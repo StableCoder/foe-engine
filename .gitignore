@@ -1,0 +1,18 @@
+# =========================
+# IDE/Editor
+# =========================
+
+.vscode/
+.idea/
+.vs/
+.clangd/
+
+# =========================
+# Build
+# =========================
+
+compile_commands.json
+cmake-build*/
+*build/
+build*/
+*.profraw
