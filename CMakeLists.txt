@@ -39,8 +39,12 @@ endif()
 include(cmake/compiler-options.cmake)
 include(cmake/sanitizers.cmake)
 
+# Libraries
+add_subdirectory(libs)
+
 # Engine Entrypoint
 add_executable(foe_engine)
+target_link_libraries(foe_engine PRIVATE foe_wsi)
 target_code_coverage(foe_engine AUTO ALL EXTERNAL)
 
 # Sources
