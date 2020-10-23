@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
 project(foe_wsi)
 
+# Dependencies
+find_path(glfw_INCLUDE_DIR NAME GLFW/glfw3.h)
+find_library(GLFW NAMES glfw glfw3 glfw3dll)
+
 # Declaration
 add_library(foe_wsi)
 
