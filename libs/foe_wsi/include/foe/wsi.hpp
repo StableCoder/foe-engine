@@ -23,37 +23,63 @@
 #include <set>
 
 struct foeKeyboard {
+    /// Unicode character currently active
     uint32_t unicodeChar;
     // Only the last pressed key can be repeated
     uint32_t repeatKey;
 
+    /// Set of keys that have received the 'pressed' signal.
     std::set<uint32_t> pressedKeys;
+    /// Set of keys that have received the 'released' signal.
     std::set<uint32_t> releasedKeys;
+    /// Set of keys currently held down.
     std::set<uint32_t> heldKeys;
 };
 
 struct foeMouse {
+    /// Holds the mouse cursor's X,Y coordinates
     struct Vec2 {
         double x;
         double y;
     };
 
+    /// If the cursor is currently in the window or not.
     bool inWindow;
+    /// If the mouse was in the window previously.
     bool oldInWindow;
 
+    /// The current position of the mouse
     Vec2 position;
+    /// The previous position of the mouse
     Vec2 oldPosition;
 
+    /// The current mouse scroll wheel values
     Vec2 scroll;
 
+    /// The set of mouse buttons just pressed.
     std::set<uint32_t> pressedButtons;
+    /// The set of mouse buttons just released.
     std::set<uint32_t> releasedButtons;
+    /// The set of mouse buttons currently being held down.
     std::set<uint32_t> heldButtons;
 };
 
+/** Creates a window for use
+ * @param width Width of the new window
+ * @param height Height of the new window
+ * @param title The title for the new window
+ * @return True if initialization successful, false otherwise, typically due to the window already
+ * being active
+ */
 FOE_WSI_EXPORT bool foeCreateWindow(int width, int height, const char *pTitle);
+
+/// Destroys the current window
 FOE_WSI_EXPORT void foeDestroyWindow();
 
+/** Processes any waiting Window events
+ *
+ * This will move the current data to be old data, and check new state of keyboard and mouse.
+ */
 FOE_WSI_EXPORT void foeWindowEventProcessing();
 
 FOE_WSI_EXPORT const char *foeWindowGetTitle();
