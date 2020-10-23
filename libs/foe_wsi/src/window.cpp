@@ -17,13 +17,16 @@
 #include <GLFW/glfw3.h>
 
 #include <mutex>
+#include <string>
 
 #include "keyboard.hpp"
 #include "mouse.hpp"
 
 namespace {
 std::once_flag glfwInitFlag;
+
 GLFWwindow *pWindow = nullptr;
+std::string title;
 bool resized;
 
 foeMouse mouse;
@@ -85,8 +88,6 @@ void foeDestroyWindow() {
     pWindow = nullptr;
 }
 
-bool foeWindowShouldClose() { return glfwWindowShouldClose(pWindow); }
-
 void foeWindowEventProcessing() {
     keyboardPreprocessing(&keyboard);
     mousePreprocessing(&mouse);
@@ -94,7 +95,24 @@ void foeWindowEventProcessing() {
     glfwPollEvents();
 }
 
+const char *foeWindowGetTitle() { return title.data(); }
+
+void foeWindowSetTitle(const char *pTitle) {
+    title = *pTitle;
+    glfwSetWindowTitle(pWindow, pTitle);
+}
+
+bool foeWindowGetShouldClose() { return glfwWindowShouldClose(pWindow); }
+
+void foeWindowSetShouldClose(bool terminate) {
+    glfwSetWindowShouldClose(pWindow, terminate ? GLFW_TRUE : GLFW_FALSE);
+}
+
+void foeWindowGetSize(int *pWidth, int *pHeight) { glfwGetWindowSize(pWindow, pWidth, pHeight); }
+
 bool foeWindowResized() { return resized; }
+
+void foeWindowResize(int width, int height) { glfwSetWindowSize(pWindow, width, height); }
 
 const foeMouse *foeGetMouse() { return &mouse; }
 const foeKeyboard *foeGetKeyboard() { return &keyboard; }

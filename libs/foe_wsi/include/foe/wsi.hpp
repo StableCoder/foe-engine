@@ -54,9 +54,17 @@ struct foeMouse {
 FOE_WSI_EXPORT bool foeCreateWindow(int width, int height, const char *pTitle);
 FOE_WSI_EXPORT void foeDestroyWindow();
 
-FOE_WSI_EXPORT bool foeWindowShouldClose();
 FOE_WSI_EXPORT void foeWindowEventProcessing();
+
+FOE_WSI_EXPORT const char *foeWindowGetTitle();
+FOE_WSI_EXPORT void foeWindowSetTitle(const char *pTitle);
+
+FOE_WSI_EXPORT bool foeWindowGetShouldClose();
+FOE_WSI_EXPORT void foeWindowSetShouldClose(bool terminate);
+
+FOE_WSI_EXPORT void foeWindowGetSize(int *pWidth, int *pHeight);
 FOE_WSI_EXPORT bool foeWindowResized();
+FOE_WSI_EXPORT void foeWindowResize(int width, int height);
 
 FOE_WSI_EXPORT const foeMouse *foeGetMouse();
 FOE_WSI_EXPORT const foeKeyboard *foeGetKeyboard();

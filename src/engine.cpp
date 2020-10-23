@@ -22,7 +22,7 @@
 int main(int, char **) {
     foeCreateWindow(1280, 720, "FoE Engine");
 
-    while (!foeWindowShouldClose()) {
+    while (!foeWindowGetShouldClose()) {
         foeWindowEventProcessing();
 
         auto *pMouse = foeGetMouse();
