@@ -17,6 +17,8 @@
 #ifndef FOE_WSI_HPP
 #define FOE_WSI_HPP
 
+#include <foe/wsi_export.h>
+
 #include <cstdint>
 #include <set>
 
@@ -49,14 +51,14 @@ struct foeMouse {
     std::set<uint32_t> heldButtons;
 };
 
-bool foeCreateWindow(int width, int height, const char *pTitle);
-void foeDestroyWindow();
+FOE_WSI_EXPORT bool foeCreateWindow(int width, int height, const char *pTitle);
+FOE_WSI_EXPORT void foeDestroyWindow();
 
-bool foeWindowShouldClose();
-void foeWindowEventProcessing();
-bool foeWindowResized();
+FOE_WSI_EXPORT bool foeWindowShouldClose();
+FOE_WSI_EXPORT void foeWindowEventProcessing();
+FOE_WSI_EXPORT bool foeWindowResized();
 
-const foeMouse *foeGetMouse();
-const foeKeyboard *foeGetKeyboard();
+FOE_WSI_EXPORT const foeMouse *foeGetMouse();
+FOE_WSI_EXPORT const foeKeyboard *foeGetKeyboard();
 
 #endif // FOE_WSI_HPP

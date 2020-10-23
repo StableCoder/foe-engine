@@ -35,6 +35,11 @@ else()
   clang_tidy(-header-filter='${CMAKE_SOURCE_DIR}/*')
 endif()
 
+# Header Exports
+include(GenerateExportHeader)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 # Misc CMake
 include(cmake/compiler-options.cmake)
 include(cmake/sanitizers.cmake)
