@@ -20,3 +20,8 @@ target_include_directories(foe_wsi PUBLIC include ${glfw_INCLUDE_DIR}
                                           ${CMAKE_CURRENT_BINARY_DIR}/exports)
 target_link_libraries(foe_wsi PUBLIC ${GLFW})
 target_code_coverage(foe_wsi)
+
+# Auxiliary Targets
+if(BUILD_EXAMPLES)
+  add_subdirectory(example)
+endif()

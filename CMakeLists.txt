@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 project(FoE-Engine CXX)
 
+# Global Options
+option(BUILD_EXAMPLES "Build example programs" OFF)
+
 # C++20 standard, no extensions
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

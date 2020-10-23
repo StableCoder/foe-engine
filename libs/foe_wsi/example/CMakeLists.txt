@@ -1,0 +1,2 @@
+add_executable(example_foe_wsi_simple simple.cpp)
+target_link_libraries(example_foe_wsi_simple PRIVATE foe_wsi)
