@@ -5,6 +5,7 @@ project(foe_wsi)
 find_path(glfw_INCLUDE_DIR NAMES GLFW/glfw3.h)
 mark_as_advanced(glfw_INCLUDE_DIR)
 find_library(GLFW NAMES glfw glfw3 glfw3dll)
+mark_as_advanced(GLFW)
 
 # Declaration
 add_library(foe_wsi)
