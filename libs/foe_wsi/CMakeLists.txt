@@ -10,6 +10,7 @@ mark_as_advanced(GLFW)
 # Declaration
 add_library(foe_wsi)
 
+# Definition
 generate_export_header(foe_wsi EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/wsi_export.h)
 
@@ -18,7 +19,6 @@ target_include_directories(foe_wsi PUBLIC include ${glfw_INCLUDE_DIR}
 target_link_libraries(foe_wsi PUBLIC ${GLFW})
 target_code_coverage(foe_wsi)
 
-# Sources
 add_subdirectory(src)
 
 # Auxiliary Targets

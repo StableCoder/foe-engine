@@ -15,12 +15,16 @@
 */
 
 #include <GLFW/glfw3.h>
+#include <foe/graphics/environment.hpp>
 #include <foe/wsi.hpp>
 
 #include <iostream>
 
 int main(int, char **) {
-    foeCreateWindow(1280, 720, "FoE Engine");
+    foeGfxEnvironment *pGfxEnvironment;
+    auto res = foeGfxCreateEnvironment("FoE Engine", 0, &pGfxEnvironment);
+
+    bool windowCreated = foeCreateWindow(1280, 720, "FoE Engine");
 
     while (!foeWindowGetShouldClose()) {
         foeWindowEventProcessing();
@@ -30,6 +34,8 @@ int main(int, char **) {
     }
 
     foeDestroyWindow();
+
+    foeGfxDestroyEnvironment(pGfxEnvironment);
 
     return 0;
 }

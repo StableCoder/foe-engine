@@ -48,12 +48,15 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 include(cmake/compiler-options.cmake)
 include(cmake/sanitizers.cmake)
 
+# GLFW/Vulkan
+add_compile_definitions(GLFW_INCLUDE_VULKAN)
+
 # Libraries
 add_subdirectory(libs)
 
 # Engine Entrypoint
 add_executable(foe_engine)
-target_link_libraries(foe_engine PRIVATE foe_wsi)
+target_link_libraries(foe_engine PRIVATE foe_graphics foe_wsi)
 target_code_coverage(foe_engine AUTO ALL EXTERNAL)
 
 # Sources

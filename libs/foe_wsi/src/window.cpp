@@ -63,7 +63,10 @@ bool foeCreateWindow(int width, int height, const char *pTitle) {
     if (pWindow != nullptr)
         return false;
 
-    std::call_once(glfwInitFlag, [] { glfwInit(); });
+    glfwInit();
+
+    // Since this is exclusively a Vulkan platform, don't initialize OpenGL context
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     pWindow = glfwCreateWindow(width, height, pTitle, nullptr, nullptr);
 
@@ -86,6 +89,17 @@ bool foeCreateWindow(int width, int height, const char *pTitle) {
 void foeDestroyWindow() {
     glfwDestroyWindow(pWindow);
     pWindow = nullptr;
+}
+
+const char **foeWindowGetVulkanExtensions(uint32_t *pExtensionCount) {
+    glfwInit();
+
+    if (!glfwVulkanSupported()) {
+        pExtensionCount = 0;
+        return nullptr;
+    }
+
+    return glfwGetRequiredInstanceExtensions(pExtensionCount);
 }
 
 void foeWindowEventProcessing() {
