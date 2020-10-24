@@ -27,28 +27,6 @@ int main(int, char **) {
 
         auto *pMouse = foeGetMouse();
         auto *pKeyboard = foeGetKeyboard();
-
-        for (auto &it : pMouse->pressedButtons)
-            std::cout << "Pressed: " << it << std::endl;
-        for (auto &it : pMouse->releasedButtons)
-            std::cout << "Released: " << it << std::endl;
-
-        for (auto &it : pKeyboard->pressedKeys)
-            std::cout << "Pressed: " << it << std::endl;
-        for (auto &it : pKeyboard->releasedKeys)
-            std::cout << "Released: " << it << std::endl;
-
-        if (pKeyboard->unicodeChar != 0)
-            std::cout << pKeyboard->unicodeChar << std::endl;
-
-        if (pMouse->inWindow && !pMouse->oldInWindow) {
-            std::cout << "Entered" << std::endl;
-        } else if (!pMouse->inWindow && pMouse->oldInWindow) {
-            std::cout << "Exited" << std::endl;
-        }
-
-        if (foeWindowResized())
-            std::cout << "Resized" << std::endl;
     }
 
     foeDestroyWindow();
