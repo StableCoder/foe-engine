@@ -20,10 +20,11 @@
 #include <foe/export.h>
 #include <foe/log/logger.hpp>
 
-#define FOE_LOG(CATEGORY, LOG_LEVEL, MESSAGE)                                                      \
+#define FOE_LOG(CATEGORY, LOG_LEVEL, MESSAGE, ...)                                                 \
     if constexpr (static_cast<int>(foeLogLevel::LOG_LEVEL) <=                                      \
                   static_cast<int>(CATEGORY::maxCompileLevel())) {                                 \
-        foeLogger::instance()->log(CATEGORY::instance(), foeLogLevel::LOG_LEVEL, MESSAGE);         \
+        foeLogger::instance()->log(CATEGORY::instance(), foeLogLevel::LOG_LEVEL, MESSAGE,          \
+                                   ##__VA_ARGS__);                                                 \
     }
 
 /** Declares a log category for static or scoped environments

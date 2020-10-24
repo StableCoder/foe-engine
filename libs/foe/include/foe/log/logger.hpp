@@ -17,6 +17,7 @@
 #ifndef FOE_LOG_LOGGER_HPP
 #define FOE_LOG_LOGGER_HPP
 
+#include <fmt/core.h>
 #include <foe/log/category.hpp>
 #include <foe/log/level.hpp>
 
@@ -28,6 +29,14 @@ class foeLogger {
     FOE_EXPORT static foeLogger *instance();
 
     FOE_EXPORT void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message);
+
+    template <typename... Args>
+    inline void log(foeLogCategory *pCategory,
+                    foeLogLevel level,
+                    std::string_view message,
+                    Args... args) {
+        log(pCategory, level, fmt::format(message, args...));
+    }
 };
 
 #endif // FOE_LOG_LOGGER_HPP

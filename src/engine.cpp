@@ -21,25 +21,20 @@
 
 #include <iostream>
 
-FOE_DECLARE_LOG_CATEGORY(TestCat, All, Warning)
-FOE_DEFINE_LOG_CATEGORY(TestCat)
-
 int main(int, char **) {
     foeGfxEnvironment *pGfxEnvironment;
     auto res = foeGfxCreateEnvironment("FoE Engine", 0, &pGfxEnvironment);
 
-    FOE_LOG(General, Warning, "Compile Test");
-
     bool windowCreated = foeCreateWindow(1280, 720, "FoE Engine");
 
+    FOE_LOG(General, Info, "Entering main loop")
     while (!foeWindowGetShouldClose()) {
         foeWindowEventProcessing();
 
         auto *pMouse = foeGetMouse();
         auto *pKeyboard = foeGetKeyboard();
     }
-
-    foeLogger::instance()->log(TestCat::instance(), foeLogLevel::Info, "Exiting application");
+    FOE_LOG(General, Info, "Exiting main loop")
 
     foeDestroyWindow();
 
