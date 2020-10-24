@@ -16,13 +16,19 @@
 
 #include <GLFW/glfw3.h>
 #include <foe/graphics/environment.hpp>
+#include <foe/log.hpp>
 #include <foe/wsi.hpp>
 
 #include <iostream>
 
+FOE_DECLARE_LOG_CATEGORY(TestCat, All, Warning)
+FOE_DEFINE_LOG_CATEGORY(TestCat)
+
 int main(int, char **) {
     foeGfxEnvironment *pGfxEnvironment;
     auto res = foeGfxCreateEnvironment("FoE Engine", 0, &pGfxEnvironment);
+
+    FOE_LOG(General, Warning, "Compile Test");
 
     bool windowCreated = foeCreateWindow(1280, 720, "FoE Engine");
 
@@ -32,6 +38,8 @@ int main(int, char **) {
         auto *pMouse = foeGetMouse();
         auto *pKeyboard = foeGetKeyboard();
     }
+
+    foeLogger::instance()->log(TestCat::instance(), foeLogLevel::Info, "Exiting application");
 
     foeDestroyWindow();
 
