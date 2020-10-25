@@ -81,3 +81,39 @@ Ubuntu/Clang Shared:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_unix_template
 
+
+.platform_windows_template: &platform_windows_template
+  stage: Platform Tests
+  image: stabletec/build-foe:windows
+  tags:
+    - docker-windows
+    - amd64
+  dependencies: []
+  script:
+    - mkdir build; cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON $env:CMAKE_OPTIONS
+    - ninja
+    - ninja test
+
+Windows/MSVC Static:
+  variables:
+  <<: *platform_windows_template
+
+Windows/MSVC Shared:
+  variables:
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_windows_template
+
+Windows/Clang-cl Static:
+  variables:
+    CC: clang-cl
+    CXX: clang-cl
+  <<: *platform_windows_template
+
+Windows/Clang-cl Shared:
+  variables:
+    CC: clang-cl
+    CXX: clang-cl
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_windows_template
+
