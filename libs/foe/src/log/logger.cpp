@@ -24,6 +24,9 @@ foeLogger *foeLogger::instance() {
 }
 
 void foeLogger::log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
+    if (level > pCategory->maxLevel())
+        return;
+
     std::scoped_lock lock{mSync};
 
     for (auto *it : mSinks) {
