@@ -3,6 +3,7 @@ project(FoE-Engine CXX)
 
 # Global Options
 option(BUILD_EXAMPLES "Build example programs" OFF)
+option(BUILD_TESTS "Build testcc programs" OFF)
 
 # C++20 standard, no extensions
 set(CMAKE_CXX_STANDARD 20)
@@ -46,7 +47,12 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 # Misc CMake
 include(cmake/compiler-options.cmake)
+include(cmake/prepare_catch.cmake)
 include(cmake/sanitizers.cmake)
+
+if(BUILD_TESTS)
+  enable_testing()
+endif()
 
 # GLFW/Vulkan
 add_compile_definitions(GLFW_INCLUDE_VULKAN)

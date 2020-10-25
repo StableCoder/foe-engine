@@ -16,3 +16,8 @@ target_link_libraries(foe PUBLIC fmt)
 target_code_coverage(foe)
 
 add_subdirectory(src)
+
+# Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
