@@ -2,6 +2,7 @@
 
 stages:
  - Platform Tests
+ - Analysis
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -141,3 +142,97 @@ Windows/Clang-cl Shared:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
+# Analysis
+
+Formatting:
+  stage: Analysis
+  image: stabletec/build-foe:fedora
+  allow_failure: true
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja
+    - ninja format
+    - ninja cmake-format
+    - git diff --exit-code
+
+Static Analysis:
+  stage: Analysis
+  image: stabletec/build-foe:fedora
+  tags:
+    - docker-linux
+    - amd64
+  dependencies: []
+  variables:
+    CC: clang
+    CXX: clang++
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON -DCLANG_TIDY=ON -DCPPCHECK=ON
+    - ninja
+
+Code Coverage:
+  stage: Analysis
+  image: stabletec/build-foe:fedora
+  tags:
+    - docker-linux
+    - amd64
+  dependencies: []
+  variables:
+    CC: clang
+    CXX: clang++
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON -DBUILD_TESTS=ON -DBUILD_WINDOW_TESTS=OFF -DNO_VULKAN_RENDERER=ON
+    - ninja
+    - ninja ccov
+    - ninja ccov-all
+    - ninja ccov-report
+    - ninja ccov-all-report
+  artifacts:
+    name: CodeCoverage
+    paths: 
+      - build/ccov
+    expire_in: 1 day
+  
+.analysis_template: &analysis_template
+  stage: Analysis
+  image: stabletec/build-foe:fedora
+  tags:
+    - docker-linux
+    - amd64
+  dependencies: []
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON -DBUILD_WINDOW_TESTS=OFF -DNO_VULKAN_RENDERER=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja test
+
+ThreadSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
+  <<: *analysis_template
+
+AddressSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Address
+  <<: *analysis_template
+
+LeakSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
+  <<: *analysis_template
+
+UndefinedSanitizer:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
+  <<: *analysis_template
