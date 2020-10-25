@@ -81,6 +81,30 @@ Ubuntu/Clang Shared:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_unix_template
 
+.platform_macos_template: &platform_macos_template
+  stage: Platform Tests
+  tags:
+    - macos
+    - amd64
+  dependencies: []
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja test
+
+macOS/Clang Static:
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *platform_macos_template
+
+macOS/Clang Shared:
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_macos_template
 
 .platform_windows_template: &platform_windows_template
   stage: Platform Tests

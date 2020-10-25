@@ -9,7 +9,7 @@ if(fmt_INCLUDE_DIRS-NOTFOUND OR fmt_LIBRARIES-NOTFOUND)
 else()
   get_filename_component(fmt_INCLUDE_DIRS ${fmt_INCLUDE_DIRS} DIRECTORY)
 endif()
-if(WIN32)
+if(WIN32 OR APPLE)
   set(fmt_INCLUDE_DIRS ${fmt_INCLUDE_DIRS}/include)
 endif()
 mark_as_advanced(FORCE fmt_INCLUDE_DIRS fmt_LIBRARIES)
@@ -21,7 +21,7 @@ add_library(foe)
 generate_export_header(foe EXPORT_MACRO_NAME FOE_EXPORT EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/export.h)
 
-target_include_directories(foe PUBLIC include
+target_include_directories(foe PUBLIC include ${fmt_INCLUDE_DIRS}
                                       ${CMAKE_CURRENT_BINARY_DIR}/exports)
 target_link_libraries(foe PUBLIC ${fmt_LIBRARIES})
 target_code_coverage(foe)
