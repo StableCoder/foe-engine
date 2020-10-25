@@ -50,3 +50,34 @@ Fedora/Clang Shared:
     CXX: clang++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_unix_template
+
+Ubuntu/GCC Static:
+  image: stabletec/build-foe:ubuntu
+  variables:
+    CC: gcc
+    CXX: g++
+  <<: *platform_unix_template
+
+Ubuntu/GCC Shared:
+  image: stabletec/build-foe:ubuntu
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_unix_template
+
+Ubuntu/Clang Static:
+  image: stabletec/build-foe:ubuntu
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *platform_unix_template
+
+Ubuntu/Clang Shared:
+  image: stabletec/build-foe:ubuntu
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_unix_template
+
