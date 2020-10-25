@@ -21,7 +21,12 @@
 
 #include <iostream>
 
+#include "stdout_sink.hpp"
+
 int main(int, char **) {
+    StdOutSink stdoutSink;
+    foeLogger::instance()->registerSink(&stdoutSink);
+
     foeGfxEnvironment *pGfxEnvironment;
     auto res = foeGfxCreateEnvironment("FoE Engine", 0, &pGfxEnvironment);
 

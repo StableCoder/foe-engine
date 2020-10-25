@@ -20,6 +20,7 @@
 #include <fmt/core.h>
 #include <foe/log/category.hpp>
 #include <foe/log/level.hpp>
+#include <foe/log/sink.hpp>
 
 #include <mutex>
 #include <string_view>
@@ -37,6 +38,14 @@ class foeLogger {
                     Args... args) {
         log(pCategory, level, fmt::format(message, args...));
     }
+
+    FOE_EXPORT bool registerSink(foeLogSink *pSink);
+
+    FOE_EXPORT bool deregisterSink(foeLogSink *pSink);
+
+  private:
+    std::mutex mSync;
+    std::vector<foeLogSink *> mSinks;
 };
 
 #endif // FOE_LOG_LOGGER_HPP

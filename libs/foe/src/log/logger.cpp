@@ -24,5 +24,41 @@ foeLogger *foeLogger::instance() {
 }
 
 void foeLogger::log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
-    std::cerr << pCategory->name() << " : " << std::to_string(level) << " : " << message << "\n";
+    std::scoped_lock lock{mSync};
+
+    for (auto *it : mSinks) {
+        it->log(pCategory, level, message);
+    }
+
+    [[unlikely]] if (level == foeLogLevel::Fatal) {
+        for (auto *it : mSinks) {
+            it->exception();
+        }
+    }
+}
+
+bool foeLogger::registerSink(foeLogSink *pSink) {
+    std::scoped_lock lock{mSync};
+
+    for (auto it = mSinks.begin(); it != mSinks.end(); ++it) {
+        if (*it == pSink) {
+            return false;
+        }
+    }
+
+    mSinks.emplace_back(pSink);
+    return true;
+}
+
+bool foeLogger::deregisterSink(foeLogSink *pSink) {
+    std::scoped_lock lock{mSync};
+
+    for (auto it = mSinks.begin(); it != mSinks.end(); ++it) {
+        if (*it == pSink) {
+            mSinks.erase(it);
+            return true;
+        }
+    }
+
+    return false;
 }
