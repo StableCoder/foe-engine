@@ -44,6 +44,8 @@ class foeLogger {
     FOE_EXPORT bool deregisterSink(foeLogSink *pSink);
 
   private:
+    foeLogger() = default;
+
     std::mutex mSync;
     std::vector<foeLogSink *> mSinks;
 };
