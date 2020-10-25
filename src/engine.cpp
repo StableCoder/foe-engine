@@ -15,6 +15,7 @@
 */
 
 #include <GLFW/glfw3.h>
+#include <foe/developer_console.hpp>
 #include <foe/graphics/environment.hpp>
 #include <foe/log.hpp>
 #include <foe/wsi.hpp>
@@ -26,6 +27,7 @@
 int main(int, char **) {
     StdOutSink stdoutSink;
     foeLogger::instance()->registerSink(&stdoutSink);
+    foeLogger::instance()->registerSink(foeDeveloperConsole::instance());
 
     foeGfxEnvironment *pGfxEnvironment;
     auto res = foeGfxCreateEnvironment("FoE Engine", 0, &pGfxEnvironment);

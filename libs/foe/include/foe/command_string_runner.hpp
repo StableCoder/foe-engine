@@ -24,14 +24,14 @@
 #include <string_view>
 #include <unordered_map>
 
-class foeCommandStringRunner {
+class FOE_EXPORT foeCommandStringRunner {
   public:
-    FOE_EXPORT bool registerCommand(std::string_view commandName,
-                                    std::function<void(std::string_view)> const &function);
+    bool registerCommand(std::string_view commandName,
+                         std::function<void(std::string_view)> const &function);
 
-    FOE_EXPORT bool deregisterCommand(std::string_view commandName);
+    bool deregisterCommand(std::string_view commandName);
 
-    FOE_EXPORT bool runCommand(std::string_view commandCall);
+    virtual bool runCommand(std::string_view commandCall);
 
   private:
     std::mutex mSync;
