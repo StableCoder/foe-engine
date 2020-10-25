@@ -7,6 +7,8 @@ mark_as_advanced(glfw_INCLUDE_DIR)
 find_library(GLFW NAMES glfw glfw3 glfw3dll)
 mark_as_advanced(GLFW)
 
+find_package(Vulkan REQUIRED)
+
 # Declaration
 add_library(foe_wsi)
 
@@ -16,7 +18,7 @@ generate_export_header(foe_wsi EXPORT_FILE_NAME
 
 target_include_directories(foe_wsi PUBLIC include ${glfw_INCLUDE_DIR}
                                           ${CMAKE_CURRENT_BINARY_DIR}/exports)
-target_link_libraries(foe_wsi PUBLIC ${GLFW})
+target_link_libraries(foe_wsi PUBLIC ${GLFW} Vulkan::Vulkan)
 target_code_coverage(foe_wsi)
 
 add_subdirectory(src)
