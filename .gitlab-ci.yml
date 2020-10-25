@@ -1,0 +1,52 @@
+# Global
+
+stages:
+ - Platform Tests
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  CTEST_OUTPUT_ON_FAILURE: 1
+
+# Platforms
+
+.platform_unix_template: &platform_unix_template
+  stage: Platform Tests
+  tags: 
+    - docker-linux
+    - amd64
+  dependencies: []
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja test
+
+Fedora/GCC Static:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: gcc
+    CXX: g++
+  <<: *platform_unix_template
+
+Fedora/GCC Shared:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_unix_template
+
+Fedora/Clang Static:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *platform_unix_template
+
+Fedora/Clang Shared:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_unix_template
