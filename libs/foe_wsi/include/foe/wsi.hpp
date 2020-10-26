@@ -33,7 +33,22 @@ struct foeKeyboard {
     /// Set of keys that have received the 'released' signal.
     std::set<uint32_t> releasedKeys;
     /// Set of keys currently held down.
-    std::set<uint32_t> heldKeys;
+    std::set<uint32_t> downKeys;
+
+    /// Returns if the given key has just been pressed this tick.
+    inline bool keyPressed(uint32_t key) const noexcept {
+        return pressedKeys.find(key) != pressedKeys.end();
+    }
+
+    /// Returns if the given key has just been released.
+    inline bool keyReleased(uint32_t key) const noexcept {
+        return releasedKeys.find(key) != releasedKeys.end();
+    }
+
+    /// Returns if the given key is being held down.
+    inline bool keyDown(uint32_t key) const noexcept {
+        return downKeys.find(key) != downKeys.end();
+    }
 };
 
 struct foeMouse {
@@ -61,7 +76,22 @@ struct foeMouse {
     /// The set of mouse buttons just released.
     std::set<uint32_t> releasedButtons;
     /// The set of mouse buttons currently being held down.
-    std::set<uint32_t> heldButtons;
+    std::set<uint32_t> downButtons;
+
+    /// Returns if the mouse button was pressed
+    inline bool buttonPressed(uint32_t button) const noexcept {
+        return pressedButtons.find(button) != pressedButtons.end();
+    }
+
+    /// Returns if the mouse button was released
+    inline bool buttonReleased(uint32_t button) const noexcept {
+        return releasedButtons.find(button) != releasedButtons.end();
+    }
+
+    /// Returns if the mouse button is currently pressed down
+    inline bool buttonDown(uint32_t button) const noexcept {
+        return downButtons.find(button) != downButtons.end();
+    }
 };
 
 /** Creates a window for use

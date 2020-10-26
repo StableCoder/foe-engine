@@ -29,12 +29,12 @@ void keyboardPreprocessing(foeKeyboard *pKeyboard) {
 void keyCallback(foeKeyboard *pKeyboard, int key, int, int action, int) {
     if (action == GLFW_PRESS) {
         pKeyboard->pressedKeys.insert(key);
-        pKeyboard->heldKeys.insert(key);
+        pKeyboard->downKeys.insert(key);
     } else if (action == GLFW_REPEAT) {
         pKeyboard->repeatKey = key;
     } else if (action == GLFW_RELEASE) {
         pKeyboard->releasedKeys.insert(key);
-        pKeyboard->heldKeys.erase(key);
+        pKeyboard->downKeys.erase(key);
     }
 }
 

@@ -41,9 +41,9 @@ void scrollCallback(foeMouse *pMouse, double xOffset, double yOffset) {
 void buttonCallback(foeMouse *pMouse, int button, int action, int) {
     if (action == GLFW_PRESS) {
         pMouse->pressedButtons.insert(button);
-        pMouse->heldButtons.insert(button);
+        pMouse->downButtons.insert(button);
     } else if (action == GLFW_RELEASE) {
         pMouse->releasedButtons.insert(button);
-        pMouse->heldButtons.erase(button);
+        pMouse->downButtons.erase(button);
     }
 }
