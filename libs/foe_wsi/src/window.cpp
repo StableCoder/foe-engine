@@ -16,15 +16,12 @@
 
 #include <GLFW/glfw3.h>
 
-#include <mutex>
 #include <string>
 
 #include "keyboard.hpp"
 #include "mouse.hpp"
 
 namespace {
-std::once_flag glfwInitFlag;
-
 GLFWwindow *pWindow = nullptr;
 std::string title;
 bool resized;

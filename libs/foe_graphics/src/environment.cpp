@@ -86,6 +86,8 @@ VkResult foeGfxCreateEnvironment(const char *appName,
     };
 
     VkResult res = vkCreateInstance(&instanceCI, nullptr, &pEnv->instance);
+    if (res != VK_SUCCESS)
+        return res;
 
     // Physical Device
     uint32_t physicalDeviceCount;
@@ -144,7 +146,7 @@ VkResult foeGfxCreateEnvironment(const char *appName,
     }
 
     uint32_t numQueueFamilies = queueFamilyCount;
-    for (int i = 0; i < numQueueFamilies; ++i) {
+    for (uint32_t i = 0; i < numQueueFamilies; ++i) {
         createQueueFamily(pEnv->device, queueFamilyProperties[i].queueFlags, i,
                           queueFamilyProperties[i].queueCount, &pEnv->pQueueFamilies[i]);
     }
