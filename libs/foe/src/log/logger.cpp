@@ -65,3 +65,5 @@ bool foeLogger::deregisterSink(foeLogSink *pSink) {
 
     return false;
 }
+
+foeLogger::foeLogger() = default;

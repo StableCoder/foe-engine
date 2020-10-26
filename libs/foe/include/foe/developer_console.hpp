@@ -40,7 +40,7 @@ class foeDeveloperConsole : public foeLogSink, public foeCommandStringRunner {
     FOE_EXPORT void maxEntries(size_t numEntries) noexcept;
 
   private:
-    foeDeveloperConsole() = default;
+    foeDeveloperConsole();
 
     struct Entry {
         foeLogCategory *pCategory;

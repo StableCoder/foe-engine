@@ -32,9 +32,6 @@ std::string to_string(foeLogLevel logLevel) {
     }
 
 #undef ADD_LEVEL
-
-    std::abort();
-    return {};
 }
 
 } // namespace std

@@ -26,6 +26,9 @@
 
 class foeCommandStringRunner {
   public:
+    FOE_EXPORT foeCommandStringRunner();
+    FOE_EXPORT virtual ~foeCommandStringRunner();
+
     FOE_EXPORT bool registerCommand(std::string_view commandName,
                                     std::function<void(std::string_view)> const &function);
 

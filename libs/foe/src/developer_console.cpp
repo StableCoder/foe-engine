@@ -65,3 +65,5 @@ void foeDeveloperConsole::maxEntries(size_t numEntries) noexcept {
         mEntries.pop_front();
     }
 }
+
+foeDeveloperConsole::foeDeveloperConsole() = default;

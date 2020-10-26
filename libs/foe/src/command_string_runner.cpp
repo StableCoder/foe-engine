@@ -19,6 +19,10 @@
 #include <algorithm>
 #include <string>
 
+foeCommandStringRunner::foeCommandStringRunner() = default;
+
+foeCommandStringRunner::~foeCommandStringRunner() = default;
+
 bool foeCommandStringRunner::registerCommand(
     std::string_view commandName, std::function<void(std::string_view)> const &function) {
     std::scoped_lock lock{mSync};

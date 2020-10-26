@@ -17,6 +17,7 @@
 #include <catch.hpp>
 #include <foe/command_string_runner.hpp>
 
+#include <atomic>
 #include <chrono>
 #include <string_view>
 #include <thread>
