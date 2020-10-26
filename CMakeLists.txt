@@ -12,7 +12,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Code Coverage
 include(cmake/code-coverage.cmake)
-add_code_coverage_all_targets()
+add_code_coverage_all_targets(EXCLUDE .*/test/.*)
 
 # Formatting
 include(cmake/formatting.cmake)
