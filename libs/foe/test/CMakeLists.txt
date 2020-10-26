@@ -14,3 +14,6 @@ target_code_coverage(
   foe
   EXCLUDE
   .*/test/.*)
+
+# Definition
+add_subdirectory(chrono)
