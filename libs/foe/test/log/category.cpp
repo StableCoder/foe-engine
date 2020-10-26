@@ -20,7 +20,7 @@
 FOE_DECLARE_LOG_CATEGORY(TestCategory, All, All)
 FOE_DEFINE_LOG_CATEGORY(TestCategory)
 
-TEST_CASE("foeLogCategory Functionality", "[foe][foeLogCategory]") {
+TEST_CASE("foeLogCategory Functionality", "[foe][log]") {
     auto *testCategory = TestCategory::instance();
 
     REQUIRE(testCategory->name() == "TestCategory");
@@ -44,7 +44,7 @@ struct TestSink : public foeLogSink {
 FOE_DECLARE_LOG_CATEGORY(FatalCategory, All, Fatal)
 FOE_DEFINE_LOG_CATEGORY(FatalCategory)
 
-TEST_CASE("foeLogCategory - Fatal compilation level") {
+TEST_CASE("foeLogCategory - Fatal compilation level", "[foe][log]") {
     TestSink testSink;
     foeLogger::instance()->registerSink(&testSink);
 
@@ -62,7 +62,7 @@ TEST_CASE("foeLogCategory - Fatal compilation level") {
 FOE_DECLARE_LOG_CATEGORY(WarningCategory, All, Warning)
 FOE_DEFINE_LOG_CATEGORY(WarningCategory)
 
-TEST_CASE("foeLogCategory - Warning compilation level") {
+TEST_CASE("foeLogCategory - Warning compilation level", "[foe][log]") {
     TestSink testSink;
     foeLogger::instance()->registerSink(&testSink);
 
@@ -80,7 +80,7 @@ TEST_CASE("foeLogCategory - Warning compilation level") {
 FOE_DECLARE_LOG_CATEGORY(VerboseCategory, All, Verbose)
 FOE_DEFINE_LOG_CATEGORY(VerboseCategory)
 
-TEST_CASE("foeLogCategory - Verbose compilation level") {
+TEST_CASE("foeLogCategory - Verbose compilation level", "[foe][log]") {
     TestSink testSink;
     foeLogger::instance()->registerSink(&testSink);
 
@@ -99,7 +99,7 @@ TEST_CASE("foeLogCategory - Verbose compilation level") {
 FOE_DECLARE_LOG_CATEGORY(AllCategory, All, All)
 FOE_DEFINE_LOG_CATEGORY(AllCategory)
 
-TEST_CASE("foeLogCategory - Runtime log levels") {
+TEST_CASE("foeLogCategory - Runtime log levels", "[foe][log]") {
     TestSink testSink;
     foeLogger::instance()->registerSink(&testSink);
 

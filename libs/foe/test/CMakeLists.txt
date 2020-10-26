@@ -1,11 +1,14 @@
 # Setup
 prepare_catch(COMPILED_CATCH)
 
-# Executable
-add_executable(test_foe log_category.cpp)
+# Declaration
+add_executable(test_foe command_string_runner.cpp)
 add_test(NAME FoE-Test COMMAND test_foe)
 
 target_link_libraries(test_foe PRIVATE catch foe)
+if(UNIX)
+  target_link_libraries(test_foe PRIVATE pthread)
+endif()
 target_code_coverage(
   test_foe
   AUTO
@@ -17,3 +20,4 @@ target_code_coverage(
 
 # Definition
 add_subdirectory(chrono)
+add_subdirectory(log)
