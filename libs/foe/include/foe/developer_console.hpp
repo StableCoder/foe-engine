@@ -24,18 +24,20 @@
 #include <deque>
 #include <mutex>
 
-class FOE_EXPORT foeDeveloperConsole : public foeLogSink, public foeCommandStringRunner {
+class foeDeveloperConsole : public foeLogSink, public foeCommandStringRunner {
   public:
-    static foeDeveloperConsole *instance();
+    FOE_EXPORT static foeDeveloperConsole *instance();
 
-    void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) final;
+    FOE_EXPORT void log(foeLogCategory *pCategory,
+                        foeLogLevel level,
+                        std::string_view message) final;
 
-    void exception() final;
+    FOE_EXPORT void exception() final;
 
-    bool runCommand(std::string_view commandCall) final;
+    FOE_EXPORT bool runCommand(std::string_view commandCall) final;
 
-    size_t maxEntries() const noexcept;
-    void maxEntries(size_t numEntries) noexcept;
+    FOE_EXPORT size_t maxEntries() const noexcept;
+    FOE_EXPORT void maxEntries(size_t numEntries) noexcept;
 
   private:
     foeDeveloperConsole() = default;
