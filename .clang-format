@@ -1,6 +1,6 @@
 BasedOnStyle: LLVM
 Language: Cpp
-Standard: Cpp11
+Standard: Latest
 IndentWidth: 4
 ColumnLimit: 100
 BinPackParameters: false
