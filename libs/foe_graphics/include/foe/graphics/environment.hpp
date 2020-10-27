@@ -38,6 +38,8 @@ struct foeQueueFamily {
 
 struct foeGfxEnvironment {
     VkInstance instance;
+    VkDebugReportCallbackEXT debugCallback;
+
     VkPhysicalDevice physicalDevice;
     VkDevice device;
 
@@ -45,7 +47,8 @@ struct foeGfxEnvironment {
     foeQueueFamily pQueueFamilies[MaxQueueFamilies];
 };
 
-FOE_GFX_EXPORT VkResult foeGfxCreateEnvironment(const char *appName,
+FOE_GFX_EXPORT VkResult foeGfxCreateEnvironment(bool validation,
+                                                const char *appName,
                                                 uint32_t appVersion,
                                                 foeGfxEnvironment **ppEnvironment);
 

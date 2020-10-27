@@ -30,7 +30,7 @@ int main(int, char **) {
     foeLogger::instance()->registerSink(foeDeveloperConsole::instance());
 
     foeGfxEnvironment *pGfxEnvironment;
-    auto res = foeGfxCreateEnvironment("FoE Engine", 0, &pGfxEnvironment);
+    auto res = foeGfxCreateEnvironment(true, "FoE Engine", 0, &pGfxEnvironment);
 
     bool windowCreated = foeCreateWindow(1280, 720, "FoE Engine");
 

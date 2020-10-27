@@ -14,7 +14,7 @@ generate_export_header(
 
 target_include_directories(foe_graphics
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
-target_link_libraries(foe_graphics PUBLIC foe_wsi Vulkan::Vulkan)
+target_link_libraries(foe_graphics PUBLIC foe foe_wsi Vulkan::Vulkan)
 target_code_coverage(foe_graphics)
 
 add_subdirectory(src)

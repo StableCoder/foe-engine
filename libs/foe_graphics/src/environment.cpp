@@ -19,11 +19,41 @@
 
 #include <cassert>
 #include <memory>
+#include <vector>
+
+#include "gfx_log.hpp"
 
 namespace {
 
+VkBool32 vulkanMessageCallbacks(VkDebugReportFlagsEXT flags,
+                                VkDebugReportObjectTypeEXT objectType,
+                                uint64_t object,
+                                size_t location,
+                                int32_t messageCode,
+                                const char *pLayerPrefix,
+                                const char *pMessage,
+                                void *pUserData) {
+    if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
+        FOE_LOG(Graphics, Error, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+    }
+    if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0 ||
+        (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
+        FOE_LOG(Graphics, Warning, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+    }
+    if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
+        FOE_LOG(Graphics, Info, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+    }
+    if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
+        FOE_LOG(Graphics, Verbose, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+    }
+
+    return VK_FALSE;
+}
+
 void clearEnvironment(foeGfxEnvironment *pEnvironment) {
     pEnvironment->instance = VK_NULL_HANDLE;
+    pEnvironment->debugCallback = VK_NULL_HANDLE;
+
     pEnvironment->physicalDevice = VK_NULL_HANDLE;
     pEnvironment->device = VK_NULL_HANDLE;
 
@@ -56,7 +86,8 @@ void createQueueFamily(VkDevice device,
 
 } // namespace
 
-VkResult foeGfxCreateEnvironment(const char *appName,
+VkResult foeGfxCreateEnvironment(bool validation,
+                                 const char *appName,
                                  uint32_t appVersion,
                                  foeGfxEnvironment **ppEnvironment) {
     foeGfxEnvironment *pEnv = new foeGfxEnvironment;
@@ -76,18 +107,47 @@ VkResult foeGfxCreateEnvironment(const char *appName,
     uint32_t extensionCount;
     const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
 
+    std::vector<const char *> extensions;
+    for (int i = 0; i < extensionCount; ++i) {
+        extensions.emplace_back(extensionNames[i]);
+    }
+
+    if (validation) {
+        extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    }
+
     VkInstanceCreateInfo instanceCI{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &appinfo,
         .enabledLayerCount = 0,
         .ppEnabledLayerNames = nullptr,
-        .enabledExtensionCount = extensionCount,
-        .ppEnabledExtensionNames = extensionNames,
+        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+        .ppEnabledExtensionNames = extensions.data(),
     };
 
     VkResult res = vkCreateInstance(&instanceCI, nullptr, &pEnv->instance);
     if (res != VK_SUCCESS)
         return res;
+
+    if (validation) {
+        VkDebugReportCallbackCreateInfoEXT debugReportCI{
+            .sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
+            .flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                     VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+                     VK_DEBUG_REPORT_INFORMATION_BIT_EXT,
+            .pfnCallback = &vulkanMessageCallbacks,
+        };
+
+        auto fpCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(
+            vkGetInstanceProcAddr(pEnv->instance, "vkCreateDebugReportCallbackEXT"));
+
+        res = fpCreateDebugReportCallbackEXT(pEnv->instance, &debugReportCI, nullptr,
+                                             &pEnv->debugCallback);
+        if (res != VK_SUCCESS) {
+            foeGfxDestroyEnvironment(pEnv);
+            return res;
+        }
+    }
 
     // Physical Device
     uint32_t physicalDeviceCount;
@@ -158,5 +218,15 @@ VkResult foeGfxCreateEnvironment(const char *appName,
 
 void foeGfxDestroyEnvironment(foeGfxEnvironment *pEnvironment) {
     vkDestroyDevice(pEnvironment->device, nullptr);
+
+    if (pEnvironment->debugCallback != VK_NULL_HANDLE) {
+        auto fpDestroyDebugReportCallbackEXT =
+            reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
+                vkGetInstanceProcAddr(pEnvironment->instance, "vkDestroyDebugReportCallbackEXT"));
+
+        fpDestroyDebugReportCallbackEXT(pEnvironment->instance, pEnvironment->debugCallback,
+                                        nullptr);
+    }
+
     vkDestroyInstance(pEnvironment->instance, nullptr);
 }
