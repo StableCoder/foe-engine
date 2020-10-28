@@ -61,6 +61,7 @@ endif()
 add_compile_definitions(GLFW_INCLUDE_VULKAN)
 
 # Libraries
+add_subdirectory(external)
 add_subdirectory(libs)
 
 # Engine Entrypoint
