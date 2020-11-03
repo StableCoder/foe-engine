@@ -90,6 +90,7 @@ VkResult foeGfxCreateEnvironment(bool validation,
                                  const char *appName,
                                  uint32_t appVersion,
                                  foeGfxEnvironment **ppEnvironment) {
+    VkResult res;
     foeGfxEnvironment *pEnv = new foeGfxEnvironment;
     clearEnvironment(pEnv);
 
@@ -103,10 +104,12 @@ VkResult foeGfxCreateEnvironment(bool validation,
         .apiVersion = VK_MAKE_VERSION(1, 0, 0),
     };
 
+    std::vector<const char *> extensions;
+    std::vector<const char *> layers;
+
     uint32_t extensionCount;
     const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
 
-    std::vector<const char *> extensions;
     for (int i = 0; i < extensionCount; ++i) {
         extensions.emplace_back(extensionNames[i]);
     }
@@ -115,16 +118,20 @@ VkResult foeGfxCreateEnvironment(bool validation,
         extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     }
 
+    if (validation) {
+        layers.emplace_back("VK_LAYER_KHRONOS_validation");
+    }
+
     VkInstanceCreateInfo instanceCI{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &appinfo,
-        .enabledLayerCount = 0,
-        .ppEnabledLayerNames = nullptr,
+        .enabledLayerCount = static_cast<uint32_t>(layers.size()),
+        .ppEnabledLayerNames = layers.data(),
         .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
         .ppEnabledExtensionNames = extensions.data(),
     };
 
-    VkResult res = vkCreateInstance(&instanceCI, nullptr, &pEnv->instance);
+    res = vkCreateInstance(&instanceCI, nullptr, &pEnv->instance);
     if (res != VK_SUCCESS)
         return res;
 
