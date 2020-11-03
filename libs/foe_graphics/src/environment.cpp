@@ -205,8 +205,8 @@ VkResult foeGfxCreateEnvironment(bool validation,
         return res;
     }
 
-    uint32_t numQueueFamilies = queueFamilyCount;
-    for (uint32_t i = 0; i < numQueueFamilies; ++i) {
+    pEnv->numQueueFamilies = queueFamilyCount;
+    for (uint32_t i = 0; i < queueFamilyCount; ++i) {
         createQueueFamily(pEnv->device, queueFamilyProperties[i].queueFlags, i,
                           queueFamilyProperties[i].queueCount, &pEnv->pQueueFamilies[i]);
     }
