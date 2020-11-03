@@ -106,12 +106,6 @@ FOE_WSI_EXPORT bool foeCreateWindow(int width, int height, const char *pTitle);
 /// Destroys the current window
 FOE_WSI_EXPORT void foeDestroyWindow();
 
-/** Returns the required extensions for the current WSI implementation
- * @param pExtensionCount [out] Used to return the number of extensions returned
- * @return List of extension names, or nullptr on failure
- */
-FOE_WSI_EXPORT const char **foeWindowGetVulkanExtensions(uint32_t *pExtensionCount);
-
 /** Processes any waiting Window events
  *
  * This will move the current data to be old data, and check new state of keyboard and mouse.

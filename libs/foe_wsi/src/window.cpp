@@ -88,17 +88,6 @@ void foeDestroyWindow() {
     pWindow = nullptr;
 }
 
-const char **foeWindowGetVulkanExtensions(uint32_t *pExtensionCount) {
-    glfwInit();
-
-    if (!glfwVulkanSupported()) {
-        pExtensionCount = 0;
-        return nullptr;
-    }
-
-    return glfwGetRequiredInstanceExtensions(pExtensionCount);
-}
-
 void foeWindowEventProcessing() {
     keyboardPreprocessing(&keyboard);
     mousePreprocessing(&mouse);
@@ -127,3 +116,18 @@ void foeWindowResize(int width, int height) { glfwSetWindowSize(pWindow, width, 
 
 const foeMouse *foeGetMouse() { return &mouse; }
 const foeKeyboard *foeGetKeyboard() { return &keyboard; }
+
+const char **foeWindowGetVulkanExtensions(uint32_t *pExtensionCount) {
+    glfwInit();
+
+    if (!glfwVulkanSupported()) {
+        pExtensionCount = 0;
+        return nullptr;
+    }
+
+    return glfwGetRequiredInstanceExtensions(pExtensionCount);
+}
+
+VkResult foeWindowGetVkSurface(VkInstance instance, VkSurfaceKHR *pSurface) {
+    return glfwCreateWindowSurface(instance, pWindow, nullptr, pSurface);
+}

@@ -15,7 +15,7 @@
 */
 
 #include <foe/graphics/environment.hpp>
-#include <foe/wsi.hpp>
+#include <foe/wsi_vulkan.hpp>
 
 #include <cassert>
 #include <memory>
@@ -103,7 +103,6 @@ VkResult foeGfxCreateEnvironment(bool validation,
         .apiVersion = VK_MAKE_VERSION(1, 0, 0),
     };
 
-    // GLFW Instance Extensions
     uint32_t extensionCount;
     const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
 
@@ -193,10 +192,14 @@ VkResult foeGfxCreateEnvironment(bool validation,
     }
 
     // Device
+    const char *deviceExtensions = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
     VkDeviceCreateInfo deviceCI{
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .queueCreateInfoCount = queueFamilyCount,
         .pQueueCreateInfos = queueCI.get(),
+        .enabledExtensionCount = 1,
+        .ppEnabledExtensionNames = &deviceExtensions,
     };
 
     res = vkCreateDevice(physDevices[0], &deviceCI, nullptr, &pEnv->device);
