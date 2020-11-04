@@ -16,6 +16,8 @@
 
 #include <GLFW/glfw3.h>
 #include <foe/developer_console.hpp>
+#include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/descriptor_set_layout_pool.hpp>
 #include <foe/graphics/environment.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/swapchain.hpp>
@@ -137,6 +139,8 @@ int main(int, char **) {
 
     foeRenderPassPool renderPassPool;
 
+    foeDescriptorSetLayoutPool descriptorSetLayoutPool;
+    foeBuiltinDescriptorSets builtinDescriptorSets;
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
@@ -163,6 +167,13 @@ int main(int, char **) {
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
+    res = descriptorSetLayoutPool.initialize(pGfxEnvironment->device);
+    if (res != VK_SUCCESS)
+        VK_END_PROGRAM
+
+    res = builtinDescriptorSets.initialize(pGfxEnvironment->device, &descriptorSetLayoutPool);
+    if (res != VK_SUCCESS)
+        VK_END_PROGRAM
 
     FOE_LOG(General, Info, "Entering main loop")
     while (!foeWindowGetShouldClose()) {
@@ -437,6 +448,8 @@ SHUTDOWN_PROGRAM:
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(pGfxEnvironment->device, it, nullptr);
 
+    builtinDescriptorSets.deinitialize(pGfxEnvironment->device);
+    descriptorSetLayoutPool.deinitialize();
 
     renderPassPool.deinitialize();
 

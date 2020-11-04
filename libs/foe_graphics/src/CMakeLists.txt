@@ -1,6 +1,7 @@
 target_sources(
   foe_graphics
-  PRIVATE
+  PRIVATE builtin_descriptor_sets.cpp
+          descriptor_set_layout_pool.cpp
           environment.cpp
           gfx_log.cpp
           render_pass_pool.cpp
