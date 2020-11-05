@@ -5,6 +5,7 @@ target_sources(
           environment.cpp
           fragment_descriptor.cpp
           gfx_log.cpp
+          pipeline_pool.cpp
           render_pass_pool.cpp
           shader_pool.cpp
           shader.cpp

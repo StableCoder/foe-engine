@@ -1,0 +1,71 @@
+/*
+    Copyright (C) 2020 George Cave.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+#ifndef FOE_GRAPHICS_PIPELINE_POOL_HPP
+#define FOE_GRAPHICS_PIPELINE_POOL_HPP
+
+#include <foe/graphics/fragment_descriptor.hpp>
+#include <foe/graphics/vertex_descriptor.hpp>
+#include <vulkan/vulkan.h>
+
+#include <vector>
+
+class foeBuiltinDescriptorSets;
+
+class foePipelinePool {
+  public:
+    VkResult initialize(VkDevice device, foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept;
+    void deinitialize() noexcept;
+    bool initialized() const noexcept;
+
+    VkResult getPipeline(foeVertexDescriptor *vertexDescriptor,
+                         foeFragmentDescriptor *fragmentDescriptor,
+                         VkRenderPass renderPass,
+                         uint32_t subpass,
+                         VkPipelineLayout *pPipelineLayout,
+                         uint32_t *pDescriptorSetLayoutCount,
+                         VkPipeline *pPipeline);
+
+  private:
+    VkResult createPipeline(foeVertexDescriptor *vertexDescriptor,
+                            foeFragmentDescriptor *fragmentDescriptor,
+                            VkRenderPass renderPass,
+                            uint32_t subpass,
+                            VkPipelineLayout *pPipelineLayout,
+                            uint32_t *pDescriptorSetLayoutCount,
+                            VkPipeline *pPipeline) const noexcept;
+
+    struct Pipeline {
+        // Key
+        foeVertexDescriptor *vertexDescriptor;
+        foeFragmentDescriptor *fragmentDescriptor;
+
+        VkRenderPass renderPass;
+        uint32_t subpass;
+
+        // Locally Managed
+        VkPipelineLayout layout;
+        uint32_t descriptorSetLayoutCount;
+        VkPipeline pipeline;
+    };
+
+    VkDevice mDevice{VK_NULL_HANDLE};
+    foeBuiltinDescriptorSets *mBuiltinDescriptorSets{nullptr};
+
+    std::vector<Pipeline> mPipelines;
+};
+
+#endif // FOE_GRAPHICS_PIPELINE_POOL_HPP
