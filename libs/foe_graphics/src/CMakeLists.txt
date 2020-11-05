@@ -5,4 +5,6 @@ target_sources(
           environment.cpp
           gfx_log.cpp
           render_pass_pool.cpp
+          shader_pool.cpp
+          shader.cpp
           swapchain.cpp)
