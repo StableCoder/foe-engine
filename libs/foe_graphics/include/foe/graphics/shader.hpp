@@ -18,6 +18,7 @@
 #define FOE_GRAPHICS_SHADER_HPP
 
 #include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/load_state.hpp>
 #include <vulkan/vulkan.h>
 
 #include <atomic>
@@ -25,13 +26,6 @@
 #include <string>
 
 class foeShaderPool;
-
-enum class LoadState {
-    Unloaded,
-    Loading,
-    Loaded,
-    Failed,
-};
 
 struct foeShader {
     std::atomic<LoadState> loadState;
