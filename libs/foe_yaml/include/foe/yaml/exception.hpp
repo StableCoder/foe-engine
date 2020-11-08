@@ -29,6 +29,7 @@ class foeYamlException : public std::exception {
      * @param what Why the exception is being thrown
      */
     FOE_YAML_EXPORT foeYamlException(std::string what);
+    ~foeYamlException() = default;
 
     FOE_YAML_EXPORT operator std::string() const noexcept;
 
