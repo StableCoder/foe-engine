@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_PIPELINE_POOL_HPP
 #define FOE_GRAPHICS_PIPELINE_POOL_HPP
 
+#include <foe/graphics/export.h>
 #include <foe/graphics/fragment_descriptor.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
 #include <vulkan/vulkan.h>
@@ -27,17 +28,18 @@ class foeBuiltinDescriptorSets;
 
 class foePipelinePool {
   public:
-    VkResult initialize(VkDevice device, foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept;
-    void deinitialize() noexcept;
-    bool initialized() const noexcept;
+    FOE_GFX_EXPORT VkResult initialize(VkDevice device,
+                                       foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept;
+    FOE_GFX_EXPORT void deinitialize() noexcept;
+    FOE_GFX_EXPORT bool initialized() const noexcept;
 
-    VkResult getPipeline(foeVertexDescriptor *vertexDescriptor,
-                         foeFragmentDescriptor *fragmentDescriptor,
-                         VkRenderPass renderPass,
-                         uint32_t subpass,
-                         VkPipelineLayout *pPipelineLayout,
-                         uint32_t *pDescriptorSetLayoutCount,
-                         VkPipeline *pPipeline);
+    FOE_GFX_EXPORT VkResult getPipeline(foeVertexDescriptor *vertexDescriptor,
+                                        foeFragmentDescriptor *fragmentDescriptor,
+                                        VkRenderPass renderPass,
+                                        uint32_t subpass,
+                                        VkPipelineLayout *pPipelineLayout,
+                                        uint32_t *pDescriptorSetLayoutCount,
+                                        VkPipeline *pPipeline);
 
   private:
     VkResult createPipeline(foeVertexDescriptor *vertexDescriptor,

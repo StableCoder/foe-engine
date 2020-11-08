@@ -17,7 +17,9 @@
 #ifndef FOE_SHADER_MANAGER_HPP
 #define FOE_SHADER_MANAGER_HPP
 
-#include "shader.hpp"
+#include <foe/graphics/export.h>
+#include <foe/graphics/shader.hpp>
+#include <vulkan/vulkan.h>
 
 #include <mutex>
 #include <string_view>
@@ -25,11 +27,11 @@
 
 class foeShaderPool {
   public:
-    VkResult initialize(VkDevice device);
-    void deinitialize();
+    FOE_GFX_EXPORT VkResult initialize(VkDevice device);
+    FOE_GFX_EXPORT void deinitialize();
 
-    foeShader *create(std::string_view name);
-    foeShader *find(std::string_view name);
+    FOE_GFX_EXPORT foeShader *create(std::string_view name);
+    FOE_GFX_EXPORT foeShader *find(std::string_view name);
 
   private:
     friend struct foeShader;

@@ -17,34 +17,34 @@
 #ifndef FOE_GRAPHICS_FRAGMENT_DESCRIPTOR_HPP
 #define FOE_GRAPHICS_FRAGMENT_DESCRIPTOR_HPP
 
+#include <foe/graphics/export.h>
 #include <foe/graphics/shader.hpp>
 #include <vulkan/vulkan.h>
 
+#include <memory>
 #include <vector>
 
 struct foeFragmentDescriptor {
-    auto getBuiltinSetLayouts() const noexcept -> foeBuiltinDescriptorSetLayoutFlags {
-        foeBuiltinDescriptorSetLayoutFlags flags = 0;
+    FOE_GFX_EXPORT foeFragmentDescriptor(
+        VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
+        VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
+        VkPipelineColorBlendStateCreateInfo const *pColourBlendAttachmentSCI,
+        foeShader *pFragment);
+    FOE_GFX_EXPORT ~foeFragmentDescriptor();
 
-        if (mFragment != nullptr)
-            flags |= mFragment->builtinSetLayouts;
+    FOE_GFX_EXPORT auto getBuiltinSetLayouts() const noexcept -> foeBuiltinDescriptorSetLayoutFlags;
 
-        return flags;
-    }
-
-    auto getColourBlendSCI() noexcept -> VkPipelineColorBlendStateCreateInfo const * {
-        mColourBlendSCI.attachmentCount = mColourBlendAttachments.size();
-        mColourBlendSCI.pAttachments = mColourBlendAttachments.data();
-
-        return &mColourBlendSCI;
-    }
+    FOE_GFX_EXPORT auto getColourBlendSCI() noexcept -> VkPipelineColorBlendStateCreateInfo const *;
 
     foeShader *mFragment = nullptr;
 
+    bool hasRasterizationSCI;
     VkPipelineRasterizationStateCreateInfo mRasterizationSCI{};
+    bool hasDepthStencilSCI;
     VkPipelineDepthStencilStateCreateInfo mDepthStencilSCI{};
 
-    std::vector<VkPipelineColorBlendAttachmentState> mColourBlendAttachments;
+    bool hasColourBlendSCI;
+    std::unique_ptr<VkPipelineColorBlendAttachmentState> mColourBlendAttachments;
     VkPipelineColorBlendStateCreateInfo mColourBlendSCI{};
 };
 

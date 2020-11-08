@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_BUILTIN_DESCRIPTOR_SETS_HPP
 #define FOE_GRAPHICS_BUILTIN_DESCRIPTOR_SETS_HPP
 
+#include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
 
 #include <array>
@@ -48,18 +49,19 @@ class foeDescriptorSetLayoutPool;
  */
 class foeBuiltinDescriptorSets {
   public:
-    auto initialize(VkDevice device, foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
+    FOE_GFX_EXPORT auto initialize(VkDevice device,
+                                   foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
         -> VkResult;
-    void deinitialize(VkDevice device);
+    FOE_GFX_EXPORT void deinitialize(VkDevice device);
 
-    auto getBuiltinLayout(foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept
-        -> VkDescriptorSetLayout;
+    FOE_GFX_EXPORT auto getBuiltinLayout(
+        foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> VkDescriptorSetLayout;
 
-    auto getBuiltinSetLayoutIndex(foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept
-        -> uint32_t;
+    FOE_GFX_EXPORT auto getBuiltinSetLayoutIndex(
+        foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> uint32_t;
 
-    auto getDummyLayout() const noexcept -> VkDescriptorSetLayout;
-    auto getDummySet() const noexcept -> VkDescriptorSet;
+    FOE_GFX_EXPORT auto getDummyLayout() const noexcept -> VkDescriptorSetLayout;
+    FOE_GFX_EXPORT auto getDummySet() const noexcept -> VkDescriptorSet;
 
   private:
     std::array<VkDescriptorSetLayout, 3> mBuiltinLayouts;

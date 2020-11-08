@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_DESCRIPTOR_SET_LAYOUT_POOL_HPP
 #define FOE_GRAPHICS_DESCRIPTOR_SET_LAYOUT_POOL_HPP
 
+#include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
 
 #include <memory>
@@ -30,19 +31,19 @@ class foeDescriptorSetLayoutPool {
      * @param device Vulkan device handle of the graphics environment
      * @return VK_SUCCESS on success. An appropriate error code otherwise.
      */
-    auto initialize(VkDevice device) -> VkResult;
+    FOE_GFX_EXPORT auto initialize(VkDevice device) -> VkResult;
 
     /** Deinitialized the object
      *
      * All generated DescriptorSetLayouts are destroyed and become unusable.
      */
-    void deinitialize();
+    FOE_GFX_EXPORT void deinitialize();
 
     /** Attempts to return a valid DescriptorSetLayout from the given create info
      * @param pDescriptorSetLayoutCI Descripts the set layout to get a handle for
      * @return A valid handle, or VK_NULL_HANDLE if it failed to find/generate one.
      */
-    auto get(VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
+    FOE_GFX_EXPORT auto get(VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
         -> VkDescriptorSetLayout;
 
   private:

@@ -18,6 +18,7 @@
 #define FOE_GRAPHICS_SHADER_HPP
 
 #include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/export.h>
 #include <foe/graphics/load_state.hpp>
 #include <vulkan/vulkan.h>
 
@@ -27,11 +28,8 @@
 
 class foeShaderPool;
 
-struct foeShader {
-    std::atomic<LoadState> loadState;
-    std::atomic<size_t> refCount;
-    std::atomic<size_t> useCount;
-
+class foeShader {
+  public:
     std::string name;
     foeShaderPool *pManager;
 
@@ -41,11 +39,20 @@ struct foeShader {
     VkDescriptorSetLayout layout{VK_NULL_HANDLE};
     VkPushConstantRange pushConstantRange{};
 
-    void incrementRefCount();
-    void decrementRefCount();
+    FOE_GFX_EXPORT void incrementRefCount();
+    FOE_GFX_EXPORT void decrementRefCount();
+    FOE_GFX_EXPORT auto getRefCount() const noexcept -> size_t;
 
-    void incrementUseCount();
-    void decrementUseCount();
+    FOE_GFX_EXPORT void incrementUseCount();
+    FOE_GFX_EXPORT void decrementUseCount();
+    FOE_GFX_EXPORT auto getUseCount() const noexcept -> size_t;
+
+  private:
+    friend class foeShaderPool;
+
+    std::atomic<LoadState> loadState;
+    std::atomic<size_t> refCount;
+    std::atomic<size_t> useCount;
 };
 
 #endif // FOE_GRAPHICS_SHADER_HPP
