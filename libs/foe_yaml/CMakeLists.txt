@@ -20,3 +20,8 @@ target_link_libraries(foe_yaml PUBLIC ${YAML_CPP_LIBRARY})
 target_code_coverage(foe_yaml)
 
 add_subdirectory(src)
+
+# Auxiliary Target
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
