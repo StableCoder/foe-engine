@@ -86,7 +86,7 @@ auto foeDescriptorSetLayoutPool::get(VkDescriptorSetLayoutCreateInfo const *pDes
               pDescriptorSetLayoutCI->pBindings + pDescriptorSetLayoutCI->bindingCount,
               newEntry.layoutBindings.get());
 
-    mLayouts.emplace_back(std::move(newLayout));
+    mLayouts.emplace_back(std::move(newEntry));
 
     return newLayout;
 }
