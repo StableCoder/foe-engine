@@ -28,6 +28,12 @@ TEST_CASE("Reading of 'REQUIRED' bool YAML nodes", "[foe][yaml]") {
         bool testVal = false;
         REQUIRE_NOTHROW(yaml_read_required<bool>("topology", root, testVal));
         REQUIRE(testVal);
+
+        SECTION("Reading from the passed-in node") {
+            bool testVal = false;
+            REQUIRE_NOTHROW(yaml_read_required<bool>("", root["topology"], testVal));
+            REQUIRE(testVal);
+        }
     }
     SECTION("Node does not exist and fails") {
         REQUIRE_NOTHROW(root = YAML::Load(R"(topLOL: true

@@ -30,6 +30,12 @@ TEST_CASE("Reading of 'REQUIRED' int16_t YAML nodes", "[foe][yaml]") {
         int16_t testVal = 0;
         REQUIRE_NOTHROW(yaml_read_required<int16_t>("topology", root, testVal));
         REQUIRE(testVal == 111);
+
+        SECTION("Reading from the passed-in node") {
+            int16_t testVal = 0;
+            REQUIRE_NOTHROW(yaml_read_required<int16_t>("", root["topology"], testVal));
+            REQUIRE(testVal == 111);
+        }
     }
     SECTION("Node does not exist and fails") {
         REQUIRE_NOTHROW(root = YAML::Load(R"(topLOL: 1
