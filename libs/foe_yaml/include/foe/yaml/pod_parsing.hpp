@@ -56,17 +56,17 @@ bool yaml_write_required(std::string const &nodeName, T const &data, YAML::Node 
 
 /** @brief Encodes the given data object to Yaml optionally
  * @param nodeName Name of the Yaml sub-node to operate on. If empty, uses the given node directly.
- * @param data Raw data being encoded
  * @param defaultData The default value of the data. If data matches this, then it is not written
  * out.
+ * @param data Raw data being encoded
  * @param node [out] Yaml node that should have the sub-node to operate on
  * @return True on a successful write. False if nothing is written out.
  * @exception Throws foeYamlException if there's an exception during encoding
  */
 template <typename T>
 bool yaml_write_optional(std::string const &nodeName,
-                         T const &data,
                          T const &defaultData,
+                         T const &data,
                          YAML::Node &node);
 
 #endif // FOE_YAML_POD_PARSING_HPP

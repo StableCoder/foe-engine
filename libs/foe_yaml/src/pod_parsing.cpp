@@ -74,8 +74,8 @@ bool yaml_write_required(std::string const &typeName,
 template <typename T>
 bool yaml_write_optional(std::string const &typeName,
                          std::string const &nodeName,
-                         T const &data,
                          T const &defaultData,
+                         T const &data,
                          YAML::Node &node) {
     if (data == defaultData) {
         return false;
@@ -104,8 +104,8 @@ bool yaml_write_optional(std::string const &typeName,
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
-    FOE_YAML_EXPORT bool yaml_write_optional<T>(std::string const &nodeName, T const &data,        \
-                                                T const &defaultData, YAML::Node &node) {          \
+    FOE_YAML_EXPORT bool yaml_write_optional<T>(std::string const &nodeName, T const &defaultData, \
+                                                T const &data, YAML::Node &node) {                 \
         return yaml_write_optional<T>(#T, nodeName, defaultData, data, node);                      \
     }
 
