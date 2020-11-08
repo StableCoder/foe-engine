@@ -15,6 +15,7 @@
 */
 
 #include <GLFW/glfw3.h>
+#include <foe/wsi_vulkan.hpp>
 
 #include <string>
 
