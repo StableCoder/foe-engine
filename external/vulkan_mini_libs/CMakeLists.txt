@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.13)
 # Dependencies
 find_package(Vulkan REQUIRED)
 
+# Common
+if(UNIX OR APPLE)
+    add_compile_options(-fPIC)
+endif()
+
 # Equality Checks
 add_library(vk_equality_checks STATIC src/equality_checks.cpp)
 
