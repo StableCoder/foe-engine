@@ -73,7 +73,7 @@ auto foeRenderPassPool::generateCompatibleKeys(
     for (auto const &it : attachments) {
         key.emplace_back(RenderPassCompatibleKey{
             .format = it.format,
-            .samples = it.samples,
+            .samples = static_cast<VkSampleCountFlags>(it.samples),
         });
     }
 
