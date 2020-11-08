@@ -90,3 +90,67 @@ TEST_CASE("Reading of 'OPTIONAL' int16_t YAML nodes", "[foe][yaml]") {
             Catch::Matchers::Contains(" - Could not parse node as 'int16_t' with value of: "));
     }
 }
+
+TEST_CASE("Writing of 'REQUIRED' int16_t YAML nodes", "[foe][yaml]") {
+    YAML::Node root;
+
+    SECTION("Writes to sub-node successfully") {
+        int16_t testVal = 101;
+        REQUIRE_NOTHROW(yaml_write_required("topology", testVal, root));
+
+        REQUIRE(root["topology"]);
+        REQUIRE(root["topology"].as<int16_t>() == 101);
+    }
+
+    SECTION("Writes to same-node successfully") {
+        root["topology"] = 10;
+        auto node = root["topology"];
+
+        int16_t testVal = 101;
+        REQUIRE_NOTHROW(yaml_write_required("", testVal, node));
+
+        REQUIRE(node);
+        REQUIRE(node.as<int16_t>() == 101);
+    }
+}
+
+TEST_CASE("Writing of 'OPTIONAL' int16_t YAML nodes", "[foe][yaml]") {
+    YAML::Node root;
+
+    SECTION("Writes to sub-node successfully IF not the same as default value") {
+        int16_t testVal = 101;
+        REQUIRE_NOTHROW(yaml_write_optional("topology", static_cast<int16_t>(100), testVal, root));
+
+        REQUIRE(root["topology"]);
+        REQUIRE(root["topology"].as<int16_t>() == 101);
+    }
+
+    SECTION("Writes to same-node successfully IF not the same as default value") {
+        root["topology"] = 10;
+        auto node = root["topology"];
+
+        int16_t testVal = 101;
+        REQUIRE_NOTHROW(yaml_write_optional("", static_cast<int16_t>(100), testVal, node));
+
+        REQUIRE(node);
+        REQUIRE(node.as<int16_t>() == 101);
+    }
+
+    SECTION("Doesn't write to sub-node IF same as default value") {
+        int16_t testVal = 101;
+        REQUIRE_NOTHROW(yaml_write_optional("topology", static_cast<int16_t>(101), testVal, root));
+
+        REQUIRE_FALSE(root["topology"]);
+    }
+
+    SECTION("Doesn't write to same-node IF same as default value") {
+        root["topology"] = 10;
+        auto node = root["topology"];
+
+        int16_t testVal = 101;
+        REQUIRE_NOTHROW(yaml_write_optional("", static_cast<int16_t>(101), testVal, node));
+
+        REQUIRE(node);
+        REQUIRE(node.as<int>() == 10);
+    }
+}

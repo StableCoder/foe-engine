@@ -87,3 +87,120 @@ TEST_CASE("Reading of 'OPTIONAL' bool YAML nodes", "[foe][yaml]") {
             Catch::Matchers::Contains(" - Could not parse node as 'bool' with value of: "));
     }
 }
+
+TEST_CASE("Writing of 'REQUIRED' bool YAML nodes", "[foe][yaml]") {
+    YAML::Node root;
+
+    SECTION("Writes to sub-node successfully") {
+        SECTION("'false' value") {
+            bool testVal = false;
+            REQUIRE_NOTHROW(yaml_write_required("topology", testVal, root));
+
+            REQUIRE(root["topology"]);
+            REQUIRE_FALSE(root["topology"].as<bool>());
+        }
+        SECTION("'true' value") {
+            bool testVal = true;
+            REQUIRE_NOTHROW(yaml_write_required("topology", testVal, root));
+
+            REQUIRE(root["topology"]);
+            REQUIRE(root["topology"].as<bool>());
+        }
+    }
+
+    SECTION("Writes to same-node successfully") {
+        root["topology"] = 10;
+        auto node = root["topology"];
+
+        SECTION("'false' value") {
+            bool testVal = false;
+            REQUIRE_NOTHROW(yaml_write_required("", testVal, node));
+
+            REQUIRE(node);
+            REQUIRE_FALSE(node.as<bool>());
+        }
+        SECTION("'true' value") {
+            bool testVal = true;
+            REQUIRE_NOTHROW(yaml_write_required("", testVal, node));
+
+            REQUIRE(node);
+            REQUIRE(node.as<bool>());
+        }
+    }
+}
+
+TEST_CASE("Writing of 'OPTIONAL' bool YAML nodes", "[foe][yaml]") {
+    YAML::Node root;
+
+    SECTION("Writes to sub-node successfully IF not the same as default value") {
+        SECTION("'false' value") {
+            bool testVal = false;
+            REQUIRE_NOTHROW(yaml_write_optional("topology", true, testVal, root));
+
+            REQUIRE(root["topology"]);
+            REQUIRE_FALSE(root["topology"].as<bool>());
+        }
+        SECTION("'true' value") {
+            bool testVal = true;
+            REQUIRE_NOTHROW(yaml_write_optional("topology", false, testVal, root));
+
+            REQUIRE(root["topology"]);
+            REQUIRE(root["topology"].as<bool>());
+        }
+    }
+
+    SECTION("Writes to same-node successfully IF not the same as default value") {
+        root["topology"] = 10;
+        auto node = root["topology"];
+
+        SECTION("'false' value") {
+            bool testVal = false;
+            REQUIRE_NOTHROW(yaml_write_optional("", true, testVal, node));
+
+            REQUIRE(node);
+            REQUIRE_FALSE(node.as<bool>());
+        }
+        SECTION("'true' value") {
+            bool testVal = true;
+            REQUIRE_NOTHROW(yaml_write_optional("", false, testVal, node));
+
+            REQUIRE(node);
+            REQUIRE(node.as<bool>());
+        }
+    }
+
+    SECTION("Doesn't write to sub-node IF same as default value") {
+        SECTION("'false' value") {
+            bool testVal = false;
+            REQUIRE_NOTHROW(yaml_write_optional("topology", false, testVal, root));
+
+            REQUIRE_FALSE(root["topology"]);
+        }
+        SECTION("'true' value") {
+            bool testVal = true;
+            REQUIRE_NOTHROW(yaml_write_optional("topology", true, testVal, root));
+
+            REQUIRE_FALSE(root["topology"]);
+        }
+    }
+
+    SECTION("Doesn't write to same-node IF same as default value") {
+        root["topology"] = 10;
+        auto node = root["topology"];
+
+        SECTION("'false' value") {
+            bool testVal = false;
+            REQUIRE_NOTHROW(yaml_write_optional("", false, testVal, node));
+
+            REQUIRE(node);
+            REQUIRE(node.as<int>() == 10);
+        }
+        SECTION("'true' value") {
+            bool testVal = true;
+            REQUIRE_NOTHROW(yaml_write_optional("", true, testVal, node));
+
+            REQUIRE(node);
+            REQUIRE(node.as<int>() == 10);
+        }
+    }
+}
