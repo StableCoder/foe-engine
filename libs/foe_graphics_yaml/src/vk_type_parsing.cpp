@@ -26,7 +26,7 @@ bool yaml_read_optional_vk(std::string const &typeName,
                            std::string const &nodeName,
                            YAML::Node const &node,
                            VkType &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    YAML::Node const &subNode = nodeName.empty() ? node : node[nodeName];
     if (!subNode) {
         return false;
     }
@@ -84,6 +84,27 @@ bool yaml_write_optional_vk(std::string const &typeName,
     return yaml_write_required_vk(typeName, nodeName, data, node);
 }
 
+template bool yaml_read_required_vk<VkFlags>(std::string const &typeName,
+                                             std::string const &nodeName,
+                                             YAML::Node const &node,
+                                             VkFlags &data);
+
+template bool yaml_read_optional_vk<VkFlags>(std::string const &typeName,
+                                             std::string const &nodeName,
+                                             YAML::Node const &node,
+                                             VkFlags &data);
+
+template bool yaml_write_required_vk<VkFlags>(std::string const &typeName,
+                                              std::string const &nodeName,
+                                              VkFlags const &data,
+                                              YAML::Node &node);
+
+template bool yaml_write_optional_vk<VkFlags>(std::string const &typeName,
+                                              std::string const &nodeName,
+                                              VkFlags const &defaultValue,
+                                              VkFlags const &data,
+                                              YAML::Node &node);
+
 #define INSTANTIATION(T)                                                                           \
                                                                                                    \
     template <>                                                                                    \
@@ -106,8 +127,6 @@ bool yaml_write_optional_vk(std::string const &typeName,
                                 YAML::Node &node) {                                                \
         return yaml_write_optional_vk<T>(#T, nodeName, defaultData, data, node);                   \
     }
-
-INSTANTIATION(VkFlags)
 
 INSTANTIATION(VkImageLayout)
 INSTANTIATION(VkAttachmentLoadOp)
