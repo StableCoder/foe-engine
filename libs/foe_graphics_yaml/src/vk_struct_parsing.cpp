@@ -14,18 +14,17 @@
     limitations under the License.
 */
 
+#include <foe/graphics/yaml/vk_type_parsing.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <vulkan/vulkan.h>
 
-#include "vk_type_parsing.hpp"
-
 #include <string>
 
 template <>
-bool yaml_read_required<VkStencilOpState>(std::string const &nodeName,
-                                          YAML::Node const &node,
-                                          VkStencilOpState &data) {
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkStencilOpState>(std::string const &nodeName,
+                                                              YAML::Node const &node,
+                                                              VkStencilOpState &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         throw foeYamlException(nodeName +
@@ -49,9 +48,9 @@ bool yaml_read_required<VkStencilOpState>(std::string const &nodeName,
 }
 
 template <>
-bool yaml_read_optional<VkStencilOpState>(std::string const &nodeName,
-                                          YAML::Node const &node,
-                                          VkStencilOpState &data) {
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string const &nodeName,
+                                                              YAML::Node const &node,
+                                                              VkStencilOpState &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -74,9 +73,9 @@ bool yaml_read_optional<VkStencilOpState>(std::string const &nodeName,
 }
 
 template <>
-bool yaml_write_required<VkStencilOpState>(std::string const &nodeName,
-                                           VkStencilOpState const &data,
-                                           YAML::Node &node) {
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkStencilOpState>(std::string const &nodeName,
+                                                               VkStencilOpState const &data,
+                                                               YAML::Node &node) {
     YAML::Node writeNode;
 
     try {
@@ -101,10 +100,10 @@ bool yaml_write_required<VkStencilOpState>(std::string const &nodeName,
 }
 
 template <>
-bool yaml_write_optional<VkStencilOpState>(std::string const &nodeName,
-                                           VkStencilOpState const &defaultData,
-                                           VkStencilOpState const &data,
-                                           YAML::Node &node) {
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkStencilOpState>(std::string const &nodeName,
+                                                               VkStencilOpState const &defaultData,
+                                                               VkStencilOpState const &data,
+                                                               YAML::Node &node) {
     YAML::Node writeNode;
     bool addedNode = false;
 
@@ -139,7 +138,7 @@ bool yaml_write_optional<VkStencilOpState>(std::string const &nodeName,
 }
 
 template <>
-bool yaml_read_required<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineRasterizationStateCreateInfo &data) {
@@ -176,7 +175,7 @@ bool yaml_read_required<VkPipelineRasterizationStateCreateInfo>(
 }
 
 template <>
-bool yaml_read_optional<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineRasterizationStateCreateInfo &data) {
@@ -211,7 +210,7 @@ bool yaml_read_optional<VkPipelineRasterizationStateCreateInfo>(
 }
 
 template <>
-bool yaml_write_required<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineRasterizationStateCreateInfo const &data,
     YAML::Node &node) {
@@ -247,7 +246,7 @@ bool yaml_write_required<VkPipelineRasterizationStateCreateInfo>(
 }
 
 template <>
-bool yaml_write_optional<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineRasterizationStateCreateInfo const &defaultData,
     VkPipelineRasterizationStateCreateInfo const &data,
@@ -298,7 +297,7 @@ bool yaml_write_optional<VkPipelineRasterizationStateCreateInfo>(
 }
 
 template <>
-bool yaml_read_required<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineDepthStencilStateCreateInfo &data) {
@@ -331,7 +330,7 @@ bool yaml_read_required<VkPipelineDepthStencilStateCreateInfo>(
 }
 
 template <>
-bool yaml_read_optional<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineDepthStencilStateCreateInfo &data) {
@@ -362,7 +361,7 @@ bool yaml_read_optional<VkPipelineDepthStencilStateCreateInfo>(
 }
 
 template <>
-bool yaml_write_required<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineDepthStencilStateCreateInfo const &data,
     YAML::Node &node) {
@@ -395,7 +394,7 @@ bool yaml_write_required<VkPipelineDepthStencilStateCreateInfo>(
 }
 
 template <>
-bool yaml_write_optional<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineDepthStencilStateCreateInfo const &defaultData,
     VkPipelineDepthStencilStateCreateInfo const &data,
@@ -442,7 +441,7 @@ bool yaml_write_optional<VkPipelineDepthStencilStateCreateInfo>(
 }
 
 template <>
-bool yaml_read_required<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineColorBlendAttachmentState &data) {
@@ -476,7 +475,7 @@ bool yaml_read_required<VkPipelineColorBlendAttachmentState>(
 }
 
 template <>
-bool yaml_read_optional<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineColorBlendAttachmentState &data) {
@@ -508,7 +507,7 @@ bool yaml_read_optional<VkPipelineColorBlendAttachmentState>(
 }
 
 template <>
-bool yaml_write_required<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     VkPipelineColorBlendAttachmentState const &data,
     YAML::Node &node) {
@@ -542,7 +541,7 @@ bool yaml_write_required<VkPipelineColorBlendAttachmentState>(
 }
 
 template <>
-bool yaml_write_optional<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     VkPipelineColorBlendAttachmentState const &defaultData,
     VkPipelineColorBlendAttachmentState const &data,

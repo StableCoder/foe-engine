@@ -14,9 +14,10 @@
     limitations under the License.
 */
 
-#ifndef VK_TYPE_PARSING_HPP
-#define VK_TYPE_PARSING_HPP
+#ifndef FOE_GRAPHICS_YAML_VK_TYPE_PARSING_HPP
+#define FOE_GRAPHICS_YAML_VK_TYPE_PARSING_HPP
 
+#include <foe/graphics/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
 #include <string>
@@ -33,10 +34,10 @@
  * during parsing
  */
 template <typename VkType>
-bool yaml_read_required_vk(std::string const &typeName,
-                           std::string const &nodeName,
-                           YAML::Node const &node,
-                           VkType &data);
+FOE_GFX_YAML_EXPORT bool yaml_read_required_vk(std::string const &typeName,
+                                               std::string const &nodeName,
+                                               YAML::Node const &node,
+                                               VkType &data);
 
 /** @brief Read a node and parse it into the given data type
  * @tparam VkType Vulkan type to parse/serialize
@@ -49,10 +50,10 @@ bool yaml_read_required_vk(std::string const &typeName,
  * @exception Throws a foeYamlException if there's an error during parsing
  */
 template <typename VkType>
-bool yaml_read_optional_vk(std::string const &typeName,
-                           std::string const &nodeName,
-                           YAML::Node const &node,
-                           VkType &data);
+FOE_GFX_YAML_EXPORT bool yaml_read_optional_vk(std::string const &typeName,
+                                               std::string const &nodeName,
+                                               YAML::Node const &node,
+                                               VkType &data);
 
 /** @brief Encodes the given data object to Yaml
  * @tparam VkType Vulkan type to parse/serialize
@@ -64,10 +65,10 @@ bool yaml_read_optional_vk(std::string const &typeName,
  * @exception Throws foeYamlException if there's an exception during encoding
  */
 template <typename VkType>
-bool yaml_write_required_vk(std::string const &typeName,
-                            std::string const &nodeName,
-                            VkType const &data,
-                            YAML::Node &node);
+FOE_GFX_YAML_EXPORT bool yaml_write_required_vk(std::string const &typeName,
+                                                std::string const &nodeName,
+                                                VkType const &data,
+                                                YAML::Node &node);
 
 /** @brief Encodes the given data object to Yaml optionally
  * @tparam VkType Vulkan type to parse/serialize
@@ -81,10 +82,10 @@ bool yaml_write_required_vk(std::string const &typeName,
  * @exception Throws foeYamlException if there's an exception during encoding
  */
 template <typename VkType>
-bool yaml_write_optional_vk(std::string const &typeName,
-                            std::string const &nodeName,
-                            VkType const &data,
-                            VkType const &defaultData,
-                            YAML::Node &node);
+FOE_GFX_YAML_EXPORT bool yaml_write_optional_vk(std::string const &typeName,
+                                                std::string const &nodeName,
+                                                VkType const &data,
+                                                VkType const &defaultData,
+                                                YAML::Node &node);
 
-#endif // VK_TYPE_PARSING_HPP
+#endif // FOE_GRAPHICS_YAML_VK_TYPE_PARSING_HPP

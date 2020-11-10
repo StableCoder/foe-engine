@@ -15,7 +15,7 @@ while read LINE; do
         STRUCT="$(cut -d ' ' -f3 <<<"$LINE")"
 
         READ_REQUIRED="template <>
-bool yaml_read_required<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
+FOE_GFX_YAML_EXPORT bool yaml_read_required<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if(!subNode) {
         throw foeYamlException(nodeName + \" - Required node not found to parse as '$STRUCT'\");
@@ -25,7 +25,7 @@ bool yaml_read_required<$STRUCT>(std::string const &nodeName, YAML::Node const &
     try {"
 
         READ_OPTIONAL="template <>
-bool yaml_read_optional<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if(!subNode) {
         return false;
@@ -35,13 +35,13 @@ bool yaml_read_optional<$STRUCT>(std::string const &nodeName, YAML::Node const &
     try {"
 
         WRITE_REQUIRED="template <>
-bool yaml_write_required<$STRUCT>(std::string const& nodeName, $STRUCT const &data, YAML::Node &node) {
+FOE_GFX_YAML_EXPORT bool yaml_write_required<$STRUCT>(std::string const& nodeName, $STRUCT const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
     try {"
 
         WRITE_OPTIONAL="template <>
-bool yaml_write_optional<$STRUCT>(std::string const& nodeName, $STRUCT const& defaultData, $STRUCT const &data, YAML::Node &node) {
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeName, $STRUCT const& defaultData, $STRUCT const &data, YAML::Node &node) {
     YAML::Node writeNode;
     bool addedNode = false;
 
