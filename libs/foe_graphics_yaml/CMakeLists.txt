@@ -16,3 +16,8 @@ target_link_libraries(foe_graphics_yaml PUBLIC foe foe_graphics foe_yaml
 target_code_coverage(foe_graphics_yaml)
 
 add_subdirectory(src)
+
+# Auxiliary Target
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
