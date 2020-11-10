@@ -58,7 +58,7 @@ bool yaml_write_required_vk(std::string const &typeName,
                             VkType const &data,
                             YAML::Node &node) {
     std::string serialized;
-    if (!vk_serialize(typeName, data, &serialized)) {
+    if (vk_serialize(typeName, data, &serialized)) {
         if (nodeName.empty()) {
             node = serialized;
         } else {
