@@ -16,7 +16,7 @@
 
 #include <catch.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/pod_parsing.hpp>
+#include <foe/yaml/parsing.hpp>
 
 TEST_CASE("Reading of 'REQUIRED' bool YAML nodes", "[foe][yaml]") {
     YAML::Node root;

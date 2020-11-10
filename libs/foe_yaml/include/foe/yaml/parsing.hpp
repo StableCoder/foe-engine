@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_YAML_POD_PARSING_HPP
-#define FOE_YAML_POD_PARSING_HPP
+#ifndef FOE_YAML_PARSING_HPP
+#define FOE_YAML_PARSING_HPP
 
 #include <yaml-cpp/yaml.h>
 
@@ -69,4 +69,4 @@ bool yaml_write_optional(std::string const &nodeName,
                          T const &data,
                          YAML::Node &node);
 
-#endif // FOE_YAML_POD_PARSING_HPP
+#endif // FOE_YAML_PARSING_HPP

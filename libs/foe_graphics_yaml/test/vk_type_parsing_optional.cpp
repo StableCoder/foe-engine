@@ -16,7 +16,7 @@
 
 #include <catch.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/pod_parsing.hpp>
+#include <foe/yaml/parsing.hpp>
 #include <vulkan/vulkan.h>
 
 TEST_CASE("Reading of Optional Vulkan YAML Nodes", "[foe][yaml][vulkan]") {

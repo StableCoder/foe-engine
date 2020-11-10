@@ -17,7 +17,7 @@
 #include "vk_type_parsing.hpp"
 
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/pod_parsing.hpp>
+#include <foe/yaml/parsing.hpp>
 #include <vk_value_serialization.hpp>
 #include <vulkan/vulkan.h>
 

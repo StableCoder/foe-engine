@@ -16,7 +16,7 @@
 
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/export.h>
-#include <foe/yaml/pod_parsing.hpp>
+#include <foe/yaml/parsing.hpp>
 
 #include <cstdint>
 

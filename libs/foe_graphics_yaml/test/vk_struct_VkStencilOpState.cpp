@@ -16,7 +16,7 @@
 
 #include <catch.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/pod_parsing.hpp>
+#include <foe/yaml/parsing.hpp>
 #include <vk_equality_checks.hpp>
 #include <vulkan/vulkan.h>
 #include <yaml-cpp/emitter.h>
