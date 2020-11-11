@@ -5,7 +5,7 @@ find_package(Vulkan REQUIRED)
 
 # Common
 if(UNIX OR APPLE)
-    add_compile_options(-fPIC)
+  add_compile_options(-fPIC)
 endif()
 
 # Equality Checks
