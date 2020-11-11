@@ -17,9 +17,9 @@ add_code_coverage_all_targets(EXCLUDE .*/test/.*)
 # Formatting
 include(cmake/formatting.cmake)
 file(GLOB_RECURSE CL_FILES *.[hc] *.[hc]pp)
-list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/build)
-list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
+list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/build)
+list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
 clang_format(format ${CL_FILES})
 
 file(GLOB_RECURSE CM_FILES CMakeLists.txt *.cmake)
