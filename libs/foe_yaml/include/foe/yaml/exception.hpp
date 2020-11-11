@@ -19,20 +19,21 @@
 
 #include <foe/yaml/export.h>
 
+#include <exception>
 #include <string>
 
 /// Exceptions that stores both the nodes and the reason for failure
-class foeYamlException {
+class FOE_YAML_EXPORT foeYamlException : std::exception {
   public:
     /** @brief String constructor
      * @param what Why the exception is being thrown
      */
-    FOE_YAML_EXPORT foeYamlException(std::string what);
+    foeYamlException(std::string what);
 
-    FOE_YAML_EXPORT operator std::string() const noexcept;
+    operator std::string() const noexcept;
 
-    FOE_YAML_EXPORT const char *what() const noexcept;
-    FOE_YAML_EXPORT std::string whatStr() const noexcept;
+    const char *what() const noexcept override;
+    std::string whatStr() const noexcept;
 
   private:
     std::string mWhat;
