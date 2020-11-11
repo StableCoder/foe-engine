@@ -395,7 +395,7 @@ int main(int, char **) {
                                     frameData[frameIndex].frameComplete);
                 if (res != VK_SUCCESS)
                     goto SHUTDOWN_PROGRAM;
-    }
+            }
 
             // Presentation
             {
