@@ -22,6 +22,8 @@ void foeShader::incrementRefCount() { ++refCount; }
 
 void foeShader::decrementRefCount() { --refCount; }
 
+auto foeShader::getRefCount() const noexcept -> size_t { return refCount; }
+
 void foeShader::incrementUseCount() {
     ++useCount;
     if (loadState == LoadState::Unloaded) {
@@ -30,3 +32,5 @@ void foeShader::incrementUseCount() {
 }
 
 void foeShader::decrementUseCount() { --useCount; }
+
+auto foeShader::getUseCount() const noexcept -> size_t { return useCount; }

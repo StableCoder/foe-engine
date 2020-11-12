@@ -19,8 +19,12 @@
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
 #include <foe/graphics/environment.hpp>
+#include <foe/graphics/fragment_descriptor.hpp>
+#include <foe/graphics/pipeline_pool.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
+#include <foe/graphics/shader_pool.hpp>
 #include <foe/graphics/swapchain.hpp>
+#include <foe/graphics/vertex_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/wsi.hpp>
 #include <foe/wsi_vulkan.hpp>
@@ -123,6 +127,7 @@ struct PerFrameData {
         vkDestroySemaphore(device, presentImageAcquired, nullptr);
     }
 };
+
 int main(int, char **) {
     StdOutSink stdoutSink;
     foeLogger::instance()->registerSink(&stdoutSink);
@@ -137,10 +142,16 @@ int main(int, char **) {
     uint32_t frameIndex = 0;
     std::array<PerFrameData, 3> frameData;
 
+    foeVertexDescriptor vertexDescriptor;
+    foeFragmentDescriptor fragmentDescriptor(nullptr, nullptr, nullptr, nullptr);
+
     foeRenderPassPool renderPassPool;
 
     foeDescriptorSetLayoutPool descriptorSetLayoutPool;
     foeBuiltinDescriptorSets builtinDescriptorSets;
+    foeShaderPool shaderPool;
+    foePipelinePool pipelinePool;
+
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
@@ -174,6 +185,57 @@ int main(int, char **) {
     res = builtinDescriptorSets.initialize(pGfxEnvironment->device, &descriptorSetLayoutPool);
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
+
+    res = shaderPool.initialize(pGfxEnvironment->device);
+    if (res != VK_SUCCESS)
+        VK_END_PROGRAM
+
+    res = pipelinePool.initialize(pGfxEnvironment->device, &builtinDescriptorSets);
+    if (res != VK_SUCCESS) {
+        VK_END_PROGRAM
+    }
+
+    {
+        foeShader *pShader;
+
+        pShader = shaderPool.create("test.vert.spv");
+        vertexDescriptor.mVertex = pShader;
+        pShader->incrementUseCount();
+
+        pShader = shaderPool.create("test.frag.spv");
+        pShader->incrementUseCount();
+
+        // Vertex
+        vertexDescriptor.mVertexInputSCI = VkPipelineVertexInputStateCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        };
+        vertexDescriptor.mInputAssemblySCI = VkPipelineInputAssemblyStateCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        };
+
+        // Fragment
+        auto rasterization = VkPipelineRasterizationStateCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+            .polygonMode = VK_POLYGON_MODE_FILL,
+            .cullMode = VK_CULL_MODE_NONE,
+            .lineWidth = 1.0f,
+        };
+        std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments{
+            VkPipelineColorBlendAttachmentState{
+                .blendEnable = VK_FALSE,
+                .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+            }};
+        auto colourBlend = VkPipelineColorBlendStateCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+            .attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size()),
+            .pAttachments = colourBlendAttachments.data(),
+        };
+
+        fragmentDescriptor =
+            std::move(foeFragmentDescriptor(&rasterization, nullptr, &colourBlend, pShader));
+    }
 
     FOE_LOG(General, Info, "Entering main loop")
     while (!foeWindowGetShouldClose()) {
@@ -368,6 +430,39 @@ int main(int, char **) {
 
                     vkCmdBeginRenderPass(commandBuffer, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
 
+                    { // Set Drawing Parameters
+                        VkViewport viewport{
+                            .width = static_cast<float>(width),
+                            .height = static_cast<float>(height),
+                            .minDepth = 0.f,
+                            .maxDepth = 1.f,
+                        };
+                        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+                        VkRect2D scissor{
+                            .offset = VkOffset2D{},
+                            .extent = VkExtent2D{.width = static_cast<uint32_t>(width),
+                                                 .height = static_cast<uint32_t>(height)},
+                        };
+                        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+                        // If we had depthbias enabled
+                        // vkCmdSetDepthBias
+
+                        // Set the Pipeline
+                        VkPipelineLayout layout;
+                        uint32_t descriptorSetLayoutCount;
+                        VkPipeline pipeline;
+
+                        pipelinePool.getPipeline(&vertexDescriptor, &fragmentDescriptor,
+                                                 swapImageRenderPass, 0, &layout,
+                                                 &descriptorSetLayoutCount, &pipeline);
+
+                        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+                        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+                    }
+
                     vkCmdEndRenderPass(commandBuffer);
                 }
 
@@ -448,6 +543,8 @@ SHUTDOWN_PROGRAM:
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(pGfxEnvironment->device, it, nullptr);
 
+    pipelinePool.deinitialize();
+    shaderPool.deinitialize();
     builtinDescriptorSets.deinitialize(pGfxEnvironment->device);
     descriptorSetLayoutPool.deinitialize();
 

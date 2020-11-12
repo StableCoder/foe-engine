@@ -19,20 +19,33 @@
 foeFragmentDescriptor::foeFragmentDescriptor(
     VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
     VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
-    VkPipelineColorBlendStateCreateInfo const *pColourBlendAttachmentSCI,
+    VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
     foeShader *pFragment) :
     mFragment{pFragment},
     hasRasterizationSCI{pRasterizationSCI != nullptr},
-    mRasterizationSCI{*pRasterizationSCI},
+    mRasterizationSCI{},
     hasDepthStencilSCI{pDepthStencilSCI != nullptr},
-    mDepthStencilSCI{*pDepthStencilSCI},
-    mColourBlendAttachments{
-        new VkPipelineColorBlendAttachmentState[pColourBlendAttachmentSCI->attachmentCount]},
-    mColourBlendSCI{*pColourBlendAttachmentSCI} {
-    std::copy(pColourBlendAttachmentSCI->pAttachments,
-              pColourBlendAttachmentSCI->pAttachments + pColourBlendAttachmentSCI->attachmentCount,
-              mColourBlendAttachments.get());
-    mColourBlendSCI.pAttachments = mColourBlendAttachments.get();
+    mDepthStencilSCI{},
+    hasColourBlendSCI{pColourBlendSCI != nullptr},
+    mColourBlendAttachments{},
+    mColourBlendSCI{} {
+    if (hasRasterizationSCI)
+        mRasterizationSCI = *pRasterizationSCI;
+
+    if (hasDepthStencilSCI)
+        mDepthStencilSCI = *pDepthStencilSCI;
+
+    if (hasColourBlendSCI) {
+        mColourBlendSCI = *pColourBlendSCI;
+
+        mColourBlendAttachments.reset(
+            new VkPipelineColorBlendAttachmentState[pColourBlendSCI->attachmentCount]);
+
+        std::copy(pColourBlendSCI->pAttachments,
+                  pColourBlendSCI->pAttachments + pColourBlendSCI->attachmentCount,
+                  mColourBlendAttachments.get());
+        mColourBlendSCI.pAttachments = mColourBlendAttachments.get();
+    }
 }
 
 foeFragmentDescriptor::~foeFragmentDescriptor() {}
@@ -49,5 +62,6 @@ auto foeFragmentDescriptor::getBuiltinSetLayouts() const noexcept
 
 auto foeFragmentDescriptor::getColourBlendSCI() noexcept
     -> VkPipelineColorBlendStateCreateInfo const * {
-    return &mColourBlendSCI;
+    mColourBlendSCI.pAttachments = mColourBlendAttachments.get();
+    return hasColourBlendSCI ? &mColourBlendSCI : nullptr;
 }

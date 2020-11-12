@@ -22,7 +22,6 @@
 #include <vulkan/vulkan.h>
 
 #include <memory>
-#include <vector>
 
 struct foeFragmentDescriptor {
     FOE_GFX_EXPORT foeFragmentDescriptor(
@@ -30,6 +29,9 @@ struct foeFragmentDescriptor {
         VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
         VkPipelineColorBlendStateCreateInfo const *pColourBlendAttachmentSCI,
         foeShader *pFragment);
+
+    FOE_GFX_EXPORT foeFragmentDescriptor &operator=(foeFragmentDescriptor &&) noexcept = default;
+
     FOE_GFX_EXPORT ~foeFragmentDescriptor();
 
     FOE_GFX_EXPORT auto getBuiltinSetLayouts() const noexcept -> foeBuiltinDescriptorSetLayoutFlags;
@@ -40,11 +42,12 @@ struct foeFragmentDescriptor {
 
     bool hasRasterizationSCI;
     VkPipelineRasterizationStateCreateInfo mRasterizationSCI{};
+
     bool hasDepthStencilSCI;
     VkPipelineDepthStencilStateCreateInfo mDepthStencilSCI{};
 
     bool hasColourBlendSCI;
-    std::unique_ptr<VkPipelineColorBlendAttachmentState> mColourBlendAttachments;
+    std::unique_ptr<VkPipelineColorBlendAttachmentState[]> mColourBlendAttachments;
     VkPipelineColorBlendStateCreateInfo mColourBlendSCI{};
 };
 
