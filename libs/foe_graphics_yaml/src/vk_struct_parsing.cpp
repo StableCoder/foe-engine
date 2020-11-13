@@ -22,6 +22,296 @@
 #include <string>
 
 template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkPushConstantRange>(std::string const &nodeName,
+                                                                 YAML::Node const &node,
+                                                                 VkPushConstantRange &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(nodeName +
+                               " - Required node not found to parse as 'VkPushConstantRange'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                          subNode, data.stageFlags);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+        read |= yaml_read_optional<uint32_t>("size", subNode, data.size);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string const &nodeName,
+                                                                 YAML::Node const &node,
+                                                                 VkPushConstantRange &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                          subNode, data.stageFlags);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+        read |= yaml_read_optional<uint32_t>("size", subNode, data.size);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkPushConstantRange>(std::string const &nodeName,
+                                                                  VkPushConstantRange const &data,
+                                                                  YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                   data.stageFlags, writeNode);
+        yaml_write_required<uint32_t>("offset", data.offset, writeNode);
+        yaml_write_required<uint32_t>("size", data.size, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+
+    return true;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPushConstantRange>(
+    std::string const &nodeName,
+    VkPushConstantRange const &defaultData,
+    VkPushConstantRange const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |= yaml_write_optional_vk<VkShaderStageFlags>(
+            "VkShaderStageFlags", "stageFlags", data.stageFlags, defaultData.stageFlags, writeNode);
+        addedNode |=
+            yaml_write_optional<uint32_t>("offset", defaultData.offset, data.offset, writeNode);
+        addedNode |= yaml_write_optional<uint32_t>("size", defaultData.size, data.size, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkDescriptorSetLayoutBinding>(
+    std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutBinding &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName + " - Required node not found to parse as 'VkDescriptorSetLayoutBinding'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |=
+            yaml_read_optional<VkDescriptorType>("descriptorType", subNode, data.descriptorType);
+        read |= yaml_read_optional<uint32_t>("descriptorCount", subNode, data.descriptorCount);
+        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                          subNode, data.stageFlags);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutBinding>(
+    std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutBinding &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |=
+            yaml_read_optional<VkDescriptorType>("descriptorType", subNode, data.descriptorType);
+        read |= yaml_read_optional<uint32_t>("descriptorCount", subNode, data.descriptorCount);
+        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                          subNode, data.stageFlags);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkDescriptorSetLayoutBinding>(
+    std::string const &nodeName, VkDescriptorSetLayoutBinding const &data, YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required<uint32_t>("binding", data.binding, writeNode);
+        yaml_write_required<VkDescriptorType>("descriptorType", data.descriptorType, writeNode);
+        yaml_write_required<uint32_t>("descriptorCount", data.descriptorCount, writeNode);
+        yaml_write_required_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                   data.stageFlags, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+
+    return true;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutBinding>(
+    std::string const &nodeName,
+    VkDescriptorSetLayoutBinding const &defaultData,
+    VkDescriptorSetLayoutBinding const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |=
+            yaml_write_optional<uint32_t>("binding", defaultData.binding, data.binding, writeNode);
+        addedNode |= yaml_write_optional<VkDescriptorType>(
+            "descriptorType", defaultData.descriptorType, data.descriptorType, writeNode);
+        addedNode |= yaml_write_optional<uint32_t>("descriptorCount", defaultData.descriptorCount,
+                                                   data.descriptorCount, writeNode);
+        addedNode |= yaml_write_optional_vk<VkShaderStageFlags>(
+            "VkShaderStageFlags", "stageFlags", data.stageFlags, defaultData.stageFlags, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
+    std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName + " - Required node not found to parse as 'VkDescriptorSetLayoutCreateInfo'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
+            "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
+    std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
+            "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkDescriptorSetLayoutCreateInfo>(
+    std::string const &nodeName, VkDescriptorSetLayoutCreateInfo const &data, YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required_vk<VkDescriptorSetLayoutCreateFlags>("VkDescriptorSetLayoutCreateFlags",
+                                                                 "flags", data.flags, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+
+    return true;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutCreateInfo>(
+    std::string const &nodeName,
+    VkDescriptorSetLayoutCreateInfo const &defaultData,
+    VkDescriptorSetLayoutCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |= yaml_write_optional_vk<VkDescriptorSetLayoutCreateFlags>(
+            "VkDescriptorSetLayoutCreateFlags", "flags", data.flags, defaultData.flags, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
 FOE_GFX_YAML_EXPORT bool yaml_read_required<VkStencilOpState>(std::string const &nodeName,
                                                               YAML::Node const &node,
                                                               VkStencilOpState &data) {

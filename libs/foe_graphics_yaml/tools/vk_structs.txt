@@ -1,3 +1,25 @@
+typedef struct VkPushConstantRange {
+  VkShaderStageFlags stageFlags;
+  uint32_t offset;
+  uint32_t size;
+} VkPushConstantRange;
+
+typedef struct VkDescriptorSetLayoutBinding {
+    uint32_t              binding;
+    VkDescriptorType      descriptorType;
+    uint32_t              descriptorCount;
+    VkShaderStageFlags    stageFlags;
+#    const VkSampler*      pImmutableSamplers;
+} VkDescriptorSetLayoutBinding;
+
+typedef struct VkDescriptorSetLayoutCreateInfo {
+    VkStructureType                        sType;
+    const void*                            pNext;
+    VkDescriptorSetLayoutCreateFlags       flags;
+#    uint32_t                               bindingCount;
+#    const VkDescriptorSetLayoutBinding*    pBindings;
+} VkDescriptorSetLayoutCreateInfo;
+
 typedef struct VkStencilOpState {
     VkStencilOp    failOp;
     VkStencilOp    passOp;

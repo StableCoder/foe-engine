@@ -24,6 +24,8 @@
 
 class foeShaderPool;
 class foeShader;
+class foeBuiltinDescriptorSets;
+class foeDescriptorSetLayoutPool;
 
 FOE_GFX_YAML_EXPORT bool yaml_read_shader_declaration(std::string const &nodeName,
                                                       YAML::Node const &node,
@@ -33,5 +35,18 @@ FOE_GFX_YAML_EXPORT bool yaml_read_shader_declaration(std::string const &nodeNam
 FOE_GFX_YAML_EXPORT bool yaml_write_shader_declaration(std::string const &nodeName,
                                                        foeShader const *pShader,
                                                        YAML::Node &node);
+
+FOE_GFX_YAML_EXPORT bool yaml_read_shader_definition(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool,
+    foeShader *pShader);
+
+FOE_GFX_YAML_EXPORT bool yaml_write_shader_definition(
+    std::string const &nodeName,
+    foeBuiltinDescriptorSets const *pBuiltinDescriptorSets,
+    foeDescriptorSetLayoutPool const *pDescriptorSetLayoutPool,
+    foeShader const *pShader,
+    YAML::Node &node);
 
 #endif // FOE_GRAPHICS_YAML_SHADER_HPP
