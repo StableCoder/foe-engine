@@ -110,7 +110,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
         VAR="$(awk 'NF>1{print $NF}' <<<$LINE)"
         VAR="${VAR//;/}"
 
-        if [[ "$LINE" = *"sType"* ]] || [[ $LINE = *"pNext"* ]] || [[ $LINE = *"*"* ]]; then
+        if [[ "$LINE" = *"sType"* ]] || [[ $LINE = *"pNext"* ]] || [[ $LINE = *"*"* ]] || [[ $LINE = *"#"* ]]; then
             :
 
         elif [[ "$TYPE" = *"Vk"* ]] && [[ "$TYPE" = *"Flags"* ]]; then
