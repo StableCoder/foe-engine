@@ -21,10 +21,10 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-bool yaml_read_shader(std::string const &nodeName,
-                      YAML::Node const &node,
-                      foeShaderPool *pShaderPool,
-                      foeShader **pShader) {
+bool yaml_read_shader_declaration(std::string const &nodeName,
+                                  YAML::Node const &node,
+                                  foeShaderPool *pShaderPool,
+                                  foeShader **pShader) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -32,7 +32,7 @@ bool yaml_read_shader(std::string const &nodeName,
 
     try {
         std::string shaderName;
-        yaml_read_required("file_shader", subNode, shaderName);
+        yaml_read_required("", subNode, shaderName);
 
         *pShader = pShaderPool->create(shaderName);
     } catch (foeYamlException const &e) {
@@ -42,12 +42,14 @@ bool yaml_read_shader(std::string const &nodeName,
     return true;
 }
 
-bool yaml_write_shader(std::string const &nodeName, foeShader const *pShader, YAML::Node &node) {
+bool yaml_write_shader_declaration(std::string const &nodeName,
+                                   foeShader const *pShader,
+                                   YAML::Node &node) {
     try {
         if (nodeName.empty()) {
-            node["file_shader"] = pShader->name;
+            node = pShader->name;
         } else {
-            node[nodeName]["file_shader"] = pShader->name;
+            node[nodeName] = pShader->name;
         }
     } catch (...) {
         throw foeYamlException(nodeName + " - Failed to serialize 'foeShader'");

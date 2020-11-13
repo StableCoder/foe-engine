@@ -68,7 +68,7 @@ bool yaml_read_fragment_descriptor(std::string const &nodeName,
 
         // Shaders
         foeShader *pFragShader = nullptr;
-        yaml_read_shader("fragment_shader", subNode, pShaderPool, &pFragShader);
+        yaml_read_shader_declaration("fragment_shader", subNode, pShaderPool, &pFragShader);
 
         // Get the descriptor
         auto *pNewFragmentDescriptor =
@@ -124,7 +124,7 @@ bool yaml_write_fragment_descriptor(std::string const &nodeName,
         }
 
         // Fragment Shader
-        yaml_write_shader("fragment_shader", pFragmentDescriptor->mFragment, writeNode);
+        yaml_write_shader_declaration("fragment_shader", pFragmentDescriptor->mFragment, writeNode);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }

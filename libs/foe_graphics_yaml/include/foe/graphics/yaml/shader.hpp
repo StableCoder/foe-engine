@@ -25,13 +25,13 @@
 class foeShaderPool;
 class foeShader;
 
-FOE_GFX_YAML_EXPORT bool yaml_read_shader(std::string const &nodeName,
-                                          YAML::Node const &node,
-                                          foeShaderPool *pShaderPool,
-                                          foeShader **pShader);
+FOE_GFX_YAML_EXPORT bool yaml_read_shader_declaration(std::string const &nodeName,
+                                                      YAML::Node const &node,
+                                                      foeShaderPool *pShaderPool,
+                                                      foeShader **pShader);
 
-FOE_GFX_YAML_EXPORT bool yaml_write_shader(std::string const &nodeName,
-                                           foeShader const *pShader,
-                                           YAML::Node &node);
+FOE_GFX_YAML_EXPORT bool yaml_write_shader_declaration(std::string const &nodeName,
+                                                       foeShader const *pShader,
+                                                       YAML::Node &node);
 
 #endif // FOE_GRAPHICS_YAML_SHADER_HPP
