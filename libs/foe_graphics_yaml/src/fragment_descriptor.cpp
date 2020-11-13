@@ -47,7 +47,13 @@ bool yaml_read_fragment_descriptor(std::string const &nodeName,
         bool hasDepthStencil = yaml_read_optional("depth_stencil", subNode, depthStencilSCI);
 
         // Colour Blend
-        bool hasColourBlend = false;
+        VkPipelineColorBlendStateCreateInfo colourBlendSCI{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+        };
+        bool hasColourBlend = yaml_read_optional("colour_blend", subNode, colourBlendSCI);
+
+        /// @todo Implement YAML parsing for VkPipelineColorBlendStateCreateInfo::blendConstants[4]
+
         std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
         if (auto colourBlendNode = subNode["colour_blend_attachments"]; colourBlendNode) {
             for (auto it = colourBlendNode.begin(); it != colourBlendNode.end(); ++it) {
@@ -57,11 +63,8 @@ bool yaml_read_fragment_descriptor(std::string const &nodeName,
                 colourBlendAttachments.emplace_back(attachmentState);
             }
         }
-        VkPipelineColorBlendStateCreateInfo colourBlendSCI{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-            .attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size()),
-            .pAttachments = colourBlendAttachments.data(),
-        };
+        colourBlendSCI.attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size());
+        colourBlendSCI.pAttachments = colourBlendAttachments.data();
 
         // Shaders
         foeShader *pFragShader = nullptr;
@@ -101,6 +104,13 @@ bool yaml_write_fragment_descriptor(std::string const &nodeName,
 
         // Colour Blend
         if (pFragmentDescriptor->hasColourBlendSCI) {
+            yaml_write_optional("colour_blend", VkPipelineColorBlendStateCreateInfo{},
+                                pFragmentDescriptor->mColourBlendSCI, writeNode);
+
+            /// @todo Implement YAML parsing for
+            /// VkPipelineColorBlendStateCreateInfo::blendConstants[4]
+
+            // Attachments
             YAML::Node arrNode;
             for (uint32_t i = 0; i < pFragmentDescriptor->mColourBlendSCI.attachmentCount; ++i) {
                 YAML::Node attachmentNode;

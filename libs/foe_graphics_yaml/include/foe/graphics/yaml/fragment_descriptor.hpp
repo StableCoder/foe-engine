@@ -20,6 +20,8 @@
 #include <foe/graphics/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
+#include <string>
+
 class foeShaderPool;
 class foeFragmentDescriptorPool;
 struct foeFragmentDescriptor;

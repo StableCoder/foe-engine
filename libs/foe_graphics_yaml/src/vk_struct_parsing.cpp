@@ -585,3 +585,108 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentState
 
     return addedNode;
 }
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_required<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineColorBlendStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineColorBlendStateCreateInfo'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, data.flags);
+        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, data.logicOpEnable);
+        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, data.logicOp);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineColorBlendStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, data.flags);
+        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, data.logicOpEnable);
+        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, data.logicOp);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_required<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineColorBlendStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", data.flags, writeNode);
+        yaml_write_required<VkBool32>("logicOpEnable", data.logicOpEnable, writeNode);
+        yaml_write_required<VkLogicOp>("logicOp", data.logicOp, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+
+    return true;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineColorBlendStateCreateInfo const &defaultData,
+    VkPipelineColorBlendStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |= yaml_write_optional_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", data.flags, defaultData.flags,
+            writeNode);
+        addedNode |= yaml_write_optional<VkBool32>("logicOpEnable", defaultData.logicOpEnable,
+                                                   data.logicOpEnable, writeNode);
+        addedNode |=
+            yaml_write_optional<VkLogicOp>("logicOp", defaultData.logicOp, data.logicOp, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
