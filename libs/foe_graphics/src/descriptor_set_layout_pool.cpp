@@ -78,15 +78,31 @@ auto foeDescriptorSetLayoutPool::get(VkDescriptorSetLayoutCreateInfo const *pDes
     Layout newEntry{
         .layout = newLayout,
         .layoutCI = *pDescriptorSetLayoutCI,
-        .layoutBindings =
-            std::make_unique<VkDescriptorSetLayoutBinding[]>(pDescriptorSetLayoutCI->bindingCount),
     };
 
-    std::copy(pDescriptorSetLayoutCI->pBindings,
-              pDescriptorSetLayoutCI->pBindings + pDescriptorSetLayoutCI->bindingCount,
-              newEntry.layoutBindings.get());
+    for (uint32_t i = 0; i < pDescriptorSetLayoutCI->bindingCount; ++i) {
+        newEntry.layoutBindings.emplace_back(pDescriptorSetLayoutCI->pBindings[i]);
+    }
 
     mLayouts.emplace_back(std::move(newEntry));
 
     return newLayout;
+}
+
+bool foeDescriptorSetLayoutPool::getCI(VkDescriptorSetLayout layout,
+                                       VkDescriptorSetLayoutCreateInfo &layoutCI,
+                                       std::vector<VkDescriptorSetLayoutBinding> &layoutBindings) {
+    std::scoped_lock lock{mSync};
+
+    for (auto const &it : mLayouts) {
+        if (layout == it.layout) {
+            layoutCI = it.layoutCI;
+            layoutCI.pBindings = nullptr;
+            layoutBindings = it.layoutBindings;
+
+            return true;
+        }
+    }
+
+    return false;
 }

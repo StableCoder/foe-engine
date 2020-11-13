@@ -20,7 +20,6 @@
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
 
-#include <memory>
 #include <mutex>
 #include <vector>
 
@@ -46,11 +45,15 @@ class foeDescriptorSetLayoutPool {
     FOE_GFX_EXPORT auto get(VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
         -> VkDescriptorSetLayout;
 
+    FOE_GFX_EXPORT bool getCI(VkDescriptorSetLayout layout,
+                              VkDescriptorSetLayoutCreateInfo &layoutCI,
+                              std::vector<VkDescriptorSetLayoutBinding> &layoutBindings);
+
   private:
     struct Layout {
         VkDescriptorSetLayout layout;
         VkDescriptorSetLayoutCreateInfo layoutCI;
-        std::unique_ptr<VkDescriptorSetLayoutBinding[]> layoutBindings;
+        std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
     };
 
     VkDevice mDevice{VK_NULL_HANDLE};
