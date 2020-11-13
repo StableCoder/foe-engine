@@ -19,9 +19,38 @@
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
 #include <vk_error_code.hpp>
 
+#include "gfx_log.hpp"
+
 #include <limits>
 
-#include "gfx_log.hpp"
+std::string to_string(foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout) {
+    switch (builtinSetLayout) {
+    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX:
+        return "ProjectionViewMatrix";
+
+    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX:
+        return "ModelMatrix";
+
+    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES:
+        return "ModelAndBoneStateMatrices";
+
+    default:
+        return {};
+    }
+}
+
+foeBuiltinDescriptorSetLayoutFlagBits to_builtin_set_layout(std::string_view str) {
+    if (str == "ProjectionViewMatrix")
+        return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX;
+
+    if (str == "ModelMatrix")
+        return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX;
+
+    if (str == "ModelAndBoneStateMatrices")
+        return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES;
+
+    return static_cast<foeBuiltinDescriptorSetLayoutFlagBits>(0);
+}
 
 auto foeBuiltinDescriptorSets::initialize(VkDevice device,
                                           foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)

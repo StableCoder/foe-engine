@@ -21,6 +21,7 @@
 #include <vulkan/vulkan.h>
 
 #include <array>
+#include <string_view>
 
 enum foeBuiltinDescriptorSetLayoutFlagBits {
     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX = 0x00000001,
@@ -28,6 +29,9 @@ enum foeBuiltinDescriptorSetLayoutFlagBits {
     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES = 0x00000004,
 };
 using foeBuiltinDescriptorSetLayoutFlags = uint32_t;
+
+FOE_GFX_EXPORT std::string to_string(foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout);
+FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlagBits to_builtin_set_layout(std::string_view str);
 
 enum foeDescriptorSetLayoutIndex {
     ProjectionViewMatrix = 0,
