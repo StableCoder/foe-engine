@@ -20,6 +20,7 @@
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
 #include <foe/graphics/environment.hpp>
 #include <foe/graphics/fragment_descriptor.hpp>
+#include <foe/graphics/fragment_descriptor_pool.hpp>
 #include <foe/graphics/pipeline_pool.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/shader_pool.hpp>
@@ -143,13 +144,14 @@ int main(int, char **) {
     std::array<PerFrameData, 3> frameData;
 
     foeVertexDescriptor vertexDescriptor;
-    foeFragmentDescriptor fragmentDescriptor(nullptr, nullptr, nullptr, nullptr);
+    foeFragmentDescriptor *fragmentDescriptor{nullptr};
 
     foeRenderPassPool renderPassPool;
 
     foeDescriptorSetLayoutPool descriptorSetLayoutPool;
     foeBuiltinDescriptorSets builtinDescriptorSets;
     foeShaderPool shaderPool;
+    foeFragmentDescriptorPool fragmentDescriptorPool;
     foePipelinePool pipelinePool;
 
     std::vector<VkFramebuffer> swapImageFramebuffers;
@@ -234,7 +236,7 @@ int main(int, char **) {
         };
 
         fragmentDescriptor =
-            std::move(foeFragmentDescriptor(&rasterization, nullptr, &colourBlend, pShader));
+            fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, pShader);
     }
 
     FOE_LOG(General, Info, "Entering main loop")
@@ -454,7 +456,7 @@ int main(int, char **) {
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
 
-                        pipelinePool.getPipeline(&vertexDescriptor, &fragmentDescriptor,
+                        pipelinePool.getPipeline(&vertexDescriptor, fragmentDescriptor,
                                                  swapImageRenderPass, 0, &layout,
                                                  &descriptorSetLayoutCount, &pipeline);
 

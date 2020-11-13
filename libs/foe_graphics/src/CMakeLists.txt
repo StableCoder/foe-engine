@@ -3,6 +3,7 @@ target_sources(
   PRIVATE builtin_descriptor_sets.cpp
           descriptor_set_layout_pool.cpp
           environment.cpp
+          fragment_descriptor_pool.cpp
           fragment_descriptor.cpp
           gfx_log.cpp
           pipeline_pool.cpp
