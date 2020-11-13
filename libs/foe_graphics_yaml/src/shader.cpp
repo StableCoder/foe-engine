@@ -19,12 +19,12 @@
 #include <foe/graphics/shader.hpp>
 #include <foe/graphics/shader_pool.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/pod_parsing.hpp>
+#include <foe/yaml/parsing.hpp>
 
 bool yaml_read_shader(std::string const &nodeName,
                       YAML::Node const &node,
                       foeShaderPool *pShaderPool,
-                      foeShader *pShader) {
+                      foeShader **pShader) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -34,7 +34,7 @@ bool yaml_read_shader(std::string const &nodeName,
         std::string shaderName;
         yaml_read_required("file_shader", subNode, shaderName);
 
-        pShader = pShaderPool->create(shaderName);
+        *pShader = pShaderPool->create(shaderName);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
