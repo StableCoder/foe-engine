@@ -3,7 +3,8 @@ project(FoE-Engine CXX)
 
 # Global Options
 option(BUILD_EXAMPLES "Build example programs" OFF)
-option(BUILD_TESTS "Build testcc programs" OFF)
+option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
+option(BUILD_TESTS "Build test programs" OFF)
 
 # C++20 standard, no extensions
 set(CMAKE_CXX_STANDARD 20)
@@ -16,7 +17,17 @@ add_code_coverage_all_targets(EXCLUDE .*/test/.*)
 
 # Formatting
 include(cmake/formatting.cmake)
-file(GLOB_RECURSE CL_FILES *.[hc] *.[hc]pp)
+file(
+  GLOB_RECURSE
+  CL_FILES
+  *.[hc]
+  *.[hc]pp
+  *.vert
+  *.tese
+  *.tesc
+  *.geom
+  *.frag
+  *.comp)
 list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/build)
 list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
@@ -73,3 +84,23 @@ target_code_coverage(foe_engine)
 
 # Sources
 add_subdirectory(src)
+
+# Auxiliary Items
+add_subdirectory(data)
+
+# Compile Shaders Optionally
+if(BUILD_SHADERS)
+  include(cmake/glsl_shaders.cmake)
+
+  file(
+    GLOB_RECURSE
+    GLSL_FILES
+    data/*.vert
+    data/*.tese
+    data/*.tesc
+    data/*.geom
+    data/*.frag
+    data/*.comp)
+
+  target_glsl_shaders(foe_engine PRIVATE ${GLSL_FILES})
+endif()

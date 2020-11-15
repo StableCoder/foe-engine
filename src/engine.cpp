@@ -200,11 +200,11 @@ int main(int, char **) {
     {
         foeShader *pShader;
 
-        pShader = shaderPool.create("test.vert.spv");
+        pShader = shaderPool.create("data/shaders/simple_tri/tri.vert.spv");
         vertexDescriptor.mVertex = pShader;
         pShader->incrementUseCount();
 
-        pShader = shaderPool.create("test.frag.spv");
+        pShader = shaderPool.create("data/shaders/simple_tri/tri.frag.spv");
         pShader->incrementUseCount();
 
         // Vertex
