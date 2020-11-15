@@ -27,21 +27,51 @@ class foeShader;
 class foeBuiltinDescriptorSets;
 class foeDescriptorSetLayoutPool;
 
+/** @brief Parses the type declaration, and uses that to find/generate one
+ * @param nodeName Name of the Yaml sub-node to operate on
+ * @param node Yaml node that should have the sub-node to operate on
+ * @param pShaderPool Pool used to search for/generate items to be returned
+ * @param pShader [out] Return data if parsing is successful
+ * @return True if parsing was successful, false otherwise.
+ * @exception Throws foeYamlException if the specified node was not found or another error
+ */
 FOE_GFX_YAML_EXPORT bool yaml_read_shader_declaration(std::string const &nodeName,
                                                       YAML::Node const &node,
                                                       foeShaderPool *pShaderPool,
                                                       foeShader **pShader);
 
+/** @brief Serializes a declaration of the given type
+ * @param nodeName Name of the Yaml sub-node to operate on
+ * @param pShader Data to be serialized
+ * @param node [out] Yaml node that the data is being written to, or to a subnode of
+ * @return True if the serialization was successful, false otherwise
+ * @exception Throws foeYamlException with a description if there's an failure during serialization
+ */
 FOE_GFX_YAML_EXPORT bool yaml_write_shader_declaration(std::string const &nodeName,
                                                        foeShader const *pShader,
                                                        YAML::Node &node);
 
+/** @brief Parses the type declaration, and uses that to find/generate one
+ * @param nodeName Name of the Yaml sub-node to operate on
+ * @param node Yaml node that should have the sub-node to operate on
+ * @param pDescriptorSetLayoutPool Pool used to search for/generate items to be returned
+ * @param pShader Item the data is being defined for
+ * @return True if parsing was successful, false otherwise.
+ * @exception Throws foeYamlException if the specified node was not found or another error
+ */
 FOE_GFX_YAML_EXPORT bool yaml_read_shader_definition(
     std::string const &nodeName,
     YAML::Node const &node,
     foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool,
     foeShader *pShader);
 
+/** @brief Serializes a declaration of the given type
+ * @param nodeName Name of the Yaml sub-node to operate on
+ * @param pMaterial Data to be serialized
+ * @param node [out] Yaml node that the data is being written to, or to a subnode of
+ * @return True if the serialization was successful, false otherwise
+ * @exception Throws foeYamlException with a description if there's an failure during serialization
+ */
 FOE_GFX_YAML_EXPORT bool yaml_write_shader_definition(
     std::string const &nodeName,
     foeBuiltinDescriptorSets const *pBuiltinDescriptorSets,
