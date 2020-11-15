@@ -60,6 +60,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 # Misc CMake
 include(cmake/compiler-options.cmake)
+include(cmake/glsl_shaders.cmake)
 include(cmake/prepare_catch.cmake)
 include(cmake/sanitizers.cmake)
 
@@ -84,23 +85,19 @@ target_code_coverage(foe_engine)
 
 # Sources
 add_subdirectory(src)
-
-# Auxiliary Items
-add_subdirectory(data)
-
-# Compile Shaders Optionally
 if(BUILD_SHADERS)
-  include(cmake/glsl_shaders.cmake)
-
   file(
     GLOB_RECURSE
     GLSL_FILES
-    data/*.vert
-    data/*.tese
-    data/*.tesc
-    data/*.geom
-    data/*.frag
-    data/*.comp)
+    data/shaders/*.vert
+    data/shaders/*.tese
+    data/shaders/*.tesc
+    data/shaders/*.geom
+    data/shaders/*.frag
+    data/shaders/*.comp)
 
   target_glsl_shaders(foe_engine PRIVATE ${GLSL_FILES})
 endif()
+
+# Auxiliary Items
+add_subdirectory(data)
