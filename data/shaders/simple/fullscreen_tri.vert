@@ -17,16 +17,16 @@
 #version 450
 
 vec2 vertexArray[3] = {
-    {0.0, -0.5},
-    {0.5, 0.5},
-    {-0.5, 0.5},
+    {-1.0, -1.0},
+    {3.0, -1.0},
+    {-1.0, 3.0},
 };
 
-layout(location = 0) out vec2 outColour;
+layout(location = 0) out vec2 outUV;
 
 out gl_PerVertex { vec4 gl_Position; };
 
 void main() {
-    outColour = vertexArray[gl_VertexIndex].xy;
+    outUV = vertexArray[gl_VertexIndex].xy;
     gl_Position = vec4(vertexArray[gl_VertexIndex], 0.0, 1.0);
 }

@@ -200,11 +200,11 @@ int main(int, char **) {
     {
         foeShader *pShader;
 
-        pShader = shaderPool.create("data/shaders/simple_tri/tri.vert.spv");
+        pShader = shaderPool.create("data/shaders/simple/tri.vert.spv");
         vertexDescriptor.mVertex = pShader;
         pShader->incrementUseCount();
 
-        pShader = shaderPool.create("data/shaders/simple_tri/tri.frag.spv");
+        pShader = shaderPool.create("data/shaders/simple/uv_to_colour.frag.spv");
         pShader->incrementUseCount();
 
         // Vertex
@@ -213,7 +213,7 @@ int main(int, char **) {
         };
         vertexDescriptor.mInputAssemblySCI = VkPipelineInputAssemblyStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
         };
 
         // Fragment

@@ -16,8 +16,18 @@
 
 #version 450
 
-layout(location = 0) in vec2 inColour;
+vec2 vertexArray[4] = {
+    {-1.0, -1.5},
+    {1.0, -1.0},
+    {-1.0, 1.0},
+    {1.0, 1.0},
+};
 
-layout(location = 0) out vec4 outFragColour;
+layout(location = 0) out vec2 outUV;
 
-void main() { outFragColour = vec4(abs(inColour.xy), 0.0, 1.0); }
+out gl_PerVertex { vec4 gl_Position; };
+
+void main() {
+    outUV = vertexArray[gl_VertexIndex].xy;
+    gl_Position = vec4(vertexArray[gl_VertexIndex], 0.0, 1.0);
+}
