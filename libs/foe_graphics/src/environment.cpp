@@ -221,13 +221,31 @@ VkResult foeGfxCreateEnvironment(bool validation,
                           queueFamilyProperties[i].queueCount, &pEnv->pQueueFamilies[i]);
     }
 
+    // VMA Allocator
+    VmaAllocatorCreateInfo allocatorCI{
+        .physicalDevice = pEnv->physicalDevice,
+        .device = pEnv->device,
+    };
+
+    res = vmaCreateAllocator(&allocatorCI, &pEnv->allocator);
+    if (res != VK_SUCCESS) {
+        foeGfxDestroyEnvironment(pEnv);
+        return res;
+    }
+
     *ppEnvironment = pEnv;
 
     return res;
 }
 
 void foeGfxDestroyEnvironment(foeGfxEnvironment *pEnvironment) {
-    vkDestroyDevice(pEnvironment->device, nullptr);
+    if (pEnvironment->allocator != VK_NULL_HANDLE) {
+        vmaDestroyAllocator(pEnvironment->allocator);
+    }
+
+    if (pEnvironment->device != VK_NULL_HANDLE) {
+        vkDestroyDevice(pEnvironment->device, nullptr);
+    }
 
     if (pEnvironment->debugCallback != VK_NULL_HANDLE) {
         auto fpDestroyDebugReportCallbackEXT =
@@ -238,5 +256,8 @@ void foeGfxDestroyEnvironment(foeGfxEnvironment *pEnvironment) {
                                         nullptr);
     }
 
-    vkDestroyInstance(pEnvironment->instance, nullptr);
+    if (pEnvironment->instance != VK_NULL_HANDLE) {
+        vkDestroyInstance(pEnvironment->instance, nullptr);
+    }
+
 }

@@ -18,6 +18,7 @@
 #define FOE_GRAPHICS_ENVIRONMENT_HPP
 
 #include <foe/graphics/export.h>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <mutex>
@@ -45,6 +46,8 @@ struct foeGfxEnvironment {
 
     uint32_t numQueueFamilies;
     foeQueueFamily pQueueFamilies[MaxQueueFamilies];
+
+    VmaAllocator allocator;
 };
 
 FOE_GFX_EXPORT VkResult foeGfxCreateEnvironment(bool validation,
