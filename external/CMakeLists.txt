@@ -1,1 +1,2 @@
+add_subdirectory(vulkan_memory_allocator)
 add_subdirectory(vulkan_mini_libs)
