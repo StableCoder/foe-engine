@@ -17,8 +17,11 @@
 #include <foe/graphics/environment.hpp>
 #include <foe/wsi_vulkan.hpp>
 
+#include <bit>
 #include <cassert>
+#include <limits>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "gfx_log.hpp"
@@ -259,5 +262,35 @@ void foeGfxDestroyEnvironment(foeGfxEnvironment *pEnvironment) {
     if (pEnvironment->instance != VK_NULL_HANDLE) {
         vkDestroyInstance(pEnvironment->instance, nullptr);
     }
+}
 
+uint32_t foeGfxGetBestQueue(foeGfxEnvironment const *pEnvironment, VkQueueFlags flags) {
+    std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;
+
+    for (uint32_t i = 0; i < MaxQueueFamilies; ++i) {
+        if (pEnvironment->pQueueFamilies[i].flags == flags) {
+            return i;
+        }
+        if ((pEnvironment->pQueueFamilies[i].flags & flags) == flags) {
+            compatibleQueueFamilies.emplace_back(
+                i, std::popcount(pEnvironment->pQueueFamilies[i].flags));
+        }
+    }
+
+    // Now iterate through the list, find the queue with the least number of extra flags
+    if (compatibleQueueFamilies.empty()) {
+        return std::numeric_limits<uint32_t>::max();
+    }
+
+    uint32_t leastFlagsIndex = 0;
+    uint32_t leastFlags = compatibleQueueFamilies[0].second;
+
+    for (uint32_t i = 1; i < compatibleQueueFamilies.size(); ++i) {
+        if (compatibleQueueFamilies[i].second < leastFlags) {
+            leastFlagsIndex = i;
+            leastFlags = compatibleQueueFamilies[i].second;
+        }
+    }
+
+    return compatibleQueueFamilies[leastFlagsIndex].first;
 }

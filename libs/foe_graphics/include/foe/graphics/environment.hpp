@@ -57,4 +57,7 @@ FOE_GFX_EXPORT VkResult foeGfxCreateEnvironment(bool validation,
 
 FOE_GFX_EXPORT void foeGfxDestroyEnvironment(foeGfxEnvironment *pEnvironment);
 
+FOE_GFX_EXPORT uint32_t foeGfxGetBestQueue(foeGfxEnvironment const *pEnvironment,
+                                           VkQueueFlags flags);
+
 #endif // FOE_GRAPHICS_ENVIRONMENT_HPP
