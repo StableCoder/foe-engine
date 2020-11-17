@@ -28,6 +28,25 @@
 
 namespace {
 
+/// @todo Replace all with std::popcount when integrated across all platforms
+inline uint32_t popcount(uint32_t value) noexcept {
+#ifdef __GNUC__
+    return __builtin_popcountll(value);
+#elif __APPLE__
+    return __popcount(value);
+#else // WIN32
+    uint32_t ret = 0;
+    for (int i = 0; i < sizeof(value) * 8; ++i) {
+        if (value & 0x1) {
+            ++ret;
+        }
+        value >>= 1;
+    }
+
+    return ret;
+#endif
+}
+
 VkBool32 vulkanMessageCallbacks(VkDebugReportFlagsEXT flags,
                                 VkDebugReportObjectTypeEXT objectType,
                                 uint64_t object,
@@ -272,8 +291,8 @@ uint32_t foeGfxGetBestQueue(foeGfxEnvironment const *pEnvironment, VkQueueFlags 
             return i;
         }
         if ((pEnvironment->pQueueFamilies[i].flags & flags) == flags) {
-            compatibleQueueFamilies.emplace_back(
-                i, std::popcount(pEnvironment->pQueueFamilies[i].flags));
+            compatibleQueueFamilies.emplace_back(i,
+                                                 popcount(pEnvironment->pQueueFamilies[i].flags));
         }
     }
 
