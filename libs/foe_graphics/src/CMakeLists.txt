@@ -11,4 +11,5 @@ target_sources(
           resource_uploader.cpp
           shader_pool.cpp
           shader.cpp
-          swapchain.cpp)
+          swapchain.cpp
+          upload_data.cpp)
