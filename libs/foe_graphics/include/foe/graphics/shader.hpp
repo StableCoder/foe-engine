@@ -50,9 +50,9 @@ class foeShader {
   private:
     friend class foeShaderPool;
 
-    std::atomic<LoadState> loadState;
-    std::atomic<size_t> refCount;
-    std::atomic<size_t> useCount;
+    std::atomic<LoadState> loadState{LoadState::Unloaded};
+    std::atomic<size_t> refCount{0};
+    std::atomic<size_t> useCount{0};
 };
 
 #endif // FOE_GRAPHICS_SHADER_HPP
