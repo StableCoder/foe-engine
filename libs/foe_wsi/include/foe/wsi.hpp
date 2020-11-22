@@ -122,6 +122,15 @@ FOE_WSI_EXPORT void foeWindowGetSize(int *pWidth, int *pHeight);
 FOE_WSI_EXPORT bool foeWindowResized();
 FOE_WSI_EXPORT void foeWindowResize(int width, int height);
 
+/** @brief
+ * @param pScaleX X scaling factor requested for content
+ * @param pScaleY Y scaling factor requested for content
+ *
+ * For macOS and Windows, content can be requested to be scaled independent of window sizing for
+ * HiDPI screens.
+ */
+FOE_WSI_EXPORT void foeWindowGetContentScale(float *pScaleX, float *pScaleY);
+
 FOE_WSI_EXPORT const foeMouse *foeGetMouse();
 FOE_WSI_EXPORT const foeKeyboard *foeGetKeyboard();
 

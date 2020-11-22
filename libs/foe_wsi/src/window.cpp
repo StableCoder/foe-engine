@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include "foe/wsi.hpp"
 #include "keyboard.hpp"
 #include "mouse.hpp"
 
@@ -117,6 +118,10 @@ void foeWindowResize(int width, int height) { glfwSetWindowSize(pWindow, width, 
 
 const foeMouse *foeGetMouse() { return &mouse; }
 const foeKeyboard *foeGetKeyboard() { return &keyboard; }
+
+void foeWindowGetContentScale(float *pScaleX, float *pScaleY) {
+    glfwGetWindowContentScale(pWindow, pScaleX, pScaleY);
+}
 
 const char **foeWindowGetVulkanExtensions(uint32_t *pExtensionCount) {
     glfwInit();
