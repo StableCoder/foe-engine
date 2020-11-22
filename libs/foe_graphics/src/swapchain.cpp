@@ -91,6 +91,8 @@ VkResult foeSwapchain::create(VkPhysicalDevice physicalDevice,
     if (res != VK_SUCCESS)
         return res;
 
+    mExtent = extent;
+
     // Get the new image views
     res = createSwapchainViews(device);
     if (res != VK_SUCCESS) {
@@ -148,6 +150,8 @@ void foeSwapchain::presentMode(VkPresentModeKHR presentMode) noexcept {
     mPresentMode = presentMode;
     mNeedRebuild = true;
 }
+
+VkExtent2D foeSwapchain::extent() const noexcept { return mExtent; }
 
 uint32_t foeSwapchain::acquiredIndex() const noexcept { return mAcquiredIndex; }
 

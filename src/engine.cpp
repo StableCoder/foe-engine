@@ -382,13 +382,14 @@ int main(int, char **) {
                 int width, height;
                 foeWindowGetSize(&width, &height);
                 VkImageView view;
+                VkExtent2D swapchainExtent = swapchain.extent();
                 VkFramebufferCreateInfo framebufferCI{
                     .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                     .renderPass = swapImageRenderPass,
                     .attachmentCount = 1,
                     .pAttachments = &view,
-                    .width = (uint32_t)width,
-                    .height = (uint32_t)height,
+                    .width = (uint32_t)swapchainExtent.width,
+                    .height = (uint32_t)swapchainExtent.height,
                     .layers = 1,
                 };
 
@@ -417,8 +418,7 @@ int main(int, char **) {
                     goto SHUTDOWN_PROGRAM;
 
                 { // Render Pass Setup
-                    int width, height;
-                    foeWindowGetSize(&width, &height);
+                    VkExtent2D swapchainExtent = swapchain.extent();
                     VkClearValue clear{
                         .color = {0.f, 0.f, 1.f, 0.f},
                     };
@@ -430,7 +430,7 @@ int main(int, char **) {
                         .renderArea =
                             {
                                 .offset = {0, 0},
-                                .extent = {(uint32_t)width, (uint32_t)height},
+                                .extent = swapchainExtent,
                             },
                         .clearValueCount = 1,
                         .pClearValues = &clear,
@@ -440,8 +440,8 @@ int main(int, char **) {
 
                     { // Set Drawing Parameters
                         VkViewport viewport{
-                            .width = static_cast<float>(width),
-                            .height = static_cast<float>(height),
+                            .width = static_cast<float>(swapchainExtent.width),
+                            .height = static_cast<float>(swapchainExtent.height),
                             .minDepth = 0.f,
                             .maxDepth = 1.f,
                         };
@@ -449,8 +449,7 @@ int main(int, char **) {
 
                         VkRect2D scissor{
                             .offset = VkOffset2D{},
-                            .extent = VkExtent2D{.width = static_cast<uint32_t>(width),
-                                                 .height = static_cast<uint32_t>(height)},
+                            .extent = swapchainExtent,
                         };
                         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
@@ -468,7 +467,7 @@ int main(int, char **) {
 
                         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-                        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+                        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
                     }
 
                     vkCmdEndRenderPass(commandBuffer);
