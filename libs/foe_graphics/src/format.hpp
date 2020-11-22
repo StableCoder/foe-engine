@@ -19,6 +19,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <cstdlib>
+
 constexpr bool isDepthFormat(VkFormat format) noexcept {
     switch (format) {
     case VK_FORMAT_D16_UNORM:
@@ -41,6 +43,66 @@ constexpr bool isDepthStencilFormat(VkFormat format) noexcept {
     default:
         return false;
     }
+}
+
+constexpr VkDeviceSize bytesPerPixel(VkFormat format, VkImageAspectFlags aspects) noexcept {
+    VkDeviceSize bpp = 0;
+
+    if ((aspects & VK_IMAGE_ASPECT_COLOR_BIT) == VK_IMAGE_ASPECT_COLOR_BIT) {
+        switch (format) {
+        case VK_FORMAT_R8G8B8A8_UNORM:
+        case VK_FORMAT_B8G8R8A8_UNORM:
+            bpp += 4;
+            break;
+
+        case VK_FORMAT_R8G8B8_UNORM:
+        case VK_FORMAT_B8G8R8_UNORM:
+            bpp += 3;
+            break;
+
+        case VK_FORMAT_R8_UNORM:
+            bpp += 1;
+            break;
+
+        default:
+            std::abort();
+        }
+    }
+
+    if ((aspects & VK_IMAGE_ASPECT_DEPTH_BIT) == VK_IMAGE_ASPECT_DEPTH_BIT) {
+        switch (format) {
+        case VK_FORMAT_D32_SFLOAT_S8_UINT:
+        case VK_FORMAT_D32_SFLOAT:
+            bpp += 4;
+            break;
+
+        case VK_FORMAT_D24_UNORM_S8_UINT:
+            bpp += 3;
+            break;
+
+        case VK_FORMAT_D16_UNORM_S8_UINT:
+        case VK_FORMAT_D16_UNORM:
+            bpp += 2;
+
+        default:
+            std::abort();
+        }
+    }
+
+    if ((aspects & VK_IMAGE_ASPECT_STENCIL_BIT) == VK_IMAGE_ASPECT_STENCIL_BIT) {
+        switch (format) {
+        case VK_FORMAT_D32_SFLOAT_S8_UINT:
+        case VK_FORMAT_D24_UNORM_S8_UINT:
+        case VK_FORMAT_D16_UNORM_S8_UINT:
+            bpp += 1;
+            break;
+
+        default:
+            std::abort();
+        }
+    }
+
+    return bpp;
 }
 
 #endif // FORMAT_HPP
