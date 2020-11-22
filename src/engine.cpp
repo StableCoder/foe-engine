@@ -23,6 +23,7 @@
 #include <foe/graphics/fragment_descriptor_pool.hpp>
 #include <foe/graphics/pipeline_pool.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
+#include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/shader_pool.hpp>
 #include <foe/graphics/swapchain.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
@@ -136,6 +137,7 @@ int main(int, char **) {
 
     FrameTimer frameTime;
     foeGfxEnvironment *pGfxEnvironment;
+    foeResourceUploader resUploader;
 
     VkWindowData vkWindow;
     foeSwapchain swapchain;
@@ -157,7 +159,11 @@ int main(int, char **) {
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
-    auto res = foeGfxCreateEnvironment(true, "FoE Engine", 0, &pGfxEnvironment);
+    VkResult res = foeGfxCreateEnvironment(true, "FoE Engine", 0, &pGfxEnvironment);
+    if (res != VK_SUCCESS)
+        VK_END_PROGRAM
+
+    res = foeGfxCreateResourceUploader(pGfxEnvironment, &resUploader);
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
@@ -557,6 +563,7 @@ SHUTDOWN_PROGRAM:
 
     foeDestroyWindow();
 
+    foeGfxDestroyResourceUploader(&resUploader);
     foeGfxDestroyEnvironment(pGfxEnvironment);
 
     return 0;

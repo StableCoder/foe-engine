@@ -8,6 +8,7 @@ target_sources(
           gfx_log.cpp
           pipeline_pool.cpp
           render_pass_pool.cpp
+          resource_uploader.cpp
           shader_pool.cpp
           shader.cpp
           swapchain.cpp)
