@@ -20,6 +20,23 @@
 
 #include "upload_data.hpp"
 
+uint32_t maxMipmapCount(VkExtent3D extent) noexcept {
+    if (extent.width == 0U || extent.height == 0U || extent.depth == 0U) {
+        return 0;
+    }
+
+    uint32_t levels = 1;
+    while (extent.width > 1U || extent.height > 1U || extent.depth > 1U) {
+        extent.width = std::max(1u, extent.width / 2);
+        extent.height = std::max(1u, extent.height / 2);
+        extent.depth = std::max(1u, extent.depth / 2);
+
+        ++levels;
+    }
+
+    return levels;
+}
+
 VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noexcept {
     uint32_t divisor = 1U << mipLevel;
 

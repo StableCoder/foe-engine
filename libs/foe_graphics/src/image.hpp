@@ -25,6 +25,12 @@
 struct foeResourceUploader;
 struct UploadData;
 
+/** @brief Returns the maximum mipmap levels for the given extent.
+ * @param extent The extent dimensions.
+ * @return The max possible mipmap levels.
+ */
+uint32_t maxMipmapCount(VkExtent3D extent) noexcept;
+
 /** @brief Returns the extent for a given mip level.
  * @param extent The original extent for mip level 0.
  * @param level The mip level to retrieve. Must be less than 32.
@@ -33,7 +39,7 @@ struct UploadData;
  */
 VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noexcept;
 
-/** Returns the pixel count for given extent, over the number of given mipmap levels.
+/** @brief Returns the pixel count for given extent, over the number of given mipmap levels.
  * @param extent The extent of the base image.
  * @param levels The number of levels down to count the number of pixels for.
  * @return The overall pixel count.
