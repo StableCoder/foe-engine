@@ -159,7 +159,7 @@ auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> 
         return VK_NULL_HANDLE;
     }
 
-    mRenderPasses.emplace_back(RenderPassSet{
+    RenderPassSet newEntry = {
         .key = compatibleKey,
         .variants =
             {
@@ -168,7 +168,9 @@ auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> 
                     .renderPass = renderPass,
                 },
             },
-    });
+    };
+
+    mRenderPasses.emplace_back(newEntry);
 
     return renderPass;
 }
