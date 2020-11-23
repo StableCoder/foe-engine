@@ -101,7 +101,6 @@ void createQueueFamily(VkDevice device,
     pQueueFamily->numQueues = numQueues;
 
     for (uint32_t i = 0; i < numQueues; ++i) {
-        pQueueFamily->sync[i].unlock();
         vkGetDeviceQueue(device, family, i, &pQueueFamily->queue[i]);
     }
 }
