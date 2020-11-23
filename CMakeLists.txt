@@ -84,9 +84,13 @@ add_executable(foe_engine)
 target_link_libraries(foe_engine PRIVATE foe foe_graphics foe_wsi)
 target_code_coverage(foe_engine)
 
+add_library(foe_engine_imgui STATIC)
+target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
+target_link_libraries(foe_engine_imgui PUBLIC foe_imgui)
+
 if(EDITOR_MODE)
-  target_compile_definitions(foe_engine PRIVATE EDITOR_MODE)
-  target_link_libraries(foe_engine PRIVATE foe_imgui)
+  # Link to executable
+  target_link_libraries(foe_engine PUBLIC foe_engine_imgui)
 endif()
 
 # Sources

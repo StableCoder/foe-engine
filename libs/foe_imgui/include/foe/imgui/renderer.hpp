@@ -17,7 +17,7 @@
 #ifndef FOE_IMGUI_RENDERER_HPP
 #define FOE_IMGUI_RENDERER_HPP
 
-#include <foe/imgui_export.h>
+#include <foe/imgui/export.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 

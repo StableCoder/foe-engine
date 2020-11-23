@@ -40,8 +40,12 @@
 #include "stdout_sink.hpp"
 
 #ifdef EDITOR_MODE
-#include <foe/imgui_renderer.hpp>
+#include <foe/imgui/renderer.hpp>
+#include <foe/imgui/state.hpp>
 #include <imgui.h>
+
+#include "imgui/frame_time_info.hpp"
+#include "imgui/termination.hpp"
 #endif
 
 #define VK_END_PROGRAM                                                                             \
@@ -135,20 +139,6 @@ struct PerFrameData {
     }
 };
 
-#ifdef EDITOR_MODE
-void testUI(double msPerFrame, double framesPerSecond) {
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-    ImGui::SetNextWindowSize(ImVec2(), ImGuiCond_FirstUseEver);
-    ImGui::Begin("FoE Engine", nullptr,
-                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize);
-
-    ImGui::Text("%.2f ms/frame (%.1f fps)", msPerFrame, framesPerSecond);
-
-    ImGui::End();
-    ImGui::PopStyleVar();
-}
-#endif
-
 int main(int, char **) {
     StdOutSink stdoutSink;
     foeLogger::instance()->registerSink(&stdoutSink);
@@ -177,12 +167,19 @@ int main(int, char **) {
 
 #ifdef EDITOR_MODE
     foeImGuiRenderer imguiRenderer;
+    foeImGuiState imguiState;
+
+    foeImGuiTermination fileTermination;
+    foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
+
+    imguiState.addUI(&fileTermination);
+    imguiState.addUI(&viewFrameTimeInfo);
 #endif
 
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
-    VkResult res = foeGfxCreateEnvironment(true, "FoE Engine", 0, &pGfxEnvironment);
+    VkResult res = foeGfxCreateEnvironment(false, "FoE Engine", 0, &pGfxEnvironment);
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
@@ -272,8 +269,13 @@ int main(int, char **) {
             fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, pShader);
     }
 
+    // MAIN LOOP BEGIN
     FOE_LOG(General, Info, "Entering main loop")
-    while (!foeWindowGetShouldClose()) {
+    while (!foeWindowGetShouldClose()
+#ifdef EDITOR_MODE
+           && !fileTermination.terminationRequested()
+#endif
+    ) {
         swapchainRebuilt = false;
         foeWindowEventProcessing();
 
@@ -513,13 +515,14 @@ int main(int, char **) {
 #ifdef EDITOR_MODE
                     { // ImGui
                         imguiRenderer.newFrame();
-                        testUI(
-                            (double)frameTime.averageFrameTime<std::chrono::nanoseconds>().count() /
-                                1000000.,
-                            frameTime.framesPerSecond());
+                        imguiState.runUI();
                         imguiRenderer.endFrame();
 
-                        imguiRenderer.update(pGfxEnvironment->allocator, frameIndex);
+                        res = imguiRenderer.update(pGfxEnvironment->allocator, frameIndex);
+                        if (res != VK_SUCCESS) {
+                            VK_END_PROGRAM
+                        }
+
                         imguiRenderer.draw(commandBuffer, frameIndex);
                     }
 #endif

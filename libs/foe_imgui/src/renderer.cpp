@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/imgui_renderer.hpp>
+#include <foe/imgui/renderer.hpp>
 
 #include <GLFW/glfw3.h>
 #include <foe/graphics/environment.hpp>
@@ -370,7 +370,7 @@ VkResult foeImGuiRenderer::update(VmaAllocator allocator, uint32_t frameIndex) {
         return VK_SUCCESS;
 
     // Vertex Buffer
-    if (vertices.buffer != VK_NULL_HANDLE || vertices.count != pDrawData->TotalVtxCount) {
+    if (vertices.buffer == VK_NULL_HANDLE || vertices.count < pDrawData->TotalVtxCount) {
         if (vertices.buffer != VK_NULL_HANDLE) {
             vmaDestroyBuffer(allocator, vertices.buffer, vertices.alloc);
         }
@@ -395,7 +395,7 @@ VkResult foeImGuiRenderer::update(VmaAllocator allocator, uint32_t frameIndex) {
     }
 
     // Index Buffer
-    if (indices.buffer != VK_NULL_HANDLE || indices.count != pDrawData->TotalIdxCount) {
+    if (indices.buffer == VK_NULL_HANDLE || indices.count < pDrawData->TotalIdxCount) {
         if (indices.buffer != VK_NULL_HANDLE) {
             vmaDestroyBuffer(allocator, indices.buffer, indices.alloc);
         }
@@ -440,7 +440,7 @@ VkResult foeImGuiRenderer::update(VmaAllocator allocator, uint32_t frameIndex) {
         memcpy(pIndexData, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
 
         pVertexData += cmdList->VtxBuffer.Size;
-        pIndexData += cmdList->VtxBuffer.Size;
+        pIndexData += cmdList->IdxBuffer.Size;
     }
 
     vmaUnmapMemory(allocator, indices.alloc);

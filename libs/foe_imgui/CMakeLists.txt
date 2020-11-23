@@ -6,7 +6,7 @@ add_library(foe_imgui)
 
 # Definition
 generate_export_header(foe_imgui EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/imgui_export.h)
+                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/imgui/export.h)
 
 target_include_directories(foe_imgui PUBLIC include
                                             ${CMAKE_CURRENT_BINARY_DIR}/exports)
