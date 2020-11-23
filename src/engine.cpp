@@ -271,8 +271,6 @@ int main(int, char **) {
         if (VK_SUCCESS == vkWaitForFences(pGfxEnvironment->device, 1,
                                           &frameData[nextFrameIndex].frameComplete, VK_TRUE, 0)) {
             frameTime.newFrame();
-            frameIndex = nextFrameIndex;
-            vkResetFences(pGfxEnvironment->device, 1, &frameData[frameIndex].frameComplete);
 
             // Rebuild swapchains
             if (!swapchain || swapchain.needRebuild()) {
@@ -346,8 +344,8 @@ int main(int, char **) {
             }
 
             // Acquire Target Presentation Images
-            VkResult res = swapchain.acquireNextImage(pGfxEnvironment->device,
-                                                      frameData[frameIndex].presentImageAcquired);
+            VkResult res = swapchain.acquireNextImage(
+                pGfxEnvironment->device, frameData[nextFrameIndex].presentImageAcquired);
             if (res == VK_TIMEOUT || res == VK_NOT_READY) {
                 // Waiting for an image to become ready
                 goto SKIP_FRAME_RENDER;
@@ -358,6 +356,8 @@ int main(int, char **) {
                 // Catastrophic error
                 VK_END_PROGRAM
             }
+            vkResetFences(pGfxEnvironment->device, 1, &frameData[nextFrameIndex].frameComplete);
+            frameIndex = nextFrameIndex;
 
             // Rendering
             vkResetCommandPool(pGfxEnvironment->device, frameData[frameIndex].commandPool, 0);
