@@ -39,6 +39,11 @@
 #include "frame_timer.hpp"
 #include "stdout_sink.hpp"
 
+#ifdef EDITOR_MODE
+#include <foe/imgui_renderer.hpp>
+#include <imgui.h>
+#endif
+
 #define VK_END_PROGRAM                                                                             \
     {                                                                                              \
         std::error_code errC = res;                                                                \
@@ -130,6 +135,20 @@ struct PerFrameData {
     }
 };
 
+#ifdef EDITOR_MODE
+void testUI(double msPerFrame, double framesPerSecond) {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+    ImGui::SetNextWindowSize(ImVec2(), ImGuiCond_FirstUseEver);
+    ImGui::Begin("FoE Engine", nullptr,
+                 ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize);
+
+    ImGui::Text("%.2f ms/frame (%.1f fps)", msPerFrame, framesPerSecond);
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+}
+#endif
+
 int main(int, char **) {
     StdOutSink stdoutSink;
     foeLogger::instance()->registerSink(&stdoutSink);
@@ -156,6 +175,10 @@ int main(int, char **) {
     foeFragmentDescriptorPool fragmentDescriptorPool;
     foePipelinePool pipelinePool;
 
+#ifdef EDITOR_MODE
+    foeImGuiRenderer imguiRenderer;
+#endif
+
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
@@ -169,6 +192,10 @@ int main(int, char **) {
 
     if (!foeCreateWindow(1280, 720, "FoE Engine"))
         END_PROGRAM
+
+#ifdef EDITOR_MODE
+    imguiRenderer.resize(1280, 720);
+#endif
 
     res = foeWindowGetVkSurface(pGfxEnvironment->instance, &vkWindow.surface);
     if (res != VK_SUCCESS) {
@@ -247,23 +274,27 @@ int main(int, char **) {
 
     FOE_LOG(General, Info, "Entering main loop")
     while (!foeWindowGetShouldClose()) {
-        static auto nextDisplayTime = std::chrono::steady_clock::now() + 1s;
-        if (std::chrono::steady_clock::now() > nextDisplayTime) {
-            FOE_LOG(General, Verbose, "Frame time: {}ms, FPS: {}",
-                    frameTime.averageFrameTime<std::chrono::milliseconds>().count(),
-                    frameTime.framesPerSecond())
-            nextDisplayTime = std::chrono::steady_clock::now() + 1s;
-        }
-
         swapchainRebuilt = false;
         foeWindowEventProcessing();
 
         auto *pMouse = foeGetMouse();
         auto *pKeyboard = foeGetKeyboard();
 
+#ifdef EDITOR_MODE
+        // User input processing
+        imguiRenderer.keyboardInput(pKeyboard);
+        imguiRenderer.mouseInput(pMouse);
+#endif
+
         if (foeWindowResized()) {
             // Swapchins will need rebuilding
             swapchain.requestRebuild();
+
+#ifdef EDITOR_MODE
+            int width, height;
+            foeWindowGetSize(&width, &height);
+            imguiRenderer.resize(width, height);
+#endif
         }
 
         // Vulkan Render Section
@@ -374,6 +405,15 @@ int main(int, char **) {
                 .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
             }});
 
+#ifdef EDITOR_MODE
+            if (!imguiRenderer.initialized()) {
+                if (imguiRenderer.initialize(pGfxEnvironment, VK_SAMPLE_COUNT_1_BIT,
+                                             swapImageRenderPass, 0) != VK_SUCCESS) {
+                    VK_END_PROGRAM
+                }
+            }
+#endif
+
             if (swapchainRebuilt) {
                 for (auto &it : swapImageFramebuffers)
                     vkDestroyFramebuffer(pGfxEnvironment->device, it, nullptr);
@@ -470,6 +510,20 @@ int main(int, char **) {
                         vkCmdDraw(commandBuffer, 4, 1, 0, 0);
                     }
 
+#ifdef EDITOR_MODE
+                    { // ImGui
+                        imguiRenderer.newFrame();
+                        testUI(
+                            (double)frameTime.averageFrameTime<std::chrono::nanoseconds>().count() /
+                                1000000.,
+                            frameTime.framesPerSecond());
+                        imguiRenderer.endFrame();
+
+                        imguiRenderer.update(pGfxEnvironment->allocator, frameIndex);
+                        imguiRenderer.draw(commandBuffer, frameIndex);
+                    }
+#endif
+
                     vkCmdEndRenderPass(commandBuffer);
                 }
 
@@ -563,6 +617,11 @@ SHUTDOWN_PROGRAM:
     foeDestroyWindow();
 
     foeGfxDestroyResourceUploader(&resUploader);
+
+#ifdef EDITOR_MODE
+    imguiRenderer.deinitialize(pGfxEnvironment);
+#endif
+
     foeGfxDestroyEnvironment(pGfxEnvironment);
 
     return 0;

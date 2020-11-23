@@ -5,6 +5,7 @@ project(FoE-Engine CXX)
 option(BUILD_EXAMPLES "Build example programs" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
+option(EDITOR_MODE "Build with the editor UI capability" OFF)
 
 # C++20 standard, no extensions
 set(CMAKE_CXX_STANDARD 20)
@@ -82,6 +83,11 @@ add_subdirectory(libs)
 add_executable(foe_engine)
 target_link_libraries(foe_engine PRIVATE foe foe_graphics foe_wsi)
 target_code_coverage(foe_engine)
+
+if(EDITOR_MODE)
+  target_compile_definitions(foe_engine PRIVATE EDITOR_MODE)
+  target_link_libraries(foe_engine PRIVATE foe_imgui)
+endif()
 
 # Sources
 add_subdirectory(src)
