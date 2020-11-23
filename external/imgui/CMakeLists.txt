@@ -2,11 +2,8 @@ cmake_minimum_required(VERSION 3.13)
 project(imgui CXX)
 
 # Declaration
-if(WIN32)
-  add_library(imgui STATIC)
-else()
-  add_library(imgui)
-endif()
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+add_library(imgui)
 
 # Definition
 target_include_directories(imgui PUBLIC include)

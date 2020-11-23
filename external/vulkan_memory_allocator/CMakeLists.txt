@@ -4,11 +4,8 @@ cmake_minimum_required(VERSION 3.13)
 find_package(Vulkan REQUIRED)
 
 # Library
-if(WIN32)
-  add_library(vulkan_memory_allocator STATIC vk_mem_alloc.cpp vk_mem_alloc.h)
-else()
-  add_library(vulkan_memory_allocator vk_mem_alloc.cpp vk_mem_alloc.h)
-endif()
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+add_library(vulkan_memory_allocator vk_mem_alloc.cpp vk_mem_alloc.h)
 
 target_include_directories(vulkan_memory_allocator
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
