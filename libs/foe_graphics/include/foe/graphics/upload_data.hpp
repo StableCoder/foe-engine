@@ -17,11 +17,12 @@
 #ifndef UPLOAD_DATA_HPP
 #define UPLOAD_DATA_HPP
 
+#include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
 
 struct foeResourceUploader;
 
-struct UploadData {
+struct foeUploadData {
     VkCommandBuffer srcCmdBuffer;
     VkCommandPool srcCmdPool;
     VkFence srcFence;
@@ -32,11 +33,13 @@ struct UploadData {
 
     VkSemaphore copyComplete;
 
-    void destroy(VkDevice device);
+    FOE_GFX_EXPORT void destroy(VkDevice device);
 };
 
-VkResult createUploadData(foeResourceUploader *pResourceUploader, UploadData *pUploadData);
+FOE_GFX_EXPORT VkResult createUploadData(foeResourceUploader *pResourceUploader,
+                                         foeUploadData *pUploadData);
 
-VkResult submitUploadDataCommands(foeResourceUploader *pResourceUploader, UploadData *pUploadData);
+FOE_GFX_EXPORT VkResult submitUploadDataCommands(foeResourceUploader *pResourceUploader,
+                                                 foeUploadData *pUploadData);
 
 #endif // UPLOAD_DATA_HPP

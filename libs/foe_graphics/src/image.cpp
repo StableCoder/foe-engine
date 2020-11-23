@@ -14,11 +14,12 @@
     limitations under the License.
 */
 
-#include "image.hpp"
+#include <foe/graphics/image.hpp>
 
 #include <foe/graphics/resource_uploader.hpp>
+#include <foe/graphics/upload_data.hpp>
 
-#include "upload_data.hpp"
+#include <cmath>
 
 uint32_t maxMipmapCount(VkExtent3D extent) noexcept {
     if (extent.width == 0U || extent.height == 0U || extent.depth == 0U) {
@@ -58,14 +59,15 @@ VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept {
 
 VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
                                    VkImageSubresourceRange const *pSubresourceRange,
-                                   std::vector<VkBufferImageCopy> const *pCopyRegions,
+                                   uint32_t copyRegionCount,
+                                   VkBufferImageCopy const *pCopyRegions,
                                    VkBuffer srcBuffer,
                                    VkImage dstImage,
                                    VkAccessFlags dstAccessFlags,
                                    VkImageLayout dstImageLayout,
-                                   UploadData *pUploadData) {
+                                   foeUploadData *pUploadData) {
     VkResult res;
-    UploadData uploadData;
+    foeUploadData uploadData;
 
     res = createUploadData(pResourceUploader, &uploadData);
     if (res != VK_SUCCESS) {
@@ -91,7 +93,7 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
         }
     }
 
-    if (!pCopyRegions->empty()) {
+    if (copyRegionCount > 0) {
         // Prepare the destination images for writing
         VkImageMemoryBarrier imgMemBarrier{
             .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -114,8 +116,7 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
                              &imgMemBarrier);
 
         vkCmdCopyBufferToImage(commandBuffer, srcBuffer, dstImage,
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, pCopyRegions->size(),
-                               pCopyRegions->data());
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copyRegionCount, pCopyRegions);
     }
 
     { // Change destination image for shader read only optimal

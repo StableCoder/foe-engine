@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#include "upload_data.hpp"
+#include <foe/graphics/upload_data.hpp>
 
 #include <foe/graphics/resource_uploader.hpp>
 
-void UploadData::destroy(VkDevice device) {
+void foeUploadData::destroy(VkDevice device) {
     if (copyComplete != VK_NULL_HANDLE) {
         vkDestroySemaphore(device, copyComplete, nullptr);
     }
@@ -40,9 +40,9 @@ void UploadData::destroy(VkDevice device) {
     }
 }
 
-VkResult createUploadData(foeResourceUploader *pResourceUploader, UploadData *pUploadData) {
+VkResult createUploadData(foeResourceUploader *pResourceUploader, foeUploadData *pUploadData) {
     VkResult res;
-    UploadData uploadData{
+    foeUploadData uploadData{
         .srcCmdPool = pResourceUploader->srcCommandPool,
         .dstCmdPool = pResourceUploader->dstCommandPool,
     };
@@ -107,7 +107,8 @@ CREATE_FAILED:
     return res;
 }
 
-VkResult submitUploadDataCommands(foeResourceUploader *pResourceUploader, UploadData *pUploadData) {
+VkResult submitUploadDataCommands(foeResourceUploader *pResourceUploader,
+                                  foeUploadData *pUploadData) {
     VkResult res;
 
     if (pUploadData->srcCmdBuffer != VK_NULL_HANDLE) { // Source command submission

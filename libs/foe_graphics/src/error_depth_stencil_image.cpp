@@ -16,11 +16,13 @@
 
 #include <foe/graphics/error_images.hpp>
 
+#include <foe/graphics/image.hpp>
+#include <foe/graphics/upload_data.hpp>
+
 #include "format.hpp"
-#include "image.hpp"
-#include "upload_data.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
@@ -97,7 +99,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
     constexpr VkFormat format = VK_FORMAT_D32_SFLOAT_S8_UINT;
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
     VkExtent3D extent = VkExtent3D{maxExtent, maxExtent, 1U};
-    UploadData uploadData{};
+    foeUploadData uploadData{};
 
     VmaAllocation stagingAlloc{VK_NULL_HANDLE};
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
@@ -222,8 +224,9 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             .layerCount = 1,
         };
 
-        recordImageUploadCommands(pResourceUploader, &subresourceRange, &copyRegions, stagingBuffer,
-                                  image, VK_ACCESS_SHADER_READ_BIT,
+        recordImageUploadCommands(pResourceUploader, &subresourceRange, copyRegions.size(),
+                                  copyRegions.data(), stagingBuffer, image,
+                                  VK_ACCESS_SHADER_READ_BIT,
                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadData);
         if (res != VK_SUCCESS) {
             goto SUBMIT_FAILED;

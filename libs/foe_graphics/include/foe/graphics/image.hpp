@@ -17,19 +17,17 @@
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 
+#include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
 
-#include <cmath>
-#include <vector>
-
 struct foeResourceUploader;
-struct UploadData;
+struct foeUploadData;
 
 /** @brief Returns the maximum mipmap levels for the given extent.
  * @param extent The extent dimensions.
  * @return The max possible mipmap levels.
  */
-uint32_t maxMipmapCount(VkExtent3D extent) noexcept;
+FOE_GFX_EXPORT uint32_t maxMipmapCount(VkExtent3D extent) noexcept;
 
 /** @brief Returns the extent for a given mip level.
  * @param extent The original extent for mip level 0.
@@ -37,22 +35,23 @@ uint32_t maxMipmapCount(VkExtent3D extent) noexcept;
  * @return The extent for the given mip level.
  * @warning There is no safety for a mipmap level beyond the max, which would also return (1, 1).
  */
-VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noexcept;
+FOE_GFX_EXPORT VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noexcept;
 
 /** @brief Returns the pixel count for given extent, over the number of given mipmap levels.
  * @param extent The extent of the base image.
  * @param levels The number of levels down to count the number of pixels for.
  * @return The overall pixel count.
  */
-VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept;
+FOE_GFX_EXPORT VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept;
 
-VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
-                                   VkImageSubresourceRange const *pSubresourceRange,
-                                   std::vector<VkBufferImageCopy> const *pCopyRegions,
-                                   VkBuffer srcBuffer,
-                                   VkImage dstImage,
-                                   VkAccessFlags dstAccessFlags,
-                                   VkImageLayout dstImageLayout,
-                                   UploadData *pUploadData);
+FOE_GFX_EXPORT VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
+                                                  VkImageSubresourceRange const *pSubresourceRange,
+                                                  uint32_t copyRegionCount,
+                                                  VkBufferImageCopy const *pCopyRegions,
+                                                  VkBuffer srcBuffer,
+                                                  VkImage dstImage,
+                                                  VkAccessFlags dstAccessFlags,
+                                                  VkImageLayout dstImageLayout,
+                                                  foeUploadData *pUploadData);
 
 #endif // IMAGE_HPP
