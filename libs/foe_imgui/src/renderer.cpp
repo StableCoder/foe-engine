@@ -495,8 +495,12 @@ void foeImGuiRenderer::draw(VkCommandBuffer commandBuffer, uint32_t frameIndex) 
                     },
                 .extent =
                     {
-                        .width = (uint32_t)(pDrawCmd->ClipRect.z - pDrawCmd->ClipRect.x),
-                        .height = (uint32_t)(pDrawCmd->ClipRect.w - pDrawCmd->ClipRect.y),
+                        .width =
+                            static_cast<uint32_t>((pDrawCmd->ClipRect.z - pDrawCmd->ClipRect.x) *
+                                                  io.DisplayFramebufferScale.x),
+                        .height =
+                            static_cast<uint32_t>((pDrawCmd->ClipRect.w - pDrawCmd->ClipRect.y) *
+                                                  io.DisplayFramebufferScale.y),
                     },
             };
 

@@ -192,6 +192,9 @@ int main(int, char **) {
 
 #ifdef EDITOR_MODE
     imguiRenderer.resize(1280, 720);
+    float xScale, yScale;
+    foeWindowGetContentScale(&xScale, &yScale);
+    imguiRenderer.rescale(xScale, yScale);
 #endif
 
     res = foeWindowGetVkSurface(pGfxEnvironment->instance, &vkWindow.surface);
