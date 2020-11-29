@@ -8,7 +8,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CTEST_OUTPUT_ON_FAILURE: 1
 
-# Platforms
+# Platform Stage Templates
 
 .platform_unix_template: &platform_unix_template
   stage: Platform Tests
@@ -21,6 +21,33 @@ variables:
     - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ${CMAKE_OPTIONS}
     - ninja
     - ninja test
+
+.platform_macos_template: &platform_macos_template
+  stage: Platform Tests
+  tags:
+    - macos
+    - amd64
+  dependencies: []
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja test
+
+.platform_windows_template: &platform_windows_template
+  stage: Platform Tests
+  image: stabletec/build-foe:windows
+  tags:
+    - docker-windows
+    - amd64
+  dependencies: []
+  script:
+    - mkdir build; cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON $env:CMAKE_OPTIONS
+    - ninja
+    - ninja test
+
+# Platforms
 
 Fedora/GCC Static:
   image: stabletec/build-foe:fedora
@@ -82,18 +109,6 @@ Ubuntu/Clang Shared:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_unix_template
 
-.platform_macos_template: &platform_macos_template
-  stage: Platform Tests
-  tags:
-    - macos
-    - amd64
-  dependencies: []
-  script:
-    - mkdir build && cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja test
-
 macOS/Clang Static:
   variables:
     CC: clang
@@ -106,19 +121,6 @@ macOS/Clang Shared:
     CXX: clang++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_macos_template
-
-.platform_windows_template: &platform_windows_template
-  stage: Platform Tests
-  image: stabletec/build-foe:windows
-  tags:
-    - docker-windows
-    - amd64
-  dependencies: []
-  script:
-    - mkdir build; cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON $env:CMAKE_OPTIONS
-    - ninja
-    - ninja test
 
 Windows/MSVC Static:
   variables:
@@ -141,6 +143,21 @@ Windows/Clang-cl Shared:
     CXX: clang-cl
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
+
+# Analysis Stage Templates
+
+.analysis_template: &analysis_template
+  stage: Analysis
+  image: stabletec/build-foe:fedora
+  tags:
+    - docker-linux
+    - amd64
+  dependencies: []
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON -DBUILD_WINDOW_TESTS=OFF -DNO_VULKAN_RENDERER=ON ${CMAKE_OPTIONS}
+    - ninja
+    - ninja test
 
 # Analysis
 
@@ -195,19 +212,6 @@ Code Coverage:
     paths: 
       - build/ccov
     expire_in: 1 day
-  
-.analysis_template: &analysis_template
-  stage: Analysis
-  image: stabletec/build-foe:fedora
-  tags:
-    - docker-linux
-    - amd64
-  dependencies: []
-  script:
-    - mkdir build && cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON -DBUILD_WINDOW_TESTS=OFF -DNO_VULKAN_RENDERER=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja test
 
 ThreadSanitizer:
   variables:
