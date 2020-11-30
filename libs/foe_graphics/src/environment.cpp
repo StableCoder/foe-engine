@@ -212,7 +212,7 @@ VkResult foeGfxCreateEnvironment(bool validation,
         maxQueueCount = std::max(maxQueueCount, queueFamilyProperties[i].queueCount);
     }
 
-    std::unique_ptr<float> queuePriorities(new float[maxQueueCount]);
+    std::unique_ptr<float[]> queuePriorities(new float[maxQueueCount]);
     std::fill_n(queuePriorities.get(), maxQueueCount, 0.f);
 
     for (uint32_t i = 0; i < queueFamilyCount; ++i) {

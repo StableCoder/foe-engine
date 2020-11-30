@@ -332,7 +332,7 @@ int main(int, char **) {
                         if (res != VK_SUCCESS)
                             VK_END_PROGRAM
 
-                        std::unique_ptr<VkSurfaceFormatKHR> surfaceFormats(
+                        std::unique_ptr<VkSurfaceFormatKHR[]> surfaceFormats(
                             new VkSurfaceFormatKHR[formatCount]);
 
                         res = vkGetPhysicalDeviceSurfaceFormatsKHR(pGfxEnvironment->physicalDevice,
@@ -349,7 +349,7 @@ int main(int, char **) {
                         vkGetPhysicalDeviceSurfacePresentModesKHR(
                             pGfxEnvironment->physicalDevice, vkWindow.surface, &modeCount, nullptr);
 
-                        std::unique_ptr<VkPresentModeKHR> presentModes(
+                        std::unique_ptr<VkPresentModeKHR[]> presentModes(
                             new VkPresentModeKHR[modeCount]);
 
                         vkGetPhysicalDeviceSurfacePresentModesKHR(pGfxEnvironment->physicalDevice,
