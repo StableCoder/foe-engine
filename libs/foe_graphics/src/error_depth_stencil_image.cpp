@@ -232,7 +232,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             goto SUBMIT_FAILED;
         }
 
-        res = submitUploadDataCommands(pResourceUploader, &uploadData);
+        res = foeSubmitUploadDataCommands(pResourceUploader, &uploadData);
         if (res != VK_SUCCESS) {
             goto SUBMIT_FAILED;
         }

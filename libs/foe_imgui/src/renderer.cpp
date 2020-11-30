@@ -191,7 +191,7 @@ VkResult foeImGuiRenderer::initialize(foeGfxEnvironment *pGfxEnvironment,
             goto INITIALIZATION_FAILED;
         }
 
-        res = submitUploadDataCommands(&resUploader, &uploadData);
+        res = foeSubmitUploadDataCommands(&resUploader, &uploadData);
         if (res != VK_SUCCESS) {
             goto SUBMIT_FAILED;
         }

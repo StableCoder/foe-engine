@@ -36,10 +36,12 @@ struct foeUploadData {
     FOE_GFX_EXPORT void destroy(VkDevice device);
 };
 
-FOE_GFX_EXPORT VkResult createUploadData(foeResourceUploader *pResourceUploader,
-                                         foeUploadData *pUploadData);
+FOE_GFX_EXPORT VkResult foeCreateUploadData(VkDevice device,
+                                            VkCommandPool srcCommandPool,
+                                            VkCommandPool dstCommandPool,
+                                            foeUploadData *pUploadData);
 
-FOE_GFX_EXPORT VkResult submitUploadDataCommands(foeResourceUploader *pResourceUploader,
-                                                 foeUploadData *pUploadData);
+FOE_GFX_EXPORT VkResult foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
+                                                    foeUploadData *pUploadData);
 
 #endif // UPLOAD_DATA_HPP

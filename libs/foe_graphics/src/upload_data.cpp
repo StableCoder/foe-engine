@@ -40,11 +40,14 @@ void foeUploadData::destroy(VkDevice device) {
     }
 }
 
-VkResult createUploadData(foeResourceUploader *pResourceUploader, foeUploadData *pUploadData) {
+VkResult foeCreateUploadData(VkDevice device,
+                             VkCommandPool srcCommandPool,
+                             VkCommandPool dstCommandPool,
+                             foeUploadData *pUploadData) {
     VkResult res;
     foeUploadData uploadData{
-        .srcCmdPool = pResourceUploader->srcCommandPool,
-        .dstCmdPool = pResourceUploader->dstCommandPool,
+        .srcCmdPool = srcCommandPool,
+        .dstCmdPool = dstCommandPool,
     };
 
     VkCommandBufferAllocateInfo bufferAI{
@@ -59,12 +62,12 @@ VkResult createUploadData(foeResourceUploader *pResourceUploader, foeUploadData 
     };
 
     // Destination
-    res = vkAllocateCommandBuffers(pResourceUploader->device, &bufferAI, &uploadData.dstCmdBuffer);
+    res = vkAllocateCommandBuffers(device, &bufferAI, &uploadData.dstCmdBuffer);
     if (res != VK_NULL_HANDLE) {
         goto CREATE_FAILED;
     }
 
-    res = vkCreateFence(pResourceUploader->device, &fenceCI, nullptr, &uploadData.dstFence);
+    res = vkCreateFence(device, &fenceCI, nullptr, &uploadData.dstFence);
     if (res != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
@@ -73,13 +76,12 @@ VkResult createUploadData(foeResourceUploader *pResourceUploader, foeUploadData 
     if (uploadData.srcCmdPool != VK_NULL_HANDLE) {
         bufferAI.commandPool = uploadData.srcCmdPool;
 
-        res = vkAllocateCommandBuffers(pResourceUploader->device, &bufferAI,
-                                       &uploadData.srcCmdBuffer);
+        res = vkAllocateCommandBuffers(device, &bufferAI, &uploadData.srcCmdBuffer);
         if (res != VK_NULL_HANDLE) {
             goto CREATE_FAILED;
         }
 
-        res = vkCreateFence(pResourceUploader->device, &fenceCI, nullptr, &uploadData.srcFence);
+        res = vkCreateFence(device, &fenceCI, nullptr, &uploadData.srcFence);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -89,8 +91,7 @@ VkResult createUploadData(foeResourceUploader *pResourceUploader, foeUploadData 
                 .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             };
 
-            res = vkCreateSemaphore(pResourceUploader->device, &semaphoreCI, nullptr,
-                                    &uploadData.copyComplete);
+            res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &uploadData.copyComplete);
             if (res != VK_SUCCESS) {
                 goto CREATE_FAILED;
             }
@@ -101,14 +102,14 @@ CREATE_FAILED:
     if (res == VK_SUCCESS) {
         *pUploadData = uploadData;
     } else {
-        uploadData.destroy(pResourceUploader->device);
+        uploadData.destroy(device);
     }
 
     return res;
 }
 
-VkResult submitUploadDataCommands(foeResourceUploader *pResourceUploader,
-                                  foeUploadData *pUploadData) {
+VkResult foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
+                                     foeUploadData *pUploadData) {
     VkResult res;
 
     if (pUploadData->srcCmdBuffer != VK_NULL_HANDLE) { // Source command submission

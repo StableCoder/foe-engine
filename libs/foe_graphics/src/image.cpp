@@ -69,7 +69,8 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
     VkResult res;
     foeUploadData uploadData;
 
-    res = createUploadData(pResourceUploader, &uploadData);
+    res = foeCreateUploadData(pResourceUploader->device, pResourceUploader->srcCommandPool,
+                              pResourceUploader->dstCommandPool, &uploadData);
     if (res != VK_SUCCESS) {
         return res;
     }
