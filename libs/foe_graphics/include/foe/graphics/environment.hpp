@@ -44,6 +44,8 @@ struct foeGfxEnvironment {
     VkPhysicalDevice physicalDevice;
     VkDevice device;
 
+    VkPhysicalDeviceLimits physicalDeviceLimits;
+
     uint32_t numQueueFamilies;
     foeQueueFamily pQueueFamilies[MaxQueueFamilies];
 

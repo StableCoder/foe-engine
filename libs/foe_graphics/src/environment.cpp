@@ -192,6 +192,10 @@ VkResult foeGfxCreateEnvironment(bool validation,
     }
     pEnv->physicalDevice = physDevices[0];
 
+    VkPhysicalDeviceProperties devProperties;
+    vkGetPhysicalDeviceProperties(pEnv->physicalDevice, &devProperties);
+    pEnv->physicalDeviceLimits = devProperties.limits;
+
     // Queues
     uint32_t queueFamilyCount;
     vkGetPhysicalDeviceQueueFamilyProperties(pEnv->physicalDevice, &queueFamilyCount, nullptr);
