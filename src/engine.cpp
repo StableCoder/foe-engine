@@ -26,6 +26,7 @@
 #include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/shader_pool.hpp>
 #include <foe/graphics/swapchain.hpp>
+#include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/wsi.hpp>
@@ -152,7 +153,7 @@ int main(int, char **) {
     foeSwapchain swapchain;
 
     uint32_t frameIndex = 0;
-    std::array<PerFrameData, 3> frameData;
+    std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 
     foeVertexDescriptor vertexDescriptor;
     foeFragmentDescriptor *fragmentDescriptor{nullptr};
