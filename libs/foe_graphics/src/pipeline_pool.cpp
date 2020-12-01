@@ -119,7 +119,7 @@ VkResult foePipelinePool::createPipeline(foeVertexDescriptor *vertexDescriptor,
                         descriptorSetLayouts.resize(j + 1);
                     }
 
-                    descriptorSetLayouts[j] = mBuiltinDescriptorSets->getBuiltinLayout(j);
+                    descriptorSetLayouts[idx] = mBuiltinDescriptorSets->getBuiltinLayout(j);
                 }
             }
         }
