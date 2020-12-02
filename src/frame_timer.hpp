@@ -63,7 +63,7 @@ class FrameTimer {
     std::chrono::high_resolution_clock::time_point mLastFrameStart{
         std::chrono::high_resolution_clock::now()};
     /// Array of times between successfully acquired frames, to be used in round-robin fashion
-    std::array<std::chrono::nanoseconds, 128> mTimeBetweenFrames;
+    std::array<std::chrono::nanoseconds, 128> mTimeBetweenFrames{};
     /// Interator within the array for the current time to set
     std::array<std::chrono::nanoseconds, 128>::iterator mCurrentBetweenFrames{
         mTimeBetweenFrames.begin()};
