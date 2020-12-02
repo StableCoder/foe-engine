@@ -15,15 +15,13 @@
 */
 
 /*
-    This shader is the basic triangle around the origin, however it is transformed 
+    This shader is the basic triangle around the origin, however it is transformed
     by a given camera projection-view matrix.
 */
 
 #version 450
 
-layout (set = 0, binding = 0) uniform CameraUBO {
-    mat4 projViewMatrix;
-};
+layout(set = 0, binding = 0) uniform CameraUBO { mat4 projViewMatrix; };
 
 layout(location = 0) out vec2 outUV;
 
