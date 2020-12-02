@@ -15,6 +15,8 @@
 */
 
 #include <GLFW/glfw3.h>
+#include <foe/chrono/dilated_long_clock.hpp>
+#include <foe/chrono/program_clock.hpp>
 #include <foe/developer_console.hpp>
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
@@ -146,6 +148,9 @@ int main(int, char **) {
     StdOutSink stdoutSink;
     foeLogger::instance()->registerSink(&stdoutSink);
     foeLogger::instance()->registerSink(foeDeveloperConsole::instance());
+
+    foeEasyProgramClock programClock;
+    foeDilatedLongClock simulationClock(std::chrono::nanoseconds{0});
 
     FrameTimer frameTime;
     foeGfxEnvironment *pGfxEnvironment;
@@ -307,12 +312,20 @@ int main(int, char **) {
     }
 
     // MAIN LOOP BEGIN
+    programClock.update();
+    simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
+
     FOE_LOG(General, Info, "Entering main loop")
     while (!foeWindowGetShouldClose()
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
     ) {
+        // Timing
+        programClock.update();
+        simulationClock.update(programClock.currentTime<std::chrono::nanoseconds>());
+        double timeElapsedInSec = simulationClock.elapsed().count() * 0.000000001f;
+
         swapchainRebuilt = false;
         foeWindowEventProcessing();
 
