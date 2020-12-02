@@ -187,7 +187,7 @@ int main(int, char **) {
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
-    VkResult res = foeGfxCreateEnvironment(false, "FoE Engine", 0, &pGfxEnvironment);
+    VkResult res = foeGfxCreateEnvironment(true, "FoE Engine", 0, &pGfxEnvironment);
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
@@ -195,8 +195,20 @@ int main(int, char **) {
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    if (!foeCreateWindow(1280, 720, "FoE Engine"))
+    if (!foeCreateWindow(1280, 720, "FoE Engine")) {
         END_PROGRAM
+    }
+
+    {
+        camera.viewX = 1280;
+        camera.viewY = 720;
+        camera.fieldOfViewY = 60.f;
+        camera.nearZ = 2.f;
+        camera.farZ = 50.f;
+
+        camera.position = glm::vec3(0.f, 0.f, -5.f);
+        camera.orientation = glm::quat(glm::vec3(0, 0, 0));
+    }
 
 #ifdef EDITOR_MODE
     imguiRenderer.resize(1280, 720);
@@ -253,14 +265,13 @@ int main(int, char **) {
     {
         foeShader *pShader;
 
-        pShader = shaderPool.create("data/shaders/simple/tri.vert.spv");
-        vertexDescriptor.mVertex = pShader;
+        pShader = shaderPool.create("data/shaders/simple/camera_tri.vert.spv");
         pShader->incrementUseCount();
-
-        pShader = shaderPool.create("data/shaders/simple/uv_to_colour.frag.spv");
-        pShader->incrementUseCount();
+        pShader->builtinSetLayouts = foeBuiltinDescriptorSetLayoutFlagBits::
+            FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX;
 
         // Vertex
+        vertexDescriptor.mVertex = pShader;
         vertexDescriptor.mVertexInputSCI = VkPipelineVertexInputStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         };
@@ -270,6 +281,9 @@ int main(int, char **) {
         };
 
         // Fragment
+        pShader = shaderPool.create("data/shaders/simple/uv_to_colour.frag.spv");
+        pShader->incrementUseCount();
+
         auto rasterization = VkPipelineRasterizationStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
             .polygonMode = VK_POLYGON_MODE_FILL,
@@ -532,6 +546,9 @@ int main(int, char **) {
                         pipelinePool.getPipeline(&vertexDescriptor, fragmentDescriptor,
                                                  swapImageRenderPass, 0, &layout,
                                                  &descriptorSetLayoutCount, &pipeline);
+
+                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                layout, 0, 1, &camera.descriptor, 0, nullptr);
 
                         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
