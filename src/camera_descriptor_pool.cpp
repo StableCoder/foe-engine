@@ -26,8 +26,9 @@ VkResult CameraDescriptorPool::initialize(foeGfxEnvironment *pGfxEnvironment,
     mDevice = pGfxEnvironment->device;
     mAllocator = pGfxEnvironment->allocator;
 
-    mMinUniformBufferOffsetAlignment = std::max(
-        sizeof(glm::mat4), pGfxEnvironment->physicalDeviceLimits.minUniformBufferOffsetAlignment);
+    mMinUniformBufferOffsetAlignment =
+        std::max(static_cast<VkDeviceSize>(sizeof(glm::mat4)),
+                 pGfxEnvironment->physicalDeviceLimits.minUniformBufferOffsetAlignment);
 
     mProjecionViewLayout = projectionViewLayout;
     mProjectionViewBinding = projectionViewBinding;
