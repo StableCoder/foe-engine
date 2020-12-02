@@ -37,6 +37,8 @@
 #include <chrono>
 #include <iostream>
 
+#include "camera.hpp"
+#include "camera_descriptor_pool.hpp"
 #include "frame_timer.hpp"
 #include "stdout_sink.hpp"
 
@@ -166,6 +168,11 @@ int main(int, char **) {
     foeFragmentDescriptorPool fragmentDescriptorPool;
     foePipelinePool pipelinePool;
 
+    Camera camera;
+    CameraDescriptorPool cameraDescriptorPool;
+
+    cameraDescriptorPool.linkCamera(&camera);
+
 #ifdef EDITOR_MODE
     foeImGuiRenderer imguiRenderer;
     foeImGuiState imguiState;
@@ -227,6 +234,18 @@ int main(int, char **) {
         VK_END_PROGRAM
 
     res = pipelinePool.initialize(pGfxEnvironment->device, &builtinDescriptorSets);
+    if (res != VK_SUCCESS) {
+        VK_END_PROGRAM
+    }
+
+    res = cameraDescriptorPool.initialize(
+        pGfxEnvironment,
+        builtinDescriptorSets.getBuiltinLayout(
+            foeBuiltinDescriptorSetLayoutFlagBits::
+                FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX),
+        builtinDescriptorSets.getBuiltinSetLayoutIndex(
+            foeBuiltinDescriptorSetLayoutFlagBits::
+                FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX));
     if (res != VK_SUCCESS) {
         VK_END_PROGRAM
     }
@@ -395,6 +414,9 @@ int main(int, char **) {
             }
             vkResetFences(pGfxEnvironment->device, 1, &frameData[nextFrameIndex].frameComplete);
             frameIndex = nextFrameIndex;
+
+            // Set camera descriptors
+            cameraDescriptorPool.generateCameraDescriptors(frameIndex);
 
             // Rendering
             vkResetCommandPool(pGfxEnvironment->device, frameData[frameIndex].commandPool, 0);
@@ -610,6 +632,8 @@ SHUTDOWN_PROGRAM:
 
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(pGfxEnvironment->device, it, nullptr);
+
+    cameraDescriptorPool.deinitialize();
 
     pipelinePool.deinitialize();
     shaderPool.deinitialize();
