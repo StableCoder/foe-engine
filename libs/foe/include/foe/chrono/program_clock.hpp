@@ -17,6 +17,7 @@
 #ifndef FOE_CHRONO_PROGRAM_CLOCK_HPP
 #define FOE_CHRONO_PROGRAM_CLOCK_HPP
 
+#include <foe/chrono/easy_clock.hpp>
 #include <foe/export.h>
 
 #include <chrono>
@@ -49,5 +50,8 @@ struct foeProgramClock {
     /// returns a time_point representing the current value of the clock
     FOE_EXPORT static auto now() noexcept -> time_point;
 };
+
+// Adds several nice-to-have, such as updating for ticks and elapsed time between those ticks.
+using foeEasyProgramClock = foeEasyClock<foeProgramClock>;
 
 #endif // FOE_CHRONO_PROGRAM_CLOCK_HPP
