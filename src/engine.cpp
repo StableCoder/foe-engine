@@ -31,6 +31,7 @@
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
 #include <foe/log.hpp>
+#include <foe/quaternion_math.hpp>
 #include <foe/wsi.hpp>
 #include <foe/wsi_vulkan.hpp>
 #include <vk_error_code.hpp>
@@ -143,6 +144,54 @@ struct PerFrameData {
         vkDestroySemaphore(device, presentImageAcquired, nullptr);
     }
 };
+
+void processUserInput(double timeElapsedInSeconds,
+                      foeKeyboard const *pKeyboard,
+                      foeMouse const *pMouse,
+                      Camera *pCamera) {
+    constexpr float movementMultiplier = 10.f;
+    constexpr float rorationMultiplier = 40.f;
+    float multiplier = timeElapsedInSeconds * 3.f; // 3 units per second
+
+    if (pMouse->inWindow) {
+        if (pKeyboard->keyDown(GLFW_KEY_Z)) { // Up
+            pCamera->position += upVec(pCamera->orientation) * movementMultiplier * multiplier;
+        }
+        if (pKeyboard->keyDown(GLFW_KEY_X)) { // Down
+            pCamera->position -= upVec(pCamera->orientation) * movementMultiplier * multiplier;
+        }
+
+        if (pKeyboard->keyDown(GLFW_KEY_W)) { // Forward
+            pCamera->position += forwardVec(pCamera->orientation) * movementMultiplier * multiplier;
+        }
+        if (pKeyboard->keyDown(GLFW_KEY_S)) { // Back
+            pCamera->position -= forwardVec(pCamera->orientation) * movementMultiplier * multiplier;
+        }
+
+        if (pKeyboard->keyDown(GLFW_KEY_A)) { // Left
+            pCamera->position += leftVec(pCamera->orientation) * movementMultiplier * multiplier;
+        }
+        if (pKeyboard->keyDown(GLFW_KEY_D)) { // Right
+            pCamera->position -= leftVec(pCamera->orientation) * movementMultiplier * multiplier;
+        }
+
+        if (pMouse->buttonDown(GLFW_MOUSE_BUTTON_1)) {
+            pCamera->orientation = changeYaw(
+                pCamera->orientation, -glm::radians(pMouse->oldPosition.x - pMouse->position.x));
+            pCamera->orientation = changePitch(
+                pCamera->orientation, glm::radians(pMouse->oldPosition.y - pMouse->position.y));
+
+            if (pKeyboard->keyDown(GLFW_KEY_Q)) { // Roll Left
+                pCamera->orientation =
+                    changeRoll(pCamera->orientation, glm::radians(rorationMultiplier * multiplier));
+            }
+            if (pKeyboard->keyDown(GLFW_KEY_E)) { // Roll Right
+                pCamera->orientation = changeRoll(pCamera->orientation,
+                                                  -glm::radians(rorationMultiplier * multiplier));
+            }
+        }
+    }
+}
 
 int main(int, char **) {
     StdOutSink stdoutSink;
@@ -337,6 +386,8 @@ int main(int, char **) {
         imguiRenderer.keyboardInput(pKeyboard);
         imguiRenderer.mouseInput(pMouse);
 #endif
+
+        processUserInput(timeElapsedInSec, pKeyboard, pMouse, &camera);
 
         if (foeWindowResized()) {
             // Swapchins will need rebuilding
