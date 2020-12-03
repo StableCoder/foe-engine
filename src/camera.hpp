@@ -46,8 +46,8 @@ struct Camera {
     }
 
     // Graphics Data
-    CameraDescriptorPool *cameraDescriptorPool;
-    VkDescriptorSet descriptor;
+    CameraDescriptorPool *cameraDescriptorPool{nullptr};
+    VkDescriptorSet descriptor{VK_NULL_HANDLE};
 };
 
 #endif // CAMERA_HPP
