@@ -385,9 +385,11 @@ int main(int, char **) {
         // User input processing
         imguiRenderer.keyboardInput(pKeyboard);
         imguiRenderer.mouseInput(pMouse);
+        if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
 #endif
-
-        processUserInput(timeElapsedInSec, pKeyboard, pMouse, &camera);
+        {
+            processUserInput(timeElapsedInSec, pKeyboard, pMouse, &camera);
+        }
 
         if (foeWindowResized()) {
             // Swapchins will need rebuilding
