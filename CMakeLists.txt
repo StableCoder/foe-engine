@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 project(FoE-Engine CXX)
 
+# Modify CMake modules path
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # Global Options
 option(BUILD_EXAMPLES "Build example programs" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
@@ -13,11 +16,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Code Coverage
-include(cmake/code-coverage.cmake)
+include(code-coverage)
 add_code_coverage_all_targets(EXCLUDE .*/test/.*)
 
 # Formatting
-include(cmake/formatting.cmake)
+include(formatting)
 file(
   GLOB_RECURSE
   CL_FILES
@@ -41,11 +44,11 @@ list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
 cmake_format(cmake-format ${CM_FILES})
 
 # Dependency Graph
-include(cmake/dependency-graph.cmake)
+include(dependency-graph)
 gen_dep_graph(png ADD_TO_DEP_GRAPH)
 
 # clang-tidy
-include(cmake/tools.cmake)
+include(tools)
 option(CLANG_TIDY_FIX "" OFF)
 if(CLANG_TIDY_FIX)
   clang_tidy(-header-filter='${CMAKE_SOURCE_DIR}/*' -fix)
@@ -60,10 +63,10 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 # Misc CMake
-include(cmake/compiler-options.cmake)
-include(cmake/glsl_shaders.cmake)
-include(cmake/prepare_catch.cmake)
-include(cmake/sanitizers.cmake)
+include(compiler-options)
+include(glsl_shaders)
+include(prepare_catch)
+include(sanitizers)
 
 if(WIN32 AND BUILD_SHARED_LIBS)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
