@@ -26,7 +26,7 @@ extern "C" {
 
 #include <stdbool.h>
 
-FOE_DEFINED_HANDLE(foePlugin)
+FOE_DEFINE_HANDLE(foePlugin)
 
 /**
  *@brief Creates a plugin handle if the given plugin file can be loaded
