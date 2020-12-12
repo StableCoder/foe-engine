@@ -56,3 +56,18 @@ TEST_CASE("Plugin (SO/DLL) exists, and can be created", "[foe][plugin]") {
 
     foeDestroyPlugin(test);
 }
+
+TEST_CASE("Loading the same plugin multiple times yields the same handle", "[foe][plugin]") {
+    foePlugin test{FOE_NULL_HANDLE};
+    foeCreatePlugin(TEST_PLUGIN_DIR, &test);
+
+    foePlugin test2{FOE_NULL_HANDLE};
+    foeCreatePlugin(TEST_PLUGIN_DIR, &test2);
+
+    foePlugin test3{FOE_NULL_HANDLE};
+    foeCreatePlugin(TEST_PLUGIN_DIR, &test3);
+
+    CHECK(test != nullptr);
+    CHECK(test == test2);
+    CHECK(test2 == test3);
+}
