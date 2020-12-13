@@ -113,14 +113,14 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
     // Reset the DescriptorPool
     vkResetDescriptorPool(mDevice, mDescriptorPools[frameIndex], 0);
 
-    glm::mat4 *pMatrixData;
+    uint8_t *pBufferData;
     VkDeviceSize offset = 0;
 
-    vmaMapMemory(mAllocator, uniform.alloc, reinterpret_cast<void **>(&pMatrixData));
+    vmaMapMemory(mAllocator, uniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
     for (auto it : mLinkedCameras) {
         VkDescriptorSet set;
-        *pMatrixData = it->projectionMatrix() * it->viewMatrix();
+        *reinterpret_cast<glm::mat4 *>(pBufferData) = it->projectionMatrix() * it->viewMatrix();
 
         { // Descriptor Set
             VkDescriptorSetAllocateInfo setAI{
@@ -155,7 +155,7 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
 
         it->descriptor = set;
 
-        ++pMatrixData;
+        pBufferData += mMinUniformBufferOffsetAlignment;
         offset += mMinUniformBufferOffsetAlignment;
     }
 
