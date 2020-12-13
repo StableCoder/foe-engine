@@ -31,8 +31,8 @@ std::string to_string(foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout) {
     case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX:
         return "ModelMatrix";
 
-    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES:
-        return "ModelAndBoneStateMatrices";
+    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES:
+        return "BoneStateMatrices";
 
     default:
         return {};
@@ -46,8 +46,8 @@ foeBuiltinDescriptorSetLayoutFlagBits to_builtin_set_layout(std::string_view str
     if (str == "ModelMatrix")
         return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX;
 
-    if (str == "ModelAndBoneStateMatrices")
-        return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES;
+    if (str == "BoneStateMatrices")
+        return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES;
 
     return static_cast<foeBuiltinDescriptorSetLayoutFlagBits>(0);
 }
@@ -204,7 +204,7 @@ auto foeBuiltinDescriptorSets::getBuiltinLayout(
         return mBuiltinLayouts[0];
     case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX:
         return mBuiltinLayouts[1];
-    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES:
+    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES:
         return mBuiltinLayouts[2];
     default:
         return VK_NULL_HANDLE;
@@ -218,7 +218,7 @@ auto foeBuiltinDescriptorSets::getBuiltinSetLayoutIndex(
         return ProjectionViewMatrix;
     case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX:
         return ModelMatrix;
-    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES:
+    case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES:
         return ModelAndBoneStateMatrices;
     default:
         FOE_LOG(Graphics, Warning,

@@ -26,7 +26,7 @@
 enum foeBuiltinDescriptorSetLayoutFlagBits {
     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX = 0x00000001,
     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX = 0x00000002,
-    FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_AND_BONE_STATE_MATRICES = 0x00000004,
+    FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES = 0x00000004,
 };
 using foeBuiltinDescriptorSetLayoutFlags = uint32_t;
 
@@ -36,12 +36,12 @@ FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlagBits to_builtin_set_layout(std::
 enum foeDescriptorSetLayoutIndex {
     ProjectionViewMatrix = 0,
     ModelMatrix = 1,
-    ModelAndBoneStateMatrices = 1,
-    VertexShader = 2,
-    TessellationControlShader = 3,
-    TessellationEvaluationShader = 4,
-    GeometryShader = 5,
-    FragmentShader = 6,
+    ModelAndBoneStateMatrices = 2,
+    VertexShader = 3,
+    TessellationControlShader = 4,
+    TessellationEvaluationShader = 5,
+    GeometryShader = 6,
+    FragmentShader = 7,
 };
 
 class foeDescriptorSetLayoutPool;
