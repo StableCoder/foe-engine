@@ -9,6 +9,7 @@ target_sources(
           fragment_descriptor.cpp
           gfx_log.cpp
           image.cpp
+          model.cpp
           pipeline_pool.cpp
           render_pass_pool.cpp
           resource_uploader.cpp
