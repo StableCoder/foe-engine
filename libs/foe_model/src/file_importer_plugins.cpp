@@ -20,7 +20,7 @@ std::unique_ptr<foeModelFileImporterPlugin> foeModelLoadFileImporterPlugin(
     std::filesystem::path pluginPath) {
     foePlugin core{FOE_NULL_HANDLE};
 
-    foeCreatePlugin(pluginPath.c_str(), &core);
+    foeCreatePlugin(pluginPath.string().c_str(), &core);
     if (core == FOE_NULL_HANDLE) {
         return nullptr;
     }
