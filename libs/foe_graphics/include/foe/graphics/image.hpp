@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef IMAGE_HPP
-#define IMAGE_HPP
+#ifndef FOE_GRAPHICS_IMAGE_HPP
+#define FOE_GRAPHICS_IMAGE_HPP
 
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
@@ -54,4 +54,4 @@ FOE_GFX_EXPORT VkResult recordImageUploadCommands(foeResourceUploader *pResource
                                                   VkImageLayout dstImageLayout,
                                                   foeUploadData *pUploadData);
 
-#endif // IMAGE_HPP
+#endif // FOE_GRAPHICS_IMAGE_HPP
