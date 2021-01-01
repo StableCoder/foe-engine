@@ -17,7 +17,7 @@
 #ifndef FOE_GRAPHICS_RESOURCE_UPLOADER_HPP
 #define FOE_GRAPHICS_RESOURCE_UPLOADER_HPP
 
-#include <foe/graphics/environment.hpp>
+#include <foe/graphics/device_environment.hpp>
 #include <foe/graphics/export.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -35,7 +35,7 @@ struct foeResourceUploader {
     VkCommandPool dstCommandPool;
 };
 
-FOE_GFX_EXPORT VkResult foeGfxCreateResourceUploader(foeGfxEnvironment *pGfxEnvironment,
+FOE_GFX_EXPORT VkResult foeGfxCreateResourceUploader(foeVkDeviceEnvironment *pGfxEnvironment,
                                                      foeResourceUploader *pResourceUploader);
 
 FOE_GFX_EXPORT void foeGfxDestroyResourceUploader(foeResourceUploader *pResourceUploader);

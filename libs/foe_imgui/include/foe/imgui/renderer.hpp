@@ -23,7 +23,7 @@
 
 #include <vector>
 
-struct foeGfxEnvironment;
+struct foeVkDeviceEnvironment;
 struct foeKeyboard;
 struct foeMouse;
 
@@ -32,11 +32,11 @@ class foeImGuiRenderer {
     FOE_IMGUI_EXPORT foeImGuiRenderer();
     FOE_IMGUI_EXPORT ~foeImGuiRenderer();
 
-    FOE_IMGUI_EXPORT VkResult initialize(foeGfxEnvironment *pGfxEnvironment,
+    FOE_IMGUI_EXPORT VkResult initialize(foeVkDeviceEnvironment *pGfxEnvironment,
                                          VkSampleCountFlags rasterSampleFlags,
                                          VkRenderPass renderPass,
                                          uint32_t subpass);
-    FOE_IMGUI_EXPORT void deinitialize(foeGfxEnvironment *pGfxEnvironment);
+    FOE_IMGUI_EXPORT void deinitialize(foeVkDeviceEnvironment *pGfxEnvironment);
     FOE_IMGUI_EXPORT bool initialized() const noexcept;
 
     FOE_IMGUI_EXPORT void newFrame();

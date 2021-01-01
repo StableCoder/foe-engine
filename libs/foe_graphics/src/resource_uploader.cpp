@@ -16,7 +16,7 @@
 
 #include <foe/graphics/resource_uploader.hpp>
 
-VkResult foeGfxCreateResourceUploader(foeGfxEnvironment *pGfxEnvironment,
+VkResult foeGfxCreateResourceUploader(foeVkDeviceEnvironment *pGfxEnvironment,
                                       foeResourceUploader *pResourceUploader) {
     VkResult res;
     foeResourceUploader resUploader{};

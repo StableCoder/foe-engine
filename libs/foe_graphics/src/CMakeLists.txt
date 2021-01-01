@@ -3,7 +3,7 @@ target_sources(
   PRIVATE builtin_descriptor_sets.cpp
           debug_callback.cpp
           descriptor_set_layout_pool.cpp
-          environment.cpp
+          device_environment.cpp
           error_colour_image.cpp
           error_depth_stencil_image.cpp
           fragment_descriptor_pool.cpp

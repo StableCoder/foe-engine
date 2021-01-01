@@ -15,7 +15,7 @@ generate_export_header(
 target_include_directories(foe_graphics
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
 target_link_libraries(
-  foe_graphics PUBLIC foe foe_wsi Vulkan::Vulkan vulkan_memory_allocator
+  foe_graphics PUBLIC foe Vulkan::Vulkan vulkan_memory_allocator
                       vk_equality_checks vk_error_code)
 target_code_coverage(foe_graphics)
 

@@ -17,7 +17,7 @@
 #include <foe/imgui/renderer.hpp>
 
 #include <GLFW/glfw3.h>
-#include <foe/graphics/environment.hpp>
+#include <foe/graphics/device_environment.hpp>
 #include <foe/graphics/image.hpp>
 #include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/upload_data.hpp>
@@ -84,7 +84,7 @@ foeImGuiRenderer::foeImGuiRenderer() {
 
 foeImGuiRenderer::~foeImGuiRenderer() { ImGui::DestroyContext(); }
 
-VkResult foeImGuiRenderer::initialize(foeGfxEnvironment *pGfxEnvironment,
+VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
                                       VkSampleCountFlags rasterSampleFlags,
                                       VkRenderPass renderPass,
                                       uint32_t subpass) {
@@ -293,7 +293,7 @@ INITIALIZATION_FAILED:
     return res;
 }
 
-void foeImGuiRenderer::deinitialize(foeGfxEnvironment *pGfxEnvironment) {
+void foeImGuiRenderer::deinitialize(foeVkDeviceEnvironment *pGfxEnvironment) {
     if (mPipeline != VK_NULL_HANDLE) {
         vkDestroyPipeline(pGfxEnvironment->device, mPipeline, nullptr);
         mPipeline = VK_NULL_HANDLE;

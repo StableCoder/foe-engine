@@ -22,6 +22,8 @@
 #include <vulkan/vulkan.h>
 
 #include <mutex>
+#include <string>
+#include <vector>
 
 enum {
     MaxQueueFamilies = 8U,
@@ -37,9 +39,8 @@ struct foeQueueFamily {
     VkQueue queue[MaxQueuesPerFamily];
 };
 
-struct foeGfxEnvironment {
+struct foeVkDeviceEnvironment {
     VkInstance instance;
-    VkDebugReportCallbackEXT debugCallback;
 
     VkPhysicalDevice physicalDevice;
     VkDevice device;
@@ -52,14 +53,21 @@ struct foeGfxEnvironment {
     VmaAllocator allocator;
 };
 
-FOE_GFX_EXPORT VkResult foeGfxCreateEnvironment(bool validation,
-                                                const char *appName,
-                                                uint32_t appVersion,
-                                                foeGfxEnvironment **ppEnvironment);
+FOE_GFX_EXPORT VkResult foeVkCreateInstance(char const *appName,
+                                            uint32_t appVersion,
+                                            std::vector<std::string> layers,
+                                            std::vector<std::string> extensions,
+                                            VkInstance *pInstance);
 
-FOE_GFX_EXPORT void foeGfxDestroyEnvironment(foeGfxEnvironment *pEnvironment);
+FOE_GFX_EXPORT VkResult foeGfxCreateEnvironment(VkInstance vkInstance,
+                                                VkPhysicalDevice vkPhysicalDevice,
+                                                std::vector<std::string> deviceLayers,
+                                                std::vector<std::string> deviceExtensions,
+                                                foeVkDeviceEnvironment **ppEnvironment);
 
-FOE_GFX_EXPORT uint32_t foeGfxGetBestQueue(foeGfxEnvironment const *pEnvironment,
+FOE_GFX_EXPORT void foeGfxDestroyEnvironment(foeVkDeviceEnvironment *pEnvironment);
+
+FOE_GFX_EXPORT uint32_t foeGfxGetBestQueue(foeVkDeviceEnvironment const *pEnvironment,
                                            VkQueueFlags flags);
 
 #endif // FOE_GRAPHICS_ENVIRONMENT_HPP

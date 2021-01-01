@@ -18,7 +18,7 @@
 
 #include "camera.hpp"
 
-VkResult CameraDescriptorPool::initialize(foeGfxEnvironment *pGfxEnvironment,
+VkResult CameraDescriptorPool::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
                                           VkDescriptorSetLayout projectionViewLayout,
                                           uint32_t projectionViewBinding) {
     VkResult res;

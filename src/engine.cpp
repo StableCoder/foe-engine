@@ -19,8 +19,9 @@
 #include <foe/chrono/program_clock.hpp>
 #include <foe/developer_console.hpp>
 #include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/debug_callback.hpp>
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
-#include <foe/graphics/environment.hpp>
+#include <foe/graphics/device_environment.hpp>
 #include <foe/graphics/fragment_descriptor.hpp>
 #include <foe/graphics/fragment_descriptor_pool.hpp>
 #include <foe/graphics/pipeline_pool.hpp>
@@ -44,6 +45,7 @@
 #include "camera_descriptor_pool.hpp"
 #include "frame_timer.hpp"
 #include "stdout_sink.hpp"
+#include "vulkan_setup.hpp"
 
 #ifdef EDITOR_MODE
 #include <foe/imgui/renderer.hpp>
@@ -202,7 +204,9 @@ int main(int, char **) {
     foeDilatedLongClock simulationClock(std::chrono::nanoseconds{0});
 
     FrameTimer frameTime;
-    foeGfxEnvironment *pGfxEnvironment;
+    VkInstance vkInstance{VK_NULL_HANDLE};
+    VkDebugReportCallbackEXT vkDebugCallback{VK_NULL_HANDLE};
+    foeVkDeviceEnvironment *pGfxEnvironment;
     foeResourceUploader resUploader;
 
     VkWindowData vkWindow;
@@ -241,9 +245,31 @@ int main(int, char **) {
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
-    VkResult res = foeGfxCreateEnvironment(true, "FoE Engine", 0, &pGfxEnvironment);
-    if (res != VK_SUCCESS)
-        VK_END_PROGRAM
+    VkResult res;
+    {
+        {
+            auto [instanceLayers, instanceExtensions] = determineVkInstanceEnvironment();
+            res = foeVkCreateInstance("FoE Engine", 0, instanceLayers, instanceExtensions,
+                                      &vkInstance);
+            if (res != VK_SUCCESS)
+                VK_END_PROGRAM
+        }
+
+        if (true) {
+            res = foeVkCreateDebugCallback(vkInstance, &vkDebugCallback);
+            if (res != VK_SUCCESS) {
+                VK_END_PROGRAM
+            }
+        }
+
+        VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(vkInstance);
+        auto [deviceLayers, deviceExtensions] = determineVkDeviceEnvironment();
+
+        res = foeGfxCreateEnvironment(vkInstance, vkPhysicalDevice, deviceLayers, deviceExtensions,
+                                      &pGfxEnvironment);
+        if (res != VK_SUCCESS)
+            VK_END_PROGRAM
+    }
 
     res = foeGfxCreateResourceUploader(pGfxEnvironment, &resUploader);
     if (res != VK_SUCCESS)
@@ -737,6 +763,11 @@ SHUTDOWN_PROGRAM:
 #endif
 
     foeGfxDestroyEnvironment(pGfxEnvironment);
+
+    if (vkDebugCallback != VK_NULL_HANDLE)
+        foeVkDestroyDebugCallback(vkInstance, vkDebugCallback);
+    if (vkInstance != VK_NULL_HANDLE)
+        vkDestroyInstance(vkInstance, nullptr);
 
     return 0;
 }
