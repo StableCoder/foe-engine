@@ -1,6 +1,7 @@
 target_sources(
   foe_graphics
   PRIVATE builtin_descriptor_sets.cpp
+          debug_callback.cpp
           descriptor_set_layout_pool.cpp
           environment.cpp
           error_colour_image.cpp
