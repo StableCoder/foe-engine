@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
 project(foe_xr)
 
+# Dependencies
+find_package(OpenXR REQUIRED)
+
 # Declaration
 add_library(foe_xr)
 
