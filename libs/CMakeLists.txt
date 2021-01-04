@@ -6,3 +6,7 @@ add_subdirectory(foe_model)
 add_subdirectory(foe_model_importer_assimp)
 add_subdirectory(foe_wsi)
 add_subdirectory(foe_yaml)
+
+if(BUILD_XR)
+  add_subdirectory(foe_xr)
+endif()

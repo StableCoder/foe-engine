@@ -9,6 +9,11 @@ option(BUILD_EXAMPLES "Build example programs" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
 option(EDITOR_MODE "Build with the editor UI capability" OFF)
+if(APPLE)
+  option(BUILD_XR "Build with OpenXR support" OFF)
+else()
+  option(BUILD_XR "Build with OpenXR support" ON)
+endif()
 
 # C++20 standard, no extensions
 set(CMAKE_CXX_STANDARD 20)
