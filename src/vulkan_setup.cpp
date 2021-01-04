@@ -26,7 +26,7 @@ auto determineVkInstanceEnvironment(EngineSettings const &engineSettings)
     std::vector<std::string> extensions;
 
     // Windowing
-    if (!engineSettings.window.haveWindow) {
+    if (engineSettings.window.haveWindow) {
         uint32_t extensionCount;
         const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
         for (int i = 0; i < extensionCount; ++i) {
@@ -75,7 +75,7 @@ auto determineVkDeviceEnvironment(EngineSettings const &engineSettings)
     std::vector<std::string> extensions;
 
     // Swapchain (for windowing)
-    if (!engineSettings.window.haveWindow) {
+    if (engineSettings.window.haveWindow) {
         extensions.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
