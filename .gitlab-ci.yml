@@ -84,6 +84,7 @@ Ubuntu/GCC Static:
   variables:
     CC: gcc
     CXX: g++
+    CMAKE_OPTIONS: -DBUILD_XR=OFF
   <<: *platform_unix_template
 
 Ubuntu/GCC Shared:
@@ -91,7 +92,7 @@ Ubuntu/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DBUILD_XR=OFF
   <<: *platform_unix_template
 
 Ubuntu/Clang Static:
@@ -99,6 +100,7 @@ Ubuntu/Clang Static:
   variables:
     CC: clang
     CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_XR=OFF
   <<: *platform_unix_template
 
 Ubuntu/Clang Shared:
@@ -106,7 +108,7 @@ Ubuntu/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DBUILD_XR=OFF
   <<: *platform_unix_template
 
 macOS/Clang Static:
