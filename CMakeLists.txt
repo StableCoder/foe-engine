@@ -84,7 +84,8 @@ add_subdirectory(libs)
 
 # Engine Entrypoint
 add_executable(foe_engine)
-target_link_libraries(foe_engine PRIVATE foe foe_graphics foe_wsi)
+target_link_libraries(foe_engine PRIVATE CLI11 foe foe_graphics foe_wsi
+                                         foe_yaml)
 target_code_coverage(foe_engine)
 
 add_library(foe_engine_imgui STATIC)

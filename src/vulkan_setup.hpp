@@ -19,16 +19,19 @@
 
 #include <vulkan/vulkan.h>
 
+#include "engine_settings.hpp"
+
 #include <string>
 #include <tuple>
 #include <vector>
 
-auto determineVkInstanceEnvironment()
+auto determineVkInstanceEnvironment(EngineSettings const &engineSettings)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>>;
 
-auto determineVkPhysicalDevice(VkInstance vkInstance) -> VkPhysicalDevice;
+auto determineVkPhysicalDevice(EngineSettings const &engineSettings, VkInstance vkInstance)
+    -> VkPhysicalDevice;
 
-auto determineVkDeviceEnvironment()
+auto determineVkDeviceEnvironment(EngineSettings const &engineSettings)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>>;
 
 #endif // VULKAN_SETUP_HPP

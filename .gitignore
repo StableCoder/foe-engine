@@ -30,3 +30,4 @@ build*/
 
 *.ini
 *.spv
+.foe-settings.yml

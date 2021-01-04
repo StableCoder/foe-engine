@@ -20,28 +20,35 @@
 
 #include <memory>
 
-auto determineVkInstanceEnvironment()
+auto determineVkInstanceEnvironment(EngineSettings const &engineSettings)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>> {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
     // Windowing
-    uint32_t extensionCount;
-    const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
-    for (int i = 0; i < extensionCount; ++i) {
-        extensions.emplace_back(extensionNames[i]);
+    if (!engineSettings.window.haveWindow) {
+        uint32_t extensionCount;
+        const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
+        for (int i = 0; i < extensionCount; ++i) {
+            extensions.emplace_back(extensionNames[i]);
+        }
     }
 
     // Validation
-    layers.emplace_back("VK_LAYER_KHRONOS_validation");
+    if (engineSettings.graphics.validation) {
+        layers.emplace_back("VK_LAYER_KHRONOS_validation");
+    }
 
     // Debug Callback
-    extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    if (engineSettings.graphics.debugLogging) {
+        extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+    }
 
     return std::make_tuple(layers, extensions);
 }
 
-auto determineVkPhysicalDevice(VkInstance vkInstance) -> VkPhysicalDevice {
+auto determineVkPhysicalDevice(EngineSettings const &engineSettings, VkInstance vkInstance)
+    -> VkPhysicalDevice {
     // Just retrieves the first available device
     uint32_t physicalDeviceCount;
     VkResult vkRes = vkEnumeratePhysicalDevices(vkInstance, &physicalDeviceCount, nullptr);
@@ -55,16 +62,22 @@ auto determineVkPhysicalDevice(VkInstance vkInstance) -> VkPhysicalDevice {
         return VK_NULL_HANDLE;
     }
 
+    if (engineSettings.graphics.gpu < physicalDeviceCount) {
+        return physDevices[engineSettings.graphics.gpu];
+    }
+
     return physDevices[0];
 }
 
-auto determineVkDeviceEnvironment()
+auto determineVkDeviceEnvironment(EngineSettings const &engineSettings)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>> {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
     // Swapchain (for windowing)
-    extensions.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    if (!engineSettings.window.haveWindow) {
+        extensions.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    }
 
     return std::make_tuple(layers, extensions);
 }

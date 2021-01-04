@@ -43,6 +43,7 @@
 
 #include "camera.hpp"
 #include "camera_descriptor_pool.hpp"
+#include "engine_settings.hpp"
 #include "frame_timer.hpp"
 #include "stdout_sink.hpp"
 #include "vulkan_setup.hpp"
@@ -195,10 +196,35 @@ void processUserInput(double timeElapsedInSeconds,
     }
 }
 
-int main(int, char **) {
+int main(int argc, char **argv) {
     StdOutSink stdoutSink;
     foeLogger::instance()->registerSink(&stdoutSink);
     foeLogger::instance()->registerSink(foeDeveloperConsole::instance());
+
+    // Settings
+    EngineSettings engineSettings;
+    std::string cfgFile = ".foe-settings.yml";
+    std::string outCfgFile = cfgFile;
+    { // Load settings from command line
+        CLI::App clParser{"This is the FoE Engine Development"};
+
+        clParser.add_option("--config", cfgFile, "Configuration file to load settings from");
+        clParser.add_option("--dump-config", outCfgFile,
+                            "If specified, on exit the settings will be written to this file");
+
+        addEngineCommandLineOptions(&clParser, &engineSettings);
+        // addAppCommandLineOptions(&clParser, &clOptions);
+
+        CLI11_PARSE(clParser, argc, argv);
+
+        { // Load settings from a configuration file (YAML)
+            if (!parseEngineConfigFile(&engineSettings, cfgFile)) {
+                return 1;
+            }
+        }
+
+        CLI11_PARSE(clParser, argc, argv);
+    }
 
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock(std::chrono::nanoseconds{0});
@@ -248,22 +274,23 @@ int main(int, char **) {
     VkResult res;
     {
         {
-            auto [instanceLayers, instanceExtensions] = determineVkInstanceEnvironment();
+            auto [instanceLayers, instanceExtensions] =
+                determineVkInstanceEnvironment(engineSettings);
             res = foeVkCreateInstance("FoE Engine", 0, instanceLayers, instanceExtensions,
                                       &vkInstance);
             if (res != VK_SUCCESS)
                 VK_END_PROGRAM
         }
 
-        if (true) {
+        if (engineSettings.graphics.debugLogging) {
             res = foeVkCreateDebugCallback(vkInstance, &vkDebugCallback);
             if (res != VK_SUCCESS) {
                 VK_END_PROGRAM
             }
         }
 
-        VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(vkInstance);
-        auto [deviceLayers, deviceExtensions] = determineVkDeviceEnvironment();
+        VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(engineSettings, vkInstance);
+        auto [deviceLayers, deviceExtensions] = determineVkDeviceEnvironment(engineSettings);
 
         res = foeGfxCreateEnvironment(vkInstance, vkPhysicalDevice, deviceLayers, deviceExtensions,
                                       &pGfxEnvironment);
@@ -275,13 +302,13 @@ int main(int, char **) {
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    if (!foeCreateWindow(1280, 720, "FoE Engine")) {
+    if (!foeCreateWindow(engineSettings.window.width, engineSettings.window.height, "FoE Engine")) {
         END_PROGRAM
     }
 
     {
-        camera.viewX = 1280;
-        camera.viewY = 720;
+        camera.viewX = engineSettings.window.width;
+        camera.viewY = engineSettings.window.height;
         camera.fieldOfViewY = 60.f;
         camera.nearZ = 2.f;
         camera.farZ = 50.f;
@@ -291,7 +318,7 @@ int main(int, char **) {
     }
 
 #ifdef EDITOR_MODE
-    imguiRenderer.resize(1280, 720);
+    imguiRenderer.resize(engineSettings.window.width, engineSettings.window.height);
     float xScale, yScale;
     foeWindowGetContentScale(&xScale, &yScale);
     imguiRenderer.rescale(xScale, yScale);
@@ -768,6 +795,21 @@ SHUTDOWN_PROGRAM:
         foeVkDestroyDebugCallback(vkInstance, vkDebugCallback);
     if (vkInstance != VK_NULL_HANDLE)
         vkDestroyInstance(vkInstance, nullptr);
+
+    // Output configuration settings to a YAML configuration file
+    YAML::Node yamlSettings;
+
+    emitEngineSettingsYaml(&engineSettings, &yamlSettings);
+
+    YAML::Emitter emitter;
+    emitter << yamlSettings;
+
+    std::ofstream outFile(outCfgFile, std::ofstream::out);
+    if (outFile.is_open()) {
+        outFile.write(emitter.c_str(), emitter.size());
+    } else {
+        FOE_LOG(General, Fatal, "Failed to open config file to write settings");
+    }
 
     return 0;
 }
