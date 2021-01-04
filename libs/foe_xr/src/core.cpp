@@ -16,6 +16,8 @@
 
 #include <foe/xr/core.hpp>
 
+#include <foe/engine_detail.h>
+
 #include <cstring>
 
 XrResult foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties) {
@@ -57,11 +59,11 @@ XrResult foeXrCreateInstance(char const *appName,
                              XrInstance *pInstance) {
     XrApplicationInfo appInfo{
         .applicationVersion = appVersion,
-        .engineName = "FoE Engine",
-        .engineVersion = 0,
+        .engineVersion = FOE_ENGINE_VERSION,
         .apiVersion = XR_MAKE_VERSION(1, 0, 12),
     };
     strncpy(appInfo.applicationName, appName, XR_MAX_APPLICATION_NAME_SIZE);
+    strncpy(appInfo.engineName, FOE_ENGINE_NAME, XR_MAX_ENGINE_NAME_SIZE);
 
     std::vector<char const *> finalLayers;
     std::vector<char const *> finalExtensions;

@@ -16,6 +16,8 @@
 
 #include <foe/graphics/device_environment.hpp>
 
+#include <foe/engine_detail.h>
+
 #include <bit>
 #include <cassert>
 #include <limits>
@@ -143,8 +145,8 @@ VkResult foeVkCreateInstance(char const *appName,
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = appName,
         .applicationVersion = appVersion,
-        .pEngineName = "FoE-Engine",
-        .engineVersion = 0,
+        .pEngineName = FOE_ENGINE_NAME,
+        .engineVersion = FOE_ENGINE_VERSION,
         .apiVersion = VK_MAKE_VERSION(1, 0, 0),
     };
 
