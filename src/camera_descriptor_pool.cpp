@@ -164,7 +164,7 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
     return res;
 }
 
-void CameraDescriptorPool::linkCamera(Camera *pCamera) {
+void CameraDescriptorPool::linkCamera(foeCameraBase *pCamera) {
     if (pCamera->cameraDescriptorPool != nullptr) {
         return;
     }
@@ -173,7 +173,7 @@ void CameraDescriptorPool::linkCamera(Camera *pCamera) {
     pCamera->cameraDescriptorPool = this;
 }
 
-void CameraDescriptorPool::delinkCamera(Camera *pCamera) {
+void CameraDescriptorPool::delinkCamera(foeCameraBase *pCamera) {
     for (auto it = mLinkedCameras.begin(); it != mLinkedCameras.end(); ++it) {
         if (*it == pCamera) {
             mLinkedCameras.erase(it);

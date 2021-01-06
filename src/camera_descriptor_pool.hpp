@@ -25,7 +25,7 @@
 #include <array>
 #include <vector>
 
-struct Camera;
+struct foeCameraBase;
 
 class CameraDescriptorPool {
   public:
@@ -36,11 +36,11 @@ class CameraDescriptorPool {
 
     VkResult generateCameraDescriptors(uint32_t frameIndex);
 
-    void linkCamera(Camera *pCamera);
-    void delinkCamera(Camera *pCamera);
+    void linkCamera(foeCameraBase *pCamera);
+    void delinkCamera(foeCameraBase *pCamera);
 
   private:
-    std::vector<Camera *> mLinkedCameras;
+    std::vector<foeCameraBase *> mLinkedCameras;
 
     struct UniformBuffer {
         VkBuffer buffer;

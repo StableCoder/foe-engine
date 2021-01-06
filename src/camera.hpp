@@ -25,14 +25,22 @@
 #include <vector>
 
 class CameraDescriptorPool;
+struct foeCameraBase {
+    virtual glm::mat4 projectionMatrix() const noexcept = 0;
+    virtual glm::mat4 viewMatrix() const noexcept = 0;
 
-struct Camera {
+    // Graphics Data
+    CameraDescriptorPool *cameraDescriptorPool{nullptr};
+    VkDescriptorSet descriptor{VK_NULL_HANDLE};
+};
+
+struct Camera : public foeCameraBase {
     // Projection Data
     float viewX, viewY;
     float fieldOfViewY;
     float nearZ, farZ;
 
-    glm::mat4 projectionMatrix() const noexcept {
+    glm::mat4 projectionMatrix() const noexcept override {
         return glm::perspectiveFov(glm::radians(fieldOfViewY), viewX, viewY, nearZ, farZ);
     }
 
@@ -40,14 +48,10 @@ struct Camera {
     glm::vec3 position;
     glm::quat orientation;
 
-    glm::mat4 viewMatrix() const noexcept {
+    glm::mat4 viewMatrix() const noexcept override {
         // Rotate * Translate
         return glm::mat4_cast(orientation) * glm::translate(glm::mat4(1.f), position);
     }
-
-    // Graphics Data
-    CameraDescriptorPool *cameraDescriptorPool{nullptr};
-    VkDescriptorSet descriptor{VK_NULL_HANDLE};
 };
 
 #endif // CAMERA_HPP
