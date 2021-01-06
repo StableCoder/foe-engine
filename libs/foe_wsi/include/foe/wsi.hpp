@@ -101,7 +101,7 @@ struct foeMouse {
  * @return True if initialization successful, false otherwise, typically due to the window already
  * being active
  */
-FOE_WSI_EXPORT bool foeCreateWindow(int width, int height, const char *pTitle);
+FOE_WSI_EXPORT bool foeCreateWindow(int width, int height, const char *pTitle, bool hide);
 
 /// Destroys the current window
 FOE_WSI_EXPORT void foeDestroyWindow();
@@ -121,6 +121,9 @@ FOE_WSI_EXPORT void foeWindowSetShouldClose(bool terminate);
 FOE_WSI_EXPORT void foeWindowGetSize(int *pWidth, int *pHeight);
 FOE_WSI_EXPORT bool foeWindowResized();
 FOE_WSI_EXPORT void foeWindowResize(int width, int height);
+
+FOE_WSI_EXPORT void foeWindowHide();
+FOE_WSI_EXPORT void foeWindowShow();
 
 /** @brief
  * @param pScaleX X scaling factor requested for content

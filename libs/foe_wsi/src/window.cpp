@@ -57,7 +57,7 @@ void buttonCallback(GLFWwindow *, int button, int action, int mods) {
 
 } // namespace
 
-bool foeCreateWindow(int width, int height, const char *pTitle) {
+bool foeCreateWindow(int width, int height, const char *pTitle, bool hide) {
     // Return false if the window already exists
     if (pWindow != nullptr)
         return false;
@@ -66,6 +66,9 @@ bool foeCreateWindow(int width, int height, const char *pTitle) {
 
     // Since this is exclusively a Vulkan platform, don't initialize OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    if (hide) {
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    }
 
     pWindow = glfwCreateWindow(width, height, pTitle, nullptr, nullptr);
 
@@ -115,6 +118,10 @@ void foeWindowGetSize(int *pWidth, int *pHeight) { glfwGetWindowSize(pWindow, pW
 bool foeWindowResized() { return resized; }
 
 void foeWindowResize(int width, int height) { glfwSetWindowSize(pWindow, width, height); }
+
+void foeWindowHide() { glfwHideWindow(pWindow); }
+
+void foeWindowShow() { glfwShowWindow(pWindow); }
 
 const foeMouse *foeGetMouse() { return &mouse; }
 const foeKeyboard *foeGetKeyboard() { return &keyboard; }
