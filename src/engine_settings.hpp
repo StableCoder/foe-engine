@@ -27,7 +27,7 @@
 /// Settings related to the core engine
 struct EngineSettings {
     struct Window {
-        bool haveWindow = true;
+        bool enableWSI = true;
         uint32_t width = 1280;
         uint32_t height = 720;
         bool vsync = false;
@@ -39,6 +39,11 @@ struct EngineSettings {
         bool validation = false;
         bool debugLogging = false;
     } graphics;
+
+    struct Xr {
+        bool forceXr = false;
+        bool debugLogging = false;
+    } xr;
 };
 
 void addEngineCommandLineOptions(CLI::App *pParser, EngineSettings *pOptions);

@@ -22,7 +22,7 @@
 
 void addEngineCommandLineOptions(CLI::App *pParser, EngineSettings *pOptions) {
     // Window
-    pParser->add_flag("--window,!--no-window", pOptions->window.haveWindow,
+    pParser->add_flag("--window,!--no-window", pOptions->window.enableWSI,
                       "Whether or not to start with an initial window");
     pParser->add_option("--width", pOptions->window.width, "Width of the initial window");
     pParser->add_option("--height", pOptions->window.height, "Height of the initial window");
@@ -36,6 +36,11 @@ void addEngineCommandLineOptions(CLI::App *pParser, EngineSettings *pOptions) {
                       "Turns on graphics validation layers");
     pParser->add_flag("--gfx-debug-logging", pOptions->graphics.debugLogging,
                       "Turns on the graphics debug logging callback");
+
+    // Xr
+    pParser->add_flag("--vr,!--no-vr", pOptions->xr.forceXr, "VR (OpenXR)");
+    pParser->add_option("--vr-debug-logging", pOptions->xr.debugLogging,
+                        "Turns on OpenXR debug logging");
 }
 
 bool parseEngineConfigFile(EngineSettings *pOptions, std::string_view configFilePath) {
@@ -55,7 +60,7 @@ bool parseEngineConfigFile(EngineSettings *pOptions, std::string_view configFile
     try {
         // Window
         if (auto windowNode = config["window"]; windowNode) {
-            yaml_read_optional("have_window", windowNode, pOptions->window.haveWindow);
+            yaml_read_optional("have_window", windowNode, pOptions->window.enableWSI);
             yaml_read_optional("width", windowNode, pOptions->window.width);
             yaml_read_optional("height", windowNode, pOptions->window.height);
             yaml_read_optional("vsync", windowNode, pOptions->window.vsync);
@@ -68,6 +73,12 @@ bool parseEngineConfigFile(EngineSettings *pOptions, std::string_view configFile
                                pOptions->graphics.maxFrameBuffering);
             yaml_read_optional("validation", graphicsNode, pOptions->graphics.validation);
             yaml_read_optional("debug_logging", graphicsNode, pOptions->graphics.debugLogging);
+        }
+
+        // Xr
+        if (auto xrNode = config["xr"]; xrNode) {
+            yaml_read_optional("xr", xrNode, pOptions->xr.forceXr);
+            yaml_read_optional("debug_logging", xrNode, pOptions->xr.debugLogging);
         }
 
     } catch (foeYamlException const &e) {

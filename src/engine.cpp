@@ -35,6 +35,12 @@
 #include <foe/quaternion_math.hpp>
 #include <foe/wsi.hpp>
 #include <foe/wsi_vulkan.hpp>
+#include <foe/xr/core.hpp>
+#include <foe/xr/debug_utils.hpp>
+#include <foe/xr/error_code.hpp>
+#include <foe/xr/runtime.hpp>
+#include <foe/xr/session.hpp>
+#include <foe/xr/vulkan.hpp>
 #include <vk_error_code.hpp>
 
 #include <array>
@@ -47,6 +53,8 @@
 #include "frame_timer.hpp"
 #include "stdout_sink.hpp"
 #include "vulkan_setup.hpp"
+#include "xr_camera.hpp"
+#include "xr_setup.hpp"
 
 #ifdef EDITOR_MODE
 #include <foe/imgui/renderer.hpp>
@@ -56,6 +64,21 @@
 #include "imgui/frame_time_info.hpp"
 #include "imgui/termination.hpp"
 #endif
+
+#define ERRC_END_PROGRAM                                                                           \
+    {                                                                                              \
+        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
+                errC.message());                                                                   \
+        goto SHUTDOWN_PROGRAM;                                                                     \
+    }
+
+#define XR_END_PROGRAM                                                                             \
+    {                                                                                              \
+        std::error_code errC = xrRes;                                                              \
+        FOE_LOG(General, Fatal, "End called from {}:{} with OpenXR error {}", __FILE__, __LINE__,  \
+                errC.message());                                                                   \
+        goto SHUTDOWN_PROGRAM;                                                                     \
+    }
 
 #define VK_END_PROGRAM                                                                             \
     {                                                                                              \
@@ -90,6 +113,7 @@ struct PerFrameData {
 
     VkCommandPool commandPool;
     VkCommandBuffer commandBuffer;
+    std::array<VkCommandBuffer, 2> xrCommandBuffers;
 
     VkResult create(VkDevice device) noexcept {
         // Semaphores
@@ -132,6 +156,11 @@ struct PerFrameData {
             .commandBufferCount = 1,
         };
         res = vkAllocateCommandBuffers(device, &commandBufferAI, &commandBuffer);
+        if (res != VK_SUCCESS)
+            return res;
+
+        commandBufferAI.commandBufferCount = 2;
+        res = vkAllocateCommandBuffers(device, &commandBufferAI, xrCommandBuffers.data());
         if (res != VK_SUCCESS)
             return res;
 
@@ -230,6 +259,24 @@ int main(int argc, char **argv) {
     foeDilatedLongClock simulationClock(std::chrono::nanoseconds{0});
 
     FrameTimer frameTime;
+
+    foeXrRuntime xrRuntime;
+    XrSystemId xrSystemId{};
+
+    struct foeXrSessionView {
+        XrViewConfigurationView viewConfig;
+        XrSwapchain swapchain;
+        VkFormat format;
+        std::vector<XrSwapchainImageVulkanKHR> images;
+        std::vector<VkImageView> imageViews;
+        std::vector<VkFramebuffer> framebuffers;
+        foeXrCamera camera;
+    };
+
+    foeXrSession xrSession;
+    VkRenderPass xrRenderPass;
+    std::vector<foeXrSessionView> xrViews;
+
     VkInstance vkInstance{VK_NULL_HANDLE};
     VkDebugReportCallbackEXT vkDebugCallback{VK_NULL_HANDLE};
     foeVkDeviceEnvironment *pGfxEnvironment;
@@ -271,15 +318,51 @@ int main(int argc, char **argv) {
     std::vector<VkFramebuffer> swapImageFramebuffers;
     bool swapchainRebuilt = false;
 
-    VkResult res;
+    XrResult xrRes{XR_SUCCESS};
+    VkResult res{VK_SUCCESS};
+
     {
-        {
-            auto [instanceLayers, instanceExtensions] =
-                determineVkInstanceEnvironment(engineSettings);
-            res = foeVkCreateInstance("FoE Engine", 0, instanceLayers, instanceExtensions,
-                                      &vkInstance);
-            if (res != VK_SUCCESS)
-                VK_END_PROGRAM
+        // Create Windows
+        // Determine OpenXR layers/extensions
+        // OpenXR INIT (& debug callback)
+        // Determine Vulkan instance layers/extensions
+        // VkInstance INIT (& debug callback)
+        // Get Window VkSurface's
+        // Determine Vk Physical device (OpenXR requirements, VkSurface Reqs, etc)
+        // Determine Vk device layers/extensions
+        // VkDevice INIT
+        // XrSession INIT
+
+        if (!foeCreateWindow(engineSettings.window.width, engineSettings.window.height,
+                             "FoE Engine", true)) {
+            END_PROGRAM
+        }
+
+        auto [layers, extensions] = determineXrInstanceEnvironment(engineSettings.xr.debugLogging);
+        auto errC = xrRuntime.createRuntime("FoE Engine", 0, layers, extensions,
+                                            engineSettings.xr.debugLogging);
+        if (errC && engineSettings.xr.forceXr) {
+            ERRC_END_PROGRAM
+        }
+
+        if (xrRuntime.instance != XR_NULL_HANDLE) {
+            XrSystemGetInfo systemGetInfo{
+                .type = XR_TYPE_SYSTEM_GET_INFO,
+                .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
+            };
+
+            xrRes = xrGetSystem(xrRuntime.instance, &systemGetInfo, &xrSystemId);
+            if (xrRes != XR_SUCCESS) {
+                XR_END_PROGRAM
+            }
+        }
+
+        auto [instanceLayers, instanceExtensions] = determineVkInstanceEnvironment(
+            xrRuntime.instance, xrSystemId, engineSettings.window.enableWSI,
+            engineSettings.graphics.validation, engineSettings.graphics.debugLogging);
+        res = foeVkCreateInstance("FoE Engine", 0, instanceLayers, instanceExtensions, &vkInstance);
+        if (res != VK_SUCCESS) {
+            VK_END_PROGRAM
         }
 
         if (engineSettings.graphics.debugLogging) {
@@ -289,8 +372,16 @@ int main(int argc, char **argv) {
             }
         }
 
-        VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(engineSettings, vkInstance);
-        auto [deviceLayers, deviceExtensions] = determineVkDeviceEnvironment(engineSettings);
+        res = foeWindowGetVkSurface(vkInstance, &vkWindow.surface);
+        if (res != VK_SUCCESS) {
+            VK_END_PROGRAM
+        }
+
+        VkPhysicalDevice vkPhysicalDevice =
+            determineVkPhysicalDevice(vkInstance, xrRuntime.instance, xrSystemId, vkWindow.surface,
+                                      engineSettings.graphics.gpu, engineSettings.xr.forceXr);
+        auto [deviceLayers, deviceExtensions] = determineVkDeviceEnvironment(
+            xrRuntime.instance, xrSystemId, vkWindow.surface != VK_NULL_HANDLE);
 
         res = foeGfxCreateEnvironment(vkInstance, vkPhysicalDevice, deviceLayers, deviceExtensions,
                                       &pGfxEnvironment);
@@ -302,20 +393,16 @@ int main(int argc, char **argv) {
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    if (!foeCreateWindow(engineSettings.window.width, engineSettings.window.height, "FoE Engine")) {
-        END_PROGRAM
-    }
+        {
+            camera.viewX = engineSettings.window.width;
+            camera.viewY = engineSettings.window.height;
+            camera.fieldOfViewY = 60.f;
+            camera.nearZ = 2.f;
+            camera.farZ = 50.f;
 
-    {
-        camera.viewX = engineSettings.window.width;
-        camera.viewY = engineSettings.window.height;
-        camera.fieldOfViewY = 60.f;
-        camera.nearZ = 2.f;
-        camera.farZ = 50.f;
-
-        camera.position = glm::vec3(0.f, 0.f, -5.f);
-        camera.orientation = glm::quat(glm::vec3(0, 0, 0));
-    }
+            camera.position = glm::vec3(0.f, 0.f, -5.f);
+            camera.orientation = glm::quat(glm::vec3(0, 0, 0));
+        }
 
 #ifdef EDITOR_MODE
     imguiRenderer.resize(engineSettings.window.width, engineSettings.window.height);
@@ -323,11 +410,6 @@ int main(int argc, char **argv) {
     foeWindowGetContentScale(&xScale, &yScale);
     imguiRenderer.rescale(xScale, yScale);
 #endif
-
-    res = foeWindowGetVkSurface(pGfxEnvironment->instance, &vkWindow.surface);
-    if (res != VK_SUCCESS) {
-        VK_END_PROGRAM
-    }
 
     for (auto &it : frameData) {
         res = it.create(pGfxEnvironment->device);
@@ -413,7 +495,223 @@ int main(int argc, char **argv) {
             fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, pShader);
     }
 
+    if (xrRuntime.instance != XR_NULL_HANDLE) {
+        // OpenXR Views
+
+        // Types
+        uint32_t viewConfigCount;
+        xrRes = xrEnumerateViewConfigurations(xrRuntime.instance, xrSystemId, 0, &viewConfigCount,
+                                              nullptr);
+        if (xrRes != XR_SUCCESS) {
+            return xrRes;
+        }
+
+        std::vector<XrViewConfigurationType> xrViewConfigTypes;
+        xrViewConfigTypes.resize(viewConfigCount);
+
+        xrRes =
+            xrEnumerateViewConfigurations(xrRuntime.instance, xrSystemId, xrViewConfigTypes.size(),
+                                          &viewConfigCount, xrViewConfigTypes.data());
+        if (xrRes != XR_SUCCESS) {
+            return xrRes;
+        }
+
+        // Is View Mutable??
+        XrViewConfigurationProperties xrViewConfigProps{.type =
+                                                            XR_TYPE_VIEW_CONFIGURATION_PROPERTIES};
+        xrRes = xrGetViewConfigurationProperties(xrRuntime.instance, xrSystemId,
+                                                 xrViewConfigTypes[0], &xrViewConfigProps);
+        if (xrRes != XR_SUCCESS) {
+            return xrRes;
+        }
+
+        // Check graphics requirements
+        XrGraphicsRequirementsVulkanKHR gfxRequirements;
+        xrRes =
+            foeXrGetVulkanGraphicsRequirements(xrRuntime.instance, xrSystemId, &gfxRequirements);
+
+        // XrSession
+        XrGraphicsBindingVulkanKHR gfxBinding{
+            .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
+            .instance = pGfxEnvironment->instance,
+            .physicalDevice = pGfxEnvironment->physicalDevice,
+            .device = pGfxEnvironment->device,
+            .queueFamilyIndex = 0,
+            .queueIndex = 0,
+        };
+        auto errC = xrSession.createSession(xrRuntime.instance, xrSystemId, xrViewConfigTypes[0],
+                                            &gfxBinding);
+        if (errC && engineSettings.xr.forceXr) {
+            ERRC_END_PROGRAM
+        }
+
+        // Session Views
+
+        // Views
+        uint32_t viewConfigViewCount;
+        xrRes = xrEnumerateViewConfigurationViews(xrRuntime.instance, xrSession.systemId,
+                                                  xrViewConfigTypes[0], 0, &viewConfigViewCount,
+                                                  nullptr);
+        if (xrRes != XR_SUCCESS) {
+            return xrRes;
+        }
+
+        std::vector<XrViewConfigurationView> viewConfigs;
+        viewConfigs.resize(viewConfigViewCount);
+
+        xrRes = xrEnumerateViewConfigurationViews(xrRuntime.instance, xrSession.systemId,
+                                                  xrViewConfigTypes[0], viewConfigs.size(),
+                                                  &viewConfigViewCount, viewConfigs.data());
+        if (xrRes != XR_SUCCESS) {
+            return xrRes;
+        }
+        xrViews.clear();
+        for (auto const &it : viewConfigs) {
+            xrViews.emplace_back(foeXrSessionView{.viewConfig = it});
+        }
+
+        // OpenXR Swapchains
+        std::vector<int64_t> swapchainFormats;
+        xrRes = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
+        if (xrRes != XR_SUCCESS) {
+            return xrRes;
+        }
+        for (auto &it : xrViews) {
+            it.format = static_cast<VkFormat>(swapchainFormats[0]);
+        }
+
+        xrRenderPass = renderPassPool.renderPass({VkAttachmentDescription{
+            .format = static_cast<VkFormat>(swapchainFormats[0]),
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        }});
+
+        for (auto &view : xrViews) {
+            // Swapchain
+            XrSwapchainCreateInfo swapchainCI{
+                .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
+                .createFlags = 0,
+                .usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
+                .format = view.format,
+                .sampleCount = 1,
+                .width = view.viewConfig.recommendedImageRectWidth,
+                .height = view.viewConfig.recommendedImageRectHeight,
+                .faceCount = 1,
+                .arraySize = 1,
+                .mipCount = 1,
+            };
+
+            xrRes = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
+            if (xrRes != XR_SUCCESS) {
+                return xrRes;
+            }
+
+            // Images
+            xrRes = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
+            if (xrRes != XR_SUCCESS) {
+                return xrRes;
+            }
+
+            // Image Views
+            VkImageViewCreateInfo viewCI{
+                .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                .viewType = VK_IMAGE_VIEW_TYPE_2D,
+                .format = view.format,
+                .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+                               VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A},
+                .subresourceRange =
+                    VkImageSubresourceRange{
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .baseMipLevel = 0,
+                        .levelCount = 1,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1,
+                    },
+            };
+
+            // VkImageView
+            view.imageViews.clear();
+            for (auto it : view.images) {
+                viewCI.image = it.image;
+                VkImageView vkView{VK_NULL_HANDLE};
+                VkResult res =
+                    vkCreateImageView(pGfxEnvironment->device, &viewCI, nullptr, &vkView);
+                if (res != VK_SUCCESS) {
+                    return res;
+                }
+
+                view.imageViews.emplace_back(vkView);
+            }
+
+            // VkFramebuffer
+            for (auto it : view.imageViews) {
+                VkFramebufferCreateInfo framebufferCI{
+                    .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                    .renderPass = xrRenderPass,
+                    .attachmentCount = 1,
+                    .pAttachments = &it,
+                    .width = view.viewConfig.recommendedImageRectWidth,
+                    .height = view.viewConfig.recommendedImageRectHeight,
+                    .layers = 1,
+                };
+
+                VkFramebuffer newFramebuffer;
+                VkResult res = vkCreateFramebuffer(pGfxEnvironment->device, &framebufferCI, nullptr,
+                                                   &newFramebuffer);
+                if (res != VK_SUCCESS) {
+                    return res;
+                }
+
+                view.framebuffers.emplace_back(newFramebuffer);
+            }
+        }
+
+        for (auto &it : xrViews) {
+            it.camera.startPos = camera.position;
+            it.camera.nearZ = camera.nearZ;
+            it.camera.farZ = camera.farZ;
+            cameraDescriptorPool.linkCamera(&it.camera);
+        }
+
+        // OpenXR Session Begin
+
+        { // Wait for the session state to be ready
+            XrEventDataBuffer event;
+            errC = xrRuntime.pollEvent(event);
+            if (errC == XR_EVENT_UNAVAILABLE) {
+                // No events currently
+            } else if (errC) {
+                // Error
+                ERRC_END_PROGRAM
+            } else {
+                // Got an event, process it
+                switch (event.type) {
+                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+                    XrEventDataSessionStateChanged const *stateChanged =
+                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
+                    if (stateChanged->state == XR_SESSION_STATE_READY &&
+                        stateChanged->session == xrSession.session) {
+                        goto SESSION_READY;
+                    }
+                } break;
+                }
+            }
+        }
+
+    SESSION_READY:
+        errC = xrSession.beginSession();
+        if (errC) {
+            ERRC_END_PROGRAM
+        }
+    }
+
     // MAIN LOOP BEGIN
+    foeWindowShow();
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
@@ -466,17 +764,6 @@ int main(int argc, char **argv) {
                 // If no swapchain, then that means we need to get the surface format and
                 // presentation mode first
                 if (!swapchain) {
-                    { // Present Queues
-                        for (int i = 0; i < pGfxEnvironment->numQueueFamilies; ++i) {
-                            VkBool32 support = VK_FALSE;
-                            vkGetPhysicalDeviceSurfaceSupportKHR(pGfxEnvironment->physicalDevice, i,
-                                                                 vkWindow.surface, &support);
-                            FOE_LOG(General, Info,
-                                    "Support on queue family {} for surface presentation: {}", i,
-                                    (bool)support);
-                        }
-                    }
-
                     { // Surface Formats
                         uint32_t formatCount;
                         res = vkGetPhysicalDeviceSurfaceFormatsKHR(pGfxEnvironment->physicalDevice,
@@ -549,10 +836,236 @@ int main(int argc, char **argv) {
             frameIndex = nextFrameIndex;
 
             // Set camera descriptors
-            cameraDescriptorPool.generateCameraDescriptors(frameIndex);
+            bool camerasRemade = false;
 
             // Rendering
-            vkResetCommandPool(pGfxEnvironment->device, frameData[frameIndex].commandPool, 0);
+            vkResetCommandPool(pGfxEnvironment->device, frameData[nextFrameIndex].commandPool, 0);
+
+            // OpenXR Render Section
+            if (xrSession.session != XR_NULL_HANDLE) {
+                XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
+                XrFrameState frameState{.type = XR_TYPE_FRAME_STATE};
+                xrRes = xrWaitFrame(xrSession.session, &frameWaitInfo, &frameState);
+                if (xrRes != XR_SUCCESS) {
+                    XR_END_PROGRAM
+                }
+
+                XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
+                xrRes = xrBeginFrame(xrSession.session, &frameBeginInfo);
+                if (xrRes != XR_SUCCESS) {
+                    XR_END_PROGRAM
+                }
+
+                std::vector<XrCompositionLayerBaseHeader *> layers;
+                std::vector<XrCompositionLayerProjectionView> projectionViews{
+                    xrViews.size(), XrCompositionLayerProjectionView{
+                                        .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW}};
+                XrCompositionLayerProjection layerProj;
+
+                if (frameState.shouldRender) {
+                    XrViewLocateInfo viewLocateInfo{
+                        .type = XR_TYPE_VIEW_LOCATE_INFO,
+                        .displayTime = frameState.predictedDisplayTime,
+                        .space = xrSession.space,
+                    };
+                    XrViewState viewState{.type = XR_TYPE_VIEW_STATE};
+                    std::vector<XrView> views{xrViews.size(), XrView{.type = XR_TYPE_VIEW}};
+                    uint32_t viewCountOutput;
+                    xrRes = xrLocateViews(xrSession.session, &viewLocateInfo, &viewState,
+                                          views.size(), &viewCountOutput, views.data());
+                    if (xrRes != XR_SUCCESS) {
+                        XR_END_PROGRAM
+                    }
+
+                    for (int i = 0; i < views.size(); ++i) {
+                        projectionViews[i].pose = views[i].pose;
+                        projectionViews[i].fov = views[i].fov;
+
+                        xrViews[i].camera.fov = views[i].fov;
+                        xrViews[i].camera.pose = views[i].pose;
+                    }
+
+                    cameraDescriptorPool.generateCameraDescriptors(frameIndex);
+                    camerasRemade = true;
+
+                    // Render Code
+                    std::vector<uint32_t> swapchainIndex;
+                    for (int i = 0; i < xrViews.size(); ++i) {
+                        auto &it = xrViews[i];
+
+                        XrSwapchainImageAcquireInfo acquireInfo{
+                            .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
+
+                        uint32_t newIndex;
+                        xrRes = xrAcquireSwapchainImage(it.swapchain, &acquireInfo, &newIndex);
+                        if (xrRes != XR_SUCCESS) {
+                            XR_END_PROGRAM
+                        }
+                        swapchainIndex.emplace_back(newIndex);
+
+                        XrSwapchainImageWaitInfo waitInfo{
+                            .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
+                            .timeout = 1,
+                        };
+                        xrRes = xrWaitSwapchainImage(it.swapchain, &waitInfo);
+                        if (xrRes != XR_SUCCESS) {
+                            XR_END_PROGRAM
+                        }
+
+                        projectionViews[i].subImage = XrSwapchainSubImage{
+                            .swapchain = it.swapchain,
+                            .imageRect =
+                                XrRect2Di{
+                                    .extent =
+                                        {
+                                            .width = static_cast<int32_t>(
+                                                it.viewConfig.recommendedImageRectWidth),
+                                            .height = static_cast<int32_t>(
+                                                it.viewConfig.recommendedImageRectHeight),
+                                        },
+                                },
+                        };
+
+                        // Vulkan Rendering BEGIN
+                        {
+                            VkCommandBuffer &commandBuffer =
+                                frameData[frameIndex].xrCommandBuffers[i];
+
+                            VkCommandBufferBeginInfo commandBufferBI{
+                                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+                            };
+
+                            res = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+                            if (res != VK_SUCCESS)
+                                goto SHUTDOWN_PROGRAM;
+
+                            { // Render Pass Setup
+                                VkExtent2D swapchainExtent{
+                                    .width = it.viewConfig.recommendedImageRectWidth,
+                                    .height = it.viewConfig.recommendedImageRectHeight,
+                                };
+                                VkClearValue clear{
+                                    .color = {0.f, 0.f, 1.f, 0.f},
+                                };
+
+                                VkRenderPassBeginInfo renderPassBI{
+                                    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                                    .renderPass = xrRenderPass,
+                                    .framebuffer = it.framebuffers[newIndex],
+                                    .renderArea =
+                                        {
+                                            .offset = {0, 0},
+                                            .extent = swapchainExtent,
+                                        },
+                                    .clearValueCount = 1,
+                                    .pClearValues = &clear,
+                                };
+
+                                vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
+                                                     VK_SUBPASS_CONTENTS_INLINE);
+
+                                if (true) { // Set Drawing Parameters
+                                    VkViewport viewport{
+                                        .width = static_cast<float>(
+                                            it.viewConfig.recommendedImageRectWidth),
+                                        .height = static_cast<float>(
+                                            it.viewConfig.recommendedImageRectHeight),
+                                        .minDepth = 0.f,
+                                        .maxDepth = 1.f,
+                                    };
+                                    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+                                    VkRect2D scissor{
+                                        .offset = VkOffset2D{},
+                                        .extent = swapchainExtent,
+                                    };
+                                    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+                                    // If we had depthbias enabled
+                                    // vkCmdSetDepthBias
+
+                                    // Set the Pipeline
+                                    VkPipelineLayout layout;
+                                    uint32_t descriptorSetLayoutCount;
+                                    VkPipeline pipeline;
+
+                                    pipelinePool.getPipeline(&vertexDescriptor, fragmentDescriptor,
+                                                             xrRenderPass, 0, &layout,
+                                                             &descriptorSetLayoutCount, &pipeline);
+
+                                    vkCmdBindDescriptorSets(
+                                        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0,
+                                        1, &it.camera.descriptor, 0, nullptr);
+
+                                    vkCmdBindPipeline(commandBuffer,
+                                                      VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+                                    vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+                                }
+
+                                vkCmdEndRenderPass(commandBuffer);
+                            }
+
+                            res = vkEndCommandBuffer(commandBuffer);
+                            if (res != VK_SUCCESS) {
+                                FOE_LOG(General, Fatal, "Error with drawing: {}",
+                                        std::error_code{res}.message());
+                            }
+
+                            // Submission
+                            VkPipelineStageFlags waitMask =
+                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+                            VkSubmitInfo submitInfo{
+                                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                                .commandBufferCount = 1,
+                                .pCommandBuffers = &commandBuffer,
+                            };
+
+                            res = vkQueueSubmit(pGfxEnvironment->pQueueFamilies[0].queue[0], 1,
+                                                &submitInfo, VK_NULL_HANDLE);
+                            if (res != VK_SUCCESS)
+                                goto SHUTDOWN_PROGRAM;
+                        }
+
+                        // Vulkan Rendering END
+
+                        XrSwapchainImageReleaseInfo releaseInfo{
+                            .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
+                        xrReleaseSwapchainImage(it.swapchain, &releaseInfo);
+                        if (xrRes != XR_SUCCESS) {
+                            XR_END_PROGRAM
+                        }
+                    }
+
+                    // Assemble composition layers
+                    layerProj = XrCompositionLayerProjection{
+                        .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION,
+                        .layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT,
+                        .space = xrSession.space,
+                        .viewCount = static_cast<uint32_t>(projectionViews.size()),
+                        .views = projectionViews.data(),
+                    };
+                    layers.emplace_back(
+                        reinterpret_cast<XrCompositionLayerBaseHeader *>(&layerProj));
+                }
+
+                XrFrameEndInfo endFrameInfo{
+                    .type = XR_TYPE_FRAME_END_INFO,
+                    .displayTime = frameState.predictedDisplayTime,
+                    .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
+                    .layerCount = static_cast<uint32_t>(layers.size()),
+                    .layers = layers.data(),
+                };
+                xrRes = xrEndFrame(xrSession.session, &endFrameInfo);
+                if (xrRes != XR_SUCCESS) {
+                    XR_END_PROGRAM
+                }
+            }
+
+            if (!camerasRemade)
+                cameraDescriptorPool.generateCameraDescriptors(frameIndex);
 
             // Render passes
             VkRenderPass swapImageRenderPass = renderPassPool.renderPass({VkAttachmentDescription{
@@ -759,8 +1272,48 @@ int main(int argc, char **argv) {
 SHUTDOWN_PROGRAM:
     FOE_LOG(General, Info, "Exiting main loop")
 
-    if (pGfxEnvironment->device != VK_NULL_HANDLE)
+    if (pGfxEnvironment != nullptr && pGfxEnvironment->device != VK_NULL_HANDLE)
         vkDeviceWaitIdle(pGfxEnvironment->device);
+
+    // OpenXR Cleanup
+    if (xrSession.session != XR_NULL_HANDLE) {
+        xrSession.requestExitSession();
+        {
+            XrEventDataBuffer event;
+            auto errC = xrRuntime.pollEvent(event);
+            if (errC == XR_EVENT_UNAVAILABLE) {
+                // No events currently
+            } else if (errC) {
+                // Error
+
+            } else {
+                // Got an event, process it
+                switch (event.type) {
+                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+                    XrEventDataSessionStateChanged const *stateChanged =
+                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
+                    if (stateChanged->state == XR_SESSION_STATE_STOPPING &&
+                        stateChanged->session == xrSession.session) {
+                        goto SESSION_END;
+                    }
+                } break;
+                }
+            }
+        }
+    SESSION_END:
+        xrSession.endSession();
+
+        for (auto &view : xrViews) {
+            for (auto it : view.imageViews) {
+                vkDestroyImageView(pGfxEnvironment->device, it, nullptr);
+            }
+            if (view.swapchain != XR_NULL_HANDLE) {
+                xrDestroySwapchain(view.swapchain);
+            }
+        }
+
+        xrSession.destroySession();
+    }
 
     for (auto &it : frameData) {
         it.destroy(pGfxEnvironment->device);
@@ -789,12 +1342,15 @@ SHUTDOWN_PROGRAM:
     imguiRenderer.deinitialize(pGfxEnvironment);
 #endif
 
-    foeGfxDestroyEnvironment(pGfxEnvironment);
+    if (pGfxEnvironment != nullptr)
+        foeGfxDestroyEnvironment(pGfxEnvironment);
 
     if (vkDebugCallback != VK_NULL_HANDLE)
         foeVkDestroyDebugCallback(vkInstance, vkDebugCallback);
     if (vkInstance != VK_NULL_HANDLE)
         vkDestroyInstance(vkInstance, nullptr);
+
+    xrRuntime.destroyRuntime();
 
     // Output configuration settings to a YAML configuration file
     YAML::Node yamlSettings;
@@ -806,9 +1362,8 @@ SHUTDOWN_PROGRAM:
 
     std::ofstream outFile(outCfgFile, std::ofstream::out);
     if (outFile.is_open()) {
-        outFile.write(emitter.c_str(), emitter.size());
-    } else {
-        FOE_LOG(General, Fatal, "Failed to open config file to write settings");
+        outFile << emitter.c_str();
+        outFile.close();
     }
 
     return 0;
