@@ -261,7 +261,6 @@ int main(int argc, char **argv) {
     FrameTimer frameTime;
 
     foeXrRuntime xrRuntime;
-    XrSystemId xrSystemId{};
 
     struct foeXrSessionView {
         XrViewConfigurationView viewConfig;
@@ -345,21 +344,9 @@ int main(int argc, char **argv) {
             ERRC_END_PROGRAM
         }
 
-        if (xrRuntime.instance != XR_NULL_HANDLE) {
-            XrSystemGetInfo systemGetInfo{
-                .type = XR_TYPE_SYSTEM_GET_INFO,
-                .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
-            };
-
-            xrRes = xrGetSystem(xrRuntime.instance, &systemGetInfo, &xrSystemId);
-            if (xrRes != XR_SUCCESS) {
-                XR_END_PROGRAM
-            }
-        }
-
         auto [instanceLayers, instanceExtensions] = determineVkInstanceEnvironment(
-            xrRuntime.instance, xrSystemId, engineSettings.window.enableWSI,
-            engineSettings.graphics.validation, engineSettings.graphics.debugLogging);
+            xrRuntime.instance, engineSettings.window.enableWSI, engineSettings.graphics.validation,
+            engineSettings.graphics.debugLogging);
         res = foeVkCreateInstance("FoE Engine", 0, instanceLayers, instanceExtensions, &vkInstance);
         if (res != VK_SUCCESS) {
             VK_END_PROGRAM
@@ -378,10 +365,10 @@ int main(int argc, char **argv) {
         }
 
         VkPhysicalDevice vkPhysicalDevice =
-            determineVkPhysicalDevice(vkInstance, xrRuntime.instance, xrSystemId, vkWindow.surface,
+            determineVkPhysicalDevice(vkInstance, xrRuntime.instance, vkWindow.surface,
                                       engineSettings.graphics.gpu, engineSettings.xr.forceXr);
-        auto [deviceLayers, deviceExtensions] = determineVkDeviceEnvironment(
-            xrRuntime.instance, xrSystemId, vkWindow.surface != VK_NULL_HANDLE);
+        auto [deviceLayers, deviceExtensions] =
+            determineVkDeviceEnvironment(xrRuntime.instance, vkWindow.surface != VK_NULL_HANDLE);
 
         res = foeGfxCreateEnvironment(vkInstance, vkPhysicalDevice, deviceLayers, deviceExtensions,
                                       &pGfxEnvironment);
@@ -496,7 +483,20 @@ int main(int argc, char **argv) {
     }
 
     if (xrRuntime.instance != XR_NULL_HANDLE) {
-        // OpenXR Views
+        XrSystemId xrSystemId{};
+
+        // OpenXR SystemId
+        if (xrRuntime.instance != XR_NULL_HANDLE) {
+            XrSystemGetInfo systemGetInfo{
+                .type = XR_TYPE_SYSTEM_GET_INFO,
+                .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
+            };
+
+            xrRes = xrGetSystem(xrRuntime.instance, &systemGetInfo, &xrSystemId);
+            if (xrRes != XR_SUCCESS) {
+                XR_END_PROGRAM
+            }
+        }
 
         // Types
         uint32_t viewConfigCount;

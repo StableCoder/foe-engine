@@ -23,7 +23,6 @@
 #include <memory>
 
 auto determineVkInstanceEnvironment(XrInstance xrInstance,
-                                    XrSystemId xrSystemId,
                                     bool enableWindowing,
                                     bool validation,
                                     bool debugLogging)
@@ -42,10 +41,29 @@ auto determineVkInstanceEnvironment(XrInstance xrInstance,
 
     // OpenXR
     if (xrInstance != XR_NULL_HANDLE) {
+        XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
-        foeXrGetVulkanInstanceExtensions(xrInstance, xrSystemId, xrExtensions);
 
-        extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        // SystemId - XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY
+        XrSystemGetInfo xrSystemGetInfo{
+            .type = XR_TYPE_SYSTEM_GET_INFO,
+            .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
+        };
+
+        XrResult xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
+
+        if (xrRes == XR_SUCCESS) {
+            foeXrGetVulkanInstanceExtensions(xrInstance, xrSystemId, xrExtensions);
+            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        }
+
+        // SystemId - XR_FORM_FACTOR_HANDHELD_DISPLAY
+        xrSystemGetInfo.formFactor = XR_FORM_FACTOR_HANDHELD_DISPLAY;
+        xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
+        if (xrRes == XR_SUCCESS) {
+            foeXrGetVulkanInstanceExtensions(xrInstance, xrSystemId, xrExtensions);
+            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        }
 
         // Add another that's missing??
         extensions.emplace_back("VK_KHR_external_fence_capabilities");
@@ -66,7 +84,6 @@ auto determineVkInstanceEnvironment(XrInstance xrInstance,
 
 auto determineVkPhysicalDevice(VkInstance vkInstance,
                                XrInstance xrInstance,
-                               XrSystemId xrSystemId,
                                VkSurfaceKHR vkSurface,
                                uint32_t explicitGpu,
                                bool forceXr) -> VkPhysicalDevice {
@@ -86,7 +103,7 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
     // OpenXR requirements
     VkPhysicalDevice xrPhysicalDevice{VK_NULL_HANDLE};
     if (xrInstance != XR_NULL_HANDLE) {
-        foeXrGetVulkanGraphicsDevice(xrInstance, xrSystemId, vkInstance, &xrPhysicalDevice);
+        foeXrGetVulkanGraphicsDevice(xrInstance, 0, vkInstance, &xrPhysicalDevice);
     }
 
     // Window Requirements
@@ -168,9 +185,7 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
     return VK_NULL_HANDLE;
 }
 
-auto determineVkDeviceEnvironment(XrInstance xrInstance,
-                                  XrSystemId xrSystemId,
-                                  bool enableWindowing)
+auto determineVkDeviceEnvironment(XrInstance xrInstance, bool enableWindowing)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>> {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
@@ -182,10 +197,29 @@ auto determineVkDeviceEnvironment(XrInstance xrInstance,
 
     // OpenXR
     if (xrInstance != XR_NULL_HANDLE) {
+        XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
-        foeXrGetVulkanDeviceExtensions(xrInstance, xrSystemId, xrExtensions);
 
-        extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        // SystemId - XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY
+        XrSystemGetInfo xrSystemGetInfo{
+            .type = XR_TYPE_SYSTEM_GET_INFO,
+            .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
+        };
+
+        XrResult xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
+        if (xrRes == XR_SUCCESS) {
+            foeXrGetVulkanDeviceExtensions(xrInstance, xrSystemId, xrExtensions);
+            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        }
+
+        // SystemId - XR_FORM_FACTOR_HANDHELD_DISPLAY
+        xrSystemGetInfo.formFactor = XR_FORM_FACTOR_HANDHELD_DISPLAY;
+
+        xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
+        if (xrRes == XR_SUCCESS) {
+            foeXrGetVulkanDeviceExtensions(xrInstance, xrSystemId, xrExtensions);
+            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        }
     }
 
     return std::make_tuple(layers, extensions);

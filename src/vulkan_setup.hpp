@@ -25,7 +25,6 @@
 #include <vector>
 
 auto determineVkInstanceEnvironment(XrInstance xrInstance,
-                                    XrSystemId xrSystemId,
                                     bool enableWindowing,
                                     bool validation,
                                     bool debugLogging)
@@ -33,14 +32,11 @@ auto determineVkInstanceEnvironment(XrInstance xrInstance,
 
 auto determineVkPhysicalDevice(VkInstance vkInstance,
                                XrInstance xrInstance,
-                               XrSystemId xrSystemId,
                                VkSurfaceKHR vkSurface,
                                uint32_t explicitGpu,
                                bool forceXr) -> VkPhysicalDevice;
 
-auto determineVkDeviceEnvironment(XrInstance xrInstance,
-                                  XrSystemId xrSystemId,
-                                  bool enableWindowing)
+auto determineVkDeviceEnvironment(XrInstance xrInstance, bool enableWindowing)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>>;
 
 #endif // VULKAN_SETUP_HPP
