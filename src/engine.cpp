@@ -21,13 +21,13 @@
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
 #include <foe/graphics/fragment_descriptor.hpp>
 #include <foe/graphics/fragment_descriptor_pool.hpp>
-#include <foe/graphics/pipeline_pool.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/shader_pool.hpp>
 #include <foe/graphics/swapchain.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
+#include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/log.hpp>
@@ -273,7 +273,7 @@ int main(int argc, char **argv) {
     foeBuiltinDescriptorSets builtinDescriptorSets;
     foeShaderPool shaderPool;
     foeFragmentDescriptorPool fragmentDescriptorPool;
-    foePipelinePool pipelinePool;
+    foeGfxVkPipelinePool pipelinePool;
 
     Camera camera;
     CameraDescriptorPool cameraDescriptorPool;
@@ -394,7 +394,7 @@ int main(int argc, char **argv) {
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    res = pipelinePool.initialize(foeGfxVkGetDevice(gfxSession), &builtinDescriptorSets);
+    res = pipelinePool.initialize(gfxSession, &builtinDescriptorSets);
     if (res != VK_SUCCESS) {
         VK_END_PROGRAM
     }

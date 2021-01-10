@@ -14,11 +14,12 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_PIPELINE_POOL_HPP
-#define FOE_GRAPHICS_PIPELINE_POOL_HPP
+#ifndef FOE_GRAPHICS_VK_PIPELINE_POOL_HPP
+#define FOE_GRAPHICS_VK_PIPELINE_POOL_HPP
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/fragment_descriptor.hpp>
+#include <foe/graphics/session.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
 #include <vulkan/vulkan.h>
 
@@ -26,9 +27,9 @@
 
 class foeBuiltinDescriptorSets;
 
-class foePipelinePool {
+class foeGfxVkPipelinePool {
   public:
-    FOE_GFX_EXPORT VkResult initialize(VkDevice device,
+    FOE_GFX_EXPORT VkResult initialize(foeGfxSession session,
                                        foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
     FOE_GFX_EXPORT bool initialized() const noexcept;
@@ -70,4 +71,4 @@ class foePipelinePool {
     std::vector<Pipeline> mPipelines;
 };
 
-#endif // FOE_GRAPHICS_PIPELINE_POOL_HPP
+#endif // FOE_GRAPHICS_VK_PIPELINE_POOL_HPP

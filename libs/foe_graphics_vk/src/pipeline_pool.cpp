@@ -14,27 +14,30 @@
     limitations under the License.
 */
 
-#include <foe/graphics/pipeline_pool.hpp>
+#include <foe/graphics/vk/pipeline_pool.hpp>
 
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <vk_error_code.hpp>
 
 #include <array>
 
-#include "gfx_log.hpp"
+#include "log.hpp"
+#include "session.hpp"
 
-VkResult foePipelinePool::initialize(VkDevice device,
-                                     foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept {
+VkResult foeGfxVkPipelinePool::initialize(
+    foeGfxSession session, foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept {
     if (initialized())
         return VK_ERROR_INITIALIZATION_FAILED;
 
-    mDevice = device;
+    auto *pSession = session_from_handle(session);
+
+    mDevice = pSession->device;
     mBuiltinDescriptorSets = pBuiltinDescriptorSets;
 
     return VK_SUCCESS;
 }
 
-void foePipelinePool::deinitialize() noexcept {
+void foeGfxVkPipelinePool::deinitialize() noexcept {
     for (auto &it : mPipelines) {
         if (it.pipeline != VK_NULL_HANDLE)
             vkDestroyPipeline(mDevice, it.pipeline, nullptr);
@@ -46,15 +49,15 @@ void foePipelinePool::deinitialize() noexcept {
     mDevice = VK_NULL_HANDLE;
 }
 
-bool foePipelinePool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
+bool foeGfxVkPipelinePool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
-VkResult foePipelinePool::getPipeline(foeVertexDescriptor *vertexDescriptor,
-                                      foeFragmentDescriptor *fragmentDescriptor,
-                                      VkRenderPass renderPass,
-                                      uint32_t subpass,
-                                      VkPipelineLayout *pPipelineLayout,
-                                      uint32_t *pDescriptorSetLayoutCount,
-                                      VkPipeline *pPipeline) {
+VkResult foeGfxVkPipelinePool::getPipeline(foeVertexDescriptor *vertexDescriptor,
+                                           foeFragmentDescriptor *fragmentDescriptor,
+                                           VkRenderPass renderPass,
+                                           uint32_t subpass,
+                                           VkPipelineLayout *pPipelineLayout,
+                                           uint32_t *pDescriptorSetLayoutCount,
+                                           VkPipeline *pPipeline) {
     // Try to retrieve an already-created pipeline
     for (auto const &pipeline : mPipelines) {
         if (pipeline.vertexDescriptor == vertexDescriptor &&
@@ -70,7 +73,7 @@ VkResult foePipelinePool::getPipeline(foeVertexDescriptor *vertexDescriptor,
     }
 
     // Generate a new pipeline
-    FOE_LOG(Graphics, Verbose, "Generating a new VkPipeline")
+    FOE_LOG(foeVkGraphics, Verbose, "Generating a new VkPipeline")
 
     VkResult res = createPipeline(vertexDescriptor, fragmentDescriptor, renderPass, subpass,
                                   pPipelineLayout, pDescriptorSetLayoutCount, pPipeline);
@@ -89,13 +92,13 @@ VkResult foePipelinePool::getPipeline(foeVertexDescriptor *vertexDescriptor,
     return res;
 }
 
-VkResult foePipelinePool::createPipeline(foeVertexDescriptor *vertexDescriptor,
-                                         foeFragmentDescriptor *fragmentDescriptor,
-                                         VkRenderPass renderPass,
-                                         uint32_t subpass,
-                                         VkPipelineLayout *pPipelineLayout,
-                                         uint32_t *pDescriptorSetLayoutCount,
-                                         VkPipeline *pPipeline) const noexcept {
+VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescriptor,
+                                              foeFragmentDescriptor *fragmentDescriptor,
+                                              VkRenderPass renderPass,
+                                              uint32_t subpass,
+                                              VkPipelineLayout *pPipelineLayout,
+                                              uint32_t *pDescriptorSetLayoutCount,
+                                              VkPipeline *pPipeline) const noexcept {
     VkResult res{VK_SUCCESS};
     VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
     uint32_t descriptorSetLayoutCount{0};
@@ -229,7 +232,7 @@ VkResult foePipelinePool::createPipeline(foeVertexDescriptor *vertexDescriptor,
         descriptorSetLayoutCount = descriptorSetLayouts.size();
         res = vkCreatePipelineLayout(mDevice, &pipelineLayoutCI, nullptr, &pipelineLayout);
         if (res != VK_SUCCESS) {
-            FOE_LOG(Graphics, Error, "Failed to generate VkPipelineLayout with error: {}",
+            FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipelineLayout with error: {}",
                     std::error_code{res}.message())
             goto CREATE_FAILED;
         }
@@ -331,7 +334,7 @@ VkResult foePipelinePool::createPipeline(foeVertexDescriptor *vertexDescriptor,
         res =
             vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &pipeline);
         if (res != VK_SUCCESS) {
-            FOE_LOG(Graphics, Error, "Failed to generate VkPipeline with error: {}",
+            FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipeline with error: {}",
                     std::error_code{res}.message())
         }
     }
