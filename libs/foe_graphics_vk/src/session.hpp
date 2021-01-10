@@ -17,6 +17,7 @@
 #ifndef SESSION_HPP
 #define SESSION_HPP
 
+#include <foe/graphics/session.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -35,5 +36,7 @@ struct foeGfxVkSession {
     uint32_t numQueueFamilies{0};
     foeVkQueueFamily pQueueFamilies[MaxQueueFamilies];
 };
+
+FOE_DEFINE_HANDLE_CASTS(session, foeGfxVkSession, foeGfxSession)
 
 #endif // SESSION_HPP

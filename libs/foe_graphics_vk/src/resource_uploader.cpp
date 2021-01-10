@@ -22,7 +22,7 @@
 
 VkResult foeGfxCreateResourceUploader(foeGfxSession session,
                                       foeResourceUploader *pResourceUploader) {
-    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
+    auto *pSession = session_from_handle(session);
     VkResult res;
     foeResourceUploader resUploader{};
 

@@ -33,6 +33,16 @@ extern "C" {
 #endif
 #endif
 
+#define FOE_DEFINE_HANDLE_CASTS(HUMAN_NAME, OBJ_TYPE, HANDLE_TYPE)                                 \
+                                                                                                   \
+    inline OBJ_TYPE *HUMAN_NAME##_from_handle(HANDLE_TYPE handle) {                                \
+        return reinterpret_cast<OBJ_TYPE *>(handle);                                               \
+    }                                                                                              \
+                                                                                                   \
+    inline HANDLE_TYPE HUMAN_NAME##_to_handle(OBJ_TYPE *object) {                                  \
+        return reinterpret_cast<HANDLE_TYPE>(object);                                              \
+    }
+
 // A null value for FoE handle types
 #define FOE_NULL_HANDLE 0
 

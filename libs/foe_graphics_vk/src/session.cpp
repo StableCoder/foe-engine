@@ -158,14 +158,14 @@ CREATE_FAILED:
     if (vkRes != VK_NULL_HANDLE) {
         foeGfxVkDestroySession(pNewSession);
     } else {
-        *pSession = reinterpret_cast<foeGfxSession>(pNewSession);
+        *pSession = session_to_handle(pNewSession);
     }
 
     return vkRes;
 }
 
 uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
-    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
+    auto *pSession = session_from_handle(session);
     std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;
 
     for (uint32_t i = 0; i < MaxQueueFamilies; ++i) {
@@ -196,26 +196,26 @@ uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
 }
 
 VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session) {
-    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
+    auto *pSession = session_from_handle(session);
     return pSession->physicalDevice;
 }
 
 VkDevice foeGfxVkGetDevice(foeGfxSession session) {
-    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
+    auto *pSession = session_from_handle(session);
     return pSession->device;
 }
 
 VmaAllocator foeGfxVkGetAllocator(foeGfxSession session) {
-    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
+    auto *pSession = session_from_handle(session);
     return pSession->allocator;
 }
 
 foeVkQueueFamily *getFirstQueue(foeGfxSession session) {
-    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
+    auto *pSession = session_from_handle(session);
     return &pSession->pQueueFamilies[0];
 }
 
 void foeGfxDestroySession(foeGfxSession session) {
-    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
+    auto *pSession = session_from_handle(session);
     foeGfxVkDestroySession(pSession);
 }

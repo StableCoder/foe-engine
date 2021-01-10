@@ -17,11 +17,14 @@
 #ifndef RUNTIME_HPP
 #define RUNTIME_HPP
 
+#include <foe/graphics/runtime.hpp>
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkRuntime {
     VkInstance instance;
     VkDebugReportCallbackEXT debugCallback;
 };
+
+FOE_DEFINE_HANDLE_CASTS(runtime, foeGfxVkRuntime, foeGfxRuntime)
 
 #endif // RUNTIME_HPP

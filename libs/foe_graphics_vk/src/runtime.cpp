@@ -91,19 +91,19 @@ CREATE_FAILED:
     if (vkRes != VK_SUCCESS) {
         foeGfxVkDestroyRuntime(pNewRuntime);
     } else {
-        *pRuntime = reinterpret_cast<foeGfxRuntime>(pNewRuntime);
+        *pRuntime = runtime_to_handle(pNewRuntime);
     }
 
     return vkRes;
 }
 
 VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime) {
-    auto *pRuntime = reinterpret_cast<foeGfxVkRuntime *>(runtime);
+    auto *pRuntime = runtime_from_handle(runtime);
     return pRuntime->instance;
 }
 
 void foeGfxDestroyRuntime(foeGfxRuntime runtime) {
-    auto *pRuntime = reinterpret_cast<foeGfxVkRuntime *>(runtime);
+    auto *pRuntime = runtime_from_handle(runtime);
 
     foeGfxVkDestroyRuntime(pRuntime);
 }
