@@ -19,13 +19,18 @@
 #include <foe/xr/debug_utils.hpp>
 #include <foe/xr/vulkan.hpp>
 
-auto determineXrInstanceEnvironment(bool debugLogging)
+auto determineXrInstanceEnvironment(bool validation, bool debugLogging)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>> {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
     // Vulkan
     extensions.emplace_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
+
+    // Validation
+    if (validation) {
+        layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
+    }
 
     // Debug Callback
     if (debugLogging) {

@@ -21,7 +21,7 @@
 #include <tuple>
 #include <vector>
 
-auto determineXrInstanceEnvironment(bool debugLogging)
+auto determineXrInstanceEnvironment(bool validation, bool debugLogging)
     -> std::tuple<std::vector<std::string>, std::vector<std::string>>;
 
 #endif // XR_SETUP_HPP

@@ -313,7 +313,8 @@ int main(int argc, char **argv) {
             END_PROGRAM
         }
 
-        auto [layers, extensions] = determineXrInstanceEnvironment(settings.xr.debugLogging);
+        auto [layers, extensions] =
+            determineXrInstanceEnvironment(settings.xr.validation, settings.xr.debugLogging);
         auto errC =
             xrRuntime.createRuntime("FoE Engine", 0, layers, extensions, settings.xr.debugLogging);
         if (errC && settings.xr.forceXr) {

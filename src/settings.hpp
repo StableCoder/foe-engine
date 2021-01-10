@@ -36,6 +36,7 @@ struct Settings {
 
     struct Xr {
         bool forceXr = false;
+        bool validation = false;
         bool debugLogging = false;
     } xr;
 };
