@@ -1,9 +1,7 @@
 target_sources(
   foe_graphics
   PRIVATE builtin_descriptor_sets.cpp
-          debug_callback.cpp
           descriptor_set_layout_pool.cpp
-          device_environment.cpp
           error_colour_image.cpp
           error_depth_stencil_image.cpp
           fragment_descriptor_pool.cpp
@@ -13,7 +11,6 @@ target_sources(
           model.cpp
           pipeline_pool.cpp
           render_pass_pool.cpp
-          resource_uploader.cpp
           shader_pool.cpp
           shader.cpp
           swapchain.cpp

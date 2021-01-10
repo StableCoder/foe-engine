@@ -17,10 +17,10 @@
 #include <foe/imgui/renderer.hpp>
 
 #include <GLFW/glfw3.h>
-#include <foe/graphics/device_environment.hpp>
 #include <foe/graphics/image.hpp>
 #include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/upload_data.hpp>
+#include <foe/graphics/vk/session.hpp>
 #include <foe/wsi.hpp>
 #include <imgui.h>
 
@@ -84,7 +84,7 @@ foeImGuiRenderer::foeImGuiRenderer() {
 
 foeImGuiRenderer::~foeImGuiRenderer() { ImGui::DestroyContext(); }
 
-VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
+VkResult foeImGuiRenderer::initialize(foeGfxSession session,
                                       VkSampleCountFlags rasterSampleFlags,
                                       VkRenderPass renderPass,
                                       uint32_t subpass) {
@@ -100,7 +100,7 @@ VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
 
     VkExtent3D fontExtent;
 
-    res = foeGfxCreateResourceUploader(pGfxEnvironment, &resUploader);
+    res = foeGfxCreateResourceUploader(session, &resUploader);
     if (res != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
@@ -125,7 +125,7 @@ VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
             .usage = VMA_MEMORY_USAGE_CPU_ONLY,
         };
 
-        res = vmaCreateBuffer(pGfxEnvironment->allocator, &bufferCI, &allocCI, &stagingBuffer,
+        res = vmaCreateBuffer(foeGfxVkGetAllocator(session), &bufferCI, &allocCI, &stagingBuffer,
                               &stagingAlloc, nullptr);
         if (res != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
@@ -133,14 +133,14 @@ VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
 
         // Map data in
         void *pData;
-        res = vmaMapMemory(pGfxEnvironment->allocator, stagingAlloc, &pData);
+        res = vmaMapMemory(foeGfxVkGetAllocator(session), stagingAlloc, &pData);
         if (res != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
 
         memcpy(pData, pFontData, uploadSize);
 
-        vmaUnmapMemory(pGfxEnvironment->allocator, stagingAlloc);
+        vmaUnmapMemory(foeGfxVkGetAllocator(session), stagingAlloc);
 
         // Image
         VkImageCreateInfo imageCI{
@@ -157,7 +157,7 @@ VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
 
         allocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        res = vmaCreateImage(pGfxEnvironment->allocator, &imageCI, &allocCI, &mFontImage,
+        res = vmaCreateImage(foeGfxVkGetAllocator(session), &imageCI, &allocCI, &mFontImage,
                              &mFontAlloc, nullptr);
         if (res != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
@@ -213,7 +213,7 @@ VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
                 },
         };
 
-        res = vkCreateImageView(pGfxEnvironment->device, &viewCI, nullptr, &mFontView);
+        res = vkCreateImageView(foeGfxVkGetDevice(session), &viewCI, nullptr, &mFontView);
         if (res != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
@@ -235,33 +235,33 @@ VkResult foeImGuiRenderer::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
             .maxLod = 1000,
         };
 
-        res = vkCreateSampler(pGfxEnvironment->device, &samplerCI, nullptr, &mFontSampler);
+        res = vkCreateSampler(foeGfxVkGetDevice(session), &samplerCI, nullptr, &mFontSampler);
         if (res != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
     }
 
-    res = initializeDescriptorPool(pGfxEnvironment->device);
+    res = initializeDescriptorPool(foeGfxVkGetDevice(session));
     if (res != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    res = initializeDescriptorSetLayout(pGfxEnvironment->device);
+    res = initializeDescriptorSetLayout(foeGfxVkGetDevice(session));
     if (res != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    res = initializeDescriptorSet(pGfxEnvironment->device);
+    res = initializeDescriptorSet(foeGfxVkGetDevice(session));
     if (res != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    res = initializePipelineLayout(pGfxEnvironment->device);
+    res = initializePipelineLayout(foeGfxVkGetDevice(session));
     if (res != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    res = initializePipeline(pGfxEnvironment->device, rasterSampleFlags, renderPass, subpass);
+    res = initializePipeline(foeGfxVkGetDevice(session), rasterSampleFlags, renderPass, subpass);
     if (res != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
@@ -270,7 +270,7 @@ SUBMIT_FAILED:
     if (uploadData.dstFence != VK_NULL_HANDLE) {
         VkResult fenceStatus = VK_NOT_READY;
         while (fenceStatus == VK_NOT_READY) {
-            fenceStatus = vkGetFenceStatus(pGfxEnvironment->device, uploadData.dstFence);
+            fenceStatus = vkGetFenceStatus(foeGfxVkGetDevice(session), uploadData.dstFence);
         }
         if (fenceStatus != VK_SUCCESS) {
             res = fenceStatus;
@@ -278,64 +278,64 @@ SUBMIT_FAILED:
     }
 
 INITIALIZATION_FAILED:
-    uploadData.destroy(pGfxEnvironment->device);
+    uploadData.destroy(foeGfxVkGetDevice(session));
 
     if (stagingBuffer != VK_NULL_HANDLE) {
-        vmaDestroyBuffer(pGfxEnvironment->allocator, stagingBuffer, stagingAlloc);
+        vmaDestroyBuffer(foeGfxVkGetAllocator(session), stagingBuffer, stagingAlloc);
     }
 
     foeGfxDestroyResourceUploader(&resUploader);
 
     if (res != VK_SUCCESS) {
-        deinitialize(pGfxEnvironment);
+        deinitialize(session);
     }
 
     return res;
 }
 
-void foeImGuiRenderer::deinitialize(foeVkDeviceEnvironment *pGfxEnvironment) {
+void foeImGuiRenderer::deinitialize(foeGfxSession session) {
     if (mPipeline != VK_NULL_HANDLE) {
-        vkDestroyPipeline(pGfxEnvironment->device, mPipeline, nullptr);
+        vkDestroyPipeline(foeGfxVkGetDevice(session), mPipeline, nullptr);
         mPipeline = VK_NULL_HANDLE;
     }
 
     if (mPipelineLayout != VK_NULL_HANDLE) {
-        vkDestroyPipelineLayout(pGfxEnvironment->device, mPipelineLayout, nullptr);
+        vkDestroyPipelineLayout(foeGfxVkGetDevice(session), mPipelineLayout, nullptr);
         mPipelineLayout = VK_NULL_HANDLE;
     }
 
     if (mDescriptorPool != VK_NULL_HANDLE) {
-        vkDestroyDescriptorPool(pGfxEnvironment->device, mDescriptorPool, nullptr);
+        vkDestroyDescriptorPool(foeGfxVkGetDevice(session), mDescriptorPool, nullptr);
         mDescriptorPool = VK_NULL_HANDLE;
     }
 
     if (mDescriptorSetLayout != VK_NULL_HANDLE) {
-        vkDestroyDescriptorSetLayout(pGfxEnvironment->device, mDescriptorSetLayout, nullptr);
+        vkDestroyDescriptorSetLayout(foeGfxVkGetDevice(session), mDescriptorSetLayout, nullptr);
         mDescriptorSetLayout = VK_NULL_HANDLE;
     }
 
     if (mFontSampler != VK_NULL_HANDLE) {
-        vkDestroySampler(pGfxEnvironment->device, mFontSampler, nullptr);
+        vkDestroySampler(foeGfxVkGetDevice(session), mFontSampler, nullptr);
         mFontSampler = VK_NULL_HANDLE;
     }
 
     if (mFontView != VK_NULL_HANDLE) {
-        vkDestroyImageView(pGfxEnvironment->device, mFontView, nullptr);
+        vkDestroyImageView(foeGfxVkGetDevice(session), mFontView, nullptr);
         mFontView = VK_NULL_HANDLE;
     }
 
     if (mFontImage != VK_NULL_HANDLE) {
-        vmaDestroyImage(pGfxEnvironment->allocator, mFontImage, mFontAlloc);
+        vmaDestroyImage(foeGfxVkGetAllocator(session), mFontImage, mFontAlloc);
         mFontImage = VK_NULL_HANDLE;
     }
 
     for (auto &it : mDrawBuffers) {
         if (it.vertices.buffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(pGfxEnvironment->allocator, it.vertices.buffer, it.vertices.alloc);
+            vmaDestroyBuffer(foeGfxVkGetAllocator(session), it.vertices.buffer, it.vertices.alloc);
         }
 
         if (it.indices.buffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(pGfxEnvironment->allocator, it.indices.buffer, it.indices.alloc);
+            vmaDestroyBuffer(foeGfxVkGetAllocator(session), it.indices.buffer, it.indices.alloc);
         }
     }
     mDrawBuffers.clear();

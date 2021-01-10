@@ -14,28 +14,26 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_TYPE_DEFS_HPP
-#define FOE_GRAPHICS_TYPE_DEFS_HPP
+#ifndef SESSION_HPP
+#define SESSION_HPP
 
-enum {
-    FOE_GRAPHICS_MAX_BUFFERED_FRAMES = 3,
-};
-
-enum {
-    MaxQueueFamilies = 8U,
-    MaxQueuesPerFamily = 8U,
-};
-
-#include <mutex>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-struct foeVkQueueFamily {
-    VkQueueFlags flags;
-    uint32_t family;
-    uint32_t numQueues;
+#include <mutex>
 
-    std::mutex sync[MaxQueuesPerFamily];
-    VkQueue queue[MaxQueuesPerFamily];
+#include <foe/graphics/type_defs.hpp>
+
+struct foeGfxVkSession {
+    // From the Runtime
+    VkInstance instance{VK_NULL_HANDLE};
+
+    VkPhysicalDevice physicalDevice{VK_NULL_HANDLE};
+    VkDevice device{VK_NULL_HANDLE};
+    VmaAllocator allocator{VK_NULL_HANDLE};
+
+    uint32_t numQueueFamilies{0};
+    foeVkQueueFamily pQueueFamilies[MaxQueueFamilies];
 };
 
-#endif // FOE_GRAPHICS_TYPE_DEFS_HPP
+#endif // SESSION_HPP

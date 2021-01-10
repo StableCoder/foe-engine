@@ -18,9 +18,7 @@
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
 #include <foe/graphics/builtin_descriptor_sets.hpp>
-#include <foe/graphics/debug_callback.hpp>
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
-#include <foe/graphics/device_environment.hpp>
 #include <foe/graphics/fragment_descriptor.hpp>
 #include <foe/graphics/fragment_descriptor_pool.hpp>
 #include <foe/graphics/pipeline_pool.hpp>
@@ -30,6 +28,8 @@
 #include <foe/graphics/swapchain.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
+#include <foe/graphics/vk/runtime.hpp>
+#include <foe/graphics/vk/session.hpp>
 #include <foe/log.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/wsi.hpp>
@@ -253,9 +253,9 @@ int main(int argc, char **argv) {
     VkRenderPass xrRenderPass;
     std::vector<foeXrSessionView> xrViews;
 
-    VkInstance vkInstance{VK_NULL_HANDLE};
-    VkDebugReportCallbackEXT vkDebugCallback{VK_NULL_HANDLE};
-    foeVkDeviceEnvironment *pGfxEnvironment;
+    foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
+    foeGfxSession gfxSession{FOE_NULL_HANDLE};
+
     foeResourceUploader resUploader;
 
     VkWindowData vkWindow;
@@ -323,36 +323,33 @@ int main(int argc, char **argv) {
         auto [instanceLayers, instanceExtensions] = determineVkInstanceEnvironment(
             xrRuntime.instance, settings.window.enableWSI, settings.graphics.validation,
             settings.graphics.debugLogging);
-        res = foeVkCreateInstance("FoE Engine", 0, instanceLayers, instanceExtensions, &vkInstance);
-        if (res != VK_SUCCESS) {
-            VK_END_PROGRAM
+
+        errC = foeGfxVkCreateRuntime("FoE Engine", 0, instanceLayers, instanceExtensions,
+                                     settings.graphics.validation, settings.graphics.debugLogging,
+                                     &gfxRuntime);
+        if (errC) {
+            ERRC_END_PROGRAM
         }
 
-        if (settings.graphics.debugLogging) {
-            res = foeVkCreateDebugCallback(vkInstance, &vkDebugCallback);
-            if (res != VK_SUCCESS) {
-                VK_END_PROGRAM
-            }
-        }
-
-        res = foeWindowGetVkSurface(vkInstance, &vkWindow.surface);
+        res = foeWindowGetVkSurface(foeGfxVkGetInstance(gfxRuntime), &vkWindow.surface);
         if (res != VK_SUCCESS) {
             VK_END_PROGRAM
         }
 
         VkPhysicalDevice vkPhysicalDevice =
-            determineVkPhysicalDevice(vkInstance, xrRuntime.instance, vkWindow.surface,
-                                      settings.graphics.gpu, settings.xr.forceXr);
+            determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime.instance,
+                                      vkWindow.surface, settings.graphics.gpu, settings.xr.forceXr);
         auto [deviceLayers, deviceExtensions] =
             determineVkDeviceEnvironment(xrRuntime.instance, vkWindow.surface != VK_NULL_HANDLE);
 
-        res = foeGfxCreateEnvironment(vkInstance, vkPhysicalDevice, deviceLayers, deviceExtensions,
-                                      &pGfxEnvironment);
-        if (res != VK_SUCCESS)
-            VK_END_PROGRAM
+        errC = foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, deviceLayers, deviceExtensions,
+                                     &gfxSession);
+        if (errC) {
+            ERRC_END_PROGRAM
+        }
     }
 
-    res = foeGfxCreateResourceUploader(pGfxEnvironment, &resUploader);
+    res = foeGfxCreateResourceUploader(gfxSession, &resUploader);
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
@@ -375,35 +372,35 @@ int main(int argc, char **argv) {
 #endif
 
     for (auto &it : frameData) {
-        res = it.create(pGfxEnvironment->device);
+        res = it.create(foeGfxVkGetDevice(gfxSession));
         if (res != VK_SUCCESS) {
             VK_END_PROGRAM
         }
     }
 
-    res = renderPassPool.initialize(pGfxEnvironment->device);
+    res = renderPassPool.initialize(foeGfxVkGetDevice(gfxSession));
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    res = descriptorSetLayoutPool.initialize(pGfxEnvironment->device);
+    res = descriptorSetLayoutPool.initialize(foeGfxVkGetDevice(gfxSession));
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    res = builtinDescriptorSets.initialize(pGfxEnvironment->device, &descriptorSetLayoutPool);
+    res = builtinDescriptorSets.initialize(foeGfxVkGetDevice(gfxSession), &descriptorSetLayoutPool);
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    res = shaderPool.initialize(pGfxEnvironment->device);
+    res = shaderPool.initialize(foeGfxVkGetDevice(gfxSession));
     if (res != VK_SUCCESS)
         VK_END_PROGRAM
 
-    res = pipelinePool.initialize(pGfxEnvironment->device, &builtinDescriptorSets);
+    res = pipelinePool.initialize(foeGfxVkGetDevice(gfxSession), &builtinDescriptorSets);
     if (res != VK_SUCCESS) {
         VK_END_PROGRAM
     }
 
     res = cameraDescriptorPool.initialize(
-        pGfxEnvironment,
+        gfxSession,
         builtinDescriptorSets.getBuiltinLayout(
             foeBuiltinDescriptorSetLayoutFlagBits::
                 FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX),
@@ -509,9 +506,9 @@ int main(int argc, char **argv) {
         // XrSession
         XrGraphicsBindingVulkanKHR gfxBinding{
             .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
-            .instance = pGfxEnvironment->instance,
-            .physicalDevice = pGfxEnvironment->physicalDevice,
-            .device = pGfxEnvironment->device,
+            .instance = foeGfxVkGetInstance(gfxRuntime),
+            .physicalDevice = foeGfxVkGetPhysicalDevice(gfxSession),
+            .device = foeGfxVkGetDevice(gfxSession),
             .queueFamilyIndex = 0,
             .queueIndex = 0,
         };
@@ -616,7 +613,7 @@ int main(int argc, char **argv) {
                 viewCI.image = it.image;
                 VkImageView vkView{VK_NULL_HANDLE};
                 VkResult res =
-                    vkCreateImageView(pGfxEnvironment->device, &viewCI, nullptr, &vkView);
+                    vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
                 if (res != VK_SUCCESS) {
                     return res;
                 }
@@ -637,8 +634,8 @@ int main(int argc, char **argv) {
                 };
 
                 VkFramebuffer newFramebuffer;
-                VkResult res = vkCreateFramebuffer(pGfxEnvironment->device, &framebufferCI, nullptr,
-                                                   &newFramebuffer);
+                VkResult res = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI,
+                                                   nullptr, &newFramebuffer);
                 if (res != VK_SUCCESS) {
                     return res;
                 }
@@ -731,7 +728,7 @@ int main(int argc, char **argv) {
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
-        if (VK_SUCCESS == vkWaitForFences(pGfxEnvironment->device, 1,
+        if (VK_SUCCESS == vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
                                           &frameData[nextFrameIndex].frameComplete, VK_TRUE, 0)) {
             frameTime.newFrame();
 
@@ -742,18 +739,18 @@ int main(int argc, char **argv) {
                 if (!swapchain) {
                     { // Surface Formats
                         uint32_t formatCount;
-                        res = vkGetPhysicalDeviceSurfaceFormatsKHR(pGfxEnvironment->physicalDevice,
-                                                                   vkWindow.surface, &formatCount,
-                                                                   nullptr);
+                        res = vkGetPhysicalDeviceSurfaceFormatsKHR(
+                            foeGfxVkGetPhysicalDevice(gfxSession), vkWindow.surface, &formatCount,
+                            nullptr);
                         if (res != VK_SUCCESS)
                             VK_END_PROGRAM
 
                         std::unique_ptr<VkSurfaceFormatKHR[]> surfaceFormats(
                             new VkSurfaceFormatKHR[formatCount]);
 
-                        res = vkGetPhysicalDeviceSurfaceFormatsKHR(pGfxEnvironment->physicalDevice,
-                                                                   vkWindow.surface, &formatCount,
-                                                                   surfaceFormats.get());
+                        res = vkGetPhysicalDeviceSurfaceFormatsKHR(
+                            foeGfxVkGetPhysicalDevice(gfxSession), vkWindow.surface, &formatCount,
+                            surfaceFormats.get());
                         if (res != VK_SUCCESS)
                             VK_END_PROGRAM
 
@@ -763,14 +760,15 @@ int main(int argc, char **argv) {
                     { // Present Modes
                         uint32_t modeCount;
                         vkGetPhysicalDeviceSurfacePresentModesKHR(
-                            pGfxEnvironment->physicalDevice, vkWindow.surface, &modeCount, nullptr);
+                            foeGfxVkGetPhysicalDevice(gfxSession), vkWindow.surface, &modeCount,
+                            nullptr);
 
                         std::unique_ptr<VkPresentModeKHR[]> presentModes(
                             new VkPresentModeKHR[modeCount]);
 
-                        vkGetPhysicalDeviceSurfacePresentModesKHR(pGfxEnvironment->physicalDevice,
-                                                                  vkWindow.surface, &modeCount,
-                                                                  presentModes.get());
+                        vkGetPhysicalDeviceSurfacePresentModesKHR(
+                            foeGfxVkGetPhysicalDevice(gfxSession), vkWindow.surface, &modeCount,
+                            presentModes.get());
 
                         swapchain.presentMode(presentModes.get()[0]);
                     }
@@ -780,15 +778,16 @@ int main(int argc, char **argv) {
 
                 int width, height;
                 foeWindowGetSize(&width, &height);
-                res = newSwapchain.create(pGfxEnvironment->physicalDevice, pGfxEnvironment->device,
-                                          vkWindow.surface, swapchain.surfaceFormat(),
-                                          swapchain.presentMode(), swapchain, 3, width, height);
+                res = newSwapchain.create(foeGfxVkGetPhysicalDevice(gfxSession),
+                                          foeGfxVkGetDevice(gfxSession), vkWindow.surface,
+                                          swapchain.surfaceFormat(), swapchain.presentMode(),
+                                          swapchain, 3, width, height);
                 if (res != VK_SUCCESS)
                     VK_END_PROGRAM
 
                 // If the old swapchain exists, we need to destroy it
                 if (swapchain) {
-                    swapchain.destroy(pGfxEnvironment->device);
+                    swapchain.destroy(foeGfxVkGetDevice(gfxSession));
                 }
 
                 swapchain = newSwapchain;
@@ -797,7 +796,7 @@ int main(int argc, char **argv) {
 
             // Acquire Target Presentation Images
             VkResult res = swapchain.acquireNextImage(
-                pGfxEnvironment->device, frameData[nextFrameIndex].presentImageAcquired);
+                foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].presentImageAcquired);
             if (res == VK_TIMEOUT || res == VK_NOT_READY) {
                 // Waiting for an image to become ready
                 goto SKIP_FRAME_RENDER;
@@ -808,14 +807,16 @@ int main(int argc, char **argv) {
                 // Catastrophic error
                 VK_END_PROGRAM
             }
-            vkResetFences(pGfxEnvironment->device, 1, &frameData[nextFrameIndex].frameComplete);
+            vkResetFences(foeGfxVkGetDevice(gfxSession), 1,
+                          &frameData[nextFrameIndex].frameComplete);
             frameIndex = nextFrameIndex;
 
             // Set camera descriptors
             bool camerasRemade = false;
 
             // Rendering
-            vkResetCommandPool(pGfxEnvironment->device, frameData[nextFrameIndex].commandPool, 0);
+            vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].commandPool,
+                               0);
 
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
@@ -999,8 +1000,8 @@ int main(int argc, char **argv) {
                                 .pCommandBuffers = &commandBuffer,
                             };
 
-                            res = vkQueueSubmit(pGfxEnvironment->pQueueFamilies[0].queue[0], 1,
-                                                &submitInfo, VK_NULL_HANDLE);
+                            res = vkQueueSubmit(getFirstQueue(gfxSession)->queue[0], 1, &submitInfo,
+                                                VK_NULL_HANDLE);
                             if (res != VK_SUCCESS)
                                 goto SHUTDOWN_PROGRAM;
                         }
@@ -1057,8 +1058,8 @@ int main(int argc, char **argv) {
 
 #ifdef EDITOR_MODE
             if (!imguiRenderer.initialized()) {
-                if (imguiRenderer.initialize(pGfxEnvironment, VK_SAMPLE_COUNT_1_BIT,
-                                             swapImageRenderPass, 0) != VK_SUCCESS) {
+                if (imguiRenderer.initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT, swapImageRenderPass,
+                                             0) != VK_SUCCESS) {
                     VK_END_PROGRAM
                 }
             }
@@ -1066,7 +1067,7 @@ int main(int argc, char **argv) {
 
             if (swapchainRebuilt) {
                 for (auto &it : swapImageFramebuffers)
-                    vkDestroyFramebuffer(pGfxEnvironment->device, it, nullptr);
+                    vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
                 swapImageFramebuffers.clear();
 
                 int width, height;
@@ -1087,8 +1088,8 @@ int main(int argc, char **argv) {
                     view = swapchain.imageView(i);
 
                     VkFramebuffer framebuffer;
-                    res = vkCreateFramebuffer(pGfxEnvironment->device, &framebufferCI, nullptr,
-                                              &framebuffer);
+                    res = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI,
+                                              nullptr, &framebuffer);
                     if (res != VK_SUCCESS)
                         VK_END_PROGRAM
                     swapImageFramebuffers.emplace_back(framebuffer);
@@ -1169,7 +1170,7 @@ int main(int argc, char **argv) {
                         imguiState.runUI();
                         imguiRenderer.endFrame();
 
-                        res = imguiRenderer.update(pGfxEnvironment->allocator, frameIndex);
+                        res = imguiRenderer.update(foeGfxVkGetAllocator(gfxSession), frameIndex);
                         if (res != VK_SUCCESS) {
                             VK_END_PROGRAM
                         }
@@ -1201,7 +1202,7 @@ int main(int argc, char **argv) {
                     .pSignalSemaphores = &frameData[frameIndex].renderComplete,
                 };
 
-                res = vkQueueSubmit(pGfxEnvironment->pQueueFamilies[0].queue[0], 1, &submitInfo,
+                res = vkQueueSubmit(getFirstQueue(gfxSession)->queue[0], 1, &submitInfo,
                                     frameData[frameIndex].frameComplete);
                 if (res != VK_SUCCESS)
                     goto SHUTDOWN_PROGRAM;
@@ -1233,8 +1234,7 @@ int main(int argc, char **argv) {
                     .pResults = swapchainResults.data(),
                 };
 
-                VkResult res =
-                    vkQueuePresentKHR(pGfxEnvironment->pQueueFamilies[0].queue[0], &presentInfo);
+                VkResult res = vkQueuePresentKHR(getFirstQueue(gfxSession)->queue[0], &presentInfo);
                 if (res == VK_ERROR_OUT_OF_DATE_KHR) {
                     // The associated window has been resized, will be fixed for the next frame
                     res = VK_SUCCESS;
@@ -1248,8 +1248,8 @@ int main(int argc, char **argv) {
 SHUTDOWN_PROGRAM:
     FOE_LOG(General, Info, "Exiting main loop")
 
-    if (pGfxEnvironment != nullptr && pGfxEnvironment->device != VK_NULL_HANDLE)
-        vkDeviceWaitIdle(pGfxEnvironment->device);
+    if (gfxSession != FOE_NULL_HANDLE)
+        vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
     // OpenXR Cleanup
     if (xrSession.session != XR_NULL_HANDLE) {
@@ -1281,7 +1281,7 @@ SHUTDOWN_PROGRAM:
 
         for (auto &view : xrViews) {
             for (auto it : view.imageViews) {
-                vkDestroyImageView(pGfxEnvironment->device, it, nullptr);
+                vkDestroyImageView(foeGfxVkGetDevice(gfxSession), it, nullptr);
             }
             if (view.swapchain != XR_NULL_HANDLE) {
                 xrDestroySwapchain(view.swapchain);
@@ -1292,39 +1292,36 @@ SHUTDOWN_PROGRAM:
     }
 
     for (auto &it : frameData) {
-        it.destroy(pGfxEnvironment->device);
+        it.destroy(foeGfxVkGetDevice(gfxSession));
     }
 
     for (auto &it : swapImageFramebuffers)
-        vkDestroyFramebuffer(pGfxEnvironment->device, it, nullptr);
+        vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
     cameraDescriptorPool.deinitialize();
 
     pipelinePool.deinitialize();
     shaderPool.deinitialize();
-    builtinDescriptorSets.deinitialize(pGfxEnvironment->device);
+    builtinDescriptorSets.deinitialize(foeGfxVkGetDevice(gfxSession));
     descriptorSetLayoutPool.deinitialize();
 
     renderPassPool.deinitialize();
 
-    swapchain.destroy(pGfxEnvironment->device);
-    destroyVkWindowData(&vkWindow, pGfxEnvironment->instance, pGfxEnvironment->device);
+    swapchain.destroy(foeGfxVkGetDevice(gfxSession));
+    destroyVkWindowData(&vkWindow, foeGfxVkGetInstance(gfxRuntime), foeGfxVkGetDevice(gfxSession));
 
     foeDestroyWindow();
 
     foeGfxDestroyResourceUploader(&resUploader);
 
 #ifdef EDITOR_MODE
-    imguiRenderer.deinitialize(pGfxEnvironment);
+    imguiRenderer.deinitialize(gfxSession);
 #endif
 
-    if (pGfxEnvironment != nullptr)
-        foeGfxDestroyEnvironment(pGfxEnvironment);
-
-    if (vkDebugCallback != VK_NULL_HANDLE)
-        foeVkDestroyDebugCallback(vkInstance, vkDebugCallback);
-    if (vkInstance != VK_NULL_HANDLE)
-        vkDestroyInstance(vkInstance, nullptr);
+    if (gfxSession != FOE_NULL_HANDLE)
+        foeGfxDestroySession(gfxSession);
+    if (gfxRuntime != FOE_NULL_HANDLE)
+        foeGfxDestroyRuntime(gfxRuntime);
 
     xrRuntime.destroyRuntime();
 

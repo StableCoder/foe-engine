@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,28 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_TYPE_DEFS_HPP
-#define FOE_GRAPHICS_TYPE_DEFS_HPP
+#ifndef DEBUG_CALLBACK_HPP
+#define DEBUG_CALLBACK_HPP
 
-enum {
-    FOE_GRAPHICS_MAX_BUFFERED_FRAMES = 3,
-};
-
-enum {
-    MaxQueueFamilies = 8U,
-    MaxQueuesPerFamily = 8U,
-};
-
-#include <mutex>
 #include <vulkan/vulkan.h>
 
-struct foeVkQueueFamily {
-    VkQueueFlags flags;
-    uint32_t family;
-    uint32_t numQueues;
+VkResult foeVkCreateDebugCallback(VkInstance instance, VkDebugReportCallbackEXT *pDebugCallback);
 
-    std::mutex sync[MaxQueuesPerFamily];
-    VkQueue queue[MaxQueuesPerFamily];
-};
+VkResult foeVkDestroyDebugCallback(VkInstance instance, VkDebugReportCallbackEXT debugCallback);
 
-#endif // FOE_GRAPHICS_TYPE_DEFS_HPP
+#endif // DEBUG_CALLBACK_HPP

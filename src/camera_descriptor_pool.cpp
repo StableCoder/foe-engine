@@ -16,19 +16,24 @@
 
 #include "camera_descriptor_pool.hpp"
 
+#include <foe/graphics/vk/session.hpp>
+
 #include "camera.hpp"
 
-VkResult CameraDescriptorPool::initialize(foeVkDeviceEnvironment *pGfxEnvironment,
+VkResult CameraDescriptorPool::initialize(foeGfxSession session,
                                           VkDescriptorSetLayout projectionViewLayout,
                                           uint32_t projectionViewBinding) {
     VkResult res;
 
-    mDevice = pGfxEnvironment->device;
-    mAllocator = pGfxEnvironment->allocator;
+    mDevice = foeGfxVkGetDevice(session);
+    mAllocator = foeGfxVkGetAllocator(session);
+
+    VkPhysicalDeviceProperties devProperties;
+    vkGetPhysicalDeviceProperties(foeGfxVkGetPhysicalDevice(session), &devProperties);
 
     mMinUniformBufferOffsetAlignment =
         std::max(static_cast<VkDeviceSize>(sizeof(glm::mat4)),
-                 pGfxEnvironment->physicalDeviceLimits.minUniformBufferOffsetAlignment);
+                 devProperties.limits.minUniformBufferOffsetAlignment);
 
     mProjecionViewLayout = projectionViewLayout;
     mProjectionViewBinding = projectionViewBinding;

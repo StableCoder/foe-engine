@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_DEBUG_UTILS_HPP
-#define FOE_GRAPHICS_DEBUG_UTILS_HPP
+#ifndef LOG_HPP
+#define LOG_HPP
 
-#include <foe/graphics/export.h>
-#include <vulkan/vulkan.h>
+#include <foe/log.hpp>
 
-FOE_GFX_EXPORT VkResult foeVkCreateDebugCallback(VkInstance instance,
-                                                 VkDebugReportCallbackEXT *pDebugCallback);
+FOE_DECLARE_LOG_CATEGORY(foeVkGraphics, All, All)
 
-FOE_GFX_EXPORT VkResult foeVkDestroyDebugCallback(VkInstance instance,
-                                                  VkDebugReportCallbackEXT debugCallback);
-
-#endif // FOE_GRAPHICS_DEBUG_UTILS_HPP
+#endif // LOG_HPP

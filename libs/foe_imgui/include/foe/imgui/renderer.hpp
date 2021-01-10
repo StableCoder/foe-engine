@@ -17,13 +17,13 @@
 #ifndef FOE_IMGUI_RENDERER_HPP
 #define FOE_IMGUI_RENDERER_HPP
 
+#include <foe/graphics/session.hpp>
 #include <foe/imgui/export.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
-struct foeVkDeviceEnvironment;
 struct foeKeyboard;
 struct foeMouse;
 
@@ -32,11 +32,11 @@ class foeImGuiRenderer {
     FOE_IMGUI_EXPORT foeImGuiRenderer();
     FOE_IMGUI_EXPORT ~foeImGuiRenderer();
 
-    FOE_IMGUI_EXPORT VkResult initialize(foeVkDeviceEnvironment *pGfxEnvironment,
+    FOE_IMGUI_EXPORT VkResult initialize(foeGfxSession session,
                                          VkSampleCountFlags rasterSampleFlags,
                                          VkRenderPass renderPass,
                                          uint32_t subpass);
-    FOE_IMGUI_EXPORT void deinitialize(foeVkDeviceEnvironment *pGfxEnvironment);
+    FOE_IMGUI_EXPORT void deinitialize(foeGfxSession session);
     FOE_IMGUI_EXPORT bool initialized() const noexcept;
 
     FOE_IMGUI_EXPORT void newFrame();

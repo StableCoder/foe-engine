@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
     limitations under the License.
 */
 
-#include <foe/graphics/debug_callback.hpp>
+#include "debug_callback.hpp"
 
-#include "gfx_log.hpp"
+#include "log.hpp"
 
 namespace {
 
@@ -29,17 +29,17 @@ VkBool32 vulkanMessageCallbacks(VkDebugReportFlagsEXT flags,
                                 const char *pMessage,
                                 void *pUserData) {
     if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
-        FOE_LOG(Graphics, Error, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, Error, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
     }
     if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0 ||
         (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
-        FOE_LOG(Graphics, Warning, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, Warning, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
     }
     if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
-        FOE_LOG(Graphics, Info, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, Info, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
     }
     if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
-        FOE_LOG(Graphics, Verbose, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, Verbose, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
     }
 
     return VK_FALSE;

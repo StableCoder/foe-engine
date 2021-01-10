@@ -17,7 +17,7 @@
 #ifndef CAMERA_DESCRIPTOR_POOL_HPP
 #define CAMERA_DESCRIPTOR_POOL_HPP
 
-#include <foe/graphics/device_environment.hpp>
+#include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -26,10 +26,9 @@
 #include <vector>
 
 struct foeCameraBase;
-
 class CameraDescriptorPool {
   public:
-    VkResult initialize(foeVkDeviceEnvironment *pGfxEnvironment,
+    VkResult initialize(foeGfxSession gfxSession,
                         VkDescriptorSetLayout projectionViewLayout,
                         uint32_t projectionViewBinding);
     void deinitialize();

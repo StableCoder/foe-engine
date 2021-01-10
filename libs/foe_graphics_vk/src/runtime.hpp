@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,28 +14,14 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_TYPE_DEFS_HPP
-#define FOE_GRAPHICS_TYPE_DEFS_HPP
+#ifndef RUNTIME_HPP
+#define RUNTIME_HPP
 
-enum {
-    FOE_GRAPHICS_MAX_BUFFERED_FRAMES = 3,
-};
-
-enum {
-    MaxQueueFamilies = 8U,
-    MaxQueuesPerFamily = 8U,
-};
-
-#include <mutex>
 #include <vulkan/vulkan.h>
 
-struct foeVkQueueFamily {
-    VkQueueFlags flags;
-    uint32_t family;
-    uint32_t numQueues;
-
-    std::mutex sync[MaxQueuesPerFamily];
-    VkQueue queue[MaxQueuesPerFamily];
+struct foeGfxVkRuntime {
+    VkInstance instance;
+    VkDebugReportCallbackEXT debugCallback;
 };
 
-#endif // FOE_GRAPHICS_TYPE_DEFS_HPP
+#endif // RUNTIME_HPP

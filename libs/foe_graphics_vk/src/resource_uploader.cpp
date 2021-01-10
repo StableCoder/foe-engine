@@ -16,22 +16,27 @@
 
 #include <foe/graphics/resource_uploader.hpp>
 
-VkResult foeGfxCreateResourceUploader(foeVkDeviceEnvironment *pGfxEnvironment,
+#include <foe/graphics/vk/session.hpp>
+
+#include "session.hpp"
+
+VkResult foeGfxCreateResourceUploader(foeGfxSession session,
                                       foeResourceUploader *pResourceUploader) {
+    auto *pSession = reinterpret_cast<foeGfxVkSession *>(session);
     VkResult res;
     foeResourceUploader resUploader{};
 
-    resUploader.device = pGfxEnvironment->device;
-    resUploader.allocator = pGfxEnvironment->allocator;
+    resUploader.device = pSession->device;
+    resUploader.allocator = pSession->allocator;
 
-    auto transferQueue = foeGfxGetBestQueue(pGfxEnvironment, VK_QUEUE_TRANSFER_BIT);
-    auto graphicsQueue = foeGfxGetBestQueue(pGfxEnvironment, VK_QUEUE_GRAPHICS_BIT);
+    auto transferQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_TRANSFER_BIT);
+    auto graphicsQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_GRAPHICS_BIT);
 
     if (transferQueue == graphicsQueue) {
-        resUploader.dstQueueFamily = &pGfxEnvironment->pQueueFamilies[graphicsQueue];
+        resUploader.dstQueueFamily = &pSession->pQueueFamilies[graphicsQueue];
     } else {
-        resUploader.srcQueueFamily = &pGfxEnvironment->pQueueFamilies[transferQueue];
-        resUploader.dstQueueFamily = &pGfxEnvironment->pQueueFamilies[graphicsQueue];
+        resUploader.srcQueueFamily = &pSession->pQueueFamilies[transferQueue];
+        resUploader.dstQueueFamily = &pSession->pQueueFamilies[graphicsQueue];
     }
 
     VkCommandPoolCreateInfo cmdPoolCI{
