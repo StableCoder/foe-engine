@@ -41,10 +41,31 @@ std::vector<std::string> splitString(char const *buffer, uint32_t length) {
     return tokens;
 }
 
+std::vector<XrSystemId> getAllSystemIds(XrInstance instance) {
+    std::vector<XrSystemId> systemIds;
+
+    XrSystemId systemId;
+    XrSystemGetInfo xrSystemGetInfo{
+        .type = XR_TYPE_SYSTEM_GET_INFO,
+        .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
+    };
+
+    // SystemId - XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY
+    XrResult xrRes = xrGetSystem(instance, &xrSystemGetInfo, &systemId);
+    if (xrRes == XR_SUCCESS)
+        systemIds.emplace_back(systemId);
+
+    // SystemId - XR_FORM_FACTOR_HANDHELD_DISPLAY
+    xrSystemGetInfo.formFactor = XR_FORM_FACTOR_HANDHELD_DISPLAY;
+    if (xrRes == XR_SUCCESS)
+        systemIds.emplace_back(systemId);
+
+    return systemIds;
+}
+
 } // namespace
 
 XrResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
-                                          XrSystemId systemId,
                                           std::vector<std::string> &extensions) {
     PFN_xrGetVulkanInstanceExtensionsKHR GetVulkanInstanceExtensions{nullptr};
     XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR",
@@ -53,27 +74,30 @@ XrResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
         return res;
     }
 
-    uint32_t bufferCapacity;
-    res = GetVulkanInstanceExtensions(instance, systemId, 0, &bufferCapacity, nullptr);
-    if (res != XR_SUCCESS) {
-        return res;
-    }
+    // Iterate through all systems available annd add their required extensions
+    auto systemIds = getAllSystemIds(instance);
+    for (auto id : systemIds) {
+        uint32_t bufferCapacity;
+        res = GetVulkanInstanceExtensions(instance, id, 0, &bufferCapacity, nullptr);
+        if (res != XR_SUCCESS) {
+            return res;
+        }
 
-    std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
-    res = GetVulkanInstanceExtensions(instance, systemId, bufferCapacity, &bufferCapacity,
-                                      buffer.get());
-    if (res != XR_SUCCESS) {
-        return res;
-    }
+        std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
+        res = GetVulkanInstanceExtensions(instance, id, bufferCapacity, &bufferCapacity,
+                                          buffer.get());
+        if (res != XR_SUCCESS) {
+            return res;
+        }
 
-    extensions = splitString(buffer.get(), bufferCapacity);
+        auto newExtensions = splitString(buffer.get(), bufferCapacity);
+        extensions.insert(extensions.end(), newExtensions.begin(), newExtensions.end());
+    }
 
     return res;
 }
 
-XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                        XrSystemId systemId,
-                                        std::vector<std::string> &extensions) {
+XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance, std::vector<std::string> &extensions) {
     PFN_xrGetVulkanDeviceExtensionsKHR GetVulkanDeviceExtensions{nullptr};
     XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR",
                                          (PFN_xrVoidFunction *)&GetVulkanDeviceExtensions);
@@ -81,20 +105,25 @@ XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
         return res;
     }
 
-    uint32_t bufferCapacity;
-    res = GetVulkanDeviceExtensions(instance, systemId, 0, &bufferCapacity, nullptr);
-    if (res != XR_SUCCESS) {
-        return res;
-    }
+    // Iterate through all systems available annd add their required extensions
+    auto systemIds = getAllSystemIds(instance);
+    for (auto id : systemIds) {
+        uint32_t bufferCapacity;
+        res = GetVulkanDeviceExtensions(instance, id, 0, &bufferCapacity, nullptr);
+        if (res != XR_SUCCESS) {
+            return res;
+        }
 
-    std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
-    res = GetVulkanDeviceExtensions(instance, systemId, bufferCapacity, &bufferCapacity,
-                                    buffer.get());
-    if (res != XR_SUCCESS) {
-        return res;
-    }
+        std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
+        res =
+            GetVulkanDeviceExtensions(instance, id, bufferCapacity, &bufferCapacity, buffer.get());
+        if (res != XR_SUCCESS) {
+            return res;
+        }
 
-    extensions = splitString(buffer.get(), bufferCapacity);
+        auto newExtensions = splitString(buffer.get(), bufferCapacity);
+        extensions.insert(extensions.end(), newExtensions.begin(), newExtensions.end());
+    }
 
     return res;
 }

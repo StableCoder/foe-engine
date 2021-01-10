@@ -44,24 +44,8 @@ auto determineVkInstanceEnvironment(XrInstance xrInstance,
         XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
 
-        // SystemId - XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY
-        XrSystemGetInfo xrSystemGetInfo{
-            .type = XR_TYPE_SYSTEM_GET_INFO,
-            .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
-        };
-
-        XrResult xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
-
+        XrResult xrRes = foeXrGetVulkanInstanceExtensions(xrInstance, xrExtensions);
         if (xrRes == XR_SUCCESS) {
-            foeXrGetVulkanInstanceExtensions(xrInstance, xrSystemId, xrExtensions);
-            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
-        }
-
-        // SystemId - XR_FORM_FACTOR_HANDHELD_DISPLAY
-        xrSystemGetInfo.formFactor = XR_FORM_FACTOR_HANDHELD_DISPLAY;
-        xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
-        if (xrRes == XR_SUCCESS) {
-            foeXrGetVulkanInstanceExtensions(xrInstance, xrSystemId, xrExtensions);
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }
 
@@ -200,24 +184,8 @@ auto determineVkDeviceEnvironment(XrInstance xrInstance, bool enableWindowing)
         XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
 
-        // SystemId - XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY
-        XrSystemGetInfo xrSystemGetInfo{
-            .type = XR_TYPE_SYSTEM_GET_INFO,
-            .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
-        };
-
-        XrResult xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
+        XrResult xrRes = foeXrGetVulkanDeviceExtensions(xrInstance, xrExtensions);
         if (xrRes == XR_SUCCESS) {
-            foeXrGetVulkanDeviceExtensions(xrInstance, xrSystemId, xrExtensions);
-            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
-        }
-
-        // SystemId - XR_FORM_FACTOR_HANDHELD_DISPLAY
-        xrSystemGetInfo.formFactor = XR_FORM_FACTOR_HANDHELD_DISPLAY;
-
-        xrRes = xrGetSystem(xrInstance, &xrSystemGetInfo, &xrSystemId);
-        if (xrRes == XR_SUCCESS) {
-            foeXrGetVulkanDeviceExtensions(xrInstance, xrSystemId, xrExtensions);
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }
     }
