@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,20 +14,9 @@
     limitations under the License.
 */
 
-#ifndef STDOUT_SINK_HPP
-#define STDOUT_SINK_HPP
+#ifndef LOGGING_HPP
+#define LOGGING_HPP
 
-#include <foe/log/sink.hpp>
+void initializeLogging();
 
-#include <iostream>
-
-class StdOutSink : public foeLogSink {
-    void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
-        std::cout << pCategory->name() << " : " << std::to_string(level) << " : " << message
-                  << "\n";
-    }
-
-    void exception() { std::cout << std::flush; }
-};
-
-#endif // STDOUT_SINK_HPP
+#endif // LOGGING_HPP

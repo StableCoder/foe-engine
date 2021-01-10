@@ -17,7 +17,6 @@
 #include <GLFW/glfw3.h>
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
-#include <foe/developer_console.hpp>
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/debug_callback.hpp>
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
@@ -51,7 +50,7 @@
 #include "camera_descriptor_pool.hpp"
 #include "engine_settings.hpp"
 #include "frame_timer.hpp"
-#include "stdout_sink.hpp"
+#include "logging.hpp"
 #include "vulkan_setup.hpp"
 #include "xr_camera.hpp"
 #include "xr_setup.hpp"
@@ -226,9 +225,7 @@ void processUserInput(double timeElapsedInSeconds,
 }
 
 int main(int argc, char **argv) {
-    StdOutSink stdoutSink;
-    foeLogger::instance()->registerSink(&stdoutSink);
-    foeLogger::instance()->registerSink(foeDeveloperConsole::instance());
+    initializeLogging();
 
     // Settings
     EngineSettings engineSettings;

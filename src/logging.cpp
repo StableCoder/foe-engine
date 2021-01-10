@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,20 +14,29 @@
     limitations under the License.
 */
 
-#ifndef STDERR_SINK_HPP
-#define STDERR_SINK_HPP
+#include "logging.hpp"
 
-#include <foe/log/sink.hpp>
+#include <foe/developer_console.hpp>
+#include <foe/log.hpp>
 
 #include <iostream>
 
-class StdErrSink : public foeLogSink {
+namespace {
+
+class StdOutSink : public foeLogSink {
     void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
-        std::cerr << pCategory->name() << " : " << std::to_string(level) << " : " << message
+        std::cout << pCategory->name() << " : " << std::to_string(level) << " : " << message
                   << "\n";
     }
 
-    void exception() { std::cerr << std::flush; }
+    void exception() { std::cout << std::flush; }
 };
 
-#endif // STDERR_SINK_HPP
+StdOutSink stdoutSink;
+
+} // namespace
+
+void initializeLogging() {
+    foeLogger::instance()->registerSink(&stdoutSink);
+    foeLogger::instance()->registerSink(foeDeveloperConsole::instance());
+}
