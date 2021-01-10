@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
     limitations under the License.
 */
 
-#ifndef ENGINE_SETTINGS_HPP
-#define ENGINE_SETTINGS_HPP
+#ifndef SETTINGS_HPP
+#define SETTINGS_HPP
 
-#include <CLI/CLI11.hpp>
-#include <yaml-cpp/yaml.h>
+#include <cstdint>
 
-#include <string>
-#include <string_view>
-#include <vector>
-
-/// Settings related to the core engine
-struct EngineSettings {
+struct Settings {
     struct Window {
         bool enableWSI = true;
         uint32_t width = 1280;
@@ -46,10 +40,8 @@ struct EngineSettings {
     } xr;
 };
 
-void addEngineCommandLineOptions(CLI::App *pParser, EngineSettings *pOptions);
+int loadSettings(int argc, char **argv, Settings &settings);
 
-bool parseEngineConfigFile(EngineSettings *pOptions, std::string_view configFilePath);
+bool saveSettings(Settings const &settings);
 
-void emitEngineSettingsYaml(EngineSettings const *pOptions, YAML::Node *pNode);
-
-#endif // ENGINE_SETTINGS_HPP
+#endif // SETTINGS_HPP

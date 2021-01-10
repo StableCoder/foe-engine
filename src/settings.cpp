@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,13 +14,20 @@
     limitations under the License.
 */
 
-#include "engine_settings.hpp"
+#include "settings.hpp"
 
+#include <CLI/CLI11.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
+#include <yaml-cpp/yaml.h>
 
-void addEngineCommandLineOptions(CLI::App *pParser, EngineSettings *pOptions) {
+#include <fstream>
+#include <string>
+
+namespace {
+
+void addCommandLineOptions(CLI::App *pParser, Settings *pOptions) {
     // Window
     pParser->add_flag("--window,!--no-window", pOptions->window.enableWSI,
                       "Whether or not to start with an initial window");
@@ -43,7 +50,7 @@ void addEngineCommandLineOptions(CLI::App *pParser, EngineSettings *pOptions) {
                         "Turns on OpenXR debug logging");
 }
 
-bool parseEngineConfigFile(EngineSettings *pOptions, std::string_view configFilePath) {
+bool parseEngineConfigFile(Settings *pOptions, std::string_view configFilePath) {
     if (configFilePath.empty()) {
         FOE_LOG(General, Info, "No config file found");
         return true;
@@ -89,8 +96,8 @@ bool parseEngineConfigFile(EngineSettings *pOptions, std::string_view configFile
     return true;
 }
 
-void emitEngineSettingsYaml(EngineSettings const *pOptions, YAML::Node *pNode) {
-    EngineSettings defaultOptions;
+void emitSettingsYaml(Settings const *pOptions, YAML::Node *pNode) {
+    Settings defaultOptions;
 
     try {
         { // Window
@@ -125,5 +132,54 @@ void emitEngineSettingsYaml(EngineSettings const *pOptions, YAML::Node *pNode) {
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Fatal, "Failed to write Yaml engine options: {}", e.what());
+    }
+}
+
+std::string outCfgFile;
+
+} // namespace
+
+int loadSettings(int argc, char **argv, Settings &settings) {
+    std::string cfgFile = ".foe-settings.yml";
+
+    outCfgFile = cfgFile;
+    { // Load settings from command line
+        CLI::App clParser{"This is the FoE Engine Development"};
+
+        clParser.add_option("--config", cfgFile, "Configuration file to load settings from");
+        clParser.add_option("--dump-config", outCfgFile,
+                            "If specified, on exit the settings will be written to this file");
+
+        addCommandLineOptions(&clParser, &settings);
+
+        CLI11_PARSE(clParser, argc, argv);
+
+        { // Load settings from a configuration file (YAML)
+            if (!parseEngineConfigFile(&settings, cfgFile)) {
+                return 1;
+            }
+        }
+
+        CLI11_PARSE(clParser, argc, argv);
+    }
+
+    return 0;
+}
+
+bool saveSettings(Settings const &settings) {
+    YAML::Node yamlSettings;
+
+    emitSettingsYaml(&settings, &yamlSettings);
+
+    YAML::Emitter emitter;
+    emitter << yamlSettings;
+
+    std::ofstream outFile(outCfgFile, std::ofstream::out);
+    if (outFile.is_open()) {
+        outFile << emitter.c_str();
+        outFile.close();
+        return true;
+    } else {
+        return false;
     }
 }

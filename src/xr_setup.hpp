@@ -17,8 +17,6 @@
 #ifndef XR_SETUP_HPP
 #define XR_SETUP_HPP
 
-#include "engine_settings.hpp"
-
 #include <string>
 #include <tuple>
 #include <vector>

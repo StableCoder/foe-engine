@@ -44,13 +44,12 @@
 
 #include <array>
 #include <chrono>
-#include <iostream>
 
 #include "camera.hpp"
 #include "camera_descriptor_pool.hpp"
-#include "engine_settings.hpp"
 #include "frame_timer.hpp"
 #include "logging.hpp"
+#include "settings.hpp"
 #include "vulkan_setup.hpp"
 #include "xr_camera.hpp"
 #include "xr_setup.hpp"
@@ -228,28 +227,9 @@ int main(int argc, char **argv) {
     initializeLogging();
 
     // Settings
-    EngineSettings engineSettings;
-    std::string cfgFile = ".foe-settings.yml";
-    std::string outCfgFile = cfgFile;
-    { // Load settings from command line
-        CLI::App clParser{"This is the FoE Engine Development"};
-
-        clParser.add_option("--config", cfgFile, "Configuration file to load settings from");
-        clParser.add_option("--dump-config", outCfgFile,
-                            "If specified, on exit the settings will be written to this file");
-
-        addEngineCommandLineOptions(&clParser, &engineSettings);
-        // addAppCommandLineOptions(&clParser, &clOptions);
-
-        CLI11_PARSE(clParser, argc, argv);
-
-        { // Load settings from a configuration file (YAML)
-            if (!parseEngineConfigFile(&engineSettings, cfgFile)) {
-                return 1;
-            }
-        }
-
-        CLI11_PARSE(clParser, argc, argv);
+    Settings settings;
+    if (auto retVal = loadSettings(argc, argv, settings); retVal != 0) {
+        return retVal;
     }
 
     foeEasyProgramClock programClock;
@@ -329,27 +309,26 @@ int main(int argc, char **argv) {
         // VkDevice INIT
         // XrSession INIT
 
-        if (!foeCreateWindow(engineSettings.window.width, engineSettings.window.height,
-                             "FoE Engine", true)) {
+        if (!foeCreateWindow(settings.window.width, settings.window.height, "FoE Engine", true)) {
             END_PROGRAM
         }
 
-        auto [layers, extensions] = determineXrInstanceEnvironment(engineSettings.xr.debugLogging);
-        auto errC = xrRuntime.createRuntime("FoE Engine", 0, layers, extensions,
-                                            engineSettings.xr.debugLogging);
-        if (errC && engineSettings.xr.forceXr) {
+        auto [layers, extensions] = determineXrInstanceEnvironment(settings.xr.debugLogging);
+        auto errC =
+            xrRuntime.createRuntime("FoE Engine", 0, layers, extensions, settings.xr.debugLogging);
+        if (errC && settings.xr.forceXr) {
             ERRC_END_PROGRAM
         }
 
         auto [instanceLayers, instanceExtensions] = determineVkInstanceEnvironment(
-            xrRuntime.instance, engineSettings.window.enableWSI, engineSettings.graphics.validation,
-            engineSettings.graphics.debugLogging);
+            xrRuntime.instance, settings.window.enableWSI, settings.graphics.validation,
+            settings.graphics.debugLogging);
         res = foeVkCreateInstance("FoE Engine", 0, instanceLayers, instanceExtensions, &vkInstance);
         if (res != VK_SUCCESS) {
             VK_END_PROGRAM
         }
 
-        if (engineSettings.graphics.debugLogging) {
+        if (settings.graphics.debugLogging) {
             res = foeVkCreateDebugCallback(vkInstance, &vkDebugCallback);
             if (res != VK_SUCCESS) {
                 VK_END_PROGRAM
@@ -363,7 +342,7 @@ int main(int argc, char **argv) {
 
         VkPhysicalDevice vkPhysicalDevice =
             determineVkPhysicalDevice(vkInstance, xrRuntime.instance, vkWindow.surface,
-                                      engineSettings.graphics.gpu, engineSettings.xr.forceXr);
+                                      settings.graphics.gpu, settings.xr.forceXr);
         auto [deviceLayers, deviceExtensions] =
             determineVkDeviceEnvironment(xrRuntime.instance, vkWindow.surface != VK_NULL_HANDLE);
 
@@ -378,8 +357,8 @@ int main(int argc, char **argv) {
         VK_END_PROGRAM
 
         {
-            camera.viewX = engineSettings.window.width;
-            camera.viewY = engineSettings.window.height;
+            camera.viewX = settings.window.width;
+            camera.viewY = settings.window.height;
             camera.fieldOfViewY = 60.f;
             camera.nearZ = 2.f;
             camera.farZ = 50.f;
@@ -389,7 +368,7 @@ int main(int argc, char **argv) {
         }
 
 #ifdef EDITOR_MODE
-    imguiRenderer.resize(engineSettings.window.width, engineSettings.window.height);
+    imguiRenderer.resize(settings.window.width, settings.window.height);
     float xScale, yScale;
     foeWindowGetContentScale(&xScale, &yScale);
     imguiRenderer.rescale(xScale, yScale);
@@ -538,7 +517,7 @@ int main(int argc, char **argv) {
         };
         auto errC = xrSession.createSession(xrRuntime.instance, xrSystemId, xrViewConfigTypes[0],
                                             &gfxBinding);
-        if (errC && engineSettings.xr.forceXr) {
+        if (errC && settings.xr.forceXr) {
             ERRC_END_PROGRAM
         }
 
@@ -1350,18 +1329,7 @@ SHUTDOWN_PROGRAM:
     xrRuntime.destroyRuntime();
 
     // Output configuration settings to a YAML configuration file
-    YAML::Node yamlSettings;
-
-    emitEngineSettingsYaml(&engineSettings, &yamlSettings);
-
-    YAML::Emitter emitter;
-    emitter << yamlSettings;
-
-    std::ofstream outFile(outCfgFile, std::ofstream::out);
-    if (outFile.is_open()) {
-        outFile << emitter.c_str();
-        outFile.close();
-    }
+    saveSettings(settings);
 
     return 0;
 }
