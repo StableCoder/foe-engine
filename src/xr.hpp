@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
     limitations under the License.
 */
 
-#ifndef XR_SETUP_HPP
-#define XR_SETUP_HPP
+#ifndef XR_HPP
+#define XR_HPP
 
-#include <string>
-#include <tuple>
-#include <vector>
+#include <foe/xr/runtime.hpp>
 
-auto determineXrInstanceEnvironment(bool validation, bool debugLogging)
-    -> std::tuple<std::vector<std::string>, std::vector<std::string>>;
+#include <system_error>
 
-#endif // XR_SETUP_HPP
+std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
+
+#endif // XR_HPP

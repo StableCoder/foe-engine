@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,28 +14,20 @@
     limitations under the License.
 */
 
-#include "xr_setup.hpp"
+#include "xr.hpp"
 
-#include <foe/xr/debug_utils.hpp>
+#include <foe/graphics/backend.h>
 #include <foe/xr/vulkan.hpp>
 
-auto determineXrInstanceEnvironment(bool validation, bool debugLogging)
-    -> std::tuple<std::vector<std::string>, std::vector<std::string>> {
+std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
-    // Vulkan
-    extensions.emplace_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
-
-    // Validation
-    if (validation) {
-        layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
+    if (foeGfxGetBackend() == FOE_GFX_BACKEND_VULKAN) {
+        extensions.emplace_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
+    } else {
+        std::abort();
     }
 
-    // Debug Callback
-    if (debugLogging) {
-        extensions.emplace_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
-
-    return std::make_tuple(layers, extensions);
+    return pRuntime->createRuntime("FoE Engine", 0, layers, extensions, debugLogging);
 }

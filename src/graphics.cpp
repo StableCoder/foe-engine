@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,23 +14,25 @@
     limitations under the License.
 */
 
-#include "vulkan_setup.hpp"
+#include "graphics.hpp"
 
+#include <foe/graphics/vk/runtime.hpp>
+#include <foe/graphics/vk/session.hpp>
 #include <foe/log.hpp>
 #include <foe/wsi_vulkan.hpp>
 #include <foe/xr/vulkan.hpp>
+#include <vk_error_code.hpp>
 
 #include <memory>
 
-auto determineVkInstanceEnvironment(XrInstance xrInstance,
-                                    bool enableWindowing,
-                                    bool validation,
-                                    bool debugLogging)
-    -> std::tuple<std::vector<std::string>, std::vector<std::string>> {
+std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
+                                 bool enableWindowing,
+                                 bool validation,
+                                 bool debugLogging,
+                                 foeGfxRuntime *pGfxRuntime) {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
-    // Windowing
     if (enableWindowing) {
         uint32_t extensionCount;
         const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
@@ -39,12 +41,13 @@ auto determineVkInstanceEnvironment(XrInstance xrInstance,
         }
     }
 
+#ifdef FOE_XR_SUPPORT
     // OpenXR
-    if (xrInstance != XR_NULL_HANDLE) {
+    if (xrRuntime.instance != XR_NULL_HANDLE) {
         XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
 
-        XrResult xrRes = foeXrGetVulkanInstanceExtensions(xrInstance, xrExtensions);
+        XrResult xrRes = foeXrGetVulkanInstanceExtensions(xrRuntime.instance, xrExtensions);
         if (xrRes == XR_SUCCESS) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }
@@ -52,19 +55,13 @@ auto determineVkInstanceEnvironment(XrInstance xrInstance,
         // Add another that's missing??
         extensions.emplace_back("VK_KHR_external_fence_capabilities");
     }
+#endif
 
-    // Validation
-    if (validation) {
-        layers.emplace_back("VK_LAYER_KHRONOS_validation");
-    }
-
-    // Debug Callback
-    if (debugLogging) {
-        extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-    }
-
-    return std::make_tuple(layers, extensions);
+    return foeGfxVkCreateRuntime("FoE Engine", 0, layers, extensions, validation, debugLogging,
+                                 pGfxRuntime);
 }
+
+namespace {
 
 auto determineVkPhysicalDevice(VkInstance vkInstance,
                                XrInstance xrInstance,
@@ -169,26 +166,41 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
     return VK_NULL_HANDLE;
 }
 
-auto determineVkDeviceEnvironment(XrInstance xrInstance, bool enableWindowing)
-    -> std::tuple<std::vector<std::string>, std::vector<std::string>> {
+} // namespace
+
+std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
+                                 foeXrRuntime xrRuntime,
+                                 bool enableWindowing,
+                                 std::vector<VkSurfaceKHR> windowSurfaces,
+                                 uint32_t explicitGpu,
+                                 bool forceXr,
+                                 foeGfxSession *pGfxSession) {
+    VkInstance vkInstance = foeGfxVkGetInstance(gfxRuntime);
+    // Determine the physical device
+    VkPhysicalDevice vkPhysicalDevice =
+        determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime.instance,
+                                  windowSurfaces[0], explicitGpu, forceXr);
+
+    // Layers and Extensions
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
-    // Swapchain (for windowing)
     if (enableWindowing) {
         extensions.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
+#ifdef FOE_XR_SUPPORT
     // OpenXR
-    if (xrInstance != XR_NULL_HANDLE) {
+    if (xrRuntime.instance != XR_NULL_HANDLE) {
         XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
 
-        XrResult xrRes = foeXrGetVulkanDeviceExtensions(xrInstance, xrExtensions);
+        XrResult xrRes = foeXrGetVulkanDeviceExtensions(xrRuntime.instance, xrExtensions);
         if (xrRes == XR_SUCCESS) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }
     }
+#endif
 
-    return std::make_tuple(layers, extensions);
+    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layers, extensions, pGfxSession);
 }
