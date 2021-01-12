@@ -34,17 +34,21 @@
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
-#include <foe/xr/session.hpp>
-#include <foe/xr/vulkan.hpp>
-
-#include <array>
 
 #include "camera.hpp"
 #include "camera_descriptor_pool.hpp"
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
 #include "settings.hpp"
+
+#include <array>
+
+#ifdef FOE_XR_SUPPORT
+#include <foe/xr/session.hpp>
+#include <foe/xr/vulkan.hpp>
+
 #include "xr_camera.hpp"
+#endif
 
 #ifdef EDITOR_MODE
 #include <foe/imgui/renderer.hpp>
@@ -69,6 +73,9 @@ struct Application {
 
     FrameTimer frameTime;
 
+    foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
+
+#ifdef FOE_XR_SUPPORT
     struct foeXrSessionView {
         XrViewConfigurationView viewConfig;
         XrSwapchain swapchain;
@@ -79,10 +86,10 @@ struct Application {
         foeXrCamera camera;
     };
 
-    foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
     foeXrSession xrSession{};
     VkRenderPass xrRenderPass;
     std::vector<foeXrSessionView> xrViews;
+#endif
 
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
     foeGfxSession gfxSession{FOE_NULL_HANDLE};

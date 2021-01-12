@@ -22,15 +22,19 @@
 #include <foe/log.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/wsi_vulkan.hpp>
-#include <foe/xr/core.hpp>
-#include <foe/xr/error_code.hpp>
-#include <foe/xr/openxr/runtime.hpp>
 
 #include <vk_error_code.hpp>
 
 #include "graphics.hpp"
 #include "logging.hpp"
+
+#ifdef FOE_XR_SUPPORT
+#include <foe/xr/core.hpp>
+#include <foe/xr/error_code.hpp>
+#include <foe/xr/openxr/runtime.hpp>
+
 #include "xr.hpp"
+#endif
 
 #define ERRC_END_PROGRAM                                                                           \
     {                                                                                              \
@@ -75,17 +79,19 @@ int Application::initialize(int argc, char **argv) {
     imguiState.addUI(&viewFrameTimeInfo);
 #endif
 
+    std::error_code errC{};
     VkResult vkRes{VK_SUCCESS};
-    XrResult xrRes{XR_SUCCESS};
     {
         if (!foeCreateWindow(settings.window.width, settings.window.height, "FoE Engine", true)) {
             END_PROGRAM
         }
 
+#ifdef FOE_XR_SUPPORT
         auto errC = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
         if (errC && settings.xr.forceXr) {
             ERRC_END_PROGRAM
         }
+#endif
 
         errC = createGfxRuntime(xrRuntime, settings.window.enableWSI, settings.graphics.validation,
                                 settings.graphics.debugLogging, &gfxRuntime);
@@ -212,7 +218,9 @@ int Application::initialize(int argc, char **argv) {
             fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, pShader);
     }
 
+#ifdef FOE_XR_SUPPORT
     if (xrRuntime != FOE_NULL_HANDLE) {
+        XrResult xrRes{XR_SUCCESS};
         XrSystemId xrSystemId{};
 
         // OpenXR SystemId
@@ -439,6 +447,7 @@ int Application::initialize(int argc, char **argv) {
             ERRC_END_PROGRAM
         }
     }
+#endif
 
     return 0;
 }
@@ -447,6 +456,7 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
+#ifdef FOE_XR_SUPPORT
     // OpenXR Cleanup
     if (xrSession.session != XR_NULL_HANDLE) {
         xrSession.requestExitSession();
@@ -485,6 +495,7 @@ void Application::deinitialize() {
 
         xrSession.destroySession();
     }
+#endif
 
     for (auto &it : frameData) {
         it.destroy(foeGfxVkGetDevice(gfxSession));
@@ -519,7 +530,9 @@ void Application::deinitialize() {
     if (gfxRuntime != FOE_NULL_HANDLE)
         foeGfxDestroyRuntime(gfxRuntime);
 
+#ifdef FOE_XR_SUPPORT
     foeXrDestroyRuntime(xrRuntime);
+#endif
 
     // Output configuration settings to a YAML configuration file
     saveSettings(settings);
@@ -715,6 +728,7 @@ int Application::mainloop() {
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].commandPool,
                                0);
 
+#ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
@@ -937,6 +951,7 @@ int Application::mainloop() {
                     XR_END_PROGRAM
                 }
             }
+#endif
 
             if (!camerasRemade)
                 cameraDescriptorPool.generateCameraDescriptors(frameIndex);

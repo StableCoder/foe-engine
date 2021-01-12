@@ -6,7 +6,10 @@ target_sources(
           graphics.cpp
           logging.cpp
           main.cpp
-          settings.cpp
-          xr.cpp)
+          settings.cpp)
+
+if(BUILD_XR)
+  target_sources(foe_engine PRIVATE xr.cpp)
+endif()
 
 add_subdirectory(imgui)

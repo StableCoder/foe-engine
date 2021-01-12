@@ -20,11 +20,14 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/log.hpp>
 #include <foe/wsi_vulkan.hpp>
-#include <foe/xr/openxr/runtime.hpp>
-#include <foe/xr/vulkan.hpp>
 #include <vk_error_code.hpp>
 
 #include <memory>
+
+#ifdef FOE_XR_SUPPORT
+#include <foe/xr/openxr/runtime.hpp>
+#include <foe/xr/vulkan.hpp>
+#endif
 
 std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
                                  bool enableWindowing,
@@ -85,10 +88,12 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
 
     // OpenXR requirements
     VkPhysicalDevice xrPhysicalDevice{VK_NULL_HANDLE};
+#ifdef FOE_XR_SUPPORT
     if (xrRuntime != FOE_NULL_HANDLE) {
         foeXrGetVulkanGraphicsDevice(foeXrOpenGetInstance(xrRuntime), 0, vkInstance,
                                      &xrPhysicalDevice);
     }
+#endif
 
     // Window Requirements
     std::vector<VkBool32> supportsWindow(physicalDeviceCount, VK_FALSE);
@@ -110,7 +115,7 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
     if (explicitGpu != UINT32_MAX) {
         if (explicitGpu < physicalDeviceCount) {
             // It exists, spit out warning if it doesn't support OpenXR or windowing
-            if (xrPhysicalDevice != XR_NULL_HANDLE &&
+            if (xrPhysicalDevice != VK_NULL_HANDLE &&
                 xrPhysicalDevice != physDevices[explicitGpu]) {
                 FOE_LOG(General, Warning,
                         "Explicit Physical GPU specified, OpenXR is possible but not supported on "

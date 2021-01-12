@@ -90,12 +90,16 @@ add_subdirectory(libs)
 # Engine Entrypoint
 add_executable(foe_engine)
 target_link_libraries(foe_engine PRIVATE CLI11 foe foe_graphics_vk foe_wsi
-                                         foe_yaml foe_xr_openxr)
+                                         foe_yaml foe_xr)
 target_code_coverage(foe_engine)
 
 add_library(foe_engine_imgui STATIC)
 target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
 target_link_libraries(foe_engine_imgui PUBLIC foe_imgui)
+
+if(BUILD_XR)
+  target_link_libraries(foe_engine PUBLIC foe_xr_openxr)
+endif()
 
 if(EDITOR_MODE)
   # Link to executable
