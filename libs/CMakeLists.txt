@@ -10,4 +10,5 @@ add_subdirectory(foe_yaml)
 
 if(BUILD_XR)
   add_subdirectory(foe_xr)
+  add_subdirectory(foe_xr_openxr)
 endif()

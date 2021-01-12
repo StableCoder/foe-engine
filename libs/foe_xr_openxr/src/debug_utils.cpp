@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,9 +14,9 @@
     limitations under the License.
 */
 
-#include <foe/xr/debug_utils.hpp>
+#include "debug_utils.hpp"
 
-#include "xr_log.hpp"
+#include "log.hpp"
 
 namespace {
 
@@ -53,16 +53,16 @@ XrBool32 openxrMessengerCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeve
                                  const XrDebugUtilsMessengerCallbackDataEXT *callbackData,
                                  void *userData) {
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-        FOE_LOG(Xr, Error, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeXrOpen, Error, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
-        FOE_LOG(Xr, Warning, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeXrOpen, Warning, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) {
-        FOE_LOG(Xr, Info, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeXrOpen, Info, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
-        FOE_LOG(Xr, Verbose, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeXrOpen, Verbose, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
 
     return XR_FALSE;

@@ -24,6 +24,7 @@
 #include <foe/wsi_vulkan.hpp>
 #include <foe/xr/core.hpp>
 #include <foe/xr/error_code.hpp>
+#include <foe/xr/openxr/runtime.hpp>
 
 #include <vk_error_code.hpp>
 
@@ -211,17 +212,17 @@ int Application::initialize(int argc, char **argv) {
             fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, pShader);
     }
 
-    if (xrRuntime.instance != XR_NULL_HANDLE) {
+    if (xrRuntime != FOE_NULL_HANDLE) {
         XrSystemId xrSystemId{};
 
         // OpenXR SystemId
-        if (xrRuntime.instance != XR_NULL_HANDLE) {
+        if (foeXrOpenGetInstance(xrRuntime) != XR_NULL_HANDLE) {
             XrSystemGetInfo systemGetInfo{
                 .type = XR_TYPE_SYSTEM_GET_INFO,
                 .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
             };
 
-            xrRes = xrGetSystem(xrRuntime.instance, &systemGetInfo, &xrSystemId);
+            xrRes = xrGetSystem(foeXrOpenGetInstance(xrRuntime), &systemGetInfo, &xrSystemId);
             if (xrRes != XR_SUCCESS) {
                 XR_END_PROGRAM
             }
@@ -229,8 +230,8 @@ int Application::initialize(int argc, char **argv) {
 
         // Types
         uint32_t viewConfigCount;
-        xrRes = xrEnumerateViewConfigurations(xrRuntime.instance, xrSystemId, 0, &viewConfigCount,
-                                              nullptr);
+        xrRes = xrEnumerateViewConfigurations(foeXrOpenGetInstance(xrRuntime), xrSystemId, 0,
+                                              &viewConfigCount, nullptr);
         if (xrRes != XR_SUCCESS) {
             return xrRes;
         }
@@ -238,9 +239,9 @@ int Application::initialize(int argc, char **argv) {
         std::vector<XrViewConfigurationType> xrViewConfigTypes;
         xrViewConfigTypes.resize(viewConfigCount);
 
-        xrRes =
-            xrEnumerateViewConfigurations(xrRuntime.instance, xrSystemId, xrViewConfigTypes.size(),
-                                          &viewConfigCount, xrViewConfigTypes.data());
+        xrRes = xrEnumerateViewConfigurations(foeXrOpenGetInstance(xrRuntime), xrSystemId,
+                                              xrViewConfigTypes.size(), &viewConfigCount,
+                                              xrViewConfigTypes.data());
         if (xrRes != XR_SUCCESS) {
             return xrRes;
         }
@@ -248,7 +249,7 @@ int Application::initialize(int argc, char **argv) {
         // Is View Mutable??
         XrViewConfigurationProperties xrViewConfigProps{.type =
                                                             XR_TYPE_VIEW_CONFIGURATION_PROPERTIES};
-        xrRes = xrGetViewConfigurationProperties(xrRuntime.instance, xrSystemId,
+        xrRes = xrGetViewConfigurationProperties(foeXrOpenGetInstance(xrRuntime), xrSystemId,
                                                  xrViewConfigTypes[0], &xrViewConfigProps);
         if (xrRes != XR_SUCCESS) {
             return xrRes;
@@ -256,8 +257,8 @@ int Application::initialize(int argc, char **argv) {
 
         // Check graphics requirements
         XrGraphicsRequirementsVulkanKHR gfxRequirements;
-        xrRes =
-            foeXrGetVulkanGraphicsRequirements(xrRuntime.instance, xrSystemId, &gfxRequirements);
+        xrRes = foeXrGetVulkanGraphicsRequirements(foeXrOpenGetInstance(xrRuntime), xrSystemId,
+                                                   &gfxRequirements);
 
         // XrSession
         XrGraphicsBindingVulkanKHR gfxBinding{
@@ -268,8 +269,8 @@ int Application::initialize(int argc, char **argv) {
             .queueFamilyIndex = 0,
             .queueIndex = 0,
         };
-        auto errC = xrSession.createSession(xrRuntime.instance, xrSystemId, xrViewConfigTypes[0],
-                                            &gfxBinding);
+        auto errC = xrSession.createSession(foeXrOpenGetInstance(xrRuntime), xrSystemId,
+                                            xrViewConfigTypes[0], &gfxBinding);
         if (errC) {
             ERRC_END_PROGRAM
         }
@@ -278,9 +279,9 @@ int Application::initialize(int argc, char **argv) {
 
         // Views
         uint32_t viewConfigViewCount;
-        xrRes = xrEnumerateViewConfigurationViews(xrRuntime.instance, xrSession.systemId,
-                                                  xrViewConfigTypes[0], 0, &viewConfigViewCount,
-                                                  nullptr);
+        xrRes = xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime),
+                                                  xrSession.systemId, xrViewConfigTypes[0], 0,
+                                                  &viewConfigViewCount, nullptr);
         if (xrRes != XR_SUCCESS) {
             return xrRes;
         }
@@ -288,9 +289,9 @@ int Application::initialize(int argc, char **argv) {
         std::vector<XrViewConfigurationView> viewConfigs;
         viewConfigs.resize(viewConfigViewCount);
 
-        xrRes = xrEnumerateViewConfigurationViews(xrRuntime.instance, xrSession.systemId,
-                                                  xrViewConfigTypes[0], viewConfigs.size(),
-                                                  &viewConfigViewCount, viewConfigs.data());
+        xrRes = xrEnumerateViewConfigurationViews(
+            foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrViewConfigTypes[0],
+            viewConfigs.size(), &viewConfigViewCount, viewConfigs.data());
         if (xrRes != XR_SUCCESS) {
             return xrRes;
         }
@@ -411,7 +412,7 @@ int Application::initialize(int argc, char **argv) {
 
         { // Wait for the session state to be ready
             XrEventDataBuffer event;
-            errC = xrRuntime.pollEvent(event);
+            errC = foeXrOpenPollEvent(xrRuntime, event);
             if (errC == XR_EVENT_UNAVAILABLE) {
                 // No events currently
             } else if (errC) {
@@ -451,12 +452,11 @@ void Application::deinitialize() {
         xrSession.requestExitSession();
         {
             XrEventDataBuffer event;
-            auto errC = xrRuntime.pollEvent(event);
+            auto errC = foeXrOpenPollEvent(xrRuntime, event);
             if (errC == XR_EVENT_UNAVAILABLE) {
                 // No events currently
             } else if (errC) {
                 // Error
-
             } else {
                 // Got an event, process it
                 switch (event.type) {
@@ -519,7 +519,7 @@ void Application::deinitialize() {
     if (gfxRuntime != FOE_NULL_HANDLE)
         foeGfxDestroyRuntime(gfxRuntime);
 
-    xrRuntime.destroyRuntime();
+    foeXrDestroyRuntime(xrRuntime);
 
     // Output configuration settings to a YAML configuration file
     saveSettings(settings);

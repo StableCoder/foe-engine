@@ -79,7 +79,7 @@ struct Application {
         foeXrCamera camera;
     };
 
-    foeXrRuntime xrRuntime{};
+    foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
     foeXrSession xrSession{};
     VkRenderPass xrRenderPass;
     std::vector<foeXrSessionView> xrViews;

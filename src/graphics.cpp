@@ -20,6 +20,7 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/log.hpp>
 #include <foe/wsi_vulkan.hpp>
+#include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/vulkan.hpp>
 #include <vk_error_code.hpp>
 
@@ -43,11 +44,12 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
 
 #ifdef FOE_XR_SUPPORT
     // OpenXR
-    if (xrRuntime.instance != XR_NULL_HANDLE) {
+    if (xrRuntime != FOE_NULL_HANDLE) {
         XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
 
-        XrResult xrRes = foeXrGetVulkanInstanceExtensions(xrRuntime.instance, xrExtensions);
+        XrResult xrRes =
+            foeXrGetVulkanInstanceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
         if (xrRes == XR_SUCCESS) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }
@@ -64,7 +66,7 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
 namespace {
 
 auto determineVkPhysicalDevice(VkInstance vkInstance,
-                               XrInstance xrInstance,
+                               foeXrRuntime xrRuntime,
                                VkSurfaceKHR vkSurface,
                                uint32_t explicitGpu,
                                bool forceXr) -> VkPhysicalDevice {
@@ -83,8 +85,9 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
 
     // OpenXR requirements
     VkPhysicalDevice xrPhysicalDevice{VK_NULL_HANDLE};
-    if (xrInstance != XR_NULL_HANDLE) {
-        foeXrGetVulkanGraphicsDevice(xrInstance, 0, vkInstance, &xrPhysicalDevice);
+    if (xrRuntime != FOE_NULL_HANDLE) {
+        foeXrGetVulkanGraphicsDevice(foeXrOpenGetInstance(xrRuntime), 0, vkInstance,
+                                     &xrPhysicalDevice);
     }
 
     // Window Requirements
@@ -177,9 +180,8 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
                                  foeGfxSession *pGfxSession) {
     VkInstance vkInstance = foeGfxVkGetInstance(gfxRuntime);
     // Determine the physical device
-    VkPhysicalDevice vkPhysicalDevice =
-        determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime.instance,
-                                  windowSurfaces[0], explicitGpu, forceXr);
+    VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(
+        foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces[0], explicitGpu, forceXr);
 
     // Layers and Extensions
     std::vector<std::string> layers;
@@ -191,11 +193,11 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
 
 #ifdef FOE_XR_SUPPORT
     // OpenXR
-    if (xrRuntime.instance != XR_NULL_HANDLE) {
-        XrSystemId xrSystemId;
+    if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        XrResult xrRes = foeXrGetVulkanDeviceExtensions(xrRuntime.instance, xrExtensions);
+        XrResult xrRes =
+            foeXrGetVulkanDeviceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
         if (xrRes == XR_SUCCESS) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }

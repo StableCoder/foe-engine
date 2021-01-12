@@ -8,7 +8,7 @@ find_package(OpenXR REQUIRED)
 add_library(foe_xr)
 
 # Definition
-generate_export_header(foe_xr EXPORT_FILE_NAME
+generate_export_header(foe_xr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/xr/export.h)
 
 target_include_directories(foe_xr PUBLIC include

@@ -14,22 +14,16 @@
     limitations under the License.
 */
 
-#include "xr.hpp"
+#ifndef FOE_XR_DEBUG_UTILS_HPP
+#define FOE_XR_DEBUG_UTILS_HPP
 
-#include <foe/graphics/backend.h>
-#include <foe/xr/openxr/runtime.hpp>
-#include <foe/xr/vulkan.hpp>
+#include <foe/xr/export.h>
+#include <openxr/openxr.h>
 
-std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
-    std::vector<std::string> layers;
-    std::vector<std::string> extensions;
+FOE_XR_EXPORT XrResult foeXrCreateDebugUtilsMessenger(XrInstance instance,
+                                                      XrDebugUtilsMessengerEXT *pDebugMessenger);
 
-    if (foeGfxGetBackend() == FOE_GFX_BACKEND_VULKAN) {
-        extensions.emplace_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
-    } else {
-        std::abort();
-    }
+FOE_XR_EXPORT XrResult foeXrDestroyDebugUtilsMessenger(XrInstance instance,
+                                                       XrDebugUtilsMessengerEXT debugMessenger);
 
-    return foeXrOpenCreateRuntime("FoE Engine", 0, layers, extensions, false, debugLogging,
-                                  pRuntime);
-}
+#endif // FOE_XR_DEBUG_UTILS_HPP

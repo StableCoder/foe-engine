@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_DEBUG_UTILS_HPP
-#define FOE_XR_DEBUG_UTILS_HPP
+#ifndef LOG_HPP
+#define LOG_HPP
 
-#include <foe/xr/export.h>
-#include <openxr/openxr.h>
+#include <foe/log.hpp>
 
-FOE_XR_EXPORT XrResult foeXrCreateDebugUtilsMessenger(XrInstance instance,
-                                                      XrDebugUtilsMessengerEXT *pDebugMessenger);
+FOE_DECLARE_LOG_CATEGORY(foeXrOpen, All, All)
 
-FOE_XR_EXPORT XrResult foeXrDestroyDebugUtilsMessenger(XrInstance instance,
-                                                       XrDebugUtilsMessengerEXT debugMessenger);
-
-#endif // FOE_XR_DEBUG_UTILS_HPP
+#endif // LOG_HPP

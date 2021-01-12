@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,6 +14,17 @@
     limitations under the License.
 */
 
-#include "xr_log.hpp"
+#ifndef RUNTIME_HPP
+#define RUNTIME_HPP
 
-FOE_DEFINE_LOG_CATEGORY(Xr)
+#include <foe/xr/runtime.hpp>
+#include <openxr/openxr.h>
+
+struct foeXrOpenRuntime {
+    XrInstance instance{XR_NULL_HANDLE};
+    XrDebugUtilsMessengerEXT debugMessenger{XR_NULL_HANDLE};
+};
+
+FOE_DEFINE_HANDLE_CASTS(runtime, foeXrOpenRuntime, foeXrRuntime)
+
+#endif // RUNTIME_HPP

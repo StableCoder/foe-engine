@@ -17,6 +17,7 @@
 #ifndef FOE_XR_RUNTIME_HPP
 #define FOE_XR_RUNTIME_HPP
 
+#include <foe/handle.h>
 #include <foe/xr/export.h>
 #include <openxr/openxr.h>
 
@@ -24,18 +25,8 @@
 #include <system_error>
 #include <vector>
 
-struct FOE_XR_EXPORT foeXrRuntime {
-    std::error_code createRuntime(char const *appName,
-                                  uint32_t appVersion,
-                                  std::vector<std::string> const &apiLayers,
-                                  std::vector<std::string> const &extensions,
-                                  bool debugLogging);
-    void destroyRuntime();
+FOE_DEFINE_HANDLE(foeXrRuntime)
 
-    std::error_code pollEvent(XrEventDataBuffer &event);
-
-    XrInstance instance{XR_NULL_HANDLE};
-    XrDebugUtilsMessengerEXT debugMessenger{XR_NULL_HANDLE};
-};
+FOE_XR_EXPORT void foeXrDestroyRuntime(foeXrRuntime runtime);
 
 #endif // FOE_XR_RUNTIME_HPP
