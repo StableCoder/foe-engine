@@ -14,4 +14,6 @@
     limitations under the License.
 */
 
-int dummy;
+#include <foe/xr/export.h>
+
+FOE_XR_EXPORT void foeXrDummyFunc() {}
