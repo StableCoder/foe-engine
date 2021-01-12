@@ -17,7 +17,7 @@
 #include <foe/wsi.hpp>
 
 int main() {
-    foeCreateWindow(1280, 720, "FoE Engine");
+    foeCreateWindow(1280, 720, "FoE Engine", false);
 
     while (!foeWindowGetShouldClose()) {
         foeWindowEventProcessing();
