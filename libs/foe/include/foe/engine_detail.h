@@ -19,9 +19,9 @@
 
 #define FOE_ENGINE_NAME "FoE-Engine"
 
-#define FOE_MAKE_VERSION(major, minor, patch) \
+#define FOE_MAKE_VERSION(major, minor, patch)                                                      \
     ((((uint32_t)(major)) << 22) | (((uint32_t)(minor)) << 12) | ((uint32_t)(patch)))
 
-#define FOE_ENGINE_VERSION FOE_MAKE_VERSION(0,1,0)
+#define FOE_ENGINE_VERSION FOE_MAKE_VERSION(0, 1, 0)
 
 #endif // FOE_ENGINE_DETAIL_HPP

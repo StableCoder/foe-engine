@@ -731,7 +731,7 @@ int Application::mainloop() {
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
                 XrResult xrRes{XR_SUCCESS};
-                
+
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
                 XrFrameState frameState{.type = XR_TYPE_FRAME_STATE};
                 xrRes = xrWaitFrame(xrSession.session, &frameWaitInfo, &frameState);
