@@ -18,6 +18,7 @@
 #define FOE_XR_OPENXR_RUNTIME_HPP
 
 #include <foe/xr/runtime.hpp>
+#include <openxr/openxr.h>
 
 #include <string>
 #include <system_error>

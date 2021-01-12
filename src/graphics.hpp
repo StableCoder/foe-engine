@@ -22,6 +22,7 @@
 #include <foe/xr/runtime.hpp>
 #include <vulkan/vulkan.h>
 
+#include <vector>
 #include <system_error>
 
 std::error_code createGfxRuntime(foeXrRuntime xrRuntime,

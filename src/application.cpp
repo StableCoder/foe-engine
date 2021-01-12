@@ -592,7 +592,6 @@ void processUserInput(double timeElapsedInSeconds,
 
 int Application::mainloop() {
     VkResult vkRes{VK_SUCCESS};
-    XrResult xrRes{XR_SUCCESS};
 
     foeWindowShow();
     programClock.update();
@@ -731,6 +730,8 @@ int Application::mainloop() {
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
+                XrResult xrRes{XR_SUCCESS};
+                
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
                 XrFrameState frameState{.type = XR_TYPE_FRAME_STATE};
                 xrRes = xrWaitFrame(xrSession.session, &frameWaitInfo, &frameState);

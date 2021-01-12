@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,14 +14,4 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_RUNTIME_HPP
-#define FOE_XR_RUNTIME_HPP
-
-#include <foe/handle.h>
-#include <foe/xr/export.h>
-
-FOE_DEFINE_HANDLE(foeXrRuntime)
-
-FOE_XR_EXPORT void foeXrDestroyRuntime(foeXrRuntime runtime);
-
-#endif // FOE_XR_RUNTIME_HPP
+int dummy;
