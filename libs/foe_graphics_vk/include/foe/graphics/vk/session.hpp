@@ -33,6 +33,7 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                                      std::vector<std::string> extensions,
                                                      foeGfxSession *pSession);
 
+FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxSession session);
 FOE_GFX_EXPORT VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session);
 FOE_GFX_EXPORT VkDevice foeGfxVkGetDevice(foeGfxSession session);
 FOE_GFX_EXPORT VmaAllocator foeGfxVkGetAllocator(foeGfxSession session);

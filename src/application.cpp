@@ -271,7 +271,7 @@ int Application::initialize(int argc, char **argv) {
         // XrSession
         XrGraphicsBindingVulkanKHR gfxBinding{
             .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
-            .instance = foeGfxVkGetInstance(gfxRuntime),
+            .instance = foeGfxVkGetInstance(gfxSession),
             .physicalDevice = foeGfxVkGetPhysicalDevice(gfxSession),
             .device = foeGfxVkGetDevice(gfxSession),
             .queueFamilyIndex = 0,

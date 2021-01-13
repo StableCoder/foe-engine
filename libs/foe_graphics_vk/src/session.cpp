@@ -195,6 +195,11 @@ uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
     return compatibleQueueFamilies[leastFlagsIndex].first;
 }
 
+VkInstance foeGfxVkGetInstance(foeGfxSession session) {
+    auto *pSession = session_from_handle(session);
+    return pSession->instance;
+}
+
 VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     return pSession->physicalDevice;
