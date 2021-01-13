@@ -221,75 +221,17 @@ int Application::initialize(int argc, char **argv) {
 #ifdef FOE_XR_SUPPORT
     if (xrRuntime != FOE_NULL_HANDLE) {
         XrResult xrRes{XR_SUCCESS};
-        XrSystemId xrSystemId{};
 
-        // OpenXR SystemId
-        if (foeXrOpenGetInstance(xrRuntime) != XR_NULL_HANDLE) {
-            XrSystemGetInfo systemGetInfo{
-                .type = XR_TYPE_SYSTEM_GET_INFO,
-                .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
-            };
-
-            xrRes = xrGetSystem(foeXrOpenGetInstance(xrRuntime), &systemGetInfo, &xrSystemId);
-            if (xrRes != XR_SUCCESS) {
-                XR_END_PROGRAM
-            }
-        }
-
-        // Types
-        uint32_t viewConfigCount;
-        xrRes = xrEnumerateViewConfigurations(foeXrOpenGetInstance(xrRuntime), xrSystemId, 0,
-                                              &viewConfigCount, nullptr);
-        if (xrRes != XR_SUCCESS) {
-            return xrRes;
-        }
-
-        std::vector<XrViewConfigurationType> xrViewConfigTypes;
-        xrViewConfigTypes.resize(viewConfigCount);
-
-        xrRes = xrEnumerateViewConfigurations(foeXrOpenGetInstance(xrRuntime), xrSystemId,
-                                              xrViewConfigTypes.size(), &viewConfigCount,
-                                              xrViewConfigTypes.data());
-        if (xrRes != XR_SUCCESS) {
-            return xrRes;
-        }
-
-        // Is View Mutable??
-        XrViewConfigurationProperties xrViewConfigProps{.type =
-                                                            XR_TYPE_VIEW_CONFIGURATION_PROPERTIES};
-        xrRes = xrGetViewConfigurationProperties(foeXrOpenGetInstance(xrRuntime), xrSystemId,
-                                                 xrViewConfigTypes[0], &xrViewConfigProps);
-        if (xrRes != XR_SUCCESS) {
-            return xrRes;
-        }
-
-        // Check graphics requirements
-        XrGraphicsRequirementsVulkanKHR gfxRequirements;
-        xrRes = foeXrGetVulkanGraphicsRequirements(foeXrOpenGetInstance(xrRuntime), xrSystemId,
-                                                   &gfxRequirements);
-
-        // XrSession
-        XrGraphicsBindingVulkanKHR gfxBinding{
-            .type = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
-            .instance = foeGfxVkGetInstance(gfxSession),
-            .physicalDevice = foeGfxVkGetPhysicalDevice(gfxSession),
-            .device = foeGfxVkGetDevice(gfxSession),
-            .queueFamilyIndex = 0,
-            .queueIndex = 0,
-        };
-        auto errC = xrSession.createSession(foeXrOpenGetInstance(xrRuntime), xrSystemId,
-                                            xrViewConfigTypes[0], &gfxBinding);
+        errC = createXrSession(xrRuntime, gfxSession, &xrSession);
         if (errC) {
             ERRC_END_PROGRAM
         }
 
         // Session Views
-
-        // Views
         uint32_t viewConfigViewCount;
-        xrRes = xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime),
-                                                  xrSession.systemId, xrViewConfigTypes[0], 0,
-                                                  &viewConfigViewCount, nullptr);
+        xrRes =
+            xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime), xrSession.systemId,
+                                              xrSession.type, 0, &viewConfigViewCount, nullptr);
         if (xrRes != XR_SUCCESS) {
             return xrRes;
         }
@@ -298,8 +240,8 @@ int Application::initialize(int argc, char **argv) {
         viewConfigs.resize(viewConfigViewCount);
 
         xrRes = xrEnumerateViewConfigurationViews(
-            foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrViewConfigTypes[0],
-            viewConfigs.size(), &viewConfigViewCount, viewConfigs.data());
+            foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
+            &viewConfigViewCount, viewConfigs.data());
         if (xrRes != XR_SUCCESS) {
             return xrRes;
         }

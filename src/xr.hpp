@@ -17,10 +17,16 @@
 #ifndef XR_HPP
 #define XR_HPP
 
+#include <foe/graphics/session.hpp>
 #include <foe/xr/runtime.hpp>
+#include <foe/xr/session.hpp>
 
 #include <system_error>
 
 std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
+
+std::error_code createXrSession(foeXrRuntime runtime,
+                                foeGfxSession gfxSession,
+                                foeXrSession *pSession);
 
 #endif // XR_HPP
