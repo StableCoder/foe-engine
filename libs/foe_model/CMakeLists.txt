@@ -19,6 +19,10 @@ generate_export_header(foe_model EXPORT_FILE_NAME
 target_link_libraries(foe_model PUBLIC foe foe_model_interface glm)
 target_code_coverage(foe_model)
 
+if(UNIX)
+  target_compile_options(foe_model PRIVATE -fPIC)
+endif()
+
 add_subdirectory(src)
 
 # Auxiliary Target
