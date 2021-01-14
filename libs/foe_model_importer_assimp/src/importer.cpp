@@ -63,6 +63,10 @@ auto foeModelFileAssimpImporter::importMeshVertexData(unsigned int mesh,
     return ::importMeshVertexData(mpScene->mMeshes[mesh], componentCount, pComponents, transform);
 }
 
+uint32_t foeModelFileAssimpImporter::getNumFaces(unsigned int mesh) const noexcept {
+    return mpScene->mMeshes[mesh]->mNumFaces;
+}
+
 void foeModelFileAssimpImporter::importMeshIndexData16(unsigned int mesh,
                                                        uint16_t offset,
                                                        uint16_t *pData) {

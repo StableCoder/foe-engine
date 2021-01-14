@@ -53,6 +53,8 @@ class foeModelImporter {
                                       foeVertexComponent const *pComponents,
                                       glm::mat4 const &transform) -> std::vector<float> = 0;
 
+    virtual uint32_t getNumFaces(unsigned int mesh) const noexcept = 0;
+
     virtual void importMeshIndexData16(unsigned int mesh, uint16_t offset, uint16_t *pData) = 0;
 
     virtual auto importMeshIndexData16(unsigned int mesh, uint16_t offset)
