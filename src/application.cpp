@@ -87,7 +87,7 @@ int Application::initialize(int argc, char **argv) {
         }
 
 #ifdef FOE_XR_SUPPORT
-        auto errC = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
+        errC = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
         if (errC && settings.xr.forceXr) {
             ERRC_END_PROGRAM
         }
@@ -473,7 +473,8 @@ void Application::deinitialize() {
         foeGfxDestroyRuntime(gfxRuntime);
 
 #ifdef FOE_XR_SUPPORT
-    foeXrDestroyRuntime(xrRuntime);
+    if (xrRuntime != FOE_NULL_HANDLE)
+        foeXrDestroyRuntime(xrRuntime);
 #endif
 
     // Output configuration settings to a YAML configuration file
