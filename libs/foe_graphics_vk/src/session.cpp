@@ -57,8 +57,6 @@ void createQueueFamily(VkDevice device,
         std::abort();
     }
 
-    std::fill_n(pQueueFamily->queue, MaxQueuesPerFamily, static_cast<VkQueue>(VK_NULL_HANDLE));
-
     pQueueFamily->flags = flags;
     pQueueFamily->family = family;
     pQueueFamily->numQueues = numQueues;
@@ -169,6 +167,9 @@ uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
     std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;
 
     for (uint32_t i = 0; i < MaxQueueFamilies; ++i) {
+        if (pSession->pQueueFamilies[i].numQueues == 0)
+            continue;
+
         if (pSession->pQueueFamilies[i].flags == flags) {
             return i;
         }

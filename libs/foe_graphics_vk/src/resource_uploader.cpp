@@ -62,11 +62,11 @@ VkResult foeGfxCreateResourceUploader(foeGfxSession session,
             goto CREATE_FAILED;
     }
 
-    *pResourceUploader = resUploader;
-
 CREATE_FAILED:
     if (res != VK_SUCCESS) {
         foeGfxDestroyResourceUploader(&resUploader);
+    } else {
+        *pResourceUploader = resUploader;
     }
 
     return res;
