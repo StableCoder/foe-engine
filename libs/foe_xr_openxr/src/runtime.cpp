@@ -20,6 +20,7 @@
 #include <foe/xr/error_code.hpp>
 
 #include "debug_utils.hpp"
+#include "log.hpp"
 #include "runtime.hpp"
 
 namespace {
@@ -45,8 +46,10 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
                                        foeXrRuntime *pRuntime) {
     auto *pNewRuntime = new foeXrOpenRuntime;
 
-    if (validation)
+    if (validation) {
         layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
+        FOE_LOG(foeXrOpen, Verbose, "Adding validation layers to XrInstance");
+    }
     if (debugLogging)
         extensions.emplace_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
@@ -59,6 +62,8 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
         xrRes = foeXrCreateDebugUtilsMessenger(pNewRuntime->instance, &pNewRuntime->debugMessenger);
         if (xrRes != XR_SUCCESS)
             goto CREATE_FAILED;
+
+        FOE_LOG(foeXrOpen, Verbose, "Added debug logging to XrInstance");
     }
 
 CREATE_FAILED:

@@ -20,6 +20,7 @@
 #include <vk_error_code.hpp>
 
 #include "debug_callback.hpp"
+#include "log.hpp"
 #include "runtime.hpp"
 
 namespace {
@@ -57,8 +58,10 @@ std::error_code foeGfxVkCreateRuntime(char const *applicationName,
     std::vector<char const *> finalLayers;
     std::vector<char const *> finalExtensions;
 
-    if (validation)
+    if (validation) {
         layers.emplace_back("VK_LAYER_KHRONOS_validation");
+        FOE_LOG(foeVkGraphics, Verbose, "Adding validation layers to new VkInstance");
+    }
     if (debugLogging)
         extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
@@ -85,6 +88,8 @@ std::error_code foeGfxVkCreateRuntime(char const *applicationName,
         vkRes = foeVkCreateDebugCallback(pNewRuntime->instance, &pNewRuntime->debugCallback);
         if (vkRes != VK_SUCCESS)
             goto CREATE_FAILED;
+
+        FOE_LOG(foeVkGraphics, Verbose, "Added debug logging to new VkInstance");
     }
 
 CREATE_FAILED:
