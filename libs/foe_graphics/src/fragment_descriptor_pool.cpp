@@ -19,6 +19,14 @@
 #include <foe/graphics/fragment_descriptor.hpp>
 #include <vk_equality_checks.hpp>
 
+foeFragmentDescriptorPool::~foeFragmentDescriptorPool() {
+    std::scoped_lock lock{mSync};
+
+    for (auto pDescriptor : mDescriptors) {
+        delete pDescriptor;
+    }
+}
+
 auto foeFragmentDescriptorPool::get(VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
                                     VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
                                     VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,

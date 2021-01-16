@@ -27,6 +27,8 @@
 
 class foeShaderPool {
   public:
+    FOE_GFX_EXPORT ~foeShaderPool();
+
     FOE_GFX_EXPORT VkResult initialize(VkDevice device);
     FOE_GFX_EXPORT void deinitialize();
 

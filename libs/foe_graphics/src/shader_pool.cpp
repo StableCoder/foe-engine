@@ -18,6 +18,12 @@
 
 #include "gfx_log.hpp"
 
+foeShaderPool::~foeShaderPool() {
+    for (auto *pShader : mShaders) {
+        delete pShader;
+    }
+}
+
 VkResult foeShaderPool::initialize(VkDevice device) {
     mDevice = device;
 

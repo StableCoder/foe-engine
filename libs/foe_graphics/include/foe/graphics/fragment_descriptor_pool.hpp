@@ -28,6 +28,8 @@ struct foeFragmentDescriptor;
 
 class foeFragmentDescriptorPool {
   public:
+    FOE_GFX_EXPORT ~foeFragmentDescriptorPool();
+
     FOE_GFX_EXPORT auto get(VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
                             VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
                             VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
