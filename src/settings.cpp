@@ -45,7 +45,8 @@ void addCommandLineOptions(CLI::App *pParser, Settings *pOptions) {
                       "Turns on the graphics debug logging callback");
 
     // Xr
-    pParser->add_flag("--vr,!--no-vr", pOptions->xr.forceXr, "VR (OpenXR)");
+    pParser->add_flag("--vr,!--no-vr", pOptions->xr.enableXr, "Enable VR (OpenXR)");
+    pParser->add_flag("--force-vr", pOptions->xr.forceXr, "Force using VR (Fail without it)");
     pParser->add_flag("--vr-validation", pOptions->xr.validation, "Turns on vr validation layers");
     pParser->add_option("--vr-debug-logging", pOptions->xr.debugLogging,
                         "Turns on OpenXR debug logging");
@@ -85,7 +86,8 @@ bool parseEngineConfigFile(Settings *pOptions, std::string_view configFilePath) 
 
         // Xr
         if (auto xrNode = config["xr"]; xrNode) {
-            yaml_read_optional("xr", xrNode, pOptions->xr.forceXr);
+            yaml_read_optional("enable", xrNode, pOptions->xr.enableXr);
+            yaml_read_optional("force", xrNode, pOptions->xr.forceXr);
             yaml_read_optional("validation", xrNode, pOptions->xr.validation);
             yaml_read_optional("debug_logging", xrNode, pOptions->xr.debugLogging);
         }

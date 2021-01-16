@@ -35,6 +35,7 @@ struct Settings {
     } graphics;
 
     struct Xr {
+        bool enableXr = true;
         bool forceXr = false;
         bool validation = false;
         bool debugLogging = false;

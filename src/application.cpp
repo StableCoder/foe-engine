@@ -87,9 +87,11 @@ int Application::initialize(int argc, char **argv) {
         }
 
 #ifdef FOE_XR_SUPPORT
-        errC = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
-        if (errC && settings.xr.forceXr) {
-            ERRC_END_PROGRAM
+        if (settings.xr.enableXr || settings.xr.forceXr) {
+            errC = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
+            if (errC && settings.xr.forceXr) {
+                ERRC_END_PROGRAM
+            }
         }
 #endif
 
@@ -390,6 +392,10 @@ int Application::initialize(int argc, char **argv) {
         }
     }
 #endif
+
+    if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
+        return -1;
+    }
 
     return 0;
 }
