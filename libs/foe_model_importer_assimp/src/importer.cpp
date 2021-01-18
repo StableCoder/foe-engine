@@ -35,12 +35,22 @@ foeModelFileAssimpImporter::~foeModelFileAssimpImporter() {
 
 bool foeModelFileAssimpImporter::loaded() const noexcept { return mpScene != nullptr; }
 
+uint32_t foeModelFileAssimpImporter::getNumMeshes() const noexcept { return mpScene->mNumMeshes; }
+
+std::string_view foeModelFileAssimpImporter::getMeshName(unsigned int mesh) const noexcept {
+    return mpScene->mMeshes[mesh]->mName.C_Str();
+}
+
 uint32_t foeModelFileAssimpImporter::getNumMeshVertices(unsigned int mesh) const noexcept {
     return mpScene->mMeshes[mesh]->mNumVertices;
 }
 
 auto foeModelFileAssimpImporter::importArmature() -> std::vector<foeArmatureNode> {
     return importSceneArmature(mpScene);
+}
+
+uint32_t foeModelFileAssimpImporter::getNumAnimations() const noexcept {
+    return mpScene->mNumAnimations;
 }
 
 auto foeModelFileAssimpImporter::importAnimation(unsigned int animation) -> foeAnimation {

@@ -23,6 +23,7 @@
 #include <glm/glm.hpp>
 
 #include <cstdint>
+#include <string_view>
 #include <vector>
 
 /**
@@ -37,9 +38,14 @@ class foeModelImporter {
 
     virtual bool loaded() const noexcept = 0;
 
+    virtual uint32_t getNumMeshes() const noexcept = 0;
+
+    virtual std::string_view getMeshName(unsigned int mesh) const noexcept = 0;
     virtual uint32_t getNumMeshVertices(unsigned int mesh) const noexcept = 0;
 
     virtual auto importArmature() -> std::vector<foeArmatureNode> = 0;
+
+    virtual uint32_t getNumAnimations() const noexcept = 0;
     virtual auto importAnimation(unsigned int animation) -> foeAnimation = 0;
 
     virtual void importMeshVertexData(unsigned int mesh,
