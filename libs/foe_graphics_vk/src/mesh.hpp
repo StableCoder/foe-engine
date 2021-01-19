@@ -27,7 +27,7 @@ struct foeGfxVkMesh {
     VmaAllocation indexAlloc{VK_NULL_HANDLE};
 
     uint32_t numIndices{0};
-    VkIndexType indexType{VK_INDEX_TYPE_NONE_KHR};
+    VkIndexType indexType{};
 
     VkDeviceSize boneDataOffset{0};
 };
