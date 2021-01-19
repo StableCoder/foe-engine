@@ -393,9 +393,11 @@ int Application::initialize(int argc, char **argv) {
     }
 #endif
 
+#ifdef FOE_XR_SUPPORT
     if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
         return -1;
     }
+#endif
 
     return 0;
 }
