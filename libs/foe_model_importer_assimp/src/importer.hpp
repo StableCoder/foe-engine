@@ -30,12 +30,13 @@ class foeModelFileAssimpImporter final : public foeModelImporter {
 
     uint32_t getNumMeshes() const noexcept;
 
-    std::string_view getMeshName(unsigned int mesh) const noexcept;
+    auto getMeshName(unsigned int mesh) const noexcept -> std::string_view;
     uint32_t getNumMeshVertices(unsigned int mesh) const noexcept;
 
     auto importArmature() -> std::vector<foeArmatureNode>;
 
     uint32_t getNumAnimations() const noexcept;
+    auto getAnimationName(unsigned int animation) const noexcept -> std::string_view;
     auto importAnimation(unsigned int animation) -> foeAnimation;
 
     void importMeshVertexData(unsigned int mesh,
