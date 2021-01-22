@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef FOE_MODEL_ICO_SPHERE_HPP
 #define FOE_MODEL_ICO_SPHERE_HPP
 
+#include <foe/model/export.h>
 #include <foe/model/vertex_component.hpp>
 
 #include <cstdint>
