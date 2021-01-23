@@ -23,6 +23,11 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
+FOE_GFX_EXPORT VkResult allocateStagingBuffer(VmaAllocator allocator,
+                                              VkDeviceSize size,
+                                              VkBuffer *pStagingBuffer,
+                                              VmaAllocation *pStagingAlloc);
+
 FOE_GFX_EXPORT VkResult allocateModelBuffers(VmaAllocator allocator,
                                              VkDeviceSize vertexDataSize,
                                              VkDeviceSize indexDataSize,
