@@ -14,10 +14,10 @@
     limitations under the License.
 */
 
-#include <foe/graphics/error_images.hpp>
+#include <foe/graphics/vk/error_images.hpp>
 
-#include <foe/graphics/image.hpp>
 #include <foe/graphics/upload_data.hpp>
+#include <foe/graphics/vk/image.hpp>
 
 #include "format.hpp"
 
@@ -29,15 +29,7 @@
 
 namespace {
 
-void fillErrorImageData(VkFormat format, uint32_t extent, uint32_t numCheckSquare, uint8_t *pData) {
-    if (format != VK_FORMAT_R8G8B8A8_UNORM) {
-        std::abort();
-    }
-
-    auto *pPel = reinterpret_cast<std::array<uint8_t, 4> *>(pData);
-    auto const colourFill = std::array<uint8_t, 4>{204, 0, 204, 255};
-    auto const blackFill = std::array<uint8_t, 4>{0, 0, 0, 255};
-
+void fillErrorDepthData(uint32_t extent, uint32_t numCheckSquare, float *pData) {
     uint32_t squareSize = extent / numCheckSquare;
     if (squareSize == 0) {
         squareSize = extent / 2U;
@@ -50,15 +42,43 @@ void fillErrorImageData(VkFormat format, uint32_t extent, uint32_t numCheckSquar
         for (uint32_t y = 0; y < extent; ++y) {
             if ((x / squareSize) % 2 == 0) {
                 if ((y / squareSize) % 2 == 0) {
-                    *pPel++ = colourFill;
+                    *pData++ = 0.f;
                 } else {
-                    *pPel++ = blackFill;
+                    *pData++ = 1.f;
                 }
             } else {
                 if ((y / squareSize) % 2 == 0) {
-                    *pPel++ = blackFill;
+                    *pData++ = 1.f;
                 } else {
-                    *pPel++ = colourFill;
+                    *pData++ = 0.f;
+                }
+            }
+        }
+    }
+}
+
+void fillErrorStencilData(uint32_t extent, uint32_t numCheckSquare, uint8_t *pData) {
+    uint32_t squareSize = extent / numCheckSquare;
+    if (squareSize == 0) {
+        squareSize = extent / 2U;
+    }
+    if (squareSize == 0) {
+        squareSize = 1U;
+    }
+
+    for (uint32_t x = 0; x < extent; ++x) {
+        for (uint32_t y = 0; y < extent; ++y) {
+            if ((x / squareSize) % 2 == 0) {
+                if ((y / squareSize) % 2 == 0) {
+                    *pData++ = 0x00;
+                } else {
+                    *pData++ = 0xFF;
+                }
+            } else {
+                if ((y / squareSize) % 2 == 0) {
+                    *pData++ = 0xFF;
+                } else {
+                    *pData++ = 0x00;
                 }
             }
         }
@@ -67,15 +87,16 @@ void fillErrorImageData(VkFormat format, uint32_t extent, uint32_t numCheckSquar
 
 } // namespace
 
-VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
-                                   VkFormat format,
-                                   uint32_t numMipLevels,
-                                   uint32_t numCheckSquares,
-                                   VmaAllocation *pAlloc,
-                                   VkImage *pImage,
-                                   VkImageView *pImageView,
-                                   VkSampler *pSampler) {
+VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
+                                         uint32_t numMipLevels,
+                                         uint32_t numCheckSquares,
+                                         VmaAllocation *pAlloc,
+                                         VkImage *pImage,
+                                         VkImageView *pImageDepthView,
+                                         VkImageView *pImageStencilView,
+                                         VkSampler *pSampler) {
     VkResult res;
+    constexpr VkFormat format = VK_FORMAT_D32_SFLOAT_S8_UINT;
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
     VkExtent3D extent = VkExtent3D{maxExtent, maxExtent, 1U};
     foeUploadData uploadData{};
@@ -87,12 +108,14 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
 
     VmaAllocation alloc{VK_NULL_HANDLE};
     VkImage image{VK_NULL_HANDLE};
-    VkImageView view{VK_NULL_HANDLE};
+    VkImageView depthView{VK_NULL_HANDLE};
+    VkImageView stencilView{VK_NULL_HANDLE};
     VkSampler sampler{VK_NULL_HANDLE};
 
     { // Staging Buffer
         uint32_t dataByteSize = pixelCount(extent, numMipLevels);
-        dataByteSize *= bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
+        dataByteSize *=
+            bytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -122,7 +145,8 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
             .arrayLayers = 1U,
             .samples = VK_SAMPLE_COUNT_1_BIT,
             .tiling = VK_IMAGE_TILING_OPTIMAL,
-            .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                     VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         };
 
         VmaAllocationCreateInfo allocCI{
@@ -136,10 +160,12 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
         }
     }
 
-    { // Map Data in
+    { // Map data in
         uint8_t *pData;
         VkDeviceSize offset = 0;
-        copyRegions.resize(numMipLevels);
+        copyRegions.resize(numMipLevels * 2);
+        auto const depth_bpp = bytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT);
+        auto const stencil_bpp = bytesPerPixel(format, VK_IMAGE_ASPECT_STENCIL_BIT);
 
         res = vmaMapMemory(pResourceUploader->allocator, stagingAlloc,
                            reinterpret_cast<void **>(&pData));
@@ -150,13 +176,15 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
         for (uint32_t i = 0; i < numMipLevels; ++i) {
             auto const mipExtent = mipmapExtent(extent, i);
 
-            fillErrorImageData(format, mipExtent.width, numCheckSquares, pData + offset);
+            // Depth
+            fillErrorDepthData(mipExtent.width, numCheckSquares,
+                               reinterpret_cast<float *>(pData + offset));
 
-            copyRegions[i] = VkBufferImageCopy{
+            copyRegions[i * 2 + 0] = VkBufferImageCopy{
                 .bufferOffset = offset,
                 .imageSubresource =
                     {
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
                         .mipLevel = i,
                         .baseArrayLayer = 0,
                         .layerCount = 1,
@@ -164,25 +192,42 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
                 .imageExtent = mipExtent,
             };
 
-            offset += mipExtent.width * mipExtent.height * mipExtent.depth *
-                      bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
+            offset += mipExtent.width * mipExtent.height * mipExtent.depth * depth_bpp;
+
+            // Stencil
+            fillErrorStencilData(mipExtent.width, numCheckSquares, pData + offset);
+
+            copyRegions[i * 2 + 1] = VkBufferImageCopy{
+                .bufferOffset = offset,
+                .imageSubresource =
+                    {
+                        .aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT,
+                        .mipLevel = i,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1,
+                    },
+                .imageExtent = mipExtent,
+            };
+
+            offset += mipExtent.width * mipExtent.height * mipExtent.depth * stencil_bpp;
         }
 
         vmaUnmapMemory(pResourceUploader->allocator, stagingAlloc);
     }
 
-    { // Record and submit upload commands
+    {
+        // Record Upload Command
         VkImageSubresourceRange subresourceRange{
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
             .baseMipLevel = 0,
             .levelCount = numMipLevels,
             .layerCount = 1,
         };
 
-        res = recordImageUploadCommands(pResourceUploader, &subresourceRange, copyRegions.size(),
-                                        copyRegions.data(), stagingBuffer, image,
-                                        VK_ACCESS_SHADER_READ_BIT,
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadData);
+        recordImageUploadCommands(pResourceUploader, &subresourceRange, copyRegions.size(),
+                                  copyRegions.data(), stagingBuffer, image,
+                                  VK_ACCESS_SHADER_READ_BIT,
+                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadData);
         if (res != VK_SUCCESS) {
             goto SUBMIT_FAILED;
         }
@@ -203,7 +248,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
                            VK_COMPONENT_SWIZZLE_A},
             .subresourceRange =
                 VkImageSubresourceRange{
-                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
                     .baseMipLevel = 0,
                     .levelCount = numMipLevels,
                     .baseArrayLayer = 0,
@@ -211,7 +256,15 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
                 },
         };
 
-        res = vkCreateImageView(pResourceUploader->device, &viewCI, nullptr, &view);
+        // Depth
+        res = vkCreateImageView(pResourceUploader->device, &viewCI, nullptr, &depthView);
+        if (res != VK_SUCCESS) {
+            goto CREATE_FAILED;
+        }
+
+        // Stencil
+        viewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+        res = vkCreateImageView(pResourceUploader->device, &viewCI, nullptr, &stencilView);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -259,15 +312,20 @@ SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed t
     if (res == VK_SUCCESS) {
         *pImage = image;
         *pAlloc = alloc;
-        *pImageView = view;
+        *pImageDepthView = depthView;
+        *pImageStencilView = stencilView;
         *pSampler = sampler;
     } else {
         if (sampler != VK_NULL_HANDLE) {
             vkDestroySampler(pResourceUploader->device, sampler, nullptr);
         }
 
-        if (view != VK_NULL_HANDLE) {
-            vkDestroyImageView(pResourceUploader->device, view, nullptr);
+        if (stencilView != VK_NULL_HANDLE) {
+            vkDestroyImageView(pResourceUploader->device, stencilView, nullptr);
+        }
+
+        if (depthView != VK_NULL_HANDLE) {
+            vkDestroyImageView(pResourceUploader->device, depthView, nullptr);
         }
 
         if (image != VK_NULL_HANDLE) {

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/model.hpp>
+#include <foe/graphics/vk/model.hpp>
 
 #include <array>
 

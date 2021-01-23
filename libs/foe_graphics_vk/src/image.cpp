@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/image.hpp>
+#include <foe/graphics/vk/image.hpp>
 
 #include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/upload_data.hpp>

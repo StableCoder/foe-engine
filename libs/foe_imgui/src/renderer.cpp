@@ -17,9 +17,9 @@
 #include <foe/imgui/renderer.hpp>
 
 #include <GLFW/glfw3.h>
-#include <foe/graphics/image.hpp>
 #include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/upload_data.hpp>
+#include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/wsi.hpp>
 #include <imgui.h>
