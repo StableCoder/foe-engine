@@ -8,5 +8,4 @@ target_sources(
           render_pass_pool.cpp
           shader_pool.cpp
           shader.cpp
-          swapchain.cpp
-          upload_data.cpp)
+          swapchain.cpp)

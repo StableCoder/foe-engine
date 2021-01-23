@@ -16,10 +16,11 @@
 
 #include <foe/graphics/vk/error_images.hpp>
 
-#include <foe/graphics/upload_data.hpp>
 #include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/upload_request.hpp>
 
 #include "format.hpp"
+#include "upload_request.hpp"
 
 #include <array>
 #include <cmath>
@@ -99,7 +100,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
     constexpr VkFormat format = VK_FORMAT_D32_SFLOAT_S8_UINT;
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
     VkExtent3D extent = VkExtent3D{maxExtent, maxExtent, 1U};
-    foeUploadData uploadData{};
+    foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
 
     VmaAllocation stagingAlloc{VK_NULL_HANDLE};
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
@@ -227,13 +228,14 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
         recordImageUploadCommands(pResourceUploader, &subresourceRange, copyRegions.size(),
                                   copyRegions.data(), stagingBuffer, image,
                                   VK_ACCESS_SHADER_READ_BIT,
-                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadData);
+                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadRequest);
         if (res != VK_SUCCESS) {
             goto SUBMIT_FAILED;
         }
 
-        res = foeSubmitUploadDataCommands(pResourceUploader, &uploadData);
-        if (res != VK_SUCCESS) {
+        auto errC = foeSubmitUploadDataCommands(pResourceUploader, uploadRequest);
+        if (errC) {
+            res = static_cast<VkResult>(errC.value());
             goto SUBMIT_FAILED;
         }
     }
@@ -294,7 +296,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
 CREATE_FAILED : {
     VkResult fenceStatus = VK_NOT_READY;
     while (fenceStatus == VK_NOT_READY) {
-        fenceStatus = foeGfxGetUploadRequestStatus(pResourceUploader->device, &uploadData);
+        fenceStatus = foeGfxGetUploadRequestStatus(pResourceUploader->device, uploadRequest);
     }
     if (fenceStatus != VK_SUCCESS) {
         res = fenceStatus;
@@ -302,7 +304,8 @@ CREATE_FAILED : {
 }
 
 SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed to submit
-    uploadData.destroy(pResourceUploader->device);
+    foeGfxVkDestroyUploadRequest(pResourceUploader->device,
+                                 upload_request_from_handle(uploadRequest));
 
     if (stagingBuffer != VK_NULL_HANDLE) {
         vmaDestroyBuffer(pResourceUploader->allocator, stagingBuffer, stagingAlloc);

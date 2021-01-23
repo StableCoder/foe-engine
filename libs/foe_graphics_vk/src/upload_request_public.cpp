@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,45 +14,35 @@
     limitations under the License.
 */
 
-#include <foe/graphics/upload_data.hpp>
+#include <foe/graphics/vk/upload_request.hpp>
 
 #include <foe/graphics/resource_uploader.hpp>
+#include <vk_error_code.hpp>
 
-void foeUploadData::destroy(VkDevice device) {
-    if (copyComplete != VK_NULL_HANDLE) {
-        vkDestroySemaphore(device, copyComplete, nullptr);
-    }
+#include "session.hpp"
+#include "upload_request.hpp"
 
-    if (dstFence != VK_NULL_HANDLE) {
-        vkDestroyFence(device, dstFence, nullptr);
-    }
+void foeGfxDestroyUploadRequest(foeGfxSession session, foeGfxUploadRequest uploadRequest) {
+    auto *pSession = session_from_handle(session);
+    auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
-    if (dstCmdBuffer != VK_NULL_HANDLE) {
-        vkFreeCommandBuffers(device, dstCmdPool, 1, &dstCmdBuffer);
-    }
-
-    if (srcFence != VK_NULL_HANDLE) {
-        vkDestroyFence(device, srcFence, nullptr);
-    }
-
-    if (srcCmdBuffer != VK_NULL_HANDLE) {
-        vkFreeCommandBuffers(device, srcCmdPool, 1, &srcCmdBuffer);
-    }
+    foeGfxVkDestroyUploadRequest(pSession->device, pUploadRequest);
 }
 
 VkResult foeCreateUploadData(VkDevice device,
                              VkCommandPool srcCommandPool,
                              VkCommandPool dstCommandPool,
-                             foeUploadData *pUploadData) {
+                             foeGfxUploadRequest *pUploadRequest) {
     VkResult res;
-    foeUploadData uploadData{
+    auto *pNewRequest = new foeGfxVkUploadRequest;
+    *pNewRequest = {
         .srcCmdPool = srcCommandPool,
         .dstCmdPool = dstCommandPool,
     };
 
     VkCommandBufferAllocateInfo bufferAI{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = uploadData.dstCmdPool,
+        .commandPool = pNewRequest->dstCmdPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
     };
@@ -62,26 +52,26 @@ VkResult foeCreateUploadData(VkDevice device,
     };
 
     // Destination
-    res = vkAllocateCommandBuffers(device, &bufferAI, &uploadData.dstCmdBuffer);
+    res = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->dstCmdBuffer);
     if (res != VK_NULL_HANDLE) {
         goto CREATE_FAILED;
     }
 
-    res = vkCreateFence(device, &fenceCI, nullptr, &uploadData.dstFence);
+    res = vkCreateFence(device, &fenceCI, nullptr, &pNewRequest->dstFence);
     if (res != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
     // Source
-    if (uploadData.srcCmdPool != VK_NULL_HANDLE) {
-        bufferAI.commandPool = uploadData.srcCmdPool;
+    if (pNewRequest->srcCmdPool != VK_NULL_HANDLE) {
+        bufferAI.commandPool = pNewRequest->srcCmdPool;
 
-        res = vkAllocateCommandBuffers(device, &bufferAI, &uploadData.srcCmdBuffer);
+        res = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->srcCmdBuffer);
         if (res != VK_NULL_HANDLE) {
             goto CREATE_FAILED;
         }
 
-        res = vkCreateFence(device, &fenceCI, nullptr, &uploadData.srcFence);
+        res = vkCreateFence(device, &fenceCI, nullptr, &pNewRequest->srcFence);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -91,7 +81,7 @@ VkResult foeCreateUploadData(VkDevice device,
                 .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             };
 
-            res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &uploadData.copyComplete);
+            res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &pNewRequest->copyComplete);
             if (res != VK_SUCCESS) {
                 goto CREATE_FAILED;
             }
@@ -100,71 +90,75 @@ VkResult foeCreateUploadData(VkDevice device,
 
 CREATE_FAILED:
     if (res == VK_SUCCESS) {
-        *pUploadData = uploadData;
+        *pUploadRequest = upload_request_to_handle(pNewRequest);
     } else {
-        uploadData.destroy(device);
+        foeGfxVkDestroyUploadRequest(device, pNewRequest);
     }
 
     return res;
 }
 
-VkResult foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
-                                     foeUploadData *pUploadData) {
+std::error_code foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
+                                            foeGfxUploadRequest uploadRequest) {
+    auto *pUploadRequest = upload_request_from_handle(uploadRequest);
     VkResult res;
 
-    if (pUploadData->srcCmdBuffer != VK_NULL_HANDLE) { // Source command submission
+    if (pUploadRequest->srcCmdBuffer != VK_NULL_HANDLE) { // Source command submission
         VkSubmitInfo submitInfo{
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .commandBufferCount = 1,
-            .pCommandBuffers = &pUploadData->srcCmdBuffer,
+            .pCommandBuffers = &pUploadRequest->srcCmdBuffer,
             .signalSemaphoreCount = 1,
-            .pSignalSemaphores = &pUploadData->copyComplete,
+            .pSignalSemaphores = &pUploadRequest->copyComplete,
         };
 
         auto queue = pResourceUploader->srcQueueFamily->queue[0];
-        res = vkQueueSubmit(queue, 1, &submitInfo, pUploadData->srcFence);
+        res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->srcFence);
         if (res != VK_SUCCESS) {
             return res;
         }
-        pUploadData->srcSubmitted = true;
+        pUploadRequest->srcSubmitted = true;
     }
 
     // Destination command submission
     VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
     VkSubmitInfo submitInfo{
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-        .waitSemaphoreCount = (pUploadData->copyComplete != VK_NULL_HANDLE) ? 1U : 0U,
-        .pWaitSemaphores = &pUploadData->copyComplete,
+        .waitSemaphoreCount = (pUploadRequest->copyComplete != VK_NULL_HANDLE) ? 1U : 0U,
+        .pWaitSemaphores = &pUploadRequest->copyComplete,
         .pWaitDstStageMask = &waitStageMask,
         .commandBufferCount = 1,
-        .pCommandBuffers = &pUploadData->dstCmdBuffer,
+        .pCommandBuffers = &pUploadRequest->dstCmdBuffer,
     };
 
     auto queue = pResourceUploader->dstQueueFamily->queue[0];
-    res = vkQueueSubmit(queue, 1, &submitInfo, pUploadData->dstFence);
+    res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->dstFence);
     if (res == VK_SUCCESS) {
-        pUploadData->dstSubmitted = true;
+        pUploadRequest->dstSubmitted = true;
     }
 
     // If the dst failed to submit but the src one *did*, then we need to wait for the source one to
     // complete or error-out before leaving.
-    if (res != VK_SUCCESS && pUploadData->srcFence != VK_NULL_HANDLE) {
-        while (vkGetFenceStatus(pResourceUploader->device, pUploadData->srcFence) == VK_NOT_READY)
+    if (res != VK_SUCCESS && pUploadRequest->srcFence != VK_NULL_HANDLE) {
+        while (vkGetFenceStatus(pResourceUploader->device, pUploadRequest->srcFence) ==
+               VK_NOT_READY)
             ;
     }
 
     return res;
 }
 
-VkResult foeGfxGetUploadRequestStatus(VkDevice device, foeUploadData const *pUploadData) {
+VkResult foeGfxGetUploadRequestStatus(VkDevice device, foeGfxUploadRequest uploadRequest) {
+    auto *pUploadRequest = upload_request_from_handle(uploadRequest);
+
     // If the destination commands were submitted
-    if (pUploadData->dstSubmitted) {
-        return vkGetFenceStatus(device, pUploadData->dstFence);
+    if (pUploadRequest->dstSubmitted) {
+        return vkGetFenceStatus(device, pUploadRequest->dstFence);
     }
 
     // Otherwise, check the source one, presumably the dst ones failed to submit
-    if (pUploadData->srcSubmitted) {
-        return vkGetFenceStatus(device, pUploadData->srcFence);
+    if (pUploadRequest->srcSubmitted) {
+        return vkGetFenceStatus(device, pUploadRequest->srcFence);
     }
 
     return VK_SUCCESS;

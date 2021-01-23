@@ -18,10 +18,10 @@
 #define FOE_GRAPHICS_IMAGE_HPP
 
 #include <foe/graphics/export.h>
+#include <foe/graphics/upload_request.hpp>
 #include <vulkan/vulkan.h>
 
 struct foeResourceUploader;
-struct foeUploadData;
 
 /** @brief Returns the maximum mipmap levels for the given extent.
  * @param extent The extent dimensions.
@@ -52,6 +52,6 @@ FOE_GFX_EXPORT VkResult recordImageUploadCommands(foeResourceUploader *pResource
                                                   VkImage dstImage,
                                                   VkAccessFlags dstAccessFlags,
                                                   VkImageLayout dstImageLayout,
-                                                  foeUploadData *pUploadData);
+                                                  foeGfxUploadRequest *pUploadRequest);
 
 #endif // FOE_GRAPHICS_IMAGE_HPP

@@ -18,9 +18,9 @@
 
 #include <GLFW/glfw3.h>
 #include <foe/graphics/resource_uploader.hpp>
-#include <foe/graphics/upload_data.hpp>
 #include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/upload_request.hpp>
 #include <foe/wsi.hpp>
 #include <imgui.h>
 
@@ -96,7 +96,7 @@ VkResult foeImGuiRenderer::initialize(foeGfxSession session,
     foeResourceUploader resUploader{};
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
     VmaAllocation stagingAlloc{VK_NULL_HANDLE};
-    foeUploadData uploadData{};
+    foeGfxUploadRequest uploadRequest;
 
     VkExtent3D fontExtent;
 
@@ -186,13 +186,14 @@ VkResult foeImGuiRenderer::initialize(foeGfxSession session,
 
         res = recordImageUploadCommands(&resUploader, &subresourceRange, 1, &imgCopy, stagingBuffer,
                                         mFontImage, VK_ACCESS_SHADER_READ_BIT,
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadData);
+                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
         if (res != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
 
-        res = foeSubmitUploadDataCommands(&resUploader, &uploadData);
-        if (res != VK_SUCCESS) {
+        auto errC = foeSubmitUploadDataCommands(&resUploader, uploadRequest);
+        if (errC) {
+            res = static_cast<VkResult>(errC.value());
             goto SUBMIT_FAILED;
         }
     }
@@ -269,7 +270,7 @@ VkResult foeImGuiRenderer::initialize(foeGfxSession session,
 SUBMIT_FAILED : {
     VkResult fenceStatus = VK_NOT_READY;
     while (fenceStatus == VK_NOT_READY) {
-        fenceStatus = foeGfxGetUploadRequestStatus(foeGfxVkGetDevice(session), &uploadData);
+        fenceStatus = foeGfxGetUploadRequestStatus(foeGfxVkGetDevice(session), uploadRequest);
     }
     if (fenceStatus != VK_SUCCESS) {
         res = fenceStatus;
@@ -277,7 +278,7 @@ SUBMIT_FAILED : {
 }
 
 INITIALIZATION_FAILED:
-    uploadData.destroy(foeGfxVkGetDevice(session));
+    foeGfxDestroyUploadRequest(session, uploadRequest);
 
     if (stagingBuffer != VK_NULL_HANDLE) {
         vmaDestroyBuffer(foeGfxVkGetAllocator(session), stagingBuffer, stagingAlloc);

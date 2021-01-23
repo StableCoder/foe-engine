@@ -19,7 +19,7 @@
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/resource_uploader.hpp>
-#include <foe/graphics/upload_data.hpp>
+#include <foe/graphics/upload_request.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -57,6 +57,6 @@ FOE_GFX_EXPORT VkResult recordModelUploadCommands(foeResourceUploader *pResource
                                                   VkBuffer indexBuffer,
                                                   VkDeviceSize indexDataSize,
                                                   VkBuffer stagingBuffer,
-                                                  foeUploadData *pUploadData);
+                                                  foeGfxUploadRequest *pUploadRequest);
 
 #endif // FOE_GRAPHICS_MODEL_HPP

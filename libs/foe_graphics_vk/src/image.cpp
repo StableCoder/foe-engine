@@ -17,7 +17,9 @@
 #include <foe/graphics/vk/image.hpp>
 
 #include <foe/graphics/resource_uploader.hpp>
-#include <foe/graphics/upload_data.hpp>
+#include <foe/graphics/vk/upload_request.hpp>
+
+#include "upload_request.hpp"
 
 #include <cmath>
 
@@ -65,9 +67,9 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
                                    VkImage dstImage,
                                    VkAccessFlags dstAccessFlags,
                                    VkImageLayout dstImageLayout,
-                                   foeUploadData *pUploadData) {
+                                   foeGfxUploadRequest *pUploadRequst) {
     VkResult res;
-    foeUploadData uploadData;
+    foeGfxVkUploadRequest *uploadData{nullptr};
 
     res = foeCreateUploadData(pResourceUploader->device, pResourceUploader->srcCommandPool,
                               pResourceUploader->dstCommandPool, &uploadData);
@@ -81,14 +83,14 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
             .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
         };
 
-        if (uploadData.srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkBeginCommandBuffer(uploadData.srcCmdBuffer, &cmdBufBI);
+        if (uploadData->srcCmdBuffer != VK_NULL_HANDLE) {
+            res = vkBeginCommandBuffer(uploadData->srcCmdBuffer, &cmdBufBI);
             if (res != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkBeginCommandBuffer(uploadData.dstCmdBuffer, &cmdBufBI);
+        res = vkBeginCommandBuffer(uploadData->dstCmdBuffer, &cmdBufBI);
         if (res != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
@@ -109,8 +111,9 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
         };
 
         // If there's no src buffer, use the dst buffer
-        auto commandBuffer = (uploadData.srcCmdBuffer != VK_NULL_HANDLE) ? uploadData.srcCmdBuffer
-                                                                         : uploadData.dstCmdBuffer;
+        auto commandBuffer = (uploadData->srcCmdBuffer != VK_NULL_HANDLE)
+                                 ? uploadData->srcCmdBuffer
+                                 : uploadData->dstCmdBuffer;
 
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1,
@@ -121,11 +124,11 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
     }
 
     { // Change destination image for shader read only optimal
-        auto srcQueueFamily = (uploadData.srcCmdBuffer != VK_NULL_HANDLE)
+        auto srcQueueFamily = (uploadData->srcCmdBuffer != VK_NULL_HANDLE)
                                   ? pResourceUploader->srcQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
-        auto dstQueueFamily = (uploadData.srcCmdBuffer != VK_NULL_HANDLE)
+        auto dstQueueFamily = (uploadData->srcCmdBuffer != VK_NULL_HANDLE)
                                   ? pResourceUploader->dstQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
@@ -141,26 +144,26 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
             .subresourceRange = *pSubresourceRange,
         };
 
-        if (uploadData.srcCmdBuffer != VK_NULL_HANDLE) {
-            vkCmdPipelineBarrier(uploadData.srcCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        if (uploadData->srcCmdBuffer != VK_NULL_HANDLE) {
+            vkCmdPipelineBarrier(uploadData->srcCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1,
                                  &imgMemBarrier);
         }
 
-        vkCmdPipelineBarrier(uploadData.dstCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        vkCmdPipelineBarrier(uploadData->dstCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1,
                              &imgMemBarrier);
     }
 
     { // End Recording
-        if (uploadData.srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkEndCommandBuffer(uploadData.srcCmdBuffer);
+        if (uploadData->srcCmdBuffer != VK_NULL_HANDLE) {
+            res = vkEndCommandBuffer(uploadData->srcCmdBuffer);
             if (res != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkEndCommandBuffer(uploadData.dstCmdBuffer);
+        res = vkEndCommandBuffer(uploadData->dstCmdBuffer);
         if (res != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
@@ -168,9 +171,9 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
 
 RECORDING_FAILED:
     if (res == VK_SUCCESS) {
-        *pUploadData = uploadData;
+        *pUploadRequst = upload_request_to_handle(uploadData);
     } else {
-        uploadData.destroy(pResourceUploader->device);
+        foeGfxVkDestroyUploadRequest(pResourceUploader->device, uploadData);
     }
 
     return res;

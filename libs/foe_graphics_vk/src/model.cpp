@@ -16,6 +16,10 @@
 
 #include <foe/graphics/vk/model.hpp>
 
+#include <foe/graphics/vk/upload_request.hpp>
+
+#include "upload_request.hpp"
+
 #include <array>
 
 VkResult allocateStagingBuffer(VmaAllocator allocator,
@@ -209,25 +213,23 @@ void unmapModelBuffers(VmaAllocator allocator,
     }
 }
 
-#include <foe/graphics/upload_data.hpp>
-
 VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
                                    VkBuffer vertexBuffer,
                                    VkDeviceSize vertexDataSize,
                                    VkBuffer indexBuffer,
                                    VkDeviceSize indexDataSize,
                                    VkBuffer stagingBuffer,
-                                   foeUploadData *pUploadData) {
+                                   foeGfxUploadRequest *pUploadRequest) {
     VkResult res;
-    foeUploadData uploadData;
+    foeGfxVkUploadRequest *uploadRequest{nullptr};
 
     if (stagingBuffer) {
         // Need both queues for a tranfer
         res = foeCreateUploadData(pResourceUploader->device, pResourceUploader->srcCommandPool,
-                                  pResourceUploader->dstCommandPool, &uploadData);
+                                  pResourceUploader->dstCommandPool, &uploadRequest);
     } else {
         res = foeCreateUploadData(pResourceUploader->device, VK_NULL_HANDLE,
-                                  pResourceUploader->dstCommandPool, &uploadData);
+                                  pResourceUploader->dstCommandPool, &uploadRequest);
     }
     if (res != VK_SUCCESS) {
         goto RECORDING_FAILED;
@@ -239,14 +241,14 @@ VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
             .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
         };
 
-        if (uploadData.srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkBeginCommandBuffer(uploadData.srcCmdBuffer, &cmdBufBI);
+        if (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE) {
+            res = vkBeginCommandBuffer(uploadRequest->srcCmdBuffer, &cmdBufBI);
             if (res != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkBeginCommandBuffer(uploadData.dstCmdBuffer, &cmdBufBI);
+        res = vkBeginCommandBuffer(uploadRequest->dstCmdBuffer, &cmdBufBI);
         if (res != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
@@ -277,9 +279,9 @@ VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
             };
 
             // If there's no src buffer, use the dst buffer
-            auto commandBuffer = (uploadData.srcCmdBuffer != VK_NULL_HANDLE)
-                                     ? uploadData.srcCmdBuffer
-                                     : uploadData.dstCmdBuffer;
+            auto commandBuffer = (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE)
+                                     ? uploadRequest->srcCmdBuffer
+                                     : uploadRequest->dstCmdBuffer;
 
             vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr,
@@ -297,11 +299,11 @@ VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
         }
 
         // Transition to final states for use
-        auto srcQueueFamily = (uploadData.srcCmdBuffer != VK_NULL_HANDLE)
+        auto srcQueueFamily = (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE)
                                   ? pResourceUploader->srcQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
-        auto dstQueueFamily = (uploadData.srcCmdBuffer != VK_NULL_HANDLE)
+        auto dstQueueFamily = (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE)
                                   ? pResourceUploader->dstQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
@@ -326,26 +328,26 @@ VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
             },
         };
 
-        if (uploadData.srcCmdBuffer) {
-            vkCmdPipelineBarrier(uploadData.srcCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        if (uploadRequest->srcCmdBuffer) {
+            vkCmdPipelineBarrier(uploadRequest->srcCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr,
                                  transitionBarriers.size(), transitionBarriers.data(), 0, nullptr);
         }
 
-        vkCmdPipelineBarrier(uploadData.dstCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        vkCmdPipelineBarrier(uploadRequest->dstCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr,
                              transitionBarriers.size(), transitionBarriers.data(), 0, nullptr);
     }
 
     { // End Recording
-        if (uploadData.srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkEndCommandBuffer(uploadData.srcCmdBuffer);
+        if (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE) {
+            res = vkEndCommandBuffer(uploadRequest->srcCmdBuffer);
             if (res != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkEndCommandBuffer(uploadData.dstCmdBuffer);
+        res = vkEndCommandBuffer(uploadRequest->dstCmdBuffer);
         if (res != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
@@ -353,9 +355,9 @@ VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
 
 RECORDING_FAILED:
     if (res == VK_SUCCESS) {
-        *pUploadData = uploadData;
-    } else {
-        uploadData.destroy(pResourceUploader->device);
+        *pUploadRequest = upload_request_to_handle(uploadRequest);
+    } else if (uploadRequest != FOE_NULL_HANDLE) {
+        foeGfxVkDestroyUploadRequest(pResourceUploader->device, uploadRequest);
     }
 
     return res;

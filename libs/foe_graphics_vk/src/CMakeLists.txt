@@ -11,4 +11,6 @@ target_sources(
           pipeline_pool.cpp
           resource_uploader.cpp
           runtime.cpp
-          session.cpp)
+          session.cpp
+          upload_request_public.cpp
+          upload_request.cpp)
