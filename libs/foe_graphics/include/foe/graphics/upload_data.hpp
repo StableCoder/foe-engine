@@ -18,6 +18,7 @@
 #define UPLOAD_DATA_HPP
 
 #include <foe/graphics/export.h>
+#include <foe/graphics/session.hpp>
 #include <vulkan/vulkan.h>
 
 struct foeResourceUploader;
@@ -26,10 +27,12 @@ struct foeUploadData {
     VkCommandBuffer srcCmdBuffer;
     VkCommandPool srcCmdPool;
     VkFence srcFence;
+    bool srcSubmitted;
 
     VkCommandBuffer dstCmdBuffer;
     VkCommandPool dstCmdPool;
     VkFence dstFence;
+    bool dstSubmitted;
 
     VkSemaphore copyComplete;
 
@@ -43,5 +46,13 @@ FOE_GFX_EXPORT VkResult foeCreateUploadData(VkDevice device,
 
 FOE_GFX_EXPORT VkResult foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
                                                     foeUploadData *pUploadData);
+
+/**
+ * @brief Returns the status of an upload request
+ * @return VK_SUCCESS if the request hasn't been submitted, or if it has and has finished. An
+ * appropriate value otherwise.
+ */
+FOE_GFX_EXPORT VkResult foeGfxGetUploadRequestStatus(VkDevice device,
+                                                     foeUploadData const *pUploadData);
 
 #endif // UPLOAD_DATA_HPP

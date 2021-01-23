@@ -238,16 +238,15 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
         }
     }
 
-CREATE_FAILED:
-    if (uploadData.dstFence != VK_NULL_HANDLE) {
-        VkResult fenceStatus = VK_NOT_READY;
-        while (fenceStatus == VK_NOT_READY) {
-            fenceStatus = vkGetFenceStatus(pResourceUploader->device, uploadData.dstFence);
-        }
-        if (fenceStatus != VK_SUCCESS) {
-            res = fenceStatus;
-        }
+CREATE_FAILED : {
+    VkResult fenceStatus = VK_NOT_READY;
+    while (fenceStatus == VK_NOT_READY) {
+        fenceStatus = foeGfxGetUploadRequestStatus(pResourceUploader->device, &uploadData);
     }
+    if (fenceStatus != VK_SUCCESS) {
+        res = fenceStatus;
+    }
+}
 
 SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed to submit
     uploadData.destroy(pResourceUploader->device);

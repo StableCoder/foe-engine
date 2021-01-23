@@ -266,16 +266,15 @@ VkResult foeImGuiRenderer::initialize(foeGfxSession session,
         goto INITIALIZATION_FAILED;
     }
 
-SUBMIT_FAILED:
-    if (uploadData.dstFence != VK_NULL_HANDLE) {
-        VkResult fenceStatus = VK_NOT_READY;
-        while (fenceStatus == VK_NOT_READY) {
-            fenceStatus = vkGetFenceStatus(foeGfxVkGetDevice(session), uploadData.dstFence);
-        }
-        if (fenceStatus != VK_SUCCESS) {
-            res = fenceStatus;
-        }
+SUBMIT_FAILED : {
+    VkResult fenceStatus = VK_NOT_READY;
+    while (fenceStatus == VK_NOT_READY) {
+        fenceStatus = foeGfxGetUploadRequestStatus(foeGfxVkGetDevice(session), &uploadData);
     }
+    if (fenceStatus != VK_SUCCESS) {
+        res = fenceStatus;
+    }
+}
 
 INITIALIZATION_FAILED:
     uploadData.destroy(foeGfxVkGetDevice(session));

@@ -126,6 +126,7 @@ VkResult foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
         if (res != VK_SUCCESS) {
             return res;
         }
+        pUploadData->srcSubmitted = true;
     }
 
     // Destination command submission
@@ -141,6 +142,9 @@ VkResult foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
 
     auto queue = pResourceUploader->dstQueueFamily->queue[0];
     res = vkQueueSubmit(queue, 1, &submitInfo, pUploadData->dstFence);
+    if (res == VK_SUCCESS) {
+        pUploadData->dstSubmitted = true;
+    }
 
     // If the dst failed to submit but the src one *did*, then we need to wait for the source one to
     // complete or error-out before leaving.
@@ -150,4 +154,18 @@ VkResult foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
     }
 
     return res;
+}
+
+VkResult foeGfxGetUploadRequestStatus(VkDevice device, foeUploadData const *pUploadData) {
+    // If the destination commands were submitted
+    if (pUploadData->dstSubmitted) {
+        return vkGetFenceStatus(device, pUploadData->dstFence);
+    }
+
+    // Otherwise, check the source one, presumably the dst ones failed to submit
+    if (pUploadData->srcSubmitted) {
+        return vkGetFenceStatus(device, pUploadData->srcFence);
+    }
+
+    return VK_SUCCESS;
 }
