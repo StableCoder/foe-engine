@@ -17,7 +17,6 @@
 #include <foe/graphics/vk/error_images.hpp>
 
 #include <foe/graphics/vk/image.hpp>
-#include <foe/graphics/vk/upload_request.hpp>
 
 #include "format.hpp"
 #include "upload_context.hpp"
@@ -244,12 +243,12 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
     }
 
 CREATE_FAILED : {
-    VkResult fenceStatus = VK_NOT_READY;
-    while (fenceStatus == VK_NOT_READY) {
-        fenceStatus = foeGfxGetUploadRequestStatus(uploadRequest);
+    auto requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
+    while (requestStatus == FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
+        requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
     }
-    if (fenceStatus != VK_SUCCESS) {
-        res = fenceStatus;
+    if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE) {
+        res = VK_ERROR_DEVICE_LOST;
     }
 }
 

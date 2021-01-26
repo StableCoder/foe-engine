@@ -26,6 +26,20 @@
 
 FOE_DEFINE_HANDLE(foeGfxUploadRequest)
 
+enum UploadRequestStatus {
+    FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE = 0,
+    FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE,
+    FOE_GFX_UPLOAD_REQUEST_STATUS_DEVICE_LOST,
+};
+
+/**
+ * @brief Returns the status of an upload request
+ * @param uploadRequest Request to get the completion status for
+ * @return VK_SUCCESS if the request hasn't been submitted, or if it has and has finished. An
+ * appropriate value otherwise.
+ */
+FOE_GFX_EXPORT UploadRequestStatus foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest);
+
 FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxSession session,
                                                foeGfxUploadRequest uploadRequest);
 

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/vk/upload_request.hpp>
+#include <foe/graphics/upload_request.hpp>
 
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
@@ -153,18 +153,35 @@ std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
     return res;
 }
 
-VkResult foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest) {
+namespace {
+
+UploadRequestStatus vkResultToRequestStatus(VkResult vkResult) {
+    switch (vkResult) {
+    case VK_SUCCESS:
+        return FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE;
+    case VK_NOT_READY:
+        return FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE;
+    default:
+        return FOE_GFX_UPLOAD_REQUEST_STATUS_DEVICE_LOST;
+    }
+}
+
+} // namespace
+
+UploadRequestStatus foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest) {
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
     // If the destination commands were submitted
     if (pUploadRequest->dstSubmitted) {
-        return vkGetFenceStatus(pUploadRequest->device, pUploadRequest->dstFence);
+        return vkResultToRequestStatus(
+            vkGetFenceStatus(pUploadRequest->device, pUploadRequest->dstFence));
     }
 
     // Otherwise, check the source one, presumably the dst ones failed to submit
     if (pUploadRequest->srcSubmitted) {
-        return vkGetFenceStatus(pUploadRequest->device, pUploadRequest->srcFence);
+        return vkResultToRequestStatus(
+            vkGetFenceStatus(pUploadRequest->device, pUploadRequest->srcFence));
     }
 
-    return VK_SUCCESS;
+    return FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE;
 }

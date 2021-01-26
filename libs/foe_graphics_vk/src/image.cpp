@@ -16,9 +16,7 @@
 
 #include <foe/graphics/vk/image.hpp>
 
-#include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
-#include <foe/graphics/vk/upload_request.hpp>
 
 #include "upload_context.hpp"
 #include "upload_request.hpp"
