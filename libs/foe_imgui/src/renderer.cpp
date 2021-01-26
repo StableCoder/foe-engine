@@ -17,7 +17,7 @@
 #include <foe/imgui/renderer.hpp>
 
 #include <GLFW/glfw3.h>
-#include <foe/graphics/resource_uploader.hpp>
+#include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/upload_request.hpp>
@@ -92,16 +92,17 @@ VkResult foeImGuiRenderer::initialize(foeGfxSession session,
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
+    std::error_code errC;
     VkResult res;
-    foeResourceUploader resUploader{};
+    foeGfxUploadContext uploadContext{FOE_NULL_HANDLE};
+    foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
     VmaAllocation stagingAlloc{VK_NULL_HANDLE};
-    foeGfxUploadRequest uploadRequest;
 
     VkExtent3D fontExtent;
 
-    res = foeGfxCreateResourceUploader(session, &resUploader);
-    if (res != VK_SUCCESS) {
+    errC = foeGfxCreateUploadContext(session, &uploadContext);
+    if (errC) {
         goto INITIALIZATION_FAILED;
     }
 
@@ -184,14 +185,14 @@ VkResult foeImGuiRenderer::initialize(foeGfxSession session,
             .imageExtent = fontExtent,
         };
 
-        res = recordImageUploadCommands(&resUploader, &subresourceRange, 1, &imgCopy, stagingBuffer,
-                                        mFontImage, VK_ACCESS_SHADER_READ_BIT,
+        res = recordImageUploadCommands(uploadContext, &subresourceRange, 1, &imgCopy,
+                                        stagingBuffer, mFontImage, VK_ACCESS_SHADER_READ_BIT,
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
         if (res != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
 
-        auto errC = foeSubmitUploadDataCommands(&resUploader, uploadRequest);
+        errC = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
         if (errC) {
             res = static_cast<VkResult>(errC.value());
             goto SUBMIT_FAILED;
@@ -284,9 +285,9 @@ INITIALIZATION_FAILED:
         vmaDestroyBuffer(foeGfxVkGetAllocator(session), stagingBuffer, stagingAlloc);
     }
 
-    foeGfxDestroyResourceUploader(&resUploader);
+    foeGfxDestroyUploadContext(uploadContext);
 
-    if (res != VK_SUCCESS) {
+    if (res != VK_SUCCESS || errC) {
         deinitialize(session);
     }
 

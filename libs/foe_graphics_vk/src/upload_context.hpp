@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,20 +14,19 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_RESOURCE_UPLOADER_HPP
-#define FOE_GRAPHICS_RESOURCE_UPLOADER_HPP
+#ifndef UPLOAD_CONTEXT_HPP
+#define UPLOAD_CONTEXT_HPP
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
-#include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/upload_context.hpp>
+#include <foe/graphics/vk/queue_family.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <mutex>
 
-struct foeGfxVkQueueFamily;
-
-struct foeResourceUploader {
+struct foeGfxVkUploadContext {
     VkDevice device;
     VmaAllocator allocator;
 
@@ -38,9 +37,6 @@ struct foeResourceUploader {
     VkCommandPool dstCommandPool;
 };
 
-FOE_GFX_EXPORT VkResult foeGfxCreateResourceUploader(foeGfxSession session,
-                                                     foeResourceUploader *pResourceUploader);
+FOE_DEFINE_HANDLE_CASTS(upload_context, foeGfxVkUploadContext, foeGfxUploadContext)
 
-FOE_GFX_EXPORT void foeGfxDestroyResourceUploader(foeResourceUploader *pResourceUploader);
-
-#endif // FOE_GRAPHICS_RESOURCE_UPLOADER_HPP
+#endif // UPLOAD_CONTEXT_HPP

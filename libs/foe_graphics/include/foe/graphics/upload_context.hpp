@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,22 +14,20 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_UPLOAD_REQUEST_HPP
-#define FOE_GRAPHICS_UPLOAD_REQUEST_HPP
+#ifndef FOE_GRAPHICS_UPLOAD_CONTEXT_HPP
+#define FOE_GRAPHICS_UPLOAD_CONTEXT_HPP
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
-#include <foe/graphics/upload_context.hpp>
 #include <foe/handle.h>
 
 #include <system_error>
 
-FOE_DEFINE_HANDLE(foeGfxUploadRequest)
+FOE_DEFINE_HANDLE(foeGfxUploadContext)
 
-FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxSession session,
-                                               foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT std::error_code foeGfxCreateUploadContext(foeGfxSession session,
+                                                         foeGfxUploadContext *pUploadContext);
 
-FOE_GFX_EXPORT std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
-                                                           foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT void foeGfxDestroyUploadContext(foeGfxUploadContext uploadContext);
 
-#endif // FOE_GRAPHICS_UPLOAD_REQUEST_HPP
+#endif // FOE_GRAPHICS_UPLOAD_CONTEXT_HPP

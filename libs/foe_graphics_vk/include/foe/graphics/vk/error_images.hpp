@@ -18,11 +18,11 @@
 #define FOE_GRAPHICS_ERROR_COLOUR_IMAGE_HPP
 
 #include <foe/graphics/export.h>
-#include <foe/graphics/resource_uploader.hpp>
+#include <foe/graphics/upload_context.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-FOE_GFX_EXPORT VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
+FOE_GFX_EXPORT VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
                                                   VkFormat format,
                                                   uint32_t numMipLevels,
                                                   uint32_t numCheckSquares,
@@ -31,7 +31,7 @@ FOE_GFX_EXPORT VkResult foeCreateErrorColourImage(foeResourceUploader *pResource
                                                   VkImageView *pImageView,
                                                   VkSampler *pSampler);
 
-FOE_GFX_EXPORT VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
+FOE_GFX_EXPORT VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
                                                         uint32_t numMipLevels,
                                                         uint32_t numCheckSquares,
                                                         VmaAllocation *pAlloc,

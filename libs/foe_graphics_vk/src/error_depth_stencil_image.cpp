@@ -20,6 +20,7 @@
 #include <foe/graphics/vk/upload_request.hpp>
 
 #include "format.hpp"
+#include "upload_context.hpp"
 #include "upload_request.hpp"
 
 #include <array>
@@ -88,7 +89,7 @@ void fillErrorStencilData(uint32_t extent, uint32_t numCheckSquare, uint8_t *pDa
 
 } // namespace
 
-VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
+VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
                                          uint32_t numMipLevels,
                                          uint32_t numCheckSquares,
                                          VmaAllocation *pAlloc,
@@ -96,6 +97,8 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
                                          VkImageView *pImageDepthView,
                                          VkImageView *pImageStencilView,
                                          VkSampler *pSampler) {
+    auto *pUploadContext = upload_context_from_handle(uploadContext);
+
     VkResult res;
     constexpr VkFormat format = VK_FORMAT_D32_SFLOAT_S8_UINT;
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
@@ -129,7 +132,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             .usage = VMA_MEMORY_USAGE_CPU_ONLY,
         };
 
-        res = vmaCreateBuffer(pResourceUploader->allocator, &bufferCI, &allocCI, &stagingBuffer,
+        res = vmaCreateBuffer(pUploadContext->allocator, &bufferCI, &allocCI, &stagingBuffer,
                               &stagingAlloc, nullptr);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
@@ -154,8 +157,8 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             .usage = VMA_MEMORY_USAGE_GPU_ONLY,
         };
 
-        res = vmaCreateImage(pResourceUploader->allocator, &imageCI, &allocCI, &image, &alloc,
-                             nullptr);
+        res =
+            vmaCreateImage(pUploadContext->allocator, &imageCI, &allocCI, &image, &alloc, nullptr);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -168,7 +171,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
         auto const depth_bpp = bytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT);
         auto const stencil_bpp = bytesPerPixel(format, VK_IMAGE_ASPECT_STENCIL_BIT);
 
-        res = vmaMapMemory(pResourceUploader->allocator, stagingAlloc,
+        res = vmaMapMemory(pUploadContext->allocator, stagingAlloc,
                            reinterpret_cast<void **>(&pData));
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
@@ -213,7 +216,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             offset += mipExtent.width * mipExtent.height * mipExtent.depth * stencil_bpp;
         }
 
-        vmaUnmapMemory(pResourceUploader->allocator, stagingAlloc);
+        vmaUnmapMemory(pUploadContext->allocator, stagingAlloc);
     }
 
     {
@@ -225,7 +228,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             .layerCount = 1,
         };
 
-        recordImageUploadCommands(pResourceUploader, &subresourceRange, copyRegions.size(),
+        recordImageUploadCommands(uploadContext, &subresourceRange, copyRegions.size(),
                                   copyRegions.data(), stagingBuffer, image,
                                   VK_ACCESS_SHADER_READ_BIT,
                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadRequest);
@@ -233,7 +236,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             goto SUBMIT_FAILED;
         }
 
-        auto errC = foeSubmitUploadDataCommands(pResourceUploader, uploadRequest);
+        auto errC = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
         if (errC) {
             res = static_cast<VkResult>(errC.value());
             goto SUBMIT_FAILED;
@@ -259,14 +262,14 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
         };
 
         // Depth
-        res = vkCreateImageView(pResourceUploader->device, &viewCI, nullptr, &depthView);
+        res = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &depthView);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
         // Stencil
         viewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-        res = vkCreateImageView(pResourceUploader->device, &viewCI, nullptr, &stencilView);
+        res = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &stencilView);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -287,7 +290,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
             .maxLod = static_cast<float>(numMipLevels - 1),
         };
 
-        res = vkCreateSampler(pResourceUploader->device, &samplerCI, nullptr, &sampler);
+        res = vkCreateSampler(pUploadContext->device, &samplerCI, nullptr, &sampler);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -296,7 +299,7 @@ VkResult foeCreateErrorDepthStencilImage(foeResourceUploader *pResourceUploader,
 CREATE_FAILED : {
     VkResult fenceStatus = VK_NOT_READY;
     while (fenceStatus == VK_NOT_READY) {
-        fenceStatus = foeGfxGetUploadRequestStatus(pResourceUploader->device, uploadRequest);
+        fenceStatus = foeGfxGetUploadRequestStatus(pUploadContext->device, uploadRequest);
     }
     if (fenceStatus != VK_SUCCESS) {
         res = fenceStatus;
@@ -304,11 +307,10 @@ CREATE_FAILED : {
 }
 
 SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed to submit
-    foeGfxVkDestroyUploadRequest(pResourceUploader->device,
-                                 upload_request_from_handle(uploadRequest));
+    foeGfxVkDestroyUploadRequest(pUploadContext->device, upload_request_from_handle(uploadRequest));
 
     if (stagingBuffer != VK_NULL_HANDLE) {
-        vmaDestroyBuffer(pResourceUploader->allocator, stagingBuffer, stagingAlloc);
+        vmaDestroyBuffer(pUploadContext->allocator, stagingBuffer, stagingAlloc);
     }
 
     if (res == VK_SUCCESS) {
@@ -319,19 +321,19 @@ SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed t
         *pSampler = sampler;
     } else {
         if (sampler != VK_NULL_HANDLE) {
-            vkDestroySampler(pResourceUploader->device, sampler, nullptr);
+            vkDestroySampler(pUploadContext->device, sampler, nullptr);
         }
 
         if (stencilView != VK_NULL_HANDLE) {
-            vkDestroyImageView(pResourceUploader->device, stencilView, nullptr);
+            vkDestroyImageView(pUploadContext->device, stencilView, nullptr);
         }
 
         if (depthView != VK_NULL_HANDLE) {
-            vkDestroyImageView(pResourceUploader->device, depthView, nullptr);
+            vkDestroyImageView(pUploadContext->device, depthView, nullptr);
         }
 
         if (image != VK_NULL_HANDLE) {
-            vmaDestroyImage(pResourceUploader->allocator, image, alloc);
+            vmaDestroyImage(pUploadContext->allocator, image, alloc);
         }
     }
 

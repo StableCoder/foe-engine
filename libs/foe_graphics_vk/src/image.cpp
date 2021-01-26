@@ -16,10 +16,11 @@
 
 #include <foe/graphics/vk/image.hpp>
 
-#include <foe/graphics/resource_uploader.hpp>
+#include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/upload_request.hpp>
 
+#include "upload_context.hpp"
 #include "upload_request.hpp"
 
 #include <cmath>
@@ -60,7 +61,7 @@ VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept {
     return pelCount;
 }
 
-VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
+VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
                                    VkImageSubresourceRange const *pSubresourceRange,
                                    uint32_t copyRegionCount,
                                    VkBufferImageCopy const *pCopyRegions,
@@ -69,11 +70,13 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
                                    VkAccessFlags dstAccessFlags,
                                    VkImageLayout dstImageLayout,
                                    foeGfxUploadRequest *pUploadRequst) {
+    auto *pUploadContext = upload_context_from_handle(uploadContext);
+
     VkResult res;
     foeGfxVkUploadRequest *uploadData{nullptr};
 
-    res = foeCreateUploadData(pResourceUploader->device, pResourceUploader->srcCommandPool,
-                              pResourceUploader->dstCommandPool, &uploadData);
+    res = foeCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
+                              pUploadContext->dstCommandPool, &uploadData);
     if (res != VK_SUCCESS) {
         return res;
     }
@@ -126,11 +129,11 @@ VkResult recordImageUploadCommands(foeResourceUploader *pResourceUploader,
 
     { // Change destination image for shader read only optimal
         auto srcQueueFamily = (uploadData->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pResourceUploader->srcQueueFamily->family
+                                  ? pUploadContext->srcQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         auto dstQueueFamily = (uploadData->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pResourceUploader->dstQueueFamily->family
+                                  ? pUploadContext->dstQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         VkImageMemoryBarrier imgMemBarrier{
@@ -174,7 +177,7 @@ RECORDING_FAILED:
     if (res == VK_SUCCESS) {
         *pUploadRequst = upload_request_to_handle(uploadData);
     } else {
-        foeGfxVkDestroyUploadRequest(pResourceUploader->device, uploadData);
+        foeGfxVkDestroyUploadRequest(pUploadContext->device, uploadData);
     }
 
     return res;

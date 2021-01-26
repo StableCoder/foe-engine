@@ -16,11 +16,12 @@
 
 #include <foe/graphics/vk/upload_request.hpp>
 
-#include <foe/graphics/resource_uploader.hpp>
+#include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <vk_error_code.hpp>
 
 #include "session.hpp"
+#include "upload_context.hpp"
 #include "upload_request.hpp"
 
 void foeGfxDestroyUploadRequest(foeGfxSession session, foeGfxUploadRequest uploadRequest) {
@@ -99,9 +100,11 @@ CREATE_FAILED:
     return res;
 }
 
-std::error_code foeSubmitUploadDataCommands(foeResourceUploader *pResourceUploader,
+std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
                                             foeGfxUploadRequest uploadRequest) {
+    auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
+
     VkResult res;
 
     if (pUploadRequest->srcCmdBuffer != VK_NULL_HANDLE) { // Source command submission
@@ -113,9 +116,9 @@ std::error_code foeSubmitUploadDataCommands(foeResourceUploader *pResourceUpload
             .pSignalSemaphores = &pUploadRequest->copyComplete,
         };
 
-        auto queue = foeGfxGetQueue(pResourceUploader->srcQueueFamily);
+        auto queue = foeGfxGetQueue(pUploadContext->srcQueueFamily);
         res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->srcFence);
-        foeGfxReleaseQueue(pResourceUploader->srcQueueFamily, queue);
+        foeGfxReleaseQueue(pUploadContext->srcQueueFamily, queue);
         if (res != VK_SUCCESS) {
             return res;
         }
@@ -133,9 +136,9 @@ std::error_code foeSubmitUploadDataCommands(foeResourceUploader *pResourceUpload
         .pCommandBuffers = &pUploadRequest->dstCmdBuffer,
     };
 
-    auto queue = foeGfxGetQueue(pResourceUploader->dstQueueFamily);
+    auto queue = foeGfxGetQueue(pUploadContext->dstQueueFamily);
     res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->dstFence);
-    foeGfxReleaseQueue(pResourceUploader->dstQueueFamily, queue);
+    foeGfxReleaseQueue(pUploadContext->dstQueueFamily, queue);
     if (res == VK_SUCCESS) {
         pUploadRequest->dstSubmitted = true;
     }
@@ -143,8 +146,7 @@ std::error_code foeSubmitUploadDataCommands(foeResourceUploader *pResourceUpload
     // If the dst failed to submit but the src one *did*, then we need to wait for the source one to
     // complete or error-out before leaving.
     if (res != VK_SUCCESS && pUploadRequest->srcFence != VK_NULL_HANDLE) {
-        while (vkGetFenceStatus(pResourceUploader->device, pUploadRequest->srcFence) ==
-               VK_NOT_READY)
+        while (vkGetFenceStatus(pUploadContext->device, pUploadRequest->srcFence) == VK_NOT_READY)
             ;
     }
 

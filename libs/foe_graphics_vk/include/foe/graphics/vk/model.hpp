@@ -18,7 +18,7 @@
 #define FOE_GRAPHICS_MODEL_HPP
 
 #include <foe/graphics/export.h>
-#include <foe/graphics/resource_uploader.hpp>
+#include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -51,7 +51,7 @@ FOE_GFX_EXPORT void unmapModelBuffers(VmaAllocator allocator,
                                       VmaAllocation indexAlloc,
                                       VmaAllocation stagingAlloc);
 
-FOE_GFX_EXPORT VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
+FOE_GFX_EXPORT VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
                                                   VkBuffer vertexBuffer,
                                                   VkDeviceSize vertexDataSize,
                                                   VkBuffer indexBuffer,

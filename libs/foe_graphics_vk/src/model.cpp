@@ -19,6 +19,7 @@
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/upload_request.hpp>
 
+#include "upload_context.hpp"
 #include "upload_request.hpp"
 
 #include <array>
@@ -214,23 +215,25 @@ void unmapModelBuffers(VmaAllocator allocator,
     }
 }
 
-VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
+VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
                                    VkBuffer vertexBuffer,
                                    VkDeviceSize vertexDataSize,
                                    VkBuffer indexBuffer,
                                    VkDeviceSize indexDataSize,
                                    VkBuffer stagingBuffer,
                                    foeGfxUploadRequest *pUploadRequest) {
+    auto *pUploadContext = upload_context_from_handle(uploadContext);
+
     VkResult res;
     foeGfxVkUploadRequest *uploadRequest{nullptr};
 
     if (stagingBuffer) {
         // Need both queues for a tranfer
-        res = foeCreateUploadData(pResourceUploader->device, pResourceUploader->srcCommandPool,
-                                  pResourceUploader->dstCommandPool, &uploadRequest);
+        res = foeCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
+                                  pUploadContext->dstCommandPool, &uploadRequest);
     } else {
-        res = foeCreateUploadData(pResourceUploader->device, VK_NULL_HANDLE,
-                                  pResourceUploader->dstCommandPool, &uploadRequest);
+        res = foeCreateUploadData(pUploadContext->device, VK_NULL_HANDLE,
+                                  pUploadContext->dstCommandPool, &uploadRequest);
     }
     if (res != VK_SUCCESS) {
         goto RECORDING_FAILED;
@@ -301,11 +304,11 @@ VkResult recordModelUploadCommands(foeResourceUploader *pResourceUploader,
 
         // Transition to final states for use
         auto srcQueueFamily = (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pResourceUploader->srcQueueFamily->family
+                                  ? pUploadContext->srcQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         auto dstQueueFamily = (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pResourceUploader->dstQueueFamily->family
+                                  ? pUploadContext->dstQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         std::array<VkBufferMemoryBarrier, 2> transitionBarriers{
@@ -358,7 +361,7 @@ RECORDING_FAILED:
     if (res == VK_SUCCESS) {
         *pUploadRequest = upload_request_to_handle(uploadRequest);
     } else if (uploadRequest != FOE_NULL_HANDLE) {
-        foeGfxVkDestroyUploadRequest(pResourceUploader->device, uploadRequest);
+        foeGfxVkDestroyUploadRequest(pUploadContext->device, uploadRequest);
     }
 
     return res;

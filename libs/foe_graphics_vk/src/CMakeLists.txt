@@ -10,8 +10,8 @@ target_sources(
           model.cpp
           pipeline_pool.cpp
           queue_family.cpp
-          resource_uploader.cpp
           runtime.cpp
           session.cpp
+          upload_context_public.cpp
           upload_request_public.cpp
           upload_request.cpp)

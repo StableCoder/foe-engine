@@ -114,20 +114,21 @@ int Application::initialize(int argc, char **argv) {
         }
     }
 
-    vkRes = foeGfxCreateResourceUploader(gfxSession, &resUploader);
-    if (vkRes != VK_SUCCESS)
+    errC = foeGfxCreateUploadContext(gfxSession, &resUploader);
+    if (errC) {
         VK_END_PROGRAM
+    }
 
-        {
-            camera.viewX = settings.window.width;
-            camera.viewY = settings.window.height;
-            camera.fieldOfViewY = 60.f;
-            camera.nearZ = 2.f;
-            camera.farZ = 50.f;
+    {
+        camera.viewX = settings.window.width;
+        camera.viewY = settings.window.height;
+        camera.fieldOfViewY = 60.f;
+        camera.nearZ = 2.f;
+        camera.farZ = 50.f;
 
-            camera.position = glm::vec3(0.f, 0.f, -5.f);
-            camera.orientation = glm::quat(glm::vec3(0, 0, 0));
-        }
+        camera.position = glm::vec3(0.f, 0.f, -5.f);
+        camera.orientation = glm::quat(glm::vec3(0, 0, 0));
+    }
 
 #ifdef EDITOR_MODE
     imguiRenderer.resize(settings.window.width, settings.window.height);
@@ -470,7 +471,7 @@ void Application::deinitialize() {
 
     foeDestroyWindow();
 
-    foeGfxDestroyResourceUploader(&resUploader);
+    foeGfxDestroyUploadContext(resUploader);
 
 #ifdef EDITOR_MODE
     imguiRenderer.deinitialize(gfxSession);

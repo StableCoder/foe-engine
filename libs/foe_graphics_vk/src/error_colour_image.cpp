@@ -20,6 +20,7 @@
 #include <foe/graphics/vk/upload_request.hpp>
 
 #include "format.hpp"
+#include "upload_context.hpp"
 #include "upload_request.hpp"
 
 #include <array>
@@ -68,7 +69,7 @@ void fillErrorImageData(VkFormat format, uint32_t extent, uint32_t numCheckSquar
 
 } // namespace
 
-VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
+VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
                                    VkFormat format,
                                    uint32_t numMipLevels,
                                    uint32_t numCheckSquares,
@@ -76,6 +77,8 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
                                    VkImage *pImage,
                                    VkImageView *pImageView,
                                    VkSampler *pSampler) {
+    auto *pUploadContext = upload_context_from_handle(uploadContext);
+
     VkResult res;
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
     VkExtent3D extent = VkExtent3D{maxExtent, maxExtent, 1U};
@@ -106,7 +109,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
             .usage = VMA_MEMORY_USAGE_CPU_ONLY,
         };
 
-        res = vmaCreateBuffer(pResourceUploader->allocator, &bufferCI, &allocCI, &stagingBuffer,
+        res = vmaCreateBuffer(pUploadContext->allocator, &bufferCI, &allocCI, &stagingBuffer,
                               &stagingAlloc, nullptr);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
@@ -130,8 +133,8 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
             .usage = VMA_MEMORY_USAGE_GPU_ONLY,
         };
 
-        res = vmaCreateImage(pResourceUploader->allocator, &imageCI, &allocCI, &image, &alloc,
-                             nullptr);
+        res =
+            vmaCreateImage(pUploadContext->allocator, &imageCI, &allocCI, &image, &alloc, nullptr);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -142,7 +145,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
         VkDeviceSize offset = 0;
         copyRegions.resize(numMipLevels);
 
-        res = vmaMapMemory(pResourceUploader->allocator, stagingAlloc,
+        res = vmaMapMemory(pUploadContext->allocator, stagingAlloc,
                            reinterpret_cast<void **>(&pData));
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
@@ -169,7 +172,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
                       bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
-        vmaUnmapMemory(pResourceUploader->allocator, stagingAlloc);
+        vmaUnmapMemory(pUploadContext->allocator, stagingAlloc);
     }
 
     { // Record and submit upload commands
@@ -180,7 +183,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
             .layerCount = 1,
         };
 
-        res = recordImageUploadCommands(pResourceUploader, &subresourceRange, copyRegions.size(),
+        res = recordImageUploadCommands(uploadContext, &subresourceRange, copyRegions.size(),
                                         copyRegions.data(), stagingBuffer, image,
                                         VK_ACCESS_SHADER_READ_BIT,
                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
@@ -188,7 +191,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
             goto SUBMIT_FAILED;
         }
 
-        auto errC = foeSubmitUploadDataCommands(pResourceUploader, uploadRequest);
+        auto errC = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
         if (errC) {
             res = static_cast<VkResult>(errC.value());
             goto SUBMIT_FAILED;
@@ -213,7 +216,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
                 },
         };
 
-        res = vkCreateImageView(pResourceUploader->device, &viewCI, nullptr, &view);
+        res = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &view);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -234,7 +237,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
             .maxLod = static_cast<float>(numMipLevels - 1),
         };
 
-        res = vkCreateSampler(pResourceUploader->device, &samplerCI, nullptr, &sampler);
+        res = vkCreateSampler(pUploadContext->device, &samplerCI, nullptr, &sampler);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -243,7 +246,7 @@ VkResult foeCreateErrorColourImage(foeResourceUploader *pResourceUploader,
 CREATE_FAILED : {
     VkResult fenceStatus = VK_NOT_READY;
     while (fenceStatus == VK_NOT_READY) {
-        fenceStatus = foeGfxGetUploadRequestStatus(pResourceUploader->device, uploadRequest);
+        fenceStatus = foeGfxGetUploadRequestStatus(pUploadContext->device, uploadRequest);
     }
     if (fenceStatus != VK_SUCCESS) {
         res = fenceStatus;
@@ -252,11 +255,11 @@ CREATE_FAILED : {
 
 SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed to submit
     if (uploadRequest != FOE_NULL_HANDLE)
-        foeGfxVkDestroyUploadRequest(pResourceUploader->device,
+        foeGfxVkDestroyUploadRequest(pUploadContext->device,
                                      upload_request_from_handle(uploadRequest));
 
     if (stagingBuffer != VK_NULL_HANDLE) {
-        vmaDestroyBuffer(pResourceUploader->allocator, stagingBuffer, stagingAlloc);
+        vmaDestroyBuffer(pUploadContext->allocator, stagingBuffer, stagingAlloc);
     }
 
     if (res == VK_SUCCESS) {
@@ -266,15 +269,15 @@ SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed t
         *pSampler = sampler;
     } else {
         if (sampler != VK_NULL_HANDLE) {
-            vkDestroySampler(pResourceUploader->device, sampler, nullptr);
+            vkDestroySampler(pUploadContext->device, sampler, nullptr);
         }
 
         if (view != VK_NULL_HANDLE) {
-            vkDestroyImageView(pResourceUploader->device, view, nullptr);
+            vkDestroyImageView(pUploadContext->device, view, nullptr);
         }
 
         if (image != VK_NULL_HANDLE) {
-            vmaDestroyImage(pResourceUploader->allocator, image, alloc);
+            vmaDestroyImage(pUploadContext->allocator, image, alloc);
         }
     }
 

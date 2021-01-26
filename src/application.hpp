@@ -24,12 +24,12 @@
 #include <foe/graphics/fragment_descriptor.hpp>
 #include <foe/graphics/fragment_descriptor_pool.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
-#include <foe/graphics/resource_uploader.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/shader_pool.hpp>
 #include <foe/graphics/swapchain.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/wsi.hpp>
@@ -94,7 +94,7 @@ struct Application {
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
 
-    foeResourceUploader resUploader;
+    foeGfxUploadContext resUploader;
 
     VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
     foeSwapchain swapchain;
