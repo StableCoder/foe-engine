@@ -25,14 +25,16 @@
 
 #include <mutex>
 
+struct foeGfxVkQueueFamily;
+
 struct foeResourceUploader {
     VkDevice device;
     VmaAllocator allocator;
 
-    foeVkQueueFamily *srcQueueFamily;
+    foeGfxVkQueueFamily *srcQueueFamily;
     VkCommandPool srcCommandPool;
 
-    foeVkQueueFamily *dstQueueFamily;
+    foeGfxVkQueueFamily *dstQueueFamily;
     VkCommandPool dstCommandPool;
 };
 

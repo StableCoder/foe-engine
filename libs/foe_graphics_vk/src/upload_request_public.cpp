@@ -17,6 +17,7 @@
 #include <foe/graphics/vk/upload_request.hpp>
 
 #include <foe/graphics/resource_uploader.hpp>
+#include <foe/graphics/vk/queue_family.hpp>
 #include <vk_error_code.hpp>
 
 #include "session.hpp"
@@ -112,8 +113,9 @@ std::error_code foeSubmitUploadDataCommands(foeResourceUploader *pResourceUpload
             .pSignalSemaphores = &pUploadRequest->copyComplete,
         };
 
-        auto queue = pResourceUploader->srcQueueFamily->queue[0];
+        auto queue = foeGfxGetQueue(pResourceUploader->srcQueueFamily);
         res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->srcFence);
+        foeGfxReleaseQueue(pResourceUploader->srcQueueFamily, queue);
         if (res != VK_SUCCESS) {
             return res;
         }
@@ -131,8 +133,9 @@ std::error_code foeSubmitUploadDataCommands(foeResourceUploader *pResourceUpload
         .pCommandBuffers = &pUploadRequest->dstCmdBuffer,
     };
 
-    auto queue = pResourceUploader->dstQueueFamily->queue[0];
+    auto queue = foeGfxGetQueue(pResourceUploader->dstQueueFamily);
     res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->dstFence);
+    foeGfxReleaseQueue(pResourceUploader->dstQueueFamily, queue);
     if (res == VK_SUCCESS) {
         pUploadRequest->dstSubmitted = true;
     }

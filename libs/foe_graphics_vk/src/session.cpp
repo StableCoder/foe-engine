@@ -49,7 +49,7 @@ void createQueueFamily(VkDevice device,
                        VkQueueFlags flags,
                        uint32_t family,
                        uint32_t numQueues,
-                       foeVkQueueFamily *pQueueFamily) {
+                       foeGfxVkQueueFamily *pQueueFamily) {
     if (numQueues >= MaxQueuesPerFamily) {
         FOE_LOG(foeVkGraphics, Fatal,
                 "There are {} Vulkan queue families, when the maximum compiled support is {}",
@@ -60,6 +60,10 @@ void createQueueFamily(VkDevice device,
     pQueueFamily->flags = flags;
     pQueueFamily->family = family;
     pQueueFamily->numQueues = numQueues;
+
+    for (auto &sync : pQueueFamily->sync) {
+        sync.unlock();
+    }
 
     for (uint32_t i = 0; i < numQueues; ++i) {
         vkGetDeviceQueue(device, family, i, &pQueueFamily->queue[i]);
@@ -216,7 +220,7 @@ VmaAllocator foeGfxVkGetAllocator(foeGfxSession session) {
     return pSession->allocator;
 }
 
-foeVkQueueFamily *getFirstQueue(foeGfxSession session) {
+foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     return &pSession->pQueueFamilies[0];
 }

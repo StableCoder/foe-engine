@@ -9,6 +9,7 @@ target_sources(
           mesh.cpp
           model.cpp
           pipeline_pool.cpp
+          queue_family.cpp
           resource_uploader.cpp
           runtime.cpp
           session.cpp

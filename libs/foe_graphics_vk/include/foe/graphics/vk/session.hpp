@@ -40,7 +40,7 @@ FOE_GFX_EXPORT VmaAllocator foeGfxVkGetAllocator(foeGfxSession session);
 
 FOE_GFX_EXPORT uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags);
 
-#include <foe/graphics/type_defs.hpp>
-FOE_GFX_EXPORT foeVkQueueFamily *getFirstQueue(foeGfxSession session);
+#include <foe/graphics/vk/queue_family.hpp>
+FOE_GFX_EXPORT foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session);
 
 #endif // FOE_GRAPHICS_VK_SESSION_HPP

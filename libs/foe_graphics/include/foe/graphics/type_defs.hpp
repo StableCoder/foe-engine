@@ -26,18 +26,4 @@ enum {
     MaxQueuesPerFamily = 8U,
 };
 
-#include <vulkan/vulkan.h>
-
-#include <array>
-#include <mutex>
-
-struct foeVkQueueFamily {
-    VkQueueFlags flags = 0;
-    uint32_t family;
-    uint32_t numQueues = 0;
-
-    std::array<std::mutex, MaxQueuesPerFamily> sync;
-    std::array<VkQueue, MaxQueuesPerFamily> queue;
-};
-
 #endif // FOE_GRAPHICS_TYPE_DEFS_HPP

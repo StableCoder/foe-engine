@@ -17,6 +17,7 @@
 #include "application.hpp"
 
 #include <GLFW/glfw3.h>
+#include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/log.hpp>
@@ -864,8 +865,9 @@ int Application::mainloop() {
                                 .pCommandBuffers = &commandBuffer,
                             };
 
-                            vkRes = vkQueueSubmit(getFirstQueue(gfxSession)->queue[0], 1,
-                                                  &submitInfo, VK_NULL_HANDLE);
+                            auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+                            vkRes = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+                            foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
                             if (vkRes != VK_SUCCESS)
                                 VK_END_PROGRAM
                         }
@@ -1067,8 +1069,9 @@ int Application::mainloop() {
                     .pSignalSemaphores = &frameData[frameIndex].renderComplete,
                 };
 
-                vkRes = vkQueueSubmit(getFirstQueue(gfxSession)->queue[0], 1, &submitInfo,
-                                      frameData[frameIndex].frameComplete);
+                auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+                vkRes = vkQueueSubmit(queue, 1, &submitInfo, frameData[frameIndex].frameComplete);
+                foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
                 if (vkRes != VK_SUCCESS) {
                     VK_END_PROGRAM
                 }
@@ -1100,8 +1103,9 @@ int Application::mainloop() {
                     .pResults = swapchainResults.data(),
                 };
 
-                VkResult vkRes =
-                    vkQueuePresentKHR(getFirstQueue(gfxSession)->queue[0], &presentInfo);
+                auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+                VkResult vkRes = vkQueuePresentKHR(queue, &presentInfo);
+                foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
                 if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
                     // The associated window has been resized, will be fixed for the next frame
                     vkRes = VK_SUCCESS;
