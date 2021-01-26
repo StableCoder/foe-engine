@@ -21,6 +21,8 @@
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkUploadRequest {
+    VkDevice device;
+
     VkCommandBuffer srcCmdBuffer;
     VkCommandPool srcCmdPool;
     VkFence srcFence;

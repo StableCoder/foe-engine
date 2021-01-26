@@ -271,7 +271,7 @@ VkResult foeImGuiRenderer::initialize(foeGfxSession session,
 SUBMIT_FAILED : {
     VkResult fenceStatus = VK_NOT_READY;
     while (fenceStatus == VK_NOT_READY) {
-        fenceStatus = foeGfxGetUploadRequestStatus(foeGfxVkGetDevice(session), uploadRequest);
+        fenceStatus = foeGfxGetUploadRequestStatus(uploadRequest);
     }
     if (fenceStatus != VK_SUCCESS) {
         res = fenceStatus;

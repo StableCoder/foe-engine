@@ -299,7 +299,7 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
 CREATE_FAILED : {
     VkResult fenceStatus = VK_NOT_READY;
     while (fenceStatus == VK_NOT_READY) {
-        fenceStatus = foeGfxGetUploadRequestStatus(pUploadContext->device, uploadRequest);
+        fenceStatus = foeGfxGetUploadRequestStatus(uploadRequest);
     }
     if (fenceStatus != VK_SUCCESS) {
         res = fenceStatus;

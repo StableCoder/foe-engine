@@ -153,17 +153,17 @@ std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
     return res;
 }
 
-VkResult foeGfxGetUploadRequestStatus(VkDevice device, foeGfxUploadRequest uploadRequest) {
+VkResult foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest) {
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
     // If the destination commands were submitted
     if (pUploadRequest->dstSubmitted) {
-        return vkGetFenceStatus(device, pUploadRequest->dstFence);
+        return vkGetFenceStatus(pUploadRequest->device, pUploadRequest->dstFence);
     }
 
     // Otherwise, check the source one, presumably the dst ones failed to submit
     if (pUploadRequest->srcSubmitted) {
-        return vkGetFenceStatus(device, pUploadRequest->srcFence);
+        return vkGetFenceStatus(pUploadRequest->device, pUploadRequest->srcFence);
     }
 
     return VK_SUCCESS;

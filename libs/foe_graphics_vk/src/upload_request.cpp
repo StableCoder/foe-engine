@@ -23,6 +23,7 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
     VkResult res;
     auto uploadData = new foeGfxVkUploadRequest;
     *uploadData = {
+        .device = device,
         .srcCmdPool = srcCommandPool,
         .dstCmdPool = dstCommandPool,
     };
