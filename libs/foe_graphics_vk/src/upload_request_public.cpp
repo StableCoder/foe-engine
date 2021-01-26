@@ -31,10 +31,10 @@ void foeGfxDestroyUploadRequest(foeGfxSession session, foeGfxUploadRequest uploa
     foeGfxVkDestroyUploadRequest(pSession->device, pUploadRequest);
 }
 
-VkResult foeCreateUploadData(VkDevice device,
-                             VkCommandPool srcCommandPool,
-                             VkCommandPool dstCommandPool,
-                             foeGfxUploadRequest *pUploadRequest) {
+VkResult foeGfxVkCreateUploadData(VkDevice device,
+                                  VkCommandPool srcCommandPool,
+                                  VkCommandPool dstCommandPool,
+                                  foeGfxUploadRequest *pUploadRequest) {
     VkResult res;
     auto *pNewRequest = new foeGfxVkUploadRequest;
     *pNewRequest = {

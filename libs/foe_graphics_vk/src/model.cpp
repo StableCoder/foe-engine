@@ -229,11 +229,11 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
 
     if (stagingBuffer) {
         // Need both queues for a tranfer
-        res = foeCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
-                                  pUploadContext->dstCommandPool, &uploadRequest);
+        res = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
+                                       pUploadContext->dstCommandPool, &uploadRequest);
     } else {
-        res = foeCreateUploadData(pUploadContext->device, VK_NULL_HANDLE,
-                                  pUploadContext->dstCommandPool, &uploadRequest);
+        res = foeGfxVkCreateUploadData(pUploadContext->device, VK_NULL_HANDLE,
+                                       pUploadContext->dstCommandPool, &uploadRequest);
     }
     if (res != VK_SUCCESS) {
         goto RECORDING_FAILED;

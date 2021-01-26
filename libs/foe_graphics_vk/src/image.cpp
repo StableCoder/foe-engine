@@ -75,8 +75,8 @@ VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
     VkResult res;
     foeGfxVkUploadRequest *uploadData{nullptr};
 
-    res = foeCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
-                              pUploadContext->dstCommandPool, &uploadData);
+    res = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
+                                   pUploadContext->dstCommandPool, &uploadData);
     if (res != VK_SUCCESS) {
         return res;
     }

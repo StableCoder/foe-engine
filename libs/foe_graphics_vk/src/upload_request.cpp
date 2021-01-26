@@ -16,10 +16,10 @@
 
 #include "upload_request.hpp"
 
-VkResult foeCreateUploadData(VkDevice device,
-                             VkCommandPool srcCommandPool,
-                             VkCommandPool dstCommandPool,
-                             foeGfxVkUploadRequest **pUploadData) {
+VkResult foeGfxVkCreateUploadData(VkDevice device,
+                                  VkCommandPool srcCommandPool,
+                                  VkCommandPool dstCommandPool,
+                                  foeGfxVkUploadRequest **pUploadData) {
     VkResult res;
     auto uploadData = new foeGfxVkUploadRequest;
     *uploadData = {

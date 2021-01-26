@@ -21,11 +21,6 @@
 #include <foe/graphics/upload_request.hpp>
 #include <vulkan/vulkan.h>
 
-FOE_GFX_EXPORT VkResult foeCreateUploadData(VkDevice device,
-                                            VkCommandPool srcCommandPool,
-                                            VkCommandPool dstCommandPool,
-                                            foeGfxUploadRequest *pUploadRequest);
-
 /**
  * @brief Returns the status of an upload request
  * @return VK_SUCCESS if the request hasn't been submitted, or if it has and has finished. An

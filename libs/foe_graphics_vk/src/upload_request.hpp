@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef UPLOAD_DATA_HPP
-#define UPLOAD_DATA_HPP
+#ifndef UPLOAD_REQUEST_HPP
+#define UPLOAD_REQUEST_HPP
 
 #include <foe/graphics/upload_request.hpp>
 #include <vulkan/vulkan.h>
@@ -36,11 +36,11 @@ struct foeGfxVkUploadRequest {
 
 FOE_DEFINE_HANDLE_CASTS(upload_request, foeGfxVkUploadRequest, foeGfxUploadRequest)
 
-VkResult foeCreateUploadData(VkDevice device,
-                             VkCommandPool srcCommandPool,
-                             VkCommandPool dstCommandPool,
-                             foeGfxVkUploadRequest **pUploadData);
+VkResult foeGfxVkCreateUploadData(VkDevice device,
+                                  VkCommandPool srcCommandPool,
+                                  VkCommandPool dstCommandPool,
+                                  foeGfxVkUploadRequest **pUploadData);
 
 void foeGfxVkDestroyUploadRequest(VkDevice device, foeGfxVkUploadRequest *pUploadRequest);
 
-#endif // UPLOAD_DATA_HPP
+#endif // UPLOAD_REQUEST_HPP
