@@ -24,11 +24,12 @@
 #include "upload_context.hpp"
 #include "upload_request.hpp"
 
-void foeGfxDestroyUploadRequest(foeGfxSession session, foeGfxUploadRequest uploadRequest) {
-    auto *pSession = session_from_handle(session);
+void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
+                                foeGfxUploadRequest uploadRequest) {
+    auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
-    foeGfxVkDestroyUploadRequest(pSession->device, pUploadRequest);
+    foeGfxVkDestroyUploadRequest(pUploadContext->device, pUploadRequest);
 }
 
 VkResult foeGfxVkCreateUploadData(VkDevice device,

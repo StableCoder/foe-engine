@@ -279,7 +279,7 @@ SUBMIT_FAILED : {
 }
 
 INITIALIZATION_FAILED:
-    foeGfxDestroyUploadRequest(session, uploadRequest);
+    foeGfxDestroyUploadRequest(uploadContext, uploadRequest);
 
     if (stagingBuffer != VK_NULL_HANDLE) {
         vmaDestroyBuffer(foeGfxVkGetAllocator(session), stagingBuffer, stagingAlloc);

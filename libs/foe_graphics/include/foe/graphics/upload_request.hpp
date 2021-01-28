@@ -40,7 +40,7 @@ enum UploadRequestStatus {
  */
 FOE_GFX_EXPORT UploadRequestStatus foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest);
 
-FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxSession session,
+FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
                                                foeGfxUploadRequest uploadRequest);
 
 FOE_GFX_EXPORT std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
