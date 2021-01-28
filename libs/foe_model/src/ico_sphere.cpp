@@ -220,6 +220,13 @@ void sphereIndexData(int recursion, T offset, T *pData) {
 
 } // namespace
 
+void foeModelIcoSphereNums(int recursion, int *pNumVertices, int *pNumIndices) {
+    auto [vertices, faces] = createIcoSphere(recursion);
+
+    *pNumVertices = vertices.size();
+    *pNumIndices = faces.size() * 3;
+}
+
 int foeModelIcoSphereNumVertices(int recursion) noexcept {
     auto [vertices, faces] = createIcoSphere(recursion);
 
