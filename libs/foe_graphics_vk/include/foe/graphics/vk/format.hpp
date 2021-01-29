@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FORMAT_HPP
-#define FORMAT_HPP
+#ifndef FOE_GRAPHICS_VK_FORMAT_HPP
+#define FOE_GRAPHICS_VK_FORMAT_HPP
 
 #include <vulkan/vulkan.h>
 
@@ -105,4 +105,4 @@ constexpr VkDeviceSize bytesPerPixel(VkFormat format, VkImageAspectFlags aspects
     return bpp;
 }
 
-#endif // FORMAT_HPP
+#endif // FOE_GRAPHICS_VK_FORMAT_HPP

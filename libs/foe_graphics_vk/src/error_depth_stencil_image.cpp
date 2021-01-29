@@ -16,9 +16,9 @@
 
 #include <foe/graphics/vk/error_images.hpp>
 
+#include <foe/graphics/vk/format.hpp>
 #include <foe/graphics/vk/image.hpp>
 
-#include "format.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
 
