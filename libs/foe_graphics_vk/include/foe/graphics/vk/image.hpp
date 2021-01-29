@@ -18,6 +18,7 @@
 #define FOE_GRAPHICS_IMAGE_HPP
 
 #include <foe/graphics/export.h>
+#include <foe/graphics/upload_buffer.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
 #include <vulkan/vulkan.h>
@@ -42,6 +43,16 @@ FOE_GFX_EXPORT VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noe
  * @return The overall pixel count.
  */
 FOE_GFX_EXPORT VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept;
+
+FOE_GFX_EXPORT VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                                                  VkImageSubresourceRange const *pSubresourceRange,
+                                                  uint32_t copyRegionCount,
+                                                  VkBufferImageCopy const *pCopyRegions,
+                                                  foeGfxUploadBuffer srcBuffer,
+                                                  VkImage dstImage,
+                                                  VkAccessFlags dstAccessFlags,
+                                                  VkImageLayout dstImageLayout,
+                                                  foeGfxUploadRequest *pUploadRequest);
 
 FOE_GFX_EXPORT VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
                                                   VkImageSubresourceRange const *pSubresourceRange,

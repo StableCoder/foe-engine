@@ -18,6 +18,7 @@
 
 #include <foe/graphics/vk/queue_family.hpp>
 
+#include "upload_buffer.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
 
@@ -57,6 +58,22 @@ VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept {
     }
 
     return pelCount;
+}
+
+VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                                   VkImageSubresourceRange const *pSubresourceRange,
+                                   uint32_t copyRegionCount,
+                                   VkBufferImageCopy const *pCopyRegions,
+                                   foeGfxUploadBuffer srcBuffer,
+                                   VkImage dstImage,
+                                   VkAccessFlags dstAccessFlags,
+                                   VkImageLayout dstImageLayout,
+                                   foeGfxUploadRequest *pUploadRequst) {
+    auto *pSrcBuffer = upload_buffer_from_handle(srcBuffer);
+
+    return recordImageUploadCommands(uploadContext, pSubresourceRange, copyRegionCount,
+                                     pCopyRegions, pSrcBuffer->buffer, dstImage, dstAccessFlags,
+                                     dstImageLayout, pUploadRequst);
 }
 
 VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,

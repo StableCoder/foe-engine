@@ -23,43 +23,6 @@
 
 #include <array>
 
-VkResult allocateStagingBuffer(VmaAllocator allocator,
-                               VkDeviceSize size,
-                               VkBuffer *pStagingBuffer,
-                               VmaAllocation *pStagingAlloc) {
-    VkBuffer stagingBuffer{VK_NULL_HANDLE};
-    VmaAllocation stagingAlloc{VK_NULL_HANDLE};
-
-    VkBufferCreateInfo bufferCI{
-        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .size = size,
-        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-    };
-
-    VmaAllocationCreateInfo allocCI{
-        .usage = VMA_MEMORY_USAGE_CPU_ONLY,
-    };
-
-    VkResult vkRes =
-        vmaCreateBuffer(allocator, &bufferCI, &allocCI, &stagingBuffer, &stagingAlloc, nullptr);
-    if (vkRes != VK_SUCCESS) {
-        goto ALLOCATION_FAILED;
-    }
-
-ALLOCATION_FAILED:
-    if (vkRes != VK_SUCCESS) {
-        if (stagingBuffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
-        }
-    } else {
-
-        *pStagingBuffer = stagingBuffer;
-        *pStagingAlloc = stagingAlloc;
-    }
-
-    return vkRes;
-}
-
 VkResult allocateModelBuffers(VmaAllocator allocator,
                               VkDeviceSize vertexDataSize,
                               VkDeviceSize indexDataSize,

@@ -12,6 +12,7 @@ target_sources(
           queue_family.cpp
           runtime.cpp
           session.cpp
+          upload_buffer_public.cpp
           upload_context_public.cpp
           upload_request_public.cpp
           upload_request.cpp)
