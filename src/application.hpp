@@ -24,14 +24,14 @@
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
-#include <foe/graphics/shader_pool.hpp>
+#include <foe/graphics/shader.hpp>
 #include <foe/graphics/swapchain.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
-#include <foe/graphics/vertex_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
+#include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
@@ -109,7 +109,8 @@ struct Application {
 
     foeDescriptorSetLayoutPool descriptorSetLayoutPool;
     foeBuiltinDescriptorSets builtinDescriptorSets;
-    foeShaderPool shaderPool;
+    foeGfxShader vertShader{FOE_NULL_HANDLE};
+    foeGfxShader fragShader{FOE_NULL_HANDLE};
     foeFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
 

@@ -28,7 +28,7 @@ struct foeFragmentDescriptor {
         VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
         VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
         VkPipelineColorBlendStateCreateInfo const *pColourBlendAttachmentSCI,
-        foeShader *pFragment);
+        foeGfxShader fragment);
 
     FOE_GFX_EXPORT foeFragmentDescriptor &operator=(foeFragmentDescriptor &&) noexcept = default;
 
@@ -38,7 +38,7 @@ struct foeFragmentDescriptor {
 
     FOE_GFX_EXPORT auto getColourBlendSCI() noexcept -> VkPipelineColorBlendStateCreateInfo const *;
 
-    foeShader *mFragment = nullptr;
+    foeGfxShader mFragment = nullptr;
 
     bool hasRasterizationSCI;
     VkPipelineRasterizationStateCreateInfo mRasterizationSCI{};

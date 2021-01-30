@@ -27,16 +27,16 @@ struct foeVertexDescriptor {
         foeBuiltinDescriptorSetLayoutFlags flags = 0;
 
         if (mVertex != nullptr)
-            flags |= mVertex->builtinSetLayouts;
+            flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(mVertex);
 
         if (mTessellationControl != nullptr)
-            flags |= mTessellationControl->builtinSetLayouts;
+            flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(mTessellationControl);
 
         if (mTessellationEvaluation != nullptr)
-            flags |= mTessellationEvaluation->builtinSetLayouts;
+            flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(mTessellationEvaluation);
 
         if (mGeometry != nullptr)
-            flags |= mGeometry->builtinSetLayouts;
+            flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(mGeometry);
 
         return flags;
     }
@@ -59,10 +59,10 @@ struct foeVertexDescriptor {
         return nullptr;
     }
 
-    foeShader *mVertex = nullptr;
-    foeShader *mTessellationControl = nullptr;
-    foeShader *mTessellationEvaluation = nullptr;
-    foeShader *mGeometry = nullptr;
+    foeGfxShader mVertex{FOE_NULL_HANDLE};
+    foeGfxShader mTessellationControl{FOE_NULL_HANDLE};
+    foeGfxShader mTessellationEvaluation{FOE_NULL_HANDLE};
+    foeGfxShader mGeometry{FOE_NULL_HANDLE};
 
     std::vector<VkVertexInputBindingDescription> mVertexInputBindings;
     std::vector<VkVertexInputAttributeDescription> mVertexInputAttributes;

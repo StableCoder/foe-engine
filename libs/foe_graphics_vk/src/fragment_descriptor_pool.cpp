@@ -30,11 +30,11 @@ foeFragmentDescriptorPool::~foeFragmentDescriptorPool() {
 auto foeFragmentDescriptorPool::get(VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
                                     VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
                                     VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
-                                    foeShader *pFragment) -> foeFragmentDescriptor * {
+                                    foeGfxShader fragment) -> foeFragmentDescriptor * {
     std::scoped_lock lock{mSync};
 
     for (auto *fragDescriptor : mDescriptors) {
-        if (fragDescriptor->mFragment != pFragment)
+        if (fragDescriptor->mFragment != fragment)
             continue;
 
         if ((pRasterizationSCI == nullptr && fragDescriptor->hasRasterizationSCI) ||
@@ -57,7 +57,7 @@ auto foeFragmentDescriptorPool::get(VkPipelineRasterizationStateCreateInfo const
     }
 
     auto pFragDescriptor =
-        new foeFragmentDescriptor(pRasterizationSCI, pDepthStencilSCI, pColourBlendSCI, pFragment);
+        new foeFragmentDescriptor(pRasterizationSCI, pDepthStencilSCI, pColourBlendSCI, fragment);
 
     mDescriptors.emplace_back(pFragDescriptor);
 

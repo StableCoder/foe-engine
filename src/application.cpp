@@ -20,6 +20,7 @@
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/shader.hpp>
 #include <foe/log.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/wsi_vulkan.hpp>
@@ -28,6 +29,7 @@
 
 #include "graphics.hpp"
 #include "logging.hpp"
+#include "shader/external_shader.hpp"
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/core.hpp>
@@ -157,10 +159,6 @@ int Application::initialize(int argc, char **argv) {
     if (vkRes != VK_SUCCESS)
         VK_END_PROGRAM
 
-    vkRes = shaderPool.initialize(foeGfxVkGetDevice(gfxSession));
-    if (vkRes != VK_SUCCESS)
-        VK_END_PROGRAM
-
     vkRes = pipelinePool.initialize(gfxSession, &builtinDescriptorSets);
     if (vkRes != VK_SUCCESS) {
         VK_END_PROGRAM
@@ -179,15 +177,16 @@ int Application::initialize(int argc, char **argv) {
     }
 
     {
-        foeShader *pShader;
-
-        pShader = shaderPool.create("data/shaders/simple/camera_tri.vert.spv");
-        pShader->incrementUseCount();
-        pShader->builtinSetLayouts = foeBuiltinDescriptorSetLayoutFlagBits::
-            FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX;
+        auto shaderCode = loadShaderDataFromFile("data/shaders/simple/camera_tri.vert.spv");
+        errC =
+            foeGfxVkCreateShader(gfxSession,
+                                 foeBuiltinDescriptorSetLayoutFlagBits::
+                                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX,
+                                 shaderCode.size(), reinterpret_cast<uint32_t *>(shaderCode.data()),
+                                 VK_NULL_HANDLE, {}, &vertShader);
 
         // Vertex
-        vertexDescriptor.mVertex = pShader;
+        vertexDescriptor.mVertex = vertShader;
         vertexDescriptor.mVertexInputSCI = VkPipelineVertexInputStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         };
@@ -197,8 +196,13 @@ int Application::initialize(int argc, char **argv) {
         };
 
         // Fragment
-        pShader = shaderPool.create("data/shaders/simple/uv_to_colour.frag.spv");
-        pShader->incrementUseCount();
+        shaderCode = loadShaderDataFromFile("data/shaders/simple/uv_to_colour.frag.spv");
+        errC = foeGfxVkCreateShader(gfxSession, 0, shaderCode.size(),
+                                    reinterpret_cast<uint32_t *>(shaderCode.data()), VK_NULL_HANDLE,
+                                    {}, &fragShader);
+        if (errC) {
+            ERRC_END_PROGRAM
+        }
 
         auto rasterization = VkPipelineRasterizationStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
@@ -219,7 +223,7 @@ int Application::initialize(int argc, char **argv) {
         };
 
         fragmentDescriptor =
-            fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, pShader);
+            fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, fragShader);
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -459,7 +463,12 @@ void Application::deinitialize() {
     cameraDescriptorPool.deinitialize();
 
     pipelinePool.deinitialize();
-    shaderPool.deinitialize();
+
+    if (fragShader != FOE_NULL_HANDLE)
+        foeGfxDestroyShader(gfxSession, fragShader);
+    if (vertShader != FOE_NULL_HANDLE)
+        foeGfxDestroyShader(gfxSession, vertShader);
+
     builtinDescriptorSets.deinitialize(foeGfxVkGetDevice(gfxSession));
     descriptorSetLayoutPool.deinitialize();
 

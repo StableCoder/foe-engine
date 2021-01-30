@@ -20,8 +20,8 @@ foeFragmentDescriptor::foeFragmentDescriptor(
     VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
     VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
     VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
-    foeShader *pFragment) :
-    mFragment{pFragment},
+    foeGfxShader fragment) :
+    mFragment{fragment},
     hasRasterizationSCI{pRasterizationSCI != nullptr},
     mRasterizationSCI{},
     hasDepthStencilSCI{pDepthStencilSCI != nullptr},
@@ -55,7 +55,7 @@ auto foeFragmentDescriptor::getBuiltinSetLayouts() const noexcept
     foeBuiltinDescriptorSetLayoutFlags flags = 0;
 
     if (mFragment != nullptr)
-        flags |= mFragment->builtinSetLayouts;
+        flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(mFragment);
 
     return flags;
 }

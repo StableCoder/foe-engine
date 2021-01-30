@@ -18,12 +18,12 @@
 #define FOE_GRAPHICS_FRAGMENT_DESCRIPTOR_POOL_HPP
 
 #include <foe/graphics/export.h>
+#include <foe/graphics/shader.hpp>
 #include <vulkan/vulkan.h>
 
 #include <mutex>
 #include <vector>
 
-class foeShader;
 struct foeFragmentDescriptor;
 
 class foeFragmentDescriptorPool {
@@ -33,7 +33,7 @@ class foeFragmentDescriptorPool {
     FOE_GFX_EXPORT auto get(VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
                             VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
                             VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
-                            foeShader *pFragment) -> foeFragmentDescriptor *;
+                            foeGfxShader fragment) -> foeFragmentDescriptor *;
 
   private:
     std::mutex mSync;

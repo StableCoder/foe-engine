@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,19 +14,22 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_SHADER_HPP
-#define FOE_GRAPHICS_SHADER_HPP
+#ifndef FOE_GRPAHICS_VK_SHADER_HPP
+#define FOE_GRPAHICS_VK_SHADER_HPP
 
-#include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/export.h>
-#include <foe/graphics/session.hpp>
-#include <foe/handle.h>
+#include <foe/graphics/shader.hpp>
+#include <vulkan/vulkan.h>
 
-FOE_DEFINE_HANDLE(foeGfxShader)
+#include <system_error>
 
-FOE_GFX_EXPORT void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader);
+FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(
+    foeGfxSession session,
+    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts,
+    uint32_t shaderCodeSize,
+    uint32_t *pShaderCode,
+    VkDescriptorSetLayout descriptorSetLayout,
+    VkPushConstantRange pushConstantRange,
+    foeGfxShader *pShader);
 
-FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlags
-foeGfxShaderGetBuiltinDescriptorSetLayouts(foeGfxShader shader);
-
-#endif // FOE_GRAPHICS_SHADER_HPP
+#endif // FOE_GRPAHICS_VK_SHADER_HPP

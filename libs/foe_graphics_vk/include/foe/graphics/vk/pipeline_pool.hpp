@@ -19,8 +19,8 @@
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
-#include <foe/graphics/vertex_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <vulkan/vulkan.h>
 
 #include <vector>

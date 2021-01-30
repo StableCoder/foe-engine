@@ -23,6 +23,7 @@
 
 #include "log.hpp"
 #include "session.hpp"
+#include "shader.hpp"
 
 VkResult foeGfxVkPipelinePool::initialize(
     foeGfxSession session, foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept {
@@ -129,15 +130,17 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescrip
 
         // Vertex Descriptor
         if (vertexDescriptor->mVertex != nullptr) {
-            if (vertexDescriptor->mVertex->layout != VK_NULL_HANDLE) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mVertex);
+
+            if (pShader->descriptorSetLayout != VK_NULL_HANDLE) {
                 if (descriptorSetLayouts.size() <= foeDescriptorSetLayoutIndex::VertexShader) {
                     descriptorSetLayouts.resize(foeDescriptorSetLayoutIndex::VertexShader + 1);
                 }
                 descriptorSetLayouts[foeDescriptorSetLayoutIndex::VertexShader] =
-                    vertexDescriptor->mVertex->layout;
+                    pShader->descriptorSetLayout;
 
-                if (vertexDescriptor->mVertex->pushConstantRange.size > 0) {
-                    auto temp = vertexDescriptor->mVertex->pushConstantRange;
+                if (pShader->pushConstantRange.size > 0) {
+                    auto temp = pShader->pushConstantRange;
                     temp.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
                     pushConstantRanges.emplace_back(temp);
                 }
@@ -145,17 +148,19 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescrip
         }
 
         if (vertexDescriptor->mTessellationControl != nullptr) {
-            if (vertexDescriptor->mTessellationControl->layout != VK_NULL_HANDLE) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mTessellationControl);
+
+            if (pShader->descriptorSetLayout != VK_NULL_HANDLE) {
                 if (descriptorSetLayouts.size() <=
                     foeDescriptorSetLayoutIndex::TessellationControlShader) {
                     descriptorSetLayouts.resize(
                         foeDescriptorSetLayoutIndex::TessellationControlShader + 1);
                 }
                 descriptorSetLayouts[foeDescriptorSetLayoutIndex::TessellationControlShader] =
-                    vertexDescriptor->mTessellationControl->layout;
+                    pShader->descriptorSetLayout;
 
-                if (vertexDescriptor->mTessellationControl->pushConstantRange.size > 0) {
-                    auto temp = vertexDescriptor->mTessellationControl->pushConstantRange;
+                if (pShader->pushConstantRange.size > 0) {
+                    auto temp = pShader->pushConstantRange;
                     temp.stageFlags = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
                     pushConstantRanges.emplace_back(temp);
                 }
@@ -163,17 +168,19 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescrip
         }
 
         if (vertexDescriptor->mTessellationEvaluation != nullptr) {
-            if (vertexDescriptor->mTessellationEvaluation->layout != VK_NULL_HANDLE) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mTessellationEvaluation);
+
+            if (pShader->descriptorSetLayout != VK_NULL_HANDLE) {
                 if (descriptorSetLayouts.size() <=
                     foeDescriptorSetLayoutIndex::TessellationEvaluationShader) {
                     descriptorSetLayouts.resize(
                         foeDescriptorSetLayoutIndex::TessellationEvaluationShader + 1);
                 }
                 descriptorSetLayouts[foeDescriptorSetLayoutIndex::TessellationEvaluationShader] =
-                    vertexDescriptor->mTessellationEvaluation->layout;
+                    pShader->descriptorSetLayout;
 
-                if (vertexDescriptor->mTessellationEvaluation->pushConstantRange.size > 0) {
-                    auto temp = vertexDescriptor->mTessellationEvaluation->pushConstantRange;
+                if (pShader->pushConstantRange.size > 0) {
+                    auto temp = pShader->pushConstantRange;
                     temp.stageFlags = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
                     pushConstantRanges.emplace_back(temp);
                 }
@@ -181,15 +188,17 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescrip
         }
 
         if (vertexDescriptor->mGeometry != nullptr) {
-            if (vertexDescriptor->mGeometry->layout != VK_NULL_HANDLE) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mGeometry);
+
+            if (pShader->descriptorSetLayout != VK_NULL_HANDLE) {
                 if (descriptorSetLayouts.size() <= foeDescriptorSetLayoutIndex::GeometryShader) {
                     descriptorSetLayouts.resize(foeDescriptorSetLayoutIndex::GeometryShader + 1);
                 }
                 descriptorSetLayouts[foeDescriptorSetLayoutIndex::GeometryShader] =
-                    vertexDescriptor->mGeometry->layout;
+                    pShader->descriptorSetLayout;
 
-                if (vertexDescriptor->mGeometry->pushConstantRange.size > 0) {
-                    auto temp = vertexDescriptor->mGeometry->pushConstantRange;
+                if (pShader->pushConstantRange.size > 0) {
+                    auto temp = pShader->pushConstantRange;
                     temp.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
                     pushConstantRanges.emplace_back(temp);
                 }
@@ -197,16 +206,18 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescrip
         }
 
         // Fragment Descriptor
-        if (fragmentDescriptor->mFragment != nullptr) {
-            if (fragmentDescriptor->mFragment->layout != VK_NULL_HANDLE) {
+        if (fragmentDescriptor->mFragment != FOE_NULL_HANDLE) {
+            auto *pShader = shader_from_handle(fragmentDescriptor->mFragment);
+
+            if (pShader->descriptorSetLayout != VK_NULL_HANDLE) {
                 if (descriptorSetLayouts.size() <= foeDescriptorSetLayoutIndex::FragmentShader) {
                     descriptorSetLayouts.resize(foeDescriptorSetLayoutIndex::FragmentShader + 1);
                 }
                 descriptorSetLayouts[foeDescriptorSetLayoutIndex::FragmentShader] =
-                    fragmentDescriptor->mFragment->layout;
+                    pShader->descriptorSetLayout;
 
-                if (fragmentDescriptor->mFragment->pushConstantRange.size > 0) {
-                    auto temp = fragmentDescriptor->mFragment->pushConstantRange;
+                if (pShader->pushConstantRange.size > 0) {
+                    auto temp = pShader->pushConstantRange;
                     temp.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                     pushConstantRanges.emplace_back(temp);
                 }
@@ -244,47 +255,57 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescrip
 
         // Vertex Descriptor
         if (vertexDescriptor->mVertex != nullptr) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mVertex);
+
             shaderList.emplace_back(VkPipelineShaderStageCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                 .stage = VK_SHADER_STAGE_VERTEX_BIT,
-                .module = vertexDescriptor->mVertex->module,
+                .module = pShader->module,
                 .pName = "main",
             });
         }
 
         if (vertexDescriptor->mTessellationControl != nullptr) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mTessellationControl);
+
             shaderList.emplace_back(VkPipelineShaderStageCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                 .stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
-                .module = vertexDescriptor->mTessellationControl->module,
+                .module = pShader->module,
                 .pName = "main",
             });
         }
 
         if (vertexDescriptor->mTessellationEvaluation != nullptr) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mTessellationEvaluation);
+
             shaderList.emplace_back(VkPipelineShaderStageCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                 .stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
-                .module = vertexDescriptor->mTessellationEvaluation->module,
+                .module = pShader->module,
                 .pName = "main",
             });
         }
 
         if (vertexDescriptor->mGeometry != nullptr) {
+            auto *pShader = shader_from_handle(vertexDescriptor->mGeometry);
+
             shaderList.emplace_back(VkPipelineShaderStageCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                 .stage = VK_SHADER_STAGE_GEOMETRY_BIT,
-                .module = vertexDescriptor->mGeometry->module,
+                .module = pShader->module,
                 .pName = "main",
             });
         }
 
         // Fragment Descriptor
-        if (fragmentDescriptor->mFragment != nullptr) {
+        if (fragmentDescriptor->mFragment != FOE_NULL_HANDLE) {
+            auto *pShader = shader_from_handle(fragmentDescriptor->mFragment);
+
             shaderList.emplace_back(VkPipelineShaderStageCreateInfo{
                 .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
                 .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-                .module = fragmentDescriptor->mFragment->module,
+                .module = pShader->module,
                 .pName = "main",
             });
         }

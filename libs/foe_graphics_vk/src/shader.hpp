@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_LOAD_STATE_HPP
-#define FOE_GRAPHICS_LOAD_STATE_HPP
+#ifndef FOE_GRAPHICS_VK_SHADER_HPP
+#define FOE_GRAPHICS_VK_SHADER_HPP
 
-enum class LoadState {
-    Unloaded,
-    Loading,
-    Loaded,
-    Failed,
+#include <foe/graphics/shader.hpp>
+
+struct foeGfxVkShader {
+    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts = 0;
+    VkShaderModule module{VK_NULL_HANDLE};
+    VkDescriptorSetLayout descriptorSetLayout{VK_NULL_HANDLE};
+    VkPushConstantRange pushConstantRange{};
 };
 
-#endif // FOE_GRAPHICS_LOAD_STATE_HPP
+FOE_DEFINE_HANDLE_CASTS(shader, foeGfxVkShader, foeGfxShader)
+
+#endif // FOE_GRAPHICS_VK_SHADER_HPP
