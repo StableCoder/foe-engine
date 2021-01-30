@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.hpp>
 
 foeFragmentDescriptor::foeFragmentDescriptor(
     VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,

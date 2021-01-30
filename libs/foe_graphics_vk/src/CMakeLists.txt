@@ -4,6 +4,8 @@ target_sources(
           debug_callback.cpp
           error_colour_image.cpp
           error_depth_stencil_image.cpp
+          fragment_descriptor_pool.cpp
+          fragment_descriptor.cpp
           image.cpp
           log.cpp
           mesh.cpp

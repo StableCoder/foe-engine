@@ -18,9 +18,9 @@
 #define FOE_GRAPHICS_VK_PIPELINE_POOL_HPP
 
 #include <foe/graphics/export.h>
-#include <foe/graphics/fragment_descriptor.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <vulkan/vulkan.h>
 
 #include <vector>

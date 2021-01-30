@@ -21,8 +21,6 @@
 #include <foe/chrono/program_clock.hpp>
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/descriptor_set_layout_pool.hpp>
-#include <foe/graphics/fragment_descriptor.hpp>
-#include <foe/graphics/fragment_descriptor_pool.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -31,6 +29,8 @@
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vertex_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>

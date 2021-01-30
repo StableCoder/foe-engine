@@ -14,9 +14,9 @@
     limitations under the License.
 */
 
-#include <foe/graphics/fragment_descriptor_pool.hpp>
+#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 
-#include <foe/graphics/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <vk_equality_checks.hpp>
 
 foeFragmentDescriptorPool::~foeFragmentDescriptorPool() {
