@@ -488,7 +488,7 @@ void Application::deinitialize() {
 #endif
 
     // Output configuration settings to a YAML configuration file
-    saveSettings(settings);
+    // saveSettings(settings);
 }
 
 namespace {
