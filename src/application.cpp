@@ -71,6 +71,9 @@
 int Application::initialize(int argc, char **argv) {
     initializeLogging();
 
+    synchronousThreadPool.start(2);
+    asynchronousThreadPool.start(2);
+
     if (auto retVal = loadSettings(argc, argv, settings); retVal != 0) {
         return retVal;
     }
@@ -164,7 +167,9 @@ int Application::initialize(int argc, char **argv) {
         VK_END_PROGRAM
     }
 
-    errC = materialLoader.initialize(&fragmentDescriptorPool, [](std::function<void()>) {});
+    errC = materialLoader.initialize(&fragmentDescriptorPool, [&](std::function<void()> task) {
+        asynchronousThreadPool.scheduleTask(std::move(task));
+    });
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -489,6 +494,9 @@ void Application::deinitialize() {
         foeXrDestroyRuntime(xrRuntime);
 #endif
 
+    asynchronousThreadPool.terminate();
+    synchronousThreadPool.terminate();
+
     // Output configuration settings to a YAML configuration file
     // saveSettings(settings);
 }
@@ -592,6 +600,8 @@ int Application::mainloop() {
 
         // Resource load requests
         materialLoader.processLoadRequests(fragShader);
+        synchronousThreadPool.waitForAllTasks();
+        asynchronousThreadPool.waitForAllTasks();
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();

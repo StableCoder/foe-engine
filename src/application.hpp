@@ -34,6 +34,7 @@
 #include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <foe/resource/material.hpp>
 #include <foe/resource/material_loader.hpp>
+#include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
@@ -70,6 +71,8 @@ struct Application {
     // Variables
     Settings settings;
 
+    foeThreadPool synchronousThreadPool;
+    foeThreadPool asynchronousThreadPool;
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
 

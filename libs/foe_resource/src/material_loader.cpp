@@ -66,11 +66,10 @@ void foeMaterialLoader::processLoadRequests(foeGfxShader fragShader) {
     // Now we'll place all load requests into asynchronous jobs
     mActiveJobs += loadRequests.size();
     for (auto pMaterial : loadRequests) {
-        // @todo : When asynchronous threading is implemented, change to it
-        // mAsyncJobs([this, pMaterial, fragShader] {
-        loadResource(pMaterial, fragShader);
-        --mActiveJobs;
-        // });
+        mAsyncJobs([this, pMaterial, fragShader] {
+            loadResource(pMaterial, fragShader);
+            --mActiveJobs;
+        });
     }
 }
 
