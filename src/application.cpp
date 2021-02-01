@@ -600,8 +600,6 @@ int Application::mainloop() {
 
         // Resource load requests
         materialLoader.processLoadRequests(fragShader);
-        synchronousThreadPool.waitForAllTasks();
-        asynchronousThreadPool.waitForAllTasks();
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
@@ -850,10 +848,13 @@ int Application::mainloop() {
                                         uint32_t descriptorSetLayoutCount;
                                         VkPipeline pipeline;
 
+                                        auto *pFragDescriptor = theMaterial.getFragmentDescriptor();
+                                        if (pFragDescriptor == nullptr)
+                                            goto SKIP_XR_DRAW;
+
                                         pipelinePool.getPipeline(
-                                            &vertexDescriptor, theMaterial.getFragmentDescriptor(),
-                                            xrRenderPass, 0, &layout, &descriptorSetLayoutCount,
-                                            &pipeline);
+                                            &vertexDescriptor, pFragDescriptor, xrRenderPass, 0,
+                                            &layout, &descriptorSetLayoutCount, &pipeline);
 
                                         vkCmdBindDescriptorSets(
                                             commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
@@ -864,6 +865,8 @@ int Application::mainloop() {
                                                           pipeline);
 
                                         vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+
+                                    SKIP_XR_DRAW:;
                                     }
 
                                     vkCmdEndRenderPass(commandBuffer);
@@ -1039,9 +1042,13 @@ int Application::mainloop() {
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
 
-                        pipelinePool.getPipeline(
-                            &vertexDescriptor, theMaterial.getFragmentDescriptor(),
-                            swapImageRenderPass, 0, &layout, &descriptorSetLayoutCount, &pipeline);
+                        auto *pFragDescriptor = theMaterial.getFragmentDescriptor();
+                        if (pFragDescriptor == nullptr)
+                            goto SKIP_DRAW;
+
+                        pipelinePool.getPipeline(&vertexDescriptor, pFragDescriptor,
+                                                 swapImageRenderPass, 0, &layout,
+                                                 &descriptorSetLayoutCount, &pipeline);
 
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 0, 1, &camera.descriptor, 0, nullptr);
@@ -1049,6 +1056,8 @@ int Application::mainloop() {
                         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
                         vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+
+                    SKIP_DRAW:;
                     }
 
 #ifdef EDITOR_MODE
@@ -1135,6 +1144,8 @@ int Application::mainloop() {
             }
         }
     SKIP_FRAME_RENDER:;
+
+        synchronousThreadPool.waitForAllTasks();
     }
     FOE_LOG(General, Info, "Exiting main loop")
 
