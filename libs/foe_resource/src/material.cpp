@@ -72,7 +72,7 @@ int foeMaterial::decrementUseCount() noexcept {
 int foeMaterial::getUseCount() const noexcept { return useCount; }
 
 foeFragmentDescriptor *foeMaterial::getFragmentDescriptor() const noexcept {
-    return pFragDescriptor;
+    return data.pFragDescriptor;
 }
 
 void foeMaterial::setSourceExternalFile(std::string_view file) {

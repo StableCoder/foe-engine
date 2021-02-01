@@ -73,8 +73,11 @@ struct foeMaterial {
     std::shared_ptr<foeMaterialSourceBase> pSourceData{nullptr};
 
     std::mutex dataWriteLock{};
-    foeMaterialSourceBase *pLoadedSource{nullptr};
-    foeFragmentDescriptor *pFragDescriptor{nullptr};
+    struct Data {
+        foeMaterialSourceBase *pLoadedSource;
+        foeFragmentDescriptor *pFragDescriptor;
+    };
+    Data data{};
 };
 
 #endif // FOE_RESOURCE_MATERIAL_HPP

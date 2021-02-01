@@ -52,16 +52,16 @@ void foeMaterialLoader::deinitialize() { mFragPool = nullptr; }
 
 bool foeMaterialLoader::initialized() const noexcept { return mFragPool != nullptr; }
 
-void foeMaterialLoader::maintenance(foeGfxShader fragShader) {
+void foeMaterialLoader::processLoadRequests(foeGfxShader fragShader) {
     if (mLoadRequests.empty()) {
         return;
     }
 
     // Move the current request list to a local variable then unlock it, minimizing time with it
     // locked.
-    mSync.lock();
+    mLoadSync.lock();
     auto loadRequests = std::move(mLoadRequests);
-    mSync.unlock();
+    mLoadSync.unlock();
 
     // Now we'll place all load requests into asynchronous jobs
     mActiveJobs += loadRequests.size();
@@ -74,9 +74,35 @@ void foeMaterialLoader::maintenance(foeGfxShader fragShader) {
     }
 }
 
+void foeMaterialLoader::processUnloadRequests() {
+    mUnloadSync.lock();
+    ++mCurrentUnloadRequests;
+    if (mCurrentUnloadRequests == &mUnloadRequestLists[mUnloadRequestLists.size()]) {
+        mCurrentUnloadRequests = &mUnloadRequestLists[0];
+    }
+    auto unloadRequests = std::move(*mCurrentUnloadRequests);
+    mUnloadSync.unlock();
+
+    for (auto &data : unloadRequests) {
+        // @todo Implement Material unloading when stuff to unload (after shader added)
+    }
+}
+
 void foeMaterialLoader::requestResourceLoad(foeMaterial *pMaterial) {
-    std::scoped_lock lock{mSync};
+    std::scoped_lock lock{mLoadSync};
     mLoadRequests.emplace_back(pMaterial);
+}
+
+void foeMaterialLoader::requestResourceUnload(foeMaterial *pMaterial) {
+    std::scoped_lock unloadLock{mUnloadSync};
+    std::scoped_lock writeLock{pMaterial->dataWriteLock};
+
+    if (pMaterial->loadState == foeResourceLoadState::Loaded) {
+        mCurrentUnloadRequests->emplace_back(pMaterial->data);
+
+        pMaterial->data = {};
+        pMaterial->loadState = foeResourceLoadState::Unloaded;
+    }
 }
 
 void foeMaterialLoader::loadResource(foeMaterial *pMaterial, foeGfxShader fragShader) {
@@ -125,12 +151,26 @@ LOADING_FAILED:
 
         pMaterial->loadState = foeResourceLoadState::Failed;
     } else {
-        std::scoped_lock writeLock{pMaterial->dataWriteLock};
+        foeMaterial::Data oldData;
+        foeMaterial::Data newData{
+            .pLoadedSource = pSourceData.get(),
+            .pFragDescriptor = pFragDescriptor,
+        };
 
-        pMaterial->pLoadedSource = pSourceData.get();
-        pMaterial->pFragDescriptor = pFragDescriptor;
+        // Secure the resource, copy any old data out, and set the new data/state
+        {
+            std::scoped_lock writeLock{pMaterial->dataWriteLock};
 
-        pMaterial->loadState = foeResourceLoadState::Loaded;
+            oldData = pMaterial->data;
+            pMaterial->data = newData;
+            pMaterial->loadState = foeResourceLoadState::Loaded;
+        }
+
+        // If there was active old data that we just wrote over, send it to be unloaded
+        if (oldData.pLoadedSource != nullptr) {
+            std::scoped_lock unloadLock{mUnloadSync};
+            mCurrentUnloadRequests->emplace_back(pMaterial->data);
+        }
     }
 
     // No longer using the material reference, decrement.

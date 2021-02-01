@@ -398,6 +398,13 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
+    // Resource Unloading
+    theMaterial.decrementUseCount();
+    materialLoader.requestResourceUnload(&theMaterial);
+    for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
+        materialLoader.processUnloadRequests();
+    }
+
 #ifdef FOE_XR_SUPPORT
     // OpenXR Cleanup
     if (xrSession.session != XR_NULL_HANDLE) {
@@ -584,7 +591,7 @@ int Application::mainloop() {
         }
 
         // Resource load requests
-        materialLoader.maintenance(fragShader);
+        materialLoader.processLoadRequests(fragShader);
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
@@ -670,6 +677,9 @@ int Application::mainloop() {
             vkResetFences(foeGfxVkGetDevice(gfxSession), 1,
                           &frameData[nextFrameIndex].frameComplete);
             frameIndex = nextFrameIndex;
+
+            // Resource Unload Requests
+            materialLoader.processUnloadRequests();
 
             // Set camera descriptors
             bool camerasRemade = false;

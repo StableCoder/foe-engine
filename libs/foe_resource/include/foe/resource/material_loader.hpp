@@ -17,16 +17,16 @@
 #ifndef FOE_RESOURCE_MATERIAL_LOADER_HPP
 #define FOE_RESOURCE_MATERIAL_LOADER_HPP
 
+#include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/material.hpp>
 
 #include <atomic>
 #include <functional>
 #include <mutex>
 #include <system_error>
 #include <vector>
-
-struct foeMaterial;
 
 class foeMaterialLoader {
   public:
@@ -38,9 +38,11 @@ class foeMaterialLoader {
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void maintenance(foeGfxShader fragShader);
+    FOE_RES_EXPORT void processLoadRequests(foeGfxShader fragShader);
+    FOE_RES_EXPORT void processUnloadRequests();
 
     FOE_RES_EXPORT void requestResourceLoad(foeMaterial *pMaterial);
+    FOE_RES_EXPORT void requestResourceUnload(foeMaterial *pMaterial);
 
   private:
     void loadResource(foeMaterial *pMaterial, foeGfxShader fragShader);
@@ -50,8 +52,13 @@ class foeMaterialLoader {
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 
-    std::mutex mSync{};
+    std::mutex mLoadSync{};
     std::vector<foeMaterial *> mLoadRequests{};
+
+    std::mutex mUnloadSync{};
+    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+        mUnloadRequestLists{};
+    std::vector<foeMaterial::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
 };
 
 #endif // FOE_RESOURCE_MATERIAL_LOADER_HPP
