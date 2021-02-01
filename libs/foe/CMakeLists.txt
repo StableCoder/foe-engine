@@ -18,7 +18,7 @@ target_code_coverage(foe)
 
 if(UNIX)
   target_compile_options(foe PRIVATE -fPIC)
-  target_link_libraries(foe PRIVATE dl)
+  target_link_libraries(foe PRIVATE dl pthread)
 endif()
 
 add_subdirectory(src)
