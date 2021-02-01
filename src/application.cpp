@@ -164,6 +164,11 @@ int Application::initialize(int argc, char **argv) {
         VK_END_PROGRAM
     }
 
+    errC = materialLoader.initialize(&fragmentDescriptorPool, [](std::function<void()>) {});
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
     vkRes = cameraDescriptorPool.initialize(
         gfxSession,
         builtinDescriptorSets.getBuiltinLayout(
@@ -204,26 +209,7 @@ int Application::initialize(int argc, char **argv) {
             ERRC_END_PROGRAM
         }
 
-        auto rasterization = VkPipelineRasterizationStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-            .polygonMode = VK_POLYGON_MODE_FILL,
-            .cullMode = VK_CULL_MODE_NONE,
-            .lineWidth = 1.0f,
-        };
-        std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments{
-            VkPipelineColorBlendAttachmentState{
-                .blendEnable = VK_FALSE,
-                .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
-            }};
-        auto colourBlend = VkPipelineColorBlendStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-            .attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size()),
-            .pAttachments = colourBlendAttachments.data(),
-        };
-
-        fragmentDescriptor =
-            fragmentDescriptorPool.get(&rasterization, nullptr, &colourBlend, fragShader);
+        theMaterial.incrementUseCount();
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -597,6 +583,9 @@ int Application::mainloop() {
 #endif
         }
 
+        // Resource load requests
+        materialLoader.maintenance(fragShader);
+
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
         if (VK_SUCCESS == vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
@@ -842,8 +831,9 @@ int Application::mainloop() {
                                         VkPipeline pipeline;
 
                                         pipelinePool.getPipeline(
-                                            &vertexDescriptor, fragmentDescriptor, xrRenderPass, 0,
-                                            &layout, &descriptorSetLayoutCount, &pipeline);
+                                            &vertexDescriptor, theMaterial.getFragmentDescriptor(),
+                                            xrRenderPass, 0, &layout, &descriptorSetLayoutCount,
+                                            &pipeline);
 
                                         vkCmdBindDescriptorSets(
                                             commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
@@ -1029,9 +1019,9 @@ int Application::mainloop() {
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
 
-                        pipelinePool.getPipeline(&vertexDescriptor, fragmentDescriptor,
-                                                 swapImageRenderPass, 0, &layout,
-                                                 &descriptorSetLayoutCount, &pipeline);
+                        pipelinePool.getPipeline(
+                            &vertexDescriptor, theMaterial.getFragmentDescriptor(),
+                            swapImageRenderPass, 0, &layout, &descriptorSetLayoutCount, &pipeline);
 
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 0, 1, &camera.descriptor, 0, nullptr);

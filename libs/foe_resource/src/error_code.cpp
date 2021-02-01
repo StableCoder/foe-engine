@@ -29,6 +29,8 @@ std::string foeResourceErrCategory::message(int ev) const {
     switch (static_cast<foeResourceResult>(ev)) {
     case FOE_RESOURCE_SUCCESS:
         return "FOE_RESOURCE_SUCCESS";
+    case FOE_RESOURCE_ERROR_ALREADY_INITIALIZED:
+        return "FOE_RESOURCE_ERROR_ALREADY_INITIALIZED";
 
     default:
         if (ev > 0)

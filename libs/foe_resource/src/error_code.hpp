@@ -21,6 +21,7 @@
 
 enum foeResourceResult : int {
     FOE_RESOURCE_SUCCESS = 0,
+    FOE_RESOURCE_ERROR_ALREADY_INITIALIZED,
 };
 
 namespace std {

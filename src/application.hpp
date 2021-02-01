@@ -32,6 +32,8 @@
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
+#include <foe/resource/material.hpp>
+#include <foe/resource/material_loader.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
@@ -103,7 +105,6 @@ struct Application {
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 
     foeVertexDescriptor vertexDescriptor;
-    foeFragmentDescriptor *fragmentDescriptor{nullptr};
 
     foeRenderPassPool renderPassPool;
 
@@ -113,6 +114,10 @@ struct Application {
     foeGfxShader fragShader{FOE_NULL_HANDLE};
     foeFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
+
+    // Resources
+    foeMaterialLoader materialLoader;
+    foeMaterial theMaterial{&materialLoader};
 
     Camera camera;
     CameraDescriptorPool cameraDescriptorPool;
