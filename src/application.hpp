@@ -35,6 +35,7 @@
 #include <foe/resource/fragment_descriptor_loader.hpp>
 #include <foe/resource/material.hpp>
 #include <foe/resource/material_loader.hpp>
+#include <foe/resource/shader_loader.hpp>
 #include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
@@ -120,8 +121,10 @@ struct Application {
     foeGfxVkPipelinePool pipelinePool;
 
     // Resources
+    foeShaderLoader shaderLoader;
+    foeShader theShader{&shaderLoader};
     foeFragmentDescriptorLoader fragDescriptorLoader;
-    foeFragmentDescriptor theFragDescriptor{&fragDescriptorLoader};
+    foeFragmentDescriptor theFragDescriptor{&fragDescriptorLoader, &theShader};
     foeMaterialLoader materialLoader;
     foeMaterial theMaterial{&materialLoader};
 

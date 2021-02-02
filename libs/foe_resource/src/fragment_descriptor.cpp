@@ -17,11 +17,13 @@
 #include <foe/resource/fragment_descriptor.hpp>
 
 #include <foe/resource/fragment_descriptor_loader.hpp>
+#include <foe/resource/shader.hpp>
 
 #include "log.hpp"
 
-foeFragmentDescriptor::foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader) :
-    pLoader{pLoader} {}
+foeFragmentDescriptor::foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader,
+                                             foeShader *pShader) :
+    pLoader{pLoader}, pShader{pShader} {}
 
 foeFragmentDescriptor::~foeFragmentDescriptor() {
     if (useCount > 0) {
@@ -56,6 +58,8 @@ int foeFragmentDescriptor::incrementUseCount() noexcept {
 
     // If the count was (presumably 1) and it's in the 'loading' state
     if (newCount == 1 && loadState == foeResourceLoadState::Unloaded) {
+        if (pShader != nullptr)
+            pShader->incrementUseCount();
         requestResourceLoad();
     }
 

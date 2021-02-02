@@ -16,6 +16,8 @@
 
 #include <foe/resource/fragment_descriptor_loader.hpp>
 
+#include <foe/resource/shader.hpp>
+
 #include "error_code.hpp"
 #include "log.hpp"
 
@@ -51,7 +53,7 @@ void foeFragmentDescriptorLoader::deinitialize() { mFragPool = nullptr; }
 
 bool foeFragmentDescriptorLoader::initialized() const noexcept { return mFragPool != nullptr; }
 
-void foeFragmentDescriptorLoader::processLoadRequests(foeGfxShader fragShader) {
+void foeFragmentDescriptorLoader::processLoadRequests() {
     if (mLoadRequests.empty()) {
         return;
     }
@@ -65,8 +67,8 @@ void foeFragmentDescriptorLoader::processLoadRequests(foeGfxShader fragShader) {
     // Now we'll place all load requests into asynchronous jobs
     mActiveJobs += loadRequests.size();
     for (auto pFragDescriptor : loadRequests) {
-        mAsyncJobs([this, pFragDescriptor, fragShader] {
-            loadResource(pFragDescriptor, fragShader);
+        mAsyncJobs([this, pFragDescriptor] {
+            loadResource(pFragDescriptor);
             --mActiveJobs;
         });
     }
@@ -82,6 +84,9 @@ void foeFragmentDescriptorLoader::processUnloadRequests() {
     mUnloadSync.unlock();
 
     for (auto &data : unloadRequests) {
+        if (data.pShader != nullptr)
+            data.pShader->decrementUseCount();
+
         // @todo Implement foeFragmentDescriptor unloading when stuff to unload (after shader added)
     }
 }
@@ -103,8 +108,7 @@ void foeFragmentDescriptorLoader::requestResourceUnload(foeFragmentDescriptor *p
     }
 }
 
-void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescriptor,
-                                               foeGfxShader fragShader) {
+void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescriptor) {
     // First, try to enter the 'loading' state
     auto expected = pFragDescriptor->loadState.load();
     while (expected != foeResourceLoadState::Loading) {
@@ -121,6 +125,15 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
     std::error_code errC;
     auto pSourceData = pFragDescriptor->pSourceData;
     foeGfxVkFragmentDescriptor *pNewFragDescriptor{nullptr};
+
+    if (pFragDescriptor->pShader != nullptr &&
+        pFragDescriptor->pShader->getLoadState() != foeResourceLoadState::Loaded) {
+        // Something we depend upon isn't loaded itself, so leave and request ourselves to attempt
+        // loading again
+        pFragDescriptor->loadState = expected;
+        requestResourceLoad(pFragDescriptor);
+        return;
+    }
 
     {
         auto rasterization = VkPipelineRasterizationStateCreateInfo{
@@ -140,6 +153,10 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
             .attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size()),
             .pAttachments = colourBlendAttachments.data(),
         };
+
+        foeGfxShader fragShader = (pFragDescriptor->pShader != nullptr)
+                                      ? pFragDescriptor->pShader->getShader()
+                                      : FOE_NULL_HANDLE;
 
         pNewFragDescriptor = mFragPool->get(&rasterization, nullptr, &colourBlend, fragShader);
     }

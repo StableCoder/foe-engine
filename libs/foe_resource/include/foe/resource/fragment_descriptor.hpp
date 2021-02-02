@@ -25,6 +25,7 @@
 #include <memory>
 #include <mutex>
 
+class foeShader;
 class foeFragmentDescriptorLoader;
 
 struct foeFragmentDescriptorSourceBase {
@@ -33,7 +34,7 @@ struct foeFragmentDescriptorSourceBase {
 
 class foeFragmentDescriptor {
   public:
-    FOE_RES_EXPORT foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader);
+    FOE_RES_EXPORT foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader, foeShader *pShader);
     FOE_RES_EXPORT ~foeFragmentDescriptor();
 
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
@@ -64,10 +65,13 @@ class foeFragmentDescriptor {
     foeFragmentDescriptorLoader *pLoader;
     std::shared_ptr<foeFragmentDescriptorSourceBase> pSourceData{nullptr};
 
+    foeShader *pShader;
+
     std::mutex dataWriteLock{};
     struct Data {
         foeFragmentDescriptorSourceBase *pLoadedSource;
         foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
+        foeShader *pShader;
     };
     Data data{};
 };

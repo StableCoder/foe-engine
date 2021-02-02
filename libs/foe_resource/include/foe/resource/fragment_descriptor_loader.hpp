@@ -17,7 +17,6 @@
 #ifndef FOE_RESOURCES_FRAGMENT_DESCRIPTOR_LOADER_HPP
 #define FOE_RESOURCES_FRAGMENT_DESCRIPTOR_LOADER_HPP
 
-#include <foe/graphics/shader.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/resource/export.h>
@@ -39,14 +38,14 @@ class foeFragmentDescriptorLoader {
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processLoadRequests(foeGfxShader fragShader);
+    FOE_RES_EXPORT void processLoadRequests();
     FOE_RES_EXPORT void processUnloadRequests();
 
     FOE_RES_EXPORT void requestResourceLoad(foeFragmentDescriptor *pFragDescriptor);
     FOE_RES_EXPORT void requestResourceUnload(foeFragmentDescriptor *pFragDescriptor);
 
   private:
-    void loadResource(foeFragmentDescriptor *pFragDescriptor, foeGfxShader fragShader);
+    void loadResource(foeFragmentDescriptor *pFragDescriptor);
 
     foeGfxVkFragmentDescriptorPool *mFragPool{nullptr};
 

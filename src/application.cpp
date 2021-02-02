@@ -167,16 +167,21 @@ int Application::initialize(int argc, char **argv) {
         VK_END_PROGRAM
     }
 
-    errC =
-        fragDescriptorLoader.initialize(&fragmentDescriptorPool, [&](std::function<void()> task) {
-            asynchronousThreadPool.scheduleTask(std::move(task));
-        });
+    auto asyncTaskFunc = [&](std::function<void()> task) {
+        asynchronousThreadPool.scheduleTask(std::move(task));
+    };
+
+    errC = shaderLoader.initialize(gfxSession, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = materialLoader.initialize(
-        [&](std::function<void()> task) { asynchronousThreadPool.scheduleTask(std::move(task)); });
+    errC = fragDescriptorLoader.initialize(&fragmentDescriptorPool, asyncTaskFunc);
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
+    errC = materialLoader.initialize(asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -212,15 +217,7 @@ int Application::initialize(int argc, char **argv) {
             .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
         };
 
-        // Fragment
-        shaderCode = loadShaderDataFromFile("data/shaders/simple/uv_to_colour.frag.spv");
-        errC = foeGfxVkCreateShader(gfxSession, 0, shaderCode.size(),
-                                    reinterpret_cast<uint32_t *>(shaderCode.data()), VK_NULL_HANDLE,
-                                    {}, &fragShader);
-        if (errC) {
-            ERRC_END_PROGRAM
-        }
-
+        // Fragment / Material
         theMaterial.incrementUseCount();
     }
 
@@ -421,6 +418,11 @@ void Application::deinitialize() {
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             fragDescriptorLoader.processUnloadRequests();
         }
+
+        shaderLoader.requestResourceLoad(&theShader);
+        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
+            shaderLoader.processUnloadRequests();
+        }
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -612,7 +614,8 @@ int Application::mainloop() {
         }
 
         // Resource load requests
-        fragDescriptorLoader.processLoadRequests(fragShader);
+        shaderLoader.processLoadRequests();
+        fragDescriptorLoader.processLoadRequests();
         materialLoader.processLoadRequests(&theFragDescriptor);
 
         // Vulkan Render Section
@@ -701,6 +704,7 @@ int Application::mainloop() {
             frameIndex = nextFrameIndex;
 
             // Resource Unload Requests
+            shaderLoader.processUnloadRequests();
             fragDescriptorLoader.processUnloadRequests();
             materialLoader.processUnloadRequests();
 
