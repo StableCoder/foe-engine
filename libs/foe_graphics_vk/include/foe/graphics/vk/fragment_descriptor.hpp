@@ -23,16 +23,17 @@
 
 #include <memory>
 
-struct foeFragmentDescriptor {
-    FOE_GFX_EXPORT foeFragmentDescriptor(
+struct foeGfxVkFragmentDescriptor {
+    FOE_GFX_EXPORT foeGfxVkFragmentDescriptor(
         VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
         VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
         VkPipelineColorBlendStateCreateInfo const *pColourBlendAttachmentSCI,
         foeGfxShader fragment);
 
-    FOE_GFX_EXPORT foeFragmentDescriptor &operator=(foeFragmentDescriptor &&) noexcept = default;
+    FOE_GFX_EXPORT foeGfxVkFragmentDescriptor &operator=(foeGfxVkFragmentDescriptor &&) noexcept =
+        default;
 
-    FOE_GFX_EXPORT ~foeFragmentDescriptor();
+    FOE_GFX_EXPORT ~foeGfxVkFragmentDescriptor();
 
     FOE_GFX_EXPORT auto getBuiltinSetLayouts() const noexcept -> foeBuiltinDescriptorSetLayoutFlags;
 

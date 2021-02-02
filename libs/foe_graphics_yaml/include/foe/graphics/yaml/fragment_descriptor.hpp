@@ -23,8 +23,8 @@
 #include <string>
 
 class foeShaderPool;
-class foeFragmentDescriptorPool;
-struct foeFragmentDescriptor;
+class foeGfxVkFragmentDescriptorPool;
+struct foeGfxVkFragmentDescriptor;
 
 /** @brief Parses the type declaration, and uses that to find/generate one
  * @param nodeName Name of the Yaml sub-node to operate on
@@ -39,8 +39,8 @@ FOE_GFX_YAML_EXPORT bool yaml_read_fragment_descriptor(
     std::string const &nodeName,
     YAML::Node const &node,
     foeShaderPool *pShaderPool,
-    foeFragmentDescriptorPool *pFragmentDescriptorPool,
-    foeFragmentDescriptor **pFragmentDescriptor);
+    foeGfxVkFragmentDescriptorPool *pFragmentDescriptorPool,
+    foeGfxVkFragmentDescriptor **pFragmentDescriptor);
 
 /** @brief Serializes a declaration of the given type
  * @param nodeName Name of the Yaml sub-node to operate on
@@ -51,7 +51,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_fragment_descriptor(
  */
 FOE_GFX_YAML_EXPORT bool yaml_write_fragment_descriptor(
     std::string const &nodeName,
-    foeFragmentDescriptor const *pFragmentDescriptor,
+    foeGfxVkFragmentDescriptor const *pFragmentDescriptor,
     YAML::Node &node);
 
 #endif // FOE_GRAPHICS_YAML_FRAGMENT_DESCRIPTOR_HPP

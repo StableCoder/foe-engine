@@ -19,7 +19,7 @@
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <vk_equality_checks.hpp>
 
-foeFragmentDescriptorPool::~foeFragmentDescriptorPool() {
+foeGfxVkFragmentDescriptorPool::~foeGfxVkFragmentDescriptorPool() {
     std::scoped_lock lock{mSync};
 
     for (auto pDescriptor : mDescriptors) {
@@ -27,10 +27,11 @@ foeFragmentDescriptorPool::~foeFragmentDescriptorPool() {
     }
 }
 
-auto foeFragmentDescriptorPool::get(VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
-                                    VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
-                                    VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
-                                    foeGfxShader fragment) -> foeFragmentDescriptor * {
+auto foeGfxVkFragmentDescriptorPool::get(
+    VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
+    VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
+    VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
+    foeGfxShader fragment) -> foeGfxVkFragmentDescriptor * {
     std::scoped_lock lock{mSync};
 
     for (auto *fragDescriptor : mDescriptors) {
@@ -56,8 +57,8 @@ auto foeFragmentDescriptorPool::get(VkPipelineRasterizationStateCreateInfo const
         return fragDescriptor;
     }
 
-    auto pFragDescriptor =
-        new foeFragmentDescriptor(pRasterizationSCI, pDepthStencilSCI, pColourBlendSCI, fragment);
+    auto pFragDescriptor = new foeGfxVkFragmentDescriptor(pRasterizationSCI, pDepthStencilSCI,
+                                                          pColourBlendSCI, fragment);
 
     mDescriptors.emplace_back(pFragDescriptor);
 

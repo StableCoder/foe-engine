@@ -24,20 +24,20 @@
 #include <mutex>
 #include <vector>
 
-struct foeFragmentDescriptor;
+struct foeGfxVkFragmentDescriptor;
 
-class foeFragmentDescriptorPool {
+class foeGfxVkFragmentDescriptorPool {
   public:
-    FOE_GFX_EXPORT ~foeFragmentDescriptorPool();
+    FOE_GFX_EXPORT ~foeGfxVkFragmentDescriptorPool();
 
     FOE_GFX_EXPORT auto get(VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
                             VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
                             VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
-                            foeGfxShader fragment) -> foeFragmentDescriptor *;
+                            foeGfxShader fragment) -> foeGfxVkFragmentDescriptor *;
 
   private:
     std::mutex mSync;
-    std::vector<foeFragmentDescriptor *> mDescriptors;
+    std::vector<foeGfxVkFragmentDescriptor *> mDescriptors;
 };
 
 #endif // FOE_GRAPHICS_FRAGMENT_DESCRIPTOR_POOL_HPP

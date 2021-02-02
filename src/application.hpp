@@ -115,7 +115,7 @@ struct Application {
     foeBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxShader vertShader{FOE_NULL_HANDLE};
     foeGfxShader fragShader{FOE_NULL_HANDLE};
-    foeFragmentDescriptorPool fragmentDescriptorPool;
+    foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
 
     // Resources

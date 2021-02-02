@@ -71,7 +71,7 @@ int foeMaterial::decrementUseCount() noexcept {
 
 int foeMaterial::getUseCount() const noexcept { return useCount; }
 
-foeFragmentDescriptor *foeMaterial::getFragmentDescriptor() const noexcept {
+foeGfxVkFragmentDescriptor *foeMaterial::getFragmentDescriptor() const noexcept {
     return data.pFragDescriptor;
 }
 

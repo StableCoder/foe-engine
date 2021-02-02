@@ -26,8 +26,8 @@
 bool yaml_read_fragment_descriptor(std::string const &nodeName,
                                    YAML::Node const &node,
                                    foeShaderPool *pShaderPool,
-                                   foeFragmentDescriptorPool *pFragmentDescriptorPool,
-                                   foeFragmentDescriptor **pFragmentDescriptor) {
+                                   foeGfxVkFragmentDescriptorPool *pFragmentDescriptorPool,
+                                   foeGfxVkFragmentDescriptor **pFragmentDescriptor) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -77,7 +77,7 @@ bool yaml_read_fragment_descriptor(std::string const &nodeName,
                                          hasColourBlend ? &colourBlendSCI : nullptr, pFragShader);
 
         if (pNewFragmentDescriptor == nullptr) {
-            throw foeYamlException(nodeName + " - Failed to general foeFragmentDescriptor");
+            throw foeYamlException(nodeName + " - Failed to general foeGfxVkFragmentDescriptor");
         }
 
         *pFragmentDescriptor = pNewFragmentDescriptor;
@@ -89,7 +89,7 @@ bool yaml_read_fragment_descriptor(std::string const &nodeName,
 }
 
 bool yaml_write_fragment_descriptor(std::string const &nodeName,
-                                    foeFragmentDescriptor const *pFragmentDescriptor,
+                                    foeGfxVkFragmentDescriptor const *pFragmentDescriptor,
                                     YAML::Node &node) {
     YAML::Node writeNode;
 

@@ -29,7 +29,7 @@ foeMaterialLoader::~foeMaterialLoader() {
 }
 
 std::error_code foeMaterialLoader::initialize(
-    foeFragmentDescriptorPool *pFragPool,
+    foeGfxVkFragmentDescriptorPool *pFragPool,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -119,7 +119,7 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial, foeGfxShader fragSh
 
     std::error_code errC;
     auto pSourceData = pMaterial->pSourceData;
-    foeFragmentDescriptor *pFragDescriptor{nullptr};
+    foeGfxVkFragmentDescriptor *pFragDescriptor{nullptr};
 
     {
         auto rasterization = VkPipelineRasterizationStateCreateInfo{

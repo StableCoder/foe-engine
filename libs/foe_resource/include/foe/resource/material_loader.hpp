@@ -33,7 +33,7 @@ class foeMaterialLoader {
     FOE_RES_EXPORT ~foeMaterialLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
-        foeFragmentDescriptorPool *pFragPool,
+        foeGfxVkFragmentDescriptorPool *pFragPool,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -47,7 +47,7 @@ class foeMaterialLoader {
   private:
     void loadResource(foeMaterial *pMaterial, foeGfxShader fragShader);
 
-    foeFragmentDescriptorPool *mFragPool{nullptr};
+    foeGfxVkFragmentDescriptorPool *mFragPool{nullptr};
 
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;

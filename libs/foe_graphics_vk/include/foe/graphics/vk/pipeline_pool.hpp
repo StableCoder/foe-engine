@@ -35,7 +35,7 @@ class foeGfxVkPipelinePool {
     FOE_GFX_EXPORT bool initialized() const noexcept;
 
     FOE_GFX_EXPORT VkResult getPipeline(foeVertexDescriptor *vertexDescriptor,
-                                        foeFragmentDescriptor *fragmentDescriptor,
+                                        foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                         VkRenderPass renderPass,
                                         uint32_t subpass,
                                         VkPipelineLayout *pPipelineLayout,
@@ -44,7 +44,7 @@ class foeGfxVkPipelinePool {
 
   private:
     VkResult createPipeline(foeVertexDescriptor *vertexDescriptor,
-                            foeFragmentDescriptor *fragmentDescriptor,
+                            foeGfxVkFragmentDescriptor *fragmentDescriptor,
                             VkRenderPass renderPass,
                             uint32_t subpass,
                             VkPipelineLayout *pPipelineLayout,
@@ -54,7 +54,7 @@ class foeGfxVkPipelinePool {
     struct Pipeline {
         // Key
         foeVertexDescriptor *vertexDescriptor;
-        foeFragmentDescriptor *fragmentDescriptor;
+        foeGfxVkFragmentDescriptor *fragmentDescriptor;
 
         VkRenderPass renderPass;
         uint32_t subpass;

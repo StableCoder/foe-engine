@@ -16,7 +16,7 @@
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 
-foeFragmentDescriptor::foeFragmentDescriptor(
+foeGfxVkFragmentDescriptor::foeGfxVkFragmentDescriptor(
     VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
     VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
     VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
@@ -48,9 +48,9 @@ foeFragmentDescriptor::foeFragmentDescriptor(
     }
 }
 
-foeFragmentDescriptor::~foeFragmentDescriptor() {}
+foeGfxVkFragmentDescriptor::~foeGfxVkFragmentDescriptor() {}
 
-auto foeFragmentDescriptor::getBuiltinSetLayouts() const noexcept
+auto foeGfxVkFragmentDescriptor::getBuiltinSetLayouts() const noexcept
     -> foeBuiltinDescriptorSetLayoutFlags {
     foeBuiltinDescriptorSetLayoutFlags flags = 0;
 
@@ -60,7 +60,7 @@ auto foeFragmentDescriptor::getBuiltinSetLayouts() const noexcept
     return flags;
 }
 
-auto foeFragmentDescriptor::getColourBlendSCI() noexcept
+auto foeGfxVkFragmentDescriptor::getColourBlendSCI() noexcept
     -> VkPipelineColorBlendStateCreateInfo const * {
     mColourBlendSCI.pAttachments = mColourBlendAttachments.get();
     return hasColourBlendSCI ? &mColourBlendSCI : nullptr;
