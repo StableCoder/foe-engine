@@ -24,7 +24,8 @@
 #include <fstream>
 #include <vector>
 
-auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vector<std::byte> {
+inline auto loadShaderDataFromFile(std::filesystem::path const &shaderPath)
+    -> std::vector<std::byte> {
     std::vector<std::byte> shaderData;
 
     // Open file
