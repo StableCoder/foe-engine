@@ -32,6 +32,7 @@
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
+#include <foe/resource/fragment_descriptor_loader.hpp>
 #include <foe/resource/material.hpp>
 #include <foe/resource/material_loader.hpp>
 #include <foe/thread_pool.hpp>
@@ -119,6 +120,8 @@ struct Application {
     foeGfxVkPipelinePool pipelinePool;
 
     // Resources
+    foeFragmentDescriptorLoader fragDescriptorLoader;
+    foeFragmentDescriptor theFragDescriptor{&fragDescriptorLoader};
     foeMaterialLoader materialLoader;
     foeMaterial theMaterial{&materialLoader};
 

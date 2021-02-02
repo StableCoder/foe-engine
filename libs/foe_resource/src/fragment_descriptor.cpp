@@ -14,43 +14,44 @@
     limitations under the License.
 */
 
-#include <foe/resource/material.hpp>
-
 #include <foe/resource/fragment_descriptor.hpp>
-#include <foe/resource/material_loader.hpp>
+
+#include <foe/resource/fragment_descriptor_loader.hpp>
 
 #include "log.hpp"
 
-foeMaterial::foeMaterial(foeMaterialLoader *pLoader) : pLoader{pLoader} {}
+foeFragmentDescriptor::foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader) :
+    pLoader{pLoader} {}
 
-foeMaterial::~foeMaterial() {
+foeFragmentDescriptor::~foeFragmentDescriptor() {
     if (useCount > 0) {
-        FOE_LOG(foeResource, Warning, "foeMaterial {} being destroyed despite having active uses",
+        FOE_LOG(foeResource, Warning,
+                "foeFragmentDescriptor {} being destroyed despite having active uses",
                 static_cast<void *>(this));
     }
     if (refCount > 0) {
         FOE_LOG(foeResource, Warning,
-                "foeMaterial {} being destroyed despite having active references",
+                "foeFragmentDescriptor {} being destroyed despite having active references",
                 static_cast<void *>(this));
     }
 }
 
-foeResourceLoadState foeMaterial::getLoadState() const noexcept { return loadState; }
+foeResourceLoadState foeFragmentDescriptor::getLoadState() const noexcept { return loadState; }
 
-int foeMaterial::incrementRefCount() noexcept { return ++refCount; }
+int foeFragmentDescriptor::incrementRefCount() noexcept { return ++refCount; }
 
-int foeMaterial::decrementRefCount() noexcept {
+int foeFragmentDescriptor::decrementRefCount() noexcept {
     auto newCount = --refCount;
     if (newCount < 0) {
-        FOE_LOG(foeResource, Warning, "foeMaterial {} has a negative reference count",
+        FOE_LOG(foeResource, Warning, "foeFragmentDescriptor {} has a negative reference count",
                 static_cast<void *>(this))
     }
     return newCount;
 }
 
-int foeMaterial::getRefCount() const noexcept { return refCount; }
+int foeFragmentDescriptor::getRefCount() const noexcept { return refCount; }
 
-int foeMaterial::incrementUseCount() noexcept {
+int foeFragmentDescriptor::incrementUseCount() noexcept {
     auto newCount = ++useCount;
 
     // If the count was (presumably 1) and it's in the 'loading' state
@@ -61,30 +62,22 @@ int foeMaterial::incrementUseCount() noexcept {
     return newCount;
 }
 
-int foeMaterial::decrementUseCount() noexcept {
+int foeFragmentDescriptor::decrementUseCount() noexcept {
     auto newCount = --useCount;
     if (newCount < 0) {
-        FOE_LOG(foeResource, Warning, "foeMaterial {} has a negative use count",
+        FOE_LOG(foeResource, Warning, "foeFragmentDescriptor {} has a negative use count",
                 static_cast<void *>(this))
     }
     return --newCount;
 }
 
-int foeMaterial::getUseCount() const noexcept { return useCount; }
+int foeFragmentDescriptor::getUseCount() const noexcept { return useCount; }
 
-foeGfxVkFragmentDescriptor *foeMaterial::getFragmentDescriptor() const noexcept {
-    if (data.pFragDescriptor != nullptr) {
-        return data.pFragDescriptor->getFragmentDescriptor();
-    }
-
-    return nullptr;
+foeGfxVkFragmentDescriptor *foeFragmentDescriptor::getFragmentDescriptor() const noexcept {
+    return data.pGfxFragDescriptor;
 }
 
-void foeMaterial::setSourceExternalFile(std::string_view file) {
-    pSourceData.reset(new foeMaterialSourceExternalFile{file});
-}
-
-void foeMaterial::requestResourceLoad() {
+void foeFragmentDescriptor::requestResourceLoad() {
     incrementRefCount();
     pLoader->requestResourceLoad(this);
 }

@@ -16,6 +16,7 @@
 
 #include <foe/resource/material_loader.hpp>
 
+#include <foe/resource/fragment_descriptor.hpp>
 #include <foe/resource/material.hpp>
 
 #include "error_code.hpp"
@@ -29,7 +30,6 @@ foeMaterialLoader::~foeMaterialLoader() {
 }
 
 std::error_code foeMaterialLoader::initialize(
-    foeGfxVkFragmentDescriptorPool *pFragPool,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -37,7 +37,6 @@ std::error_code foeMaterialLoader::initialize(
 
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
-    mFragPool = pFragPool;
     mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
@@ -48,11 +47,13 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void foeMaterialLoader::deinitialize() { mFragPool = nullptr; }
+void foeMaterialLoader::deinitialize() {
+    mAsyncJobs = std::function<void(std::function<void()>)>{};
+}
 
-bool foeMaterialLoader::initialized() const noexcept { return mFragPool != nullptr; }
+bool foeMaterialLoader::initialized() const noexcept { return static_cast<bool>(mAsyncJobs); }
 
-void foeMaterialLoader::processLoadRequests(foeGfxShader fragShader) {
+void foeMaterialLoader::processLoadRequests(foeFragmentDescriptor *pFragDescriptor) {
     if (mLoadRequests.empty()) {
         return;
     }
@@ -66,8 +67,8 @@ void foeMaterialLoader::processLoadRequests(foeGfxShader fragShader) {
     // Now we'll place all load requests into asynchronous jobs
     mActiveJobs += loadRequests.size();
     for (auto pMaterial : loadRequests) {
-        mAsyncJobs([this, pMaterial, fragShader] {
-            loadResource(pMaterial, fragShader);
+        mAsyncJobs([this, pMaterial, pFragDescriptor] {
+            loadResource(pMaterial, pFragDescriptor);
             --mActiveJobs;
         });
     }
@@ -83,6 +84,8 @@ void foeMaterialLoader::processUnloadRequests() {
     mUnloadSync.unlock();
 
     for (auto &data : unloadRequests) {
+        data.pFragDescriptor->decrementUseCount();
+        data.pFragDescriptor->decrementRefCount();
         // @todo Implement Material unloading when stuff to unload (after shader added)
     }
 }
@@ -104,7 +107,8 @@ void foeMaterialLoader::requestResourceUnload(foeMaterial *pMaterial) {
     }
 }
 
-void foeMaterialLoader::loadResource(foeMaterial *pMaterial, foeGfxShader fragShader) {
+void foeMaterialLoader::loadResource(foeMaterial *pMaterial,
+                                     foeFragmentDescriptor *pFragDescriptor) {
     // First, try to enter the 'loading' state
     auto expected = pMaterial->loadState.load();
     while (expected != foeResourceLoadState::Loading) {
@@ -119,29 +123,10 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial, foeGfxShader fragSh
 
     std::error_code errC;
     auto pSourceData = pMaterial->pSourceData;
-    foeGfxVkFragmentDescriptor *pFragDescriptor{nullptr};
+    foeFragmentDescriptor *pNewFragDescriptor{pFragDescriptor};
 
-    {
-        auto rasterization = VkPipelineRasterizationStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-            .polygonMode = VK_POLYGON_MODE_FILL,
-            .cullMode = VK_CULL_MODE_NONE,
-            .lineWidth = 1.0f,
-        };
-        std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments{
-            VkPipelineColorBlendAttachmentState{
-                .blendEnable = VK_FALSE,
-                .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
-            }};
-        auto colourBlend = VkPipelineColorBlendStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-            .attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size()),
-            .pAttachments = colourBlendAttachments.data(),
-        };
-
-        pFragDescriptor = mFragPool->get(&rasterization, nullptr, &colourBlend, fragShader);
-    }
+    pNewFragDescriptor->incrementRefCount();
+    pNewFragDescriptor->incrementUseCount();
 
 LOADING_FAILED:
     if (errC) {
@@ -149,6 +134,9 @@ LOADING_FAILED:
                 static_cast<void *>(pMaterial), errC.value(), errC.message())
 
         pMaterial->loadState = foeResourceLoadState::Failed;
+
+        pNewFragDescriptor->decrementUseCount();
+        pNewFragDescriptor->decrementRefCount();
     } else {
         foeMaterial::Data oldData;
         foeMaterial::Data newData{

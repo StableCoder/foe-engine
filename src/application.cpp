@@ -167,9 +167,16 @@ int Application::initialize(int argc, char **argv) {
         VK_END_PROGRAM
     }
 
-    errC = materialLoader.initialize(&fragmentDescriptorPool, [&](std::function<void()> task) {
-        asynchronousThreadPool.scheduleTask(std::move(task));
-    });
+    errC =
+        fragDescriptorLoader.initialize(&fragmentDescriptorPool, [&](std::function<void()> task) {
+            asynchronousThreadPool.scheduleTask(std::move(task));
+        });
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
+    errC = materialLoader.initialize(
+        [&](std::function<void()> task) { asynchronousThreadPool.scheduleTask(std::move(task)); });
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -403,11 +410,17 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
-    // Resource Unloading
-    theMaterial.decrementUseCount();
-    materialLoader.requestResourceUnload(&theMaterial);
-    for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-        materialLoader.processUnloadRequests();
+    { // Resource Unloading
+        theMaterial.decrementUseCount();
+        materialLoader.requestResourceUnload(&theMaterial);
+        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
+            materialLoader.processUnloadRequests();
+        }
+
+        fragDescriptorLoader.requestResourceUnload(&theFragDescriptor);
+        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
+            fragDescriptorLoader.processUnloadRequests();
+        }
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -599,7 +612,8 @@ int Application::mainloop() {
         }
 
         // Resource load requests
-        materialLoader.processLoadRequests(fragShader);
+        fragDescriptorLoader.processLoadRequests(fragShader);
+        materialLoader.processLoadRequests(&theFragDescriptor);
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
@@ -687,6 +701,7 @@ int Application::mainloop() {
             frameIndex = nextFrameIndex;
 
             // Resource Unload Requests
+            fragDescriptorLoader.processUnloadRequests();
             materialLoader.processUnloadRequests();
 
             // Set camera descriptors

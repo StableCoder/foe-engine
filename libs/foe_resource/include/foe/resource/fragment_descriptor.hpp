@@ -14,10 +14,9 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_MATERIAL_HPP
-#define FOE_RESOURCE_MATERIAL_HPP
+#ifndef FOE_RESOURCE_FRAGMENT_DESCRIPTOR_HPP
+#define FOE_RESOURCE_FRAGMENT_DESCRIPTOR_HPP
 
-#include <foe/ecs/entity_id.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
@@ -26,23 +25,16 @@
 #include <memory>
 #include <mutex>
 
-class foeMaterialLoader;
-class foeFragmentDescriptor;
+class foeFragmentDescriptorLoader;
 
-struct foeMaterialSourceBase {
-    virtual ~foeMaterialSourceBase() = default;
+struct foeFragmentDescriptorSourceBase {
+    virtual ~foeFragmentDescriptorSourceBase() = default;
 };
 
-struct foeMaterialSourceExternalFile : public foeMaterialSourceBase {
-    foeMaterialSourceExternalFile(std::string_view file) : file{file} {}
-
-    std::string file;
-};
-
-struct foeMaterial {
+class foeFragmentDescriptor {
   public:
-    FOE_RES_EXPORT foeMaterial(foeMaterialLoader *pLoader);
-    FOE_RES_EXPORT ~foeMaterial();
+    FOE_RES_EXPORT foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader);
+    FOE_RES_EXPORT ~foeFragmentDescriptor();
 
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
@@ -54,13 +46,12 @@ struct foeMaterial {
     FOE_RES_EXPORT int decrementUseCount() noexcept;
     FOE_RES_EXPORT int getUseCount() const noexcept;
 
-    // Specializations
     FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getFragmentDescriptor() const noexcept;
 
     FOE_RES_EXPORT void setSourceExternalFile(std::string_view file);
 
   private:
-    friend foeMaterialLoader;
+    friend foeFragmentDescriptorLoader;
 
     void requestResourceLoad();
 
@@ -70,15 +61,15 @@ struct foeMaterial {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeMaterialLoader *pLoader;
-    std::shared_ptr<foeMaterialSourceBase> pSourceData{nullptr};
+    foeFragmentDescriptorLoader *pLoader;
+    std::shared_ptr<foeFragmentDescriptorSourceBase> pSourceData{nullptr};
 
     std::mutex dataWriteLock{};
     struct Data {
-        foeMaterialSourceBase *pLoadedSource;
-        foeFragmentDescriptor *pFragDescriptor;
+        foeFragmentDescriptorSourceBase *pLoadedSource;
+        foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
     };
     Data data{};
 };
 
-#endif // FOE_RESOURCE_MATERIAL_HPP
+#endif // FOE_RESOURCE_FRAGMENT_DESCRIPTOR_HPP

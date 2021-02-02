@@ -14,13 +14,14 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_MATERIAL_LOADER_HPP
-#define FOE_RESOURCE_MATERIAL_LOADER_HPP
+#ifndef FOE_RESOURCES_FRAGMENT_DESCRIPTOR_LOADER_HPP
+#define FOE_RESOURCES_FRAGMENT_DESCRIPTOR_LOADER_HPP
 
+#include <foe/graphics/shader.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/material.hpp>
+#include <foe/resource/fragment_descriptor.hpp>
 
 #include <atomic>
 #include <functional>
@@ -28,34 +29,37 @@
 #include <system_error>
 #include <vector>
 
-class foeMaterialLoader {
+class foeFragmentDescriptorLoader {
   public:
-    FOE_RES_EXPORT ~foeMaterialLoader();
+    FOE_RES_EXPORT ~foeFragmentDescriptorLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
+        foeGfxVkFragmentDescriptorPool *pFragPool,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processLoadRequests(foeFragmentDescriptor *pFragDescriptor);
+    FOE_RES_EXPORT void processLoadRequests(foeGfxShader fragShader);
     FOE_RES_EXPORT void processUnloadRequests();
 
-    FOE_RES_EXPORT void requestResourceLoad(foeMaterial *pMaterial);
-    FOE_RES_EXPORT void requestResourceUnload(foeMaterial *pMaterial);
+    FOE_RES_EXPORT void requestResourceLoad(foeFragmentDescriptor *pFragDescriptor);
+    FOE_RES_EXPORT void requestResourceUnload(foeFragmentDescriptor *pFragDescriptor);
 
   private:
-    void loadResource(foeMaterial *pMaterial, foeFragmentDescriptor *pFragDescriptor);
+    void loadResource(foeFragmentDescriptor *pFragDescriptor, foeGfxShader fragShader);
+
+    foeGfxVkFragmentDescriptorPool *mFragPool{nullptr};
 
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 
     std::mutex mLoadSync{};
-    std::vector<foeMaterial *> mLoadRequests{};
+    std::vector<foeFragmentDescriptor *> mLoadRequests{};
 
     std::mutex mUnloadSync{};
-    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+    std::array<std::vector<foeFragmentDescriptor::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
         mUnloadRequestLists{};
-    std::vector<foeMaterial::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
+    std::vector<foeFragmentDescriptor::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
 };
 
-#endif // FOE_RESOURCE_MATERIAL_LOADER_HPP
+#endif // FOE_RESOURCES_FRAGMENT_DESCRIPTOR_LOADER_HPP
