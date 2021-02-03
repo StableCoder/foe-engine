@@ -19,18 +19,17 @@
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
-#include <foe/graphics/vk/fragment_descriptor.hpp>
-#include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
+class foeVertexDescriptor;
+class foeGfxVkFragmentDescriptor;
 class foeGfxVkBuiltinDescriptorSets;
 
 class foeGfxVkPipelinePool {
   public:
-    FOE_GFX_EXPORT VkResult initialize(
-        foeGfxSession session, foeGfxVkBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept;
+    FOE_GFX_EXPORT VkResult initialize(foeGfxSession session) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
     FOE_GFX_EXPORT bool initialized() const noexcept;
 

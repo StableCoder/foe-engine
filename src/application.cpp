@@ -153,16 +153,7 @@ int Application::initialize(int argc, char **argv) {
     if (vkRes != VK_SUCCESS)
         VK_END_PROGRAM
 
-    vkRes = descriptorSetLayoutPool.initialize(foeGfxVkGetDevice(gfxSession));
-    if (vkRes != VK_SUCCESS)
-        VK_END_PROGRAM
-
-    vkRes =
-        builtinDescriptorSets.initialize(foeGfxVkGetDevice(gfxSession), &descriptorSetLayoutPool);
-    if (vkRes != VK_SUCCESS)
-        VK_END_PROGRAM
-
-    vkRes = pipelinePool.initialize(gfxSession, &builtinDescriptorSets);
+    vkRes = pipelinePool.initialize(gfxSession);
     if (vkRes != VK_SUCCESS) {
         VK_END_PROGRAM
     }
@@ -188,12 +179,12 @@ int Application::initialize(int argc, char **argv) {
 
     vkRes = cameraDescriptorPool.initialize(
         gfxSession,
-        builtinDescriptorSets.getBuiltinLayout(
-            foeBuiltinDescriptorSetLayoutFlagBits::
-                FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX),
-        builtinDescriptorSets.getBuiltinSetLayoutIndex(
-            foeBuiltinDescriptorSetLayoutFlagBits::
-                FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX));
+        foeGfxVkGetBuiltinLayout(gfxSession,
+                                 foeBuiltinDescriptorSetLayoutFlagBits::
+                                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX),
+        foeGfxVkGetBuiltinSetLayoutIndex(
+            gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
+                            FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX));
     if (vkRes != VK_SUCCESS) {
         VK_END_PROGRAM
     }
@@ -481,9 +472,6 @@ void Application::deinitialize() {
         foeGfxDestroyShader(gfxSession, fragShader);
     if (vertShader != FOE_NULL_HANDLE)
         foeGfxDestroyShader(gfxSession, vertShader);
-
-    builtinDescriptorSets.deinitialize(foeGfxVkGetDevice(gfxSession));
-    descriptorSetLayoutPool.deinitialize();
 
     renderPassPool.deinitialize();
 

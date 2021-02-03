@@ -70,7 +70,11 @@ void createQueueFamily(VkDevice device,
     }
 }
 
-void foeGfxVkDestroySession(foeGfxVkSession const *pSession) {
+void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
+    // Descriptor Set Layouts
+    pSession->builtinDescriptorSets.deinitialize(pSession->device);
+    pSession->descriptorSetLayoutPool.deinitialize();
+
     if (pSession->allocator != VK_NULL_HANDLE)
         vmaDestroyAllocator(pSession->allocator);
 
@@ -156,6 +160,17 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
         }
     }
 
+    { // Descriptor Set Layouts
+        vkRes = pNewSession->descriptorSetLayoutPool.initialize(pNewSession->device);
+        if (vkRes != VK_SUCCESS)
+            goto CREATE_FAILED;
+
+        vkRes = pNewSession->builtinDescriptorSets.initialize(
+            pNewSession->device, &pNewSession->descriptorSetLayoutPool);
+        if (vkRes != VK_SUCCESS)
+            goto CREATE_FAILED;
+    }
+
 CREATE_FAILED:
     if (vkRes != VK_NULL_HANDLE) {
         foeGfxVkDestroySession(pNewSession);
@@ -228,4 +243,20 @@ foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session) {
 void foeGfxDestroySession(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     foeGfxVkDestroySession(pSession);
+}
+
+auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
+                              foeBuiltinDescriptorSetLayoutFlags builtinLayout)
+    -> VkDescriptorSetLayout {
+    auto *pSession = session_from_handle(session);
+
+    return pSession->builtinDescriptorSets.getBuiltinLayout(builtinLayout);
+}
+
+auto foeGfxVkGetBuiltinSetLayoutIndex(foeGfxSession session,
+                                      foeBuiltinDescriptorSetLayoutFlags builtinLayout)
+    -> uint32_t {
+    auto *pSession = session_from_handle(session);
+
+    return pSession->builtinDescriptorSets.getBuiltinSetLayoutIndex(builtinLayout);
 }

@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_VK_BUILTIN_DESCRIPTOR_SETS_HPP
-#define FOE_GRAPHICS_VK_BUILTIN_DESCRIPTOR_SETS_HPP
+#ifndef BUILTIN_DESCRIPTOR_SETS_HPP
+#define BUILTIN_DESCRIPTOR_SETS_HPP
 
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/export.h>
@@ -30,19 +30,18 @@ class foeGfxVkDescriptorSetLayoutPool;
  */
 class foeGfxVkBuiltinDescriptorSets {
   public:
-    FOE_GFX_EXPORT auto initialize(VkDevice device,
-                                   foeGfxVkDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
+    auto initialize(VkDevice device, foeGfxVkDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
         -> VkResult;
-    FOE_GFX_EXPORT void deinitialize(VkDevice device);
+    void deinitialize(VkDevice device);
 
-    FOE_GFX_EXPORT auto getBuiltinLayout(
-        foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> VkDescriptorSetLayout;
+    auto getBuiltinLayout(foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept
+        -> VkDescriptorSetLayout;
 
-    FOE_GFX_EXPORT auto getBuiltinSetLayoutIndex(
-        foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> uint32_t;
+    auto getBuiltinSetLayoutIndex(foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept
+        -> uint32_t;
 
-    FOE_GFX_EXPORT auto getDummyLayout() const noexcept -> VkDescriptorSetLayout;
-    FOE_GFX_EXPORT auto getDummySet() const noexcept -> VkDescriptorSet;
+    auto getDummyLayout() const noexcept -> VkDescriptorSetLayout;
+    auto getDummySet() const noexcept -> VkDescriptorSet;
 
   private:
     std::array<VkDescriptorSetLayout, 3> mBuiltinLayouts;
@@ -53,4 +52,4 @@ class foeGfxVkBuiltinDescriptorSets {
     VkDescriptorSet mDummySet{VK_NULL_HANDLE};
 };
 
-#endif // FOE_GRAPHICS_VK_BUILTIN_DESCRIPTOR_SETS_HPP
+#endif // BUILTIN_DESCRIPTOR_SETS_HPP

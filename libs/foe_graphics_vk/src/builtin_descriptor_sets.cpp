@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#include <foe/graphics/vk/builtin_descriptor_sets.hpp>
+#include "builtin_descriptor_sets.hpp"
 
-#include <foe/graphics/vk/descriptor_set_layout_pool.hpp>
 #include <vk_error_code.hpp>
 
+#include "descriptor_set_layout_pool.hpp"
 #include "log.hpp"
 
 auto foeGfxVkBuiltinDescriptorSets::initialize(

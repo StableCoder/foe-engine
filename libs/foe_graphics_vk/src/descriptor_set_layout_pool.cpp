@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/vk/descriptor_set_layout_pool.hpp>
+#include "descriptor_set_layout_pool.hpp"
 
 #include <vk_equality_checks.hpp>
 #include <vk_error_code.hpp>

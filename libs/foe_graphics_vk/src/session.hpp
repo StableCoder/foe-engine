@@ -18,13 +18,15 @@
 #define SESSION_HPP
 
 #include <foe/graphics/session.hpp>
+#include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <mutex>
 
-#include <foe/graphics/type_defs.hpp>
+#include "builtin_descriptor_sets.hpp"
+#include "descriptor_set_layout_pool.hpp"
 
 struct foeGfxVkSession {
     // From the Runtime
@@ -36,6 +38,9 @@ struct foeGfxVkSession {
 
     uint32_t numQueueFamilies{0};
     foeGfxVkQueueFamily pQueueFamilies[MaxQueueFamilies];
+
+    foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
+    foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
 };
 
 FOE_DEFINE_HANDLE_CASTS(session, foeGfxVkSession, foeGfxSession)

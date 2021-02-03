@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_VK_SESSION_HPP
 #define FOE_GRAPHICS_VK_SESSION_HPP
 
+#include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -42,5 +43,12 @@ FOE_GFX_EXPORT uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags
 
 #include <foe/graphics/vk/queue_family.hpp>
 FOE_GFX_EXPORT foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session);
+
+FOE_GFX_EXPORT auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
+                                             foeBuiltinDescriptorSetLayoutFlags builtinLayout)
+    -> VkDescriptorSetLayout;
+
+FOE_GFX_EXPORT auto foeGfxVkGetBuiltinSetLayoutIndex(
+    foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout) -> uint32_t;
 
 #endif // FOE_GRAPHICS_VK_SESSION_HPP

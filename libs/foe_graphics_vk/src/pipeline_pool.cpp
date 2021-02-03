@@ -16,24 +16,25 @@
 
 #include <foe/graphics/vk/pipeline_pool.hpp>
 
-#include <foe/graphics/vk/builtin_descriptor_sets.hpp>
+#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <vk_error_code.hpp>
 
 #include <array>
 
+#include "builtin_descriptor_sets.hpp"
 #include "log.hpp"
 #include "session.hpp"
 #include "shader.hpp"
 
-VkResult foeGfxVkPipelinePool::initialize(
-    foeGfxSession session, foeGfxVkBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept {
+VkResult foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {
     if (initialized())
         return VK_ERROR_INITIALIZATION_FAILED;
 
     auto *pSession = session_from_handle(session);
 
     mDevice = pSession->device;
-    mBuiltinDescriptorSets = pBuiltinDescriptorSets;
+    mBuiltinDescriptorSets = &pSession->builtinDescriptorSets;
 
     return VK_SUCCESS;
 }

@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_VK_DESCRIPTOR_SET_LAYOUT_POOL_HPP
-#define FOE_GRAPHICS_VK_DESCRIPTOR_SET_LAYOUT_POOL_HPP
+#ifndef DESCRIPTOR_SET_LAYOUT_POOL_HPP
+#define DESCRIPTOR_SET_LAYOUT_POOL_HPP
 
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
@@ -30,24 +30,24 @@ class foeGfxVkDescriptorSetLayoutPool {
      * @param device Vulkan device handle of the graphics environment
      * @return VK_SUCCESS on success. An appropriate error code otherwise.
      */
-    FOE_GFX_EXPORT auto initialize(VkDevice device) -> VkResult;
+    auto initialize(VkDevice device) -> VkResult;
 
     /** Deinitialized the object
      *
      * All generated DescriptorSetLayouts are destroyed and become unusable.
      */
-    FOE_GFX_EXPORT void deinitialize();
+    void deinitialize();
 
     /** Attempts to return a valid DescriptorSetLayout from the given create info
      * @param pDescriptorSetLayoutCI Descripts the set layout to get a handle for
      * @return A valid handle, or VK_NULL_HANDLE if it failed to find/generate one.
      */
-    FOE_GFX_EXPORT auto get(VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
+    auto get(VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
         -> VkDescriptorSetLayout;
 
-    FOE_GFX_EXPORT bool getCI(VkDescriptorSetLayout layout,
-                              VkDescriptorSetLayoutCreateInfo &layoutCI,
-                              std::vector<VkDescriptorSetLayoutBinding> &layoutBindings);
+    bool getCI(VkDescriptorSetLayout layout,
+               VkDescriptorSetLayoutCreateInfo &layoutCI,
+               std::vector<VkDescriptorSetLayoutBinding> &layoutBindings);
 
   private:
     struct Layout {
@@ -62,4 +62,4 @@ class foeGfxVkDescriptorSetLayoutPool {
     std::vector<Layout> mLayouts;
 };
 
-#endif // FOE_GRAPHICS_VK_DESCRIPTOR_SET_LAYOUT_POOL_HPP
+#endif // DESCRIPTOR_SET_LAYOUT_POOL_HPP
