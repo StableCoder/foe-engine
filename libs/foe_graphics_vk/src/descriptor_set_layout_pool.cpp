@@ -14,14 +14,14 @@
     limitations under the License.
 */
 
-#include <foe/graphics/descriptor_set_layout_pool.hpp>
+#include <foe/graphics/vk/descriptor_set_layout_pool.hpp>
 
 #include <vk_equality_checks.hpp>
 #include <vk_error_code.hpp>
 
-#include "gfx_log.hpp"
+#include "log.hpp"
 
-auto foeDescriptorSetLayoutPool::initialize(VkDevice device) -> VkResult {
+auto foeGfxVkDescriptorSetLayoutPool::initialize(VkDevice device) -> VkResult {
     if (mDevice != VK_NULL_HANDLE)
         return VK_ERROR_INITIALIZATION_FAILED;
 
@@ -30,7 +30,7 @@ auto foeDescriptorSetLayoutPool::initialize(VkDevice device) -> VkResult {
     return VK_SUCCESS;
 }
 
-void foeDescriptorSetLayoutPool::deinitialize() {
+void foeGfxVkDescriptorSetLayoutPool::deinitialize() {
     std::scoped_lock lock{mSync};
 
     for (auto &it : mLayouts) {
@@ -42,8 +42,8 @@ void foeDescriptorSetLayoutPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-auto foeDescriptorSetLayoutPool::get(VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
-    -> VkDescriptorSetLayout {
+auto foeGfxVkDescriptorSetLayoutPool::get(
+    VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI) -> VkDescriptorSetLayout {
     std::scoped_lock lock{mSync};
 
     // Check if we already have this layout
@@ -64,13 +64,13 @@ auto foeDescriptorSetLayoutPool::get(VkDescriptorSetLayoutCreateInfo const *pDes
             return it.layout;
     }
 
-    FOE_LOG(Graphics, Verbose, "Creating a new DescriptorSetLayout");
+    FOE_LOG(foeVkGraphics, Verbose, "Creating a new DescriptorSetLayout");
 
     VkDescriptorSetLayout newLayout;
     std::error_code errc =
         vkCreateDescriptorSetLayout(mDevice, pDescriptorSetLayoutCI, nullptr, &newLayout);
     if (errc) {
-        FOE_LOG(Graphics, Error, "vkCreateDescriptorSetLayout failed with error: {}",
+        FOE_LOG(foeVkGraphics, Error, "vkCreateDescriptorSetLayout failed with error: {}",
                 errc.message());
         return VK_NULL_HANDLE;
     }
@@ -89,9 +89,10 @@ auto foeDescriptorSetLayoutPool::get(VkDescriptorSetLayoutCreateInfo const *pDes
     return newLayout;
 }
 
-bool foeDescriptorSetLayoutPool::getCI(VkDescriptorSetLayout layout,
-                                       VkDescriptorSetLayoutCreateInfo &layoutCI,
-                                       std::vector<VkDescriptorSetLayoutBinding> &layoutBindings) {
+bool foeGfxVkDescriptorSetLayoutPool::getCI(
+    VkDescriptorSetLayout layout,
+    VkDescriptorSetLayoutCreateInfo &layoutCI,
+    std::vector<VkDescriptorSetLayoutBinding> &layoutBindings) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mLayouts) {

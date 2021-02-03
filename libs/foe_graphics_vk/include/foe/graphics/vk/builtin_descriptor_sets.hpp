@@ -21,7 +21,7 @@
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
 
-class foeDescriptorSetLayoutPool;
+class foeGfxVkDescriptorSetLayoutPool;
 
 /** Special builtin DescriptorSetLayouts and 'dummy' set
  *
@@ -31,7 +31,7 @@ class foeDescriptorSetLayoutPool;
 class foeGfxVkBuiltinDescriptorSets {
   public:
     FOE_GFX_EXPORT auto initialize(VkDevice device,
-                                   foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
+                                   foeGfxVkDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
         -> VkResult;
     FOE_GFX_EXPORT void deinitialize(VkDevice device);
 

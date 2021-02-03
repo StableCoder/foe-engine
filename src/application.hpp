@@ -19,7 +19,6 @@
 
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
-#include <foe/graphics/descriptor_set_layout_pool.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -28,6 +27,7 @@
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/builtin_descriptor_sets.hpp>
+#include <foe/graphics/vk/descriptor_set_layout_pool.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
@@ -113,7 +113,7 @@ struct Application {
 
     foeRenderPassPool renderPassPool;
 
-    foeDescriptorSetLayoutPool descriptorSetLayoutPool;
+    foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
     foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxShader vertShader{FOE_NULL_HANDLE};
     foeGfxShader fragShader{FOE_NULL_HANDLE};

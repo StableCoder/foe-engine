@@ -16,14 +16,13 @@
 
 #include <foe/graphics/vk/builtin_descriptor_sets.hpp>
 
-#include <foe/graphics/descriptor_set_layout_pool.hpp>
+#include <foe/graphics/vk/descriptor_set_layout_pool.hpp>
 #include <vk_error_code.hpp>
 
 #include "log.hpp"
 
-auto foeGfxVkBuiltinDescriptorSets::initialize(VkDevice device,
-                                               foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
-    -> VkResult {
+auto foeGfxVkBuiltinDescriptorSets::initialize(
+    VkDevice device, foeGfxVkDescriptorSetLayoutPool *pDescriptorSetLayoutPool) -> VkResult {
     { // ProjectionViewMatrix
         VkDescriptorSetLayoutBinding binding{
             .binding = 0,

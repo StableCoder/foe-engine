@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_DESCRIPTOR_SET_LAYOUT_POOL_HPP
-#define FOE_GRAPHICS_DESCRIPTOR_SET_LAYOUT_POOL_HPP
+#ifndef FOE_GRAPHICS_VK_DESCRIPTOR_SET_LAYOUT_POOL_HPP
+#define FOE_GRAPHICS_VK_DESCRIPTOR_SET_LAYOUT_POOL_HPP
 
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
@@ -24,7 +24,7 @@
 #include <vector>
 
 /// Handles generation and retrieval of requested DescriptorSetLayouts.
-class foeDescriptorSetLayoutPool {
+class foeGfxVkDescriptorSetLayoutPool {
   public:
     /** Initializes the pool with the graphics backend
      * @param device Vulkan device handle of the graphics environment
@@ -62,4 +62,4 @@ class foeDescriptorSetLayoutPool {
     std::vector<Layout> mLayouts;
 };
 
-#endif // FOE_GRAPHICS_DESCRIPTOR_SET_LAYOUT_POOL_HPP
+#endif // FOE_GRAPHICS_VK_DESCRIPTOR_SET_LAYOUT_POOL_HPP
