@@ -21,8 +21,8 @@
 
 #include "log.hpp"
 
-auto foeBuiltinDescriptorSets::initialize(VkDevice device,
-                                          foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
+auto foeGfxVkBuiltinDescriptorSets::initialize(VkDevice device,
+                                               foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
     -> VkResult {
     { // ProjectionViewMatrix
         VkDescriptorSetLayoutBinding binding{
@@ -115,7 +115,7 @@ auto foeBuiltinDescriptorSets::initialize(VkDevice device,
         VkResult res = vkCreateDescriptorPool(device, &poolCI, nullptr, &mDescriptorPool);
         if (res != VK_SUCCESS) {
             FOE_LOG(foeVkGraphics, Error,
-                    "Failed to create foeBuiltinDescriptorSets descriptor pool with error: {}",
+                    "Failed to create foeGfxVkBuiltinDescriptorSets descriptor pool with error: {}",
                     std::error_code{res}.message());
             return res;
         }
@@ -153,7 +153,7 @@ auto foeBuiltinDescriptorSets::initialize(VkDevice device,
     return VK_SUCCESS;
 }
 
-void foeBuiltinDescriptorSets::deinitialize(VkDevice device) {
+void foeGfxVkBuiltinDescriptorSets::deinitialize(VkDevice device) {
     mDummySet = VK_NULL_HANDLE;
     mDummyLayout = VK_NULL_HANDLE;
 
@@ -166,7 +166,7 @@ void foeBuiltinDescriptorSets::deinitialize(VkDevice device) {
     }
 }
 
-auto foeBuiltinDescriptorSets::getBuiltinLayout(
+auto foeGfxVkBuiltinDescriptorSets::getBuiltinLayout(
     foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> VkDescriptorSetLayout {
     switch (builtinLayout) {
     case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX:
@@ -180,7 +180,7 @@ auto foeBuiltinDescriptorSets::getBuiltinLayout(
     }
 }
 
-auto foeBuiltinDescriptorSets::getBuiltinSetLayoutIndex(
+auto foeGfxVkBuiltinDescriptorSets::getBuiltinSetLayoutIndex(
     foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> uint32_t {
     switch (builtinLayout) {
     case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX:
@@ -198,8 +198,10 @@ auto foeBuiltinDescriptorSets::getBuiltinSetLayoutIndex(
     }
 }
 
-auto foeBuiltinDescriptorSets::getDummyLayout() const noexcept -> VkDescriptorSetLayout {
+auto foeGfxVkBuiltinDescriptorSets::getDummyLayout() const noexcept -> VkDescriptorSetLayout {
     return mDummyLayout;
 }
 
-auto foeBuiltinDescriptorSets::getDummySet() const noexcept -> VkDescriptorSet { return mDummySet; }
+auto foeGfxVkBuiltinDescriptorSets::getDummySet() const noexcept -> VkDescriptorSet {
+    return mDummySet;
+}

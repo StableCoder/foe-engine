@@ -26,7 +26,7 @@
 #include "shader.hpp"
 
 VkResult foeGfxVkPipelinePool::initialize(
-    foeGfxSession session, foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept {
+    foeGfxSession session, foeGfxVkBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept {
     if (initialized())
         return VK_ERROR_INITIALIZATION_FAILED;
 

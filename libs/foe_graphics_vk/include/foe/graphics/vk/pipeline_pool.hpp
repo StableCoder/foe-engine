@@ -25,12 +25,12 @@
 
 #include <vector>
 
-class foeBuiltinDescriptorSets;
+class foeGfxVkBuiltinDescriptorSets;
 
 class foeGfxVkPipelinePool {
   public:
-    FOE_GFX_EXPORT VkResult initialize(foeGfxSession session,
-                                       foeBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept;
+    FOE_GFX_EXPORT VkResult initialize(
+        foeGfxSession session, foeGfxVkBuiltinDescriptorSets *pBuiltinDescriptorSets) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
     FOE_GFX_EXPORT bool initialized() const noexcept;
 
@@ -66,7 +66,7 @@ class foeGfxVkPipelinePool {
     };
 
     VkDevice mDevice{VK_NULL_HANDLE};
-    foeBuiltinDescriptorSets *mBuiltinDescriptorSets{nullptr};
+    foeGfxVkBuiltinDescriptorSets *mBuiltinDescriptorSets{nullptr};
 
     std::vector<Pipeline> mPipelines;
 };

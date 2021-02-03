@@ -28,7 +28,7 @@ class foeDescriptorSetLayoutPool;
  * These are core items that are integral to how most of the rendering and shared across many
  * generated shader programs.
  */
-class foeBuiltinDescriptorSets {
+class foeGfxVkBuiltinDescriptorSets {
   public:
     FOE_GFX_EXPORT auto initialize(VkDevice device,
                                    foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)

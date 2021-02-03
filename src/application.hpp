@@ -114,7 +114,7 @@ struct Application {
     foeRenderPassPool renderPassPool;
 
     foeDescriptorSetLayoutPool descriptorSetLayoutPool;
-    foeBuiltinDescriptorSets builtinDescriptorSets;
+    foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxShader vertShader{FOE_NULL_HANDLE};
     foeGfxShader fragShader{FOE_NULL_HANDLE};
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
