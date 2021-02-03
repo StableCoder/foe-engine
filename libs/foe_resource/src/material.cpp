@@ -21,7 +21,8 @@
 
 #include "log.hpp"
 
-foeMaterial::foeMaterial(foeMaterialLoader *pLoader) : pLoader{pLoader} {}
+foeMaterial::foeMaterial(std::string_view name, foeMaterialLoader *pLoader) :
+    name{name}, pLoader{pLoader} {}
 
 foeMaterial::~foeMaterial() {
     if (useCount > 0) {
@@ -34,6 +35,8 @@ foeMaterial::~foeMaterial() {
                 static_cast<void *>(this));
     }
 }
+
+std::string_view foeMaterial::getName() const noexcept { return name; }
 
 foeResourceLoadState foeMaterial::getLoadState() const noexcept { return loadState; }
 

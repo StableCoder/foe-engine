@@ -122,11 +122,11 @@ struct Application {
 
     // Resources
     foeShaderLoader shaderLoader;
-    foeShader theShader{&shaderLoader};
+    foeShader theShader{"theShader", &shaderLoader};
     foeFragmentDescriptorLoader fragDescriptorLoader;
-    foeFragmentDescriptor theFragDescriptor{&fragDescriptorLoader, &theShader};
+    foeFragmentDescriptor theFragDescriptor{"theFragDescriptor", &fragDescriptorLoader, &theShader};
     foeMaterialLoader materialLoader;
-    foeMaterial theMaterial{&materialLoader};
+    foeMaterial theMaterial{"theMaterial", &materialLoader};
 
     Camera camera;
     CameraDescriptorPool cameraDescriptorPool;

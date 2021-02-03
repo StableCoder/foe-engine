@@ -21,9 +21,10 @@
 
 #include "log.hpp"
 
-foeFragmentDescriptor::foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader,
+foeFragmentDescriptor::foeFragmentDescriptor(std::string_view name,
+                                             foeFragmentDescriptorLoader *pLoader,
                                              foeShader *pShader) :
-    pLoader{pLoader}, pShader{pShader} {}
+    name{name}, pLoader{pLoader}, pShader{pShader} {}
 
 foeFragmentDescriptor::~foeFragmentDescriptor() {
     if (useCount > 0) {
@@ -37,6 +38,8 @@ foeFragmentDescriptor::~foeFragmentDescriptor() {
                 static_cast<void *>(this));
     }
 }
+
+std::string_view foeFragmentDescriptor::getName() const noexcept { return name; }
 
 foeResourceLoadState foeFragmentDescriptor::getLoadState() const noexcept { return loadState; }
 

@@ -20,7 +20,8 @@
 
 #include "log.hpp"
 
-foeShader::foeShader(foeShaderLoader *pLoader) : pLoader{pLoader} {}
+foeShader::foeShader(std::string_view name, foeShaderLoader *pLoader) :
+    name{name}, pLoader{pLoader} {}
 
 foeShader::~foeShader() {
     if (useCount > 0) {
@@ -33,6 +34,8 @@ foeShader::~foeShader() {
                 static_cast<void *>(this));
     }
 }
+
+std::string_view foeShader::getName() const noexcept { return name; }
 
 foeResourceLoadState foeShader::getLoadState() const noexcept { return loadState; }
 

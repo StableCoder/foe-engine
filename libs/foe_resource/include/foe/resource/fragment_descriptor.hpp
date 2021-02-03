@@ -24,6 +24,8 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <string_view>
 
 class foeShader;
 class foeFragmentDescriptorLoader;
@@ -34,9 +36,12 @@ struct foeFragmentDescriptorSourceBase {
 
 class foeFragmentDescriptor {
   public:
-    FOE_RES_EXPORT foeFragmentDescriptor(foeFragmentDescriptorLoader *pLoader, foeShader *pShader);
+    FOE_RES_EXPORT foeFragmentDescriptor(std::string_view name,
+                                         foeFragmentDescriptorLoader *pLoader,
+                                         foeShader *pShader);
     FOE_RES_EXPORT ~foeFragmentDescriptor();
 
+    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -57,12 +62,13 @@ class foeFragmentDescriptor {
     void requestResourceLoad();
 
     // General
+    std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};
 
     // Specialization
-    foeFragmentDescriptorLoader *pLoader;
+    foeFragmentDescriptorLoader * const pLoader;
     std::shared_ptr<foeFragmentDescriptorSourceBase> pSourceData{nullptr};
 
     foeShader *pShader;

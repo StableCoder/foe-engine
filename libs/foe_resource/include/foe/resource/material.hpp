@@ -17,7 +17,6 @@
 #ifndef FOE_RESOURCE_MATERIAL_HPP
 #define FOE_RESOURCE_MATERIAL_HPP
 
-#include <foe/ecs/entity_id.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
@@ -25,6 +24,8 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <string_view>
 
 class foeMaterialLoader;
 class foeFragmentDescriptor;
@@ -41,9 +42,10 @@ struct foeMaterialSourceExternalFile : public foeMaterialSourceBase {
 
 struct foeMaterial {
   public:
-    FOE_RES_EXPORT foeMaterial(foeMaterialLoader *pLoader);
+    FOE_RES_EXPORT foeMaterial(std::string_view name, foeMaterialLoader *pLoader);
     FOE_RES_EXPORT ~foeMaterial();
 
+    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -65,6 +67,7 @@ struct foeMaterial {
     void requestResourceLoad();
 
     // General
+    std::string name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};
