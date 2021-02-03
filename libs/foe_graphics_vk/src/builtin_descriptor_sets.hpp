@@ -40,8 +40,8 @@ class foeGfxVkBuiltinDescriptorSets {
     auto getBuiltinSetLayoutIndex(foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept
         -> uint32_t;
 
-    auto getDummyLayout() const noexcept -> VkDescriptorSetLayout;
-    auto getDummySet() const noexcept -> VkDescriptorSet;
+    FOE_GFX_EXPORT auto getDummyLayout() const noexcept -> VkDescriptorSetLayout;
+    FOE_GFX_EXPORT auto getDummySet() const noexcept -> VkDescriptorSet;
 
   private:
     std::array<VkDescriptorSetLayout, 3> mBuiltinLayouts;

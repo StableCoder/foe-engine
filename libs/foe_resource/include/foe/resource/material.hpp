@@ -57,7 +57,9 @@ struct foeMaterial {
     FOE_RES_EXPORT int getUseCount() const noexcept;
 
     // Specializations
-    FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getFragmentDescriptor() const noexcept;
+    FOE_RES_EXPORT foeFragmentDescriptor *getFragmentDescriptor() const noexcept;
+
+    FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getGfxFragmentDescriptor() const noexcept;
 
     FOE_RES_EXPORT void setSourceExternalFile(std::string_view file);
 

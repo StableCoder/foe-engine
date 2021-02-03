@@ -15,3 +15,6 @@ target_link_libraries(foe_resource PUBLIC foe foe_graphics foe_graphics_vk)
 target_code_coverage(foe_resource)
 
 add_subdirectory(src)
+
+# Auxiliary Targets
+add_subdirectory(libs)

@@ -80,6 +80,8 @@ int foeFragmentDescriptor::decrementUseCount() noexcept {
 
 int foeFragmentDescriptor::getUseCount() const noexcept { return useCount; }
 
+foeShader *foeFragmentDescriptor::getFragmentShader() const noexcept { return pShader; }
+
 foeGfxVkFragmentDescriptor *foeFragmentDescriptor::getFragmentDescriptor() const noexcept {
     return data.pGfxFragDescriptor;
 }

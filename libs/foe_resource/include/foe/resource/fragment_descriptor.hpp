@@ -52,6 +52,8 @@ class foeFragmentDescriptor {
     FOE_RES_EXPORT int decrementUseCount() noexcept;
     FOE_RES_EXPORT int getUseCount() const noexcept;
 
+    FOE_RES_EXPORT foeShader *getFragmentShader() const noexcept;
+
     FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getFragmentDescriptor() const noexcept;
 
     FOE_RES_EXPORT void setSourceExternalFile(std::string_view file);
@@ -68,7 +70,7 @@ class foeFragmentDescriptor {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeFragmentDescriptorLoader * const pLoader;
+    foeFragmentDescriptorLoader *const pLoader;
     std::shared_ptr<foeFragmentDescriptorSourceBase> pSourceData{nullptr};
 
     foeShader *pShader;
@@ -77,7 +79,6 @@ class foeFragmentDescriptor {
     struct Data {
         foeFragmentDescriptorSourceBase *pLoadedSource;
         foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
-        foeShader *pShader;
     };
     Data data{};
 };

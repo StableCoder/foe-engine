@@ -84,9 +84,6 @@ void foeFragmentDescriptorLoader::processUnloadRequests() {
     mUnloadSync.unlock();
 
     for (auto &data : unloadRequests) {
-        if (data.pShader != nullptr)
-            data.pShader->decrementUseCount();
-
         // @todo Implement foeFragmentDescriptor unloading when stuff to unload (after shader added)
     }
 }

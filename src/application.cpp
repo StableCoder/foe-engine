@@ -855,7 +855,8 @@ int Application::mainloop() {
                                         uint32_t descriptorSetLayoutCount;
                                         VkPipeline pipeline;
 
-                                        auto *pFragDescriptor = theMaterial.getFragmentDescriptor();
+                                        auto *pFragDescriptor =
+                                            theMaterial.getGfxFragmentDescriptor();
                                         if (pFragDescriptor == nullptr)
                                             goto SKIP_XR_DRAW;
 
@@ -1049,7 +1050,7 @@ int Application::mainloop() {
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
 
-                        auto *pFragDescriptor = theMaterial.getFragmentDescriptor();
+                        auto *pFragDescriptor = theMaterial.getGfxFragmentDescriptor();
                         if (pFragDescriptor == nullptr)
                             goto SKIP_DRAW;
 
