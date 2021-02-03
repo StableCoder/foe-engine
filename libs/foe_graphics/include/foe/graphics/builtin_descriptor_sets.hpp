@@ -18,9 +18,9 @@
 #define FOE_GRAPHICS_BUILTIN_DESCRIPTOR_SETS_HPP
 
 #include <foe/graphics/export.h>
-#include <vulkan/vulkan.h>
 
 #include <array>
+#include <string>
 #include <string_view>
 
 enum foeBuiltinDescriptorSetLayoutFlagBits {
@@ -42,38 +42,6 @@ enum foeDescriptorSetLayoutIndex {
     TessellationEvaluationShader = 5,
     GeometryShader = 6,
     FragmentShader = 7,
-};
-
-class foeDescriptorSetLayoutPool;
-
-/** Special builtin DescriptorSetLayouts and 'dummy' set
- *
- * These are core items that are integral to how most of the rendering and shared across many
- * generated shader programs.
- */
-class foeBuiltinDescriptorSets {
-  public:
-    FOE_GFX_EXPORT auto initialize(VkDevice device,
-                                   foeDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
-        -> VkResult;
-    FOE_GFX_EXPORT void deinitialize(VkDevice device);
-
-    FOE_GFX_EXPORT auto getBuiltinLayout(
-        foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> VkDescriptorSetLayout;
-
-    FOE_GFX_EXPORT auto getBuiltinSetLayoutIndex(
-        foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept -> uint32_t;
-
-    FOE_GFX_EXPORT auto getDummyLayout() const noexcept -> VkDescriptorSetLayout;
-    FOE_GFX_EXPORT auto getDummySet() const noexcept -> VkDescriptorSet;
-
-  private:
-    std::array<VkDescriptorSetLayout, 3> mBuiltinLayouts;
-
-    VkDescriptorPool mDescriptorPool{VK_NULL_HANDLE};
-
-    VkDescriptorSetLayout mDummyLayout{VK_NULL_HANDLE};
-    VkDescriptorSet mDummySet{VK_NULL_HANDLE};
 };
 
 #endif // FOE_GRAPHICS_BUILTIN_DESCRIPTOR_SETS_HPP

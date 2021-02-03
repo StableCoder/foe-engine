@@ -16,7 +16,7 @@
 
 #include <foe/graphics/vk/pipeline_pool.hpp>
 
-#include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/vk/builtin_descriptor_sets.hpp>
 #include <vk_error_code.hpp>
 
 #include <array>

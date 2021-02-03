@@ -1,6 +1,7 @@
 target_sources(
   foe_graphics_vk
   PRIVATE backend.c
+          builtin_descriptor_sets_public.cpp
           debug_callback.cpp
           error_colour_image.cpp
           error_depth_stencil_image.cpp
