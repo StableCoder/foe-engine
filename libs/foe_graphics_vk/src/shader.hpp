@@ -18,6 +18,7 @@
 #define FOE_GRAPHICS_VK_SHADER_HPP
 
 #include <foe/graphics/shader.hpp>
+#include <vulkan/vulkan.h>
 
 struct foeGfxVkShader {
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts = 0;

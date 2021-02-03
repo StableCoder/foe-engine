@@ -19,6 +19,7 @@
 
 #include <foe/graphics/vk/mesh.hpp>
 #include <vk_mem_alloc.h>
+#include <vulkan/vulkan.h>
 
 struct foeGfxVkMesh {
     VkBuffer vertexBuffer{VK_NULL_HANDLE};
