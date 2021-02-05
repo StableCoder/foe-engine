@@ -37,8 +37,7 @@ struct foeFragmentDescriptorSourceBase {
 class foeFragmentDescriptor {
   public:
     FOE_RES_EXPORT foeFragmentDescriptor(std::string_view name,
-                                         foeFragmentDescriptorLoader *pLoader,
-                                         foeShader *pShader);
+                                         foeFragmentDescriptorLoader *pLoader);
     FOE_RES_EXPORT ~foeFragmentDescriptor();
 
     FOE_RES_EXPORT std::string_view getName() const noexcept;
@@ -74,7 +73,7 @@ class foeFragmentDescriptor {
     foeFragmentDescriptorLoader *const pLoader;
     std::shared_ptr<foeFragmentDescriptorSourceBase> pSourceData{nullptr};
 
-    foeShader *pShader;
+    foeShader *pShader{nullptr};
 
     std::mutex dataWriteLock{};
     struct Data {

@@ -34,6 +34,7 @@
 #include <foe/resource/material.hpp>
 #include <foe/resource/material_loader.hpp>
 #include <foe/resource/shader_loader.hpp>
+#include <foe/resource/shader_pool.hpp>
 #include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
@@ -118,9 +119,9 @@ struct Application {
 
     // Resources
     foeShaderLoader shaderLoader;
-    foeShader theShader{"theShader", &shaderLoader};
+    foeShaderPool shaderPool;
     foeFragmentDescriptorLoader fragDescriptorLoader;
-    foeFragmentDescriptor theFragDescriptor{"theFragDescriptor", &fragDescriptorLoader, &theShader};
+    foeFragmentDescriptor theFragDescriptor{"theFragDescriptor", &fragDescriptorLoader};
     foeMaterialLoader materialLoader;
     foeMaterial theMaterial{"theMaterial", &materialLoader};
 

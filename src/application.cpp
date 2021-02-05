@@ -167,7 +167,8 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = fragDescriptorLoader.initialize(&fragmentDescriptorPool, asyncTaskFunc);
+    errC = fragDescriptorLoader.initialize(&fragmentDescriptorPool, &shaderLoader, &shaderPool,
+                                           asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -209,6 +210,11 @@ int Application::initialize(int argc, char **argv) {
         };
 
         // Fragment / Material
+        foeShader *pFragShader = new foeShader{"theShader", &shaderLoader};
+        if (!shaderPool.add(pFragShader)) {
+            std::abort();
+        }
+
         theMaterial.incrementUseCount();
     }
 

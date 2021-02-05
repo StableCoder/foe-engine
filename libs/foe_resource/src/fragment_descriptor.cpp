@@ -22,9 +22,8 @@
 #include "log.hpp"
 
 foeFragmentDescriptor::foeFragmentDescriptor(std::string_view name,
-                                             foeFragmentDescriptorLoader *pLoader,
-                                             foeShader *pShader) :
-    name{name}, pLoader{pLoader}, pShader{pShader} {}
+                                             foeFragmentDescriptorLoader *pLoader) :
+    name{name}, pLoader{pLoader} {}
 
 foeFragmentDescriptor::~foeFragmentDescriptor() {
     if (useCount > 0) {

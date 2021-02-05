@@ -17,6 +17,7 @@
 #include <foe/resource/fragment_descriptor_loader.hpp>
 
 #include <foe/resource/shader.hpp>
+#include <foe/resource/shader_pool.hpp>
 
 #include "error_code.hpp"
 #include "log.hpp"
@@ -31,6 +32,8 @@ foeFragmentDescriptorLoader::~foeFragmentDescriptorLoader() {
 
 std::error_code foeFragmentDescriptorLoader::initialize(
     foeGfxVkFragmentDescriptorPool *pFragPool,
+    foeShaderLoader *pShaderLoader,
+    foeShaderPool *pShaderPool,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -39,6 +42,8 @@ std::error_code foeFragmentDescriptorLoader::initialize(
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
     mFragPool = pFragPool;
+    mShaderLoader = pShaderLoader;
+    mShaderPool = pShaderPool;
     mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
@@ -49,7 +54,11 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void foeFragmentDescriptorLoader::deinitialize() { mFragPool = nullptr; }
+void foeFragmentDescriptorLoader::deinitialize() {
+    mShaderPool = nullptr;
+    mShaderLoader = nullptr;
+    mFragPool = nullptr;
+}
 
 bool foeFragmentDescriptorLoader::initialized() const noexcept { return mFragPool != nullptr; }
 
@@ -150,6 +159,25 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
             .attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size()),
             .pAttachments = colourBlendAttachments.data(),
         };
+
+        auto *pFragShader = mShaderPool->find("theShader");
+        if (pFragDescriptor->pShader != pFragShader) {
+            auto oldFragShader = pFragDescriptor->pShader;
+            pFragShader->incrementUseCount();
+            pFragDescriptor->pShader = pFragShader;
+            if (oldFragShader != nullptr) {
+                oldFragShader->decrementUseCount();
+            }
+        }
+
+        if (pFragDescriptor->pShader != nullptr &&
+            pFragDescriptor->pShader->getLoadState() != foeResourceLoadState::Loaded) {
+            // Something we depend upon isn't loaded itself, so leave and request ourselves to
+            // attempt loading again
+            pFragDescriptor->loadState = expected;
+            requestResourceLoad(pFragDescriptor);
+            return;
+        }
 
         foeGfxShader fragShader = (pFragDescriptor->pShader != nullptr)
                                       ? pFragDescriptor->pShader->getShader()

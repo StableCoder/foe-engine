@@ -28,12 +28,17 @@
 #include <system_error>
 #include <vector>
 
+class foeShaderLoader;
+class foeShaderPool;
+
 class foeFragmentDescriptorLoader {
   public:
     FOE_RES_EXPORT ~foeFragmentDescriptorLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
         foeGfxVkFragmentDescriptorPool *pFragPool,
+        foeShaderLoader *pShaderLoader,
+        foeShaderPool *pShaderPool,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -48,6 +53,8 @@ class foeFragmentDescriptorLoader {
     void loadResource(foeFragmentDescriptor *pFragDescriptor);
 
     foeGfxVkFragmentDescriptorPool *mFragPool{nullptr};
+    foeShaderLoader *mShaderLoader{nullptr};
+    foeShaderPool *mShaderPool{nullptr};
 
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
