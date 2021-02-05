@@ -32,6 +32,8 @@ class foeShaderPool {
     FOE_RES_EXPORT bool add(foeShader *pShader);
     FOE_RES_EXPORT foeShader *find(std::string_view name);
 
+    FOE_RES_EXPORT void unloadAll();
+
   private:
     std::shared_mutex mSync;
     std::vector<foeShader *> mShaders;

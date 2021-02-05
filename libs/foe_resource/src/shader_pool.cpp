@@ -52,3 +52,11 @@ foeShader *foeShaderPool::find(std::string_view name) {
 
     return pShader;
 }
+
+void foeShaderPool::unloadAll() {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pShader : mShaders) {
+        pShader->requestUnload();
+    }
+}

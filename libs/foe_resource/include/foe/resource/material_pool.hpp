@@ -32,6 +32,8 @@ class foeMaterialPool {
     FOE_RES_EXPORT bool add(foeMaterial *pShader);
     FOE_RES_EXPORT foeMaterial *find(std::string_view name);
 
+    FOE_RES_EXPORT void unloadAll();
+
   private:
     std::shared_mutex mSync;
     std::vector<foeMaterial *> mMaterials;

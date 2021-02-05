@@ -52,3 +52,11 @@ foeFragmentDescriptor *foeFragmentDescriptorPool::find(std::string_view name) {
 
     return pFragmentDescriptor;
 }
+
+void foeFragmentDescriptorPool::unloadAll() {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pFragmentDescriptor : mFragmentDescriptors) {
+        pFragmentDescriptor->requestUnload();
+    }
+}

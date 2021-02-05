@@ -32,6 +32,8 @@ class foeFragmentDescriptorPool {
     FOE_RES_EXPORT bool add(foeFragmentDescriptor *pShader);
     FOE_RES_EXPORT foeFragmentDescriptor *find(std::string_view name);
 
+    FOE_RES_EXPORT void unloadAll();
+
   private:
     std::shared_mutex mSync;
     std::vector<foeFragmentDescriptor *> mFragmentDescriptors;

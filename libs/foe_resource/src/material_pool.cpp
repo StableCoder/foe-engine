@@ -52,3 +52,11 @@ foeMaterial *foeMaterialPool::find(std::string_view name) {
 
     return pMaterial;
 }
+
+void foeMaterialPool::unloadAll() {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pMaterial : mMaterials) {
+        pMaterial->requestUnload();
+    }
+}

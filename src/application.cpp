@@ -410,7 +410,7 @@ void Application::deinitialize() {
             fragDescriptorLoader.processUnloadRequests();
         }
 
-        shaderLoader.requestResourceLoad(&theShader);
+        shaderPool.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             shaderLoader.processUnloadRequests();
         }
