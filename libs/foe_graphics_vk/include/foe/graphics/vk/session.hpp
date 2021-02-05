@@ -44,6 +44,10 @@ FOE_GFX_EXPORT uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags
 #include <foe/graphics/vk/queue_family.hpp>
 FOE_GFX_EXPORT foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session);
 
+FOE_GFX_EXPORT auto foeGfxVkGetDescriptorSetLayout(
+    foeGfxSession session, VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
+    -> VkDescriptorSetLayout;
+
 FOE_GFX_EXPORT auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
                                              foeBuiltinDescriptorSetLayoutFlags builtinLayout)
     -> VkDescriptorSetLayout;
