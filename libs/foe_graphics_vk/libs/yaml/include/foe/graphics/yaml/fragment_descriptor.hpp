@@ -28,4 +28,12 @@ bool yaml_write_gfx_fragment_descriptor(std::string const &nodeName,
                                         foeGfxVkFragmentDescriptor const *pFragmentDescriptor,
                                         YAML::Node &node);
 
+FOE_GFX_YAML_EXPORT bool yaml_read_gfx_fragment_descriptor(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI);
+
 #endif // FOE_GRAPHICS_YAML_FRAGMENT_DESCRIPTOR_HPP

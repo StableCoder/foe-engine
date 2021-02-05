@@ -94,3 +94,56 @@ bool yaml_write_gfx_shader(std::string const &nodeName,
 
     return true;
 }
+
+bool yaml_read_gfx_shader(std::string const &nodeName,
+                          YAML::Node const &node,
+                          foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
+                          VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
+                          VkPushConstantRange &pushConstantRange) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    try {
+        // Builtin Descriptor Set Layouts
+        builtinSetLayouts = 0;
+        if (auto builtinsNode = subNode["builtin_descriptor_set_layouts"]; builtinsNode) {
+            for (auto it = builtinsNode.begin(); it != builtinsNode.end(); ++it) {
+                std::string builtinName;
+                yaml_read_required("", *it, builtinName);
+
+                builtinSetLayouts |= to_builtin_set_layout(builtinName);
+            }
+        }
+
+        // DescriptorSetLayouts
+        descriptorSetLayoutCI = {
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+        };
+        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
+
+        if (auto layoutNode = subNode["descriptor_set_layout"]; layoutNode) {
+            yaml_read_optional("", subNode, descriptorSetLayoutCI);
+
+            if (auto bindingsNode = subNode["bindings"]; bindingsNode) {
+                for (auto const &it : bindingsNode) {
+                    VkDescriptorSetLayoutBinding data{};
+                    yaml_read_required("", it, data);
+
+                    setLayoutBindings.emplace_back(data);
+                }
+            }
+        }
+        descriptorSetLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+        descriptorSetLayoutCI.pBindings = setLayoutBindings.data();
+
+        // Push Constant Range
+        pushConstantRange = {};
+        yaml_read_optional("push_constant_range", subNode, pushConstantRange);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return true;
+}

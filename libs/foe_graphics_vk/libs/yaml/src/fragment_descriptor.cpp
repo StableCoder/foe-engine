@@ -65,3 +65,54 @@ bool yaml_write_gfx_fragment_descriptor(std::string const &nodeName,
 
     return true;
 }
+
+bool yaml_read_gfx_fragment_descriptor(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    try {
+        // Rasterization
+        rasterizationSCI = VkPipelineRasterizationStateCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+        };
+        bool hasRasterization = yaml_read_optional("rasterization", subNode, rasterizationSCI);
+
+        // Depth Stencil
+        depthStencilSCI = VkPipelineDepthStencilStateCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+        };
+        bool hasDepthStencil = yaml_read_optional("depth_stencil", subNode, depthStencilSCI);
+
+        // Colour Blend
+        colourBlendSCI = VkPipelineColorBlendStateCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+        };
+        bool hasColourBlend = yaml_read_optional("colour_blend", subNode, colourBlendSCI);
+
+        /// @todo Implement YAML parsing for VkPipelineColorBlendStateCreateInfo::blendConstants[4]
+
+        colourBlendAttachments.clear();
+        if (auto colourBlendNode = subNode["colour_blend_attachments"]; colourBlendNode) {
+            for (auto it = colourBlendNode.begin(); it != colourBlendNode.end(); ++it) {
+                VkPipelineColorBlendAttachmentState attachmentState;
+                hasColourBlend |= yaml_read_required("", *it, attachmentState);
+
+                colourBlendAttachments.emplace_back(attachmentState);
+            }
+        }
+        colourBlendSCI.attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size());
+        colourBlendSCI.pAttachments = colourBlendAttachments.data();
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return true;
+}
