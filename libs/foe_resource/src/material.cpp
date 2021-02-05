@@ -58,7 +58,7 @@ int foeMaterial::incrementUseCount() noexcept {
 
     // If the count was (presumably 1) and it's in the 'loading' state
     if (newCount == 1 && loadState == foeResourceLoadState::Unloaded) {
-        requestResourceLoad();
+        requestLoad();
     }
 
     return newCount;
@@ -75,6 +75,13 @@ int foeMaterial::decrementUseCount() noexcept {
 
 int foeMaterial::getUseCount() const noexcept { return useCount; }
 
+void foeMaterial::requestLoad() {
+    incrementRefCount();
+    pLoader->requestResourceLoad(this);
+}
+
+void foeMaterial::requestUnload() { pLoader->requestResourceUnload(this); }
+
 foeFragmentDescriptor *foeMaterial::getFragmentDescriptor() const noexcept {
     return data.pFragDescriptor;
 }
@@ -89,9 +96,4 @@ foeGfxVkFragmentDescriptor *foeMaterial::getGfxFragmentDescriptor() const noexce
 
 void foeMaterial::setSourceExternalFile(std::string_view file) {
     pSourceData.reset(new foeMaterialSourceExternalFile{file});
-}
-
-void foeMaterial::requestResourceLoad() {
-    incrementRefCount();
-    pLoader->requestResourceLoad(this);
 }

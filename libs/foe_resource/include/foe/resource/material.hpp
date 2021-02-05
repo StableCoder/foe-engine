@@ -56,6 +56,9 @@ struct foeMaterial {
     FOE_RES_EXPORT int decrementUseCount() noexcept;
     FOE_RES_EXPORT int getUseCount() const noexcept;
 
+    FOE_RES_EXPORT void requestLoad();
+    FOE_RES_EXPORT void requestUnload();
+
     // Specializations
     FOE_RES_EXPORT foeFragmentDescriptor *getFragmentDescriptor() const noexcept;
 
@@ -65,8 +68,6 @@ struct foeMaterial {
 
   private:
     friend foeMaterialLoader;
-
-    void requestResourceLoad();
 
     // General
     std::string name;

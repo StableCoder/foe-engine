@@ -52,6 +52,9 @@ class foeFragmentDescriptor {
     FOE_RES_EXPORT int decrementUseCount() noexcept;
     FOE_RES_EXPORT int getUseCount() const noexcept;
 
+    FOE_RES_EXPORT void requestLoad();
+    FOE_RES_EXPORT void requestUnload();
+
     FOE_RES_EXPORT foeShader *getFragmentShader() const noexcept;
 
     FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getFragmentDescriptor() const noexcept;
@@ -60,8 +63,6 @@ class foeFragmentDescriptor {
 
   private:
     friend foeFragmentDescriptorLoader;
-
-    void requestResourceLoad();
 
     // General
     std::string const name;

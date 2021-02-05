@@ -57,7 +57,7 @@ int foeShader::incrementUseCount() noexcept {
 
     // If the count was (presumably 1) and it's in the 'loading' state
     if (newCount == 1 && loadState == foeResourceLoadState::Unloaded) {
-        requestResourceLoad();
+        requestLoad();
     }
 
     return newCount;
@@ -74,13 +74,15 @@ int foeShader::decrementUseCount() noexcept {
 
 int foeShader::getUseCount() const noexcept { return useCount; }
 
+void foeShader::requestLoad() {
+    incrementRefCount();
+    pLoader->requestResourceLoad(this);
+}
+
+void foeShader::requestUnload() { pLoader->requestResourceUnload(this); }
+
 foeGfxShader foeShader::getShader() const noexcept { return data.shader; }
 
 void foeShader::setSourceExternalFile(std::string_view file) {
     // pSourceData.reset(new foeShaderSourceExternalFile{file});
-}
-
-void foeShader::requestResourceLoad() {
-    incrementRefCount();
-    pLoader->requestResourceLoad(this);
 }

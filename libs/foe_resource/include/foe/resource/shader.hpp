@@ -53,10 +53,11 @@ class foeShader {
 
     FOE_RES_EXPORT void setSourceExternalFile(std::string_view file);
 
+    FOE_RES_EXPORT void requestLoad();
+    FOE_RES_EXPORT void requestUnload();
+
   private:
     friend foeShaderLoader;
-
-    void requestResourceLoad();
 
     // General
     std::string const name;
