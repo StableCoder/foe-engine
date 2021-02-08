@@ -31,6 +31,8 @@ std::string foeResourceErrCategory::message(int ev) const {
         return "FOE_RESOURCE_SUCCESS";
     case FOE_RESOURCE_ERROR_ALREADY_INITIALIZED:
         return "FOE_RESOURCE_ERROR_ALREADY_INITIALIZED";
+    case FOE_RESOURCE_ERROR_IMPORT_FAILED:
+        return "FOE_RESOURCE_ERROR_IMPORT_FAILED";
 
     default:
         if (ev > 0)
