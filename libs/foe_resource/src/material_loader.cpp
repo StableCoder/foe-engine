@@ -99,7 +99,8 @@ void foeMaterialLoader::requestResourceUnload(foeMaterial *pMaterial) {
     std::scoped_lock unloadLock{mUnloadSync};
     std::scoped_lock writeLock{pMaterial->dataWriteLock};
 
-    if (pMaterial->loadState == foeResourceLoadState::Loaded) {
+    // Only unload if it's 'loaded' and useCount is zero
+    if (pMaterial->loadState == foeResourceLoadState::Loaded && pMaterial->getUseCount() == 0) {
         mCurrentUnloadRequests->emplace_back(pMaterial->data);
 
         pMaterial->data = {};

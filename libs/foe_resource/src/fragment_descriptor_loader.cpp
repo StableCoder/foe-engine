@@ -106,7 +106,9 @@ void foeFragmentDescriptorLoader::requestResourceUnload(foeFragmentDescriptor *p
     std::scoped_lock unloadLock{mUnloadSync};
     std::scoped_lock writeLock{pFragDescriptor->dataWriteLock};
 
-    if (pFragDescriptor->loadState == foeResourceLoadState::Loaded) {
+    // Only unload if it's 'loaded' and useCount is zero
+    if (pFragDescriptor->loadState == foeResourceLoadState::Loaded &&
+        pFragDescriptor->getUseCount() == 0) {
         mCurrentUnloadRequests->emplace_back(pFragDescriptor->data);
 
         pFragDescriptor->data = {};

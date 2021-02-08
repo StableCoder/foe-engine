@@ -94,7 +94,8 @@ void foeShaderLoader::requestResourceUnload(foeShader *pShader) {
     std::scoped_lock unloadLock{mUnloadSync};
     std::scoped_lock writeLock{pShader->dataWriteLock};
 
-    if (pShader->loadState == foeResourceLoadState::Loaded) {
+    // Only unload if it's 'loaded' and useCount is zero
+    if (pShader->loadState == foeResourceLoadState::Loaded && pShader->getUseCount() == 0) {
         mCurrentUnloadRequests->emplace_back(pShader->data);
 
         pShader->data = {};
