@@ -21,6 +21,11 @@
 
 #include <filesystem>
 
+/**
+ * @brief Returns the path to the users home directory
+ * @return Home directory path
+ * @note Only Unix, Windows implementations
+ */
 FOE_EXPORT auto foeGetUserHomeDirectory() -> std::filesystem::path;
 
 #endif // FOE_FILESYSTEM_HPP
