@@ -104,7 +104,9 @@ void foeShaderLoader::requestResourceUnload(foeShader *pShader) {
 }
 
 #include "external_shader.hpp"
+#include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
+#include <foe/resource/imex/shader.hpp>
 
 void foeShaderLoader::loadResource(foeShader *pShader) {
     // First, try to enter the 'loading' state
@@ -123,11 +125,27 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
     auto pSourceData = pShader->pSourceData;
     foeGfxShader newShader{FOE_NULL_HANDLE};
 
+    std::string shaderCodeFile;
+    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
+    VkPushConstantRange pushConstantRange;
+
+    // Read in the definition
+    bool read = import_shader_definition(pShader->getName(), shaderCodeFile, builtinSetLayouts,
+                                         descriptorSetLayoutCI, pushConstantRange);
+    if (!read) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
+    }
+
     {
-        auto shaderCode = loadShaderDataFromFile("data/shaders/simple/uv_to_colour.frag.spv");
-        errC = foeGfxVkCreateShader(mGfxSession, 0, shaderCode.size(),
-                                    reinterpret_cast<uint32_t *>(shaderCode.data()), VK_NULL_HANDLE,
-                                    {}, &newShader);
+        auto descriptorSetLayout =
+            foeGfxVkGetDescriptorSetLayout(mGfxSession, &descriptorSetLayoutCI);
+
+        auto shaderCode = loadShaderDataFromFile(shaderCodeFile);
+        errC = foeGfxVkCreateShader(mGfxSession, builtinSetLayouts, shaderCode.size(),
+                                    reinterpret_cast<uint32_t *>(shaderCode.data()),
+                                    descriptorSetLayout, pushConstantRange, &newShader);
         if (errC) {
             goto LOADING_FAILED;
         }

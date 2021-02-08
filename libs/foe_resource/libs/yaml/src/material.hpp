@@ -14,23 +14,20 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_FRAGMENT_DESCRIPTOR_HPP
-#define FOE_RESOURCE_YAML_FRAGMENT_DESCRIPTOR_HPP
+#ifndef MATERIAL_HPP
+#define MATERIAL_HPP
 
-#include <foe/resource/fragment_descriptor.hpp>
-#include <foe/resource/yaml/export.h>
+#include <foe/resource/material.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include <string>
 
-FOE_RES_YAML_EXPORT bool yaml_write_fragment_descriptor_declaration(
-    std::string const &nodeName,
-    foeFragmentDescriptor const *pFragmentDescriptor,
-    YAML::Node &node);
+bool yaml_write_material_declaration(std::string const &nodeName,
+                                     foeMaterial const *pMaterial,
+                                     YAML::Node &node);
 
-FOE_RES_YAML_EXPORT bool yaml_write_fragment_descriptor_definition(
-    std::string const &nodeName,
-    foeFragmentDescriptor const *pFragmentDescriptor,
-    YAML::Node &node);
+bool yaml_write_material_definition(std::string const &nodeName,
+                                    foeMaterial const *pMaterial,
+                                    YAML::Node &node);
 
-#endif // FOE_RESOURCE_YAML_FRAGMENT_DESCRIPTOR_HPP
+#endif // MATERIAL_HPP

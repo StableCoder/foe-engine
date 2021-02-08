@@ -14,11 +14,13 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/fragment_descriptor.hpp>
+#include "fragment_descriptor.hpp"
 
 #include <foe/graphics/yaml/fragment_descriptor.hpp>
-#include <foe/resource/yaml/shader.hpp>
 #include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
+
+#include "shader.hpp"
 
 bool yaml_write_fragment_descriptor_declaration(std::string const &nodeName,
                                                 foeFragmentDescriptor const *pFragmentDescriptor,
@@ -67,6 +69,37 @@ bool yaml_write_fragment_descriptor_definition(std::string const &nodeName,
         node = writeNode;
     } else {
         node[nodeName] = writeNode;
+    }
+
+    return true;
+}
+
+bool yaml_read_fragment_descriptor_definition(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    std::string &fragmentShader,
+    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    try {
+        {
+            auto resNode = subNode["resources"];
+
+            // Resources
+            yaml_read_optional("fragment_shader", resNode, fragmentShader);
+        }
+
+        // Graphics Data
+        yaml_read_gfx_fragment_descriptor("graphics_data", subNode, rasterizationSCI,
+                                          depthStencilSCI, colourBlendAttachments, colourBlendSCI);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
     }
 
     return true;

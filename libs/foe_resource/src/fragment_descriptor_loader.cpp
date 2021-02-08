@@ -116,6 +116,8 @@ void foeFragmentDescriptorLoader::requestResourceUnload(foeFragmentDescriptor *p
     }
 }
 
+#include <foe/resource/imex/fragment_descriptor.hpp>
+
 void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescriptor) {
     // First, try to enter the 'loading' state
     auto expected = pFragDescriptor->loadState.load();
@@ -134,44 +136,45 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
     auto pSourceData = pFragDescriptor->pSourceData;
     foeGfxVkFragmentDescriptor *pNewFragDescriptor{nullptr};
 
-    if (pFragDescriptor->pShader != nullptr &&
-        pFragDescriptor->pShader->getLoadState() != foeResourceLoadState::Loaded) {
-        // Something we depend upon isn't loaded itself, so leave and request ourselves to attempt
-        // loading again
-        pFragDescriptor->loadState = expected;
-        requestResourceLoad(pFragDescriptor);
-        return;
+    std::string fragmentShader;
+
+    VkPipelineRasterizationStateCreateInfo rasterizationSCI;
+    VkPipelineDepthStencilStateCreateInfo depthStencilSCI;
+    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
+    VkPipelineColorBlendStateCreateInfo colourBlendSCI;
+
+    // Read in the definition
+    bool read = import_fragment_descriptor_definition(pFragDescriptor->getName(), fragmentShader,
+                                                      rasterizationSCI, depthStencilSCI,
+                                                      colourBlendAttachments, colourBlendSCI);
+    if (!read) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
     }
 
     {
-        auto rasterization = VkPipelineRasterizationStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
-            .polygonMode = VK_POLYGON_MODE_FILL,
-            .cullMode = VK_CULL_MODE_NONE,
-            .lineWidth = 1.0f,
-        };
-        std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments{
-            VkPipelineColorBlendAttachmentState{
-                .blendEnable = VK_FALSE,
-                .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                  VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
-            }};
-        auto colourBlend = VkPipelineColorBlendStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
-            .attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size()),
-            .pAttachments = colourBlendAttachments.data(),
-        };
+        foeShader *pFragmentShader{nullptr};
+        if (!fragmentShader.empty()) {
+            pFragmentShader = mShaderPool->find(fragmentShader);
+            if (pFragmentShader == nullptr) {
+                pFragmentShader = new foeShader{fragmentShader, mShaderLoader};
+                if (!mShaderPool->add(pFragmentShader)) {
+                    delete pFragmentShader;
+                    pFragmentShader = mShaderPool->find(fragmentShader);
+                }
+            }
+        }
 
-        auto *pFragShader = mShaderPool->find("theShader");
-        if (pFragDescriptor->pShader != pFragShader) {
+        if (pFragDescriptor->pShader != pFragmentShader) {
             auto oldFragShader = pFragDescriptor->pShader;
-            pFragShader->incrementUseCount();
-            pFragDescriptor->pShader = pFragShader;
+            pFragmentShader->incrementUseCount();
+            pFragDescriptor->pShader = pFragmentShader;
             if (oldFragShader != nullptr) {
                 oldFragShader->decrementUseCount();
             }
         }
 
+        // If resources we depend on aren't loaded, then leave, and try to re-load later
         if (pFragDescriptor->pShader != nullptr &&
             pFragDescriptor->pShader->getLoadState() != foeResourceLoadState::Loaded) {
             // Something we depend upon isn't loaded itself, so leave and request ourselves to
@@ -185,7 +188,8 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
                                       ? pFragDescriptor->pShader->getShader()
                                       : FOE_NULL_HANDLE;
 
-        pNewFragDescriptor = mFragPool->get(&rasterization, nullptr, &colourBlend, fragShader);
+        pNewFragDescriptor =
+            mFragPool->get(&rasterizationSCI, nullptr, &colourBlendSCI, fragShader);
     }
 
 LOADING_FAILED:

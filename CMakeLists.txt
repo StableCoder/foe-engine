@@ -99,6 +99,7 @@ target_link_libraries(
           foe_graphics_vk
           foe_model
           foe_resource
+          foe_resource_yaml
           foe_wsi
           foe_yaml
           foe_xr)

@@ -14,10 +14,11 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/material.hpp>
+#include "material.hpp"
 
-#include <foe/resource/yaml/fragment_descriptor.hpp>
 #include <foe/yaml/exception.hpp>
+
+#include "fragment_descriptor.hpp"
 
 bool yaml_write_material_declaration(std::string const &nodeName,
                                      foeMaterial const *pMaterial,
