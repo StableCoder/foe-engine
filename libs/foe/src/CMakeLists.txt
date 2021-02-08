@@ -2,6 +2,7 @@ target_sources(
   foe
   PRIVATE command_string_runner.cpp
           developer_console.cpp
+          filesystem.cpp
           log.cpp
           plugin.cpp
           search_paths_reader.cpp
