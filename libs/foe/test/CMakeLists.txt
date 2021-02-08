@@ -2,7 +2,8 @@
 prepare_catch(COMPILED_CATCH)
 
 # Declaration
-add_executable(test_foe command_string_runner.cpp plugin.cpp thread_pool.cpp)
+add_executable(test_foe command_string_runner.cpp filesystem.cpp plugin.cpp
+                        thread_pool.cpp)
 add_test(NAME FoE-Test COMMAND test_foe)
 
 target_compile_definitions(
