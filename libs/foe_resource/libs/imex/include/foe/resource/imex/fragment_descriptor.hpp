@@ -27,10 +27,13 @@
 FOE_RES_IMEX_EXPORT bool import_fragment_descriptor_definition(
     std::string_view fragmentDescriptorName,
     std::string &fragmentShader,
+    bool &hasRasterizationSCI,
     VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
     VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
-    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
-    VkPipelineColorBlendStateCreateInfo &colourBlendSCI);
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments);
 
 FOE_RES_IMEX_EXPORT bool export_fragment_descriptor_definition(
     foeFragmentDescriptor const *pFragmentDescriptor);

@@ -34,9 +34,12 @@ bool yaml_read_fragment_descriptor_definition(
     std::string const &nodeName,
     YAML::Node const &node,
     std::string &fragmentShader,
+    bool &hasRasterizationSCI,
     VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
     VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
-    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
-    VkPipelineColorBlendStateCreateInfo &colourBlendSCI);
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments);
 
 #endif // FRAGMENT_DESCRIPTOR_HPP

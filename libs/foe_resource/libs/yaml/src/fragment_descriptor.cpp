@@ -78,10 +78,13 @@ bool yaml_read_fragment_descriptor_definition(
     std::string const &nodeName,
     YAML::Node const &node,
     std::string &fragmentShader,
+    bool &hasRasterizationSCI,
     VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
     VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
-    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
-    VkPipelineColorBlendStateCreateInfo &colourBlendSCI) {
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -96,8 +99,9 @@ bool yaml_read_fragment_descriptor_definition(
         }
 
         // Graphics Data
-        yaml_read_gfx_fragment_descriptor("graphics_data", subNode, rasterizationSCI,
-                                          depthStencilSCI, colourBlendAttachments, colourBlendSCI);
+        yaml_read_gfx_fragment_descriptor(
+            "graphics_data", subNode, hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI,
+            depthStencilSCI, hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }

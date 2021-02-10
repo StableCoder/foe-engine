@@ -138,15 +138,22 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
 
     std::string fragmentShader;
 
+    bool hasRasterizationSCI = false;
     VkPipelineRasterizationStateCreateInfo rasterizationSCI;
+    bool hasDepthStencilSCI = false;
     VkPipelineDepthStencilStateCreateInfo depthStencilSCI;
-    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
+    bool hasColourBlendSCI = false;
     VkPipelineColorBlendStateCreateInfo colourBlendSCI;
+    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
 
     // Read in the definition
-    bool read = import_fragment_descriptor_definition(pFragDescriptor->getName(), fragmentShader,
-                                                      rasterizationSCI, depthStencilSCI,
-                                                      colourBlendAttachments, colourBlendSCI);
+    bool read = import_fragment_descriptor_definition(
+        pFragDescriptor->getName(), fragmentShader, hasRasterizationSCI, rasterizationSCI,
+        hasDepthStencilSCI, depthStencilSCI, hasColourBlendSCI, colourBlendSCI,
+        colourBlendAttachments);
+    colourBlendSCI.pAttachments = colourBlendAttachments.data();
+    colourBlendSCI.attachmentCount = colourBlendAttachments.size();
+
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
@@ -189,7 +196,9 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
                                       : FOE_NULL_HANDLE;
 
         pNewFragDescriptor =
-            mFragPool->get(&rasterizationSCI, nullptr, &colourBlendSCI, fragShader);
+            mFragPool->get((hasRasterizationSCI) ? &rasterizationSCI : nullptr,
+                           (hasDepthStencilSCI) ? &depthStencilSCI : nullptr,
+                           (hasColourBlendSCI) ? &colourBlendSCI : nullptr, fragShader);
     }
 
 LOADING_FAILED:

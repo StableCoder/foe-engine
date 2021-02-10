@@ -69,10 +69,13 @@ bool yaml_write_gfx_fragment_descriptor(std::string const &nodeName,
 bool yaml_read_gfx_fragment_descriptor(
     std::string const &nodeName,
     YAML::Node const &node,
+    bool &hasRasterizationSCI,
     VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
     VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
-    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
-    VkPipelineColorBlendStateCreateInfo &colourBlendSCI) {
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -83,27 +86,28 @@ bool yaml_read_gfx_fragment_descriptor(
         rasterizationSCI = VkPipelineRasterizationStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
         };
-        bool hasRasterization = yaml_read_optional("rasterization", subNode, rasterizationSCI);
+        hasRasterizationSCI = yaml_read_optional("rasterization", subNode, rasterizationSCI);
 
         // Depth Stencil
         depthStencilSCI = VkPipelineDepthStencilStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
         };
-        bool hasDepthStencil = yaml_read_optional("depth_stencil", subNode, depthStencilSCI);
+        hasDepthStencilSCI = yaml_read_optional("depth_stencil", subNode, depthStencilSCI);
 
         // Colour Blend
         colourBlendSCI = VkPipelineColorBlendStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
         };
-        bool hasColourBlend = yaml_read_optional("colour_blend", subNode, colourBlendSCI);
+        hasColourBlendSCI = yaml_read_optional("colour_blend", subNode, colourBlendSCI);
 
         /// @todo Implement YAML parsing for VkPipelineColorBlendStateCreateInfo::blendConstants[4]
 
         colourBlendAttachments.clear();
         if (auto colourBlendNode = subNode["colour_blend_attachments"]; colourBlendNode) {
+            hasColourBlendSCI = true;
             for (auto it = colourBlendNode.begin(); it != colourBlendNode.end(); ++it) {
                 VkPipelineColorBlendAttachmentState attachmentState;
-                hasColourBlend |= yaml_read_required("", *it, attachmentState);
+                yaml_read_required("", *it, attachmentState);
 
                 colourBlendAttachments.emplace_back(attachmentState);
             }

@@ -26,10 +26,13 @@
 bool import_fragment_descriptor_definition(
     std::string_view fragmentDescriptorName,
     std::string &fragmentShader,
+    bool &hasRasterizationSCI,
     VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
     VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
-    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments,
-    VkPipelineColorBlendStateCreateInfo &colourBlendSCI) {
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments) {
     // Open the YAML file
     YAML::Node config;
     try {
@@ -39,9 +42,9 @@ bool import_fragment_descriptor_definition(
     }
 
     try {
-        yaml_read_fragment_descriptor_definition("", config, fragmentShader, rasterizationSCI,
-                                                 depthStencilSCI, colourBlendAttachments,
-                                                 colourBlendSCI);
+        yaml_read_fragment_descriptor_definition(
+            "", config, fragmentShader, hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI,
+            depthStencilSCI, hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
         return false;
