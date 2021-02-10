@@ -114,15 +114,15 @@ template bool yaml_write_optional_vk<VkFlags>(std::string const &typeName,
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
-    FOE_GFX_YAML_EXPORT bool yaml_read_required<T>(std::string const &nodeName,                    \
+    FOE_GFX_YAML_EXPORT void yaml_read_required<T>(std::string const &nodeName,                    \
                                                    YAML::Node const &node, T &data) {              \
-        return yaml_read_required_vk<T>(#T, nodeName, node, data);                                 \
+        yaml_read_required_vk<T>(#T, nodeName, node, data);                                        \
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
-    FOE_GFX_YAML_EXPORT bool yaml_write_required<T>(std::string const &nodeName, T const &data,    \
+    FOE_GFX_YAML_EXPORT void yaml_write_required<T>(std::string const &nodeName, T const &data,    \
                                                     YAML::Node &node) {                            \
-        return yaml_write_required_vk<T>(#T, nodeName, data, node);                                \
+        yaml_write_required_vk<T>(#T, nodeName, data, node);                                       \
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \

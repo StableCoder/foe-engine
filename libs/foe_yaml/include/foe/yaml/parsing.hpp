@@ -25,13 +25,11 @@
  * @param nodeName Name of the Yaml sub-node to operate on. If empty, uses the given node directly.
  * @param node Yaml node that should have the sub-node to operate on
  * @param data [out] Raw data being worked on
- * @return True on a successful read. The function returns an exception if the 'required' node isn't
- * found instead.
  * @exception Throws foeYamlException if the required node is not found or there's an error
  * during parsing
  */
 template <typename T>
-bool yaml_read_required(std::string const &nodeName, YAML::Node const &node, T &data);
+void yaml_read_required(std::string const &nodeName, YAML::Node const &node, T &data);
 
 /** @brief Read a node and parse it into the given data type
  * @param nodeName Name of the Yaml sub-node to operate on. If empty, uses the given node directly.
@@ -48,11 +46,10 @@ bool yaml_read_optional(std::string const &nodeName, YAML::Node const &node, T &
  * @param nodeName Name of the Yaml sub-node to operate on. If empty, uses the given node directly.
  * @param data Data to be encoded
  * @param node [out] Yaml node that should have the sub-node to operate on
- * @return True on a successful write. Returns an exception if there's an error when writing.
  * @exception Throws foeYamlException if there's an exception during encoding
  */
 template <typename T>
-bool yaml_write_required(std::string const &nodeName, T const &data, YAML::Node &node);
+void yaml_write_required(std::string const &nodeName, T const &data, YAML::Node &node);
 
 /** @brief Encodes the given data object to Yaml optionally
  * @param nodeName Name of the Yaml sub-node to operate on. If empty, uses the given node directly.

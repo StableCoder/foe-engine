@@ -41,7 +41,7 @@ bool yaml_read_optional(std::string const &typeName,
 }
 
 template <typename T>
-bool yaml_read_required(std::string const &typeName,
+void yaml_read_required(std::string const &typeName,
                         std::string const &nodeName,
                         YAML::Node const &node,
                         T &data) {
@@ -49,12 +49,10 @@ bool yaml_read_required(std::string const &typeName,
         throw foeYamlException(nodeName + " - Required node not found to parse as '" + typeName +
                                "'");
     }
-
-    return true;
 }
 
 template <typename T>
-bool yaml_write_required(std::string const &typeName,
+void yaml_write_required(std::string const &typeName,
                          std::string const &nodeName,
                          T const &data,
                          YAML::Node &node) {
@@ -67,8 +65,6 @@ bool yaml_write_required(std::string const &typeName,
     } catch (...) {
         throw foeYamlException(nodeName + " - Failed to serialize node as '" + typeName + "'");
     }
-
-    return true;
 }
 
 template <typename T>
@@ -81,14 +77,16 @@ bool yaml_write_optional(std::string const &typeName,
         return false;
     }
 
-    return yaml_write_required(typeName, nodeName, data, node);
+    yaml_write_required(typeName, nodeName, data, node);
+
+    return true;
 }
 
 #define INSTANTIATION(T)                                                                           \
     template <>                                                                                    \
-    FOE_YAML_EXPORT bool yaml_read_required<T>(std::string const &nodeName,                        \
+    FOE_YAML_EXPORT void yaml_read_required<T>(std::string const &nodeName,                        \
                                                YAML::Node const &node, T &data) {                  \
-        return yaml_read_required<T>(#T, nodeName, node, data);                                    \
+        yaml_read_required<T>(#T, nodeName, node, data);                                           \
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
@@ -98,9 +96,9 @@ bool yaml_write_optional(std::string const &typeName,
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
-    FOE_YAML_EXPORT bool yaml_write_required<T>(std::string const &nodeName, T const &data,        \
+    FOE_YAML_EXPORT void yaml_write_required<T>(std::string const &nodeName, T const &data,        \
                                                 YAML::Node &node) {                                \
-        return yaml_write_required<T>(#T, nodeName, data, node);                                   \
+        yaml_write_required<T>(#T, nodeName, data, node);                                          \
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \

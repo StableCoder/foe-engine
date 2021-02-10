@@ -15,7 +15,7 @@ while read LINE; do
         STRUCT="$(cut -d ' ' -f3 <<<"$LINE")"
 
         READ_REQUIRED="template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_required<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
+FOE_GFX_YAML_EXPORT void yaml_read_required<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if(!subNode) {
         throw foeYamlException(nodeName + \" - Required node not found to parse as '$STRUCT'\");
@@ -35,7 +35,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<$STRUCT>(std::string const &nodeName
     try {"
 
         WRITE_REQUIRED="template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_required<$STRUCT>(std::string const& nodeName, $STRUCT const &data, YAML::Node &node) {
+FOE_GFX_YAML_EXPORT void yaml_write_required<$STRUCT>(std::string const& nodeName, $STRUCT const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
     try {"
@@ -53,8 +53,6 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
     } catch (foeYamlException const& e) {
         throw foeYamlException(nodeName + \"::\" + e.what());
     }
-
-    return read;
 }
 "
 
@@ -77,8 +75,6 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
     } else {
         node[nodeName] = writeNode;
     }
-
-    return true;
 }
 "
 
