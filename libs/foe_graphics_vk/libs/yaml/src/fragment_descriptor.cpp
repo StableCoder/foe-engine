@@ -24,6 +24,9 @@ bool yaml_write_gfx_fragment_descriptor(std::string const &nodeName,
                                         YAML::Node &node) {
     YAML::Node writeNode;
 
+    bool dataWritten = pFragmentDescriptor->hasRasterizationSCI ||
+                       pFragmentDescriptor->hasDepthStencilSCI ||
+                       pFragmentDescriptor->hasColourBlendSCI;
     try {
         // Rasterization
         if (pFragmentDescriptor->hasRasterizationSCI)
@@ -35,8 +38,9 @@ bool yaml_write_gfx_fragment_descriptor(std::string const &nodeName,
 
         // Colour Blend
         if (pFragmentDescriptor->hasColourBlendSCI) {
-            yaml_write_optional("colour_blend", VkPipelineColorBlendStateCreateInfo{},
-                                pFragmentDescriptor->mColourBlendSCI, writeNode);
+            YAML::Node colourBlendNode;
+            yaml_write_optional("", VkPipelineColorBlendStateCreateInfo{},
+                                pFragmentDescriptor->mColourBlendSCI, colourBlendNode);
 
             /// @todo Implement YAML parsing for
             /// VkPipelineColorBlendStateCreateInfo::blendConstants[4]
@@ -51,19 +55,23 @@ bool yaml_write_gfx_fragment_descriptor(std::string const &nodeName,
                 arrNode.push_back(attachmentNode);
             }
 
-            writeNode["colour_blend_attachments"] = arrNode;
+            colourBlendNode["colour_blend_attachments"] = arrNode;
+
+            writeNode["colour_blend"] = colourBlendNode;
         }
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
+    if (dataWritten) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
     }
 
-    return true;
+    return dataWritten;
 }
 
 bool yaml_read_gfx_fragment_descriptor(
@@ -98,22 +106,28 @@ bool yaml_read_gfx_fragment_descriptor(
         colourBlendSCI = VkPipelineColorBlendStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
         };
-        hasColourBlendSCI = yaml_read_optional("colour_blend", subNode, colourBlendSCI);
-
-        /// @todo Implement YAML parsing for VkPipelineColorBlendStateCreateInfo::blendConstants[4]
-
-        colourBlendAttachments.clear();
-        if (auto colourBlendNode = subNode["colour_blend_attachments"]; colourBlendNode) {
+        if (auto colourBlendNode = subNode["colour_blend"]; colourBlendNode) {
             hasColourBlendSCI = true;
-            for (auto it = colourBlendNode.begin(); it != colourBlendNode.end(); ++it) {
-                VkPipelineColorBlendAttachmentState attachmentState;
-                yaml_read_required("", *it, attachmentState);
+            yaml_read_optional("", colourBlendNode, colourBlendSCI);
 
-                colourBlendAttachments.emplace_back(attachmentState);
+            /// @todo Implement YAML parsing for
+            /// VkPipelineColorBlendStateCreateInfo::blendConstants[4]
+
+            colourBlendAttachments.clear();
+            if (auto attachmentNode = colourBlendNode["colour_blend_attachments"]; attachmentNode) {
+
+                for (auto it = attachmentNode.begin(); it != attachmentNode.end(); ++it) {
+                    VkPipelineColorBlendAttachmentState attachmentState;
+                    yaml_read_required("", *it, attachmentState);
+
+                    colourBlendAttachments.emplace_back(attachmentState);
+                }
             }
+            colourBlendSCI.attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size());
+            colourBlendSCI.pAttachments = colourBlendAttachments.data();
+        } else {
+            hasColourBlendSCI = false;
         }
-        colourBlendSCI.attachmentCount = static_cast<uint32_t>(colourBlendAttachments.size());
-        colourBlendSCI.pAttachments = colourBlendAttachments.data();
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
