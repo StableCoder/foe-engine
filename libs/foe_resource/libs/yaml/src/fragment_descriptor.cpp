@@ -91,10 +91,8 @@ bool yaml_read_fragment_descriptor_definition(
     }
 
     try {
-        {
-            auto resNode = subNode["resources"];
-
-            // Resources
+        // Resources
+        if (auto resNode = subNode["resources"]; resNode) {
             yaml_read_optional("fragment_shader", resNode, fragmentShader);
         }
 

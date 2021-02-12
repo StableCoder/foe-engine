@@ -34,16 +34,16 @@ bool import_fragment_descriptor_definition(
     VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
     std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments) {
     // Open the YAML file
-    YAML::Node config;
+    YAML::Node rootNode;
     try {
-        config = YAML::LoadFile(std::string{fragmentDescriptorName} + ".yml");
+        rootNode = YAML::LoadFile(std::string{fragmentDescriptorName} + ".yml");
     } catch (YAML::ParserException &e) {
-        FOE_LOG(General, Fatal, "Failed to load config file: {}", e.what());
+        FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
     }
 
     try {
         yaml_read_fragment_descriptor_definition(
-            "", config, fragmentShader, hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI,
+            "", rootNode, fragmentShader, hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI,
             depthStencilSCI, hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
