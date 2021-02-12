@@ -49,27 +49,6 @@ void foeShaderLoader::deinitialize() { mGfxSession = FOE_NULL_HANDLE; }
 
 bool foeShaderLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
 
-void foeShaderLoader::processLoadRequests() {
-    if (mLoadRequests.empty()) {
-        return;
-    }
-
-    // Move the current request list to a local variable then unlock it, minimizing time with it
-    // locked.
-    mLoadSync.lock();
-    auto loadRequests = std::move(mLoadRequests);
-    mLoadSync.unlock();
-
-    // Now we'll place all load requests into asynchronous jobs
-    mActiveJobs += loadRequests.size();
-    for (auto pMaterial : loadRequests) {
-        mAsyncJobs([this, pMaterial] {
-            loadResource(pMaterial);
-            --mActiveJobs;
-        });
-    }
-}
-
 void foeShaderLoader::processUnloadRequests() {
     mUnloadSync.lock();
     ++mCurrentUnloadRequests;
@@ -86,8 +65,11 @@ void foeShaderLoader::processUnloadRequests() {
 }
 
 void foeShaderLoader::requestResourceLoad(foeShader *pShader) {
-    std::scoped_lock lock{mLoadSync};
-    mLoadRequests.emplace_back(pShader);
+    ++mActiveJobs;
+    mAsyncJobs([this, pShader] {
+        loadResource(pShader);
+        --mActiveJobs;
+    });
 }
 
 void foeShaderLoader::requestResourceUnload(foeShader *pShader) {

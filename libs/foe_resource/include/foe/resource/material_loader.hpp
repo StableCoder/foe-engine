@@ -41,7 +41,6 @@ class foeMaterialLoader {
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processLoadRequests();
     FOE_RES_EXPORT void processUnloadRequests();
 
     FOE_RES_EXPORT void requestResourceLoad(foeMaterial *pMaterial);
@@ -55,9 +54,6 @@ class foeMaterialLoader {
 
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
-
-    std::mutex mLoadSync{};
-    std::vector<foeMaterial *> mLoadRequests{};
 
     std::mutex mUnloadSync{};
     std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>

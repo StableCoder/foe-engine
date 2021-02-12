@@ -58,27 +58,6 @@ void foeMaterialLoader::deinitialize() {
 
 bool foeMaterialLoader::initialized() const noexcept { return static_cast<bool>(mAsyncJobs); }
 
-void foeMaterialLoader::processLoadRequests() {
-    if (mLoadRequests.empty()) {
-        return;
-    }
-
-    // Move the current request list to a local variable then unlock it, minimizing time with it
-    // locked.
-    mLoadSync.lock();
-    auto loadRequests = std::move(mLoadRequests);
-    mLoadSync.unlock();
-
-    // Now we'll place all load requests into asynchronous jobs
-    mActiveJobs += loadRequests.size();
-    for (auto pMaterial : loadRequests) {
-        mAsyncJobs([this, pMaterial] {
-            loadResource(pMaterial);
-            --mActiveJobs;
-        });
-    }
-}
-
 void foeMaterialLoader::processUnloadRequests() {
     mUnloadSync.lock();
     ++mCurrentUnloadRequests;
@@ -94,8 +73,11 @@ void foeMaterialLoader::processUnloadRequests() {
 }
 
 void foeMaterialLoader::requestResourceLoad(foeMaterial *pMaterial) {
-    std::scoped_lock lock{mLoadSync};
-    mLoadRequests.emplace_back(pMaterial);
+    ++mActiveJobs;
+    mAsyncJobs([this, pMaterial] {
+        loadResource(pMaterial);
+        --mActiveJobs;
+    });
 }
 
 void foeMaterialLoader::requestResourceUnload(foeMaterial *pMaterial) {

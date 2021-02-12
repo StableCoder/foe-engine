@@ -607,11 +607,6 @@ int Application::mainloop() {
 #endif
         }
 
-        // Resource load requests
-        shaderLoader.processLoadRequests();
-        fragDescriptorLoader.processLoadRequests();
-        materialLoader.processLoadRequests();
-
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
         if (VK_SUCCESS == vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,

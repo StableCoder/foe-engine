@@ -62,27 +62,6 @@ void foeFragmentDescriptorLoader::deinitialize() {
 
 bool foeFragmentDescriptorLoader::initialized() const noexcept { return mFragPool != nullptr; }
 
-void foeFragmentDescriptorLoader::processLoadRequests() {
-    if (mLoadRequests.empty()) {
-        return;
-    }
-
-    // Move the current request list to a local variable then unlock it, minimizing time with it
-    // locked.
-    mLoadSync.lock();
-    auto loadRequests = std::move(mLoadRequests);
-    mLoadSync.unlock();
-
-    // Now we'll place all load requests into asynchronous jobs
-    mActiveJobs += loadRequests.size();
-    for (auto pFragDescriptor : loadRequests) {
-        mAsyncJobs([this, pFragDescriptor] {
-            loadResource(pFragDescriptor);
-            --mActiveJobs;
-        });
-    }
-}
-
 void foeFragmentDescriptorLoader::processUnloadRequests() {
     mUnloadSync.lock();
     ++mCurrentUnloadRequests;
@@ -98,8 +77,11 @@ void foeFragmentDescriptorLoader::processUnloadRequests() {
 }
 
 void foeFragmentDescriptorLoader::requestResourceLoad(foeFragmentDescriptor *pFragDescriptor) {
-    std::scoped_lock lock{mLoadSync};
-    mLoadRequests.emplace_back(pFragDescriptor);
+    ++mActiveJobs;
+    mAsyncJobs([this, pFragDescriptor] {
+        loadResource(pFragDescriptor);
+        --mActiveJobs;
+    });
 }
 
 void foeFragmentDescriptorLoader::requestResourceUnload(foeFragmentDescriptor *pFragDescriptor) {
