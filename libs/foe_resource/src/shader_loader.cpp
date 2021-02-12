@@ -174,7 +174,7 @@ LOADING_FAILED:
         // If there was active old data that we just wrote over, send it to be unloaded
         {
             std::scoped_lock unloadLock{mUnloadSync};
-            mCurrentUnloadRequests->emplace_back(pShader->data);
+            mCurrentUnloadRequests->emplace_back(oldData);
         }
     }
 
