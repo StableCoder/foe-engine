@@ -23,7 +23,22 @@
 
 #include <fstream>
 
-bool import_material_definition(std::string_view materialName, std::string &fragDescriptorName) {}
+bool import_material_definition(std::string_view materialName, std::string &fragDescriptorName) {
+    // Open the YAML file
+    YAML::Node rootNode;
+    try {
+        rootNode = YAML::LoadFile(std::string{materialName} + ".yml");
+    } catch (YAML::ParserException &e) {
+        FOE_LOG(General, Fatal, "Failed to load config file: {}", e.what());
+    }
+
+    try {
+        return yaml_read_material_definition("", rootNode, fragDescriptorName);
+    } catch (foeYamlException const &e) {
+        FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
+        return false;
+    }
+}
 
 bool export_material_definition(foeMaterial const *pMaterial) {
     YAML::Node definition;

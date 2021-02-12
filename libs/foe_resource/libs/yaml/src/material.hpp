@@ -30,4 +30,8 @@ bool yaml_write_material_definition(std::string const &nodeName,
                                     foeMaterial const *pMaterial,
                                     YAML::Node &node);
 
+bool yaml_read_material_definition(std::string const &nodeName,
+                                   YAML::Node const &node,
+                                   std::string &fragmentDescriptor);
+
 #endif // MATERIAL_HPP

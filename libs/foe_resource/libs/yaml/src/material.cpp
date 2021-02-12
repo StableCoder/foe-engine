@@ -17,6 +17,7 @@
 #include "material.hpp"
 
 #include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
 
 #include "fragment_descriptor.hpp"
 
@@ -65,6 +66,26 @@ bool yaml_write_material_definition(std::string const &nodeName,
         node = writeNode;
     } else {
         node[nodeName] = writeNode;
+    }
+
+    return true;
+}
+
+bool yaml_read_material_definition(std::string const &nodeName,
+                                   YAML::Node const &node,
+                                   std::string &fragmentDescriptor) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    try {
+        // Resources
+        if (auto resNode = subNode["resources"]; resNode) {
+            yaml_read_optional("fragment_descriptor", resNode, fragmentDescriptor);
+        }
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
     }
 
     return true;
