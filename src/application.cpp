@@ -173,7 +173,7 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = materialLoader.initialize(asyncTaskFunc);
+    errC = materialLoader.initialize(&fragDescriptorLoader, &fragDescriptorPool, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -411,7 +411,7 @@ void Application::deinitialize() {
             materialLoader.processUnloadRequests();
         }
 
-        fragDescriptorLoader.requestResourceUnload(&theFragDescriptor);
+        fragDescriptorPool.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             fragDescriptorLoader.processUnloadRequests();
         }
@@ -610,7 +610,7 @@ int Application::mainloop() {
         // Resource load requests
         shaderLoader.processLoadRequests();
         fragDescriptorLoader.processLoadRequests();
-        materialLoader.processLoadRequests(&theFragDescriptor);
+        materialLoader.processLoadRequests();
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();

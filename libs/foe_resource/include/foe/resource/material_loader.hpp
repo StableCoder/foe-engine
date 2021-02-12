@@ -18,7 +18,6 @@
 #define FOE_RESOURCE_MATERIAL_LOADER_HPP
 
 #include <foe/graphics/type_defs.hpp>
-#include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/material.hpp>
 
@@ -28,23 +27,31 @@
 #include <system_error>
 #include <vector>
 
+class foeFragmentDescriptorLoader;
+class foeFragmentDescriptorPool;
+
 class foeMaterialLoader {
   public:
     FOE_RES_EXPORT ~foeMaterialLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
+        foeFragmentDescriptorLoader *pFragmentDescriptorLoader,
+        foeFragmentDescriptorPool *pFragmentDescriptorPool,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processLoadRequests(foeFragmentDescriptor *pFragDescriptor);
+    FOE_RES_EXPORT void processLoadRequests();
     FOE_RES_EXPORT void processUnloadRequests();
 
     FOE_RES_EXPORT void requestResourceLoad(foeMaterial *pMaterial);
     FOE_RES_EXPORT void requestResourceUnload(foeMaterial *pMaterial);
 
   private:
-    void loadResource(foeMaterial *pMaterial, foeFragmentDescriptor *pFragDescriptor);
+    void loadResource(foeMaterial *pMaterial);
+
+    foeFragmentDescriptorLoader *mFragmentDescriptorLoader{nullptr};
+    foeFragmentDescriptorPool *mFragmentDescriptorPool{nullptr};
 
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;

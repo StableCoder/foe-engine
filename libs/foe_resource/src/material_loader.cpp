@@ -17,6 +17,7 @@
 #include <foe/resource/material_loader.hpp>
 
 #include <foe/resource/fragment_descriptor.hpp>
+#include <foe/resource/fragment_descriptor_pool.hpp>
 #include <foe/resource/material.hpp>
 
 #include "error_code.hpp"
@@ -30,6 +31,8 @@ foeMaterialLoader::~foeMaterialLoader() {
 }
 
 std::error_code foeMaterialLoader::initialize(
+    foeFragmentDescriptorLoader *pFragmentDescriptorLoader,
+    foeFragmentDescriptorPool *pFragmentDescriptorPool,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -37,6 +40,8 @@ std::error_code foeMaterialLoader::initialize(
 
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
+    mFragmentDescriptorLoader = pFragmentDescriptorLoader;
+    mFragmentDescriptorPool = pFragmentDescriptorPool;
     mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
@@ -53,7 +58,7 @@ void foeMaterialLoader::deinitialize() {
 
 bool foeMaterialLoader::initialized() const noexcept { return static_cast<bool>(mAsyncJobs); }
 
-void foeMaterialLoader::processLoadRequests(foeFragmentDescriptor *pFragDescriptor) {
+void foeMaterialLoader::processLoadRequests() {
     if (mLoadRequests.empty()) {
         return;
     }
@@ -67,8 +72,8 @@ void foeMaterialLoader::processLoadRequests(foeFragmentDescriptor *pFragDescript
     // Now we'll place all load requests into asynchronous jobs
     mActiveJobs += loadRequests.size();
     for (auto pMaterial : loadRequests) {
-        mAsyncJobs([this, pMaterial, pFragDescriptor] {
-            loadResource(pMaterial, pFragDescriptor);
+        mAsyncJobs([this, pMaterial] {
+            loadResource(pMaterial);
             --mActiveJobs;
         });
     }
@@ -84,9 +89,7 @@ void foeMaterialLoader::processUnloadRequests() {
     mUnloadSync.unlock();
 
     for (auto &data : unloadRequests) {
-        data.pFragDescriptor->decrementUseCount();
-        data.pFragDescriptor->decrementRefCount();
-        // @todo Implement Material unloading when stuff to unload (after shader added)
+        // Nothing to do yet
     }
 }
 
@@ -101,15 +104,16 @@ void foeMaterialLoader::requestResourceUnload(foeMaterial *pMaterial) {
 
     // Only unload if it's 'loaded' and useCount is zero
     if (pMaterial->loadState == foeResourceLoadState::Loaded && pMaterial->getUseCount() == 0) {
-        mCurrentUnloadRequests->emplace_back(pMaterial->data);
+        mCurrentUnloadRequests->emplace_back(std::move(pMaterial->data));
 
         pMaterial->data = {};
         pMaterial->loadState = foeResourceLoadState::Unloaded;
     }
 }
 
-void foeMaterialLoader::loadResource(foeMaterial *pMaterial,
-                                     foeFragmentDescriptor *pFragDescriptor) {
+#include <foe/resource/imex/material.hpp>
+
+void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     // First, try to enter the 'loading' state
     auto expected = pMaterial->loadState.load();
     while (expected != foeResourceLoadState::Loading) {
@@ -123,39 +127,94 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial,
     }
 
     std::error_code errC;
-    foeFragmentDescriptor *pNewFragDescriptor{pFragDescriptor};
+    std::string fragmentDescriptorName;
+    foeMaterial::SubResources subResources;
 
-    pNewFragDescriptor->incrementRefCount();
-    pNewFragDescriptor->incrementUseCount();
+    bool read = import_material_definition(pMaterial->getName(), fragmentDescriptorName);
+    if (!read) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
+    }
+
+    { // Resource Dependencies
+        // Fragment Descriptor
+        if (!fragmentDescriptorName.empty()) {
+            subResources.pFragmentDescriptor =
+                mFragmentDescriptorPool->find(fragmentDescriptorName);
+            if (subResources.pFragmentDescriptor == nullptr) {
+                subResources.pFragmentDescriptor =
+                    new foeFragmentDescriptor{fragmentDescriptorName, mFragmentDescriptorLoader};
+                if (!mFragmentDescriptorPool->add(subResources.pFragmentDescriptor)) {
+                    // Failed to add a 'new' shader, must've been added by another loading process
+                    delete subResources.pFragmentDescriptor;
+                    subResources.pFragmentDescriptor =
+                        mFragmentDescriptorPool->find(fragmentDescriptorName);
+                }
+            }
+            subResources.pFragmentDescriptor->incrementRefCount();
+            subResources.pFragmentDescriptor->incrementUseCount();
+        }
+
+        // Check all sub resources are loaded, if not, then leave and try to reload later.
+        if (subResources.pFragmentDescriptor != nullptr) {
+            if (subResources.pFragmentDescriptor->getLoadState() == foeResourceLoadState::Failed) {
+                // The sub-resource failed to load itself, so set this as failed to load and leave
+                FOE_LOG(foeResource, Error,
+                        "Failed to load foeMaterial '{}', as sub resource foeFragmentDescriptor {} "
+                        "failed to load",
+                        pMaterial->getName(), subResources.pFragmentDescriptor->getName())
+                std::scoped_lock writeLock{pMaterial->dataWriteLock};
+
+                // Reset the loading resources, no longer trying to load this
+                pMaterial->loadingSubResources.reset();
+                pMaterial->loadState = foeResourceLoadState::Failed;
+                return;
+            } else if (subResources.pFragmentDescriptor->getLoadState() !=
+                       foeResourceLoadState::Loaded) {
+                // Something we depend upon isn't loaded itself, so leave and request ourselves to
+                // attempt loading again
+                std::scoped_lock writeLock{pMaterial->dataWriteLock};
+
+                // Overwrite with the new sub-resources we're attempting to load.
+                pMaterial->loadingSubResources = std::move(subResources);
+
+                pMaterial->loadState = expected;
+                requestResourceLoad(pMaterial);
+                return;
+            }
+        }
+    }
+
+    { // Using the sub-resources that are loaded, and definition data, create the resource
+    }
 
 LOADING_FAILED:
     if (errC) {
         FOE_LOG(foeResource, Error, "Failed to load foeMaterial {} with error {}:{}",
                 static_cast<void *>(pMaterial), errC.value(), errC.message())
 
+        pMaterial->loadingSubResources.reset();
         pMaterial->loadState = foeResourceLoadState::Failed;
-
-        pNewFragDescriptor->decrementUseCount();
-        pNewFragDescriptor->decrementRefCount();
     } else {
         foeMaterial::Data oldData;
         foeMaterial::Data newData{
-            .pFragDescriptor = pFragDescriptor,
+            .subResources = std::move(subResources),
         };
 
         // Secure the resource, copy any old data out, and set the new data/state
         {
             std::scoped_lock writeLock{pMaterial->dataWriteLock};
 
-            oldData = pMaterial->data;
-            pMaterial->data = newData;
+            oldData = std::move(pMaterial->data);
+            pMaterial->data = std::move(newData);
+            pMaterial->loadingSubResources.reset();
             pMaterial->loadState = foeResourceLoadState::Loaded;
         }
 
         // If there was active old data that we just wrote over, send it to be unloaded
         {
             std::scoped_lock unloadLock{mUnloadSync};
-            mCurrentUnloadRequests->emplace_back(pMaterial->data);
+            mCurrentUnloadRequests->emplace_back(std::move(oldData));
         }
     }
 

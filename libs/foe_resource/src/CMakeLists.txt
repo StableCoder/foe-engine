@@ -8,6 +8,7 @@ target_sources(
           log.cpp
           material_loader.cpp
           material_pool.cpp
+          material_subresources.cpp
           material.cpp
           shader_loader.cpp
           shader_pool.cpp

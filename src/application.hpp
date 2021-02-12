@@ -31,6 +31,7 @@
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <foe/resource/fragment_descriptor_loader.hpp>
+#include <foe/resource/fragment_descriptor_pool.hpp>
 #include <foe/resource/material.hpp>
 #include <foe/resource/material_loader.hpp>
 #include <foe/resource/shader_loader.hpp>
@@ -121,7 +122,8 @@ struct Application {
     foeShaderLoader shaderLoader;
     foeShaderPool shaderPool;
     foeFragmentDescriptorLoader fragDescriptorLoader;
-    foeFragmentDescriptor theFragDescriptor{"theFragDescriptor", &fragDescriptorLoader};
+    foeFragmentDescriptorPool fragDescriptorPool;
+    // foeFragmentDescriptor theFragDescriptor{"theFragDescriptor", &fragDescriptorLoader};
     foeMaterialLoader materialLoader;
     foeMaterial theMaterial{"theMaterial", &materialLoader};
 

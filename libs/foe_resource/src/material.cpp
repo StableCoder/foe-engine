@@ -83,12 +83,12 @@ void foeMaterial::requestLoad() {
 void foeMaterial::requestUnload() { pLoader->requestResourceUnload(this); }
 
 foeFragmentDescriptor *foeMaterial::getFragmentDescriptor() const noexcept {
-    return data.pFragDescriptor;
+    return data.subResources.pFragmentDescriptor;
 }
 
 foeGfxVkFragmentDescriptor *foeMaterial::getGfxFragmentDescriptor() const noexcept {
-    if (data.pFragDescriptor != nullptr) {
-        return data.pFragDescriptor->getFragmentDescriptor();
+    if (data.subResources.pFragmentDescriptor != nullptr) {
+        return data.subResources.pFragmentDescriptor->getFragmentDescriptor();
     }
 
     return nullptr;

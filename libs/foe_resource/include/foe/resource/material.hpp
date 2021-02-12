@@ -57,6 +57,21 @@ struct foeMaterial {
   private:
     friend foeMaterialLoader;
 
+    struct SubResources {
+        foeFragmentDescriptor *pFragmentDescriptor{nullptr};
+
+        SubResources() = default;
+        ~SubResources();
+
+        SubResources(SubResources const &) = delete;
+        SubResources &operator=(SubResources const &) = delete;
+
+        SubResources(SubResources &&);
+        SubResources &operator=(SubResources &&);
+
+        void reset();
+    };
+
     // General
     std::string name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
@@ -67,8 +82,9 @@ struct foeMaterial {
     foeMaterialLoader *pLoader;
 
     std::mutex dataWriteLock{};
+    SubResources loadingSubResources;
     struct Data {
-        foeFragmentDescriptor *pFragDescriptor;
+        SubResources subResources;
     };
     Data data{};
 };
