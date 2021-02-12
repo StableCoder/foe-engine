@@ -93,7 +93,3 @@ foeGfxVkFragmentDescriptor *foeMaterial::getGfxFragmentDescriptor() const noexce
 
     return nullptr;
 }
-
-void foeMaterial::setSourceExternalFile(std::string_view file) {
-    pSourceData.reset(new foeMaterialSourceExternalFile{file});
-}

@@ -30,10 +30,6 @@
 class foeShader;
 class foeFragmentDescriptorLoader;
 
-struct foeFragmentDescriptorSourceBase {
-    virtual ~foeFragmentDescriptorSourceBase() = default;
-};
-
 class foeFragmentDescriptor {
   public:
     FOE_RES_EXPORT foeFragmentDescriptor(std::string_view name,
@@ -57,8 +53,6 @@ class foeFragmentDescriptor {
     FOE_RES_EXPORT foeShader *getFragmentShader() const noexcept;
 
     FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getFragmentDescriptor() const noexcept;
-
-    FOE_RES_EXPORT void setSourceExternalFile(std::string_view file);
 
   private:
     friend foeFragmentDescriptorLoader;
@@ -87,8 +81,6 @@ class foeFragmentDescriptor {
     // Specialization
     foeFragmentDescriptorLoader *const pLoader;
 
-    std::shared_ptr<foeFragmentDescriptorSourceBase> pSourceData{nullptr};
-
     std::mutex dataWriteLock{};
 
     // Used to keep tabs on sub-resources if we're still loading this resource.
@@ -96,7 +88,6 @@ class foeFragmentDescriptor {
 
     struct Data {
         SubResources loaded;
-        foeFragmentDescriptorSourceBase *pLoadedSource;
         foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
     };
     Data data{};

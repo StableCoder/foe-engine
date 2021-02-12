@@ -123,7 +123,6 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial,
     }
 
     std::error_code errC;
-    auto pSourceData = pMaterial->pSourceData;
     foeFragmentDescriptor *pNewFragDescriptor{pFragDescriptor};
 
     pNewFragDescriptor->incrementRefCount();
@@ -141,7 +140,6 @@ LOADING_FAILED:
     } else {
         foeMaterial::Data oldData;
         foeMaterial::Data newData{
-            .pLoadedSource = pSourceData.get(),
             .pFragDescriptor = pFragDescriptor,
         };
 
@@ -155,7 +153,7 @@ LOADING_FAILED:
         }
 
         // If there was active old data that we just wrote over, send it to be unloaded
-        if (oldData.pLoadedSource != nullptr) {
+        {
             std::scoped_lock unloadLock{mUnloadSync};
             mCurrentUnloadRequests->emplace_back(pMaterial->data);
         }

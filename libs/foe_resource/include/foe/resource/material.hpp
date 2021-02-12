@@ -30,16 +30,6 @@
 class foeMaterialLoader;
 class foeFragmentDescriptor;
 
-struct foeMaterialSourceBase {
-    virtual ~foeMaterialSourceBase() = default;
-};
-
-struct foeMaterialSourceExternalFile : public foeMaterialSourceBase {
-    foeMaterialSourceExternalFile(std::string_view file) : file{file} {}
-
-    std::string file;
-};
-
 struct foeMaterial {
   public:
     FOE_RES_EXPORT foeMaterial(std::string_view name, foeMaterialLoader *pLoader);
@@ -64,8 +54,6 @@ struct foeMaterial {
 
     FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getGfxFragmentDescriptor() const noexcept;
 
-    FOE_RES_EXPORT void setSourceExternalFile(std::string_view file);
-
   private:
     friend foeMaterialLoader;
 
@@ -77,11 +65,9 @@ struct foeMaterial {
 
     // Specialization
     foeMaterialLoader *pLoader;
-    std::shared_ptr<foeMaterialSourceBase> pSourceData{nullptr};
 
     std::mutex dataWriteLock{};
     struct Data {
-        foeMaterialSourceBase *pLoadedSource;
         foeFragmentDescriptor *pFragDescriptor;
     };
     Data data{};

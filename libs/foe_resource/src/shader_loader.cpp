@@ -122,7 +122,6 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
     }
 
     std::error_code errC;
-    auto pSourceData = pShader->pSourceData;
     foeGfxShader newShader{FOE_NULL_HANDLE};
 
     std::string shaderCodeFile;
@@ -160,7 +159,6 @@ LOADING_FAILED:
     } else {
         foeShader::Data oldData;
         foeShader::Data newData{
-            .pLoadedSource = pSourceData.get(),
             .shader = newShader,
         };
 
@@ -174,7 +172,7 @@ LOADING_FAILED:
         }
 
         // If there was active old data that we just wrote over, send it to be unloaded
-        if (oldData.pLoadedSource != nullptr) {
+        {
             std::scoped_lock unloadLock{mUnloadSync};
             mCurrentUnloadRequests->emplace_back(pShader->data);
         }

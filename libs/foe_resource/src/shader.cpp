@@ -82,7 +82,3 @@ void foeShader::requestLoad() {
 void foeShader::requestUnload() { pLoader->requestResourceUnload(this); }
 
 foeGfxShader foeShader::getShader() const noexcept { return data.shader; }
-
-void foeShader::setSourceExternalFile(std::string_view file) {
-    // pSourceData.reset(new foeShaderSourceExternalFile{file});
-}

@@ -29,10 +29,6 @@
 
 class foeShaderLoader;
 
-struct foeShaderSourceBase {
-    virtual ~foeShaderSourceBase() = default;
-};
-
 class foeShader {
   public:
     FOE_RES_EXPORT foeShader(std::string_view name, foeShaderLoader *pLoader);
@@ -51,8 +47,6 @@ class foeShader {
 
     FOE_RES_EXPORT foeGfxShader getShader() const noexcept;
 
-    FOE_RES_EXPORT void setSourceExternalFile(std::string_view file);
-
     FOE_RES_EXPORT void requestLoad();
     FOE_RES_EXPORT void requestUnload();
 
@@ -67,11 +61,9 @@ class foeShader {
 
     // Specialization
     foeShaderLoader *const pLoader;
-    std::shared_ptr<foeShaderSourceBase> pSourceData{nullptr};
 
     std::mutex dataWriteLock{};
     struct Data {
-        foeShaderSourceBase *pLoadedSource;
         foeGfxShader shader;
     };
     Data data{};

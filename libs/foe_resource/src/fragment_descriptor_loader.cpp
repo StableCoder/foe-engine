@@ -93,7 +93,7 @@ void foeFragmentDescriptorLoader::processUnloadRequests() {
     mUnloadSync.unlock();
 
     for (auto &data : unloadRequests) {
-        // @todo Implement foeFragmentDescriptor unloading when stuff to unload (after shader added)
+        // Nothing to do, compiles out
     }
 }
 
@@ -133,7 +133,6 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
     }
 
     std::error_code errC;
-    auto pSourceData = pFragDescriptor->pSourceData;
     foeGfxVkFragmentDescriptor *pNewFragDescriptor{nullptr};
 
     std::string fragmentShader;
@@ -231,7 +230,6 @@ LOADING_FAILED:
         foeFragmentDescriptor::Data oldData;
         foeFragmentDescriptor::Data newData{
             .loaded = std::move(loadingSubResources),
-            .pLoadedSource = pSourceData.get(),
             .pGfxFragDescriptor = pNewFragDescriptor,
         };
 
@@ -246,7 +244,7 @@ LOADING_FAILED:
         }
 
         // If there was active old data that we just wrote over, send it to be unloaded
-        if (oldData.pLoadedSource != nullptr) {
+        {
             std::scoped_lock unloadLock{mUnloadSync};
             mCurrentUnloadRequests->emplace_back(std::move(oldData));
         }
