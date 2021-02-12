@@ -63,6 +63,21 @@ class foeFragmentDescriptor {
   private:
     friend foeFragmentDescriptorLoader;
 
+    struct SubResources {
+        foeShader *pFragmentShader{nullptr};
+
+        SubResources() = default;
+        ~SubResources();
+
+        SubResources(SubResources const &) = delete;
+        SubResources &operator=(SubResources const &) = delete;
+
+        SubResources(SubResources &&);
+        SubResources &operator=(SubResources &&);
+
+        void reset();
+    };
+
     // General
     std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
@@ -71,12 +86,16 @@ class foeFragmentDescriptor {
 
     // Specialization
     foeFragmentDescriptorLoader *const pLoader;
+
     std::shared_ptr<foeFragmentDescriptorSourceBase> pSourceData{nullptr};
 
-    foeShader *pShader{nullptr};
-
     std::mutex dataWriteLock{};
+
+    // Used to keep tabs on sub-resources if we're still loading this resource.
+    SubResources loading;
+
     struct Data {
+        SubResources loaded;
         foeFragmentDescriptorSourceBase *pLoadedSource;
         foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
     };

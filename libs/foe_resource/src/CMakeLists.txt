@@ -3,6 +3,7 @@ target_sources(
   PRIVATE error_code.cpp
           fragment_descriptor_loader.cpp
           fragment_descriptor_pool.cpp
+          fragment_descriptor_subresources.cpp
           fragment_descriptor.cpp
           log.cpp
           material_loader.cpp

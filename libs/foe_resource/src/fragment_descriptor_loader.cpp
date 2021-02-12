@@ -109,7 +109,7 @@ void foeFragmentDescriptorLoader::requestResourceUnload(foeFragmentDescriptor *p
     // Only unload if it's 'loaded' and useCount is zero
     if (pFragDescriptor->loadState == foeResourceLoadState::Loaded &&
         pFragDescriptor->getUseCount() == 0) {
-        mCurrentUnloadRequests->emplace_back(pFragDescriptor->data);
+        mCurrentUnloadRequests->emplace_back(std::move(pFragDescriptor->data));
 
         pFragDescriptor->data = {};
         pFragDescriptor->loadState = foeResourceLoadState::Unloaded;
@@ -145,6 +145,7 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
     bool hasColourBlendSCI = false;
     VkPipelineColorBlendStateCreateInfo colourBlendSCI;
     std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
+    foeFragmentDescriptor::SubResources loadingSubResources{};
 
     // Read in the definition
     bool read = import_fragment_descriptor_definition(
@@ -159,40 +160,57 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
         goto LOADING_FAILED;
     }
 
-    {
-        foeShader *pFragmentShader{nullptr};
+    { //  Resource Dependencies
+        // Fragment Shader
         if (!fragmentShader.empty()) {
-            pFragmentShader = mShaderPool->find(fragmentShader);
-            if (pFragmentShader == nullptr) {
-                pFragmentShader = new foeShader{fragmentShader, mShaderLoader};
-                if (!mShaderPool->add(pFragmentShader)) {
-                    delete pFragmentShader;
-                    pFragmentShader = mShaderPool->find(fragmentShader);
+            loadingSubResources.pFragmentShader = mShaderPool->find(fragmentShader);
+            if (loadingSubResources.pFragmentShader == nullptr) {
+                loadingSubResources.pFragmentShader = new foeShader{fragmentShader, mShaderLoader};
+                if (!mShaderPool->add(loadingSubResources.pFragmentShader)) {
+                    // Failed to add a 'new' shader, must've been added by another loading process
+                    delete loadingSubResources.pFragmentShader;
+                    loadingSubResources.pFragmentShader = mShaderPool->find(fragmentShader);
                 }
             }
+            loadingSubResources.pFragmentShader->incrementRefCount();
+            loadingSubResources.pFragmentShader->incrementUseCount();
         }
 
-        if (pFragDescriptor->pShader != pFragmentShader) {
-            auto oldFragShader = pFragDescriptor->pShader;
-            pFragmentShader->incrementUseCount();
-            pFragDescriptor->pShader = pFragmentShader;
-            if (oldFragShader != nullptr) {
-                oldFragShader->decrementUseCount();
+        // Check all sub resources are loaded, if not, then leave and try to reload later.
+        if (loadingSubResources.pFragmentShader != nullptr) {
+            if (loadingSubResources.pFragmentShader->getLoadState() ==
+                foeResourceLoadState::Failed) {
+                // The sub-resource failed to load itself, so set this as failed to load and leave
+                FOE_LOG(foeResource, Error,
+                        "Failed to load foeFragmentDescriptor {}, as sub resource foeShader {} "
+                        "failed to load",
+                        static_cast<void *>(pFragDescriptor),
+                        static_cast<void *>(loadingSubResources.pFragmentShader))
+                std::scoped_lock writeLock{pFragDescriptor->dataWriteLock};
+
+                // Reset the loading resources, no longer trying to load this
+                pFragDescriptor->loading.reset();
+                pFragDescriptor->loadState = foeResourceLoadState::Failed;
+                return;
+            } else if (loadingSubResources.pFragmentShader->getLoadState() !=
+                       foeResourceLoadState::Loaded) {
+                // Something we depend upon isn't loaded itself, so leave and request ourselves to
+                // attempt loading again
+                std::scoped_lock writeLock{pFragDescriptor->dataWriteLock};
+
+                // Overwrite with the new sub-resources we're attempting to load.
+                pFragDescriptor->loading = std::move(loadingSubResources);
+
+                pFragDescriptor->loadState = expected;
+                requestResourceLoad(pFragDescriptor);
+                return;
             }
         }
+    }
 
-        // If resources we depend on aren't loaded, then leave, and try to re-load later
-        if (pFragDescriptor->pShader != nullptr &&
-            pFragDescriptor->pShader->getLoadState() != foeResourceLoadState::Loaded) {
-            // Something we depend upon isn't loaded itself, so leave and request ourselves to
-            // attempt loading again
-            pFragDescriptor->loadState = expected;
-            requestResourceLoad(pFragDescriptor);
-            return;
-        }
-
-        foeGfxShader fragShader = (pFragDescriptor->pShader != nullptr)
-                                      ? pFragDescriptor->pShader->getShader()
+    { // Using the sub-resources that are loaded, and the definition data, create the resource
+        foeGfxShader fragShader = (loadingSubResources.pFragmentShader != nullptr)
+                                      ? loadingSubResources.pFragmentShader->getShader()
                                       : FOE_NULL_HANDLE;
 
         pNewFragDescriptor =
@@ -206,10 +224,13 @@ LOADING_FAILED:
         FOE_LOG(foeResource, Error, "Failed to load foeFragmentDescriptor {} with error {}:{}",
                 static_cast<void *>(pFragDescriptor), errC.value(), errC.message())
 
+        pFragDescriptor->loading.reset();
+
         pFragDescriptor->loadState = foeResourceLoadState::Failed;
     } else {
         foeFragmentDescriptor::Data oldData;
         foeFragmentDescriptor::Data newData{
+            .loaded = std::move(loadingSubResources),
             .pLoadedSource = pSourceData.get(),
             .pGfxFragDescriptor = pNewFragDescriptor,
         };
@@ -218,15 +239,16 @@ LOADING_FAILED:
         {
             std::scoped_lock writeLock{pFragDescriptor->dataWriteLock};
 
-            oldData = pFragDescriptor->data;
-            pFragDescriptor->data = newData;
+            oldData = std::move(pFragDescriptor->data);
+            pFragDescriptor->data = std::move(newData);
+            pFragDescriptor->loading.reset();
             pFragDescriptor->loadState = foeResourceLoadState::Loaded;
         }
 
         // If there was active old data that we just wrote over, send it to be unloaded
         if (oldData.pLoadedSource != nullptr) {
             std::scoped_lock unloadLock{mUnloadSync};
-            mCurrentUnloadRequests->emplace_back(pFragDescriptor->data);
+            mCurrentUnloadRequests->emplace_back(std::move(oldData));
         }
     }
 

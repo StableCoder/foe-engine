@@ -60,8 +60,6 @@ int foeFragmentDescriptor::incrementUseCount() noexcept {
 
     // If the count was (presumably 1) and it's in the 'loading' state
     if (newCount == 1 && loadState == foeResourceLoadState::Unloaded) {
-        if (pShader != nullptr)
-            pShader->incrementUseCount();
         requestLoad();
     }
 
@@ -86,7 +84,9 @@ void foeFragmentDescriptor::requestLoad() {
 
 void foeFragmentDescriptor::requestUnload() { pLoader->requestResourceUnload(this); }
 
-foeShader *foeFragmentDescriptor::getFragmentShader() const noexcept { return pShader; }
+foeShader *foeFragmentDescriptor::getFragmentShader() const noexcept {
+    return data.loaded.pFragmentShader;
+}
 
 foeGfxVkFragmentDescriptor *foeFragmentDescriptor::getFragmentDescriptor() const noexcept {
     return data.pGfxFragDescriptor;
