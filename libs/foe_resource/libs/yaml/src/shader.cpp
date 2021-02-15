@@ -70,6 +70,7 @@ bool yaml_read_shader_definition(std::string const &nodeName,
                                  std::string &shaderCode,
                                  foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
                                  VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
+                                 std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
                                  VkPushConstantRange &pushConstantRange) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -86,7 +87,7 @@ bool yaml_read_shader_definition(std::string const &nodeName,
 
         // Gfx Data Node
         yaml_read_gfx_shader("graphics_data", subNode, builtinSetLayouts, descriptorSetLayoutCI,
-                             pushConstantRange);
+                             setLayoutBindings, pushConstantRange);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }

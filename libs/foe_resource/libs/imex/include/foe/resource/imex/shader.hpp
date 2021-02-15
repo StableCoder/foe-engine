@@ -30,6 +30,7 @@ FOE_RES_IMEX_EXPORT bool import_shader_definition(
     std::string &shaderCodeFile,
     foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
     VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
+    std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
     VkPushConstantRange &pushConstantRange);
 
 FOE_RES_IMEX_EXPORT bool export_shader_definition(foeGfxSession session, foeShader const *pShader);

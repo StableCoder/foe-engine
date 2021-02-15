@@ -109,11 +109,13 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
     std::string shaderCodeFile;
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
     VkPushConstantRange pushConstantRange;
 
     // Read in the definition
-    bool read = import_shader_definition(pShader->getName(), shaderCodeFile, builtinSetLayouts,
-                                         descriptorSetLayoutCI, pushConstantRange);
+    bool read =
+        import_shader_definition(pShader->getName(), shaderCodeFile, builtinSetLayouts,
+                                 descriptorSetLayoutCI, setLayoutBindings, pushConstantRange);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;

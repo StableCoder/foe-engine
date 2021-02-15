@@ -99,6 +99,7 @@ bool yaml_read_gfx_shader(std::string const &nodeName,
                           YAML::Node const &node,
                           foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
                           VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
+                          std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
                           VkPushConstantRange &pushConstantRange) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -121,12 +122,12 @@ bool yaml_read_gfx_shader(std::string const &nodeName,
         descriptorSetLayoutCI = {
             .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         };
-        std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
+        setLayoutBindings.clear();
 
         if (auto layoutNode = subNode["descriptor_set_layout"]; layoutNode) {
             yaml_read_optional("", subNode, descriptorSetLayoutCI);
 
-            if (auto bindingsNode = subNode["bindings"]; bindingsNode) {
+            if (auto bindingsNode = layoutNode["bindings"]; bindingsNode) {
                 for (auto const &it : bindingsNode) {
                     VkDescriptorSetLayoutBinding data{};
                     yaml_read_required("", it, data);

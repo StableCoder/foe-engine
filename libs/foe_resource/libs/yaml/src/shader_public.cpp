@@ -27,6 +27,7 @@ bool import_shader_definition(std::string_view shaderName,
                               std::string &shaderCodeFile,
                               foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
                               VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
+                              std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
                               VkPushConstantRange &pushConstantRange) {
     // Open the YAML file
     YAML::Node config;
@@ -38,7 +39,7 @@ bool import_shader_definition(std::string_view shaderName,
 
     try {
         yaml_read_shader_definition("", config, shaderCodeFile, builtinSetLayouts,
-                                    descriptorSetLayoutCI, pushConstantRange);
+                                    descriptorSetLayoutCI, setLayoutBindings, pushConstantRange);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeShader definition: {}", e.what());
         return false;

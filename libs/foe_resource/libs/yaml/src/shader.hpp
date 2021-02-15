@@ -38,6 +38,7 @@ bool yaml_read_shader_definition(std::string const &nodeName,
                                  std::string &shaderCode,
                                  foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
                                  VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
+                                 std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
                                  VkPushConstantRange &pushConstantRange);
 
 #endif // SHADER_HPP
