@@ -5,6 +5,9 @@ target_sources(
           fragment_descriptor_pool.cpp
           fragment_descriptor_subresources.cpp
           fragment_descriptor.cpp
+          image_loader.cpp
+          image_pool.cpp
+          image.cpp
           log.cpp
           material_loader.cpp
           material_pool.cpp

@@ -173,6 +173,11 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
+    errC = imageLoader.initialize(gfxSession, asyncTaskFunc);
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
     errC = materialLoader.initialize(&fragDescriptorLoader, &fragDescriptorPool, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -411,6 +416,11 @@ void Application::deinitialize() {
             materialLoader.processUnloadRequests();
         }
 
+        imagePool.unloadAll();
+        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
+            imageLoader.processUnloadRequests();
+        }
+
         fragDescriptorPool.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             fragDescriptorLoader.processUnloadRequests();
@@ -465,6 +475,7 @@ void Application::deinitialize() {
 
     // Resource Deinitialization
     materialLoader.deinitialize();
+    imageLoader.deinitialize();
     fragDescriptorLoader.deinitialize();
     shaderLoader.deinitialize();
 
@@ -700,7 +711,11 @@ int Application::mainloop() {
             // Resource Unload Requests
             shaderLoader.processUnloadRequests();
             fragDescriptorLoader.processUnloadRequests();
+            imageLoader.processUnloadRequests();
             materialLoader.processUnloadRequests();
+
+            // Resource Load Requests
+            imageLoader.processLoadRequests();
 
             // Set camera descriptors
             bool camerasRemade = false;
