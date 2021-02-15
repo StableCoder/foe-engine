@@ -32,4 +32,9 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(
     VkPushConstantRange pushConstantRange,
     foeGfxShader *pShader);
 
+FOE_GFX_EXPORT auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader)
+    -> VkDescriptorSetLayout;
+
+FOE_GFX_EXPORT auto foeGfxVkGetShaderPushConstantRange(foeGfxShader shader) -> VkPushConstantRange;
+
 #endif // FOE_GRPAHICS_VK_SHADER_HPP

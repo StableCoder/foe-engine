@@ -83,3 +83,15 @@ foeBuiltinDescriptorSetLayoutFlags foeGfxShaderGetBuiltinDescriptorSetLayouts(fo
 
     return pShader->builtinSetLayouts;
 }
+
+auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader) -> VkDescriptorSetLayout {
+    auto *pShader = shader_from_handle(shader);
+
+    return pShader->descriptorSetLayout;
+}
+
+auto foeGfxVkGetShaderPushConstantRange(foeGfxShader shader) -> VkPushConstantRange {
+    auto *pShader = shader_from_handle(shader);
+
+    return pShader->pushConstantRange;
+}
