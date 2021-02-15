@@ -463,6 +463,11 @@ void Application::deinitialize() {
     }
 #endif
 
+    // Resource Deinitialization
+    materialLoader.deinitialize();
+    fragDescriptorLoader.deinitialize();
+    shaderLoader.deinitialize();
+
     for (auto &it : frameData) {
         it.destroy(foeGfxVkGetDevice(gfxSession));
     }
