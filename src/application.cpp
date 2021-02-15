@@ -220,7 +220,10 @@ int Application::initialize(int argc, char **argv) {
             std::abort();
         }
 
-        theMaterial.incrementUseCount();
+        foeMaterial *theMaterial = new foeMaterial{"theMaterial", &materialLoader};
+        materialPool.add(theMaterial);
+        theMaterial->incrementUseCount();
+        theMaterial->decrementUseCount();
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -410,8 +413,7 @@ void Application::deinitialize() {
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
     { // Resource Unloading
-        theMaterial.decrementUseCount();
-        materialLoader.requestResourceUnload(&theMaterial);
+        materialPool.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             materialLoader.processUnloadRequests();
         }
@@ -876,8 +878,9 @@ int Application::mainloop() {
                                         uint32_t descriptorSetLayoutCount;
                                         VkPipeline pipeline;
 
+                                        auto *theMaterial = materialPool.find("theMaterial");
                                         auto *pFragDescriptor =
-                                            theMaterial.getGfxFragmentDescriptor();
+                                            theMaterial->getGfxFragmentDescriptor();
                                         if (pFragDescriptor == nullptr)
                                             goto SKIP_XR_DRAW;
 
@@ -1071,7 +1074,8 @@ int Application::mainloop() {
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
 
-                        auto *pFragDescriptor = theMaterial.getGfxFragmentDescriptor();
+                        auto *theMaterial = materialPool.find("theMaterial");
+                        auto *pFragDescriptor = theMaterial->getGfxFragmentDescriptor();
                         if (pFragDescriptor == nullptr)
                             goto SKIP_DRAW;
 

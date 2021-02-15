@@ -29,7 +29,7 @@ class foeMaterialPool {
   public:
     FOE_RES_EXPORT ~foeMaterialPool();
 
-    FOE_RES_EXPORT bool add(foeMaterial *pShader);
+    FOE_RES_EXPORT bool add(foeMaterial *pMaterial);
     FOE_RES_EXPORT foeMaterial *find(std::string_view name);
 
     FOE_RES_EXPORT void unloadAll();

@@ -32,12 +32,12 @@
 #include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <foe/resource/fragment_descriptor_loader.hpp>
 #include <foe/resource/fragment_descriptor_pool.hpp>
-#include <foe/resource/material.hpp>
+#include <foe/resource/image_loader.hpp>
+#include <foe/resource/image_pool.hpp>
 #include <foe/resource/material_loader.hpp>
+#include <foe/resource/material_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
 #include <foe/resource/shader_pool.hpp>
-#include <foe/resource/image_pool.hpp>
-#include <foe/resource/image_loader.hpp>
 #include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
@@ -128,7 +128,7 @@ struct Application {
     foeImageLoader imageLoader;
     foeImagePool imagePool;
     foeMaterialLoader materialLoader;
-    foeMaterial theMaterial{"theMaterial", &materialLoader};
+    foeMaterialPool materialPool;
 
     Camera camera;
     CameraDescriptorPool cameraDescriptorPool;
