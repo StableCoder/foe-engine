@@ -53,10 +53,15 @@ INITIALIZATION_FAILED:
 }
 
 void foeMaterialLoader::deinitialize() {
+    mFragmentDescriptorPool = nullptr;
+    mFragmentDescriptorLoader = nullptr;
+
     mAsyncJobs = std::function<void(std::function<void()>)>{};
 }
 
-bool foeMaterialLoader::initialized() const noexcept { return static_cast<bool>(mAsyncJobs); }
+bool foeMaterialLoader::initialized() const noexcept {
+    return mFragmentDescriptorLoader != nullptr;
+}
 
 void foeMaterialLoader::processUnloadRequests() {
     mUnloadSync.lock();
