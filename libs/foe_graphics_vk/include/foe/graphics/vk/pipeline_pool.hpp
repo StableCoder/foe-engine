@@ -23,7 +23,7 @@
 
 #include <vector>
 
-class foeVertexDescriptor;
+class foeGfxVertexDescriptor;
 class foeGfxVkFragmentDescriptor;
 class foeGfxVkBuiltinDescriptorSets;
 
@@ -33,7 +33,7 @@ class foeGfxVkPipelinePool {
     FOE_GFX_EXPORT void deinitialize() noexcept;
     FOE_GFX_EXPORT bool initialized() const noexcept;
 
-    FOE_GFX_EXPORT VkResult getPipeline(foeVertexDescriptor *vertexDescriptor,
+    FOE_GFX_EXPORT VkResult getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
                                         foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                         VkRenderPass renderPass,
                                         uint32_t subpass,
@@ -42,7 +42,7 @@ class foeGfxVkPipelinePool {
                                         VkPipeline *pPipeline);
 
   private:
-    VkResult createPipeline(foeVertexDescriptor *vertexDescriptor,
+    VkResult createPipeline(foeGfxVertexDescriptor *vertexDescriptor,
                             foeGfxVkFragmentDescriptor *fragmentDescriptor,
                             VkRenderPass renderPass,
                             uint32_t subpass,
@@ -52,7 +52,7 @@ class foeGfxVkPipelinePool {
 
     struct Pipeline {
         // Key
-        foeVertexDescriptor *vertexDescriptor;
+        foeGfxVertexDescriptor *vertexDescriptor;
         foeGfxVkFragmentDescriptor *fragmentDescriptor;
 
         VkRenderPass renderPass;

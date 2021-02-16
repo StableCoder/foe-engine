@@ -22,7 +22,7 @@
 
 #include <vector>
 
-struct foeVertexDescriptor {
+struct foeGfxVertexDescriptor {
     auto getBuiltinSetLayouts() const noexcept -> foeBuiltinDescriptorSetLayoutFlags {
         foeBuiltinDescriptorSetLayoutFlags flags = 0;
 

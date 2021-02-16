@@ -53,7 +53,7 @@ void foeGfxVkPipelinePool::deinitialize() noexcept {
 
 bool foeGfxVkPipelinePool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
-VkResult foeGfxVkPipelinePool::getPipeline(foeVertexDescriptor *vertexDescriptor,
+VkResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
                                            foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                            VkRenderPass renderPass,
                                            uint32_t subpass,
@@ -94,7 +94,7 @@ VkResult foeGfxVkPipelinePool::getPipeline(foeVertexDescriptor *vertexDescriptor
     return res;
 }
 
-VkResult foeGfxVkPipelinePool::createPipeline(foeVertexDescriptor *vertexDescriptor,
+VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDescriptor,
                                               foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                               VkRenderPass renderPass,
                                               uint32_t subpass,

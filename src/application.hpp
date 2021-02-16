@@ -111,7 +111,7 @@ struct Application {
     uint32_t frameIndex = 0;
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 
-    foeVertexDescriptor vertexDescriptor;
+    foeGfxVertexDescriptor vertexDescriptor;
 
     foeRenderPassPool renderPassPool;
 
