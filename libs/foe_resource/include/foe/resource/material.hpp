@@ -27,8 +27,9 @@
 #include <string>
 #include <string_view>
 
-class foeMaterialLoader;
 class foeFragmentDescriptor;
+class foeImage;
+class foeMaterialLoader;
 
 struct foeMaterial {
   public:
@@ -54,11 +55,14 @@ struct foeMaterial {
 
     FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getGfxFragmentDescriptor() const noexcept;
 
+    FOE_RES_EXPORT VkDescriptorSet getVkDescriptorSet(uint32_t frameIndex);
+
   private:
     friend foeMaterialLoader;
 
     struct SubResources {
         foeFragmentDescriptor *pFragmentDescriptor{nullptr};
+        foeImage *pImage{nullptr};
 
         SubResources() = default;
         ~SubResources();
@@ -70,6 +74,7 @@ struct foeMaterial {
         SubResources &operator=(SubResources &&);
 
         void reset();
+        foeResourceLoadState getWorstSubresourceState() const noexcept;
     };
 
     // General
@@ -85,6 +90,7 @@ struct foeMaterial {
     SubResources loadingSubResources;
     struct Data {
         SubResources subResources;
+        VkDescriptorSet materialDescriptorSet;
     };
     Data data{};
 };

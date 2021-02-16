@@ -26,7 +26,8 @@
 #include <vector>
 
 FOE_RES_IMEX_EXPORT bool import_material_definition(std::string_view materialName,
-                                                    std::string &fragDescriptorName);
+                                                    std::string &fragDescriptorName,
+                                                    std::string &image);
 
 FOE_RES_IMEX_EXPORT bool export_material_definition(foeMaterial const *pMaterial);
 

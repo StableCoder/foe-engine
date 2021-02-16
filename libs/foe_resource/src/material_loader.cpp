@@ -16,9 +16,13 @@
 
 #include <foe/resource/material_loader.hpp>
 
+#include <foe/graphics/vk/session.hpp>
 #include <foe/resource/fragment_descriptor.hpp>
 #include <foe/resource/fragment_descriptor_pool.hpp>
+#include <foe/resource/image.hpp>
+#include <foe/resource/image_pool.hpp>
 #include <foe/resource/material.hpp>
+#include <vk_error_code.hpp>
 
 #include "error_code.hpp"
 #include "log.hpp"
@@ -33,6 +37,9 @@ foeMaterialLoader::~foeMaterialLoader() {
 std::error_code foeMaterialLoader::initialize(
     foeFragmentDescriptorLoader *pFragmentDescriptorLoader,
     foeFragmentDescriptorPool *pFragmentDescriptorPool,
+    foeImageLoader *pImageLoader,
+    foeImagePool *pImagePool,
+    foeGfxSession session,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -42,7 +49,35 @@ std::error_code foeMaterialLoader::initialize(
 
     mFragmentDescriptorLoader = pFragmentDescriptorLoader;
     mFragmentDescriptorPool = pFragmentDescriptorPool;
+    mImageLoader = pImageLoader;
+    mImagePool = pImagePool;
+
     mAsyncJobs = asynchronousJobs;
+
+    { // VULKAN Descriptor Set Stuff
+        mGfxSession = session;
+
+        VkDescriptorPoolSize size{
+            .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .descriptorCount = 1024,
+        };
+
+        VkDescriptorPoolCreateInfo poolCI{
+            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .maxSets = 1024,
+            .poolSizeCount = 1,
+            .pPoolSizes = &size,
+        };
+
+        VkDevice device = foeGfxVkGetDevice(session);
+        for (auto &it : mDescriptorPools) {
+            VkResult vkRes = vkCreateDescriptorPool(device, &poolCI, nullptr, &it);
+            if (vkRes != VK_SUCCESS) {
+                errC = vkRes;
+                goto INITIALIZATION_FAILED;
+            }
+        }
+    }
 
 INITIALIZATION_FAILED:
     if (errC) {
@@ -53,6 +88,17 @@ INITIALIZATION_FAILED:
 }
 
 void foeMaterialLoader::deinitialize() {
+    { // VULKAN Descriptor Set Stuff
+        for (auto &it : mDescriptorPools) {
+            if (it != VK_NULL_HANDLE)
+                vkDestroyDescriptorPool(foeGfxVkGetDevice(mGfxSession), it, nullptr);
+
+            it = VK_NULL_HANDLE;
+        }
+    }
+
+    mImagePool = nullptr;
+    mImageLoader = nullptr;
     mFragmentDescriptorPool = nullptr;
     mFragmentDescriptorLoader = nullptr;
 
@@ -98,6 +144,57 @@ void foeMaterialLoader::requestResourceUnload(foeMaterial *pMaterial) {
     }
 }
 
+#include <foe/graphics/vk/shader.hpp>
+#include <foe/resource/shader.hpp>
+
+VkDescriptorSet foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterial,
+                                                       uint32_t frameIndex) {
+    if (pMaterial->data.subResources.pImage == nullptr) {
+        return VK_NULL_HANDLE;
+    }
+
+    VkDescriptorSet set;
+    auto vkDevice = foeGfxVkGetDevice(mGfxSession);
+    vkResetDescriptorPool(vkDevice, mDescriptorPools[frameIndex], 0);
+
+    // We have an image to do
+    auto fragShader =
+        pMaterial->data.subResources.pFragmentDescriptor->getFragmentShader()->getShader();
+
+    auto descriptorSetLayout = foeGfxVkGetShaderDescriptorSetLayout(fragShader);
+
+    VkDescriptorSetAllocateInfo setAI{
+        .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+        .descriptorPool = mDescriptorPools[frameIndex],
+        .descriptorSetCount = 1U,
+        .pSetLayouts = &descriptorSetLayout,
+    };
+
+    VkResult vkRes = vkAllocateDescriptorSets(vkDevice, &setAI, &set);
+    if (vkRes != VK_SUCCESS) {
+        std::abort();
+    }
+
+    VkDescriptorImageInfo imageInfo{
+        .sampler = pMaterial->data.subResources.pImage->data.sampler,
+        .imageView = pMaterial->data.subResources.pImage->data.view,
+        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    };
+
+    VkWriteDescriptorSet writeDescriptorSet{
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = set,
+        .dstBinding = 1,
+        .descriptorCount = 1,
+        .descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        .pImageInfo = &imageInfo,
+    };
+
+    vkUpdateDescriptorSets(vkDevice, 1, &writeDescriptorSet, 0, nullptr);
+
+    return set;
+}
+
 #include <foe/resource/imex/material.hpp>
 
 void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
@@ -115,9 +212,10 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
 
     std::error_code errC;
     std::string fragmentDescriptorName;
+    std::string imageName;
     foeMaterial::SubResources subResources;
 
-    bool read = import_material_definition(pMaterial->getName(), fragmentDescriptorName);
+    bool read = import_material_definition(pMaterial->getName(), fragmentDescriptorName, imageName);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
@@ -128,9 +226,11 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
         if (!fragmentDescriptorName.empty()) {
             subResources.pFragmentDescriptor =
                 mFragmentDescriptorPool->find(fragmentDescriptorName);
+
             if (subResources.pFragmentDescriptor == nullptr) {
                 subResources.pFragmentDescriptor =
                     new foeFragmentDescriptor{fragmentDescriptorName, mFragmentDescriptorLoader};
+
                 if (!mFragmentDescriptorPool->add(subResources.pFragmentDescriptor)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete subResources.pFragmentDescriptor;
@@ -138,37 +238,54 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
                         mFragmentDescriptorPool->find(fragmentDescriptorName);
                 }
             }
+
             subResources.pFragmentDescriptor->incrementRefCount();
             subResources.pFragmentDescriptor->incrementUseCount();
         }
 
-        // Check all sub resources are loaded, if not, then leave and try to reload later.
-        if (subResources.pFragmentDescriptor != nullptr) {
-            if (subResources.pFragmentDescriptor->getLoadState() == foeResourceLoadState::Failed) {
-                // The sub-resource failed to load itself, so set this as failed to load and leave
-                FOE_LOG(foeResource, Error,
-                        "Failed to load foeMaterial '{}', as sub resource foeFragmentDescriptor {} "
-                        "failed to load",
-                        pMaterial->getName(), subResources.pFragmentDescriptor->getName())
-                std::scoped_lock writeLock{pMaterial->dataWriteLock};
+        // Image
+        if (!imageName.empty()) {
+            subResources.pImage = mImagePool->find(imageName);
 
-                // Reset the loading resources, no longer trying to load this
-                pMaterial->loadingSubResources.reset();
-                pMaterial->loadState = foeResourceLoadState::Failed;
-                return;
-            } else if (subResources.pFragmentDescriptor->getLoadState() !=
-                       foeResourceLoadState::Loaded) {
-                // Something we depend upon isn't loaded itself, so leave and request ourselves to
-                // attempt loading again
-                std::scoped_lock writeLock{pMaterial->dataWriteLock};
+            if (subResources.pImage == nullptr) {
+                subResources.pImage = new foeImage{imageName, mImageLoader};
 
-                // Overwrite with the new sub-resources we're attempting to load.
-                pMaterial->loadingSubResources = std::move(subResources);
+                if (!mImagePool->add(subResources.pImage)) {
+                    delete subResources.pImage;
 
-                pMaterial->loadState = expected;
-                requestResourceLoad(pMaterial);
-                return;
+                    subResources.pImage = mImagePool->find(imageName);
+                }
             }
+
+            subResources.pImage->incrementRefCount();
+            subResources.pImage->incrementUseCount();
+        }
+
+        // Check all sub resources are loaded, if not, then leave and try to reload later.
+        auto subResourcesState = subResources.getWorstSubresourceState();
+        if (subResourcesState == foeResourceLoadState::Failed) {
+            // The sub-resource failed to load itself, so set this as failed to load and
+            // leave
+            FOE_LOG(foeResource, Error,
+                    "Failed to load foeMaterial '{}', as a sub resource failed to load",
+                    pMaterial->getName())
+            std::scoped_lock writeLock{pMaterial->dataWriteLock};
+
+            // Reset the loading resources, no longer trying to load this
+            pMaterial->loadingSubResources.reset();
+            pMaterial->loadState = foeResourceLoadState::Failed;
+            return;
+        } else if (subResourcesState != foeResourceLoadState::Loaded) {
+            // Something we depend upon isn't loaded itself, so leave and request ourselves
+            // to attempt loading again
+            std::scoped_lock writeLock{pMaterial->dataWriteLock};
+
+            // Overwrite with the new sub-resources we're attempting to load.
+            pMaterial->loadingSubResources = std::move(subResources);
+
+            pMaterial->loadState = expected;
+            requestResourceLoad(pMaterial);
+            return;
         }
     }
 

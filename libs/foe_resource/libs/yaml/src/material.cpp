@@ -73,7 +73,8 @@ bool yaml_write_material_definition(std::string const &nodeName,
 
 bool yaml_read_material_definition(std::string const &nodeName,
                                    YAML::Node const &node,
-                                   std::string &fragmentDescriptor) {
+                                   std::string &fragmentDescriptor,
+                                   std::string &image) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -83,6 +84,7 @@ bool yaml_read_material_definition(std::string const &nodeName,
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
             yaml_read_optional("fragment_descriptor", resNode, fragmentDescriptor);
+            yaml_read_optional("image", resNode, image);
         }
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());

@@ -30,6 +30,7 @@
 #include <string_view>
 
 class foeImageLoader;
+class foeMaterialLoader;
 
 class foeImage {
   public:
@@ -52,6 +53,7 @@ class foeImage {
 
   private:
     friend foeImageLoader;
+    friend foeMaterialLoader;
 
     // General
     std::string const name;

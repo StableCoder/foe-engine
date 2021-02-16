@@ -178,7 +178,8 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = materialLoader.initialize(&fragDescriptorLoader, &fragDescriptorPool, asyncTaskFunc);
+    errC = materialLoader.initialize(&fragDescriptorLoader, &fragDescriptorPool, &imageLoader,
+                                     &imagePool, gfxSession, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -221,6 +222,10 @@ int Application::initialize(int argc, char **argv) {
         }
 
         foeMaterial *theMaterial = new foeMaterial{"theMaterial", &materialLoader};
+        materialPool.add(theMaterial);
+        theMaterial->incrementUseCount();
+        theMaterial->decrementUseCount();
+        theMaterial = new foeMaterial{"theMaterial2", &materialLoader};
         materialPool.add(theMaterial);
         theMaterial->incrementUseCount();
         theMaterial->decrementUseCount();
@@ -877,20 +882,29 @@ int Application::mainloop() {
                                         VkPipelineLayout layout;
                                         uint32_t descriptorSetLayoutCount;
                                         VkPipeline pipeline;
+                                        foeGfxVkFragmentDescriptor *pFragDescriptor;
+                                        auto *theMaterial = materialPool.find("theMaterial2");
 
-                                        auto *theMaterial = materialPool.find("theMaterial");
-                                        auto *pFragDescriptor =
-                                            theMaterial->getGfxFragmentDescriptor();
-                                        if (pFragDescriptor == nullptr)
+                                        if (theMaterial->getLoadState() !=
+                                            foeResourceLoadState::Loaded)
                                             goto SKIP_XR_DRAW;
 
                                         pipelinePool.getPipeline(
-                                            &vertexDescriptor, pFragDescriptor, xrRenderPass, 0,
-                                            &layout, &descriptorSetLayoutCount, &pipeline);
+                                            &vertexDescriptor,
+                                            theMaterial->getGfxFragmentDescriptor(), xrRenderPass,
+                                            0, &layout, &descriptorSetLayoutCount, &pipeline);
 
                                         vkCmdBindDescriptorSets(
                                             commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                             0, 1, &it.camera.descriptor, 0, nullptr);
+
+                                        if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
+                                            set != VK_NULL_HANDLE) {
+                                            vkCmdBindDescriptorSets(
+                                                commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                layout, foeDescriptorSetLayoutIndex::FragmentShader,
+                                                1, &set, 0, nullptr);
+                                        }
 
                                         vkCmdBindPipeline(commandBuffer,
                                                           VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1073,18 +1087,25 @@ int Application::mainloop() {
                         VkPipelineLayout layout;
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
+                        foeGfxVkFragmentDescriptor *pFragDescriptor;
+                        auto *theMaterial = materialPool.find("theMaterial2");
 
-                        auto *theMaterial = materialPool.find("theMaterial");
-                        auto *pFragDescriptor = theMaterial->getGfxFragmentDescriptor();
-                        if (pFragDescriptor == nullptr)
+                        if (theMaterial->getLoadState() != foeResourceLoadState::Loaded)
                             goto SKIP_DRAW;
 
-                        pipelinePool.getPipeline(&vertexDescriptor, pFragDescriptor,
-                                                 swapImageRenderPass, 0, &layout,
-                                                 &descriptorSetLayoutCount, &pipeline);
+                        pipelinePool.getPipeline(
+                            &vertexDescriptor, theMaterial->getGfxFragmentDescriptor(),
+                            swapImageRenderPass, 0, &layout, &descriptorSetLayoutCount, &pipeline);
 
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 0, 1, &camera.descriptor, 0, nullptr);
+
+                        if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
+                            set != VK_NULL_HANDLE) {
+                            vkCmdBindDescriptorSets(
+                                commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                foeDescriptorSetLayoutIndex::FragmentShader, 1, &set, 0, nullptr);
+                        }
 
                         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 

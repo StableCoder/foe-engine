@@ -23,7 +23,9 @@
 
 #include <fstream>
 
-bool import_material_definition(std::string_view materialName, std::string &fragDescriptorName) {
+bool import_material_definition(std::string_view materialName,
+                                std::string &fragDescriptorName,
+                                std::string &image) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
@@ -33,7 +35,7 @@ bool import_material_definition(std::string_view materialName, std::string &frag
     }
 
     try {
-        return yaml_read_material_definition("", rootNode, fragDescriptorName);
+        return yaml_read_material_definition("", rootNode, fragDescriptorName, image);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
         return false;

@@ -17,9 +17,11 @@
 #ifndef FOE_RESOURCE_MATERIAL_LOADER_HPP
 #define FOE_RESOURCE_MATERIAL_LOADER_HPP
 
+#include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/material.hpp>
+#include <vulkan/vulkan.h>
 
 #include <atomic>
 #include <functional>
@@ -29,6 +31,8 @@
 
 class foeFragmentDescriptorLoader;
 class foeFragmentDescriptorPool;
+class foeImageLoader;
+class foeImagePool;
 
 class foeMaterialLoader {
   public:
@@ -37,6 +41,9 @@ class foeMaterialLoader {
     FOE_RES_EXPORT std::error_code initialize(
         foeFragmentDescriptorLoader *pFragmentDescriptorLoader,
         foeFragmentDescriptorPool *pFragmentDescriptorPool,
+        foeImageLoader *pImageLoader,
+        foeImagePool *pImagePool,
+        foeGfxSession session,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -46,11 +53,15 @@ class foeMaterialLoader {
     FOE_RES_EXPORT void requestResourceLoad(foeMaterial *pMaterial);
     FOE_RES_EXPORT void requestResourceUnload(foeMaterial *pMaterial);
 
+    FOE_RES_EXPORT VkDescriptorSet createDescriptorSet(foeMaterial *pMaterial, uint32_t frameIndex);
+
   private:
     void loadResource(foeMaterial *pMaterial);
 
     foeFragmentDescriptorLoader *mFragmentDescriptorLoader{nullptr};
     foeFragmentDescriptorPool *mFragmentDescriptorPool{nullptr};
+    foeImageLoader *mImageLoader{nullptr};
+    foeImagePool *mImagePool{nullptr};
 
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
@@ -59,6 +70,10 @@ class foeMaterialLoader {
     std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
         mUnloadRequestLists{};
     std::vector<foeMaterial::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
+
+    // VULKAN DESCRIPTORS
+    foeGfxSession mGfxSession;
+    std::array<VkDescriptorPool, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> mDescriptorPools{};
 };
 
 #endif // FOE_RESOURCE_MATERIAL_LOADER_HPP

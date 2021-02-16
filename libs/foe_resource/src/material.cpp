@@ -93,3 +93,7 @@ foeGfxVkFragmentDescriptor *foeMaterial::getGfxFragmentDescriptor() const noexce
 
     return nullptr;
 }
+
+VkDescriptorSet foeMaterial::getVkDescriptorSet(uint32_t frameIndex) {
+    return pLoader->createDescriptorSet(this, frameIndex);
+}
