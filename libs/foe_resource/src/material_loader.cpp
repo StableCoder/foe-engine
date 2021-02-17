@@ -58,7 +58,7 @@ std::error_code foeMaterialLoader::initialize(
         mGfxSession = session;
 
         VkDescriptorPoolSize size{
-            .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
             .descriptorCount = 1024,
         };
 
