@@ -7,4 +7,5 @@ target_sources(
           material_public.cpp
           material.cpp
           shader_public.cpp
-          shader.cpp)
+          shader.cpp
+          vertex_descriptor_public.cpp)

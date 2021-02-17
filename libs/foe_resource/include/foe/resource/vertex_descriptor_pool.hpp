@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_FRAGMENT_DESCRIPTOR_POOL_HPP
-#define FOE_RESOURCE_FRAGMENT_DESCRIPTOR_POOL_HPP
+#ifndef FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
+#define FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
 
 #include <foe/resource/export.h>
 
@@ -23,20 +23,20 @@
 #include <string_view>
 #include <vector>
 
-class foeFragmentDescriptor;
+class foeVertexDescriptor;
 
-class foeFragmentDescriptorPool {
+class foeVertexDescriptorPool {
   public:
-    FOE_RES_EXPORT ~foeFragmentDescriptorPool();
+    FOE_RES_EXPORT ~foeVertexDescriptorPool();
 
-    FOE_RES_EXPORT bool add(foeFragmentDescriptor *pFragmentDescriptor);
-    FOE_RES_EXPORT foeFragmentDescriptor *find(std::string_view name);
+    FOE_RES_EXPORT bool add(foeVertexDescriptor *pVertexDescriptor);
+    FOE_RES_EXPORT foeVertexDescriptor *find(std::string_view name);
 
     FOE_RES_EXPORT void unloadAll();
 
   private:
     std::shared_mutex mSync;
-    std::vector<foeFragmentDescriptor *> mFragmentDescriptors;
+    std::vector<foeVertexDescriptor *> mVertexDescriptors;
 };
 
-#endif // FOE_RESOURCE_FRAGMENT_DESCRIPTOR_POOL_HPP
+#endif // FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
