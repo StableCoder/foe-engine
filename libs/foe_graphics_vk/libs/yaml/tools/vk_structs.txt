@@ -82,3 +82,41 @@ typedef struct VkPipelineColorBlendStateCreateInfo {
 #    const VkPipelineColorBlendAttachmentState*    pAttachments;
 #    float                                         blendConstants[4];
 } VkPipelineColorBlendStateCreateInfo;
+
+typedef struct VkVertexInputBindingDescription {
+    uint32_t             binding;
+    uint32_t             stride;
+    VkVertexInputRate    inputRate;
+} VkVertexInputBindingDescription;
+
+typedef struct VkVertexInputAttributeDescription {
+    uint32_t    location;
+    uint32_t    binding;
+    VkFormat    format;
+    uint32_t    offset;
+} VkVertexInputAttributeDescription;
+
+typedef struct VkPipelineVertexInputStateCreateInfo {
+    VkStructureType                             sType;
+    const void*                                 pNext;
+    VkPipelineVertexInputStateCreateFlags       flags;
+#    uint32_t                                    vertexBindingDescriptionCount;
+#    const VkVertexInputBindingDescription*      pVertexBindingDescriptions;
+#    uint32_t                                    vertexAttributeDescriptionCount;
+#    const VkVertexInputAttributeDescription*    pVertexAttributeDescriptions;
+} VkPipelineVertexInputStateCreateInfo;
+
+typedef struct VkPipelineInputAssemblyStateCreateInfo {
+    VkStructureType                            sType;
+    const void*                                pNext;
+    VkPipelineInputAssemblyStateCreateFlags    flags;
+    VkPrimitiveTopology                        topology;
+    VkBool32                                   primitiveRestartEnable;
+} VkPipelineInputAssemblyStateCreateInfo;
+
+typedef struct VkPipelineTessellationStateCreateInfo {
+    VkStructureType                           sType;
+    const void*                               pNext;
+    VkPipelineTessellationStateCreateFlags    flags;
+    uint32_t                                  patchControlPoints;
+} VkPipelineTessellationStateCreateInfo;

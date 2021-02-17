@@ -948,3 +948,484 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateInfo
 
     return addedNode;
 }
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputBindingDescription>(
+    std::string const &nodeName, YAML::Node const &node, VkVertexInputBindingDescription &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName + " - Required node not found to parse as 'VkVertexInputBindingDescription'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("stride", subNode, data.stride);
+        read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, data.inputRate);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputBindingDescription>(
+    std::string const &nodeName, YAML::Node const &node, VkVertexInputBindingDescription &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("stride", subNode, data.stride);
+        read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, data.inputRate);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_write_required<VkVertexInputBindingDescription>(
+    std::string const &nodeName, VkVertexInputBindingDescription const &data, YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required<uint32_t>("binding", data.binding, writeNode);
+        yaml_write_required<uint32_t>("stride", data.stride, writeNode);
+        yaml_write_required<VkVertexInputRate>("inputRate", data.inputRate, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkVertexInputBindingDescription>(
+    std::string const &nodeName,
+    VkVertexInputBindingDescription const &defaultData,
+    VkVertexInputBindingDescription const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |=
+            yaml_write_optional<uint32_t>("binding", defaultData.binding, data.binding, writeNode);
+        addedNode |=
+            yaml_write_optional<uint32_t>("stride", defaultData.stride, data.stride, writeNode);
+        addedNode |= yaml_write_optional<VkVertexInputRate>("inputRate", defaultData.inputRate,
+                                                            data.inputRate, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputAttributeDescription>(
+    std::string const &nodeName, YAML::Node const &node, VkVertexInputAttributeDescription &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkVertexInputAttributeDescription'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional<uint32_t>("location", subNode, data.location);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<VkFormat>("format", subNode, data.format);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputAttributeDescription>(
+    std::string const &nodeName, YAML::Node const &node, VkVertexInputAttributeDescription &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional<uint32_t>("location", subNode, data.location);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<VkFormat>("format", subNode, data.format);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_write_required<VkVertexInputAttributeDescription>(
+    std::string const &nodeName, VkVertexInputAttributeDescription const &data, YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required<uint32_t>("location", data.location, writeNode);
+        yaml_write_required<uint32_t>("binding", data.binding, writeNode);
+        yaml_write_required<VkFormat>("format", data.format, writeNode);
+        yaml_write_required<uint32_t>("offset", data.offset, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkVertexInputAttributeDescription>(
+    std::string const &nodeName,
+    VkVertexInputAttributeDescription const &defaultData,
+    VkVertexInputAttributeDescription const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |= yaml_write_optional<uint32_t>("location", defaultData.location, data.location,
+                                                   writeNode);
+        addedNode |=
+            yaml_write_optional<uint32_t>("binding", defaultData.binding, data.binding, writeNode);
+        addedNode |=
+            yaml_write_optional<VkFormat>("format", defaultData.format, data.format, writeNode);
+        addedNode |=
+            yaml_write_optional<uint32_t>("offset", defaultData.offset, data.offset, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineVertexInputStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineVertexInputStateCreateInfo'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
+            "VkPipelineVertexInputStateCreateFlags", "flags", subNode, data.flags);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineVertexInputStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
+            "VkPipelineVertexInputStateCreateFlags", "flags", subNode, data.flags);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineVertexInputStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineVertexInputStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required_vk<VkPipelineVertexInputStateCreateFlags>(
+            "VkPipelineVertexInputStateCreateFlags", "flags", data.flags, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineVertexInputStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineVertexInputStateCreateInfo const &defaultData,
+    VkPipelineVertexInputStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |= yaml_write_optional_vk<VkPipelineVertexInputStateCreateFlags>(
+            "VkPipelineVertexInputStateCreateFlags", "flags", data.flags, defaultData.flags,
+            writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineInputAssemblyStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineInputAssemblyStateCreateInfo'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
+            "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, data.flags);
+        read |= yaml_read_optional<VkPrimitiveTopology>("topology", subNode, data.topology);
+        read |= yaml_read_optional<VkBool32>("primitiveRestartEnable", subNode,
+                                             data.primitiveRestartEnable);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineInputAssemblyStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
+            "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, data.flags);
+        read |= yaml_read_optional<VkPrimitiveTopology>("topology", subNode, data.topology);
+        read |= yaml_read_optional<VkBool32>("primitiveRestartEnable", subNode,
+                                             data.primitiveRestartEnable);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineInputAssemblyStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineInputAssemblyStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required_vk<VkPipelineInputAssemblyStateCreateFlags>(
+            "VkPipelineInputAssemblyStateCreateFlags", "flags", data.flags, writeNode);
+        yaml_write_required<VkPrimitiveTopology>("topology", data.topology, writeNode);
+        yaml_write_required<VkBool32>("primitiveRestartEnable", data.primitiveRestartEnable,
+                                      writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineInputAssemblyStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineInputAssemblyStateCreateInfo const &defaultData,
+    VkPipelineInputAssemblyStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |= yaml_write_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
+            "VkPipelineInputAssemblyStateCreateFlags", "flags", data.flags, defaultData.flags,
+            writeNode);
+        addedNode |= yaml_write_optional<VkPrimitiveTopology>("topology", defaultData.topology,
+                                                              data.topology, writeNode);
+        addedNode |= yaml_write_optional<VkBool32>("primitiveRestartEnable",
+                                                   defaultData.primitiveRestartEnable,
+                                                   data.primitiveRestartEnable, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineTessellationStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineTessellationStateCreateInfo'");
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
+            "VkPipelineTessellationStateCreateFlags", "flags", subNode, data.flags);
+        read |=
+            yaml_read_optional<uint32_t>("patchControlPoints", subNode, data.patchControlPoints);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineTessellationStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read = false;
+    try {
+        read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
+            "VkPipelineTessellationStateCreateFlags", "flags", subNode, data.flags);
+        read |=
+            yaml_read_optional<uint32_t>("patchControlPoints", subNode, data.patchControlPoints);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return read;
+}
+
+template <>
+FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineTessellationStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineTessellationStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required_vk<VkPipelineTessellationStateCreateFlags>(
+            "VkPipelineTessellationStateCreateFlags", "flags", data.flags, writeNode);
+        yaml_write_required<uint32_t>("patchControlPoints", data.patchControlPoints, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineTessellationStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineTessellationStateCreateInfo const &defaultData,
+    VkPipelineTessellationStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        addedNode |= yaml_write_optional_vk<VkPipelineTessellationStateCreateFlags>(
+            "VkPipelineTessellationStateCreateFlags", "flags", data.flags, defaultData.flags,
+            writeNode);
+        addedNode |=
+            yaml_write_optional<uint32_t>("patchControlPoints", defaultData.patchControlPoints,
+                                          data.patchControlPoints, writeNode);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
