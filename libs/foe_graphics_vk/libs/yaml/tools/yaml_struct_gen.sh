@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 
+if [ "$1" == "" ]; then
+    echo "ERROR: Input file not specified!"
+    exit 1
+fi
+
 OUT_FILE=$1_yaml.cpp
 
 printf "" >$OUT_FILE
