@@ -29,7 +29,6 @@
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
-#include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <foe/resource/fragment_descriptor_loader.hpp>
 #include <foe/resource/fragment_descriptor_pool.hpp>
 #include <foe/resource/image_loader.hpp>
@@ -38,6 +37,9 @@
 #include <foe/resource/material_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
 #include <foe/resource/shader_pool.hpp>
+#include <foe/resource/vertex_descriptor.hpp>
+#include <foe/resource/vertex_descriptor_loader.hpp>
+#include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
@@ -111,18 +113,16 @@ struct Application {
     uint32_t frameIndex = 0;
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 
-    foeGfxVertexDescriptor vertexDescriptor;
-
     foeRenderPassPool renderPassPool;
 
-    foeGfxShader vertShader{FOE_NULL_HANDLE};
-    foeGfxShader fragShader{FOE_NULL_HANDLE};
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
 
     // Resources
     foeShaderLoader shaderLoader;
     foeShaderPool shaderPool;
+    foeVertexDescriptorLoader vertexDescriptorLoader;
+    foeVertexDescriptorPool vertexDescriptorPool;
     foeFragmentDescriptorLoader fragDescriptorLoader;
     foeFragmentDescriptorPool fragDescriptorPool;
     foeImageLoader imageLoader;

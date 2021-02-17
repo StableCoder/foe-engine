@@ -29,7 +29,6 @@
 
 #include "graphics.hpp"
 #include "logging.hpp"
-#include "shader/external_shader.hpp"
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/core.hpp>
@@ -167,6 +166,11 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
+    errC = vertexDescriptorLoader.initialize(&shaderLoader, &shaderPool, asyncTaskFunc);
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
     errC = fragDescriptorLoader.initialize(&fragmentDescriptorPool, &shaderLoader, &shaderPool,
                                            asyncTaskFunc);
     if (errC) {
@@ -197,30 +201,14 @@ int Application::initialize(int argc, char **argv) {
     }
 
     {
-        auto shaderCode = loadShaderDataFromFile("data/shaders/simple/camera_tri.vert.spv");
-        errC =
-            foeGfxVkCreateShader(gfxSession,
-                                 foeBuiltinDescriptorSetLayoutFlagBits::
-                                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX,
-                                 shaderCode.size(), reinterpret_cast<uint32_t *>(shaderCode.data()),
-                                 VK_NULL_HANDLE, {}, &vertShader);
+        // Vertex Descriptor
+        foeVertexDescriptor *theVertexDescriptor =
+            new foeVertexDescriptor{"theVertexDescriptor", &vertexDescriptorLoader};
+        vertexDescriptorPool.add(theVertexDescriptor);
+        theVertexDescriptor->incrementUseCount();
+        theVertexDescriptor->decrementUseCount();
 
-        // Vertex
-        vertexDescriptor.mVertex = vertShader;
-        vertexDescriptor.mVertexInputSCI = VkPipelineVertexInputStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        };
-        vertexDescriptor.mInputAssemblySCI = VkPipelineInputAssemblyStateCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
-        };
-
-        // Fragment / Material
-        foeShader *pFragShader = new foeShader{"theShader", &shaderLoader};
-        if (!shaderPool.add(pFragShader)) {
-            std::abort();
-        }
-
+        // Materials
         foeMaterial *theMaterial = new foeMaterial{"theMaterial", &materialLoader};
         materialPool.add(theMaterial);
         theMaterial->incrementUseCount();
@@ -433,6 +421,11 @@ void Application::deinitialize() {
             fragDescriptorLoader.processUnloadRequests();
         }
 
+        vertexDescriptorPool.unloadAll();
+        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
+            vertexDescriptorLoader.processUnloadRequests();
+        }
+
         shaderPool.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             shaderLoader.processUnloadRequests();
@@ -484,6 +477,7 @@ void Application::deinitialize() {
     materialLoader.deinitialize();
     imageLoader.deinitialize();
     fragDescriptorLoader.deinitialize();
+    vertexDescriptorLoader.deinitialize();
     shaderLoader.deinitialize();
 
     for (auto &it : frameData) {
@@ -496,11 +490,6 @@ void Application::deinitialize() {
     cameraDescriptorPool.deinitialize();
 
     pipelinePool.deinitialize();
-
-    if (fragShader != FOE_NULL_HANDLE)
-        foeGfxDestroyShader(gfxSession, fragShader);
-    if (vertShader != FOE_NULL_HANDLE)
-        foeGfxDestroyShader(gfxSession, vertShader);
 
     renderPassPool.deinitialize();
 
@@ -883,14 +872,19 @@ int Application::mainloop() {
                                         uint32_t descriptorSetLayoutCount;
                                         VkPipeline pipeline;
                                         foeGfxVkFragmentDescriptor *pFragDescriptor;
+                                        auto *theVertexDescriptor =
+                                            vertexDescriptorPool.find("theVertexDescriptor");
                                         auto *theMaterial = materialPool.find("theMaterial2");
 
-                                        if (theMaterial->getLoadState() !=
-                                            foeResourceLoadState::Loaded)
+                                        if (theVertexDescriptor->getLoadState() !=
+                                                foeResourceLoadState::Loaded ||
+                                            theMaterial->getLoadState() !=
+                                                foeResourceLoadState::Loaded)
                                             goto SKIP_XR_DRAW;
 
                                         pipelinePool.getPipeline(
-                                            &vertexDescriptor,
+                                            const_cast<foeGfxVertexDescriptor *>(
+                                                theVertexDescriptor->getGfxVertexDescriptor()),
                                             theMaterial->getGfxFragmentDescriptor(), xrRenderPass,
                                             0, &layout, &descriptorSetLayoutCount, &pipeline);
 
@@ -1088,14 +1082,19 @@ int Application::mainloop() {
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
                         foeGfxVkFragmentDescriptor *pFragDescriptor;
+                        auto *theVertexDescriptor =
+                            vertexDescriptorPool.find("theVertexDescriptor");
                         auto *theMaterial = materialPool.find("theMaterial2");
 
-                        if (theMaterial->getLoadState() != foeResourceLoadState::Loaded)
+                        if (theVertexDescriptor->getLoadState() != foeResourceLoadState::Loaded ||
+                            theMaterial->getLoadState() != foeResourceLoadState::Loaded)
                             goto SKIP_DRAW;
 
-                        pipelinePool.getPipeline(
-                            &vertexDescriptor, theMaterial->getGfxFragmentDescriptor(),
-                            swapImageRenderPass, 0, &layout, &descriptorSetLayoutCount, &pipeline);
+                        pipelinePool.getPipeline(const_cast<foeGfxVertexDescriptor *>(
+                                                     theVertexDescriptor->getGfxVertexDescriptor()),
+                                                 theMaterial->getGfxFragmentDescriptor(),
+                                                 swapImageRenderPass, 0, &layout,
+                                                 &descriptorSetLayoutCount, &pipeline);
 
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 0, 1, &camera.descriptor, 0, nullptr);
