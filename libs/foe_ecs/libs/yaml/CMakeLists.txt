@@ -15,3 +15,8 @@ target_link_libraries(foe_ecs_yaml PUBLIC foe_ecs foe_yaml)
 target_code_coverage(foe_ecs_yaml)
 
 add_subdirectory(src)
+
+# Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
