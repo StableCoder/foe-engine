@@ -15,6 +15,8 @@ target_code_coverage(foe_ecs)
 add_subdirectory(src)
 
 # Auxiliary Targets
+add_subdirectory(libs/yaml)
+
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
