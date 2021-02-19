@@ -73,7 +73,7 @@ auto yaml_write_index_generator(foeEcsIndexGenerator &data) -> YAML::Node {
     for (auto it : recycledIndices) {
         recycledNode.push_back(it);
     }
-    node["recycled_indices"] = node;
+    node["recycled_indices"] = recycledNode;
 
     return node;
 }
