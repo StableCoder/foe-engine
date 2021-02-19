@@ -32,7 +32,7 @@ class foeEcsGroups {
         // Entities that are not to be preseved, and are just local to the current session
         Temporary = foeEcsMaxGroupValue << foeEcsNumIndexBits,
         // Max number possible of general groups
-        MaxGeneralGroups = foeEcsMaxGroupValue - 2,
+        MaxGeneralGroups = foeEcsMaxGroupValue - 1,
     };
 
     FOE_ECS_EXPORT bool addGroup(std::unique_ptr<foeEcsIndexGenerator> &&group) noexcept;
