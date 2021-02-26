@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/imex/shader.hpp>
+#include <foe/resource/yaml/shader.hpp>
 
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
@@ -23,12 +23,12 @@
 
 #include <fstream>
 
-bool import_shader_definition(std::string_view shaderName,
-                              std::string &shaderCodeFile,
-                              foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
-                              VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
-                              std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
-                              VkPushConstantRange &pushConstantRange) {
+bool import_yaml_shader_definition(std::string_view shaderName,
+                                   std::string &shaderCodeFile,
+                                   foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
+                                   VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
+                                   std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
+                                   VkPushConstantRange &pushConstantRange) {
     // Open the YAML file
     YAML::Node config;
     try {
@@ -48,7 +48,7 @@ bool import_shader_definition(std::string_view shaderName,
     return true;
 }
 
-bool export_shader_definition(foeGfxSession session, foeShader const *pShader) {
+bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShader) {
     YAML::Node definition;
 
     try {

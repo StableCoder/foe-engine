@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/imex/material.hpp>
+#include <foe/resource/yaml/material.hpp>
 
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
@@ -23,9 +23,9 @@
 
 #include <fstream>
 
-bool import_material_definition(std::string_view materialName,
-                                std::string &fragDescriptorName,
-                                std::string &image) {
+bool import_yaml_material_definition(std::string_view materialName,
+                                     std::string &fragDescriptorName,
+                                     std::string &image) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
@@ -42,7 +42,7 @@ bool import_material_definition(std::string_view materialName,
     }
 }
 
-bool export_material_definition(foeMaterial const *pMaterial) {
+bool export_yaml_material_definition(foeMaterial const *pMaterial) {
     YAML::Node definition;
 
     try {

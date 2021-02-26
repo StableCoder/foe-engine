@@ -14,21 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_IMEX_MATERIAL_HPP
-#define FOE_RESOURCE_IMEX_MATERIAL_HPP
+#ifndef FOE_RESOURCE_YAML_MATERIAL_HPP
+#define FOE_RESOURCE_YAML_MATERIAL_HPP
 
-#include <foe/resource/imex/export.h>
 #include <foe/resource/material.hpp>
+#include <foe/resource/yaml/export.h>
 #include <vulkan/vulkan.h>
 
 #include <string>
 #include <string_view>
 #include <vector>
 
-FOE_RES_IMEX_EXPORT bool import_material_definition(std::string_view materialName,
-                                                    std::string &fragDescriptorName,
-                                                    std::string &image);
+FOE_RES_YAML_EXPORT bool import_yaml_material_definition(std::string_view materialName,
+                                                         std::string &fragDescriptorName,
+                                                         std::string &image);
 
-FOE_RES_IMEX_EXPORT bool export_material_definition(foeMaterial const *pMaterial);
+FOE_RES_YAML_EXPORT bool export_yaml_material_definition(foeMaterial const *pMaterial);
 
-#endif // FOE_RESOURCE_IMEX_MATERIAL_HPP
+#endif // FOE_RESOURCE_YAML_MATERIAL_HPP

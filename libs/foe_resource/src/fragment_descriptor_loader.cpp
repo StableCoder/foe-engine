@@ -98,7 +98,7 @@ void foeFragmentDescriptorLoader::requestResourceUnload(foeFragmentDescriptor *p
     }
 }
 
-#include <foe/resource/imex/fragment_descriptor.hpp>
+#include <foe/resource/yaml/fragment_descriptor.hpp>
 
 void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescriptor) {
     // First, try to enter the 'loading' state
@@ -129,7 +129,7 @@ void foeFragmentDescriptorLoader::loadResource(foeFragmentDescriptor *pFragDescr
     foeFragmentDescriptor::SubResources loadingSubResources{};
 
     // Read in the definition
-    bool read = import_fragment_descriptor_definition(
+    bool read = import_yaml_fragment_descriptor_definition(
         pFragDescriptor->getName(), fragmentShader, hasRasterizationSCI, rasterizationSCI,
         hasDepthStencilSCI, depthStencilSCI, hasColourBlendSCI, colourBlendSCI,
         colourBlendAttachments);

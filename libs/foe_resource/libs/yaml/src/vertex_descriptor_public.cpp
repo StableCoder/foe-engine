@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/imex/vertex_descriptor.hpp>
+#include <foe/resource/yaml/vertex_descriptor.hpp>
 
 #include <foe/graphics/yaml/vertex_descriptor.hpp>
 #include <foe/log.hpp>
@@ -67,7 +67,7 @@ bool yaml_read_vertex_descriptor_definition(
 
 } // namespace
 
-bool import_vertex_descriptor_definition(
+bool import_yaml_vertex_descriptor_definition(
     std::string_view vertexDescriptorName,
     std::string &vertexShader,
     std::string &tessellationControlShader,
@@ -150,7 +150,7 @@ bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
 
 } // namespace
 
-bool export_vertex_descriptor_definition(foeVertexDescriptor const *pVertexDescriptor) {
+bool export_yaml_vertex_descriptor_definition(foeVertexDescriptor const *pVertexDescriptor) {
     YAML::Node definition;
 
     try {

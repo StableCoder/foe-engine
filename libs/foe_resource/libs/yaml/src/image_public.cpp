@@ -14,14 +14,14 @@
     limitations under the License.
 */
 
-#include <foe/resource/imex/image.hpp>
+#include <foe/resource/yaml/image.hpp>
 
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 
 #include "image.hpp"
 
-bool import_image_definition(std::string_view imageName, std::string &fileName) {
+bool import_yaml_image_definition(std::string_view imageName, std::string &fileName) {
     // Open the YAML file
     YAML::Node rootNode;
     try {

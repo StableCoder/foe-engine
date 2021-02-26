@@ -14,14 +14,15 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_IMEX_IMAGE_HPP
-#define FOE_RESOURCE_IMEX_IMAGE_HPP
+#ifndef FOE_RESOURCE_YAML_IMAGE_HPP
+#define FOE_RESOURCE_YAML_IMAGE_HPP
 
 #include <foe/resource/image.hpp>
-#include <foe/resource/imex/export.h>
+#include <foe/resource/yaml/export.h>
 
-FOE_RES_IMEX_EXPORT bool import_image_definition(std::string_view imageName, std::string &fileName);
+FOE_RES_YAML_EXPORT bool import_yaml_image_definition(std::string_view imageName,
+                                                      std::string &fileName);
 
-// FOE_RES_IMEX_EXPORT bool export_image_definition(foe)
+// FOE_RES_YAML_EXPORT bool export_image_definition(foe)
 
-#endif // FOE_RESOURCE_IMEX_IMAGE_HPP
+#endif // FOE_RESOURCE_YAML_IMAGE_HPP

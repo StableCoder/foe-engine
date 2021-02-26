@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/imex/fragment_descriptor.hpp>
+#include <foe/resource/yaml/fragment_descriptor.hpp>
 
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
@@ -23,7 +23,7 @@
 
 #include <fstream>
 
-bool import_fragment_descriptor_definition(
+bool import_yaml_fragment_descriptor_definition(
     std::string_view fragmentDescriptorName,
     std::string &fragmentShader,
     bool &hasRasterizationSCI,
@@ -53,7 +53,7 @@ bool import_fragment_descriptor_definition(
     return true;
 }
 
-bool export_fragment_descriptor_definition(foeFragmentDescriptor const *pFragmentDescriptor) {
+bool export_yaml_fragment_descriptor_definition(foeFragmentDescriptor const *pFragmentDescriptor) {
     YAML::Node definition;
 
     try {

@@ -96,7 +96,7 @@ void foeVertexDescriptorLoader::requestResourceUnload(foeVertexDescriptor *pVert
     }
 }
 
-#include <foe/resource/imex/vertex_descriptor.hpp>
+#include <foe/resource/yaml/vertex_descriptor.hpp>
 
 void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescriptor) {
     auto expected = pVertexDescriptor->loadState.load();
@@ -124,10 +124,10 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
     VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
     VkPipelineTessellationStateCreateInfo tessellationSCI;
 
-    import_vertex_descriptor_definition(pVertexDescriptor->getName(), vertexShader,
-                                        tessellationControlShader, tessellationEvaluationShader,
-                                        geometryShader, vertexInputSCI, inputBindings,
-                                        inputAttributes, inputAssemblySCI, tessellationSCI);
+    import_yaml_vertex_descriptor_definition(
+        pVertexDescriptor->getName(), vertexShader, tessellationControlShader,
+        tessellationEvaluationShader, geometryShader, vertexInputSCI, inputBindings,
+        inputAttributes, inputAssemblySCI, tessellationSCI);
 
     { // Resource Dependencies
         if (!vertexShader.empty()) {

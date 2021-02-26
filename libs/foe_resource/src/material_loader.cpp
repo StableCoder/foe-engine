@@ -195,7 +195,7 @@ VkDescriptorSet foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterial,
     return set;
 }
 
-#include <foe/resource/imex/material.hpp>
+#include <foe/resource/yaml/material.hpp>
 
 void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     // First, try to enter the 'loading' state
@@ -215,7 +215,8 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     std::string imageName;
     foeMaterial::SubResources subResources;
 
-    bool read = import_material_definition(pMaterial->getName(), fragmentDescriptorName, imageName);
+    bool read =
+        import_yaml_material_definition(pMaterial->getName(), fragmentDescriptorName, imageName);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;

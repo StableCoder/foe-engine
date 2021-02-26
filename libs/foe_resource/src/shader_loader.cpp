@@ -88,7 +88,7 @@ void foeShaderLoader::requestResourceUnload(foeShader *pShader) {
 #include "external_shader.hpp"
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
-#include <foe/resource/imex/shader.hpp>
+#include <foe/resource/yaml/shader.hpp>
 
 void foeShaderLoader::loadResource(foeShader *pShader) {
     // First, try to enter the 'loading' state
@@ -114,8 +114,8 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
 
     // Read in the definition
     bool read =
-        import_shader_definition(pShader->getName(), shaderCodeFile, builtinSetLayouts,
-                                 descriptorSetLayoutCI, setLayoutBindings, pushConstantRange);
+        import_yaml_shader_definition(pShader->getName(), shaderCodeFile, builtinSetLayouts,
+                                      descriptorSetLayoutCI, setLayoutBindings, pushConstantRange);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;

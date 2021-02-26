@@ -14,17 +14,17 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_IMEX_FRAGMENT_DESCRIPTOR_HPP
-#define FOE_RESOURCE_IMEX_FRAGMENT_DESCRIPTOR_HPP
+#ifndef FOE_RESOURCE_YAML_FRAGMENT_DESCRIPTOR_HPP
+#define FOE_RESOURCE_YAML_FRAGMENT_DESCRIPTOR_HPP
 
 #include <foe/resource/fragment_descriptor.hpp>
-#include <foe/resource/imex/export.h>
+#include <foe/resource/yaml/export.h>
 
 #include <string>
 #include <string_view>
 #include <vector>
 
-FOE_RES_IMEX_EXPORT bool import_fragment_descriptor_definition(
+FOE_RES_YAML_EXPORT bool import_yaml_fragment_descriptor_definition(
     std::string_view fragmentDescriptorName,
     std::string &fragmentShader,
     bool &hasRasterizationSCI,
@@ -35,7 +35,7 @@ FOE_RES_IMEX_EXPORT bool import_fragment_descriptor_definition(
     VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
     std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments);
 
-FOE_RES_IMEX_EXPORT bool export_fragment_descriptor_definition(
+FOE_RES_YAML_EXPORT bool export_yaml_fragment_descriptor_definition(
     foeFragmentDescriptor const *pFragmentDescriptor);
 
-#endif // FOE_RESOURCE_IMEX_FRAGMENT_DESCRIPTOR_HPP
+#endif // FOE_RESOURCE_YAML_FRAGMENT_DESCRIPTOR_HPP
