@@ -16,33 +16,33 @@
 
 #include <foe/resource/material.hpp>
 
-#include <foe/resource/fragment_descriptor.hpp>
 #include <foe/resource/image.hpp>
+#include <foe/resource/shader.hpp>
 
 foeMaterial::SubResources::~SubResources() { reset(); }
 
 foeMaterial::SubResources::SubResources(SubResources &&other) :
-    pFragmentDescriptor{std::move(other.pFragmentDescriptor)}, pImage{std::move(other.pImage)} {
-    other.pFragmentDescriptor = nullptr;
+    pFragmentShader{std::move(other.pFragmentShader)}, pImage{std::move(other.pImage)} {
+    other.pFragmentShader = nullptr;
     other.pImage = nullptr;
 }
 
 auto foeMaterial::SubResources::operator=(SubResources &&other) -> SubResources & {
     reset();
 
-    pFragmentDescriptor = std::move(other.pFragmentDescriptor);
+    pFragmentShader = std::move(other.pFragmentShader);
     pImage = std::move(other.pImage);
 
-    other.pFragmentDescriptor = nullptr;
+    other.pFragmentShader = nullptr;
     other.pImage = nullptr;
 
     return *this;
 }
 
 void foeMaterial::SubResources::reset() {
-    if (pFragmentDescriptor != nullptr) {
-        pFragmentDescriptor->decrementUseCount();
-        pFragmentDescriptor->decrementRefCount();
+    if (pFragmentShader != nullptr) {
+        pFragmentShader->decrementUseCount();
+        pFragmentShader->decrementRefCount();
     }
 
     if (pImage != nullptr) {
@@ -50,12 +50,13 @@ void foeMaterial::SubResources::reset() {
         pImage->decrementRefCount();
     }
 
-    pFragmentDescriptor = nullptr;
+    pImage = nullptr;
+    pFragmentShader = nullptr;
 }
 
 foeResourceLoadState foeMaterial::SubResources::getWorstSubresourceState() const noexcept {
-    if (pFragmentDescriptor != nullptr) {
-        auto state = pFragmentDescriptor->getLoadState();
+    if (pFragmentShader != nullptr) {
+        auto state = pFragmentShader->getLoadState();
         if (state != foeResourceLoadState::Loaded)
             return state;
     }

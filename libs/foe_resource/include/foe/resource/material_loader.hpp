@@ -29,8 +29,9 @@
 #include <system_error>
 #include <vector>
 
-class foeFragmentDescriptorLoader;
-class foeFragmentDescriptorPool;
+class foeShaderLoader;
+class foeShaderPool;
+class foeGfxVkFragmentDescriptorPool;
 class foeImageLoader;
 class foeImagePool;
 
@@ -39,8 +40,9 @@ class foeMaterialLoader {
     FOE_RES_EXPORT ~foeMaterialLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
-        foeFragmentDescriptorLoader *pFragmentDescriptorLoader,
-        foeFragmentDescriptorPool *pFragmentDescriptorPool,
+        foeShaderLoader *pShaderLoader,
+        foeShaderPool *pShaderPool,
+        foeGfxVkFragmentDescriptorPool *pGfxFragmentDescriptorPool,
         foeImageLoader *pImageLoader,
         foeImagePool *pImagePool,
         foeGfxSession session,
@@ -58,8 +60,9 @@ class foeMaterialLoader {
   private:
     void loadResource(foeMaterial *pMaterial);
 
-    foeFragmentDescriptorLoader *mFragmentDescriptorLoader{nullptr};
-    foeFragmentDescriptorPool *mFragmentDescriptorPool{nullptr};
+    foeShaderLoader *mShaderLoader{nullptr};
+    foeShaderPool *mShaderPool{nullptr};
+    foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
     foeImageLoader *mImageLoader{nullptr};
     foeImagePool *mImagePool{nullptr};
 

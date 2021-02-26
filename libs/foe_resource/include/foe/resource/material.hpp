@@ -28,6 +28,7 @@
 #include <string_view>
 
 class foeFragmentDescriptor;
+class foeShader;
 class foeImage;
 class foeMaterialLoader;
 
@@ -51,9 +52,9 @@ struct foeMaterial {
     FOE_RES_EXPORT void requestUnload();
 
     // Specializations
-    FOE_RES_EXPORT foeFragmentDescriptor *getFragmentDescriptor() const noexcept;
-
+    FOE_RES_EXPORT foeShader *getFragmentShader() const noexcept;
     FOE_RES_EXPORT foeGfxVkFragmentDescriptor *getGfxFragmentDescriptor() const noexcept;
+    FOE_RES_EXPORT foeImage *getImage() const noexcept;
 
     FOE_RES_EXPORT VkDescriptorSet getVkDescriptorSet(uint32_t frameIndex);
 
@@ -61,7 +62,9 @@ struct foeMaterial {
     friend foeMaterialLoader;
 
     struct SubResources {
-        foeFragmentDescriptor *pFragmentDescriptor{nullptr};
+        // For the FragmentDescriptor
+        foeShader *pFragmentShader{nullptr};
+        // For the Material
         foeImage *pImage{nullptr};
 
         SubResources() = default;
@@ -90,6 +93,7 @@ struct foeMaterial {
     SubResources loadingSubResources;
     struct Data {
         SubResources subResources;
+        foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
         VkDescriptorSet materialDescriptorSet;
     };
     Data data{};

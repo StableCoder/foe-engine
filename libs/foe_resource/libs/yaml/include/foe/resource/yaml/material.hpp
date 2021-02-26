@@ -25,9 +25,18 @@
 #include <string_view>
 #include <vector>
 
-FOE_RES_YAML_EXPORT bool import_yaml_material_definition(std::string_view materialName,
-                                                         std::string &fragDescriptorName,
-                                                         std::string &image);
+FOE_RES_YAML_EXPORT bool import_yaml_material_definition(
+    std::string_view materialName,
+    std::string &fragmentShaderName,
+    std::string &fragDescriptorName,
+    std::string &image,
+    bool &hasRasterizationSCI,
+    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
+    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments);
 
 FOE_RES_YAML_EXPORT bool export_yaml_material_definition(foeMaterial const *pMaterial);
 

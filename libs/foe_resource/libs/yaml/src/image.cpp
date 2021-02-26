@@ -19,6 +19,22 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+bool yaml_write_image_declaration(std::string const &nodeName,
+                                  foeImage const *pImage,
+                                  YAML::Node &node) {
+    try {
+        if (nodeName.empty()) {
+            node = std::string{pImage->getName()};
+        } else {
+            node[nodeName] = std::string{pImage->getName()};
+        }
+    } catch (...) {
+        throw foeYamlException(nodeName + " - Failed to serialize 'foeShader' declaration");
+    }
+
+    return true;
+}
+
 bool yaml_read_image_definition(std::string const &nodeName,
                                 YAML::Node const &node,
                                 std::string &fileName) {

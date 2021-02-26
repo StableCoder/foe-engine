@@ -17,9 +17,14 @@
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 
+#include <foe/resource/image.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include <string>
+
+bool yaml_write_image_declaration(std::string const &nodeName,
+                                  foeImage const *pImage,
+                                  YAML::Node &node);
 
 bool yaml_read_image_definition(std::string const &nodeName,
                                 YAML::Node const &node,

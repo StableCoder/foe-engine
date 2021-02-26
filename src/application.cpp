@@ -171,19 +171,13 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = fragDescriptorLoader.initialize(&fragmentDescriptorPool, &shaderLoader, &shaderPool,
-                                           asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
     errC = imageLoader.initialize(gfxSession, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = materialLoader.initialize(&fragDescriptorLoader, &fragDescriptorPool, &imageLoader,
-                                     &imagePool, gfxSession, asyncTaskFunc);
+    errC = materialLoader.initialize(&shaderLoader, &shaderPool, &fragmentDescriptorPool,
+                                     &imageLoader, &imagePool, gfxSession, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -401,9 +395,14 @@ int Application::initialize(int argc, char **argv) {
     return 0;
 }
 
+#include <foe/resource/yaml/material.hpp>
+
 void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
+
+    export_yaml_material_definition(materialPool.find("theMaterial"));
+    export_yaml_material_definition(materialPool.find("theMaterial2"));
 
     { // Resource Unloading
         materialPool.unloadAll();
@@ -414,11 +413,6 @@ void Application::deinitialize() {
         imagePool.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             imageLoader.processUnloadRequests();
-        }
-
-        fragDescriptorPool.unloadAll();
-        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            fragDescriptorLoader.processUnloadRequests();
         }
 
         vertexDescriptorPool.unloadAll();
@@ -476,7 +470,6 @@ void Application::deinitialize() {
     // Resource Deinitialization
     materialLoader.deinitialize();
     imageLoader.deinitialize();
-    fragDescriptorLoader.deinitialize();
     vertexDescriptorLoader.deinitialize();
     shaderLoader.deinitialize();
 
@@ -706,7 +699,6 @@ int Application::mainloop() {
 
             // Resource Unload Requests
             shaderLoader.processUnloadRequests();
-            fragDescriptorLoader.processUnloadRequests();
             imageLoader.processUnloadRequests();
             materialLoader.processUnloadRequests();
 

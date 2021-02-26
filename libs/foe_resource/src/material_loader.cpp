@@ -16,12 +16,12 @@
 
 #include <foe/resource/material_loader.hpp>
 
+#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/resource/fragment_descriptor.hpp>
-#include <foe/resource/fragment_descriptor_pool.hpp>
 #include <foe/resource/image.hpp>
 #include <foe/resource/image_pool.hpp>
 #include <foe/resource/material.hpp>
+#include <foe/resource/shader_pool.hpp>
 #include <vk_error_code.hpp>
 
 #include "error_code.hpp"
@@ -35,8 +35,9 @@ foeMaterialLoader::~foeMaterialLoader() {
 }
 
 std::error_code foeMaterialLoader::initialize(
-    foeFragmentDescriptorLoader *pFragmentDescriptorLoader,
-    foeFragmentDescriptorPool *pFragmentDescriptorPool,
+    foeShaderLoader *pShaderLoader,
+    foeShaderPool *pShaderPool,
+    foeGfxVkFragmentDescriptorPool *pGfxFragmentDescriptorPool,
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
@@ -47,8 +48,9 @@ std::error_code foeMaterialLoader::initialize(
 
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
-    mFragmentDescriptorLoader = pFragmentDescriptorLoader;
-    mFragmentDescriptorPool = pFragmentDescriptorPool;
+    mShaderLoader = pShaderLoader;
+    mShaderPool = pShaderPool;
+    mGfxFragmentDescriptorPool = pGfxFragmentDescriptorPool;
     mImageLoader = pImageLoader;
     mImagePool = pImagePool;
 
@@ -99,15 +101,14 @@ void foeMaterialLoader::deinitialize() {
 
     mImagePool = nullptr;
     mImageLoader = nullptr;
-    mFragmentDescriptorPool = nullptr;
-    mFragmentDescriptorLoader = nullptr;
+    mGfxFragmentDescriptorPool = nullptr;
+    mShaderPool = nullptr;
+    mShaderLoader = nullptr;
 
     mAsyncJobs = std::function<void(std::function<void()>)>{};
 }
 
-bool foeMaterialLoader::initialized() const noexcept {
-    return mFragmentDescriptorLoader != nullptr;
-}
+bool foeMaterialLoader::initialized() const noexcept { return mShaderLoader != nullptr; }
 
 void foeMaterialLoader::processUnloadRequests() {
     mUnloadSync.lock();
@@ -158,8 +159,7 @@ VkDescriptorSet foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterial,
     vkResetDescriptorPool(vkDevice, mDescriptorPools[frameIndex], 0);
 
     // We have an image to do
-    auto fragShader =
-        pMaterial->data.subResources.pFragmentDescriptor->getFragmentShader()->getShader();
+    auto fragShader = pMaterial->data.subResources.pFragmentShader->getShader();
 
     auto descriptorSetLayout = foeGfxVkGetShaderDescriptorSetLayout(fragShader);
 
@@ -211,37 +211,43 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     }
 
     std::error_code errC;
-    std::string fragmentDescriptorName;
-    std::string imageName;
+    foeGfxVkFragmentDescriptor *pNewFragDescriptor{nullptr};
     foeMaterial::SubResources subResources;
 
-    bool read =
-        import_yaml_material_definition(pMaterial->getName(), fragmentDescriptorName, imageName);
+    std::string fragmentShader;
+    std::string fragmentDescriptorName;
+    std::string imageName;
+    bool hasRasterizationSCI = false;
+    VkPipelineRasterizationStateCreateInfo rasterizationSCI;
+    bool hasDepthStencilSCI = false;
+    VkPipelineDepthStencilStateCreateInfo depthStencilSCI;
+    bool hasColourBlendSCI = false;
+    VkPipelineColorBlendStateCreateInfo colourBlendSCI;
+    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
+
+    bool read = import_yaml_material_definition(
+        pMaterial->getName(), fragmentShader, fragmentDescriptorName, imageName,
+        hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI, depthStencilSCI,
+        hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     { // Resource Dependencies
-        // Fragment Descriptor
-        if (!fragmentDescriptorName.empty()) {
-            subResources.pFragmentDescriptor =
-                mFragmentDescriptorPool->find(fragmentDescriptorName);
-
-            if (subResources.pFragmentDescriptor == nullptr) {
-                subResources.pFragmentDescriptor =
-                    new foeFragmentDescriptor{fragmentDescriptorName, mFragmentDescriptorLoader};
-
-                if (!mFragmentDescriptorPool->add(subResources.pFragmentDescriptor)) {
+        // Fragment Shader
+        if (!fragmentShader.empty()) {
+            subResources.pFragmentShader = mShaderPool->find(fragmentShader);
+            if (subResources.pFragmentShader == nullptr) {
+                subResources.pFragmentShader = new foeShader{fragmentShader, mShaderLoader};
+                if (!mShaderPool->add(subResources.pFragmentShader)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
-                    delete subResources.pFragmentDescriptor;
-                    subResources.pFragmentDescriptor =
-                        mFragmentDescriptorPool->find(fragmentDescriptorName);
+                    delete subResources.pFragmentShader;
+                    subResources.pFragmentShader = mShaderPool->find(fragmentShader);
                 }
             }
-
-            subResources.pFragmentDescriptor->incrementRefCount();
-            subResources.pFragmentDescriptor->incrementUseCount();
+            subResources.pFragmentShader->incrementRefCount();
+            subResources.pFragmentShader->incrementUseCount();
         }
 
         // Image
@@ -291,6 +297,14 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     }
 
     { // Using the sub-resources that are loaded, and definition data, create the resource
+        foeGfxShader fragShader = (subResources.pFragmentShader != nullptr)
+                                      ? subResources.pFragmentShader->getShader()
+                                      : FOE_NULL_HANDLE;
+
+        pNewFragDescriptor = mGfxFragmentDescriptorPool->get(
+            (hasRasterizationSCI) ? &rasterizationSCI : nullptr,
+            (hasDepthStencilSCI) ? &depthStencilSCI : nullptr,
+            (hasColourBlendSCI) ? &colourBlendSCI : nullptr, fragShader);
     }
 
 LOADING_FAILED:
@@ -304,6 +318,7 @@ LOADING_FAILED:
         foeMaterial::Data oldData;
         foeMaterial::Data newData{
             .subResources = std::move(subResources),
+            .pGfxFragDescriptor = pNewFragDescriptor,
         };
 
         // Secure the resource, copy any old data out, and set the new data/state

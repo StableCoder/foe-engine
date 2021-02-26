@@ -16,10 +16,12 @@
 
 #include "material.hpp"
 
+#include <foe/graphics/yaml/fragment_descriptor.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "fragment_descriptor.hpp"
+#include "image.hpp"
+#include "shader.hpp"
 
 bool yaml_write_material_declaration(std::string const &nodeName,
                                      foeMaterial const *pMaterial,
@@ -47,17 +49,21 @@ bool yaml_write_material_definition(std::string const &nodeName,
             YAML::Node resNode;
 
             // Fragment Shader
-            if (auto *pFragDescriptor = pMaterial->getFragmentDescriptor();
-                pFragDescriptor != nullptr) {
-                yaml_write_fragment_descriptor_declaration("fragment_descriptor", pFragDescriptor,
-                                                           resNode);
+            if (auto *pFragShader = pMaterial->getFragmentShader(); pFragShader != nullptr) {
+                yaml_write_shader_declaration("fragment_shader", pFragShader, resNode);
+            }
+
+            // Image
+            if (auto *pImage = pMaterial->getImage(); pImage != nullptr) {
+                yaml_write_image_declaration("image", pImage, resNode);
             }
 
             writeNode["resources"] = resNode;
         }
 
         // Gfx Data Node
-        // (Nothing currently)
+        yaml_write_gfx_fragment_descriptor("graphics_data", pMaterial->getGfxFragmentDescriptor(),
+                                           writeNode);
     } catch (...) {
         throw foeYamlException(nodeName + " - Failed to serialize 'foeMaterial' definition");
     }
@@ -71,10 +77,19 @@ bool yaml_write_material_definition(std::string const &nodeName,
     return true;
 }
 
-bool yaml_read_material_definition(std::string const &nodeName,
-                                   YAML::Node const &node,
-                                   std::string &fragmentDescriptor,
-                                   std::string &image) {
+bool yaml_read_material_definition(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    std::string &fragmentShader,
+    std::string &fragmentDescriptor,
+    std::string &image,
+    bool &hasRasterizationSCI,
+    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
+    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -83,9 +98,15 @@ bool yaml_read_material_definition(std::string const &nodeName,
     try {
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
+            yaml_read_optional("fragment_shader", resNode, fragmentShader);
             yaml_read_optional("fragment_descriptor", resNode, fragmentDescriptor);
             yaml_read_optional("image", resNode, image);
         }
+
+        // Graphics Data
+        yaml_read_gfx_fragment_descriptor(
+            "graphics_data", subNode, hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI,
+            depthStencilSCI, hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }

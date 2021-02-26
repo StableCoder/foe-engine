@@ -23,9 +23,18 @@
 
 #include <fstream>
 
-bool import_yaml_material_definition(std::string_view materialName,
-                                     std::string &fragDescriptorName,
-                                     std::string &image) {
+bool import_yaml_material_definition(
+    std::string_view materialName,
+    std::string &fragmentShaderName,
+    std::string &fragDescriptorName,
+    std::string &image,
+    bool &hasRasterizationSCI,
+    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
+    bool &hasDepthStencilSCI,
+    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
+    bool &hasColourBlendSCI,
+    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
+    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
@@ -35,7 +44,10 @@ bool import_yaml_material_definition(std::string_view materialName,
     }
 
     try {
-        return yaml_read_material_definition("", rootNode, fragDescriptorName, image);
+        return yaml_read_material_definition("", rootNode, fragmentShaderName, fragDescriptorName,
+                                             image, hasRasterizationSCI, rasterizationSCI,
+                                             hasDepthStencilSCI, depthStencilSCI, hasColourBlendSCI,
+                                             colourBlendSCI, colourBlendAttachments);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
         return false;
@@ -54,7 +66,7 @@ bool export_yaml_material_definition(foeMaterial const *pMaterial) {
     YAML::Emitter emitter;
     emitter << definition;
 
-    std::ofstream outFile(std::string{pMaterial->getName()} + "2.yml", std::ofstream::out);
+    std::ofstream outFile(std::string{pMaterial->getName()} + ".yml", std::ofstream::out);
     if (outFile.is_open()) {
         outFile << emitter.c_str();
         outFile.close();

@@ -1,10 +1,6 @@
 target_sources(
   foe_resource
   PRIVATE error_code.cpp
-          fragment_descriptor_loader.cpp
-          fragment_descriptor_pool.cpp
-          fragment_descriptor_subresources.cpp
-          fragment_descriptor.cpp
           image_loader.cpp
           image_pool.cpp
           image.cpp

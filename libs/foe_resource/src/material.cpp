@@ -16,7 +16,6 @@
 
 #include <foe/resource/material.hpp>
 
-#include <foe/resource/fragment_descriptor.hpp>
 #include <foe/resource/material_loader.hpp>
 
 #include "log.hpp"
@@ -82,17 +81,15 @@ void foeMaterial::requestLoad() {
 
 void foeMaterial::requestUnload() { pLoader->requestResourceUnload(this); }
 
-foeFragmentDescriptor *foeMaterial::getFragmentDescriptor() const noexcept {
-    return data.subResources.pFragmentDescriptor;
+foeShader *foeMaterial::getFragmentShader() const noexcept {
+    return data.subResources.pFragmentShader;
 }
 
 foeGfxVkFragmentDescriptor *foeMaterial::getGfxFragmentDescriptor() const noexcept {
-    if (data.subResources.pFragmentDescriptor != nullptr) {
-        return data.subResources.pFragmentDescriptor->getFragmentDescriptor();
-    }
-
-    return nullptr;
+    return data.pGfxFragDescriptor;
 }
+
+foeImage *foeMaterial::getImage() const noexcept { return data.subResources.pImage; }
 
 VkDescriptorSet foeMaterial::getVkDescriptorSet(uint32_t frameIndex) {
     return pLoader->createDescriptorSet(this, frameIndex);
