@@ -77,6 +77,14 @@ int Application::initialize(int argc, char **argv) {
         return retVal;
     }
 
+    // Groups/Entities
+    cameraID = ecsGroups.persistentGroup()->generate();
+
+    mPositionPool[cameraID].reset(new Position3D{
+        .position = glm::vec3(0.f, 0.f, -5.f),
+        .orientation = glm::quat(glm::vec3(0, 0, 0)),
+    });
+
     cameraDescriptorPool.linkCamera(&camera);
 
 #ifdef EDITOR_MODE
@@ -130,8 +138,7 @@ int Application::initialize(int argc, char **argv) {
         camera.nearZ = 2.f;
         camera.farZ = 50.f;
 
-        camera.position = glm::vec3(0.f, 0.f, -5.f);
-        camera.orientation = glm::quat(glm::vec3(0, 0, 0));
+        camera.pPosition3D = mPositionPool[cameraID].get();
     }
 
 #ifdef EDITOR_MODE
@@ -347,7 +354,7 @@ int Application::initialize(int argc, char **argv) {
         }
 
         for (auto &it : xrViews) {
-            it.camera.startPos = camera.position;
+            it.camera.pPosition3D = camera.pPosition3D;
             it.camera.nearZ = camera.nearZ;
             it.camera.farZ = camera.farZ;
             cameraDescriptorPool.linkCamera(&it.camera);
@@ -520,7 +527,7 @@ namespace {
 void processUserInput(double timeElapsedInSeconds,
                       foeKeyboard const *pKeyboard,
                       foeMouse const *pMouse,
-                      Camera *pCamera) {
+                      Position3D *pCamera) {
     constexpr float movementMultiplier = 10.f;
     constexpr float rorationMultiplier = 40.f;
     float multiplier = timeElapsedInSeconds * 3.f; // 3 units per second
@@ -598,7 +605,7 @@ int Application::mainloop() {
         if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
 #endif
         {
-            processUserInput(timeElapsedInSec, pKeyboard, pMouse, &camera);
+            processUserInput(timeElapsedInSec, pKeyboard, pMouse, camera.pPosition3D);
         }
 
         if (foeWindowResized()) {
@@ -737,10 +744,6 @@ int Application::mainloop() {
                 XrCompositionLayerProjection layerProj;
 
                 if (frameState.shouldRender) {
-                    for (auto &it : xrViews) {
-                        it.camera.startPos = camera.position;
-                    }
-
                     XrViewLocateInfo viewLocateInfo{
                         .type = XR_TYPE_VIEW_LOCATE_INFO,
                         .displayTime = frameState.predictedDisplayTime,

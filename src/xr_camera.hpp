@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ struct foeXrCamera : public foeCameraBase {
     }
 
     // View Data
-    glm::vec3 startPos;
+    Position3D *pPosition3D;
     XrPosef pose;
 
     glm::mat4 viewMatrix() const noexcept override {
         glm::mat4 rot = glm::mat4_cast(foeXrPoseOrientation(pose));
-        glm::vec3 pos = startPos + foeXrPosePosition(pose);
+        glm::vec3 pos = pPosition3D->position + foeXrPosePosition(pose);
 
         glm::mat4 view = glm::translate(glm::mat4(1.f), pos) * rot;
         view = glm::inverse(view);

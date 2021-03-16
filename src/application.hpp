@@ -19,6 +19,7 @@
 
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
+#include <foe/ecs/groups.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -46,9 +47,11 @@
 #include "camera_descriptor_pool.hpp"
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
+#include "position_3d.hpp"
 #include "settings.hpp"
 
 #include <array>
+#include <map>
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/session.hpp>
@@ -79,6 +82,11 @@ struct Application {
     foeThreadPool asynchronousThreadPool;
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
+
+    // Groups/Entities
+    foeEcsGroups ecsGroups;
+    foeEntityID cameraID;
+    std::map<foeEntityID, std::unique_ptr<Position3D>> mPositionPool;
 
     FrameTimer frameTime;
 

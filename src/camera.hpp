@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@
 #include <array>
 #include <vector>
 
+#include "position_3d.hpp"
+
 class CameraDescriptorPool;
 struct foeCameraBase {
     virtual glm::mat4 projectionMatrix() const noexcept = 0;
@@ -45,12 +47,12 @@ struct Camera : public foeCameraBase {
     }
 
     // View Data
-    glm::vec3 position;
-    glm::quat orientation;
+    Position3D *pPosition3D;
 
     glm::mat4 viewMatrix() const noexcept override {
         // Rotate * Translate
-        return glm::mat4_cast(orientation) * glm::translate(glm::mat4(1.f), position);
+        return glm::mat4_cast(pPosition3D->orientation) *
+               glm::translate(glm::mat4(1.f), pPosition3D->position);
     }
 };
 
