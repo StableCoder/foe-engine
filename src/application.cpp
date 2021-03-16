@@ -737,6 +737,10 @@ int Application::mainloop() {
                 XrCompositionLayerProjection layerProj;
 
                 if (frameState.shouldRender) {
+                    for (auto &it : xrViews) {
+                        it.camera.startPos = camera.position;
+                    }
+
                     XrViewLocateInfo viewLocateInfo{
                         .type = XR_TYPE_VIEW_LOCATE_INFO,
                         .displayTime = frameState.predictedDisplayTime,
