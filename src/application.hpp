@@ -48,6 +48,7 @@
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
 #include "position_3d.hpp"
+#include "position_descriptor_pool.hpp"
 #include "settings.hpp"
 
 #include <array>
@@ -86,6 +87,7 @@ struct Application {
     // Groups/Entities
     foeEcsGroups ecsGroups;
     foeEntityID cameraID;
+    foeEntityID renderID;
     std::map<foeEntityID, std::unique_ptr<Position3D>> mPositionPool;
 
     FrameTimer frameTime;
@@ -136,6 +138,7 @@ struct Application {
 
     Camera camera;
     CameraDescriptorPool cameraDescriptorPool;
+    PositionDescriptorPool positionDescriptorPool;
 
 #ifdef EDITOR_MODE
     foeImGuiRenderer imguiRenderer;

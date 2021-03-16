@@ -6,6 +6,7 @@ target_sources(
           graphics.cpp
           logging.cpp
           main.cpp
+          position_descriptor_pool.cpp
           settings.cpp)
 
 if(BUILD_XR)

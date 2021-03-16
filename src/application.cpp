@@ -79,9 +79,15 @@ int Application::initialize(int argc, char **argv) {
 
     // Groups/Entities
     cameraID = ecsGroups.persistentGroup()->generate();
+    renderID = ecsGroups.persistentGroup()->generate();
 
     mPositionPool[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),
+        .orientation = glm::quat(glm::vec3(0, 0, 0)),
+    });
+
+    mPositionPool[renderID].reset(new Position3D{
+        .position = glm::vec3(0.f, 0.f, 0.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
 
@@ -201,10 +207,22 @@ int Application::initialize(int argc, char **argv) {
         VK_END_PROGRAM
     }
 
+    vkRes = positionDescriptorPool.initialize(
+        gfxSession,
+        foeGfxVkGetBuiltinLayout(
+            gfxSession,
+            foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX),
+        foeGfxVkGetBuiltinSetLayoutIndex(
+            gfxSession,
+            foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX));
+    if (vkRes != VK_SUCCESS) {
+        VK_END_PROGRAM
+    }
+
     {
         // Vertex Descriptor
         foeVertexDescriptor *theVertexDescriptor =
-            new foeVertexDescriptor{"theVertexDescriptor", &vertexDescriptorLoader};
+            new foeVertexDescriptor{"theVertexDescriptor2", &vertexDescriptorLoader};
         vertexDescriptorPool.add(theVertexDescriptor);
         theVertexDescriptor->incrementUseCount();
         theVertexDescriptor->decrementUseCount();
@@ -487,6 +505,7 @@ void Application::deinitialize() {
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
+    positionDescriptorPool.deinitialize();
     cameraDescriptorPool.deinitialize();
 
     pipelinePool.deinitialize();
@@ -719,6 +738,8 @@ int Application::mainloop() {
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].commandPool,
                                0);
 
+            positionDescriptorPool.generatePositionDescriptors(frameIndex, mPositionPool);
+
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
@@ -872,7 +893,7 @@ int Application::mainloop() {
                                         VkPipeline pipeline;
                                         foeGfxVkFragmentDescriptor *pFragDescriptor;
                                         auto *theVertexDescriptor =
-                                            vertexDescriptorPool.find("theVertexDescriptor");
+                                            vertexDescriptorPool.find("theVertexDescriptor2");
                                         auto *theMaterial = materialPool.find("theMaterial2");
 
                                         if (theVertexDescriptor->getLoadState() !=
@@ -890,6 +911,10 @@ int Application::mainloop() {
                                         vkCmdBindDescriptorSets(
                                             commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                             0, 1, &it.camera.descriptor, 0, nullptr);
+                                        vkCmdBindDescriptorSets(
+                                            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                            1, 1, &mPositionPool[renderID]->descriptorSet, 0,
+                                            nullptr);
 
                                         if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
                                             set != VK_NULL_HANDLE) {
@@ -1082,7 +1107,7 @@ int Application::mainloop() {
                         VkPipeline pipeline;
                         foeGfxVkFragmentDescriptor *pFragDescriptor;
                         auto *theVertexDescriptor =
-                            vertexDescriptorPool.find("theVertexDescriptor");
+                            vertexDescriptorPool.find("theVertexDescriptor2");
                         auto *theMaterial = materialPool.find("theMaterial2");
 
                         if (theVertexDescriptor->getLoadState() != foeResourceLoadState::Loaded ||
@@ -1097,6 +1122,9 @@ int Application::mainloop() {
 
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 0, 1, &camera.descriptor, 0, nullptr);
+                        vkCmdBindDescriptorSets(
+                            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
+                            &mPositionPool[renderID]->descriptorSet, 0, nullptr);
 
                         if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
                             set != VK_NULL_HANDLE) {

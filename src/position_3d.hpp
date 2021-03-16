@@ -19,10 +19,13 @@
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
+#include <vulkan/vulkan.h>
 
 struct Position3D {
     glm::vec3 position;
     glm::quat orientation;
+
+    VkDescriptorSet descriptorSet{VK_NULL_HANDLE};
 };
 
 #endif // POSITION_3D_HPP
