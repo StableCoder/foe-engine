@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_IMAGE_LOADER_HPP
-#define FOE_IMAGE_LOADER_HPP
+#ifndef FOE_RESOURCE_IMAGE_LOADER_HPP
+#define FOE_RESOURCE_IMAGE_LOADER_HPP
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
@@ -23,6 +23,8 @@
 #include <foe/resource/export.h>
 #include <foe/resource/image.hpp>
 
+#include <array>
+#include <vector>
 #include <atomic>
 #include <functional>
 #include <mutex>
@@ -78,4 +80,4 @@ class foeImageLoader {
     std::vector<foeImage::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
 };
 
-#endif // FOE_IMAGE_LOADER_HPP
+#endif // FOE_RESOURCE_IMAGE_LOADER_HPP

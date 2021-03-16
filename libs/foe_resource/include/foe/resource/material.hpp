@@ -68,7 +68,7 @@ struct foeMaterial {
         foeImage *pImage{nullptr};
 
         SubResources() = default;
-        ~SubResources();
+        FOE_RES_EXPORT ~SubResources();
 
         SubResources(SubResources const &) = delete;
         SubResources &operator=(SubResources const &) = delete;
