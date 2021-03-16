@@ -96,6 +96,7 @@ target_link_libraries(
   foe_engine
   PRIVATE CLI11
           foe
+          foe_ecs
           foe_graphics_vk
           foe_model
           foe_resource
