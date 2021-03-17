@@ -154,7 +154,10 @@ TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
     WHEN("Should fail to free an InvalidID") { REQUIRE(!test.free(FOE_INVALID_ENTITY)); }
 
     SECTION("Should return an Invalid ID when it runs out of indexes.") {
-        for (uint64_t i = 0; i < foeEcsMaxIndexValue - 1; ++i) {
+        // Shortcut to near the end of the index range
+        test.importState(foeEcsMaxIndexValue - 10000, {});
+
+        for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ENTITY) {
                 REQUIRE(temp != FOE_INVALID_ENTITY);
             }
@@ -204,7 +207,10 @@ TEST_CASE("IndexGenerator - GroupID of 0xF0", "[foe][ecs][IndexGenerator]") {
     WHEN("Should fail to free an eInvalidID") { REQUIRE(!test.free(foeEntityID())); }
 
     SECTION("Should return an eInvalidID when it runs out of indexes.") {
-        for (uint64_t i = 0; i < foeEcsMaxIndexValue - 1; ++i) {
+        // Shortcut to near the end of the index range
+        test.importState(foeEcsMaxIndexValue - 10000, {});
+
+        for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ENTITY) {
                 REQUIRE(temp != FOE_INVALID_ENTITY);
             }
@@ -254,7 +260,10 @@ TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
     WHEN("Should fail to free an eInvalidID") { REQUIRE(!test.free(FOE_INVALID_ENTITY)); }
 
     SECTION("Should return an Invalid ID when it runs out of indexes.") {
-        for (uint64_t i = 0; i < foeEcsMaxIndexValue - 1; ++i) {
+        // Shortcut to near the end of the index range
+        test.importState(foeEcsMaxIndexValue - 10000, {});
+
+        for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ENTITY) {
                 REQUIRE(temp != FOE_INVALID_ENTITY);
             }
