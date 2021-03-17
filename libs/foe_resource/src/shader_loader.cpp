@@ -27,7 +27,14 @@ foeShaderLoader::~foeShaderLoader() {
 }
 
 std::error_code foeShaderLoader::initialize(
-    foeGfxSession gfxSession, std::function<void(std::function<void()>)> asynchronousJobs) {
+    foeGfxSession gfxSession,
+    std::function<bool(std::string_view,
+                       std::string &,
+                       foeBuiltinDescriptorSetLayoutFlags &,
+                       VkDescriptorSetLayoutCreateInfo &,
+                       std::vector<VkDescriptorSetLayoutBinding> &,
+                       VkPushConstantRange &)> importFunction,
+    std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
     }
@@ -35,6 +42,8 @@ std::error_code foeShaderLoader::initialize(
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
     mGfxSession = gfxSession;
+
+    mImportFunction = importFunction;
     mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
@@ -88,7 +97,6 @@ void foeShaderLoader::requestResourceUnload(foeShader *pShader) {
 #include "external_shader.hpp"
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
-#include <foe/resource/yaml/shader.hpp>
 
 void foeShaderLoader::loadResource(foeShader *pShader) {
     // First, try to enter the 'loading' state
@@ -113,9 +121,8 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
     VkPushConstantRange pushConstantRange;
 
     // Read in the definition
-    bool read =
-        import_yaml_shader_definition(pShader->getName(), shaderCodeFile, builtinSetLayouts,
-                                      descriptorSetLayoutCI, setLayoutBindings, pushConstantRange);
+    bool read = mImportFunction(pShader->getName(), shaderCodeFile, builtinSetLayouts,
+                                descriptorSetLayoutCI, setLayoutBindings, pushConstantRange);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;

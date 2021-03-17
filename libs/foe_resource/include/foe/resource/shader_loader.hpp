@@ -21,6 +21,7 @@
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/shader.hpp>
+#include <vulkan/vulkan.h>
 
 #include <atomic>
 #include <functional>
@@ -33,7 +34,14 @@ class foeShaderLoader {
     FOE_RES_EXPORT ~foeShaderLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
-        foeGfxSession gfxSession, std::function<void(std::function<void()>)> asynchronousJobs);
+        foeGfxSession gfxSession,
+        std::function<bool(std::string_view,
+                           std::string &,
+                           foeBuiltinDescriptorSetLayoutFlags &,
+                           VkDescriptorSetLayoutCreateInfo &,
+                           std::vector<VkDescriptorSetLayoutBinding> &,
+                           VkPushConstantRange &)> importFunction,
+        std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
 
@@ -46,6 +54,14 @@ class foeShaderLoader {
     void loadResource(foeShader *pShader);
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
+
+    std::function<bool(std::string_view,
+                       std::string &,
+                       foeBuiltinDescriptorSetLayoutFlags &,
+                       VkDescriptorSetLayoutCreateInfo &,
+                       std::vector<VkDescriptorSetLayoutBinding> &,
+                       VkPushConstantRange &)>
+        mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 

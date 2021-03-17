@@ -33,6 +33,16 @@ foeVertexDescriptorLoader::~foeVertexDescriptorLoader() {
 std::error_code foeVertexDescriptorLoader::initialize(
     foeShaderLoader *pShaderLoader,
     foeShaderPool *pShaderPool,
+    std::function<bool(std::string_view,
+                       std::string &,
+                       std::string &,
+                       std::string &,
+                       std::string &,
+                       VkPipelineVertexInputStateCreateInfo &,
+                       std::vector<VkVertexInputBindingDescription> &,
+                       std::vector<VkVertexInputAttributeDescription> &,
+                       VkPipelineInputAssemblyStateCreateInfo &,
+                       VkPipelineTessellationStateCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -43,6 +53,7 @@ std::error_code foeVertexDescriptorLoader::initialize(
     mShaderLoader = pShaderLoader;
     mShaderPool = pShaderPool;
 
+    mImportFunction = importFunction;
     mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
@@ -96,8 +107,6 @@ void foeVertexDescriptorLoader::requestResourceUnload(foeVertexDescriptor *pVert
     }
 }
 
-#include <foe/resource/yaml/vertex_descriptor.hpp>
-
 void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescriptor) {
     auto expected = pVertexDescriptor->loadState.load();
     while (expected != foeResourceLoadState::Loading) {
@@ -113,6 +122,7 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
 
     std::error_code errC;
     foeVertexDescriptor::SubResources newSubResources{};
+    foeGfxVertexDescriptor theVertexDescriptor;
 
     std::string vertexShader;
     std::string tessellationControlShader;
@@ -124,10 +134,14 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
     VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
     VkPipelineTessellationStateCreateInfo tessellationSCI;
 
-    import_yaml_vertex_descriptor_definition(
-        pVertexDescriptor->getName(), vertexShader, tessellationControlShader,
-        tessellationEvaluationShader, geometryShader, vertexInputSCI, inputBindings,
-        inputAttributes, inputAssemblySCI, tessellationSCI);
+    bool read =
+        mImportFunction(pVertexDescriptor->getName(), vertexShader, tessellationControlShader,
+                        tessellationEvaluationShader, geometryShader, vertexInputSCI, inputBindings,
+                        inputAttributes, inputAssemblySCI, tessellationSCI);
+    if (!read) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
+    }
 
     { // Resource Dependencies
         if (!vertexShader.empty()) {
@@ -174,7 +188,6 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
         }
     }
 
-    foeGfxVertexDescriptor theVertexDescriptor;
     { // Using the loaded sub-resources and definition data, create the resource
         if (newSubResources.pVertex != nullptr)
             theVertexDescriptor.mVertex = newSubResources.pVertex->getShader();

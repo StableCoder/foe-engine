@@ -23,6 +23,10 @@
 #include <foe/graphics/vk/shader.hpp>
 #include <foe/log.hpp>
 #include <foe/quaternion_math.hpp>
+#include <foe/resource/yaml/image.hpp>
+#include <foe/resource/yaml/material.hpp>
+#include <foe/resource/yaml/shader.hpp>
+#include <foe/resource/yaml/vertex_descriptor.hpp>
 #include <foe/wsi_vulkan.hpp>
 
 #include <vk_error_code.hpp>
@@ -174,23 +178,25 @@ int Application::initialize(int argc, char **argv) {
         asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
-    errC = shaderLoader.initialize(gfxSession, asyncTaskFunc);
+    errC = shaderLoader.initialize(gfxSession, import_yaml_shader_definition, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = vertexDescriptorLoader.initialize(&shaderLoader, &shaderPool, asyncTaskFunc);
+    errC = vertexDescriptorLoader.initialize(
+        &shaderLoader, &shaderPool, import_yaml_vertex_descriptor_definition, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = imageLoader.initialize(gfxSession, asyncTaskFunc);
+    errC = imageLoader.initialize(gfxSession, import_yaml_image_definition, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
     errC = materialLoader.initialize(&shaderLoader, &shaderPool, &fragmentDescriptorPool,
-                                     &imageLoader, &imagePool, gfxSession, asyncTaskFunc);
+                                     &imageLoader, &imagePool, gfxSession,
+                                     import_yaml_material_definition, asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }

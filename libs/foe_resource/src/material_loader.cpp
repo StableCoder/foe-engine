@@ -41,6 +41,17 @@ std::error_code foeMaterialLoader::initialize(
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
+    std::function<bool(std::string_view,
+                       std::string &,
+                       std::string &,
+                       std::string &,
+                       bool &,
+                       VkPipelineRasterizationStateCreateInfo &,
+                       bool &,
+                       VkPipelineDepthStencilStateCreateInfo &,
+                       bool &,
+                       VkPipelineColorBlendStateCreateInfo &,
+                       std::vector<VkPipelineColorBlendAttachmentState> &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -54,6 +65,7 @@ std::error_code foeMaterialLoader::initialize(
     mImageLoader = pImageLoader;
     mImagePool = pImagePool;
 
+    mImportFunction = importFunction;
     mAsyncJobs = asynchronousJobs;
 
     { // VULKAN Descriptor Set Stuff
@@ -195,8 +207,6 @@ VkDescriptorSet foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterial,
     return set;
 }
 
-#include <foe/resource/yaml/material.hpp>
-
 void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     // First, try to enter the 'loading' state
     auto expected = pMaterial->loadState.load();
@@ -225,10 +235,10 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     VkPipelineColorBlendStateCreateInfo colourBlendSCI;
     std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
 
-    bool read = import_yaml_material_definition(
-        pMaterial->getName(), fragmentShader, fragmentDescriptorName, imageName,
-        hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI, depthStencilSCI,
-        hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
+    bool read =
+        mImportFunction(pMaterial->getName(), fragmentShader, fragmentDescriptorName, imageName,
+                        hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI, depthStencilSCI,
+                        hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;

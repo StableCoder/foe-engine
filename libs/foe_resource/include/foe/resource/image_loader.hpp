@@ -33,7 +33,9 @@ class foeImageLoader {
     FOE_RES_EXPORT ~foeImageLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
-        foeGfxSession session, std::function<void(std::function<void()>)> asynchronousJobs);
+        foeGfxSession session,
+        std::function<bool(std::string_view, std::string &)> importFunction,
+        std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
 
@@ -62,6 +64,7 @@ class foeImageLoader {
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
     foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
 
+    std::function<bool(std::string_view, std::string &)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 

@@ -34,7 +34,9 @@ foeImageLoader::~foeImageLoader() {
 }
 
 std::error_code foeImageLoader::initialize(
-    foeGfxSession session, std::function<void(std::function<void()>)> asynchronousJobs) {
+    foeGfxSession session,
+    std::function<bool(std::string_view, std::string &)> importFunction,
+    std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
     }
@@ -42,6 +44,7 @@ std::error_code foeImageLoader::initialize(
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
     mGfxSession = session;
+    mImportFunction = importFunction;
     mAsyncJobs = asynchronousJobs;
 
     errC = foeGfxCreateUploadContext(session, &mGfxUploadContext);
@@ -134,7 +137,6 @@ void foeImageLoader::requestResourceUnload(foeImage *pImage) {
 #include <FreeImage.h>
 #include <foe/graphics/vk/format.hpp>
 #include <foe/graphics/vk/image.hpp>
-#include <foe/resource/yaml/image.hpp>
 #include <vk_error_code.hpp>
 
 void foeImageLoader::startUpload(foeImage *pImage) {
@@ -159,7 +161,7 @@ void foeImageLoader::startUpload(foeImage *pImage) {
     foeGfxUploadBuffer gfxUploadBuffer;
     foeImage::Data imgData{};
 
-    bool read = import_yaml_image_definition(pImage->getName(), fileName);
+    bool read = mImportFunction(pImage->getName(), fileName);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
