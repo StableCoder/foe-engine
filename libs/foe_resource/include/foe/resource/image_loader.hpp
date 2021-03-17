@@ -24,11 +24,11 @@
 #include <foe/resource/image.hpp>
 
 #include <array>
-#include <vector>
 #include <atomic>
 #include <functional>
 #include <mutex>
 #include <system_error>
+#include <vector>
 
 class foeImageLoader {
   public:
