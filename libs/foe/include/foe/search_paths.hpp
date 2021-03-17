@@ -36,8 +36,8 @@ class foeSearchPaths {
         FOE_EXPORT Writer() noexcept;
         FOE_EXPORT ~Writer();
 
-        FOE_EXPORT Writer(Writer const &) = delete;
-        FOE_EXPORT Writer &operator=(Writer const &) = delete;
+        Writer(Writer const &) = delete;
+        Writer &operator=(Writer const &) = delete;
 
         FOE_EXPORT Writer(Writer &&) noexcept;
         FOE_EXPORT Writer &operator=(Writer &&) noexcept;
@@ -73,8 +73,8 @@ class foeSearchPaths {
         FOE_EXPORT Reader() noexcept;
         FOE_EXPORT ~Reader();
 
-        FOE_EXPORT Reader(Reader const &) = delete;
-        FOE_EXPORT Reader &operator=(Reader const &) = delete;
+        Reader(Reader const &) = delete;
+        Reader &operator=(Reader const &) = delete;
 
         FOE_EXPORT Reader(Reader &&) noexcept;
         FOE_EXPORT Reader &operator=(Reader &&) noexcept;
