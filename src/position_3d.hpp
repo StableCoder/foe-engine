@@ -17,9 +17,11 @@
 #ifndef POSITION_3D_HPP
 #define POSITION_3D_HPP
 
+#include <foe/yaml/parsing.hpp>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
+#include <yaml-cpp/yaml.h>
 
 struct Position3D {
     glm::vec3 position;
@@ -27,5 +29,16 @@ struct Position3D {
 
     VkDescriptorSet descriptorSet{VK_NULL_HANDLE};
 };
+
+inline auto yaml_read_Position3D(YAML::Node const &node) -> Position3D {}
+
+inline auto yaml_write_Position3D(Position3D const &data) -> YAML::Node {
+    YAML::Node writeNode;
+
+    yaml_write_required("position", data.position, writeNode);
+    yaml_write_required("orientation", data.orientation, writeNode);
+
+    return writeNode;
+}
 
 #endif // POSITION_3D_HPP

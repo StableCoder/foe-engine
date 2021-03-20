@@ -94,12 +94,12 @@ target_link_libraries(
   PRIVATE CLI11
           foe
           foe_ecs
+          foe_ecs_yaml
           foe_graphics_vk
           foe_model
           foe_resource
           foe_resource_yaml
           foe_wsi
-          foe_yaml
           foe_xr)
 target_code_coverage(foe_engine)
 
