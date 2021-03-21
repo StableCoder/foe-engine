@@ -18,40 +18,35 @@
 #define FOE_GRAPHICS_MODEL_HPP
 
 #include <foe/graphics/export.h>
+#include <foe/graphics/upload_buffer.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-FOE_GFX_EXPORT VkResult allocateModelBuffers(VmaAllocator allocator,
-                                             VkDeviceSize vertexDataSize,
-                                             VkDeviceSize indexDataSize,
-                                             VkBuffer *pVertexBuffer,
-                                             VmaAllocation *pVertexAlloc,
-                                             VkBuffer *pIndexBuffer,
-                                             VmaAllocation *pIndexAlloc,
-                                             VkBuffer *pStagingBuffer,
-                                             VmaAllocation *pStagingAlloc);
+#include <system_error>
 
-FOE_GFX_EXPORT VkResult mapModelBuffers(VmaAllocator allocator,
-                                        VkDeviceSize vertexDataSize,
-                                        VmaAllocation vertexAlloc,
-                                        VmaAllocation indexAlloc,
-                                        VmaAllocation stagingAlloc,
-                                        void **ppVertexData,
-                                        void **ppIndexData);
+FOE_GFX_EXPORT std::error_code mapModelBuffers(VmaAllocator allocator,
+                                               VkDeviceSize vertexDataSize,
+                                               VmaAllocation vertexAlloc,
+                                               VmaAllocation indexAlloc,
+                                               foeGfxUploadContext uploadContext,
+                                               foeGfxUploadBuffer uploadBuffer,
+                                               void **ppVertexData,
+                                               void **ppIndexData);
 
 FOE_GFX_EXPORT void unmapModelBuffers(VmaAllocator allocator,
                                       VmaAllocation vertexAlloc,
                                       VmaAllocation indexAlloc,
-                                      VmaAllocation stagingAlloc);
+                                      foeGfxUploadContext uploadContext,
+                                      foeGfxUploadBuffer uploadBuffer);
 
 FOE_GFX_EXPORT VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
                                                   VkBuffer vertexBuffer,
                                                   VkDeviceSize vertexDataSize,
                                                   VkBuffer indexBuffer,
                                                   VkDeviceSize indexDataSize,
-                                                  VkBuffer stagingBuffer,
+                                                  foeGfxUploadBuffer uploadBuffer,
                                                   foeGfxUploadRequest *pUploadRequest);
 
 #endif // FOE_GRAPHICS_MODEL_HPP

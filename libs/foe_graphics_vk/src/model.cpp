@@ -17,140 +17,30 @@
 #include <foe/graphics/vk/model.hpp>
 
 #include <foe/graphics/vk/queue_family.hpp>
+#include <vk_error_code.hpp>
 
+#include "upload_buffer.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
 
 #include <array>
 
-VkResult allocateModelBuffers(VmaAllocator allocator,
-                              VkDeviceSize vertexDataSize,
-                              VkDeviceSize indexDataSize,
-                              VkBuffer *pVertexBuffer,
-                              VmaAllocation *pVertexAlloc,
-                              VkBuffer *pIndexBuffer,
-                              VmaAllocation *pIndexAlloc,
-                              VkBuffer *pStagingBuffer,
-                              VmaAllocation *pStagingAlloc) {
-    VkResult res;
-
-    VkBuffer vertexBuffer{VK_NULL_HANDLE};
-    VmaAllocation vertexAlloc{VK_NULL_HANDLE};
-    VkBuffer indexBuffer{VK_NULL_HANDLE};
-    VmaAllocation indexAlloc{VK_NULL_HANDLE};
-    VkBuffer stagingBuffer{VK_NULL_HANDLE};
-    VmaAllocation stagingAlloc{VK_NULL_HANDLE};
-    bool bothHostVisible = true;
-
-    { // Vertex Buffer
-        VkBufferCreateInfo bufferCI{
-            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = vertexDataSize,
-            .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-        };
-
-        VmaAllocationCreateInfo allocCI{
-            .usage = VMA_MEMORY_USAGE_GPU_ONLY,
-        };
-
-        VmaAllocationInfo allocInfo;
-        res = vmaCreateBuffer(allocator, &bufferCI, &allocCI, &vertexBuffer, &vertexAlloc,
-                              &allocInfo);
-        if (res != VK_SUCCESS) {
-            goto ALLOCATION_FAILED;
-        }
-
-        VkMemoryPropertyFlags memFlags;
-        vmaGetMemoryTypeProperties(allocator, allocInfo.memoryType, &memFlags);
-        if ((memFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == 0) {
-            bothHostVisible = false;
-        }
-    }
-
-    { // Index Buffer
-        VkBufferCreateInfo bufferCI{
-            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = indexDataSize,
-            .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-        };
-
-        VmaAllocationCreateInfo allocCI{
-            .usage = VMA_MEMORY_USAGE_GPU_ONLY,
-        };
-
-        VmaAllocationInfo allocInfo;
-        res =
-            vmaCreateBuffer(allocator, &bufferCI, &allocCI, &indexBuffer, &indexAlloc, &allocInfo);
-        if (res != VK_SUCCESS) {
-            goto ALLOCATION_FAILED;
-        }
-
-        VkMemoryPropertyFlags memFlags;
-        vmaGetMemoryTypeProperties(allocator, allocInfo.memoryType, &memFlags);
-        if ((memFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) == 0) {
-            bothHostVisible = false;
-        }
-    }
-
-    if (!bothHostVisible) {
-        VkBufferCreateInfo bufferCI{
-            .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = vertexDataSize + indexDataSize,
-            .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-        };
-
-        VmaAllocationCreateInfo allocCI{
-            .usage = VMA_MEMORY_USAGE_CPU_ONLY,
-        };
-
-        res =
-            vmaCreateBuffer(allocator, &bufferCI, &allocCI, &stagingBuffer, &stagingAlloc, nullptr);
-        if (res != VK_SUCCESS) {
-            goto ALLOCATION_FAILED;
-        }
-    }
-
-ALLOCATION_FAILED:
-    if (res != VK_SUCCESS) {
-        if (stagingBuffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
-        }
-
-        if (indexBuffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(allocator, indexBuffer, indexAlloc);
-        }
-
-        if (vertexBuffer != VK_NULL_HANDLE) {
-            vmaDestroyBuffer(allocator, vertexBuffer, vertexAlloc);
-        }
-    } else {
-        *pVertexBuffer = vertexBuffer;
-        *pVertexAlloc = vertexAlloc;
-        *pIndexBuffer = indexBuffer;
-        *pIndexAlloc = indexAlloc;
-        *pStagingBuffer = stagingBuffer;
-        *pStagingAlloc = stagingAlloc;
-    }
-
-    return res;
-}
-
-VkResult mapModelBuffers(VmaAllocator allocator,
-                         VkDeviceSize vertexDataSize,
-                         VmaAllocation vertexAlloc,
-                         VmaAllocation indexAlloc,
-                         VmaAllocation stagingAlloc,
-                         void **ppVertexData,
-                         void **ppIndexData) {
-    VkResult res;
-
-    if (stagingAlloc != VK_NULL_HANDLE) {
-        res = vmaMapMemory(allocator, stagingAlloc, ppVertexData);
-        if (res != VK_SUCCESS) {
-            return res;
+std::error_code mapModelBuffers(VmaAllocator allocator,
+                                VkDeviceSize vertexDataSize,
+                                VmaAllocation vertexAlloc,
+                                VmaAllocation indexAlloc,
+                                foeGfxUploadContext uploadContext,
+                                foeGfxUploadBuffer uploadBuffer,
+                                void **ppVertexData,
+                                void **ppIndexData) {
+    if (uploadBuffer != FOE_NULL_HANDLE) {
+        auto errC = foeGfxMapUploadBuffer(uploadContext, uploadBuffer, ppVertexData);
+        if (errC) {
+            return errC;
         }
         *ppIndexData = static_cast<uint8_t *>(*ppVertexData) + vertexDataSize;
     } else {
+        VkResult res;
         res = vmaMapMemory(allocator, vertexAlloc, ppVertexData);
         if (res != VK_SUCCESS) {
             return res;
@@ -162,15 +52,16 @@ VkResult mapModelBuffers(VmaAllocator allocator,
         }
     }
 
-    return res;
+    return std::error_code{};
 }
 
 void unmapModelBuffers(VmaAllocator allocator,
                        VmaAllocation vertexAlloc,
                        VmaAllocation indexAlloc,
-                       VmaAllocation stagingAlloc) {
-    if (stagingAlloc != VK_NULL_HANDLE) {
-        vmaUnmapMemory(allocator, stagingAlloc);
+                       foeGfxUploadContext uploadContext,
+                       foeGfxUploadBuffer uploadBuffer) {
+    if (uploadBuffer != FOE_NULL_HANDLE) {
+        foeGfxUnmapUploadBuffer(uploadContext, uploadBuffer);
     } else {
         vmaUnmapMemory(allocator, indexAlloc);
         vmaUnmapMemory(allocator, vertexAlloc);
@@ -182,14 +73,14 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
                                    VkDeviceSize vertexDataSize,
                                    VkBuffer indexBuffer,
                                    VkDeviceSize indexDataSize,
-                                   VkBuffer stagingBuffer,
+                                   foeGfxUploadBuffer uploadBuffer,
                                    foeGfxUploadRequest *pUploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkResult res;
     foeGfxVkUploadRequest *uploadRequest{nullptr};
 
-    if (stagingBuffer) {
+    if (uploadBuffer != FOE_NULL_HANDLE) {
         // Need both queues for a tranfer
         res = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
                                        pUploadContext->dstCommandPool, &uploadRequest);
@@ -221,7 +112,7 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
     }
 
     { // Recording
-        if (stagingBuffer != VK_NULL_HANDLE) {
+        if (uploadBuffer != FOE_NULL_HANDLE) {
             // Set memory barriers
             std::array<VkBufferMemoryBarrier, 2> transitionBarriers{
                 VkBufferMemoryBarrier{
@@ -255,13 +146,14 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
 
             // Transfer data
             VkBufferCopy copyRegion{};
+            auto *pGfxUploadBuffer = upload_buffer_from_handle(uploadBuffer);
 
             copyRegion.size = vertexDataSize;
-            vkCmdCopyBuffer(commandBuffer, stagingBuffer, vertexBuffer, 1, &copyRegion);
+            vkCmdCopyBuffer(commandBuffer, pGfxUploadBuffer->buffer, vertexBuffer, 1, &copyRegion);
 
             copyRegion.srcOffset = vertexDataSize;
             copyRegion.size = indexDataSize;
-            vkCmdCopyBuffer(commandBuffer, stagingBuffer, indexBuffer, 1, &copyRegion);
+            vkCmdCopyBuffer(commandBuffer, pGfxUploadBuffer->buffer, indexBuffer, 1, &copyRegion);
         }
 
         // Transition to final states for use
