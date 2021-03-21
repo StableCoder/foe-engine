@@ -1,6 +1,7 @@
 target_sources(
   foe_resource_yaml
-  PRIVATE image_public.cpp
+  PRIVATE armature_public.cpp
+          image_public.cpp
           image.cpp
           material_public.cpp
           material.cpp

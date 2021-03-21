@@ -1,6 +1,8 @@
 target_sources(
   foe_resource
-  PRIVATE error_code.cpp
+  PRIVATE armature_loader.cpp
+          armature.cpp
+          error_code.cpp
           image_loader.cpp
           image_pool.cpp
           image.cpp
