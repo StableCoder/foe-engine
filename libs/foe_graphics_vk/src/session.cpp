@@ -253,6 +253,12 @@ auto foeGfxVkGetDescriptorSetLayout(foeGfxSession session,
     return pSession->descriptorSetLayoutPool.get(pDescriptorSetLayoutCI);
 }
 
+auto foeGfxVkGetDummySet(foeGfxSession session) -> VkDescriptorSet {
+    auto *pSession = session_from_handle(session);
+
+    return pSession->builtinDescriptorSets.getDummySet();
+}
+
 auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
                               foeBuiltinDescriptorSetLayoutFlags builtinLayout)
     -> VkDescriptorSetLayout {

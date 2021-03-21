@@ -48,6 +48,8 @@ FOE_GFX_EXPORT auto foeGfxVkGetDescriptorSetLayout(
     foeGfxSession session, VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
     -> VkDescriptorSetLayout;
 
+FOE_GFX_EXPORT auto foeGfxVkGetDummySet(foeGfxSession session) -> VkDescriptorSet;
+
 FOE_GFX_EXPORT auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
                                              foeBuiltinDescriptorSetLayoutFlags builtinLayout)
     -> VkDescriptorSetLayout;
