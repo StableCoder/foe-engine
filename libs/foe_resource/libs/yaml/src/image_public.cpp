@@ -28,6 +28,7 @@ bool import_yaml_image_definition(std::string_view imageName, std::string &fileN
         rootNode = YAML::LoadFile(std::string{imageName} + ".yml");
     } catch (YAML::ParserException &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
+        return false;
     }
 
     try {

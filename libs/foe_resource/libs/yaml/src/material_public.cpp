@@ -41,6 +41,7 @@ bool import_yaml_material_definition(
         rootNode = YAML::LoadFile(std::string{materialName} + ".yml");
     } catch (YAML::ParserException &e) {
         FOE_LOG(General, Fatal, "Failed to load config file: {}", e.what());
+        return false;
     }
 
     try {
@@ -61,6 +62,7 @@ bool export_yaml_material_definition(foeMaterial const *pMaterial) {
         yaml_write_material_definition("", pMaterial, definition);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to export foeMaterial definition: {}", e.what());
+        return false;
     }
 
     YAML::Emitter emitter;

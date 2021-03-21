@@ -35,6 +35,7 @@ bool import_yaml_shader_definition(std::string_view shaderName,
         config = YAML::LoadFile(std::string{shaderName} + ".yml");
     } catch (YAML::ParserException &e) {
         FOE_LOG(General, Fatal, "Failed to load config file: {}", e.what());
+        return false;
     }
 
     try {
@@ -55,6 +56,7 @@ bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShad
         yaml_write_shader_definition("", session, pShader, definition);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to export foeShader definition: {}", e.what());
+        return false;
     }
 
     YAML::Emitter emitter;
