@@ -12,6 +12,9 @@ target_sources(
           material_pool.cpp
           material_subresources.cpp
           material.cpp
+          mesh_loader.cpp
+          mesh_pool.cpp
+          mesh.cpp
           shader_loader.cpp
           shader_pool.cpp
           shader.cpp

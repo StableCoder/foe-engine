@@ -5,6 +5,7 @@ target_sources(
           image.cpp
           material_public.cpp
           material.cpp
+          mesh_public.cpp
           shader_public.cpp
           shader.cpp
           vertex_descriptor_public.cpp)
