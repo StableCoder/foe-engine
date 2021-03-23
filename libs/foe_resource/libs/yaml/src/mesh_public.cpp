@@ -22,8 +22,7 @@
 #include <yaml-cpp/yaml.h>
 
 bool import_yaml_mesh_definition(std::string_view name,
-                                 std::string &fileName,
-                                 std::string &meshName) {
+                                 std::unique_ptr<foeMeshCreateInfo> &meshCI) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
@@ -35,14 +34,24 @@ bool import_yaml_mesh_definition(std::string_view name,
     try {
         // Read the definition
         if (auto externalFileNode = rootNode["external_file"]; externalFileNode) {
-            yaml_read_required("file", externalFileNode, fileName);
-            yaml_read_required("mesh_name", externalFileNode, meshName);
-        } /* else if (auto generatedCubeNode = rootNode["generated_cube"]; generatedCubeNode) {
+            meshCI.reset(new foeMeshFromFileCreateInfo);
+            foeMeshFromFileCreateInfo *ci = static_cast<foeMeshFromFileCreateInfo *>(meshCI.get());
 
-         } else if (auto generatedIcosphereNode = rootNode["generated_icosphere"];
-                    generatedIcosphereNode) {
-         }*/
-        else {
+            yaml_read_required("file", externalFileNode, ci->fileName);
+            yaml_read_required("mesh_name", externalFileNode, ci->meshName);
+        } else if (auto generatedCubeNode = rootNode["generated_cube"]; generatedCubeNode) {
+            meshCI.reset(new foeMeshGenerateCubeCreateInfo);
+            foeMeshGenerateCubeCreateInfo *ci =
+                static_cast<foeMeshGenerateCubeCreateInfo *>(meshCI.get());
+
+        } else if (auto generatedIcosphereNode = rootNode["generated_icosphere"];
+                   generatedIcosphereNode) {
+            meshCI.reset(new foeMeshGenerateIcosphereCreateInfo);
+            foeMeshGenerateIcosphereCreateInfo *ci =
+                static_cast<foeMeshGenerateIcosphereCreateInfo *>(meshCI.get());
+
+            yaml_read_required("recursion", generatedIcosphereNode, ci->recursion);
+        } else {
             return false;
         }
     } catch (foeYamlException const &e) {

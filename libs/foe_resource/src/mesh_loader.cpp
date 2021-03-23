@@ -33,7 +33,7 @@ foeMeshLoader::~foeMeshLoader() {
 
 std::error_code foeMeshLoader::initialize(
     foeGfxSession session,
-    std::function<bool(std::string_view, std::string &, std::string &)> importFunction,
+    std::function<bool(std::string_view, std::unique_ptr<foeMeshCreateInfo> &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -104,10 +104,10 @@ void foeMeshLoader::processUnloadRequests() {
 
 void foeMeshLoader::requestResourceLoad(foeMesh *pMesh) {
     ++mActiveJobs;
-    mAsyncJobs([this, pMesh] {
-        startUpload(pMesh);
-        --mActiveJobs;
-    });
+    // mAsyncJobs([this, pMesh] {
+    startUpload(pMesh);
+    --mActiveJobs;
+    //});
 }
 
 void foeMeshLoader::requestResourceUnload(foeMesh *pMesh) {
@@ -126,7 +126,9 @@ void foeMeshLoader::requestResourceUnload(foeMesh *pMesh) {
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/model.hpp>
 #include <foe/graphics/vk/session.hpp>
+#include <foe/model/cube.hpp>
 #include <foe/model/file_importer_plugins.hpp>
+#include <foe/model/ico_sphere.hpp>
 #include <vk_error_code.hpp>
 #include <vulkan/vulkan.h>
 
@@ -146,30 +148,29 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
 
-    std::string fileName;
-    std::string meshName;
+    std::unique_ptr<foeMeshCreateInfo> meshCI;
 
-    foeGfxUploadRequest gfxUploadRequest;
-    foeGfxUploadBuffer gfxUploadBuffer;
+    foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
+    foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
     foeMesh::Data meshData{};
 
-    bool read = mImportFunction(pMesh->getName(), fileName, meshName);
+    bool read = mImportFunction(pMesh->getName(), meshCI);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    {
+    if (auto pCI = dynamic_cast<foeMeshFromFileCreateInfo *>(meshCI.get()); pCI) {
         auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
-        auto modelLoader = modelImporterPlugin->createImporter(fileName.c_str());
+        auto modelLoader = modelImporterPlugin->createImporter(pCI->fileName.c_str());
         assert(modelLoader->loaded());
 
         unsigned int meshIndex;
         {
             bool found = false;
             for (unsigned int i = 0; i < modelLoader->getNumMeshes(); ++i) {
-                if (modelLoader->getMeshName(i) == meshName) {
+                if (modelLoader->getMeshName(i) == pCI->meshName) {
                     meshIndex = i;
                     found = true;
                     break;
@@ -277,6 +278,145 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
         meshData.gfxVertexComponent = components;
 
         modelImporterPlugin.release();
+    } else if (auto pCI = dynamic_cast<foeMeshGenerateCubeCreateInfo *>(meshCI.get()); pCI) {
+        std::vector<foeVertexComponent> components{
+            foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
+
+        uint32_t vertexDataSize = foeModelCubeNumVertices() *
+                                  foeGetVertexComponentStride(components.size(), components.data());
+        std::vector<float> vertexData(vertexDataSize);
+        vertexDataSize *= sizeof(float);
+
+        foeModelCubeVertexData(components.size(), components.data(), vertexData.data());
+
+        uint32_t indexDataSize = foeModelCubeNumIndices();
+        std::vector<uint16_t> indexData(indexDataSize);
+        indexDataSize *= sizeof(uint16_t);
+
+        foeModelCubeIndexData16(0, indexData.data());
+
+        // Graphics Upload
+        bool hostVisible; // If the original buffers are host visible, then no need for staging
+
+        auto errC = foeGfxVkCreateMesh(mGfxSession, vertexDataSize, indexDataSize, indexData.size(),
+                                       VK_INDEX_TYPE_UINT16, 0, &hostVisible, &meshData.gfxData);
+        if (errC) {
+            goto LOADING_FAILED;
+        }
+
+        VkResult vkRes{VK_SUCCESS};
+        auto [vertexBuffer, vertexAlloc] = foeGfxVkGetMeshVertexData(meshData.gfxData);
+        auto [indexBuffer, indexAlloc] = foeGfxVkGetMeshIndexData(meshData.gfxData);
+
+        if (!hostVisible) {
+            errC = foeGfxCreateUploadBuffer(mGfxUploadContext, vertexDataSize + indexDataSize,
+                                            &gfxUploadBuffer);
+            if (errC) {
+                goto LOADING_FAILED;
+            }
+        }
+
+        void *pVertexData;
+        void *pIndexData;
+
+        errC = mapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexDataSize, vertexAlloc,
+                               indexAlloc, mGfxUploadContext, gfxUploadBuffer, &pVertexData,
+                               &pIndexData);
+        if (errC) {
+            goto LOADING_FAILED;
+        }
+        memcpy(pVertexData, vertexData.data(), vertexDataSize);
+        memcpy(pIndexData, indexData.data(), indexDataSize);
+
+        unmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
+                          mGfxUploadContext, gfxUploadBuffer);
+
+        vkRes =
+            recordModelUploadCommands(mGfxUploadContext, vertexBuffer, vertexDataSize, indexBuffer,
+                                      indexDataSize, gfxUploadBuffer, &gfxUploadRequest);
+        if (vkRes != VK_SUCCESS) {
+            goto LOADING_FAILED;
+        }
+
+        errC = foeSubmitUploadDataCommands(mGfxUploadContext, gfxUploadRequest);
+        if (errC) {
+            goto LOADING_FAILED;
+        }
+
+        meshData.perVertexBoneWeights = 0;
+        meshData.gfxVertexComponent = std::move(components);
+    } else if (auto pCI = dynamic_cast<foeMeshGenerateIcosphereCreateInfo *>(meshCI.get()); pCI) {
+        std::vector<foeVertexComponent> components{
+            foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
+
+        int numVertices;
+        int numIndices;
+        foeModelIcoSphereNums(pCI->recursion, &numVertices, &numIndices);
+
+        uint32_t vertexDataSize =
+            numVertices * foeGetVertexComponentStride(components.size(), components.data());
+        std::vector<float> vertexData(vertexDataSize);
+        vertexDataSize *= sizeof(float);
+
+        foeModelIcoSphereVertexData(pCI->recursion, components.size(), components.data(),
+                                    vertexData.data());
+
+        uint32_t indexDataSize = numIndices;
+        std::vector<uint16_t> indexData(indexDataSize);
+        indexDataSize *= sizeof(uint16_t);
+
+        foeModelIcoSphereIndexData16(pCI->recursion, 0, indexData.data());
+
+        // Graphics Upload
+        bool hostVisible; // If the original buffers are host visible, then no need for staging
+
+        auto errC = foeGfxVkCreateMesh(mGfxSession, vertexDataSize, indexDataSize, indexData.size(),
+                                       VK_INDEX_TYPE_UINT16, 0, &hostVisible, &meshData.gfxData);
+        if (errC) {
+            goto LOADING_FAILED;
+        }
+
+        VkResult vkRes{VK_SUCCESS};
+        auto [vertexBuffer, vertexAlloc] = foeGfxVkGetMeshVertexData(meshData.gfxData);
+        auto [indexBuffer, indexAlloc] = foeGfxVkGetMeshIndexData(meshData.gfxData);
+
+        if (!hostVisible) {
+            errC = foeGfxCreateUploadBuffer(mGfxUploadContext, vertexDataSize + indexDataSize,
+                                            &gfxUploadBuffer);
+            if (errC) {
+                goto LOADING_FAILED;
+            }
+        }
+
+        void *pVertexData;
+        void *pIndexData;
+
+        errC = mapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexDataSize, vertexAlloc,
+                               indexAlloc, mGfxUploadContext, gfxUploadBuffer, &pVertexData,
+                               &pIndexData);
+        if (errC) {
+            goto LOADING_FAILED;
+        }
+        memcpy(pVertexData, vertexData.data(), vertexDataSize);
+        memcpy(pIndexData, indexData.data(), indexDataSize);
+
+        unmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
+                          mGfxUploadContext, gfxUploadBuffer);
+
+        vkRes =
+            recordModelUploadCommands(mGfxUploadContext, vertexBuffer, vertexDataSize, indexBuffer,
+                                      indexDataSize, gfxUploadBuffer, &gfxUploadRequest);
+        if (vkRes != VK_SUCCESS) {
+            goto LOADING_FAILED;
+        }
+
+        errC = foeSubmitUploadDataCommands(mGfxUploadContext, gfxUploadRequest);
+        if (vkRes) {
+            goto LOADING_FAILED;
+        }
+
+        meshData.perVertexBoneWeights = 0;
+        meshData.gfxVertexComponent = std::move(components);
     }
 
 LOADING_FAILED:
@@ -295,8 +435,8 @@ LOADING_FAILED:
 
         if (gfxUploadRequest != FOE_NULL_HANDLE) {
             ++mActiveUploads;
-            // A partial upload success, leave pMesh as nullptr, so the upload completes then the
-            // data is discarded
+            // A partial upload success, leave pMesh as nullptr, so the upload completes then
+            // the data is discarded
             processUpload(nullptr, gfxUploadRequest, gfxUploadBuffer, meshData);
         } else {
             // No target image, discard all the data
@@ -305,8 +445,8 @@ LOADING_FAILED:
         }
 
     } else {
-        // Stash the data in a list while we wait for the upload to complete, to later be processed
-        // by processUploadRequest
+        // Stash the data in a list while we wait for the upload to complete, to later be
+        // processed by processUploadRequest
         ++mActiveUploads;
 
         processUpload(pMesh, gfxUploadRequest, gfxUploadBuffer, meshData);
@@ -314,14 +454,14 @@ LOADING_FAILED:
 }
 
 void foeMeshLoader::processUpload(foeMesh *pMesh,
-                                  foeGfxUploadRequest uploadRequest,
-                                  foeGfxUploadBuffer uploadBuffer,
+                                  foeGfxUploadRequest gfxUploadRequest,
+                                  foeGfxUploadBuffer gfxUploadBuffer,
                                   foeMesh::Data data) {
-    auto requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
+    auto requestStatus = foeGfxGetUploadRequestStatus(gfxUploadRequest);
     if (requestStatus == FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE) {
-        if (uploadBuffer != FOE_NULL_HANDLE)
-            foeGfxDestroyUploadBuffer(mGfxUploadContext, uploadBuffer);
-        foeGfxDestroyUploadRequest(mGfxUploadContext, uploadRequest);
+        if (gfxUploadBuffer != FOE_NULL_HANDLE)
+            foeGfxDestroyUploadBuffer(mGfxUploadContext, gfxUploadBuffer);
+        foeGfxDestroyUploadRequest(mGfxUploadContext, gfxUploadRequest);
 
         // It's done, swap the data in
         if (pMesh != nullptr) {
@@ -343,9 +483,9 @@ void foeMeshLoader::processUpload(foeMesh *pMesh,
 
         --mActiveUploads;
     } else if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
-        if (uploadBuffer != FOE_NULL_HANDLE)
-            foeGfxDestroyUploadBuffer(mGfxUploadContext, uploadBuffer);
-        foeGfxDestroyUploadRequest(mGfxUploadContext, uploadRequest);
+        if (gfxUploadBuffer != FOE_NULL_HANDLE)
+            foeGfxDestroyUploadBuffer(mGfxUploadContext, gfxUploadBuffer);
+        foeGfxDestroyUploadRequest(mGfxUploadContext, gfxUploadRequest);
 
         // There was an error, this is lost
         if (pMesh != nullptr) {
@@ -363,8 +503,8 @@ void foeMeshLoader::processUpload(foeMesh *pMesh,
 
         mUploadingData.emplace_back(MeshUpload{
             .pMesh = pMesh,
-            .uploadRequest = uploadRequest,
-            .uploadBuffer = uploadBuffer,
+            .uploadRequest = gfxUploadRequest,
+            .uploadBuffer = gfxUploadBuffer,
             .data = data,
         });
     }

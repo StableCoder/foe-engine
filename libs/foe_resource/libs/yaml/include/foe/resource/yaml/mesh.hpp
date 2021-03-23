@@ -17,13 +17,13 @@
 #ifndef FOE_RESOURCE_YAML_MESH_HPP
 #define FOE_RESOURCE_YAML_MESH_HPP
 
+#include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/yaml/export.h>
 
 #include <string>
 #include <string_view>
 
 FOE_RES_YAML_EXPORT bool import_yaml_mesh_definition(std::string_view name,
-                                                     std::string &fileName,
-                                                     std::string &meshName);
+                                                     std::unique_ptr<foeMeshCreateInfo> &meshCI);
 
 #endif // FOE_RESOURCE_YAML_MESH_HPP

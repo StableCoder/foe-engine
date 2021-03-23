@@ -28,9 +28,25 @@
 #include <array>
 #include <atomic>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <system_error>
 #include <vector>
+
+struct foeMeshCreateInfo {
+    virtual ~foeMeshCreateInfo() = default;
+};
+
+struct foeMeshFromFileCreateInfo : public foeMeshCreateInfo {
+    std::string fileName;
+    std::string meshName;
+};
+
+struct foeMeshGenerateCubeCreateInfo : public foeMeshCreateInfo {};
+
+struct foeMeshGenerateIcosphereCreateInfo : public foeMeshCreateInfo {
+    int recursion;
+};
 
 class foeMeshLoader {
   public:
@@ -38,7 +54,7 @@ class foeMeshLoader {
 
     FOE_RES_EXPORT std::error_code initialize(
         foeGfxSession session,
-        std::function<bool(std::string_view, std::string &, std::string &)> importFunction,
+        std::function<bool(std::string_view, std::unique_ptr<foeMeshCreateInfo> &)> importFunction,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -68,7 +84,7 @@ class foeMeshLoader {
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
     foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
 
-    std::function<bool(std::string_view, std::string &, std::string &)> mImportFunction;
+    std::function<bool(std::string_view, std::unique_ptr<foeMeshCreateInfo> &)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 
