@@ -30,10 +30,14 @@
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
+#include <foe/resource/armature_loader.hpp>
+#include <foe/resource/armature_pool.hpp>
 #include <foe/resource/image_loader.hpp>
 #include <foe/resource/image_pool.hpp>
 #include <foe/resource/material_loader.hpp>
 #include <foe/resource/material_pool.hpp>
+#include <foe/resource/mesh_loader.hpp>
+#include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <foe/resource/vertex_descriptor.hpp>
@@ -50,6 +54,7 @@
 #include "position_3d.hpp"
 #include "position_descriptor_pool.hpp"
 #include "settings.hpp"
+#include "vk_animation.hpp"
 
 #include <array>
 #include <map>
@@ -126,7 +131,11 @@ struct Application {
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
 
-    // Resources
+    // Other Resources
+    foeArmatureLoader armatureLoader;
+    foeArmaturePool armaturePool;
+
+    // Grapics Resources
     foeShaderLoader shaderLoader;
     foeShaderPool shaderPool;
     foeVertexDescriptorLoader vertexDescriptorLoader;
@@ -135,10 +144,15 @@ struct Application {
     foeImagePool imagePool;
     foeMaterialLoader materialLoader;
     foeMaterialPool materialPool;
+    foeMeshLoader meshLoader;
+    foeMeshPool meshPool;
 
     Camera camera;
     CameraDescriptorPool cameraDescriptorPool;
     PositionDescriptorPool positionDescriptorPool;
+
+    // Other
+    VkAnimationPool vkAnimationPool;
 
 #ifdef EDITOR_MODE
     foeImGuiRenderer imguiRenderer;

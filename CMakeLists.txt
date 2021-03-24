@@ -89,9 +89,6 @@ add_subdirectory(libs)
 
 # Engine Entrypoint
 add_executable(foe_engine)
-target_compile_definitions(
-  foe_engine
-  PUBLIC ASSIMP_PLUGIN_PATH="$<TARGET_FILE:foe_model_importer_assimp>")
 target_link_libraries(
   foe_engine
   PRIVATE CLI11

@@ -7,7 +7,8 @@ target_sources(
           logging.cpp
           main.cpp
           position_descriptor_pool.cpp
-          settings.cpp)
+          settings.cpp
+          vk_animation.cpp)
 
 if(BUILD_XR)
   target_sources(foe_engine PRIVATE xr.cpp)
