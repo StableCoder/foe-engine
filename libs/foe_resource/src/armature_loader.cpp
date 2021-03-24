@@ -126,9 +126,11 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
                 for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
                     auto animName = modelLoader->getAnimationName(i);
 
-                    if (animName == it.animationName) {
-                        // We found it
-                        animations.emplace_back(modelLoader->importAnimation(i));
+                    for (auto const &importAnimName : it.animationNames) {
+                        if (animName == importAnimName) {
+                            animations.emplace_back(modelLoader->importAnimation(i));
+                            break;
+                        }
                     }
                 }
             }

@@ -31,7 +31,7 @@ class foeArmatureLoader;
 
 struct AnimationImportInfo {
     std::string file;
-    std::string animationName;
+    std::vector<std::string> animationNames;
 };
 
 struct foeArmature {

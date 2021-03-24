@@ -49,7 +49,18 @@ bool import_yaml_armature_definition(std::string_view armatureName,
                             AnimationImportInfo animation;
 
                             yaml_read_required("fileName", *it, animation.file);
-                            yaml_read_required("name", *it, animation.animationName);
+
+                            if (auto animationNamesNode = (*it)["animationNames"];
+                                animationNamesNode) {
+                                for (auto it = animationNamesNode.begin();
+                                     it != animationNamesNode.end(); ++it) {
+                                    std::string tempStr;
+
+                                    yaml_read_required("", *it, tempStr);
+
+                                    animation.animationNames.push_back(std::move(tempStr));
+                                }
+                            }
 
                             animations.emplace_back(animation);
                         }
