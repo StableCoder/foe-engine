@@ -141,7 +141,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = foeGfxCreateUploadContext(gfxSession, &resUploader);
     if (errC) {
-        VK_END_PROGRAM
+        ERRC_END_PROGRAM
     }
 
     {
@@ -1309,9 +1309,9 @@ int Application::mainloop() {
 
                         if constexpr (true) {
                             // Render Model
-                            auto *theVertexDescriptor = vertexDescriptorPool.find("nonbonedMeshVD");
+                            auto *theVertexDescriptor = vertexDescriptorPool.find("bonedMeshVD");
                             auto *theMaterial = materialPool.find("MeshMaterial");
-                            bool boned = false;
+                            bool boned = true;
                             auto *pMesh = meshPool.find("testMesh");
                             auto *pArmature = armaturePool.find("testArmature");
 
@@ -1349,7 +1349,7 @@ int Application::mainloop() {
                                     static_cast<float>(
                                         simulationClock.time<std::chrono::milliseconds>().count()) /
                                         1000.f,
-                                    pMesh->data.gfxBones, &pArmature->data.animations[0]);
+                                    pMesh->data.gfxBones, &pArmature->data.animations[1]);
 
                                 // Model Matrix
                                 std::array<VkDescriptorSet, 2> sets = {
