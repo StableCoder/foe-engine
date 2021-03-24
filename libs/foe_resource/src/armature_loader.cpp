@@ -110,7 +110,12 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
             auto modelLoader = modelImporterPlugin->createImporter(armatureFileName.c_str());
             assert(modelLoader->loaded());
 
-            armature = modelLoader->importArmature();
+            auto tempArmature = modelLoader->importArmature();
+            for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {
+                if (it->name == armatureRootNodeName) {
+                    armature.assign(it, tempArmature.end());
+                }
+            }
         }
 
         { // Animations
