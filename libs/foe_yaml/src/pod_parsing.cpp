@@ -33,8 +33,23 @@ bool yaml_read_optional(std::string const &typeName,
     try {
         data = subNode.as<T>();
     } catch (...) {
-        throw foeYamlException(nodeName + " - Could not parse node as '" + typeName +
-                               "' with value of: " + subNode.as<std::string>());
+        switch (node.Type()) {
+        case YAML::NodeType::Null:
+            throw foeYamlException(nodeName + " - Could not parse Null-type node as '" + typeName +
+                                   "'");
+        case YAML::NodeType::Scalar:
+            throw foeYamlException(nodeName + " - Could not parse node as '" + typeName +
+                                   "' with value of: " + subNode.as<std::string>());
+        case YAML::NodeType::Sequence:
+            throw foeYamlException(nodeName + " - Could not parse Sequence-type node as '" +
+                                   typeName + "'");
+        case YAML::NodeType::Map:
+            throw foeYamlException(nodeName + " - Could not parse Map-type node as '" + typeName +
+                                   "'");
+        case YAML::NodeType::Undefined:
+            throw foeYamlException(nodeName + " - Could not parse Undefined-type node as '" +
+                                   typeName + "'");
+        }
     }
 
     return true;
