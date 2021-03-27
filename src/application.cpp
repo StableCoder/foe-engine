@@ -398,7 +398,7 @@ int Application::initialize(int argc, char **argv) {
         camera.nearZ = 2.f;
         camera.farZ = 50.f;
 
-        camera.pPosition3D = mPositionPool[cameraID].get();
+        camera.pPosition3D = statePools.position[cameraID].get();
     }
 
 #ifdef EDITOR_MODE
@@ -738,7 +738,7 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
-    saveStateData(&ecsGroups, mPositionPool);
+    saveStateData(&ecsGroups, statePools.position);
 
     /*
     export_yaml_material_definition(materialPool.find("theMaterial"));
@@ -1068,7 +1068,7 @@ int Application::mainloop() {
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].commandPool,
                                0);
 
-            positionDescriptorPool.generatePositionDescriptors(frameIndex, mPositionPool);
+            positionDescriptorPool.generatePositionDescriptors(frameIndex, statePools.position);
 
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
@@ -1247,7 +1247,7 @@ int Application::mainloop() {
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 1, 1,
-                                                &mPositionPool[renderID]->descriptorSet, 0,
+                                                &statePools.position[renderID]->descriptorSet, 0,
                                                 nullptr);
 
                                             if (auto set =
@@ -1541,7 +1541,7 @@ int Application::mainloop() {
                                                     layout, 0, 1, &camera.descriptor, 0, nullptr);
                             vkCmdBindDescriptorSets(
                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
-                                &mPositionPool[renderID]->descriptorSet, 0, nullptr);
+                                &statePools.position[renderID]->descriptorSet, 0, nullptr);
 
                             if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
                                 set != VK_NULL_HANDLE) {
