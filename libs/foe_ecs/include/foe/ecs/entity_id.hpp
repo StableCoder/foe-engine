@@ -19,6 +19,9 @@
 
 #include <cstdint>
 #include <limits>
+#include <string>
+#include <sstream>
+#include <iomanip>
 
 using foeEntityID = uint32_t;
 using foeGroupID = foeEntityID;
@@ -65,5 +68,13 @@ inline uint32_t foeEcsGetNormalizedGroupID(foeEntityID entity) {
 }
 
 inline foeGroupID foeEcsGetIndexID(foeEntityID entity) { return (entity & foeEcsValidIndexBits); }
+
+inline std::string foeEntityID_to_string(foeEntityID entity) {
+    constexpr int printWidth = foeEcsNumBytes * 2;
+
+    std::stringstream ss;
+    ss << "0x" << std::hex << std::setw(printWidth) << std::uppercase << std::setfill('0') << entity;
+    return ss.str();
+}
 
 #endif // FOE_ECS_ENTITY_ID_HPP
