@@ -30,7 +30,14 @@ struct Position3D {
     VkDescriptorSet descriptorSet{VK_NULL_HANDLE};
 };
 
-inline auto yaml_read_Position3D(YAML::Node const &node) -> Position3D {}
+inline auto yaml_read_Position3D(YAML::Node const &node) -> Position3D {
+    Position3D position;
+
+    yaml_read_required("position", node, position.position);
+    yaml_read_required("orientation", node, position.orientation);
+
+    return position;
+}
 
 inline auto yaml_write_Position3D(Position3D const &data) -> YAML::Node {
     YAML::Node writeNode;
