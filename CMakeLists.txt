@@ -52,6 +52,10 @@ cmake_format(cmake-format ${CM_FILES})
 include(dependency-graph)
 gen_dep_graph(png ADD_TO_DEP_GRAPH)
 
+# Link Time Optimization
+include(link-time-optimization)
+link_time_optimization()
+
 # clang-tidy
 include(tools)
 option(CLANG_TIDY_FIX "" OFF)
@@ -69,8 +73,8 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 # Misc CMake
 include(compiler-options)
-include(glsl_shaders)
-include(prepare_catch)
+include(glsl-shaders)
+include(prepare-catch)
 include(sanitizers)
 
 if(WIN32 AND BUILD_SHARED_LIBS)
