@@ -80,6 +80,8 @@ if(BUILD_TESTS)
   enable_testing()
 endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # GLFW/Vulkan
 add_compile_definitions(GLFW_INCLUDE_VULKAN)
 
