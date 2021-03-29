@@ -55,6 +55,7 @@
 #include "settings.hpp"
 #include "state_pools.hpp"
 #include "vk_animation.hpp"
+#include "resource_pools.hpp"
 
 #include <array>
 #include <map>

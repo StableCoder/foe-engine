@@ -30,6 +30,7 @@
 #include <foe/resource/yaml/mesh.hpp>
 #include <foe/resource/yaml/shader.hpp>
 #include <foe/resource/yaml/vertex_descriptor.hpp>
+#include <foe/search_paths.hpp>
 #include <foe/wsi_vulkan.hpp>
 
 #include <vk_error_code.hpp>
@@ -74,255 +75,25 @@
         return 1;                                                                                  \
     }
 
-#include <filesystem>
-#include <foe/ecs/entity_id.hpp>
-#include <foe/ecs/groups.hpp>
-#include <foe/ecs/yaml/index_generator.hpp>
-#include <fstream>
-#include <yaml-cpp/yaml.h>
-
-namespace {
-
-struct StateDataDependency {
-    std::string name;
-    std::filesystem::path file;
-    foeGroupID group;
-};
-
-std::vector<StateDataDependency> currentTopLevelDependencies;
-
-auto loadStateDataDependencies(std::string stateDataFilePath) -> std::vector<StateDataDependency> {
-    std::ifstream stateDataFile{stateDataFilePath, std::fstream::in};
-    if (!stateDataFile) {
-        std::abort();
-    }
-
-    YAML::Node rootNode;
-    try {
-        rootNode = YAML::Load(stateDataFile);
-    } catch (...) {
-        std::abort();
-    }
-
-    std::vector<StateDataDependency> dependencies;
-    if (auto depNode = rootNode["dependencies"]; depNode) {
-        for (auto it = depNode.begin(); it != depNode.end(); ++it) {
-            try {
-                StateDataDependency newDependency{
-                    .name = (*it)["name"].as<std::string>(),
-                    .group = (*it)["group_id"].as<unsigned int>(),
-                };
-
-                dependencies.emplace_back(newDependency);
-            } catch (...) {
-                std::abort();
-            }
-        }
-    } else {
-        std::abort();
-    }
-
-    return dependencies;
-}
-
-struct GroupTranslation {
-    foeGroupID source;
-    foeGroupID target;
-};
-
-bool importStateData(std::filesystem::path stateData,
-                     foeEcsGroups *pEntityGroups,
-                     foeGroupID targetGroup,
-                     void *pDataPools,
-                     void *pResourcePools) {
-    auto fileDependencies = loadStateDataDependencies(stateData);
-
-    // Create translation between the file groups to the current application groups
-    std::vector<GroupTranslation> translationList;
-    for (auto const &it : fileDependencies) {
-        translationList.emplace_back(GroupTranslation{
-            .source = it.group,
-            .target = pEntityGroups->group(it.name)->groupID(),
-        });
-    }
-
-    std::ifstream stateDataFile{stateData, std::fstream::in};
-    if (!stateDataFile) {
-        std::abort();
-    }
-
-    YAML::Node rootNode;
-    try {
-        rootNode = YAML::Load(stateDataFile);
-    } catch (...) {
-        std::abort();
-    }
-
-    if (auto node = rootNode["state_data"]; node) {
-    }
-
-    return true;
-}
-
-bool loadStateData(std::filesystem::path stateData, foeEcsGroups *pEntityGroups) {
-    // Get the top-level dependencies
-    auto dependencies = loadStateDataDependencies(stateData);
-
-    { // Check that dependencies are valid
-        // No duplicates
-        for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
-            for (auto innerIt = it + 1; innerIt != dependencies.end(); ++innerIt) {
-                if (innerIt->name == it->name) {
-                    FOE_LOG(
-                        General, Error,
-                        "Duplicate state data dependencies '{}' detected for state data file: {}",
-                        innerIt->name, stateData.native())
-                    return false;
-                }
-            }
-        }
-
-        // Find all the dependent files
-        for (auto &it : dependencies) {
-            if (std::filesystem::exists(it.name + ".yml")) {
-                it.file = it.name + ".yml";
-            } else {
-                FOE_LOG(General, Error, "Could not find dependency for state data: {}", it.name)
-                return false;
-            }
-        }
-
-        // Check transitive dependencies
-        for (auto dependencyIt = dependencies.begin(); dependencyIt != dependencies.end();
-             ++dependencyIt) {
-            auto transitiveDependencies = loadStateDataDependencies(dependencyIt->file);
-
-            // Check that all required transitive dependencies are available *before* it is loaded,
-            // and in the correct order
-            auto checkIt = dependencies.begin();
-            for (auto transIt : transitiveDependencies) {
-                bool depFound{false};
-
-                for (; checkIt != dependencyIt; ++checkIt) {
-                    if (checkIt->name == transIt.name) {
-                        depFound = true;
-                        break;
-                    }
-                }
-
-                if (!depFound) {
-                    FOE_LOG(General, Error,
-                            "Could not find transitive dependency '{}' for sub-dependency '{}'",
-                            transIt.name, dependencyIt->name)
-                    return false;
-                }
-            }
-        }
-    }
-
-    // Setup entity groups
-    foeGroupID newID = 0;
-    for (auto const &it : dependencies) {
-        auto newGroup =
-            std::make_unique<foeEcsIndexGenerator>(it.name, foeEcsNormalizedToGroupID(it.group));
-        auto success = pEntityGroups->addGroup(std::move(newGroup));
-        if (!success) {
-            FOE_LOG(General, Error, "Could not create Entity Group '{}'", it.name)
-            return false;
-        }
-        ++newID;
-    }
-
-    std::ifstream stateDataFile{stateData, std::fstream::in};
-    if (!stateDataFile) {
-        std::abort();
-    }
-
-    YAML::Node rootNode;
-    try {
-        rootNode = YAML::Load(stateDataFile);
-    } catch (...) {
-        std::abort();
-    }
-
-    // Top-level index data
-    if (auto indexNode = rootNode["index_data"]; indexNode) {
-        yaml_read_index_generator(indexNode, *pEntityGroups->persistentGroup());
-    } else {
-        FOE_LOG(General, Error, "Could not find index state data")
-        return false;
-    }
-
-    // Import dependency state data
-    void *dataPools, *resourcePools;
-    for (auto const &it : dependencies) {
-        importStateData(it.file, pEntityGroups, pEntityGroups->group(it.name)->groupID(), dataPools,
-                        resourcePools);
-    }
-
-    // Import top-level state data
-    importStateData(stateData, pEntityGroups, pEntityGroups->persistentGroup()->groupID(),
-                    dataPools, resourcePools);
-
-    currentTopLevelDependencies = dependencies;
-
-    return true;
-}
-
-YAML::Node saveStateDataDependencies(std::vector<StateDataDependency> const &dependencies) {
-    YAML::Node writeNode;
-
-    for (auto const &it : dependencies) {
-        YAML::Node depNode;
-
-        depNode["name"] = it.name;
-        depNode["group_id"] = it.group;
-
-        writeNode.push_back(depNode);
-    }
-
-    return writeNode;
-}
-
-bool saveStateData(foeEcsGroups *pEntityGroups,
-                   std::map<foeEntityID, std::unique_ptr<Position3D>> &positionPool) {
-    YAML::Node rootNode;
-
-    // Dependency Data
-    rootNode["dependencies"] = saveStateDataDependencies(currentTopLevelDependencies);
-
-    // State Group Index Data
-    rootNode["index_data"] = yaml_write_index_generator(*pEntityGroups->persistentGroup());
-
-    // State Data
-    YAML::Node stateDataNode;
-
-    for (auto const &it : positionPool) {
-        YAML::Node entityNode;
-        entityNode["entity"] = it.first;
-        entityNode["position_3d"] = yaml_write_Position3D(*it.second.get());
-
-        stateDataNode.push_back(entityNode);
-    }
-
-    rootNode["state_data"] = stateDataNode;
-
-    // Out to file
-    YAML::Emitter emitter;
-    emitter << rootNode;
-
-    std::ofstream outFile{"outStateData.yml", std::ofstream::out};
-    outFile << emitter.c_str();
-
-    return true;
-}
-
-} // namespace
+#include "state_yaml/export.hpp"
+#include "state_yaml/import.hpp"
 
 int Application::initialize(int argc, char **argv) {
     initializeLogging();
 
-    auto temp = loadStateData("theDataE.yml", &ecsGroups);
+    foeSearchPaths searchPaths;
+    auto writer = searchPaths.getWriter();
+    writer.searchPaths()->push_back("data/state");
+    writer.release();
+    foeEcsGroups groups2;
+    StatePools newStatePools;
+    ResourcePools newResourcePools;
+
+    auto imported = importGroupState("data/state/theDataE", searchPaths, groups2, newStatePools,
+                                     newResourcePools);
+
+    auto exported =
+        exportGroupState("data/state/output_test", groups2, newStatePools, newResourcePools);
 
     synchronousThreadPool.start(2);
     asynchronousThreadPool.start(2);
@@ -335,12 +106,12 @@ int Application::initialize(int argc, char **argv) {
     cameraID = ecsGroups.persistentGroup()->generate();
     renderID = ecsGroups.persistentGroup()->generate();
 
-    mPositionPool[cameraID].reset(new Position3D{
+    statePools.position[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
 
-    mPositionPool[renderID].reset(new Position3D{
+    statePools.position[renderID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, 0.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
@@ -738,12 +509,6 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
-    saveStateData(&ecsGroups, statePools.position);
-
-    /*
-    export_yaml_material_definition(materialPool.find("theMaterial"));
-    export_yaml_material_definition(materialPool.find("theMaterial2"));
-    */
     { // Resource Unloading
         armaturePool.unloadAll();
 
