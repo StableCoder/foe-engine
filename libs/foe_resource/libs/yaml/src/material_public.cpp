@@ -23,18 +23,8 @@
 
 #include <fstream>
 
-bool import_yaml_material_definition(
-    std::string_view materialName,
-    std::string &fragmentShaderName,
-    std::string &fragDescriptorName,
-    std::string &image,
-    bool &hasRasterizationSCI,
-    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
-    bool &hasDepthStencilSCI,
-    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
-    bool &hasColourBlendSCI,
-    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
-    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments) {
+bool import_yaml_material_definition(std::string_view materialName,
+                                     foeMaterialCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
@@ -45,10 +35,11 @@ bool import_yaml_material_definition(
     }
 
     try {
-        return yaml_read_material_definition("", rootNode, fragmentShaderName, fragDescriptorName,
-                                             image, hasRasterizationSCI, rasterizationSCI,
-                                             hasDepthStencilSCI, depthStencilSCI, hasColourBlendSCI,
-                                             colourBlendSCI, colourBlendAttachments);
+        return yaml_read_material_definition(
+            "", rootNode, createInfo.fragmentShaderName, createInfo.fragDescriptorName,
+            createInfo.image, createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
+            createInfo.hasDepthStencilSCI, createInfo.depthStencilSCI, createInfo.hasColourBlendSCI,
+            createInfo.colourBlendSCI, createInfo.colourBlendAttachments);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
         return false;

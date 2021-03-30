@@ -67,17 +67,8 @@ bool yaml_read_vertex_descriptor_definition(
 
 } // namespace
 
-bool import_yaml_vertex_descriptor_definition(
-    std::string_view vertexDescriptorName,
-    std::string &vertexShader,
-    std::string &tessellationControlShader,
-    std::string &tessellationEvaluationShader,
-    std::string &geometryShader,
-    VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
-    std::vector<VkVertexInputBindingDescription> &inputBindings,
-    std::vector<VkVertexInputAttributeDescription> &inputAttributes,
-    VkPipelineInputAssemblyStateCreateInfo &inputAssemblySCI,
-    VkPipelineTessellationStateCreateInfo &tessellationSCI) {
+bool import_yaml_vertex_descriptor_definition(std::string_view vertexDescriptorName,
+                                              foeVertexDescriptorCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
@@ -88,9 +79,10 @@ bool import_yaml_vertex_descriptor_definition(
 
     try {
         yaml_read_vertex_descriptor_definition(
-            "", rootNode, vertexShader, tessellationControlShader, tessellationEvaluationShader,
-            geometryShader, vertexInputSCI, inputBindings, inputAttributes, inputAssemblySCI,
-            tessellationSCI);
+            "", rootNode, createInfo.vertexShader, createInfo.tessellationControlShader,
+            createInfo.tessellationEvaluationShader, createInfo.geometryShader,
+            createInfo.vertexInputSCI, createInfo.inputBindings, createInfo.inputAttributes,
+            createInfo.inputAssemblySCI, createInfo.tessellationSCI);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
         return false;

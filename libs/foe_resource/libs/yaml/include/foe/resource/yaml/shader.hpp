@@ -25,13 +25,8 @@
 #include <string_view>
 #include <vector>
 
-FOE_RES_YAML_EXPORT bool import_yaml_shader_definition(
-    std::string_view shaderName,
-    std::string &shaderCodeFile,
-    foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
-    VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
-    std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
-    VkPushConstantRange &pushConstantRange);
+FOE_RES_YAML_EXPORT bool import_yaml_shader_definition(std::string_view shaderName,
+                                                       foeShaderCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_shader_definition(foeGfxSession session,
                                                        foeShader const *pShader);

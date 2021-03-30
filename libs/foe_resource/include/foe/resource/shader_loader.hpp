@@ -35,12 +35,7 @@ class foeShaderLoader {
 
     FOE_RES_EXPORT std::error_code initialize(
         foeGfxSession gfxSession,
-        std::function<bool(std::string_view,
-                           std::string &,
-                           foeBuiltinDescriptorSetLayoutFlags &,
-                           VkDescriptorSetLayoutCreateInfo &,
-                           std::vector<VkDescriptorSetLayoutBinding> &,
-                           VkPushConstantRange &)> importFunction,
+        std::function<bool(std::string_view, foeShaderCreateInfo &)> importFunction,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -55,13 +50,7 @@ class foeShaderLoader {
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
-    std::function<bool(std::string_view,
-                       std::string &,
-                       foeBuiltinDescriptorSetLayoutFlags &,
-                       VkDescriptorSetLayoutCreateInfo &,
-                       std::vector<VkDescriptorSetLayoutBinding> &,
-                       VkPushConstantRange &)>
-        mImportFunction;
+    std::function<bool(std::string_view, foeShaderCreateInfo &)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 

@@ -20,14 +20,24 @@
 #include <foe/graphics/shader.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
+#include <vulkan/vulkan.h>
 
 #include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class foeShaderLoader;
+
+struct foeShaderCreateInfo {
+    std::string shaderCodeFile;
+    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
+    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
+    VkPushConstantRange pushConstantRange;
+};
 
 class foeShader {
   public:

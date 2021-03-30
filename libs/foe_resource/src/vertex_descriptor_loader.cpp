@@ -33,16 +33,7 @@ foeVertexDescriptorLoader::~foeVertexDescriptorLoader() {
 std::error_code foeVertexDescriptorLoader::initialize(
     foeShaderLoader *pShaderLoader,
     foeShaderPool *pShaderPool,
-    std::function<bool(std::string_view,
-                       std::string &,
-                       std::string &,
-                       std::string &,
-                       std::string &,
-                       VkPipelineVertexInputStateCreateInfo &,
-                       std::vector<VkVertexInputBindingDescription> &,
-                       std::vector<VkVertexInputAttributeDescription> &,
-                       VkPipelineInputAssemblyStateCreateInfo &,
-                       VkPipelineTessellationStateCreateInfo &)> importFunction,
+    std::function<bool(std::string_view, foeVertexDescriptorCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -123,35 +114,23 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
     std::error_code errC;
     foeVertexDescriptor::SubResources newSubResources{};
     foeGfxVertexDescriptor theVertexDescriptor;
+    foeVertexDescriptorCreateInfo createInfo;
 
-    std::string vertexShader;
-    std::string tessellationControlShader;
-    std::string tessellationEvaluationShader;
-    std::string geometryShader;
-    VkPipelineVertexInputStateCreateInfo vertexInputSCI;
-    std::vector<VkVertexInputBindingDescription> inputBindings;
-    std::vector<VkVertexInputAttributeDescription> inputAttributes;
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
-    VkPipelineTessellationStateCreateInfo tessellationSCI;
-
-    bool read =
-        mImportFunction(pVertexDescriptor->getName(), vertexShader, tessellationControlShader,
-                        tessellationEvaluationShader, geometryShader, vertexInputSCI, inputBindings,
-                        inputAttributes, inputAssemblySCI, tessellationSCI);
+    bool read = mImportFunction(pVertexDescriptor->getName(), createInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     { // Resource Dependencies
-        if (!vertexShader.empty()) {
-            newSubResources.pVertex = mShaderPool->find(vertexShader);
+        if (!createInfo.vertexShader.empty()) {
+            newSubResources.pVertex = mShaderPool->find(createInfo.vertexShader);
             if (newSubResources.pVertex == nullptr) {
-                newSubResources.pVertex = new foeShader{vertexShader, mShaderLoader};
+                newSubResources.pVertex = new foeShader{createInfo.vertexShader, mShaderLoader};
                 if (!mShaderPool->add(newSubResources.pVertex)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete newSubResources.pVertex;
-                    newSubResources.pVertex = mShaderPool->find(vertexShader);
+                    newSubResources.pVertex = mShaderPool->find(createInfo.vertexShader);
                 }
             }
             newSubResources.pVertex->incrementRefCount();
@@ -203,13 +182,13 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
         if (newSubResources.pGeometry != nullptr)
             theVertexDescriptor.mGeometry = newSubResources.pGeometry->getShader();
 
-        theVertexDescriptor.mVertexInputSCI = vertexInputSCI;
-        theVertexDescriptor.mVertexInputBindings = std::move(inputBindings);
-        theVertexDescriptor.mVertexInputAttributes = std::move(inputAttributes);
+        theVertexDescriptor.mVertexInputSCI = createInfo.vertexInputSCI;
+        theVertexDescriptor.mVertexInputBindings = std::move(createInfo.inputBindings);
+        theVertexDescriptor.mVertexInputAttributes = std::move(createInfo.inputAttributes);
 
-        theVertexDescriptor.mInputAssemblySCI = inputAssemblySCI;
+        theVertexDescriptor.mInputAssemblySCI = createInfo.inputAssemblySCI;
 
-        theVertexDescriptor.mTessellationSCI = tessellationSCI;
+        theVertexDescriptor.mTessellationSCI = createInfo.tessellationSCI;
     }
 
 LOADING_FAILED:

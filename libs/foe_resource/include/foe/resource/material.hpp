@@ -26,11 +26,25 @@
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class foeFragmentDescriptor;
 class foeShader;
 class foeImage;
 class foeMaterialLoader;
+
+struct foeMaterialCreateInfo {
+    std::string fragmentShaderName;
+    std::string fragDescriptorName;
+    std::string image;
+    bool hasRasterizationSCI;
+    VkPipelineRasterizationStateCreateInfo rasterizationSCI;
+    bool hasDepthStencilSCI;
+    VkPipelineDepthStencilStateCreateInfo depthStencilSCI;
+    bool hasColourBlendSCI;
+    VkPipelineColorBlendStateCreateInfo colourBlendSCI;
+    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
+};
 
 struct foeMaterial {
   public:

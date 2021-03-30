@@ -37,16 +37,7 @@ class foeVertexDescriptorLoader {
     FOE_RES_EXPORT std::error_code initialize(
         foeShaderLoader *pShaderLoader,
         foeShaderPool *pShaderPool,
-        std::function<bool(std::string_view,
-                           std::string &,
-                           std::string &,
-                           std::string &,
-                           std::string &,
-                           VkPipelineVertexInputStateCreateInfo &,
-                           std::vector<VkVertexInputBindingDescription> &,
-                           std::vector<VkVertexInputAttributeDescription> &,
-                           VkPipelineInputAssemblyStateCreateInfo &,
-                           VkPipelineTessellationStateCreateInfo &)> importFunction,
+        std::function<bool(std::string_view, foeVertexDescriptorCreateInfo &)> importFunction,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -62,17 +53,7 @@ class foeVertexDescriptorLoader {
     foeShaderLoader *mShaderLoader{nullptr};
     foeShaderPool *mShaderPool{nullptr};
 
-    std::function<bool(std::string_view,
-                       std::string &,
-                       std::string &,
-                       std::string &,
-                       std::string &,
-                       VkPipelineVertexInputStateCreateInfo &,
-                       std::vector<VkVertexInputBindingDescription> &,
-                       std::vector<VkVertexInputAttributeDescription> &,
-                       VkPipelineInputAssemblyStateCreateInfo &,
-                       VkPipelineTessellationStateCreateInfo &)>
-        mImportFunction;
+    std::function<bool(std::string_view, foeVertexDescriptorCreateInfo &)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 

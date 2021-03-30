@@ -28,12 +28,7 @@ foeShaderLoader::~foeShaderLoader() {
 
 std::error_code foeShaderLoader::initialize(
     foeGfxSession gfxSession,
-    std::function<bool(std::string_view,
-                       std::string &,
-                       foeBuiltinDescriptorSetLayoutFlags &,
-                       VkDescriptorSetLayoutCreateInfo &,
-                       std::vector<VkDescriptorSetLayoutBinding> &,
-                       VkPushConstantRange &)> importFunction,
+    std::function<bool(std::string_view, foeShaderCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -113,16 +108,10 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
 
     std::error_code errC;
     foeGfxShader newShader{FOE_NULL_HANDLE};
-
-    std::string shaderCodeFile;
-    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
-    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
-    VkPushConstantRange pushConstantRange;
+    foeShaderCreateInfo createInfo;
 
     // Read in the definition
-    bool read = mImportFunction(pShader->getName(), shaderCodeFile, builtinSetLayouts,
-                                descriptorSetLayoutCI, setLayoutBindings, pushConstantRange);
+    bool read = mImportFunction(pShader->getName(), createInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
@@ -130,12 +119,12 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
 
     {
         auto descriptorSetLayout =
-            foeGfxVkGetDescriptorSetLayout(mGfxSession, &descriptorSetLayoutCI);
+            foeGfxVkGetDescriptorSetLayout(mGfxSession, &createInfo.descriptorSetLayoutCI);
 
-        auto shaderCode = loadShaderDataFromFile(shaderCodeFile);
-        errC = foeGfxVkCreateShader(mGfxSession, builtinSetLayouts, shaderCode.size(),
+        auto shaderCode = loadShaderDataFromFile(createInfo.shaderCodeFile);
+        errC = foeGfxVkCreateShader(mGfxSession, createInfo.builtinSetLayouts, shaderCode.size(),
                                     reinterpret_cast<uint32_t *>(shaderCode.data()),
-                                    descriptorSetLayout, pushConstantRange, &newShader);
+                                    descriptorSetLayout, createInfo.pushConstantRange, &newShader);
         if (errC) {
             goto LOADING_FAILED;
         }

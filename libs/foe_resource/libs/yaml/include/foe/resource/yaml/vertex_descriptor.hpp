@@ -25,16 +25,7 @@
 #include <vector>
 
 FOE_RES_YAML_EXPORT bool import_yaml_vertex_descriptor_definition(
-    std::string_view vertexDescriptorName,
-    std::string &vertexShader,
-    std::string &tessellationControlShader,
-    std::string &tessellationEvaluationShader,
-    std::string &geometryShader,
-    VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
-    std::vector<VkVertexInputBindingDescription> &inputBindings,
-    std::vector<VkVertexInputAttributeDescription> &inputAttributes,
-    VkPipelineInputAssemblyStateCreateInfo &inputAssemblySCI,
-    VkPipelineTessellationStateCreateInfo &tessellationSCI);
+    std::string_view vertexDescriptorName, foeVertexDescriptorCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_vertex_descriptor_definition(
     foeVertexDescriptor const *pVertexDescriptor);

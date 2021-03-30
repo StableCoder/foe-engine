@@ -41,17 +41,7 @@ std::error_code foeMaterialLoader::initialize(
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
-    std::function<bool(std::string_view,
-                       std::string &,
-                       std::string &,
-                       std::string &,
-                       bool &,
-                       VkPipelineRasterizationStateCreateInfo &,
-                       bool &,
-                       VkPipelineDepthStencilStateCreateInfo &,
-                       bool &,
-                       VkPipelineColorBlendStateCreateInfo &,
-                       std::vector<VkPipelineColorBlendAttachmentState> &)> importFunction,
+    std::function<bool(std::string_view, foeMaterialCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -223,22 +213,9 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     std::error_code errC;
     foeGfxVkFragmentDescriptor *pNewFragDescriptor{nullptr};
     foeMaterial::SubResources subResources;
+    foeMaterialCreateInfo createInfo;
 
-    std::string fragmentShader;
-    std::string fragmentDescriptorName;
-    std::string imageName;
-    bool hasRasterizationSCI = false;
-    VkPipelineRasterizationStateCreateInfo rasterizationSCI;
-    bool hasDepthStencilSCI = false;
-    VkPipelineDepthStencilStateCreateInfo depthStencilSCI;
-    bool hasColourBlendSCI = false;
-    VkPipelineColorBlendStateCreateInfo colourBlendSCI;
-    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
-
-    bool read =
-        mImportFunction(pMaterial->getName(), fragmentShader, fragmentDescriptorName, imageName,
-                        hasRasterizationSCI, rasterizationSCI, hasDepthStencilSCI, depthStencilSCI,
-                        hasColourBlendSCI, colourBlendSCI, colourBlendAttachments);
+    bool read = mImportFunction(pMaterial->getName(), createInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
@@ -246,14 +223,15 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
 
     { // Resource Dependencies
         // Fragment Shader
-        if (!fragmentShader.empty()) {
-            subResources.pFragmentShader = mShaderPool->find(fragmentShader);
+        if (!createInfo.fragmentShaderName.empty()) {
+            subResources.pFragmentShader = mShaderPool->find(createInfo.fragmentShaderName);
             if (subResources.pFragmentShader == nullptr) {
-                subResources.pFragmentShader = new foeShader{fragmentShader, mShaderLoader};
+                subResources.pFragmentShader =
+                    new foeShader{createInfo.fragmentShaderName, mShaderLoader};
                 if (!mShaderPool->add(subResources.pFragmentShader)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete subResources.pFragmentShader;
-                    subResources.pFragmentShader = mShaderPool->find(fragmentShader);
+                    subResources.pFragmentShader = mShaderPool->find(createInfo.fragmentShaderName);
                 }
             }
             subResources.pFragmentShader->incrementRefCount();
@@ -261,16 +239,16 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
         }
 
         // Image
-        if (!imageName.empty()) {
-            subResources.pImage = mImagePool->find(imageName);
+        if (!createInfo.image.empty()) {
+            subResources.pImage = mImagePool->find(createInfo.image);
 
             if (subResources.pImage == nullptr) {
-                subResources.pImage = new foeImage{imageName, mImageLoader};
+                subResources.pImage = new foeImage{createInfo.image, mImageLoader};
 
                 if (!mImagePool->add(subResources.pImage)) {
                     delete subResources.pImage;
 
-                    subResources.pImage = mImagePool->find(imageName);
+                    subResources.pImage = mImagePool->find(createInfo.image);
                 }
             }
 
@@ -312,9 +290,9 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
                                       : FOE_NULL_HANDLE;
 
         pNewFragDescriptor = mGfxFragmentDescriptorPool->get(
-            (hasRasterizationSCI) ? &rasterizationSCI : nullptr,
-            (hasDepthStencilSCI) ? &depthStencilSCI : nullptr,
-            (hasColourBlendSCI) ? &colourBlendSCI : nullptr, fragShader);
+            (createInfo.hasRasterizationSCI) ? &createInfo.rasterizationSCI : nullptr,
+            (createInfo.hasDepthStencilSCI) ? &createInfo.depthStencilSCI : nullptr,
+            (createInfo.hasColourBlendSCI) ? &createInfo.colourBlendSCI : nullptr, fragShader);
     }
 
 LOADING_FAILED:

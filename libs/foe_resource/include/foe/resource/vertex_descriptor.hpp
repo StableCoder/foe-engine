@@ -30,6 +30,18 @@
 class foeShader;
 class foeVertexDescriptorLoader;
 
+struct foeVertexDescriptorCreateInfo {
+    std::string vertexShader;
+    std::string tessellationControlShader;
+    std::string tessellationEvaluationShader;
+    std::string geometryShader;
+    VkPipelineVertexInputStateCreateInfo vertexInputSCI;
+    std::vector<VkVertexInputBindingDescription> inputBindings;
+    std::vector<VkVertexInputAttributeDescription> inputAttributes;
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
+    VkPipelineTessellationStateCreateInfo tessellationSCI;
+};
+
 class foeVertexDescriptor {
   public:
     FOE_RES_EXPORT foeVertexDescriptor(std::string_view name, foeVertexDescriptorLoader *pLoader);
