@@ -29,8 +29,12 @@ bool import_yaml_armature_definition(std::string_view armatureName,
     YAML::Node rootNode;
     try {
         rootNode = YAML::LoadFile(std::string{armatureName} + ".yml");
-    } catch (YAML::ParserException &e) {
+    } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
+        return false;
+    } catch (YAML::BadFile const &e) {
+        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
+        return false;
     }
 
     try {

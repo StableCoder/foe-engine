@@ -73,8 +73,12 @@ bool import_yaml_vertex_descriptor_definition(std::string_view vertexDescriptorN
     YAML::Node rootNode;
     try {
         rootNode = YAML::LoadFile(std::string{vertexDescriptorName} + ".yml");
-    } catch (YAML::ParserException &e) {
+    } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
+        return false;
+    } catch (YAML::BadFile const &e) {
+        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
+        return false;
     }
 
     try {

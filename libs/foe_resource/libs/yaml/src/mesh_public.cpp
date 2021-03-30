@@ -27,8 +27,12 @@ bool import_yaml_mesh_definition(std::string_view name,
     YAML::Node rootNode;
     try {
         rootNode = YAML::LoadFile(std::string{name} + ".yml");
-    } catch (YAML::ParserException &e) {
+    } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
+        return false;
+    } catch (YAML::BadFile const &e) {
+        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
+        return false;
     }
 
     try {

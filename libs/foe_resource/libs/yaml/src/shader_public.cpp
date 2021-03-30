@@ -50,8 +50,11 @@ bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShad
 
     try {
         yaml_write_shader_definition("", session, pShader, definition);
-    } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to export foeShader definition: {}", e.what());
+    } catch (YAML::ParserException const &e) {
+        FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
+        return false;
+    } catch (YAML::BadFile const &e) {
+        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
         return false;
     }
 
