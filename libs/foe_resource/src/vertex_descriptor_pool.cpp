@@ -28,7 +28,7 @@ bool foeVertexDescriptorPool::add(foeVertexDescriptor *pVertexDescriptor) {
     std::scoped_lock lock{mSync};
 
     for (auto *pOld : mVertexDescriptors) {
-        if (pOld->getName() == pVertexDescriptor->getName())
+        if (pOld->getID() == pVertexDescriptor->getID())
             return false;
     }
 

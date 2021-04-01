@@ -28,7 +28,7 @@ bool foeMeshPool::add(foeMesh *pMesh) {
     std::scoped_lock lock{mSync};
 
     for (auto *pOld : mMeshs) {
-        if (pOld->getName() == pMesh->getName())
+        if (pOld->getID() == pMesh->getID())
             return false;
     }
 

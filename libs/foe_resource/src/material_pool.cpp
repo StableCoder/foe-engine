@@ -28,7 +28,7 @@ bool foeMaterialPool::add(foeMaterial *pMaterial) {
     std::scoped_lock lock{mSync};
 
     for (auto *pOld : mMaterials) {
-        if (pOld->getName() == pMaterial->getName())
+        if (pOld->getID() == pMaterial->getID())
             return false;
     }
 

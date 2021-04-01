@@ -28,7 +28,7 @@ bool foeShaderPool::add(foeShader *pShader) {
     std::scoped_lock lock{mSync};
 
     for (auto *pOld : mShaders) {
-        if (pOld->getName() == pShader->getName())
+        if (pOld->getID() == pShader->getID())
             return false;
     }
 

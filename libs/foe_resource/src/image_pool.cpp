@@ -28,7 +28,7 @@ bool foeImagePool::add(foeImage *pImage) {
     std::scoped_lock lock{mSync};
 
     for (auto *pOld : mImages) {
-        if (pOld->getName() == pImage->getName())
+        if (pOld->getID() == pImage->getID())
             return false;
     }
 

@@ -28,7 +28,7 @@ bool foeArmaturePool::add(foeArmature *pArmature) {
     std::scoped_lock lock{mSync};
 
     for (auto *pOld : mArmatures) {
-        if (pOld->getName() == pArmature->getName())
+        if (pOld->getID() == pArmature->getID())
             return false;
     }
 
