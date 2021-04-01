@@ -20,10 +20,9 @@
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/yaml/export.h>
 
-#include <string>
-#include <string_view>
+#include <filesystem>
 
-FOE_RES_YAML_EXPORT bool import_yaml_mesh_definition(std::string_view name,
-                                                     std::unique_ptr<foeMeshCreateInfo> &meshCI);
+FOE_RES_YAML_EXPORT bool import_yaml_mesh_definition(std::filesystem::path path,
+                                                     foeMeshCreateInfo &createInfo);
 
 #endif // FOE_RESOURCE_YAML_MESH_HPP

@@ -19,6 +19,7 @@
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>
@@ -34,9 +35,9 @@ class foeImage;
 class foeMaterialLoader;
 
 struct foeMaterialCreateInfo {
-    std::string fragmentShaderName;
+    foeResourceID fragmentShader = FOE_INVALID_RESOURCE;
     std::string fragDescriptorName;
-    std::string image;
+    foeResourceID image = FOE_INVALID_RESOURCE;
     bool hasRasterizationSCI;
     VkPipelineRasterizationStateCreateInfo rasterizationSCI;
     bool hasDepthStencilSCI;
@@ -48,9 +49,10 @@ struct foeMaterialCreateInfo {
 
 struct foeMaterial {
   public:
-    FOE_RES_EXPORT foeMaterial(std::string_view name, foeMaterialLoader *pLoader);
+    FOE_RES_EXPORT foeMaterial(foeResourceID id, std::string_view name, foeMaterialLoader *pLoader);
     FOE_RES_EXPORT ~foeMaterial();
 
+    FOE_RES_EXPORT foeResourceID getID() const noexcept;
     FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
@@ -95,6 +97,7 @@ struct foeMaterial {
     };
 
     // General
+    foeResourceID id;
     std::string name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};

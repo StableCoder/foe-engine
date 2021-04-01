@@ -53,6 +53,21 @@ foeMesh *foeMeshPool::find(std::string_view name) {
     return pMesh;
 }
 
+foeMesh *foeMeshPool::find(foeResourceID id) {
+    foeMesh *pMesh{nullptr};
+
+    mSync.lock_shared();
+    for (auto *pOld : mMeshs) {
+        if (pOld->getID() == id) {
+            pMesh = pOld;
+            break;
+        }
+    }
+    mSync.unlock_shared();
+
+    return pMesh;
+}
+
 void foeMeshPool::unloadAll() {
     std::scoped_lock lock{mSync};
 

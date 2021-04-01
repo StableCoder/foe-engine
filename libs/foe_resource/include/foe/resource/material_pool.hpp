@@ -18,6 +18,7 @@
 #define FOE_RESOURCE_MATERIAL_POOL_HPP
 
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 
 #include <shared_mutex>
 #include <string_view>
@@ -31,6 +32,7 @@ class foeMaterialPool {
 
     FOE_RES_EXPORT bool add(foeMaterial *pMaterial);
     FOE_RES_EXPORT foeMaterial *find(std::string_view name);
+    FOE_RES_EXPORT foeMaterial *find(foeResourceID id);
 
     FOE_RES_EXPORT void unloadAll();
 

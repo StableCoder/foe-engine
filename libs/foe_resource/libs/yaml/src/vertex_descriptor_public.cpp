@@ -31,10 +31,10 @@ namespace {
 bool yaml_read_vertex_descriptor_definition(
     std::string const &nodeName,
     YAML::Node const &node,
-    std::string &vertexShader,
-    std::string &tessellationControlShader,
-    std::string &tessellationEvaluationShader,
-    std::string &geometryShader,
+    foeResourceID &vertexShader,
+    foeResourceID &tessellationControlShader,
+    foeResourceID &tessellationEvaluationShader,
+    foeResourceID &geometryShader,
     VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
     std::vector<VkVertexInputBindingDescription> &inputBindings,
     std::vector<VkVertexInputAttributeDescription> &inputAttributes,
@@ -67,12 +67,12 @@ bool yaml_read_vertex_descriptor_definition(
 
 } // namespace
 
-bool import_yaml_vertex_descriptor_definition(std::string_view vertexDescriptorName,
+bool import_yaml_vertex_descriptor_definition(std::filesystem::path path,
                                               foeVertexDescriptorCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
-        rootNode = YAML::LoadFile(std::string{vertexDescriptorName} + ".yml");
+        rootNode = YAML::LoadFile(path.native());
     } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
         return false;
@@ -103,6 +103,9 @@ bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
+        writeNode["index_id"] = pVertexDescriptor->getID();
+        writeNode["editor_name"] = std::string{pVertexDescriptor->getName()};
+
         { // Resources Node
             YAML::Node resNode;
 
@@ -158,7 +161,9 @@ bool export_yaml_vertex_descriptor_definition(foeVertexDescriptor const *pVertex
     YAML::Emitter emitter;
     emitter << definition;
 
-    std::ofstream outFile(std::string{pVertexDescriptor->getName()} + ".yml", std::ofstream::out);
+    std::ofstream outFile(std::string{"_"} + std::to_string(pVertexDescriptor->getID()) + "_" +
+                              std::string{pVertexDescriptor->getName()} + ".yml",
+                          std::ofstream::out);
     if (outFile.is_open()) {
         outFile << emitter.c_str();
         outFile.close();

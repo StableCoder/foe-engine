@@ -20,8 +20,10 @@
 #include <foe/resource/image.hpp>
 #include <foe/resource/yaml/export.h>
 
-FOE_RES_YAML_EXPORT bool import_yaml_image_definition(std::string_view imageName,
-                                                      std::string &fileName);
+#include <filesystem>
+
+FOE_RES_YAML_EXPORT bool import_yaml_image_definition(std::filesystem::path path,
+                                                      foeImageCreateInfo &createInfo);
 
 // FOE_RES_YAML_EXPORT bool export_image_definition(foe)
 

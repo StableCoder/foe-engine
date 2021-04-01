@@ -53,6 +53,21 @@ foeVertexDescriptor *foeVertexDescriptorPool::find(std::string_view name) {
     return pVertexDescriptor;
 }
 
+foeVertexDescriptor *foeVertexDescriptorPool::find(foeResourceID resource) {
+    foeVertexDescriptor *pVertexDescriptor{nullptr};
+
+    mSync.lock_shared();
+    for (auto *pOld : mVertexDescriptors) {
+        if (pOld->getID() == resource) {
+            pVertexDescriptor = pOld;
+            break;
+        }
+    }
+    mSync.unlock_shared();
+
+    return pVertexDescriptor;
+}
+
 void foeVertexDescriptorPool::unloadAll() {
     std::scoped_lock lock{mSync};
 

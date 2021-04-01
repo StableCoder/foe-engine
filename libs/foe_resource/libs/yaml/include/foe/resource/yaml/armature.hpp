@@ -20,14 +20,9 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/yaml/export.h>
 
-#include <string>
-#include <string_view>
-#include <vector>
+#include <filesystem>
 
-FOE_RES_YAML_EXPORT bool import_yaml_armature_definition(
-    std::string_view armatureName,
-    std::string &fileName,
-    std::string &rootArmatureNode,
-    std::vector<AnimationImportInfo> &animations);
+FOE_RES_YAML_EXPORT bool import_yaml_armature_definition(std::filesystem::path path,
+                                                         foeArmatureCreateInfo &createInfo);
 
 #endif // FOE_RESOURCE_YAML_ARMATURE_HPP

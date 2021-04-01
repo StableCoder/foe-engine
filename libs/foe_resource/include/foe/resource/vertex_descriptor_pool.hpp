@@ -18,6 +18,7 @@
 #define FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
 
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 
 #include <shared_mutex>
 #include <string_view>
@@ -31,6 +32,7 @@ class foeVertexDescriptorPool {
 
     FOE_RES_EXPORT bool add(foeVertexDescriptor *pVertexDescriptor);
     FOE_RES_EXPORT foeVertexDescriptor *find(std::string_view name);
+    FOE_RES_EXPORT foeVertexDescriptor *find(foeResourceID id);
 
     FOE_RES_EXPORT void unloadAll();
 

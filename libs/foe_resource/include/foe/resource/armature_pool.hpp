@@ -18,6 +18,7 @@
 #define FOE_RESOURCE_ARMATURE_POOL_HPP
 
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 
 #include <shared_mutex>
 #include <string_view>
@@ -31,6 +32,7 @@ class foeArmaturePool {
 
     FOE_RES_EXPORT bool add(foeArmature *pArmature);
     FOE_RES_EXPORT foeArmature *find(std::string_view name);
+    FOE_RES_EXPORT foeArmature *find(foeResourceID id);
 
     FOE_RES_EXPORT void unloadAll();
 

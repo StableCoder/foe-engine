@@ -31,9 +31,7 @@ class foeArmatureLoader {
     FOE_RES_EXPORT ~foeArmatureLoader();
 
     FOE_RES_EXPORT std::error_code initialize(
-        std::function<bool(
-            std::string_view, std::string &, std::string &, std::vector<AnimationImportInfo> &)>
-            importFunction,
+        std::function<bool(foeResourceID, foeArmatureCreateInfo &)> importFunction,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -45,9 +43,7 @@ class foeArmatureLoader {
     void loadResource(foeArmature *pArmature);
 
     bool mInitialized{false};
-    std::function<bool(
-        std::string_view, std::string &, std::string &, std::vector<AnimationImportInfo> &)>
-        mImportFunction;
+    std::function<bool(foeResourceID, foeArmatureCreateInfo &)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 };

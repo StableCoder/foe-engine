@@ -20,8 +20,8 @@
 
 #include "log.hpp"
 
-foeMaterial::foeMaterial(std::string_view name, foeMaterialLoader *pLoader) :
-    name{name}, pLoader{pLoader} {}
+foeMaterial::foeMaterial(foeResourceID id, std::string_view name, foeMaterialLoader *pLoader) :
+    id{id}, name{name}, pLoader{pLoader} {}
 
 foeMaterial::~foeMaterial() {
     if (useCount > 0) {
@@ -34,6 +34,8 @@ foeMaterial::~foeMaterial() {
                 static_cast<void *>(this));
     }
 }
+
+foeResourceID foeMaterial::getID() const noexcept { return id; }
 
 std::string_view foeMaterial::getName() const noexcept { return name; }
 

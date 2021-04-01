@@ -18,6 +18,7 @@
 #define FOE_RESOURCE_SHADER_POOL_HPP
 
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 
 #include <shared_mutex>
 #include <string_view>
@@ -31,8 +32,11 @@ class foeShaderPool {
 
     FOE_RES_EXPORT bool add(foeShader *pShader);
     FOE_RES_EXPORT foeShader *find(std::string_view name);
+    FOE_RES_EXPORT foeShader *find(foeResourceID resource);
 
     FOE_RES_EXPORT void unloadAll();
+
+    std::vector<foeShader *> const &getEntries() const noexcept { return mShaders; }
 
   private:
     std::shared_mutex mSync;

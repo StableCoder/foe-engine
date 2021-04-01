@@ -45,6 +45,9 @@ bool yaml_write_material_definition(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
+        writeNode["index_id"] = pMaterial->getID();
+        writeNode["editor_name"] = std::string{pMaterial->getName()};
+
         { // Resources Node
             YAML::Node resNode;
 
@@ -80,9 +83,9 @@ bool yaml_write_material_definition(std::string const &nodeName,
 bool yaml_read_material_definition(
     std::string const &nodeName,
     YAML::Node const &node,
-    std::string &fragmentShader,
+    foeResourceID &fragmentShader,
     std::string &fragmentDescriptor,
-    std::string &image,
+    foeResourceID &image,
     bool &hasRasterizationSCI,
     VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
     bool &hasDepthStencilSCI,

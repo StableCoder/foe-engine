@@ -21,4 +21,6 @@
 
 using foeResourceID = uint32_t;
 
+constexpr foeResourceID FOE_INVALID_RESOURCE = UINT32_MAX;
+
 #endif // FOE_RESOURCE_ID_HPP

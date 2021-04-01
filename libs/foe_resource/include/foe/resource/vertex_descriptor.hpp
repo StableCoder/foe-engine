@@ -19,6 +19,7 @@
 
 #include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>
@@ -31,10 +32,10 @@ class foeShader;
 class foeVertexDescriptorLoader;
 
 struct foeVertexDescriptorCreateInfo {
-    std::string vertexShader;
-    std::string tessellationControlShader;
-    std::string tessellationEvaluationShader;
-    std::string geometryShader;
+    foeResourceID vertexShader;
+    foeResourceID tessellationControlShader;
+    foeResourceID tessellationEvaluationShader;
+    foeResourceID geometryShader;
     VkPipelineVertexInputStateCreateInfo vertexInputSCI;
     std::vector<VkVertexInputBindingDescription> inputBindings;
     std::vector<VkVertexInputAttributeDescription> inputAttributes;
@@ -44,9 +45,12 @@ struct foeVertexDescriptorCreateInfo {
 
 class foeVertexDescriptor {
   public:
-    FOE_RES_EXPORT foeVertexDescriptor(std::string_view name, foeVertexDescriptorLoader *pLoader);
+    FOE_RES_EXPORT foeVertexDescriptor(foeResourceID id,
+                                       std::string_view name,
+                                       foeVertexDescriptorLoader *pLoader);
     FOE_RES_EXPORT ~foeVertexDescriptor();
 
+    FOE_RES_EXPORT foeResourceID getID() const noexcept;
     FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
@@ -90,6 +94,7 @@ class foeVertexDescriptor {
     };
 
     // General
+    foeResourceID id;
     std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};

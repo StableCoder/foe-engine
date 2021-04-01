@@ -19,6 +19,7 @@
 
 #include <foe/graphics/shader.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 #include <vulkan/vulkan.h>
 
@@ -41,9 +42,10 @@ struct foeShaderCreateInfo {
 
 class foeShader {
   public:
-    FOE_RES_EXPORT foeShader(std::string_view name, foeShaderLoader *pLoader);
+    FOE_RES_EXPORT foeShader(foeResourceID id, std::string_view name, foeShaderLoader *pLoader);
     FOE_RES_EXPORT ~foeShader();
 
+    FOE_RES_EXPORT foeResourceID getID() const noexcept;
     FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
@@ -64,6 +66,7 @@ class foeShader {
     friend foeShaderLoader;
 
     // General
+    foeResourceID id;
     std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};

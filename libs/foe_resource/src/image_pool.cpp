@@ -53,6 +53,21 @@ foeImage *foeImagePool::find(std::string_view name) {
     return pImage;
 }
 
+foeImage *foeImagePool::find(foeResourceID id) {
+    foeImage *pImage{nullptr};
+
+    mSync.lock_shared();
+    for (auto *pOld : mImages) {
+        if (pOld->getID() == id) {
+            pImage = pOld;
+            break;
+        }
+    }
+    mSync.unlock_shared();
+
+    return pImage;
+}
+
 void foeImagePool::unloadAll() {
     std::scoped_lock lock{mSync};
 

@@ -28,7 +28,7 @@ foeShaderLoader::~foeShaderLoader() {
 
 std::error_code foeShaderLoader::initialize(
     foeGfxSession gfxSession,
-    std::function<bool(std::string_view, foeShaderCreateInfo &)> importFunction,
+    std::function<bool(foeResourceID, foeShaderCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -111,7 +111,7 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
     foeShaderCreateInfo createInfo;
 
     // Read in the definition
-    bool read = mImportFunction(pShader->getName(), createInfo);
+    bool read = mImportFunction(pShader->getID(), createInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;

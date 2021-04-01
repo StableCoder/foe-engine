@@ -18,6 +18,7 @@
 #define FOE_RESOURCE_MESH_POOL_HPP
 
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 
 #include <shared_mutex>
 #include <string_view>
@@ -31,6 +32,7 @@ class foeMeshPool {
 
     FOE_RES_EXPORT bool add(foeMesh *pMesh);
     FOE_RES_EXPORT foeMesh *find(std::string_view name);
+    FOE_RES_EXPORT foeMesh *find(foeResourceID id);
 
     FOE_RES_EXPORT void unloadAll();
 

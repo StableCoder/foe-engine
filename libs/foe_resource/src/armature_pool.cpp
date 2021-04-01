@@ -53,6 +53,21 @@ foeArmature *foeArmaturePool::find(std::string_view name) {
     return pArmature;
 }
 
+foeArmature *foeArmaturePool::find(foeResourceID id) {
+    foeArmature *pArmature{nullptr};
+
+    mSync.lock_shared();
+    for (auto *pOld : mArmatures) {
+        if (pOld->getID() == id) {
+            pArmature = pOld;
+            break;
+        }
+    }
+    mSync.unlock_shared();
+
+    return pArmature;
+}
+
 void foeArmaturePool::unloadAll() {
     std::scoped_lock lock{mSync};
 

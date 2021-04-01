@@ -33,7 +33,7 @@ foeMeshLoader::~foeMeshLoader() {
 
 std::error_code foeMeshLoader::initialize(
     foeGfxSession session,
-    std::function<bool(std::string_view, std::unique_ptr<foeMeshCreateInfo> &)> importFunction,
+    std::function<bool(foeResourceID, foeMeshCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -148,19 +148,19 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
 
-    std::unique_ptr<foeMeshCreateInfo> meshCI;
+    foeMeshCreateInfo createInfo;
 
     foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
     foeMesh::Data meshData{};
 
-    bool read = mImportFunction(pMesh->getName(), meshCI);
+    bool read = mImportFunction(pMesh->getID(), createInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    if (auto pCI = dynamic_cast<foeMeshFromFileCreateInfo *>(meshCI.get()); pCI) {
+    if (auto pCI = dynamic_cast<foeMeshFileSource *>(createInfo.source.get()); pCI) {
         auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
         auto modelLoader = modelImporterPlugin->createImporter(pCI->fileName.c_str());
@@ -278,7 +278,7 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
         meshData.gfxVertexComponent = components;
 
         modelImporterPlugin.release();
-    } else if (auto pCI = dynamic_cast<foeMeshGenerateCubeCreateInfo *>(meshCI.get()); pCI) {
+    } else if (auto pCI = dynamic_cast<foeMeshCubeSource *>(createInfo.source.get()); pCI) {
         std::vector<foeVertexComponent> components{
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
 
@@ -345,7 +345,7 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
 
         meshData.perVertexBoneWeights = 0;
         meshData.gfxVertexComponent = std::move(components);
-    } else if (auto pCI = dynamic_cast<foeMeshGenerateIcosphereCreateInfo *>(meshCI.get()); pCI) {
+    } else if (auto pCI = dynamic_cast<foeMeshIcosphereSource *>(createInfo.source.get()); pCI) {
         std::vector<foeVertexComponent> components{
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
 

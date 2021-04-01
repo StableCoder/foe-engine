@@ -21,14 +21,12 @@
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>
 
-bool import_yaml_armature_definition(std::string_view armatureName,
-                                     std::string &fileName,
-                                     std::string &rootArmatureNode,
-                                     std::vector<AnimationImportInfo> &animations) {
+bool import_yaml_armature_definition(std::filesystem::path path,
+                                     foeArmatureCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
-        rootNode = YAML::LoadFile(std::string{armatureName} + ".yml");
+        rootNode = YAML::LoadFile(path.native());
     } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
         return false;
@@ -45,8 +43,8 @@ bool import_yaml_armature_definition(std::string_view armatureName,
             // Data
             if (auto dataNode = rootNode["data"]; dataNode) {
                 try {
-                    yaml_read_required("fileName", dataNode, fileName);
-                    yaml_read_required("root_armature_node", dataNode, rootArmatureNode);
+                    yaml_read_required("fileName", dataNode, createInfo.fileName);
+                    yaml_read_required("root_armature_node", dataNode, createInfo.rootArmatureNode);
 
                     if (auto animationsNode = dataNode["animations"]; animationsNode) {
                         for (auto it = animationsNode.begin(); it != animationsNode.end(); ++it) {
@@ -66,7 +64,7 @@ bool import_yaml_armature_definition(std::string_view armatureName,
                                 }
                             }
 
-                            animations.emplace_back(animation);
+                            createInfo.animations.emplace_back(animation);
                         }
                     } else {
                         throw foeYamlException("animations - Required node not found");

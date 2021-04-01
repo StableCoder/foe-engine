@@ -21,9 +21,11 @@
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
@@ -31,11 +33,31 @@
 
 class foeMeshLoader;
 
+struct foeMeshSource {
+    virtual ~foeMeshSource() = default;
+};
+
+struct foeMeshFileSource : public foeMeshSource {
+    std::string fileName;
+    std::string meshName;
+};
+
+struct foeMeshCubeSource : public foeMeshSource {};
+
+struct foeMeshIcosphereSource : public foeMeshSource {
+    int recursion;
+};
+
+struct foeMeshCreateInfo {
+    std::unique_ptr<foeMeshSource> source;
+};
+
 struct foeMesh {
   public:
-    FOE_RES_EXPORT foeMesh(std::string_view name, foeMeshLoader *pLoader);
+    FOE_RES_EXPORT foeMesh(foeResourceID id, std::string_view name, foeMeshLoader *pLoader);
     FOE_RES_EXPORT ~foeMesh();
 
+    FOE_RES_EXPORT foeResourceID getID() const noexcept;
     FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
@@ -54,6 +76,7 @@ struct foeMesh {
     friend foeMeshLoader;
 
     // General
+    foeResourceID id;
     std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};

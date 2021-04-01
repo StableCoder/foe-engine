@@ -25,9 +25,9 @@ bool yaml_write_shader_declaration(std::string const &nodeName,
                                    YAML::Node &node) {
     try {
         if (nodeName.empty()) {
-            node = std::string{pShader->getName()};
+            node = pShader->getID();
         } else {
-            node[nodeName] = std::string{pShader->getName()};
+            node[nodeName] = pShader->getID();
         }
     } catch (...) {
         throw foeYamlException(nodeName + " - Failed to serialize 'foeShader' declaration");
@@ -43,6 +43,9 @@ bool yaml_write_shader_definition(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
+        writeNode["index_id"] = pShader->getID();
+        writeNode["editor_name"] = std::string{pShader->getName()};
+
         // Resources Node
         // (Nothing Currently)
 

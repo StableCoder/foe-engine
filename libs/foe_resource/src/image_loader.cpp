@@ -35,7 +35,7 @@ foeImageLoader::~foeImageLoader() {
 
 std::error_code foeImageLoader::initialize(
     foeGfxSession session,
-    std::function<bool(std::string_view, std::string &)> importFunction,
+    std::function<bool(foeResourceID, foeImageCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -155,13 +155,14 @@ void foeImageLoader::startUpload(foeImage *pImage) {
     // Start the actual loading process
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
-    std::string fileName;
+
+    foeImageCreateInfo createInfo;
 
     foeGfxUploadRequest gfxUploadRequest;
     foeGfxUploadBuffer gfxUploadBuffer;
     foeImage::Data imgData{};
 
-    bool read = mImportFunction(pImage->getName(), fileName);
+    bool read = mImportFunction(pImage->getID(), createInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
@@ -169,20 +170,21 @@ void foeImageLoader::startUpload(foeImage *pImage) {
 
     { // Import the data
         // Determine the image format
-        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(fileName.c_str());
+        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(createInfo.fileName.c_str());
         if (imageFormat == FIF_UNKNOWN) {
-            FreeImage_GetFIFFromFilename(fileName.c_str());
+            FreeImage_GetFIFFromFilename(createInfo.fileName.c_str());
         }
         if (imageFormat == FIF_UNKNOWN) {
-            FOE_LOG(foeResource, Error, "Could not determine image format for: {}", fileName)
+            FOE_LOG(foeResource, Error, "Could not determine image format for: {}",
+                    createInfo.fileName)
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }
 
         // Load the image into memory
-        auto *bitmap = FreeImage_Load(imageFormat, fileName.c_str(), 0);
+        auto *bitmap = FreeImage_Load(imageFormat, createInfo.fileName.c_str(), 0);
         if (bitmap == nullptr) {
-            FOE_LOG(foeResource, Error, "Failed to load image: {}", fileName)
+            FOE_LOG(foeResource, Error, "Failed to load image: {}", createInfo.fileName)
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }

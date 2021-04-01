@@ -27,9 +27,7 @@ foeArmatureLoader::~foeArmatureLoader() {
 }
 
 std::error_code foeArmatureLoader::initialize(
-    std::function<
-        bool(std::string_view, std::string &, std::string &, std::vector<AnimationImportInfo> &)>
-        importFunction,
+    std::function<bool(foeResourceID, foeArmatureCreateInfo &)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -90,14 +88,10 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
 
     std::vector<foeArmatureNode> armature;
     std::vector<foeAnimation> animations;
-
-    std::string armatureFileName;
-    std::string armatureRootNodeName;
-    std::vector<AnimationImportInfo> animationImportInfo;
+    foeArmatureCreateInfo createInfo;
 
     // Read in the definition
-    bool read = mImportFunction(pArmature->getName(), armatureFileName, armatureRootNodeName,
-                                animationImportInfo);
+    bool read = mImportFunction(pArmature->getID(), createInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
@@ -107,19 +101,19 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
         auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
         { // Armature
-            auto modelLoader = modelImporterPlugin->createImporter(armatureFileName.c_str());
+            auto modelLoader = modelImporterPlugin->createImporter(createInfo.fileName.c_str());
             assert(modelLoader->loaded());
 
             auto tempArmature = modelLoader->importArmature();
             for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {
-                if (it->name == armatureRootNodeName) {
+                if (it->name == createInfo.rootArmatureNode) {
                     armature.assign(it, tempArmature.end());
                 }
             }
         }
 
         { // Animations
-            for (auto const &it : animationImportInfo) {
+            for (auto const &it : createInfo.animations) {
                 auto modelLoader = modelImporterPlugin->createImporter(it.file.c_str());
                 assert(modelLoader->loaded());
 

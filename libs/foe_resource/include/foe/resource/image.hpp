@@ -19,6 +19,7 @@
 
 #include <foe/graphics/vk/image.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -32,11 +33,16 @@
 class foeImageLoader;
 class foeMaterialLoader;
 
+struct foeImageCreateInfo {
+    std::string fileName;
+};
+
 class foeImage {
   public:
-    FOE_RES_EXPORT foeImage(std::string_view name, foeImageLoader *pLoader);
+    FOE_RES_EXPORT foeImage(foeResourceID id, std::string_view name, foeImageLoader *pLoader);
     FOE_RES_EXPORT ~foeImage();
 
+    FOE_RES_EXPORT foeResourceID getID() const noexcept;
     FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
@@ -56,6 +62,7 @@ class foeImage {
     friend foeMaterialLoader;
 
     // General
+    foeResourceID id;
     std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};

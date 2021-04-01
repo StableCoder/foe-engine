@@ -53,6 +53,21 @@ foeShader *foeShaderPool::find(std::string_view name) {
     return pShader;
 }
 
+foeShader *foeShaderPool::find(foeResourceID id) {
+    foeShader *pShader{nullptr};
+
+    mSync.lock_shared();
+    for (auto *pOld : mShaders) {
+        if (pOld->getID() == id) {
+            pShader = pOld;
+            break;
+        }
+    }
+    mSync.unlock_shared();
+
+    return pShader;
+}
+
 void foeShaderPool::unloadAll() {
     std::scoped_lock lock{mSync};
 

@@ -23,11 +23,11 @@
 
 #include <fstream>
 
-bool import_yaml_shader_definition(std::string_view shaderName, foeShaderCreateInfo &createInfo) {
+bool import_yaml_shader_definition(std::filesystem::path path, foeShaderCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node config;
     try {
-        config = YAML::LoadFile(std::string{shaderName} + ".yml");
+        config = YAML::LoadFile(path.native());
     } catch (YAML::ParserException &e) {
         FOE_LOG(General, Fatal, "Failed to load config file: {}", e.what());
         return false;
@@ -61,7 +61,9 @@ bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShad
     YAML::Emitter emitter;
     emitter << definition;
 
-    std::ofstream outFile(std::string{pShader->getName()} + ".yml", std::ofstream::out);
+    std::ofstream outFile(std::string{"_"} + std::to_string(pShader->getID()) + "_" +
+                              std::string{pShader->getName()} + ".yml",
+                          std::ofstream::out);
     if (outFile.is_open()) {
         outFile << emitter.c_str();
         outFile.close();

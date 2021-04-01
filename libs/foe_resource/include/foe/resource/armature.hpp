@@ -20,12 +20,14 @@
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class foeArmatureLoader;
 
@@ -34,11 +36,18 @@ struct AnimationImportInfo {
     std::vector<std::string> animationNames;
 };
 
+struct foeArmatureCreateInfo {
+    std::string fileName;
+    std::string rootArmatureNode;
+    std::vector<AnimationImportInfo> animations;
+};
+
 struct foeArmature {
   public:
-    FOE_RES_EXPORT foeArmature(std::string_view name, foeArmatureLoader *pLoader);
+    FOE_RES_EXPORT foeArmature(foeResourceID id, std::string_view name, foeArmatureLoader *pLoader);
     FOE_RES_EXPORT ~foeArmature();
 
+    FOE_RES_EXPORT foeResourceID getID() const noexcept;
     FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
@@ -57,6 +66,7 @@ struct foeArmature {
     friend foeArmatureLoader;
 
     // General
+    foeResourceID id;
     std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};

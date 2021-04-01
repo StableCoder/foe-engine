@@ -21,11 +21,9 @@
 #include <foe/resource/yaml/export.h>
 #include <vulkan/vulkan.h>
 
-#include <string>
-#include <string_view>
-#include <vector>
+#include <filesystem>
 
-FOE_RES_YAML_EXPORT bool import_yaml_shader_definition(std::string_view shaderName,
+FOE_RES_YAML_EXPORT bool import_yaml_shader_definition(std::filesystem::path path,
                                                        foeShaderCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_shader_definition(foeGfxSession session,

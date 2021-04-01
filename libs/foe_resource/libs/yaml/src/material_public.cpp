@@ -23,12 +23,12 @@
 
 #include <fstream>
 
-bool import_yaml_material_definition(std::string_view materialName,
+bool import_yaml_material_definition(std::filesystem::path path,
                                      foeMaterialCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
-        rootNode = YAML::LoadFile(std::string{materialName} + ".yml");
+        rootNode = YAML::LoadFile(path.native());
     } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
         return false;
@@ -39,7 +39,7 @@ bool import_yaml_material_definition(std::string_view materialName,
 
     try {
         return yaml_read_material_definition(
-            "", rootNode, createInfo.fragmentShaderName, createInfo.fragDescriptorName,
+            "", rootNode, createInfo.fragmentShader, createInfo.fragDescriptorName,
             createInfo.image, createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
             createInfo.hasDepthStencilSCI, createInfo.depthStencilSCI, createInfo.hasColourBlendSCI,
             createInfo.colourBlendSCI, createInfo.colourBlendAttachments);
@@ -62,7 +62,9 @@ bool export_yaml_material_definition(foeMaterial const *pMaterial) {
     YAML::Emitter emitter;
     emitter << definition;
 
-    std::ofstream outFile(std::string{pMaterial->getName()} + ".yml", std::ofstream::out);
+    std::ofstream outFile(std::string{"_"} + std::to_string(pMaterial->getID()) + "_" +
+                              std::string{pMaterial->getName()} + ".yml",
+                          std::ofstream::out);
     if (outFile.is_open()) {
         outFile << emitter.c_str();
         outFile.close();

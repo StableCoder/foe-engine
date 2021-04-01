@@ -21,11 +21,11 @@
 
 #include "image.hpp"
 
-bool import_yaml_image_definition(std::string_view imageName, std::string &fileName) {
+bool import_yaml_image_definition(std::filesystem::path path, foeImageCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
-        rootNode = YAML::LoadFile(std::string{imageName} + ".yml");
+        rootNode = YAML::LoadFile(path.native());
     } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
         return false;
@@ -35,7 +35,7 @@ bool import_yaml_image_definition(std::string_view imageName, std::string &fileN
     }
 
     try {
-        yaml_read_image_definition("", rootNode, fileName);
+        yaml_read_image_definition("", rootNode, createInfo.fileName);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeImage definition: {}", e.what());
         return false;

@@ -53,6 +53,21 @@ foeMaterial *foeMaterialPool::find(std::string_view name) {
     return pMaterial;
 }
 
+foeMaterial *foeMaterialPool::find(foeResourceID id) {
+    foeMaterial *pMaterial{nullptr};
+
+    mSync.lock_shared();
+    for (auto *pOld : mMaterials) {
+        if (pOld->getID() == id) {
+            pMaterial = pOld;
+            break;
+        }
+    }
+    mSync.unlock_shared();
+
+    return pMaterial;
+}
+
 void foeMaterialPool::unloadAll() {
     std::scoped_lock lock{mSync};
 

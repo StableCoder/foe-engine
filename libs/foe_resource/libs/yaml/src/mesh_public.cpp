@@ -21,12 +21,11 @@
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>
 
-bool import_yaml_mesh_definition(std::string_view name,
-                                 std::unique_ptr<foeMeshCreateInfo> &meshCI) {
+bool import_yaml_mesh_definition(std::filesystem::path path, foeMeshCreateInfo &createInfo) {
     // Open the YAML file
     YAML::Node rootNode;
     try {
-        rootNode = YAML::LoadFile(std::string{name} + ".yml");
+        rootNode = YAML::LoadFile(path.native());
     } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
         return false;
@@ -38,21 +37,20 @@ bool import_yaml_mesh_definition(std::string_view name,
     try {
         // Read the definition
         if (auto externalFileNode = rootNode["external_file"]; externalFileNode) {
-            meshCI.reset(new foeMeshFromFileCreateInfo);
-            foeMeshFromFileCreateInfo *ci = static_cast<foeMeshFromFileCreateInfo *>(meshCI.get());
+            createInfo.source.reset(new foeMeshFileSource);
+            foeMeshFileSource *ci = static_cast<foeMeshFileSource *>(createInfo.source.get());
 
             yaml_read_required("file", externalFileNode, ci->fileName);
             yaml_read_required("mesh_name", externalFileNode, ci->meshName);
         } else if (auto generatedCubeNode = rootNode["generated_cube"]; generatedCubeNode) {
-            meshCI.reset(new foeMeshGenerateCubeCreateInfo);
-            foeMeshGenerateCubeCreateInfo *ci =
-                static_cast<foeMeshGenerateCubeCreateInfo *>(meshCI.get());
+            createInfo.source.reset(new foeMeshCubeSource);
+            foeMeshCubeSource *ci = static_cast<foeMeshCubeSource *>(createInfo.source.get());
 
         } else if (auto generatedIcosphereNode = rootNode["generated_icosphere"];
                    generatedIcosphereNode) {
-            meshCI.reset(new foeMeshGenerateIcosphereCreateInfo);
-            foeMeshGenerateIcosphereCreateInfo *ci =
-                static_cast<foeMeshGenerateIcosphereCreateInfo *>(meshCI.get());
+            createInfo.source.reset(new foeMeshIcosphereSource);
+            foeMeshIcosphereSource *ci =
+                static_cast<foeMeshIcosphereSource *>(createInfo.source.get());
 
             yaml_read_required("recursion", generatedIcosphereNode, ci->recursion);
         } else {
