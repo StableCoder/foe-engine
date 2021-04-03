@@ -44,6 +44,14 @@ foeEntityID foeEcsIndexGenerator::generate() {
     return cGroupID | entity;
 }
 
+foeEntityID foeEcsIndexGenerator::generateResource() {
+    auto newID = generate();
+    if (newID != FOE_INVALID_ENTITY) {
+        newID |= foeEcsNumTypeBits;
+    }
+    return newID;
+}
+
 bool foeEcsIndexGenerator::free(foeEntityID entity) { return free(1, &entity); }
 
 bool foeEcsIndexGenerator::free(uint32_t count, foeEntityID *pEntities) {
@@ -122,8 +130,8 @@ auto foeEcsIndexGenerator::activeEntityList() -> std::vector<foeEntityID> {
     std::sort(recycled.begin(), recycled.end());
     auto recycledIt = recycled.begin();
 
-    for(foeIndexID i = 0; i < nextFreeIndex; ++i) {
-        if(recycledIt == recycled.end() || *recycledIt != i) {
+    for (foeIndexID i = 0; i < nextFreeIndex; ++i) {
+        if (recycledIt == recycled.end() || *recycledIt != i) {
             entityList.emplace_back(cGroupID | i);
         } else {
             ++recycledIt;

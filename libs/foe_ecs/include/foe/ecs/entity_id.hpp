@@ -18,13 +18,14 @@
 #define FOE_ECS_ENTITY_ID_HPP
 
 #include <cstdint>
-#include <limits>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <limits>
+#include <sstream>
+#include <string>
 
 using foeEntityID = uint32_t;
 using foeGroupID = foeEntityID;
+using foeTypeID = foeEntityID;
 using foeIndexID = foeEntityID;
 
 enum : uint32_t {
@@ -34,8 +35,10 @@ enum : uint32_t {
     foeEcsNumBytes = foeEcsNumBits / 8,
     /// Number of bits used for the foeGroupID
     foeEcsNumGroupBits = 4,
+    /// Number of bits for determining the object type the ID represents
+    foeEcsNumTypeBits = 1,
     /// Number of bits used for the foeGroupID
-    foeEcsNumIndexBits = foeEcsNumBits - foeEcsNumGroupBits,
+    foeEcsNumIndexBits = foeEcsNumBits - (foeEcsNumGroupBits + foeEcsNumTypeBits),
 };
 
 enum : foeEntityID {
@@ -43,16 +46,21 @@ enum : foeEntityID {
     foeInvalidId = std::numeric_limits<foeEntityID>::max(),
 
     /// Bitflag of the valid GroupID bits
-    foeEcsValidGroupBits = foeInvalidId << foeEcsNumIndexBits,
+    foeEcsValidGroupBits = foeInvalidId << (foeEcsNumIndexBits + foeEcsNumTypeBits),
     /// Maximum value of a GroupID
-    foeEcsMaxGroupValue = foeInvalidId >> foeEcsNumIndexBits,
+    foeEcsMaxGroupValue = foeEcsValidGroupBits >> (foeEcsNumIndexBits + foeEcsNumTypeBits),
+
+    // Bitflag of the valid Type bits
+    foeEcsValidTypeBits =
+        (foeInvalidId << (foeEcsNumIndexBits + foeEcsNumGroupBits)) >> (foeEcsNumGroupBits),
+    foeEcsMaxTypeValue = foeEcsValidTypeBits >> foeEcsNumIndexBits,
 
     /// Bitflag of the valid IndexID bits
-    foeEcsValidIndexBits = foeInvalidId >> foeEcsNumGroupBits,
-    /// Maximum value of an IndexID
-    foeEcsMaxIndexValue = foeEcsValidIndexBits - 1,
+    foeEcsValidIndexBits = foeInvalidId >> (foeEcsNumGroupBits + foeEcsNumTypeBits),
     /// The invalid index value
     foeEcsInvalidIndexID = foeEcsValidIndexBits,
+    /// Maximum value of an IndexID
+    foeEcsMaxIndexValue = foeEcsValidIndexBits - 1,
 };
 
 #define FOE_INVALID_ENTITY foeInvalidId
@@ -67,13 +75,18 @@ inline uint32_t foeEcsGetNormalizedGroupID(foeEntityID entity) {
     return foeEcsGetGroupID(entity) >> foeEcsNumIndexBits;
 }
 
+inline bool foeEcsIsResource(foeEntityID entity) { return entity & foeEcsValidTypeBits; }
+
+inline bool foeEcsIsEntity(foeEntityID entity) { return entity ^ foeEcsValidTypeBits; }
+
 inline foeGroupID foeEcsGetIndexID(foeEntityID entity) { return (entity & foeEcsValidIndexBits); }
 
 inline std::string foeEntityID_to_string(foeEntityID entity) {
     constexpr int printWidth = foeEcsNumBytes * 2;
 
     std::stringstream ss;
-    ss << "0x" << std::hex << std::setw(printWidth) << std::uppercase << std::setfill('0') << entity;
+    ss << "0x" << std::hex << std::setw(printWidth) << std::uppercase << std::setfill('0')
+       << entity;
     return ss.str();
 }
 
