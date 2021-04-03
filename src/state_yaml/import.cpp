@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#include <foe/ecs/entity_id.hpp>
 #include <foe/ecs/groups.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/log.hpp>
 #include <foe/search_paths.hpp>
@@ -40,7 +40,7 @@ constexpr std::string_view stateDataDirectoryPath = "state_data";
 
 struct StateDataDependency {
     std::string name;
-    foeGroupID group;
+    foeIdGroup group;
     std::filesystem::path path;
 };
 
@@ -219,7 +219,7 @@ bool generateGroupTranslations(std::vector<StateDataDependency> const &dependenc
 }
 
 bool importStateDataFromFile(std::filesystem::path filePath,
-                             foeGroupID targetGroup,
+                             foeIdGroup targetGroup,
                              std::vector<GroupTranslation> groupTranslations,
                              StatePools &statePools,
                              ResourcePools &resourcePools) {
@@ -250,10 +250,10 @@ bool importStateDataFromFile(std::filesystem::path filePath,
     try {
         auto entity =
             yaml_read_entity(node, targetGroup, groupTranslations, &statePools, &resourcePools);
-        if (entity == FOE_INVALID_ENTITY) {
+        if (entity == FOE_INVALID_ID) {
             return false;
         } else {
-            FOE_LOG(General, Info, "Successfully parsed entity {}", foeEntityID_to_string(entity))
+            FOE_LOG(General, Info, "Successfully parsed entity {}", foeId_to_string(entity))
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to parse Yaml state data for '{}': {}", filePath.native(),
@@ -264,7 +264,7 @@ bool importStateDataFromFile(std::filesystem::path filePath,
     return true;
 }
 
-bool importGroupStateData(foeGroupID targetGroup,
+bool importGroupStateData(foeIdGroup targetGroup,
                           std::filesystem::path targetGroupPath,
                           foeEcsGroups &ecsGroups,
                           StatePools &statePools,
@@ -345,7 +345,7 @@ bool importGroupState(std::filesystem::path yamlPath,
     if (!retVal)
         return false;
 
-    foeGroupID newGroupID = 0;
+    foeIdGroup newGroupID = 0;
     for (auto const &it : groupDependencies) {
         auto newGroup =
             std::make_unique<foeEcsIndexGenerator>(it.name, foeEcsNormalizedToGroupID(it.group));

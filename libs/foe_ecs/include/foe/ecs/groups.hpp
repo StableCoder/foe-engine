@@ -17,8 +17,8 @@
 #ifndef FOE_ECS_GROUPS_HPP
 #define FOE_ECS_GROUPS_HPP
 
-#include <foe/ecs/entity_id.hpp>
 #include <foe/ecs/export.h>
+#include <foe/ecs/id.hpp>
 #include <foe/ecs/index_generator.hpp>
 
 #include <array>
@@ -26,7 +26,7 @@
 
 class foeEcsGroups {
   public:
-    enum : foeGroupID {
+    enum : foeIdGroup {
         // Entities that are to be preserved across sessions
         Persistent = (foeEcsMaxGroupValue - 1) << foeEcsNumIndexBits,
         // Entities that are not to be preseved, and are just local to the current session
@@ -36,9 +36,9 @@ class foeEcsGroups {
     };
 
     FOE_ECS_EXPORT bool addGroup(std::unique_ptr<foeEcsIndexGenerator> &&group) noexcept;
-    FOE_ECS_EXPORT void removeGroup(foeGroupID groupID) noexcept;
+    FOE_ECS_EXPORT void removeGroup(foeIdGroup groupID) noexcept;
 
-    FOE_ECS_EXPORT foeEcsIndexGenerator *group(foeGroupID groupID) noexcept;
+    FOE_ECS_EXPORT foeEcsIndexGenerator *group(foeIdGroup groupID) noexcept;
     FOE_ECS_EXPORT foeEcsIndexGenerator *group(std::string_view groupName) noexcept;
 
     FOE_ECS_EXPORT foeEcsIndexGenerator *persistentGroup() noexcept;

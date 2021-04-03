@@ -15,4 +15,4 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/entity_id.hpp>
+#include <foe/ecs/id.hpp>

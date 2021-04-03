@@ -17,7 +17,7 @@
 #ifndef POSITION_DESCRIPTOR_POOL_HPP
 #define POSITION_DESCRIPTOR_POOL_HPP
 
-#include <foe/ecs/entity_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>
@@ -43,8 +43,8 @@ struct PositionDescriptorPool {
                         uint32_t modelMatrixBinding);
     void deinitialize();
 
-    VkResult generatePositionDescriptors(
-        uint32_t frameIndex, std::map<foeEntityID, std::unique_ptr<Position3D>> &positions);
+    VkResult generatePositionDescriptors(uint32_t frameIndex,
+                                         std::map<foeId, std::unique_ptr<Position3D>> &positions);
 
   private:
     struct UniformBuffer {

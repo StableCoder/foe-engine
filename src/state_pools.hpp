@@ -17,7 +17,7 @@
 #ifndef STATE_POOLS_HPP
 #define STATE_POOLS_HPP
 
-#include <foe/ecs/entity_id.hpp>
+#include <foe/ecs/id.hpp>
 
 #include <map>
 #include <memory>
@@ -25,7 +25,7 @@
 #include "position_3d.hpp"
 
 struct StatePools {
-    std::map<foeEntityID, std::unique_ptr<Position3D>> position;
+    std::map<foeId, std::unique_ptr<Position3D>> position;
 };
 
 #endif // STATE_POOLS_HPP

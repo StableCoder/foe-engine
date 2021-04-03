@@ -23,10 +23,10 @@
 #include "../position_3d.hpp"
 
 auto yaml_read_entity(YAML::Node const &node,
-                      foeGroupID targetedGroupID,
+                      foeIdGroup targetedGroupID,
                       std::vector<GroupTranslation> groupTranslations,
                       StatePools *pStatePools,
-                      ResourcePools *pResourcePools) -> foeEntityID {
+                      ResourcePools *pResourcePools) -> foeId {
     { // *OPTIONAL* GroupID
         // If a GroupID is specified here, it means this data belongs to an entity from a
         // dependency, with some sort of data being overwritten
@@ -43,7 +43,7 @@ auto yaml_read_entity(YAML::Node const &node,
             if (!translationFound) {
                 throw foeYamlException{"group_id - No group translation for value of '" +
                                        std::to_string(normalizedGroupID) + "' found"};
-                return FOE_INVALID_ENTITY;
+                return FOE_INVALID_ID;
             }
         }
     }
@@ -53,36 +53,35 @@ auto yaml_read_entity(YAML::Node const &node,
     yaml_read_required("index_id", node, indexID);
 
     // Determine full EntityID
-    foeEntityID entity = targetedGroupID | indexID;
+    foeId id = targetedGroupID | indexID;
 
     if (auto dataNode = node["position_3d"]; dataNode) {
         try {
             std::unique_ptr<Position3D> pPos(new Position3D);
             *pPos = yaml_read_Position3D(dataNode);
-            pStatePools->position[entity] = std::move(pPos);
+            pStatePools->position[id] = std::move(pPos);
         } catch (foeYamlException const &e) {
             throw foeYamlException{"position_3d::" + e.whatStr()};
         }
     }
 
-    return entity;
+    return id;
 }
 
-auto yaml_write_entity(foeEntityID entity, StatePools *pStatePools, ResourcePools *pResourcePools)
+auto yaml_write_entity(foeId id, StatePools *pStatePools, ResourcePools *pResourcePools)
     -> YAML::Node {
     YAML::Node outNode;
 
     // *OPTIONAL* GroupID if *not* the persistent group
-    if (foeEcsGetGroupID(entity) != foeEcsGroups::Persistent) {
-        yaml_write_required("group_id", foeEcsGetNormalizedGroupID(entity), outNode);
+    if (foeEcsGetGroupID(id) != foeEcsGroups::Persistent) {
+        yaml_write_required("group_id", foeEcsGetNormalizedGroupID(id), outNode);
     }
 
     // *REQUIRED* IndexID
-    yaml_write_required("index_id", foeEcsGetIndexID(entity), outNode);
+    yaml_write_required("index_id", foeEcsGetIndexID(id), outNode);
 
     // Position3D
-    if (auto searchIt = pStatePools->position.find(entity);
-        searchIt != pStatePools->position.end()) {
+    if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.end()) {
         outNode["position_3d"] = yaml_write_Position3D(*searchIt->second.get());
     }
 

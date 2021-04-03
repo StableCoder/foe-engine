@@ -86,7 +86,7 @@ void PositionDescriptorPool::deinitialize() {
 }
 
 VkResult PositionDescriptorPool::generatePositionDescriptors(
-    uint32_t frameIndex, std::map<foeEntityID, std::unique_ptr<Position3D>> &positions) {
+    uint32_t frameIndex, std::map<foeId, std::unique_ptr<Position3D>> &positions) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];

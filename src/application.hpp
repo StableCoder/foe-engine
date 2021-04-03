@@ -92,8 +92,8 @@ struct Application {
 
     // Groups/Entities
     foeEcsGroups ecsGroups;
-    foeEntityID cameraID;
-    foeEntityID renderID;
+    foeId cameraID;
+    foeId renderID;
     StatePools statePools;
 
     FrameTimer frameTime;

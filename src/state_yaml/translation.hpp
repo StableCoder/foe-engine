@@ -1,11 +1,11 @@
 #ifndef TRANSLATION_HPP
 #define TRANSLATION_HPP
 
-#include <foe/ecs/entity_id.hpp>
+#include <foe/ecs/id.hpp>
 
 struct GroupTranslation {
-    foeGroupID source;
-    foeGroupID target;
+    foeIdGroup source;
+    foeIdGroup target;
 };
 
 #endif // TRANSLATION_HPP

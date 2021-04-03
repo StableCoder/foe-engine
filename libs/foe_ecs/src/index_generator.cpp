@@ -18,47 +18,47 @@
 
 #include <cassert>
 
-foeEcsIndexGenerator::foeEcsIndexGenerator(std::string_view name, foeGroupID groupId) :
+foeEcsIndexGenerator::foeEcsIndexGenerator(std::string_view name, foeIdGroup groupId) :
     cName{name}, cGroupID{groupId}, mNumRecycled{0}, mRecycled{}, mNextFreeID{0} {
     /// \todo Replace with C++20 contracts
     assert((groupId & foeEcsValidIndexBits) == 0);
 }
 
-foeEntityID foeEcsIndexGenerator::generate() {
-    foeEntityID entity = FOE_INVALID_ENTITY;
+foeId foeEcsIndexGenerator::generate() {
+    foeId id = FOE_INVALID_ID;
 
     std::scoped_lock lock{mSync};
 
     if (mNumRecycled != 0) {
-        entity = mRecycled.front();
+        id = mRecycled.front();
         mRecycled.pop();
         --mNumRecycled;
     } else if (mNextFreeID >= foeEcsInvalidIndexID) {
         // Ran out of indexes for this group
-        return FOE_INVALID_ENTITY;
+        return FOE_INVALID_ID;
     } else {
         // Fresh index
-        entity = mNextFreeID++;
+        id = mNextFreeID++;
     }
 
-    return cGroupID | entity;
+    return cGroupID | id;
 }
 
-foeEntityID foeEcsIndexGenerator::generateResource() {
+foeId foeEcsIndexGenerator::generateResource() {
     auto newID = generate();
-    if (newID != FOE_INVALID_ENTITY) {
+    if (newID != FOE_INVALID_ID) {
         newID |= foeEcsNumTypeBits;
     }
     return newID;
 }
 
-bool foeEcsIndexGenerator::free(foeEntityID entity) { return free(1, &entity); }
+bool foeEcsIndexGenerator::free(foeId id) { return free(1, &id); }
 
-bool foeEcsIndexGenerator::free(uint32_t count, foeEntityID *pEntities) {
+bool foeEcsIndexGenerator::free(uint32_t count, foeId *pEntities) {
     // Validate that all the IDs to be recycled belong to this generator
     auto const *const endIt = pEntities + count;
     for (auto const *it = pEntities; it != endIt; ++it) {
-        if (*it == FOE_INVALID_ENTITY || foeEcsGetGroupID(*it) != cGroupID ||
+        if (*it == FOE_INVALID_ID || foeEcsGetGroupID(*it) != cGroupID ||
             foeEcsGetIndexID(*it) >= mNextFreeID) {
             return false;
         }
@@ -78,14 +78,14 @@ bool foeEcsIndexGenerator::free(uint32_t count, foeEntityID *pEntities) {
 
 std::string_view foeEcsIndexGenerator::name() const noexcept { return cName; }
 
-foeGroupID foeEcsIndexGenerator::groupID() const noexcept { return cGroupID; }
+foeIdGroup foeEcsIndexGenerator::groupID() const noexcept { return cGroupID; }
 
-foeIndexID foeEcsIndexGenerator::peekNextFreshIndex() const noexcept { return mNextFreeID; }
+foeIdIndex foeEcsIndexGenerator::peekNextFreshIndex() const noexcept { return mNextFreeID; }
 
 size_t foeEcsIndexGenerator::recyclable() const noexcept { return mNumRecycled; }
 
-void foeEcsIndexGenerator::importState(foeIndexID nextIndex,
-                                       const std::vector<foeIndexID> &recycledIndices) {
+void foeEcsIndexGenerator::importState(foeIdIndex nextIndex,
+                                       const std::vector<foeIdIndex> &recycledIndices) {
     std::scoped_lock lock{mSync};
 
     mNextFreeID = nextIndex;
@@ -101,8 +101,8 @@ void foeEcsIndexGenerator::importState(foeIndexID nextIndex,
     }
 }
 
-void foeEcsIndexGenerator::exportState(foeIndexID &nextIndex,
-                                       std::vector<foeIndexID> &recycledIndices) {
+void foeEcsIndexGenerator::exportState(foeIdIndex &nextIndex,
+                                       std::vector<foeIdIndex> &recycledIndices) {
     std::scoped_lock lock{mSync};
 
     nextIndex = mNextFreeID;
@@ -118,19 +118,19 @@ void foeEcsIndexGenerator::exportState(foeIndexID &nextIndex,
     }
 }
 
-auto foeEcsIndexGenerator::activeEntityList() -> std::vector<foeEntityID> {
-    std::vector<foeEntityID> entityList;
+auto foeEcsIndexGenerator::activeEntityList() -> std::vector<foeId> {
+    std::vector<foeId> entityList;
 
     // Generate list
-    foeIndexID nextFreeIndex;
-    std::vector<foeIndexID> recycled;
+    foeIdIndex nextFreeIndex;
+    std::vector<foeIdIndex> recycled;
     exportState(nextFreeIndex, recycled);
 
     entityList.reserve(nextFreeIndex - recycled.size());
     std::sort(recycled.begin(), recycled.end());
     auto recycledIt = recycled.begin();
 
-    for (foeIndexID i = 0; i < nextFreeIndex; ++i) {
+    for (foeIdIndex i = 0; i < nextFreeIndex; ++i) {
         if (recycledIt == recycled.end() || *recycledIt != i) {
             entityList.emplace_back(cGroupID | i);
         } else {

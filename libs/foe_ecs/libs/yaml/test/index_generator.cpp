@@ -83,7 +83,7 @@ recycled_indices: [8, 4, 10])"));
     REQUIRE_THROWS_MATCHES(
         yaml_read_index_generator(root, temp), foeYamlException,
         Catch::Matchers::Equals("yaml_read_index_generator::next_free_index - Could not parse "
-                                "value of 'fifteen' to foeIndexID"));
+                                "value of 'fifteen' to foeIdIndex"));
 }
 
 TEST_CASE("yaml_read_index_generator - Missing 'recycled_indices' node",
@@ -108,5 +108,5 @@ recycled_indices: [eight, 4, 10])"));
     REQUIRE_THROWS_MATCHES(
         yaml_read_index_generator(root, temp), foeYamlException,
         Catch::Matchers::Equals("yaml_read_index_generator::recycled_indices - Could not parse "
-                                "value of 'eight' as a foeIndexID"));
+                                "value of 'eight' as a foeIdIndex"));
 }

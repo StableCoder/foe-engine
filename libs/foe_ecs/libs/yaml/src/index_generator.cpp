@@ -19,17 +19,17 @@
 #include <foe/yaml/exception.hpp>
 
 void yaml_read_index_generator(YAML::Node const &node, foeEcsIndexGenerator &indexGenerator) {
-    foeIndexID nextIndex;
-    std::vector<foeIndexID> recycledIndices;
+    foeIdIndex nextIndex;
+    std::vector<foeIdIndex> recycledIndices;
 
     // Next Free Index
     if (auto nextNode = node["next_free_index"]; nextNode) {
         try {
-            nextIndex = nextNode.as<foeIndexID>();
+            nextIndex = nextNode.as<foeIdIndex>();
         } catch (...) {
             throw foeYamlException{
                 "yaml_read_index_generator::next_free_index - Could not parse value of '" +
-                nextNode.as<std::string>() + "' to foeIndexID"};
+                nextNode.as<std::string>() + "' to foeIdIndex"};
         }
     } else {
         throw foeYamlException{
@@ -42,11 +42,11 @@ void yaml_read_index_generator(YAML::Node const &node, foeEcsIndexGenerator &ind
 
         for (auto it = recycledNode.begin(); it != recycledNode.end(); ++it) {
             try {
-                recycledIndices.emplace_back(it->as<foeIndexID>());
+                recycledIndices.emplace_back(it->as<foeIdIndex>());
             } catch (...) {
                 throw foeYamlException{
                     "yaml_read_index_generator::recycled_indices - Could not parse value of '" +
-                    it->as<std::string>() + "' as a foeIndexID"};
+                    it->as<std::string>() + "' as a foeIdIndex"};
             }
         }
     } else {
@@ -60,8 +60,8 @@ void yaml_read_index_generator(YAML::Node const &node, foeEcsIndexGenerator &ind
 auto yaml_write_index_generator(foeEcsIndexGenerator &data) -> YAML::Node {
     YAML::Node node;
 
-    foeIndexID nextIndex;
-    std::vector<foeIndexID> recycledIndices;
+    foeIdIndex nextIndex;
+    std::vector<foeIdIndex> recycledIndices;
 
     data.exportState(nextIndex, recycledIndices);
 

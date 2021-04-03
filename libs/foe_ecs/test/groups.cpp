@@ -15,8 +15,8 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/entity_id.hpp>
 #include <foe/ecs/groups.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/ecs/index_generator.hpp>
 
 TEST_CASE("Groups - Getting groups", "[foe][ecs]") {
@@ -130,7 +130,7 @@ TEST_CASE("Groups - Adding/removing all possible general groups", "[foe][ecs]") 
     }
 
     for (uint32_t i = 0; i < foeEcsGroups::MaxGeneralGroups; ++i) {
-        const foeGroupID id = foeEcsNormalizedToGroupID(i);
+        const foeIdGroup id = foeEcsNormalizedToGroupID(i);
 
         REQUIRE(test.group(id) != nullptr);
         REQUIRE(test.group(id)->groupID() == id);

@@ -36,7 +36,7 @@ auto write_yaml_dependencies(foeEcsGroups &ecsGroups) -> YAML::Node {
     YAML::Node outNode;
 
     for (uint32_t i = 0; i < foeEcsGroups::MaxGeneralGroups; ++i) {
-        foeGroupID groupID = foeEcsNormalizedToGroupID(i);
+        foeIdGroup groupID = foeEcsNormalizedToGroupID(i);
 
         auto *pGroup = ecsGroups.group(groupID);
         if (pGroup == nullptr) {
@@ -100,7 +100,7 @@ bool exportGroupStateData(std::filesystem::path path,
 
     // Dependent groups
     for (uint32_t i = 0; i < foeEcsGroups::MaxGeneralGroups; ++i) {
-        foeGroupID groupID = foeEcsNormalizedToGroupID(i);
+        foeIdGroup groupID = foeEcsNormalizedToGroupID(i);
         auto *pGroup = ecsGroups.group(groupID);
 
         if (pGroup == nullptr)
@@ -115,7 +115,7 @@ bool exportGroupStateData(std::filesystem::path path,
                 rootNode = yaml_write_entity(entity, &statePools, &resourcePools);
             } catch (foeYamlException const &e) {
                 FOE_LOG(General, Error,
-                        "Failed to generete Yaml for entity {}: ", foeEntityID_to_string(entity),
+                        "Failed to generete Yaml for entity {}: ", foeId_to_string(entity),
                         e.what())
                 return false;
             }
@@ -123,7 +123,7 @@ bool exportGroupStateData(std::filesystem::path path,
             YAML::Emitter emitter;
             emitter << rootNode;
 
-            std::ofstream outFile{path / std::string{foeEntityID_to_string(entity) + ".yml "},
+            std::ofstream outFile{path / std::string{foeId_to_string(entity) + ".yml "},
                                   std::ofstream::out};
             outFile << emitter.c_str();
         }
@@ -140,7 +140,7 @@ bool exportGroupStateData(std::filesystem::path path,
                 rootNode = yaml_write_entity(entity, &statePools, &resourcePools);
             } catch (foeYamlException const &e) {
                 FOE_LOG(General, Error,
-                        "Failed to generete Yaml for entity {}: ", foeEntityID_to_string(entity),
+                        "Failed to generete Yaml for entity {}: ", foeId_to_string(entity),
                         e.what())
                 return false;
             }
@@ -149,8 +149,7 @@ bool exportGroupStateData(std::filesystem::path path,
             emitter << rootNode;
 
             std::ofstream outFile{
-                path /
-                    std::string{"P-" + foeEntityID_to_string(foeEcsGetIndexID(entity)) + ".yml "},
+                path / std::string{"P-" + foeId_to_string(foeEcsGetIndexID(entity)) + ".yml "},
                 std::ofstream::out};
             outFile << emitter.c_str();
         }
