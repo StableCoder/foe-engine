@@ -17,8 +17,8 @@
 #ifndef FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
 #define FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
 
+#include <foe/ecs/resource_id.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/id.hpp>
 
 #include <shared_mutex>
 #include <string_view>

@@ -17,9 +17,9 @@
 #ifndef FOE_RESOURCE_SHADER_HPP
 #define FOE_RESOURCE_SHADER_HPP
 
+#include <foe/ecs/resource_id.hpp>
 #include <foe/graphics/shader.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 #include <vulkan/vulkan.h>
 

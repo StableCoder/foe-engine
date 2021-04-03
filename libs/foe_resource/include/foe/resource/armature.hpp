@@ -17,10 +17,10 @@
 #ifndef FOE_RESOURCE_ARMATURE_HPP
 #define FOE_RESOURCE_ARMATURE_HPP
 
+#include <foe/ecs/resource_id.hpp>
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>

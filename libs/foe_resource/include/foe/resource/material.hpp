@@ -17,9 +17,9 @@
 #ifndef FOE_RESOURCE_MATERIAL_HPP
 #define FOE_RESOURCE_MATERIAL_HPP
 
+#include <foe/ecs/resource_id.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>

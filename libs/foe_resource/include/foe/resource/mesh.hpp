@@ -17,11 +17,11 @@
 #ifndef FOE_RESOURCE_MESH_HPP
 #define FOE_RESOURCE_MESH_HPP
 
+#include <foe/ecs/resource_id.hpp>
 #include <foe/graphics/mesh.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/id.hpp>
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>

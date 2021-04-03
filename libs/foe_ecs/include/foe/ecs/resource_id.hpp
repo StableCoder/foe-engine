@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_ID_HPP
-#define FOE_RESOURCE_ID_HPP
+#ifndef FOE_ECS_RESOURCE_ID_HPP
+#define FOE_ECS_RESOURCE_ID_HPP
 
 #include <cstdint>
 
@@ -23,4 +23,4 @@ using foeResourceID = uint32_t;
 
 constexpr foeResourceID FOE_INVALID_RESOURCE = UINT32_MAX;
 
-#endif // FOE_RESOURCE_ID_HPP
+#endif // FOE_ECS_RESOURCE_ID_HPP
