@@ -17,16 +17,14 @@
 #ifndef FOE_ECS_YAML_ID_HPP
 #define FOE_ECS_YAML_ID_HPP
 
-#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/id.hpp>
 #include <foe/ecs/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
-FOE_ECS_YAML_EXPORT bool yaml_read_id(YAML::Node const &node,
+FOE_ECS_YAML_EXPORT auto yaml_read_id(YAML::Node const &node,
                                       // foeIdGroup targetGroup,
-                                      foeId &id,
-                                      foeEditorNameMap *pEditorNameMap);
+                                      foeId &id) -> foeId;
 
-FOE_ECS_YAML_EXPORT auto yaml_write_id(foeId &id, foeEditorNameMap *pEditorNameMap) -> YAML::Node;
+FOE_ECS_YAML_EXPORT void yaml_write_id(foeId &id, YAML::Node &node);
 
 #endif // FOE_ECS_YAML_ID_HPP

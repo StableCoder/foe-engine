@@ -20,63 +20,38 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-bool yaml_read_id(YAML::Node const &node,
+auto yaml_read_id(YAML::Node const &node,
                   // foeIdGroup targetGroup,
-                  foeId &id,
-                  foeEditorNameMap *pEditorNameMap) {
+                  foeId &id) -> foeId {
     try {
-        { // ID
-            foeIdGroup idGroup = 0;
-            /*
-            if (yaml_read_optional("group_id", node, idGroup)) {
-                idGroup = foeEcsNormalizedToGroupID(idGroup);
-            }
-            */
-
-            foeIdIndex idIndex;
-            yaml_read_required("index_id", node, idIndex);
-
-            id = idGroup | idIndex;
+        // Group
+        foeIdGroup idGroup = 0;
+        /*
+        if (yaml_read_optional("group_id", node, idGroup)) {
+            idGroup = foeEcsNormalizedToGroupID(idGroup);
         }
+        */
 
-        // Editor Name
-        if (auto editorNameMap = node["editor_name"]; editorNameMap && pEditorNameMap != nullptr) {
-            std::string editorName;
-            yaml_read_required("", editorNameMap, editorName);
+        // Index
+        foeIdIndex idIndex;
+        yaml_read_required("index_id", node, idIndex);
 
-            if (!pEditorNameMap->add(id, editorName)) {
-                return false;
-            }
-        }
+        return idGroup | idIndex;
     } catch (foeYamlException const &e) {
         throw e;
     }
-
-    return true;
 }
 
-auto yaml_write_id(foeId id, foeEditorNameMap *pEditorNameMap) -> YAML::Node {
-    YAML::Node writeNode;
-
+void yaml_write_id(foeId id, YAML::Node &node) {
     try {
-        { // ID
-            yaml_write_required("index_id", foeEcsGetIndexID(id), writeNode);
+        // Index
+        yaml_write_required("index_id", foeEcsGetIndexID(id), node);
 
-            // Write out the IdGroup if it is part of a dependency group.
-            if (foeEcsGetGroupID(id) != foeEcsGroups::Persistent) {
-                yaml_write_required("group_id", foeEcsGetGroupID(id), writeNode);
-            }
-        }
-
-        // Editor Name
-        if (pEditorNameMap != nullptr) {
-            if (auto editorName = pEditorNameMap->find(id); !editorName.empty()) {
-                yaml_write_required("editor_name", editorName, writeNode);
-            }
+        // Group, if not part of the persistent group
+        if (foeEcsGetGroupID(id) != foeEcsGroups::Persistent) {
+            yaml_write_required("group_id", foeEcsGetGroupID(id), node);
         }
     } catch (foeYamlException const &e) {
         throw e;
     }
-
-    return writeNode;
 }
