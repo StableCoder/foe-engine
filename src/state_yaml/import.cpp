@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+#include <foe/ecs/group_translation.hpp>
 #include <foe/ecs/groups.hpp>
 #include <foe/ecs/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
@@ -37,12 +38,6 @@ constexpr std::string_view dependenciesFilePath = "dependencies.yml";
 constexpr std::string_view indexDataFilePath = "index_data.yml";
 constexpr std::string_view resourcesDirectoryPath = "resources";
 constexpr std::string_view stateDataDirectoryPath = "state_data";
-
-struct StateDataDependency {
-    std::string name;
-    foeIdGroup group;
-    std::filesystem::path path;
-};
 
 bool importStateDependenciesFromNode(YAML::Node const &dependenciesNode,
                                      std::vector<StateDataDependency> &stateDependencies) {
@@ -200,7 +195,7 @@ bool importGroupStateIndexDataFromFile(std::string_view groupName,
 
 bool generateGroupTranslations(std::vector<StateDataDependency> const &dependencies,
                                foeEcsGroups &ecsGroups,
-                               std::vector<GroupTranslation> &translationList) {
+                               std::vector<foeGroupTranslation::Set> &translationList) {
     translationList.reserve(dependencies.size());
 
     for (auto const &it : dependencies) {
@@ -209,8 +204,8 @@ bool generateGroupTranslations(std::vector<StateDataDependency> const &dependenc
         if (targetGroup == nullptr)
             return false;
 
-        translationList.emplace_back(GroupTranslation{
-            .source = it.group,
+        translationList.emplace_back(foeGroupTranslation::Set{
+            .normalizedSourceGroup = it.group,
             .target = targetGroup->groupID(),
         });
     }
@@ -220,7 +215,7 @@ bool generateGroupTranslations(std::vector<StateDataDependency> const &dependenc
 
 bool importStateDataFromFile(std::filesystem::path filePath,
                              foeIdGroup targetGroup,
-                             std::vector<GroupTranslation> groupTranslations,
+                             foeGroupTranslation &groupTranslations,
                              StatePools &statePools,
                              ResourcePools &resourcePools) {
     if (!std::filesystem::is_regular_file(filePath)) {
@@ -249,7 +244,7 @@ bool importStateDataFromFile(std::filesystem::path filePath,
 
     try {
         auto entity =
-            yaml_read_entity(node, targetGroup, groupTranslations, &statePools, &resourcePools);
+            yaml_read_entity(node, targetGroup, &groupTranslations, &statePools, &resourcePools);
         if (entity == FOE_INVALID_ID) {
             return false;
         } else {
@@ -276,8 +271,8 @@ bool importGroupStateData(foeIdGroup targetGroup,
         return false;
     }
 
-    std::vector<GroupTranslation> groupTranslations;
-    retVal = generateGroupTranslations(groupDependencies, ecsGroups, groupTranslations);
+    foeGroupTranslation groupTranslations;
+    retVal = groupTranslations.generateTranslations(groupDependencies, ecsGroups);
     if (!retVal) {
         return false;
     }

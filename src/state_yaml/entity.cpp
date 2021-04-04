@@ -24,7 +24,7 @@
 
 auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroup targetedGroupID,
-                      std::vector<GroupTranslation> groupTranslations,
+                      foeGroupTranslation *pGroupTranslations,
                       StatePools *pStatePools,
                       ResourcePools *pResourcePools) -> foeId {
     { // *OPTIONAL* GroupID
@@ -32,14 +32,8 @@ auto yaml_read_entity(YAML::Node const &node,
         // dependency, with some sort of data being overwritten
         uint64_t normalizedGroupID = 0;
         if (yaml_read_optional("group_id", node, normalizedGroupID)) {
-            bool translationFound = false;
-            for (auto const &it : groupTranslations) {
-                if (it.source == normalizedGroupID) {
-                    targetedGroupID = it.target;
-                    translationFound = true;
-                    break;
-                }
-            }
+            bool translationFound =
+                pGroupTranslations->targetFromNormalizedGroup(normalizedGroupID, targetedGroupID);
             if (!translationFound) {
                 throw foeYamlException{"group_id - No group translation for value of '" +
                                        std::to_string(normalizedGroupID) + "' found"};
