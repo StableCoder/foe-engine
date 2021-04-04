@@ -271,17 +271,17 @@ int Application::initialize(int argc, char **argv) {
     {
         // Vertex Descriptor
         foeVertexDescriptor *theVertexDescriptor =
-            new foeVertexDescriptor{"theVertexDescriptor2", &vertexDescriptorLoader};
+            new foeVertexDescriptor{0, &vertexDescriptorLoader};
         vertexDescriptorPool.add(theVertexDescriptor);
         theVertexDescriptor->incrementUseCount();
         theVertexDescriptor->decrementUseCount();
 
         // Materials
-        foeMaterial *theMaterial = new foeMaterial{"theMaterial", &materialLoader};
+        foeMaterial *theMaterial = new foeMaterial{3, &materialLoader};
         materialPool.add(theMaterial);
         theMaterial->incrementUseCount();
         theMaterial->decrementUseCount();
-        theMaterial = new foeMaterial{"theMaterial2", &materialLoader};
+        theMaterial = new foeMaterial{4, &materialLoader};
         materialPool.add(theMaterial);
         theMaterial->incrementUseCount();
         theMaterial->decrementUseCount();
@@ -290,33 +290,33 @@ int Application::initialize(int argc, char **argv) {
     { // Model Items
         foeVertexDescriptor *pVD;
 
-        pVD = new foeVertexDescriptor("nonbonedMeshVD", &vertexDescriptorLoader);
+        pVD = new foeVertexDescriptor(1, &vertexDescriptorLoader);
         vertexDescriptorPool.add(pVD);
         pVD->incrementUseCount();
         pVD->decrementUseCount();
 
-        pVD = new foeVertexDescriptor("bonedMeshVD", &vertexDescriptorLoader);
+        pVD = new foeVertexDescriptor(2, &vertexDescriptorLoader);
         vertexDescriptorPool.add(pVD);
         pVD->incrementUseCount();
         pVD->decrementUseCount();
 
         foeMaterial *pMaterial;
-        pMaterial = new foeMaterial("MeshMaterial", &materialLoader);
+        pMaterial = new foeMaterial(5, &materialLoader);
         materialPool.add(pMaterial);
         pMaterial->incrementUseCount();
         pMaterial->decrementUseCount();
 
-        auto *pMesh = new foeMesh("testMesh", &meshLoader);
+        auto *pMesh = new foeMesh(13, &meshLoader);
         meshPool.add(pMesh);
         pMesh->incrementUseCount();
         pMesh->decrementUseCount();
 
-        pMesh = new foeMesh("testMesh2", &meshLoader);
+        pMesh = new foeMesh(14, &meshLoader);
         meshPool.add(pMesh);
         pMesh->incrementUseCount();
         pMesh->decrementUseCount();
 
-        auto *pArmature = new foeArmature("testArmature", &armatureLoader);
+        auto *pArmature = new foeArmature(12, &armatureLoader);
         pArmature->incrementUseCount();
         armaturePool.add(pArmature);
     }
@@ -502,8 +502,6 @@ int Application::initialize(int argc, char **argv) {
 
     return 0;
 }
-
-#include <foe/resource/yaml/material.hpp>
 
 void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
@@ -989,8 +987,8 @@ int Application::mainloop() {
 
                                         if constexpr (false) {
                                             auto *theVertexDescriptor =
-                                                vertexDescriptorPool.find("theVertexDescriptor2");
-                                            auto *theMaterial = materialPool.find("theMaterial2");
+                                                vertexDescriptorPool.find(0);
+                                            auto *theMaterial = materialPool.find(4);
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
@@ -1035,11 +1033,11 @@ int Application::mainloop() {
                                         if constexpr (true) {
                                             // Render Model
                                             auto *theVertexDescriptor =
-                                                vertexDescriptorPool.find("nonbonedMeshVD");
-                                            auto *theMaterial = materialPool.find("MeshMaterial");
+                                                vertexDescriptorPool.find(1);
+                                            auto *theMaterial = materialPool.find(5);
                                             bool boned = false;
-                                            auto *pMesh = meshPool.find("testMesh");
-                                            auto *pArmature = armaturePool.find("testArmature");
+                                            auto *pMesh = meshPool.find(13);
+                                            auto *pArmature = armaturePool.find(12);
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
@@ -1286,9 +1284,8 @@ int Application::mainloop() {
                         VkPipeline pipeline;
 
                         if constexpr (false) {
-                            auto *theVertexDescriptor =
-                                vertexDescriptorPool.find("theVertexDescriptor2");
-                            auto *theMaterial = materialPool.find("theMaterial2");
+                            auto *theVertexDescriptor = vertexDescriptorPool.find(0);
+                            auto *theMaterial = materialPool.find(4);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||
@@ -1324,11 +1321,11 @@ int Application::mainloop() {
 
                         if constexpr (true) {
                             // Render Model
-                            auto *theVertexDescriptor = vertexDescriptorPool.find("bonedMeshVD");
-                            auto *theMaterial = materialPool.find("MeshMaterial");
+                            auto *theVertexDescriptor = vertexDescriptorPool.find(2);
+                            auto *theMaterial = materialPool.find(5);
                             bool boned = true;
-                            auto *pMesh = meshPool.find("testMesh");
-                            auto *pArmature = armaturePool.find("testArmature");
+                            auto *pMesh = meshPool.find(13);
+                            auto *pArmature = armaturePool.find(12);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||

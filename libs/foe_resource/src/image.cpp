@@ -20,8 +20,7 @@
 
 #include "log.hpp"
 
-foeImage::foeImage(foeResourceID id, std::string_view name, foeImageLoader *pLoader) :
-    id{id}, name{name}, pLoader{pLoader} {}
+foeImage::foeImage(foeResourceID id, foeImageLoader *pLoader) : id{id}, pLoader{pLoader} {}
 
 foeImage::~foeImage() {
     if (useCount > 0) {
@@ -36,8 +35,6 @@ foeImage::~foeImage() {
 }
 
 foeResourceID foeImage::getID() const noexcept { return id; }
-
-std::string_view foeImage::getName() const noexcept { return name; }
 
 foeResourceLoadState foeImage::getLoadState() const noexcept { return loadState; }
 

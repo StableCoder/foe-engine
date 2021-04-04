@@ -16,6 +16,7 @@
 
 #include <foe/resource/yaml/vertex_descriptor.hpp>
 
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/yaml/vertex_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
@@ -103,9 +104,6 @@ bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
-        writeNode["index_id"] = pVertexDescriptor->getID();
-        writeNode["editor_name"] = std::string{pVertexDescriptor->getName()};
-
         { // Resources Node
             YAML::Node resNode;
 
@@ -161,8 +159,7 @@ bool export_yaml_vertex_descriptor_definition(foeVertexDescriptor const *pVertex
     YAML::Emitter emitter;
     emitter << definition;
 
-    std::ofstream outFile(std::string{"_"} + std::to_string(pVertexDescriptor->getID()) + "_" +
-                              std::string{pVertexDescriptor->getName()} + ".yml",
+    std::ofstream outFile(std::string{"_"} + std::to_string(pVertexDescriptor->getID()) + ".yml",
                           std::ofstream::out);
     if (outFile.is_open()) {
         outFile << emitter.c_str();
@@ -170,7 +167,7 @@ bool export_yaml_vertex_descriptor_definition(foeVertexDescriptor const *pVertex
     } else {
         FOE_LOG(General, Error,
                 "Failed to export foeVertexDescriptor: Failed to open output file {}.yml",
-                pVertexDescriptor->getName());
+                foeId_to_string(pVertexDescriptor->getID()));
         return false;
     }
 

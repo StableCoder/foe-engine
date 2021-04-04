@@ -28,7 +28,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <string_view>
 
 class foeImageLoader;
 class foeMaterialLoader;
@@ -39,11 +38,10 @@ struct foeImageCreateInfo {
 
 class foeImage {
   public:
-    FOE_RES_EXPORT foeImage(foeResourceID id, std::string_view name, foeImageLoader *pLoader);
+    FOE_RES_EXPORT foeImage(foeResourceID id, foeImageLoader *pLoader);
     FOE_RES_EXPORT ~foeImage();
 
     FOE_RES_EXPORT foeResourceID getID() const noexcept;
-    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -63,7 +61,6 @@ class foeImage {
 
     // General
     foeResourceID id;
-    std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

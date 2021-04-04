@@ -21,10 +21,8 @@
 
 #include "log.hpp"
 
-foeVertexDescriptor::foeVertexDescriptor(foeResourceID id,
-                                         std::string_view name,
-                                         foeVertexDescriptorLoader *pLoader) :
-    id{id}, name{name}, pLoader{pLoader} {}
+foeVertexDescriptor::foeVertexDescriptor(foeResourceID id, foeVertexDescriptorLoader *pLoader) :
+    id{id}, pLoader{pLoader} {}
 
 foeVertexDescriptor::~foeVertexDescriptor() {
     if (useCount > 0) {
@@ -40,8 +38,6 @@ foeVertexDescriptor::~foeVertexDescriptor() {
 }
 
 foeResourceID foeVertexDescriptor::getID() const noexcept { return id; }
-
-std::string_view foeVertexDescriptor::getName() const noexcept { return name; }
 
 foeResourceLoadState foeVertexDescriptor::getLoadState() const noexcept { return loadState; }
 

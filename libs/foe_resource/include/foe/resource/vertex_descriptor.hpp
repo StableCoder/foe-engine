@@ -25,8 +25,6 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <string>
-#include <string_view>
 
 class foeShader;
 class foeVertexDescriptorLoader;
@@ -45,13 +43,10 @@ struct foeVertexDescriptorCreateInfo {
 
 class foeVertexDescriptor {
   public:
-    FOE_RES_EXPORT foeVertexDescriptor(foeResourceID id,
-                                       std::string_view name,
-                                       foeVertexDescriptorLoader *pLoader);
+    FOE_RES_EXPORT foeVertexDescriptor(foeResourceID id, foeVertexDescriptorLoader *pLoader);
     FOE_RES_EXPORT ~foeVertexDescriptor();
 
     FOE_RES_EXPORT foeResourceID getID() const noexcept;
-    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -95,7 +90,6 @@ class foeVertexDescriptor {
 
     // General
     foeResourceID id;
-    std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

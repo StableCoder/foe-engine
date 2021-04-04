@@ -38,21 +38,6 @@ bool foeArmaturePool::add(foeArmature *pArmature) {
     return true;
 }
 
-foeArmature *foeArmaturePool::find(std::string_view name) {
-    foeArmature *pArmature{nullptr};
-
-    mSync.lock_shared();
-    for (auto *pOld : mArmatures) {
-        if (pOld->getName() == name) {
-            pArmature = pOld;
-            break;
-        }
-    }
-    mSync.unlock_shared();
-
-    return pArmature;
-}
-
 foeArmature *foeArmaturePool::find(foeResourceID id) {
     foeArmature *pArmature{nullptr};
 

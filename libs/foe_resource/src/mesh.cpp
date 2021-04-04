@@ -20,8 +20,7 @@
 
 #include "log.hpp"
 
-foeMesh::foeMesh(foeResourceID id, std::string_view name, foeMeshLoader *pLoader) :
-    id{id}, name{name}, pLoader{pLoader} {}
+foeMesh::foeMesh(foeResourceID id, foeMeshLoader *pLoader) : id{id}, pLoader{pLoader} {}
 
 foeMesh::~foeMesh() {
     if (useCount > 0) {
@@ -35,8 +34,6 @@ foeMesh::~foeMesh() {
 }
 
 foeResourceID foeMesh::getID() const noexcept { return id; }
-
-std::string_view foeMesh::getName() const noexcept { return name; }
 
 foeResourceLoadState foeMesh::getLoadState() const noexcept { return loadState; }
 

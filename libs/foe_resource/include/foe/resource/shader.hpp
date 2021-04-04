@@ -27,7 +27,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <string_view>
 #include <vector>
 
 class foeShaderLoader;
@@ -42,11 +41,10 @@ struct foeShaderCreateInfo {
 
 class foeShader {
   public:
-    FOE_RES_EXPORT foeShader(foeResourceID id, std::string_view name, foeShaderLoader *pLoader);
+    FOE_RES_EXPORT foeShader(foeResourceID id, foeShaderLoader *pLoader);
     FOE_RES_EXPORT ~foeShader();
 
     FOE_RES_EXPORT foeResourceID getID() const noexcept;
-    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -67,7 +65,6 @@ class foeShader {
 
     // General
     foeResourceID id;
-    std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

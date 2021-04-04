@@ -28,9 +28,9 @@ bool yaml_write_material_declaration(std::string const &nodeName,
                                      YAML::Node &node) {
     try {
         if (nodeName.empty()) {
-            node = std::string{pMaterial->getName()};
+            node = pMaterial->getID();
         } else {
-            node[nodeName] = std::string{pMaterial->getName()};
+            node[nodeName] = pMaterial->getID();
         }
     } catch (...) {
         throw foeYamlException(nodeName + " - Failed to serialize 'foeMaterial' declaration");
@@ -45,9 +45,6 @@ bool yaml_write_material_definition(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
-        writeNode["index_id"] = pMaterial->getID();
-        writeNode["editor_name"] = std::string{pMaterial->getName()};
-
         { // Resources Node
             YAML::Node resNode;
 

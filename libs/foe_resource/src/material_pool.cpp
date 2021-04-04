@@ -38,21 +38,6 @@ bool foeMaterialPool::add(foeMaterial *pMaterial) {
     return true;
 }
 
-foeMaterial *foeMaterialPool::find(std::string_view name) {
-    foeMaterial *pMaterial{nullptr};
-
-    mSync.lock_shared();
-    for (auto *pOld : mMaterials) {
-        if (pOld->getName() == name) {
-            pMaterial = pOld;
-            break;
-        }
-    }
-    mSync.unlock_shared();
-
-    return pMaterial;
-}
-
 foeMaterial *foeMaterialPool::find(foeResourceID id) {
     foeMaterial *pMaterial{nullptr};
 

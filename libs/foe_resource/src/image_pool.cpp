@@ -38,21 +38,6 @@ bool foeImagePool::add(foeImage *pImage) {
     return true;
 }
 
-foeImage *foeImagePool::find(std::string_view name) {
-    foeImage *pImage{nullptr};
-
-    mSync.lock_shared();
-    for (auto *pOld : mImages) {
-        if (pOld->getName() == name) {
-            pImage = pOld;
-            break;
-        }
-    }
-    mSync.unlock_shared();
-
-    return pImage;
-}
-
 foeImage *foeImagePool::find(foeResourceID id) {
     foeImage *pImage{nullptr};
 

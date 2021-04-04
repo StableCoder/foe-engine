@@ -43,9 +43,6 @@ bool yaml_write_shader_definition(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
-        writeNode["index_id"] = pShader->getID();
-        writeNode["editor_name"] = std::string{pShader->getName()};
-
         // Resources Node
         // (Nothing Currently)
 

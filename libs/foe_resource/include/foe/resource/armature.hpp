@@ -26,7 +26,6 @@
 #include <atomic>
 #include <mutex>
 #include <string>
-#include <string_view>
 #include <vector>
 
 class foeArmatureLoader;
@@ -44,11 +43,10 @@ struct foeArmatureCreateInfo {
 
 struct foeArmature {
   public:
-    FOE_RES_EXPORT foeArmature(foeResourceID id, std::string_view name, foeArmatureLoader *pLoader);
+    FOE_RES_EXPORT foeArmature(foeResourceID id, foeArmatureLoader *pLoader);
     FOE_RES_EXPORT ~foeArmature();
 
     FOE_RES_EXPORT foeResourceID getID() const noexcept;
-    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -67,7 +65,6 @@ struct foeArmature {
 
     // General
     foeResourceID id;
-    std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

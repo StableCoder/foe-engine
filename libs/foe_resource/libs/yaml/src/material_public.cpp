@@ -16,6 +16,7 @@
 
 #include <foe/resource/yaml/material.hpp>
 
+#include <foe/ecs/id.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 
@@ -62,15 +63,14 @@ bool export_yaml_material_definition(foeMaterial const *pMaterial) {
     YAML::Emitter emitter;
     emitter << definition;
 
-    std::ofstream outFile(std::string{"_"} + std::to_string(pMaterial->getID()) + "_" +
-                              std::string{pMaterial->getName()} + ".yml",
+    std::ofstream outFile(std::string{"_"} + std::to_string(pMaterial->getID()) + ".yml",
                           std::ofstream::out);
     if (outFile.is_open()) {
         outFile << emitter.c_str();
         outFile.close();
     } else {
         FOE_LOG(General, Error, "Failed to export foeMaterial: Failed to open output file {}.yml",
-                pMaterial->getName());
+                foeId_to_string(pMaterial->getID()));
         return false;
     }
 

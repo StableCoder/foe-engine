@@ -38,21 +38,6 @@ bool foeMeshPool::add(foeMesh *pMesh) {
     return true;
 }
 
-foeMesh *foeMeshPool::find(std::string_view name) {
-    foeMesh *pMesh{nullptr};
-
-    mSync.lock_shared();
-    for (auto *pOld : mMeshs) {
-        if (pOld->getName() == name) {
-            pMesh = pOld;
-            break;
-        }
-    }
-    mSync.unlock_shared();
-
-    return pMesh;
-}
-
 foeMesh *foeMeshPool::find(foeResourceID id) {
     foeMesh *pMesh{nullptr};
 

@@ -20,8 +20,7 @@
 
 #include "log.hpp"
 
-foeArmature::foeArmature(foeResourceID id, std::string_view name, foeArmatureLoader *pLoader) :
-    id{id}, name{name}, pLoader{pLoader} {}
+foeArmature::foeArmature(foeResourceID id, foeArmatureLoader *pLoader) : id{id}, pLoader{pLoader} {}
 
 foeArmature::~foeArmature() {
     if (useCount > 0) {
@@ -36,8 +35,6 @@ foeArmature::~foeArmature() {
 }
 
 foeResourceID foeArmature::getID() const noexcept { return id; }
-
-std::string_view foeArmature::getName() const noexcept { return name; }
 
 foeResourceLoadState foeArmature::getLoadState() const noexcept { return loadState; }
 

@@ -126,7 +126,7 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
         if (createInfo.vertexShader != FOE_INVALID_RESOURCE) {
             newSubResources.pVertex = mShaderPool->find(createInfo.vertexShader);
             if (newSubResources.pVertex == nullptr) {
-                newSubResources.pVertex = new foeShader{createInfo.vertexShader, "", mShaderLoader};
+                newSubResources.pVertex = new foeShader{createInfo.vertexShader, mShaderLoader};
                 if (!mShaderPool->add(newSubResources.pVertex)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete newSubResources.pVertex;

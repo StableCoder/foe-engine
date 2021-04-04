@@ -21,7 +21,6 @@
 #include <foe/resource/export.h>
 
 #include <shared_mutex>
-#include <string_view>
 #include <vector>
 
 class foeMesh;
@@ -31,7 +30,6 @@ class foeMeshPool {
     FOE_RES_EXPORT ~foeMeshPool();
 
     FOE_RES_EXPORT bool add(foeMesh *pMesh);
-    FOE_RES_EXPORT foeMesh *find(std::string_view name);
     FOE_RES_EXPORT foeMesh *find(foeResourceID id);
 
     FOE_RES_EXPORT void unloadAll();

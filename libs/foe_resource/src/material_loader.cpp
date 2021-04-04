@@ -16,6 +16,7 @@
 
 #include <foe/resource/material_loader.hpp>
 
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/resource/image.hpp>
@@ -227,7 +228,7 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
             subResources.pFragmentShader = mShaderPool->find(createInfo.fragmentShader);
             if (subResources.pFragmentShader == nullptr) {
                 subResources.pFragmentShader =
-                    new foeShader{createInfo.fragmentShader, "", mShaderLoader};
+                    new foeShader{createInfo.fragmentShader, mShaderLoader};
                 if (!mShaderPool->add(subResources.pFragmentShader)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete subResources.pFragmentShader;
@@ -243,7 +244,7 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
             subResources.pImage = mImagePool->find(createInfo.image);
 
             if (subResources.pImage == nullptr) {
-                subResources.pImage = new foeImage{createInfo.image, "", mImageLoader};
+                subResources.pImage = new foeImage{createInfo.image, mImageLoader};
 
                 if (!mImagePool->add(subResources.pImage)) {
                     delete subResources.pImage;
@@ -263,7 +264,7 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
             // leave
             FOE_LOG(foeResource, Error,
                     "Failed to load foeMaterial '{}', as a sub resource failed to load",
-                    pMaterial->getName())
+                    foeId_to_string(pMaterial->getID()))
             std::scoped_lock writeLock{pMaterial->dataWriteLock};
 
             // Reset the loading resources, no longer trying to load this

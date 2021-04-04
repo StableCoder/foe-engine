@@ -28,7 +28,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <string_view>
 #include <vector>
 
 class foeMeshLoader;
@@ -54,11 +53,10 @@ struct foeMeshCreateInfo {
 
 struct foeMesh {
   public:
-    FOE_RES_EXPORT foeMesh(foeResourceID id, std::string_view name, foeMeshLoader *pLoader);
+    FOE_RES_EXPORT foeMesh(foeResourceID id, foeMeshLoader *pLoader);
     FOE_RES_EXPORT ~foeMesh();
 
     FOE_RES_EXPORT foeResourceID getID() const noexcept;
-    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -77,7 +75,6 @@ struct foeMesh {
 
     // General
     foeResourceID id;
-    std::string const name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

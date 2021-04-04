@@ -16,6 +16,7 @@
 
 #include <foe/resource/yaml/shader.hpp>
 
+#include <foe/ecs/id.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 
@@ -61,15 +62,14 @@ bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShad
     YAML::Emitter emitter;
     emitter << definition;
 
-    std::ofstream outFile(std::string{"_"} + std::to_string(pShader->getID()) + "_" +
-                              std::string{pShader->getName()} + ".yml",
+    std::ofstream outFile(std::string{"_"} + std::to_string(pShader->getID()) + ".yml",
                           std::ofstream::out);
     if (outFile.is_open()) {
         outFile << emitter.c_str();
         outFile.close();
     } else {
         FOE_LOG(General, Error, "Failed to export foeShader: Failed to open output file {}.yml",
-                pShader->getName());
+                foeId_to_string(pShader->getID()));
         return false;
     }
 

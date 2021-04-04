@@ -38,21 +38,6 @@ bool foeShaderPool::add(foeShader *pShader) {
     return true;
 }
 
-foeShader *foeShaderPool::find(std::string_view name) {
-    foeShader *pShader{nullptr};
-
-    mSync.lock_shared();
-    for (auto *pOld : mShaders) {
-        if (pOld->getName() == name) {
-            pShader = pOld;
-            break;
-        }
-    }
-    mSync.unlock_shared();
-
-    return pShader;
-}
-
 foeShader *foeShaderPool::find(foeResourceID id) {
     foeShader *pShader{nullptr};
 

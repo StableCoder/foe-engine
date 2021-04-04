@@ -21,7 +21,6 @@
 #include <foe/resource/export.h>
 
 #include <shared_mutex>
-#include <string_view>
 #include <vector>
 
 class foeShader;
@@ -31,7 +30,6 @@ class foeShaderPool {
     FOE_RES_EXPORT ~foeShaderPool();
 
     FOE_RES_EXPORT bool add(foeShader *pShader);
-    FOE_RES_EXPORT foeShader *find(std::string_view name);
     FOE_RES_EXPORT foeShader *find(foeResourceID resource);
 
     FOE_RES_EXPORT void unloadAll();

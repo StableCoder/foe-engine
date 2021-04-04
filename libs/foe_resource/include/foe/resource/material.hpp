@@ -26,7 +26,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include <string_view>
 #include <vector>
 
 class foeFragmentDescriptor;
@@ -49,11 +48,10 @@ struct foeMaterialCreateInfo {
 
 struct foeMaterial {
   public:
-    FOE_RES_EXPORT foeMaterial(foeResourceID id, std::string_view name, foeMaterialLoader *pLoader);
+    FOE_RES_EXPORT foeMaterial(foeResourceID id, foeMaterialLoader *pLoader);
     FOE_RES_EXPORT ~foeMaterial();
 
     FOE_RES_EXPORT foeResourceID getID() const noexcept;
-    FOE_RES_EXPORT std::string_view getName() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -98,7 +96,6 @@ struct foeMaterial {
 
     // General
     foeResourceID id;
-    std::string name;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

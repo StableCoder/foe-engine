@@ -38,21 +38,6 @@ bool foeVertexDescriptorPool::add(foeVertexDescriptor *pVertexDescriptor) {
     return true;
 }
 
-foeVertexDescriptor *foeVertexDescriptorPool::find(std::string_view name) {
-    foeVertexDescriptor *pVertexDescriptor{nullptr};
-
-    mSync.lock_shared();
-    for (auto *pOld : mVertexDescriptors) {
-        if (pOld->getName() == name) {
-            pVertexDescriptor = pOld;
-            break;
-        }
-    }
-    mSync.unlock_shared();
-
-    return pVertexDescriptor;
-}
-
 foeVertexDescriptor *foeVertexDescriptorPool::find(foeResourceID resource) {
     foeVertexDescriptor *pVertexDescriptor{nullptr};
 

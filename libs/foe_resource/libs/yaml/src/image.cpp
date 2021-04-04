@@ -24,9 +24,9 @@ bool yaml_write_image_declaration(std::string const &nodeName,
                                   YAML::Node &node) {
     try {
         if (nodeName.empty()) {
-            node = std::string{pImage->getName()};
+            node = pImage->getID();
         } else {
-            node[nodeName] = std::string{pImage->getName()};
+            node[nodeName] = pImage->getID();
         }
     } catch (...) {
         throw foeYamlException(nodeName + " - Failed to serialize 'foeShader' declaration");
