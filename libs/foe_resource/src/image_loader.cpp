@@ -444,6 +444,7 @@ void foeImageLoader::processUpload(foeImage *pImage,
                 vmaDestroyImage(allocator, data.image, data.alloc);
         }
 
+        pImage->decrementRefCount();
         --mActiveUploads;
     } else if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
         if (uploadBuffer != FOE_NULL_HANDLE)
@@ -466,6 +467,7 @@ void foeImageLoader::processUpload(foeImage *pImage,
                 vmaDestroyImage(allocator, data.image, data.alloc);
         }
 
+        pImage->decrementRefCount();
         --mActiveUploads;
     } else {
         // It's not yet complete, add to the uploading data list

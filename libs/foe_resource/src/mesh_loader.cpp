@@ -481,6 +481,7 @@ void foeMeshLoader::processUpload(foeMesh *pMesh,
                 foeGfxDestroyMesh(mGfxSession, data.gfxData);
         }
 
+        pMesh->decrementRefCount();
         --mActiveUploads;
     } else if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
         if (gfxUploadBuffer != FOE_NULL_HANDLE)
@@ -496,6 +497,7 @@ void foeMeshLoader::processUpload(foeMesh *pMesh,
                 foeGfxDestroyMesh(mGfxSession, data.gfxData);
         }
 
+        pMesh->decrementRefCount();
         --mActiveUploads;
     } else {
         // It's not yet complete, add to the uploading data list
