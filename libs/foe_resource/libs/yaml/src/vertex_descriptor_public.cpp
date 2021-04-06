@@ -21,7 +21,6 @@
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <yaml-cpp/yaml.h>
 
 #include "shader.hpp"
 
@@ -68,23 +67,11 @@ bool yaml_read_vertex_descriptor_definition(
 
 } // namespace
 
-bool import_yaml_vertex_descriptor_definition(std::filesystem::path path,
-                                              foeVertexDescriptorCreateInfo &createInfo) {
-    // Open the YAML file
-    YAML::Node rootNode;
-    try {
-        rootNode = YAML::LoadFile(path.native());
-    } catch (YAML::ParserException const &e) {
-        FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
-        return false;
-    } catch (YAML::BadFile const &e) {
-        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
-        return false;
-    }
-
+bool yaml_read_vertex_descriptor_definition(YAML::Node const &node,
+                                            foeVertexDescriptorCreateInfo &createInfo) {
     try {
         yaml_read_vertex_descriptor_definition(
-            "", rootNode, createInfo.vertexShader, createInfo.tessellationControlShader,
+            "", node, createInfo.vertexShader, createInfo.tessellationControlShader,
             createInfo.tessellationEvaluationShader, createInfo.geometryShader,
             createInfo.vertexInputSCI, createInfo.inputBindings, createInfo.inputAttributes,
             createInfo.inputAssemblySCI, createInfo.tessellationSCI);

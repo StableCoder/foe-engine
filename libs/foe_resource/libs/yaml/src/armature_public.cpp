@@ -19,65 +19,46 @@
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <yaml-cpp/yaml.h>
 
-bool import_yaml_armature_definition(std::filesystem::path path,
-                                     foeArmatureCreateInfo &createInfo) {
-    // Open the YAML file
-    YAML::Node rootNode;
+bool yaml_read_armature_definition(YAML::Node const &node, foeArmatureCreateInfo &createInfo) {
     try {
-        rootNode = YAML::LoadFile(path.native());
-    } catch (YAML::ParserException const &e) {
-        FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
-        return false;
-    } catch (YAML::BadFile const &e) {
-        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
-        return false;
-    }
+        // Sub-Resources
 
-    try {
-        // Read the definition
-        {
-            // Sub-Resources
+        // Data
+        if (auto dataNode = node["data"]; dataNode) {
+            try {
+                yaml_read_required("fileName", dataNode, createInfo.fileName);
+                yaml_read_required("root_armature_node", dataNode, createInfo.rootArmatureNode);
 
-            // Data
-            if (auto dataNode = rootNode["data"]; dataNode) {
-                try {
-                    yaml_read_required("fileName", dataNode, createInfo.fileName);
-                    yaml_read_required("root_armature_node", dataNode, createInfo.rootArmatureNode);
+                if (auto animationsNode = dataNode["animations"]; animationsNode) {
+                    for (auto it = animationsNode.begin(); it != animationsNode.end(); ++it) {
+                        AnimationImportInfo animation;
 
-                    if (auto animationsNode = dataNode["animations"]; animationsNode) {
-                        for (auto it = animationsNode.begin(); it != animationsNode.end(); ++it) {
-                            AnimationImportInfo animation;
+                        yaml_read_required("fileName", *it, animation.file);
 
-                            yaml_read_required("fileName", *it, animation.file);
+                        if (auto animationNamesNode = (*it)["animationNames"]; animationNamesNode) {
+                            for (auto it = animationNamesNode.begin();
+                                 it != animationNamesNode.end(); ++it) {
+                                std::string tempStr;
 
-                            if (auto animationNamesNode = (*it)["animationNames"];
-                                animationNamesNode) {
-                                for (auto it = animationNamesNode.begin();
-                                     it != animationNamesNode.end(); ++it) {
-                                    std::string tempStr;
+                                yaml_read_required("", *it, tempStr);
 
-                                    yaml_read_required("", *it, tempStr);
-
-                                    animation.animationNames.push_back(std::move(tempStr));
-                                }
+                                animation.animationNames.push_back(std::move(tempStr));
                             }
-
-                            createInfo.animations.emplace_back(animation);
                         }
-                    } else {
-                        throw foeYamlException("animations - Required node not found");
+
+                        createInfo.animations.emplace_back(animation);
                     }
-
-                } catch (foeYamlException const &e) {
-                    throw foeYamlException("data::" + e.whatStr());
+                } else {
+                    throw foeYamlException("animations - Required node not found");
                 }
-            } else {
-                throw foeYamlException("Required 'data' node not found.");
-            }
-        }
 
+            } catch (foeYamlException const &e) {
+                throw foeYamlException("data::" + e.whatStr());
+            }
+        } else {
+            throw foeYamlException("Required 'data' node not found.");
+        }
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeArmature definition: {}", e.what());
         return false;

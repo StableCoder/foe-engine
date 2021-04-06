@@ -24,24 +24,11 @@
 
 #include <fstream>
 
-bool import_yaml_material_definition(std::filesystem::path path,
-                                     foeMaterialCreateInfo &createInfo) {
-    // Open the YAML file
-    YAML::Node rootNode;
-    try {
-        rootNode = YAML::LoadFile(path.native());
-    } catch (YAML::ParserException const &e) {
-        FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
-        return false;
-    } catch (YAML::BadFile const &e) {
-        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
-        return false;
-    }
-
+bool yaml_read_material_definition(YAML::Node const &node, foeMaterialCreateInfo &createInfo) {
     try {
         return yaml_read_material_definition(
-            "", rootNode, createInfo.fragmentShader, createInfo.fragDescriptorName,
-            createInfo.image, createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
+            "", node, createInfo.fragmentShader, createInfo.fragDescriptorName, createInfo.image,
+            createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
             createInfo.hasDepthStencilSCI, createInfo.depthStencilSCI, createInfo.hasColourBlendSCI,
             createInfo.colourBlendSCI, createInfo.colourBlendAttachments);
     } catch (foeYamlException const &e) {

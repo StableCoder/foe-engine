@@ -19,10 +19,9 @@
 
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/yaml/export.h>
+#include <yaml-cpp/yaml.h>
 
-#include <filesystem>
-
-FOE_RES_YAML_EXPORT bool import_yaml_mesh_definition(std::filesystem::path path,
-                                                     foeMeshCreateInfo &createInfo);
+FOE_RES_YAML_EXPORT bool yaml_read_mesh_definition(YAML::Node const &node,
+                                                   foeMeshCreateInfo &createInfo);
 
 #endif // FOE_RESOURCE_YAML_MESH_HPP

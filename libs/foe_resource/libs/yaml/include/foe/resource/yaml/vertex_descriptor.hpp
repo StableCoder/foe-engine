@@ -19,11 +19,10 @@
 
 #include <foe/resource/vertex_descriptor.hpp>
 #include <foe/resource/yaml/export.h>
+#include <yaml-cpp/yaml.h>
 
-#include <filesystem>
-
-FOE_RES_YAML_EXPORT bool import_yaml_vertex_descriptor_definition(
-    std::filesystem::path path, foeVertexDescriptorCreateInfo &createInfo);
+FOE_RES_YAML_EXPORT bool yaml_read_vertex_descriptor_definition(
+    YAML::Node const &node, foeVertexDescriptorCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_vertex_descriptor_definition(
     foeVertexDescriptor const *pVertexDescriptor);

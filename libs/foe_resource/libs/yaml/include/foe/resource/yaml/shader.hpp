@@ -19,12 +19,10 @@
 
 #include <foe/resource/shader.hpp>
 #include <foe/resource/yaml/export.h>
-#include <vulkan/vulkan.h>
+#include <yaml-cpp/yaml.h>
 
-#include <filesystem>
-
-FOE_RES_YAML_EXPORT bool import_yaml_shader_definition(std::filesystem::path path,
-                                                       foeShaderCreateInfo &createInfo);
+FOE_RES_YAML_EXPORT bool yaml_read_shader_definition(YAML::Node const &node,
+                                                     foeShaderCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_shader_definition(foeGfxSession session,
                                                        foeShader const *pShader);

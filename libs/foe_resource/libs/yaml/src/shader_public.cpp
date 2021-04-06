@@ -24,18 +24,9 @@
 
 #include <fstream>
 
-bool import_yaml_shader_definition(std::filesystem::path path, foeShaderCreateInfo &createInfo) {
-    // Open the YAML file
-    YAML::Node config;
+bool yaml_read_shader_definition(YAML::Node const &node, foeShaderCreateInfo &createInfo) {
     try {
-        config = YAML::LoadFile(path.native());
-    } catch (YAML::ParserException &e) {
-        FOE_LOG(General, Fatal, "Failed to load config file: {}", e.what());
-        return false;
-    }
-
-    try {
-        yaml_read_shader_definition("", config, createInfo.shaderCodeFile,
+        yaml_read_shader_definition("", node, createInfo.shaderCodeFile,
                                     createInfo.builtinSetLayouts, createInfo.descriptorSetLayoutCI,
                                     createInfo.setLayoutBindings, createInfo.pushConstantRange);
     } catch (foeYamlException const &e) {

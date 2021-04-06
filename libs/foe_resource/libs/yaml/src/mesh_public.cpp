@@ -19,34 +19,21 @@
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <yaml-cpp/yaml.h>
 
-bool import_yaml_mesh_definition(std::filesystem::path path, foeMeshCreateInfo &createInfo) {
-    // Open the YAML file
-    YAML::Node rootNode;
-    try {
-        rootNode = YAML::LoadFile(path.native());
-    } catch (YAML::ParserException const &e) {
-        FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
-        return false;
-    } catch (YAML::BadFile const &e) {
-        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
-        return false;
-    }
-
+bool yaml_read_mesh_definition(YAML::Node const &node, foeMeshCreateInfo &createInfo) {
     try {
         // Read the definition
-        if (auto externalFileNode = rootNode["external_file"]; externalFileNode) {
+        if (auto externalFileNode = node["external_file"]; externalFileNode) {
             createInfo.source.reset(new foeMeshFileSource);
             foeMeshFileSource *ci = static_cast<foeMeshFileSource *>(createInfo.source.get());
 
             yaml_read_required("file", externalFileNode, ci->fileName);
             yaml_read_required("mesh_name", externalFileNode, ci->meshName);
-        } else if (auto generatedCubeNode = rootNode["generated_cube"]; generatedCubeNode) {
+        } else if (auto generatedCubeNode = node["generated_cube"]; generatedCubeNode) {
             createInfo.source.reset(new foeMeshCubeSource);
             foeMeshCubeSource *ci = static_cast<foeMeshCubeSource *>(createInfo.source.get());
 
-        } else if (auto generatedIcosphereNode = rootNode["generated_icosphere"];
+        } else if (auto generatedIcosphereNode = node["generated_icosphere"];
                    generatedIcosphereNode) {
             createInfo.source.reset(new foeMeshIcosphereSource);
             foeMeshIcosphereSource *ci =

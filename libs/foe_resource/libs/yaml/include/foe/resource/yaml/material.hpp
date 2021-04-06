@@ -19,12 +19,10 @@
 
 #include <foe/resource/material.hpp>
 #include <foe/resource/yaml/export.h>
-#include <vulkan/vulkan.h>
+#include <yaml-cpp/yaml.h>
 
-#include <filesystem>
-
-FOE_RES_YAML_EXPORT bool import_yaml_material_definition(std::filesystem::path path,
-                                                         foeMaterialCreateInfo &createInfo);
+FOE_RES_YAML_EXPORT bool yaml_read_material_definition(YAML::Node const &node,
+                                                       foeMaterialCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_material_definition(foeMaterial const *pMaterial);
 
