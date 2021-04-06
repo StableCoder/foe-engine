@@ -21,6 +21,8 @@
 foeVertexDescriptorPool::~foeVertexDescriptorPool() {
     for (auto *pVertexDescriptor : mVertexDescriptors) {
         pVertexDescriptor->decrementRefCount();
+
+        delete pVertexDescriptor;
     }
 }
 

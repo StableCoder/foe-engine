@@ -21,6 +21,8 @@
 foeImagePool::~foeImagePool() {
     for (auto *pImage : mImages) {
         pImage->decrementRefCount();
+
+        delete pImage;
     }
 }
 

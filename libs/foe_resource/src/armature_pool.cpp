@@ -21,6 +21,8 @@
 foeArmaturePool::~foeArmaturePool() {
     for (auto *pArmature : mArmatures) {
         pArmature->decrementRefCount();
+
+        delete pArmature;
     }
 }
 

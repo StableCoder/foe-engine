@@ -21,6 +21,8 @@
 foeMeshPool::~foeMeshPool() {
     for (auto *pMesh : mMeshs) {
         pMesh->decrementRefCount();
+
+        delete pMesh;
     }
 }
 

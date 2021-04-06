@@ -21,6 +21,8 @@
 foeShaderPool::~foeShaderPool() {
     for (auto *pShader : mShaders) {
         pShader->decrementRefCount();
+
+        delete pShader;
     }
 }
 

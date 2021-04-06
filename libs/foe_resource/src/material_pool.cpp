@@ -21,6 +21,8 @@
 foeMaterialPool::~foeMaterialPool() {
     for (auto *pMaterial : mMaterials) {
         pMaterial->decrementRefCount();
+
+        delete pMaterial;
     }
 }
 
