@@ -20,9 +20,7 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-auto yaml_read_id(YAML::Node const &node,
-                  // foeIdGroup targetGroup,
-                  foeId &id) -> foeId {
+auto yaml_read_id(YAML::Node const &node) -> foeId {
     try {
         // Group
         foeIdGroup idGroup = 0;

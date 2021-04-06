@@ -21,9 +21,7 @@
 #include <foe/ecs/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
-FOE_ECS_YAML_EXPORT auto yaml_read_id(YAML::Node const &node,
-                                      // foeIdGroup targetGroup,
-                                      foeId &id) -> foeId;
+FOE_ECS_YAML_EXPORT auto yaml_read_id(YAML::Node const &node) -> foeId;
 
 FOE_ECS_YAML_EXPORT void yaml_write_id(foeId &id, YAML::Node &node);
 
