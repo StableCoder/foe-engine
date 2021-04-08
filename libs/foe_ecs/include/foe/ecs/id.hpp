@@ -66,13 +66,13 @@ enum : foeId {
 #define FOE_INVALID_ID foeInvalidId
 
 inline foeIdGroup foeEcsNormalizedToGroupID(uint32_t groupValue) {
-    return (static_cast<foeIdGroup>(groupValue) << foeEcsNumIndexBits);
+    return static_cast<foeIdGroup>(groupValue) << (foeEcsNumIndexBits + foeEcsNumTypeBits);
 }
 
 inline foeIdGroup foeEcsGetGroupID(foeId id) { return (id & foeEcsValidGroupBits); }
 
 inline uint32_t foeEcsGetNormalizedGroupID(foeId id) {
-    return foeEcsGetGroupID(id) >> foeEcsNumIndexBits;
+    return foeEcsGetGroupID(id) >> (foeEcsNumIndexBits + foeEcsNumTypeBits);
 }
 
 inline bool foeEcsIsResource(foeId id) { return id & foeEcsValidTypeBits; }
