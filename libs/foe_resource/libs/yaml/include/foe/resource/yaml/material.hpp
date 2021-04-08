@@ -24,6 +24,9 @@
 FOE_RES_YAML_EXPORT bool yaml_read_material_definition(YAML::Node const &node,
                                                        foeMaterialCreateInfo &createInfo);
 
+FOE_RES_YAML_EXPORT void yaml_read_material_definition2(YAML::Node const &node,
+                                                        foeResourceCreateInfoBase **ppCreateInfo);
+
 FOE_RES_YAML_EXPORT bool export_yaml_material_definition(foeMaterial const *pMaterial);
 
 #endif // FOE_RESOURCE_YAML_MATERIAL_HPP

@@ -19,6 +19,7 @@
 
 #include <foe/ecs/resource_id.hpp>
 #include <foe/graphics/shader.hpp>
+#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
 #include <vulkan/vulkan.h>
@@ -31,7 +32,7 @@
 
 class foeShaderLoader;
 
-struct foeShaderCreateInfo {
+struct foeShaderCreateInfo : public foeResourceCreateInfoBase {
     std::string shaderCodeFile;
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;

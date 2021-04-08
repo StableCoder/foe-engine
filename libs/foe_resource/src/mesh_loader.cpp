@@ -33,7 +33,7 @@ foeMeshLoader::~foeMeshLoader() {
 
 std::error_code foeMeshLoader::initialize(
     foeGfxSession session,
-    std::function<bool(foeResourceID, foeMeshCreateInfo &)> importFunction,
+    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -147,20 +147,26 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
 
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
-
-    foeMeshCreateInfo createInfo;
+    foeResourceCreateInfoBase *pCreateInfo = nullptr;
+    foeMeshCreateInfo *pMeshCI = nullptr;
 
     foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
     foeMesh::Data meshData{};
 
-    bool read = mImportFunction(pMesh->getID(), createInfo);
+    bool read = mImportFunction(pMesh->getID(), &pCreateInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    if (auto pCI = dynamic_cast<foeMeshFileSource *>(createInfo.source.get()); pCI) {
+    pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pCreateInfo);
+    if (pMeshCI == nullptr) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
+    }
+
+    if (auto pCI = dynamic_cast<foeMeshFileSource *>(pMeshCI->source.get()); pCI) {
         auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
         auto modelLoader = modelImporterPlugin->createImporter(pCI->fileName.c_str());
@@ -278,7 +284,7 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
         meshData.gfxVertexComponent = components;
 
         modelImporterPlugin.release();
-    } else if (auto pCI = dynamic_cast<foeMeshCubeSource *>(createInfo.source.get()); pCI) {
+    } else if (auto pCI = dynamic_cast<foeMeshCubeSource *>(pMeshCI->source.get()); pCI) {
         std::vector<foeVertexComponent> components{
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
 
@@ -345,7 +351,7 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
 
         meshData.perVertexBoneWeights = 0;
         meshData.gfxVertexComponent = std::move(components);
-    } else if (auto pCI = dynamic_cast<foeMeshIcosphereSource *>(createInfo.source.get()); pCI) {
+    } else if (auto pCI = dynamic_cast<foeMeshIcosphereSource *>(pMeshCI->source.get()); pCI) {
         std::vector<foeVertexComponent> components{
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
 
@@ -425,7 +431,7 @@ LOADING_FAILED:
     }
     if (errC) {
         // Failed at some point, clear all relevant data
-        FOE_LOG(foeResource, Error, "Failed to load foeImage {} with error {}:{}",
+        FOE_LOG(foeResource, Error, "Failed to load foeMesh {} with error {}:{}",
                 static_cast<void *>(pMesh), errC.value(), errC.message())
 
         pMesh->loadState = foeResourceLoadState::Failed;

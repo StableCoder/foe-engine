@@ -19,6 +19,7 @@
 
 #include <foe/ecs/resource_id.hpp>
 #include <foe/graphics/vk/image.hpp>
+#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
 #include <vk_mem_alloc.h>
@@ -32,7 +33,7 @@
 class foeImageLoader;
 class foeMaterialLoader;
 
-struct foeImageCreateInfo {
+struct foeImageCreateInfo : public foeResourceCreateInfoBase {
     std::string fileName;
 };
 

@@ -24,6 +24,9 @@
 FOE_RES_YAML_EXPORT bool yaml_read_vertex_descriptor_definition(
     YAML::Node const &node, foeVertexDescriptorCreateInfo &createInfo);
 
+FOE_RES_YAML_EXPORT void yaml_read_vertex_descriptor_definition2(
+    YAML::Node const &node, foeResourceCreateInfoBase **ppCreateInfo);
+
 FOE_RES_YAML_EXPORT bool export_yaml_vertex_descriptor_definition(
     foeVertexDescriptor const *pVertexDescriptor);
 

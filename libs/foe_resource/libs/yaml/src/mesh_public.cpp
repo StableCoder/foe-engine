@@ -50,3 +50,11 @@ bool yaml_read_mesh_definition(YAML::Node const &node, foeMeshCreateInfo &create
 
     return true;
 }
+
+void yaml_read_mesh_definition2(YAML::Node const &node, foeResourceCreateInfoBase **ppCreateInfo) {
+    foeMeshCreateInfo ci;
+
+    yaml_read_mesh_definition(node, ci);
+
+    *ppCreateInfo = new foeMeshCreateInfo(std::move(ci));
+}

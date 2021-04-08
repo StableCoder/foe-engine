@@ -28,7 +28,7 @@ foeShaderLoader::~foeShaderLoader() {
 
 std::error_code foeShaderLoader::initialize(
     foeGfxSession gfxSession,
-    std::function<bool(foeResourceID, foeShaderCreateInfo &)> importFunction,
+    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -108,23 +108,30 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
 
     std::error_code errC;
     foeGfxShader newShader{FOE_NULL_HANDLE};
-    foeShaderCreateInfo createInfo;
+    foeResourceCreateInfoBase *pCreateInfo = nullptr;
+    foeShaderCreateInfo *createInfo = nullptr;
 
     // Read in the definition
-    bool read = mImportFunction(pShader->getID(), createInfo);
+    bool read = mImportFunction(pShader->getID(), &pCreateInfo);
     if (!read) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
+    }
+
+    createInfo = dynamic_cast<foeShaderCreateInfo *>(pCreateInfo);
+    if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     {
         auto descriptorSetLayout =
-            foeGfxVkGetDescriptorSetLayout(mGfxSession, &createInfo.descriptorSetLayoutCI);
+            foeGfxVkGetDescriptorSetLayout(mGfxSession, &createInfo->descriptorSetLayoutCI);
 
-        auto shaderCode = loadShaderDataFromFile(createInfo.shaderCodeFile);
-        errC = foeGfxVkCreateShader(mGfxSession, createInfo.builtinSetLayouts, shaderCode.size(),
+        auto shaderCode = loadShaderDataFromFile(createInfo->shaderCodeFile);
+        errC = foeGfxVkCreateShader(mGfxSession, createInfo->builtinSetLayouts, shaderCode.size(),
                                     reinterpret_cast<uint32_t *>(shaderCode.data()),
-                                    descriptorSetLayout, createInfo.pushConstantRange, &newShader);
+                                    descriptorSetLayout, createInfo->pushConstantRange, &newShader);
         if (errC) {
             goto LOADING_FAILED;
         }

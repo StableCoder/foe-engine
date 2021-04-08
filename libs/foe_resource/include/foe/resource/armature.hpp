@@ -20,6 +20,7 @@
 #include <foe/ecs/resource_id.hpp>
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
+#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
 
@@ -35,7 +36,7 @@ struct AnimationImportInfo {
     std::vector<std::string> animationNames;
 };
 
-struct foeArmatureCreateInfo {
+struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
     std::string fileName;
     std::string rootArmatureNode;
     std::vector<AnimationImportInfo> animations;

@@ -21,6 +21,7 @@
 #include <foe/graphics/mesh.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
+#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
 
@@ -47,7 +48,7 @@ struct foeMeshIcosphereSource : public foeMeshSource {
     int recursion;
 };
 
-struct foeMeshCreateInfo {
+struct foeMeshCreateInfo : public foeResourceCreateInfoBase {
     std::unique_ptr<foeMeshSource> source;
 };
 

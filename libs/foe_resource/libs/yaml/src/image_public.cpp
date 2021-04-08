@@ -31,3 +31,11 @@ bool yaml_read_image_definition(YAML::Node const &node, foeImageCreateInfo &crea
 
     return true;
 }
+
+void yaml_read_image_definition2(YAML::Node const &node, foeResourceCreateInfoBase **ppCreateInfo) {
+    foeImageCreateInfo ci;
+
+    yaml_read_image_definition(node, ci);
+
+    *ppCreateInfo = new foeImageCreateInfo(std::move(ci));
+}

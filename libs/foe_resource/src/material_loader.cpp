@@ -42,7 +42,7 @@ std::error_code foeMaterialLoader::initialize(
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
-    std::function<bool(foeResourceID, foeMaterialCreateInfo &)> importFunction,
+    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -214,25 +214,32 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     std::error_code errC;
     foeGfxVkFragmentDescriptor *pNewFragDescriptor{nullptr};
     foeMaterial::SubResources subResources;
-    foeMaterialCreateInfo createInfo;
+    foeResourceCreateInfoBase *pCreateInfo = nullptr;
+    foeMaterialCreateInfo *createInfo = nullptr;
 
-    bool read = mImportFunction(pMaterial->getID(), createInfo);
+    bool read = mImportFunction(pMaterial->getID(), &pCreateInfo);
     if (!read) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
+    }
+
+    createInfo = dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo);
+    if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     { // Resource Dependencies
         // Fragment Shader
-        if (createInfo.fragmentShader != FOE_INVALID_RESOURCE) {
-            subResources.pFragmentShader = mShaderPool->find(createInfo.fragmentShader);
+        if (createInfo->fragmentShader != FOE_INVALID_RESOURCE) {
+            subResources.pFragmentShader = mShaderPool->find(createInfo->fragmentShader);
             if (subResources.pFragmentShader == nullptr) {
                 subResources.pFragmentShader =
-                    new foeShader{createInfo.fragmentShader, mShaderLoader};
+                    new foeShader{createInfo->fragmentShader, mShaderLoader};
                 if (!mShaderPool->add(subResources.pFragmentShader)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete subResources.pFragmentShader;
-                    subResources.pFragmentShader = mShaderPool->find(createInfo.fragmentShader);
+                    subResources.pFragmentShader = mShaderPool->find(createInfo->fragmentShader);
                 }
             }
             subResources.pFragmentShader->incrementRefCount();
@@ -240,16 +247,16 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
         }
 
         // Image
-        if (createInfo.image != FOE_INVALID_RESOURCE) {
-            subResources.pImage = mImagePool->find(createInfo.image);
+        if (createInfo->image != FOE_INVALID_RESOURCE) {
+            subResources.pImage = mImagePool->find(createInfo->image);
 
             if (subResources.pImage == nullptr) {
-                subResources.pImage = new foeImage{createInfo.image, mImageLoader};
+                subResources.pImage = new foeImage{createInfo->image, mImageLoader};
 
                 if (!mImagePool->add(subResources.pImage)) {
                     delete subResources.pImage;
 
-                    subResources.pImage = mImagePool->find(createInfo.image);
+                    subResources.pImage = mImagePool->find(createInfo->image);
                 }
             }
 
@@ -291,9 +298,9 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
                                       : FOE_NULL_HANDLE;
 
         pNewFragDescriptor = mGfxFragmentDescriptorPool->get(
-            (createInfo.hasRasterizationSCI) ? &createInfo.rasterizationSCI : nullptr,
-            (createInfo.hasDepthStencilSCI) ? &createInfo.depthStencilSCI : nullptr,
-            (createInfo.hasColourBlendSCI) ? &createInfo.colourBlendSCI : nullptr, fragShader);
+            (createInfo->hasRasterizationSCI) ? &createInfo->rasterizationSCI : nullptr,
+            (createInfo->hasDepthStencilSCI) ? &createInfo->depthStencilSCI : nullptr,
+            (createInfo->hasColourBlendSCI) ? &createInfo->colourBlendSCI : nullptr, fragShader);
     }
 
 LOADING_FAILED:

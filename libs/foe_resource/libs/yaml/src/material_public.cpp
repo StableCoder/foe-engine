@@ -37,6 +37,15 @@ bool yaml_read_material_definition(YAML::Node const &node, foeMaterialCreateInfo
     }
 }
 
+void yaml_read_material_definition2(YAML::Node const &node,
+                                    foeResourceCreateInfoBase **ppCreateInfo) {
+    foeMaterialCreateInfo ci;
+
+    yaml_read_material_definition(node, ci);
+
+    *ppCreateInfo = new foeMaterialCreateInfo(std::move(ci));
+}
+
 bool export_yaml_material_definition(foeMaterial const *pMaterial) {
     YAML::Node definition;
 

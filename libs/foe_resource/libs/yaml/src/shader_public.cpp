@@ -37,6 +37,15 @@ bool yaml_read_shader_definition(YAML::Node const &node, foeShaderCreateInfo &cr
     return true;
 }
 
+void yaml_read_shader_definition2(YAML::Node const &node,
+                                  foeResourceCreateInfoBase **ppCreateInfo) {
+    foeShaderCreateInfo ci;
+
+    yaml_read_shader_definition(node, ci);
+
+    *ppCreateInfo = new foeShaderCreateInfo(std::move(ci));
+}
+
 bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShader) {
     YAML::Node definition;
 

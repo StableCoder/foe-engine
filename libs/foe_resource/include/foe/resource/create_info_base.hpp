@@ -14,19 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_IMAGE_HPP
-#define FOE_RESOURCE_YAML_IMAGE_HPP
+#ifndef FOE_RESOURCE_CREATE_INFO_BASE_HPP
+#define FOE_RESOURCE_CREATE_INFO_BASE_HPP
 
-#include <foe/resource/image.hpp>
-#include <foe/resource/yaml/export.h>
-#include <yaml-cpp/yaml.h>
+#include <foe/resource/export.h>
 
-FOE_RES_YAML_EXPORT bool yaml_read_image_definition(YAML::Node const &node,
-                                                    foeImageCreateInfo &createInfo);
+struct FOE_RES_EXPORT foeResourceCreateInfoBase {
+    virtual ~foeResourceCreateInfoBase() = default;
+};
 
-FOE_RES_YAML_EXPORT void yaml_read_image_definition2(YAML::Node const &node,
-                                                     foeResourceCreateInfoBase **ppCreateInfo);
-
-// FOE_RES_YAML_EXPORT bool export_image_definition(foe)
-
-#endif // FOE_RESOURCE_YAML_IMAGE_HPP
+#endif // FOE_RESOURCE_CREATE_INFO_BASE_HPP

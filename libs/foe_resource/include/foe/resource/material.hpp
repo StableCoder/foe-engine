@@ -19,6 +19,7 @@
 
 #include <foe/ecs/resource_id.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
 
@@ -33,7 +34,7 @@ class foeShader;
 class foeImage;
 class foeMaterialLoader;
 
-struct foeMaterialCreateInfo {
+struct foeMaterialCreateInfo : public foeResourceCreateInfoBase {
     foeResourceID fragmentShader = FOE_INVALID_RESOURCE;
     std::string fragDescriptorName;
     foeResourceID image = FOE_INVALID_RESOURCE;

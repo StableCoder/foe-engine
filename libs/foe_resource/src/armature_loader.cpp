@@ -27,7 +27,7 @@ foeArmatureLoader::~foeArmatureLoader() {
 }
 
 std::error_code foeArmatureLoader::initialize(
-    std::function<bool(foeResourceID, foeArmatureCreateInfo &)> importFunction,
+    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -71,6 +71,51 @@ void foeArmatureLoader::requestResourceUnload(foeArmature *pArmature) {}
 
 #include <foe/model/file_importer_plugins.hpp>
 
+namespace {
+
+bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foeArmature::Data &data) {
+    auto *createInfo = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo);
+    if (createInfo == nullptr) {
+        return false;
+    }
+
+    auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
+
+    { // Armature
+        auto modelLoader = modelImporterPlugin->createImporter(createInfo->fileName.c_str());
+        assert(modelLoader->loaded());
+
+        auto tempArmature = modelLoader->importArmature();
+        for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {
+            if (it->name == createInfo->rootArmatureNode) {
+                data.armature.assign(it, tempArmature.end());
+            }
+        }
+    }
+
+    { // Animations
+        for (auto const &it : createInfo->animations) {
+            auto modelLoader = modelImporterPlugin->createImporter(it.file.c_str());
+            assert(modelLoader->loaded());
+
+            for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
+                auto animName = modelLoader->getAnimationName(i);
+
+                for (auto const &importAnimName : it.animationNames) {
+                    if (animName == importAnimName) {
+                        data.animations.emplace_back(modelLoader->importAnimation(i));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+} // namespace
+
 void foeArmatureLoader::loadResource(foeArmature *pArmature) {
     // First, try to enter the 'loading' state
     auto expected = pArmature->loadState.load();
@@ -86,49 +131,20 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
 
     std::error_code errC;
 
-    std::vector<foeArmatureNode> armature;
-    std::vector<foeAnimation> animations;
-    foeArmatureCreateInfo createInfo;
+    foeResourceCreateInfoBase *pCreateInfo = nullptr;
+    foeArmature::Data data;
 
     // Read in the definition
-    bool read = mImportFunction(pArmature->getID(), createInfo);
+    bool read = mImportFunction(pArmature->getID(), &pCreateInfo);
     if (!read) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    {
-        auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
-
-        { // Armature
-            auto modelLoader = modelImporterPlugin->createImporter(createInfo.fileName.c_str());
-            assert(modelLoader->loaded());
-
-            auto tempArmature = modelLoader->importArmature();
-            for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {
-                if (it->name == createInfo.rootArmatureNode) {
-                    armature.assign(it, tempArmature.end());
-                }
-            }
-        }
-
-        { // Animations
-            for (auto const &it : createInfo.animations) {
-                auto modelLoader = modelImporterPlugin->createImporter(it.file.c_str());
-                assert(modelLoader->loaded());
-
-                for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
-                    auto animName = modelLoader->getAnimationName(i);
-
-                    for (auto const &importAnimName : it.animationNames) {
-                        if (animName == importAnimName) {
-                            animations.emplace_back(modelLoader->importAnimation(i));
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+    // Process the imported definition
+    if (!processCreateInfo(pCreateInfo, data)) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
     }
 
 LOADING_FAILED:
@@ -138,17 +154,12 @@ LOADING_FAILED:
 
         pArmature->loadState = foeResourceLoadState::Failed;
     } else {
-        foeArmature::Data newData{
-            .armature = std::move(armature),
-            .animations = std::move(animations),
-        };
 
         // Secure the resource, and set the new data/state
         {
             std::scoped_lock writeLock{pArmature->dataWriteLock};
 
-            //  oldData = pArmature->data;
-            pArmature->data = newData;
+            pArmature->data = data;
             pArmature->loadState = foeResourceLoadState::Loaded;
         }
 

@@ -83,6 +83,15 @@ bool yaml_read_vertex_descriptor_definition(YAML::Node const &node,
     return true;
 }
 
+void yaml_read_vertex_descriptor_definition2(YAML::Node const &node,
+                                             foeResourceCreateInfoBase **ppCreateInfo) {
+    foeVertexDescriptorCreateInfo ci;
+
+    yaml_read_vertex_descriptor_definition(node, ci);
+
+    *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
+}
+
 namespace {
 
 bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,

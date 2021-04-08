@@ -19,6 +19,7 @@
 
 #include <foe/ecs/resource_id.hpp>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
+#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
 
@@ -29,7 +30,7 @@
 class foeShader;
 class foeVertexDescriptorLoader;
 
-struct foeVertexDescriptorCreateInfo {
+struct foeVertexDescriptorCreateInfo : public foeResourceCreateInfoBase {
     foeResourceID vertexShader;
     foeResourceID tessellationControlShader;
     foeResourceID tessellationEvaluationShader;
