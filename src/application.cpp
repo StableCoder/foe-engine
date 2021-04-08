@@ -17,6 +17,7 @@
 #include "application.hpp"
 
 #include <GLFW/glfw3.h>
+#include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/runtime.hpp>
@@ -89,29 +90,36 @@ int Application::initialize(int argc, char **argv) {
     StatePools newStatePools;
     ResourcePools newResourcePools;
 
-    auto imported = importGroupState("data/state/theDataE", searchPaths, groups2, newStatePools,
+    auto imported = importGroupState("data/state/theDataA", searchPaths, groups2, newStatePools,
                                      newResourcePools);
-
+    /*
     auto exported =
         exportGroupState("data/state/output_test", groups2, newStatePools, newResourcePools);
-
+    */
     synchronousThreadPool.start(2);
     asynchronousThreadPool.start(2);
+
+    yamlImporter.addImporter("armature", 1, yaml_read_armature_definition2);
+    yamlImporter.addImporter("mesh", 1, yaml_read_mesh_definition2);
+    yamlImporter.addImporter("material", 1, yaml_read_material_definition2);
+    yamlImporter.addImporter("vertex_descriptor", 1, yaml_read_vertex_descriptor_definition2);
+    yamlImporter.addImporter("shader", 1, yaml_read_shader_definition2);
+    yamlImporter.addImporter("image", 1, yaml_read_image_definition2);
 
     if (auto retVal = loadSettings(argc, argv, settings); retVal != 0) {
         return retVal;
     }
 
     // Groups/Entities
-    cameraID = ecsGroups.persistentGroup()->generate();
-    renderID = ecsGroups.persistentGroup()->generate();
+    cameraID = simulationSet.groups.persistentGroup()->generate();
+    renderID = simulationSet.groups.persistentGroup()->generate();
 
-    statePools.position[cameraID].reset(new Position3D{
+    simulationSet.state.position[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
 
-    statePools.position[renderID].reset(new Position3D{
+    simulationSet.state.position[renderID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, 0.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
@@ -169,7 +177,7 @@ int Application::initialize(int argc, char **argv) {
         camera.nearZ = 2.f;
         camera.farZ = 50.f;
 
-        camera.pPosition3D = statePools.position[cameraID].get();
+        camera.pPosition3D = simulationSet.state.position[cameraID].get();
     }
 
 #ifdef EDITOR_MODE
@@ -199,35 +207,53 @@ int Application::initialize(int argc, char **argv) {
         asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
-    errC = shaderLoader.initialize(gfxSession, import_yaml_shader_definition, asyncTaskFunc);
+    errC =
+        shaderLoader.initialize(gfxSession,
+                                std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
+                                          std::placeholders::_1, std::placeholders::_2),
+                                asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = vertexDescriptorLoader.initialize(
-        &shaderLoader, &shaderPool, import_yaml_vertex_descriptor_definition, asyncTaskFunc);
+    errC = vertexDescriptorLoader.initialize(&shaderLoader, &shaderPool,
+                                             std::bind(&foeDistributedYamlImporter::getResource,
+                                                       &yamlImporter, std::placeholders::_1,
+                                                       std::placeholders::_2),
+                                             asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = imageLoader.initialize(gfxSession, import_yaml_image_definition, asyncTaskFunc);
+    errC = imageLoader.initialize(gfxSession,
+                                  std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
+                                            std::placeholders::_1, std::placeholders::_2),
+                                  asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = materialLoader.initialize(&shaderLoader, &shaderPool, &fragmentDescriptorPool,
-                                     &imageLoader, &imagePool, gfxSession,
-                                     import_yaml_material_definition, asyncTaskFunc);
+    errC = materialLoader.initialize(
+        &shaderLoader, &shaderPool, &fragmentDescriptorPool, &imageLoader, &imagePool, gfxSession,
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
+                  std::placeholders::_2),
+        asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = meshLoader.initialize(gfxSession, import_yaml_mesh_definition, asyncTaskFunc);
+    errC = meshLoader.initialize(gfxSession,
+                                 std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
+                                           std::placeholders::_1, std::placeholders::_2),
+                                 asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = armatureLoader.initialize(import_yaml_armature_definition, asyncTaskFunc);
+    errC =
+        armatureLoader.initialize(std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
+                                            std::placeholders::_1, std::placeholders::_2),
+                                  asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -285,9 +311,8 @@ int Application::initialize(int argc, char **argv) {
         materialPool.add(theMaterial);
         theMaterial->incrementUseCount();
         theMaterial->decrementUseCount();
-    }
 
-    { // Model Items
+        // Model Items
         foeVertexDescriptor *pVD;
 
         pVD = new foeVertexDescriptor(1, &vertexDescriptorLoader);
@@ -318,6 +343,7 @@ int Application::initialize(int argc, char **argv) {
 
         auto *pArmature = new foeArmature(12, &armatureLoader);
         pArmature->incrementUseCount();
+        pArmature->decrementUseCount();
         armaturePool.add(pArmature);
     }
 
@@ -831,7 +857,8 @@ int Application::mainloop() {
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].commandPool,
                                0);
 
-            positionDescriptorPool.generatePositionDescriptors(frameIndex, statePools.position);
+            positionDescriptorPool.generatePositionDescriptors(frameIndex,
+                                                               simulationSet.state.position);
 
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
@@ -1010,8 +1037,9 @@ int Application::mainloop() {
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 1, 1,
-                                                &statePools.position[renderID]->descriptorSet, 0,
-                                                nullptr);
+                                                &simulationSet.state.position[renderID]
+                                                     ->descriptorSet,
+                                                0, nullptr);
 
                                             if (auto set =
                                                     theMaterial->getVkDescriptorSet(frameIndex);
@@ -1303,7 +1331,7 @@ int Application::mainloop() {
                                                     layout, 0, 1, &camera.descriptor, 0, nullptr);
                             vkCmdBindDescriptorSets(
                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
-                                &statePools.position[renderID]->descriptorSet, 0, nullptr);
+                                &simulationSet.state.position[renderID]->descriptorSet, 0, nullptr);
 
                             if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
                                 set != VK_NULL_HANDLE) {

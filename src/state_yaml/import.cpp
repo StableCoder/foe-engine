@@ -24,13 +24,14 @@
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <string_view>
 
+#include "distributed_yaml.hpp"
 #include "entity.hpp"
 #include "import.hpp"
-#include "translation.hpp"
 
 namespace {
 
@@ -357,6 +358,11 @@ bool importGroupState(std::filesystem::path yamlPath,
                                                *ecsGroups.persistentGroup());
     if (!retVal)
         return false;
+
+    // Resource imports
+    for (auto const &it : groupDependencies) {
+        foeDistributedYamlImporter importer{it.path / resourcesDirectoryPath};
+    }
 
     // Dependency State Data
     for (auto const &it : groupDependencies) {

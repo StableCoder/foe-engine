@@ -26,8 +26,9 @@ target_compile_definitions(
 target_include_directories(
   foe_resource PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports
                       ${freeimage_INCLUDE_DIRS})
-target_link_libraries(foe_resource PUBLIC foe foe_graphics foe_graphics_vk
-                                          foe_model ${freeimage_LIBRARIES})
+target_link_libraries(
+  foe_resource PUBLIC foe foe_ecs foe_graphics foe_graphics_vk foe_model
+                      ${freeimage_LIBRARIES})
 target_code_coverage(foe_resource)
 
 add_subdirectory(src)

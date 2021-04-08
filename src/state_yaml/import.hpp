@@ -19,8 +19,8 @@
 
 #include <filesystem>
 
-#include "../state_pools.hpp"
 #include "../resource_pools.hpp"
+#include "../state_pools.hpp"
 
 class foeSearchPaths;
 class foeEcsGroups;
