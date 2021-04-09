@@ -42,7 +42,7 @@ TEST_CASE("Reading of 'REQUIRED' bool YAML nodes", "[foe][yaml]") {
         bool testVal;
         REQUIRE_THROWS_MATCHES(
             yaml_read_required<bool>("topology", root, testVal), foeYamlException,
-            Catch::Matchers::EndsWith(" - Required node not found to parse as 'bool'"));
+            Catch::Matchers::Equals("topology - Required node not found to parse as 'bool'"));
     }
     SECTION("Node with bad data fails") {
         REQUIRE_NOTHROW(root = YAML::Load(R"(topology: truthy
@@ -51,7 +51,7 @@ TEST_CASE("Reading of 'REQUIRED' bool YAML nodes", "[foe][yaml]") {
         bool testVal;
         REQUIRE_THROWS_MATCHES(
             yaml_read_required<bool>("topology", root, testVal), foeYamlException,
-            Catch::Matchers::Contains(" - Could not parse node as 'bool' with value of: "));
+            Catch::Matchers::Equals("topology - Could not parse Map-type node as 'bool'"));
     }
 }
 
@@ -84,7 +84,7 @@ TEST_CASE("Reading of 'OPTIONAL' bool YAML nodes", "[foe][yaml]") {
         bool testVal;
         REQUIRE_THROWS_MATCHES(
             yaml_read_optional<bool>("topology", root, testVal), foeYamlException,
-            Catch::Matchers::Contains(" - Could not parse node as 'bool' with value of: "));
+            Catch::Matchers::Equals("topology - Could not parse Map-type node as 'bool'"));
     }
 }
 

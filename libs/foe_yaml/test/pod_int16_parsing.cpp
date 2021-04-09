@@ -44,7 +44,7 @@ TEST_CASE("Reading of 'REQUIRED' int16_t YAML nodes", "[foe][yaml]") {
         int16_t testVal;
         REQUIRE_THROWS_MATCHES(
             yaml_read_required<int16_t>("topology", root, testVal), foeYamlException,
-            Catch::Matchers::EndsWith(" - Required node not found to parse as 'int16_t'"));
+            Catch::Matchers::Equals("topology - Required node not found to parse as 'int16_t'"));
     }
     SECTION("Node with bad data fails") {
         REQUIRE_NOTHROW(root = YAML::Load(R"(topology: 1a
@@ -53,7 +53,7 @@ TEST_CASE("Reading of 'REQUIRED' int16_t YAML nodes", "[foe][yaml]") {
         int16_t testVal;
         REQUIRE_THROWS_MATCHES(
             yaml_read_required<int16_t>("topology", root, testVal), foeYamlException,
-            Catch::Matchers::Contains(" - Could not parse node as 'int16_t' with value of: "));
+            Catch::Matchers::Equals("topology - Could not parse Map-type node as 'int16_t'"));
     }
 }
 
@@ -87,7 +87,7 @@ TEST_CASE("Reading of 'OPTIONAL' int16_t YAML nodes", "[foe][yaml]") {
         int16_t testVal;
         REQUIRE_THROWS_MATCHES(
             yaml_read_optional<int16_t>("topology", root, testVal), foeYamlException,
-            Catch::Matchers::Contains(" - Could not parse node as 'int16_t' with value of: "));
+            Catch::Matchers::Equals("topology - Could not parse Map-type node as 'int16_t'"));
     }
 }
 
