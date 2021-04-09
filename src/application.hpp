@@ -31,19 +31,6 @@
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
-#include <foe/resource/armature_loader.hpp>
-#include <foe/resource/armature_pool.hpp>
-#include <foe/resource/image_loader.hpp>
-#include <foe/resource/image_pool.hpp>
-#include <foe/resource/material_loader.hpp>
-#include <foe/resource/material_pool.hpp>
-#include <foe/resource/mesh_loader.hpp>
-#include <foe/resource/mesh_pool.hpp>
-#include <foe/resource/shader_loader.hpp>
-#include <foe/resource/shader_pool.hpp>
-#include <foe/resource/vertex_descriptor.hpp>
-#include <foe/resource/vertex_descriptor_loader.hpp>
-#include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
@@ -103,7 +90,7 @@ struct Application {
         // DataImporters importers;
 
         ResourcePools resources;
-        // ResourceLoaders resourceLoaders;
+        ResourceLoaders resourceLoaders;
 
         StatePools state;
         // StateSystems systems;
@@ -146,22 +133,6 @@ struct Application {
 
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
-
-    // Other Resources
-    foeArmatureLoader armatureLoader;
-    foeArmaturePool armaturePool;
-
-    // Grapics Resources
-    foeShaderLoader shaderLoader;
-    foeShaderPool shaderPool;
-    foeVertexDescriptorLoader vertexDescriptorLoader;
-    foeVertexDescriptorPool vertexDescriptorPool;
-    foeImageLoader imageLoader;
-    foeImagePool imagePool;
-    foeMaterialLoader materialLoader;
-    foeMaterialPool materialPool;
-    foeMeshLoader meshLoader;
-    foeMeshPool meshPool;
 
     Camera camera;
     CameraDescriptorPool cameraDescriptorPool;

@@ -17,6 +17,42 @@
 #ifndef RESOURCE_POOLS_HPP
 #define RESOURCE_POOLS_HPP
 
-struct ResourcePools {};
+#include <foe/resource/armature_pool.hpp>
+#include <foe/resource/image_pool.hpp>
+#include <foe/resource/material_pool.hpp>
+#include <foe/resource/mesh_pool.hpp>
+#include <foe/resource/shader_pool.hpp>
+#include <foe/resource/vertex_descriptor_pool.hpp>
+
+struct ResourcePools {
+    // Other Resources
+    foeArmaturePool armature;
+
+    // Graphics Resources
+    foeShaderPool shader;
+    foeVertexDescriptorPool vertexDescriptor;
+    foeImagePool image;
+    foeMaterialPool material;
+    foeMeshPool mesh;
+};
+
+#include <foe/resource/armature_loader.hpp>
+#include <foe/resource/image_loader.hpp>
+#include <foe/resource/material_loader.hpp>
+#include <foe/resource/mesh_loader.hpp>
+#include <foe/resource/shader_loader.hpp>
+#include <foe/resource/vertex_descriptor_loader.hpp>
+
+struct ResourceLoaders {
+    // Other Resources
+    foeArmatureLoader armature;
+
+    // Graphics Resources
+    foeShaderLoader shader;
+    foeVertexDescriptorLoader vertexDescriptor;
+    foeImageLoader image;
+    foeMaterialLoader material;
+    foeMeshLoader mesh;
+};
 
 #endif // RESOURCE_POOLS_HPP

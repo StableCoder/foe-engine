@@ -207,34 +207,8 @@ int Application::initialize(int argc, char **argv) {
         asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
-    errC =
-        shaderLoader.initialize(gfxSession,
-                                std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
-                                          std::placeholders::_1, std::placeholders::_2),
-                                asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    errC = vertexDescriptorLoader.initialize(&shaderLoader, &shaderPool,
-                                             std::bind(&foeDistributedYamlImporter::getResource,
-                                                       &yamlImporter, std::placeholders::_1,
-                                                       std::placeholders::_2),
-                                             asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    errC = imageLoader.initialize(gfxSession,
-                                  std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
-                                            std::placeholders::_1, std::placeholders::_2),
-                                  asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    errC = materialLoader.initialize(
-        &shaderLoader, &shaderPool, &fragmentDescriptorPool, &imageLoader, &imagePool, gfxSession,
+    errC = simulationSet.resourceLoaders.shader.initialize(
+        gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
                   std::placeholders::_2),
         asyncTaskFunc);
@@ -242,18 +216,48 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = meshLoader.initialize(gfxSession,
-                                 std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
-                                           std::placeholders::_1, std::placeholders::_2),
-                                 asyncTaskFunc);
+    errC = simulationSet.resourceLoaders.vertexDescriptor.initialize(
+        &simulationSet.resourceLoaders.shader, &simulationSet.resources.shader,
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
+                  std::placeholders::_2),
+        asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC =
-        armatureLoader.initialize(std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter,
-                                            std::placeholders::_1, std::placeholders::_2),
-                                  asyncTaskFunc);
+    errC = simulationSet.resourceLoaders.image.initialize(
+        gfxSession,
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
+                  std::placeholders::_2),
+        asyncTaskFunc);
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
+    errC = simulationSet.resourceLoaders.material.initialize(
+        &simulationSet.resourceLoaders.shader, &simulationSet.resources.shader,
+        &fragmentDescriptorPool, &simulationSet.resourceLoaders.image,
+        &simulationSet.resources.image, gfxSession,
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
+                  std::placeholders::_2),
+        asyncTaskFunc);
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
+    errC = simulationSet.resourceLoaders.mesh.initialize(
+        gfxSession,
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
+                  std::placeholders::_2),
+        asyncTaskFunc);
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
+    errC = simulationSet.resourceLoaders.armature.initialize(
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
+                  std::placeholders::_2),
+        asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -297,54 +301,54 @@ int Application::initialize(int argc, char **argv) {
     {
         // Vertex Descriptor
         foeVertexDescriptor *theVertexDescriptor =
-            new foeVertexDescriptor{0, &vertexDescriptorLoader};
-        vertexDescriptorPool.add(theVertexDescriptor);
+            new foeVertexDescriptor{0, &simulationSet.resourceLoaders.vertexDescriptor};
+        simulationSet.resources.vertexDescriptor.add(theVertexDescriptor);
         theVertexDescriptor->incrementUseCount();
         theVertexDescriptor->decrementUseCount();
 
         // Materials
-        foeMaterial *theMaterial = new foeMaterial{3, &materialLoader};
-        materialPool.add(theMaterial);
+        foeMaterial *theMaterial = new foeMaterial{3, &simulationSet.resourceLoaders.material};
+        simulationSet.resources.material.add(theMaterial);
         theMaterial->incrementUseCount();
         theMaterial->decrementUseCount();
-        theMaterial = new foeMaterial{4, &materialLoader};
-        materialPool.add(theMaterial);
+        theMaterial = new foeMaterial{4, &simulationSet.resourceLoaders.material};
+        simulationSet.resources.material.add(theMaterial);
         theMaterial->incrementUseCount();
         theMaterial->decrementUseCount();
 
         // Model Items
         foeVertexDescriptor *pVD;
 
-        pVD = new foeVertexDescriptor(1, &vertexDescriptorLoader);
-        vertexDescriptorPool.add(pVD);
+        pVD = new foeVertexDescriptor(1, &simulationSet.resourceLoaders.vertexDescriptor);
+        simulationSet.resources.vertexDescriptor.add(pVD);
         pVD->incrementUseCount();
         pVD->decrementUseCount();
 
-        pVD = new foeVertexDescriptor(2, &vertexDescriptorLoader);
-        vertexDescriptorPool.add(pVD);
+        pVD = new foeVertexDescriptor(2, &simulationSet.resourceLoaders.vertexDescriptor);
+        simulationSet.resources.vertexDescriptor.add(pVD);
         pVD->incrementUseCount();
         pVD->decrementUseCount();
 
         foeMaterial *pMaterial;
-        pMaterial = new foeMaterial(5, &materialLoader);
-        materialPool.add(pMaterial);
+        pMaterial = new foeMaterial(5, &simulationSet.resourceLoaders.material);
+        simulationSet.resources.material.add(pMaterial);
         pMaterial->incrementUseCount();
         pMaterial->decrementUseCount();
 
-        auto *pMesh = new foeMesh(13, &meshLoader);
-        meshPool.add(pMesh);
+        auto *pMesh = new foeMesh(13, &simulationSet.resourceLoaders.mesh);
+        simulationSet.resources.mesh.add(pMesh);
         pMesh->incrementUseCount();
         pMesh->decrementUseCount();
 
-        pMesh = new foeMesh(14, &meshLoader);
-        meshPool.add(pMesh);
+        pMesh = new foeMesh(14, &simulationSet.resourceLoaders.mesh);
+        simulationSet.resources.mesh.add(pMesh);
         pMesh->incrementUseCount();
         pMesh->decrementUseCount();
 
-        auto *pArmature = new foeArmature(12, &armatureLoader);
+        auto *pArmature = new foeArmature(12, &simulationSet.resourceLoaders.armature);
         pArmature->incrementUseCount();
         pArmature->decrementUseCount();
-        armaturePool.add(pArmature);
+        simulationSet.resources.armature.add(pArmature);
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -534,31 +538,31 @@ void Application::deinitialize() {
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
     { // Resource Unloading
-        armaturePool.unloadAll();
+        simulationSet.resources.armature.unloadAll();
 
-        meshPool.unloadAll();
+        simulationSet.resources.mesh.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            meshLoader.processUnloadRequests();
+            simulationSet.resourceLoaders.mesh.processUnloadRequests();
         }
 
-        materialPool.unloadAll();
+        simulationSet.resources.material.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            materialLoader.processUnloadRequests();
+            simulationSet.resourceLoaders.material.processUnloadRequests();
         }
 
-        imagePool.unloadAll();
+        simulationSet.resources.image.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            imageLoader.processUnloadRequests();
+            simulationSet.resourceLoaders.image.processUnloadRequests();
         }
 
-        vertexDescriptorPool.unloadAll();
+        simulationSet.resources.vertexDescriptor.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            vertexDescriptorLoader.processUnloadRequests();
+            simulationSet.resourceLoaders.vertexDescriptor.processUnloadRequests();
         }
 
-        shaderPool.unloadAll();
+        simulationSet.resources.shader.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            shaderLoader.processUnloadRequests();
+            simulationSet.resourceLoaders.shader.processUnloadRequests();
         }
     }
 
@@ -606,14 +610,14 @@ void Application::deinitialize() {
     vkAnimationPool.deinitialize();
 
     // Graphics Resource Deinitialization
-    meshLoader.deinitialize();
-    materialLoader.deinitialize();
-    imageLoader.deinitialize();
-    vertexDescriptorLoader.deinitialize();
-    shaderLoader.deinitialize();
+    simulationSet.resourceLoaders.mesh.deinitialize();
+    simulationSet.resourceLoaders.material.deinitialize();
+    simulationSet.resourceLoaders.image.deinitialize();
+    simulationSet.resourceLoaders.vertexDescriptor.deinitialize();
+    simulationSet.resourceLoaders.shader.deinitialize();
 
     // Other Resource Deinitialization
-    armatureLoader.deinitialize();
+    simulationSet.resourceLoaders.armature.deinitialize();
 
     for (auto &it : frameData) {
         it.destroy(foeGfxVkGetDevice(gfxSession));
@@ -841,14 +845,14 @@ int Application::mainloop() {
             frameIndex = nextFrameIndex;
 
             // Resource Unload Requests
-            shaderLoader.processUnloadRequests();
-            imageLoader.processUnloadRequests();
-            materialLoader.processUnloadRequests();
-            meshLoader.processUnloadRequests();
+            simulationSet.resourceLoaders.shader.processUnloadRequests();
+            simulationSet.resourceLoaders.image.processUnloadRequests();
+            simulationSet.resourceLoaders.material.processUnloadRequests();
+            simulationSet.resourceLoaders.mesh.processUnloadRequests();
 
             // Resource Load Requests
-            imageLoader.processLoadRequests();
-            meshLoader.processLoadRequests();
+            simulationSet.resourceLoaders.image.processLoadRequests();
+            simulationSet.resourceLoaders.mesh.processLoadRequests();
 
             // Set camera descriptors
             bool camerasRemade = false;
@@ -1014,8 +1018,9 @@ int Application::mainloop() {
 
                                         if constexpr (false) {
                                             auto *theVertexDescriptor =
-                                                vertexDescriptorPool.find(0);
-                                            auto *theMaterial = materialPool.find(4);
+                                                simulationSet.resources.vertexDescriptor.find(0);
+                                            auto *theMaterial =
+                                                simulationSet.resources.material.find(4);
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
@@ -1061,11 +1066,13 @@ int Application::mainloop() {
                                         if constexpr (true) {
                                             // Render Model
                                             auto *theVertexDescriptor =
-                                                vertexDescriptorPool.find(1);
-                                            auto *theMaterial = materialPool.find(5);
+                                                simulationSet.resources.vertexDescriptor.find(1);
+                                            auto *theMaterial =
+                                                simulationSet.resources.material.find(5);
                                             bool boned = false;
-                                            auto *pMesh = meshPool.find(13);
-                                            auto *pArmature = armaturePool.find(12);
+                                            auto *pMesh = simulationSet.resources.mesh.find(13);
+                                            auto *pArmature =
+                                                simulationSet.resources.armature.find(12);
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
@@ -1312,8 +1319,9 @@ int Application::mainloop() {
                         VkPipeline pipeline;
 
                         if constexpr (false) {
-                            auto *theVertexDescriptor = vertexDescriptorPool.find(0);
-                            auto *theMaterial = materialPool.find(4);
+                            auto *theVertexDescriptor =
+                                simulationSet.resources.vertexDescriptor.find(0);
+                            auto *theMaterial = simulationSet.resources.material.find(4);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||
@@ -1349,11 +1357,12 @@ int Application::mainloop() {
 
                         if constexpr (true) {
                             // Render Model
-                            auto *theVertexDescriptor = vertexDescriptorPool.find(2);
-                            auto *theMaterial = materialPool.find(5);
+                            auto *theVertexDescriptor =
+                                simulationSet.resources.vertexDescriptor.find(2);
+                            auto *theMaterial = simulationSet.resources.material.find(5);
                             bool boned = true;
-                            auto *pMesh = meshPool.find(13);
-                            auto *pArmature = armaturePool.find(12);
+                            auto *pMesh = simulationSet.resources.mesh.find(13);
+                            auto *pArmature = simulationSet.resources.armature.find(12);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||
