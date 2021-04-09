@@ -28,11 +28,11 @@ class foeEcsGroups {
   public:
     enum : foeIdGroup {
         // Entities that are to be preserved across sessions
-        Persistent = (foeEcsMaxGroupValue - 1) << foeEcsNumIndexBits,
+        Persistent = (foeEcsMaxGroupValue - 1) << (foeEcsNumIndexBits + foeEcsNumTypeBits),
         // Entities that are not to be preseved, and are just local to the current session
-        Temporary = foeEcsMaxGroupValue << foeEcsNumIndexBits,
+        Temporary = foeEcsMaxGroupValue << (foeEcsNumIndexBits + foeEcsNumTypeBits),
         // Max number possible of general groups
-        MaxGeneralGroups = foeEcsMaxGroupValue - 1,
+        MaxGeneralGroups = foeEcsMaxGroupValue - 2,
     };
 
     FOE_ECS_EXPORT bool addGroup(std::unique_ptr<foeEcsIndexGenerator> &&group) noexcept;
