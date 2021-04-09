@@ -21,7 +21,7 @@
 namespace {
 
 auto parseFileStem(std::filesystem::path const &path) -> foeId {
-    std::string fullStem{path.stem()};
+    std::string fullStem{path.stem().string()};
 
     // Group Stem
     auto firstStemEnd = fullStem.find_first_of('_');
@@ -50,7 +50,7 @@ auto parseFileStem(std::filesystem::path const &path) -> foeId {
 
 bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
     try {
-        rootNode = YAML::LoadFile(path.native());
+        rootNode = YAML::LoadFile(path.string());
     } catch (YAML::ParserException const &e) {
         FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
         return false;

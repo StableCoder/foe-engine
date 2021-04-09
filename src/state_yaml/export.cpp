@@ -61,7 +61,7 @@ bool exportDependenciesToFile(std::filesystem::path path, foeEcsGroups &ecsGroup
     try {
         rootNode = write_yaml_dependencies(ecsGroups);
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to write general dependencies node")
+        FOE_LOG(General, Error, "Failed to write general dependencies node with error: {}", e.what())
         return false;
     }
 
@@ -80,7 +80,7 @@ bool exportIndexDataToFile(std::filesystem::path path, foeEcsIndexGenerator &dat
     try {
         rootNode = yaml_write_index_generator(data);
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to write index data node")
+        FOE_LOG(General, Error, "Failed to write index data node with error: {}", e.what())
         return false;
     }
 
@@ -170,12 +170,12 @@ bool exportGroupState(std::filesystem::path yamlPath,
         if (std::filesystem::is_regular_file(yamlPath)) {
             FOE_LOG(General, Error,
                     "Attempted to export state data as a single Yaml file '{}', unsupported",
-                    yamlPath.native())
+                    yamlPath.string())
             return false;
         } else if (std::filesystem::is_directory(yamlPath)) {
             FOE_LOG(General, Info,
                     "Attempting to export state via Yaml to an existing  directory at '{}'",
-                    yamlPath.native())
+                    yamlPath.string())
         }
     } else {
         // Create the starting directory
@@ -185,16 +185,16 @@ bool exportGroupState(std::filesystem::path yamlPath,
         if (errC) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, with error: {}",
-                    yamlPath.native(), errC.message())
+                    yamlPath.string(), errC.message())
             return false;
         } else if (!created) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, no error given",
-                    yamlPath.native())
+                    yamlPath.string())
             return false;
         } else {
             FOE_LOG(General, Info, "Created new directory at '{}' to export state as Yaml",
-                    yamlPath.native())
+                    yamlPath.string())
         }
     }
 
@@ -204,12 +204,12 @@ bool exportGroupState(std::filesystem::path yamlPath,
         if (errC) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, with error: {}",
-                    yamlPath.native(), errC.message())
+                    yamlPath.string(), errC.message())
             return false;
         } else if (!created) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, no error given",
-                    yamlPath.native())
+                    yamlPath.string())
             return false;
         }
 
@@ -217,12 +217,12 @@ bool exportGroupState(std::filesystem::path yamlPath,
         if (errC) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, with error: {}",
-                    yamlPath.native(), errC.message())
+                    yamlPath.string(), errC.message())
             return false;
         } else if (!created) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, no error given",
-                    yamlPath.native())
+                    yamlPath.string())
             return false;
         }
     }

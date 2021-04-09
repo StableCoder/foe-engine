@@ -64,7 +64,7 @@ bool importStateDependenciesFromFile(std::filesystem::path filePath,
     std::ifstream dependencyYamlFile{filePath, std::ifstream::in};
     if (!dependencyYamlFile) {
         FOE_LOG(General, Error, "Could not open Yaml state dependencies file at '{}'",
-                filePath.native())
+                filePath.string())
         return false;
     }
 
@@ -72,7 +72,7 @@ bool importStateDependenciesFromFile(std::filesystem::path filePath,
     try {
         dependenciesNode = YAML::Load(dependencyYamlFile);
     } catch (YAML::Exception const &e) {
-        FOE_LOG(General, Error, "Could not parse dependencies file at '{}': {}", filePath.native(),
+        FOE_LOG(General, Error, "Could not parse dependencies file at '{}': {}", filePath.string(),
                 e.what())
         return false;
     }
@@ -170,7 +170,7 @@ bool importGroupStateIndexDataFromFile(std::string_view groupName,
     std::ifstream yamlFile{filePath, std::ifstream::in};
     if (!yamlFile) {
         FOE_LOG(General, Error, "Could not open Yaml group index data file at '{}'",
-                filePath.native())
+                filePath.string())
         return false;
     }
 
@@ -179,7 +179,7 @@ bool importGroupStateIndexDataFromFile(std::string_view groupName,
         node = YAML::Load(yamlFile);
     } catch (YAML::Exception const &e) {
         FOE_LOG(General, Error, "Could not parse group index data file file at '{}': {}",
-                filePath.native(), e.what())
+                filePath.string(), e.what())
         return false;
     }
 
@@ -222,14 +222,14 @@ bool importStateDataFromFile(std::filesystem::path filePath,
     if (!std::filesystem::is_regular_file(filePath)) {
         FOE_LOG(General, Error,
                 "Attempted to parse '{}' as a state data file when it's NOT a regular file!",
-                filePath.native())
+                filePath.string())
         return false;
     }
 
     std::ifstream yamlFile{filePath, std::ifstream::in};
     if (!yamlFile) {
         FOE_LOG(General, Error, "Could not open Yaml group state data file at '{}'",
-                filePath.native())
+                filePath.string())
         return false;
     }
 
@@ -239,7 +239,7 @@ bool importStateDataFromFile(std::filesystem::path filePath,
     } catch (YAML::Exception const &e) {
         FOE_LOG(General, Error,
                 "Could not parse the Yaml in the group state data file file at '{}': {}",
-                filePath.native(), e.what())
+                filePath.string(), e.what())
         return false;
     }
 
@@ -252,7 +252,7 @@ bool importStateDataFromFile(std::filesystem::path filePath,
             FOE_LOG(General, Info, "Successfully parsed entity {}", foeId_to_string(entity))
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to parse Yaml state data for '{}': {}", filePath.native(),
+        FOE_LOG(General, Error, "Failed to parse Yaml state data for '{}': {}", filePath.string(),
                 e.what())
         return false;
     }
@@ -288,7 +288,7 @@ bool importGroupStateData(foeIdGroup targetGroup,
     // Go through all entries in the state data directory, recursively
     for (auto &dirEntry :
          std::filesystem::recursive_directory_iterator{targetGroupPath / stateDataDirectoryPath}) {
-        FOE_LOG(General, Info, "Visiting: {}", dirEntry.path().native());
+        FOE_LOG(General, Info, "Visiting: {}", dirEntry.path().string());
         if (std::filesystem::is_directory(dirEntry))
             continue;
 
@@ -296,7 +296,7 @@ bool importGroupStateData(foeIdGroup targetGroup,
             FOE_LOG(General, Warning,
                     "State data directory entry '{}' not a directory or regular file! Possible "
                     "corruption!",
-                    dirEntry.path().native())
+                    dirEntry.path().string())
             return false;
         }
 
@@ -323,11 +323,11 @@ bool importGroupState(std::filesystem::path yamlPath,
         FOE_LOG(General, Error,
                 "Given YAML state path '{}' is not a "
                 "directory, not supported",
-                yamlPath.native())
+                yamlPath.string())
         return false;
     }
 
-    std::string groupName = yamlPath.stem().native();
+    std::string groupName = yamlPath.stem().string();
 
     // Group Dependencies
     std::vector<StateDataDependency> groupDependencies;
