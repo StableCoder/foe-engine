@@ -19,8 +19,6 @@
 
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
-#include <foe/ecs/editor_name_map.hpp>
-#include <foe/ecs/groups.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -40,9 +38,8 @@
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
 #include "position_descriptor_pool.hpp"
-#include "resource_pools.hpp"
 #include "settings.hpp"
-#include "state_pools.hpp"
+#include "simulation_set.hpp"
 #include "state_yaml/distributed_yaml.hpp"
 #include "vk_animation.hpp"
 
@@ -83,18 +80,6 @@ struct Application {
     foeDistributedYamlImporter yamlImporter{"data/state/theDataA"};
     foeId cameraID;
     foeId renderID;
-
-    struct SimulationSet {
-        foeEcsGroups groups;
-        foeEditorNameMap nameMap;
-        // DataImporters importers;
-
-        ResourcePools resources;
-        ResourceLoaders resourceLoaders;
-
-        StatePools state;
-        // StateSystems systems;
-    };
 
     SimulationSet simulationSet;
 
