@@ -6,6 +6,7 @@ target_sources(
           camera_descriptor_pool.cpp
           frame_timer.cpp
           graphics.cpp
+          group_data.cpp
           logging.cpp
           position_descriptor_pool.cpp
           settings.cpp

@@ -75,6 +75,8 @@ enum : foeIdGroup {
     foeIdTemporaryGroup = foeIdMaxGroupValue << (foeIdNumIndexBits + foeIdNumTypeBits),
     /// Max number possible of general groups
     foeIdMaxDynamicGroups = foeIdMaxGroupValue - 2,
+    /// The maximum value a dynamic group can be
+    foeIdMaxDynamicGroupValue = foeIdMaxDynamicGroups - 1,
 };
 
 inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdValidGroupBits); }
