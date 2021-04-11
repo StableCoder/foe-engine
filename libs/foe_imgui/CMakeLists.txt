@@ -16,6 +16,6 @@ target_code_coverage(foe_imgui)
 add_subdirectory(src)
 
 # Auxiliary Target
-if(BUILD_TESTS)
+if(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
   add_subdirectory(test)
 endif()
