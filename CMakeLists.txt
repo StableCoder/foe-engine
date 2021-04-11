@@ -95,32 +95,43 @@ add_subdirectory(libs)
 
 # Engine Entrypoint
 add_executable(foe_engine)
-target_link_libraries(
-  foe_engine
-  PRIVATE CLI11
-          foe
-          foe_ecs
-          foe_ecs_yaml
-          foe_graphics_vk
-          foe_model
-          foe_resource
-          foe_resource_yaml
-          foe_wsi
-          foe_xr)
+target_link_libraries(foe_engine PRIVATE foe_engine_lib)
 target_code_coverage(foe_engine)
 
-add_library(foe_engine_imgui STATIC)
-target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
-target_link_libraries(foe_engine_imgui PUBLIC foe_imgui)
+# Engine Library
+set(CMAKE_C_VISIBILITY_PRESET default)
+set(CMAKE_CXX_VISIBILITY_PRESET default)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+add_library(foe_engine_lib)
+target_link_libraries(
+  foe_engine_lib
+  PUBLIC CLI11
+         foe
+         foe_ecs
+         foe_ecs_yaml
+         foe_graphics_vk
+         foe_model
+         foe_resource
+         foe_resource_yaml
+         foe_wsi
+         foe_xr)
+target_code_coverage(foe_engine_lib)
 
 if(BUILD_XR)
-  target_link_libraries(foe_engine PUBLIC foe_xr_openxr)
+  target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
 endif()
 
 if(EDITOR_MODE)
   # Link to executable
-  target_link_libraries(foe_engine PUBLIC foe_engine_imgui)
+  target_link_libraries(foe_engine_lib PUBLIC foe_engine_imgui)
 endif()
+
+# Engine ImGUI Library
+add_library(foe_engine_imgui STATIC)
+target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
+target_link_libraries(foe_engine_imgui PUBLIC foe_imgui)
 
 # Sources
 add_subdirectory(src)
@@ -140,3 +151,6 @@ endif()
 
 # Auxiliary Items
 add_subdirectory(data)
+if(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
+  add_subdirectory(test)
+endif()

@@ -1,17 +1,18 @@
+target_sources(foe_engine PRIVATE main.cpp)
+
 target_sources(
-  foe_engine
+  foe_engine_lib
   PRIVATE application.cpp
           camera_descriptor_pool.cpp
           frame_timer.cpp
           graphics.cpp
           logging.cpp
-          main.cpp
           position_descriptor_pool.cpp
           settings.cpp
           vk_animation.cpp)
 
 if(BUILD_XR)
-  target_sources(foe_engine PRIVATE xr.cpp)
+  target_sources(foe_engine_lib PRIVATE xr.cpp)
 endif()
 
 add_subdirectory(imgui)
