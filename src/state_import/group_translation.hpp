@@ -25,21 +25,15 @@
 
 class foeEcsGroups;
 
-struct StateDataDependency {
-    std::string name;
-    foeIdGroup group;
-    std::filesystem::path path;
-};
-
 class foeGroupTranslation {
   public:
-    FOE_ECS_EXPORT bool generateTranslations(std::vector<StateDataDependency> const &dependencies,
+    FOE_ECS_EXPORT bool generateTranslations(std::vector<std::string> const &dependencies,
                                              foeEcsGroups &idGroups);
 
     FOE_ECS_EXPORT
     bool targetFromNormalizedGroup(foeIdGroup normalizedGroup, foeIdGroup &group);
 
-  public:
+  private:
     struct Set {
         foeIdGroup normalizedSourceGroup;
         foeIdGroup target;

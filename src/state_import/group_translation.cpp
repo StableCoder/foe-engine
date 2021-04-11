@@ -14,25 +14,28 @@
     limitations under the License.
 */
 
-#include <foe/ecs/group_translation.hpp>
+#include "group_translation.hpp"
 
 #include <foe/ecs/groups.hpp>
 
-bool foeGroupTranslation::generateTranslations(std::vector<StateDataDependency> const &dependencies,
+bool foeGroupTranslation::generateTranslations(std::vector<std::string> const &dependencies,
                                                foeEcsGroups &idGroups) {
     std::vector<Set> newSets;
     newSets.reserve(dependencies.size());
 
+    foeIdGroup idGroup = 0;
     for (auto const &it : dependencies) {
-        auto *targetGroup = idGroups.group(it.name);
+        auto *targetGroup = idGroups.group(it);
 
         if (targetGroup == nullptr)
             return false;
 
         newSets.emplace_back(foeGroupTranslation::Set{
-            .normalizedSourceGroup = it.group,
+            .normalizedSourceGroup = idGroup,
             .target = targetGroup->groupID(),
         });
+
+        ++idGroup;
     }
 
     mTranslations = std::move(newSets);
