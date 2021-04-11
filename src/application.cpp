@@ -76,8 +76,7 @@
         return 1;                                                                                  \
     }
 
-#include "state_yaml/export.hpp"
-#include "state_yaml/import.hpp"
+#include "state_import/import_state.hpp"
 
 int Application::initialize(int argc, char **argv) {
     initializeLogging();
@@ -86,16 +85,13 @@ int Application::initialize(int argc, char **argv) {
     auto writer = searchPaths.getWriter();
     writer.searchPaths()->push_back("data/state");
     writer.release();
-    foeEcsGroups groups2;
-    StatePools newStatePools;
-    ResourcePools newResourcePools;
 
-    auto imported = importGroupState("data/state/theDataA", searchPaths, groups2, newStatePools,
-                                     newResourcePools);
-    /*
-    auto exported =
-        exportGroupState("data/state/output_test", groups2, newStatePools, newResourcePools);
-    */
+    SimulationSet *pSimulationSet;
+    foeImportState stateImport;
+    stateImport.addImporterGenerator(createDistributedYamlImporter);
+    std::error_code errC =
+        stateImport.importState("data/state/theDataA", &searchPaths, &pSimulationSet);
+
     synchronousThreadPool.start(2);
     asynchronousThreadPool.start(2);
 
@@ -131,7 +127,6 @@ int Application::initialize(int argc, char **argv) {
     imguiState.addUI(&viewFrameTimeInfo);
 #endif
 
-    std::error_code errC{};
     VkResult vkRes{VK_SUCCESS};
     {
         if (!foeCreateWindow(settings.window.width, settings.window.height, "FoE Engine", true)) {

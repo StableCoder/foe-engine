@@ -21,12 +21,13 @@
 #include <foe/yaml/parsing.hpp>
 
 #include "../position_3d.hpp"
+#include "../state_import/group_translation.hpp"
+#include "../state_pools.hpp"
 
 auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroup targetedGroupID,
                       foeGroupTranslation *pGroupTranslations,
-                      StatePools *pStatePools,
-                      ResourcePools *pResourcePools) -> foeId {
+                      StatePools *pStatePools) -> foeId {
     { // *OPTIONAL* GroupID
         // If a GroupID is specified here, it means this data belongs to an entity from a
         // dependency, with some sort of data being overwritten
@@ -62,8 +63,7 @@ auto yaml_read_entity(YAML::Node const &node,
     return id;
 }
 
-auto yaml_write_entity(foeId id, StatePools *pStatePools, ResourcePools *pResourcePools)
-    -> YAML::Node {
+auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node {
     YAML::Node outNode;
 
     // *OPTIONAL* GroupID if *not* the persistent group

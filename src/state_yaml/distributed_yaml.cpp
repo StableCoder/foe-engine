@@ -16,9 +16,22 @@
 
 #include "distributed_yaml.hpp"
 
+#include <foe/ecs/groups.hpp>
 #include <foe/log.hpp>
+#include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
+
+#include "entity.hpp"
+
+#include <string>
+#include <string_view>
 
 namespace {
+
+constexpr std::string_view dependenciesFilePath = "dependencies.yml";
+constexpr std::string_view indexDataFilePath = "index_data.yml";
+constexpr std::string_view resourcesDirectoryPath = "resources";
+constexpr std::string_view stateDirectoryPath = "state";
 
 auto parseFileStem(std::filesystem::path const &path) -> foeId {
     std::string fullStem{path.stem().string()};
@@ -64,8 +77,30 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 
 } // namespace
 
-foeDistributedYamlImporter::foeDistributedYamlImporter(std::filesystem::path rootDir) :
-    mRootDir{std::move(rootDir)} {}
+auto createDistributedYamlImporter(foeIdGroup group, std::filesystem::path stateDataPath)
+    -> foeImporterBase * {
+    if (std::filesystem::is_directory(stateDataPath) &&
+        // Dependencies
+        (std::filesystem::exists(stateDataPath / dependenciesFilePath) &&
+         std::filesystem::is_regular_file(stateDataPath / dependenciesFilePath)) &&
+        // Index Data
+        (std::filesystem::exists(stateDataPath / indexDataFilePath) &&
+         std::filesystem::is_regular_file(stateDataPath / indexDataFilePath)) &&
+        // Resources
+        (std::filesystem::exists(stateDataPath / resourcesDirectoryPath) &&
+         std::filesystem::is_directory(stateDataPath / resourcesDirectoryPath)) &&
+        // State
+        (std::filesystem::exists(stateDataPath / stateDirectoryPath) &&
+         std::filesystem::is_directory(stateDataPath / stateDirectoryPath))) {
+        return new foeDistributedYamlImporter{group, stateDataPath};
+    }
+
+    return nullptr;
+}
+
+foeDistributedYamlImporter::foeDistributedYamlImporter(foeIdGroup group,
+                                                       std::filesystem::path rootDir) :
+    mGroup{group}, mRootDir{std::move(rootDir)} {}
 
 bool foeDistributedYamlImporter::addImporter(std::string type,
                                              uint32_t version,
@@ -82,6 +117,99 @@ bool foeDistributedYamlImporter::addImporter(std::string type,
 
     FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}:{}", type, version);
     mImportFunctions[key] = function;
+    return true;
+}
+
+namespace {
+
+bool importDependenciesFromNode(YAML::Node const &dependenciesNode,
+                                std::vector<std::string> &dependencies) {
+    try {
+        for (auto it = dependenciesNode.begin(); it != dependenciesNode.end(); ++it) {
+            std::string newDependency;
+
+            yaml_read_required("name", *it, newDependency);
+
+            dependencies.emplace_back(newDependency);
+        }
+    } catch (YAML::Exception const &e) {
+        FOE_LOG(General, Error, "{}", e.what())
+        return false;
+    }
+
+    return true;
+}
+
+} // namespace
+
+foeIdGroup foeDistributedYamlImporter::group() const noexcept { return mGroup; }
+
+std::string foeDistributedYamlImporter::name() const noexcept { return mRootDir.stem().string(); }
+
+void foeDistributedYamlImporter::setGroupTranslation(foeGroupTranslation &&groupTranslation) {
+    mGroupTranslation = std::move(groupTranslation);
+}
+
+bool foeDistributedYamlImporter::getDependencies(std::vector<std::string> &dependencies) {
+    YAML::Node node;
+    if (!openYamlFile(mRootDir / dependenciesFilePath, node))
+        return false;
+
+    return importDependenciesFromNode(node, dependencies);
+}
+
+#include <foe/ecs/yaml/index_generator.hpp>
+
+bool foeDistributedYamlImporter::getGroupIndexData(foeEcsIndexGenerator &ecsGroup) {
+    YAML::Node node;
+    if (!openYamlFile(mRootDir / indexDataFilePath, node))
+        return false;
+
+    try {
+        yaml_read_index_generator(node, ecsGroup);
+    } catch (foeYamlException const &e) {
+        FOE_LOG(General, Error, "Failed to parse Group State Index Data from Yaml file: {}",
+                e.what())
+        return false;
+    }
+
+    return true;
+}
+
+bool foeDistributedYamlImporter::importStateData(foeEcsGroups *pGroups, StatePools *pStatePools) {
+    for (auto &dirIt :
+         std::filesystem::recursive_directory_iterator{mRootDir / stateDirectoryPath}) {
+        FOE_LOG(General, Info, "Visiting: {}", dirIt.path().string())
+        if (std::filesystem::is_directory(dirIt))
+            continue;
+
+        if (!std::filesystem::is_regular_file(dirIt)) {
+            FOE_LOG(General, Warning,
+                    "State data directory entry '{}' not a directory or regular file! Possible "
+                    "corruption!",
+                    dirIt.path().string())
+            return false;
+        }
+
+        // Otherwise, parse the entity state data
+        YAML::Node entityNode;
+        if (!openYamlFile(dirIt, entityNode))
+            return false;
+
+        try {
+            auto entity = yaml_read_entity(entityNode, mGroup, &mGroupTranslation, pStatePools);
+            if (entity == FOE_INVALID_ID) {
+                return false;
+            } else {
+                FOE_LOG(General, Info, "Successfully parsed entity {}", foeId_to_string(entity))
+            }
+
+        } catch (foeYamlException const &e) {
+            FOE_LOG(General, Error, "Failed to parse entity state data: {}", e.what())
+            return false;
+        }
+    }
+
     return true;
 }
 

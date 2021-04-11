@@ -18,17 +18,30 @@
 #include <foe/resource/create_info_base.hpp>
 #include <yaml-cpp/yaml.h>
 
+#include "../state_import/importer_base.hpp"
+
 #include <filesystem>
 #include <functional>
 #include <map>
 #include <string>
 #include <string_view>
 
-class foeDistributedYamlImporter {
+auto createDistributedYamlImporter(foeIdGroup group, std::filesystem::path stateDataPath)
+    -> foeImporterBase *;
+
+class foeDistributedYamlImporter : public foeImporterBase {
   public:
     using ImportFunc = std::function<void(YAML::Node const &, foeResourceCreateInfoBase **)>;
 
-    foeDistributedYamlImporter(std::filesystem::path rootDir);
+    foeDistributedYamlImporter(foeIdGroup group, std::filesystem::path rootDir);
+
+    foeIdGroup group() const noexcept override;
+    std::string name() const noexcept override;
+    void setGroupTranslation(foeGroupTranslation &&groupTranslation) override;
+
+    bool getDependencies(std::vector<std::string> &dependencies) override;
+    bool getGroupIndexData(foeEcsIndexGenerator &ecsGroup) override;
+    bool importStateData(foeEcsGroups *pGroups, StatePools *pStatePools) override;
 
     bool addImporter(std::string type, uint32_t version, ImportFunc function);
     bool removeImporter(std::string type, uint32_t version);
@@ -42,5 +55,7 @@ class foeDistributedYamlImporter {
 
     using ImportKey = std::tuple<std::string, uint32_t>;
 
+    foeIdGroup mGroup;
+    foeGroupTranslation mGroupTranslation;
     std::map<ImportKey, ImportFunc> mImportFunctions;
 };

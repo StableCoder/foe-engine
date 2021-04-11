@@ -17,22 +17,19 @@
 #ifndef STATE_YAML_ENTITY_HPP
 #define STATE_YAML_ENTITY_HPP
 
-#include <foe/ecs/group_translation.hpp>
 #include <foe/ecs/id.hpp>
 #include <yaml-cpp/yaml.h>
 
-#include "../resource_pools.hpp"
-#include "../state_pools.hpp"
-
 #include <vector>
+
+class foeGroupTranslation;
+struct StatePools;
 
 auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroup targetedGroupID,
                       foeGroupTranslation *pGroupTranslations,
-                      StatePools *pStatePools,
-                      ResourcePools *pResourcePools) -> foeId;
+                      StatePools *pStatePools) -> foeId;
 
-auto yaml_write_entity(foeId id, StatePools *pStatePools, ResourcePools *pResourcePools)
-    -> YAML::Node;
+auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node;
 
 #endif // STATE_YAML_ENTITY_HPP

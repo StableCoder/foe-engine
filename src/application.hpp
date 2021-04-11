@@ -77,7 +77,7 @@ struct Application {
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
 
     // Groups/Entities
-    foeDistributedYamlImporter yamlImporter{"data/state/theDataA"};
+    foeDistributedYamlImporter yamlImporter{foeEcsGroups::Persistent, "data/state/theDataA"};
     foeId cameraID;
     foeId renderID;
 
