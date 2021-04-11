@@ -45,7 +45,7 @@ class foeDistributedYamlImporter : public foeImporterBase {
 
     bool addImporter(std::string type, uint32_t version, ImportFunc function);
     bool removeImporter(std::string type, uint32_t version);
-    bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo);
+    bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) override;
 
   public:
     static constexpr std::string_view cResourceSubDir = "resources";
