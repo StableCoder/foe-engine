@@ -22,7 +22,7 @@
 #include <vector>
 
 TEST_CASE("IndexGenerator - default state", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0);
+    foeIdIndexGenerator test("", 0);
 
     REQUIRE(test.peekNextFreshIndex() == 0);
     REQUIRE(test.recyclable() == 0);
@@ -30,13 +30,13 @@ TEST_CASE("IndexGenerator - default state", "[foe][ecs][IndexGenerator]") {
 }
 
 TEST_CASE("IndexGenerator - name", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("test", 0);
+    foeIdIndexGenerator test("test", 0);
 
     REQUIRE(test.name() == "test");
 }
 
 TEST_CASE("IndexGenerator - plain reset", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0);
+    foeIdIndexGenerator test("", 0);
 
     REQUIRE(test.peekNextFreshIndex() == 0);
     REQUIRE(test.recyclable() == 0);
@@ -48,7 +48,7 @@ TEST_CASE("IndexGenerator - plain reset", "[foe][ecs][IndexGenerator]") {
 }
 
 TEST_CASE("IndexGenerator - reset with initial values", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0);
+    foeIdIndexGenerator test("", 0);
 
     REQUIRE(test.peekNextFreshIndex() == 0);
     REQUIRE(test.recyclable() == 0);
@@ -60,7 +60,7 @@ TEST_CASE("IndexGenerator - reset with initial values", "[foe][ecs][IndexGenerat
 }
 
 TEST_CASE("IndexGenerator - Generating then freeing a bunch of IDs", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0);
+    foeIdIndexGenerator test("", 0);
 
     std::vector<foeId> idList;
     idList.reserve(256);
@@ -75,7 +75,7 @@ TEST_CASE("IndexGenerator - Generating then freeing a bunch of IDs", "[foe][ecs]
 }
 
 TEST_CASE("IndexGenerator - Reset with custom values", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0);
+    foeIdIndexGenerator test("", 0);
 
     REQUIRE(test.peekNextFreshIndex() == 0);
     REQUIRE(test.recyclable() == 0);
@@ -111,41 +111,46 @@ TEST_CASE("IndexGenerator - Reset with custom values", "[foe][ecs][IndexGenerato
 }
 
 TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0);
+    foeIdIndexGenerator test("", 0);
 
-    REQUIRE(test.groupID() == 0);
-    REQUIRE(test.peekNextFreshIndex() == 0);
-    REQUIRE(test.recyclable() == 0);
-
-    // Generate first ID
+    // Generate the first ID (as an entity)
     foeId test0 = test.generate();
 
-    REQUIRE(test0 == foeId(0));
-    REQUIRE(foeEcsGetGroupID(test0) == 0);
-    REQUIRE(foeEcsGetNormalizedGroupID(test0) == 0);
-    REQUIRE(foeEcsGetIndexID(test0) == 0);
-    REQUIRE(test.peekNextFreshIndex() == 1);
+    REQUIRE(test0 == foeId(0x00000000));
+    REQUIRE(foeIdGetGroup(test0) == 0x00000000);
+    REQUIRE(foeIdGroupToValue(test0) == 0x0);
+    REQUIRE(foeIdIsEntity(test0));
+    REQUIRE(foeIdGetIndex(test0) == 0);
 
-    // Generate second ID
-    foeId test1 = test.generate();
+    // Generate the second ID (as a resource)
+    foeId test1 = test.generateResource();
 
-    REQUIRE(test1 == foeId(1));
-    REQUIRE(foeEcsGetGroupID(test1) == 0);
-    REQUIRE(foeEcsGetNormalizedGroupID(test1) == 0);
-    REQUIRE(foeEcsGetIndexID(test1) == 1);
-    REQUIRE(test.peekNextFreshIndex() == 2);
+    REQUIRE(test1 == foeId(0x08000001));
+    REQUIRE(foeIdGetGroup(test1) == 0x00000000);
+    REQUIRE(foeIdGroupToValue(test1) == 0x0);
+    REQUIRE(foeIdIsResource(test1));
+    REQUIRE(foeIdGetIndex(test1) == 1);
 
-    // Recycle the second ID and generate again.
+    // Recycle the second ID then first ID and generate again as their opposites
     REQUIRE(test.free(test1));
+    REQUIRE(test.free(test0));
 
-    test1 = test.generate();
+    test0 = test.generate();
+    THEN("First recycled should be 1 again.") {
+        REQUIRE(test0 == foeId(0x00000001));
+        REQUIRE(foeIdGetGroup(test0) == 0x00000000);
+        REQUIRE(foeIdGroupToValue(test0) == 0x0);
+        REQUIRE(foeIdIsEntity(test0));
+        REQUIRE(foeIdGetIndex(test0) == 1);
+    }
 
-    THEN("Should be 1 again.") {
-        REQUIRE(test1 == foeId(1));
-        REQUIRE(foeEcsGetGroupID(test1) == 0);
-        REQUIRE(foeEcsGetNormalizedGroupID(test1) == 0);
-        REQUIRE(foeEcsGetIndexID(test1) == 1);
-        REQUIRE(test.peekNextFreshIndex() == 2);
+    test1 = test.generateResource();
+    THEN("Second recycled should be 0 again.") {
+        REQUIRE(test1 == foeId(0x08000000));
+        REQUIRE(foeIdGetGroup(test1) == 0x00000000);
+        REQUIRE(foeIdGroupToValue(test1) == 0x0);
+        REQUIRE(foeIdIsResource(test1));
+        REQUIRE(foeIdGetIndex(test1) == 0);
     }
 
     WHEN("Should fail to free an ID not from correct groupID.") { REQUIRE(!test.free(foeId(0xF))); }
@@ -153,7 +158,7 @@ TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
 
     SECTION("Should return an Invalid ID when it runs out of indexes.") {
         // Shortcut to near the end of the index range
-        test.importState(foeEcsMaxIndexValue - 10000, {});
+        test.importState(foeIdMaxIndexValue - 10000, {});
 
         for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ID) {
@@ -162,41 +167,53 @@ TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
         }
 
         REQUIRE(test.generate() == FOE_INVALID_ID);
-        REQUIRE(test.peekNextFreshIndex() == foeEcsInvalidIndexID);
+        REQUIRE(test.peekNextFreshIndex() == foeIdInvalidIndex);
     }
 }
 
-TEST_CASE("IndexGenerator - GroupID of 0xF0", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0xF0000000);
+TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
+    foeIdIndexGenerator test("", 0xF0000000);
 
     REQUIRE(test.groupID() == 0xF0000000);
 
-    // Generate the first ID
+    // Generate the first ID (as an entity)
     foeId test0 = test.generate();
 
     REQUIRE(test0 == foeId(0xF0000000));
-    REQUIRE(foeEcsGetGroupID(test0) == 0xF0000000);
-    REQUIRE(foeEcsGetNormalizedGroupID(test0) == 0xF);
-    REQUIRE(foeEcsGetIndexID(test0) == 0);
+    REQUIRE(foeIdGetGroup(test0) == 0xF0000000);
+    REQUIRE(foeIdGroupToValue(test0) == 0xF);
+    REQUIRE(foeIdIsEntity(test0));
+    REQUIRE(foeIdGetIndex(test0) == 0);
 
-    // Generate the second ID
-    foeId test1 = test.generate();
+    // Generate the second ID (as a resource)
+    foeId test1 = test.generateResource();
 
-    REQUIRE(test1 == foeId(0xF0000001));
-    REQUIRE(foeEcsGetGroupID(test1) == 0xF0000000);
-    REQUIRE(foeEcsGetNormalizedGroupID(test1) == 0xF);
-    REQUIRE(foeEcsGetIndexID(test1) == 1);
+    REQUIRE(test1 == foeId(0xF8000001));
+    REQUIRE(foeIdGetGroup(test1) == 0xF0000000);
+    REQUIRE(foeIdGroupToValue(test1) == 0xF);
+    REQUIRE(foeIdIsResource(test1));
+    REQUIRE(foeIdGetIndex(test1) == 1);
 
-    // Recycle the second ID and generate again.
+    // Recycle the second ID then first ID and generate again as their opposites
     REQUIRE(test.free(test1));
+    REQUIRE(test.free(test0));
 
-    test1 = test.generate();
+    test0 = test.generate();
+    THEN("First recycled should be 1 again.") {
+        REQUIRE(test0 == foeId(0xF0000001));
+        REQUIRE(foeIdGetGroup(test0) == 0xF0000000);
+        REQUIRE(foeIdGroupToValue(test0) == 0xF);
+        REQUIRE(foeIdIsEntity(test0));
+        REQUIRE(foeIdGetIndex(test0) == 1);
+    }
 
-    THEN("Should be 1 again.") {
-        REQUIRE(test1 == foeId(0xF0000001));
-        REQUIRE(foeEcsGetGroupID(test1) == 0xF0000000);
-        REQUIRE(foeEcsGetNormalizedGroupID(test1) == 0xF);
-        REQUIRE(foeEcsGetIndexID(test1) == 1);
+    test1 = test.generateResource();
+    THEN("Second recycled should be 0 again.") {
+        REQUIRE(test1 == foeId(0xF8000000));
+        REQUIRE(foeIdGetGroup(test1) == 0xF0000000);
+        REQUIRE(foeIdGroupToValue(test1) == 0xF);
+        REQUIRE(foeIdIsResource(test1));
+        REQUIRE(foeIdGetIndex(test1) == 0);
     }
 
     WHEN("Should fail to free an ID not from correct groupID.") { REQUIRE(!test.free(foeId(0xE))); }
@@ -204,7 +221,7 @@ TEST_CASE("IndexGenerator - GroupID of 0xF0", "[foe][ecs][IndexGenerator]") {
 
     SECTION("Should return an eInvalidID when it runs out of indexes.") {
         // Shortcut to near the end of the index range
-        test.importState(foeEcsMaxIndexValue - 10000, {});
+        test.importState(foeIdMaxIndexValue - 10000, {});
 
         for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ID) {
@@ -213,64 +230,13 @@ TEST_CASE("IndexGenerator - GroupID of 0xF0", "[foe][ecs][IndexGenerator]") {
         }
 
         REQUIRE(test.generate() == FOE_INVALID_ID);
-        REQUIRE(test.peekNextFreshIndex() == foeEcsInvalidIndexID);
-    }
-}
-
-TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0xF0000000);
-
-    REQUIRE(test.groupID() == 0xF0000000);
-
-    // Generate the first ID
-    foeId test0 = test.generate();
-
-    REQUIRE(test0 == foeId(0xF0000000));
-    REQUIRE(foeEcsGetGroupID(test0) == 0xF0000000);
-    REQUIRE(foeEcsGetNormalizedGroupID(test0) == 0xF);
-    REQUIRE(foeEcsGetIndexID(test0) == 0);
-
-    // Generate the second ID
-    foeId test1 = test.generate();
-
-    REQUIRE(test1 == foeId(0xF0000001));
-    REQUIRE(foeEcsGetGroupID(test1) == 0xF0000000);
-    REQUIRE(foeEcsGetNormalizedGroupID(test1) == 0xF);
-    REQUIRE(foeEcsGetIndexID(test1) == 1);
-
-    // Recycle the second ID and generate again.
-    REQUIRE(test.free(test1));
-
-    test1 = test.generate();
-
-    THEN("Should be 1 again.") {
-        REQUIRE(test1 == foeId(0xF0000001));
-        REQUIRE(foeEcsGetGroupID(test1) == 0xF0000000);
-        REQUIRE(foeEcsGetNormalizedGroupID(test1) == 0xF);
-        REQUIRE(foeEcsGetIndexID(test1) == 1);
-    }
-
-    WHEN("Should fail to free an ID not from correct groupID.") { REQUIRE(!test.free(foeId(0xE))); }
-    WHEN("Should fail to free an eInvalidID") { REQUIRE(!test.free(FOE_INVALID_ID)); }
-
-    SECTION("Should return an Invalid ID when it runs out of indexes.") {
-        // Shortcut to near the end of the index range
-        test.importState(foeEcsMaxIndexValue - 10000, {});
-
-        for (uint64_t i = 0; i < 10001; ++i) {
-            if (auto temp = test.generate(); temp == FOE_INVALID_ID) {
-                REQUIRE(temp != FOE_INVALID_ID);
-            }
-        }
-
-        REQUIRE(test.generate() == FOE_INVALID_ID);
-        REQUIRE(test.peekNextFreshIndex() == foeEcsInvalidIndexID);
+        REQUIRE(test.peekNextFreshIndex() == foeIdInvalidIndex);
     }
 }
 
 TEST_CASE("IndexGenerator - Attempting to free incorrect/invalid IDs from list",
           "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0);
+    foeIdIndexGenerator test("", 0);
 
     SECTION("Invalid ID") {
         std::array<foeId, 1> ids = {FOE_INVALID_ID};
@@ -289,7 +255,7 @@ TEST_CASE("IndexGenerator - Attempting to free incorrect/invalid IDs from list",
 }
 
 TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator testGenerator{"", 0};
+    foeIdIndexGenerator testGenerator{"", 0};
 
     for (int i = 0; i < 15; ++i) {
         testGenerator.generate();
@@ -320,7 +286,7 @@ TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]
 
         testGenerator.exportState(nextFreeId, recycledIds);
 
-        foeEcsIndexGenerator testGenerator2{"", 0};
+        foeIdIndexGenerator testGenerator2{"", 0};
         testGenerator2.importState(nextFreeId, recycledIds);
 
         CHECK(testGenerator2.generate() == 8);
@@ -345,13 +311,13 @@ constexpr auto cNumThreads = 2;
 
 static_assert(cNumThreads > 1, "Number of threads for tests must be > 1.");
 
-void generateIds(std::vector<foeId> *idList, foeEcsIndexGenerator *idGenerator) {
+void generateIds(std::vector<foeId> *idList, foeIdIndexGenerator *idGenerator) {
     for (int i = 0; i < cNumIds; ++i) {
         idList->emplace_back(idGenerator->generate());
     }
 }
 
-void freeIds(std::vector<foeId> *idList, foeEcsIndexGenerator *idGenerator) {
+void freeIds(std::vector<foeId> *idList, foeIdIndexGenerator *idGenerator) {
     for (int i = 0; i < cNumIds; ++i) {
         idGenerator->free((*idList)[i]);
     }
@@ -360,7 +326,7 @@ void freeIds(std::vector<foeId> *idList, foeEcsIndexGenerator *idGenerator) {
 } // namespace
 
 TEST_CASE("IndexGenerator - Multi-threaded synchronization tests", "[foe][ecs][IndexGenerator]") {
-    foeEcsIndexGenerator test("", 0xF0000000);
+    foeIdIndexGenerator test("", 0xF0000000);
 
     std::vector<foeId> idList[cNumThreads];
     for (auto &i : idList) {

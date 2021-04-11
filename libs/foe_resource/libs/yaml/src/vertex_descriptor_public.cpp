@@ -163,7 +163,7 @@ bool export_yaml_vertex_descriptor_definition(foeVertexDescriptor const *pVertex
     } else {
         FOE_LOG(General, Error,
                 "Failed to export foeVertexDescriptor: Failed to open output file {}.yml",
-                foeId_to_string(pVertexDescriptor->getID()));
+                foeIdToString(pVertexDescriptor->getID()));
         return false;
     }
 

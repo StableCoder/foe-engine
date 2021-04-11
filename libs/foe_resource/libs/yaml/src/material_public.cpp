@@ -66,7 +66,7 @@ bool export_yaml_material_definition(foeMaterial const *pMaterial) {
         outFile.close();
     } else {
         FOE_LOG(General, Error, "Failed to export foeMaterial: Failed to open output file {}.yml",
-                foeId_to_string(pMaterial->getID()));
+                foeIdToString(pMaterial->getID()));
         return false;
     }
 

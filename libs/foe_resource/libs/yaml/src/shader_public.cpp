@@ -69,7 +69,7 @@ bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShad
         outFile.close();
     } else {
         FOE_LOG(General, Error, "Failed to export foeShader: Failed to open output file {}.yml",
-                foeId_to_string(pShader->getID()));
+                foeIdToString(pShader->getID()));
         return false;
     }
 

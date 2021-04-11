@@ -18,13 +18,13 @@
 
 #include <cassert>
 
-foeEcsIndexGenerator::foeEcsIndexGenerator(std::string_view name, foeIdGroup groupId) :
+foeIdIndexGenerator::foeIdIndexGenerator(std::string_view name, foeIdGroup groupId) :
     cName{name}, cGroupID{groupId}, mNumRecycled{0}, mRecycled{}, mNextFreeID{0} {
     /// \todo Replace with C++20 contracts
-    assert((groupId & foeEcsValidIndexBits) == 0);
+    assert((groupId & foeIdValidIndexBits) == 0);
 }
 
-foeId foeEcsIndexGenerator::generate() {
+foeId foeIdIndexGenerator::generate() {
     foeId id = FOE_INVALID_ID;
 
     std::scoped_lock lock{mSync};
@@ -33,7 +33,7 @@ foeId foeEcsIndexGenerator::generate() {
         id = mRecycled.front();
         mRecycled.pop();
         --mNumRecycled;
-    } else if (mNextFreeID >= foeEcsInvalidIndexID) {
+    } else if (mNextFreeID >= foeIdInvalidIndex) {
         // Ran out of indexes for this group
         return FOE_INVALID_ID;
     } else {
@@ -44,22 +44,22 @@ foeId foeEcsIndexGenerator::generate() {
     return cGroupID | id;
 }
 
-foeId foeEcsIndexGenerator::generateResource() {
+foeId foeIdIndexGenerator::generateResource() {
     auto newID = generate();
     if (newID != FOE_INVALID_ID) {
-        newID |= foeEcsNumTypeBits;
+        newID |= foeIdValidTypeBits;
     }
     return newID;
 }
 
-bool foeEcsIndexGenerator::free(foeId id) { return free(1, &id); }
+bool foeIdIndexGenerator::free(foeId id) { return free(1, &id); }
 
-bool foeEcsIndexGenerator::free(uint32_t count, foeId *pEntities) {
+bool foeIdIndexGenerator::free(uint32_t count, foeId *pEntities) {
     // Validate that all the IDs to be recycled belong to this generator
     auto const *const endIt = pEntities + count;
     for (auto const *it = pEntities; it != endIt; ++it) {
-        if (*it == FOE_INVALID_ID || foeEcsGetGroupID(*it) != cGroupID ||
-            foeEcsGetIndexID(*it) >= mNextFreeID) {
+        if (*it == FOE_INVALID_ID || foeIdGetGroup(*it) != cGroupID ||
+            foeIdGetIndex(*it) >= mNextFreeID) {
             return false;
         }
     }
@@ -68,7 +68,7 @@ bool foeEcsIndexGenerator::free(uint32_t count, foeId *pEntities) {
     std::scoped_lock lock{mSync};
 
     for (; pEntities != endIt; ++pEntities) {
-        mRecycled.push(*pEntities);
+        mRecycled.push(foeIdGetIndex(*pEntities));
     }
 
     mNumRecycled += count;
@@ -76,16 +76,16 @@ bool foeEcsIndexGenerator::free(uint32_t count, foeId *pEntities) {
     return true;
 }
 
-std::string_view foeEcsIndexGenerator::name() const noexcept { return cName; }
+std::string_view foeIdIndexGenerator::name() const noexcept { return cName; }
 
-foeIdGroup foeEcsIndexGenerator::groupID() const noexcept { return cGroupID; }
+foeIdGroup foeIdIndexGenerator::groupID() const noexcept { return cGroupID; }
 
-foeIdIndex foeEcsIndexGenerator::peekNextFreshIndex() const noexcept { return mNextFreeID; }
+foeIdIndex foeIdIndexGenerator::peekNextFreshIndex() const noexcept { return mNextFreeID; }
 
-size_t foeEcsIndexGenerator::recyclable() const noexcept { return mNumRecycled; }
+size_t foeIdIndexGenerator::recyclable() const noexcept { return mNumRecycled; }
 
-void foeEcsIndexGenerator::importState(foeIdIndex nextIndex,
-                                       const std::vector<foeIdIndex> &recycledIndices) {
+void foeIdIndexGenerator::importState(foeIdIndex nextIndex,
+                                      const std::vector<foeIdIndex> &recycledIndices) {
     std::scoped_lock lock{mSync};
 
     mNextFreeID = nextIndex;
@@ -101,8 +101,8 @@ void foeEcsIndexGenerator::importState(foeIdIndex nextIndex,
     }
 }
 
-void foeEcsIndexGenerator::exportState(foeIdIndex &nextIndex,
-                                       std::vector<foeIdIndex> &recycledIndices) {
+void foeIdIndexGenerator::exportState(foeIdIndex &nextIndex,
+                                      std::vector<foeIdIndex> &recycledIndices) {
     std::scoped_lock lock{mSync};
 
     nextIndex = mNextFreeID;
@@ -118,7 +118,7 @@ void foeEcsIndexGenerator::exportState(foeIdIndex &nextIndex,
     }
 }
 
-auto foeEcsIndexGenerator::activeEntityList() -> std::vector<foeId> {
+auto foeIdIndexGenerator::activeEntityList() -> std::vector<foeId> {
     std::vector<foeId> entityList;
 
     // Generate list

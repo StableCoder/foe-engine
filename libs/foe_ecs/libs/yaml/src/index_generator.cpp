@@ -18,7 +18,7 @@
 
 #include <foe/yaml/exception.hpp>
 
-void yaml_read_index_generator(YAML::Node const &node, foeEcsIndexGenerator &indexGenerator) {
+void yaml_read_index_generator(YAML::Node const &node, foeIdIndexGenerator &indexGenerator) {
     foeIdIndex nextIndex;
     std::vector<foeIdIndex> recycledIndices;
 
@@ -57,7 +57,7 @@ void yaml_read_index_generator(YAML::Node const &node, foeEcsIndexGenerator &ind
     indexGenerator.importState(nextIndex, recycledIndices);
 }
 
-auto yaml_write_index_generator(foeEcsIndexGenerator &data) -> YAML::Node {
+auto yaml_write_index_generator(foeIdIndexGenerator &data) -> YAML::Node {
     YAML::Node node;
 
     foeIdIndex nextIndex;

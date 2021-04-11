@@ -80,7 +80,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     // Find the importer for the starting path
     foeImporterBase *pImporter{nullptr};
     for (auto it : mImporterGenerators) {
-        pImporter = it(foePersistentGroup, stateDataPath);
+        pImporter = it(foeIdPersistentGroup, stateDataPath);
         if (pImporter != nullptr)
             break;
     }
@@ -100,7 +100,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
         foeIdGroup idGroup = 0;
         for (auto const &it : dependencies) {
             auto newGroupIndices =
-                std::make_unique<foeEcsIndexGenerator>(it, foeEcsNormalizedToGroupID(idGroup));
+                std::make_unique<foeIdIndexGenerator>(it, foeIdValueToGroup(idGroup));
 
             auto success = pSimulationSet->groups.addGroup(std::move(newGroupIndices));
             if (!success) {

@@ -16,11 +16,11 @@
 
 #include <foe/ecs/groups.hpp>
 
-bool foeEcsGroups::addGroup(std::unique_ptr<foeEcsIndexGenerator> &&newGroup) noexcept {
-    auto const normalizedGroup = foeEcsGetNormalizedGroupID(newGroup->groupID());
+bool foeEcsGroups::addGroup(std::unique_ptr<foeIdIndexGenerator> &&newGroup) noexcept {
+    auto const normalizedGroup = foeIdGroupToValue(newGroup->groupID());
 
     // Must be a group withing the general group values
-    if (normalizedGroup >= foeMaxGeneralGroups)
+    if (normalizedGroup >= foeIdMaxDynamicGroups)
         return false;
 
     // Don't do it if there's a group already there
@@ -42,28 +42,28 @@ bool foeEcsGroups::addGroup(std::unique_ptr<foeEcsIndexGenerator> &&newGroup) no
 }
 
 void foeEcsGroups::removeGroup(foeIdGroup groupID) noexcept {
-    auto const normalizedGroup = foeEcsGetNormalizedGroupID(groupID);
+    auto const normalizedGroup = foeIdGroupToValue(groupID);
 
-    if (normalizedGroup >= foeMaxGeneralGroups)
+    if (normalizedGroup >= foeIdMaxDynamicGroups)
         return;
 
     mGroups[normalizedGroup].reset();
 }
 
-foeEcsIndexGenerator *foeEcsGroups::group(foeIdGroup groupID) noexcept {
-    auto group = foeEcsGetGroupID(groupID);
-    if (group == foePersistentGroup) {
+foeIdIndexGenerator *foeEcsGroups::group(foeIdGroup groupID) noexcept {
+    auto group = foeIdGetGroup(groupID);
+    if (group == foeIdPersistentGroup) {
         return persistentGroup();
-    } else if (group == foeTemporaryGroup) {
+    } else if (group == foeIdTemporaryGroup) {
         return temporaryGroup();
     }
 
-    auto const normalizedGroup = foeEcsGetNormalizedGroupID(groupID);
+    auto const normalizedGroup = foeIdGroupToValue(groupID);
 
     return mGroups[normalizedGroup].get();
 }
 
-foeEcsIndexGenerator *foeEcsGroups::group(std::string_view groupName) noexcept {
+foeIdIndexGenerator *foeEcsGroups::group(std::string_view groupName) noexcept {
     if (groupName == "Persistent") {
         return persistentGroup();
     } else if (groupName == "Temporary") {
@@ -79,6 +79,6 @@ foeEcsIndexGenerator *foeEcsGroups::group(std::string_view groupName) noexcept {
     return nullptr;
 }
 
-foeEcsIndexGenerator *foeEcsGroups::persistentGroup() noexcept { return &mPersistentGroup; }
+foeIdIndexGenerator *foeEcsGroups::persistentGroup() noexcept { return &mPersistentGroup; }
 
-foeEcsIndexGenerator *foeEcsGroups::temporaryGroup() noexcept { return &mTemporaryGroup; }
+foeIdIndexGenerator *foeEcsGroups::temporaryGroup() noexcept { return &mTemporaryGroup; }

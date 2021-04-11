@@ -66,12 +66,12 @@ auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node {
     YAML::Node outNode;
 
     // *OPTIONAL* GroupID if *not* the persistent group
-    if (foeEcsGetGroupID(id) != foePersistentGroup) {
-        yaml_write_required("group_id", foeEcsGetNormalizedGroupID(id), outNode);
+    if (foeIdGetGroup(id) != foeIdPersistentGroup) {
+        yaml_write_required("group_id", foeIdGroupToValue(id), outNode);
     }
 
     // *REQUIRED* IndexID
-    yaml_write_required("index_id", foeEcsGetIndexID(id), outNode);
+    yaml_write_required("index_id", foeIdGetIndex(id), outNode);
 
     // Position3D
     if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.end()) {

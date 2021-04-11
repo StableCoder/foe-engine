@@ -24,7 +24,7 @@ TEST_CASE("yaml_read_index_generator - Success Case", "[foe][ecs][yaml][IndexGen
     REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15
 recycled_indices: [8, 4, 10])"));
 
-    foeEcsIndexGenerator testGenerator{"", 0};
+    foeIdIndexGenerator testGenerator{"", 0};
     REQUIRE_NOTHROW(yaml_read_index_generator(root, testGenerator));
 
     CHECK(testGenerator.generate() == 8);
@@ -35,7 +35,7 @@ recycled_indices: [8, 4, 10])"));
 }
 
 TEST_CASE("yaml_write_index_generator", "[foe][ecs][yaml][IndexGenerator]") {
-    foeEcsIndexGenerator indexGen{"", 0};
+    foeIdIndexGenerator indexGen{"", 0};
 
     for (int i = 0; i < 15; ++i) {
         indexGen.generate();
@@ -52,7 +52,7 @@ TEST_CASE("yaml_write_index_generator", "[foe][ecs][yaml][IndexGenerator]") {
 
     std::string show = emitter.c_str();
 
-    foeEcsIndexGenerator testGenerator{"", 0};
+    foeIdIndexGenerator testGenerator{"", 0};
     REQUIRE_NOTHROW(yaml_read_index_generator(testNode, testGenerator));
 
     CHECK(testGenerator.generate() == 8);
@@ -67,7 +67,7 @@ TEST_CASE("yaml_read_index_generator - Missing 'next_free_index' node",
     YAML::Node root;
     REQUIRE_NOTHROW(root = YAML::Load(R"(recycled_indices: [8, 4, 10])"));
 
-    foeEcsIndexGenerator temp{"", 0};
+    foeIdIndexGenerator temp{"", 0};
     REQUIRE_THROWS_MATCHES(
         yaml_read_index_generator(root, temp), foeYamlException,
         Catch::Matchers::Equals(
@@ -79,7 +79,7 @@ TEST_CASE("yaml_read_index_generator - 'next_free_index' node not integer") {
     REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: fifteen
 recycled_indices: [8, 4, 10])"));
 
-    foeEcsIndexGenerator temp{"", 0};
+    foeIdIndexGenerator temp{"", 0};
     REQUIRE_THROWS_MATCHES(
         yaml_read_index_generator(root, temp), foeYamlException,
         Catch::Matchers::Equals("yaml_read_index_generator::next_free_index - Could not parse "
@@ -91,7 +91,7 @@ TEST_CASE("yaml_read_index_generator - Missing 'recycled_indices' node",
     YAML::Node root;
     REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15)"));
 
-    foeEcsIndexGenerator temp{"", 0};
+    foeIdIndexGenerator temp{"", 0};
     REQUIRE_THROWS_MATCHES(
         yaml_read_index_generator(root, temp), foeYamlException,
         Catch::Matchers::Equals(
@@ -104,7 +104,7 @@ TEST_CASE("yaml_read_index_generator - 'recycled_indices' with non-number",
     REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15
 recycled_indices: [eight, 4, 10])"));
 
-    foeEcsIndexGenerator temp{"", 0};
+    foeIdIndexGenerator temp{"", 0};
     REQUIRE_THROWS_MATCHES(
         yaml_read_index_generator(root, temp), foeYamlException,
         Catch::Matchers::Equals("yaml_read_index_generator::recycled_indices - Could not parse "

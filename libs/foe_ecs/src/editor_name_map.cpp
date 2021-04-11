@@ -54,7 +54,7 @@ bool foeEditorNameMap::add(foeId id, std::string editorName) {
     }
     if (editorName.empty()) {
         FOE_LOG(General, Warning, "Attempted to add ID {} with a blank editor name",
-                foeId_to_string(id))
+                foeIdToString(id))
         return false;
     }
 
@@ -62,14 +62,13 @@ bool foeEditorNameMap::add(foeId id, std::string editorName) {
 
     if (mIdToEditor.find(id) != mIdToEditor.end()) {
         FOE_LOG(General, Warning, "Attempted to add ID {} that already has an editor name",
-                foeId_to_string(id))
+                foeIdToString(id))
         return false;
     }
     if (mEditorToId.find(editorName) != mEditorToId.end()) {
         FOE_LOG(General, Warning,
                 "Attempted to add ID {} that with editor name {} that is already used by ID {}",
-                foeId_to_string(id), editorName,
-                foeId_to_string(mEditorToId.find(editorName)->second))
+                foeIdToString(id), editorName, foeIdToString(mEditorToId.find(editorName)->second))
         return false;
     }
 
@@ -82,7 +81,7 @@ bool foeEditorNameMap::add(foeId id, std::string editorName) {
 bool foeEditorNameMap::update(foeId id, std::string editorName) {
     if (editorName.empty()) {
         FOE_LOG(General, Warning, "Attempted to update ID {} with a blank editor name",
-                foeId_to_string(id))
+                foeIdToString(id))
         return false;
     }
 
@@ -90,8 +89,7 @@ bool foeEditorNameMap::update(foeId id, std::string editorName) {
     if (mEditorToId.find(editorName) != mEditorToId.end()) {
         FOE_LOG(General, Warning,
                 "Attempted to update ID {} with editor name '{}' already used by ID {}",
-                foeId_to_string(id), editorName,
-                foeId_to_string(mEditorToId.find(editorName)->second))
+                foeIdToString(id), editorName, foeIdToString(mEditorToId.find(editorName)->second))
         return false;
     }
 
@@ -99,7 +97,7 @@ bool foeEditorNameMap::update(foeId id, std::string editorName) {
     auto searchIt = mIdToEditor.find(id);
     if (searchIt == mIdToEditor.end()) {
         FOE_LOG(General, Info, "Attempted to update ID {} that did not have an editorName",
-                foeId_to_string(id))
+                foeIdToString(id))
         return false;
     }
 
@@ -117,7 +115,7 @@ bool foeEditorNameMap::remove(foeId id) {
     auto searchIt = mIdToEditor.find(id);
     if (searchIt == mIdToEditor.end()) {
         FOE_LOG(General, Info, "Attempted to remove ID {} that did not have an editorName",
-                foeId_to_string(id))
+                foeIdToString(id))
         return false;
     }
 

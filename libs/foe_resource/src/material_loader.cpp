@@ -271,7 +271,7 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
             // leave
             FOE_LOG(foeResource, Error,
                     "Failed to load foeMaterial '{}', as a sub resource failed to load",
-                    foeId_to_string(pMaterial->getID()))
+                    foeIdToString(pMaterial->getID()))
             std::scoped_lock writeLock{pMaterial->dataWriteLock};
 
             // Reset the loading resources, no longer trying to load this

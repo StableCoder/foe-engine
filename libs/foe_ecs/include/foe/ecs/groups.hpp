@@ -26,20 +26,20 @@
 
 class foeEcsGroups {
   public:
-    FOE_ECS_EXPORT bool addGroup(std::unique_ptr<foeEcsIndexGenerator> &&group) noexcept;
+    FOE_ECS_EXPORT bool addGroup(std::unique_ptr<foeIdIndexGenerator> &&group) noexcept;
     FOE_ECS_EXPORT void removeGroup(foeIdGroup groupID) noexcept;
 
-    FOE_ECS_EXPORT foeEcsIndexGenerator *group(foeIdGroup groupID) noexcept;
-    FOE_ECS_EXPORT foeEcsIndexGenerator *group(std::string_view groupName) noexcept;
+    FOE_ECS_EXPORT foeIdIndexGenerator *group(foeIdGroup groupID) noexcept;
+    FOE_ECS_EXPORT foeIdIndexGenerator *group(std::string_view groupName) noexcept;
 
-    FOE_ECS_EXPORT foeEcsIndexGenerator *persistentGroup() noexcept;
-    FOE_ECS_EXPORT foeEcsIndexGenerator *temporaryGroup() noexcept;
+    FOE_ECS_EXPORT foeIdIndexGenerator *persistentGroup() noexcept;
+    FOE_ECS_EXPORT foeIdIndexGenerator *temporaryGroup() noexcept;
 
   private:
-    foeEcsIndexGenerator mPersistentGroup{"Persistent", foePersistentGroup};
-    foeEcsIndexGenerator mTemporaryGroup{"Temporary", foeTemporaryGroup};
+    foeIdIndexGenerator mPersistentGroup{"Persistent", foeIdPersistentGroup};
+    foeIdIndexGenerator mTemporaryGroup{"Temporary", foeIdTemporaryGroup};
 
-    std::array<std::unique_ptr<foeEcsIndexGenerator>, foeMaxGeneralGroups> mGroups;
+    std::array<std::unique_ptr<foeIdIndexGenerator>, foeIdMaxDynamicGroups> mGroups;
 };
 
 #endif // FOE_ECS_GROUPS_HPP

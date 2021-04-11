@@ -160,7 +160,7 @@ bool foeDistributedYamlImporter::getDependencies(std::vector<std::string> &depen
 
 #include <foe/ecs/yaml/index_generator.hpp>
 
-bool foeDistributedYamlImporter::getGroupIndexData(foeEcsIndexGenerator &ecsGroup) {
+bool foeDistributedYamlImporter::getGroupIndexData(foeIdIndexGenerator &ecsGroup) {
     YAML::Node node;
     if (!openYamlFile(mRootDir / indexDataFilePath, node))
         return false;
@@ -201,7 +201,7 @@ bool foeDistributedYamlImporter::importStateData(foeEcsGroups *pGroups, StatePoo
             if (entity == FOE_INVALID_ID) {
                 return false;
             } else {
-                FOE_LOG(General, Info, "Successfully parsed entity {}", foeId_to_string(entity))
+                FOE_LOG(General, Info, "Successfully parsed entity {}", foeIdToString(entity))
             }
 
         } catch (foeYamlException const &e) {

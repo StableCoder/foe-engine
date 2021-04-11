@@ -26,13 +26,13 @@
 #include <string_view>
 #include <vector>
 
-class foeEcsIndexGenerator {
+class foeIdIndexGenerator {
   public:
     /** Constructor.
      * @param name Name of the group, should be unique, or it won't be accepted by foe::ecs::Groups.
      * @param baseID The BaseID of the indices we're generating for.
      */
-    FOE_ECS_EXPORT foeEcsIndexGenerator(std::string_view name, foeIdGroup groupId);
+    FOE_ECS_EXPORT foeIdIndexGenerator(std::string_view name, foeIdGroup groupId);
 
     /** Generates an unused IndexID for use in an EntityID.
      * @return An unused EntityID. If no indexes are available, returns eInvalidID instead.

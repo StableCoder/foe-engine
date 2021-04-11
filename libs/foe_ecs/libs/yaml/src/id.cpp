@@ -25,7 +25,7 @@ auto yaml_read_id(YAML::Node const &node) -> foeId {
         foeIdGroup idGroup = 0;
         /*
         if (yaml_read_optional("group_id", node, idGroup)) {
-            idGroup = foeEcsNormalizedToGroupID(idGroup);
+            idGroup = foeIdValueToGroup(idGroup);
         }
         */
 
@@ -42,11 +42,11 @@ auto yaml_read_id(YAML::Node const &node) -> foeId {
 void yaml_write_id(foeId id, YAML::Node &node) {
     try {
         // Index
-        yaml_write_required("index_id", foeEcsGetIndexID(id), node);
+        yaml_write_required("index_id", foeIdGetIndex(id), node);
 
         // Group, if not part of the persistent group
-        if (foeEcsGetGroupID(id) != foePersistentGroup) {
-            yaml_write_required("group_id", foeEcsGetGroupID(id), node);
+        if (foeIdGetGroup(id) != foeIdPersistentGroup) {
+            yaml_write_required("group_id", foeIdGetGroup(id), node);
         }
     } catch (foeYamlException const &e) {
         throw e;
