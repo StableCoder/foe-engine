@@ -35,7 +35,7 @@ constexpr std::string_view stateDataDirectoryPath = "state_data";
 auto write_yaml_dependencies(foeEcsGroups &ecsGroups) -> YAML::Node {
     YAML::Node outNode;
 
-    for (uint32_t i = 0; i < foeEcsGroups::MaxGeneralGroups; ++i) {
+    for (uint32_t i = 0; i < foeMaxGeneralGroups; ++i) {
         foeIdGroup groupID = foeEcsNormalizedToGroupID(i);
 
         auto *pGroup = ecsGroups.group(groupID);
@@ -61,7 +61,8 @@ bool exportDependenciesToFile(std::filesystem::path path, foeEcsGroups &ecsGroup
     try {
         rootNode = write_yaml_dependencies(ecsGroups);
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to write general dependencies node with error: {}", e.what())
+        FOE_LOG(General, Error, "Failed to write general dependencies node with error: {}",
+                e.what())
         return false;
     }
 
@@ -99,7 +100,7 @@ bool exportGroupStateData(std::filesystem::path path,
                           ResourcePools &resourcePools) {
 
     // Dependent groups
-    for (uint32_t i = 0; i < foeEcsGroups::MaxGeneralGroups; ++i) {
+    for (uint32_t i = 0; i < foeMaxGeneralGroups; ++i) {
         foeIdGroup groupID = foeEcsNormalizedToGroupID(i);
         auto *pGroup = ecsGroups.group(groupID);
 

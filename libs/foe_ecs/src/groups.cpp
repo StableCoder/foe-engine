@@ -20,7 +20,7 @@ bool foeEcsGroups::addGroup(std::unique_ptr<foeEcsIndexGenerator> &&newGroup) no
     auto const normalizedGroup = foeEcsGetNormalizedGroupID(newGroup->groupID());
 
     // Must be a group withing the general group values
-    if (normalizedGroup >= MaxGeneralGroups)
+    if (normalizedGroup >= foeMaxGeneralGroups)
         return false;
 
     // Don't do it if there's a group already there
@@ -44,7 +44,7 @@ bool foeEcsGroups::addGroup(std::unique_ptr<foeEcsIndexGenerator> &&newGroup) no
 void foeEcsGroups::removeGroup(foeIdGroup groupID) noexcept {
     auto const normalizedGroup = foeEcsGetNormalizedGroupID(groupID);
 
-    if (normalizedGroup >= MaxGeneralGroups)
+    if (normalizedGroup >= foeMaxGeneralGroups)
         return;
 
     mGroups[normalizedGroup].reset();
@@ -52,9 +52,9 @@ void foeEcsGroups::removeGroup(foeIdGroup groupID) noexcept {
 
 foeEcsIndexGenerator *foeEcsGroups::group(foeIdGroup groupID) noexcept {
     auto group = foeEcsGetGroupID(groupID);
-    if (group == Persistent) {
+    if (group == foePersistentGroup) {
         return persistentGroup();
-    } else if (group == Temporary) {
+    } else if (group == foeTemporaryGroup) {
         return temporaryGroup();
     }
 

@@ -80,7 +80,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     // Find the importer for the starting path
     foeImporterBase *pImporter{nullptr};
     for (auto it : mImporterGenerators) {
-        pImporter = it(foeEcsGroups::Persistent, stateDataPath);
+        pImporter = it(foePersistentGroup, stateDataPath);
         if (pImporter != nullptr)
             break;
     }

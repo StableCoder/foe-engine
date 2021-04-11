@@ -24,14 +24,14 @@ TEST_CASE("Groups - Getting groups", "[foe][ecs]") {
 
     SECTION("Persistent") {
         REQUIRE(test.persistentGroup() != nullptr);
-        REQUIRE(test.persistentGroup() == test.group(foeEcsGroups::Persistent));
-        REQUIRE(test.persistentGroup()->groupID() == foeEcsGroups::Persistent);
+        REQUIRE(test.persistentGroup() == test.group(foePersistentGroup));
+        REQUIRE(test.persistentGroup()->groupID() == foePersistentGroup);
         REQUIRE(test.persistentGroup() == test.group("Persistent"));
     }
     SECTION("Temporary") {
         REQUIRE(test.temporaryGroup() != nullptr);
-        REQUIRE(test.temporaryGroup() == test.group(foeEcsGroups::Temporary));
-        REQUIRE(test.temporaryGroup()->groupID() == foeEcsGroups::Temporary);
+        REQUIRE(test.temporaryGroup() == test.group(foeTemporaryGroup));
+        REQUIRE(test.temporaryGroup()->groupID() == foeTemporaryGroup);
         REQUIRE(test.temporaryGroup() == test.group("Temporary"));
     }
     SECTION("General") {
@@ -86,10 +86,10 @@ TEST_CASE("Groups - Adding temporary/persistent GroupIDs fail", "[foe][ecs]") {
     foeEcsGroups test;
 
     SECTION("Same GroupID") {
-        auto pGroup = std::make_unique<foeEcsIndexGenerator>("", foeEcsGroups::Persistent);
+        auto pGroup = std::make_unique<foeEcsIndexGenerator>("", foePersistentGroup);
         REQUIRE_FALSE(test.addGroup(std::move(pGroup)));
 
-        auto tGroup = std::make_unique<foeEcsIndexGenerator>("", foeEcsGroups::Temporary);
+        auto tGroup = std::make_unique<foeEcsIndexGenerator>("", foeTemporaryGroup);
         REQUIRE_FALSE(test.addGroup(std::move(tGroup)));
     }
     SECTION("Same name") {
@@ -104,19 +104,19 @@ TEST_CASE("Groups - Adding temporary/persistent GroupIDs fail", "[foe][ecs]") {
 TEST_CASE("Groups - Removing temporary/persistent GroupIDs fail", "[foe][ecs]") {
     foeEcsGroups test;
 
-    test.removeGroup(foeEcsGroups::Persistent);
-    test.removeGroup(foeEcsGroups::Temporary);
+    test.removeGroup(foePersistentGroup);
+    test.removeGroup(foeTemporaryGroup);
 
-    REQUIRE(test.group(foeEcsGroups::Persistent) != nullptr);
-    REQUIRE(test.group(foeEcsGroups::Temporary) != nullptr);
+    REQUIRE(test.group(foePersistentGroup) != nullptr);
+    REQUIRE(test.group(foeTemporaryGroup) != nullptr);
 }
 
 TEST_CASE("Groups - Adding/removing all possible general groups", "[foe][ecs]") {
     foeEcsGroups test;
 
-    std::array<std::unique_ptr<foeEcsIndexGenerator>, foeEcsGroups::MaxGeneralGroups> groups;
+    std::array<std::unique_ptr<foeEcsIndexGenerator>, foeMaxGeneralGroups> groups;
 
-    for (uint32_t i = 0; i < foeEcsGroups::MaxGeneralGroups; ++i) {
+    for (uint32_t i = 0; i < foeMaxGeneralGroups; ++i) {
         groups[i] =
             std::make_unique<foeEcsIndexGenerator>(std::to_string(i), foeEcsNormalizedToGroupID(i));
     }
@@ -129,7 +129,7 @@ TEST_CASE("Groups - Adding/removing all possible general groups", "[foe][ecs]") 
         REQUIRE(test.group(id) == pNewGroup);
     }
 
-    for (uint32_t i = 0; i < foeEcsGroups::MaxGeneralGroups; ++i) {
+    for (uint32_t i = 0; i < foeMaxGeneralGroups; ++i) {
         const foeIdGroup id = foeEcsNormalizedToGroupID(i);
 
         REQUIRE(test.group(id) != nullptr);

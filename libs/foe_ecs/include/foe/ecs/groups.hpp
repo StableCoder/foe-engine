@@ -26,15 +26,6 @@
 
 class foeEcsGroups {
   public:
-    enum : foeIdGroup {
-        // Entities that are to be preserved across sessions
-        Persistent = (foeEcsMaxGroupValue - 1) << (foeEcsNumIndexBits + foeEcsNumTypeBits),
-        // Entities that are not to be preseved, and are just local to the current session
-        Temporary = foeEcsMaxGroupValue << (foeEcsNumIndexBits + foeEcsNumTypeBits),
-        // Max number possible of general groups
-        MaxGeneralGroups = foeEcsMaxGroupValue - 2,
-    };
-
     FOE_ECS_EXPORT bool addGroup(std::unique_ptr<foeEcsIndexGenerator> &&group) noexcept;
     FOE_ECS_EXPORT void removeGroup(foeIdGroup groupID) noexcept;
 
@@ -45,10 +36,10 @@ class foeEcsGroups {
     FOE_ECS_EXPORT foeEcsIndexGenerator *temporaryGroup() noexcept;
 
   private:
-    foeEcsIndexGenerator mPersistentGroup{"Persistent", foeEcsGroups::Persistent};
-    foeEcsIndexGenerator mTemporaryGroup{"Temporary", foeEcsGroups::Temporary};
+    foeEcsIndexGenerator mPersistentGroup{"Persistent", foePersistentGroup};
+    foeEcsIndexGenerator mTemporaryGroup{"Temporary", foeTemporaryGroup};
 
-    std::array<std::unique_ptr<foeEcsIndexGenerator>, MaxGeneralGroups> mGroups;
+    std::array<std::unique_ptr<foeEcsIndexGenerator>, foeMaxGeneralGroups> mGroups;
 };
 
 #endif // FOE_ECS_GROUPS_HPP

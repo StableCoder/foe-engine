@@ -16,7 +16,6 @@
 
 #include <foe/ecs/yaml/id.hpp>
 
-#include <foe/ecs/groups.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -46,7 +45,7 @@ void yaml_write_id(foeId id, YAML::Node &node) {
         yaml_write_required("index_id", foeEcsGetIndexID(id), node);
 
         // Group, if not part of the persistent group
-        if (foeEcsGetGroupID(id) != foeEcsGroups::Persistent) {
+        if (foeEcsGetGroupID(id) != foePersistentGroup) {
             yaml_write_required("group_id", foeEcsGetGroupID(id), node);
         }
     } catch (foeYamlException const &e) {

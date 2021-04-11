@@ -41,20 +41,51 @@ enum : uint32_t {
     foeEcsNumIndexBits = foeEcsNumBits - (foeEcsNumGroupBits + foeEcsNumTypeBits),
 };
 
+// General ID
+
 enum : foeId {
     /// The invalid ID
     foeInvalidId = std::numeric_limits<foeId>::max(),
+    foeIdInvalid = foeInvalidId,
+};
+
+#define FOE_INVALID_ID foeInvalidId
+
+// ID Group
+
+enum : foeIdGroup {
+    /// Number of bits that values are shifted for the Id Group's bits
+    foeIdGroupBitShift = foeEcsNumIndexBits + foeEcsNumTypeBits,
 
     /// Bitflag of the valid GroupID bits
-    foeEcsValidGroupBits = foeInvalidId << (foeEcsNumIndexBits + foeEcsNumTypeBits),
+    foeEcsValidGroupBits = foeInvalidId << foeIdGroupBitShift,
     /// Maximum value of a GroupID
-    foeEcsMaxGroupValue = foeEcsValidGroupBits >> (foeEcsNumIndexBits + foeEcsNumTypeBits),
+    foeEcsMaxGroupValue = foeEcsValidGroupBits >> foeIdGroupBitShift,
 
-    // Bitflag of the valid Type bits
+    /// Entities that are to be preserved across sessions
+    foePersistentGroup = (foeEcsMaxGroupValue - 1) << (foeEcsNumIndexBits + foeEcsNumTypeBits),
+    /// Entities that are not to be preseved, and are just local to the current session
+    foeTemporaryGroup = foeEcsMaxGroupValue << (foeEcsNumIndexBits + foeEcsNumTypeBits),
+    /// Max number possible of general groups
+    foeMaxGeneralGroups = foeEcsMaxGroupValue - 2,
+};
+
+// ID Type
+
+enum : foeIdType {
+    /// Number of bits that values are shifted for the Id Type's bits
+    foeIdTypeBitShift = foeEcsNumIndexBits,
+
+    /// Bitflag of the valid Type bits
     foeEcsValidTypeBits =
         (foeInvalidId << (foeEcsNumIndexBits + foeEcsNumGroupBits)) >> (foeEcsNumGroupBits),
+    /// Maximum value that the type section can represent
     foeEcsMaxTypeValue = foeEcsValidTypeBits >> foeEcsNumIndexBits,
+};
 
+// ID Index
+
+enum : foeIdIndex {
     /// Bitflag of the valid IndexID bits
     foeEcsValidIndexBits = foeInvalidId >> (foeEcsNumGroupBits + foeEcsNumTypeBits),
     /// The invalid index value
@@ -63,9 +94,7 @@ enum : foeId {
     foeEcsMaxIndexValue = foeEcsValidIndexBits - 1,
 };
 
-#define FOE_INVALID_ID foeInvalidId
-
-inline foeIdGroup foeEcsNormalizedToGroupID(uint32_t groupValue) {
+inline foeIdGroup foeEcsNormalizedToGroupID(foeIdGroup groupValue) {
     return static_cast<foeIdGroup>(groupValue) << (foeEcsNumIndexBits + foeEcsNumTypeBits);
 }
 

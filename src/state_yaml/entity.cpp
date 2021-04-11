@@ -16,7 +16,6 @@
 
 #include "entity.hpp"
 
-#include <foe/ecs/groups.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -67,7 +66,7 @@ auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node {
     YAML::Node outNode;
 
     // *OPTIONAL* GroupID if *not* the persistent group
-    if (foeEcsGetGroupID(id) != foeEcsGroups::Persistent) {
+    if (foeEcsGetGroupID(id) != foePersistentGroup) {
         yaml_write_required("group_id", foeEcsGetNormalizedGroupID(id), outNode);
     }
 
