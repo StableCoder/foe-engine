@@ -17,25 +17,23 @@
 #include "group_translation.hpp"
 
 #include "../group_data.hpp"
+#include "importer_base.hpp"
 
-bool foeGroupTranslation::generateTranslations(std::vector<std::string> const &dependencies,
-                                               foeGroupData *pGroupData) {
+bool foeGroupTranslation::generateTranslations(
+    std::vector<foeImporterDependencySet> const &dependencies, foeGroupData *pGroupData) {
     std::vector<Set> newSets;
     newSets.reserve(dependencies.size());
 
-    foeIdGroup idGroup = 0;
     for (auto const &it : dependencies) {
-        auto *targetGroup = pGroupData->indices(it);
+        auto *targetGroup = pGroupData->indices(it.name);
 
         if (targetGroup == nullptr)
             return false;
 
         newSets.emplace_back(foeGroupTranslation::Set{
-            .normalizedSourceGroup = idGroup,
+            .sourceGroupValue = it.groupValue,
             .target = targetGroup->groupID(),
         });
-
-        ++idGroup;
     }
 
     mTranslations = std::move(newSets);
@@ -45,7 +43,7 @@ bool foeGroupTranslation::generateTranslations(std::vector<std::string> const &d
 
 bool foeGroupTranslation::targetFromNormalizedGroup(foeIdGroup normalizedGroup, foeIdGroup &group) {
     for (auto const &it : mTranslations) {
-        if (it.normalizedSourceGroup == normalizedGroup) {
+        if (it.sourceGroupValue == normalizedGroup) {
             group = it.target;
             return true;
         }

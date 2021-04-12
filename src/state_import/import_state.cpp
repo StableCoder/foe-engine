@@ -31,7 +31,7 @@ void foeImportState::removeImporterGenerator(
 namespace {
 
 bool generateDependencyImporters(
-    std::vector<std::string> const &dependencies,
+    std::vector<foeImporterDependencySet> const &dependencies,
     foeSearchPaths *pSearchPaths,
     std::vector<foeImporterBase *(*)(foeIdGroup, std::filesystem::path)> const &importerGenerators,
     std::vector<std::unique_ptr<foeImporterBase>> &importers) {
@@ -39,19 +39,17 @@ bool generateDependencyImporters(
 
     auto pathReader = pSearchPaths->getReader();
 
-    foeIdGroup groupValue = 0;
     for (auto const &depIt : dependencies) {
         for (auto searchPath : *pathReader.searchPaths()) {
             for (auto dirIt : std::filesystem::directory_iterator{searchPath}) {
                 auto path = dirIt.path();
 
-                if (path.stem() == depIt) {
+                if (path.stem() == depIt.name) {
                     foeImporterBase *pImporter{nullptr};
                     for (auto it : importerGenerators) {
-                        pImporter = it(foeIdValueToGroup(groupValue), path);
+                        pImporter = it(foeIdValueToGroup(depIt.groupValue), path);
                         if (pImporter != nullptr) {
                             newImporters.emplace_back(pImporter);
-                            ++groupValue;
                             goto DEPENDENCY_FOUND;
                         }
                     }
@@ -93,7 +91,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     }
 
     // Get the list of dependencies
-    std::vector<std::string> dependencies;
+    std::vector<foeImporterDependencySet> dependencies;
     bool pass = persistentImporter->getDependencies(dependencies);
     if (!pass)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
@@ -101,7 +99,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     // Check for duplicate dependencies
     for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
         for (auto innerIt = it + 1; innerIt != dependencies.end(); ++innerIt) {
-            if (*innerIt == *it) {
+            if (innerIt->name == it->name) {
                 FOE_LOG(General, Error, "Duplicate dependency '{}' detected")
                 return FOE_STATE_IMPORT_ERROR_DUPLICATE_DEPENDENCIES;
             }
@@ -118,22 +116,22 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     { // Check transitive dependencies
         auto pImporter = dependencyImporters.begin();
         for (auto depIt = dependencies.begin(); depIt != dependencies.end(); ++depIt, ++pImporter) {
-            std::vector<std::string> transitiveDependencies;
+            std::vector<foeImporterDependencySet> transitiveDependencies;
             pass = pImporter->get()->getDependencies(transitiveDependencies);
             if (!pass) {
                 FOE_LOG(General, Error, "Failed to import sub-dependencies of the '{}' dependency",
-                        *depIt)
+                        depIt->name)
                 return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
             }
 
             // Check that all required transitive dependencies are available *before* it is loaded,
             // and in the correct order
             auto checkIt = dependencies.begin();
-            for (auto transIt : transitiveDependencies) {
+            for (auto const &transIt : transitiveDependencies) {
                 bool depFound{false};
 
                 for (; checkIt != depIt; ++checkIt) {
-                    if (*checkIt == transIt) {
+                    if (checkIt->name == transIt.name) {
                         depFound = true;
                         break;
                     }
@@ -142,7 +140,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
                 if (!depFound) {
                     FOE_LOG(General, Error,
                             "Could not find transitive dependency '{}' for dependency group '{}'",
-                            transIt, *depIt)
+                            transIt.name, depIt->name)
                     return FOE_STATE_IMPORT_ERROR_TRANSITIVE_DEPENDENCIES_UNFULFILLED;
                 }
             }
@@ -153,7 +151,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
         foeIdGroup groupValue = 0;
         for (auto &it : dependencyImporters) {
             // Setup importer translations
-            std::vector<std::string> groupDependencies;
+            std::vector<foeImporterDependencySet> groupDependencies;
             it->getDependencies(groupDependencies);
 
             foeGroupTranslation newTranslation;
@@ -179,8 +177,8 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     }
 
     // Persistent Group Index Data
-    bool retVal =
-        persistentImporter->getGroupIndexData(*pSimulationSet->groupData.persistentIndices());
+    bool retVal = pSimulationSet->groupData.persistentImporter()->getGroupIndexData(
+        *pSimulationSet->groupData.persistentIndices());
     if (!retVal) {
         return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
     }

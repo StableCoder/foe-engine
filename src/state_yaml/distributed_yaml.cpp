@@ -123,12 +123,13 @@ bool foeDistributedYamlImporter::addImporter(std::string type,
 namespace {
 
 bool importDependenciesFromNode(YAML::Node const &dependenciesNode,
-                                std::vector<std::string> &dependencies) {
+                                std::vector<foeImporterDependencySet> &dependencies) {
     try {
         for (auto it = dependenciesNode.begin(); it != dependenciesNode.end(); ++it) {
-            std::string newDependency;
+            foeImporterDependencySet newDependency;
 
-            yaml_read_required("name", *it, newDependency);
+            yaml_read_required("name", *it, newDependency.name);
+            yaml_read_required("group_id", *it, newDependency.groupValue);
 
             dependencies.emplace_back(newDependency);
         }
@@ -150,7 +151,8 @@ void foeDistributedYamlImporter::setGroupTranslation(foeGroupTranslation &&group
     mGroupTranslation = std::move(groupTranslation);
 }
 
-bool foeDistributedYamlImporter::getDependencies(std::vector<std::string> &dependencies) {
+bool foeDistributedYamlImporter::getDependencies(
+    std::vector<foeImporterDependencySet> &dependencies) {
     YAML::Node node;
     if (!openYamlFile(mRootDir / dependenciesFilePath, node))
         return false;

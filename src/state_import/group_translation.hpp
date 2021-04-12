@@ -24,18 +24,19 @@
 #include <vector>
 
 class foeGroupData;
+struct foeImporterDependencySet;
 
 class foeGroupTranslation {
   public:
-    FOE_ECS_EXPORT bool generateTranslations(std::vector<std::string> const &dependencies,
-                                             foeGroupData *pGroupData);
+    FOE_ECS_EXPORT bool generateTranslations(
+        std::vector<foeImporterDependencySet> const &dependencies, foeGroupData *pGroupData);
 
     FOE_ECS_EXPORT
     bool targetFromNormalizedGroup(foeIdGroup normalizedGroup, foeIdGroup &group);
 
   private:
     struct Set {
-        foeIdGroup normalizedSourceGroup;
+        foeIdGroup sourceGroupValue;
         foeIdGroup target;
     };
 

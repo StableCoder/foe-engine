@@ -10,6 +10,11 @@ class foeIdIndexGenerator;
 struct StatePools;
 struct foeResourceCreateInfoBase;
 
+struct foeImporterDependencySet {
+    std::string name;
+    foeIdGroup groupValue;
+};
+
 class foeImporterBase {
   public:
     virtual ~foeImporterBase() = default;
@@ -18,7 +23,7 @@ class foeImporterBase {
     virtual std::string name() const noexcept = 0;
     virtual void setGroupTranslation(foeGroupTranslation &&groupTranslation) = 0;
 
-    virtual bool getDependencies(std::vector<std::string> &dependencies) = 0;
+    virtual bool getDependencies(std::vector<foeImporterDependencySet> &dependencies) = 0;
     virtual bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(StatePools *pStatePools) = 0;
 
