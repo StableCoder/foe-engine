@@ -23,12 +23,12 @@
 #include <filesystem>
 #include <vector>
 
-class foeEcsGroups;
+class foeGroupData;
 
 class foeGroupTranslation {
   public:
     FOE_ECS_EXPORT bool generateTranslations(std::vector<std::string> const &dependencies,
-                                             foeEcsGroups &idGroups);
+                                             foeGroupData *pGroupData);
 
     FOE_ECS_EXPORT
     bool targetFromNormalizedGroup(foeIdGroup normalizedGroup, foeIdGroup &group);

@@ -7,7 +7,6 @@
 #include <vector>
 
 class foeIdIndexGenerator;
-class foeEcsGroups;
 struct StatePools;
 struct foeResourceCreateInfoBase;
 
@@ -21,7 +20,7 @@ class foeImporterBase {
 
     virtual bool getDependencies(std::vector<std::string> &dependencies) = 0;
     virtual bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) = 0;
-    virtual bool importStateData(foeEcsGroups *pGroups, StatePools *pStatePools) = 0;
+    virtual bool importStateData(StatePools *pStatePools) = 0;
 
     virtual bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) = 0;
 };

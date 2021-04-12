@@ -16,16 +16,16 @@
 
 #include "group_translation.hpp"
 
-#include <foe/ecs/groups.hpp>
+#include "../group_data.hpp"
 
 bool foeGroupTranslation::generateTranslations(std::vector<std::string> const &dependencies,
-                                               foeEcsGroups &idGroups) {
+                                               foeGroupData *pGroupData) {
     std::vector<Set> newSets;
     newSets.reserve(dependencies.size());
 
     foeIdGroup idGroup = 0;
     for (auto const &it : dependencies) {
-        auto *targetGroup = idGroups.group(it);
+        auto *targetGroup = pGroupData->indices(it);
 
         if (targetGroup == nullptr)
             return false;

@@ -2,13 +2,13 @@
 #define SIMULATION_SET_HPP
 
 #include <foe/ecs/editor_name_map.hpp>
-#include <foe/ecs/groups.hpp>
 
+#include "group_data.hpp"
 #include "resource_pools.hpp"
 #include "state_pools.hpp"
 
 struct SimulationSet {
-    foeEcsGroups groups;
+    foeGroupData groupData;
     foeEditorNameMap nameMap;
     // DataImporters importers;
 

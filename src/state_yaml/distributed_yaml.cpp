@@ -176,7 +176,7 @@ bool foeDistributedYamlImporter::getGroupIndexData(foeIdIndexGenerator &ecsGroup
     return true;
 }
 
-bool foeDistributedYamlImporter::importStateData(foeEcsGroups *pGroups, StatePools *pStatePools) {
+bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / stateDirectoryPath}) {
         FOE_LOG(General, Info, "Visiting: {}", dirIt.path().string())

@@ -39,7 +39,7 @@ bool generateDependencyImporters(
 
     auto pathReader = pSearchPaths->getReader();
 
-    foeIdGroup idGroup = 0;
+    foeIdGroup groupValue = 0;
     for (auto const &depIt : dependencies) {
         for (auto searchPath : *pathReader.searchPaths()) {
             for (auto dirIt : std::filesystem::directory_iterator{searchPath}) {
@@ -48,10 +48,10 @@ bool generateDependencyImporters(
                 if (path.stem() == depIt) {
                     foeImporterBase *pImporter{nullptr};
                     for (auto it : importerGenerators) {
-                        pImporter = it(idGroup, path);
+                        pImporter = it(foeIdValueToGroup(groupValue), path);
                         if (pImporter != nullptr) {
                             newImporters.emplace_back(pImporter);
-                            ++idGroup;
+                            ++groupValue;
                             goto DEPENDENCY_FOUND;
                         }
                     }
@@ -78,13 +78,15 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     auto pSimulationSet = std::make_unique<SimulationSet>();
 
     // Find the importer for the starting path
-    foeImporterBase *pImporter{nullptr};
+    std::unique_ptr<foeImporterBase> persistentImporter;
     for (auto it : mImporterGenerators) {
-        pImporter = it(foeIdPersistentGroup, stateDataPath);
-        if (pImporter != nullptr)
+        auto *pImporter = it(foeIdPersistentGroup, stateDataPath);
+        if (pImporter != nullptr) {
+            persistentImporter.reset(pImporter);
             break;
+        }
     }
-    if (pImporter == nullptr) {
+    if (persistentImporter == nullptr) {
         FOE_LOG(General, Error, "Could not find importer for state data at path: {}",
                 stateDataPath.string())
         return FOE_STATE_IMPORT_ERROR_NO_IMPORTER;
@@ -92,24 +94,9 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
 
     // Get the list of dependencies
     std::vector<std::string> dependencies;
-    bool pass = pImporter->getDependencies(dependencies);
+    bool pass = persistentImporter->getDependencies(dependencies);
     if (!pass)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
-
-    { // Setup the ECS Groups
-        foeIdGroup idGroup = 0;
-        for (auto const &it : dependencies) {
-            auto newGroupIndices =
-                std::make_unique<foeIdIndexGenerator>(it, foeIdValueToGroup(idGroup));
-
-            auto success = pSimulationSet->groups.addGroup(std::move(newGroupIndices));
-            if (!success) {
-                FOE_LOG(General, Error, "Could not setup Group '{}'", it);
-                return FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE;
-            }
-            ++idGroup;
-        }
-    }
 
     // Check for duplicate dependencies
     for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
@@ -168,15 +155,35 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
         it->getDependencies(groupDependencies);
 
         foeGroupTranslation newTranslation;
-        newTranslation.generateTranslations(groupDependencies, pSimulationSet->groups);
+        newTranslation.generateTranslations(groupDependencies, &pSimulationSet->groupData);
 
         it->setGroupTranslation(std::move(newTranslation));
     }
 
     // Persistent Group Index Data
-    bool retVal = pImporter->getGroupIndexData(*pSimulationSet->groups.persistentGroup());
+    bool retVal =
+        persistentImporter->getGroupIndexData(*pSimulationSet->groupData.persistentIndices());
     if (!retVal) {
         return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
+    }
+
+    { // Setup the ECS Groups
+        foeIdGroup groupValue = 0;
+        for (auto &it : dependencyImporters) {
+            std::string name{it->name()};
+            auto newGroupIndices =
+                std::make_unique<foeIdIndexGenerator>(name, foeIdValueToGroup(groupValue));
+
+            auto success = pSimulationSet->groupData.addDynamicGroup(std::move(newGroupIndices),
+                                                                     std::move(it));
+            if (!success) {
+                FOE_LOG(General, Error, "Could not setup Group '{}'", name);
+                return FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE;
+            }
+            ++groupValue;
+        }
+
+        pSimulationSet->groupData.setPersistentImporter(std::move(persistentImporter));
     }
 
     // Load Persistent resource definitions
@@ -184,12 +191,15 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     // Load dependency resource definitions
 
     // Importing Dependency State Data
-    for (auto const &it : dependencyImporters) {
-        it->importStateData(&pSimulationSet->groups, &pSimulationSet->state);
+    for (foeIdGroup groupValue = 0; groupValue < foeIdMaxDynamicGroups; ++groupValue) {
+        auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
+        if (pGroupImporter != nullptr) {
+            pGroupImporter->importStateData(&pSimulationSet->state);
+        }
     }
 
     // Importing Persistent State Data
-    pImporter->importStateData(&pSimulationSet->groups, &pSimulationSet->state);
+    pSimulationSet->groupData.persistentImporter()->importStateData(&pSimulationSet->state);
 
     // Successfully returning
     *ppSimulationSet = pSimulationSet.release();

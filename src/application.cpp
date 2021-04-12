@@ -107,8 +107,8 @@ int Application::initialize(int argc, char **argv) {
     }
 
     // Groups/Entities
-    cameraID = simulationSet.groups.persistentGroup()->generate();
-    renderID = simulationSet.groups.persistentGroup()->generate();
+    cameraID = simulationSet.groupData.persistentIndices()->generate();
+    renderID = simulationSet.groupData.persistentIndices()->generate();
 
     simulationSet.state.position[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),

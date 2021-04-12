@@ -32,7 +32,7 @@ class DummyImporter : public foeImporterBase {
 
     bool getDependencies(std::vector<std::string> &dependencies) final { return false; }
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
-    bool importStateData(foeEcsGroups *pGroups, StatePools *pStatePools) final { return false; }
+    bool importStateData(StatePools *pStatePools) final { return false; }
 
     bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) final {
         return mResReturn;

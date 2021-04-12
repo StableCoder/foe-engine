@@ -41,7 +41,7 @@ class foeDistributedYamlImporter : public foeImporterBase {
 
     bool getDependencies(std::vector<std::string> &dependencies) override;
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) override;
-    bool importStateData(foeEcsGroups *pGroups, StatePools *pStatePools) override;
+    bool importStateData(StatePools *pStatePools) override;
 
     bool addImporter(std::string type, uint32_t version, ImportFunc function);
     bool removeImporter(std::string type, uint32_t version);
