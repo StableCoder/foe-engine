@@ -16,7 +16,6 @@
 
 #include "distributed_yaml.hpp"
 
-#include <foe/ecs/groups.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>

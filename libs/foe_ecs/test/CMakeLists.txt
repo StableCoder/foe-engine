@@ -2,7 +2,7 @@
 prepare_catch(COMPILED_CATCH)
 
 # Declaration
-add_executable(test_foe_ecs editor_name_map.cpp entity_id.cpp groups.cpp
+add_executable(test_foe_ecs editor_name_map.cpp entity_id.cpp
                             index_generator.cpp)
 add_test(NAME FoE-ECS-Test COMMAND test_foe_ecs)
 
