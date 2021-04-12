@@ -149,27 +149,19 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
         }
     }
 
-    // Setup importer translations
-    for (auto const &it : dependencyImporters) {
-        std::vector<std::string> groupDependencies;
-        it->getDependencies(groupDependencies);
-
-        foeGroupTranslation newTranslation;
-        newTranslation.generateTranslations(groupDependencies, &pSimulationSet->groupData);
-
-        it->setGroupTranslation(std::move(newTranslation));
-    }
-
-    // Persistent Group Index Data
-    bool retVal =
-        persistentImporter->getGroupIndexData(*pSimulationSet->groupData.persistentIndices());
-    if (!retVal) {
-        return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
-    }
-
     { // Setup the ECS Groups
         foeIdGroup groupValue = 0;
         for (auto &it : dependencyImporters) {
+            // Setup importer translations
+            std::vector<std::string> groupDependencies;
+            it->getDependencies(groupDependencies);
+
+            foeGroupTranslation newTranslation;
+            newTranslation.generateTranslations(groupDependencies, &pSimulationSet->groupData);
+
+            it->setGroupTranslation(std::move(newTranslation));
+
+            // Add to GroupData
             std::string name{it->name()};
             auto newGroupIndices =
                 std::make_unique<foeIdIndexGenerator>(name, foeIdValueToGroup(groupValue));
@@ -184,6 +176,13 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
         }
 
         pSimulationSet->groupData.setPersistentImporter(std::move(persistentImporter));
+    }
+
+    // Persistent Group Index Data
+    bool retVal =
+        persistentImporter->getGroupIndexData(*pSimulationSet->groupData.persistentIndices());
+    if (!retVal) {
+        return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
     }
 
     // Load Persistent resource definitions
