@@ -48,9 +48,6 @@ class foeDistributedYamlImporter : public foeImporterBase {
     bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) override;
 
   public:
-    static constexpr std::string_view cResourceSubDir = "resources";
-    static constexpr std::string_view cStateSubDir = "state_data";
-
     std::filesystem::path mRootDir;
 
     using ImportKey = std::tuple<std::string, uint32_t>;

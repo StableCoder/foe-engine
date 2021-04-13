@@ -16,6 +16,7 @@
 
 #include "distributed_yaml.hpp"
 
+#include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -159,8 +160,6 @@ bool foeDistributedYamlImporter::getDependencies(
     return importDependenciesFromNode(node, dependencies);
 }
 
-#include <foe/ecs/yaml/index_generator.hpp>
-
 bool foeDistributedYamlImporter::getGroupIndexData(foeIdIndexGenerator &ecsGroup) {
     YAML::Node node;
     if (!openYamlFile(mRootDir / indexDataFilePath, node))
@@ -229,13 +228,10 @@ bool foeDistributedYamlImporter::removeImporter(std::string type, uint32_t versi
     return true;
 }
 
-#include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
-
 bool foeDistributedYamlImporter::getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) {
     YAML::Node rootNode;
     for (auto &dirEntry :
-         std::filesystem::recursive_directory_iterator{mRootDir / cResourceSubDir}) {
+         std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
         if (dirEntry.is_regular_file()) {
             foeId fileId = parseFileStem(dirEntry);
 
