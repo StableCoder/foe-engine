@@ -40,7 +40,7 @@ bool foeImagePool::add(foeImage *pImage) {
     return true;
 }
 
-foeImage *foeImagePool::find(foeResourceID id) {
+foeImage *foeImagePool::find(foeId id) {
     foeImage *pImage{nullptr};
 
     mSync.lock_shared();

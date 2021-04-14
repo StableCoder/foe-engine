@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_ARMATURE_HPP
 #define FOE_RESOURCE_ARMATURE_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/resource/create_info_base.hpp>
@@ -44,10 +44,10 @@ struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
 
 struct foeArmature {
   public:
-    FOE_RES_EXPORT foeArmature(foeResourceID id, foeArmatureLoader *pLoader);
+    FOE_RES_EXPORT foeArmature(foeId id, foeArmatureLoader *pLoader);
     FOE_RES_EXPORT ~foeArmature();
 
-    FOE_RES_EXPORT foeResourceID getID() const noexcept;
+    FOE_RES_EXPORT foeId getID() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -65,7 +65,7 @@ struct foeArmature {
     friend foeArmatureLoader;
 
     // General
-    foeResourceID id;
+    foeId id;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

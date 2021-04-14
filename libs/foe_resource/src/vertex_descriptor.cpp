@@ -21,7 +21,7 @@
 
 #include "log.hpp"
 
-foeVertexDescriptor::foeVertexDescriptor(foeResourceID id, foeVertexDescriptorLoader *pLoader) :
+foeVertexDescriptor::foeVertexDescriptor(foeId id, foeVertexDescriptorLoader *pLoader) :
     id{id}, pLoader{pLoader} {}
 
 foeVertexDescriptor::~foeVertexDescriptor() {
@@ -37,7 +37,7 @@ foeVertexDescriptor::~foeVertexDescriptor() {
     }
 }
 
-foeResourceID foeVertexDescriptor::getID() const noexcept { return id; }
+foeId foeVertexDescriptor::getID() const noexcept { return id; }
 
 foeResourceLoadState foeVertexDescriptor::getLoadState() const noexcept { return loadState; }
 

@@ -40,7 +40,7 @@ bool foeArmaturePool::add(foeArmature *pArmature) {
     return true;
 }
 
-foeArmature *foeArmaturePool::find(foeResourceID id) {
+foeArmature *foeArmaturePool::find(foeId id) {
     foeArmature *pArmature{nullptr};
 
     mSync.lock_shared();

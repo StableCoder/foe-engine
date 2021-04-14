@@ -33,7 +33,7 @@ foeVertexDescriptorLoader::~foeVertexDescriptorLoader() {
 std::error_code foeVertexDescriptorLoader::initialize(
     foeShaderLoader *pShaderLoader,
     foeShaderPool *pShaderPool,
-    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
+    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -130,7 +130,7 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
     }
 
     { // Resource Dependencies
-        if (createInfo->vertexShader != FOE_INVALID_RESOURCE) {
+        if (createInfo->vertexShader != FOE_INVALID_ID) {
             newSubResources.pVertex = mShaderPool->find(createInfo->vertexShader);
             if (newSubResources.pVertex == nullptr) {
                 newSubResources.pVertex = new foeShader{createInfo->vertexShader, mShaderLoader};

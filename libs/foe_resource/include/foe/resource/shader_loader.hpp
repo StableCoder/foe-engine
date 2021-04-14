@@ -35,7 +35,7 @@ class foeShaderLoader {
 
     FOE_RES_EXPORT std::error_code initialize(
         foeGfxSession gfxSession,
-        std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
+        std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -50,7 +50,7 @@ class foeShaderLoader {
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
-    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> mImportFunction;
+    std::function<bool(foeId, foeResourceCreateInfoBase **)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 

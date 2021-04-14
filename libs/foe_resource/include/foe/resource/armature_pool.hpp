@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_ARMATURE_POOL_HPP
 #define FOE_RESOURCE_ARMATURE_POOL_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/resource/export.h>
 
 #include <shared_mutex>
@@ -30,7 +30,7 @@ class foeArmaturePool {
     FOE_RES_EXPORT ~foeArmaturePool();
 
     FOE_RES_EXPORT bool add(foeArmature *pArmature);
-    FOE_RES_EXPORT foeArmature *find(foeResourceID id);
+    FOE_RES_EXPORT foeArmature *find(foeId id);
 
     FOE_RES_EXPORT void unloadAll();
 

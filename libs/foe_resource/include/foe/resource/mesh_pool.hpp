@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_MESH_POOL_HPP
 #define FOE_RESOURCE_MESH_POOL_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/resource/export.h>
 
 #include <shared_mutex>
@@ -30,7 +30,7 @@ class foeMeshPool {
     FOE_RES_EXPORT ~foeMeshPool();
 
     FOE_RES_EXPORT bool add(foeMesh *pMesh);
-    FOE_RES_EXPORT foeMesh *find(foeResourceID id);
+    FOE_RES_EXPORT foeMesh *find(foeId id);
 
     FOE_RES_EXPORT void unloadAll();
 

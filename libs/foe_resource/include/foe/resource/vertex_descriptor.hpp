@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_VERTEX_DESCRIPTOR_HPP
 #define FOE_RESOURCE_VERTEX_DESCRIPTOR_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
 #include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
@@ -31,10 +31,10 @@ class foeShader;
 class foeVertexDescriptorLoader;
 
 struct foeVertexDescriptorCreateInfo : public foeResourceCreateInfoBase {
-    foeResourceID vertexShader;
-    foeResourceID tessellationControlShader;
-    foeResourceID tessellationEvaluationShader;
-    foeResourceID geometryShader;
+    foeId vertexShader;
+    foeId tessellationControlShader;
+    foeId tessellationEvaluationShader;
+    foeId geometryShader;
     VkPipelineVertexInputStateCreateInfo vertexInputSCI;
     std::vector<VkVertexInputBindingDescription> inputBindings;
     std::vector<VkVertexInputAttributeDescription> inputAttributes;
@@ -44,10 +44,10 @@ struct foeVertexDescriptorCreateInfo : public foeResourceCreateInfoBase {
 
 class foeVertexDescriptor {
   public:
-    FOE_RES_EXPORT foeVertexDescriptor(foeResourceID id, foeVertexDescriptorLoader *pLoader);
+    FOE_RES_EXPORT foeVertexDescriptor(foeId id, foeVertexDescriptorLoader *pLoader);
     FOE_RES_EXPORT ~foeVertexDescriptor();
 
-    FOE_RES_EXPORT foeResourceID getID() const noexcept;
+    FOE_RES_EXPORT foeId getID() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -90,7 +90,7 @@ class foeVertexDescriptor {
     };
 
     // General
-    foeResourceID id;
+    foeId id;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

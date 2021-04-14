@@ -40,7 +40,7 @@ bool foeMaterialPool::add(foeMaterial *pMaterial) {
     return true;
 }
 
-foeMaterial *foeMaterialPool::find(foeResourceID id) {
+foeMaterial *foeMaterialPool::find(foeId id) {
     foeMaterial *pMaterial{nullptr};
 
     mSync.lock_shared();

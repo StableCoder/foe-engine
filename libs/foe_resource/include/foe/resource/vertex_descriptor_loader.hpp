@@ -37,7 +37,7 @@ class foeVertexDescriptorLoader {
     FOE_RES_EXPORT std::error_code initialize(
         foeShaderLoader *pShaderLoader,
         foeShaderPool *pShaderPool,
-        std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
+        std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -53,7 +53,7 @@ class foeVertexDescriptorLoader {
     foeShaderLoader *mShaderLoader{nullptr};
     foeShaderPool *mShaderPool{nullptr};
 
-    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> mImportFunction;
+    std::function<bool(foeId, foeResourceCreateInfoBase **)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 

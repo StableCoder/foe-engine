@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_IMAGE_HPP
 #define FOE_RESOURCE_IMAGE_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/vk/image.hpp>
 #include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
@@ -39,10 +39,10 @@ struct foeImageCreateInfo : public foeResourceCreateInfoBase {
 
 class foeImage {
   public:
-    FOE_RES_EXPORT foeImage(foeResourceID id, foeImageLoader *pLoader);
+    FOE_RES_EXPORT foeImage(foeId id, foeImageLoader *pLoader);
     FOE_RES_EXPORT ~foeImage();
 
-    FOE_RES_EXPORT foeResourceID getID() const noexcept;
+    FOE_RES_EXPORT foeId getID() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -61,7 +61,7 @@ class foeImage {
     friend foeMaterialLoader;
 
     // General
-    foeResourceID id;
+    foeId id;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

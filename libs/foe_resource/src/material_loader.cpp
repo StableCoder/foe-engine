@@ -42,7 +42,7 @@ std::error_code foeMaterialLoader::initialize(
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
-    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
+    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -231,7 +231,7 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
 
     { // Resource Dependencies
         // Fragment Shader
-        if (createInfo->fragmentShader != FOE_INVALID_RESOURCE) {
+        if (createInfo->fragmentShader != FOE_INVALID_ID) {
             subResources.pFragmentShader = mShaderPool->find(createInfo->fragmentShader);
             if (subResources.pFragmentShader == nullptr) {
                 subResources.pFragmentShader =
@@ -247,7 +247,7 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
         }
 
         // Image
-        if (createInfo->image != FOE_INVALID_RESOURCE) {
+        if (createInfo->image != FOE_INVALID_ID) {
             subResources.pImage = mImagePool->find(createInfo->image);
 
             if (subResources.pImage == nullptr) {

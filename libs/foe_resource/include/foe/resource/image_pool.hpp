@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_IMAGE_POOL_HPP
 #define FOE_RESOURCE_IMAGE_POOL_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/resource/export.h>
 
 #include <shared_mutex>
@@ -30,7 +30,7 @@ class foeImagePool {
     FOE_RES_EXPORT ~foeImagePool();
 
     FOE_RES_EXPORT bool add(foeImage *pImage);
-    FOE_RES_EXPORT foeImage *find(foeResourceID id);
+    FOE_RES_EXPORT foeImage *find(foeId id);
 
     FOE_RES_EXPORT void unloadAll();
 

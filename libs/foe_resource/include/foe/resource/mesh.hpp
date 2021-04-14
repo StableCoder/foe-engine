@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_MESH_HPP
 #define FOE_RESOURCE_MESH_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/mesh.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
@@ -54,10 +54,10 @@ struct foeMeshCreateInfo : public foeResourceCreateInfoBase {
 
 struct foeMesh {
   public:
-    FOE_RES_EXPORT foeMesh(foeResourceID id, foeMeshLoader *pLoader);
+    FOE_RES_EXPORT foeMesh(foeId id, foeMeshLoader *pLoader);
     FOE_RES_EXPORT ~foeMesh();
 
-    FOE_RES_EXPORT foeResourceID getID() const noexcept;
+    FOE_RES_EXPORT foeId getID() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -75,7 +75,7 @@ struct foeMesh {
     friend foeMeshLoader;
 
     // General
-    foeResourceID id;
+    foeId id;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

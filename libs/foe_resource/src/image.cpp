@@ -20,7 +20,7 @@
 
 #include "log.hpp"
 
-foeImage::foeImage(foeResourceID id, foeImageLoader *pLoader) : id{id}, pLoader{pLoader} {}
+foeImage::foeImage(foeId id, foeImageLoader *pLoader) : id{id}, pLoader{pLoader} {}
 
 foeImage::~foeImage() {
     if (useCount > 0) {
@@ -34,7 +34,7 @@ foeImage::~foeImage() {
     }
 }
 
-foeResourceID foeImage::getID() const noexcept { return id; }
+foeId foeImage::getID() const noexcept { return id; }
 
 foeResourceLoadState foeImage::getLoadState() const noexcept { return loadState; }
 

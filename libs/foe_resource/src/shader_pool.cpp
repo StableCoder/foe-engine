@@ -40,7 +40,7 @@ bool foeShaderPool::add(foeShader *pShader) {
     return true;
 }
 
-foeShader *foeShaderPool::find(foeResourceID id) {
+foeShader *foeShaderPool::find(foeId id) {
     foeShader *pShader{nullptr};
 
     mSync.lock_shared();

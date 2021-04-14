@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_SHADER_HPP
 #define FOE_RESOURCE_SHADER_HPP
 
-#include <foe/ecs/resource_id.hpp>
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/shader.hpp>
 #include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
@@ -42,10 +42,10 @@ struct foeShaderCreateInfo : public foeResourceCreateInfoBase {
 
 class foeShader {
   public:
-    FOE_RES_EXPORT foeShader(foeResourceID id, foeShaderLoader *pLoader);
+    FOE_RES_EXPORT foeShader(foeId id, foeShaderLoader *pLoader);
     FOE_RES_EXPORT ~foeShader();
 
-    FOE_RES_EXPORT foeResourceID getID() const noexcept;
+    FOE_RES_EXPORT foeId getID() const noexcept;
     FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
 
     FOE_RES_EXPORT int incrementRefCount() noexcept;
@@ -65,7 +65,7 @@ class foeShader {
     friend foeShaderLoader;
 
     // General
-    foeResourceID id;
+    foeId id;
     std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
     std::atomic_int refCount{0};
     std::atomic_int useCount{0};

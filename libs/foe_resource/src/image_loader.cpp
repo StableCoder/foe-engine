@@ -35,7 +35,7 @@ foeImageLoader::~foeImageLoader() {
 
 std::error_code foeImageLoader::initialize(
     foeGfxSession session,
-    std::function<bool(foeResourceID, foeResourceCreateInfoBase **)> importFunction,
+    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;

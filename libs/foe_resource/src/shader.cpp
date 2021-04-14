@@ -20,7 +20,7 @@
 
 #include "log.hpp"
 
-foeShader::foeShader(foeResourceID id, foeShaderLoader *pLoader) : id{id}, pLoader{pLoader} {}
+foeShader::foeShader(foeId id, foeShaderLoader *pLoader) : id{id}, pLoader{pLoader} {}
 
 foeShader::~foeShader() {
     if (useCount > 0) {
@@ -34,7 +34,7 @@ foeShader::~foeShader() {
     }
 }
 
-foeResourceID foeShader::getID() const noexcept { return id; }
+foeId foeShader::getID() const noexcept { return id; }
 
 foeResourceLoadState foeShader::getLoadState() const noexcept { return loadState; }
 

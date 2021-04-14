@@ -40,7 +40,7 @@ bool foeMeshPool::add(foeMesh *pMesh) {
     return true;
 }
 
-foeMesh *foeMeshPool::find(foeResourceID id) {
+foeMesh *foeMeshPool::find(foeId id) {
     foeMesh *pMesh{nullptr};
 
     mSync.lock_shared();

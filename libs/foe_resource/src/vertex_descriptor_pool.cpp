@@ -40,7 +40,7 @@ bool foeVertexDescriptorPool::add(foeVertexDescriptor *pVertexDescriptor) {
     return true;
 }
 
-foeVertexDescriptor *foeVertexDescriptorPool::find(foeResourceID resource) {
+foeVertexDescriptor *foeVertexDescriptorPool::find(foeId resource) {
     foeVertexDescriptor *pVertexDescriptor{nullptr};
 
     mSync.lock_shared();
