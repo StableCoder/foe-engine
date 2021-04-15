@@ -14,16 +14,14 @@
     limitations under the License.
 */
 
-#ifndef IMPORT_STATE_HPP
-#define IMPORT_STATE_HPP
+#ifndef STATE_YAML_FUNCTION_REGISTRAR_HPP
+#define STATE_YAML_FUNCTION_REGISTRAR_HPP
 
-#include <filesystem>
+#include "../state_import/importers.hpp"
 
-class foeSearchPaths;
-struct SimulationSet;
+class foeYamlCoreResourceFunctionRegistrar : public foeImporterFunctionRegistrar {
+    bool registerFunctions(foeImporterGenerator *pGenerator) final;
+    bool deregisterFunctions(foeImporterGenerator *pGenerator) final;
+};
 
-auto importState(std::filesystem::path stateDataPath,
-                 foeSearchPaths *pSearchPaths,
-                 SimulationSet **ppSimulationSet) -> std::error_code;
-
-#endif // IMPORT_STATE_HPP
+#endif // STATE_YAML_FUNCTION_REGISTRAR_HPP

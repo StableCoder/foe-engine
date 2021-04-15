@@ -1,3 +1,19 @@
+/*
+    Copyright (C) 2021 George Cave.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 #include "import_state.hpp"
 
 #include <foe/log.hpp>
@@ -6,35 +22,13 @@
 #include "../simulation_set.hpp"
 #include "error_code.hpp"
 #include "importer_base.hpp"
-
-bool foeImportState::addImporterGenerator(
-    foeImporterBase *(*pGeneratorFunction)(foeIdGroup, std::filesystem::path)) {
-
-    for (auto it : mImporterGenerators) {
-        if (it == pGeneratorFunction)
-            return false;
-    }
-
-    mImporterGenerators.emplace_back(pGeneratorFunction);
-    return true;
-}
-
-void foeImportState::removeImporterGenerator(
-    foeImporterBase *(*pGeneratorFunction)(foeIdGroup, std::filesystem::path)) {
-
-    for (auto it = mImporterGenerators.begin(); it != mImporterGenerators.end(); ++it) {
-        if (*it == pGeneratorFunction)
-            it = mImporterGenerators.erase(it);
-    }
-}
+#include "importers.hpp"
 
 namespace {
 
-bool generateDependencyImporters(
-    std::vector<foeImporterDependencySet> const &dependencies,
-    foeSearchPaths *pSearchPaths,
-    std::vector<foeImporterBase *(*)(foeIdGroup, std::filesystem::path)> const &importerGenerators,
-    std::vector<std::unique_ptr<foeImporterBase>> &importers) {
+bool generateDependencyImporters(std::vector<foeImporterDependencySet> const &dependencies,
+                                 foeSearchPaths *pSearchPaths,
+                                 std::vector<std::unique_ptr<foeImporterBase>> &importers) {
     std::vector<std::unique_ptr<foeImporterBase>> newImporters;
 
     auto pathReader = pSearchPaths->getReader();
@@ -45,15 +39,12 @@ bool generateDependencyImporters(
                 auto path = dirIt.path();
 
                 if (path.stem() == depIt.name) {
-                    foeImporterBase *pImporter{nullptr};
-                    for (auto it : importerGenerators) {
-                        pImporter = it(foeIdValueToGroup(depIt.groupValue), path);
-                        if (pImporter != nullptr) {
-                            newImporters.emplace_back(pImporter);
-                            goto DEPENDENCY_FOUND;
-                        }
-                    }
-                    if (pImporter == nullptr) {
+                    std::unique_ptr<foeImporterBase> importer{
+                        createImporter(foeIdValueToGroup(depIt.groupValue), path)};
+                    if (importer != nullptr) {
+                        newImporters.emplace_back(std::move(importer));
+                        goto DEPENDENCY_FOUND;
+                    } else {
                         FOE_LOG(General, Error, "Failed to find importer for dependency at: {}",
                                 path.string())
                         return false;
@@ -70,20 +61,14 @@ bool generateDependencyImporters(
 
 } // namespace
 
-auto foeImportState::importState(std::filesystem::path stateDataPath,
-                                 foeSearchPaths *pSearchPaths,
-                                 SimulationSet **ppSimulationSet) -> std::error_code {
+auto importState(std::filesystem::path stateDataPath,
+                 foeSearchPaths *pSearchPaths,
+                 SimulationSet **ppSimulationSet) -> std::error_code {
     auto pSimulationSet = std::make_unique<SimulationSet>();
 
     // Find the importer for the starting path
-    std::unique_ptr<foeImporterBase> persistentImporter;
-    for (auto it : mImporterGenerators) {
-        auto *pImporter = it(foeIdPersistentGroup, stateDataPath);
-        if (pImporter != nullptr) {
-            persistentImporter.reset(pImporter);
-            break;
-        }
-    }
+    std::unique_ptr<foeImporterBase> persistentImporter{
+        createImporter(foeIdPersistentGroup, stateDataPath)};
     if (persistentImporter == nullptr) {
         FOE_LOG(General, Error, "Could not find importer for state data at path: {}",
                 stateDataPath.string())
@@ -108,8 +93,7 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
 
     // Generate importers for all of the dependencies
     std::vector<std::unique_ptr<foeImporterBase>> dependencyImporters;
-    pass = generateDependencyImporters(dependencies, pSearchPaths, mImporterGenerators,
-                                       dependencyImporters);
+    pass = generateDependencyImporters(dependencies, pSearchPaths, dependencyImporters);
     if (!pass)
         return FOE_STATE_IMPORT_ERROR_NO_IMPORTER;
 
@@ -184,8 +168,16 @@ auto foeImportState::importState(std::filesystem::path stateDataPath,
     }
 
     // Load Persistent resource definitions
+    for (foeIdGroup groupValue = 0; groupValue < foeIdMaxDynamicGroups; ++groupValue) {
+        auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
+        if (pGroupImporter != nullptr) {
+            pGroupImporter->importResourceDefinitions(&pSimulationSet->resources);
+        }
+    }
 
     // Load dependency resource definitions
+    pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
+        &pSimulationSet->resources);
 
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdMaxDynamicGroups; ++groupValue) {

@@ -41,6 +41,7 @@
 #include "settings.hpp"
 #include "simulation_set.hpp"
 #include "state_yaml/distributed_yaml.hpp"
+#include "state_yaml/distributed_yaml_generator.hpp"
 #include "vk_animation.hpp"
 
 #include <array>
@@ -77,7 +78,9 @@ struct Application {
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
 
     // Groups/Entities
-    foeDistributedYamlImporter yamlImporter{foeIdPersistentGroup, "data/state/theDataA"};
+    foeDistributedYamlImporterGenerator testGenerator;
+    foeDistributedYamlImporter yamlImporter{&testGenerator, foeIdPersistentGroup,
+                                            "data/state/theDataA"};
     foeId cameraID;
     foeId renderID;
 

@@ -23,25 +23,28 @@
 
 class DummyImporter : public foeImporterBase {
   public:
-    DummyImporter(std::string_view name, foeIdGroup group, bool resourceReturn = true) :
+    DummyImporter(std::string_view name, foeIdGroup group, void *resourceReturn = nullptr) :
         mName{name}, mGroup{group}, mResReturn{resourceReturn} {}
 
     foeIdGroup group() const noexcept final { return mGroup; }
     std::string name() const noexcept final { return mName; }
     void setGroupTranslation(foeGroupTranslation &&groupTranslation) final {}
 
-    bool getDependencies(std::vector<std::string> &dependencies) final { return false; }
+    bool getDependencies(std::vector<foeImporterDependencySet> &dependencies) final {
+        return false;
+    }
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool importStateData(StatePools *pStatePools) final { return false; }
 
-    bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) final {
-        return mResReturn;
+    bool importResourceDefinitions(ResourcePools *pResourcePools) { return false; }
+    foeResourceCreateInfoBase *getResource(foeId id) final {
+        return static_cast<foeResourceCreateInfoBase *>(mResReturn);
     }
 
   private:
     std::string mName;
     foeIdGroup mGroup;
-    bool mResReturn;
+    void *mResReturn;
 };
 
 TEST_CASE("foeGroupData - Initial State", "[foe]") {
@@ -274,15 +277,15 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
 
     SECTION("Persistent importer added") {
         SECTION("Returning true") {
-            auto persistentImporter =
-                std::make_unique<DummyImporter>("testPersistent", foeIdPersistentGroup);
+            auto persistentImporter = std::make_unique<DummyImporter>(
+                "testPersistent", foeIdPersistentGroup, static_cast<int *>(NULL) + 1);
             REQUIRE(test.setPersistentImporter(std::move(persistentImporter)));
 
             REQUIRE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));
         }
         SECTION("Returning false") {
             auto persistentImporter =
-                std::make_unique<DummyImporter>("testPersistent", foeIdPersistentGroup, false);
+                std::make_unique<DummyImporter>("testPersistent", foeIdPersistentGroup);
             REQUIRE(test.setPersistentImporter(std::move(persistentImporter)));
 
             REQUIRE_FALSE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));
@@ -292,7 +295,8 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
     SECTION("Dynamic importer added") {
         SECTION("Returning true") {
             auto testIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
-            auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
+            auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1),
+                                                                static_cast<int *>(NULL) + 1);
 
             REQUIRE(test.addDynamicGroup(std::move(testIndices), std::move(testImporter)));
 
@@ -300,7 +304,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
         }
         SECTION("Returning false") {
             auto testIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
-            auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1), false);
+            auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
 
             REQUIRE(test.addDynamicGroup(std::move(testIndices), std::move(testImporter)));
             REQUIRE_FALSE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));

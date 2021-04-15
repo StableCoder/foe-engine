@@ -21,6 +21,7 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+#include "distributed_yaml_generator.hpp"
 #include "entity.hpp"
 
 #include <string>
@@ -77,48 +78,11 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 
 } // namespace
 
-auto createDistributedYamlImporter(foeIdGroup group, std::filesystem::path stateDataPath)
-    -> foeImporterBase * {
-    if (std::filesystem::is_directory(stateDataPath) &&
-        // Dependencies
-        (std::filesystem::exists(stateDataPath / dependenciesFilePath) &&
-         std::filesystem::is_regular_file(stateDataPath / dependenciesFilePath)) &&
-        // Index Data
-        (std::filesystem::exists(stateDataPath / indexDataFilePath) &&
-         std::filesystem::is_regular_file(stateDataPath / indexDataFilePath)) &&
-        // Resources
-        (std::filesystem::exists(stateDataPath / resourcesDirectoryPath) &&
-         std::filesystem::is_directory(stateDataPath / resourcesDirectoryPath)) &&
-        // State
-        (std::filesystem::exists(stateDataPath / stateDirectoryPath) &&
-         std::filesystem::is_directory(stateDataPath / stateDirectoryPath))) {
-        return new foeDistributedYamlImporter{group, stateDataPath};
-    }
-
-    return nullptr;
-}
-
-foeDistributedYamlImporter::foeDistributedYamlImporter(foeIdGroup group,
-                                                       std::filesystem::path rootDir) :
-    mGroup{group}, mRootDir{std::move(rootDir)} {}
-
-bool foeDistributedYamlImporter::addImporter(std::string type,
-                                             uint32_t version,
-                                             ImportFunc function) {
-    auto key = std::make_tuple(type, version);
-
-    auto searchIt = mImportFunctions.find(key);
-    if (searchIt != mImportFunctions.end()) {
-        FOE_LOG(General, Error,
-                "Could not add DistributedYamlImporter function for {}:{}, as it already exists",
-                type, version);
-        return false;
-    }
-
-    FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}:{}", type, version);
-    mImportFunctions[key] = function;
-    return true;
-}
+foeDistributedYamlImporter::foeDistributedYamlImporter(
+    foeDistributedYamlImporterGenerator *pGenerator,
+    foeIdGroup group,
+    std::filesystem::path rootDir) :
+    mGroup{group}, mRootDir{std::move(rootDir)}, mGenerator{pGenerator} {}
 
 namespace {
 
@@ -213,18 +177,55 @@ bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
     return true;
 }
 
-bool foeDistributedYamlImporter::removeImporter(std::string type, uint32_t version) {
-    auto key = std::make_tuple(type, version);
+bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResourcePools) {
+    for (auto &dirIt :
+         std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
+        if (std::filesystem::is_directory(dirIt))
+            continue;
 
-    auto searchIt = mImportFunctions.find(key);
-    if (searchIt == mImportFunctions.end()) {
-        FOE_LOG(General, Error,
-                "Could not remove DistributedYamlImporter function for {}:{}, as it isn't added",
-                type, version);
-        return false;
+        if (!std::filesystem::is_regular_file(dirIt)) {
+            FOE_LOG(General, Warning,
+                    "Resource file '{}' not a directory or regular file! Possible corruption!",
+                    dirIt.path().string())
+            return false;
+        }
+
+        // Is a regular file continue...
+        YAML::Node node;
+        if (!openYamlFile(dirIt, node))
+            return false;
+
+        try {
+            std::string type;
+            uint32_t version;
+            yaml_read_required("type", node, type);
+            yaml_read_required("version", node, version);
+
+            auto key = std::make_tuple(type, version);
+
+            auto searchIt = mGenerator->mImportFunctions.find(key);
+            if (searchIt == mGenerator->mImportFunctions.end()) {
+                // Failed to find importer, leave
+                return false;
+            }
+
+            foeResourceCreateInfoBase *pCreateInfo{nullptr};
+            searchIt->second(node, &pCreateInfo);
+            std::unique_ptr<foeResourceCreateInfoBase> createInfo{pCreateInfo};
+
+            // std::abort();
+        } catch (foeYamlException const &e) {
+            FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
+            return false;
+        } catch (std::exception const &e) {
+            FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
+            return false;
+        } catch (...) {
+            FOE_LOG(General, Error, "Failed to import resource definition with unknown exception");
+            return false;
+        }
     }
 
-    mImportFunctions.erase(searchIt);
     return true;
 }
 
@@ -232,6 +233,9 @@ bool foeDistributedYamlImporter::getResource(foeId id, foeResourceCreateInfoBase
     YAML::Node rootNode;
     for (auto &dirEntry :
          std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
+        if (std::filesystem::is_directory(dirEntry))
+            continue;
+
         if (dirEntry.is_regular_file()) {
             foeId fileId = parseFileStem(dirEntry);
 
@@ -254,8 +258,8 @@ GOT_RESOURCE_NODE:
 
         auto key = std::make_tuple(type, version);
 
-        auto searchIt = mImportFunctions.find(key);
-        if (searchIt == mImportFunctions.end()) {
+        auto searchIt = mGenerator->mImportFunctions.find(key);
+        if (searchIt == mGenerator->mImportFunctions.end()) {
             // Failed to find importer, leave
             return false;
         }

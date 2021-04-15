@@ -25,12 +25,6 @@
 #include <foe/graphics/vk/shader.hpp>
 #include <foe/log.hpp>
 #include <foe/quaternion_math.hpp>
-#include <foe/resource/yaml/armature.hpp>
-#include <foe/resource/yaml/image.hpp>
-#include <foe/resource/yaml/material.hpp>
-#include <foe/resource/yaml/mesh.hpp>
-#include <foe/resource/yaml/shader.hpp>
-#include <foe/resource/yaml/vertex_descriptor.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/wsi_vulkan.hpp>
 
@@ -77,6 +71,7 @@
     }
 
 #include "state_import/import_state.hpp"
+#include "state_yaml/function_registrar.hpp"
 
 int Application::initialize(int argc, char **argv) {
     initializeLogging();
@@ -86,21 +81,16 @@ int Application::initialize(int argc, char **argv) {
     writer.searchPaths()->push_back("data/state");
     writer.release();
 
-    SimulationSet *pSimulationSet;
-    foeImportState stateImport;
-    stateImport.addImporterGenerator(createDistributedYamlImporter);
-    std::error_code errC =
-        stateImport.importState("data/state/theDataA", &searchPaths, &pSimulationSet);
+    foeYamlCoreResourceFunctionRegistrar testRegistrar;
+    addImporterGenerator(&testGenerator);
+    addImporterFunctionRegistrar(&testRegistrar);
+
+    SimulationSet *pSimulationSet{nullptr};
+    std::error_code errC = importState("data/state/theDataA", &searchPaths, &pSimulationSet);
+    delete pSimulationSet;
 
     synchronousThreadPool.start(2);
     asynchronousThreadPool.start(2);
-
-    yamlImporter.addImporter("armature", 1, yaml_read_armature_definition2);
-    yamlImporter.addImporter("mesh", 1, yaml_read_mesh_definition2);
-    yamlImporter.addImporter("material", 1, yaml_read_material_definition2);
-    yamlImporter.addImporter("vertex_descriptor", 1, yaml_read_vertex_descriptor_definition2);
-    yamlImporter.addImporter("shader", 1, yaml_read_shader_definition2);
-    yamlImporter.addImporter("image", 1, yaml_read_image_definition2);
 
     if (auto retVal = loadSettings(argc, argv, settings); retVal != 0) {
         return retVal;
