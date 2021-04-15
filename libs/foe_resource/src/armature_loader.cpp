@@ -27,7 +27,7 @@ foeArmatureLoader::~foeArmatureLoader() {
 }
 
 std::error_code foeArmatureLoader::initialize(
-    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
+    std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -130,19 +130,17 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
     }
 
     std::error_code errC;
-
-    foeResourceCreateInfoBase *pCreateInfo = nullptr;
     foeArmature::Data data;
 
     // Read in the definition
-    bool read = mImportFunction(pArmature->getID(), &pCreateInfo);
-    if (!read) {
+    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFunction(pArmature->getID())};
+    if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     // Process the imported definition
-    if (!processCreateInfo(pCreateInfo, data)) {
+    if (!processCreateInfo(createInfo.get(), data)) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }

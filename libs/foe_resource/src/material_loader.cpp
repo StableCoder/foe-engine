@@ -42,7 +42,7 @@ std::error_code foeMaterialLoader::initialize(
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
-    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
+    std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -214,32 +214,31 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     std::error_code errC;
     foeGfxVkFragmentDescriptor *pNewFragDescriptor{nullptr};
     foeMaterial::SubResources subResources;
-    foeResourceCreateInfoBase *pCreateInfo = nullptr;
-    foeMaterialCreateInfo *createInfo = nullptr;
+    foeMaterialCreateInfo *pMaterialCI = nullptr;
 
-    bool read = mImportFunction(pMaterial->getID(), &pCreateInfo);
-    if (!read) {
+    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFunction(pMaterial->getID())};
+    if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    createInfo = dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo);
-    if (createInfo == nullptr) {
+    pMaterialCI = dynamic_cast<foeMaterialCreateInfo *>(createInfo.get());
+    if (pMaterialCI == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     { // Resource Dependencies
         // Fragment Shader
-        if (createInfo->fragmentShader != FOE_INVALID_ID) {
-            subResources.pFragmentShader = mShaderPool->find(createInfo->fragmentShader);
+        if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {
+            subResources.pFragmentShader = mShaderPool->find(pMaterialCI->fragmentShader);
             if (subResources.pFragmentShader == nullptr) {
                 subResources.pFragmentShader =
-                    new foeShader{createInfo->fragmentShader, mShaderLoader};
+                    new foeShader{pMaterialCI->fragmentShader, mShaderLoader};
                 if (!mShaderPool->add(subResources.pFragmentShader)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete subResources.pFragmentShader;
-                    subResources.pFragmentShader = mShaderPool->find(createInfo->fragmentShader);
+                    subResources.pFragmentShader = mShaderPool->find(pMaterialCI->fragmentShader);
                 }
             }
             subResources.pFragmentShader->incrementRefCount();
@@ -247,16 +246,16 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
         }
 
         // Image
-        if (createInfo->image != FOE_INVALID_ID) {
-            subResources.pImage = mImagePool->find(createInfo->image);
+        if (pMaterialCI->image != FOE_INVALID_ID) {
+            subResources.pImage = mImagePool->find(pMaterialCI->image);
 
             if (subResources.pImage == nullptr) {
-                subResources.pImage = new foeImage{createInfo->image, mImageLoader};
+                subResources.pImage = new foeImage{pMaterialCI->image, mImageLoader};
 
                 if (!mImagePool->add(subResources.pImage)) {
                     delete subResources.pImage;
 
-                    subResources.pImage = mImagePool->find(createInfo->image);
+                    subResources.pImage = mImagePool->find(pMaterialCI->image);
                 }
             }
 
@@ -298,9 +297,9 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
                                       : FOE_NULL_HANDLE;
 
         pNewFragDescriptor = mGfxFragmentDescriptorPool->get(
-            (createInfo->hasRasterizationSCI) ? &createInfo->rasterizationSCI : nullptr,
-            (createInfo->hasDepthStencilSCI) ? &createInfo->depthStencilSCI : nullptr,
-            (createInfo->hasColourBlendSCI) ? &createInfo->colourBlendSCI : nullptr, fragShader);
+            (pMaterialCI->hasRasterizationSCI) ? &pMaterialCI->rasterizationSCI : nullptr,
+            (pMaterialCI->hasDepthStencilSCI) ? &pMaterialCI->depthStencilSCI : nullptr,
+            (pMaterialCI->hasColourBlendSCI) ? &pMaterialCI->colourBlendSCI : nullptr, fragShader);
     }
 
 LOADING_FAILED:

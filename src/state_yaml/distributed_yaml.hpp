@@ -43,7 +43,7 @@ class foeDistributedYamlImporter : public foeImporterBase {
     bool importStateData(StatePools *pStatePools) override;
 
     bool importResourceDefinitions(ResourcePools *pResourcePools) override;
-    bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) override;
+    foeResourceCreateInfoBase *getResource(foeId id) override;
 
   public:
     std::filesystem::path mRootDir;

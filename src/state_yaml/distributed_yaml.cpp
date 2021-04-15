@@ -229,7 +229,7 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
     return true;
 }
 
-bool foeDistributedYamlImporter::getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) {
+foeResourceCreateInfoBase *foeDistributedYamlImporter::getResource(foeId id) {
     YAML::Node rootNode;
     for (auto &dirEntry :
          std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
@@ -261,20 +261,20 @@ GOT_RESOURCE_NODE:
         auto searchIt = mGenerator->mImportFunctions.find(key);
         if (searchIt == mGenerator->mImportFunctions.end()) {
             // Failed to find importer, leave
-            return false;
+            return nullptr;
         }
 
-        searchIt->second(rootNode, ppCreateInfo);
+        foeResourceCreateInfoBase *pCreateInfo{nullptr};
+        searchIt->second(rootNode, &pCreateInfo);
+        return pCreateInfo;
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
-        return false;
+        return nullptr;
     } catch (std::exception const &e) {
         FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
-        return false;
+        return nullptr;
     } catch (...) {
         FOE_LOG(General, Error, "Failed to import resource definition with unknown exception");
-        return false;
+        return nullptr;
     }
-
-    return true;
 }

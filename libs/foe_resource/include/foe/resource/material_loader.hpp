@@ -46,7 +46,7 @@ class foeMaterialLoader {
         foeImageLoader *pImageLoader,
         foeImagePool *pImagePool,
         foeGfxSession session,
-        std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
+        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
         std::function<void(std::function<void()>)> asynchronousJobs);
     FOE_RES_EXPORT void deinitialize();
     FOE_RES_EXPORT bool initialized() const noexcept;
@@ -67,7 +67,7 @@ class foeMaterialLoader {
     foeImageLoader *mImageLoader{nullptr};
     foeImagePool *mImagePool{nullptr};
 
-    std::function<bool(foeId, foeResourceCreateInfoBase **)> mImportFunction;
+    std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
     std::function<void(std::function<void()>)> mAsyncJobs;
     std::atomic_int mActiveJobs;
 

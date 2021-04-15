@@ -165,12 +165,20 @@ auto foeGroupData::temporaryIndices() noexcept -> foeIdIndexGenerator * {
 }
 
 bool foeGroupData::getResourceDefinition(foeId id, foeResourceCreateInfoBase **ppCreateInfo) {
-    if (mPersistentImporter != nullptr && mPersistentImporter->getResource(id, ppCreateInfo))
-        return true;
+    if (mPersistentImporter != nullptr) {
+        if (auto *pCreateInfo = mPersistentImporter->getResource(id); pCreateInfo) {
+            *ppCreateInfo = pCreateInfo;
+            return true;
+        }
+    }
 
     for (auto it = mDynamicGroups.rbegin(); it != mDynamicGroups.rend(); ++it) {
-        if (it->pImporter != nullptr && it->pImporter->getResource(id, ppCreateInfo))
-            return true;
+        if (it->pImporter != nullptr) {
+            if (auto *pCreateInfo = it->pImporter->getResource(id)) {
+                *ppCreateInfo = pCreateInfo;
+                return true;
+            }
+        }
     }
 
     return false;

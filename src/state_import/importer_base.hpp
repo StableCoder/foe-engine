@@ -45,7 +45,7 @@ class foeImporterBase {
     virtual bool importStateData(StatePools *pStatePools) = 0;
 
     virtual bool importResourceDefinitions(ResourcePools *pResourcePools) = 0;
-    virtual bool getResource(foeId id, foeResourceCreateInfoBase **ppCreateInfo) = 0;
+    virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
 };
 
 #endif // IMPORTER_BASE_HPP

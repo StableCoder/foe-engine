@@ -33,7 +33,7 @@ foeMeshLoader::~foeMeshLoader() {
 
 std::error_code foeMeshLoader::initialize(
     foeGfxSession session,
-    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
+    std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -147,20 +147,19 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
 
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
-    foeResourceCreateInfoBase *pCreateInfo = nullptr;
     foeMeshCreateInfo *pMeshCI = nullptr;
 
     foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
     foeMesh::Data meshData{};
 
-    bool read = mImportFunction(pMesh->getID(), &pCreateInfo);
-    if (!read) {
+    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFunction(pMesh->getID())};
+    if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pCreateInfo);
+    pMeshCI = dynamic_cast<foeMeshCreateInfo *>(createInfo.get());
     if (pMeshCI == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;

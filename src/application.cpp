@@ -194,8 +194,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = simulationSet.resourceLoaders.shader.initialize(
         gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
-                  std::placeholders::_2),
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -203,8 +202,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = simulationSet.resourceLoaders.vertexDescriptor.initialize(
         &simulationSet.resourceLoaders.shader, &simulationSet.resources.shader,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
-                  std::placeholders::_2),
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -212,8 +210,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = simulationSet.resourceLoaders.image.initialize(
         gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
-                  std::placeholders::_2),
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -223,8 +220,7 @@ int Application::initialize(int argc, char **argv) {
         &simulationSet.resourceLoaders.shader, &simulationSet.resources.shader,
         &fragmentDescriptorPool, &simulationSet.resourceLoaders.image,
         &simulationSet.resources.image, gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
-                  std::placeholders::_2),
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -232,16 +228,14 @@ int Application::initialize(int argc, char **argv) {
 
     errC = simulationSet.resourceLoaders.mesh.initialize(
         gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
-                  std::placeholders::_2),
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
     errC = simulationSet.resourceLoaders.armature.initialize(
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1,
-                  std::placeholders::_2),
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM

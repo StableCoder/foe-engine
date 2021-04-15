@@ -35,7 +35,7 @@ foeImageLoader::~foeImageLoader() {
 
 std::error_code foeImageLoader::initialize(
     foeGfxSession session,
-    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
+    std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -156,42 +156,41 @@ void foeImageLoader::startUpload(foeImage *pImage) {
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
 
-    foeResourceCreateInfoBase *pCreateInfo = nullptr;
-    foeImageCreateInfo *createInfo = nullptr;
+    foeImageCreateInfo *pImageCI = nullptr;
 
     foeGfxUploadRequest gfxUploadRequest;
     foeGfxUploadBuffer gfxUploadBuffer;
     foeImage::Data imgData{};
 
-    bool read = mImportFunction(pImage->getID(), &pCreateInfo);
-    if (!read) {
+    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFunction(pImage->getID())};
+    if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    createInfo = dynamic_cast<foeImageCreateInfo *>(pCreateInfo);
-    if (createInfo == nullptr) {
+    pImageCI = dynamic_cast<foeImageCreateInfo *>(createInfo.get());
+    if (pImageCI == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     { // Import the data
         // Determine the image format
-        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(createInfo->fileName.c_str());
+        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(pImageCI->fileName.c_str());
         if (imageFormat == FIF_UNKNOWN) {
-            FreeImage_GetFIFFromFilename(createInfo->fileName.c_str());
+            FreeImage_GetFIFFromFilename(pImageCI->fileName.c_str());
         }
         if (imageFormat == FIF_UNKNOWN) {
             FOE_LOG(foeResource, Error, "Could not determine image format for: {}",
-                    createInfo->fileName)
+                    pImageCI->fileName)
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }
 
         // Load the image into memory
-        auto *bitmap = FreeImage_Load(imageFormat, createInfo->fileName.c_str(), 0);
+        auto *bitmap = FreeImage_Load(imageFormat, pImageCI->fileName.c_str(), 0);
         if (bitmap == nullptr) {
-            FOE_LOG(foeResource, Error, "Failed to load image: {}", createInfo->fileName)
+            FOE_LOG(foeResource, Error, "Failed to load image: {}", pImageCI->fileName)
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }

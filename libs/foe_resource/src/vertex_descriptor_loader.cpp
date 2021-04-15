@@ -33,7 +33,7 @@ foeVertexDescriptorLoader::~foeVertexDescriptorLoader() {
 std::error_code foeVertexDescriptorLoader::initialize(
     foeShaderLoader *pShaderLoader,
     foeShaderPool *pShaderPool,
-    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
+    std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -114,30 +114,31 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
     std::error_code errC;
     foeVertexDescriptor::SubResources newSubResources{};
     foeGfxVertexDescriptor theVertexDescriptor;
-    foeResourceCreateInfoBase *pCreateInfo = nullptr;
-    foeVertexDescriptorCreateInfo *createInfo = nullptr;
+    foeVertexDescriptorCreateInfo *pVertexDescriptorCI = nullptr;
 
-    bool read = mImportFunction(pVertexDescriptor->getID(), &pCreateInfo);
-    if (!read) {
-        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
-        goto LOADING_FAILED;
-    }
-
-    createInfo = dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo);
+    std::unique_ptr<foeResourceCreateInfoBase> createInfo{
+        mImportFunction(pVertexDescriptor->getID())};
     if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
+    pVertexDescriptorCI = dynamic_cast<foeVertexDescriptorCreateInfo *>(createInfo.get());
+    if (pVertexDescriptorCI == nullptr) {
+        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
+        goto LOADING_FAILED;
+    }
+
     { // Resource Dependencies
-        if (createInfo->vertexShader != FOE_INVALID_ID) {
-            newSubResources.pVertex = mShaderPool->find(createInfo->vertexShader);
+        if (pVertexDescriptorCI->vertexShader != FOE_INVALID_ID) {
+            newSubResources.pVertex = mShaderPool->find(pVertexDescriptorCI->vertexShader);
             if (newSubResources.pVertex == nullptr) {
-                newSubResources.pVertex = new foeShader{createInfo->vertexShader, mShaderLoader};
+                newSubResources.pVertex =
+                    new foeShader{pVertexDescriptorCI->vertexShader, mShaderLoader};
                 if (!mShaderPool->add(newSubResources.pVertex)) {
                     // Failed to add a 'new' shader, must've been added by another loading process
                     delete newSubResources.pVertex;
-                    newSubResources.pVertex = mShaderPool->find(createInfo->vertexShader);
+                    newSubResources.pVertex = mShaderPool->find(pVertexDescriptorCI->vertexShader);
                 }
             }
             newSubResources.pVertex->incrementRefCount();
@@ -189,13 +190,14 @@ void foeVertexDescriptorLoader::loadResource(foeVertexDescriptor *pVertexDescrip
         if (newSubResources.pGeometry != nullptr)
             theVertexDescriptor.mGeometry = newSubResources.pGeometry->getShader();
 
-        theVertexDescriptor.mVertexInputSCI = createInfo->vertexInputSCI;
-        theVertexDescriptor.mVertexInputBindings = std::move(createInfo->inputBindings);
-        theVertexDescriptor.mVertexInputAttributes = std::move(createInfo->inputAttributes);
+        theVertexDescriptor.mVertexInputSCI = pVertexDescriptorCI->vertexInputSCI;
+        theVertexDescriptor.mVertexInputBindings = std::move(pVertexDescriptorCI->inputBindings);
+        theVertexDescriptor.mVertexInputAttributes =
+            std::move(pVertexDescriptorCI->inputAttributes);
 
-        theVertexDescriptor.mInputAssemblySCI = createInfo->inputAssemblySCI;
+        theVertexDescriptor.mInputAssemblySCI = pVertexDescriptorCI->inputAssemblySCI;
 
-        theVertexDescriptor.mTessellationSCI = createInfo->tessellationSCI;
+        theVertexDescriptor.mTessellationSCI = pVertexDescriptorCI->tessellationSCI;
     }
 
 LOADING_FAILED:

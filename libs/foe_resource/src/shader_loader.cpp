@@ -28,7 +28,7 @@ foeShaderLoader::~foeShaderLoader() {
 
 std::error_code foeShaderLoader::initialize(
     foeGfxSession gfxSession,
-    std::function<bool(foeId, foeResourceCreateInfoBase **)> importFunction,
+    std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -108,30 +108,29 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
 
     std::error_code errC;
     foeGfxShader newShader{FOE_NULL_HANDLE};
-    foeResourceCreateInfoBase *pCreateInfo = nullptr;
-    foeShaderCreateInfo *createInfo = nullptr;
+    foeShaderCreateInfo *pShaderCI = nullptr;
 
     // Read in the definition
-    bool read = mImportFunction(pShader->getID(), &pCreateInfo);
-    if (!read) {
+    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFunction(pShader->getID())};
+    if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
-    createInfo = dynamic_cast<foeShaderCreateInfo *>(pCreateInfo);
-    if (createInfo == nullptr) {
+    pShaderCI = dynamic_cast<foeShaderCreateInfo *>(createInfo.get());
+    if (pShaderCI == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     {
         auto descriptorSetLayout =
-            foeGfxVkGetDescriptorSetLayout(mGfxSession, &createInfo->descriptorSetLayoutCI);
+            foeGfxVkGetDescriptorSetLayout(mGfxSession, &pShaderCI->descriptorSetLayoutCI);
 
-        auto shaderCode = loadShaderDataFromFile(createInfo->shaderCodeFile);
-        errC = foeGfxVkCreateShader(mGfxSession, createInfo->builtinSetLayouts, shaderCode.size(),
+        auto shaderCode = loadShaderDataFromFile(pShaderCI->shaderCodeFile);
+        errC = foeGfxVkCreateShader(mGfxSession, pShaderCI->builtinSetLayouts, shaderCode.size(),
                                     reinterpret_cast<uint32_t *>(shaderCode.data()),
-                                    descriptorSetLayout, createInfo->pushConstantRange, &newShader);
+                                    descriptorSetLayout, pShaderCI->pushConstantRange, &newShader);
         if (errC) {
             goto LOADING_FAILED;
         }
