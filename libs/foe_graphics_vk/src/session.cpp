@@ -172,7 +172,7 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
     }
 
 CREATE_FAILED:
-    if (vkRes != VK_NULL_HANDLE) {
+    if (vkRes != VK_SUCCESS) {
         foeGfxVkDestroySession(pNewSession);
     } else {
         *pSession = session_to_handle(pNewSession);

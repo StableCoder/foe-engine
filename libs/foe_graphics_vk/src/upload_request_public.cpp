@@ -56,7 +56,7 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
 
     // Destination
     res = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->dstCmdBuffer);
-    if (res != VK_NULL_HANDLE) {
+    if (res != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
@@ -70,7 +70,7 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
         bufferAI.commandPool = pNewRequest->srcCmdPool;
 
         res = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->srcCmdBuffer);
-        if (res != VK_NULL_HANDLE) {
+        if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 

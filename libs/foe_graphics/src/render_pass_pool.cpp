@@ -137,7 +137,7 @@ auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> 
             // Create the specific variant
             VkRenderPass renderPass{VK_NULL_HANDLE};
             VkResult res = createRenderPass(attachments, &renderPass);
-            if (res != VK_NULL_HANDLE) {
+            if (res != VK_SUCCESS) {
                 FOE_LOG(Graphics, Error, "Could not create a requested RenderPass")
                 return VK_NULL_HANDLE;
             }
@@ -154,7 +154,7 @@ auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> 
     // Create both a new compatible set and variant
     VkRenderPass renderPass{VK_NULL_HANDLE};
     VkResult res = createRenderPass(attachments, &renderPass);
-    if (res != VK_NULL_HANDLE) {
+    if (res != VK_SUCCESS) {
         FOE_LOG(Graphics, Error, "Could not create a requested RenderPass")
         return VK_NULL_HANDLE;
     }
