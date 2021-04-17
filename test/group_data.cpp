@@ -36,7 +36,10 @@ class DummyImporter : public foeImporterBase {
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool importStateData(StatePools *pStatePools) final { return false; }
 
-    bool importResourceDefinitions(ResourcePools *pResourcePools) { return false; }
+    bool importResourceDefinitions(ResourcePools *pResourcePools,
+                                   ResourceLoaders *pResourceLoaders) {
+        return false;
+    }
     foeResourceCreateInfoBase *getResource(foeId id) final {
         return static_cast<foeResourceCreateInfoBase *>(mResReturn);
     }

@@ -36,6 +36,8 @@ class foeShaderPool {
 
     std::vector<foeShader *> const &getEntries() const noexcept { return mShaders; }
 
+    FOE_RES_EXPORT auto getDataVector() { return mShaders; }
+
   private:
     std::shared_mutex mSync;
     std::vector<foeShader *> mShaders;

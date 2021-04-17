@@ -34,6 +34,8 @@ class foeArmaturePool {
 
     FOE_RES_EXPORT void unloadAll();
 
+    FOE_RES_EXPORT auto getDataVector() { return mArmatures; }
+
   private:
     std::shared_mutex mSync;
     std::vector<foeArmature *> mArmatures;

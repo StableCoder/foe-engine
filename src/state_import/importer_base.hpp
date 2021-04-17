@@ -25,6 +25,7 @@
 class foeIdIndexGenerator;
 struct StatePools;
 struct ResourcePools;
+struct ResourceLoaders;
 struct foeResourceCreateInfoBase;
 
 struct foeImporterDependencySet {
@@ -44,7 +45,8 @@ class foeImporterBase {
     virtual bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(StatePools *pStatePools) = 0;
 
-    virtual bool importResourceDefinitions(ResourcePools *pResourcePools) = 0;
+    virtual bool importResourceDefinitions(ResourcePools *pResourcePools,
+                                           ResourceLoaders *pResourceLoaders) = 0;
     virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
 };
 

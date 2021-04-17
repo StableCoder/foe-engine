@@ -34,6 +34,8 @@ class foeVertexDescriptorPool {
 
     FOE_RES_EXPORT void unloadAll();
 
+    FOE_RES_EXPORT auto getDataVector() { return mVertexDescriptors; }
+
   private:
     std::shared_mutex mSync;
     std::vector<foeVertexDescriptor *> mVertexDescriptors;

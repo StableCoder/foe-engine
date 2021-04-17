@@ -34,6 +34,8 @@ class foeMaterialPool {
 
     FOE_RES_EXPORT void unloadAll();
 
+    FOE_RES_EXPORT auto getDataVector() { return mMaterials; }
+
   private:
     std::shared_mutex mSync;
     std::vector<foeMaterial *> mMaterials;

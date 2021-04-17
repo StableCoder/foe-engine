@@ -16,11 +16,13 @@
 
 #include "distributed_yaml.hpp"
 
+#include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+#include "../resource_pools.hpp"
 #include "distributed_yaml_generator.hpp"
 #include "entity.hpp"
 
@@ -34,13 +36,22 @@ constexpr std::string_view indexDataFilePath = "index_data.yml";
 constexpr std::string_view resourcesDirectoryPath = "resources";
 constexpr std::string_view stateDirectoryPath = "state";
 
-auto parseFileStem(std::filesystem::path const &path) -> foeId {
+/** @brief Parses a Yaml filename to determine the IdGroupValue and IdIndex
+ * @param path File path to parse
+ * @param groupValue Returns the IdGroup, return foeIdPersistentGroup if there was no specified
+ * IdGroup
+ * @param index Returns the parsed IdIndex
+ * @return True if successfully parsed, false otherwise
+ */
+bool parseFileStem(std::filesystem::path const &path,
+                   foeIdGroupValue &groupValue,
+                   foeIdIndex &index) {
     std::string fullStem{path.stem().string()};
 
     // Group Stem
     auto firstStemEnd = fullStem.find_first_of('_');
     if (firstStemEnd == std::string::npos) {
-        return FOE_INVALID_ID;
+        return false;
     }
     std::string idGroupStem = fullStem.substr(0, firstStemEnd);
     ++firstStemEnd;
@@ -49,17 +60,18 @@ auto parseFileStem(std::filesystem::path const &path) -> foeId {
     auto secondStemEnd = fullStem.find_first_of('_', firstStemEnd);
     std::string idIndexStem = fullStem.substr(firstStemEnd, secondStemEnd - firstStemEnd);
     if (idIndexStem.empty())
-        return FOE_INVALID_ID;
+        return false;
 
-    // @todo Add group parsing here
-    foeIdGroup idGroup = 0;
-
-    // Index parsing
-    foeIdIndex idIndex = FOE_INVALID_ID;
+    // Parsing
     char *endCh;
-    idIndex = std::strtoul(idIndexStem.c_str(), &endCh, 0);
+    groupValue = foeIdPersistentGroup;
+    if (!idGroupStem.empty()) {
+        groupValue = std::strtoul(idGroupStem.c_str(), &endCh, 0);
+    }
 
-    return idGroup | idIndex;
+    index = std::strtoul(idIndexStem.c_str(), &endCh, 0);
+
+    return true;
 }
 
 bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
@@ -177,7 +189,8 @@ bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
     return true;
 }
 
-bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResourcePools) {
+bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResourcePools,
+                                                           ResourceLoaders *pResourceLoaders) {
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
         if (std::filesystem::is_directory(dirIt))
@@ -196,6 +209,19 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
             return false;
 
         try {
+            foeIdGroupValue groupValue;
+            foeIdIndex index;
+            yaml_read_id(node, groupValue, index);
+
+            foeIdGroup group = foeIdPersistentGroup;
+            if (groupValue != FOE_INVALID_ID &&
+                !mGroupTranslation.targetFromNormalizedGroup(groupValue, group)) {
+                FOE_LOG(General, Error, "Failed to translate from normalized group")
+                return false;
+            }
+
+            foeId resId = foeIdCreateResource(group, index);
+
             std::string type;
             uint32_t version;
             yaml_read_required("type", node, type);
@@ -213,7 +239,34 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
             searchIt->second(node, &pCreateInfo);
             std::unique_ptr<foeResourceCreateInfoBase> createInfo{pCreateInfo};
 
-            // std::abort();
+            if (type == "armature" && version == 1) {
+                auto armature = std::make_unique<foeArmature>(resId, &pResourceLoaders->armature);
+
+                pResourcePools->armature.add(armature.release());
+            } else if (type == "mesh" && version == 1) {
+                auto mesh = std::make_unique<foeMesh>(resId, &pResourceLoaders->mesh);
+
+                pResourcePools->mesh.add(mesh.release());
+            } else if (type == "material" && version == 1) {
+                auto material = std::make_unique<foeMaterial>(resId, &pResourceLoaders->material);
+
+                pResourcePools->material.add(material.release());
+            } else if (type == "vertex_descriptor" && version == 1) {
+                auto vertexDescriptor = std::make_unique<foeVertexDescriptor>(
+                    resId, &pResourceLoaders->vertexDescriptor);
+
+                pResourcePools->vertexDescriptor.add(vertexDescriptor.release());
+            } else if (type == "shader" && version == 1) {
+                auto shader = std::make_unique<foeShader>(resId, &pResourceLoaders->shader);
+
+                pResourcePools->shader.add(shader.release());
+            } else if (type == "image" && version == 1) {
+                auto image = std::make_unique<foeImage>(resId, &pResourceLoaders->image);
+
+                pResourcePools->image.add(image.release());
+            } else {
+                std::abort();
+            }
         } catch (foeYamlException const &e) {
             FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
             return false;
@@ -231,18 +284,22 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
 
 foeResourceCreateInfoBase *foeDistributedYamlImporter::getResource(foeId id) {
     YAML::Node rootNode;
+    foeIdIndex index = foeIdGetIndex(id);
     for (auto &dirEntry :
          std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
         if (std::filesystem::is_directory(dirEntry))
             continue;
 
         if (dirEntry.is_regular_file()) {
-            foeId fileId = parseFileStem(dirEntry);
-
-            if (fileId == FOE_INVALID_ID || fileId != id)
+            foeIdGroupValue fileGroupValue;
+            foeIdIndex fileIndex;
+            if (!parseFileStem(dirEntry, fileGroupValue, fileIndex))
                 continue;
 
-            if (fileId == id) {
+            if (fileIndex == FOE_INVALID_ID || fileIndex != index)
+                continue;
+
+            if (fileIndex == index) {
                 if (openYamlFile(dirEntry, rootNode))
                     goto GOT_RESOURCE_NODE;
             }

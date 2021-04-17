@@ -34,6 +34,8 @@ class foeImagePool {
 
     FOE_RES_EXPORT void unloadAll();
 
+    FOE_RES_EXPORT auto getDataVector() { return mImages; }
+
   private:
     std::shared_mutex mSync;
     std::vector<foeImage *> mImages;

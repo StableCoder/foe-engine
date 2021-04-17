@@ -42,7 +42,8 @@ class foeDistributedYamlImporter : public foeImporterBase {
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) override;
     bool importStateData(StatePools *pStatePools) override;
 
-    bool importResourceDefinitions(ResourcePools *pResourcePools) override;
+    bool importResourceDefinitions(ResourcePools *pResourcePools,
+                                   ResourceLoaders *pResourceLoaders) override;
     foeResourceCreateInfoBase *getResource(foeId id) override;
 
   public:

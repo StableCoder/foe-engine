@@ -85,27 +85,27 @@ int Application::initialize(int argc, char **argv) {
     addImporterGenerator(&testGenerator);
     addImporterFunctionRegistrar(&testRegistrar);
 
-    SimulationSet *pSimulationSet{nullptr};
-    std::error_code errC = importState("data/state/theDataA", &searchPaths, &pSimulationSet);
-    delete pSimulationSet;
+    SimulationSet *pNewSimulationSet{nullptr};
+    std::error_code errC = importState("data/state/theDataA", &searchPaths, &pNewSimulationSet);
+    pSimulationSet.reset(pNewSimulationSet);
 
-    synchronousThreadPool.start(2);
-    asynchronousThreadPool.start(2);
+    synchronousThreadPool.start(1);
+    asynchronousThreadPool.start(1);
 
     if (auto retVal = loadSettings(argc, argv, settings); retVal != 0) {
         return retVal;
     }
 
     // Groups/Entities
-    cameraID = simulationSet.groupData.persistentIndices()->generate();
-    renderID = simulationSet.groupData.persistentIndices()->generate();
+    cameraID = pSimulationSet->groupData.persistentIndices()->generate();
+    renderID = pSimulationSet->groupData.persistentIndices()->generate();
 
-    simulationSet.state.position[cameraID].reset(new Position3D{
+    pSimulationSet->state.position[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
 
-    simulationSet.state.position[renderID].reset(new Position3D{
+    pSimulationSet->state.position[renderID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, 0.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
@@ -162,7 +162,7 @@ int Application::initialize(int argc, char **argv) {
         camera.nearZ = 2.f;
         camera.farZ = 50.f;
 
-        camera.pPosition3D = simulationSet.state.position[cameraID].get();
+        camera.pPosition3D = pSimulationSet->state.position[cameraID].get();
     }
 
 #ifdef EDITOR_MODE
@@ -192,7 +192,7 @@ int Application::initialize(int argc, char **argv) {
         asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
-    errC = simulationSet.resourceLoaders.shader.initialize(
+    errC = pSimulationSet->resourceLoaders.shader.initialize(
         gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
@@ -200,15 +200,15 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = simulationSet.resourceLoaders.vertexDescriptor.initialize(
-        &simulationSet.resourceLoaders.shader, &simulationSet.resources.shader,
+    errC = pSimulationSet->resourceLoaders.vertexDescriptor.initialize(
+        &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = simulationSet.resourceLoaders.image.initialize(
+    errC = pSimulationSet->resourceLoaders.image.initialize(
         gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
@@ -216,17 +216,17 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = simulationSet.resourceLoaders.material.initialize(
-        &simulationSet.resourceLoaders.shader, &simulationSet.resources.shader,
-        &fragmentDescriptorPool, &simulationSet.resourceLoaders.image,
-        &simulationSet.resources.image, gfxSession,
+    errC = pSimulationSet->resourceLoaders.material.initialize(
+        &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
+        &fragmentDescriptorPool, &pSimulationSet->resourceLoaders.image,
+        &pSimulationSet->resources.image, gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = simulationSet.resourceLoaders.mesh.initialize(
+    errC = pSimulationSet->resourceLoaders.mesh.initialize(
         gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
@@ -234,7 +234,7 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    errC = simulationSet.resourceLoaders.armature.initialize(
+    errC = pSimulationSet->resourceLoaders.armature.initialize(
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
@@ -278,56 +278,35 @@ int Application::initialize(int argc, char **argv) {
     }
 
     {
-        // Vertex Descriptor
-        foeVertexDescriptor *theVertexDescriptor =
-            new foeVertexDescriptor{0, &simulationSet.resourceLoaders.vertexDescriptor};
-        simulationSet.resources.vertexDescriptor.add(theVertexDescriptor);
-        theVertexDescriptor->incrementUseCount();
-        theVertexDescriptor->decrementUseCount();
+        for (auto *ptr : pSimulationSet->resources.armature.getDataVector()) {
+            ptr->incrementUseCount();
+            ptr->decrementUseCount();
+        }
 
-        // Materials
-        foeMaterial *theMaterial = new foeMaterial{3, &simulationSet.resourceLoaders.material};
-        simulationSet.resources.material.add(theMaterial);
-        theMaterial->incrementUseCount();
-        theMaterial->decrementUseCount();
-        theMaterial = new foeMaterial{4, &simulationSet.resourceLoaders.material};
-        simulationSet.resources.material.add(theMaterial);
-        theMaterial->incrementUseCount();
-        theMaterial->decrementUseCount();
+        for (auto *ptr : pSimulationSet->resources.image.getDataVector()) {
+            ptr->incrementUseCount();
+            ptr->decrementUseCount();
+        }
 
-        // Model Items
-        foeVertexDescriptor *pVD;
+        for (auto *ptr : pSimulationSet->resources.material.getDataVector()) {
+            ptr->incrementUseCount();
+            ptr->decrementUseCount();
+        }
 
-        pVD = new foeVertexDescriptor(1, &simulationSet.resourceLoaders.vertexDescriptor);
-        simulationSet.resources.vertexDescriptor.add(pVD);
-        pVD->incrementUseCount();
-        pVD->decrementUseCount();
+        for (auto *ptr : pSimulationSet->resources.mesh.getDataVector()) {
+            ptr->incrementUseCount();
+            ptr->decrementUseCount();
+        }
 
-        pVD = new foeVertexDescriptor(2, &simulationSet.resourceLoaders.vertexDescriptor);
-        simulationSet.resources.vertexDescriptor.add(pVD);
-        pVD->incrementUseCount();
-        pVD->decrementUseCount();
+        for (auto *ptr : pSimulationSet->resources.shader.getDataVector()) {
+            ptr->incrementUseCount();
+            ptr->decrementUseCount();
+        }
 
-        foeMaterial *pMaterial;
-        pMaterial = new foeMaterial(5, &simulationSet.resourceLoaders.material);
-        simulationSet.resources.material.add(pMaterial);
-        pMaterial->incrementUseCount();
-        pMaterial->decrementUseCount();
-
-        auto *pMesh = new foeMesh(13, &simulationSet.resourceLoaders.mesh);
-        simulationSet.resources.mesh.add(pMesh);
-        pMesh->incrementUseCount();
-        pMesh->decrementUseCount();
-
-        pMesh = new foeMesh(14, &simulationSet.resourceLoaders.mesh);
-        simulationSet.resources.mesh.add(pMesh);
-        pMesh->incrementUseCount();
-        pMesh->decrementUseCount();
-
-        auto *pArmature = new foeArmature(12, &simulationSet.resourceLoaders.armature);
-        pArmature->incrementUseCount();
-        pArmature->decrementUseCount();
-        simulationSet.resources.armature.add(pArmature);
+        for (auto *ptr : pSimulationSet->resources.vertexDescriptor.getDataVector()) {
+            ptr->incrementUseCount();
+            ptr->decrementUseCount();
+        }
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -517,31 +496,31 @@ void Application::deinitialize() {
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
     { // Resource Unloading
-        simulationSet.resources.armature.unloadAll();
+        pSimulationSet->resources.armature.unloadAll();
 
-        simulationSet.resources.mesh.unloadAll();
+        pSimulationSet->resources.mesh.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            simulationSet.resourceLoaders.mesh.processUnloadRequests();
+            pSimulationSet->resourceLoaders.mesh.processUnloadRequests();
         }
 
-        simulationSet.resources.material.unloadAll();
+        pSimulationSet->resources.material.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            simulationSet.resourceLoaders.material.processUnloadRequests();
+            pSimulationSet->resourceLoaders.material.processUnloadRequests();
         }
 
-        simulationSet.resources.image.unloadAll();
+        pSimulationSet->resources.image.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            simulationSet.resourceLoaders.image.processUnloadRequests();
+            pSimulationSet->resourceLoaders.image.processUnloadRequests();
         }
 
-        simulationSet.resources.vertexDescriptor.unloadAll();
+        pSimulationSet->resources.vertexDescriptor.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            simulationSet.resourceLoaders.vertexDescriptor.processUnloadRequests();
+            pSimulationSet->resourceLoaders.vertexDescriptor.processUnloadRequests();
         }
 
-        simulationSet.resources.shader.unloadAll();
+        pSimulationSet->resources.shader.unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            simulationSet.resourceLoaders.shader.processUnloadRequests();
+            pSimulationSet->resourceLoaders.shader.processUnloadRequests();
         }
     }
 
@@ -589,14 +568,14 @@ void Application::deinitialize() {
     vkAnimationPool.deinitialize();
 
     // Graphics Resource Deinitialization
-    simulationSet.resourceLoaders.mesh.deinitialize();
-    simulationSet.resourceLoaders.material.deinitialize();
-    simulationSet.resourceLoaders.image.deinitialize();
-    simulationSet.resourceLoaders.vertexDescriptor.deinitialize();
-    simulationSet.resourceLoaders.shader.deinitialize();
+    pSimulationSet->resourceLoaders.mesh.deinitialize();
+    pSimulationSet->resourceLoaders.material.deinitialize();
+    pSimulationSet->resourceLoaders.image.deinitialize();
+    pSimulationSet->resourceLoaders.vertexDescriptor.deinitialize();
+    pSimulationSet->resourceLoaders.shader.deinitialize();
 
     // Other Resource Deinitialization
-    simulationSet.resourceLoaders.armature.deinitialize();
+    pSimulationSet->resourceLoaders.armature.deinitialize();
 
     for (auto &it : frameData) {
         it.destroy(foeGfxVkGetDevice(gfxSession));
@@ -824,14 +803,14 @@ int Application::mainloop() {
             frameIndex = nextFrameIndex;
 
             // Resource Unload Requests
-            simulationSet.resourceLoaders.shader.processUnloadRequests();
-            simulationSet.resourceLoaders.image.processUnloadRequests();
-            simulationSet.resourceLoaders.material.processUnloadRequests();
-            simulationSet.resourceLoaders.mesh.processUnloadRequests();
+            pSimulationSet->resourceLoaders.shader.processUnloadRequests();
+            pSimulationSet->resourceLoaders.image.processUnloadRequests();
+            pSimulationSet->resourceLoaders.material.processUnloadRequests();
+            pSimulationSet->resourceLoaders.mesh.processUnloadRequests();
 
             // Resource Load Requests
-            simulationSet.resourceLoaders.image.processLoadRequests();
-            simulationSet.resourceLoaders.mesh.processLoadRequests();
+            pSimulationSet->resourceLoaders.image.processLoadRequests();
+            pSimulationSet->resourceLoaders.mesh.processLoadRequests();
 
             // Set camera descriptors
             bool camerasRemade = false;
@@ -841,7 +820,7 @@ int Application::mainloop() {
                                0);
 
             positionDescriptorPool.generatePositionDescriptors(frameIndex,
-                                                               simulationSet.state.position);
+                                                               pSimulationSet->state.position);
 
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
@@ -997,9 +976,11 @@ int Application::mainloop() {
 
                                         if constexpr (false) {
                                             auto *theVertexDescriptor =
-                                                simulationSet.resources.vertexDescriptor.find(0);
+                                                pSimulationSet->resources.vertexDescriptor.find(
+                                                    foeIdPersistentGroup | foeIdTypeResource | 0);
                                             auto *theMaterial =
-                                                simulationSet.resources.material.find(4);
+                                                pSimulationSet->resources.material.find(
+                                                    foeIdPersistentGroup | foeIdTypeResource | 4);
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
@@ -1021,7 +1002,7 @@ int Application::mainloop() {
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 1, 1,
-                                                &simulationSet.state.position[renderID]
+                                                &pSimulationSet->state.position[renderID]
                                                      ->descriptorSet,
                                                 0, nullptr);
 
@@ -1045,13 +1026,17 @@ int Application::mainloop() {
                                         if constexpr (true) {
                                             // Render Model
                                             auto *theVertexDescriptor =
-                                                simulationSet.resources.vertexDescriptor.find(1);
+                                                pSimulationSet->resources.vertexDescriptor.find(
+                                                    foeIdPersistentGroup | foeIdTypeResource | 1);
                                             auto *theMaterial =
-                                                simulationSet.resources.material.find(5);
+                                                pSimulationSet->resources.material.find(
+                                                    foeIdPersistentGroup | foeIdTypeResource | 5);
                                             bool boned = false;
-                                            auto *pMesh = simulationSet.resources.mesh.find(13);
+                                            auto *pMesh = pSimulationSet->resources.mesh.find(
+                                                foeIdPersistentGroup | foeIdTypeResource | 13);
                                             auto *pArmature =
-                                                simulationSet.resources.armature.find(12);
+                                                pSimulationSet->resources.armature.find(
+                                                    foeIdPersistentGroup | foeIdTypeResource | 12);
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
@@ -1299,8 +1284,10 @@ int Application::mainloop() {
 
                         if constexpr (false) {
                             auto *theVertexDescriptor =
-                                simulationSet.resources.vertexDescriptor.find(0);
-                            auto *theMaterial = simulationSet.resources.material.find(4);
+                                pSimulationSet->resources.vertexDescriptor.find(
+                                    foeIdPersistentGroup | foeIdTypeResource | 0);
+                            auto *theMaterial = pSimulationSet->resources.material.find(
+                                foeIdPersistentGroup | foeIdTypeResource | 4);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||
@@ -1318,7 +1305,8 @@ int Application::mainloop() {
                                                     layout, 0, 1, &camera.descriptor, 0, nullptr);
                             vkCmdBindDescriptorSets(
                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
-                                &simulationSet.state.position[renderID]->descriptorSet, 0, nullptr);
+                                &pSimulationSet->state.position[renderID]->descriptorSet, 0,
+                                nullptr);
 
                             if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
                                 set != VK_NULL_HANDLE) {
@@ -1337,11 +1325,15 @@ int Application::mainloop() {
                         if constexpr (true) {
                             // Render Model
                             auto *theVertexDescriptor =
-                                simulationSet.resources.vertexDescriptor.find(2);
-                            auto *theMaterial = simulationSet.resources.material.find(5);
+                                pSimulationSet->resources.vertexDescriptor.find(
+                                    foeIdPersistentGroup | foeIdTypeResource | 2);
+                            auto *theMaterial = pSimulationSet->resources.material.find(
+                                foeIdPersistentGroup | foeIdTypeResource | 5);
                             bool boned = true;
-                            auto *pMesh = simulationSet.resources.mesh.find(13);
-                            auto *pArmature = simulationSet.resources.armature.find(12);
+                            auto *pMesh = pSimulationSet->resources.mesh.find(
+                                foeIdPersistentGroup | foeIdTypeResource | 13);
+                            auto *pArmature = pSimulationSet->resources.armature.find(
+                                foeIdPersistentGroup | foeIdTypeResource | 12);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||

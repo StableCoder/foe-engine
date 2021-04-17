@@ -84,7 +84,7 @@ struct Application {
     foeId cameraID;
     foeId renderID;
 
-    SimulationSet simulationSet;
+    std::unique_ptr<SimulationSet> pSimulationSet;
 
     FrameTimer frameTime;
 
