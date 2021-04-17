@@ -23,9 +23,17 @@
 #include <sstream>
 #include <string>
 
+/// The full ID for some object, combined of it's constituent parts
 using foeId = uint32_t;
+/// Represents an Id's 'Group' portion of an ID
 using foeIdGroup = foeId;
+/// Represents the normalized value of an ID's Group, shifted to be zero-based
+using foeIdGroupValue = foeIdGroup;
+/// Represents an Id's 'Type' portion of an ID
 using foeIdType = foeId;
+/// Represents the normalized value of an ID's Type, shifted to be zero-based
+using foeIdTypeValue = foeIdType;
+/// Represents an index within a particular 'Group'
 using foeIdIndex = foeId;
 
 enum : uint32_t {

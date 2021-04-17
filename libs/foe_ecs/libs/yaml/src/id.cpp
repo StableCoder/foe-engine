@@ -19,21 +19,14 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-auto yaml_read_id(YAML::Node const &node) -> foeId {
+void yaml_read_id(YAML::Node const &node, foeIdGroupValue &groupValue, foeIdIndex &index) {
     try {
         // Group
-        foeIdGroup idGroup = 0;
-        /*
-        if (yaml_read_optional("group_id", node, idGroup)) {
-            idGroup = foeIdValueToGroup(idGroup);
-        }
-        */
+        groupValue = FOE_INVALID_ID;
+        yaml_read_optional("group_id", node, groupValue);
 
         // Index
-        foeIdIndex idIndex;
-        yaml_read_required("index_id", node, idIndex);
-
-        return idGroup | idIndex;
+        yaml_read_required("index_id", node, index);
     } catch (foeYamlException const &e) {
         throw e;
     }
@@ -46,7 +39,7 @@ void yaml_write_id(foeId id, YAML::Node &node) {
 
         // Group, if not part of the persistent group
         if (foeIdGetGroup(id) != foeIdPersistentGroup) {
-            yaml_write_required("group_id", foeIdGetGroup(id), node);
+            yaml_write_required("group_id", foeIdGroupToValue(id), node);
         }
     } catch (foeYamlException const &e) {
         throw e;
