@@ -23,7 +23,7 @@
 #include <shared_mutex>
 #include <vector>
 
-class foeMaterial;
+struct foeMaterial;
 
 class foeMaterialPool {
   public:

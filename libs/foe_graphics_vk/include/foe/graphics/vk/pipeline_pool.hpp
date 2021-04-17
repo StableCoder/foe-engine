@@ -23,8 +23,8 @@
 
 #include <vector>
 
-class foeGfxVertexDescriptor;
-class foeGfxVkFragmentDescriptor;
+struct foeGfxVertexDescriptor;
+struct foeGfxVkFragmentDescriptor;
 class foeGfxVkBuiltinDescriptorSets;
 
 class foeGfxVkPipelinePool {

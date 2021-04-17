@@ -22,7 +22,7 @@
 #include <filesystem>
 #include <vector>
 
-struct foeImporterBase;
+class foeImporterBase;
 
 class foeImporterGenerator {
   public:
