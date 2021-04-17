@@ -108,11 +108,13 @@ enum : foeIdType {
         (foeIdInvalid << (foeIdNumIndexBits + foeIdNumGroupBits)) >> (foeIdNumGroupBits),
     /// Maximum value that the type section can represent
     foeIdMaxTypeValue = foeIdValidTypeBits >> foeIdNumIndexBits,
+
+    foeIdTypeEntity = 0 << foeIdTypeBitShift,
+    foeIdTypeResource = 1 << foeIdTypeBitShift,
 };
 
-inline bool foeIdIsResource(foeId id) { return id & foeIdValidTypeBits; }
-
-inline bool foeIdIsEntity(foeId id) { return id ^ foeIdValidTypeBits; }
+inline bool foeIdIsEntity(foeId id) { return (id & foeIdValidTypeBits) == foeIdTypeEntity; }
+inline bool foeIdIsResource(foeId id) { return (id & foeIdValidTypeBits) == foeIdTypeResource; }
 
 // ID Index
 
@@ -126,5 +128,15 @@ enum : foeIdIndex {
 };
 
 inline foeIdGroup foeIdGetIndex(foeId id) { return (id & foeIdValidIndexBits); }
+
+// Other ID Functions
+
+inline foeId foeIdCreateEntity(foeIdGroup group, foeIdIndex index) {
+    return group | foeIdTypeEntity | index;
+}
+
+inline foeId foeIdCreateResource(foeIdGroup group, foeIdIndex index) {
+    return group | foeIdTypeResource | index;
+}
 
 #endif // FOE_ID_HPP
