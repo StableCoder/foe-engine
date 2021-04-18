@@ -35,7 +35,7 @@ struct foeIdGroupTranslator;
  */
 FOE_ECS_YAML_EXPORT void yaml_read_id_required(std::string const &nodeName,
                                                YAML::Node const &node,
-                                               foeIdGroupTranslator *pTranslator,
+                                               foeIdGroupTranslator const *pTranslator,
                                                foeId &id);
 
 /** @brief Reads the GroupValue and Index portions of an ID
@@ -51,7 +51,7 @@ FOE_ECS_YAML_EXPORT void yaml_read_id_required(std::string const &nodeName,
  */
 FOE_ECS_YAML_EXPORT bool yaml_read_id_optional(std::string const &nodeName,
                                                YAML::Node const &node,
-                                               foeIdGroupTranslator *pTranslator,
+                                               foeIdGroupTranslator const *pTranslator,
                                                foeId &id);
 
 /** @brief Writes the given ID's GroupValue and Index to the Yaml node

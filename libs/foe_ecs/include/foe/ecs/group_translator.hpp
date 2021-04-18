@@ -43,7 +43,7 @@ FOE_ECS_EXPORT auto foeIdCreateTranslator(std::vector<foeIdGroupValueNameSet> co
                                           std::vector<foeIdGroupValueNameSet> const &destination,
                                           foeIdGroupTranslator *pTranslator) -> std::error_code;
 
-FOE_ECS_EXPORT auto foeIdTranslateGroupValue(foeIdGroupTranslator *pTranslator,
+FOE_ECS_EXPORT auto foeIdTranslateGroupValue(foeIdGroupTranslator const *pTranslator,
                                              foeIdGroupValue groupValue) -> foeIdGroup;
 
 #endif // FOE_ECS_GROUP_TRANSLATOR_HPP

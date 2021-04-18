@@ -22,7 +22,7 @@
 
 void yaml_read_id_required(std::string const &nodeName,
                            YAML::Node const &node,
-                           foeIdGroupTranslator *pTranslator,
+                           foeIdGroupTranslator const *pTranslator,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -45,7 +45,7 @@ void yaml_read_id_required(std::string const &nodeName,
 
 bool yaml_read_id_optional(std::string const &nodeName,
                            YAML::Node const &node,
-                           foeIdGroupTranslator *pTranslator,
+                           foeIdGroupTranslator const *pTranslator,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {

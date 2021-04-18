@@ -49,7 +49,7 @@ auto foeIdCreateTranslator(std::vector<foeIdGroupValueNameSet> const &source,
     return FOE_ECS_SUCCESS;
 }
 
-auto foeIdTranslateGroupValue(foeIdGroupTranslator *pTranslator, foeIdGroupValue groupValue)
+auto foeIdTranslateGroupValue(foeIdGroupTranslator const *pTranslator, foeIdGroupValue groupValue)
     -> foeIdGroup {
     for (auto const &it : pTranslator->translations) {
         if (it.sourceGroupValue == groupValue) {
