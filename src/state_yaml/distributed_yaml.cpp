@@ -16,6 +16,7 @@
 
 #include "distributed_yaml.hpp"
 
+#include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/log.hpp>
@@ -99,10 +100,10 @@ foeDistributedYamlImporter::foeDistributedYamlImporter(
 namespace {
 
 bool importDependenciesFromNode(YAML::Node const &dependenciesNode,
-                                std::vector<foeImporterDependencySet> &dependencies) {
+                                std::vector<foeIdGroupValueNameSet> &dependencies) {
     try {
         for (auto it = dependenciesNode.begin(); it != dependenciesNode.end(); ++it) {
-            foeImporterDependencySet newDependency;
+            foeIdGroupValueNameSet newDependency;
 
             yaml_read_required("name", *it, newDependency.name);
             yaml_read_required("group_id", *it, newDependency.groupValue);
@@ -123,12 +124,12 @@ foeIdGroup foeDistributedYamlImporter::group() const noexcept { return mGroup; }
 
 std::string foeDistributedYamlImporter::name() const noexcept { return mRootDir.stem().string(); }
 
-void foeDistributedYamlImporter::setGroupTranslation(foeGroupTranslation &&groupTranslation) {
-    mGroupTranslation = std::move(groupTranslation);
+void foeDistributedYamlImporter::setGroupTranslator(foeIdGroupTranslator &&groupTranslation) {
+    mGroupTranslator = std::move(groupTranslation);
 }
 
 bool foeDistributedYamlImporter::getDependencies(
-    std::vector<foeImporterDependencySet> &dependencies) {
+    std::vector<foeIdGroupValueNameSet> &dependencies) {
     YAML::Node node;
     if (!openYamlFile(mRootDir / dependenciesFilePath, node))
         return false;
@@ -173,7 +174,7 @@ bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
             return false;
 
         try {
-            auto entity = yaml_read_entity(entityNode, mGroup, &mGroupTranslation, pStatePools);
+            auto entity = yaml_read_entity(entityNode, mGroup, &mGroupTranslator, pStatePools);
             if (entity == FOE_INVALID_ID) {
                 return false;
             } else {
@@ -209,18 +210,9 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
             return false;
 
         try {
-            foeIdGroupValue groupValue;
-            foeIdIndex index;
-            yaml_read_id(node, groupValue, index);
-
-            foeIdGroup group = foeIdPersistentGroup;
-            if (groupValue != FOE_INVALID_ID &&
-                !mGroupTranslation.targetFromNormalizedGroup(groupValue, group)) {
-                FOE_LOG(General, Error, "Failed to translate from normalized group")
-                return false;
-            }
-
-            foeId resId = foeIdCreateResource(group, index);
+            foeId resId;
+            yaml_read_id_required("", node, nullptr, resId);
+            resId = foeIdConvertToResource(resId);
 
             std::string type;
             uint32_t version;

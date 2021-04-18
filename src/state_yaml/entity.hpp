@@ -22,12 +22,12 @@
 
 #include <vector>
 
-class foeGroupTranslation;
+class foeIdGroupTranslator;
 struct StatePools;
 
 auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroup targetedGroupID,
-                      foeGroupTranslation *pGroupTranslations,
+                      foeIdGroupTranslator *pGroupTranslator,
                       StatePools *pStatePools) -> foeId;
 
 auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node;

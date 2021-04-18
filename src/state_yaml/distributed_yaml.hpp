@@ -14,6 +14,7 @@
     limitations under the License.
 */
 
+#include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/id.hpp>
 #include <foe/resource/create_info_base.hpp>
 #include <yaml-cpp/yaml.h>
@@ -36,9 +37,9 @@ class foeDistributedYamlImporter : public foeImporterBase {
 
     foeIdGroup group() const noexcept override;
     std::string name() const noexcept override;
-    void setGroupTranslation(foeGroupTranslation &&groupTranslation) override;
+    void setGroupTranslator(foeIdGroupTranslator &&groupTranslator) override;
 
-    bool getDependencies(std::vector<foeImporterDependencySet> &dependencies) override;
+    bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) override;
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) override;
     bool importStateData(StatePools *pStatePools) override;
 
@@ -51,5 +52,5 @@ class foeDistributedYamlImporter : public foeImporterBase {
     foeIdGroup mGroup;
     foeDistributedYamlImporterGenerator *mGenerator;
 
-    foeGroupTranslation mGroupTranslation;
+    foeIdGroupTranslator mGroupTranslator;
 };

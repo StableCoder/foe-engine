@@ -16,6 +16,7 @@
 
 #include "import_state.hpp"
 
+#include <foe/ecs/group_translator.hpp>
 #include <foe/log.hpp>
 #include <foe/search_paths.hpp>
 
@@ -26,7 +27,7 @@
 
 namespace {
 
-bool generateDependencyImporters(std::vector<foeImporterDependencySet> const &dependencies,
+bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &dependencies,
                                  foeSearchPaths *pSearchPaths,
                                  std::vector<std::unique_ptr<foeImporterBase>> &importers) {
     std::vector<std::unique_ptr<foeImporterBase>> newImporters;
@@ -76,7 +77,7 @@ auto importState(std::filesystem::path stateDataPath,
     }
 
     // Get the list of dependencies
-    std::vector<foeImporterDependencySet> dependencies;
+    std::vector<foeIdGroupValueNameSet> dependencies;
     bool pass = persistentImporter->getDependencies(dependencies);
     if (!pass)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
@@ -100,7 +101,7 @@ auto importState(std::filesystem::path stateDataPath,
     { // Check transitive dependencies
         auto pImporter = dependencyImporters.begin();
         for (auto depIt = dependencies.begin(); depIt != dependencies.end(); ++depIt, ++pImporter) {
-            std::vector<foeImporterDependencySet> transitiveDependencies;
+            std::vector<foeIdGroupValueNameSet> transitiveDependencies;
             pass = pImporter->get()->getDependencies(transitiveDependencies);
             if (!pass) {
                 FOE_LOG(General, Error, "Failed to import sub-dependencies of the '{}' dependency",
@@ -135,13 +136,13 @@ auto importState(std::filesystem::path stateDataPath,
         foeIdGroup groupValue = 0;
         for (auto &it : dependencyImporters) {
             // Setup importer translations
-            std::vector<foeImporterDependencySet> groupDependencies;
+            std::vector<foeIdGroupValueNameSet> groupDependencies;
             it->getDependencies(groupDependencies);
 
-            foeGroupTranslation newTranslation;
-            newTranslation.generateTranslations(groupDependencies, &pSimulationSet->groupData);
+            foeIdGroupTranslator newTranslator;
+            auto errC = foeIdCreateTranslator(groupDependencies, dependencies, &newTranslator);
 
-            it->setGroupTranslation(std::move(newTranslation));
+            it->setGroupTranslator(std::move(newTranslator));
 
             // Add to GroupData
             std::string name{it->name()};

@@ -21,17 +21,38 @@
 #include <foe/ecs/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
+struct foeIdGroupTranslator;
+
 /** @brief Reads the GroupValue and Index portions of an ID
+ * @param nodeName The name of the sub-node to read the id from, or empty for the given node
  * @param node Yaml node to parse
- * @param groupValue Returns the normalized group value, or FOE_INDEX_ID if the value wasn't found
- * @param index Id's index value
+ * @param pTranslator If given, translates the read-in groupValue to a different final IdGroup
+ * @param id Returns the final foeId value
+ * @throws A descriptive exception on failure to parse.
  *
  * groupValue is from the 'group_id' node.
  * index is read from the 'index_id' node.
  */
-FOE_ECS_YAML_EXPORT void yaml_read_id(YAML::Node const &node,
-                                      foeIdGroupValue &groupValue,
-                                      foeIdIndex &index);
+FOE_ECS_YAML_EXPORT void yaml_read_id_required(std::string const &nodeName,
+                                               YAML::Node const &node,
+                                               foeIdGroupTranslator *pTranslator,
+                                               foeId &id);
+
+/** @brief Reads the GroupValue and Index portions of an ID
+ * @param nodeName The name of the sub-node to read the id from, or empty for the given node
+ * @param node Yaml node to parse
+ * @param pTranslator If given, translates the read-in groupValue to a different final IdGroup
+ * @param id Returns the final foeId value
+ * @throws A descriptive exception on failure to parse.
+ * @returns True if the ID was read in, false if the index_id node was missing
+ *
+ * groupValue is from the 'group_id' node.
+ * index is read from the 'index_id' node.
+ */
+FOE_ECS_YAML_EXPORT bool yaml_read_id_optional(std::string const &nodeName,
+                                               YAML::Node const &node,
+                                               foeIdGroupTranslator *pTranslator,
+                                               foeId &id);
 
 /** @brief Writes the given ID's GroupValue and Index to the Yaml node
  * @param id ID to be converted to Yaml

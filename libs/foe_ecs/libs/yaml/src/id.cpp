@@ -16,20 +16,66 @@
 
 #include <foe/ecs/yaml/id.hpp>
 
+#include <foe/ecs/group_translator.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-void yaml_read_id(YAML::Node const &node, foeIdGroupValue &groupValue, foeIdIndex &index) {
+void yaml_read_id_required(std::string const &nodeName,
+                           YAML::Node const &node,
+                           foeIdGroupTranslator *pTranslator,
+                           foeId &id) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(nodeName + " - Required node to parse foeId not found");
+    }
+
+    try {
+        if (!yaml_read_id_optional("", node, pTranslator, id)) {
+            throw foeYamlException(nodeName +
+                                   "::index_id - Coudl not find required node to parse foeId");
+        }
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException(nodeName + "::" + e.whatStr());
+        }
+    }
+}
+
+bool yaml_read_id_optional(std::string const &nodeName,
+                           YAML::Node const &node,
+                           foeIdGroupTranslator *pTranslator,
+                           foeId &id) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
     try {
         // Group
-        groupValue = FOE_INVALID_ID;
-        yaml_read_optional("group_id", node, groupValue);
+        foeIdGroup group = foeIdPersistentGroup;
+        foeIdGroupValue groupValue;
+        if (yaml_read_optional("group_id", node, groupValue)) {
+            // If we were given a translator, use it otherwise the value is just converted
+            if (pTranslator != nullptr) {
+                group = foeIdTranslateGroupValue(pTranslator, groupValue);
+            } else {
+                group = foeIdValueToGroup(groupValue);
+            }
+        }
 
         // Index
-        yaml_read_required("index_id", node, index);
+        foeIdIndex index;
+        if (!yaml_read_optional("index_id", node, index))
+            return false;
+
+        id = foeIdCreate(group, index);
     } catch (foeYamlException const &e) {
         throw e;
     }
+
+    return true;
 }
 
 void yaml_write_id(foeId id, YAML::Node &node) {

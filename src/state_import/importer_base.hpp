@@ -17,7 +17,7 @@
 #ifndef IMPORTER_BASE_HPP
 #define IMPORTER_BASE_HPP
 
-#include "group_translation.hpp"
+#include <foe/ecs/id.hpp>
 
 #include <string>
 #include <vector>
@@ -27,11 +27,8 @@ struct StatePools;
 struct ResourcePools;
 struct ResourceLoaders;
 struct foeResourceCreateInfoBase;
-
-struct foeImporterDependencySet {
-    std::string name;
-    foeIdGroup groupValue;
-};
+struct foeIdGroupTranslator;
+struct foeIdGroupValueNameSet;
 
 class foeImporterBase {
   public:
@@ -39,9 +36,9 @@ class foeImporterBase {
 
     virtual foeIdGroup group() const noexcept = 0;
     virtual std::string name() const noexcept = 0;
-    virtual void setGroupTranslation(foeGroupTranslation &&groupTranslation) = 0;
+    virtual void setGroupTranslator(foeIdGroupTranslator &&groupTranslator) = 0;
 
-    virtual bool getDependencies(std::vector<foeImporterDependencySet> &dependencies) = 0;
+    virtual bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) = 0;
     virtual bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(StatePools *pStatePools) = 0;
 

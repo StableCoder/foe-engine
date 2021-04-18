@@ -28,11 +28,9 @@ class DummyImporter : public foeImporterBase {
 
     foeIdGroup group() const noexcept final { return mGroup; }
     std::string name() const noexcept final { return mName; }
-    void setGroupTranslation(foeGroupTranslation &&groupTranslation) final {}
+    void setGroupTranslator(foeIdGroupTranslator &&groupTranslation) final {}
 
-    bool getDependencies(std::vector<foeImporterDependencySet> &dependencies) final {
-        return false;
-    }
+    bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) final { return false; }
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool importStateData(StatePools *pStatePools) final { return false; }
 
