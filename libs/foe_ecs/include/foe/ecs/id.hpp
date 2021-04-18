@@ -131,8 +131,18 @@ inline foeIdGroup foeIdGetIndex(foeId id) { return (id & foeIdValidIndexBits); }
 
 // Other ID Functions
 
+inline foeId foeIdCreate(foeIdGroup group, foeIdIndex index) { return group | index; }
+
+inline foeId foeIdConvertToEntity(foeId id) {
+    return foeIdGetGroup(id) | foeIdTypeEntity | foeIdGetIndex(id);
+}
+
 inline foeId foeIdCreateEntity(foeIdGroup group, foeIdIndex index) {
     return group | foeIdTypeEntity | index;
+}
+
+inline foeId foeIdConvertToResource(foeId id) {
+    return foeIdGetGroup(id) | foeIdTypeResource | foeIdGetIndex(id);
 }
 
 inline foeId foeIdCreateResource(foeIdGroup group, foeIdIndex index) {
