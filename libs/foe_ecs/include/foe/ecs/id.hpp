@@ -133,6 +133,10 @@ inline foeIdGroup foeIdGetIndex(foeId id) { return (id & foeIdValidIndexBits); }
 
 inline foeId foeIdCreate(foeIdGroup group, foeIdIndex index) { return group | index; }
 
+inline foeId foeIdCreateType(foeIdGroup group, foeIdType type, foeIdIndex index) {
+    return group | type | index;
+}
+
 inline foeId foeIdConvertToEntity(foeId id) {
     return foeIdGetGroup(id) | foeIdTypeEntity | foeIdGetIndex(id);
 }

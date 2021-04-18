@@ -23,6 +23,7 @@
 void yaml_read_id_required(std::string const &nodeName,
                            YAML::Node const &node,
                            foeIdGroupTranslator const *pTranslator,
+                           foeIdType idType,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -30,7 +31,7 @@ void yaml_read_id_required(std::string const &nodeName,
     }
 
     try {
-        if (!yaml_read_id_optional("", node, pTranslator, id)) {
+        if (!yaml_read_id_optional("", subNode, pTranslator, idType, id)) {
             throw foeYamlException(nodeName +
                                    "::index_id - Coudl not find required node to parse foeId");
         }
@@ -46,6 +47,7 @@ void yaml_read_id_required(std::string const &nodeName,
 bool yaml_read_id_optional(std::string const &nodeName,
                            YAML::Node const &node,
                            foeIdGroupTranslator const *pTranslator,
+                           foeIdType idType,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -56,7 +58,7 @@ bool yaml_read_id_optional(std::string const &nodeName,
         // Group
         foeIdGroup group = foeIdPersistentGroup;
         foeIdGroupValue groupValue;
-        if (yaml_read_optional("group_id", node, groupValue)) {
+        if (yaml_read_optional("group_id", subNode, groupValue)) {
             // If we were given a translator, use it otherwise the value is just converted
             if (pTranslator != nullptr) {
                 group = foeIdTranslateGroupValue(pTranslator, groupValue);
@@ -67,10 +69,10 @@ bool yaml_read_id_optional(std::string const &nodeName,
 
         // Index
         foeIdIndex index;
-        if (!yaml_read_optional("index_id", node, index))
+        if (!yaml_read_optional("index_id", subNode, index))
             return false;
 
-        id = foeIdCreate(group, index);
+        id = foeIdCreateType(group, idType, index);
     } catch (foeYamlException const &e) {
         throw e;
     }

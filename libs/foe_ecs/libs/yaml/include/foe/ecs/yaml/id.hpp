@@ -27,6 +27,7 @@ struct foeIdGroupTranslator;
  * @param nodeName The name of the sub-node to read the id from, or empty for the given node
  * @param node Yaml node to parse
  * @param pTranslator If given, translates the read-in groupValue to a different final IdGroup
+ * @param idType Determines the IdType to be returned, such as an entity or resource ID
  * @param id Returns the final foeId value
  * @throws A descriptive exception on failure to parse.
  *
@@ -36,12 +37,14 @@ struct foeIdGroupTranslator;
 FOE_ECS_YAML_EXPORT void yaml_read_id_required(std::string const &nodeName,
                                                YAML::Node const &node,
                                                foeIdGroupTranslator const *pTranslator,
+                                               foeIdType idType,
                                                foeId &id);
 
 /** @brief Reads the GroupValue and Index portions of an ID
  * @param nodeName The name of the sub-node to read the id from, or empty for the given node
  * @param node Yaml node to parse
  * @param pTranslator If given, translates the read-in groupValue to a different final IdGroup
+ * @param idType Determines the IdType to be returned, such as an entity or resource ID
  * @param id Returns the final foeId value
  * @throws A descriptive exception on failure to parse.
  * @returns True if the ID was read in, false if the index_id node was missing
@@ -52,6 +55,7 @@ FOE_ECS_YAML_EXPORT void yaml_read_id_required(std::string const &nodeName,
 FOE_ECS_YAML_EXPORT bool yaml_read_id_optional(std::string const &nodeName,
                                                YAML::Node const &node,
                                                foeIdGroupTranslator const *pTranslator,
+                                               foeIdType idType,
                                                foeId &id);
 
 /** @brief Writes the given ID's GroupValue and Index to the Yaml node
