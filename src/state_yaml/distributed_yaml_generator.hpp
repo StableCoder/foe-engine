@@ -27,9 +27,13 @@
 #include <functional>
 #include <map>
 
+struct foeIdGroupTranslator;
+
 class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
   public:
-    using ImportFunc = std::function<void(YAML::Node const &, foeResourceCreateInfoBase **)>;
+    using ImportFunc = void (*)(YAML::Node const &,
+                                foeIdGroupTranslator const *,
+                                foeResourceCreateInfoBase **);
 
     auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * override;

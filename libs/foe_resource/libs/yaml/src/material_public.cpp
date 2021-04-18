@@ -24,11 +24,13 @@
 
 #include <fstream>
 
-bool yaml_read_material_definition(YAML::Node const &node, foeMaterialCreateInfo &createInfo) {
+bool yaml_read_material_definition(YAML::Node const &node,
+                                   foeIdGroupTranslator const *pTranslator,
+                                   foeMaterialCreateInfo &createInfo) {
     try {
         return yaml_read_material_definition(
-            "", node, createInfo.fragmentShader, createInfo.fragDescriptorName, createInfo.image,
-            createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
+            "", node, pTranslator, createInfo.fragmentShader, createInfo.fragDescriptorName,
+            createInfo.image, createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
             createInfo.hasDepthStencilSCI, createInfo.depthStencilSCI, createInfo.hasColourBlendSCI,
             createInfo.colourBlendSCI, createInfo.colourBlendAttachments);
     } catch (foeYamlException const &e) {
@@ -38,10 +40,11 @@ bool yaml_read_material_definition(YAML::Node const &node, foeMaterialCreateInfo
 }
 
 void yaml_read_material_definition2(YAML::Node const &node,
+                                    foeIdGroupTranslator const *pTranslator,
                                     foeResourceCreateInfoBase **ppCreateInfo) {
     foeMaterialCreateInfo ci;
 
-    yaml_read_material_definition(node, ci);
+    yaml_read_material_definition(node, pTranslator, ci);
 
     *ppCreateInfo = new foeMaterialCreateInfo(std::move(ci));
 }

@@ -17,6 +17,7 @@
 #include <foe/resource/yaml/vertex_descriptor.hpp>
 
 #include <foe/ecs/id.hpp>
+#include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/yaml/vertex_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
@@ -31,6 +32,7 @@ namespace {
 bool yaml_read_vertex_descriptor_definition(
     std::string const &nodeName,
     YAML::Node const &node,
+    foeIdGroupTranslator const *pTranslator,
     foeId &vertexShader,
     foeId &tessellationControlShader,
     foeId &tessellationEvaluationShader,
@@ -48,11 +50,14 @@ bool yaml_read_vertex_descriptor_definition(
     try {
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
-            yaml_read_optional("vertex_shader", resNode, vertexShader);
-            yaml_read_optional("tessellation_control_shader", resNode, tessellationControlShader);
-            yaml_read_optional("tessellation_evaluation_shader", resNode,
-                               tessellationEvaluationShader);
-            yaml_read_optional("geometry_shader", resNode, geometryShader);
+            yaml_read_id_optional("vertex_shader", resNode, pTranslator, foeIdTypeResource,
+                                  vertexShader);
+            yaml_read_id_optional("tessellation_control_shader", resNode, pTranslator,
+                                  foeIdTypeResource, tessellationControlShader);
+            yaml_read_id_optional("tessellation_evaluation_shader", resNode, pTranslator,
+                                  foeIdTypeResource, tessellationEvaluationShader);
+            yaml_read_id_optional("geometry_shader", resNode, pTranslator, foeIdTypeResource,
+                                  geometryShader);
         }
 
         // Graphics Data
@@ -68,10 +73,11 @@ bool yaml_read_vertex_descriptor_definition(
 } // namespace
 
 bool yaml_read_vertex_descriptor_definition(YAML::Node const &node,
+                                            foeIdGroupTranslator const *pTranslator,
                                             foeVertexDescriptorCreateInfo &createInfo) {
     try {
         yaml_read_vertex_descriptor_definition(
-            "", node, createInfo.vertexShader, createInfo.tessellationControlShader,
+            "", node, pTranslator, createInfo.vertexShader, createInfo.tessellationControlShader,
             createInfo.tessellationEvaluationShader, createInfo.geometryShader,
             createInfo.vertexInputSCI, createInfo.inputBindings, createInfo.inputAttributes,
             createInfo.inputAssemblySCI, createInfo.tessellationSCI);
@@ -84,10 +90,11 @@ bool yaml_read_vertex_descriptor_definition(YAML::Node const &node,
 }
 
 void yaml_read_vertex_descriptor_definition2(YAML::Node const &node,
+                                             foeIdGroupTranslator const *pTranslator,
                                              foeResourceCreateInfoBase **ppCreateInfo) {
     foeVertexDescriptorCreateInfo ci;
 
-    yaml_read_vertex_descriptor_definition(node, ci);
+    yaml_read_vertex_descriptor_definition(node, pTranslator, ci);
 
     *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
 }

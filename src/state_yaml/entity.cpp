@@ -28,7 +28,7 @@ auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroupTranslator *pGroupTranslator,
                       StatePools *pStatePools) -> foeId {
     foeId entity;
-    yaml_read_id_required("", node, pGroupTranslator, entity);
+    yaml_read_id_required("", node, pGroupTranslator, foeIdTypeEntity, entity);
 
     if (auto dataNode = node["position_3d"]; dataNode) {
         try {

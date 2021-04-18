@@ -37,6 +37,7 @@ bool yaml_write_image_declaration(std::string const &nodeName,
 
 bool yaml_read_image_definition(std::string const &nodeName,
                                 YAML::Node const &node,
+                                foeIdGroupTranslator const *pTranslator,
                                 std::string &fileName) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {

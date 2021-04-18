@@ -21,11 +21,17 @@
 #include <foe/resource/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
+struct foeIdGroupTranslator;
+
 FOE_RES_YAML_EXPORT bool yaml_read_vertex_descriptor_definition(
-    YAML::Node const &node, foeVertexDescriptorCreateInfo &createInfo);
+    YAML::Node const &node,
+    foeIdGroupTranslator const *pTranslator,
+    foeVertexDescriptorCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT void yaml_read_vertex_descriptor_definition2(
-    YAML::Node const &node, foeResourceCreateInfoBase **ppCreateInfo);
+    YAML::Node const &node,
+    foeIdGroupTranslator const *pTranslator,
+    foeResourceCreateInfoBase **ppCreateInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_vertex_descriptor_definition(
     foeVertexDescriptor const *pVertexDescriptor);

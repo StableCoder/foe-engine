@@ -16,6 +16,7 @@
 
 #include "material.hpp"
 
+#include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/yaml/fragment_descriptor.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -80,6 +81,7 @@ bool yaml_write_material_definition(std::string const &nodeName,
 bool yaml_read_material_definition(
     std::string const &nodeName,
     YAML::Node const &node,
+    foeIdGroupTranslator const *pTranslator,
     foeId &fragmentShader,
     std::string &fragmentDescriptor,
     foeId &image,
@@ -98,9 +100,11 @@ bool yaml_read_material_definition(
     try {
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
-            yaml_read_optional("fragment_shader", resNode, fragmentShader);
+            yaml_read_id_optional("fragment_shader", resNode, pTranslator, foeIdTypeResource,
+                                  fragmentShader);
+            yaml_read_id_optional("image", resNode, pTranslator, foeIdTypeResource, image);
+
             yaml_read_optional("fragment_descriptor", resNode, fragmentDescriptor);
-            yaml_read_optional("image", resNode, image);
         }
 
         // Graphics Data

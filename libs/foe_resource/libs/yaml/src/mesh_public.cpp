@@ -20,7 +20,9 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-bool yaml_read_mesh_definition(YAML::Node const &node, foeMeshCreateInfo &createInfo) {
+bool yaml_read_mesh_definition(YAML::Node const &node,
+                               foeIdGroupTranslator const *pTranslator,
+                               foeMeshCreateInfo &createInfo) {
     try {
         // Read the definition
         if (auto externalFileNode = node["external_file"]; externalFileNode) {
@@ -51,10 +53,12 @@ bool yaml_read_mesh_definition(YAML::Node const &node, foeMeshCreateInfo &create
     return true;
 }
 
-void yaml_read_mesh_definition2(YAML::Node const &node, foeResourceCreateInfoBase **ppCreateInfo) {
+void yaml_read_mesh_definition2(YAML::Node const &node,
+                                foeIdGroupTranslator const *pTranslator,
+                                foeResourceCreateInfoBase **ppCreateInfo) {
     foeMeshCreateInfo ci;
 
-    yaml_read_mesh_definition(node, ci);
+    yaml_read_mesh_definition(node, pTranslator, ci);
 
     *ppCreateInfo = new foeMeshCreateInfo(std::move(ci));
 }

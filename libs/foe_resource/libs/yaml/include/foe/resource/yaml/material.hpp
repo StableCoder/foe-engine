@@ -21,10 +21,14 @@
 #include <foe/resource/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
+struct foeIdGroupTranslator;
+
 FOE_RES_YAML_EXPORT bool yaml_read_material_definition(YAML::Node const &node,
+                                                       foeIdGroupTranslator const *pTranslator,
                                                        foeMaterialCreateInfo &createInfo);
 
 FOE_RES_YAML_EXPORT void yaml_read_material_definition2(YAML::Node const &node,
+                                                        foeIdGroupTranslator const *pTranslator,
                                                         foeResourceCreateInfoBase **ppCreateInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_material_definition(foeMaterial const *pMaterial);

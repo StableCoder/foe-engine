@@ -211,8 +211,7 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
 
         try {
             foeId resId;
-            yaml_read_id_required("", node, nullptr, resId);
-            resId = foeIdConvertToResource(resId);
+            yaml_read_id_required("", node, nullptr, foeIdTypeResource, resId);
 
             std::string type;
             uint32_t version;
@@ -228,7 +227,7 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
             }
 
             foeResourceCreateInfoBase *pCreateInfo{nullptr};
-            searchIt->second(node, &pCreateInfo);
+            searchIt->second(node, &mGroupTranslator, &pCreateInfo);
             std::unique_ptr<foeResourceCreateInfoBase> createInfo{pCreateInfo};
 
             if (type == "armature" && version == 1) {
@@ -314,7 +313,7 @@ GOT_RESOURCE_NODE:
         }
 
         foeResourceCreateInfoBase *pCreateInfo{nullptr};
-        searchIt->second(rootNode, &pCreateInfo);
+        searchIt->second(rootNode, &mGroupTranslator, &pCreateInfo);
         return pCreateInfo;
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());

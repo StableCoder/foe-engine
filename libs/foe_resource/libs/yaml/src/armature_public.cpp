@@ -20,7 +20,9 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-bool yaml_read_armature_definition(YAML::Node const &node, foeArmatureCreateInfo &createInfo) {
+bool yaml_read_armature_definition(YAML::Node const &node,
+                                   foeIdGroupTranslator const *pTranslator,
+                                   foeArmatureCreateInfo &createInfo) {
     // Sub-Resources
 
     // Data
@@ -63,10 +65,11 @@ bool yaml_read_armature_definition(YAML::Node const &node, foeArmatureCreateInfo
 }
 
 void yaml_read_armature_definition2(YAML::Node const &node,
+                                    foeIdGroupTranslator const *pTranslator,
                                     foeResourceCreateInfoBase **ppCreateInfo) {
     foeArmatureCreateInfo ci;
 
-    yaml_read_armature_definition(node, ci);
+    yaml_read_armature_definition(node, pTranslator, ci);
 
     *ppCreateInfo = new foeArmatureCreateInfo(std::move(ci));
 }

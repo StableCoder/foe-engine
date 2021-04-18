@@ -22,6 +22,8 @@
 
 #include <string>
 
+struct foeIdGroupTranslator;
+
 bool yaml_write_material_declaration(std::string const &nodeName,
                                      foeMaterial const *pMaterial,
                                      YAML::Node &node);
@@ -33,6 +35,7 @@ bool yaml_write_material_definition(std::string const &nodeName,
 bool yaml_read_material_definition(
     std::string const &nodeName,
     YAML::Node const &node,
+    foeIdGroupTranslator const *pTranslator,
     foeId &fragmentShader,
     std::string &fragmentDescriptor,
     foeId &image,

@@ -24,7 +24,9 @@
 
 #include <fstream>
 
-bool yaml_read_shader_definition(YAML::Node const &node, foeShaderCreateInfo &createInfo) {
+bool yaml_read_shader_definition(YAML::Node const &node,
+                                 foeIdGroupTranslator const *pTranslator,
+                                 foeShaderCreateInfo &createInfo) {
     try {
         yaml_read_shader_definition("", node, createInfo.shaderCodeFile,
                                     createInfo.builtinSetLayouts, createInfo.descriptorSetLayoutCI,
@@ -38,10 +40,11 @@ bool yaml_read_shader_definition(YAML::Node const &node, foeShaderCreateInfo &cr
 }
 
 void yaml_read_shader_definition2(YAML::Node const &node,
+                                  foeIdGroupTranslator const *pTranslator,
                                   foeResourceCreateInfoBase **ppCreateInfo) {
     foeShaderCreateInfo ci;
 
-    yaml_read_shader_definition(node, ci);
+    yaml_read_shader_definition(node, pTranslator, ci);
 
     *ppCreateInfo = new foeShaderCreateInfo(std::move(ci));
 }

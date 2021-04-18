@@ -21,9 +21,11 @@
 
 #include "image.hpp"
 
-bool yaml_read_image_definition(YAML::Node const &node, foeImageCreateInfo &createInfo) {
+bool yaml_read_image_definition(YAML::Node const &node,
+                                foeIdGroupTranslator const *pTranslator,
+                                foeImageCreateInfo &createInfo) {
     try {
-        yaml_read_image_definition("", node, createInfo.fileName);
+        yaml_read_image_definition("", node, pTranslator, createInfo.fileName);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import foeImage definition: {}", e.what());
         return false;
@@ -32,10 +34,12 @@ bool yaml_read_image_definition(YAML::Node const &node, foeImageCreateInfo &crea
     return true;
 }
 
-void yaml_read_image_definition2(YAML::Node const &node, foeResourceCreateInfoBase **ppCreateInfo) {
+void yaml_read_image_definition2(YAML::Node const &node,
+                                 foeIdGroupTranslator const *pTranslator,
+                                 foeResourceCreateInfoBase **ppCreateInfo) {
     foeImageCreateInfo ci;
 
-    yaml_read_image_definition(node, ci);
+    yaml_read_image_definition(node, pTranslator, ci);
 
     *ppCreateInfo = new foeImageCreateInfo(std::move(ci));
 }
