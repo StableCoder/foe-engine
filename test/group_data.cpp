@@ -84,7 +84,7 @@ TEST_CASE("foeGroupData - Initial State", "[foe]") {
     }
 
     SECTION("Dynamic Groups") {
-        for (uint32_t i = 0; i < (foeIdMaxGroupValue - 2); ++i) {
+        for (uint32_t i = 0; i < (foeIdGroupMaxValue - 2); ++i) {
             REQUIRE(test.indices(foeIdValueToGroup(i)) == nullptr);
             REQUIRE(test.importer(foeIdValueToGroup(i)) == nullptr);
         }

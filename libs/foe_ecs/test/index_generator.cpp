@@ -158,7 +158,7 @@ TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
 
     SECTION("Should return an Invalid ID when it runs out of indexes.") {
         // Shortcut to near the end of the index range
-        test.importState(foeIdMaxIndexValue - 10000, {});
+        test.importState(foeIdIndexMaxValue - 10000, {});
 
         for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ID) {
@@ -221,7 +221,7 @@ TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
 
     SECTION("Should return an eInvalidID when it runs out of indexes.") {
         // Shortcut to near the end of the index range
-        test.importState(foeIdMaxIndexValue - 10000, {});
+        test.importState(foeIdIndexMaxValue - 10000, {});
 
         for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ID) {

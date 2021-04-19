@@ -22,6 +22,27 @@ TEST_CASE("foeID - Creating and converting IDs", "[foe][ecs]") {
     foeIdGroup group = foeIdValueToGroup(12);
     foeId test;
 
+    SECTION("Create Generic ID") {
+        test = foeIdCreate(foeIdValueToGroup(0xF), 0xFF);
+
+        REQUIRE(foeIdGroupToValue(foeIdGetGroup(test)) == 0xF);
+        REQUIRE(foeIdGetIndex(test) == 0xFF);
+    }
+
+    SECTION("Create IDs with specified type") {
+        test = foeIdCreateType(foeIdValueToGroup(0xF), foeIdTypeEntity, 0xFF);
+
+        REQUIRE(foeIdGroupToValue(foeIdGetGroup(test)) == 0xF);
+        REQUIRE(foeIdGetType(test) == foeIdTypeEntity);
+        REQUIRE(foeIdGetIndex(test) == 0xFF);
+
+        test = foeIdCreateType(foeIdValueToGroup(0xF), foeIdTypeResource, 0xFF);
+
+        REQUIRE(foeIdGroupToValue(foeIdGetGroup(test)) == 0xF);
+        REQUIRE(foeIdGetType(test) == foeIdTypeResource);
+        REQUIRE(foeIdGetIndex(test) == 0xFF);
+    }
+
     SECTION("Create Entity") {
         test = foeIdCreateEntity(group, index);
 

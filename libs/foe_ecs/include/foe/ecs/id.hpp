@@ -27,14 +27,16 @@
 using foeId = uint32_t;
 /// Represents an Id's 'Group' portion of an ID
 using foeIdGroup = foeId;
-/// Represents the normalized value of an ID's Group, shifted to be zero-based
+/// Represents the value of an ID's Group, shifted to be zero-based
 using foeIdGroupValue = foeIdGroup;
 /// Represents an Id's 'Type' portion of an ID
 using foeIdType = foeId;
-/// Represents the normalized value of an ID's Type, shifted to be zero-based
+/// Represents the value of an ID's Type, shifted to be zero-based
 using foeIdTypeValue = foeIdType;
 /// Represents an index within a particular 'Group'
 using foeIdIndex = foeId;
+/// Represents the value of an ID's Index, shifted to be zero-based
+using foeIdIndexValue = foeIdIndex;
 
 enum : uint32_t {
     /// Number of total bits in the foeId type
@@ -69,65 +71,70 @@ inline std::string foeIdToString(foeId id) {
 // ID Group
 
 enum : foeIdGroup {
-    /// Number of bits that values are shifted for the Id Group's bits
+    /// Number of bits that values are shifted for the Id Group
     foeIdGroupBitShift = foeIdNumIndexBits + foeIdNumTypeBits,
 
     /// Bitflag of the valid GroupID bits
-    foeIdValidGroupBits = foeIdInvalid << foeIdGroupBitShift,
+    foeIdGroupBits = foeIdInvalid << foeIdGroupBitShift,
     /// Maximum value of a GroupID
-    foeIdMaxGroupValue = foeIdValidGroupBits >> foeIdGroupBitShift,
+    foeIdGroupMaxValue = foeIdGroupBits >> foeIdGroupBitShift,
 
     /// Entities that are to be preserved across sessions
-    foeIdPersistentGroup = (foeIdMaxGroupValue - 1) << (foeIdNumIndexBits + foeIdNumTypeBits),
+    foeIdPersistentGroup = (foeIdGroupMaxValue - 1) << (foeIdNumIndexBits + foeIdNumTypeBits),
     /// Entities that are not to be preseved, and are just local to the current session
-    foeIdTemporaryGroup = foeIdMaxGroupValue << (foeIdNumIndexBits + foeIdNumTypeBits),
+    foeIdTemporaryGroup = foeIdGroupMaxValue << (foeIdNumIndexBits + foeIdNumTypeBits),
     /// Max number possible of general groups
-    foeIdMaxDynamicGroups = foeIdMaxGroupValue - 2,
+    foeIdMaxDynamicGroups = foeIdGroupMaxValue - 2,
     /// The maximum value a dynamic group can be
     foeIdMaxDynamicGroupValue = foeIdMaxDynamicGroups - 1,
 };
 
-inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdValidGroupBits); }
+inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdGroupBits); }
 
 inline foeIdGroup foeIdValueToGroup(foeIdGroup groupValue) {
     return static_cast<foeIdGroup>(groupValue) << (foeIdNumIndexBits + foeIdNumTypeBits);
 }
 
-inline uint32_t foeIdGroupToValue(foeId id) {
+inline foeIdGroupValue foeIdGroupToValue(foeId id) {
     return foeIdGetGroup(id) >> (foeIdNumIndexBits + foeIdNumTypeBits);
 }
 
 // ID Type
 
 enum : foeIdType {
-    /// Number of bits that values are shifted for the Id Type's bits
+    /// Number of bits that values are shifted for the Id Type
     foeIdTypeBitShift = foeIdNumIndexBits,
 
     /// Bitflag of the valid Type bits
-    foeIdValidTypeBits =
+    foeIdTypeBits =
         (foeIdInvalid << (foeIdNumIndexBits + foeIdNumGroupBits)) >> (foeIdNumGroupBits),
     /// Maximum value that the type section can represent
-    foeIdMaxTypeValue = foeIdValidTypeBits >> foeIdNumIndexBits,
+    foeIdTypeMaxValue = foeIdTypeBits >> foeIdNumIndexBits,
 
     foeIdTypeEntity = 0 << foeIdTypeBitShift,
     foeIdTypeResource = 1 << foeIdTypeBitShift,
 };
 
-inline bool foeIdIsEntity(foeId id) { return (id & foeIdValidTypeBits) == foeIdTypeEntity; }
-inline bool foeIdIsResource(foeId id) { return (id & foeIdValidTypeBits) == foeIdTypeResource; }
+inline foeIdType foeIdGetType(foeId id) { return id & foeIdTypeBits; }
+
+inline bool foeIdIsEntity(foeId id) { return (id & foeIdTypeBits) == foeIdTypeEntity; }
+inline bool foeIdIsResource(foeId id) { return (id & foeIdTypeBits) == foeIdTypeResource; }
 
 // ID Index
 
 enum : foeIdIndex {
+    /// Number of bits that values are shifted for the Id Index
+    foeIdIndexBitShift = 0,
+
     /// Bitflag of the valid IndexID bits
-    foeIdValidIndexBits = foeIdInvalid >> (foeIdNumGroupBits + foeIdNumTypeBits),
+    foeIdIndexBits = foeIdInvalid >> (foeIdNumGroupBits + foeIdNumTypeBits),
     /// The invalid index value
-    foeIdInvalidIndex = foeIdValidIndexBits,
+    foeIdInvalidIndex = foeIdIndexBits,
     /// Maximum value of an IndexID
-    foeIdMaxIndexValue = foeIdValidIndexBits - 1,
+    foeIdIndexMaxValue = foeIdIndexBits - 1,
 };
 
-inline foeIdGroup foeIdGetIndex(foeId id) { return (id & foeIdValidIndexBits); }
+inline foeIdIndex foeIdGetIndex(foeId id) { return (id & foeIdIndexBits); }
 
 // Other ID Functions
 

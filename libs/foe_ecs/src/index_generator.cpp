@@ -21,7 +21,7 @@
 foeIdIndexGenerator::foeIdIndexGenerator(std::string_view name, foeIdGroup groupId) :
     cName{name}, cGroupID{groupId}, mNumRecycled{0}, mRecycled{}, mNextFreeID{0} {
     /// \todo Replace with C++20 contracts
-    assert((groupId & foeIdValidIndexBits) == 0);
+    assert((groupId & foeIdIndexBits) == 0);
 }
 
 foeId foeIdIndexGenerator::generate() {
@@ -47,7 +47,7 @@ foeId foeIdIndexGenerator::generate() {
 foeId foeIdIndexGenerator::generateResource() {
     auto newID = generate();
     if (newID != FOE_INVALID_ID) {
-        newID |= foeIdValidTypeBits;
+        newID |= foeIdTypeBits;
     }
     return newID;
 }
