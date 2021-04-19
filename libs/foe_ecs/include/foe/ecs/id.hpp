@@ -17,10 +17,10 @@
 #ifndef FOE_ID_HPP
 #define FOE_ID_HPP
 
+#include <foe/ecs/export.h>
+
 #include <cstdint>
-#include <iomanip>
 #include <limits>
-#include <sstream>
 #include <string>
 
 /// The full ID for some object, combined of it's constituent parts
@@ -60,13 +60,7 @@ enum : foeId {
 
 #define FOE_INVALID_ID foeIdInvalid
 
-inline std::string foeIdToString(foeId id) {
-    constexpr int printWidth = foeIdNumBytes * 2;
-
-    std::stringstream ss;
-    ss << "0x" << std::hex << std::setw(printWidth) << std::uppercase << std::setfill('0') << id;
-    return ss.str();
-}
+FOE_ECS_EXPORT std::string foeIdToString(foeId id);
 
 // ID Group
 
