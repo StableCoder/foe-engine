@@ -184,7 +184,7 @@ TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
 
     SECTION("Giving an importer that is not foeIdPersistentGroup") {
         SECTION("Dynamic Groups") {
-            for (foeIdGroup group = 0; group < foeIdMaxDynamicGroups; ++group) {
+            for (foeIdGroup group = 0; group < foeIdNumDynamicGroups; ++group) {
                 auto tempImporter = std::make_unique<DummyImporter>("testPersistent", group);
 
                 REQUIRE_FALSE(test.setPersistentImporter(std::move(tempImporter)));
@@ -259,11 +259,11 @@ TEST_CASE("foeGroupData - IndexGenerator/Importer retrieval", "[foe]") {
         }
 
         SECTION("Name not added") {
-            REQUIRE(test.indices("foeIdMaxDynamicGroups") == nullptr);
-            REQUIRE(test.indices("foeIdMaxDynamicGroups") == nullptr);
+            REQUIRE(test.indices("foeIdNumDynamicGroups") == nullptr);
+            REQUIRE(test.indices("foeIdNumDynamicGroups") == nullptr);
 
-            REQUIRE(test.importer("foeIdMaxDynamicGroups") == nullptr);
-            REQUIRE(test.importer("foeIdMaxDynamicGroups") == nullptr);
+            REQUIRE(test.importer("foeIdNumDynamicGroups") == nullptr);
+            REQUIRE(test.importer("foeIdNumDynamicGroups") == nullptr);
         }
     }
 }

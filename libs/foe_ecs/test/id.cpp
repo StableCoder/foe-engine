@@ -49,6 +49,9 @@ TEST_CASE("foeID - Creating and converting IDs", "[foe][ecs]") {
         REQUIRE(foeIdGetIndex(test) == index);
         REQUIRE(foeIdGetGroup(test) == group);
 
+        REQUIRE(foeIdGetType(test) == foeIdTypeEntity);
+        REQUIRE(foeIdTypeToValue(test) == foeIdTypeEntityValue);
+
         REQUIRE(foeIdIsEntity(test));
         REQUIRE(!foeIdIsResource(test));
     }
@@ -57,6 +60,9 @@ TEST_CASE("foeID - Creating and converting IDs", "[foe][ecs]") {
 
         REQUIRE(foeIdGetIndex(test) == index);
         REQUIRE(foeIdGetGroup(test) == group);
+
+        REQUIRE(foeIdGetType(test) == foeIdTypeResource);
+        REQUIRE(foeIdTypeToValue(test) == foeIdTypeResourceValue);
 
         REQUIRE(foeIdIsResource(test));
         REQUIRE(!foeIdIsEntity(test));
@@ -77,5 +83,49 @@ TEST_CASE("foeID - Creating and converting IDs", "[foe][ecs]") {
 
         REQUIRE(foeIdIsEntity(test));
         REQUIRE(!foeIdIsResource(test));
+    }
+}
+
+TEST_CASE("foeID - Stringify functionality", "[foe][ecs]") {
+    SECTION("Group 0x4") {
+        CHECK(foeIdToString(foeIdCreate(foeIdValueToGroup(0x4), 0x404)) == "0x40000404");
+        CHECK(foeIdToSplitString(foeIdCreate(foeIdValueToGroup(0x4), 0x404)) ==
+              "0x4-0x0-0x0000404");
+
+        CHECK(foeIdToString(foeIdCreateResource(foeIdValueToGroup(0x4), 0x404)) == "0x48000404");
+        CHECK(foeIdToSplitString(foeIdCreateResource(foeIdValueToGroup(0x4), 0x404)) ==
+              "0x4-0x1-0x0000404");
+    }
+    SECTION("Group 0xF") {
+        CHECK(foeIdToString(foeIdCreate(foeIdValueToGroup(0xF), 0x404)) == "0xF0000404");
+        CHECK(foeIdToSplitString(foeIdCreate(foeIdValueToGroup(0xF), 0x404)) ==
+              "0xF-0x0-0x0000404");
+
+        CHECK(foeIdToString(foeIdCreateResource(foeIdValueToGroup(0xF), 0x404)) == "0xF8000404");
+        CHECK(foeIdToSplitString(foeIdCreateResource(foeIdValueToGroup(0xF), 0x404)) ==
+              "0xF-0x1-0x0000404");
+    }
+}
+
+TEST_CASE("foeID - Testing Value Conversions", "[foe][ecs]") {
+    SECTION("Group") {
+        CHECK(foeIdValueToGroup(foeIdPersistentGroupValue) == foeIdPersistentGroup);
+        CHECK(foeIdGroupToValue(foeIdPersistentGroup) == foeIdPersistentGroupValue);
+
+        CHECK(foeIdValueToGroup(foeIdTemporaryGroupValue) == foeIdTemporaryGroup);
+        CHECK(foeIdGroupToValue(foeIdTemporaryGroup) == foeIdTemporaryGroupValue);
+    }
+
+    SECTION("Type") {
+        CHECK(foeIdValueToType(foeIdTypeEntityValue) == foeIdTypeEntity);
+        CHECK(foeIdTypeToValue(foeIdTypeEntity) == foeIdTypeEntityValue);
+
+        CHECK(foeIdValueToType(foeIdTypeResourceValue) == foeIdTypeResource);
+        CHECK(foeIdTypeToValue(foeIdTypeResource) == foeIdTypeResourceValue);
+    }
+
+    SECTION("Index") {
+        CHECK(foeIdValueToIndex(foeIdIndexMaxValue) == foeIdIndexMax);
+        CHECK(foeIdIndexToValue(foeIdIndexMax) == foeIdIndexMaxValue);
     }
 }

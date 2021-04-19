@@ -20,9 +20,24 @@
 #include <sstream>
 
 std::string foeIdToString(foeId id) {
-    constexpr int printWidth = foeIdNumBytes * 2;
+    constexpr int printWidth = foeIdNumBits / 4;
 
     std::stringstream ss;
     ss << "0x" << std::hex << std::setw(printWidth) << std::uppercase << std::setfill('0') << id;
+
+    return ss.str();
+}
+
+std::string foeIdToSplitString(foeId id) {
+    constexpr int groupWidth = (foeIdNumGroupBits / 4) + ((foeIdNumGroupBits % 4) ? 1 : 0);
+    constexpr int typeWidth = (foeIdNumTypeBits / 4) + ((foeIdNumTypeBits % 4) ? 1 : 0);
+    constexpr int indexWidth = (foeIdNumIndexBits / 4) + ((foeIdNumIndexBits % 4) ? 1 : 0);
+
+    std::stringstream ss;
+    ss << std::hex << std::uppercase << std::setfill('0');
+    ss << "0x" << std::setw(groupWidth) << foeIdGroupToValue(id);
+    ss << "-0x" << std::setw(typeWidth) << foeIdTypeToValue(id);
+    ss << "-0x" << std::setw(indexWidth) << foeIdIndexToValue(id);
+
     return ss.str();
 }

@@ -33,7 +33,7 @@ foeId foeIdIndexGenerator::generate() {
         id = mRecycled.front();
         mRecycled.pop();
         --mNumRecycled;
-    } else if (mNextFreeID >= foeIdInvalidIndex) {
+    } else if (mNextFreeID >= foeIdIndexMaxValue) {
         // Ran out of indexes for this group
         return FOE_INVALID_ID;
     } else {
@@ -41,7 +41,7 @@ foeId foeIdIndexGenerator::generate() {
         id = mNextFreeID++;
     }
 
-    return cGroupID | id;
+    return foeIdCreate(cGroupID, id);
 }
 
 foeId foeIdIndexGenerator::generateResource() {

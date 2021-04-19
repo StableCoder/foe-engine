@@ -66,6 +66,12 @@ FOE_ECS_YAML_EXPORT bool yaml_read_id_optional(std::string const &nodeName,
  * The IdGroup is written to the 'group_id' node.
  * The IdIndex is written to the 'index_id' node.
  */
-FOE_ECS_YAML_EXPORT void yaml_write_id(foeId id, YAML::Node &node);
+FOE_ECS_YAML_EXPORT void yaml_write_id_required(std::string const &nodeName,
+                                                foeId id,
+                                                YAML::Node &node);
+
+FOE_ECS_YAML_EXPORT bool yaml_write_id_optional(std::string const &nodeName,
+                                                foeId id,
+                                                YAML::Node &node);
 
 #endif // FOE_ECS_YAML_ID_HPP

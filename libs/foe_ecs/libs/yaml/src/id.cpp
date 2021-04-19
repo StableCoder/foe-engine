@@ -80,16 +80,33 @@ bool yaml_read_id_optional(std::string const &nodeName,
     return true;
 }
 
-void yaml_write_id(foeId id, YAML::Node &node) {
-    try {
-        // Index
-        yaml_write_required("index_id", foeIdGetIndex(id), node);
-
-        // Group, if not part of the persistent group
-        if (foeIdGetGroup(id) != foeIdPersistentGroup) {
-            yaml_write_required("group_id", foeIdGroupToValue(id), node);
+bool yaml_write_id_optional(std::string const &nodeName, foeId data, YAML::Node &node) {
+    YAML::Node newNode;
+    YAML::Node *pWriteNode{nullptr};
+    if (nodeName.empty()) {
+        pWriteNode = &node;
+    } else {
+        pWriteNode = &newNode;
+        if (auto existingNode = node[nodeName]; existingNode) {
+            newNode = existingNode;
         }
-    } catch (foeYamlException const &e) {
-        throw e;
     }
+
+    try {
+        yaml_write_optional("group_id", foeIdGroupToValue(foeIdPersistentGroup),
+                            foeIdGroupToValue(foeIdGetGroup(data)), *pWriteNode);
+
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+        }
+    }
+
+    if (!nodeName.empty()) {
+        node[nodeName] = newNode;
+    }
+
+    return true;
 }

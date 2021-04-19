@@ -59,6 +59,7 @@ void yaml_write_required(std::string const &nodeName, T const &data, YAML::Node 
  * @param node [out] Yaml node that should have the sub-node to operate on
  * @return True on a successful write. False if nothing is written out.
  * @exception Throws foeYamlException if there's an exception during encoding
+ * @warning The specified node is overwritten with the provided data.
  */
 template <typename T>
 bool yaml_write_optional(std::string const &nodeName,

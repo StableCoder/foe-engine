@@ -46,7 +46,7 @@ auto yaml_read_entity(YAML::Node const &node,
 auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_id(id, outNode);
+    // yaml_write_id(id, outNode);
 
     // Position3D
     if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.end()) {

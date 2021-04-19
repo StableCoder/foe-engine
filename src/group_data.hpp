@@ -62,7 +62,7 @@ class foeGroupData {
 
     foeIdIndexGenerator mTemporaryIndices{"", foeIdTemporaryGroup};
 
-    std::array<CombinedGroup, foeIdMaxDynamicGroups> mDynamicGroups;
+    std::array<CombinedGroup, foeIdNumDynamicGroups> mDynamicGroups;
 };
 
 #endif // GROUP_DATA_HPP

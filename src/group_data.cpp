@@ -43,7 +43,7 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pIndic
 
     // Must be within the dynamic groups valid range
     auto groupValue = foeIdGroupToValue(pIndices->groupID());
-    if (groupValue >= foeIdMaxDynamicGroups) {
+    if (groupValue >= foeIdNumDynamicGroups) {
         FOE_LOG(General, Error,
                 "foeGroupData::addDynamicGroup - ID Group is not within the valid dynamic group "
                 "value range");

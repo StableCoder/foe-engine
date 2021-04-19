@@ -120,7 +120,7 @@ class foeIdIndexGenerator {
     /// Synchronizes the recycle list
     std::mutex mSync;
     /// The next free IndexID, never yet used.
-    foeIdIndex mNextFreeID;
+    foeIdIndexValue mNextFreeID;
     /// The list of recyclable IndexIDs.
     std::queue<foeIdIndex> mRecycled;
     /// The number of currently recyclable IDs.

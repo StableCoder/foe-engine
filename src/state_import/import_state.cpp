@@ -169,7 +169,7 @@ auto importState(std::filesystem::path stateDataPath,
     }
 
     // Load Persistent resource definitions
-    for (foeIdGroup groupValue = 0; groupValue < foeIdMaxDynamicGroups; ++groupValue) {
+    for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
             pGroupImporter->importResourceDefinitions(&pSimulationSet->resources,
@@ -182,7 +182,7 @@ auto importState(std::filesystem::path stateDataPath,
         &pSimulationSet->resources, &pSimulationSet->resourceLoaders);
 
     // Importing Dependency State Data
-    for (foeIdGroup groupValue = 0; groupValue < foeIdMaxDynamicGroups; ++groupValue) {
+    for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
             pGroupImporter->importStateData(&pSimulationSet->state);

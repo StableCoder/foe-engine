@@ -35,7 +35,7 @@ constexpr std::string_view stateDataDirectoryPath = "state_data";
 auto write_yaml_dependencies(foeEcsGroups &ecsGroups) -> YAML::Node {
     YAML::Node outNode;
 
-    for (uint32_t i = 0; i < foeIdMaxDynamicGroups; ++i) {
+    for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
         foeIdGroup groupID = foeIdValueToGroup(i);
 
         auto *pGroup = ecsGroups.group(groupID);
@@ -100,7 +100,7 @@ bool exportGroupStateData(std::filesystem::path path,
                           ResourcePools &resourcePools) {
 
     // Dependent groups
-    for (uint32_t i = 0; i < foeIdMaxDynamicGroups; ++i) {
+    for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
         foeIdGroup groupID = foeIdValueToGroup(i);
         auto *pGroup = ecsGroups.group(groupID);
 

@@ -40,14 +40,14 @@ using foeIdIndexValue = foeIdIndex;
 
 enum : uint32_t {
     /// Number of total bits in the foeId type
-    foeIdNumBits = static_cast<uint32_t>(std::numeric_limits<foeId>::digits),
-    /// Number of total bytes in the foeId type
+    foeIdNumBits = static_cast<foeId>(std::numeric_limits<foeId>::digits),
+    /// Number of bytes in the foeId type
     foeIdNumBytes = foeIdNumBits / 8,
-    /// Number of bits used for the foeIdGroup
+    /// Number of bits used for the ID's group
     foeIdNumGroupBits = 4,
-    /// Number of bits for determining the object type the ID represents
+    /// Number of bits used for the ID's type
     foeIdNumTypeBits = 1,
-    /// Number of bits used for the foeIdGroup
+    /// Number of bits used for the ID's index
     foeIdNumIndexBits = foeIdNumBits - (foeIdNumGroupBits + foeIdNumTypeBits),
 };
 
@@ -58,8 +58,13 @@ enum : foeId {
     foeIdInvalid = std::numeric_limits<foeId>::max(),
 };
 
+/// An Invalid ID value is the maximum possible total value that the type can hold
 #define FOE_INVALID_ID foeIdInvalid
 
+/** @brief Converts the foeId to a more readable hexadecimal string
+ * @param id ID to convert
+ * @return The ID in a hexadecimal format
+ */
 FOE_ECS_EXPORT std::string foeIdToString(foeId id);
 
 // ID Group
@@ -68,29 +73,37 @@ enum : foeIdGroup {
     /// Number of bits that values are shifted for the Id Group
     foeIdGroupBitShift = foeIdNumIndexBits + foeIdNumTypeBits,
 
-    /// Bitflag of the valid GroupID bits
-    foeIdGroupBits = foeIdInvalid << foeIdGroupBitShift,
-    /// Maximum value of a GroupID
+    /// Valid GroupID bits
+    foeIdGroupBits = (FOE_INVALID_ID >> (foeIdNumBits - foeIdNumGroupBits)) << foeIdGroupBitShift,
+    /// Maximum zero-based value of a GroupID
     foeIdGroupMaxValue = foeIdGroupBits >> foeIdGroupBitShift,
 
-    /// Entities that are to be preserved across sessions
-    foeIdPersistentGroup = (foeIdGroupMaxValue - 1) << (foeIdNumIndexBits + foeIdNumTypeBits),
-    /// Entities that are not to be preseved, and are just local to the current session
-    foeIdTemporaryGroup = foeIdGroupMaxValue << (foeIdNumIndexBits + foeIdNumTypeBits),
-    /// Max number possible of general groups
-    foeIdMaxDynamicGroups = foeIdGroupMaxValue - 2,
-    /// The maximum value a dynamic group can be
-    foeIdMaxDynamicGroupValue = foeIdMaxDynamicGroups - 1,
+    /// Number of reserved ID groups
+    foeIdReservedGroups = 2,
+    /// Number of non-reserved ID groups
+    foeIdNumDynamicGroups = foeIdGroupMaxValue - foeIdReservedGroups + 1,
+
+    /// Zero-based value representing the 'Temporary' ID group
+    foeIdTemporaryGroupValue = foeIdGroupMaxValue,
+    /// Zero-based value representing the 'Persistent' ID group
+    foeIdPersistentGroupValue = (foeIdGroupMaxValue - 1),
+    /// Zero-based value representing the maximum number of dynamic ID groups
+    foeIdMaxDynamicGroupValue = foeIdGroupMaxValue - foeIdReservedGroups,
+
+    /// Shifted enum representing the 'Persistent' ID group
+    foeIdPersistentGroup = foeIdPersistentGroupValue << foeIdGroupBitShift,
+    /// Shifted enum representing the 'Temporary' ID group
+    foeIdTemporaryGroup = foeIdTemporaryGroupValue << foeIdGroupBitShift,
 };
 
 inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdGroupBits); }
 
-inline foeIdGroup foeIdValueToGroup(foeIdGroup groupValue) {
-    return static_cast<foeIdGroup>(groupValue) << (foeIdNumIndexBits + foeIdNumTypeBits);
+inline foeIdGroup foeIdValueToGroup(foeIdGroupValue groupValue) {
+    return static_cast<foeIdGroup>(groupValue) << foeIdGroupBitShift;
 }
 
 inline foeIdGroupValue foeIdGroupToValue(foeId id) {
-    return foeIdGetGroup(id) >> (foeIdNumIndexBits + foeIdNumTypeBits);
+    return foeIdGetGroup(id) >> foeIdGroupBitShift;
 }
 
 // ID Type
@@ -99,17 +112,29 @@ enum : foeIdType {
     /// Number of bits that values are shifted for the Id Type
     foeIdTypeBitShift = foeIdNumIndexBits,
 
-    /// Bitflag of the valid Type bits
-    foeIdTypeBits =
-        (foeIdInvalid << (foeIdNumIndexBits + foeIdNumGroupBits)) >> (foeIdNumGroupBits),
-    /// Maximum value that the type section can represent
+    /// Valid Type bits
+    foeIdTypeBits = (FOE_INVALID_ID >> (foeIdNumBits - foeIdNumTypeBits)) << foeIdTypeBitShift,
+    /// Maximum value that the Type section can represent
     foeIdTypeMaxValue = foeIdTypeBits >> foeIdNumIndexBits,
 
-    foeIdTypeEntity = 0 << foeIdTypeBitShift,
-    foeIdTypeResource = 1 << foeIdTypeBitShift,
+    /// Zero-based value representing a Entity-type ID
+    foeIdTypeEntityValue = 0,
+    /// Zero-based value representing a Resource-type ID
+    foeIdTypeResourceValue = 1,
+
+    /// Shifted enum representing a Entity-type ID
+    foeIdTypeEntity = foeIdTypeEntityValue << foeIdTypeBitShift,
+    /// Shifted enum representing a Resource-type ID
+    foeIdTypeResource = foeIdTypeResourceValue << foeIdTypeBitShift,
 };
 
 inline foeIdType foeIdGetType(foeId id) { return id & foeIdTypeBits; }
+
+inline foeIdType foeIdValueToType(foeIdTypeValue typeValue) {
+    return static_cast<foeIdType>(typeValue) << foeIdTypeBitShift;
+}
+
+inline foeIdTypeValue foeIdTypeToValue(foeId id) { return foeIdGetType(id) >> foeIdTypeBitShift; }
 
 inline bool foeIdIsEntity(foeId id) { return (id & foeIdTypeBits) == foeIdTypeEntity; }
 inline bool foeIdIsResource(foeId id) { return (id & foeIdTypeBits) == foeIdTypeResource; }
@@ -121,16 +146,34 @@ enum : foeIdIndex {
     foeIdIndexBitShift = 0,
 
     /// Bitflag of the valid IndexID bits
-    foeIdIndexBits = foeIdInvalid >> (foeIdNumGroupBits + foeIdNumTypeBits),
-    /// The invalid index value
-    foeIdInvalidIndex = foeIdIndexBits,
+    foeIdIndexBits = FOE_INVALID_ID >> (foeIdNumGroupBits + foeIdNumTypeBits),
     /// Maximum value of an IndexID
-    foeIdIndexMaxValue = foeIdIndexBits - 1,
+    foeIdIndexMaxValue = foeIdIndexBits >> foeIdIndexBitShift,
+
+    /// Maximum IdIndex
+    foeIdIndexMax = foeIdIndexMaxValue << foeIdIndexBitShift,
 };
 
 inline foeIdIndex foeIdGetIndex(foeId id) { return (id & foeIdIndexBits); }
 
+inline foeIdIndex foeIdValueToIndex(foeIdIndexValue indexValue) {
+    return static_cast<foeIdIndex>(indexValue) << foeIdIndexBitShift;
+}
+
+inline foeIdIndexValue foeIdIndexToValue(foeId id) {
+    return foeIdGetIndex(id) >> foeIdIndexBitShift;
+}
+
 // Other ID Functions
+
+/** @brief Converts the foeId to a more readable hexadecimal string, witht he different parts split
+ * @param id ID to convert
+ * @return The ID in a split-hexadecimal format
+ *
+ * Each of the constituent parts of the ID are split via '-', with the format being
+ * Group-Type-Index.
+ */
+FOE_ECS_EXPORT std::string foeIdToSplitString(foeId id);
 
 inline foeId foeIdCreate(foeIdGroup group, foeIdIndex index) { return group | index; }
 
