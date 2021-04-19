@@ -17,63 +17,84 @@
 #include <foe/ecs/yaml/index_generator.hpp>
 
 #include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
 
-void yaml_read_index_generator(YAML::Node const &node, foeIdIndexGenerator &indexGenerator) {
+void yaml_read_index_generator(std::string const &nodeName,
+                               YAML::Node const &node,
+                               foeIdIndexGenerator &indexGenerator) {
+    YAML::Node const &readNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!readNode) {
+        throw foeYamlException(nodeName + " - Required node to parse not found");
+    }
+
     foeIdIndex nextIndex;
     std::vector<foeIdIndex> recycledIndices;
 
     // Next Free Index
-    if (auto nextNode = node["next_free_index"]; nextNode) {
-        try {
-            nextIndex = nextNode.as<foeIdIndex>();
-        } catch (...) {
-            throw foeYamlException{
-                "yaml_read_index_generator::next_free_index - Could not parse value of '" +
-                nextNode.as<std::string>() + "' to foeIdIndex"};
-        }
-    } else {
-        throw foeYamlException{
-            "yaml_read_index_generator - Could not find required 'next_free_index' node"};
-    }
+    yaml_read_required("next_free_index", readNode, nextIndex);
 
     // Recycled Indices
-    if (auto recycledNode = node["recycled_indices"]; recycledNode) {
-        recycledIndices.reserve(recycledNode.size());
+    try {
+        if (auto recycledNode = node["recycled_indices"]; recycledNode) {
+            recycledIndices.reserve(recycledNode.size());
 
-        for (auto it = recycledNode.begin(); it != recycledNode.end(); ++it) {
-            try {
-                recycledIndices.emplace_back(it->as<foeIdIndex>());
-            } catch (...) {
-                throw foeYamlException{
-                    "yaml_read_index_generator::recycled_indices - Could not parse value of '" +
-                    it->as<std::string>() + "' as a foeIdIndex"};
+            for (auto it = recycledNode.begin(); it != recycledNode.end(); ++it) {
+                foeIdIndex readIndex;
+                yaml_read_required("", *it, readIndex);
+                recycledIndices.emplace_back(readIndex);
             }
+        } else {
+            throw foeYamlException{" - Required node not found"};
         }
-    } else {
-        throw foeYamlException{
-            "yaml_read_index_generator - Could not find required 'recycled_indices' node"};
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw foeYamlException{"recycled_indices" + e.whatStr()};
+        } else {
+            throw foeYamlException{nodeName + "::recycled_indices" + e.whatStr()};
+        }
     }
 
     indexGenerator.importState(nextIndex, recycledIndices);
 }
 
-auto yaml_write_index_generator(foeIdIndexGenerator &data) -> YAML::Node {
-    YAML::Node node;
+void yaml_write_index_generator(std::string const &nodeName,
+                                foeIdIndexGenerator &data,
+                                YAML::Node &node) {
+    YAML::Node newNode;
+    YAML::Node *pWriteNode{nullptr};
+    if (nodeName.empty()) {
+        pWriteNode = &node;
+    } else {
+        pWriteNode = &newNode;
+        if (auto existingNode = node[nodeName]; existingNode) {
+            newNode = existingNode;
+        }
+    }
 
     foeIdIndex nextIndex;
     std::vector<foeIdIndex> recycledIndices;
 
     data.exportState(nextIndex, recycledIndices);
 
-    // Next Free Index
-    node["next_free_index"] = nextIndex;
+    try {
+        // Next Free Index
+        yaml_write_required("next_free_index", nextIndex, *pWriteNode);
 
-    // Recycled Indices
-    YAML::Node recycledNode;
-    for (auto it : recycledIndices) {
-        recycledNode.push_back(it);
+        // Recycled Indices
+        YAML::Node recycledNode;
+        for (auto it : recycledIndices) {
+            recycledNode.push_back(it);
+        }
+        (*pWriteNode)["recycled_indices"] = recycledNode;
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+        }
     }
-    node["recycled_indices"] = recycledNode;
 
-    return node;
+    if (!nodeName.empty()) {
+        node[nodeName] = newNode;
+    }
 }

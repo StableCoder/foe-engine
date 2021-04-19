@@ -3,7 +3,7 @@ enable_testing()
 prepare_catch(COMPILED_CATCH)
 
 # Executables
-add_executable(test_foe_ecs_yaml index_generator.cpp)
+add_executable(test_foe_ecs_yaml id.cpp index_generator.cpp)
 
 target_link_libraries(test_foe_ecs_yaml PRIVATE foe_ecs_yaml catch)
 target_code_coverage(
@@ -16,6 +16,6 @@ target_code_coverage(
   .*/test/.*
   .*/tests/.*
   OBJECTS
-  foe_ecs)
+  foe_ecs_yaml)
 
 add_test(NAME FoE-ECS-Yaml-Tests COMMAND test_foe_ecs_yaml)

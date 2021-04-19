@@ -32,8 +32,7 @@ void yaml_read_id_required(std::string const &nodeName,
 
     try {
         if (!yaml_read_id_optional("", subNode, pTranslator, idType, id)) {
-            throw foeYamlException(nodeName +
-                                   "::index_id - Coudl not find required node to parse foeId");
+            throw foeYamlException("index_id - Could not find required node to parse foeId");
         }
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
@@ -80,7 +79,7 @@ bool yaml_read_id_optional(std::string const &nodeName,
     return true;
 }
 
-bool yaml_write_id_optional(std::string const &nodeName, foeId data, YAML::Node &node) {
+void yaml_write_id(std::string const &nodeName, foeId data, YAML::Node &node) {
     YAML::Node newNode;
     YAML::Node *pWriteNode{nullptr};
     if (nodeName.empty()) {
@@ -96,6 +95,7 @@ bool yaml_write_id_optional(std::string const &nodeName, foeId data, YAML::Node 
         yaml_write_optional("group_id", foeIdGroupToValue(foeIdPersistentGroup),
                             foeIdGroupToValue(foeIdGetGroup(data)), *pWriteNode);
 
+        yaml_write_required("index_id", foeIdIndexToValue(data), *pWriteNode);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
@@ -107,6 +107,4 @@ bool yaml_write_id_optional(std::string const &nodeName, foeId data, YAML::Node 
     if (!nodeName.empty()) {
         node[nodeName] = newNode;
     }
-
-    return true;
 }

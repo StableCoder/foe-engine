@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave - gcave@stablecoder.ca
+    Copyright (C) 2020-2021 George Cave - gcave@stablecoder.ca
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ TEST_CASE("yaml_read_index_generator - Success Case", "[foe][ecs][yaml][IndexGen
 recycled_indices: [8, 4, 10])"));
 
     foeIdIndexGenerator testGenerator{"", 0};
-    REQUIRE_NOTHROW(yaml_read_index_generator(root, testGenerator));
+    REQUIRE_NOTHROW(yaml_read_index_generator("", root, testGenerator));
 
     CHECK(testGenerator.generate() == 8);
     CHECK(testGenerator.generate() == 4);
@@ -45,15 +45,10 @@ TEST_CASE("yaml_write_index_generator", "[foe][ecs][yaml][IndexGenerator]") {
     indexGen.free(10);
 
     YAML::Node testNode;
-    REQUIRE_NOTHROW(testNode = yaml_write_index_generator(indexGen));
-
-    YAML::Emitter emitter;
-    emitter << testNode;
-
-    std::string show = emitter.c_str();
+    REQUIRE_NOTHROW(yaml_write_index_generator("", indexGen, testNode));
 
     foeIdIndexGenerator testGenerator{"", 0};
-    REQUIRE_NOTHROW(yaml_read_index_generator(testNode, testGenerator));
+    REQUIRE_NOTHROW(yaml_read_index_generator("", testNode, testGenerator));
 
     CHECK(testGenerator.generate() == 8);
     CHECK(testGenerator.generate() == 4);
@@ -68,22 +63,21 @@ TEST_CASE("yaml_read_index_generator - Missing 'next_free_index' node",
     REQUIRE_NOTHROW(root = YAML::Load(R"(recycled_indices: [8, 4, 10])"));
 
     foeIdIndexGenerator temp{"", 0};
-    REQUIRE_THROWS_MATCHES(
-        yaml_read_index_generator(root, temp), foeYamlException,
-        Catch::Matchers::Equals(
-            "yaml_read_index_generator - Could not find required 'next_free_index' node"));
+    REQUIRE_THROWS_MATCHES(yaml_read_index_generator("", root, temp), foeYamlException,
+                           Catch::Matchers::Equals(
+                               "next_free_index - Required node not found to parse as 'uint32_t'"));
 }
 
-TEST_CASE("yaml_read_index_generator - 'next_free_index' node not integer") {
+TEST_CASE("yaml_read_index_generator - 'next_free_index' node not integer",
+          "[foe][ecs][yaml][IndexGenerator]") {
     YAML::Node root;
     REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: fifteen
 recycled_indices: [8, 4, 10])"));
 
     foeIdIndexGenerator temp{"", 0};
     REQUIRE_THROWS_MATCHES(
-        yaml_read_index_generator(root, temp), foeYamlException,
-        Catch::Matchers::Equals("yaml_read_index_generator::next_free_index - Could not parse "
-                                "value of 'fifteen' to foeIdIndex"));
+        yaml_read_index_generator("", root, temp), foeYamlException,
+        Catch::Matchers::Equals("next_free_index - Could not parse Map-type node as 'uint32_t'"));
 }
 
 TEST_CASE("yaml_read_index_generator - Missing 'recycled_indices' node",
@@ -92,10 +86,8 @@ TEST_CASE("yaml_read_index_generator - Missing 'recycled_indices' node",
     REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15)"));
 
     foeIdIndexGenerator temp{"", 0};
-    REQUIRE_THROWS_MATCHES(
-        yaml_read_index_generator(root, temp), foeYamlException,
-        Catch::Matchers::Equals(
-            "yaml_read_index_generator - Could not find required 'recycled_indices' node"));
+    REQUIRE_THROWS_MATCHES(yaml_read_index_generator("", root, temp), foeYamlException,
+                           Catch::Matchers::Equals("recycled_indices - Required node not found"));
 }
 
 TEST_CASE("yaml_read_index_generator - 'recycled_indices' with non-number",
@@ -106,7 +98,7 @@ recycled_indices: [eight, 4, 10])"));
 
     foeIdIndexGenerator temp{"", 0};
     REQUIRE_THROWS_MATCHES(
-        yaml_read_index_generator(root, temp), foeYamlException,
-        Catch::Matchers::Equals("yaml_read_index_generator::recycled_indices - Could not parse "
-                                "value of 'eight' as a foeIdIndex"));
+        yaml_read_index_generator("", root, temp), foeYamlException,
+        Catch::Matchers::Equals(
+            "recycled_indices - Could not parse node as 'uint32_t' with value of: eight"));
 }

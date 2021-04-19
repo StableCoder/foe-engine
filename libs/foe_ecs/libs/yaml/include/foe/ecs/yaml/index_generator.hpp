@@ -21,9 +21,12 @@
 #include <foe/ecs/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
-FOE_ECS_YAML_EXPORT void yaml_read_index_generator(YAML::Node const &node,
-                                                   foeIdIndexGenerator &indexGenerator);
+FOE_ECS_YAML_EXPORT void yaml_read_index_generator(std::string const &nodeName,
+                                                   YAML::Node const &node,
+                                                   foeIdIndexGenerator &data);
 
-FOE_ECS_YAML_EXPORT auto yaml_write_index_generator(foeIdIndexGenerator &data) -> YAML::Node;
+FOE_ECS_YAML_EXPORT void yaml_write_index_generator(std::string const &nodeName,
+                                                    foeIdIndexGenerator &data,
+                                                    YAML::Node &node);
 
 #endif // FOE_ECS_YAML_INDEX_GENERATOR_HPP

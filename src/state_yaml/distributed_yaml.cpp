@@ -143,7 +143,7 @@ bool foeDistributedYamlImporter::getGroupIndexData(foeIdIndexGenerator &ecsGroup
         return false;
 
     try {
-        yaml_read_index_generator(node, ecsGroup);
+        yaml_read_index_generator("", node, ecsGroup);
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to parse Group State Index Data from Yaml file: {}",
                 e.what())
