@@ -22,7 +22,7 @@
 
 #include <vector>
 
-class foeIdGroupTranslator;
+struct foeIdGroupTranslator;
 struct StatePools;
 
 auto yaml_read_entity(YAML::Node const &node,
