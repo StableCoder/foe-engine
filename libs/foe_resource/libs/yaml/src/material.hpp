@@ -32,19 +32,4 @@ bool yaml_write_material_definition(std::string const &nodeName,
                                     foeMaterial const *pMaterial,
                                     YAML::Node &node);
 
-bool yaml_read_material_definition(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    foeIdGroupTranslator const *pTranslator,
-    foeId &fragmentShader,
-    std::string &fragmentDescriptor,
-    foeId &image,
-    bool &hasRasterizationSCI,
-    VkPipelineRasterizationStateCreateInfo &rasterizationSCI,
-    bool &hasDepthStencilSCI,
-    VkPipelineDepthStencilStateCreateInfo &depthStencilSCI,
-    bool &hasColourBlendSCI,
-    VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
-    std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments);
-
 #endif // MATERIAL_HPP

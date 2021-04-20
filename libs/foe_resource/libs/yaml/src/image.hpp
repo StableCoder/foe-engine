@@ -28,9 +28,4 @@ bool yaml_write_image_declaration(std::string const &nodeName,
                                   foeImage const *pImage,
                                   YAML::Node &node);
 
-bool yaml_read_image_definition(std::string const &nodeName,
-                                YAML::Node const &node,
-                                foeIdGroupTranslator const *pTranslator,
-                                std::string &fileName);
-
 #endif // IMAGE_HPP

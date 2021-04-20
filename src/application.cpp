@@ -1282,7 +1282,7 @@ int Application::mainloop() {
                         uint32_t descriptorSetLayoutCount;
                         VkPipeline pipeline;
 
-                        if constexpr (false) {
+                        if constexpr (true) {
                             auto *theVertexDescriptor =
                                 pSimulationSet->resources.vertexDescriptor.find(
                                     foeIdPersistentGroup | foeIdTypeResource | 0);

@@ -29,8 +29,9 @@ constexpr std::string_view stateDirectoryPath = "state";
 
 } // namespace
 
-auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
-        -> foeImporterBase * {
+auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
+                                                         std::filesystem::path stateDataPath)
+    -> foeImporterBase * {
     if (std::filesystem::is_directory(stateDataPath) &&
         // Dependencies
         (std::filesystem::exists(stateDataPath / dependenciesFilePath) &&

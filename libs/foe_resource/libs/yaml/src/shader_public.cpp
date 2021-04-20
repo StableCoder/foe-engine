@@ -16,35 +16,53 @@
 
 #include <foe/resource/yaml/shader.hpp>
 
-#include <foe/ecs/id.hpp>
+#include <foe/graphics/yaml/shader.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
 
 #include "shader.hpp"
 
 #include <fstream>
 
-bool yaml_read_shader_definition(YAML::Node const &node,
-                                 foeIdGroupTranslator const *pTranslator,
-                                 foeShaderCreateInfo &createInfo) {
-    try {
-        yaml_read_shader_definition("", node, createInfo.shaderCodeFile,
-                                    createInfo.builtinSetLayouts, createInfo.descriptorSetLayoutCI,
-                                    createInfo.setLayoutBindings, createInfo.pushConstantRange);
-    } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to import foeShader definition: {}", e.what());
+namespace {
+
+bool yaml_read_shader_definition_internal(std::string const &nodeName,
+                                          YAML::Node const &node,
+                                          foeIdGroupTranslator const *pTranslator,
+                                          foeShaderCreateInfo &createInfo) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
         return false;
+    }
+
+    try {
+        // Resource Node
+        // (Nothing currently)
+
+        { // SPIR-V Source
+            yaml_read_required("spirv_source", subNode, createInfo.shaderCodeFile);
+        }
+
+        // Gfx Data Node
+        yaml_read_gfx_shader("graphics_data", subNode, createInfo.builtinSetLayouts,
+                             createInfo.descriptorSetLayoutCI, createInfo.setLayoutBindings,
+                             createInfo.pushConstantRange);
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
     }
 
     return true;
 }
 
-void yaml_read_shader_definition2(YAML::Node const &node,
-                                  foeIdGroupTranslator const *pTranslator,
-                                  foeResourceCreateInfoBase **ppCreateInfo) {
+} // namespace
+
+void yaml_read_shader_definition(YAML::Node const &node,
+                                 foeIdGroupTranslator const *pTranslator,
+                                 foeResourceCreateInfoBase **ppCreateInfo) {
     foeShaderCreateInfo ci;
 
-    yaml_read_shader_definition(node, pTranslator, ci);
+    yaml_read_shader_definition_internal("", node, pTranslator, ci);
 
     *ppCreateInfo = new foeShaderCreateInfo(std::move(ci));
 }

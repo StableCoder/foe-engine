@@ -34,26 +34,3 @@ bool yaml_write_image_declaration(std::string const &nodeName,
 
     return true;
 }
-
-bool yaml_read_image_definition(std::string const &nodeName,
-                                YAML::Node const &node,
-                                foeIdGroupTranslator const *pTranslator,
-                                std::string &fileName) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    try {
-        // Resources
-
-        // Graphics Data
-
-        // Other Data
-        yaml_read_required("file", subNode, fileName);
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    return true;
-}

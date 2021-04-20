@@ -16,35 +16,65 @@
 
 #include <foe/resource/yaml/material.hpp>
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/yaml/id.hpp>
+#include <foe/graphics/yaml/fragment_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
 
 #include "material.hpp"
 
 #include <fstream>
 
-bool yaml_read_material_definition(YAML::Node const &node,
-                                   foeIdGroupTranslator const *pTranslator,
-                                   foeMaterialCreateInfo &createInfo) {
+namespace {
+
+bool yaml_read_material_definition_internal(std::string const &nodeName,
+                                            YAML::Node const &node,
+                                            foeIdGroupTranslator const *pTranslator,
+                                            foeMaterialCreateInfo &createInfo) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    bool read{false};
+
     try {
-        return yaml_read_material_definition(
-            "", node, pTranslator, createInfo.fragmentShader, createInfo.fragDescriptorName,
-            createInfo.image, createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
+        // Resources
+        if (auto resNode = subNode["resources"]; resNode) {
+            read |= yaml_read_id_optional("fragment_shader", resNode, pTranslator,
+                                          foeIdTypeResource, createInfo.fragmentShader);
+            read |= yaml_read_id_optional("image", resNode, pTranslator, foeIdTypeResource,
+                                          createInfo.image);
+
+            read |=
+                yaml_read_optional("fragment_descriptor", resNode, createInfo.fragDescriptorName);
+        }
+
+        // Graphics Data
+        read |= yaml_read_gfx_fragment_descriptor(
+            "graphics_data", subNode, createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
             createInfo.hasDepthStencilSCI, createInfo.depthStencilSCI, createInfo.hasColourBlendSCI,
             createInfo.colourBlendSCI, createInfo.colourBlendAttachments);
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
-        return false;
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException(nodeName + "::" + e.what());
+        }
     }
+
+    return read;
 }
 
-void yaml_read_material_definition2(YAML::Node const &node,
-                                    foeIdGroupTranslator const *pTranslator,
-                                    foeResourceCreateInfoBase **ppCreateInfo) {
+} // namespace
+
+void yaml_read_material_definition(YAML::Node const &node,
+                                   foeIdGroupTranslator const *pTranslator,
+                                   foeResourceCreateInfoBase **ppCreateInfo) {
     foeMaterialCreateInfo ci;
 
-    yaml_read_material_definition(node, pTranslator, ci);
+    yaml_read_material_definition_internal("", node, pTranslator, ci);
 
     *ppCreateInfo = new foeMaterialCreateInfo(std::move(ci));
 }

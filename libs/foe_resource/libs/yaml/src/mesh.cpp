@@ -20,22 +20,29 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-bool yaml_read_mesh_definition(YAML::Node const &node,
-                               foeIdGroupTranslator const *pTranslator,
-                               foeMeshCreateInfo &createInfo) {
+namespace {
+
+bool yaml_read_mesh_definition_internal(std::string const &nodeName,
+                                        YAML::Node const &node,
+                                        foeIdGroupTranslator const *pTranslator,
+                                        foeMeshCreateInfo &createInfo) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
     try {
         // Read the definition
-        if (auto externalFileNode = node["external_file"]; externalFileNode) {
+        if (auto externalFileNode = subNode["external_file"]; externalFileNode) {
             createInfo.source.reset(new foeMeshFileSource);
             foeMeshFileSource *ci = static_cast<foeMeshFileSource *>(createInfo.source.get());
 
             yaml_read_required("file", externalFileNode, ci->fileName);
             yaml_read_required("mesh_name", externalFileNode, ci->meshName);
-        } else if (auto generatedCubeNode = node["generated_cube"]; generatedCubeNode) {
+        } else if (auto generatedCubeNode = subNode["generated_cube"]; generatedCubeNode) {
             createInfo.source.reset(new foeMeshCubeSource);
             foeMeshCubeSource *ci = static_cast<foeMeshCubeSource *>(createInfo.source.get());
-
-        } else if (auto generatedIcosphereNode = node["generated_icosphere"];
+        } else if (auto generatedIcosphereNode = subNode["generated_icosphere"];
                    generatedIcosphereNode) {
             createInfo.source.reset(new foeMeshIcosphereSource);
             foeMeshIcosphereSource *ci =
@@ -46,19 +53,24 @@ bool yaml_read_mesh_definition(YAML::Node const &node,
             return false;
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to import foeMesh definition: {}", e.what());
-        return false;
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException{nodeName + "::" + e.what()};
+        }
     }
 
     return true;
 }
 
-void yaml_read_mesh_definition2(YAML::Node const &node,
-                                foeIdGroupTranslator const *pTranslator,
-                                foeResourceCreateInfoBase **ppCreateInfo) {
+} // namespace
+
+void yaml_read_mesh_definition(YAML::Node const &node,
+                               foeIdGroupTranslator const *pTranslator,
+                               foeResourceCreateInfoBase **ppCreateInfo) {
     foeMeshCreateInfo ci;
 
-    yaml_read_mesh_definition(node, pTranslator, ci);
+    yaml_read_mesh_definition_internal("", node, pTranslator, ci);
 
     *ppCreateInfo = new foeMeshCreateInfo(std::move(ci));
 }

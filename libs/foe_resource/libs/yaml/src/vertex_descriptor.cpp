@@ -29,72 +29,55 @@
 
 namespace {
 
-bool yaml_read_vertex_descriptor_definition(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    foeIdGroupTranslator const *pTranslator,
-    foeId &vertexShader,
-    foeId &tessellationControlShader,
-    foeId &tessellationEvaluationShader,
-    foeId &geometryShader,
-    VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
-    std::vector<VkVertexInputBindingDescription> &inputBindings,
-    std::vector<VkVertexInputAttributeDescription> &inputAttributes,
-    VkPipelineInputAssemblyStateCreateInfo &inputAssemblySCI,
-    VkPipelineTessellationStateCreateInfo &tessellationSCI) {
+bool yaml_read_vertex_descriptor_definition_internal(std::string const &nodeName,
+                                                     YAML::Node const &node,
+                                                     foeIdGroupTranslator const *pTranslator,
+                                                     foeVertexDescriptorCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
     }
 
+    bool read{false};
+
     try {
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
-            yaml_read_id_optional("vertex_shader", resNode, pTranslator, foeIdTypeResource,
-                                  vertexShader);
-            yaml_read_id_optional("tessellation_control_shader", resNode, pTranslator,
-                                  foeIdTypeResource, tessellationControlShader);
-            yaml_read_id_optional("tessellation_evaluation_shader", resNode, pTranslator,
-                                  foeIdTypeResource, tessellationEvaluationShader);
-            yaml_read_id_optional("geometry_shader", resNode, pTranslator, foeIdTypeResource,
-                                  geometryShader);
+            read |= yaml_read_id_optional("vertex_shader", resNode, pTranslator, foeIdTypeResource,
+                                          createInfo.vertexShader);
+            read |= yaml_read_id_optional("tessellation_control_shader", resNode, pTranslator,
+                                          foeIdTypeResource, createInfo.tessellationControlShader);
+            read |=
+                yaml_read_id_optional("tessellation_evaluation_shader", resNode, pTranslator,
+                                      foeIdTypeResource, createInfo.tessellationEvaluationShader);
+            read |= yaml_read_id_optional("geometry_shader", resNode, pTranslator,
+                                          foeIdTypeResource, createInfo.geometryShader);
         }
 
         // Graphics Data
-        yaml_read_gfx_vertex_descriptor("graphics_data", subNode, vertexInputSCI, inputBindings,
-                                        inputAttributes, inputAssemblySCI, tessellationSCI);
+        read |= yaml_read_gfx_vertex_descriptor(
+            "graphics_data", subNode, createInfo.vertexInputSCI, createInfo.inputBindings,
+            createInfo.inputAttributes, createInfo.inputAssemblySCI, createInfo.tessellationSCI);
     } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+        }
+        return false;
     }
 
-    return true;
+    return read;
 }
 
 } // namespace
 
-bool yaml_read_vertex_descriptor_definition(YAML::Node const &node,
+void yaml_read_vertex_descriptor_definition(YAML::Node const &node,
                                             foeIdGroupTranslator const *pTranslator,
-                                            foeVertexDescriptorCreateInfo &createInfo) {
-    try {
-        yaml_read_vertex_descriptor_definition(
-            "", node, pTranslator, createInfo.vertexShader, createInfo.tessellationControlShader,
-            createInfo.tessellationEvaluationShader, createInfo.geometryShader,
-            createInfo.vertexInputSCI, createInfo.inputBindings, createInfo.inputAttributes,
-            createInfo.inputAssemblySCI, createInfo.tessellationSCI);
-    } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to import foeFragmentDescriptor definition: {}", e.what());
-        return false;
-    }
-
-    return true;
-}
-
-void yaml_read_vertex_descriptor_definition2(YAML::Node const &node,
-                                             foeIdGroupTranslator const *pTranslator,
-                                             foeResourceCreateInfoBase **ppCreateInfo) {
+                                            foeResourceCreateInfoBase **ppCreateInfo) {
     foeVertexDescriptorCreateInfo ci;
 
-    yaml_read_vertex_descriptor_definition(node, pTranslator, ci);
+    yaml_read_vertex_descriptor_definition_internal("", node, pTranslator, ci);
 
     *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
 }

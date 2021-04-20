@@ -23,13 +23,9 @@
 
 struct foeIdGroupTranslator;
 
-FOE_RES_YAML_EXPORT bool yaml_read_image_definition(YAML::Node const &node,
+FOE_RES_YAML_EXPORT void yaml_read_image_definition(YAML::Node const &node,
                                                     foeIdGroupTranslator const *pTranslator,
-                                                    foeImageCreateInfo &createInfo);
-
-FOE_RES_YAML_EXPORT void yaml_read_image_definition2(YAML::Node const &node,
-                                                     foeIdGroupTranslator const *pTranslator,
-                                                     foeResourceCreateInfoBase **ppCreateInfo);
+                                                    foeResourceCreateInfoBase **ppCreateInfo);
 
 // FOE_RES_YAML_EXPORT bool export_image_definition(foe)
 

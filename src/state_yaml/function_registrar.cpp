@@ -28,12 +28,12 @@
 bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeDistributedYamlImporterGenerator *>(pGenerator);
         pYamlImporter) {
-        pYamlImporter->addImporter("armature", 1, yaml_read_armature_definition2);
-        pYamlImporter->addImporter("mesh", 1, yaml_read_mesh_definition2);
-        pYamlImporter->addImporter("material", 1, yaml_read_material_definition2);
-        pYamlImporter->addImporter("vertex_descriptor", 1, yaml_read_vertex_descriptor_definition2);
-        pYamlImporter->addImporter("shader", 1, yaml_read_shader_definition2);
-        pYamlImporter->addImporter("image", 1, yaml_read_image_definition2);
+        pYamlImporter->addImporter("armature", 1, yaml_read_armature_definition);
+        pYamlImporter->addImporter("mesh", 1, yaml_read_mesh_definition);
+        pYamlImporter->addImporter("material", 1, yaml_read_material_definition);
+        pYamlImporter->addImporter("vertex_descriptor", 1, yaml_read_vertex_descriptor_definition);
+        pYamlImporter->addImporter("shader", 1, yaml_read_shader_definition);
+        pYamlImporter->addImporter("image", 1, yaml_read_image_definition);
     }
 
     return true;

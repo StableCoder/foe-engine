@@ -18,28 +18,47 @@
 
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
 
 #include "image.hpp"
 
-bool yaml_read_image_definition(YAML::Node const &node,
-                                foeIdGroupTranslator const *pTranslator,
-                                foeImageCreateInfo &createInfo) {
-    try {
-        yaml_read_image_definition("", node, pTranslator, createInfo.fileName);
-    } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to import foeImage definition: {}", e.what());
+namespace {
+
+bool yaml_read_image_definition_internal(std::string const &nodeName,
+                                         YAML::Node const &node,
+                                         foeIdGroupTranslator const *pTranslator,
+                                         foeImageCreateInfo &createInfo) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
         return false;
+    }
+
+    try {
+        // Resources
+
+        // Graphics Data
+
+        // Other Data
+        yaml_read_required("file", subNode, createInfo.fileName);
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException(nodeName + "::" + e.what());
+        }
     }
 
     return true;
 }
 
-void yaml_read_image_definition2(YAML::Node const &node,
-                                 foeIdGroupTranslator const *pTranslator,
-                                 foeResourceCreateInfoBase **ppCreateInfo) {
+} // namespace
+
+void yaml_read_image_definition(YAML::Node const &node,
+                                foeIdGroupTranslator const *pTranslator,
+                                foeResourceCreateInfoBase **ppCreateInfo) {
     foeImageCreateInfo ci;
 
-    yaml_read_image_definition(node, pTranslator, ci);
+    yaml_read_image_definition_internal("", node, pTranslator, ci);
 
     *ppCreateInfo = new foeImageCreateInfo(std::move(ci));
 }

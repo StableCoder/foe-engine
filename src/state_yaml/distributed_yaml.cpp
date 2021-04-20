@@ -180,7 +180,6 @@ bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
             } else {
                 FOE_LOG(General, Info, "Successfully parsed entity {}", foeIdToString(entity))
             }
-
         } catch (foeYamlException const &e) {
             FOE_LOG(General, Error, "Failed to parse entity state data: {}", e.what())
             return false;

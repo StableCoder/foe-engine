@@ -23,13 +23,9 @@
 
 struct foeIdGroupTranslator;
 
-FOE_RES_YAML_EXPORT bool yaml_read_shader_definition(YAML::Node const &node,
+FOE_RES_YAML_EXPORT void yaml_read_shader_definition(YAML::Node const &node,
                                                      foeIdGroupTranslator const *pTranslator,
-                                                     foeShaderCreateInfo &createInfo);
-
-FOE_RES_YAML_EXPORT void yaml_read_shader_definition2(YAML::Node const &node,
-                                                      foeIdGroupTranslator const *pTranslator,
-                                                      foeResourceCreateInfoBase **ppCreateInfo);
+                                                     foeResourceCreateInfoBase **ppCreateInfo);
 
 FOE_RES_YAML_EXPORT bool export_yaml_shader_definition(foeGfxSession session,
                                                        foeShader const *pShader);
