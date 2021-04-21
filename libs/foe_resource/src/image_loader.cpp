@@ -91,8 +91,8 @@ void foeImageLoader::processLoadRequests() {
 void foeImageLoader::processUnloadRequests() {
     mUnloadSync.lock();
     ++mCurrentUnloadRequests;
-    if (mCurrentUnloadRequests == &mUnloadRequestLists[mUnloadRequestLists.size()]) {
-        mCurrentUnloadRequests = &mUnloadRequestLists[0];
+    if (mCurrentUnloadRequests == mUnloadRequestLists.end()) {
+        mCurrentUnloadRequests = mUnloadRequestLists.begin();
     }
     auto unloadRequests = std::move(*mCurrentUnloadRequests);
     mUnloadSync.unlock();

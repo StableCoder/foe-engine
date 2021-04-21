@@ -56,8 +56,8 @@ bool foeShaderLoader::initialized() const noexcept { return mGfxSession != FOE_N
 void foeShaderLoader::processUnloadRequests() {
     mUnloadSync.lock();
     ++mCurrentUnloadRequests;
-    if (mCurrentUnloadRequests == &mUnloadRequestLists[mUnloadRequestLists.size()]) {
-        mCurrentUnloadRequests = &mUnloadRequestLists[0];
+    if (mCurrentUnloadRequests == mUnloadRequestLists.end()) {
+        mCurrentUnloadRequests = mUnloadRequestLists.begin();
     }
     auto unloadRequests = std::move(*mCurrentUnloadRequests);
     mUnloadSync.unlock();

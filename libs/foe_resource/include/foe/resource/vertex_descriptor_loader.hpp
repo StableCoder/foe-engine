@@ -60,7 +60,9 @@ class foeVertexDescriptorLoader {
     std::mutex mUnloadSync{};
     std::array<std::vector<foeVertexDescriptor::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
         mUnloadRequestLists{};
-    std::vector<foeVertexDescriptor::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
+    std::array<std::vector<foeVertexDescriptor::Data>,
+               FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator mCurrentUnloadRequests{
+        mUnloadRequestLists.begin()};
 };
 
 #endif // FOE_RESOURCE_VERTEX_DESCRIPTOR_LOADER_HPP

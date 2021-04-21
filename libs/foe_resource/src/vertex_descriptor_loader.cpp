@@ -65,8 +65,8 @@ bool foeVertexDescriptorLoader::initialized() const noexcept { return mShaderLoa
 void foeVertexDescriptorLoader::processUnloadRequests() {
     mUnloadSync.lock();
     ++mCurrentUnloadRequests;
-    if (mCurrentUnloadRequests == &mUnloadRequestLists[mUnloadRequestLists.size()]) {
-        mCurrentUnloadRequests = &mUnloadRequestLists[0];
+    if (mCurrentUnloadRequests == mUnloadRequestLists.end()) {
+        mCurrentUnloadRequests = mUnloadRequestLists.begin();
     }
     auto unloadRequests = std::move(*mCurrentUnloadRequests);
     mUnloadSync.unlock();

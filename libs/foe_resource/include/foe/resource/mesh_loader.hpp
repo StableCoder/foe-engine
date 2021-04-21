@@ -80,7 +80,8 @@ class foeMeshLoader {
     std::mutex mUnloadSync{};
     std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
         mUnloadRequestLists{};
-    std::vector<foeMesh::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
+    std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+        mCurrentUnloadRequests{&mUnloadRequestLists[0]};
 };
 
 #endif // FOE_RESOURCE_MESH_LOADER_HPP

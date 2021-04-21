@@ -74,7 +74,8 @@ class foeMaterialLoader {
     std::mutex mUnloadSync{};
     std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
         mUnloadRequestLists{};
-    std::vector<foeMaterial::Data> *mCurrentUnloadRequests{&mUnloadRequestLists[0]};
+    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+        mCurrentUnloadRequests{mUnloadRequestLists.begin()};
 
     // VULKAN DESCRIPTORS
     foeGfxSession mGfxSession;
