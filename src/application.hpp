@@ -81,8 +81,9 @@ struct Application {
     foeDistributedYamlImporterGenerator testGenerator;
     foeDistributedYamlImporter yamlImporter{&testGenerator, foeIdPersistentGroup,
                                             "data/state/theDataA"};
-    foeId cameraID;
-    foeId renderID;
+    foeId cameraID = FOE_INVALID_ID;
+    foeId renderTriangleID = FOE_INVALID_ID;
+    foeId renderMeshID = FOE_INVALID_ID;
 
     std::unique_ptr<SimulationSet> pSimulationSet;
 

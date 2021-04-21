@@ -21,6 +21,7 @@
 #include <foe/yaml/parsing.hpp>
 
 #include "../position_3d.hpp"
+#include "../render_state.hpp"
 #include "../state_pools.hpp"
 
 auto yaml_read_entity(YAML::Node const &node,
@@ -40,6 +41,15 @@ auto yaml_read_entity(YAML::Node const &node,
         }
     }
 
+    if (auto dataNode = node["render_state"]; dataNode) {
+        try {
+            foeRenderState renderState = yaml_read_RenderState(dataNode, pGroupTranslator);
+            pStatePools->renderStates[entity] = std::move(renderState);
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{"render_state::" + e.whatStr()};
+        }
+    }
+
     return entity;
 }
 
@@ -51,6 +61,11 @@ auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node {
     // Position3D
     if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.end()) {
         outNode["position_3d"] = yaml_write_Position3D(*searchIt->second.get());
+    }
+    // RenderState
+    if (auto searchIt = pStatePools->renderStates.find(id);
+        searchIt != pStatePools->renderStates.end()) {
+        outNode["render_state"] = yaml_write_RenderState(searchIt->second);
     }
 
     return outNode;

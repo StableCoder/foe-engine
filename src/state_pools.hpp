@@ -23,9 +23,11 @@
 #include <memory>
 
 #include "position_3d.hpp"
+#include "render_state.hpp"
 
 struct StatePools {
     std::map<foeId, std::unique_ptr<Position3D>> position;
+    std::map<foeId, foeRenderState> renderStates;
 };
 
 #endif // STATE_POOLS_HPP
