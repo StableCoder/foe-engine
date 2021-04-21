@@ -49,6 +49,38 @@ variables:
 
 # Platforms
 
+(Debug) Fedora/GCC Static:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
+  <<: *platform_unix_template
+
+(Debug) Fedora/GCC Shared:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
+  <<: *platform_unix_template
+
+(Debug) Fedora/Clang Static:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
+  <<: *platform_unix_template
+
+(Debug) Fedora/Clang Shared:
+  image: stabletec/build-foe:fedora
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
+  <<: *platform_unix_template
+
 Fedora/GCC Static:
   image: stabletec/build-foe:fedora
   variables:
