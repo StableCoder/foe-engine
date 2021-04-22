@@ -26,10 +26,9 @@ layout(location = 4) in vec4 inBoneWeights;
 
 // Uniforms
 layout(set = 0, binding = 0) uniform CameraUBO { mat4 projViewMatrix; };
+layout(set = 1, binding = 1) uniform ModelUBO { mat4 modelMatrix; };
 
 #define MAX_BONES 4
-
-// layout(set = 1, binding = 1) uniform ModelUBO { mat4 modelMatrix; };
 layout(set = 2, binding = 2) uniform ArmatureUBO { mat4 boneMatrices[MAX_BONES]; };
 
 // Outputs
@@ -49,5 +48,5 @@ mat4 getBoneTransforms() {
 
 void main() {
     outUV = inUV;
-    gl_Position = projViewMatrix * getBoneTransforms() * vec4(inPosition, 1.0);
+    gl_Position = projViewMatrix * modelMatrix * getBoneTransforms() * vec4(inPosition, 1.0);
 }

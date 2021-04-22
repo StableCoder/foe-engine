@@ -113,7 +113,7 @@ int Application::initialize(int argc, char **argv) {
         });
 
         pSimulationSet->state.position[renderMeshID].reset(new Position3D{
-            .position = glm::vec3(0.f, 0.f, 0.f),
+            .position = glm::vec3(0.f, 4.f, 0.f),
             .orientation = glm::quat(glm::vec3(0, 0, 0)),
         });
 
@@ -849,10 +849,12 @@ int Application::mainloop() {
             auto renderCall = [&](foeId entity, VkCommandBuffer commandBuffer,
                                   VkDescriptorSet projViewDescriptor,
                                   VkRenderPass renderPass) -> bool {
+                VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
+
                 foeRenderState &renderState = pSimulationSet->state.renderStates[entity];
 
-                auto *pArmature = pSimulationSet->resources.armature.find(foeIdPersistentGroup |
-                                                                          foeIdTypeResource | 12);
+                foeArmature *pArmature = pSimulationSet->resources.armature.find(
+                    foeIdPersistentGroup | foeIdTypeResource | 12);
 
                 foeVertexDescriptor *pVertexDescriptor{nullptr};
                 bool boned{false};
@@ -897,17 +899,21 @@ int Application::mainloop() {
 
                 auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
                 if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX) {
-                    // Bind projection/view *if* the descriptor supports
-                    // it
+                    // Bind projection/view *if* the descriptor supports it
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                             0, 1, &projViewDescriptor, 0, nullptr);
+                } else {
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                            0, 1, &dummyDescriptorSet, 0, nullptr);
                 }
                 if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
-                    // Bind the object's position *if* the descriptor
-                    // supports it
+                    // Bind the object's position *if* the descriptor supports it
                     vkCmdBindDescriptorSets(
                         commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
                         &pSimulationSet->state.position[entity]->descriptorSet, 0, nullptr);
+                } else {
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                            1, 1, &dummyDescriptorSet, 0, nullptr);
                 }
 
                 if (boned) {
@@ -918,13 +924,8 @@ int Application::mainloop() {
                             1000.f,
                         pMesh->data.gfxBones, &pArmature->data.animations[1]);
 
-                    // Model Matrix
-                    std::array<VkDescriptorSet, 2> sets = {
-                        foeGfxVkGetDummySet(gfxSession), // Model Matrix
-                        vkAnimationPool.mSet,            // Bone Data
-                    };
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            1, 2, sets.data(), 0, nullptr);
+                                            2, 1, &vkAnimationPool.mSet, 0, nullptr);
                 }
 
                 // Bind the fragment descriptor set *if* it exists?

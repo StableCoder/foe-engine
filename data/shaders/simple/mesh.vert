@@ -22,6 +22,7 @@ layout(location = 2) in vec2 inUV;
 
 // Uniforms
 layout(set = 0, binding = 0) uniform CameraUBO { mat4 projViewMatrix; };
+layout(set = 1, binding = 1) uniform ModelUBO { mat4 modelMatrix; };
 
 // Outputs
 layout(location = 0) out vec2 outUV;
@@ -30,5 +31,5 @@ out gl_PerVertex { vec4 gl_Position; };
 
 void main() {
     outUV = inUV;
-    gl_Position = projViewMatrix * vec4(inPosition, 1.0);
+    gl_Position = projViewMatrix * modelMatrix * vec4(inPosition, 1.0);
 }
