@@ -1,6 +1,10 @@
 #include "vk_animation.hpp"
 
 #include <foe/graphics/vk/session.hpp>
+#include <foe/resource/armature.hpp>
+#include <foe/resource/armature_pool.hpp>
+#include <foe/resource/mesh.hpp>
+#include <foe/resource/mesh_pool.hpp>
 #include <glm/glm.hpp>
 
 VkResult VkAnimationPool::initialize(foeGfxSession gfxSession,
@@ -88,10 +92,12 @@ void VkAnimationPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult VkAnimationPool::generateBoneAnimation(uint32_t frameIndex,
-                                                double time,
-                                                std::vector<foeMeshBone> const &bones,
-                                                foeAnimation const *pAnimation) {
+VkResult VkAnimationPool::uploadBoneOffsets(
+    uint32_t frameIndex,
+    std::map<foeId, foeArmatureState> const *pArmatureStates,
+    std::map<foeId, foeRenderState> *pRenderStates,
+    foeArmaturePool *pArmaturePool,
+    foeMeshPool *pMeshPool) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &modelUniform = mModelBuffers[frameIndex];
@@ -117,10 +123,10 @@ VkResult VkAnimationPool::generateBoneAnimation(uint32_t frameIndex,
         modelUniform.capacity = 1;
     }
 
-    if (boneUniform.capacity < bones.size()) {
+    if (boneUniform.capacity < 1024) {
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = sizeof(glm::mat4) * bones.size(),
+            .size = sizeof(glm::mat4) * 1024,
             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         };
 
@@ -134,7 +140,7 @@ VkResult VkAnimationPool::generateBoneAnimation(uint32_t frameIndex,
             return res;
         }
 
-        boneUniform.capacity = bones.size();
+        boneUniform.capacity = 1024;
     }
 
     vkResetDescriptorPool(mDevice, mBoneDescriptorPools[frameIndex], 0);
@@ -143,81 +149,93 @@ VkResult VkAnimationPool::generateBoneAnimation(uint32_t frameIndex,
     VkDeviceSize offset = 0;
     vmaMapMemory(mAllocator, boneUniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    if (pAnimation == nullptr) {
-        // No animation, oops
-        for (int i = 0; i < bones.size(); ++i) {
-            *pBufferData = glm::mat4(1.f) * bones[i].offsetMatrix;
-            pBufferData++;
-        }
-    } else {
-        auto totalDuration = pAnimation->duration / pAnimation->ticksPerSecond;
-        while (time > totalDuration) {
-            time -= totalDuration;
+    for (auto it = pRenderStates->begin(); it != pRenderStates->end(); ++it) {
+        // Make sure the buffer offset matches the minimum allowed alignment
+        {
+            auto alignment = offset / mMinUniformBufferOffsetAlignment;
+            if (offset != alignment * mMinUniformBufferOffsetAlignment) {
+                // Not maching an alignment, need to move offset up a little
+                offset = (alignment + 1) * mMinUniformBufferOffsetAlignment;
+            }
         }
 
+        foeRenderState &renderState = it->second;
+
+        // Only need bone state data if we have an associated armature.
+        foeArmatureState const *pArmatureState{nullptr};
+        if (auto searchIt = pArmatureStates->find(it->first); searchIt != pArmatureStates->end()) {
+            pArmatureState = &searchIt->second;
+        } else {
+            continue;
+        }
+
+        foeMesh *pMesh = pMeshPool->find(renderState.mesh);
+        foeArmature *pArmature = pArmaturePool->find(pArmatureState->armatureID);
+
+        if (pMesh == nullptr || pArmature == nullptr ||
+            pMesh->getLoadState() != foeResourceLoadState::Loaded ||
+            pArmature->getLoadState() != foeResourceLoadState::Loaded) {
+            continue;
+        }
+
+        glm::mat4 lastBone = glm::mat4{1.f};
         glm::mat4 transform(1.f);
-        auto animationTime = time * pAnimation->ticksPerSecond;
-        for (int i = 0; i < bones.size(); ++i) {
-            foeMeshBone const &bone = bones[i];
-            foeNodeAnimationChannel const *pChannel{nullptr};
-            for (size_t i = 0; i < pAnimation->nodeChannels.size(); ++i) {
-                if (pAnimation->nodeChannels[i].nodeName == bone.name) {
-                    pChannel = &pAnimation->nodeChannels[i];
+        for (auto const &bone : pMesh->data.gfxBones) {
+            // Find the matching armature node, if it exists
+            foeArmatureNode *pArmatureNode{nullptr};
+            size_t armatureNodeIndex;
+            for (size_t i = 0; i < pArmature->data.armature.size(); ++i) {
+                if (pArmature->data.armature[i].name == bone.name) {
+                    pArmatureNode = &pArmature->data.armature[i];
+                    armatureNodeIndex = i;
+                    break;
                 }
             }
 
-            if (pChannel != nullptr &&
-                (!pChannel->positionKeys.empty() || !pChannel->rotationKeys.empty() ||
-                 !pChannel->scalingKeys.empty())) {
-                // Animation channel isn't empty
-                glm::vec3 posVec = interpolatePosition(animationTime, pChannel);
-                glm::mat4 posMat = glm::translate(glm::mat4(1.f), posVec);
-
-                glm::quat rotQuat = interpolateRotation(animationTime, pChannel);
-                glm::mat4 rotMat = glm::mat4_cast(rotQuat);
-
-                glm::vec3 scaleVec = interpolateScaling(animationTime, pChannel);
-                glm::mat4 scaleMat = glm::scale(glm::mat4(1.f), scaleVec);
-
-                transform = transform * posMat * rotMat * scaleMat;
+            if (pArmatureNode == nullptr) {
+                // Didn't find a matching node,
+                lastBone = glm::mat4{1.f};
             } else {
-                transform = glm::mat4(1.f);
+                lastBone = pArmatureState->armatureState[armatureNodeIndex];
             }
 
-            *pBufferData = transform * bones[i].offsetMatrix;
-            pBufferData++;
-        }
-    }
-
-    { // Descriptor Set
-        VkDescriptorSetAllocateInfo setAI{
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-            .descriptorPool = mBoneDescriptorPools[frameIndex],
-            .descriptorSetCount = 1U,
-            .pSetLayouts = &mBoneSetLayout,
-        };
-
-        res = vkAllocateDescriptorSets(mDevice, &setAI, &mSet);
-        if (res != VK_SUCCESS) {
-            return res;
+            *pBufferData = lastBone * bone.offsetMatrix;
+            ++pBufferData;
         }
 
-        VkDescriptorBufferInfo bufferInfo{
-            .buffer = boneUniform.buffer,
-            .offset = offset,
-            .range = sizeof(glm::mat4) * bones.size(),
-        };
+        { // Set bone descriptor set
+            VkDescriptorSetAllocateInfo setAI{
+                .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+                .descriptorPool = mBoneDescriptorPools[frameIndex],
+                .descriptorSetCount = 1U,
+                .pSetLayouts = &mBoneSetLayout,
+            };
 
-        VkWriteDescriptorSet writeSet{
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .dstSet = mSet,
-            .dstBinding = mBoneSetBinding,
-            .descriptorCount = 1,
-            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .pBufferInfo = &bufferInfo,
-        };
+            res = vkAllocateDescriptorSets(mDevice, &setAI, &renderState.boneDescriptorSet);
+            if (res != VK_SUCCESS) {
+                return res;
+            }
 
-        vkUpdateDescriptorSets(mDevice, 1, &writeSet, 0, nullptr);
+            VkDescriptorBufferInfo bufferInfo{
+                .buffer = boneUniform.buffer,
+                .offset = offset,
+                .range = sizeof(glm::mat4) * pMesh->data.gfxBones.size(),
+            };
+
+            VkWriteDescriptorSet writeSet{
+                .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                .dstSet = renderState.boneDescriptorSet,
+                .dstBinding = mBoneSetBinding,
+                .descriptorCount = 1,
+                .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                .pBufferInfo = &bufferInfo,
+            };
+
+            vkUpdateDescriptorSets(mDevice, 1, &writeSet, 0, nullptr);
+        }
+
+        // Move the offset into the buffer by however many bones we put in
+        offset += sizeof(glm::mat4) * pMesh->data.gfxBones.size();
     }
 
     vmaUnmapMemory(mAllocator, boneUniform.alloc);

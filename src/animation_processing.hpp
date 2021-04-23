@@ -14,22 +14,16 @@
     limitations under the License.
 */
 
-#ifndef STATE_POOLS_HPP
-#define STATE_POOLS_HPP
+#ifndef ANIMATION_PROCESSING_HPP
+#define ANIMATION_PROCESSING_HPP
 
-#include <foe/ecs/id.hpp>
-
-#include <map>
-#include <memory>
+#include <foe/resource/armature_pool.hpp>
 
 #include "armature_state.hpp"
-#include "position_3d.hpp"
-#include "render_state.hpp"
 
-struct StatePools {
-    std::map<foeId, std::unique_ptr<Position3D>> position;
-    std::map<foeId, foeRenderState> renderStates;
-    std::map<foeId, foeArmatureState> armatureStates;
-};
+#include <map>
 
-#endif // STATE_POOLS_HPP
+void processArmatureStates(std::map<foeId, foeArmatureState> *pArmatureStates,
+                           foeArmaturePool *pArmaturePool);
+
+#endif // ANIMATION_PROCESSING_HPP

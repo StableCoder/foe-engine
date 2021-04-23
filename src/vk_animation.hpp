@@ -17,14 +17,20 @@
 #ifndef VK_ANIMATION_HPP
 #define VK_ANIMATION_HPP
 
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/model/animation.hpp>
-#include <foe/model/armature.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
+#include "armature_state.hpp"
+#include "render_state.hpp"
+
 #include <array>
+#include <map>
+
+class foeArmaturePool;
+class foeMeshPool;
 
 class VkAnimationPool {
   public:
@@ -33,10 +39,11 @@ class VkAnimationPool {
                         uint32_t boneSetBinding);
     void deinitialize();
 
-    VkResult generateBoneAnimation(uint32_t frameIndex,
-                                   double time,
-                                   std::vector<foeMeshBone> const &bones,
-                                   foeAnimation const *pAnimation);
+    VkResult uploadBoneOffsets(uint32_t frameIndex,
+                               std::map<foeId, foeArmatureState> const *pArmatureStates,
+                               std::map<foeId, foeRenderState> *pRenderStates,
+                               foeArmaturePool *pArmaturePool,
+                               foeMeshPool *pMeshPool);
 
   public:
     struct UniformBuffer {
@@ -50,8 +57,6 @@ class VkAnimationPool {
 
     VkDescriptorSetLayout mBoneSetLayout{VK_NULL_HANDLE};
     uint32_t mBoneSetBinding;
-
-    VkDescriptorSet mSet{VK_NULL_HANDLE};
 
     uint32_t maxBones{64};
 

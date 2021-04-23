@@ -2,12 +2,16 @@
 #define RENDER_STATE_HPP
 
 #include <foe/ecs/id.hpp>
+#include <vulkan/vulkan.h>
 
 struct foeRenderState {
     foeId vertexDescriptor;
     foeId bonedVertexDescriptor;
     foeId material;
     foeId mesh;
+
+    // Runtime info
+    VkDescriptorSet boneDescriptorSet;
 };
 
 #include <foe/ecs/group_translator.hpp>

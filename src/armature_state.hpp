@@ -14,22 +14,22 @@
     limitations under the License.
 */
 
-#ifndef STATE_POOLS_HPP
-#define STATE_POOLS_HPP
+#ifndef ARMATURE_STATE_HPP
+#define ARMATURE_STATE_HPP
 
 #include <foe/ecs/id.hpp>
+#include <glm/glm.hpp>
 
-#include <map>
-#include <memory>
+#include <vector>
 
-#include "armature_state.hpp"
-#include "position_3d.hpp"
-#include "render_state.hpp"
+struct foeArmatureState {
+    // Armature information
+    foeId armatureID{FOE_INVALID_ID};
+    std::vector<glm::mat4> armatureState;
 
-struct StatePools {
-    std::map<foeId, std::unique_ptr<Position3D>> position;
-    std::map<foeId, foeRenderState> renderStates;
-    std::map<foeId, foeArmatureState> armatureStates;
+    // Animation info
+    uint32_t animationID{UINT32_MAX};
+    float time{0.f};
 };
 
-#endif // STATE_POOLS_HPP
+#endif // ARMATURE_STATE_HPP

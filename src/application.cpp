@@ -30,6 +30,7 @@
 
 #include <vk_error_code.hpp>
 
+#include "animation_processing.hpp"
 #include "graphics.hpp"
 #include "logging.hpp"
 
@@ -131,6 +132,15 @@ int Application::initialize(int argc, char **argv) {
             .bonedVertexDescriptor = foeIdCreateResource(foeIdPersistentGroup, 2),
             .material = foeIdCreateResource(foeIdPersistentGroup, 5),
             .mesh = foeIdCreateResource(foeIdPersistentGroup, 13),
+
+            .boneDescriptorSet = VK_NULL_HANDLE,
+        };
+
+        pSimulationSet->state.armatureStates[renderMeshID] = foeArmatureState{
+            .armatureID = foeIdCreateResource(foeIdPersistentGroup, 12),
+            // .armatureState =
+            .animationID = 1,
+            .time = 0.f,
         };
     }
 
@@ -741,6 +751,15 @@ int Application::mainloop() {
 #endif
         }
 
+        for (auto &it : pSimulationSet->state.armatureStates) {
+            it.second.time =
+                static_cast<float>(simulationClock.time<std::chrono::milliseconds>().count()) /
+                1000.f;
+        }
+
+        processArmatureStates(&pSimulationSet->state.armatureStates,
+                              &pSimulationSet->resources.armature);
+
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
         if (VK_SUCCESS == vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
@@ -840,11 +859,15 @@ int Application::mainloop() {
             bool camerasRemade = false;
 
             // Rendering
-            vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].commandPool,
-                               0);
+            vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool, 0);
 
             positionDescriptorPool.generatePositionDescriptors(frameIndex,
                                                                pSimulationSet->state.position);
+
+            vkAnimationPool.uploadBoneOffsets(frameIndex, &pSimulationSet->state.armatureStates,
+                                              &pSimulationSet->state.renderStates,
+                                              &pSimulationSet->resources.armature,
+                                              &pSimulationSet->resources.mesh);
 
             auto renderCall = [&](foeId entity, VkCommandBuffer commandBuffer,
                                   VkDescriptorSet projViewDescriptor,
@@ -853,12 +876,10 @@ int Application::mainloop() {
 
                 foeRenderState &renderState = pSimulationSet->state.renderStates[entity];
 
-                foeArmature *pArmature = pSimulationSet->resources.armature.find(
-                    foeIdPersistentGroup | foeIdTypeResource | 12);
-
                 foeVertexDescriptor *pVertexDescriptor{nullptr};
                 bool boned{false};
-                if (pArmature != nullptr && renderState.bonedVertexDescriptor != FOE_INVALID_ID) {
+                if (renderState.bonedVertexDescriptor != FOE_INVALID_ID &&
+                    renderState.boneDescriptorSet != VK_NULL_HANDLE) {
                     boned = true;
                     pVertexDescriptor = pSimulationSet->resources.vertexDescriptor.find(
                         renderState.bonedVertexDescriptor);
@@ -878,10 +899,6 @@ int Application::mainloop() {
                 if (pVertexDescriptor->getLoadState() != foeResourceLoadState::Loaded ||
                     pMaterial->getLoadState() != foeResourceLoadState::Loaded ||
                     pMesh->getLoadState() != foeResourceLoadState::Loaded) {
-                    return false;
-                }
-
-                if (boned && pArmature->getLoadState() != foeResourceLoadState::Loaded) {
                     return false;
                 }
 
@@ -915,19 +932,11 @@ int Application::mainloop() {
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                             1, 1, &dummyDescriptorSet, 0, nullptr);
                 }
-
                 if (boned) {
-                    vkAnimationPool.generateBoneAnimation(
-                        frameIndex,
-                        static_cast<float>(
-                            simulationClock.time<std::chrono::milliseconds>().count()) /
-                            1000.f,
-                        pMesh->data.gfxBones, &pArmature->data.animations[1]);
-
+                    // If we have bone information, bind that too
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            2, 1, &vkAnimationPool.mSet, 0, nullptr);
+                                            2, 1, &renderState.boneDescriptorSet, 0, nullptr);
                 }
-
                 // Bind the fragment descriptor set *if* it exists?
                 if (auto set = pMaterial->getVkDescriptorSet(frameIndex); set != VK_NULL_HANDLE) {
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
