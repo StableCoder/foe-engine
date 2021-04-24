@@ -28,6 +28,7 @@ build*/
 # Other
 # =========================
 
+*.cap
 *.ini
 *.spv
 .foe-settings.yml
