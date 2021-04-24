@@ -1,9 +1,9 @@
 # Setup
 prepare_catch(COMPILED_CATCH)
 
-# Declaration
+# Main Declaration
 add_executable(test_foe command_string_runner.cpp filesystem.cpp plugin.cpp
-                        search_paths.cpp thread_pool.cpp)
+                        search_paths.cpp)
 add_test(NAME FoE-Test COMMAND test_foe)
 
 target_compile_definitions(
@@ -11,11 +11,22 @@ target_compile_definitions(
                    TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(test_foe PRIVATE catch foe)
-if(UNIX)
-  target_link_libraries(test_foe PRIVATE pthread)
-endif()
 target_code_coverage(
   test_foe
+  AUTO
+  ALL
+  OBJECTS
+  foe
+  EXCLUDE
+  .*/test/.*)
+
+# Thread
+add_executable(test_foe_thread thread_pool.cpp)
+add_test(NAME FoE-Test-Thread COMMAND test_foe_thread)
+
+target_link_libraries(test_foe_thread PRIVATE catch foe)
+target_code_coverage(
+  test_foe_thread
   AUTO
   ALL
   OBJECTS
