@@ -158,7 +158,7 @@ Windows/MSVC Static:
   variables:
   <<: *platform_windows_template
 
-Windows/MSVC Shared:
+.Windows/MSVC Shared: # Disabled while MSVC can't build imgui library dynamically
   variables:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
