@@ -94,21 +94,21 @@ bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
             YAML::Node resNode;
 
             if (auto *pShader = pVertexDescriptor->getVertexShader(); pShader != nullptr) {
-                yaml_write_shader_declaration("vertex_shader", pShader, resNode);
+                yaml_write_id("vertex_shader", pShader->getID(), resNode);
             }
 
             if (auto *pShader = pVertexDescriptor->getTessellationControlShader();
                 pShader != nullptr) {
-                yaml_write_shader_declaration("tessellation_control_shader", pShader, resNode);
+                yaml_write_id("tessellation_control_shader", pShader->getID(), resNode);
             }
 
             if (auto *pShader = pVertexDescriptor->getTessellationEvaluationShader();
                 pShader != nullptr) {
-                yaml_write_shader_declaration("tessellation_evaluation_shader", pShader, resNode);
+                yaml_write_id("tessellation_evaluation_shader", pShader->getID(), resNode);
             }
 
             if (auto *pShader = pVertexDescriptor->getGeometryShader(); pShader != nullptr) {
-                yaml_write_shader_declaration("geometry_shader", pShader, resNode);
+                yaml_write_id("geometry_shader", pShader->getID(), resNode);
             }
 
             writeNode["resources"] = resNode;
@@ -133,29 +133,11 @@ bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
 
 } // namespace
 
-bool export_yaml_vertex_descriptor_definition(foeVertexDescriptor const *pVertexDescriptor) {
+auto yaml_write_vertex_descriptor_definition(foeVertexDescriptor const *pVertexDescriptor)
+    -> YAML::Node {
     YAML::Node definition;
 
-    try {
-        yaml_write_vertex_descriptor_definition("", pVertexDescriptor, definition);
-    } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to export foeVertexDescriptor definition: {}", e.what());
-    }
+    yaml_write_vertex_descriptor_definition("", pVertexDescriptor, definition);
 
-    YAML::Emitter emitter;
-    emitter << definition;
-
-    std::ofstream outFile(std::string{"_"} + std::to_string(pVertexDescriptor->getID()) + ".yml",
-                          std::ofstream::out);
-    if (outFile.is_open()) {
-        outFile << emitter.c_str();
-        outFile.close();
-    } else {
-        FOE_LOG(General, Error,
-                "Failed to export foeVertexDescriptor: Failed to open output file {}.yml",
-                foeIdToString(pVertexDescriptor->getID()));
-        return false;
-    }
-
-    return true;
+    return definition;
 }

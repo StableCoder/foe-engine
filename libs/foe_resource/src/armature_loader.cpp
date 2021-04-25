@@ -143,6 +143,9 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
     if (!processCreateInfo(createInfo.get(), data)) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
+    } else {
+        pArmature->createInfo.reset(
+            reinterpret_cast<foeArmatureCreateInfo *>(createInfo.release()));
     }
 
 LOADING_FAILED:

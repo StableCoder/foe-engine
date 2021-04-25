@@ -62,3 +62,15 @@ void yaml_read_image_definition(YAML::Node const &node,
 
     *ppCreateInfo = new foeImageCreateInfo(std::move(ci));
 }
+
+auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node {
+    YAML::Node outNode;
+
+    try {
+        yaml_write_required("file", data.fileName, outNode);
+    } catch (foeYamlException const &e) {
+        throw e;
+    }
+
+    return outNode;
+}

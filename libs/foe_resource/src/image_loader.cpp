@@ -411,6 +411,8 @@ LOADING_FAILED:
         // by processUploadRequest
         ++mActiveUploads;
 
+        pImage->createInfo.reset(reinterpret_cast<foeImageCreateInfo *>(createInfo.release()));
+
         processUpload(pImage, gfxUploadRequest, gfxUploadBuffer, imgData);
     }
 }

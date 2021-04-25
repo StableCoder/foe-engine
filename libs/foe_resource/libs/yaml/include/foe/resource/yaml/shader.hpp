@@ -27,7 +27,7 @@ FOE_RES_YAML_EXPORT void yaml_read_shader_definition(YAML::Node const &node,
                                                      foeIdGroupTranslator const *pTranslator,
                                                      foeResourceCreateInfoBase **ppCreateInfo);
 
-FOE_RES_YAML_EXPORT bool export_yaml_shader_definition(foeGfxSession session,
-                                                       foeShader const *pShader);
+FOE_RES_YAML_EXPORT auto yaml_write_shader_definition(foeGfxSession session,
+                                                      foeShader const *pShader) -> YAML::Node;
 
 #endif // FOE_RESOURCE_YAML_SHADER_HPP

@@ -47,7 +47,7 @@ bool yaml_write_shader_definition(std::string const &nodeName,
         // (Nothing Currently)
 
         // SPIR-V Source
-        writeNode["spirv_source"] = "data/shaders/simple/uv_to_colour.frag.spv";
+        yaml_write_required("spirv_source", pShader->createInfo->shaderCodeFile, writeNode);
 
         // Gfx Data Node
         yaml_write_gfx_shader("graphics_data", session, pShader->getShader(), writeNode);

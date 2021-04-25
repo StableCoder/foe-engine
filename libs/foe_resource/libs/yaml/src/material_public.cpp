@@ -22,8 +22,6 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "material.hpp"
-
 #include <fstream>
 
 namespace {
@@ -79,29 +77,32 @@ void yaml_read_material_definition(YAML::Node const &node,
     *ppCreateInfo = new foeMaterialCreateInfo(std::move(ci));
 }
 
-bool export_yaml_material_definition(foeMaterial const *pMaterial) {
-    YAML::Node definition;
+auto yaml_write_material_definition(foeMaterialCreateInfo const &data,
+                                    foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node {
+    YAML::Node writeNode;
 
     try {
-        yaml_write_material_definition("", pMaterial, definition);
+        { // Resources Node
+            YAML::Node resNode;
+
+            // Fragment Shader
+            if (data.fragmentShader != FOE_INVALID_ID) {
+                yaml_write_id("fragment_shader", data.fragmentShader, resNode);
+            }
+
+            // Image
+            if (data.image != FOE_INVALID_ID) {
+                yaml_write_id("image", data.image, resNode);
+            }
+
+            writeNode["resources"] = resNode;
+        }
+
+        // Gfx Data Node
+        yaml_write_gfx_fragment_descriptor("graphics_data", pFragmentDescriptor, writeNode);
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to export foeMaterial definition: {}", e.what());
-        return false;
+        throw e;
     }
 
-    YAML::Emitter emitter;
-    emitter << definition;
-
-    std::ofstream outFile(std::string{"_"} + std::to_string(pMaterial->getID()) + ".yml",
-                          std::ofstream::out);
-    if (outFile.is_open()) {
-        outFile << emitter.c_str();
-        outFile.close();
-    } else {
-        FOE_LOG(General, Error, "Failed to export foeMaterial: Failed to open output file {}.yml",
-                foeIdToString(pMaterial->getID()));
-        return false;
-    }
-
-    return true;
+    return writeNode;
 }

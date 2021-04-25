@@ -86,6 +86,7 @@ struct foeMesh {
     std::mutex dataWriteLock{};
 
   public:
+    std::unique_ptr<foeMeshCreateInfo> createInfo;
     struct Data {
         foeGfxMesh gfxData{};
         std::vector<foeMeshBone> gfxBones{};

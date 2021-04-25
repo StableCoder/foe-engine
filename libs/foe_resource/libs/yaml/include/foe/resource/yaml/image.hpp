@@ -27,6 +27,6 @@ FOE_RES_YAML_EXPORT void yaml_read_image_definition(YAML::Node const &node,
                                                     foeIdGroupTranslator const *pTranslator,
                                                     foeResourceCreateInfoBase **ppCreateInfo);
 
-// FOE_RES_YAML_EXPORT bool export_image_definition(foe)
+FOE_RES_YAML_EXPORT auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node;
 
 #endif // FOE_RESOURCE_YAML_IMAGE_HPP

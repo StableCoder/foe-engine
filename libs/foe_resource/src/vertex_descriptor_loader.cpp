@@ -219,6 +219,9 @@ LOADING_FAILED:
         {
             std::scoped_lock writeLock{pVertexDescriptor->dataWriteLock};
 
+            pVertexDescriptor->createInfo.reset(
+                reinterpret_cast<foeVertexDescriptorCreateInfo *>(createInfo.release()));
+
             oldData = std::move(pVertexDescriptor->data);
             pVertexDescriptor->data = std::move(newData);
             pVertexDescriptor->loading.reset();

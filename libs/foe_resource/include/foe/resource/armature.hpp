@@ -25,6 +25,7 @@
 #include <foe/resource/load_state.hpp>
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -76,6 +77,7 @@ struct foeArmature {
     std::mutex dataWriteLock{};
 
   public:
+    std::unique_ptr<foeArmatureCreateInfo> createInfo{nullptr};
     struct Data {
         std::vector<foeArmatureNode> armature;
         std::vector<foeAnimation> animations;

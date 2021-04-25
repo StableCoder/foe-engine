@@ -67,32 +67,10 @@ void yaml_read_shader_definition(YAML::Node const &node,
     *ppCreateInfo = new foeShaderCreateInfo(std::move(ci));
 }
 
-bool export_yaml_shader_definition(foeGfxSession session, foeShader const *pShader) {
+auto yaml_write_shader_definition(foeGfxSession session, foeShader const *pShader) -> YAML::Node {
     YAML::Node definition;
 
-    try {
-        yaml_write_shader_definition("", session, pShader, definition);
-    } catch (YAML::ParserException const &e) {
-        FOE_LOG(General, Fatal, "Failed to load Yaml file: {}", e.what());
-        return false;
-    } catch (YAML::BadFile const &e) {
-        FOE_LOG(General, Fatal, "YAML::LoadFile failed: {}", e.what());
-        return false;
-    }
+    yaml_write_shader_definition("", session, pShader, definition);
 
-    YAML::Emitter emitter;
-    emitter << definition;
-
-    std::ofstream outFile(std::string{"_"} + std::to_string(pShader->getID()) + ".yml",
-                          std::ofstream::out);
-    if (outFile.is_open()) {
-        outFile << emitter.c_str();
-        outFile.close();
-    } else {
-        FOE_LOG(General, Error, "Failed to export foeShader: Failed to open output file {}.yml",
-                foeIdToString(pShader->getID()));
-        return false;
-    }
-
-    return true;
+    return definition;
 }

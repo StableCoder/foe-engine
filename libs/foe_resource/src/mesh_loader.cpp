@@ -454,6 +454,8 @@ LOADING_FAILED:
         // processed by processUploadRequest
         ++mActiveUploads;
 
+        pMesh->createInfo.reset(reinterpret_cast<foeMeshCreateInfo *>(createInfo.release()));
+
         processUpload(pMesh, gfxUploadRequest, gfxUploadBuffer, meshData);
     }
 }

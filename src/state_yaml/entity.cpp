@@ -16,10 +16,12 @@
 
 #include "entity.hpp"
 
+#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+#include "../armature_state.hpp"
 #include "../position_3d.hpp"
 #include "../render_state.hpp"
 #include "../state_pools.hpp"
@@ -50,13 +52,31 @@ auto yaml_read_entity(YAML::Node const &node,
         }
     }
 
+    if (auto dataNode = node["armature_state"]; dataNode) {
+        try {
+            foeArmatureState armatureState = yaml_read_ArmatureState(dataNode, pGroupTranslator);
+            pStatePools->armatureStates[entity] = std::move(armatureState);
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{"armature_state::" + e.whatStr()};
+        }
+    }
+
     return entity;
 }
 
-auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node {
+auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStatePools)
+    -> YAML::Node {
     YAML::Node outNode;
 
-    // yaml_write_id(id, outNode);
+    yaml_write_id("", id, outNode);
+
+    if (pNameMap != nullptr) {
+        auto name = pNameMap->find(id);
+
+        if (!name.empty()) {
+            yaml_write_required("editor_name", name, outNode);
+        }
+    }
 
     // Position3D
     if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.end()) {
@@ -66,6 +86,11 @@ auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node {
     if (auto searchIt = pStatePools->renderStates.find(id);
         searchIt != pStatePools->renderStates.end()) {
         outNode["render_state"] = yaml_write_RenderState(searchIt->second);
+    }
+    // ArmatureState
+    if (auto searchIt = pStatePools->armatureStates.find(id);
+        searchIt != pStatePools->armatureStates.end()) {
+        outNode["armature_state"] = yaml_write_ArmatureState(searchIt->second);
     }
 
     return outNode;

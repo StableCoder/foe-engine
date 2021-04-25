@@ -69,6 +69,7 @@ class foeImage {
     // Specialization
     foeImageLoader *const pLoader;
 
+  public:
     std::mutex dataWriteLock{};
     struct Data {
         VmaAllocation alloc{};
@@ -76,6 +77,7 @@ class foeImage {
         VkImageView view{};
         VkSampler sampler{};
     };
+    std::unique_ptr<foeImageCreateInfo> createInfo;
     Data data{};
 };
 

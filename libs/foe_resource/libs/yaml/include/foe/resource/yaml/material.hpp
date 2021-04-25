@@ -27,6 +27,8 @@ FOE_RES_YAML_EXPORT void yaml_read_material_definition(YAML::Node const &node,
                                                        foeIdGroupTranslator const *pTranslator,
                                                        foeResourceCreateInfoBase **ppCreateInfo);
 
-FOE_RES_YAML_EXPORT bool export_yaml_material_definition(foeMaterial const *pMaterial);
+FOE_RES_YAML_EXPORT auto yaml_write_material_definition(
+    foeMaterialCreateInfo const &data, foeGfxVkFragmentDescriptor *pFragmentDescriptor)
+    -> YAML::Node;
 
 #endif // FOE_RESOURCE_YAML_MATERIAL_HPP

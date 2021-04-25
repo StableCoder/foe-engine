@@ -22,10 +22,13 @@
 #include "../resource_pools.hpp"
 #include "../state_pools.hpp"
 
-class foeEcsGroups;
+class foeGroupData;
+class foeEditorNameMap;
 
 bool exportGroupState(std::filesystem::path yamlPath,
-                      foeEcsGroups &ecsGroups,
+                      foeGfxSession gfxSession,
+                      foeGroupData &ecsGroups,
+                      foeEditorNameMap *pNameMap,
                       StatePools &statePools,
                       ResourcePools &resourcePools);
 

@@ -72,6 +72,7 @@
     }
 
 #include "state_import/import_state.hpp"
+#include "state_yaml/export.hpp"
 #include "state_yaml/function_registrar.hpp"
 
 int Application::initialize(int argc, char **argv) {
@@ -99,8 +100,11 @@ int Application::initialize(int argc, char **argv) {
 
     // Groups/Entities
     cameraID = pSimulationSet->groupData.persistentIndices()->generate();
+    pSimulationSet->nameMap.add(cameraID, "camera");
     renderTriangleID = pSimulationSet->groupData.persistentIndices()->generate();
+    pSimulationSet->nameMap.add(renderTriangleID, "renderTri");
     renderMeshID = pSimulationSet->groupData.persistentIndices()->generate();
+    pSimulationSet->nameMap.add(renderMeshID, "renderMesh");
 
     pSimulationSet->state.position[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),
@@ -528,6 +532,9 @@ int Application::initialize(int argc, char **argv) {
 void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
+
+    exportGroupState("testExport", gfxSession, pSimulationSet->groupData, &pSimulationSet->nameMap,
+                     pSimulationSet->state, pSimulationSet->resources);
 
     { // Resource Unloading
         pSimulationSet->resources.armature.unloadAll();

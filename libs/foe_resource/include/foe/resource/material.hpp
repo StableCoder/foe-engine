@@ -104,8 +104,10 @@ struct foeMaterial {
     // Specialization
     foeMaterialLoader *pLoader;
 
+  public:
     std::mutex dataWriteLock{};
     SubResources loadingSubResources;
+    std::unique_ptr<foeMaterialCreateInfo> createInfo;
     struct Data {
         SubResources subResources;
         foeGfxVkFragmentDescriptor *pGfxFragDescriptor;

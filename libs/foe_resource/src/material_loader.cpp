@@ -320,6 +320,9 @@ LOADING_FAILED:
         {
             std::scoped_lock writeLock{pMaterial->dataWriteLock};
 
+            pMaterial->createInfo.reset(
+                reinterpret_cast<foeMaterialCreateInfo *>(createInfo.release()));
+
             oldData = std::move(pMaterial->data);
             pMaterial->data = std::move(newData);
             pMaterial->loadingSubResources.reset();

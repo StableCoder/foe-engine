@@ -25,11 +25,13 @@
 struct foeIdGroupTranslator;
 struct StatePools;
 
+class foeEditorNameMap;
+
 auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroup targetedGroupID,
                       foeIdGroupTranslator *pGroupTranslator,
                       StatePools *pStatePools) -> foeId;
 
-auto yaml_write_entity(foeId id, StatePools *pStatePools) -> YAML::Node;
+auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStatePools) -> YAML::Node;
 
 #endif // STATE_YAML_ENTITY_HPP

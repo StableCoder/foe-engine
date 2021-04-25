@@ -16,14 +16,22 @@
 
 #include "export.hpp"
 
-#include <foe/ecs/groups.hpp>
+#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/log.hpp>
+#include <foe/resource/yaml/armature.hpp>
+#include <foe/resource/yaml/image.hpp>
+#include <foe/resource/yaml/material.hpp>
+#include <foe/resource/yaml/mesh.hpp>
+#include <foe/resource/yaml/shader.hpp>
+#include <foe/resource/yaml/vertex_descriptor.hpp>
 #include <foe/yaml/exception.hpp>
 
-#include <fstream>
-
+#include "../group_data.hpp"
 #include "entity.hpp"
+
+#include <fstream>
+#include <sstream>
 
 namespace {
 
@@ -32,13 +40,52 @@ constexpr std::string_view indexDataFilePath = "index_data.yml";
 constexpr std::string_view resourcesDirectoryPath = "resources";
 constexpr std::string_view stateDataDirectoryPath = "state_data";
 
-auto write_yaml_dependencies(foeEcsGroups &ecsGroups) -> YAML::Node {
+std::string id_to_filename(foeId id, foeEditorNameMap *pNameMap) {
+    std::string filename;
+
+    { // Group
+        foeIdGroupValue groupValue = foeIdGroupToValue(id);
+        if (groupValue != foeIdPersistentGroupValue) {
+            constexpr int groupWidth = (foeIdNumGroupBits / 4) + ((foeIdNumGroupBits % 4) ? 1 : 0);
+
+            std::stringstream ss;
+            ss << std::hex << std::uppercase << std::setfill('0');
+            ss << "0x" << std::setw(groupWidth) << groupValue;
+            filename += ss.str();
+        }
+    }
+
+    filename += "_";
+
+    // Index
+    {
+        constexpr int indexWidth = (foeIdNumIndexBits / 4) + ((foeIdNumIndexBits % 4) ? 1 : 0);
+        std::stringstream ss;
+        ss << std::hex << std::uppercase << std::setfill('0');
+        ss << "0x" << std::setw(indexWidth) << foeIdIndexToValue(id);
+        filename += ss.str();
+    }
+
+    // Editor Name
+    if (pNameMap != nullptr) {
+        auto name = pNameMap->find(id);
+
+        if (!name.empty()) {
+            filename += "_";
+            filename += name;
+        }
+    }
+
+    return filename;
+}
+
+auto write_yaml_dependencies(foeGroupData &groups) -> YAML::Node {
     YAML::Node outNode;
 
     for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
         foeIdGroup groupID = foeIdValueToGroup(i);
 
-        auto *pGroup = ecsGroups.group(groupID);
+        foeImporterBase const *pGroup = groups.importer(foeIdValueToGroup(groupID));
         if (pGroup == nullptr) {
             continue;
         }
@@ -55,13 +102,13 @@ auto write_yaml_dependencies(foeEcsGroups &ecsGroups) -> YAML::Node {
     return outNode;
 }
 
-bool exportDependenciesToFile(std::filesystem::path path, foeEcsGroups &ecsGroups) {
+bool exportDependenciesToFile(std::filesystem::path path, foeGroupData &groups) {
     YAML::Node rootNode;
 
     try {
-        rootNode = write_yaml_dependencies(ecsGroups);
+        rootNode = write_yaml_dependencies(groups);
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to write general dependencies node with error: {}",
+        FOE_LOG(General, Error, "Failed to write general dependencies node with exception: {}",
                 e.what())
         return false;
     }
@@ -79,9 +126,9 @@ bool exportIndexDataToFile(std::filesystem::path path, foeIdIndexGenerator &data
     YAML::Node rootNode;
 
     try {
-        rootNode = yaml_write_index_generator(data);
+        yaml_write_index_generator("", data, rootNode);
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Error, "Failed to write index data node with error: {}", e.what())
+        FOE_LOG(General, Error, "Failed to write index data node with exception: {}", e.what())
         return false;
     }
 
@@ -94,15 +141,233 @@ bool exportIndexDataToFile(std::filesystem::path path, foeIdIndexGenerator &data
     return true;
 }
 
+bool exportResources(std::filesystem::path path,
+                     foeGfxSession gfxSession,
+                     foeGroupData &groups,
+                     foeEditorNameMap *pNameMap,
+                     ResourcePools &resourcePools) {
+    { // Persistent group
+        auto groupEntityList = groups.persistentIndices()->activeEntityList();
+
+        // ARMATURE
+        for (auto const it : resourcePools.armature.getDataVector()) {
+            YAML::Node rootNode;
+
+            try {
+                if (it->createInfo != nullptr) {
+                    rootNode = yaml_write_armature_definition(*it->createInfo.get());
+                } else {
+                    return false;
+                }
+            } catch (...) {
+                return false;
+            }
+
+            yaml_write_id("", it->getID(), rootNode);
+
+            if (pNameMap != nullptr) {
+                auto name = pNameMap->find(it->getID());
+                if (!name.empty()) {
+                    yaml_write_required("editor_name", name, rootNode);
+                }
+            }
+
+            yaml_write_required("type", std::string{"armature"}, rootNode);
+            yaml_write_required("version", 1, rootNode);
+
+            YAML::Emitter emitter;
+            emitter << rootNode;
+
+            std::ofstream outFile{path /
+                                      std::string{id_to_filename(it->getID(), pNameMap) + ".yml"},
+                                  std::ofstream::out};
+            outFile << emitter.c_str();
+        }
+    }
+
+    // IMAGE
+    for (auto const it : resourcePools.image.getDataVector()) {
+        YAML::Node rootNode;
+
+        try {
+            if (it->createInfo != nullptr) {
+                rootNode = yaml_write_image_definition(*it->createInfo.get());
+            } else {
+                return false;
+            }
+        } catch (...) {
+            return false;
+        }
+
+        yaml_write_id("", it->getID(), rootNode);
+
+        if (pNameMap != nullptr) {
+            auto name = pNameMap->find(it->getID());
+            if (!name.empty()) {
+                yaml_write_required("editor_name", name, rootNode);
+            }
+        }
+
+        yaml_write_required("type", std::string{"image"}, rootNode);
+        yaml_write_required("version", 1, rootNode);
+
+        YAML::Emitter emitter;
+        emitter << rootNode;
+
+        std::ofstream outFile{path / std::string{id_to_filename(it->getID(), pNameMap) + ".yml"},
+                              std::ofstream::out};
+        outFile << emitter.c_str();
+    }
+
+    // MATERIAL
+    for (auto const it : resourcePools.material.getDataVector()) {
+        YAML::Node rootNode;
+
+        try {
+            if (it->createInfo != nullptr) {
+                rootNode = yaml_write_material_definition(*it->createInfo.get(),
+                                                          it->getGfxFragmentDescriptor());
+            } else {
+                return false;
+            }
+        } catch (...) {
+            return false;
+        }
+
+        yaml_write_id("", it->getID(), rootNode);
+
+        if (pNameMap != nullptr) {
+            auto name = pNameMap->find(it->getID());
+            if (!name.empty()) {
+                yaml_write_required("editor_name", name, rootNode);
+            }
+        }
+
+        yaml_write_required("type", std::string{"material"}, rootNode);
+        yaml_write_required("version", 1, rootNode);
+
+        YAML::Emitter emitter;
+        emitter << rootNode;
+
+        std::ofstream outFile{path / std::string{id_to_filename(it->getID(), pNameMap) + ".yml"},
+                              std::ofstream::out};
+        outFile << emitter.c_str();
+    }
+
+    // MESH
+    for (auto const it : resourcePools.mesh.getDataVector()) {
+        YAML::Node rootNode;
+
+        try {
+            if (it->createInfo != nullptr) {
+                rootNode = yaml_write_mesh_definition(*it->createInfo.get());
+            } else {
+                return false;
+            }
+        } catch (...) {
+            return false;
+        }
+
+        yaml_write_id("", it->getID(), rootNode);
+
+        if (pNameMap != nullptr) {
+            auto name = pNameMap->find(it->getID());
+            if (!name.empty()) {
+                yaml_write_required("editor_name", name, rootNode);
+            }
+        }
+
+        yaml_write_required("type", std::string{"mesh"}, rootNode);
+        yaml_write_required("version", 1, rootNode);
+
+        YAML::Emitter emitter;
+        emitter << rootNode;
+
+        std::ofstream outFile{path / std::string{id_to_filename(it->getID(), pNameMap) + ".yml"},
+                              std::ofstream::out};
+        outFile << emitter.c_str();
+    }
+
+    // SHADER
+    for (auto const it : resourcePools.shader.getDataVector()) {
+        YAML::Node rootNode;
+
+        try {
+            if (it->createInfo != nullptr) {
+                rootNode = yaml_write_shader_definition(gfxSession, it);
+            } else {
+                return false;
+            }
+        } catch (...) {
+            return false;
+        }
+
+        yaml_write_id("", it->getID(), rootNode);
+
+        if (pNameMap != nullptr) {
+            auto name = pNameMap->find(it->getID());
+            if (!name.empty()) {
+                yaml_write_required("editor_name", name, rootNode);
+            }
+        }
+
+        yaml_write_required("type", std::string{"shader"}, rootNode);
+        yaml_write_required("version", 1, rootNode);
+
+        YAML::Emitter emitter;
+        emitter << rootNode;
+
+        std::ofstream outFile{path / std::string{id_to_filename(it->getID(), pNameMap) + ".yml"},
+                              std::ofstream::out};
+        outFile << emitter.c_str();
+    }
+
+    // VERTEX DESCRIPTORS
+    for (auto const it : resourcePools.vertexDescriptor.getDataVector()) {
+        YAML::Node rootNode;
+
+        try {
+            if (it->createInfo != nullptr) {
+                rootNode = yaml_write_vertex_descriptor_definition(it);
+            } else {
+                return false;
+            }
+        } catch (...) {
+            return false;
+        }
+
+        yaml_write_id("", it->getID(), rootNode);
+
+        if (pNameMap != nullptr) {
+            auto name = pNameMap->find(it->getID());
+            if (!name.empty()) {
+                yaml_write_required("editor_name", name, rootNode);
+            }
+        }
+
+        yaml_write_required("type", std::string{"vertex_descriptor"}, rootNode);
+        yaml_write_required("version", 1, rootNode);
+
+        YAML::Emitter emitter;
+        emitter << rootNode;
+
+        std::ofstream outFile{path / std::string{id_to_filename(it->getID(), pNameMap) + ".yml"},
+                              std::ofstream::out};
+        outFile << emitter.c_str();
+    }
+
+    return true;
+}
+
 bool exportGroupStateData(std::filesystem::path path,
-                          foeEcsGroups &ecsGroups,
-                          StatePools &statePools,
-                          ResourcePools &resourcePools) {
+                          foeGroupData &groups,
+                          foeEditorNameMap *pNameMap,
+                          StatePools &statePools) {
 
     // Dependent groups
     for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
         foeIdGroup groupID = foeIdValueToGroup(i);
-        auto *pGroup = ecsGroups.group(groupID);
+        auto *pGroup = groups.indices(groupID);
 
         if (pGroup == nullptr)
             continue;
@@ -113,7 +378,7 @@ bool exportGroupStateData(std::filesystem::path path,
             YAML::Node rootNode;
 
             try {
-                rootNode = yaml_write_entity(entity, &statePools, &resourcePools);
+                rootNode = yaml_write_entity(entity, pNameMap, &statePools);
             } catch (foeYamlException const &e) {
                 FOE_LOG(General, Error,
                         "Failed to generete Yaml for entity {}: ", foeIdToString(entity), e.what())
@@ -123,21 +388,21 @@ bool exportGroupStateData(std::filesystem::path path,
             YAML::Emitter emitter;
             emitter << rootNode;
 
-            std::ofstream outFile{path / std::string{foeIdToString(entity) + ".yml "},
+            std::ofstream outFile{path / std::string{id_to_filename(entity, pNameMap) + ".yml"},
                                   std::ofstream::out};
             outFile << emitter.c_str();
         }
     }
 
     { // Persistent group
-        auto *pGroup = ecsGroups.persistentGroup();
+        auto *pGroup = groups.persistentIndices();
         auto groupEntityList = pGroup->activeEntityList();
 
         for (auto const entity : groupEntityList) {
             YAML::Node rootNode;
 
             try {
-                rootNode = yaml_write_entity(entity, &statePools, &resourcePools);
+                rootNode = yaml_write_entity(entity, pNameMap, &statePools);
             } catch (foeYamlException const &e) {
                 FOE_LOG(General, Error,
                         "Failed to generete Yaml for entity {}: ", foeIdToString(entity), e.what())
@@ -147,9 +412,8 @@ bool exportGroupStateData(std::filesystem::path path,
             YAML::Emitter emitter;
             emitter << rootNode;
 
-            std::ofstream outFile{
-                path / std::string{"P-" + foeIdToString(foeIdGetIndex(entity)) + ".yml "},
-                std::ofstream::out};
+            std::ofstream outFile{path / std::string{id_to_filename(entity, pNameMap) + ".yml"},
+                                  std::ofstream::out};
             outFile << emitter.c_str();
         }
     }
@@ -160,7 +424,9 @@ bool exportGroupStateData(std::filesystem::path path,
 } // namespace
 
 bool exportGroupState(std::filesystem::path yamlPath,
-                      foeEcsGroups &ecsGroups,
+                      foeGfxSession gfxSession,
+                      foeGroupData &groups,
+                      foeEditorNameMap *pNameMap,
                       StatePools &statePools,
                       ResourcePools &resourcePools) {
     // Check if it exists already
@@ -175,6 +441,7 @@ bool exportGroupState(std::filesystem::path yamlPath,
             FOE_LOG(General, Info,
                     "Attempting to export state via Yaml to an existing  directory at '{}'",
                     yamlPath.string())
+            std::filesystem::remove_all(yamlPath);
         }
     } else {
         // Create the starting directory
@@ -227,16 +494,20 @@ bool exportGroupState(std::filesystem::path yamlPath,
     }
 
     // Dependencies
-    bool retVal = exportDependenciesToFile(yamlPath / dependenciesFilePath, ecsGroups);
+    bool retVal = exportDependenciesToFile(yamlPath / dependenciesFilePath, groups);
     if (!retVal)
         return false;
 
-    retVal = exportIndexDataToFile(yamlPath / indexDataFilePath, *ecsGroups.persistentGroup());
+    retVal = exportIndexDataToFile(yamlPath / indexDataFilePath, *groups.persistentIndices());
     if (!retVal)
         return false;
 
-    retVal = exportGroupStateData(yamlPath / stateDataDirectoryPath, ecsGroups, statePools,
-                                  resourcePools);
+    retVal = exportResources(yamlPath / resourcesDirectoryPath, gfxSession, groups, pNameMap,
+                             resourcePools);
+    if (!retVal)
+        return false;
+
+    retVal = exportGroupStateData(yamlPath / stateDataDirectoryPath, groups, pNameMap, statePools);
     if (!retVal)
         return false;
 

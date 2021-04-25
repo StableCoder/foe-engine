@@ -102,6 +102,8 @@ class foeVertexDescriptor {
 
     SubResources loading;
 
+  public:
+    std::unique_ptr<foeVertexDescriptorCreateInfo> createInfo;
     struct Data {
         SubResources subResources{};
         foeGfxVertexDescriptor gfxVertDescriptor;

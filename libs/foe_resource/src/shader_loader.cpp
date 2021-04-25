@@ -152,6 +152,9 @@ LOADING_FAILED:
         {
             std::scoped_lock writeLock{pShader->dataWriteLock};
 
+            pShader->createInfo.reset(
+                reinterpret_cast<foeShaderCreateInfo *>(createInfo.release()));
+
             oldData = pShader->data;
             pShader->data = newData;
             pShader->loadState = foeResourceLoadState::Loaded;

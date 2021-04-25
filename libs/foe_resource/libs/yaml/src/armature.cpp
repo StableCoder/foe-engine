@@ -89,3 +89,45 @@ void yaml_read_armature_definition(YAML::Node const &node,
 
     *ppCreateInfo = new foeArmatureCreateInfo(std::move(ci));
 }
+
+auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node {
+    YAML::Node outNode;
+
+    try {
+        // Data
+        YAML::Node dataNode;
+
+        // Armature Data
+        yaml_write_required("fileName", data.fileName, dataNode);
+        yaml_write_required("root_armature_node", data.rootArmatureNode, dataNode);
+
+        { // Animation Data
+            YAML::Node animationsNode;
+
+            for (auto const &it : data.animations) {
+                YAML::Node animationListNode;
+                for (auto const &subIt : it.animationNames) {
+                    YAML::Node animationNode;
+
+                    yaml_write_required("", subIt, animationNode);
+
+                    animationListNode.push_back(animationNode);
+                }
+
+                YAML::Node animationFileNode;
+                yaml_write_required("fileName", it.file, animationFileNode);
+                animationFileNode["animationNames"] = animationListNode;
+
+                animationsNode.push_back(animationFileNode);
+            }
+
+            dataNode["animations"] = animationsNode;
+        }
+
+        outNode["data"] = dataNode;
+    } catch (foeYamlException const &e) {
+        throw e;
+    }
+
+    return outNode;
+}

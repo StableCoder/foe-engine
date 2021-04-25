@@ -74,6 +74,9 @@ class foeShader {
     foeShaderLoader *const pLoader;
 
     std::mutex dataWriteLock{};
+
+  public:
+    std::unique_ptr<foeShaderCreateInfo> createInfo;
     struct Data {
         foeGfxShader shader;
     };

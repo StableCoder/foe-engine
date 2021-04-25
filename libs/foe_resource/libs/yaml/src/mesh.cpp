@@ -74,3 +74,22 @@ void yaml_read_mesh_definition(YAML::Node const &node,
 
     *ppCreateInfo = new foeMeshCreateInfo(std::move(ci));
 }
+
+auto yaml_write_mesh_definition(foeMeshCreateInfo const &data) -> YAML::Node {
+    YAML::Node outNode;
+
+    if (auto *pFileMesh = dynamic_cast<foeMeshFileSource *>(data.source.get()); pFileMesh) {
+        YAML::Node fileNode;
+        yaml_write_required("file", pFileMesh->fileName, fileNode);
+        yaml_write_required("mesh_name", pFileMesh->meshName, fileNode);
+        outNode["external_file"] = fileNode;
+    } else if (auto *pCube = dynamic_cast<foeMeshCubeSource *>(data.source.get()); pCube) {
+        outNode["generated_cube"] = YAML::Node{};
+    } else if (auto *pSphere = dynamic_cast<foeMeshIcosphereSource *>(data.source.get()); pSphere) {
+        YAML::Node icosphereNode;
+        yaml_write_required("recusrion", pSphere->recursion, icosphereNode);
+        outNode["generated_icosphere"] = icosphereNode;
+    }
+
+    return outNode;
+}
