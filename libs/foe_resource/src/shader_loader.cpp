@@ -124,13 +124,11 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
     }
 
     {
-        auto descriptorSetLayout =
-            foeGfxVkGetDescriptorSetLayout(mGfxSession, &pShaderCI->descriptorSetLayoutCI);
-
         auto shaderCode = loadShaderDataFromFile(pShaderCI->shaderCodeFile);
         errC = foeGfxVkCreateShader(mGfxSession, pShaderCI->builtinSetLayouts, shaderCode.size(),
                                     reinterpret_cast<uint32_t *>(shaderCode.data()),
-                                    descriptorSetLayout, pShaderCI->pushConstantRange, &newShader);
+                                    &pShaderCI->descriptorSetLayoutCI, pShaderCI->pushConstantRange,
+                                    &newShader);
         if (errC) {
             goto LOADING_FAILED;
         }

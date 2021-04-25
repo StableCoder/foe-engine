@@ -241,14 +241,6 @@ void foeGfxDestroySession(foeGfxSession session) {
     foeGfxVkDestroySession(pSession);
 }
 
-auto foeGfxVkGetDescriptorSetLayout(foeGfxSession session,
-                                    VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
-    -> VkDescriptorSetLayout {
-    auto *pSession = session_from_handle(session);
-
-    return pSession->descriptorSetLayoutPool.get(pDescriptorSetLayoutCI);
-}
-
 auto foeGfxVkGetDummySet(foeGfxSession session) -> VkDescriptorSet {
     auto *pSession = session_from_handle(session);
 

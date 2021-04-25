@@ -27,8 +27,8 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(
     foeGfxSession session,
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts,
     uint32_t shaderCodeSize,
-    uint32_t *pShaderCode,
-    VkDescriptorSetLayout descriptorSetLayout,
+    uint32_t const *pShaderCode,
+    VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI,
     VkPushConstantRange pushConstantRange,
     foeGfxShader *pShader);
 
