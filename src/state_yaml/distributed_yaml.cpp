@@ -16,6 +16,7 @@
 
 #include "distributed_yaml.hpp"
 
+#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
@@ -189,7 +190,8 @@ bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
     return true;
 }
 
-bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResourcePools,
+bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
+                                                           ResourcePools *pResourcePools,
                                                            ResourceLoaders *pResourceLoaders) {
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
@@ -208,10 +210,16 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
         if (!openYamlFile(dirIt, node))
             return false;
 
+        foeId resource;
+        std::string editorName;
         try {
-            foeId resId;
-            yaml_read_id_required("", node, nullptr, foeIdTypeResource, resId);
+            // ID
+            yaml_read_id_required("", node, nullptr, foeIdTypeResource, resource);
 
+            // Editor Name
+            yaml_read_optional("editor_name", node, editorName);
+
+            // Resource type
             std::string type;
             uint32_t version;
             yaml_read_required("type", node, type);
@@ -230,28 +238,30 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
             std::unique_ptr<foeResourceCreateInfoBase> createInfo{pCreateInfo};
 
             if (type == "armature" && version == 1) {
-                auto armature = std::make_unique<foeArmature>(resId, &pResourceLoaders->armature);
+                auto armature =
+                    std::make_unique<foeArmature>(resource, &pResourceLoaders->armature);
 
                 pResourcePools->armature.add(armature.release());
             } else if (type == "mesh" && version == 1) {
-                auto mesh = std::make_unique<foeMesh>(resId, &pResourceLoaders->mesh);
+                auto mesh = std::make_unique<foeMesh>(resource, &pResourceLoaders->mesh);
 
                 pResourcePools->mesh.add(mesh.release());
             } else if (type == "material" && version == 1) {
-                auto material = std::make_unique<foeMaterial>(resId, &pResourceLoaders->material);
+                auto material =
+                    std::make_unique<foeMaterial>(resource, &pResourceLoaders->material);
 
                 pResourcePools->material.add(material.release());
             } else if (type == "vertex_descriptor" && version == 1) {
                 auto vertexDescriptor = std::make_unique<foeVertexDescriptor>(
-                    resId, &pResourceLoaders->vertexDescriptor);
+                    resource, &pResourceLoaders->vertexDescriptor);
 
                 pResourcePools->vertexDescriptor.add(vertexDescriptor.release());
             } else if (type == "shader" && version == 1) {
-                auto shader = std::make_unique<foeShader>(resId, &pResourceLoaders->shader);
+                auto shader = std::make_unique<foeShader>(resource, &pResourceLoaders->shader);
 
                 pResourcePools->shader.add(shader.release());
             } else if (type == "image" && version == 1) {
-                auto image = std::make_unique<foeImage>(resId, &pResourceLoaders->image);
+                auto image = std::make_unique<foeImage>(resource, &pResourceLoaders->image);
 
                 pResourcePools->image.add(image.release());
             } else {
@@ -266,6 +276,10 @@ bool foeDistributedYamlImporter::importResourceDefinitions(ResourcePools *pResou
         } catch (...) {
             FOE_LOG(General, Error, "Failed to import resource definition with unknown exception");
             return false;
+        }
+
+        if (pNameMap != nullptr) {
+            pNameMap->add(resource, editorName);
         }
     }
 

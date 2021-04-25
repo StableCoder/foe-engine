@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+class foeEditorNameMap;
 class foeIdIndexGenerator;
 struct StatePools;
 struct ResourcePools;
@@ -42,7 +43,8 @@ class foeImporterBase {
     virtual bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(StatePools *pStatePools) = 0;
 
-    virtual bool importResourceDefinitions(ResourcePools *pResourcePools,
+    virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
+                                           ResourcePools *pResourcePools,
                                            ResourceLoaders *pResourceLoaders) = 0;
     virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
 };

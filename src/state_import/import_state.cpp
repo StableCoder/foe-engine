@@ -172,14 +172,15 @@ auto importState(std::filesystem::path stateDataPath,
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            pGroupImporter->importResourceDefinitions(&pSimulationSet->resources,
+            pGroupImporter->importResourceDefinitions(&pSimulationSet->nameMap,
+                                                      &pSimulationSet->resources,
                                                       &pSimulationSet->resourceLoaders);
         }
     }
 
     // Load dependency resource definitions
     pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
-        &pSimulationSet->resources, &pSimulationSet->resourceLoaders);
+        &pSimulationSet->nameMap, &pSimulationSet->resources, &pSimulationSet->resourceLoaders);
 
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {

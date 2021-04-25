@@ -34,7 +34,8 @@ class DummyImporter : public foeImporterBase {
     bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool importStateData(StatePools *pStatePools) final { return false; }
 
-    bool importResourceDefinitions(ResourcePools *pResourcePools,
+    bool importResourceDefinitions(foeEditorNameMap *pNameMap,
+                                   ResourcePools *pResourcePools,
                                    ResourceLoaders *pResourceLoaders) {
         return false;
     }
