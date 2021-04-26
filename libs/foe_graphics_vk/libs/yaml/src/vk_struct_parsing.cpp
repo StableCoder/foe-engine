@@ -19,6 +19,7 @@
 #include <foe/yaml/parsing.hpp>
 #include <vulkan/vulkan.h>
 
+#include <cstring>
 #include <string>
 
 template <>
@@ -229,6 +230,24 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
     try {
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
             "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
+        // pBindings / bindingCount
+        std::unique_ptr<VkDescriptorSetLayoutBinding[]> pBindings;
+        if (auto bindingsNode = subNode["bindings"]; bindingsNode) {
+            pBindings.reset(new VkDescriptorSetLayoutBinding[bindingsNode.size()]);
+            memset(pBindings.get(), 0, sizeof(VkDescriptorSetLayoutBinding) * bindingsNode.size());
+            size_t count = 0;
+            for (auto it = bindingsNode.begin(); it != bindingsNode.end(); ++it) {
+                yaml_read_required("", *it, pBindings[count]);
+                ++count;
+            }
+            data.bindingCount = bindingsNode.size();
+            read = true;
+        } else {
+            throw foeYamlException{"bindings - Required node not found"};
+        }
+
+        // Releasing pointer members
+        data.pBindings = pBindings.release();
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
@@ -246,6 +265,22 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
     try {
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
             "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
+        // pBindings / bindingCount
+        std::unique_ptr<VkDescriptorSetLayoutBinding[]> pBindings;
+        if (auto bindingsNode = subNode["bindings"]; bindingsNode) {
+            pBindings.reset(new VkDescriptorSetLayoutBinding[bindingsNode.size()]);
+            memset(pBindings.get(), 0, sizeof(VkDescriptorSetLayoutBinding) * bindingsNode.size());
+            size_t count = 0;
+            for (auto it = bindingsNode.begin(); it != bindingsNode.end(); ++it) {
+                yaml_read_required("", *it, pBindings[count]);
+                ++count;
+            }
+            data.bindingCount = bindingsNode.size();
+            read = true;
+        }
+
+        // Releasing pointer members
+        data.pBindings = pBindings.release();
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
@@ -261,6 +296,14 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkDescriptorSetLayoutCreateInfo>(
     try {
         yaml_write_required_vk<VkDescriptorSetLayoutCreateFlags>("VkDescriptorSetLayoutCreateFlags",
                                                                  "flags", data.flags, writeNode);
+        // pBindings / bindingCount
+        YAML::Node bindingsNode;
+        for (uint32_t i = 0; i < data.bindingCount; ++i) {
+            YAML::Node newNode;
+            yaml_write_required<VkDescriptorSetLayoutBinding>("", data.pBindings[i], newNode);
+            bindingsNode.push_back(newNode);
+        }
+        writeNode["bindings"] = bindingsNode;
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
@@ -284,6 +327,17 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutCreateInfo>(
     try {
         addedNode |= yaml_write_optional_vk<VkDescriptorSetLayoutCreateFlags>(
             "VkDescriptorSetLayoutCreateFlags", "flags", data.flags, defaultData.flags, writeNode);
+        // pBindings / bindingCount
+        if (data.bindingCount > 0) {
+            YAML::Node bindingsNode;
+            for (uint32_t i = 0; i < data.bindingCount; ++i) {
+                YAML::Node newNode;
+                yaml_write_required<VkDescriptorSetLayoutBinding>("", data.pBindings[i], newNode);
+                bindingsNode.push_back(newNode);
+            }
+            writeNode["bindings"] = bindingsNode;
+            addedNode = true;
+        }
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
