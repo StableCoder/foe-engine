@@ -36,7 +36,6 @@ FOE_GFX_YAML_EXPORT bool yaml_read_gfx_shader(
     YAML::Node const &node,
     foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
     VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
-    std::vector<VkDescriptorSetLayoutBinding> &setLayoutBindings,
     VkPushConstantRange &pushConstantRange);
 
 #endif // FOE_GRAPHICS_YAML_SHADER_HPP

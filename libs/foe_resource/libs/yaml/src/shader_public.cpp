@@ -46,8 +46,7 @@ bool yaml_read_shader_definition_internal(std::string const &nodeName,
 
         // Gfx Data Node
         yaml_read_gfx_shader("graphics_data", subNode, createInfo.builtinSetLayouts,
-                             createInfo.descriptorSetLayoutCI, createInfo.setLayoutBindings,
-                             createInfo.pushConstantRange);
+                             createInfo.descriptorSetLayoutCI, createInfo.pushConstantRange);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
