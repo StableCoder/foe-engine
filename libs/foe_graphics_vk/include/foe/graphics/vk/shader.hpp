@@ -23,14 +23,17 @@
 
 #include <system_error>
 
-FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(
-    foeGfxSession session,
-    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts,
-    uint32_t shaderCodeSize,
-    uint32_t const *pShaderCode,
-    VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI,
-    VkPushConstantRange pushConstantRange,
-    foeGfxShader *pShader);
+struct foeGfxVkShaderCreateInfo {
+    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
+    uint32_t shaderCodeSize;
+    uint32_t const *pShaderCode;
+    VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI;
+    VkPushConstantRange pushConstantRange;
+};
+
+FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(foeGfxSession session,
+                                                    foeGfxVkShaderCreateInfo *pCreateInfo,
+                                                    foeGfxShader *pShader);
 
 FOE_GFX_EXPORT auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader)
     -> VkDescriptorSetLayout;

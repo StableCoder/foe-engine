@@ -125,10 +125,16 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
 
     {
         auto shaderCode = loadShaderDataFromFile(pShaderCI->shaderCodeFile);
-        errC = foeGfxVkCreateShader(mGfxSession, pShaderCI->builtinSetLayouts, shaderCode.size(),
-                                    reinterpret_cast<uint32_t *>(shaderCode.data()),
-                                    &pShaderCI->descriptorSetLayoutCI, pShaderCI->pushConstantRange,
-                                    &newShader);
+
+        foeGfxVkShaderCreateInfo gfxShaderCI = {
+            .builtinSetLayouts = pShaderCI->builtinSetLayouts,
+            .shaderCodeSize = static_cast<uint32_t>(shaderCode.size()),
+            .pShaderCode = reinterpret_cast<uint32_t *>(shaderCode.data()),
+            .pDescriptorSetLayoutCI = &pShaderCI->descriptorSetLayoutCI,
+            .pushConstantRange = pShaderCI->pushConstantRange,
+        };
+
+        errC = foeGfxVkCreateShader(mGfxSession, &gfxShaderCI, &newShader);
         if (errC) {
             goto LOADING_FAILED;
         }

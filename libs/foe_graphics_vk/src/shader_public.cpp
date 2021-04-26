@@ -34,11 +34,7 @@ void foeGfxVkDestroyShader(foeGfxVkSession *pSession, foeGfxVkShader *pShader) {
 } // namespace
 
 std::error_code foeGfxVkCreateShader(foeGfxSession session,
-                                     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts,
-                                     uint32_t shaderCodeSize,
-                                     uint32_t const *pShaderCode,
-                                     VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI,
-                                     VkPushConstantRange pushConstantRange,
+                                     foeGfxVkShaderCreateInfo *pCreateInfo,
                                      foeGfxShader *pShader) {
     auto *pSession = session_from_handle(session);
 
@@ -46,18 +42,19 @@ std::error_code foeGfxVkCreateShader(foeGfxSession session,
     auto *pNew = new foeGfxVkShader;
 
     // Get the DescriptorSetLayout directly from the gfxSession
-    VkDescriptorSetLayout layout = pSession->descriptorSetLayoutPool.get(pDescriptorSetLayoutCI);
+    VkDescriptorSetLayout layout =
+        pSession->descriptorSetLayoutPool.get(pCreateInfo->pDescriptorSetLayoutCI);
 
     *pNew = foeGfxVkShader{
-        .builtinSetLayouts = builtinSetLayouts,
+        .builtinSetLayouts = pCreateInfo->builtinSetLayouts,
         .descriptorSetLayout = layout,
-        .pushConstantRange = pushConstantRange,
+        .pushConstantRange = pCreateInfo->pushConstantRange,
     };
 
     VkShaderModuleCreateInfo shaderCI{
         .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize = shaderCodeSize,
-        .pCode = pShaderCode,
+        .codeSize = pCreateInfo->shaderCodeSize,
+        .pCode = pCreateInfo->pShaderCode,
     };
 
     vkRes = vkCreateShaderModule(pSession->device, &shaderCI, nullptr, &pNew->module);
