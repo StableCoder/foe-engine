@@ -156,7 +156,8 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             read = true;
         } else {
             throw foeYamlException{\"${NAME} - Required node not found\"};
-        }"
+        }
+"
 
             READ_OPTIONAL="$READ_OPTIONAL
         // $VAR / $COUNT_NAME
@@ -171,7 +172,8 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             }
             data.bindingCount = ${NAME}Node.size();
             read = true;
-        }"
+        }
+"
 
             WRITE_REQUIRED="$WRITE_REQUIRED
         // $VAR / $COUNT_NAME
@@ -181,7 +183,8 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             yaml_write_required<$TYPE>(\"\", data.$VAR[i], newNode);
             ${NAME}Node.push_back(newNode);
         }
-        writeNode[\"$NAME\"] = ${NAME}Node;"
+        writeNode[\"$NAME\"] = ${NAME}Node;
+"
 
             WRITE_OPTIONAL="$WRITE_OPTIONAL
         // $VAR / $COUNT_NAME
@@ -194,35 +197,52 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             }
             writeNode[\"$NAME\"] = ${NAME}Node;
             addedNode = true;
-        }"
+        }
+"
 
         elif [[ "$TYPE" = *"Vk"* ]] && [[ "$TYPE" = *"Flags"* ]]; then
             # It's a flag type which is typically an overloaded basic type
             READ_REQUIRED="$READ_REQUIRED
-        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);"
+        // $VAR
+        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);
+"
 
             READ_OPTIONAL="$READ_OPTIONAL
-        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);"
+        // $VAR
+        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);
+"
 
             WRITE_REQUIRED="$WRITE_REQUIRED
-        yaml_write_required_vk<$TYPE>(\"$TYPE\", \"$VAR\", data.$VAR, writeNode);"
+        // $VAR
+        yaml_write_required_vk<$TYPE>(\"$TYPE\", \"$VAR\", data.$VAR, writeNode);
+"
 
             WRITE_OPTIONAL="$WRITE_OPTIONAL
-        addedNode |= yaml_write_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", data.$VAR, defaultData.$VAR, writeNode);"
+        // $VAR
+        addedNode |= yaml_write_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", data.$VAR, defaultData.$VAR, writeNode);
+"
 
         else
             # It's another VK-specific non-overloaded type
             READ_REQUIRED="$READ_REQUIRED
-        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);"
+        // $VAR
+        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);
+"
 
             READ_OPTIONAL="$READ_OPTIONAL
-        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);"
+        // $VAR
+        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);
+"
 
             WRITE_REQUIRED="$WRITE_REQUIRED
-        yaml_write_required<$TYPE>(\"$VAR\", data.$VAR, writeNode);"
+        // $VAR
+        yaml_write_required<$TYPE>(\"$VAR\", data.$VAR, writeNode);
+"
 
             WRITE_OPTIONAL="$WRITE_OPTIONAL
-        addedNode |= yaml_write_optional<$TYPE>(\"$VAR\", defaultData.$VAR, data.$VAR, writeNode);"
+        // $VAR
+        addedNode |= yaml_write_optional<$TYPE>(\"$VAR\", defaultData.$VAR, data.$VAR, writeNode);
+"
         fi
     fi
 
