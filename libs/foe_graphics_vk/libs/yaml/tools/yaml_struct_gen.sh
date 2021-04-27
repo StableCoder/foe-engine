@@ -1,13 +1,45 @@
 #!/usr/bin/env sh
+set -e
 
 if [ "$1" == "" ]; then
     echo "ERROR: Input file not specified!"
     exit 1
 fi
 
-OUT_FILE=$1_yaml.cpp
+if [[ "$2" != "" ]]; then
+    # We've been given an output file, use it
+    OUT_FILE=$2
+else
+    # No Output file, derive from the input file
+    OUT_FILE=$1_yaml.cpp
+fi
 
-printf "" >$OUT_FILE
+printf "/*
+    Copyright (C) $(date +"%Y") George Cave.
+
+    Licensed under the Apache License, Version 2.0 (the \"License\");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an \"AS IS\" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+
+#include <foe/graphics/yaml/vk_type_parsing.hpp>
+#include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
+#include <vulkan/vulkan.h>
+
+#include <cstring>
+#include <string>
+
+" >$OUT_FILE
 
 READ_REQUIRED=
 READ_OPTIONAL=
@@ -142,7 +174,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             COUNT_NAME=${NAME%?}Count
 
             READ_REQUIRED="$READ_REQUIRED
-        // $VAR / $COUNT_NAME
+        // $TYPE - $VAR / $COUNT_NAME
         std::unique_ptr<$TYPE[]> $VAR;
         if (auto ${NAME}Node = subNode[\"$NAME\"]; ${NAME}Node) {
             $VAR.reset(new $TYPE[${NAME}Node.size()]);
@@ -160,7 +192,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
 "
 
             READ_OPTIONAL="$READ_OPTIONAL
-        // $VAR / $COUNT_NAME
+        // $TYPE - $VAR / $COUNT_NAME
         std::unique_ptr<$TYPE[]> $VAR;
         if (auto ${NAME}Node = subNode[\"$NAME\"]; ${NAME}Node) {
             $VAR.reset(new $TYPE[${NAME}Node.size()]);
@@ -176,7 +208,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
 "
 
             WRITE_REQUIRED="$WRITE_REQUIRED
-        // $VAR / $COUNT_NAME
+        // $TYPE - $VAR / $COUNT_NAME
         YAML::Node ${NAME}Node;
         for(uint32_t i = 0; i < data.${COUNT_NAME}; ++i) {
             YAML::Node newNode;
@@ -187,7 +219,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
 "
 
             WRITE_OPTIONAL="$WRITE_OPTIONAL
-        // $VAR / $COUNT_NAME
+        // $TYPE - $VAR / $COUNT_NAME
         if(data.${COUNT_NAME} > 0) {
             YAML::Node ${NAME}Node;
             for(uint32_t i = 0; i < data.${COUNT_NAME}; ++i) {
@@ -203,47 +235,50 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
         elif [[ "$TYPE" = *"Vk"* ]] && [[ "$TYPE" = *"Flags"* ]]; then
             # It's a flag type which is typically an overloaded basic type
             READ_REQUIRED="$READ_REQUIRED
-        // $VAR
+        // $TYPE - $VAR
         read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);
 "
 
             READ_OPTIONAL="$READ_OPTIONAL
-        // $VAR
+        // $TYPE - $VAR
         read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);
 "
 
             WRITE_REQUIRED="$WRITE_REQUIRED
-        // $VAR
+        // $TYPE - $VAR
         yaml_write_required_vk<$TYPE>(\"$TYPE\", \"$VAR\", data.$VAR, writeNode);
 "
 
             WRITE_OPTIONAL="$WRITE_OPTIONAL
-        // $VAR
+        // $TYPE - $VAR
         addedNode |= yaml_write_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", data.$VAR, defaultData.$VAR, writeNode);
 "
 
         else
             # It's another VK-specific non-overloaded type
             READ_REQUIRED="$READ_REQUIRED
-        // $VAR
+        // $TYPE - $VAR
         read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);
 "
 
             READ_OPTIONAL="$READ_OPTIONAL
-        // $VAR
+        // $TYPE - $VAR
         read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);
 "
 
             WRITE_REQUIRED="$WRITE_REQUIRED
-        // $VAR
+        // $TYPE - $VAR
         yaml_write_required<$TYPE>(\"$VAR\", data.$VAR, writeNode);
 "
 
             WRITE_OPTIONAL="$WRITE_OPTIONAL
-        // $VAR
+        // $TYPE - $VAR
         addedNode |= yaml_write_optional<$TYPE>(\"$VAR\", defaultData.$VAR, data.$VAR, writeNode);
 "
         fi
     fi
 
 done <$1
+
+# Run clang-format
+clang-format -i $2
