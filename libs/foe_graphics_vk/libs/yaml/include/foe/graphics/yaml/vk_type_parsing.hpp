@@ -28,13 +28,11 @@
  * @param nodeName Name of the Yaml sub-node to operate on
  * @param node Yaml node that should have the sub-node to operate on
  * @param data [out] Raw data being worked on
- * @return True on a successful read. The function returns an exception if the 'required' node
- * isn'VkType found instead.
  * @exception Throws foeYamlException if the required node is not found or there's an error
  * during parsing
  */
 template <typename VkType>
-FOE_GFX_YAML_EXPORT bool yaml_read_required_vk(std::string const &typeName,
+FOE_GFX_YAML_EXPORT void yaml_read_required_vk(std::string const &typeName,
                                                std::string const &nodeName,
                                                YAML::Node const &node,
                                                VkType &data);
@@ -61,11 +59,10 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional_vk(std::string const &typeName,
  * @param nodeName Name of the Yaml sub-node to operate on
  * @param data Data to be encoded
  * @param node [out] Yaml node that should have the sub-node to operate on
- * @return True on a successful write. Returns an exception if there's an error when writing.
  * @exception Throws foeYamlException if there's an exception during encoding
  */
 template <typename VkType>
-FOE_GFX_YAML_EXPORT bool yaml_write_required_vk(std::string const &typeName,
+FOE_GFX_YAML_EXPORT void yaml_write_required_vk(std::string const &typeName,
                                                 std::string const &nodeName,
                                                 VkType const &data,
                                                 YAML::Node &node);

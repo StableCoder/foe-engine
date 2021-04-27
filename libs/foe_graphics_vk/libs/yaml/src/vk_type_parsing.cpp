@@ -32,28 +32,35 @@ bool yaml_read_optional_vk(std::string const &typeName,
     }
 
     if (!vk_parse<VkType>(typeName, subNode.as<std::string>(), &data)) {
-        throw foeYamlException(nodeName + " - Could not parse node as '" + typeName +
-                               "' with value of: " + subNode.as<std::string>());
+        if (nodeName.empty()) {
+            throw foeYamlException(" - Could not parse node as '" + typeName +
+                                   "' with value of: " + subNode.as<std::string>());
+        } else {
+            throw foeYamlException(nodeName + " - Could not parse node as '" + typeName +
+                                   "' with value of: " + subNode.as<std::string>());
+        }
     }
 
     return true;
 }
 
 template <typename VkType>
-bool yaml_read_required_vk(std::string const &typeName,
+void yaml_read_required_vk(std::string const &typeName,
                            std::string const &nodeName,
                            YAML::Node const &node,
                            VkType &data) {
     if (!yaml_read_optional_vk(typeName, nodeName, node, data)) {
-        throw foeYamlException(nodeName + " - Required node not found to parse as '" + typeName +
-                               "'");
+        if (nodeName.empty()) {
+            throw foeYamlException(" - Required node not found to parse as '" + typeName + "'");
+        } else {
+            throw foeYamlException(nodeName + " - Required node not found to parse as '" +
+                                   typeName + "'");
+        }
     }
-
-    return true;
 }
 
 template <typename VkType>
-bool yaml_write_required_vk(std::string const &typeName,
+void yaml_write_required_vk(std::string const &typeName,
                             std::string const &nodeName,
                             VkType const &data,
                             YAML::Node &node) {
@@ -65,10 +72,12 @@ bool yaml_write_required_vk(std::string const &typeName,
             node[nodeName] = serialized;
         }
     } else {
-        throw foeYamlException(nodeName + " - Failed to serialize node as '" + typeName + "'");
+        if (nodeName.empty()) {
+            throw foeYamlException(" - Failed to serialize node as '" + typeName + "'");
+        } else {
+            throw foeYamlException(nodeName + " - Failed to serialize node as '" + typeName + "'");
+        }
     }
-
-    return true;
 }
 
 template <typename VkType>
@@ -81,10 +90,12 @@ bool yaml_write_optional_vk(std::string const &typeName,
         return false;
     }
 
-    return yaml_write_required_vk(typeName, nodeName, data, node);
+    yaml_write_required_vk(typeName, nodeName, data, node);
+
+    return true;
 }
 
-template bool yaml_read_required_vk<VkFlags>(std::string const &typeName,
+template void yaml_read_required_vk<VkFlags>(std::string const &typeName,
                                              std::string const &nodeName,
                                              YAML::Node const &node,
                                              VkFlags &data);
@@ -94,7 +105,7 @@ template bool yaml_read_optional_vk<VkFlags>(std::string const &typeName,
                                              YAML::Node const &node,
                                              VkFlags &data);
 
-template bool yaml_write_required_vk<VkFlags>(std::string const &typeName,
+template void yaml_write_required_vk<VkFlags>(std::string const &typeName,
                                               std::string const &nodeName,
                                               VkFlags const &data,
                                               YAML::Node &node);
