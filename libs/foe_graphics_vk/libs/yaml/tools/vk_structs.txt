@@ -13,7 +13,7 @@ typedef struct VkDescriptorSetLayoutBinding {
 } VkDescriptorSetLayoutBinding;
 
 typedef struct VkDescriptorSetLayoutCreateInfo {
-    VkStructureType                        sType;
+    VkStructureType                        sType; VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO
     const void*                            pNext;
     VkDescriptorSetLayoutCreateFlags       flags;
 #    uint32_t                               bindingCount;
@@ -31,7 +31,7 @@ typedef struct VkStencilOpState {
 } VkStencilOpState;
 
 typedef struct VkPipelineRasterizationStateCreateInfo {
-    VkStructureType                            sType;
+    VkStructureType                            sType; VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
     const void*                                pNext;
     VkPipelineRasterizationStateCreateFlags    flags;
     VkBool32                                   depthClampEnable;
@@ -47,7 +47,7 @@ typedef struct VkPipelineRasterizationStateCreateInfo {
 } VkPipelineRasterizationStateCreateInfo;
 
 typedef struct VkPipelineDepthStencilStateCreateInfo {
-    VkStructureType                           sType;
+    VkStructureType                           sType; VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO
     const void*                               pNext;
     VkPipelineDepthStencilStateCreateFlags    flags;
     VkBool32                                  depthTestEnable;
@@ -73,7 +73,7 @@ typedef struct VkPipelineColorBlendAttachmentState {
 } VkPipelineColorBlendAttachmentState;
 
 typedef struct VkPipelineColorBlendStateCreateInfo {
-    VkStructureType                               sType;
+    VkStructureType                               sType; VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
     const void*                                   pNext;
     VkPipelineColorBlendStateCreateFlags          flags;
     VkBool32                                      logicOpEnable;
@@ -97,7 +97,7 @@ typedef struct VkVertexInputAttributeDescription {
 } VkVertexInputAttributeDescription;
 
 typedef struct VkPipelineVertexInputStateCreateInfo {
-    VkStructureType                             sType;
+    VkStructureType                             sType; VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
     const void*                                 pNext;
     VkPipelineVertexInputStateCreateFlags       flags;
 #    uint32_t                                    vertexBindingDescriptionCount;
@@ -107,7 +107,7 @@ typedef struct VkPipelineVertexInputStateCreateInfo {
 } VkPipelineVertexInputStateCreateInfo;
 
 typedef struct VkPipelineInputAssemblyStateCreateInfo {
-    VkStructureType                            sType;
+    VkStructureType                            sType; VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
     const void*                                pNext;
     VkPipelineInputAssemblyStateCreateFlags    flags;
     VkPrimitiveTopology                        topology;
@@ -115,7 +115,7 @@ typedef struct VkPipelineInputAssemblyStateCreateInfo {
 } VkPipelineInputAssemblyStateCreateInfo;
 
 typedef struct VkPipelineTessellationStateCreateInfo {
-    VkStructureType                           sType;
+    VkStructureType                           sType; VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO
     const void*                               pNext;
     VkPipelineTessellationStateCreateFlags    flags;
     uint32_t                                  patchControlPoints;

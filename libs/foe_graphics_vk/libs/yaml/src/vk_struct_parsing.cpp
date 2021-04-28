@@ -284,6 +284,12 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkDescriptorSetLayoutCreateFlags - flags
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
             "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
@@ -321,6 +327,12 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkDescriptorSetLayoutCreateFlags - flags
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
             "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
@@ -601,6 +613,12 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreateIn
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineRasterizationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
             "VkPipelineRasterizationStateCreateFlags", "flags", subNode, data.flags);
@@ -656,6 +674,12 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateIn
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineRasterizationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
             "VkPipelineRasterizationStateCreateFlags", "flags", subNode, data.flags);
@@ -844,6 +868,12 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreateInf
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineDepthStencilStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
             "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, data.flags);
@@ -893,6 +923,12 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInf
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineDepthStencilStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
             "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, data.flags);
@@ -1270,6 +1306,12 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateInfo>
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineColorBlendStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
             "VkPipelineColorBlendStateCreateFlags", "flags", subNode, data.flags);
@@ -1297,6 +1339,12 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineColorBlendStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
             "VkPipelineColorBlendStateCreateFlags", "flags", subNode, data.flags);
@@ -1637,6 +1685,12 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateInfo
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineVertexInputStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
             "VkPipelineVertexInputStateCreateFlags", "flags", subNode, data.flags);
@@ -1658,6 +1712,12 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateInfo
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineVertexInputStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
             "VkPipelineVertexInputStateCreateFlags", "flags", subNode, data.flags);
@@ -1736,6 +1796,12 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreateIn
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineInputAssemblyStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
             "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, data.flags);
@@ -1764,6 +1830,12 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreateIn
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineInputAssemblyStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
             "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, data.flags);
@@ -1865,6 +1937,12 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreateInf
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineTessellationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
             "VkPipelineTessellationStateCreateFlags", "flags", subNode, data.flags);
@@ -1890,6 +1968,12 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreateInf
 
     bool read = false;
     try {
+        // VkStructureType - sType
+        data.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+
+        // void* - pNext
+        data.pNext = nullptr;
+
         // VkPipelineTessellationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
             "VkPipelineTessellationStateCreateFlags", "flags", subNode, data.flags);

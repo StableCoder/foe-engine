@@ -162,8 +162,35 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
         VAR="$(awk 'NF>1{print $NF}' <<<$LINE)"
         VAR="${VAR//;/}"
 
-        if [[ "$LINE" = *"sType"* ]] || [[ $LINE = *"pNext"* ]] || [[ $LINE = *"#"* ]]; then
+        if [[ $LINE = *"#"* ]]; then
             :
+
+        elif [[ "$VAR" = "pNext" ]]; then
+            READ_REQUIRED="$READ_REQUIRED
+        // void* - pNext
+        data.pNext = nullptr;
+"
+
+            READ_OPTIONAL="$READ_OPTIONAL
+        // void* - pNext
+        data.pNext = nullptr;
+"
+
+        elif [[ "$TYPE" = "VkStructureType" ]]; then
+            VALUE=$(awk '{print $3;}' <<<$LINE)
+            if [[ "$VALUE" = "" ]]; then
+                echo "ERROR: VkStructureType doesn't have corresponding value!"
+                exit 1
+            fi
+            READ_REQUIRED="$READ_REQUIRED
+        // $TYPE - sType
+        data.sType = $VALUE;
+"
+
+            READ_OPTIONAL="$READ_OPTIONAL
+        // $TYPE - sType
+        data.sType = $VALUE;
+"
 
         elif [[ "$TYPE" = "const" ]] && [[ "$LINE" = *"*"* ]]; then
             # It's an array of lower-level structs
