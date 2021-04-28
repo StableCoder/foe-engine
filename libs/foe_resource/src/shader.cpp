@@ -17,8 +17,19 @@
 #include <foe/resource/shader.hpp>
 
 #include <foe/resource/shader_loader.hpp>
+#include <vk_struct_cleanup.hpp>
 
 #include "log.hpp"
+
+foeShaderCreateInfo::~foeShaderCreateInfo() { vk_struct_cleanup(&descriptorSetLayoutCI); }
+
+foeShaderCreateInfo::foeShaderCreateInfo(foeShaderCreateInfo &&rhs) :
+    shaderCodeFile{std::move(rhs.shaderCodeFile)},
+    builtinSetLayouts{std::move(rhs.builtinSetLayouts)},
+    descriptorSetLayoutCI{std::move(rhs.descriptorSetLayoutCI)},
+    pushConstantRange{std::move(rhs.pushConstantRange)} {
+    rhs.descriptorSetLayoutCI = {};
+}
 
 foeShader::foeShader(foeId id, foeShaderLoader *pLoader) : id{id}, pLoader{pLoader} {}
 

@@ -32,12 +32,16 @@
 
 class foeShaderLoader;
 
-struct foeShaderCreateInfo : public foeResourceCreateInfoBase {
+struct FOE_RES_EXPORT foeShaderCreateInfo : public foeResourceCreateInfoBase {
     std::string shaderCodeFile;
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
-    std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings;
     VkPushConstantRange pushConstantRange;
+
+    foeShaderCreateInfo() = default;
+    ~foeShaderCreateInfo();
+
+    foeShaderCreateInfo(foeShaderCreateInfo &&);
 };
 
 class foeShader {
