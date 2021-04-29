@@ -30,10 +30,10 @@ printf "/*
     limitations under the License.
 */
 
-
 #include <foe/graphics/yaml/vk_type_parsing.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
+#include <vk_struct_cleanup.hpp>
 #include <vulkan/vulkan.h>
 
 #include <cstring>
@@ -60,6 +60,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<$STRUCT>(std::string const &nodeName
         throw foeYamlException(nodeName + \" - Required node not found to parse as '$STRUCT'\");
     }
 
+    $STRUCT newData{};
     bool read = false;
     try {"
 
@@ -70,6 +71,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<$STRUCT>(std::string const &nodeName
         return false;
     }
 
+    $STRUCT newData{};
     bool read = false;
     try {"
 
@@ -88,35 +90,24 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
 
     elif [[ $LINE = *'}'* ]]; then
         # Complete the struct
-        if [[ "$PTR_MEMBERS" != "" ]]; then
-            READ_REQUIRED="$READ_REQUIRED
-            
-        // Releasing pointer members"
-            READ_OPTIONAL="$READ_OPTIONAL
-
-        // Releasing pointer members"
-        fi
-
-        for PTR_MEM in $PTR_MEMBERS; do
-            READ_REQUIRED="$READ_REQUIRED
-        data.$PTR_MEM = $PTR_MEM.release();"
-        done
         READ_REQUIRED="$READ_REQUIRED
     } catch (foeYamlException const& e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + \"::\" + e.what());
     }
+
+    data = newData;
 }
 "
 
-        for PTR_MEM in $PTR_MEMBERS; do
-            READ_OPTIONAL="$READ_OPTIONAL
-        data.$PTR_MEM = $PTR_MEM.release();"
-        done
         READ_OPTIONAL="$READ_OPTIONAL
     } catch (foeYamlException const& e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + \"::\" + e.what());
     }
 
+    if(read)
+        data = newData;
     return read;
 }
 "
@@ -168,12 +159,12 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
         elif [[ "$VAR" = "pNext" ]]; then
             READ_REQUIRED="$READ_REQUIRED
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 "
 
             READ_OPTIONAL="$READ_OPTIONAL
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 "
 
         elif [[ "$TYPE" = "VkStructureType" ]]; then
@@ -184,12 +175,12 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             fi
             READ_REQUIRED="$READ_REQUIRED
         // $TYPE - sType
-        data.sType = $VALUE;
+        newData.sType = $VALUE;
 "
 
             READ_OPTIONAL="$READ_OPTIONAL
         // $TYPE - sType
-        data.sType = $VALUE;
+        newData.sType = $VALUE;
 "
 
         elif [[ "$TYPE" = "const" ]] && [[ "$LINE" = *"*"* ]]; then
@@ -204,14 +195,13 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
         // $TYPE - $VAR / $COUNT_NAME
         std::unique_ptr<$TYPE[]> $VAR;
         if (auto ${NAME}Node = subNode[\"$NAME\"]; ${NAME}Node) {
-            $VAR.reset(new $TYPE[${NAME}Node.size()]);
-            memset($VAR.get(), 0, sizeof($TYPE) * ${NAME}Node.size());
+            newData.$VAR = static_cast<$TYPE *>(calloc(${NAME}Node.size(), sizeof($TYPE)));
             size_t count = 0;
             for (auto it = ${NAME}Node.begin(); it != ${NAME}Node.end(); ++it) {
-                yaml_read_required(\"\", *it, $VAR[count]);
+                yaml_read_required(\"\", *it, *const_cast<$TYPE *>(&newData.$VAR[count]));
                 ++count;
             }
-            data.bindingCount = ${NAME}Node.size();
+            newData.bindingCount = ${NAME}Node.size();
             read = true;
         } else {
             throw foeYamlException{\"${NAME} - Required node not found\"};
@@ -222,14 +212,13 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
         // $TYPE - $VAR / $COUNT_NAME
         std::unique_ptr<$TYPE[]> $VAR;
         if (auto ${NAME}Node = subNode[\"$NAME\"]; ${NAME}Node) {
-            $VAR.reset(new $TYPE[${NAME}Node.size()]);
-            memset($VAR.get(), 0, sizeof($TYPE) * ${NAME}Node.size());
+            newData.$VAR = static_cast<$TYPE *>(calloc(${NAME}Node.size(), sizeof($TYPE)));
             size_t count = 0;
             for (auto it = ${NAME}Node.begin(); it != ${NAME}Node.end(); ++it) {
-                yaml_read_required(\"\", *it, $VAR[count]);
+                yaml_read_required(\"\", *it, *const_cast<$TYPE *>(&newData.$VAR[count]));
                 ++count;
             }
-            data.bindingCount = ${NAME}Node.size();
+            newData.bindingCount = ${NAME}Node.size();
             read = true;
         }
 "
@@ -263,12 +252,12 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             # It's a flag type which is typically an overloaded basic type
             READ_REQUIRED="$READ_REQUIRED
         // $TYPE - $VAR
-        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);
+        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, newData.$VAR);
 "
 
             READ_OPTIONAL="$READ_OPTIONAL
         // $TYPE - $VAR
-        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, data.$VAR);
+        read |= yaml_read_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", subNode, newData.$VAR);
 "
 
             WRITE_REQUIRED="$WRITE_REQUIRED
@@ -285,12 +274,12 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeNam
             # It's another VK-specific non-overloaded type
             READ_REQUIRED="$READ_REQUIRED
         // $TYPE - $VAR
-        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);
+        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, newData.$VAR);
 "
 
             READ_OPTIONAL="$READ_OPTIONAL
         // $TYPE - $VAR
-        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, data.$VAR);
+        read |= yaml_read_optional<$TYPE>(\"$VAR\", subNode, newData.$VAR);
 "
 
             WRITE_REQUIRED="$WRITE_REQUIRED

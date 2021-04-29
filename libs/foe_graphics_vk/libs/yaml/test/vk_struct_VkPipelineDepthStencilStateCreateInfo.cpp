@@ -24,18 +24,21 @@
 #include <iostream>
 #include <string>
 
-constexpr VkPipelineDepthStencilStateCreateInfo cFilledData{.depthCompareOp = VK_COMPARE_OP_GREATER,
-                                                            .front =
-                                                                VkStencilOpState{
-                                                                    .failOp = VK_STENCIL_OP_INVERT,
-                                                                    .writeMask = 12,
-                                                                },
-                                                            .back =
-                                                                VkStencilOpState{
-                                                                    .failOp = VK_STENCIL_OP_REPLACE,
-                                                                    .writeMask = 10,
-                                                                },
-                                                            .maxDepthBounds = 1024.5f};
+constexpr VkPipelineDepthStencilStateCreateInfo cFilledData{
+    .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+    .depthCompareOp = VK_COMPARE_OP_GREATER,
+    .front =
+        VkStencilOpState{
+            .failOp = VK_STENCIL_OP_INVERT,
+            .writeMask = 12,
+        },
+    .back =
+        VkStencilOpState{
+            .failOp = VK_STENCIL_OP_REPLACE,
+            .writeMask = 10,
+        },
+    .maxDepthBounds = 1024.5f,
+};
 
 TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
     SECTION("Exists as empty node and is successful") {
@@ -46,7 +49,9 @@ TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][y
         REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
 
         REQUIRE_NOTHROW(yaml_read_required("test_struct", testNode, data));
-        REQUIRE(data == VkPipelineDepthStencilStateCreateInfo{});
+        REQUIRE(data == VkPipelineDepthStencilStateCreateInfo{
+                            .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+                        });
     }
 
     SECTION("Exists as node with data and is successful") {

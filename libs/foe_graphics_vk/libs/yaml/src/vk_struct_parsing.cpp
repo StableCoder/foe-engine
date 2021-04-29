@@ -17,6 +17,7 @@
 #include <foe/graphics/yaml/vk_type_parsing.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
+#include <vk_struct_cleanup.hpp>
 #include <vulkan/vulkan.h>
 
 #include <cstring>
@@ -32,21 +33,25 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPushConstantRange>(std::string con
                                " - Required node not found to parse as 'VkPushConstantRange'");
     }
 
+    VkPushConstantRange newData{};
     bool read = false;
     try {
         // VkShaderStageFlags - stageFlags
         read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
-                                                          subNode, data.stageFlags);
+                                                          subNode, newData.stageFlags);
 
         // uint32_t - offset
-        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
 
         // uint32_t - size
-        read |= yaml_read_optional<uint32_t>("size", subNode, data.size);
+        read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -58,22 +63,26 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string con
         return false;
     }
 
+    VkPushConstantRange newData{};
     bool read = false;
     try {
         // VkShaderStageFlags - stageFlags
         read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
-                                                          subNode, data.stageFlags);
+                                                          subNode, newData.stageFlags);
 
         // uint32_t - offset
-        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
 
         // uint32_t - size
-        read |= yaml_read_optional<uint32_t>("size", subNode, data.size);
+        read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -150,25 +159,29 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutBinding>(
             nodeName + " - Required node not found to parse as 'VkDescriptorSetLayoutBinding'");
     }
 
+    VkDescriptorSetLayoutBinding newData{};
     bool read = false;
     try {
         // uint32_t - binding
-        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, newData.binding);
 
         // VkDescriptorType - descriptorType
         read |=
-            yaml_read_optional<VkDescriptorType>("descriptorType", subNode, data.descriptorType);
+            yaml_read_optional<VkDescriptorType>("descriptorType", subNode, newData.descriptorType);
 
         // uint32_t - descriptorCount
-        read |= yaml_read_optional<uint32_t>("descriptorCount", subNode, data.descriptorCount);
+        read |= yaml_read_optional<uint32_t>("descriptorCount", subNode, newData.descriptorCount);
 
         // VkShaderStageFlags - stageFlags
         read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
-                                                          subNode, data.stageFlags);
+                                                          subNode, newData.stageFlags);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -179,26 +192,30 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutBinding>(
         return false;
     }
 
+    VkDescriptorSetLayoutBinding newData{};
     bool read = false;
     try {
         // uint32_t - binding
-        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, newData.binding);
 
         // VkDescriptorType - descriptorType
         read |=
-            yaml_read_optional<VkDescriptorType>("descriptorType", subNode, data.descriptorType);
+            yaml_read_optional<VkDescriptorType>("descriptorType", subNode, newData.descriptorType);
 
         // uint32_t - descriptorCount
-        read |= yaml_read_optional<uint32_t>("descriptorCount", subNode, data.descriptorCount);
+        read |= yaml_read_optional<uint32_t>("descriptorCount", subNode, newData.descriptorCount);
 
         // VkShaderStageFlags - stageFlags
         read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
-                                                          subNode, data.stageFlags);
+                                                          subNode, newData.stageFlags);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -282,39 +299,43 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
             nodeName + " - Required node not found to parse as 'VkDescriptorSetLayoutCreateInfo'");
     }
 
+    VkDescriptorSetLayoutCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkDescriptorSetLayoutCreateFlags - flags
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
-            "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
+            "VkDescriptorSetLayoutCreateFlags", "flags", subNode, newData.flags);
 
         // VkDescriptorSetLayoutBinding - pBindings / bindingCount
         std::unique_ptr<VkDescriptorSetLayoutBinding[]> pBindings;
         if (auto bindingsNode = subNode["bindings"]; bindingsNode) {
-            pBindings.reset(new VkDescriptorSetLayoutBinding[bindingsNode.size()]);
-            memset(pBindings.get(), 0, sizeof(VkDescriptorSetLayoutBinding) * bindingsNode.size());
+            newData.pBindings = static_cast<VkDescriptorSetLayoutBinding *>(
+                calloc(bindingsNode.size(), sizeof(VkDescriptorSetLayoutBinding)));
             size_t count = 0;
             for (auto it = bindingsNode.begin(); it != bindingsNode.end(); ++it) {
-                yaml_read_required("", *it, pBindings[count]);
+                yaml_read_required(
+                    "", *it,
+                    *const_cast<VkDescriptorSetLayoutBinding *>(&newData.pBindings[count]));
                 ++count;
             }
-            data.bindingCount = bindingsNode.size();
+            newData.bindingCount = bindingsNode.size();
             read = true;
         } else {
             throw foeYamlException{"bindings - Required node not found"};
         }
 
-        // Releasing pointer members
-        data.pBindings = pBindings.release();
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -325,38 +346,42 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
         return false;
     }
 
+    VkDescriptorSetLayoutCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkDescriptorSetLayoutCreateFlags - flags
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
-            "VkDescriptorSetLayoutCreateFlags", "flags", subNode, data.flags);
+            "VkDescriptorSetLayoutCreateFlags", "flags", subNode, newData.flags);
 
         // VkDescriptorSetLayoutBinding - pBindings / bindingCount
         std::unique_ptr<VkDescriptorSetLayoutBinding[]> pBindings;
         if (auto bindingsNode = subNode["bindings"]; bindingsNode) {
-            pBindings.reset(new VkDescriptorSetLayoutBinding[bindingsNode.size()]);
-            memset(pBindings.get(), 0, sizeof(VkDescriptorSetLayoutBinding) * bindingsNode.size());
+            newData.pBindings = static_cast<VkDescriptorSetLayoutBinding *>(
+                calloc(bindingsNode.size(), sizeof(VkDescriptorSetLayoutBinding)));
             size_t count = 0;
             for (auto it = bindingsNode.begin(); it != bindingsNode.end(); ++it) {
-                yaml_read_required("", *it, pBindings[count]);
+                yaml_read_required(
+                    "", *it,
+                    *const_cast<VkDescriptorSetLayoutBinding *>(&newData.pBindings[count]));
                 ++count;
             }
-            data.bindingCount = bindingsNode.size();
+            newData.bindingCount = bindingsNode.size();
             read = true;
         }
 
-        // Releasing pointer members
-        data.pBindings = pBindings.release();
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -441,32 +466,36 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkStencilOpState>(std::string const 
                                " - Required node not found to parse as 'VkStencilOpState'");
     }
 
+    VkStencilOpState newData{};
     bool read = false;
     try {
         // VkStencilOp - failOp
-        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, data.failOp);
+        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, newData.failOp);
 
         // VkStencilOp - passOp
-        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, data.passOp);
+        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, newData.passOp);
 
         // VkStencilOp - depthFailOp
-        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, data.depthFailOp);
+        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, newData.depthFailOp);
 
         // VkCompareOp - compareOp
-        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, data.compareOp);
+        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, newData.compareOp);
 
         // uint32_t - compareMask
-        read |= yaml_read_optional<uint32_t>("compareMask", subNode, data.compareMask);
+        read |= yaml_read_optional<uint32_t>("compareMask", subNode, newData.compareMask);
 
         // uint32_t - writeMask
-        read |= yaml_read_optional<uint32_t>("writeMask", subNode, data.writeMask);
+        read |= yaml_read_optional<uint32_t>("writeMask", subNode, newData.writeMask);
 
         // uint32_t - reference
-        read |= yaml_read_optional<uint32_t>("reference", subNode, data.reference);
+        read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -478,33 +507,37 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string const 
         return false;
     }
 
+    VkStencilOpState newData{};
     bool read = false;
     try {
         // VkStencilOp - failOp
-        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, data.failOp);
+        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, newData.failOp);
 
         // VkStencilOp - passOp
-        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, data.passOp);
+        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, newData.passOp);
 
         // VkStencilOp - depthFailOp
-        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, data.depthFailOp);
+        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, newData.depthFailOp);
 
         // VkCompareOp - compareOp
-        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, data.compareOp);
+        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, newData.compareOp);
 
         // uint32_t - compareMask
-        read |= yaml_read_optional<uint32_t>("compareMask", subNode, data.compareMask);
+        read |= yaml_read_optional<uint32_t>("compareMask", subNode, newData.compareMask);
 
         // uint32_t - writeMask
-        read |= yaml_read_optional<uint32_t>("writeMask", subNode, data.writeMask);
+        read |= yaml_read_optional<uint32_t>("writeMask", subNode, newData.writeMask);
 
         // uint32_t - reference
-        read |= yaml_read_optional<uint32_t>("reference", subNode, data.reference);
+        read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -611,55 +644,59 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreateIn
             " - Required node not found to parse as 'VkPipelineRasterizationStateCreateInfo'");
     }
 
+    VkPipelineRasterizationStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineRasterizationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
-            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkBool32 - depthClampEnable
-        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, data.depthClampEnable);
+        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, newData.depthClampEnable);
 
         // VkBool32 - rasterizerDiscardEnable
         read |= yaml_read_optional<VkBool32>("rasterizerDiscardEnable", subNode,
-                                             data.rasterizerDiscardEnable);
+                                             newData.rasterizerDiscardEnable);
 
         // VkPolygonMode - polygonMode
-        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, data.polygonMode);
+        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, newData.polygonMode);
 
         // VkCullModeFlags - cullMode
         read |= yaml_read_optional_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", subNode,
-                                                       data.cullMode);
+                                                       newData.cullMode);
 
         // VkFrontFace - frontFace
-        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, data.frontFace);
+        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, newData.frontFace);
 
         // VkBool32 - depthBiasEnable
-        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, data.depthBiasEnable);
+        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, newData.depthBiasEnable);
 
         // float - depthBiasConstantFactor
         read |= yaml_read_optional<float>("depthBiasConstantFactor", subNode,
-                                          data.depthBiasConstantFactor);
+                                          newData.depthBiasConstantFactor);
 
         // float - depthBiasClamp
-        read |= yaml_read_optional<float>("depthBiasClamp", subNode, data.depthBiasClamp);
+        read |= yaml_read_optional<float>("depthBiasClamp", subNode, newData.depthBiasClamp);
 
         // float - depthBiasSlopeFactor
-        read |=
-            yaml_read_optional<float>("depthBiasSlopeFactor", subNode, data.depthBiasSlopeFactor);
+        read |= yaml_read_optional<float>("depthBiasSlopeFactor", subNode,
+                                          newData.depthBiasSlopeFactor);
 
         // float - lineWidth
-        read |= yaml_read_optional<float>("lineWidth", subNode, data.lineWidth);
+        read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -672,56 +709,60 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateIn
         return false;
     }
 
+    VkPipelineRasterizationStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineRasterizationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
-            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkBool32 - depthClampEnable
-        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, data.depthClampEnable);
+        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, newData.depthClampEnable);
 
         // VkBool32 - rasterizerDiscardEnable
         read |= yaml_read_optional<VkBool32>("rasterizerDiscardEnable", subNode,
-                                             data.rasterizerDiscardEnable);
+                                             newData.rasterizerDiscardEnable);
 
         // VkPolygonMode - polygonMode
-        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, data.polygonMode);
+        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, newData.polygonMode);
 
         // VkCullModeFlags - cullMode
         read |= yaml_read_optional_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", subNode,
-                                                       data.cullMode);
+                                                       newData.cullMode);
 
         // VkFrontFace - frontFace
-        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, data.frontFace);
+        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, newData.frontFace);
 
         // VkBool32 - depthBiasEnable
-        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, data.depthBiasEnable);
+        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, newData.depthBiasEnable);
 
         // float - depthBiasConstantFactor
         read |= yaml_read_optional<float>("depthBiasConstantFactor", subNode,
-                                          data.depthBiasConstantFactor);
+                                          newData.depthBiasConstantFactor);
 
         // float - depthBiasClamp
-        read |= yaml_read_optional<float>("depthBiasClamp", subNode, data.depthBiasClamp);
+        read |= yaml_read_optional<float>("depthBiasClamp", subNode, newData.depthBiasClamp);
 
         // float - depthBiasSlopeFactor
-        read |=
-            yaml_read_optional<float>("depthBiasSlopeFactor", subNode, data.depthBiasSlopeFactor);
+        read |= yaml_read_optional<float>("depthBiasSlopeFactor", subNode,
+                                          newData.depthBiasSlopeFactor);
 
         // float - lineWidth
-        read |= yaml_read_optional<float>("lineWidth", subNode, data.lineWidth);
+        read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -866,49 +907,54 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreateInf
             " - Required node not found to parse as 'VkPipelineDepthStencilStateCreateInfo'");
     }
 
+    VkPipelineDepthStencilStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineDepthStencilStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
-            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkBool32 - depthTestEnable
-        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, data.depthTestEnable);
+        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, newData.depthTestEnable);
 
         // VkBool32 - depthWriteEnable
-        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, data.depthWriteEnable);
+        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, newData.depthWriteEnable);
 
         // VkCompareOp - depthCompareOp
-        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, data.depthCompareOp);
+        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, newData.depthCompareOp);
 
         // VkBool32 - depthBoundsTestEnable
         read |= yaml_read_optional<VkBool32>("depthBoundsTestEnable", subNode,
-                                             data.depthBoundsTestEnable);
+                                             newData.depthBoundsTestEnable);
 
         // VkBool32 - stencilTestEnable
-        read |= yaml_read_optional<VkBool32>("stencilTestEnable", subNode, data.stencilTestEnable);
+        read |=
+            yaml_read_optional<VkBool32>("stencilTestEnable", subNode, newData.stencilTestEnable);
 
         // VkStencilOpState - front
-        read |= yaml_read_optional<VkStencilOpState>("front", subNode, data.front);
+        read |= yaml_read_optional<VkStencilOpState>("front", subNode, newData.front);
 
         // VkStencilOpState - back
-        read |= yaml_read_optional<VkStencilOpState>("back", subNode, data.back);
+        read |= yaml_read_optional<VkStencilOpState>("back", subNode, newData.back);
 
         // float - minDepthBounds
-        read |= yaml_read_optional<float>("minDepthBounds", subNode, data.minDepthBounds);
+        read |= yaml_read_optional<float>("minDepthBounds", subNode, newData.minDepthBounds);
 
         // float - maxDepthBounds
-        read |= yaml_read_optional<float>("maxDepthBounds", subNode, data.maxDepthBounds);
+        read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -921,50 +967,55 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInf
         return false;
     }
 
+    VkPipelineDepthStencilStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineDepthStencilStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
-            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkBool32 - depthTestEnable
-        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, data.depthTestEnable);
+        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, newData.depthTestEnable);
 
         // VkBool32 - depthWriteEnable
-        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, data.depthWriteEnable);
+        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, newData.depthWriteEnable);
 
         // VkCompareOp - depthCompareOp
-        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, data.depthCompareOp);
+        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, newData.depthCompareOp);
 
         // VkBool32 - depthBoundsTestEnable
         read |= yaml_read_optional<VkBool32>("depthBoundsTestEnable", subNode,
-                                             data.depthBoundsTestEnable);
+                                             newData.depthBoundsTestEnable);
 
         // VkBool32 - stencilTestEnable
-        read |= yaml_read_optional<VkBool32>("stencilTestEnable", subNode, data.stencilTestEnable);
+        read |=
+            yaml_read_optional<VkBool32>("stencilTestEnable", subNode, newData.stencilTestEnable);
 
         // VkStencilOpState - front
-        read |= yaml_read_optional<VkStencilOpState>("front", subNode, data.front);
+        read |= yaml_read_optional<VkStencilOpState>("front", subNode, newData.front);
 
         // VkStencilOpState - back
-        read |= yaml_read_optional<VkStencilOpState>("back", subNode, data.back);
+        read |= yaml_read_optional<VkStencilOpState>("back", subNode, newData.back);
 
         // float - minDepthBounds
-        read |= yaml_read_optional<float>("minDepthBounds", subNode, data.minDepthBounds);
+        read |= yaml_read_optional<float>("minDepthBounds", subNode, newData.minDepthBounds);
 
         // float - maxDepthBounds
-        read |= yaml_read_optional<float>("maxDepthBounds", subNode, data.maxDepthBounds);
+        read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -1098,40 +1149,44 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendAttachmentState>
             " - Required node not found to parse as 'VkPipelineColorBlendAttachmentState'");
     }
 
+    VkPipelineColorBlendAttachmentState newData{};
     bool read = false;
     try {
         // VkBool32 - blendEnable
-        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, data.blendEnable);
+        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, newData.blendEnable);
 
         // VkBlendFactor - srcColorBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("srcColorBlendFactor", subNode,
-                                                  data.srcColorBlendFactor);
+                                                  newData.srcColorBlendFactor);
 
         // VkBlendFactor - dstColorBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("dstColorBlendFactor", subNode,
-                                                  data.dstColorBlendFactor);
+                                                  newData.dstColorBlendFactor);
 
         // VkBlendOp - colorBlendOp
-        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, data.colorBlendOp);
+        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, newData.colorBlendOp);
 
         // VkBlendFactor - srcAlphaBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("srcAlphaBlendFactor", subNode,
-                                                  data.srcAlphaBlendFactor);
+                                                  newData.srcAlphaBlendFactor);
 
         // VkBlendFactor - dstAlphaBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("dstAlphaBlendFactor", subNode,
-                                                  data.dstAlphaBlendFactor);
+                                                  newData.dstAlphaBlendFactor);
 
         // VkBlendOp - alphaBlendOp
-        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, data.alphaBlendOp);
+        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, newData.alphaBlendOp);
 
         // VkColorComponentFlags - colorWriteMask
         read |= yaml_read_optional_vk<VkColorComponentFlags>(
-            "VkColorComponentFlags", "colorWriteMask", subNode, data.colorWriteMask);
+            "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -1144,41 +1199,45 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentState>
         return false;
     }
 
+    VkPipelineColorBlendAttachmentState newData{};
     bool read = false;
     try {
         // VkBool32 - blendEnable
-        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, data.blendEnable);
+        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, newData.blendEnable);
 
         // VkBlendFactor - srcColorBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("srcColorBlendFactor", subNode,
-                                                  data.srcColorBlendFactor);
+                                                  newData.srcColorBlendFactor);
 
         // VkBlendFactor - dstColorBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("dstColorBlendFactor", subNode,
-                                                  data.dstColorBlendFactor);
+                                                  newData.dstColorBlendFactor);
 
         // VkBlendOp - colorBlendOp
-        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, data.colorBlendOp);
+        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, newData.colorBlendOp);
 
         // VkBlendFactor - srcAlphaBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("srcAlphaBlendFactor", subNode,
-                                                  data.srcAlphaBlendFactor);
+                                                  newData.srcAlphaBlendFactor);
 
         // VkBlendFactor - dstAlphaBlendFactor
         read |= yaml_read_optional<VkBlendFactor>("dstAlphaBlendFactor", subNode,
-                                                  data.dstAlphaBlendFactor);
+                                                  newData.dstAlphaBlendFactor);
 
         // VkBlendOp - alphaBlendOp
-        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, data.alphaBlendOp);
+        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, newData.alphaBlendOp);
 
         // VkColorComponentFlags - colorWriteMask
         read |= yaml_read_optional_vk<VkColorComponentFlags>(
-            "VkColorComponentFlags", "colorWriteMask", subNode, data.colorWriteMask);
+            "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -1304,27 +1363,31 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateInfo>
             " - Required node not found to parse as 'VkPipelineColorBlendStateCreateInfo'");
     }
 
+    VkPipelineColorBlendStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineColorBlendStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
-            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkBool32 - logicOpEnable
-        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, data.logicOpEnable);
+        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, newData.logicOpEnable);
 
         // VkLogicOp - logicOp
-        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, data.logicOp);
+        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -1337,28 +1400,32 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>
         return false;
     }
 
+    VkPipelineColorBlendStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineColorBlendStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
-            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkBool32 - logicOpEnable
-        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, data.logicOpEnable);
+        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, newData.logicOpEnable);
 
         // VkLogicOp - logicOp
-        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, data.logicOp);
+        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -1438,20 +1505,24 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputBindingDescription>(
             nodeName + " - Required node not found to parse as 'VkVertexInputBindingDescription'");
     }
 
+    VkVertexInputBindingDescription newData{};
     bool read = false;
     try {
         // uint32_t - binding
-        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, newData.binding);
 
         // uint32_t - stride
-        read |= yaml_read_optional<uint32_t>("stride", subNode, data.stride);
+        read |= yaml_read_optional<uint32_t>("stride", subNode, newData.stride);
 
         // VkVertexInputRate - inputRate
-        read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, data.inputRate);
+        read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, newData.inputRate);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -1462,21 +1533,25 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputBindingDescription>(
         return false;
     }
 
+    VkVertexInputBindingDescription newData{};
     bool read = false;
     try {
         // uint32_t - binding
-        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, newData.binding);
 
         // uint32_t - stride
-        read |= yaml_read_optional<uint32_t>("stride", subNode, data.stride);
+        read |= yaml_read_optional<uint32_t>("stride", subNode, newData.stride);
 
         // VkVertexInputRate - inputRate
-        read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, data.inputRate);
+        read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, newData.inputRate);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -1553,23 +1628,27 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputAttributeDescription>(
             " - Required node not found to parse as 'VkVertexInputAttributeDescription'");
     }
 
+    VkVertexInputAttributeDescription newData{};
     bool read = false;
     try {
         // uint32_t - location
-        read |= yaml_read_optional<uint32_t>("location", subNode, data.location);
+        read |= yaml_read_optional<uint32_t>("location", subNode, newData.location);
 
         // uint32_t - binding
-        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, newData.binding);
 
         // VkFormat - format
-        read |= yaml_read_optional<VkFormat>("format", subNode, data.format);
+        read |= yaml_read_optional<VkFormat>("format", subNode, newData.format);
 
         // uint32_t - offset
-        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -1580,24 +1659,28 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputAttributeDescription>(
         return false;
     }
 
+    VkVertexInputAttributeDescription newData{};
     bool read = false;
     try {
         // uint32_t - location
-        read |= yaml_read_optional<uint32_t>("location", subNode, data.location);
+        read |= yaml_read_optional<uint32_t>("location", subNode, newData.location);
 
         // uint32_t - binding
-        read |= yaml_read_optional<uint32_t>("binding", subNode, data.binding);
+        read |= yaml_read_optional<uint32_t>("binding", subNode, newData.binding);
 
         // VkFormat - format
-        read |= yaml_read_optional<VkFormat>("format", subNode, data.format);
+        read |= yaml_read_optional<VkFormat>("format", subNode, newData.format);
 
         // uint32_t - offset
-        read |= yaml_read_optional<uint32_t>("offset", subNode, data.offset);
+        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -1683,21 +1766,25 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateInfo
             " - Required node not found to parse as 'VkPipelineVertexInputStateCreateInfo'");
     }
 
+    VkPipelineVertexInputStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineVertexInputStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
-            "VkPipelineVertexInputStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineVertexInputStateCreateFlags", "flags", subNode, newData.flags);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -1710,22 +1797,26 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateInfo
         return false;
     }
 
+    VkPipelineVertexInputStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineVertexInputStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
-            "VkPipelineVertexInputStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineVertexInputStateCreateFlags", "flags", subNode, newData.flags);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -1794,28 +1885,32 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreateIn
             " - Required node not found to parse as 'VkPipelineInputAssemblyStateCreateInfo'");
     }
 
+    VkPipelineInputAssemblyStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineInputAssemblyStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
-            "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkPrimitiveTopology - topology
-        read |= yaml_read_optional<VkPrimitiveTopology>("topology", subNode, data.topology);
+        read |= yaml_read_optional<VkPrimitiveTopology>("topology", subNode, newData.topology);
 
         // VkBool32 - primitiveRestartEnable
         read |= yaml_read_optional<VkBool32>("primitiveRestartEnable", subNode,
-                                             data.primitiveRestartEnable);
+                                             newData.primitiveRestartEnable);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -1828,29 +1923,33 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreateIn
         return false;
     }
 
+    VkPipelineInputAssemblyStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineInputAssemblyStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
-            "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineInputAssemblyStateCreateFlags", "flags", subNode, newData.flags);
 
         // VkPrimitiveTopology - topology
-        read |= yaml_read_optional<VkPrimitiveTopology>("topology", subNode, data.topology);
+        read |= yaml_read_optional<VkPrimitiveTopology>("topology", subNode, newData.topology);
 
         // VkBool32 - primitiveRestartEnable
         read |= yaml_read_optional<VkBool32>("primitiveRestartEnable", subNode,
-                                             data.primitiveRestartEnable);
+                                             newData.primitiveRestartEnable);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
@@ -1935,25 +2034,29 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreateInf
             " - Required node not found to parse as 'VkPipelineTessellationStateCreateInfo'");
     }
 
+    VkPipelineTessellationStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineTessellationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
-            "VkPipelineTessellationStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineTessellationStateCreateFlags", "flags", subNode, newData.flags);
 
         // uint32_t - patchControlPoints
         read |=
-            yaml_read_optional<uint32_t>("patchControlPoints", subNode, data.patchControlPoints);
+            yaml_read_optional<uint32_t>("patchControlPoints", subNode, newData.patchControlPoints);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
+
+    data = newData;
 }
 
 template <>
@@ -1966,26 +2069,30 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreateInf
         return false;
     }
 
+    VkPipelineTessellationStateCreateInfo newData{};
     bool read = false;
     try {
         // VkStructureType - sType
-        data.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
 
         // void* - pNext
-        data.pNext = nullptr;
+        newData.pNext = nullptr;
 
         // VkPipelineTessellationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
-            "VkPipelineTessellationStateCreateFlags", "flags", subNode, data.flags);
+            "VkPipelineTessellationStateCreateFlags", "flags", subNode, newData.flags);
 
         // uint32_t - patchControlPoints
         read |=
-            yaml_read_optional<uint32_t>("patchControlPoints", subNode, data.patchControlPoints);
+            yaml_read_optional<uint32_t>("patchControlPoints", subNode, newData.patchControlPoints);
 
     } catch (foeYamlException const &e) {
+        vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    if (read)
+        data = newData;
     return read;
 }
 
