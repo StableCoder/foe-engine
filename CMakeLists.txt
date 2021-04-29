@@ -147,7 +147,7 @@ if(BUILD_SHADERS)
     data/shaders/*.comp)
 
   target_glsl_shaders(foe_engine PRIVATE ${GLSL_FILES})
-  clang_format(format ${GLSL_FILES})
+  clang_format(format_shaders ${GLSL_FILES})
 endif()
 
 # Auxiliary Items
