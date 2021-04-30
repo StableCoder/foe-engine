@@ -102,15 +102,6 @@ class foeIdIndexGenerator {
     FOE_ECS_EXPORT void exportState(foeIdIndex &nextIndex,
                                     std::vector<foeIdIndex> &recycledIndices);
 
-    /**
-     * @brief Returns a list of all the currently 'active' entities
-     * @return The full list of 'active' entities
-     *
-     * 'Active' entities are those that are below the current next free index, and haven't been
-     * 'recycled'.
-     */
-    FOE_ECS_EXPORT auto activeEntityList() -> std::vector<foeId>;
-
   private:
     /// Name of the group
     std::string const cName;

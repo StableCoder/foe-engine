@@ -147,7 +147,6 @@ bool exportResources(std::filesystem::path path,
                      foeEditorNameMap *pNameMap,
                      ResourcePools &resourcePools) {
     { // Persistent group
-        auto groupEntityList = groups.persistentIndices()->activeEntityList();
 
         // ARMATURE
         for (auto const it : resourcePools.armature.getDataVector()) {
@@ -366,15 +365,24 @@ bool exportGroupStateData(std::filesystem::path path,
 
     // Dependent groups
     for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
-        foeIdGroup groupID = foeIdValueToGroup(i);
-        auto *pGroup = groups.indices(groupID);
+        foeIdGroup idGroup = foeIdValueToGroup(i);
+        auto *pGroup = groups.indices(idGroup);
 
         if (pGroup == nullptr)
             continue;
 
-        auto groupEntityList = pGroup->activeEntityList();
+        foeIdIndex nextFreeIndex;
+        std::vector<foeIdIndex> recycled;
+        pGroup->exportState(nextFreeIndex, recycled);
 
-        for (auto const entity : groupEntityList) {
+        auto recycledIt = recycled.begin();
+        for (foeIdIndex idIndex = 0; idIndex < nextFreeIndex; ++idIndex) {
+            // Skip recycled IDs
+            if (recycledIt != recycled.end() && *recycledIt == idIndex) {
+                ++recycledIt;
+                continue;
+            }
+            foeId entity = foeIdCreateEntity(idGroup, idIndex);
             YAML::Node rootNode;
 
             try {
@@ -396,9 +404,19 @@ bool exportGroupStateData(std::filesystem::path path,
 
     { // Persistent group
         auto *pGroup = groups.persistentIndices();
-        auto groupEntityList = pGroup->activeEntityList();
 
-        for (auto const entity : groupEntityList) {
+        foeIdIndex nextFreeIndex;
+        std::vector<foeIdIndex> recycled;
+        pGroup->exportState(nextFreeIndex, recycled);
+
+        auto recycledIt = recycled.begin();
+        for (foeIdIndex idIndex = 0; idIndex < nextFreeIndex; ++idIndex) {
+            // Skip recycled IDs
+            if (recycledIt != recycled.end() && *recycledIt == idIndex) {
+                ++recycledIt;
+                continue;
+            }
+            foeId entity = foeIdCreateEntity(foeIdPersistentGroup, idIndex);
             YAML::Node rootNode;
 
             try {

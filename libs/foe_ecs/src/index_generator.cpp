@@ -117,26 +117,3 @@ void foeIdIndexGenerator::exportState(foeIdIndex &nextIndex,
         tempList.pop();
     }
 }
-
-auto foeIdIndexGenerator::activeEntityList() -> std::vector<foeId> {
-    std::vector<foeId> entityList;
-
-    // Generate list
-    foeIdIndex nextFreeIndex;
-    std::vector<foeIdIndex> recycled;
-    exportState(nextFreeIndex, recycled);
-
-    entityList.reserve(nextFreeIndex - recycled.size());
-    std::sort(recycled.begin(), recycled.end());
-    auto recycledIt = recycled.begin();
-
-    for (foeIdIndex i = 0; i < nextFreeIndex; ++i) {
-        if (recycledIt == recycled.end() || *recycledIt != i) {
-            entityList.emplace_back(cGroupID | i);
-        } else {
-            ++recycledIt;
-        }
-    }
-
-    return entityList;
-}
