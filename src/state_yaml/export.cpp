@@ -358,10 +358,47 @@ bool exportResources(std::filesystem::path path,
     return true;
 }
 
+bool isResource(foeId entity, ResourcePools &resourcePools) {
+    foeId resource = foeIdConvertToResource(entity);
+
+    for (auto const it : resourcePools.armature.getDataVector()) {
+        if (it->getID() == resource)
+            return true;
+    }
+
+    for (auto const it : resourcePools.image.getDataVector()) {
+        if (it->getID() == resource)
+            return true;
+    }
+
+    for (auto const it : resourcePools.material.getDataVector()) {
+        if (it->getID() == resource)
+            return true;
+    }
+
+    for (auto const it : resourcePools.mesh.getDataVector()) {
+        if (it->getID() == resource)
+            return true;
+    }
+
+    for (auto const it : resourcePools.shader.getDataVector()) {
+        if (it->getID() == resource)
+            return true;
+    }
+
+    for (auto const it : resourcePools.vertexDescriptor.getDataVector()) {
+        if (it->getID() == resource)
+            return true;
+    }
+
+    return false;
+}
+
 bool exportGroupStateData(std::filesystem::path path,
                           foeGroupData &groups,
                           foeEditorNameMap *pNameMap,
-                          StatePools &statePools) {
+                          StatePools &statePools,
+                          ResourcePools &resourcePools) {
 
     // Dependent groups
     for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
@@ -383,6 +420,8 @@ bool exportGroupStateData(std::filesystem::path path,
                 continue;
             }
             foeId entity = foeIdCreateEntity(idGroup, idIndex);
+            if (isResource(entity, resourcePools))
+                continue;
             YAML::Node rootNode;
 
             try {
@@ -417,6 +456,8 @@ bool exportGroupStateData(std::filesystem::path path,
                 continue;
             }
             foeId entity = foeIdCreateEntity(foeIdPersistentGroup, idIndex);
+            if (isResource(entity, resourcePools))
+                continue;
             YAML::Node rootNode;
 
             try {
@@ -525,7 +566,8 @@ bool exportGroupState(std::filesystem::path yamlPath,
     if (!retVal)
         return false;
 
-    retVal = exportGroupStateData(yamlPath / stateDataDirectoryPath, groups, pNameMap, statePools);
+    retVal = exportGroupStateData(yamlPath / stateDataDirectoryPath, groups, pNameMap, statePools,
+                                  resourcePools);
     if (!retVal)
         return false;
 
