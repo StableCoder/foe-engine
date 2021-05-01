@@ -21,8 +21,6 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "shader.hpp"
-
 #include <fstream>
 
 namespace {
@@ -49,6 +47,35 @@ bool yaml_read_shader_definition_internal(std::string const &nodeName,
                              createInfo.descriptorSetLayoutCI, createInfo.pushConstantRange);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    return true;
+}
+
+bool yaml_write_shader_definition(std::string const &nodeName,
+                                  foeGfxSession session,
+                                  foeShader const *pShader,
+                                  YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // Resources Node
+        // (Nothing Currently)
+
+        // SPIR-V Source
+        yaml_write_required("spirv_source", pShader->createInfo->shaderCodeFile, writeNode);
+
+        // Gfx Data Node
+        yaml_write_gfx_shader("graphics_data", session, pShader->getShader(), writeNode);
+    } catch (...) {
+        throw foeYamlException(nodeName +
+                               " - Failed to serialize 'foeFragmentDescriptor' definition");
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
     }
 
     return true;

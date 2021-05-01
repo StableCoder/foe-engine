@@ -20,8 +20,6 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "image.hpp"
-
 namespace {
 
 bool yaml_read_image_definition_internal(std::string const &nodeName,

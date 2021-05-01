@@ -20,10 +20,9 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/yaml/vertex_descriptor.hpp>
 #include <foe/log.hpp>
+#include <foe/resource/shader.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-
-#include "shader.hpp"
 
 #include <fstream>
 
@@ -69,20 +68,6 @@ bool yaml_read_vertex_descriptor_definition_internal(std::string const &nodeName
 
     return read;
 }
-
-} // namespace
-
-void yaml_read_vertex_descriptor_definition(YAML::Node const &node,
-                                            foeIdGroupTranslator const *pTranslator,
-                                            foeResourceCreateInfoBase **ppCreateInfo) {
-    foeVertexDescriptorCreateInfo ci;
-
-    yaml_read_vertex_descriptor_definition_internal("", node, pTranslator, ci);
-
-    *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
-}
-
-namespace {
 
 bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
                                              foeVertexDescriptor const *pVertexDescriptor,
@@ -132,6 +117,16 @@ bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
 }
 
 } // namespace
+
+void yaml_read_vertex_descriptor_definition(YAML::Node const &node,
+                                            foeIdGroupTranslator const *pTranslator,
+                                            foeResourceCreateInfoBase **ppCreateInfo) {
+    foeVertexDescriptorCreateInfo ci;
+
+    yaml_read_vertex_descriptor_definition_internal("", node, pTranslator, ci);
+
+    *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
+}
 
 auto yaml_write_vertex_descriptor_definition(foeVertexDescriptor const *pVertexDescriptor)
     -> YAML::Node {
