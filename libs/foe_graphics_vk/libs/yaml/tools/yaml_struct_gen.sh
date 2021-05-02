@@ -30,7 +30,7 @@ printf "/*
     limitations under the License.
 */
 
-#include <foe/graphics/yaml/vk_type_parsing.hpp>
+#include <foe/graphics/vk/yaml/vk_type_parsing.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <vk_struct_cleanup.hpp>
@@ -54,7 +54,7 @@ while read LINE; do
         PTR_MEMBERS=
 
         READ_REQUIRED="template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if(!subNode) {
         throw foeYamlException(nodeName + \" - Required node not found to parse as '$STRUCT'\");
@@ -65,7 +65,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<$STRUCT>(std::string const &nodeName
     try {"
 
         READ_OPTIONAL="template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<$STRUCT>(std::string const &nodeName, YAML::Node const &node, $STRUCT &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if(!subNode) {
         return false;
@@ -76,13 +76,13 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<$STRUCT>(std::string const &nodeName
     try {"
 
         WRITE_REQUIRED="template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<$STRUCT>(std::string const& nodeName, $STRUCT const &data, YAML::Node &node) {
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<$STRUCT>(std::string const& nodeName, $STRUCT const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
     try {"
 
         WRITE_OPTIONAL="template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeName, $STRUCT const& defaultData, $STRUCT const &data, YAML::Node &node) {
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& nodeName, $STRUCT const& defaultData, $STRUCT const &data, YAML::Node &node) {
     YAML::Node writeNode;
     bool addedNode = false;
 

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/yaml/fragment_descriptor.hpp>
+#include <foe/graphics/vk/yaml/fragment_descriptor.hpp>
 
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>

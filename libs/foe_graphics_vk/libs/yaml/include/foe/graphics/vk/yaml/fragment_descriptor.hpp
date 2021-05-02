@@ -14,21 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_YAML_FRAGMENT_DESCRIPTOR_HPP
-#define FOE_GRAPHICS_YAML_FRAGMENT_DESCRIPTOR_HPP
+#ifndef FOE_GRAPHICS_VK_YAML_FRAGMENT_DESCRIPTOR_HPP
+#define FOE_GRAPHICS_VK_YAML_FRAGMENT_DESCRIPTOR_HPP
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
-#include <foe/graphics/yaml/export.h>
+#include <foe/graphics/vk/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
 #include <string>
 
-FOE_GFX_YAML_EXPORT
+FOE_GFX_VK_YAML_EXPORT
 bool yaml_write_gfx_fragment_descriptor(std::string const &nodeName,
                                         foeGfxVkFragmentDescriptor const *pFragmentDescriptor,
                                         YAML::Node &node);
 
-FOE_GFX_YAML_EXPORT bool yaml_read_gfx_fragment_descriptor(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_gfx_fragment_descriptor(
     std::string const &nodeName,
     YAML::Node const &node,
     bool &hasRasterizationSCI,
@@ -39,4 +39,4 @@ FOE_GFX_YAML_EXPORT bool yaml_read_gfx_fragment_descriptor(
     VkPipelineColorBlendStateCreateInfo &colourBlendSCI,
     std::vector<VkPipelineColorBlendAttachmentState> &colourBlendAttachments);
 
-#endif // FOE_GRAPHICS_YAML_FRAGMENT_DESCRIPTOR_HPP
+#endif // FOE_GRAPHICS_VK_YAML_FRAGMENT_DESCRIPTOR_HPP

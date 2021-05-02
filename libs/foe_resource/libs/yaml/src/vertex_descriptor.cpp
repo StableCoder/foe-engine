@@ -18,7 +18,7 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/graphics/yaml/vertex_descriptor.hpp>
+#include <foe/graphics/vk/yaml/vertex_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/resource/shader.hpp>
 #include <foe/yaml/exception.hpp>

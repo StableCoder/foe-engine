@@ -14,21 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_YAML_VERTEX_DESCRIPTOR_HPP
-#define FOE_GRAPHICS_YAML_VERTEX_DESCRIPTOR_HPP
+#ifndef FOE_GRAPHICS_VK_YAML_VERTEX_DESCRIPTOR_HPP
+#define FOE_GRAPHICS_VK_YAML_VERTEX_DESCRIPTOR_HPP
 
 #include <foe/graphics/vk/vertex_descriptor.hpp>
-#include <foe/graphics/yaml/export.h>
+#include <foe/graphics/vk/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
 #include <string>
 
-FOE_GFX_YAML_EXPORT
+FOE_GFX_VK_YAML_EXPORT
 bool yaml_write_gfx_vertex_descriptor(std::string const &nodeName,
                                       foeGfxVertexDescriptor const *pVertexDescriptor,
                                       YAML::Node &node);
 
-FOE_GFX_YAML_EXPORT bool yaml_read_gfx_vertex_descriptor(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_gfx_vertex_descriptor(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
@@ -37,4 +37,4 @@ FOE_GFX_YAML_EXPORT bool yaml_read_gfx_vertex_descriptor(
     VkPipelineInputAssemblyStateCreateInfo &inputAssemblySCI,
     VkPipelineTessellationStateCreateInfo &tessellationSCI);
 
-#endif // FOE_GRAPHICS_YAML_VERTEX_DESCRIPTOR_HPP
+#endif // FOE_GRAPHICS_VK_YAML_VERTEX_DESCRIPTOR_HPP

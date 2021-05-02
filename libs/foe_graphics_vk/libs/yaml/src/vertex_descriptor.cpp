@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/yaml/vertex_descriptor.hpp>
+#include <foe/graphics/vk/yaml/vertex_descriptor.hpp>
 
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>

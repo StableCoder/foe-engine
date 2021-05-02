@@ -6,8 +6,9 @@ add_library(foe_graphics_vk_yaml)
 
 # Definition
 generate_export_header(
-  foe_graphics_vk_yaml EXPORT_MACRO_NAME FOE_GFX_YAML_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/graphics/yaml/export.h)
+  foe_graphics_vk_yaml EXPORT_MACRO_NAME FOE_GFX_VK_YAML_EXPORT
+  EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/graphics/vk/yaml/export.h)
 
 target_include_directories(
   foe_graphics_vk_yaml PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports

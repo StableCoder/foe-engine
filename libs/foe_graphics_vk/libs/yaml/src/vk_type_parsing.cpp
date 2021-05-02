@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/yaml/vk_type_parsing.hpp>
+#include <foe/graphics/vk/yaml/vk_type_parsing.hpp>
 
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -119,25 +119,25 @@ template bool yaml_write_optional_vk<VkFlags>(std::string const &typeName,
 #define INSTANTIATION(T)                                                                           \
                                                                                                    \
     template <>                                                                                    \
-    FOE_GFX_YAML_EXPORT bool yaml_read_optional<T>(std::string const &nodeName,                    \
-                                                   YAML::Node const &node, T &data) {              \
+    FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<T>(std::string const &nodeName,                 \
+                                                      YAML::Node const &node, T &data) {           \
         return yaml_read_optional_vk<T>(#T, nodeName, node, data);                                 \
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
-    FOE_GFX_YAML_EXPORT void yaml_read_required<T>(std::string const &nodeName,                    \
-                                                   YAML::Node const &node, T &data) {              \
+    FOE_GFX_VK_YAML_EXPORT void yaml_read_required<T>(std::string const &nodeName,                 \
+                                                      YAML::Node const &node, T &data) {           \
         yaml_read_required_vk<T>(#T, nodeName, node, data);                                        \
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
-    FOE_GFX_YAML_EXPORT void yaml_write_required<T>(std::string const &nodeName, T const &data,    \
-                                                    YAML::Node &node) {                            \
+    FOE_GFX_VK_YAML_EXPORT void yaml_write_required<T>(std::string const &nodeName, T const &data, \
+                                                       YAML::Node &node) {                         \
         yaml_write_required_vk<T>(#T, nodeName, data, node);                                       \
     }                                                                                              \
                                                                                                    \
     template <>                                                                                    \
-    FOE_GFX_YAML_EXPORT bool yaml_write_optional<T>(                                               \
+    FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<T>(                                            \
         std::string const &nodeName, T const &defaultData, T const &data, YAML::Node &node) {      \
         return yaml_write_optional_vk<T>(#T, nodeName, defaultData, data, node);                   \
     }

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/yaml/vk_type_parsing.hpp>
+#include <foe/graphics/vk/yaml/vk_type_parsing.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <vk_struct_cleanup.hpp>
@@ -24,9 +24,9 @@
 #include <string>
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPushConstantRange>(std::string const &nodeName,
-                                                                 YAML::Node const &node,
-                                                                 VkPushConstantRange &data) {
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPushConstantRange>(std::string const &nodeName,
+                                                                    YAML::Node const &node,
+                                                                    VkPushConstantRange &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         throw foeYamlException(nodeName +
@@ -55,9 +55,9 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPushConstantRange>(std::string con
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string const &nodeName,
-                                                                 YAML::Node const &node,
-                                                                 VkPushConstantRange &data) {
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string const &nodeName,
+                                                                    YAML::Node const &node,
+                                                                    VkPushConstantRange &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -87,9 +87,8 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string con
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPushConstantRange>(std::string const &nodeName,
-                                                                  VkPushConstantRange const &data,
-                                                                  YAML::Node &node) {
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPushConstantRange>(
+    std::string const &nodeName, VkPushConstantRange const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
     try {
@@ -115,7 +114,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPushConstantRange>(std::string co
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPushConstantRange>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPushConstantRange>(
     std::string const &nodeName,
     VkPushConstantRange const &defaultData,
     VkPushConstantRange const &data,
@@ -151,7 +150,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPushConstantRange>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutBinding>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutBinding>(
     std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutBinding &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -185,7 +184,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutBinding>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutBinding>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutBinding>(
     std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutBinding &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -220,7 +219,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutBinding>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkDescriptorSetLayoutBinding>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkDescriptorSetLayoutBinding>(
     std::string const &nodeName, VkDescriptorSetLayoutBinding const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
@@ -250,7 +249,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkDescriptorSetLayoutBinding>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutBinding>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutBinding>(
     std::string const &nodeName,
     VkDescriptorSetLayoutBinding const &defaultData,
     VkDescriptorSetLayoutBinding const &data,
@@ -291,7 +290,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutBinding>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
     std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutCreateInfo &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -339,7 +338,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
     std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutCreateInfo &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -386,7 +385,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkDescriptorSetLayoutCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkDescriptorSetLayoutCreateInfo>(
     std::string const &nodeName, VkDescriptorSetLayoutCreateInfo const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
@@ -416,7 +415,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkDescriptorSetLayoutCreateInfo>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutCreateInfo>(
     std::string const &nodeName,
     VkDescriptorSetLayoutCreateInfo const &defaultData,
     VkDescriptorSetLayoutCreateInfo const &data,
@@ -457,9 +456,9 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutCreateInfo>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkStencilOpState>(std::string const &nodeName,
-                                                              YAML::Node const &node,
-                                                              VkStencilOpState &data) {
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkStencilOpState>(std::string const &nodeName,
+                                                                 YAML::Node const &node,
+                                                                 VkStencilOpState &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         throw foeYamlException(nodeName +
@@ -499,9 +498,9 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkStencilOpState>(std::string const 
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string const &nodeName,
-                                                              YAML::Node const &node,
-                                                              VkStencilOpState &data) {
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string const &nodeName,
+                                                                 YAML::Node const &node,
+                                                                 VkStencilOpState &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -542,9 +541,9 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string const 
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkStencilOpState>(std::string const &nodeName,
-                                                               VkStencilOpState const &data,
-                                                               YAML::Node &node) {
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkStencilOpState>(std::string const &nodeName,
+                                                                  VkStencilOpState const &data,
+                                                                  YAML::Node &node) {
     YAML::Node writeNode;
 
     try {
@@ -581,10 +580,11 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkStencilOpState>(std::string const
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkStencilOpState>(std::string const &nodeName,
-                                                               VkStencilOpState const &defaultData,
-                                                               VkStencilOpState const &data,
-                                                               YAML::Node &node) {
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkStencilOpState>(
+    std::string const &nodeName,
+    VkStencilOpState const &defaultData,
+    VkStencilOpState const &data,
+    YAML::Node &node) {
     YAML::Node writeNode;
     bool addedNode = false;
 
@@ -633,7 +633,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkStencilOpState>(std::string const
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineRasterizationStateCreateInfo &data) {
@@ -700,7 +700,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreateIn
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineRasterizationStateCreateInfo &data) {
@@ -767,7 +767,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateIn
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineRasterizationStateCreateInfo const &data,
     YAML::Node &node) {
@@ -823,7 +823,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineRasterizationStateCreateI
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineRasterizationStateCreateInfo const &defaultData,
     VkPipelineRasterizationStateCreateInfo const &data,
@@ -896,7 +896,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCreateI
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineDepthStencilStateCreateInfo &data) {
@@ -958,7 +958,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreateInf
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineDepthStencilStateCreateInfo &data) {
@@ -1020,7 +1020,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInf
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineDepthStencilStateCreateInfo const &data,
     YAML::Node &node) {
@@ -1071,7 +1071,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineDepthStencilStateCreateIn
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineDepthStencilStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineDepthStencilStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineDepthStencilStateCreateInfo const &defaultData,
     VkPipelineDepthStencilStateCreateInfo const &data,
@@ -1138,7 +1138,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineDepthStencilStateCreateIn
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineColorBlendAttachmentState &data) {
@@ -1190,7 +1190,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendAttachmentState>
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineColorBlendAttachmentState &data) {
@@ -1242,7 +1242,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentState>
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     VkPipelineColorBlendAttachmentState const &data,
     YAML::Node &node) {
@@ -1290,7 +1290,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendAttachmentState
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentState>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentState>(
     std::string const &nodeName,
     VkPipelineColorBlendAttachmentState const &defaultData,
     VkPipelineColorBlendAttachmentState const &data,
@@ -1352,7 +1352,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentState
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineColorBlendStateCreateInfo &data) {
@@ -1391,7 +1391,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateInfo>
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineColorBlendStateCreateInfo &data) {
@@ -1430,7 +1430,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineColorBlendStateCreateInfo const &data,
     YAML::Node &node) {
@@ -1459,7 +1459,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendStateCreateInfo
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineColorBlendStateCreateInfo const &defaultData,
     VkPipelineColorBlendStateCreateInfo const &data,
@@ -1497,7 +1497,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateInfo
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputBindingDescription>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkVertexInputBindingDescription>(
     std::string const &nodeName, YAML::Node const &node, VkVertexInputBindingDescription &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -1526,7 +1526,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputBindingDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputBindingDescription>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkVertexInputBindingDescription>(
     std::string const &nodeName, YAML::Node const &node, VkVertexInputBindingDescription &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -1556,7 +1556,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputBindingDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkVertexInputBindingDescription>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkVertexInputBindingDescription>(
     std::string const &nodeName, VkVertexInputBindingDescription const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
@@ -1582,7 +1582,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkVertexInputBindingDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkVertexInputBindingDescription>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkVertexInputBindingDescription>(
     std::string const &nodeName,
     VkVertexInputBindingDescription const &defaultData,
     VkVertexInputBindingDescription const &data,
@@ -1619,7 +1619,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkVertexInputBindingDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputAttributeDescription>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkVertexInputAttributeDescription>(
     std::string const &nodeName, YAML::Node const &node, VkVertexInputAttributeDescription &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -1652,7 +1652,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkVertexInputAttributeDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputAttributeDescription>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkVertexInputAttributeDescription>(
     std::string const &nodeName, YAML::Node const &node, VkVertexInputAttributeDescription &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -1685,7 +1685,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkVertexInputAttributeDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkVertexInputAttributeDescription>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkVertexInputAttributeDescription>(
     std::string const &nodeName, VkVertexInputAttributeDescription const &data, YAML::Node &node) {
     YAML::Node writeNode;
 
@@ -1714,7 +1714,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkVertexInputAttributeDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkVertexInputAttributeDescription>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkVertexInputAttributeDescription>(
     std::string const &nodeName,
     VkVertexInputAttributeDescription const &defaultData,
     VkVertexInputAttributeDescription const &data,
@@ -1755,7 +1755,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkVertexInputAttributeDescription>(
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineVertexInputStateCreateInfo &data) {
@@ -1788,7 +1788,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateInfo
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineVertexInputStateCreateInfo &data) {
@@ -1821,7 +1821,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateInfo
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineVertexInputStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineVertexInputStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineVertexInputStateCreateInfo const &data,
     YAML::Node &node) {
@@ -1844,7 +1844,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineVertexInputStateCreateInf
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineVertexInputStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineVertexInputStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineVertexInputStateCreateInfo const &defaultData,
     VkPipelineVertexInputStateCreateInfo const &data,
@@ -1874,7 +1874,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineVertexInputStateCreateInf
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineInputAssemblyStateCreateInfo &data) {
@@ -1914,7 +1914,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreateIn
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineInputAssemblyStateCreateInfo &data) {
@@ -1954,7 +1954,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreateIn
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineInputAssemblyStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineInputAssemblyStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineInputAssemblyStateCreateInfo const &data,
     YAML::Node &node) {
@@ -1984,7 +1984,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineInputAssemblyStateCreateI
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineInputAssemblyStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineInputAssemblyStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineInputAssemblyStateCreateInfo const &defaultData,
     VkPipelineInputAssemblyStateCreateInfo const &data,
@@ -2023,7 +2023,7 @@ FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineInputAssemblyStateCreateI
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineTessellationStateCreateInfo &data) {
@@ -2060,7 +2060,7 @@ FOE_GFX_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreateInf
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreateInfo>(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineTessellationStateCreateInfo &data) {
@@ -2097,7 +2097,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreateInf
 }
 
 template <>
-FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineTessellationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineTessellationStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineTessellationStateCreateInfo const &data,
     YAML::Node &node) {
@@ -2123,7 +2123,7 @@ FOE_GFX_YAML_EXPORT void yaml_write_required<VkPipelineTessellationStateCreateIn
 }
 
 template <>
-FOE_GFX_YAML_EXPORT bool yaml_write_optional<VkPipelineTessellationStateCreateInfo>(
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineTessellationStateCreateInfo>(
     std::string const &nodeName,
     VkPipelineTessellationStateCreateInfo const &defaultData,
     VkPipelineTessellationStateCreateInfo const &data,

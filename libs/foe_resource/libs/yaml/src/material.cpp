@@ -17,7 +17,7 @@
 #include <foe/resource/yaml/material.hpp>
 
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/graphics/yaml/fragment_descriptor.hpp>
+#include <foe/graphics/vk/yaml/fragment_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
