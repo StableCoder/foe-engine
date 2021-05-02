@@ -47,9 +47,6 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
                                           foeIdTypeResource, createInfo.fragmentShader);
             read |= yaml_read_id_optional("image", resNode, pTranslator, foeIdTypeResource,
                                           createInfo.image);
-
-            read |=
-                yaml_read_optional("fragment_descriptor", resNode, createInfo.fragDescriptorName);
         }
 
         // Graphics Data

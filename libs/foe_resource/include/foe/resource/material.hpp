@@ -36,7 +36,6 @@ class foeMaterialLoader;
 
 struct foeMaterialCreateInfo : public foeResourceCreateInfoBase {
     foeId fragmentShader = FOE_INVALID_ID;
-    std::string fragDescriptorName;
     foeId image = FOE_INVALID_ID;
     bool hasRasterizationSCI;
     VkPipelineRasterizationStateCreateInfo rasterizationSCI;
