@@ -201,7 +201,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
                 yaml_read_required(\"\", *it, *const_cast<$TYPE *>(&newData.$VAR[count]));
                 ++count;
             }
-            newData.bindingCount = ${NAME}Node.size();
+            newData.${COUNT_NAME} = ${NAME}Node.size();
             read = true;
         } else {
             throw foeYamlException{\"${NAME} - Required node not found\"};
@@ -218,7 +218,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
                 yaml_read_required(\"\", *it, *const_cast<$TYPE *>(&newData.$VAR[count]));
                 ++count;
             }
-            newData.bindingCount = ${NAME}Node.size();
+            newData.${COUNT_NAME} = ${NAME}Node.size();
             read = true;
         }
 "
@@ -297,4 +297,4 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
 done <$1
 
 # Run clang-format
-clang-format -i $2
+clang-format -i $OUT_FILE
