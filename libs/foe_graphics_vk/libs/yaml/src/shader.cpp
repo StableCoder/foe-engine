@@ -20,44 +20,25 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "session.hpp"
 #include "shader.hpp"
 
 bool yaml_write_gfx_shader(std::string const &nodeName,
-                           foeGfxSession session,
-                           foeGfxShader shader,
+                           foeGfxVkShaderCreateInfo const &data,
                            YAML::Node &node) {
-    auto *pSession = session_from_handle(session);
-    auto *pShader = shader_from_handle(shader);
-
     YAML::Node writeNode;
 
     try {
         // Builtin Descriptor Set Layouts
         yaml_write_builtin_descriptor_set_layouts("builtin_descriptor_set_layouts",
-                                                  pShader->builtinSetLayouts, writeNode);
+                                                  data.builtinSetLayouts, writeNode);
 
         // Descriptor Set Layout
-        if (pShader->descriptorSetLayout != VK_NULL_HANDLE &&
-            pShader->descriptorSetLayout != pSession->builtinDescriptorSets.getDummyLayout()) {
-            VkDescriptorSetLayoutCreateInfo layoutCI;
-            std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-
-            if (!pSession->descriptorSetLayoutPool.getCI(pShader->descriptorSetLayout, layoutCI,
-                                                         layoutBindings)) {
-                throw foeYamlException("descriptor_set_layout - Could not retireve info from "
-                                       "foeGfxVkDescriptorSetLayoutPool");
-            }
-
-            layoutCI.pBindings = layoutBindings.data();
-
-            yaml_write_optional("descriptor_set_layout", VkDescriptorSetLayoutCreateInfo{},
-                                layoutCI, writeNode);
-        }
+        yaml_write_optional("descriptor_set_layout", VkDescriptorSetLayoutCreateInfo{},
+                            data.descriptorSetLayoutCI, writeNode);
 
         // Push Constant Range
-        yaml_write_optional("push_constant_range", VkPushConstantRange{},
-                            pShader->pushConstantRange, writeNode);
+        yaml_write_optional("push_constant_range", VkPushConstantRange{}, data.pushConstantRange,
+                            writeNode);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
@@ -73,32 +54,27 @@ bool yaml_write_gfx_shader(std::string const &nodeName,
 
 bool yaml_read_gfx_shader(std::string const &nodeName,
                           YAML::Node const &node,
-                          foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
-                          VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
-                          VkPushConstantRange &pushConstantRange) {
+                          foeGfxVkShaderCreateInfo &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
     }
 
+    foeGfxVkShaderCreateInfo tempData{};
     try {
         // Builtin Descriptor Set Layouts
-        builtinSetLayouts = 0;
         yaml_read_builtin_descriptor_set_layouts("builtin_descriptor_set_layouts", subNode,
-                                                 builtinSetLayouts);
+                                                 tempData.builtinSetLayouts);
 
         // DescriptorSetLayouts
-        descriptorSetLayoutCI = {
-            .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        };
-        yaml_read_optional("descriptor_set_layout", subNode, descriptorSetLayoutCI);
+        yaml_read_optional("descriptor_set_layout", subNode, tempData.descriptorSetLayoutCI);
 
         // Push Constant Range
-        pushConstantRange = {};
-        yaml_read_optional("push_constant_range", subNode, pushConstantRange);
+        yaml_read_optional("push_constant_range", subNode, tempData.pushConstantRange);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
+    data = tempData;
     return true;
 }

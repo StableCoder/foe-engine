@@ -21,14 +21,13 @@
 
 #include "log.hpp"
 
-foeShaderCreateInfo::~foeShaderCreateInfo() { vk_struct_cleanup(&descriptorSetLayoutCI); }
+foeShaderCreateInfo::~foeShaderCreateInfo() {
+    vk_struct_cleanup(&gfxCreateInfo.descriptorSetLayoutCI);
+}
 
 foeShaderCreateInfo::foeShaderCreateInfo(foeShaderCreateInfo &&rhs) :
-    shaderCodeFile{std::move(rhs.shaderCodeFile)},
-    builtinSetLayouts{std::move(rhs.builtinSetLayouts)},
-    descriptorSetLayoutCI{std::move(rhs.descriptorSetLayoutCI)},
-    pushConstantRange{std::move(rhs.pushConstantRange)} {
-    rhs.descriptorSetLayoutCI = {};
+    shaderCodeFile{std::move(rhs.shaderCodeFile)}, gfxCreateInfo{std::move(rhs.gfxCreateInfo)} {
+    rhs.gfxCreateInfo.descriptorSetLayoutCI = {};
 }
 
 foeShader::foeShader(foeId id, foeShaderLoader *pLoader) : id{id}, pLoader{pLoader} {}

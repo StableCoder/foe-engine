@@ -18,7 +18,7 @@
 #define FOE_RESOURCE_SHADER_HPP
 
 #include <foe/ecs/id.hpp>
-#include <foe/graphics/shader.hpp>
+#include <foe/graphics/vk/shader.hpp>
 #include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
@@ -34,9 +34,7 @@ class foeShaderLoader;
 
 struct FOE_RES_EXPORT foeShaderCreateInfo : public foeResourceCreateInfoBase {
     std::string shaderCodeFile;
-    foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
-    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
-    VkPushConstantRange pushConstantRange;
+    foeGfxVkShaderCreateInfo gfxCreateInfo;
 
     foeShaderCreateInfo() = default;
     ~foeShaderCreateInfo();

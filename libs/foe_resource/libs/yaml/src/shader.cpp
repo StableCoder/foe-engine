@@ -25,26 +25,21 @@
 
 namespace {
 
-bool yaml_read_shader_definition_internal(std::string const &nodeName,
-                                          YAML::Node const &node,
-                                          foeIdGroupTranslator const *pTranslator,
-                                          foeShaderCreateInfo &createInfo) {
+std::string_view cNodeName = "shader_resource_v1";
+
+bool yaml_read_shader_internal(std::string const &nodeName,
+                               YAML::Node const &node,
+                               foeIdGroupTranslator const *pTranslator,
+                               foeShaderCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
     }
 
     try {
-        // Resource Node
-        // (Nothing currently)
+        yaml_read_required("spirv_source", subNode, createInfo.shaderCodeFile);
 
-        { // SPIR-V Source
-            yaml_read_required("spirv_source", subNode, createInfo.shaderCodeFile);
-        }
-
-        // Gfx Data Node
-        yaml_read_gfx_shader("graphics_data", subNode, createInfo.builtinSetLayouts,
-                             createInfo.descriptorSetLayoutCI, createInfo.pushConstantRange);
+        yaml_read_gfx_shader("graphics_data", subNode, createInfo.gfxCreateInfo);
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
     }
@@ -52,21 +47,15 @@ bool yaml_read_shader_definition_internal(std::string const &nodeName,
     return true;
 }
 
-bool yaml_write_shader_definition(std::string const &nodeName,
-                                  foeGfxSession session,
-                                  foeShader const *pShader,
-                                  YAML::Node &node) {
+bool yaml_write_shader_internal(std::string const &nodeName,
+                                foeShaderCreateInfo const &data,
+                                YAML::Node &node) {
     YAML::Node writeNode;
 
     try {
-        // Resources Node
-        // (Nothing Currently)
+        yaml_write_required("spirv_source", data.shaderCodeFile, writeNode);
 
-        // SPIR-V Source
-        yaml_write_required("spirv_source", pShader->createInfo->shaderCodeFile, writeNode);
-
-        // Gfx Data Node
-        yaml_write_gfx_shader("graphics_data", session, pShader->getShader(), writeNode);
+        yaml_write_gfx_shader("graphics_data", data.gfxCreateInfo, writeNode);
     } catch (...) {
         throw foeYamlException(nodeName +
                                " - Failed to serialize 'foeFragmentDescriptor' definition");
@@ -88,15 +77,15 @@ void yaml_read_shader_definition(YAML::Node const &node,
                                  foeResourceCreateInfoBase **ppCreateInfo) {
     foeShaderCreateInfo ci;
 
-    yaml_read_shader_definition_internal("", node, pTranslator, ci);
+    yaml_read_shader_internal("", node, pTranslator, ci);
 
     *ppCreateInfo = new foeShaderCreateInfo(std::move(ci));
 }
 
-auto yaml_write_shader_definition(foeGfxSession session, foeShader const *pShader) -> YAML::Node {
+auto yaml_write_shader_definition(foeShaderCreateInfo const &data) -> YAML::Node {
     YAML::Node definition;
 
-    yaml_write_shader_definition("", session, pShader, definition);
+    yaml_write_shader_internal(std::string{cNodeName}, data, definition);
 
     return definition;
 }

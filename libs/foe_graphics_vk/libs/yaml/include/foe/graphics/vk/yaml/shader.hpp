@@ -19,6 +19,7 @@
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/shader.hpp>
+#include <foe/graphics/vk/shader.hpp>
 #include <foe/graphics/vk/yaml/export.h>
 #include <vulkan/vulkan.h>
 #include <yaml-cpp/yaml.h>
@@ -27,15 +28,12 @@
 
 FOE_GFX_VK_YAML_EXPORT
 bool yaml_write_gfx_shader(std::string const &nodeName,
-                           foeGfxSession session,
-                           foeGfxShader shader,
+                           foeGfxVkShaderCreateInfo const &data,
                            YAML::Node &node);
 
 FOE_GFX_VK_YAML_EXPORT bool yaml_read_gfx_shader(
     std::string const &nodeName,
     YAML::Node const &node,
-    foeBuiltinDescriptorSetLayoutFlags &builtinSetLayouts,
-    VkDescriptorSetLayoutCreateInfo &descriptorSetLayoutCI,
-    VkPushConstantRange &pushConstantRange);
+    foeGfxVkShaderCreateInfo &data);
 
 #endif // FOE_GRAPHICS_VK_YAML_SHADER_HPP

@@ -22,6 +22,8 @@
 
 namespace {
 
+constexpr std::string_view cNodeName = "image_resource_v1";
+
 bool yaml_read_image_definition_internal(std::string const &nodeName,
                                          YAML::Node const &node,
                                          foeIdGroupTranslator const *pTranslator,
@@ -32,11 +34,6 @@ bool yaml_read_image_definition_internal(std::string const &nodeName,
     }
 
     try {
-        // Resources
-
-        // Graphics Data
-
-        // Other Data
         yaml_read_required("file", subNode, createInfo.fileName);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
@@ -47,6 +44,29 @@ bool yaml_read_image_definition_internal(std::string const &nodeName,
     }
 
     return true;
+}
+
+void yaml_write_image_internal(std::string const &nodeName,
+                               foeImageCreateInfo const &data,
+                               YAML::Node &node) {
+
+    YAML::Node writeNode;
+
+    try {
+        yaml_write_required("file", data.fileName, writeNode);
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+        }
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
 }
 
 } // namespace
@@ -64,11 +84,7 @@ void yaml_read_image_definition(YAML::Node const &node,
 auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    try {
-        yaml_write_required("file", data.fileName, outNode);
-    } catch (foeYamlException const &e) {
-        throw e;
-    }
+    yaml_write_image_internal(std::string{cNodeName}, data, outNode);
 
     return outNode;
 }

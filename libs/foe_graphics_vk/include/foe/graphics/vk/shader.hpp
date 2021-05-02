@@ -25,14 +25,14 @@
 
 struct foeGfxVkShaderCreateInfo {
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
-    uint32_t shaderCodeSize;
-    uint32_t const *pShaderCode;
-    VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI;
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
     VkPushConstantRange pushConstantRange;
 };
 
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(foeGfxSession session,
-                                                    foeGfxVkShaderCreateInfo *pCreateInfo,
+                                                    foeGfxVkShaderCreateInfo const *pCreateInfo,
+                                                    uint32_t shaderCodeSize,
+                                                    uint32_t const *pShaderCode,
                                                     foeGfxShader *pShader);
 
 FOE_GFX_EXPORT auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader)

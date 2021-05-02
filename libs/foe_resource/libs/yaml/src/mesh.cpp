@@ -22,6 +22,8 @@
 
 namespace {
 
+constexpr std::string_view cNodeName = "mesh_resource_v1";
+
 bool yaml_read_mesh_definition_internal(std::string const &nodeName,
                                         YAML::Node const &node,
                                         foeIdGroupTranslator const *pTranslator,
@@ -63,6 +65,42 @@ bool yaml_read_mesh_definition_internal(std::string const &nodeName,
     return true;
 }
 
+void yaml_write_mesh_internal(std::string const &nodeName,
+                              foeMeshCreateInfo const &data,
+                              YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        if (auto *pFileMesh = dynamic_cast<foeMeshFileSource *>(data.source.get()); pFileMesh) {
+            YAML::Node fileNode;
+            yaml_write_required("file", pFileMesh->fileName, fileNode);
+            yaml_write_required("mesh_name", pFileMesh->meshName, fileNode);
+            writeNode["external_file"] = fileNode;
+
+        } else if (auto *pCube = dynamic_cast<foeMeshCubeSource *>(data.source.get()); pCube) {
+            writeNode["generated_cube"] = YAML::Node{};
+
+        } else if (auto *pSphere = dynamic_cast<foeMeshIcosphereSource *>(data.source.get());
+                   pSphere) {
+            YAML::Node icosphereNode;
+            yaml_write_required("recusrion", pSphere->recursion, icosphereNode);
+            writeNode["generated_icosphere"] = icosphereNode;
+        }
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+        }
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
 } // namespace
 
 void yaml_read_mesh_definition(YAML::Node const &node,
@@ -78,18 +116,7 @@ void yaml_read_mesh_definition(YAML::Node const &node,
 auto yaml_write_mesh_definition(foeMeshCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    if (auto *pFileMesh = dynamic_cast<foeMeshFileSource *>(data.source.get()); pFileMesh) {
-        YAML::Node fileNode;
-        yaml_write_required("file", pFileMesh->fileName, fileNode);
-        yaml_write_required("mesh_name", pFileMesh->meshName, fileNode);
-        outNode["external_file"] = fileNode;
-    } else if (auto *pCube = dynamic_cast<foeMeshCubeSource *>(data.source.get()); pCube) {
-        outNode["generated_cube"] = YAML::Node{};
-    } else if (auto *pSphere = dynamic_cast<foeMeshIcosphereSource *>(data.source.get()); pSphere) {
-        YAML::Node icosphereNode;
-        yaml_write_required("recusrion", pSphere->recursion, icosphereNode);
-        outNode["generated_icosphere"] = icosphereNode;
-    }
+    yaml_write_mesh_internal(std::string{cNodeName}, data, outNode);
 
     return outNode;
 }

@@ -28,10 +28,12 @@
 
 namespace {
 
-bool yaml_read_vertex_descriptor_definition_internal(std::string const &nodeName,
-                                                     YAML::Node const &node,
-                                                     foeIdGroupTranslator const *pTranslator,
-                                                     foeVertexDescriptorCreateInfo &createInfo) {
+constexpr std::string_view cNodeName = "vertex_descriptor_v1";
+
+bool yaml_read_vertex_descriptor_internal(std::string const &nodeName,
+                                          YAML::Node const &node,
+                                          foeIdGroupTranslator const *pTranslator,
+                                          foeVertexDescriptorCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -69,30 +71,30 @@ bool yaml_read_vertex_descriptor_definition_internal(std::string const &nodeName
     return read;
 }
 
-bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
-                                             foeVertexDescriptor const *pVertexDescriptor,
-                                             YAML::Node &node) {
+bool yaml_write_vertex_descriptor_internal(std::string const &nodeName,
+                                           foeVertexDescriptor const &vertexDescriptor,
+                                           YAML::Node &node) {
     YAML::Node writeNode;
 
     try {
         { // Resources Node
             YAML::Node resNode;
 
-            if (auto *pShader = pVertexDescriptor->getVertexShader(); pShader != nullptr) {
+            if (auto *pShader = vertexDescriptor.getVertexShader(); pShader != nullptr) {
                 yaml_write_id("vertex_shader", pShader->getID(), resNode);
             }
 
-            if (auto *pShader = pVertexDescriptor->getTessellationControlShader();
+            if (auto *pShader = vertexDescriptor.getTessellationControlShader();
                 pShader != nullptr) {
                 yaml_write_id("tessellation_control_shader", pShader->getID(), resNode);
             }
 
-            if (auto *pShader = pVertexDescriptor->getTessellationEvaluationShader();
+            if (auto *pShader = vertexDescriptor.getTessellationEvaluationShader();
                 pShader != nullptr) {
                 yaml_write_id("tessellation_evaluation_shader", pShader->getID(), resNode);
             }
 
-            if (auto *pShader = pVertexDescriptor->getGeometryShader(); pShader != nullptr) {
+            if (auto *pShader = vertexDescriptor.getGeometryShader(); pShader != nullptr) {
                 yaml_write_id("geometry_shader", pShader->getID(), resNode);
             }
 
@@ -100,8 +102,8 @@ bool yaml_write_vertex_descriptor_definition(std::string const &nodeName,
         }
 
         // Graphics Data Node
-        yaml_write_gfx_vertex_descriptor("graphics_data",
-                                         pVertexDescriptor->getGfxVertexDescriptor(), writeNode);
+        yaml_write_gfx_vertex_descriptor("graphics_data", vertexDescriptor.getGfxVertexDescriptor(),
+                                         writeNode);
     } catch (...) {
         throw foeYamlException(nodeName +
                                " - Failed to serialize 'foeVertexDescriptor' definition");
@@ -123,16 +125,16 @@ void yaml_read_vertex_descriptor_definition(YAML::Node const &node,
                                             foeResourceCreateInfoBase **ppCreateInfo) {
     foeVertexDescriptorCreateInfo ci;
 
-    yaml_read_vertex_descriptor_definition_internal("", node, pTranslator, ci);
+    yaml_read_vertex_descriptor_internal("", node, pTranslator, ci);
 
     *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
 }
 
-auto yaml_write_vertex_descriptor_definition(foeVertexDescriptor const *pVertexDescriptor)
+auto yaml_write_vertex_descriptor_definition(foeVertexDescriptor const &vertexDescriptor)
     -> YAML::Node {
     YAML::Node definition;
 
-    yaml_write_vertex_descriptor_definition("", pVertexDescriptor, definition);
+    yaml_write_vertex_descriptor_internal(std::string{cNodeName}, vertexDescriptor, definition);
 
     return definition;
 }

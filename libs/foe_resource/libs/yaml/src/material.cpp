@@ -23,8 +23,11 @@
 #include <foe/yaml/parsing.hpp>
 
 #include <fstream>
+#include <string_view>
 
 namespace {
+
+constexpr std::string_view cNodeName = "material_v1";
 
 bool yaml_read_material_definition_internal(std::string const &nodeName,
                                             YAML::Node const &node,
@@ -65,6 +68,38 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
     return read;
 }
 
+void yaml_write_material_internal(std::string const &nodeName,
+                                  foeMaterialCreateInfo const &data,
+                                  foeGfxVkFragmentDescriptor const &fragmentDescriptor,
+                                  YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // Fragment Shader
+        if (data.fragmentShader != FOE_INVALID_ID) {
+            yaml_write_id("fragment_shader", data.fragmentShader, writeNode);
+        }
+
+        // Image
+        if (data.image != FOE_INVALID_ID) {
+            yaml_write_id("image", data.image, writeNode);
+        }
+
+        yaml_write_gfx_fragment_descriptor("fragment_descriptor", &fragmentDescriptor, writeNode);
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty())
+            throw e;
+        else
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
 } // namespace
 
 void yaml_read_material_definition(YAML::Node const &node,
@@ -79,30 +114,9 @@ void yaml_read_material_definition(YAML::Node const &node,
 
 auto yaml_write_material_definition(foeMaterialCreateInfo const &data,
                                     foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node {
-    YAML::Node writeNode;
+    YAML::Node outNode;
 
-    try {
-        { // Resources Node
-            YAML::Node resNode;
+    yaml_write_material_internal(std::string{cNodeName}, data, *pFragmentDescriptor, outNode);
 
-            // Fragment Shader
-            if (data.fragmentShader != FOE_INVALID_ID) {
-                yaml_write_id("fragment_shader", data.fragmentShader, resNode);
-            }
-
-            // Image
-            if (data.image != FOE_INVALID_ID) {
-                yaml_write_id("image", data.image, resNode);
-            }
-
-            writeNode["resources"] = resNode;
-        }
-
-        // Gfx Data Node
-        yaml_write_gfx_fragment_descriptor("graphics_data", pFragmentDescriptor, writeNode);
-    } catch (foeYamlException const &e) {
-        throw e;
-    }
-
-    return writeNode;
+    return outNode;
 }

@@ -31,6 +31,6 @@ FOE_RES_YAML_EXPORT void yaml_read_vertex_descriptor_definition(
     foeResourceCreateInfoBase **ppCreateInfo);
 
 FOE_RES_YAML_EXPORT auto yaml_write_vertex_descriptor_definition(
-    foeVertexDescriptor const *pVertexDescriptor) -> YAML::Node;
+    foeVertexDescriptor const &vertexDescriptor) -> YAML::Node;
 
 #endif // FOE_RESOURCE_YAML_VERTEX_DESCRIPTOR_HPP

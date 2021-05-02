@@ -171,9 +171,6 @@ bool exportResources(std::filesystem::path path,
                 }
             }
 
-            yaml_write_required("type", std::string{"armature"}, rootNode);
-            yaml_write_required("version", 1, rootNode);
-
             YAML::Emitter emitter;
             emitter << rootNode;
 
@@ -207,9 +204,6 @@ bool exportResources(std::filesystem::path path,
             }
         }
 
-        yaml_write_required("type", std::string{"image"}, rootNode);
-        yaml_write_required("version", 1, rootNode);
-
         YAML::Emitter emitter;
         emitter << rootNode;
 
@@ -242,9 +236,6 @@ bool exportResources(std::filesystem::path path,
             }
         }
 
-        yaml_write_required("type", std::string{"material"}, rootNode);
-        yaml_write_required("version", 1, rootNode);
-
         YAML::Emitter emitter;
         emitter << rootNode;
 
@@ -276,9 +267,6 @@ bool exportResources(std::filesystem::path path,
             }
         }
 
-        yaml_write_required("type", std::string{"mesh"}, rootNode);
-        yaml_write_required("version", 1, rootNode);
-
         YAML::Emitter emitter;
         emitter << rootNode;
 
@@ -293,7 +281,7 @@ bool exportResources(std::filesystem::path path,
 
         try {
             if (it->createInfo != nullptr) {
-                rootNode = yaml_write_shader_definition(gfxSession, it);
+                rootNode = yaml_write_shader_definition(*it->createInfo);
             } else {
                 return false;
             }
@@ -309,9 +297,6 @@ bool exportResources(std::filesystem::path path,
                 yaml_write_required("editor_name", name, rootNode);
             }
         }
-
-        yaml_write_required("type", std::string{"shader"}, rootNode);
-        yaml_write_required("version", 1, rootNode);
 
         YAML::Emitter emitter;
         emitter << rootNode;
@@ -327,7 +312,7 @@ bool exportResources(std::filesystem::path path,
 
         try {
             if (it->createInfo != nullptr) {
-                rootNode = yaml_write_vertex_descriptor_definition(it);
+                rootNode = yaml_write_vertex_descriptor_definition(*it);
             } else {
                 return false;
             }
@@ -343,9 +328,6 @@ bool exportResources(std::filesystem::path path,
                 yaml_write_required("editor_name", name, rootNode);
             }
         }
-
-        yaml_write_required("type", std::string{"vertex_descriptor"}, rootNode);
-        yaml_write_required("version", 1, rootNode);
 
         YAML::Emitter emitter;
         emitter << rootNode;

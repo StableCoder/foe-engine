@@ -22,6 +22,8 @@
 
 namespace {
 
+constexpr std::string_view cNodeName = "armature_resource_v1";
+
 bool yaml_read_armature_definition_internal(std::string const &nodeName,
                                             YAML::Node const &node,
                                             foeIdGroupTranslator const *pTranslator,
@@ -78,28 +80,15 @@ bool yaml_read_armature_definition_internal(std::string const &nodeName,
     return true;
 }
 
-} // namespace
-
-void yaml_read_armature_definition(YAML::Node const &node,
-                                   foeIdGroupTranslator const *pTranslator,
-                                   foeResourceCreateInfoBase **ppCreateInfo) {
-    foeArmatureCreateInfo ci;
-
-    yaml_read_armature_definition_internal("", node, pTranslator, ci);
-
-    *ppCreateInfo = new foeArmatureCreateInfo(std::move(ci));
-}
-
-auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node {
-    YAML::Node outNode;
+void yaml_write_armature_internal(std::string const &nodeName,
+                                  foeArmatureCreateInfo const &data,
+                                  YAML::Node &node) {
+    YAML::Node writeNode;
 
     try {
-        // Data
-        YAML::Node dataNode;
-
         // Armature Data
-        yaml_write_required("fileName", data.fileName, dataNode);
-        yaml_write_required("root_armature_node", data.rootArmatureNode, dataNode);
+        yaml_write_required("fileName", data.fileName, writeNode);
+        yaml_write_required("root_armature_node", data.rootArmatureNode, writeNode);
 
         { // Animation Data
             YAML::Node animationsNode;
@@ -121,13 +110,39 @@ auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node {
                 animationsNode.push_back(animationFileNode);
             }
 
-            dataNode["animations"] = animationsNode;
+            writeNode["animations"] = animationsNode;
         }
-
-        outNode["data"] = dataNode;
     } catch (foeYamlException const &e) {
-        throw e;
+        if (nodeName.empty()) {
+            throw e;
+        } else {
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+        }
     }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+} // namespace
+
+void yaml_read_armature_definition(YAML::Node const &node,
+                                   foeIdGroupTranslator const *pTranslator,
+                                   foeResourceCreateInfoBase **ppCreateInfo) {
+    foeArmatureCreateInfo ci;
+
+    yaml_read_armature_definition_internal("", node, pTranslator, ci);
+
+    *ppCreateInfo = new foeArmatureCreateInfo(std::move(ci));
+}
+
+auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node {
+    YAML::Node outNode;
+
+    yaml_write_armature_internal(std::string{cNodeName}, data, outNode);
 
     return outNode;
 }
