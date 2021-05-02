@@ -16,6 +16,7 @@
 
 #include <foe/graphics/vk/yaml/shader.hpp>
 
+#include <foe/graphics/yaml/builtin_descriptor_sets.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -33,21 +34,8 @@ bool yaml_write_gfx_shader(std::string const &nodeName,
 
     try {
         // Builtin Descriptor Set Layouts
-        auto builtinSetLayouts = pShader->builtinSetLayouts;
-        YAML::Node builtinSetLayoutsNode;
-        for (size_t i = 0; i < std::numeric_limits<foeBuiltinDescriptorSetLayoutFlags>::digits &&
-                           builtinSetLayouts != 0;
-             ++i) {
-            foeBuiltinDescriptorSetLayoutFlagBits setFlag =
-                static_cast<foeBuiltinDescriptorSetLayoutFlagBits>(1 << i);
-
-            if ((builtinSetLayouts & setFlag) != 0) {
-                builtinSetLayoutsNode.push_back(to_string(setFlag));
-            }
-        }
-        if (builtinSetLayoutsNode.begin() != builtinSetLayoutsNode.end()) {
-            writeNode["builtin_descriptor_set_layouts"] = builtinSetLayoutsNode;
-        }
+        yaml_write_builtin_descriptor_set_layouts("builtin_descriptor_set_layouts",
+                                                  pShader->builtinSetLayouts, writeNode);
 
         // Descriptor Set Layout
         if (pShader->descriptorSetLayout != VK_NULL_HANDLE &&
@@ -96,14 +84,8 @@ bool yaml_read_gfx_shader(std::string const &nodeName,
     try {
         // Builtin Descriptor Set Layouts
         builtinSetLayouts = 0;
-        if (auto builtinsNode = subNode["builtin_descriptor_set_layouts"]; builtinsNode) {
-            for (auto it = builtinsNode.begin(); it != builtinsNode.end(); ++it) {
-                std::string builtinName;
-                yaml_read_required("", *it, builtinName);
-
-                builtinSetLayouts |= to_builtin_set_layout(builtinName);
-            }
-        }
+        yaml_read_builtin_descriptor_set_layouts("builtin_descriptor_set_layouts", subNode,
+                                                 builtinSetLayouts);
 
         // DescriptorSetLayouts
         descriptorSetLayoutCI = {

@@ -20,3 +20,6 @@ target_link_libraries(
 target_code_coverage(foe_graphics)
 
 add_subdirectory(src)
+
+# Auxiliary Targets
+add_subdirectory(libs/yaml)

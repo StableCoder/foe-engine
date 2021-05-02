@@ -1,0 +1,1 @@
+target_sources(foe_graphics_yaml PRIVATE builtin_descriptor_sets.cpp)
