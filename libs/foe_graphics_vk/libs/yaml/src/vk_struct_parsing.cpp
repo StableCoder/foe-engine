@@ -1382,6 +1382,24 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateIn
         // VkLogicOp - logicOp
         read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
 
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        std::unique_ptr<VkPipelineColorBlendAttachmentState[]> pAttachments;
+        if (auto attachmentsNode = subNode["attachments"]; attachmentsNode) {
+            newData.pAttachments = static_cast<VkPipelineColorBlendAttachmentState *>(
+                calloc(attachmentsNode.size(), sizeof(VkPipelineColorBlendAttachmentState)));
+            size_t count = 0;
+            for (auto it = attachmentsNode.begin(); it != attachmentsNode.end(); ++it) {
+                yaml_read_required("", *it,
+                                   *const_cast<VkPipelineColorBlendAttachmentState *>(
+                                       &newData.pAttachments[count]));
+                ++count;
+            }
+            newData.attachmentCount = attachmentsNode.size();
+            read = true;
+        } else {
+            throw foeYamlException{"attachments - Required node not found"};
+        }
+
     } catch (foeYamlException const &e) {
         vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
@@ -1419,6 +1437,22 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateIn
         // VkLogicOp - logicOp
         read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
 
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        std::unique_ptr<VkPipelineColorBlendAttachmentState[]> pAttachments;
+        if (auto attachmentsNode = subNode["attachments"]; attachmentsNode) {
+            newData.pAttachments = static_cast<VkPipelineColorBlendAttachmentState *>(
+                calloc(attachmentsNode.size(), sizeof(VkPipelineColorBlendAttachmentState)));
+            size_t count = 0;
+            for (auto it = attachmentsNode.begin(); it != attachmentsNode.end(); ++it) {
+                yaml_read_required("", *it,
+                                   *const_cast<VkPipelineColorBlendAttachmentState *>(
+                                       &newData.pAttachments[count]));
+                ++count;
+            }
+            newData.attachmentCount = attachmentsNode.size();
+            read = true;
+        }
+
     } catch (foeYamlException const &e) {
         vk_struct_cleanup(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
@@ -1446,6 +1480,16 @@ FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendStateCreateI
 
         // VkLogicOp - logicOp
         yaml_write_required<VkLogicOp>("logicOp", data.logicOp, writeNode);
+
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        YAML::Node attachmentsNode;
+        for (uint32_t i = 0; i < data.attachmentCount; ++i) {
+            YAML::Node newNode;
+            yaml_write_required<VkPipelineColorBlendAttachmentState>("", data.pAttachments[i],
+                                                                     newNode);
+            attachmentsNode.push_back(newNode);
+        }
+        writeNode["attachments"] = attachmentsNode;
 
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
@@ -1480,6 +1524,19 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateI
         // VkLogicOp - logicOp
         addedNode |=
             yaml_write_optional<VkLogicOp>("logicOp", defaultData.logicOp, data.logicOp, writeNode);
+
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        if (data.attachmentCount > 0) {
+            YAML::Node attachmentsNode;
+            for (uint32_t i = 0; i < data.attachmentCount; ++i) {
+                YAML::Node newNode;
+                yaml_write_required<VkPipelineColorBlendAttachmentState>("", data.pAttachments[i],
+                                                                         newNode);
+                attachmentsNode.push_back(newNode);
+            }
+            writeNode["attachments"] = attachmentsNode;
+            addedNode = true;
+        }
 
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());

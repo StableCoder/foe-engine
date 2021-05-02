@@ -24,6 +24,7 @@
 #include <foe/resource/material.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <vk_error_code.hpp>
+#include <vk_struct_cleanup.hpp>
 
 #include "error_code.hpp"
 #include "log.hpp"
@@ -145,6 +146,13 @@ void foeMaterialLoader::requestResourceUnload(foeMaterial *pMaterial) {
 
         pMaterial->data = {};
         pMaterial->loadState = foeResourceLoadState::Unloaded;
+
+        if (pMaterial->createInfo->hasRasterizationSCI)
+            vk_struct_cleanup(&pMaterial->createInfo->rasterizationSCI);
+        if (pMaterial->createInfo->hasDepthStencilSCI)
+            vk_struct_cleanup(&pMaterial->createInfo->depthStencilSCI);
+        if (pMaterial->createInfo->hasColourBlendSCI)
+            vk_struct_cleanup(&pMaterial->createInfo->colourBlendSCI);
     }
 }
 
@@ -276,6 +284,13 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
             // Reset the loading resources, no longer trying to load this
             pMaterial->loadingSubResources.reset();
             pMaterial->loadState = foeResourceLoadState::Failed;
+
+            if (pMaterialCI->hasRasterizationSCI)
+                vk_struct_cleanup(&pMaterialCI->rasterizationSCI);
+            if (pMaterialCI->hasDepthStencilSCI)
+                vk_struct_cleanup(&pMaterialCI->depthStencilSCI);
+            if (pMaterialCI->hasColourBlendSCI)
+                vk_struct_cleanup(&pMaterialCI->colourBlendSCI);
             return;
         } else if (subResourcesState != foeResourceLoadState::Loaded) {
             // Something we depend upon isn't loaded itself, so leave and request ourselves
@@ -287,6 +302,13 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
 
             pMaterial->loadState = expected;
             requestResourceLoad(pMaterial);
+
+            if (pMaterialCI->hasRasterizationSCI)
+                vk_struct_cleanup(&pMaterialCI->rasterizationSCI);
+            if (pMaterialCI->hasDepthStencilSCI)
+                vk_struct_cleanup(&pMaterialCI->depthStencilSCI);
+            if (pMaterialCI->hasColourBlendSCI)
+                vk_struct_cleanup(&pMaterialCI->colourBlendSCI);
             return;
         }
     }
@@ -309,6 +331,13 @@ LOADING_FAILED:
 
         pMaterial->loadingSubResources.reset();
         pMaterial->loadState = foeResourceLoadState::Failed;
+
+        if (pMaterialCI->hasRasterizationSCI)
+            vk_struct_cleanup(&pMaterialCI->rasterizationSCI);
+        if (pMaterialCI->hasDepthStencilSCI)
+            vk_struct_cleanup(&pMaterialCI->depthStencilSCI);
+        if (pMaterialCI->hasColourBlendSCI)
+            vk_struct_cleanup(&pMaterialCI->colourBlendSCI);
     } else {
         foeMaterial::Data oldData;
         foeMaterial::Data newData{

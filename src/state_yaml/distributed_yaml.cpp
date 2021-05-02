@@ -23,6 +23,7 @@
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
+#include <vk_struct_cleanup.hpp>
 
 #include "../resource_pools.hpp"
 #include "distributed_yaml_generator.hpp"
@@ -251,6 +252,14 @@ bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNa
                     std::make_unique<foeMaterial>(resource, &pResourceLoaders->material);
 
                 pResourcePools->material.add(material.release());
+
+                auto *pMaterialCI = static_cast<foeMaterialCreateInfo *>(createInfo.get());
+                if (pMaterialCI->hasRasterizationSCI)
+                    vk_struct_cleanup(&pMaterialCI->rasterizationSCI);
+                if (pMaterialCI->hasDepthStencilSCI)
+                    vk_struct_cleanup(&pMaterialCI->depthStencilSCI);
+                if (pMaterialCI->hasColourBlendSCI)
+                    vk_struct_cleanup(&pMaterialCI->colourBlendSCI);
             } else if (type == "vertex_descriptor" && version == 1) {
                 auto vertexDescriptor = std::make_unique<foeVertexDescriptor>(
                     resource, &pResourceLoaders->vertexDescriptor);

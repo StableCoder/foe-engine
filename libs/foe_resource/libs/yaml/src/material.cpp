@@ -17,7 +17,6 @@
 #include <foe/resource/yaml/material.hpp>
 
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/graphics/vk/yaml/fragment_descriptor.hpp>
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -39,7 +38,7 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
     }
 
     bool read{false};
-
+    foeMaterialCreateInfo tempData;
     try {
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
@@ -50,10 +49,20 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
         }
 
         // Graphics Data
-        read |= yaml_read_gfx_fragment_descriptor(
-            "graphics_data", subNode, createInfo.hasRasterizationSCI, createInfo.rasterizationSCI,
-            createInfo.hasDepthStencilSCI, createInfo.depthStencilSCI, createInfo.hasColourBlendSCI,
-            createInfo.colourBlendSCI, createInfo.colourBlendAttachments);
+        {
+            YAML::Node tempNode = subNode["graphics_data"];
+
+            createInfo.hasRasterizationSCI =
+                yaml_read_optional("rasterization", tempNode, createInfo.rasterizationSCI);
+            createInfo.hasDepthStencilSCI =
+                yaml_read_optional("depth_stencil", tempNode, createInfo.depthStencilSCI);
+            createInfo.hasColourBlendSCI =
+                yaml_read_optional("colour_blend", tempNode, createInfo.colourBlendSCI);
+
+            read = read | createInfo.hasRasterizationSCI | createInfo.hasDepthStencilSCI |
+                   createInfo.hasColourBlendSCI;
+        }
+
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
@@ -82,7 +91,16 @@ void yaml_write_material_internal(std::string const &nodeName,
             yaml_write_id("image", data.image, writeNode);
         }
 
-        yaml_write_gfx_fragment_descriptor("fragment_descriptor", &fragmentDescriptor, writeNode);
+        // Fragment Descriptor Items
+        if (data.hasRasterizationSCI)
+            yaml_write_required("rasterization", data.rasterizationSCI, writeNode);
+
+        if (data.hasDepthStencilSCI)
+            yaml_write_required("depth_stencil", data.depthStencilSCI, writeNode);
+
+        if (data.hasColourBlendSCI)
+            yaml_write_required("colour_blend", data.colourBlendSCI, writeNode);
+
     } catch (foeYamlException const &e) {
         if (nodeName.empty())
             throw e;
