@@ -126,6 +126,9 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
     for (auto it : mLinkedCameras) {
         VkDescriptorSet set;
         *reinterpret_cast<glm::mat4 *>(pBufferData) = it->projectionMatrix() * it->viewMatrix();
+        // Invert Y-axis for Y-Up
+        (*reinterpret_cast<glm::mat4 *>(pBufferData))[1][1] =
+            -(*reinterpret_cast<glm::mat4 *>(pBufferData))[1][1];
 
         { // Descriptor Set
             VkDescriptorSetAllocateInfo setAI{
