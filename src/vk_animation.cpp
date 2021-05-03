@@ -174,7 +174,8 @@ VkResult VkAnimationPool::uploadBoneOffsets(
 
         if (pMesh == nullptr || pArmature == nullptr ||
             pMesh->getLoadState() != foeResourceLoadState::Loaded ||
-            pArmature->getLoadState() != foeResourceLoadState::Loaded) {
+            pArmature->getLoadState() != foeResourceLoadState::Loaded ||
+            pArmatureState->armatureState.empty()) {
             continue;
         }
 
