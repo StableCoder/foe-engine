@@ -31,9 +31,8 @@ bool yaml_write_gfx_shader(std::string const &nodeName,
                            foeGfxVkShaderCreateInfo const &data,
                            YAML::Node &node);
 
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_gfx_shader(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    foeGfxVkShaderCreateInfo &data);
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_gfx_shader(std::string const &nodeName,
+                                                 YAML::Node const &node,
+                                                 foeGfxVkShaderCreateInfo &data);
 
 #endif // FOE_GRAPHICS_VK_YAML_SHADER_HPP
