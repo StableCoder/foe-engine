@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Global Options
 option(BUILD_EXAMPLES "Build example programs" OFF)
+option(BUILD_EXTRAS "Builds other programs, such as benchmarks" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
 option(EDITOR_MODE "Build with the editor UI capability" OFF)
