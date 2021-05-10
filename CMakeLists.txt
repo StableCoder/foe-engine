@@ -52,10 +52,6 @@ cmake_format(cmake-format ${CM_FILES})
 include(dependency-graph)
 gen_dep_graph(png ADD_TO_DEP_GRAPH)
 
-# Link Time Optimization
-include(link-time-optimization)
-link_time_optimization()
-
 # clang-tidy
 include(tools)
 option(CLANG_TIDY_FIX "" OFF)
