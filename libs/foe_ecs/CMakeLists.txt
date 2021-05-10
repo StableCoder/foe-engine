@@ -16,6 +16,7 @@ target_code_coverage(foe_ecs)
 add_subdirectory(src)
 
 # Auxiliary Targets
+add_subdirectory(extras)
 add_subdirectory(libs/yaml)
 
 if(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
