@@ -37,4 +37,5 @@ target_code_coverage(
 # Definition
 add_subdirectory(chrono)
 add_subdirectory(log)
+add_subdirectory(storage)
 add_subdirectory(test_plugin_so)
