@@ -17,6 +17,7 @@
 #include <catch.hpp>
 #include <foe/storage/multi_alloc.hpp>
 
+#include <optional>
 #include <string>
 #include <variant>
 
@@ -85,7 +86,7 @@ TEST_CASE("foeMultiAllocStorage Constructor") {
             SECTION("int, double, std::string, std::optional<std::string>, "
                     "std::variant<std::string, int, double>") {
                 foeMultiAllocStorage<int, double, std::string, std::optional<std::string>,
-                                    std::variant<std::string, int, double>>
+                                     std::variant<std::string, int, double>>
                     test;
 
                 CHECK(test.capacity() == 0);
@@ -165,7 +166,7 @@ TEST_CASE("foeMultiAllocStorage Constructor") {
             SECTION("int, double, std::string, std::optional<std::string>, "
                     "std::variant<std::string, int, double>") {
                 foeMultiAllocStorage<int, double, std::string, std::optional<std::string>,
-                                    std::variant<std::string, int, double>>
+                                     std::variant<std::string, int, double>>
                     test{1};
 
                 CHECK(test.capacity() == 1);
@@ -280,7 +281,7 @@ TEST_CASE("foeMultiAllocStorage Move Constructor") {
         SECTION("int, double, std::string, std::optional<std::string>, "
                 "std::variant<std::string, int, double>") {
             foeMultiAllocStorage<int, double, std::string, std::optional<std::string>,
-                                std::variant<std::string, int, double>>
+                                 std::variant<std::string, int, double>>
                 test{1};
 
             auto ptr0 = test.get<0>();
@@ -289,7 +290,7 @@ TEST_CASE("foeMultiAllocStorage Move Constructor") {
             auto ptr3 = test.get<3>();
             auto ptr4 = test.get<4>();
             foeMultiAllocStorage<int, double, std::string, std::optional<std::string>,
-                                std::variant<std::string, int, double>>
+                                 std::variant<std::string, int, double>>
                 moveTo{std::move(test)};
 
             SECTION("Pointers from moved-to object the same as previously") {
@@ -409,7 +410,7 @@ TEST_CASE("foeMultiAllocStorage Move Operator") {
         SECTION("int, double, std::string, std::optional<std::string>, "
                 "std::variant<std::string, int, double>") {
             foeMultiAllocStorage<int, double, std::string, std::optional<std::string>,
-                                std::variant<std::string, int, double>>
+                                 std::variant<std::string, int, double>>
                 test{1};
 
             auto ptr0 = test.get<0>();
@@ -418,7 +419,7 @@ TEST_CASE("foeMultiAllocStorage Move Operator") {
             auto ptr3 = test.get<3>();
             auto ptr4 = test.get<4>();
             foeMultiAllocStorage<int, double, std::string, std::optional<std::string>,
-                                std::variant<std::string, int, double>>
+                                 std::variant<std::string, int, double>>
                 moveTo = std::move(test);
 
             SECTION("Pointers from moved-to object the same as previously") {
