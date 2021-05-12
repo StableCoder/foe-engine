@@ -341,6 +341,9 @@ void foeDataPool<Components...>::insertPass() {
         auto *pId = pBeginId;
 
         while (inIt != inEndIt) {
+            // Try to shortcut the linear search by doing binary search
+            pId = std::lower_bound(pId, pEndId, std::get<0>(*inIt));
+
             // Find the next destination placement
             while (pId != pEndId && *pId < std::get<0>(*inIt)) {
                 ++pId;
