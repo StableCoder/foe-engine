@@ -21,7 +21,6 @@
 #include <foe/storage/multi_alloc.hpp>
 
 #include <cstring>
-#include <map>
 #include <mutex>
 #include <shared_mutex>
 #include <vector>
@@ -355,8 +354,6 @@ void foeDataPool<Components...>::insertPass() {
                 continue;
             }
 
-            // Worry about duplicates? Not for map
-
             // At this point, it is not already in storage, and is unique, so it is to be added
             srcDstOffsets.emplace_back(inIt, pId - pBeginId);
 
@@ -370,13 +367,14 @@ void foeDataPool<Components...>::insertPass() {
     }
 
     // Resize main storage if necessary
+    PoolStore possibleNewStore;
+    // By default new storage is the same storage
+    PoolStore *pNewStore = &mMainStorage;
+    // If we need a newly resized storage, change where the above pointer looks to
     if (auto newMinSize = mStored + srcDstOffsets.size(); mMainStorage.capacity() < newMinSize) {
         newMinSize = ((newMinSize / mExpansionRate) + 1) * mExpansionRate;
-        PoolStore newStore{newMinSize};
-
-        multiMove(&mMainStorage, 0, mStored, &newStore, 0);
-
-        mMainStorage = std::move(newStore);
+        possibleNewStore = std::move(PoolStore{newMinSize});
+        pNewStore = &possibleNewStore;
     }
 
     size_t lastMovedOldItem = mStored;
@@ -392,13 +390,13 @@ void foeDataPool<Components...>::insertPass() {
             size_t dst = givenOffset + accumulatedDistance;
             size_t numMove = lastMovedOldItem - givenOffset;
 
-            multiMove(&mMainStorage, src, numMove, &mMainStorage, dst);
+            multiMove(&mMainStorage, src, numMove, pNewStore, dst);
 
             lastMovedOldItem = givenOffset;
         }
 
         // Everything has been shifted out of the way, place the entry now
-        singleEmplace(&mMainStorage, srcDstIt->second, std::get<0>(*srcDstIt->first),
+        singleEmplace(pNewStore, srcDstIt->second, std::get<0>(*srcDstIt->first),
                       std::move(std::get<1>(*srcDstIt->first)));
 
         // We added an item, decrement the accumulated distance
@@ -406,6 +404,19 @@ void foeDataPool<Components...>::insertPass() {
 
         // Add the aded ID to the inserted list
         mInsertedOffsets.emplace_back(srcDstIt->second);
+    }
+
+    // If there is a new storage medium, then change over
+    if (pNewStore != &mMainStorage) {
+        // Make sure, if we are changing storage, that the last items are moved over.
+        if (0 < lastMovedOldItem) {
+            size_t src = 0;
+            size_t dst = accumulatedDistance;
+            size_t numMove = lastMovedOldItem;
+            multiMove(&mMainStorage, src, numMove, pNewStore, dst);
+        }
+
+        mMainStorage = std::move(possibleNewStore);
     }
 
     // Set the new number of held items
