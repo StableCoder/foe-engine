@@ -19,7 +19,7 @@
 #include <cassert>
 
 foeIdIndexGenerator::foeIdIndexGenerator(std::string_view name, foeIdGroup groupId) :
-    cName{name}, cGroupID{groupId}, mNumRecycled{0}, mRecycled{}, mNextFreeID{0} {
+    cName{name}, cGroupID{groupId}, mNumRecycled{0}, mRecycled{}, mNextFreeID{1} {
     /// \todo Replace with C++20 contracts
     assert((groupId & foeIdIndexBits) == 0);
 }
@@ -86,6 +86,10 @@ size_t foeIdIndexGenerator::recyclable() const noexcept { return mNumRecycled; }
 
 void foeIdIndexGenerator::importState(foeIdIndex nextIndex,
                                       const std::vector<foeIdIndex> &recycledIndices) {
+    /// @todo Replace with contract
+    /// @todo FOE_LOG this
+    assert(nextIndex != 0);
+
     std::scoped_lock lock{mSync};
 
     mNextFreeID = nextIndex;

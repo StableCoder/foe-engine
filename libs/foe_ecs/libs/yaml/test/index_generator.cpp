@@ -53,8 +53,8 @@ TEST_CASE("yaml_write_index_generator", "[foe][ecs][yaml][IndexGenerator]") {
     CHECK(testGenerator.generate() == 8);
     CHECK(testGenerator.generate() == 4);
     CHECK(testGenerator.generate() == 10);
-    CHECK(testGenerator.generate() == 15);
     CHECK(testGenerator.generate() == 16);
+    CHECK(testGenerator.generate() == 17);
 }
 
 TEST_CASE("yaml_read_index_generator - Missing 'next_free_index' node",

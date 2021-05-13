@@ -124,7 +124,7 @@ int Application::initialize(int argc, char **argv) {
 
         // Triangle
         pSimulationSet->state.renderStates[renderTriangleID] = foeRenderState{
-            .vertexDescriptor = foeIdCreateResource(foeIdPersistentGroup, 0),
+            .vertexDescriptor = foeIdCreateResource(foeIdPersistentGroup, 16),
             .bonedVertexDescriptor = FOE_INVALID_ID,
             .material = foeIdCreateResource(foeIdPersistentGroup, 4),
             .mesh = FOE_INVALID_ID,

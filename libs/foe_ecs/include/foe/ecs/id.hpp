@@ -53,13 +53,11 @@ enum : uint32_t {
 
 // General ID
 
-enum : foeId {
-    /// The invalid ID
-    foeIdInvalid = std::numeric_limits<foeId>::max(),
-};
+// This is the maximum numerical limit value for foeId
+constexpr foeId foeIdMax = std::numeric_limits<foeId>::max();
 
 /// An Invalid ID value is the maximum possible total value that the type can hold
-#define FOE_INVALID_ID foeIdInvalid
+#define FOE_INVALID_ID 0
 
 /** @brief Converts the foeId to a more readable hexadecimal string
  * @param id ID to convert
@@ -74,7 +72,7 @@ enum : foeIdGroup {
     foeIdGroupBitShift = foeIdNumIndexBits + foeIdNumTypeBits,
 
     /// Valid GroupID bits
-    foeIdGroupBits = (FOE_INVALID_ID >> (foeIdNumBits - foeIdNumGroupBits)) << foeIdGroupBitShift,
+    foeIdGroupBits = (foeIdMax >> (foeIdNumBits - foeIdNumGroupBits)) << foeIdGroupBitShift,
     /// Maximum zero-based value of a GroupID
     foeIdGroupMaxValue = foeIdGroupBits >> foeIdGroupBitShift,
 
@@ -113,7 +111,7 @@ enum : foeIdType {
     foeIdTypeBitShift = foeIdNumIndexBits,
 
     /// Valid Type bits
-    foeIdTypeBits = (FOE_INVALID_ID >> (foeIdNumBits - foeIdNumTypeBits)) << foeIdTypeBitShift,
+    foeIdTypeBits = (foeIdMax >> (foeIdNumBits - foeIdNumTypeBits)) << foeIdTypeBitShift,
     /// Maximum value that the Type section can represent
     foeIdTypeMaxValue = foeIdTypeBits >> foeIdNumIndexBits,
 
@@ -146,7 +144,7 @@ enum : foeIdIndex {
     foeIdIndexBitShift = 0,
 
     /// Bitflag of the valid IndexID bits
-    foeIdIndexBits = FOE_INVALID_ID >> (foeIdNumGroupBits + foeIdNumTypeBits),
+    foeIdIndexBits = foeIdMax >> (foeIdNumGroupBits + foeIdNumTypeBits),
     /// Maximum value of an IndexID
     foeIdIndexMaxValue = foeIdIndexBits >> foeIdIndexBitShift,
 
