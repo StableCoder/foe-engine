@@ -17,17 +17,31 @@
 #ifndef FOE_ECS_DATA_POOL_HPP
 #define FOE_ECS_DATA_POOL_HPP
 
-#include <foe/ecs/id.hpp>
 #include <foe/storage/multi_alloc.hpp>
 
 #include <mutex>
 #include <tuple>
 #include <vector>
 
-template <typename... Components>
+/**
+ * @brief Stores each data type in separate contiguous arrays for several possible speed benefits
+ * @tparam IdType Identifier type used as a form of key
+ * @tparam Components... A variadic set of at least one type that the pool will manage
+ *
+ * This data pool stores several pieces of data in separate conitguous arrays, where the data
+ * identified by the ID will be at the same offset across all given memory pointers.
+ *
+ * Because ID data is stored in a separate contiguous memory, searching for IDs and their offsets is
+ * generally faster, as these IDs are very tightly packed into memory, leading to better cache hit
+ * ratios and/or faster iteration.
+ *
+ * This has the benefit of allowing for splitting hot/cold data, and as such the very real
+ * possibility of better cache locality for hot data.
+ */
+template <typename IdType, typename... Components>
 class foeDataPool {
-    using TupleType = std::tuple<foeId, Components...>;
-    using PoolStore = foeMultiAllocStorage<foeId, Components...>;
+    using TupleType = std::tuple<IdType, Components...>;
+    using PoolStore = foeMultiAllocStorage<IdType, Components...>;
 
   public:
     /**
@@ -67,7 +81,7 @@ class foeDataPool {
     size_t removed() const noexcept;
 
     /// Returns true if data for the ID is already in the pool
-    bool exist(foeId id) const noexcept;
+    bool exist(IdType id) const noexcept;
 
     /**
      * @brief Adds associated data with an ID to be inserted next maintenance cycle
@@ -76,14 +90,14 @@ class foeDataPool {
      * @warning If the data already exists in the pool and isn't removed next cycle, this data
      * *will* be discarded
      */
-    void insert(foeId id, Components &&...components);
+    void insert(IdType id, Components &&...components);
 
     /// Adds the given ID for any data present to be removed next maintenance cycle
-    void remove(foeId id);
+    void remove(IdType id);
 
-    size_t sequential_search(foeId id) const noexcept;
-    size_t binary_search(foeId id) const noexcept;
-    size_t find(foeId id) const noexcept;
+    size_t sequential_search(IdType id) const noexcept;
+    size_t binary_search(IdType id) const noexcept;
+    size_t find(IdType id) const noexcept;
 
     template <int Index = 0>
     auto begin() noexcept -> typename std::tuple_element<Index, TupleType>::type *;
@@ -111,9 +125,9 @@ class foeDataPool {
     auto inend() const noexcept;
     auto cinend() const noexcept;
 
-    size_t rm_sequential_search(foeId id) const noexcept;
-    size_t rm_binary_search(foeId id) const noexcept;
-    size_t rm_find(foeId id) const noexcept;
+    size_t rm_sequential_search(IdType id) const noexcept;
+    size_t rm_binary_search(IdType id) const noexcept;
+    size_t rm_find(IdType id) const noexcept;
 
     template <int Index = 0>
     auto rmbegin() noexcept -> typename std::tuple_element<Index, TupleType>::type *;
@@ -144,7 +158,7 @@ class foeDataPool {
     template <int Index = 0>
     void singleEmplace(PoolStore *pStore,
                        size_t offset,
-                       foeId id,
+                       IdType id,
                        std::tuple<Components...> &&components);
 
     /**
@@ -188,14 +202,14 @@ class foeDataPool {
     /// Synchronizes access to the insertion list
     std::mutex mToInsertSync;
     /// IDs and data to attempt insertion next maintenance
-    std::vector<std::tuple<foeId, std::tuple<Components...>>> mToInsert;
+    std::vector<std::tuple<IdType, std::tuple<Components...>>> mToInsert;
     /// List of offsets of items inserted last maintenance
     std::vector<size_t> mInsertedOffsets;
 
     /// Synchronizes access to the removal list
     std::mutex mToRemoveSync;
     /// List of ID'd items to remove next maintenance
-    std::vector<foeId> mToRemove;
+    std::vector<IdType> mToRemove;
 
     /// Data removed last maintenance
     PoolStore mRemovedStore;

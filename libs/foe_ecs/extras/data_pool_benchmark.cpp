@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -220,7 +220,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -264,7 +264,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -303,7 +303,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -344,7 +344,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -372,7 +372,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -386,7 +386,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -435,7 +435,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -479,7 +479,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -502,7 +502,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -560,7 +560,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -602,7 +602,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -623,7 +623,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -679,7 +679,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -721,7 +721,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -742,7 +742,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -795,7 +795,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -831,7 +831,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -849,7 +849,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -901,7 +901,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -941,7 +941,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -961,7 +961,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -1016,7 +1016,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int> test;
+            foeDataPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -1058,7 +1058,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<Custom> test;
+            foeDataPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -1079,7 +1079,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            foeDataPool<int, Custom> test;
+            foeDataPool<uint32_t, int, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;

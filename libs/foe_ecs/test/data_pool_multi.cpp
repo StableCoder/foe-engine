@@ -17,9 +17,9 @@
 #include <catch.hpp>
 #include <foe/ecs/data_pool.hpp>
 
-using Pool = foeDataPool<uint32_t, int, double>;
+using Pool = foeDataPool<uint32_t, uint32_t, int, double>;
 
-template class foeDataPool<uint32_t, int, double>;
+template class foeDataPool<uint32_t, uint32_t, int, double>;
 
 TEST_CASE("Pool<MULTI> - Expansion Rate") {
     Pool test;

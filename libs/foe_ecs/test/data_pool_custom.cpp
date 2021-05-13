@@ -31,9 +31,9 @@ struct alignas(128) Custom {
     }
 };
 
-using Pool = foeDataPool<Custom>;
+using Pool = foeDataPool<uint32_t, Custom>;
 
-template class foeDataPool<Custom>;
+template class foeDataPool<uint32_t, Custom>;
 
 TEST_CASE("Pool<Custom> - Expansion Rate") {
     Pool test;

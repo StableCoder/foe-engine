@@ -21,8 +21,8 @@
 
 #include <cstring>
 
-template <typename... Components>
-foeDataPool<Components...>::foeDataPool(size_t expansionRate) :
+template <typename IdType, typename... Components>
+foeDataPool<IdType, Components...>::foeDataPool(size_t expansionRate) :
     mExpansionRate{expansionRate},
     mMainStorage{},
     mStored{0},
@@ -34,14 +34,14 @@ foeDataPool<Components...>::foeDataPool(size_t expansionRate) :
     mRemovedStore{},
     mRemoved{0} {}
 
-template <typename... Components>
-foeDataPool<Components...>::~foeDataPool() {
+template <typename IdType, typename... Components>
+foeDataPool<IdType, Components...>::~foeDataPool() {
     multiDelete(&mMainStorage, 0, size());
     clearRemoved();
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::maintenance() {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::maintenance() {
     clearRemoved();
     clearInserted();
 
@@ -49,43 +49,43 @@ void foeDataPool<Components...>::maintenance() {
     insertPass();
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::expansionRate(size_t expansionRate) {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::expansionRate(size_t expansionRate) {
     mExpansionRate = expansionRate;
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::expansionRate() const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::expansionRate() const noexcept {
     return mExpansionRate;
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::capacity() const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::capacity() const noexcept {
     return mMainStorage.capacity();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::size() const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::size() const noexcept {
     return mStored;
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::inserted() {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::inserted() {
     return mInsertedOffsets.size();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::removed() const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::removed() const noexcept {
     return mRemoved;
 }
 
-template <typename... Components>
-bool foeDataPool<Components...>::exist(foeId id) const noexcept {
+template <typename IdType, typename... Components>
+bool foeDataPool<IdType, Components...>::exist(IdType id) const noexcept {
     return find(id) != size();
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::insert(foeId id, Components &&...components) {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::insert(IdType id, Components &&...components) {
     mToInsertSync.lock();
 
     mToInsert.emplace_back(id, std::make_tuple(std::move(components)...));
@@ -93,15 +93,15 @@ void foeDataPool<Components...>::insert(foeId id, Components &&...components) {
     mToInsertSync.unlock();
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::remove(foeId id) {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::remove(IdType id) {
     mToRemoveSync.lock();
     mToRemove.emplace_back(id);
     mToRemoveSync.unlock();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::sequential_search(foeId id) const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::sequential_search(IdType id) const noexcept {
     auto it = begin();
     auto const endIt = end();
 
@@ -115,8 +115,8 @@ size_t foeDataPool<Components...>::sequential_search(foeId id) const noexcept {
     return size();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::binary_search(foeId id) const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::binary_search(IdType id) const noexcept {
     auto searchIt = std::lower_bound(begin(), end(), id);
     if (searchIt != end() && *searchIt == id) {
         return searchIt - begin();
@@ -124,92 +124,92 @@ size_t foeDataPool<Components...>::binary_search(foeId id) const noexcept {
     return size();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::find(foeId id) const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::find(IdType id) const noexcept {
     auto searchIt = std::find(begin(), end(), id);
     return searchIt - begin();
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::begin() noexcept ->
+auto foeDataPool<IdType, Components...>::begin() noexcept ->
     typename std::tuple_element<Index, TupleType>::type * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
         mMainStorage.template get<Index>());
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::begin() const noexcept ->
+auto foeDataPool<IdType, Components...>::begin() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mMainStorage.template get<Index>());
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::cbegin() const noexcept ->
+auto foeDataPool<IdType, Components...>::cbegin() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mMainStorage.template get<Index>());
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::end() noexcept ->
+auto foeDataPool<IdType, Components...>::end() noexcept ->
     typename std::tuple_element<Index, TupleType>::type * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
         mMainStorage.template get<Index>() + mStored);
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::end() const noexcept ->
+auto foeDataPool<IdType, Components...>::end() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mMainStorage.template get<Index>() + mStored);
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::cend() const noexcept ->
+auto foeDataPool<IdType, Components...>::cend() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mMainStorage.template get<Index>() + mStored);
 }
 
-template <typename... Components>
-auto foeDataPool<Components...>::inbegin() noexcept {
+template <typename IdType, typename... Components>
+auto foeDataPool<IdType, Components...>::inbegin() noexcept {
     return mInsertedOffsets.begin();
 }
 
-template <typename... Components>
-auto foeDataPool<Components...>::inbegin() const noexcept {
+template <typename IdType, typename... Components>
+auto foeDataPool<IdType, Components...>::inbegin() const noexcept {
     return mInsertedOffsets.begin();
 }
 
-template <typename... Components>
-auto foeDataPool<Components...>::cinbegin() const noexcept {
+template <typename IdType, typename... Components>
+auto foeDataPool<IdType, Components...>::cinbegin() const noexcept {
     return mInsertedOffsets.cbegin();
 }
 
-template <typename... Components>
-auto foeDataPool<Components...>::inend() noexcept {
+template <typename IdType, typename... Components>
+auto foeDataPool<IdType, Components...>::inend() noexcept {
     return mInsertedOffsets.end();
 }
 
-template <typename... Components>
-auto foeDataPool<Components...>::inend() const noexcept {
+template <typename IdType, typename... Components>
+auto foeDataPool<IdType, Components...>::inend() const noexcept {
     return mInsertedOffsets.end();
 }
 
-template <typename... Components>
-auto foeDataPool<Components...>::cinend() const noexcept {
+template <typename IdType, typename... Components>
+auto foeDataPool<IdType, Components...>::cinend() const noexcept {
     return mInsertedOffsets.cend();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::rm_sequential_search(foeId id) const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::rm_sequential_search(IdType id) const noexcept {
     auto it = rmbegin();
     auto const endIt = rmend();
 
@@ -223,8 +223,8 @@ size_t foeDataPool<Components...>::rm_sequential_search(foeId id) const noexcept
     return removed();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::rm_binary_search(foeId id) const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::rm_binary_search(IdType id) const noexcept {
     auto searchIt = std::lower_bound(rmbegin(), rmend(), id);
     if (searchIt != rmend() && *searchIt == id) {
         return searchIt - rmbegin();
@@ -232,66 +232,66 @@ size_t foeDataPool<Components...>::rm_binary_search(foeId id) const noexcept {
     return removed();
 }
 
-template <typename... Components>
-size_t foeDataPool<Components...>::rm_find(foeId id) const noexcept {
+template <typename IdType, typename... Components>
+size_t foeDataPool<IdType, Components...>::rm_find(IdType id) const noexcept {
     auto searchIt = std::find(rmbegin(), rmend(), id);
     return searchIt - rmbegin();
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::rmbegin() noexcept ->
+auto foeDataPool<IdType, Components...>::rmbegin() noexcept ->
     typename std::tuple_element<Index, TupleType>::type * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
         mRemovedStore.template get<Index>());
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::rmbegin() const noexcept ->
+auto foeDataPool<IdType, Components...>::rmbegin() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mRemovedStore.template get<Index>());
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::crmbegin() const noexcept ->
+auto foeDataPool<IdType, Components...>::crmbegin() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mRemovedStore.template get<Index>());
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::rmend() noexcept ->
+auto foeDataPool<IdType, Components...>::rmend() noexcept ->
     typename std::tuple_element<Index, TupleType>::type * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
         mRemovedStore.template get<Index>() + mRemoved);
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::rmend() const noexcept ->
+auto foeDataPool<IdType, Components...>::rmend() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mRemovedStore.template get<Index>() + mRemoved);
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-auto foeDataPool<Components...>::crmend() const noexcept ->
+auto foeDataPool<IdType, Components...>::crmend() const noexcept ->
     typename std::tuple_element<Index, TupleType>::type const * {
     return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
         mRemovedStore.template get<Index>() + mRemoved);
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-void foeDataPool<Components...>::singleEmplace(PoolStore *pStore,
-                                               size_t offset,
-                                               foeId id,
-                                               std::tuple<Components...> &&components) {
+void foeDataPool<IdType, Components...>::singleEmplace(PoolStore *pStore,
+                                                       size_t offset,
+                                                       IdType id,
+                                                       std::tuple<Components...> &&components) {
     auto *pData = pStore->template get<Index>() + offset;
 
     if constexpr (Index == 0) {
@@ -309,9 +309,9 @@ void foeDataPool<Components...>::singleEmplace(PoolStore *pStore,
     }
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-void foeDataPool<Components...>::multiMove(
+void foeDataPool<IdType, Components...>::multiMove(
     PoolStore *pSrc, size_t srcOffset, size_t count, PoolStore *pDst, size_t dstOffset) {
     using IndexType = typename std::tuple_element<Index, TupleType>::type;
 
@@ -319,7 +319,7 @@ void foeDataPool<Components...>::multiMove(
     auto *pDstData = pDst->template get<Index>() + dstOffset;
 
     if constexpr (std::is_trivially_copyable<IndexType>::value) {
-        memmove(pDstData, pData, count * sizeof(foeId));
+        memmove(pDstData, pData, count * sizeof(IdType));
     } else {
         // Components
         auto *pDataEnd = pData + count;
@@ -335,9 +335,11 @@ void foeDataPool<Components...>::multiMove(
     }
 }
 
-template <typename... Components>
+template <typename IdType, typename... Components>
 template <int Index>
-void foeDataPool<Components...>::multiDelete(PoolStore *pStore, size_t offset, size_t count) {
+void foeDataPool<IdType, Components...>::multiDelete(PoolStore *pStore,
+                                                     size_t offset,
+                                                     size_t count) {
     using IndexType = typename std::tuple_element<Index, TupleType>::type;
 
     if constexpr (!std::is_trivially_destructible<IndexType>::value) {
@@ -355,13 +357,13 @@ void foeDataPool<Components...>::multiDelete(PoolStore *pStore, size_t offset, s
     }
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::clearInserted() {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::clearInserted() {
     mInsertedOffsets.clear();
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::insertPass() {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::insertPass() {
     mToInsertSync.lock();
     auto toInsert = std::move(mToInsert);
     mToInsertSync.unlock();
@@ -380,7 +382,7 @@ void foeDataPool<Components...>::insertPass() {
     mInsertedOffsets.reserve(toInsert.size());
 
     std::vector<std::pair<
-        typename std::vector<std::tuple<foeId, std::tuple<Components...>>>::iterator, size_t>>
+        typename std::vector<std::tuple<IdType, std::tuple<Components...>>>::iterator, size_t>>
         srcDstOffsets;
     srcDstOffsets.reserve(toInsert.size());
 
@@ -388,7 +390,7 @@ void foeDataPool<Components...>::insertPass() {
         // Iterators to the insertion map items
         auto inIt = toInsert.begin();
         auto const inEndIt = toInsert.end();
-        // Pointer/Iterator to the foeId's of items already in regular storage
+        // Pointer/Iterator to the IdType's of items already in regular storage
         auto *const pBeginId = mMainStorage.get();
         auto *const pEndId = mMainStorage.get() + mStored;
         auto *pId = pBeginId;
@@ -482,14 +484,14 @@ void foeDataPool<Components...>::insertPass() {
     std::reverse(mInsertedOffsets.begin(), mInsertedOffsets.end());
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::clearRemoved() {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::clearRemoved() {
     multiDelete(&mRemovedStore, 0, mRemoved);
     mRemoved = 0;
 }
 
-template <typename... Components>
-void foeDataPool<Components...>::removePass() {
+template <typename IdType, typename... Components>
+void foeDataPool<IdType, Components...>::removePass() {
     mToRemoveSync.lock();
     auto toRemove = std::move(mToRemove);
     mToRemoveSync.unlock();
