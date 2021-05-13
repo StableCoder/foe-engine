@@ -21,6 +21,18 @@ using Pool = foeDataPool<int>;
 
 template class foeDataPool<int>;
 
+TEST_CASE("Pool<int> - Expansion Rate") {
+    Pool test;
+
+    SECTION("Default rate is 128") { CHECK(test.expansionRate() == 128); }
+
+    SECTION("Rate can be changed") {
+        test.expansionRate(8192);
+
+        CHECK(test.expansionRate() == 8192);
+    }
+}
+
 TEST_CASE("Pool<int> - Accessors on new object all have empty ranges") {
     Pool test;
 

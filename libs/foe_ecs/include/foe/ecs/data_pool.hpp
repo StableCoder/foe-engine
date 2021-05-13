@@ -114,6 +114,9 @@ class foeDataPool {
         insertPass();
     }
 
+    void expansionRate(size_t expansionRate) { mExpansionRate = expansionRate; }
+    size_t expansionRate() const noexcept { return mExpansionRate; }
+
     size_t capacity() const noexcept { return mMainStorage.capacity(); }
     size_t size() const noexcept { return mStored; }
 

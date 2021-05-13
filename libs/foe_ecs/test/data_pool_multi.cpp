@@ -21,6 +21,18 @@ using Pool = foeDataPool<uint32_t, int, double>;
 
 template class foeDataPool<uint32_t, int, double>;
 
+TEST_CASE("Pool<MULTI> - Expansion Rate") {
+    Pool test;
+
+    SECTION("Default rate is 128") { CHECK(test.expansionRate() == 128); }
+
+    SECTION("Rate can be changed") {
+        test.expansionRate(8192);
+
+        CHECK(test.expansionRate() == 8192);
+    }
+}
+
 TEST_CASE("Pool<MULTI> - Accessors on new object all have empty ranges") {
     Pool test;
 
