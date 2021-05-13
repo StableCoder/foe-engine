@@ -29,6 +29,18 @@ template <typename... Components>
 class foeDataPool {
     /// Common
   public:
+    foeDataPool(size_t expansionRate = 128) :
+        mExpansionRate{expansionRate},
+        mMainStorage{},
+        mStored{0},
+        mToInsertSync{},
+        mToInsert{},
+        mInsertedOffsets{},
+        mToRemoveSync{},
+        mToRemove{},
+        mRemovedStore{},
+        mRemoved{0} {}
+
     ~foeDataPool() {
         multiDelete(&mMainStorage, 0, size());
         clearRemoved();
@@ -186,10 +198,10 @@ class foeDataPool {
     }
 
   private:
-    size_t mExpansionRate = 8192;
+    size_t mExpansionRate;
 
     PoolStore mMainStorage;
-    size_t mStored{0};
+    size_t mStored;
 
     /// Insertion
   public:
@@ -306,7 +318,7 @@ class foeDataPool {
 
     // Stuff removed last maintenance cycle
     PoolStore mRemovedStore;
-    size_t mRemoved{0};
+    size_t mRemoved;
 };
 
 template <typename... Components>
@@ -393,6 +405,8 @@ void foeDataPool<Components...>::insertPass() {
             size_t dst = givenOffset + accumulatedDistance;
             size_t numMove = lastMovedOldItem - givenOffset;
 
+            // @todo Revisit idea of doing 'floating memory' as this is by far the worst time sink
+            // during execution
             multiMove(&mMainStorage, src, numMove, pNewStore, dst);
 
             lastMovedOldItem = givenOffset;
