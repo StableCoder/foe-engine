@@ -24,6 +24,9 @@ endif()
 add_subdirectory(src)
 
 # Auxiliary Targets
+if(BUILD_EXTRAS)
+  add_subdirectory(extras)
+endif()
 if(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
   add_subdirectory(test)
 endif()

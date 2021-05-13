@@ -2,8 +2,15 @@
 prepare_catch(COMPILED_CATCH)
 
 # Main Declaration
-add_executable(test_foe command_string_runner.cpp filesystem.cpp plugin.cpp
-                        search_paths.cpp)
+add_executable(
+  test_foe
+  command_string_runner.cpp
+  data_pool_custom.cpp
+  data_pool_int.cpp
+  data_pool_multi.cpp
+  filesystem.cpp
+  plugin.cpp
+  search_paths.cpp)
 add_test(NAME FoE-Test COMMAND test_foe)
 
 target_compile_definitions(

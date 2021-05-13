@@ -17,14 +17,12 @@
 #ifndef STATE_POOL_TEMPLATE_MAP_HPP
 #define STATE_POOL_TEMPLATE_MAP_HPP
 
-#include <foe/ecs/id.hpp>
-
 #include <map>
 #include <mutex>
 #include <shared_mutex>
 #include <vector>
 
-template <typename StateType>
+template <typename IdType, typename StateType>
 class StateDataMapPool {
     /// Common
   public:
@@ -43,7 +41,7 @@ class StateDataMapPool {
 
     size_t size() { return mMainStorage.size(); }
 
-    StateType *get(foeId id) {
+    StateType *get(IdType id) {
         auto searchIt = mMainStorage.find(id);
         if (searchIt != mMainStorage.end()) {
             return &searchIt->second;
@@ -58,11 +56,11 @@ class StateDataMapPool {
     auto cend() noexcept { return mMainStorage.cend(); }
 
   private:
-    std::map<foeId, StateType> mMainStorage;
+    std::map<IdType, StateType> mMainStorage;
 
     /// Insertion
   public:
-    void insert(foeId id, StateType &&state) {
+    void insert(IdType id, StateType &&state) {
         mToInsertSync.lock();
 
         mToInsert.emplace(id, std::move(state));
@@ -72,7 +70,7 @@ class StateDataMapPool {
 
     size_t inserted() { return mInserted.size(); };
 
-    std::vector<foeId> getInserted() { return mInserted; }
+    std::vector<IdType> getInserted() { return mInserted; }
 
     auto inbegin() noexcept { return mInsertedIters.begin(); }
     auto cinbegin() const noexcept { return mInsertedIters.cbegin(); }
@@ -88,14 +86,14 @@ class StateDataMapPool {
     void insertPass();
 
     std::mutex mToInsertSync;
-    std::map<foeId, StateType> mToInsert;
+    std::map<IdType, StateType> mToInsert;
 
-    std::vector<foeId> mInserted;
-    std::vector<typename std::map<foeId, StateType>::iterator> mInsertedIters;
+    std::vector<IdType> mInserted;
+    std::vector<typename std::map<IdType, StateType>::iterator> mInsertedIters;
 
     /// Removal
   public:
-    void remove(foeId id) {
+    void remove(IdType id) {
         mToRemoveSync.lock();
         mToRemove.emplace_back(id);
         mToRemoveSync.unlock();
@@ -115,14 +113,14 @@ class StateDataMapPool {
 
     // To be removed stuff
     std::mutex mToRemoveSync;
-    std::vector<foeId> mToRemove;
+    std::vector<IdType> mToRemove;
 
     // Stuff removed last maintenance cycle
-    std::map<foeId, StateType> mRemoved;
+    std::map<IdType, StateType> mRemoved;
 };
 
-template <typename StateType>
-void StateDataMapPool<StateType>::insertPass() {
+template <typename IdType, typename StateType>
+void StateDataMapPool<IdType, StateType>::insertPass() {
     mToInsertSync.lock();
     auto toInsert = std::move(mToInsert);
     mToInsertSync.unlock();
@@ -147,8 +145,8 @@ void StateDataMapPool<StateType>::insertPass() {
     }
 }
 
-template <typename StateType>
-void StateDataMapPool<StateType>::removePass() {
+template <typename IdType, typename StateType>
+void StateDataMapPool<IdType, StateType>::removePass() {
     mToRemoveSync.lock();
     auto toRemove = std::move(mToRemove);
     mToRemoveSync.unlock();

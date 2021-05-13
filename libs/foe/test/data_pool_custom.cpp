@@ -15,7 +15,7 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/data_pool.hpp>
+#include <foe/data_pool.hpp>
 
 #include <memory>
 #include <variant>

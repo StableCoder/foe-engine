@@ -17,7 +17,7 @@
 #ifndef FOE_ECS_DATA_POOL_IMPL_HPP
 #define FOE_ECS_DATA_POOL_IMPL_HPP
 
-#include <foe/ecs/data_pool.hpp>
+#include <foe/data_pool.hpp>
 
 #include <cstring>
 

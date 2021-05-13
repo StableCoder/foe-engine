@@ -217,6 +217,6 @@ class foeDataPool {
     size_t mRemoved;
 };
 
-#include <foe/ecs/data_pool.impl.hpp>
+#include <foe/data_pool.impl.hpp>
 
 #endif // FOE_ECS_DATA_POOL_HPP

@@ -1,0 +1,3 @@
+# Declaration
+add_executable(foe_data_pool_benchmark data_pool_benchmark.cpp)
+target_link_libraries(foe_data_pool_benchmark PRIVATE foe)

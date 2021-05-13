@@ -16,7 +16,7 @@
 
 #include <fmt/core.h>
 #include <foe/chrono/easy_clock.hpp>
-#include <foe/ecs/data_pool.hpp>
+#include <foe/data_pool.hpp>
 
 #include "reference_pool_map_template.hpp"
 #include "test_seed.hpp"
@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 
     { // Insert/maintenance groups of 16
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
 
     { // Insert/maintenance groups of 512
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -251,7 +251,7 @@ int main(int argc, char **argv) {
 
     { // Insert all calls
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -277,7 +277,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             clock.update();
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
@@ -330,7 +330,7 @@ int main(int argc, char **argv) {
 
     { // Insert all maintenance
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -358,7 +358,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -414,7 +414,7 @@ int main(int argc, char **argv) {
 
     { // Iteration
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -458,7 +458,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -539,7 +539,7 @@ int main(int argc, char **argv) {
 
     { // Remove/Maintenance (16)
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -581,7 +581,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -658,7 +658,7 @@ int main(int argc, char **argv) {
 
     { // Remove/Maintenance (512)
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -700,7 +700,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -777,7 +777,7 @@ int main(int argc, char **argv) {
 
     { // Remove Calls
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -813,7 +813,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -881,7 +881,7 @@ int main(int argc, char **argv) {
 
     { // Remove Maintenance 1 (all)
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -921,7 +921,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -995,7 +995,7 @@ int main(int argc, char **argv) {
 
     { // Remove Maintenance 2 (all)
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<int> test;
+            StateDataMapPool<uint32_t, int> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;
@@ -1037,7 +1037,7 @@ int main(int argc, char **argv) {
         }
 
         for (int i = 0; i < cTestRunCount; ++i) {
-            StateDataMapPool<Custom> test;
+            StateDataMapPool<uint32_t, Custom> test;
 
             for (size_t i = 0; i < cTestSeed.size(); ++i) {
                 int val = i;

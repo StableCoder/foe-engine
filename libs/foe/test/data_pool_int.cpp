@@ -15,13 +15,13 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/data_pool.hpp>
+#include <foe/data_pool.hpp>
 
-using Pool = foeDataPool<uint32_t, uint32_t, int, double>;
+using Pool = foeDataPool<uint32_t, int>;
 
-template class foeDataPool<uint32_t, uint32_t, int, double>;
+template class foeDataPool<uint32_t, int>;
 
-TEST_CASE("Pool<MULTI> - Expansion Rate") {
+TEST_CASE("Pool<int> - Expansion Rate") {
     Pool test;
 
     SECTION("Default rate is 128") { CHECK(test.expansionRate() == 128); }
@@ -33,7 +33,7 @@ TEST_CASE("Pool<MULTI> - Expansion Rate") {
     }
 }
 
-TEST_CASE("Pool<MULTI> - Accessors on new object all have empty ranges") {
+TEST_CASE("Pool<int> - Accessors on new object all have empty ranges") {
     Pool test;
 
     SECTION("regular accessors") {
@@ -94,30 +94,28 @@ TEST_CASE("Pool<MULTI> - Accessors on new object all have empty ranges") {
     }
 }
 
-TEST_CASE("Pool<MULTI> - Maintenance with no changes does nothing") {
+TEST_CASE("Pool<int> - Maintenance with no changes does nothing") {
     Pool test;
 
     test.maintenance();
 
-    REQUIRE(test.capacity() == 0);
-    REQUIRE(test.size() == 0);
-    REQUIRE(test.inserted() == 0);
-    REQUIRE(test.removed() == 0);
+    CHECK(test.capacity() == 0);
+    CHECK(test.size() == 0);
+    CHECK(test.inserted() == 0);
+    CHECK(test.removed() == 0);
 }
 
 /** INSERTIONS **/
 
-TEST_CASE("Pool<MULTI> - Single insertion") {
+TEST_CASE("Pool<int> - Single insertion") {
     Pool test;
 
     SECTION("Entity doesn't exist in pool before insertion") {
         REQUIRE(!test.exist(uint32_t(256)));
     }
 
-    int tempI = 128;
-    unsigned int tempUi = 128;
-    double tempD = 128.;
-    test.insert(uint32_t(256), std::move(tempI), std::move(tempUi), std::move(tempD));
+    int temp = 128;
+    test.insert(uint32_t(256), std::move(temp));
 
     test.maintenance();
 
@@ -141,12 +139,6 @@ TEST_CASE("Pool<MULTI> - Single insertion") {
 
                 REQUIRE(*test.begin<1>() == 128);
                 REQUIRE(*test.cbegin<1>() == 128);
-
-                REQUIRE(*test.begin<2>() == 128);
-                REQUIRE(*test.cbegin<2>() == 128);
-
-                REQUIRE(*test.begin<3>() == 128.);
-                REQUIRE(*test.cbegin<3>() == 128.);
             }
             SECTION("const accessors") {
                 Pool const &ctest = test;
@@ -157,17 +149,11 @@ TEST_CASE("Pool<MULTI> - Single insertion") {
                 REQUIRE(ctest.begin() + 1 == ctest.cend());
                 REQUIRE(ctest.cbegin() + 1 == ctest.end());
 
-                REQUIRE(*test.begin() == uint32_t(256));
-                REQUIRE(*test.cbegin() == uint32_t(256));
+                REQUIRE(*ctest.begin() == uint32_t(256));
+                REQUIRE(*ctest.cbegin() == uint32_t(256));
 
-                REQUIRE(*test.begin<1>() == 128);
-                REQUIRE(*test.cbegin<1>() == 128);
-
-                REQUIRE(*test.begin<2>() == 128);
-                REQUIRE(*test.cbegin<2>() == 128);
-
-                REQUIRE(*test.begin<3>() == 128.);
-                REQUIRE(*test.cbegin<3>() == 128.);
+                REQUIRE(*ctest.begin<1>() == 128);
+                REQUIRE(*ctest.cbegin<1>() == 128);
             }
         }
 
@@ -179,17 +165,11 @@ TEST_CASE("Pool<MULTI> - Single insertion") {
                 REQUIRE(test.inbegin() + 1 == test.cinend());
                 REQUIRE(test.cinbegin() + 1 == test.inend());
 
-                REQUIRE(*test.begin() == uint32_t(256));
-                REQUIRE(*test.cbegin() == uint32_t(256));
+                REQUIRE(*(test.begin() + *test.inbegin()) == uint32_t(256));
+                REQUIRE(*(test.cbegin() + *test.inbegin()) == uint32_t(256));
 
-                REQUIRE(*test.begin<1>() == 128);
-                REQUIRE(*test.cbegin<1>() == 128);
-
-                REQUIRE(*test.begin<2>() == 128);
-                REQUIRE(*test.cbegin<2>() == 128);
-
-                REQUIRE(*test.begin<3>() == 128.);
-                REQUIRE(*test.cbegin<3>() == 128.);
+                REQUIRE(*(test.begin<1>() + *test.inbegin()) == 128);
+                REQUIRE(*(test.begin<1>() + *test.inbegin()) == 128);
             }
             SECTION("const accessors") {
                 Pool const &ctest = test;
@@ -200,23 +180,17 @@ TEST_CASE("Pool<MULTI> - Single insertion") {
                 REQUIRE(ctest.inbegin() + 1 == ctest.cinend());
                 REQUIRE(ctest.cinbegin() + 1 == ctest.inend());
 
-                REQUIRE(*test.begin() == uint32_t(256));
-                REQUIRE(*test.cbegin() == uint32_t(256));
+                REQUIRE(*(ctest.begin() + *ctest.inbegin()) == uint32_t(256));
+                REQUIRE(*(ctest.cbegin() + *ctest.inbegin()) == uint32_t(256));
 
-                REQUIRE(*test.begin<1>() == 128);
-                REQUIRE(*test.cbegin<1>() == 128);
-
-                REQUIRE(*test.begin<2>() == 128);
-                REQUIRE(*test.cbegin<2>() == 128);
-
-                REQUIRE(*test.begin<3>() == 128.);
-                REQUIRE(*test.cbegin<3>() == 128.);
+                REQUIRE(*(ctest.begin<1>() + *ctest.inbegin()) == 128);
+                REQUIRE(*(ctest.begin<1>() + *ctest.inbegin()) == 128);
             }
         }
     }
 }
 
-TEST_CASE("Pool<MULTI> - Multiple reversed insertion") {
+TEST_CASE("Pool<int> - Multiple reversed insertion") {
     Pool test;
 
     constexpr int cTestNum = 3;
@@ -228,10 +202,8 @@ TEST_CASE("Pool<MULTI> - Multiple reversed insertion") {
     }
 
     for (int i = cTestNum - 1; i >= 0; --i) {
-        int tempI = i;
-        unsigned int tempUi = i;
-        double tempD = i;
-        test.insert(uint32_t(i), std::move(tempI), std::move(tempUi), std::move(tempD));
+        int val = i;
+        test.insert(uint32_t(i), std::move(val));
     }
 
     test.maintenance();
@@ -253,15 +225,20 @@ TEST_CASE("Pool<MULTI> - Multiple reversed insertion") {
                 REQUIRE(test.begin() + cTestNum == test.cend());
                 REQUIRE(test.cbegin() + cTestNum == test.end());
 
-                auto it = test.begin();
-                auto cit = test.cbegin();
+                auto idIt = test.begin();
+                auto dataIt = test.begin<1>();
+                auto cIdIt = test.cbegin();
+                auto cDataIt = test.begin<1>();
 
-                for (int i = 0; i < 3; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                for (int i = 0; i < 3; ++i, ++idIt, ++dataIt, ++cIdIt, ++cDataIt) {
+                    REQUIRE(*idIt == uint32_t(i));
+                    REQUIRE(*cIdIt == uint32_t(i));
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin<1>() + i) == i);
+                    REQUIRE(*(test.cbegin<1>() + i) == i);
+
+                    REQUIRE(*dataIt == i);
+                    REQUIRE(*cDataIt == i);
                 }
             }
             SECTION("const accessors") {
@@ -273,15 +250,20 @@ TEST_CASE("Pool<MULTI> - Multiple reversed insertion") {
                 REQUIRE(ctest.begin() + cTestNum == ctest.cend());
                 REQUIRE(ctest.cbegin() + cTestNum == ctest.end());
 
-                auto it = test.begin();
-                auto cit = test.cbegin();
+                auto idIt = test.begin();
+                auto dataIt = test.begin<1>();
+                auto cIdIt = test.cbegin();
+                auto cDataIt = test.begin<1>();
 
-                for (int i = 0; i < cTestNum; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                for (int i = 0; i < 3; ++i, ++idIt, ++dataIt, ++cIdIt, ++cDataIt) {
+                    REQUIRE(*idIt == uint32_t(i));
+                    REQUIRE(*cIdIt == uint32_t(i));
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin<1>() + i) == i);
+                    REQUIRE(*(test.cbegin<1>() + i) == i);
+
+                    REQUIRE(*dataIt == i);
+                    REQUIRE(*cDataIt == i);
                 }
             }
         }
@@ -298,11 +280,14 @@ TEST_CASE("Pool<MULTI> - Multiple reversed insertion") {
                 auto cit = test.cinbegin();
 
                 for (int i = 0; i < cTestNum; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                    REQUIRE(*(test.begin() + *test.inbegin() + i) == i);
+                    REQUIRE(*(test.cbegin() + *test.cinbegin() + i) == i);
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin() + *it) == uint32_t(i));
+                    REQUIRE(*(test.cbegin() + *cit) == uint32_t(i));
+
+                    REQUIRE(*(test.begin<1>() + *it) == i);
+                    REQUIRE(*(test.cbegin<1>() + *cit) == i);
                 }
             }
             SECTION("const accessors") {
@@ -318,23 +303,24 @@ TEST_CASE("Pool<MULTI> - Multiple reversed insertion") {
                 auto cit = test.cinbegin();
 
                 for (int i = 0; i < cTestNum; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                    REQUIRE(*(test.begin() + *test.inbegin() + i) == i);
+                    REQUIRE(*(test.cbegin() + *test.cinbegin() + i) == i);
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin() + *it) == uint32_t(i));
+                    REQUIRE(*(test.cbegin() + *cit) == uint32_t(i));
+
+                    REQUIRE(*(test.begin<1>() + *it) == i);
+                    REQUIRE(*(test.cbegin<1>() + *cit) == i);
                 }
             }
         }
     }
 }
 
-TEST_CASE("Pool<MULTI> - Testing insert/regular storage expansion") {
+TEST_CASE("Pool<int> - Testing insert/regular storage expansion") {
     // Starting the pool with essentiall no storage, and inserting more than the storage
     // initially holds to test that the expansion mechanisms work correctly.
     Pool test;
-
-    REQUIRE(test.capacity() == 0);
 
     constexpr int cTestNum = 3;
 
@@ -345,10 +331,8 @@ TEST_CASE("Pool<MULTI> - Testing insert/regular storage expansion") {
     }
 
     for (int i = cTestNum - 1; i >= 0; --i) {
-        int tempI = i;
-        unsigned int tempUi = i;
-        double tempD = i;
-        test.insert(uint32_t(i), std::move(tempI), std::move(tempUi), std::move(tempD));
+        int val = i;
+        test.insert(uint32_t(i), std::move(val));
     }
 
     test.maintenance();
@@ -372,15 +356,20 @@ TEST_CASE("Pool<MULTI> - Testing insert/regular storage expansion") {
                 REQUIRE(test.begin() + cTestNum == test.cend());
                 REQUIRE(test.cbegin() + cTestNum == test.end());
 
-                auto it = test.begin();
-                auto cit = test.cbegin();
+                auto idIt = test.begin();
+                auto dataIt = test.begin<1>();
+                auto cIdIt = test.cbegin();
+                auto cDataIt = test.begin<1>();
 
-                for (int i = 0; i < 3; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                for (int i = 0; i < 3; ++i, ++idIt, ++dataIt, ++cIdIt, ++cDataIt) {
+                    REQUIRE(*idIt == uint32_t(i));
+                    REQUIRE(*cIdIt == uint32_t(i));
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin<1>() + i) == i);
+                    REQUIRE(*(test.cbegin<1>() + i) == i);
+
+                    REQUIRE(*dataIt == i);
+                    REQUIRE(*cDataIt == i);
                 }
             }
             SECTION("const accessors") {
@@ -392,15 +381,20 @@ TEST_CASE("Pool<MULTI> - Testing insert/regular storage expansion") {
                 REQUIRE(ctest.begin() + cTestNum == ctest.cend());
                 REQUIRE(ctest.cbegin() + cTestNum == ctest.end());
 
-                auto it = test.begin();
-                auto cit = test.cbegin();
+                auto idIt = test.begin();
+                auto dataIt = test.begin<1>();
+                auto cIdIt = test.cbegin();
+                auto cDataIt = test.begin<1>();
 
-                for (int i = 0; i < cTestNum; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                for (int i = 0; i < 3; ++i, ++idIt, ++dataIt, ++cIdIt, ++cDataIt) {
+                    REQUIRE(*idIt == uint32_t(i));
+                    REQUIRE(*cIdIt == uint32_t(i));
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin<1>() + i) == i);
+                    REQUIRE(*(test.cbegin<1>() + i) == i);
+
+                    REQUIRE(*dataIt == i);
+                    REQUIRE(*cDataIt == i);
                 }
             }
         }
@@ -417,11 +411,14 @@ TEST_CASE("Pool<MULTI> - Testing insert/regular storage expansion") {
                 auto cit = test.cinbegin();
 
                 for (int i = 0; i < cTestNum; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                    REQUIRE(*(test.begin() + *test.inbegin() + i) == i);
+                    REQUIRE(*(test.cbegin() + *test.cinbegin() + i) == i);
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin() + *it) == uint32_t(i));
+                    REQUIRE(*(test.cbegin() + *cit) == uint32_t(i));
+
+                    REQUIRE(*(test.begin<1>() + *it) == i);
+                    REQUIRE(*(test.cbegin<1>() + *cit) == i);
                 }
             }
             SECTION("const accessors") {
@@ -437,44 +434,45 @@ TEST_CASE("Pool<MULTI> - Testing insert/regular storage expansion") {
                 auto cit = test.cinbegin();
 
                 for (int i = 0; i < cTestNum; ++i, ++it, ++cit) {
-                    REQUIRE(*(test.begin() + i) == i);
-                    REQUIRE(*(test.cbegin() + i) == i);
+                    REQUIRE(*(test.begin() + *test.inbegin() + i) == i);
+                    REQUIRE(*(test.cbegin() + *test.cinbegin() + i) == i);
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*(test.begin() + *it) == uint32_t(i));
+                    REQUIRE(*(test.cbegin() + *cit) == uint32_t(i));
+
+                    REQUIRE(*(test.begin<1>() + *it) == i);
+                    REQUIRE(*(test.cbegin<1>() + *cit) == i);
                 }
             }
         }
     }
 }
 
-TEST_CASE("Pool<MULTI> - Staggered insertion") {
-    // In this case, we'll first insert a group of even number in a pass, then in the next pass,
+TEST_CASE("Pool<int> - Staggered insertion") {
+    // In this case, we'll first insert a group of even numbers in a pass, then in the next pass,
     // the interleaving set of odd numbers, ensuring that they interleave and sort out
     // correctly.
-    Pool test;
+    Pool test; //{32};
     constexpr int cTestNum = 20;
 
     for (int i = cTestNum; i >= 0; i -= 2) {
-        int tempI = i;
-        unsigned int tempUi = i;
-        double tempD = i;
-        test.insert(uint32_t(i), std::move(tempI), std::move(tempUi), std::move(tempD));
+        int val = i;
+        test.insert(uint32_t(i), std::move(val));
     }
 
     test.maintenance();
 
     SECTION("even items should exist, and in ascending order") {
-        auto *it = test.begin();
-        auto *dataIt = test.begin<1>();
+        auto idIt = test.begin();
+        auto dataIt = test.begin();
         auto inIt = test.inbegin();
 
-        for (int i = 0; i < cTestNum; i += 2, ++it, ++dataIt, ++inIt) {
-            REQUIRE(*it == uint32_t(i));
+        for (int i = 0; i < cTestNum; i += 2, ++idIt, ++dataIt, ++inIt) {
+            REQUIRE(*idIt == uint32_t(i));
             REQUIRE(*dataIt == i);
 
             REQUIRE(*(test.begin() + *inIt) == uint32_t(i));
-            REQUIRE(*(test.begin() + *inIt) == i);
+            REQUIRE(*(test.begin<1>() + *inIt) == i);
         }
     }
     SECTION("off numbers don't exist yet") {
@@ -485,49 +483,42 @@ TEST_CASE("Pool<MULTI> - Staggered insertion") {
 
     // Inserting the odd numbers
     for (int i = cTestNum - 1; i >= 0; i -= 2) {
-        int tempI = i;
-        unsigned int tempUi = i;
-        double tempD = i;
-        test.insert(uint32_t(i), std::move(tempI), std::move(tempUi), std::move(tempD));
+        int val = i;
+        test.insert(uint32_t(i), std::move(val));
     }
 
     test.maintenance();
 
     SECTION("all numbers exist, in correct order") {
-        auto *it = test.begin();
-        auto *dataIt = test.begin<1>();
+        auto idIt = test.begin();
+        auto dataIt = test.begin();
 
-        for (int i = 0; i < cTestNum; ++i, ++it, ++dataIt) {
-            REQUIRE(*it == uint32_t(i));
+        for (int i = 0; i < cTestNum; ++i, ++idIt, ++dataIt) {
+            REQUIRE(*idIt == uint32_t(i));
             REQUIRE(*dataIt == i);
         }
     }
     SECTION("odd numbered insertions are the only ones in the insertion list, in order") {
-        auto inIt = test.inbegin();
+        auto it = test.inbegin();
 
-        for (int i = 1; i < cTestNum; i += 2, ++inIt) {
-            REQUIRE(*(test.begin() + *inIt) == uint32_t(i));
-            REQUIRE(*(test.begin() + *inIt) == i);
+        for (int i = 1; i < cTestNum; i += 2, ++it) {
+            REQUIRE(*(test.begin() + *it) == uint32_t(i));
+            REQUIRE(*(test.begin<1>() + *it) == i);
         }
     }
 }
 
-TEST_CASE("Pool<MULTI> - Attempting to insert multiple of the same uint32_t fails, only the "
-          "first one is inserted") {
+TEST_CASE(
+    "Pool<int> - Attempting to insert multiple of the same uint32_t fails, only the *first* one "
+    "is inserted") {
     Pool test;
 
-    int tempI = 1;
-    unsigned int tempUi = 1;
-    double tempD = 1.;
-    test.insert(uint32_t(16), std::move(tempI), std::move(tempUi), std::move(tempD));
-    tempI = 2;
-    tempUi = 2;
-    tempD = 2.;
-    test.insert(uint32_t(16), std::move(tempI), std::move(tempUi), std::move(tempD));
-    tempI = 3;
-    tempUi = 3;
-    tempD = 3.;
-    test.insert(uint32_t(16), std::move(tempI), std::move(tempUi), std::move(tempD));
+    int temp = 1;
+    test.insert(uint32_t(16), std::move(temp));
+    temp = 2;
+    test.insert(uint32_t(16), std::move(temp));
+    temp = 3;
+    test.insert(uint32_t(16), std::move(temp));
 
     test.maintenance();
 
@@ -538,20 +529,16 @@ TEST_CASE("Pool<MULTI> - Attempting to insert multiple of the same uint32_t fail
     REQUIRE(*test.begin<1>() == 1);
 }
 
-TEST_CASE("Pool<MULTI> - Attempting to add same entity in a different pass fails, original "
-          "stays intact") {
+TEST_CASE(
+    "Pool<int> - Attempting to add same entity in a different pass fails, original stays intact") {
     Pool test;
 
-    int tempI = 1;
-    unsigned int tempUi = 1;
-    double tempD = 1.;
-    test.insert(uint32_t(16), std::move(tempI), std::move(tempUi), std::move(tempD));
+    int temp = 1;
+    test.insert(uint32_t(16), std::move(temp));
     test.maintenance();
 
-    tempI = 2;
-    tempUi = 2;
-    tempD = 2.;
-    test.insert(uint32_t(16), std::move(tempI), std::move(tempUi), std::move(tempD));
+    temp = 2;
+    test.insert(uint32_t(16), std::move(temp));
     test.maintenance();
 
     REQUIRE(test.size() == 1);
@@ -561,15 +548,13 @@ TEST_CASE("Pool<MULTI> - Attempting to add same entity in a different pass fails
     REQUIRE(*test.begin<1>() == 1);
 }
 
-/** REMOVALS **/
+// REMOVALS
 
-TEST_CASE("Pool<MULTI> - Single removal") {
+TEST_CASE("Pool<int> - Single removal") {
     Pool test;
 
-    int tempI = 128;
-    unsigned int tempUi = 128;
-    double tempD = 128.;
-    test.insert(uint32_t(256), std::move(tempI), std::move(tempUi), std::move(tempD));
+    int temp = 128;
+    test.insert(uint32_t(256), std::move(temp));
 
     test.maintenance();
 
@@ -612,25 +597,23 @@ TEST_CASE("Pool<MULTI> - Single removal") {
                 REQUIRE(ctest.rmbegin() + 1 == ctest.crmend());
                 REQUIRE(ctest.crmbegin() + 1 == ctest.rmend());
 
-                REQUIRE(*test.rmbegin() == uint32_t(256));
-                REQUIRE(*test.crmbegin() == uint32_t(256));
+                REQUIRE(*ctest.rmbegin() == uint32_t(256));
+                REQUIRE(*ctest.crmbegin() == uint32_t(256));
 
-                REQUIRE(*test.rmbegin<1>() == 128);
-                REQUIRE(*test.crmbegin<1>() == 128);
+                REQUIRE(*ctest.rmbegin<1>() == 128);
+                REQUIRE(*ctest.crmbegin<1>() == 128);
             }
         }
     }
 }
 
-TEST_CASE("Pool<MULTI> - Multiple removal") {
+TEST_CASE("Pool<int> - Multiple removal") {
     Pool test;
     constexpr int cTestNum = 20;
 
     for (int i = 0; i < cTestNum; ++i) {
-        int tempI = i;
-        unsigned int tempUi = i;
-        double tempD = i;
-        test.insert(uint32_t(i), std::move(tempI), std::move(tempUi), std::move(tempD));
+        int val = i;
+        test.insert(uint32_t(i), std::move(val));
     }
 
     test.maintenance();
@@ -655,17 +638,17 @@ TEST_CASE("Pool<MULTI> - Multiple removal") {
                 REQUIRE(test.rmbegin() + cTestNum == test.crmend());
                 REQUIRE(test.crmbegin() + cTestNum == test.rmend());
 
-                auto *it = test.rmbegin();
-                auto *dataIt = test.rmbegin<1>();
-                auto *cit = test.crmbegin();
-                auto *cDataIt = test.crmbegin<1>();
+                auto idIt = test.rmbegin();
+                auto dataIt = test.rmbegin<1>();
+                auto cIdIt = test.crmbegin();
+                auto cDataIt = test.crmbegin<1>();
 
-                for (int i = 0; i < cTestNum; ++i, ++it, ++dataIt, ++cit, ++cDataIt) {
+                for (int i = 0; i < cTestNum; ++i, ++idIt, ++dataIt, ++cIdIt, ++cDataIt) {
                     REQUIRE(*(test.rmbegin() + i) == i);
                     REQUIRE(*(test.crmbegin() + i) == i);
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*idIt == uint32_t(i));
+                    REQUIRE(*cIdIt == uint32_t(i));
 
                     REQUIRE(*dataIt == i);
                     REQUIRE(*cDataIt == i);
@@ -680,17 +663,17 @@ TEST_CASE("Pool<MULTI> - Multiple removal") {
                 REQUIRE(ctest.rmbegin() + cTestNum == ctest.crmend());
                 REQUIRE(ctest.crmbegin() + cTestNum == ctest.rmend());
 
-                auto *it = test.rmbegin();
-                auto *dataIt = test.rmbegin<1>();
-                auto *cit = test.crmbegin();
-                auto *cDataIt = test.crmbegin<1>();
+                auto idIt = test.rmbegin();
+                auto dataIt = test.rmbegin<1>();
+                auto cIdIt = test.crmbegin();
+                auto cDataIt = test.crmbegin<1>();
 
-                for (int i = 0; i < cTestNum; ++i, ++it, ++dataIt, ++cit, ++cDataIt) {
+                for (int i = 0; i < cTestNum; ++i, ++idIt, ++dataIt, ++cIdIt, ++cDataIt) {
                     REQUIRE(*(test.rmbegin() + i) == i);
                     REQUIRE(*(test.crmbegin() + i) == i);
 
-                    REQUIRE(*it == uint32_t(i));
-                    REQUIRE(*cit == uint32_t(i));
+                    REQUIRE(*idIt == uint32_t(i));
+                    REQUIRE(*cIdIt == uint32_t(i));
 
                     REQUIRE(*dataIt == i);
                     REQUIRE(*cDataIt == i);
@@ -700,17 +683,15 @@ TEST_CASE("Pool<MULTI> - Multiple removal") {
     }
 }
 
-TEST_CASE("Pool<MULTI> - Staggered removal") {
+TEST_CASE("Pool<int> - Staggered removal") {
     // All items are added, then just the odd ones are removed, making sure that removals are
     // correct.
     Pool test;
     constexpr int cTestNum = 20;
 
     for (int i = 0; i < cTestNum; ++i) {
-        int tempI = i;
-        unsigned int tempUi = i;
-        double tempD = i;
-        test.insert(uint32_t(i), std::move(tempI), std::move(tempUi), std::move(tempD));
+        int val = i;
+        test.insert(uint32_t(i), std::move(val));
     }
 
     test.maintenance();
@@ -730,8 +711,8 @@ TEST_CASE("Pool<MULTI> - Staggered removal") {
     REQUIRE(test.removed() == cTestNum / 2);
 
     SECTION("Entities have been removed during maintenance, no longer exists, and is accessible") {
-        auto *it = test.rmbegin();
-        auto *dataIt = test.rmbegin<1>();
+        auto it = test.rmbegin();
+        auto dataIt = test.rmbegin<1>();
 
         for (int i = 1; i < cTestNum; i += 2, ++it, ++dataIt) {
             REQUIRE(!test.exist(uint32_t(i)));
@@ -740,8 +721,8 @@ TEST_CASE("Pool<MULTI> - Staggered removal") {
         }
     }
     SECTION("Entities that should remain do so, and in order") {
-        auto *it = test.begin();
-        auto *dataIt = test.begin<1>();
+        auto it = test.begin();
+        auto dataIt = test.begin<1>();
 
         for (int i = 0; i < cTestNum; i += 2, ++it, ++dataIt) {
             REQUIRE(test.exist(uint32_t(i)));
@@ -751,22 +732,16 @@ TEST_CASE("Pool<MULTI> - Staggered removal") {
     }
 }
 
-TEST_CASE("Pool<MULTI> - Attempting to remove an item multiple times doesn't have "
-          "undesired effects") {
+TEST_CASE(
+    "Pool<int> - Attempting to remove an item multiple times doesn't have undesired effects") {
     Pool test;
 
-    int tempI = 10;
-    unsigned int tempUi = 10;
-    double tempD = 10.;
-    test.insert(uint32_t(10), std::move(tempI), std::move(tempUi), std::move(tempD));
-    tempI = 12;
-    tempUi = 12;
-    tempD = 12.;
-    test.insert(uint32_t(12), std::move(tempI), std::move(tempUi), std::move(tempD));
-    tempI = 8;
-    tempUi = 8;
-    tempD = 8.;
-    test.insert(uint32_t(8), std::move(tempI), std::move(tempUi), std::move(tempD));
+    int temp = 10;
+    test.insert(uint32_t(10), std::move(temp));
+    temp = 12;
+    test.insert(uint32_t(12), std::move(temp));
+    temp = 8;
+    test.insert(uint32_t(8), std::move(temp));
 
     test.maintenance();
 
@@ -782,32 +757,26 @@ TEST_CASE("Pool<MULTI> - Attempting to remove an item multiple times doesn't hav
 
     SECTION("Remaining items") {
         REQUIRE(*test.begin() == uint32_t(8));
-        REQUIRE(*test.begin() == 8);
+        REQUIRE(*test.begin<1>() == 8);
 
         REQUIRE(*(test.begin() + 1) == uint32_t(12));
-        REQUIRE(*(test.begin() + 1) == 12);
+        REQUIRE(*(test.begin<1>() + 1) == 12);
     }
     SECTION("Removed item") {
-        REQUIRE(*test.rmbegin() == uint32_t(10));
-        REQUIRE(*test.rmbegin() == 10);
+        REQUIRE(*(test.rmbegin()) == uint32_t(10));
+        REQUIRE(*(test.rmbegin<1>()) == 10);
     }
 }
 
-TEST_CASE("Pool<MULTI> - Attempting to remove items not in the pool has no undesired effects") {
+TEST_CASE("Pool<int> - Attempting to remove items not in the pool has no undesired effects") {
     Pool test;
 
-    int tempI = 1;
-    unsigned int tempUi = 1;
-    double tempD = 1.;
-    test.insert(uint32_t(1), std::move(tempI), std::move(tempUi), std::move(tempD));
-    tempI = 3;
-    tempUi = 3;
-    tempD = 3.;
-    test.insert(uint32_t(3), std::move(tempI), std::move(tempUi), std::move(tempD));
-    tempI = 5;
-    tempUi = 5;
-    tempD = 5.;
-    test.insert(uint32_t(5), std::move(tempI), std::move(tempUi), std::move(tempD));
+    int temp = 1;
+    test.insert(uint32_t(1), std::move(temp));
+    temp = 3;
+    test.insert(uint32_t(3), std::move(temp));
+    temp = 5;
+    test.insert(uint32_t(5), std::move(temp));
 
     test.maintenance();
 
@@ -823,16 +792,14 @@ TEST_CASE("Pool<MULTI> - Attempting to remove items not in the pool has no undes
     REQUIRE(test.removed() == 0);
 }
 
-TEST_CASE("Pool<MULTI> - Search/find functionality") {
+TEST_CASE("Pool<int> - Search/find functionality") {
     Pool test;
     constexpr int cBuffer = 16;
     constexpr int cTestNum = 16;
 
     for (int i = cBuffer; i < cBuffer + cTestNum; ++i) {
-        int tempI = i;
-        unsigned int tempUi = i;
-        double tempD = i;
-        test.insert(uint32_t(i), std::move(tempI), std::move(tempUi), std::move(tempD));
+        int val = i;
+        test.insert(uint32_t(i), std::move(val));
     }
 
     test.maintenance();
@@ -903,7 +870,7 @@ TEST_CASE("Pool<MULTI> - Search/find functionality") {
                 REQUIRE(ctest.rm_find(uint32_t(i)) == test.removed());
             }
         }
-        SECTION("Inserted items can be found") {
+        SECTION("Inserted items can't be found") {
             for (int i = cBuffer; i < cBuffer + cTestNum; ++i) {
                 REQUIRE(test.rm_sequential_search(uint32_t(i)) != test.removed());
                 REQUIRE(test.rm_binary_search(uint32_t(i)) != test.removed());
