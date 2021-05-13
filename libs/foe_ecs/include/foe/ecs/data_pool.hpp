@@ -20,492 +20,189 @@
 #include <foe/ecs/id.hpp>
 #include <foe/storage/multi_alloc.hpp>
 
-#include <cstring>
 #include <mutex>
-#include <shared_mutex>
+#include <tuple>
 #include <vector>
 
 template <typename... Components>
 class foeDataPool {
-    /// Common
-  public:
-    foeDataPool(size_t expansionRate = 128) :
-        mExpansionRate{expansionRate},
-        mMainStorage{},
-        mStored{0},
-        mToInsertSync{},
-        mToInsert{},
-        mInsertedOffsets{},
-        mToRemoveSync{},
-        mToRemove{},
-        mRemovedStore{},
-        mRemoved{0} {}
-
-    ~foeDataPool() {
-        multiDelete(&mMainStorage, 0, size());
-        clearRemoved();
-    }
-
-  private:
     using TupleType = std::tuple<foeId, Components...>;
     using PoolStore = foeMultiAllocStorage<foeId, Components...>;
 
+  public:
+    /**
+     * @brief Constructor that can set the starting expansion rate
+     * @param expansionRate Rate that the pool will expand by when it enlarges
+     */
+    foeDataPool(size_t expansionRate = 128);
+
+    /// Data held in the main and removed stores are deleted and memory freed
+    ~foeDataPool();
+
+    /**
+     * @brief Performs the data remove/insert requested, in that order
+     * @warning Any insert requests of data with ID's already in the pool are discarded
+     * @note Data can be both removed and inserted in a cycle, since removals occur first
+     *
+     * The remove pass is performed first, and any requested data is made accessible for from the
+     * rmbegin/rmend iterator accessors.
+     *
+     * Then, any insertions are performed, with any unique ID'd data inserted and made accessible
+     * for the inbegin/inend offset iterator accessors.
+     */
+    void maintenance();
+
+    /// Sets a new rate of data pool expansion
+    void expansionRate(size_t expansionRate);
+    /// Returns the current rate of pool expansion
+    size_t expansionRate() const noexcept;
+
+    /// Returns the current capacity of the pool
+    size_t capacity() const noexcept;
+    /// Returns the number of elements in the regular pool
+    size_t size() const noexcept;
+    /// Returns the number of items inserted last maintenance cycle
+    size_t inserted();
+    /// Returns the number of items removed last maintenance cycle
+    size_t removed() const noexcept;
+
+    /// Returns true if data for the ID is already in the pool
+    bool exist(foeId id) const noexcept;
+
+    /**
+     * @brief Adds associated data with an ID to be inserted next maintenance cycle
+     * @param id ID that ties the data together and identifies it uniquely
+     * @param components Data being inserted
+     * @warning If the data already exists in the pool and isn't removed next cycle, this data
+     * *will* be discarded
+     */
+    void insert(foeId id, Components &&...components);
+
+    /// Adds the given ID for any data present to be removed next maintenance cycle
+    void remove(foeId id);
+
+    size_t sequential_search(foeId id) const noexcept;
+    size_t binary_search(foeId id) const noexcept;
+    size_t find(foeId id) const noexcept;
+
     template <int Index = 0>
-    void singleEmplace(PoolStore *pDst,
-                       size_t dstOffset,
+    auto begin() noexcept -> typename std::tuple_element<Index, TupleType>::type *;
+
+    template <int Index = 0>
+    auto begin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+    template <int Index = 0>
+    auto cbegin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+    template <int Index = 0>
+    auto end() noexcept -> typename std::tuple_element<Index, TupleType>::type *;
+
+    template <int Index = 0>
+    auto end() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+    template <int Index = 0>
+    auto cend() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+    auto inbegin() noexcept;
+    auto inbegin() const noexcept;
+    auto cinbegin() const noexcept;
+
+    auto inend() noexcept;
+    auto inend() const noexcept;
+    auto cinend() const noexcept;
+
+    size_t rm_sequential_search(foeId id) const noexcept;
+    size_t rm_binary_search(foeId id) const noexcept;
+    size_t rm_find(foeId id) const noexcept;
+
+    template <int Index = 0>
+    auto rmbegin() noexcept -> typename std::tuple_element<Index, TupleType>::type *;
+
+    template <int Index = 0>
+    auto rmbegin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+    template <int Index = 0>
+    auto crmbegin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+    template <int Index = 0>
+    auto rmend() noexcept -> typename std::tuple_element<Index, TupleType>::type *;
+
+    template <int Index = 0>
+    auto rmend() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+    template <int Index = 0>
+    auto crmend() const noexcept -> typename std::tuple_element<Index, TupleType>::type const *;
+
+  private:
+    /**
+     * @brief Emplaces a single ID/dataset at a specified place in a data store
+     * @param pStore Data store the data is being moved to
+     * @param offset Offset in the data store the item is being emplaced at
+     * @param id ID value that ties the data
+     * @param components Variadic set of items being moved to the data store
+     */
+    template <int Index = 0>
+    void singleEmplace(PoolStore *pStore,
+                       size_t offset,
                        foeId id,
-                       std::tuple<Components...> &&components) {
-        auto *pDstData = pDst->template get<Index>() + dstOffset;
+                       std::tuple<Components...> &&components);
 
-        if constexpr (Index == 0) {
-            // Specifically for the ID
-            *pDstData = id;
-        } else {
-            // Components
-            using IndexType = typename std::tuple_element<Index, TupleType>::type;
-
-            new (pDstData) IndexType{std::move(std::get<Index - 1>(components))};
-        }
-
-        if constexpr (Index != sizeof...(Components)) {
-            singleEmplace<Index + 1>(pDst, dstOffset, id, std::move(components));
-        }
-    }
-
+    /**
+     * @brief Moved stored data objects based on the provided values
+     * @param pSrc Data store to move data from
+     * @param srcOffset Offset into the store to start moves at
+     * @param count Number of items from the offset move
+     * @param pDst Data store to move data to
+     * @param dstOffset Offset into the destination store to start at
+     */
     template <int Index = 0>
     void multiMove(
-        PoolStore *pSrc, size_t startOffset, size_t count, PoolStore *pDst, size_t dstOffset) {
-        using IndexType = typename std::tuple_element<Index, TupleType>::type;
+        PoolStore *pSrc, size_t srcOffset, size_t count, PoolStore *pDst, size_t dstOffset);
 
-        auto *pData = pSrc->template get<Index>() + startOffset;
-        auto *pDstData = pDst->template get<Index>() + dstOffset;
-
-        if constexpr (std::is_trivially_copyable<IndexType>::value) {
-            memmove(pDstData, pData, count * sizeof(foeId));
-        } else {
-            // Components
-            auto *pDataEnd = pData + count;
-
-            while (pData != pDataEnd) {
-                new (pDstData++) IndexType{std::move(*pData++)};
-            }
-        }
-
-        // If not the last component type, go deeper
-        if constexpr (Index != sizeof...(Components)) {
-            multiMove<Index + 1>(pSrc, startOffset, count, pDst, dstOffset);
-        }
-    }
-
+    /**
+     * @brief Deletes stored data objects based on the provided values
+     * @param pStore Data store to delete items from
+     * @param offset Offset into the store to start deletions at
+     * @param count Number of items from the offset to delete
+     */
     template <int Index = 0>
-    void multiDelete(PoolStore *pStore, size_t offset, size_t count) {
-        using IndexType = typename std::tuple_element<Index, TupleType>::type;
+    void multiDelete(PoolStore *pStore, size_t offset, size_t count);
 
-        if constexpr (!std::is_trivially_destructible<IndexType>::value) {
-            auto *pData = pStore->template get<Index>() + offset;
-            auto *const pDataEnd = pData + count;
-
-            while (pData != pDataEnd) {
-                (pData++)->~IndexType();
-            }
-        }
-
-        // If not the last component type, go deeper
-        if constexpr (Index != sizeof...(Components)) {
-            multiDelete<Index + 1>(pStore, offset, count);
-        }
-    }
-
-    /// Regular
-  public:
-    void maintenance() {
-        clearRemoved();
-        clearInserted();
-
-        removePass();
-        insertPass();
-    }
-
-    void expansionRate(size_t expansionRate) { mExpansionRate = expansionRate; }
-    size_t expansionRate() const noexcept { return mExpansionRate; }
-
-    size_t capacity() const noexcept { return mMainStorage.capacity(); }
-    size_t size() const noexcept { return mStored; }
-
-    bool exist(foeId id) const noexcept { return find(id) != size(); }
-
-    size_t sequential_search(foeId id) const noexcept {
-        auto it = begin();
-        auto const endIt = end();
-
-        while (it != endIt) {
-            if (*it == id) {
-                return it - begin();
-            }
-            ++it;
-        }
-
-        return size();
-    }
-
-    size_t binary_search(foeId id) const noexcept {
-        auto searchIt = std::lower_bound(begin(), end(), id);
-        if (searchIt != end() && *searchIt == id) {
-            return searchIt - begin();
-        }
-        return size();
-    }
-
-    size_t find(foeId id) const noexcept {
-        auto searchIt = std::find(begin(), end(), id);
-        return searchIt - begin();
-    }
-
-    template <int Index = 0>
-    auto begin() noexcept -> typename std::tuple_element<Index, TupleType>::type * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
-            mMainStorage.template get<Index>());
-    }
-
-    template <int Index = 0>
-    auto begin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mMainStorage.template get<Index>());
-    }
-
-    template <int Index = 0>
-    auto cbegin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mMainStorage.template get<Index>());
-    }
-
-    template <int Index = 0>
-    auto end() noexcept -> typename std::tuple_element<Index, TupleType>::type * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
-            mMainStorage.template get<Index>() + mStored);
-    }
-
-    template <int Index = 0>
-    auto end() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mMainStorage.template get<Index>() + mStored);
-    }
-
-    template <int Index = 0>
-    auto cend() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mMainStorage.template get<Index>() + mStored);
-    }
-
-  private:
-    size_t mExpansionRate;
-
-    PoolStore mMainStorage;
-    size_t mStored;
-
-    /// Insertion
-  public:
-    void insert(foeId id, Components &&...components) {
-        mToInsertSync.lock();
-
-        mToInsert.emplace_back(id, std::make_tuple(std::move(components)...));
-
-        mToInsertSync.unlock();
-    }
-
-    size_t inserted() { return mInsertedOffsets.size(); };
-
-    auto inbegin() noexcept { return mInsertedOffsets.begin(); }
-    auto inbegin() const noexcept { return mInsertedOffsets.begin(); }
-    auto cinbegin() const noexcept { return mInsertedOffsets.cbegin(); }
-
-    auto inend() noexcept { return mInsertedOffsets.end(); }
-    auto inend() const noexcept { return mInsertedOffsets.end(); }
-    auto cinend() const noexcept { return mInsertedOffsets.cend(); }
-
-  private:
-    void clearInserted() { mInsertedOffsets.clear(); }
+    /// Clears data relating to what was previously inserted
+    void clearInserted();
+    /// Performs insertion of requested data
     void insertPass();
 
-    std::mutex mToInsertSync;
-    std::vector<std::tuple<foeId, std::tuple<Components...>>> mToInsert;
-
-    std::vector<size_t> mInsertedOffsets;
-
-    /// Removal
-  public:
-    void remove(foeId id) {
-        mToRemoveSync.lock();
-        mToRemove.emplace_back(id);
-        mToRemoveSync.unlock();
-    }
-
-    size_t removed() const noexcept { return mRemoved; }
-
-    size_t rm_sequential_search(foeId id) const noexcept {
-        auto it = rmbegin();
-        auto const endIt = rmend();
-
-        while (it != endIt) {
-            if (*it == id) {
-                return it - rmbegin();
-            }
-            ++it;
-        }
-
-        return removed();
-    }
-
-    size_t rm_binary_search(foeId id) const noexcept {
-        auto searchIt = std::lower_bound(rmbegin(), rmend(), id);
-        if (searchIt != rmend() && *searchIt == id) {
-            return searchIt - rmbegin();
-        }
-        return removed();
-    }
-
-    size_t rm_find(foeId id) const noexcept {
-        auto searchIt = std::find(rmbegin(), rmend(), id);
-        return searchIt - rmbegin();
-    }
-
-    template <int Index = 0>
-    auto rmbegin() noexcept -> typename std::tuple_element<Index, TupleType>::type * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
-            mRemovedStore.template get<Index>());
-    }
-
-    template <int Index = 0>
-    auto rmbegin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mRemovedStore.template get<Index>());
-    }
-
-    template <int Index = 0>
-    auto crmbegin() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mRemovedStore.template get<Index>());
-    }
-
-    template <int Index = 0>
-    auto rmend() noexcept -> typename std::tuple_element<Index, TupleType>::type * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type *>(
-            mRemovedStore.template get<Index>() + mRemoved);
-    }
-
-    template <int Index = 0>
-    auto rmend() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mRemovedStore.template get<Index>() + mRemoved);
-    }
-
-    template <int Index = 0>
-    auto crmend() const noexcept -> typename std::tuple_element<Index, TupleType>::type const * {
-        return static_cast<typename std::tuple_element<Index, TupleType>::type const *>(
-            mRemovedStore.template get<Index>() + mRemoved);
-    }
-
-  private:
-    void clearRemoved() {
-        multiDelete(&mRemovedStore, 0, mRemoved);
-        mRemoved = 0;
-    }
+    /// Clears previously removed data
+    void clearRemoved();
+    /// Performs removals of requested data
     void removePass();
 
-    // To be removed stuff
+    /// When the main data store expand, this dictates the multiple of how much
+    size_t mExpansionRate;
+    /// Currently held IDs and data
+    PoolStore mMainStorage;
+    /// Number of items in the main store
+    size_t mStored;
+
+    /// Synchronizes access to the insertion list
+    std::mutex mToInsertSync;
+    /// IDs and data to attempt insertion next maintenance
+    std::vector<std::tuple<foeId, std::tuple<Components...>>> mToInsert;
+    /// List of offsets of items inserted last maintenance
+    std::vector<size_t> mInsertedOffsets;
+
+    /// Synchronizes access to the removal list
     std::mutex mToRemoveSync;
+    /// List of ID'd items to remove next maintenance
     std::vector<foeId> mToRemove;
 
-    // Stuff removed last maintenance cycle
+    /// Data removed last maintenance
     PoolStore mRemovedStore;
+    /// Number of items removed last maintenance
     size_t mRemoved;
 };
 
-template <typename... Components>
-void foeDataPool<Components...>::insertPass() {
-    mToInsertSync.lock();
-    auto toInsert = std::move(mToInsert);
-    mToInsertSync.unlock();
-
-    // If there's nothing to insert, leave
-    if (toInsert.empty())
-        return;
-
-    std::sort(toInsert.begin(), toInsert.end(),
-              [](auto const &a, auto const &b) { return std::get<0>(a) < std::get<0>(b); });
-    toInsert.erase(
-        std::unique(toInsert.begin(), toInsert.end(),
-                    [](auto const &a, auto const &b) { return std::get<0>(a) == std::get<0>(b); }),
-        toInsert.end());
-
-    mInsertedOffsets.reserve(toInsert.size());
-
-    std::vector<std::pair<
-        typename std::vector<std::tuple<foeId, std::tuple<Components...>>>::iterator, size_t>>
-        srcDstOffsets;
-    srcDstOffsets.reserve(toInsert.size());
-
-    {
-        // Iterators to the insertion map items
-        auto inIt = toInsert.begin();
-        auto const inEndIt = toInsert.end();
-        // Pointer/Iterator to the foeId's of items already in regular storage
-        auto *const pBeginId = mMainStorage.get();
-        auto *const pEndId = mMainStorage.get() + mStored;
-        auto *pId = pBeginId;
-
-        while (inIt != inEndIt) {
-            // Try to shortcut the linear search by doing binary search
-            pId = std::lower_bound(pId, pEndId, std::get<0>(*inIt));
-
-            // Find the next destination placement
-            while (pId != pEndId && *pId < std::get<0>(*inIt)) {
-                ++pId;
-            }
-
-            // Same values, item already in regular list, skip the insertion of this element
-            if (pId != pEndId && *pId == std::get<0>(*inIt)) {
-                ++inIt;
-                continue;
-            }
-
-            // At this point, it is not already in storage, and is unique, so it is to be added
-            srcDstOffsets.emplace_back(inIt, pId - pBeginId);
-
-            ++inIt;
-        }
-    }
-
-    // If nothing to be inserted, just skip out
-    if (srcDstOffsets.empty()) {
-        return;
-    }
-
-    // Resize main storage if necessary
-    PoolStore possibleNewStore;
-    // By default new storage is the same storage
-    PoolStore *pNewStore = &mMainStorage;
-    // If we need a newly resized storage, change where the above pointer looks to
-    if (auto newMinSize = mStored + srcDstOffsets.size(); mMainStorage.capacity() < newMinSize) {
-        newMinSize = ((newMinSize / mExpansionRate) + 1) * mExpansionRate;
-        possibleNewStore = std::move(PoolStore{newMinSize});
-        pNewStore = &possibleNewStore;
-    }
-
-    size_t lastMovedOldItem = mStored;
-    size_t accumulatedDistance = srcDstOffsets.size();
-
-    for (auto srcDstIt = srcDstOffsets.rbegin(); srcDstIt != srcDstOffsets.rend(); ++srcDstIt) {
-        size_t givenOffset = srcDstIt->second;
-        srcDstIt->second += accumulatedDistance - 1;
-
-        // If the item is being placed before some old objects, then we need to shift them up
-        if (givenOffset < lastMovedOldItem) {
-            size_t src = givenOffset;
-            size_t dst = givenOffset + accumulatedDistance;
-            size_t numMove = lastMovedOldItem - givenOffset;
-
-            // @todo Revisit idea of doing 'floating memory' as this is by far the worst time sink
-            // during execution
-            multiMove(&mMainStorage, src, numMove, pNewStore, dst);
-
-            lastMovedOldItem = givenOffset;
-        }
-
-        // Everything has been shifted out of the way, place the entry now
-        singleEmplace(pNewStore, srcDstIt->second, std::get<0>(*srcDstIt->first),
-                      std::move(std::get<1>(*srcDstIt->first)));
-
-        // We added an item, decrement the accumulated distance
-        --accumulatedDistance;
-
-        // Add the aded ID to the inserted list
-        mInsertedOffsets.emplace_back(srcDstIt->second);
-    }
-
-    // If there is a new storage medium, then change over
-    if (pNewStore != &mMainStorage) {
-        // Make sure, if we are changing storage, that the last items are moved over.
-        if (0 < lastMovedOldItem) {
-            size_t src = 0;
-            size_t dst = accumulatedDistance;
-            size_t numMove = lastMovedOldItem;
-            multiMove(&mMainStorage, src, numMove, pNewStore, dst);
-        }
-
-        mMainStorage = std::move(possibleNewStore);
-    }
-
-    // Set the new number of held items
-    mStored += srcDstOffsets.size();
-
-    // Reverse the inserted lists to be in ascending order
-    std::reverse(mInsertedOffsets.begin(), mInsertedOffsets.end());
-}
-
-template <typename... Components>
-void foeDataPool<Components...>::removePass() {
-    mToRemoveSync.lock();
-    auto toRemove = std::move(mToRemove);
-    mToRemoveSync.unlock();
-
-    // If there's nothing to remove, leave
-    if (toRemove.empty())
-        return;
-
-    // Sort the IDs to be in-order
-    std::sort(toRemove.begin(), toRemove.end());
-
-    // Prepare removed storage for new items, make sure has enough capacity
-    if (mRemovedStore.capacity() < toRemove.size()) {
-        mRemovedStore = std::move(PoolStore{toRemove.size()});
-    }
-
-    auto *const pIdStart = mMainStorage.template get<0>();
-    auto *const pIdEnd = pIdStart + mStored;
-    auto *pId = pIdStart;
-
-    auto rmIt = toRemove.cbegin();
-    auto const rmItEnd = toRemove.cend();
-
-    size_t lastMovedObject = 0;
-    while (pId != pIdEnd && rmIt != rmItEnd) {
-        // If we haven't found the next item to remove yet, continue the search
-        if (*pId < *rmIt) {
-            ++pId;
-            continue;
-        }
-
-        if (*pId == *rmIt) {
-            // Move the removed entry out
-            auto const offset = pId - pIdStart;
-            multiMove(&mMainStorage, offset, 1, &mRemovedStore, mRemoved);
-
-            // Move any regular object that need to be shifted down.
-            if (lastMovedObject != 0) {
-                multiMove(&mMainStorage, lastMovedObject, offset - lastMovedObject, &mMainStorage,
-                          lastMovedObject - mRemoved);
-            }
-
-            ++pId;
-            ++rmIt;
-            // We removed another and it's used in-loop, increment
-            ++mRemoved;
-            lastMovedObject = offset + 1;
-        } else {
-            // The ID is larger than the ID to remove, so the ID isn't in the pool, so skip this
-            // remove request
-            ++rmIt;
-        }
-    }
-
-    if (lastMovedObject != 0) {
-        multiMove(&mMainStorage, lastMovedObject, mStored - lastMovedObject, &mMainStorage,
-                  lastMovedObject - mRemoved);
-    }
-
-    // Finally, decrement the total stored by the number we just removed.
-    mStored -= mRemoved;
-}
+#include <foe/ecs/data_pool.impl.hpp>
 
 #endif // FOE_ECS_DATA_POOL_HPP
