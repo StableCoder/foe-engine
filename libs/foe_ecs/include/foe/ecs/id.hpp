@@ -34,6 +34,11 @@ using foeIdIndex = foeId;
 /// Represents the value of an ID's Index, shifted to be zero-based
 using foeIdIndexValue = foeIdIndex;
 
+/// Identifier specifically for a resource type
+using foeResourceID = foeId;
+/// Identifier specifically for entities/state data
+using foeEntityID = foeId;
+
 enum : uint32_t {
     /// Number of total bits in the foeId type
     foeIdNumBits = static_cast<foeId>(std::numeric_limits<foeId>::digits),
