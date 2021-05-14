@@ -23,8 +23,9 @@
 namespace {
 
 constexpr std::string_view dependenciesFilePath = "dependencies.yml";
-constexpr std::string_view indexDataFilePath = "index_data.yml";
-constexpr std::string_view resourcesDirectoryPath = "resources";
+constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
+constexpr std::string_view resourceDirectoryPath = "resources";
+constexpr std::string_view stateIndexDataFilePath = "state_index_data.yml";
 constexpr std::string_view stateDirectoryPath = "state";
 
 } // namespace
@@ -36,12 +37,15 @@ auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
         // Dependencies
         (std::filesystem::exists(stateDataPath / dependenciesFilePath) &&
          std::filesystem::is_regular_file(stateDataPath / dependenciesFilePath)) &&
-        // Index Data
-        (std::filesystem::exists(stateDataPath / indexDataFilePath) &&
-         std::filesystem::is_regular_file(stateDataPath / indexDataFilePath)) &&
+        // Resource Index Data
+        (std::filesystem::exists(stateDataPath / resourceIndexDataFilePath) &&
+         std::filesystem::is_regular_file(stateDataPath / resourceIndexDataFilePath)) &&
         // Resources
-        (std::filesystem::exists(stateDataPath / resourcesDirectoryPath) &&
-         std::filesystem::is_directory(stateDataPath / resourcesDirectoryPath)) &&
+        (std::filesystem::exists(stateDataPath / resourceDirectoryPath) &&
+         std::filesystem::is_directory(stateDataPath / resourceDirectoryPath)) &&
+        // State Index Data
+        (std::filesystem::exists(stateDataPath / stateIndexDataFilePath) &&
+         std::filesystem::is_regular_file(stateDataPath / stateIndexDataFilePath)) &&
         // State
         (std::filesystem::exists(stateDataPath / stateDirectoryPath) &&
          std::filesystem::is_directory(stateDataPath / stateDirectoryPath))) {

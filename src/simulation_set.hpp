@@ -25,13 +25,13 @@
 
 struct SimulationSet {
     foeGroupData groupData;
-    foeEditorNameMap nameMap;
-    // DataImporters importers;
 
     ResourcePools resources;
     ResourceLoaders resourceLoaders;
+    foeEditorNameMap resourceNameMap;
 
     StatePools state;
+    foeEditorNameMap entityNameMap;
     // StateSystems systems;
 };
 

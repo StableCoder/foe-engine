@@ -35,8 +35,9 @@
 namespace {
 
 constexpr std::string_view dependenciesFilePath = "dependencies.yml";
-constexpr std::string_view indexDataFilePath = "index_data.yml";
-constexpr std::string_view resourcesDirectoryPath = "resources";
+constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
+constexpr std::string_view resourceDirectoryPath = "resources";
+constexpr std::string_view stateIndexDataFilePath = "state_index_data.yml";
 constexpr std::string_view stateDirectoryPath = "state";
 
 /** @brief Parses a Yaml filename to determine the IdGroupValue and IdIndex
@@ -139,9 +140,11 @@ bool foeDistributedYamlImporter::getDependencies(
     return importDependenciesFromNode(node, dependencies);
 }
 
-bool foeDistributedYamlImporter::getGroupIndexData(foeIdIndexGenerator &ecsGroup) {
+namespace {
+
+bool getGroupIndexData(std::filesystem::path path, foeIdIndexGenerator &ecsGroup) {
     YAML::Node node;
-    if (!openYamlFile(mRootDir / indexDataFilePath, node))
+    if (!openYamlFile(path, node))
         return false;
 
     try {
@@ -153,6 +156,16 @@ bool foeDistributedYamlImporter::getGroupIndexData(foeIdIndexGenerator &ecsGroup
     }
 
     return true;
+}
+
+} // namespace
+
+bool foeDistributedYamlImporter::getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) {
+    return getGroupIndexData(mRootDir / stateIndexDataFilePath, ecsGroup);
+}
+
+bool foeDistributedYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) {
+    return getGroupIndexData(mRootDir / resourceIndexDataFilePath, ecsGroup);
 }
 
 bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
@@ -195,7 +208,7 @@ bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNa
                                                            ResourcePools *pResourcePools,
                                                            ResourceLoaders *pResourceLoaders) {
     for (auto &dirIt :
-         std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
+         std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
         if (std::filesystem::is_directory(dirIt))
             continue;
 
@@ -215,7 +228,7 @@ bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNa
         std::string editorName;
         try {
             // ID
-            yaml_read_id_required("", node, nullptr, foeIdTypeResource, resource);
+            yaml_read_id_required("", node, nullptr, resource);
 
             // Editor Name
             yaml_read_optional("editor_name", node, editorName);
@@ -299,7 +312,7 @@ foeResourceCreateInfoBase *foeDistributedYamlImporter::getResource(foeId id) {
     YAML::Node rootNode;
     foeIdIndex index = foeIdGetIndex(id);
     for (auto &dirEntry :
-         std::filesystem::recursive_directory_iterator{mRootDir / resourcesDirectoryPath}) {
+         std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
         if (std::filesystem::is_directory(dirEntry))
             continue;
 

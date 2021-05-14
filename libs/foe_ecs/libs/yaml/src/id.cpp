@@ -23,7 +23,6 @@
 void yaml_read_id_required(std::string const &nodeName,
                            YAML::Node const &node,
                            foeIdGroupTranslator const *pTranslator,
-                           foeIdType idType,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -31,7 +30,7 @@ void yaml_read_id_required(std::string const &nodeName,
     }
 
     try {
-        if (!yaml_read_id_optional("", subNode, pTranslator, idType, id)) {
+        if (!yaml_read_id_optional("", subNode, pTranslator, id)) {
             throw foeYamlException("index_id - Could not find required node to parse foeId");
         }
     } catch (foeYamlException const &e) {
@@ -46,7 +45,6 @@ void yaml_read_id_required(std::string const &nodeName,
 bool yaml_read_id_optional(std::string const &nodeName,
                            YAML::Node const &node,
                            foeIdGroupTranslator const *pTranslator,
-                           foeIdType idType,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -71,7 +69,7 @@ bool yaml_read_id_optional(std::string const &nodeName,
         if (!yaml_read_optional("index_id", subNode, index))
             return false;
 
-        id = foeIdCreateType(group, idType, index);
+        id = foeIdCreate(group, index);
     } catch (foeYamlException const &e) {
         throw e;
     }

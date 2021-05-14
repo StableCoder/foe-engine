@@ -28,8 +28,9 @@ class foeEditorNameMap;
 bool exportGroupState(std::filesystem::path yamlPath,
                       foeGfxSession gfxSession,
                       foeGroupData &ecsGroups,
-                      foeEditorNameMap *pNameMap,
+                      foeEditorNameMap *pEntityNameMap,
                       StatePools &statePools,
+                      foeEditorNameMap *pResourceNameMap,
                       ResourcePools &resourcePools);
 
 #endif // EXPORT_HPP

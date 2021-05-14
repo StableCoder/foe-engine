@@ -23,11 +23,11 @@ TEST_CASE("Reading foeId with only Index - Success Cases", "[foe][ecs][yaml][id]
     REQUIRE_NOTHROW(root = YAML::Load(R"(index_id: 15)"));
 
     foeId test = FOE_INVALID_ID;
-    REQUIRE_NOTHROW(yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test));
+    REQUIRE_NOTHROW(yaml_read_id_required("", root, nullptr, test));
     CHECK(test == foeIdCreate(foeIdPersistentGroup, 15));
 
     test = FOE_INVALID_ID;
-    REQUIRE(yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test));
+    REQUIRE(yaml_read_id_optional("", root, nullptr, test));
     CHECK(test == foeIdCreate(foeIdPersistentGroup, 15));
 }
 
@@ -39,11 +39,11 @@ TEST_CASE("Reading foeId with only Index - Failure Cases", "[foe][ecs][yaml][id]
 
         foeId test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_required("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("index_id - Could not find required node to parse foeId"));
 
         test = FOE_INVALID_ID;
-        REQUIRE_FALSE(yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test));
+        REQUIRE_FALSE(yaml_read_id_optional("", root, nullptr, test));
     }
 
     SECTION("Bad data") {
@@ -51,12 +51,12 @@ TEST_CASE("Reading foeId with only Index - Failure Cases", "[foe][ecs][yaml][id]
 
         foeId test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_required("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("index_id - Could not parse Map-type node as 'uint32_t'"));
 
         test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_optional("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("index_id - Could not parse Map-type node as 'uint32_t'"));
     }
 }
@@ -67,11 +67,11 @@ TEST_CASE("Reading foeId with for Group & Index - Success Cases", "[foe][ecs][ya
 group_id: 4)"));
 
     foeId test = FOE_INVALID_ID;
-    REQUIRE_NOTHROW(yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test));
+    REQUIRE_NOTHROW(yaml_read_id_required("", root, nullptr, test));
     CHECK(test == foeIdCreate(foeIdValueToGroup(4), 15));
 
     test = FOE_INVALID_ID;
-    REQUIRE(yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test));
+    REQUIRE(yaml_read_id_optional("", root, nullptr, test));
     CHECK(test == foeIdCreate(foeIdValueToGroup(4), 15));
 }
 
@@ -84,11 +84,11 @@ group_id: 4)"));
 
         foeId test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_required("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("index_id - Could not find required node to parse foeId"));
 
         test = FOE_INVALID_ID;
-        REQUIRE_FALSE(yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test));
+        REQUIRE_FALSE(yaml_read_id_optional("", root, nullptr, test));
     }
 
     SECTION("Missing group_id node succeeds, but returns using the 'Persistent' group") {
@@ -96,11 +96,11 @@ group_id: 4)"));
 group_id_BROKE: 4)"));
 
         foeId test = FOE_INVALID_ID;
-        REQUIRE_NOTHROW(yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test));
+        REQUIRE_NOTHROW(yaml_read_id_required("", root, nullptr, test));
         CHECK(test == foeIdCreate(foeIdPersistentGroup, 15));
 
         test = FOE_INVALID_ID;
-        REQUIRE(yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test));
+        REQUIRE(yaml_read_id_optional("", root, nullptr, test));
         CHECK(test == foeIdCreate(foeIdPersistentGroup, 15));
     }
 
@@ -110,12 +110,12 @@ group_id: 4)"));
 
         foeId test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_required("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("index_id - Could not parse Map-type node as 'uint32_t'"));
 
         test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_optional("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("index_id - Could not parse Map-type node as 'uint32_t'"));
     }
 
@@ -125,12 +125,12 @@ group_id: four)"));
 
         foeId test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_required("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_required("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("group_id - Could not parse Map-type node as 'uint32_t'"));
 
         test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_id_optional("", root, nullptr, foeIdTypeEntity, test), foeYamlException,
+            yaml_read_id_optional("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("group_id - Could not parse Map-type node as 'uint32_t'"));
     }
 }
@@ -144,8 +144,7 @@ TEST_CASE("Writing foeId") {
                 "", foeIdCreate(foeIdPersistentGroup, foeIdValueToIndex(0x404)), test));
 
             foeId reconstituted = FOE_INVALID_ID;
-            REQUIRE_NOTHROW(
-                yaml_read_id_required("", test, nullptr, foeIdTypeEntity, reconstituted));
+            REQUIRE_NOTHROW(yaml_read_id_required("", test, nullptr, reconstituted));
             CHECK(reconstituted == foeIdCreate(foeIdPersistentGroup, foeIdValueToIndex(0x404)));
         }
 
@@ -154,8 +153,7 @@ TEST_CASE("Writing foeId") {
                 "id_sub", foeIdCreate(foeIdPersistentGroup, foeIdValueToIndex(0x404)), test));
 
             foeId reconstituted = FOE_INVALID_ID;
-            REQUIRE_NOTHROW(
-                yaml_read_id_required("id_sub", test, nullptr, foeIdTypeEntity, reconstituted));
+            REQUIRE_NOTHROW(yaml_read_id_required("id_sub", test, nullptr, reconstituted));
             CHECK(reconstituted == foeIdCreate(foeIdPersistentGroup, foeIdValueToIndex(0x404)));
         }
 
@@ -165,8 +163,7 @@ TEST_CASE("Writing foeId") {
                 "id_sub", foeIdCreate(foeIdPersistentGroup, foeIdValueToIndex(0x404)), test));
 
             foeId reconstituted = FOE_INVALID_ID;
-            REQUIRE_NOTHROW(
-                yaml_read_id_required("id_sub", test, nullptr, foeIdTypeEntity, reconstituted));
+            REQUIRE_NOTHROW(yaml_read_id_required("id_sub", test, nullptr, reconstituted));
             CHECK(reconstituted == foeIdCreate(foeIdPersistentGroup, foeIdValueToIndex(0x404)));
         }
     }
@@ -177,8 +174,7 @@ TEST_CASE("Writing foeId") {
                 "", foeIdCreate(foeIdValueToGroup(0x4), foeIdValueToIndex(0x404)), test));
 
             foeId reconstituted = FOE_INVALID_ID;
-            REQUIRE_NOTHROW(
-                yaml_read_id_required("", test, nullptr, foeIdTypeEntity, reconstituted));
+            REQUIRE_NOTHROW(yaml_read_id_required("", test, nullptr, reconstituted));
             CHECK(reconstituted == foeIdCreate(foeIdValueToGroup(0x4), foeIdValueToIndex(0x404)));
         }
 
@@ -187,8 +183,7 @@ TEST_CASE("Writing foeId") {
                 "id_sub", foeIdCreate(foeIdValueToGroup(0x4), foeIdValueToIndex(0x404)), test));
 
             foeId reconstituted = FOE_INVALID_ID;
-            REQUIRE_NOTHROW(
-                yaml_read_id_required("id_sub", test, nullptr, foeIdTypeEntity, reconstituted));
+            REQUIRE_NOTHROW(yaml_read_id_required("id_sub", test, nullptr, reconstituted));
             CHECK(reconstituted == foeIdCreate(foeIdValueToGroup(0x4), foeIdValueToIndex(0x404)));
         }
 
@@ -198,8 +193,7 @@ TEST_CASE("Writing foeId") {
                 "id_sub", foeIdCreate(foeIdValueToGroup(0x4), foeIdValueToIndex(0x404)), test));
 
             foeId reconstituted = FOE_INVALID_ID;
-            REQUIRE_NOTHROW(
-                yaml_read_id_required("id_sub", test, nullptr, foeIdTypeEntity, reconstituted));
+            REQUIRE_NOTHROW(yaml_read_id_required("id_sub", test, nullptr, reconstituted));
             CHECK(reconstituted == foeIdCreate(foeIdValueToGroup(0x4), foeIdValueToIndex(0x404)));
         }
     }

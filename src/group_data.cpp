@@ -18,10 +18,11 @@
 
 #include <foe/log.hpp>
 
-bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pIndices,
+bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntityIndices,
+                                   std::unique_ptr<foeIdIndexGenerator> &&pResourceIndices,
                                    std::unique_ptr<foeImporterBase> &&pImporter) {
     // Make sure both items are valid pointers
-    if (pIndices == nullptr || pImporter == nullptr) {
+    if (pEntityIndices == nullptr || pResourceIndices == nullptr || pImporter == nullptr) {
         FOE_LOG(General, Error,
                 "foeGroupData::addDynamicGroup - Either the given indices or importer are nullptr");
         return false;
@@ -34,7 +35,8 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pIndic
     }
 
     // Check both have the same ID Group
-    if (pIndices->groupID() != pImporter->group()) {
+    if (pEntityIndices->groupID() != pImporter->group() ||
+        pResourceIndices->groupID() != pImporter->group()) {
         FOE_LOG(General, Error,
                 "foeGroupData::addDynamicGroup - ID Groups don't match between the indices and "
                 "importer");
@@ -42,7 +44,7 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pIndic
     }
 
     // Must be within the dynamic groups valid range
-    auto groupValue = foeIdGroupToValue(pIndices->groupID());
+    auto groupValue = foeIdGroupToValue(pEntityIndices->groupID());
     if (groupValue >= foeIdNumDynamicGroups) {
         FOE_LOG(General, Error,
                 "foeGroupData::addDynamicGroup - ID Group is not within the valid dynamic group "
@@ -51,7 +53,7 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pIndic
     }
 
     // Check that the group isn't already used
-    if (mDynamicGroups[groupValue].pIndices != nullptr) {
+    if (mDynamicGroups[groupValue].pEntityIndices != nullptr) {
         FOE_LOG(General, Error,
                 "foeGroupData::addDynamicGroup - Attempted to add ID group that is already used")
         return false;
@@ -73,7 +75,8 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pIndic
         }
     }
 
-    mDynamicGroups[groupValue].pIndices = std::move(pIndices);
+    mDynamicGroups[groupValue].pEntityIndices = std::move(pEntityIndices);
+    mDynamicGroups[groupValue].pResourceIndices = std::move(pResourceIndices);
     mDynamicGroups[groupValue].pImporter = std::move(pImporter);
     return true;
 }
@@ -96,28 +99,56 @@ bool foeGroupData::setPersistentImporter(std::unique_ptr<foeImporterBase> &&pImp
     return true;
 }
 
-auto foeGroupData::indices(foeIdGroup group) noexcept -> foeIdIndexGenerator * {
+auto foeGroupData::entityIndices(foeIdGroup group) noexcept -> foeIdIndexGenerator * {
     auto idGroup = foeIdGetGroup(group);
 
     if (idGroup == foeIdPersistentGroup) {
-        return persistentIndices();
+        return persistentEntityIndices();
     } else if (idGroup == foeIdTemporaryGroup) {
-        return temporaryIndices();
+        return temporaryEntityIndices();
     }
 
-    return mDynamicGroups[foeIdGroupToValue(idGroup)].pIndices.get();
+    return mDynamicGroups[foeIdGroupToValue(idGroup)].pEntityIndices.get();
 }
 
-auto foeGroupData::indices(std::string_view groupName) noexcept -> foeIdIndexGenerator * {
+auto foeGroupData::entityIndices(std::string_view groupName) noexcept -> foeIdIndexGenerator * {
     if (groupName == cPersistentName) {
-        return persistentIndices();
+        return persistentEntityIndices();
     } else if (groupName == cTemporaryName) {
-        return temporaryIndices();
+        return temporaryEntityIndices();
     }
 
     for (auto const &it : mDynamicGroups) {
         if (it.pImporter != nullptr && it.pImporter->name() == groupName) {
-            return it.pIndices.get();
+            return it.pEntityIndices.get();
+        }
+    }
+
+    return nullptr;
+}
+
+auto foeGroupData::resourceIndices(foeIdGroup group) noexcept -> foeIdIndexGenerator * {
+    auto idGroup = foeIdGetGroup(group);
+
+    if (idGroup == foeIdPersistentGroup) {
+        return persistentResourceIndices();
+    } else if (idGroup == foeIdTemporaryGroup) {
+        return temporaryResourceIndices();
+    }
+
+    return mDynamicGroups[foeIdGroupToValue(idGroup)].pResourceIndices.get();
+}
+
+auto foeGroupData::resourceIndices(std::string_view groupName) noexcept -> foeIdIndexGenerator * {
+    if (groupName == cPersistentName) {
+        return persistentResourceIndices();
+    } else if (groupName == cTemporaryName) {
+        return temporaryResourceIndices();
+    }
+
+    for (auto const &it : mDynamicGroups) {
+        if (it.pImporter != nullptr && it.pImporter->name() == groupName) {
+            return it.pResourceIndices.get();
         }
     }
 
@@ -153,15 +184,24 @@ auto foeGroupData::importer(std::string_view groupName) noexcept -> foeImporterB
     return nullptr;
 }
 
-auto foeGroupData::persistentIndices() noexcept -> foeIdIndexGenerator * {
-    return &mPersistentIndices;
+auto foeGroupData::persistentEntityIndices() noexcept -> foeIdIndexGenerator * {
+    return &mPersistentEntityIndices;
 }
+
+auto foeGroupData::persistentResourceIndices() noexcept -> foeIdIndexGenerator * {
+    return &mPersistentResourceIndices;
+}
+
 auto foeGroupData::persistentImporter() noexcept -> foeImporterBase * {
     return mPersistentImporter.get();
 }
 
-auto foeGroupData::temporaryIndices() noexcept -> foeIdIndexGenerator * {
-    return &mTemporaryIndices;
+auto foeGroupData::temporaryEntityIndices() noexcept -> foeIdIndexGenerator * {
+    return &mTemporaryEntityIndices;
+}
+
+auto foeGroupData::temporaryResourceIndices() noexcept -> foeIdIndexGenerator * {
+    return &mTemporaryResourceIndices;
 }
 
 bool foeGroupData::getResourceDefinition(foeId id, foeResourceCreateInfoBase **ppCreateInfo) {

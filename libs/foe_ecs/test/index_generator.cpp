@@ -113,22 +113,20 @@ TEST_CASE("IndexGenerator - Reset with custom values", "[foe][ecs][IndexGenerato
 TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
     foeIdIndexGenerator test("", 0);
 
-    // Generate the first ID (as an entity)
+    // Generate the first ID
     foeId test0 = test.generate();
 
     REQUIRE(test0 == foeId(0x00000001));
     REQUIRE(foeIdGetGroup(test0) == 0x00000000);
     REQUIRE(foeIdGroupToValue(test0) == 0x0);
-    REQUIRE(foeIdIsEntity(test0));
     REQUIRE(foeIdGetIndex(test0) == 1);
 
-    // Generate the second ID (as a resource)
-    foeId test1 = test.generateResource();
+    // Generate the second ID
+    foeId test1 = test.generate();
 
-    REQUIRE(test1 == foeId(0x08000002));
+    REQUIRE(test1 == foeId(0x00000002));
     REQUIRE(foeIdGetGroup(test1) == 0x00000000);
     REQUIRE(foeIdGroupToValue(test1) == 0x0);
-    REQUIRE(foeIdIsResource(test1));
     REQUIRE(foeIdGetIndex(test1) == 2);
 
     // Recycle the second ID then first ID and generate again as their opposites
@@ -140,16 +138,14 @@ TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
         REQUIRE(test0 == foeId(0x00000002));
         REQUIRE(foeIdGetGroup(test0) == 0x00000000);
         REQUIRE(foeIdGroupToValue(test0) == 0x0);
-        REQUIRE(foeIdIsEntity(test0));
         REQUIRE(foeIdGetIndex(test0) == 2);
     }
 
-    test1 = test.generateResource();
+    test1 = test.generate();
     THEN("Second recycled should be 1 again.") {
-        REQUIRE(test1 == foeId(0x08000001));
+        REQUIRE(test1 == foeId(0x00000001));
         REQUIRE(foeIdGetGroup(test1) == 0x00000000);
         REQUIRE(foeIdGroupToValue(test1) == 0x0);
-        REQUIRE(foeIdIsResource(test1));
         REQUIRE(foeIdGetIndex(test1) == 1);
     }
 
@@ -176,22 +172,20 @@ TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
 
     REQUIRE(test.groupID() == 0xF0000000);
 
-    // Generate the first ID (as an entity)
+    // Generate the first ID
     foeId test0 = test.generate();
 
     REQUIRE(test0 == foeId(0xF0000001));
     REQUIRE(foeIdGetGroup(test0) == 0xF0000000);
     REQUIRE(foeIdGroupToValue(test0) == 0xF);
-    REQUIRE(foeIdIsEntity(test0));
     REQUIRE(foeIdGetIndex(test0) == 1);
 
-    // Generate the second ID (as a resource)
-    foeId test1 = test.generateResource();
+    // Generate the second ID
+    foeId test1 = test.generate();
 
-    REQUIRE(test1 == foeId(0xF8000002));
+    REQUIRE(test1 == foeId(0xF0000002));
     REQUIRE(foeIdGetGroup(test1) == 0xF0000000);
     REQUIRE(foeIdGroupToValue(test1) == 0xF);
-    REQUIRE(foeIdIsResource(test1));
     REQUIRE(foeIdGetIndex(test1) == 2);
 
     // Recycle the second ID then first ID and generate again as their opposites
@@ -203,16 +197,14 @@ TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
         REQUIRE(test0 == foeId(0xF0000002));
         REQUIRE(foeIdGetGroup(test0) == 0xF0000000);
         REQUIRE(foeIdGroupToValue(test0) == 0xF);
-        REQUIRE(foeIdIsEntity(test0));
         REQUIRE(foeIdGetIndex(test0) == 2);
     }
 
-    test1 = test.generateResource();
+    test1 = test.generate();
     THEN("Second recycled should be 1 again.") {
-        REQUIRE(test1 == foeId(0xF8000001));
+        REQUIRE(test1 == foeId(0xF0000001));
         REQUIRE(foeIdGetGroup(test1) == 0xF0000000);
         REQUIRE(foeIdGroupToValue(test1) == 0xF);
-        REQUIRE(foeIdIsResource(test1));
         REQUIRE(foeIdGetIndex(test1) == 1);
     }
 

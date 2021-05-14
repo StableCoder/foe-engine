@@ -44,14 +44,6 @@ foeId foeIdIndexGenerator::generate() {
     return foeIdCreate(cGroupID, id);
 }
 
-foeId foeIdIndexGenerator::generateResource() {
-    auto newID = generate();
-    if (newID != FOE_INVALID_ID) {
-        newID |= foeIdTypeBits;
-    }
-    return newID;
-}
-
 bool foeIdIndexGenerator::free(foeId id) { return free(1, &id); }
 
 bool foeIdIndexGenerator::free(uint32_t count, foeId *pEntities) {

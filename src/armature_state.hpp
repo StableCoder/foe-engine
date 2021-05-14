@@ -41,8 +41,7 @@ inline auto yaml_read_ArmatureState(YAML::Node const &node, foeIdGroupTranslator
     -> foeArmatureState {
     foeArmatureState armatureState;
 
-    yaml_read_id_optional("armature", node, pTranslator, foeIdTypeResource,
-                          armatureState.armatureID);
+    yaml_read_id_optional("armature", node, pTranslator, armatureState.armatureID);
 
     yaml_read_required("animation", node, armatureState.animationID);
     yaml_read_required("time", node, armatureState.time);

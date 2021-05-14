@@ -39,12 +39,11 @@ inline auto yaml_read_RenderState(YAML::Node const &node, foeIdGroupTranslator c
     -> foeRenderState {
     foeRenderState renderState;
 
-    yaml_read_id_optional("vertex_descriptor", node, pTranslator, foeIdTypeResource,
-                          renderState.vertexDescriptor);
-    yaml_read_id_optional("boned_vertex_descriptor", node, pTranslator, foeIdTypeResource,
+    yaml_read_id_optional("vertex_descriptor", node, pTranslator, renderState.vertexDescriptor);
+    yaml_read_id_optional("boned_vertex_descriptor", node, pTranslator,
                           renderState.bonedVertexDescriptor);
-    yaml_read_id_optional("material", node, pTranslator, foeIdTypeResource, renderState.material);
-    yaml_read_id_optional("mesh", node, pTranslator, foeIdTypeResource, renderState.mesh);
+    yaml_read_id_optional("material", node, pTranslator, renderState.material);
+    yaml_read_id_optional("mesh", node, pTranslator, renderState.mesh);
 
     return renderState;
 }

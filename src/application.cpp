@@ -99,12 +99,12 @@ int Application::initialize(int argc, char **argv) {
     }
 
     // Groups/Entities
-    cameraID = pSimulationSet->groupData.persistentIndices()->generate();
-    pSimulationSet->nameMap.add(cameraID, "camera");
-    renderTriangleID = pSimulationSet->groupData.persistentIndices()->generate();
-    pSimulationSet->nameMap.add(renderTriangleID, "renderTri");
-    renderMeshID = pSimulationSet->groupData.persistentIndices()->generate();
-    pSimulationSet->nameMap.add(renderMeshID, "renderMesh");
+    cameraID = pSimulationSet->groupData.persistentEntityIndices()->generate();
+    pSimulationSet->entityNameMap.add(cameraID, "camera");
+    renderTriangleID = pSimulationSet->groupData.persistentEntityIndices()->generate();
+    pSimulationSet->entityNameMap.add(renderTriangleID, "renderTri");
+    renderMeshID = pSimulationSet->groupData.persistentEntityIndices()->generate();
+    pSimulationSet->entityNameMap.add(renderMeshID, "renderMesh");
 
     pSimulationSet->state.position[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),
@@ -124,24 +124,24 @@ int Application::initialize(int argc, char **argv) {
 
         // Triangle
         pSimulationSet->state.renderStates[renderTriangleID] = foeRenderState{
-            .vertexDescriptor = foeIdCreateResource(foeIdPersistentGroup, 16),
+            .vertexDescriptor = foeIdCreate(foeIdPersistentGroup, 16),
             .bonedVertexDescriptor = FOE_INVALID_ID,
-            .material = foeIdCreateResource(foeIdPersistentGroup, 4),
+            .material = foeIdCreate(foeIdPersistentGroup, 4),
             .mesh = FOE_INVALID_ID,
         };
 
         // Mesh/Model
         pSimulationSet->state.renderStates[renderMeshID] = foeRenderState{
-            .vertexDescriptor = foeIdCreateResource(foeIdPersistentGroup, 1),
-            .bonedVertexDescriptor = foeIdCreateResource(foeIdPersistentGroup, 2),
-            .material = foeIdCreateResource(foeIdPersistentGroup, 5),
-            .mesh = foeIdCreateResource(foeIdPersistentGroup, 13),
+            .vertexDescriptor = foeIdCreate(foeIdPersistentGroup, 1),
+            .bonedVertexDescriptor = foeIdCreate(foeIdPersistentGroup, 2),
+            .material = foeIdCreate(foeIdPersistentGroup, 5),
+            .mesh = foeIdCreate(foeIdPersistentGroup, 13),
 
             .boneDescriptorSet = VK_NULL_HANDLE,
         };
 
         pSimulationSet->state.armatureStates[renderMeshID] = foeArmatureState{
-            .armatureID = foeIdCreateResource(foeIdPersistentGroup, 12),
+            .armatureID = foeIdCreate(foeIdPersistentGroup, 12),
             // .armatureState =
             .animationID = 1,
             .time = 0.f,
@@ -533,8 +533,9 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
-    exportGroupState("testExport", gfxSession, pSimulationSet->groupData, &pSimulationSet->nameMap,
-                     pSimulationSet->state, pSimulationSet->resources);
+    exportGroupState("testExport", gfxSession, pSimulationSet->groupData,
+                     &pSimulationSet->entityNameMap, pSimulationSet->state,
+                     &pSimulationSet->resourceNameMap, pSimulationSet->resources);
 
     { // Resource Unloading
         pSimulationSet->resources.armature.unloadAll();

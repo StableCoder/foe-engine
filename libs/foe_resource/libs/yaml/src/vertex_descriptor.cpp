@@ -44,15 +44,14 @@ bool yaml_read_vertex_descriptor_internal(std::string const &nodeName,
     try {
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
-            read |= yaml_read_id_optional("vertex_shader", resNode, pTranslator, foeIdTypeResource,
+            read |= yaml_read_id_optional("vertex_shader", resNode, pTranslator,
                                           createInfo.vertexShader);
             read |= yaml_read_id_optional("tessellation_control_shader", resNode, pTranslator,
-                                          foeIdTypeResource, createInfo.tessellationControlShader);
-            read |=
-                yaml_read_id_optional("tessellation_evaluation_shader", resNode, pTranslator,
-                                      foeIdTypeResource, createInfo.tessellationEvaluationShader);
+                                          createInfo.tessellationControlShader);
+            read |= yaml_read_id_optional("tessellation_evaluation_shader", resNode, pTranslator,
+                                          createInfo.tessellationEvaluationShader);
             read |= yaml_read_id_optional("geometry_shader", resNode, pTranslator,
-                                          foeIdTypeResource, createInfo.geometryShader);
+                                          createInfo.geometryShader);
         }
 
         // Graphics Data

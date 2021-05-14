@@ -36,9 +36,10 @@
 namespace {
 
 constexpr std::string_view dependenciesFilePath = "dependencies.yml";
-constexpr std::string_view indexDataFilePath = "index_data.yml";
-constexpr std::string_view resourcesDirectoryPath = "resources";
-constexpr std::string_view stateDataDirectoryPath = "state_data";
+constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
+constexpr std::string_view resourceDirectoryPath = "resources";
+constexpr std::string_view stateIndexDataFilePath = "state_index_data.yml";
+constexpr std::string_view stateDirectoryPath = "state";
 
 std::string id_to_filename(foeId id, foeEditorNameMap *pNameMap) {
     std::string filename;
@@ -340,42 +341,6 @@ bool exportResources(std::filesystem::path path,
     return true;
 }
 
-bool isResource(foeId entity, ResourcePools &resourcePools) {
-    foeId resource = foeIdConvertToResource(entity);
-
-    for (auto const it : resourcePools.armature.getDataVector()) {
-        if (it->getID() == resource)
-            return true;
-    }
-
-    for (auto const it : resourcePools.image.getDataVector()) {
-        if (it->getID() == resource)
-            return true;
-    }
-
-    for (auto const it : resourcePools.material.getDataVector()) {
-        if (it->getID() == resource)
-            return true;
-    }
-
-    for (auto const it : resourcePools.mesh.getDataVector()) {
-        if (it->getID() == resource)
-            return true;
-    }
-
-    for (auto const it : resourcePools.shader.getDataVector()) {
-        if (it->getID() == resource)
-            return true;
-    }
-
-    for (auto const it : resourcePools.vertexDescriptor.getDataVector()) {
-        if (it->getID() == resource)
-            return true;
-    }
-
-    return false;
-}
-
 bool exportGroupStateData(std::filesystem::path path,
                           foeGroupData &groups,
                           foeEditorNameMap *pNameMap,
@@ -385,7 +350,7 @@ bool exportGroupStateData(std::filesystem::path path,
     // Dependent groups
     for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
         foeIdGroup idGroup = foeIdValueToGroup(i);
-        auto *pGroup = groups.indices(idGroup);
+        auto *pGroup = groups.entityIndices(idGroup);
 
         if (pGroup == nullptr)
             continue;
@@ -401,9 +366,7 @@ bool exportGroupStateData(std::filesystem::path path,
                 ++recycledIt;
                 continue;
             }
-            foeId entity = foeIdCreateEntity(idGroup, idIndex);
-            if (isResource(entity, resourcePools))
-                continue;
+            foeId entity = foeIdCreate(idGroup, idIndex);
             YAML::Node rootNode;
 
             try {
@@ -424,7 +387,7 @@ bool exportGroupStateData(std::filesystem::path path,
     }
 
     { // Persistent group
-        auto *pGroup = groups.persistentIndices();
+        auto *pGroup = groups.persistentEntityIndices();
 
         foeIdIndex nextFreeIndex;
         std::vector<foeIdIndex> recycled;
@@ -437,9 +400,7 @@ bool exportGroupStateData(std::filesystem::path path,
                 ++recycledIt;
                 continue;
             }
-            foeId entity = foeIdCreateEntity(foeIdPersistentGroup, idIndex);
-            if (isResource(entity, resourcePools))
-                continue;
+            foeId entity = foeIdCreate(foeIdPersistentGroup, idIndex);
             YAML::Node rootNode;
 
             try {
@@ -467,8 +428,9 @@ bool exportGroupStateData(std::filesystem::path path,
 bool exportGroupState(std::filesystem::path yamlPath,
                       foeGfxSession gfxSession,
                       foeGroupData &groups,
-                      foeEditorNameMap *pNameMap,
+                      foeEditorNameMap *pEntityNameMap,
                       StatePools &statePools,
+                      foeEditorNameMap *pResourceNameMap,
                       ResourcePools &resourcePools) {
     // Check if it exists already
     if (std::filesystem::exists(yamlPath)) {
@@ -507,7 +469,7 @@ bool exportGroupState(std::filesystem::path yamlPath,
 
     { // Create the required sub-directories
         std::error_code errC;
-        bool created = std::filesystem::create_directories(yamlPath / resourcesDirectoryPath, errC);
+        bool created = std::filesystem::create_directories(yamlPath / resourceDirectoryPath, errC);
         if (errC) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, with error: {}",
@@ -520,7 +482,7 @@ bool exportGroupState(std::filesystem::path yamlPath,
             return false;
         }
 
-        created = std::filesystem::create_directories(yamlPath / stateDataDirectoryPath, errC);
+        created = std::filesystem::create_directories(yamlPath / stateDirectoryPath, errC);
         if (errC) {
             FOE_LOG(General, Error,
                     "Failed to create directory '{}' to export Yaml state, with error: {}",
@@ -539,16 +501,26 @@ bool exportGroupState(std::filesystem::path yamlPath,
     if (!retVal)
         return false;
 
-    retVal = exportIndexDataToFile(yamlPath / indexDataFilePath, *groups.persistentIndices());
+    // Resource Index Data
+    retVal = exportIndexDataToFile(yamlPath / resourceIndexDataFilePath,
+                                   *groups.persistentResourceIndices());
     if (!retVal)
         return false;
 
-    retVal = exportResources(yamlPath / resourcesDirectoryPath, gfxSession, groups, pNameMap,
+    // Resources
+    retVal = exportResources(yamlPath / resourceDirectoryPath, gfxSession, groups, pResourceNameMap,
                              resourcePools);
     if (!retVal)
         return false;
 
-    retVal = exportGroupStateData(yamlPath / stateDataDirectoryPath, groups, pNameMap, statePools,
+    // Entity Index Data
+    retVal =
+        exportIndexDataToFile(yamlPath / stateIndexDataFilePath, *groups.persistentEntityIndices());
+    if (!retVal)
+        return false;
+
+    // Entity Data
+    retVal = exportGroupStateData(yamlPath / stateDirectoryPath, groups, pEntityNameMap, statePools,
                                   resourcePools);
     if (!retVal)
         return false;

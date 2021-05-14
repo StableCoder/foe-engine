@@ -39,12 +39,6 @@ class foeIdIndexGenerator {
      */
     FOE_ECS_EXPORT foeId generate();
 
-    /** Generates an unused foeId that is set to represent a resource object
-     * @return An recycled or new IndexID or'd with the generator's GroupID and the TypeID for
-     * resources.
-     */
-    FOE_ECS_EXPORT foeId generateResource();
-
     /** Frees an IndexID so that it may be recycled.
      * @param id The ID to recycle.
      * @return True if freed, false otherwise.

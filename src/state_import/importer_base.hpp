@@ -40,7 +40,8 @@ class foeImporterBase {
     virtual void setGroupTranslator(foeIdGroupTranslator &&groupTranslator) = 0;
 
     virtual bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) = 0;
-    virtual bool getGroupIndexData(foeIdIndexGenerator &ecsGroup) = 0;
+    virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
+    virtual bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(StatePools *pStatePools) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,

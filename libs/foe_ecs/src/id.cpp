@@ -30,13 +30,11 @@ std::string foeIdToString(foeId id) {
 
 std::string foeIdToSplitString(foeId id) {
     constexpr int groupWidth = (foeIdNumGroupBits / 4) + ((foeIdNumGroupBits % 4) ? 1 : 0);
-    constexpr int typeWidth = (foeIdNumTypeBits / 4) + ((foeIdNumTypeBits % 4) ? 1 : 0);
     constexpr int indexWidth = (foeIdNumIndexBits / 4) + ((foeIdNumIndexBits % 4) ? 1 : 0);
 
     std::stringstream ss;
     ss << std::hex << std::uppercase << std::setfill('0');
     ss << "0x" << std::setw(groupWidth) << foeIdGroupToValue(id);
-    ss << "-0x" << std::setw(typeWidth) << foeIdTypeToValue(id);
     ss << "-0x" << std::setw(indexWidth) << foeIdIndexToValue(id);
 
     return ss.str();

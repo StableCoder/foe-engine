@@ -30,37 +30,46 @@ struct foeResourceCreateInfo;
 
 class foeGroupData {
   public:
-    bool addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pIndices,
+    bool addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntityIndices,
+                         std::unique_ptr<foeIdIndexGenerator> &&pResourceIndices,
                          std::unique_ptr<foeImporterBase> &&pImporter);
 
     bool setPersistentImporter(std::unique_ptr<foeImporterBase> &&pImporter);
 
-    auto indices(foeIdGroup group) noexcept -> foeIdIndexGenerator *;
-    auto indices(std::string_view groupName) noexcept -> foeIdIndexGenerator *;
+    auto entityIndices(foeIdGroup group) noexcept -> foeIdIndexGenerator *;
+    auto entityIndices(std::string_view groupName) noexcept -> foeIdIndexGenerator *;
+
+    auto resourceIndices(foeIdGroup group) noexcept -> foeIdIndexGenerator *;
+    auto resourceIndices(std::string_view groupName) noexcept -> foeIdIndexGenerator *;
 
     auto importer(foeIdGroup group) noexcept -> foeImporterBase *;
     auto importer(std::string_view groupName) noexcept -> foeImporterBase *;
 
-    auto persistentIndices() noexcept -> foeIdIndexGenerator *;
+    auto persistentEntityIndices() noexcept -> foeIdIndexGenerator *;
+    auto persistentResourceIndices() noexcept -> foeIdIndexGenerator *;
     auto persistentImporter() noexcept -> foeImporterBase *;
 
-    auto temporaryIndices() noexcept -> foeIdIndexGenerator *;
+    auto temporaryEntityIndices() noexcept -> foeIdIndexGenerator *;
+    auto temporaryResourceIndices() noexcept -> foeIdIndexGenerator *;
 
     bool getResourceDefinition(foeId id, foeResourceCreateInfoBase **ppCreateInfo);
 
   private:
     struct CombinedGroup {
-        std::unique_ptr<foeIdIndexGenerator> pIndices;
+        std::unique_ptr<foeIdIndexGenerator> pEntityIndices;
+        std::unique_ptr<foeIdIndexGenerator> pResourceIndices;
         std::unique_ptr<foeImporterBase> pImporter;
     };
 
     static constexpr std::string_view cPersistentName = "Persistent";
     static constexpr std::string_view cTemporaryName = "Temporary";
 
-    foeIdIndexGenerator mPersistentIndices{"", foeIdPersistentGroup};
+    foeIdIndexGenerator mPersistentEntityIndices{"", foeIdPersistentGroup};
+    foeIdIndexGenerator mPersistentResourceIndices{"", foeIdPersistentGroup};
     std::unique_ptr<foeImporterBase> mPersistentImporter;
 
-    foeIdIndexGenerator mTemporaryIndices{"", foeIdTemporaryGroup};
+    foeIdIndexGenerator mTemporaryEntityIndices{"", foeIdTemporaryGroup};
+    foeIdIndexGenerator mTemporaryResourceIndices{"", foeIdTemporaryGroup};
 
     std::array<CombinedGroup, foeIdNumDynamicGroups> mDynamicGroups;
 };

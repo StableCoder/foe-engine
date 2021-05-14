@@ -146,11 +146,14 @@ auto importState(std::filesystem::path stateDataPath,
 
             // Add to GroupData
             std::string name{it->name()};
-            auto newGroupIndices =
+            auto newGroupEntityIndices =
+                std::make_unique<foeIdIndexGenerator>(name, foeIdValueToGroup(groupValue));
+            auto newGroupResourceIndices =
                 std::make_unique<foeIdIndexGenerator>(name, foeIdValueToGroup(groupValue));
 
-            auto success = pSimulationSet->groupData.addDynamicGroup(std::move(newGroupIndices),
-                                                                     std::move(it));
+            auto success = pSimulationSet->groupData.addDynamicGroup(
+                std::move(newGroupEntityIndices), std::move(newGroupResourceIndices),
+                std::move(it));
             if (!success) {
                 FOE_LOG(General, Error, "Could not setup Group '{}'", name);
                 return FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE;
@@ -162,17 +165,21 @@ auto importState(std::filesystem::path stateDataPath,
     }
 
     // Persistent Group Index Data
-    bool retVal = pSimulationSet->groupData.persistentImporter()->getGroupIndexData(
-        *pSimulationSet->groupData.persistentIndices());
-    if (!retVal) {
+    bool retVal = pSimulationSet->groupData.persistentImporter()->getGroupEntityIndexData(
+        *pSimulationSet->groupData.persistentEntityIndices());
+    if (!retVal)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
-    }
+
+    retVal = pSimulationSet->groupData.persistentImporter()->getGroupResourceIndexData(
+        *pSimulationSet->groupData.persistentResourceIndices());
+    if (!retVal)
+        return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
 
     // Load Persistent resource definitions
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            pGroupImporter->importResourceDefinitions(&pSimulationSet->nameMap,
+            pGroupImporter->importResourceDefinitions(&pSimulationSet->resourceNameMap,
                                                       &pSimulationSet->resources,
                                                       &pSimulationSet->resourceLoaders);
         }
@@ -180,7 +187,8 @@ auto importState(std::filesystem::path stateDataPath,
 
     // Load dependency resource definitions
     pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
-        &pSimulationSet->nameMap, &pSimulationSet->resources, &pSimulationSet->resourceLoaders);
+        &pSimulationSet->resourceNameMap, &pSimulationSet->resources,
+        &pSimulationSet->resourceLoaders);
 
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
