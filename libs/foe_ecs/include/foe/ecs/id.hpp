@@ -106,6 +106,8 @@ enum : foeIdIndex {
 
     /// Bitflag of the valid IndexID bits
     foeIdIndexBits = foeIdMax >> (foeIdNumGroupBits),
+    /// Minimum value of an IndexID (to avoid overlapping with FOE_INVALID_ID)
+    foeIdIndexMinValue = 0x1,
     /// Maximum value of an IndexID
     foeIdIndexMaxValue = foeIdIndexBits >> foeIdIndexBitShift,
 

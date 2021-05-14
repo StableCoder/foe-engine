@@ -360,7 +360,7 @@ bool exportGroupStateData(std::filesystem::path path,
         pGroup->exportState(nextFreeIndex, recycled);
 
         auto recycledIt = recycled.begin();
-        for (foeIdIndex idIndex = 0; idIndex < nextFreeIndex; ++idIndex) {
+        for (foeIdIndex idIndex = foeIdIndexMinValue; idIndex < nextFreeIndex; ++idIndex) {
             // Skip recycled IDs
             if (recycledIt != recycled.end() && *recycledIt == idIndex) {
                 ++recycledIt;
@@ -394,7 +394,7 @@ bool exportGroupStateData(std::filesystem::path path,
         pGroup->exportState(nextFreeIndex, recycled);
 
         auto recycledIt = recycled.begin();
-        for (foeIdIndex idIndex = 0; idIndex < nextFreeIndex; ++idIndex) {
+        for (foeIdIndex idIndex = foeIdIndexMinValue; idIndex < nextFreeIndex; ++idIndex) {
             // Skip recycled IDs
             if (recycledIt != recycled.end() && *recycledIt == idIndex) {
                 ++recycledIt;
