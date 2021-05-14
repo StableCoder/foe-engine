@@ -16,7 +16,8 @@
 
 #include <foe/resource/mesh_loader.hpp>
 
-#include "error_code.hpp"
+#include <foe/resource/error_code.hpp>
+
 #include "log.hpp"
 
 foeMeshLoader::~foeMeshLoader() {

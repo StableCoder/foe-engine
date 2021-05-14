@@ -17,8 +17,8 @@
 #include <foe/resource/image_loader.hpp>
 
 #include <foe/graphics/vk/session.hpp>
+#include <foe/resource/error_code.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
 
 foeImageLoader::~foeImageLoader() {

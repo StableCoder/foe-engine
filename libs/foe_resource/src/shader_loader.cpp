@@ -16,7 +16,8 @@
 
 #include <foe/resource/shader_loader.hpp>
 
-#include "error_code.hpp"
+#include <foe/resource/error_code.hpp>
+
 #include "log.hpp"
 
 foeShaderLoader::~foeShaderLoader() {

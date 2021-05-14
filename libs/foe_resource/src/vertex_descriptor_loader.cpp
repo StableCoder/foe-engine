@@ -16,10 +16,10 @@
 
 #include <foe/resource/vertex_descriptor_loader.hpp>
 
+#include <foe/resource/error_code.hpp>
 #include <foe/resource/shader.hpp>
 #include <foe/resource/shader_pool.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
 
 foeVertexDescriptorLoader::~foeVertexDescriptorLoader() {

@@ -16,7 +16,8 @@
 
 #include <foe/resource/armature_loader.hpp>
 
-#include "error_code.hpp"
+#include <foe/resource/error_code.hpp>
+
 #include "log.hpp"
 
 foeArmatureLoader::~foeArmatureLoader() {

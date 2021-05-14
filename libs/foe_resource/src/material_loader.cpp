@@ -19,6 +19,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
+#include <foe/resource/error_code.hpp>
 #include <foe/resource/image.hpp>
 #include <foe/resource/image_pool.hpp>
 #include <foe/resource/material.hpp>
@@ -26,7 +27,6 @@
 #include <vk_error_code.hpp>
 #include <vk_struct_cleanup.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
 
 foeMaterialLoader::~foeMaterialLoader() {

@@ -14,8 +14,10 @@
     limitations under the License.
 */
 
-#ifndef ERROR_CODE_HPP
-#define ERROR_CODE_HPP
+#ifndef FOE_RESOURCE_ERROR_CODE_HPP
+#define FOE_RESOURCE_ERROR_CODE_HPP
+
+#include <foe/resource/export.h>
 
 #include <system_error>
 
@@ -30,6 +32,6 @@ template <>
 struct is_error_code_enum<foeResourceResult> : true_type {};
 } // namespace std
 
-std::error_code make_error_code(foeResourceResult);
+FOE_RES_EXPORT std::error_code make_error_code(foeResourceResult);
 
-#endif // ERROR_CODE_HPP
+#endif // FOE_RESOURCE_ERROR_CODE_HPP
