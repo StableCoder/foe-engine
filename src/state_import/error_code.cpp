@@ -48,6 +48,9 @@ std::string foeStateImportErrorCategory::message(int ev) const {
     case FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA:
         return "FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA";
 
+    case FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE:
+        return "FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE";
+
     default:
         if (ev > 0)
             return "(unrecognized positive foeStateImportResult value)";

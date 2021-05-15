@@ -22,7 +22,7 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "armature_resource_v1";
+constexpr std::string_view cNodeName = "armature_v1";
 
 bool yaml_read_armature_definition_internal(std::string const &nodeName,
                                             YAML::Node const &node,
@@ -35,39 +35,30 @@ bool yaml_read_armature_definition_internal(std::string const &nodeName,
 
     try {
         // Data
-        if (auto dataNode = subNode["data"]; dataNode) {
-            try {
-                yaml_read_required("fileName", dataNode, createInfo.fileName);
-                yaml_read_required("root_armature_node", dataNode, createInfo.rootArmatureNode);
+        yaml_read_required("fileName", subNode, createInfo.fileName);
+        yaml_read_required("root_armature_node", subNode, createInfo.rootArmatureNode);
 
-                if (auto animationsNode = dataNode["animations"]; animationsNode) {
-                    for (auto it = animationsNode.begin(); it != animationsNode.end(); ++it) {
-                        AnimationImportInfo animation;
+        if (auto animationsNode = subNode["animations"]; animationsNode) {
+            for (auto it = animationsNode.begin(); it != animationsNode.end(); ++it) {
+                AnimationImportInfo animation;
 
-                        yaml_read_required("fileName", *it, animation.file);
+                yaml_read_required("fileName", *it, animation.file);
 
-                        if (auto animationNamesNode = (*it)["animationNames"]; animationNamesNode) {
-                            for (auto it = animationNamesNode.begin();
-                                 it != animationNamesNode.end(); ++it) {
-                                std::string tempStr;
+                if (auto animationNamesNode = (*it)["animationNames"]; animationNamesNode) {
+                    for (auto it = animationNamesNode.begin(); it != animationNamesNode.end();
+                         ++it) {
+                        std::string tempStr;
 
-                                yaml_read_required("", *it, tempStr);
+                        yaml_read_required("", *it, tempStr);
 
-                                animation.animationNames.push_back(std::move(tempStr));
-                            }
-                        }
-
-                        createInfo.animations.emplace_back(animation);
+                        animation.animationNames.push_back(std::move(tempStr));
                     }
-                } else {
-                    throw foeYamlException("animations - Required node not found");
                 }
 
-            } catch (foeYamlException const &e) {
-                throw foeYamlException("data::" + e.whatStr());
+                createInfo.animations.emplace_back(animation);
             }
         } else {
-            throw foeYamlException("data - Required node not found");
+            throw foeYamlException("animations - Required node not found");
         }
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
@@ -134,7 +125,7 @@ void yaml_read_armature_definition(YAML::Node const &node,
                                    foeResourceCreateInfoBase **ppCreateInfo) {
     foeArmatureCreateInfo ci;
 
-    yaml_read_armature_definition_internal("", node, pTranslator, ci);
+    yaml_read_armature_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
 
     *ppCreateInfo = new foeArmatureCreateInfo(std::move(ci));
 }

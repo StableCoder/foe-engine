@@ -186,9 +186,11 @@ auto importState(std::filesystem::path stateDataPath,
     }
 
     // Load dependency resource definitions
-    pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
+    retVal = pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
         &pSimulationSet->resourceNameMap, &pSimulationSet->resources,
         &pSimulationSet->resourceLoaders);
+    if (!retVal)
+        return FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE;
 
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {

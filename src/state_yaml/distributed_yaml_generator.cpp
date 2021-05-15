@@ -55,32 +55,24 @@ auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
     return nullptr;
 }
 
-bool foeDistributedYamlImporterGenerator::addImporter(std::string type,
-                                                      uint32_t version,
-                                                      ImportFunc function) {
-    auto key = std::make_tuple(type, version);
-
+bool foeDistributedYamlImporterGenerator::addImporter(std::string key, ImportFunc function) {
     auto searchIt = mImportFunctions.find(key);
     if (searchIt != mImportFunctions.end()) {
         FOE_LOG(General, Error,
-                "Could not add DistributedYamlImporter function for {}:{}, as it already exists",
-                type, version);
+                "Could not add DistributedYamlImporter function for {}, as it already exists", key);
         return false;
     }
 
-    FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}:{}", type, version);
+    FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}", key);
     mImportFunctions[key] = function;
     return true;
 }
 
-bool foeDistributedYamlImporterGenerator::removeImporter(std::string type, uint32_t version) {
-    auto key = std::make_tuple(type, version);
-
+bool foeDistributedYamlImporterGenerator::removeImporter(std::string key) {
     auto searchIt = mImportFunctions.find(key);
     if (searchIt == mImportFunctions.end()) {
         FOE_LOG(General, Error,
-                "Could not remove DistributedYamlImporter function for {}:{}, as it isn't added",
-                type, version);
+                "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);
         return false;
     }
 

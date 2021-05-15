@@ -233,61 +233,56 @@ bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNa
             // Editor Name
             yaml_read_optional("editor_name", node, editorName);
 
-            // Resource type
-            std::string type;
-            uint32_t version;
-            yaml_read_required("type", node, type);
-            yaml_read_required("version", node, version);
-
-            auto key = std::make_tuple(type, version);
-
-            auto searchIt = mGenerator->mImportFunctions.find(key);
-            if (searchIt == mGenerator->mImportFunctions.end()) {
-                // Failed to find importer, leave
-                return false;
-            }
-
+            // Resource Type
             foeResourceCreateInfoBase *pCreateInfo{nullptr};
-            searchIt->second(node, &mGroupTranslator, &pCreateInfo);
+            for (auto const &it : mGenerator->mImportFunctions) {
+                if (auto subNode = node[it.first]; subNode) {
+                    it.second(node, &mGroupTranslator, &pCreateInfo);
+                    break;
+                }
+            }
             std::unique_ptr<foeResourceCreateInfoBase> createInfo{pCreateInfo};
 
-            if (type == "armature" && version == 1) {
+            if (auto pArmatureCI = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo);
+                pArmatureCI) {
                 auto armature =
                     std::make_unique<foeArmature>(resource, &pResourceLoaders->armature);
 
                 pResourcePools->armature.add(armature.release());
-            } else if (type == "mesh" && version == 1) {
+            } else if (auto pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pCreateInfo); pMeshCI) {
                 auto mesh = std::make_unique<foeMesh>(resource, &pResourceLoaders->mesh);
 
                 pResourcePools->mesh.add(mesh.release());
-            } else if (type == "material" && version == 1) {
+            } else if (auto pMaterialCI = dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo);
+                       pMaterialCI) {
                 auto material =
                     std::make_unique<foeMaterial>(resource, &pResourceLoaders->material);
 
                 pResourcePools->material.add(material.release());
 
-                auto *pMaterialCI = static_cast<foeMaterialCreateInfo *>(createInfo.get());
                 if (pMaterialCI->hasRasterizationSCI)
                     vk_struct_cleanup(&pMaterialCI->rasterizationSCI);
                 if (pMaterialCI->hasDepthStencilSCI)
                     vk_struct_cleanup(&pMaterialCI->depthStencilSCI);
                 if (pMaterialCI->hasColourBlendSCI)
                     vk_struct_cleanup(&pMaterialCI->colourBlendSCI);
-            } else if (type == "vertex_descriptor" && version == 1) {
+            } else if (auto pVertexDescriptorCI =
+                           dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo);
+                       pVertexDescriptorCI) {
                 auto vertexDescriptor = std::make_unique<foeVertexDescriptor>(
                     resource, &pResourceLoaders->vertexDescriptor);
 
                 pResourcePools->vertexDescriptor.add(vertexDescriptor.release());
-            } else if (type == "shader" && version == 1) {
+            } else if (auto pShaderCI = dynamic_cast<foeShaderCreateInfo *>(pCreateInfo);
+                       pShaderCI) {
                 auto shader = std::make_unique<foeShader>(resource, &pResourceLoaders->shader);
 
                 pResourcePools->shader.add(shader.release());
-            } else if (type == "image" && version == 1) {
+
+            } else if (auto pImageCI = dynamic_cast<foeImageCreateInfo *>(pCreateInfo); pImageCI) {
                 auto image = std::make_unique<foeImage>(resource, &pResourceLoaders->image);
 
                 pResourcePools->image.add(image.release());
-            } else {
-                std::abort();
             }
         } catch (foeYamlException const &e) {
             FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
@@ -334,22 +329,14 @@ foeResourceCreateInfoBase *foeDistributedYamlImporter::getResource(foeId id) {
 GOT_RESOURCE_NODE:
 
     try {
-        std::string type;
-        uint32_t version;
-        yaml_read_required("type", rootNode, type);
-        yaml_read_required("version", rootNode, version);
-
-        auto key = std::make_tuple(type, version);
-
-        auto searchIt = mGenerator->mImportFunctions.find(key);
-        if (searchIt == mGenerator->mImportFunctions.end()) {
-            // Failed to find importer, leave
-            return nullptr;
-        }
-
         foeResourceCreateInfoBase *pCreateInfo{nullptr};
-        searchIt->second(rootNode, &mGroupTranslator, &pCreateInfo);
-        return pCreateInfo;
+
+        for (auto const &it : mGenerator->mImportFunctions) {
+            if (auto subNode = rootNode[it.first]; subNode) {
+                it.second(rootNode, &mGroupTranslator, &pCreateInfo);
+                return pCreateInfo;
+            }
+        }
     } catch (foeYamlException const &e) {
         FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
         return nullptr;
@@ -360,4 +347,6 @@ GOT_RESOURCE_NODE:
         FOE_LOG(General, Error, "Failed to import resource definition with unknown exception");
         return nullptr;
     }
+
+    return nullptr;
 }

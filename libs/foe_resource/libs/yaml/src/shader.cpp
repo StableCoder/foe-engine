@@ -25,7 +25,7 @@
 
 namespace {
 
-std::string_view cNodeName = "shader_resource_v1";
+std::string_view cNodeName = "shader_v1";
 
 bool yaml_read_shader_internal(std::string const &nodeName,
                                YAML::Node const &node,
@@ -77,7 +77,7 @@ void yaml_read_shader_definition(YAML::Node const &node,
                                  foeResourceCreateInfoBase **ppCreateInfo) {
     foeShaderCreateInfo ci;
 
-    yaml_read_shader_internal("", node, pTranslator, ci);
+    yaml_read_shader_internal(std::string{cNodeName}, node, pTranslator, ci);
 
     *ppCreateInfo = new foeShaderCreateInfo(std::move(ci));
 }

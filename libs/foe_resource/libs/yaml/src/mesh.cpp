@@ -22,7 +22,7 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "mesh_resource_v1";
+constexpr std::string_view cNodeName = "mesh_v1";
 
 bool yaml_read_mesh_definition_internal(std::string const &nodeName,
                                         YAML::Node const &node,
@@ -108,7 +108,7 @@ void yaml_read_mesh_definition(YAML::Node const &node,
                                foeResourceCreateInfoBase **ppCreateInfo) {
     foeMeshCreateInfo ci;
 
-    yaml_read_mesh_definition_internal("", node, pTranslator, ci);
+    yaml_read_mesh_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
 
     *ppCreateInfo = new foeMeshCreateInfo(std::move(ci));
 }

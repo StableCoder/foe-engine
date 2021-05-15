@@ -38,15 +38,13 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
     auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * override;
 
-    bool addImporter(std::string type, uint32_t version, ImportFunc function);
-    bool removeImporter(std::string type, uint32_t version);
+    bool addImporter(std::string key, ImportFunc function);
+    bool removeImporter(std::string key);
 
   private:
     friend class foeDistributedYamlImporter;
 
-    using ImportKey = std::tuple<std::string, uint32_t>;
-
-    std::map<ImportKey, ImportFunc> mImportFunctions;
+    std::map<std::string, ImportFunc> mImportFunctions;
 };
 
 #endif // DISTRIBUTED_YAML_GENERATOR_HPP

@@ -28,12 +28,12 @@
 bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeDistributedYamlImporterGenerator *>(pGenerator);
         pYamlImporter) {
-        pYamlImporter->addImporter("armature", 1, yaml_read_armature_definition);
-        pYamlImporter->addImporter("mesh", 1, yaml_read_mesh_definition);
-        pYamlImporter->addImporter("material", 1, yaml_read_material_definition);
-        pYamlImporter->addImporter("vertex_descriptor", 1, yaml_read_vertex_descriptor_definition);
-        pYamlImporter->addImporter("shader", 1, yaml_read_shader_definition);
-        pYamlImporter->addImporter("image", 1, yaml_read_image_definition);
+        pYamlImporter->addImporter("armature_v1", yaml_read_armature_definition);
+        pYamlImporter->addImporter("mesh_v1", yaml_read_mesh_definition);
+        pYamlImporter->addImporter("material_v1", yaml_read_material_definition);
+        pYamlImporter->addImporter("vertex_descriptor_v1", yaml_read_vertex_descriptor_definition);
+        pYamlImporter->addImporter("shader_v1", yaml_read_shader_definition);
+        pYamlImporter->addImporter("image_v1", yaml_read_image_definition);
     }
 
     return true;
@@ -42,12 +42,12 @@ bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerato
 bool foeYamlCoreResourceFunctionRegistrar::deregisterFunctions(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeDistributedYamlImporterGenerator *>(pGenerator);
         pYamlImporter) {
-        pYamlImporter->removeImporter("armature", 1);
-        pYamlImporter->removeImporter("mesh", 1);
-        pYamlImporter->removeImporter("material", 1);
-        pYamlImporter->removeImporter("vertex_descriptor", 1);
-        pYamlImporter->removeImporter("shader", 1);
-        pYamlImporter->removeImporter("image", 1);
+        pYamlImporter->removeImporter("armature_v1");
+        pYamlImporter->removeImporter("mesh_v1");
+        pYamlImporter->removeImporter("material_v1");
+        pYamlImporter->removeImporter("vertex_descriptor_v1");
+        pYamlImporter->removeImporter("shader_v1");
+        pYamlImporter->removeImporter("image_v1");
     }
 
     return true;

@@ -124,7 +124,7 @@ void yaml_read_vertex_descriptor_definition(YAML::Node const &node,
                                             foeResourceCreateInfoBase **ppCreateInfo) {
     foeVertexDescriptorCreateInfo ci;
 
-    yaml_read_vertex_descriptor_internal("", node, pTranslator, ci);
+    yaml_read_vertex_descriptor_internal(std::string{cNodeName}, node, pTranslator, ci);
 
     *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
 }

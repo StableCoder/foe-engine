@@ -22,7 +22,7 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "image_resource_v1";
+constexpr std::string_view cNodeName = "image_v1";
 
 bool yaml_read_image_definition_internal(std::string const &nodeName,
                                          YAML::Node const &node,
@@ -76,7 +76,7 @@ void yaml_read_image_definition(YAML::Node const &node,
                                 foeResourceCreateInfoBase **ppCreateInfo) {
     foeImageCreateInfo ci;
 
-    yaml_read_image_definition_internal("", node, pTranslator, ci);
+    yaml_read_image_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
 
     *ppCreateInfo = new foeImageCreateInfo(std::move(ci));
 }

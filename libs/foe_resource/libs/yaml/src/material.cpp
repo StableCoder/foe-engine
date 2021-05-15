@@ -41,27 +41,19 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
     foeMaterialCreateInfo tempData;
     try {
         // Resources
-        if (auto resNode = subNode["resources"]; resNode) {
-            read |= yaml_read_id_optional("fragment_shader", resNode, pTranslator,
-                                          createInfo.fragmentShader);
-            read |= yaml_read_id_optional("image", resNode, pTranslator, createInfo.image);
-        }
+        read |= yaml_read_id_optional("fragment_shader", subNode, pTranslator,
+                                      createInfo.fragmentShader);
+        read |= yaml_read_id_optional("image", subNode, pTranslator, createInfo.image);
 
-        // Graphics Data
-        {
-            YAML::Node tempNode = subNode["graphics_data"];
+        createInfo.hasRasterizationSCI =
+            yaml_read_optional("rasterization", subNode, createInfo.rasterizationSCI);
+        createInfo.hasDepthStencilSCI =
+            yaml_read_optional("depth_stencil", subNode, createInfo.depthStencilSCI);
+        createInfo.hasColourBlendSCI =
+            yaml_read_optional("colour_blend", subNode, createInfo.colourBlendSCI);
 
-            createInfo.hasRasterizationSCI =
-                yaml_read_optional("rasterization", tempNode, createInfo.rasterizationSCI);
-            createInfo.hasDepthStencilSCI =
-                yaml_read_optional("depth_stencil", tempNode, createInfo.depthStencilSCI);
-            createInfo.hasColourBlendSCI =
-                yaml_read_optional("colour_blend", tempNode, createInfo.colourBlendSCI);
-
-            read = read | createInfo.hasRasterizationSCI | createInfo.hasDepthStencilSCI |
-                   createInfo.hasColourBlendSCI;
-        }
-
+        read = read | createInfo.hasRasterizationSCI | createInfo.hasDepthStencilSCI |
+               createInfo.hasColourBlendSCI;
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
@@ -121,7 +113,7 @@ void yaml_read_material_definition(YAML::Node const &node,
                                    foeResourceCreateInfoBase **ppCreateInfo) {
     foeMaterialCreateInfo ci;
 
-    yaml_read_material_definition_internal("", node, pTranslator, ci);
+    yaml_read_material_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
 
     *ppCreateInfo = new foeMaterialCreateInfo(std::move(ci));
 }
