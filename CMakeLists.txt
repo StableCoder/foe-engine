@@ -110,6 +110,8 @@ target_link_libraries(
          foe_ecs_yaml
          foe_graphics_vk
          foe_model
+         foe_position
+         foe_position_yaml
          foe_resource
          foe_resource_yaml
          foe_wsi

@@ -18,11 +18,12 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/position/3d.hpp>
+#include <foe/position/yaml/3d.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
 #include "../armature_state.hpp"
-#include "../position_3d.hpp"
 #include "../render_state.hpp"
 #include "../state_pools.hpp"
 

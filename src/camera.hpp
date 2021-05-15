@@ -17,14 +17,13 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
+#include <foe/position/3d.hpp>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
 #include <array>
 #include <vector>
-
-#include "position_3d.hpp"
 
 class CameraDescriptorPool;
 struct foeCameraBase {

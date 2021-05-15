@@ -14,24 +14,11 @@
     limitations under the License.
 */
 
-#ifndef POSITION_3D_HPP
-#define POSITION_3D_HPP
-
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
-#include <vulkan/vulkan.h>
-
-struct Position3D {
-    glm::vec3 position;
-    glm::quat orientation;
-
-    VkDescriptorSet descriptorSet{VK_NULL_HANDLE};
-};
+#include <foe/position/yaml/3d.hpp>
 
 #include <foe/yaml/parsing.hpp>
-#include <yaml-cpp/yaml.h>
 
-inline auto yaml_read_Position3D(YAML::Node const &node) -> Position3D {
+auto yaml_read_Position3D(YAML::Node const &node) -> Position3D {
     Position3D position;
 
     yaml_read_required("position", node, position.position);
@@ -40,7 +27,7 @@ inline auto yaml_read_Position3D(YAML::Node const &node) -> Position3D {
     return position;
 }
 
-inline auto yaml_write_Position3D(Position3D const &data) -> YAML::Node {
+auto yaml_write_Position3D(Position3D const &data) -> YAML::Node {
     YAML::Node writeNode;
 
     yaml_write_required("position", data.position, writeNode);
@@ -48,5 +35,3 @@ inline auto yaml_write_Position3D(Position3D const &data) -> YAML::Node {
 
     return writeNode;
 }
-
-#endif // POSITION_3D_HPP

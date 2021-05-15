@@ -14,22 +14,18 @@
     limitations under the License.
 */
 
-#ifndef STATE_POOLS_HPP
-#define STATE_POOLS_HPP
+#ifndef FOE_POSITION_3D_HPP
+#define FOE_POSITION_3D_HPP
 
-#include <foe/ecs/id.hpp>
-#include <foe/position/3d.hpp>
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
+#include <vulkan/vulkan.h>
 
-#include <map>
-#include <memory>
+struct Position3D {
+    glm::vec3 position;
+    glm::quat orientation;
 
-#include "armature_state.hpp"
-#include "render_state.hpp"
-
-struct StatePools {
-    std::map<foeId, std::unique_ptr<Position3D>> position;
-    std::map<foeId, foeRenderState> renderStates;
-    std::map<foeId, foeArmatureState> armatureStates;
+    VkDescriptorSet descriptorSet{VK_NULL_HANDLE};
 };
 
-#endif // STATE_POOLS_HPP
+#endif // FOE_POSITION_3D_HPP

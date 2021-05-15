@@ -17,8 +17,7 @@
 #include "position_descriptor_pool.hpp"
 
 #include <foe/graphics/vk/session.hpp>
-
-#include "position_3d.hpp"
+#include <foe/position/3d.hpp>
 
 VkResult PositionDescriptorPool::initialize(foeGfxSession session,
                                             VkDescriptorSetLayout modelMatrixLayout,

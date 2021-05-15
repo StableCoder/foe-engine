@@ -14,22 +14,15 @@
     limitations under the License.
 */
 
-#ifndef STATE_POOLS_HPP
-#define STATE_POOLS_HPP
+#ifndef FOE_POSITION_YAML_3D_HPP
+#define FOE_POSITION_YAML_3D_HPP
 
-#include <foe/ecs/id.hpp>
 #include <foe/position/3d.hpp>
+#include <foe/position/yaml/export.h>
+#include <yaml-cpp/yaml.h>
 
-#include <map>
-#include <memory>
+FOE_POSITION_YAML_EXPORT auto yaml_read_Position3D(YAML::Node const &node) -> Position3D;
 
-#include "armature_state.hpp"
-#include "render_state.hpp"
+FOE_POSITION_YAML_EXPORT auto yaml_write_Position3D(Position3D const &data) -> YAML::Node;
 
-struct StatePools {
-    std::map<foeId, std::unique_ptr<Position3D>> position;
-    std::map<foeId, foeRenderState> renderStates;
-    std::map<foeId, foeArmatureState> armatureStates;
-};
-
-#endif // STATE_POOLS_HPP
+#endif // FOE_POSITION_YAML_3D_HPP

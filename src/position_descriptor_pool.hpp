@@ -20,6 +20,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/position/3d.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -27,8 +28,6 @@
 #include <map>
 #include <memory>
 #include <vector>
-
-#include "position_3d.hpp"
 
 struct PositionDescriptorPool {
   public:
