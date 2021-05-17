@@ -24,6 +24,7 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
 #include <foe/log.hpp>
+#include <foe/physics/system.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/wsi_vulkan.hpp>
@@ -106,21 +107,55 @@ int Application::initialize(int argc, char **argv) {
     renderMeshID = pSimulationSet->groupData.persistentEntityIndices()->generate();
     pSimulationSet->entityNameMap.add(renderMeshID, "renderMesh");
 
+    /*
     pSimulationSet->state.position[cameraID].reset(new Position3D{
         .position = glm::vec3(0.f, 0.f, -5.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
+    */
+    // Camera
+    std::unique_ptr<Position3D> pPosition(new Position3D{
+        .position = glm::vec3(0.f, 0.f, -5.f),
+        .orientation = glm::quat(glm::vec3(0, 0, 0)),
+    });
+
+    {
+        camera.viewX = settings.window.width;
+        camera.viewY = settings.window.height;
+        camera.fieldOfViewY = 60.f;
+        camera.nearZ = 2.f;
+        camera.farZ = 50.f;
+
+        auto posOffset = pSimulationSet->state.position.find(cameraID);
+        camera.pPosition3D = pPosition.get();
+    }
+
+    pSimulationSet->state.position.insert(cameraID, std::move(pPosition));
 
     { // Render item
-        pSimulationSet->state.position[renderTriangleID].reset(new Position3D{
+        /*
+            pSimulationSet->state.position[renderTriangleID].reset(new Position3D{
+                .position = glm::vec3(0.f, 0.f, 0.f),
+                .orientation = glm::quat(glm::vec3(0, 0, 0)),
+            });
+            */
+        pPosition.reset(new Position3D{
             .position = glm::vec3(0.f, 0.f, 0.f),
             .orientation = glm::quat(glm::vec3(0, 0, 0)),
         });
+        pSimulationSet->state.position.insert(renderTriangleID, std::move(pPosition));
 
-        pSimulationSet->state.position[renderMeshID].reset(new Position3D{
+        /*
+            pSimulationSet->state.position[renderMeshID].reset(new Position3D{
+                .position = glm::vec3(0.f, 4.f, 0.f),
+                .orientation = glm::quat(glm::vec3(0, 0, 0)),
+            });
+            */
+        pPosition.reset(new Position3D{
             .position = glm::vec3(0.f, 4.f, 0.f),
             .orientation = glm::quat(glm::vec3(0, 0, 0)),
         });
+        pSimulationSet->state.position.insert(renderMeshID, std::move(pPosition));
 
         // Triangle
         pSimulationSet->state.renderStates[renderTriangleID] = foeRenderState{
@@ -146,7 +181,15 @@ int Application::initialize(int argc, char **argv) {
             .animationID = 1,
             .time = 0.f,
         };
+
+        pSimulationSet->state.rigidBody.insert(
+            renderMeshID, foePhysRigidBody{
+                              .mass = 1.f,
+                              .collisionShape = foeIdCreate(foeIdPersistentGroup, 17),
+                          });
     }
+
+    initPhysics();
 
     cameraDescriptorPool.linkCamera(&camera);
 
@@ -191,16 +234,6 @@ int Application::initialize(int argc, char **argv) {
     errC = foeGfxCreateUploadContext(gfxSession, &resUploader);
     if (errC) {
         ERRC_END_PROGRAM
-    }
-
-    {
-        camera.viewX = settings.window.width;
-        camera.viewY = settings.window.height;
-        camera.fieldOfViewY = 60.f;
-        camera.nearZ = 2.f;
-        camera.farZ = 50.f;
-
-        camera.pPosition3D = pSimulationSet->state.position[cameraID].get();
     }
 
 #ifdef EDITOR_MODE
@@ -279,6 +312,13 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
+    errC = pSimulationSet->resourceLoaders.collisionShape.initialize(
+        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        asyncTaskFunc);
+    if (errC) {
+        ERRC_END_PROGRAM
+    }
+
     vkRes = cameraDescriptorPool.initialize(
         gfxSession,
         foeGfxVkGetBuiltinLayout(gfxSession,
@@ -320,7 +360,12 @@ int Application::initialize(int argc, char **argv) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
         }
-
+        /*
+                for (auto *ptr : pSimulationSet->resources.collisionShape.getDataVector()) {
+                    ptr->incrementUseCount();
+                    ptr->decrementUseCount();
+                }
+        */
         for (auto *ptr : pSimulationSet->resources.image.getDataVector()) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
@@ -738,6 +783,8 @@ int Application::mainloop() {
         auto *pMouse = foeGetMouse();
         auto *pKeyboard = foeGetKeyboard();
 
+        pSimulationSet->state.maintenance();
+
 #ifdef EDITOR_MODE
         // User input processing
         imguiRenderer.keyboardInput(pKeyboard);
@@ -767,6 +814,10 @@ int Application::mainloop() {
 
         processArmatureStates(&pSimulationSet->state.armatureStates,
                               &pSimulationSet->resources.armature);
+
+        processPhysics(pSimulationSet->resourceLoaders.collisionShape,
+                       pSimulationSet->resources.collisionShape, pSimulationSet->state.rigidBody,
+                       pSimulationSet->state.position, timeElapsedInSec);
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
@@ -932,10 +983,12 @@ int Application::mainloop() {
                                             0, 1, &dummyDescriptorSet, 0, nullptr);
                 }
                 if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
+                    auto posOffset = pSimulationSet->state.position.find(entity);
+                    auto *pPosition =
+                        (pSimulationSet->state.position.begin<1>() + posOffset)->get();
                     // Bind the object's position *if* the descriptor supports it
-                    vkCmdBindDescriptorSets(
-                        commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
-                        &pSimulationSet->state.position[entity]->descriptorSet, 0, nullptr);
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                            1, 1, &pPosition->descriptorSet, 0, nullptr);
                 } else {
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                             1, 1, &dummyDescriptorSet, 0, nullptr);
@@ -1139,12 +1192,16 @@ int Application::mainloop() {
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 0, 1, &it.camera.descriptor, 0, nullptr);
+                                            auto posOffset = pSimulationSet->state.position.find(
+                                                renderTriangleID);
+                                            auto *pPosition =
+                                                (pSimulationSet->state.position.begin<1>() +
+                                                 posOffset)
+                                                    ->get();
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                layout, 1, 1,
-                                                &pSimulationSet->state.position[renderTriangleID]
-                                                     ->descriptorSet,
-                                                0, nullptr);
+                                                layout, 1, 1, &pPosition->descriptorSet, 0,
+                                                nullptr);
 
                                             if (auto set =
                                                     theMaterial->getVkDescriptorSet(frameIndex);
@@ -1367,10 +1424,13 @@ int Application::mainloop() {
 
                             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                     layout, 0, 1, &camera.descriptor, 0, nullptr);
-                            vkCmdBindDescriptorSets(
-                                commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
-                                &pSimulationSet->state.position[renderTriangleID]->descriptorSet, 0,
-                                nullptr);
+
+                            auto posOffset = pSimulationSet->state.position.find(renderTriangleID);
+                            auto *pPosition =
+                                (pSimulationSet->state.position.begin<1>() + posOffset)->get();
+                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                    layout, 1, 1, &pPosition->descriptorSet, 0,
+                                                    nullptr);
 
                             if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
                                 set != VK_NULL_HANDLE) {

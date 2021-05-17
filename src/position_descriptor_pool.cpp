@@ -85,20 +85,20 @@ void PositionDescriptorPool::deinitialize() {
 }
 
 VkResult PositionDescriptorPool::generatePositionDescriptors(
-    uint32_t frameIndex, std::map<foeId, std::unique_ptr<Position3D>> &positions) {
+    uint32_t frameIndex, foeDataPool<foeEntityID, std::unique_ptr<Position3D>> &positionPool) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];
 
     // Make sure the frame data buffer is large enough
-    if (uniform.capacity < positions.size()) {
+    if (uniform.capacity < positionPool.size()) {
         if (uniform.buffer != VK_NULL_HANDLE) {
             vmaDestroyBuffer(mAllocator, uniform.buffer, uniform.alloc);
         }
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = mMinUniformBufferOffsetAlignment * positions.size(),
+            .size = mMinUniformBufferOffsetAlignment * positionPool.size(),
             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         };
 
@@ -112,7 +112,7 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(
             return res;
         }
 
-        uniform.capacity = positions.size();
+        uniform.capacity = positionPool.size();
     }
 
     // Reset the DescriptorPool
@@ -124,11 +124,13 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(
 
     vmaMapMemory(mAllocator, uniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    for (auto const &it : positions) {
+    auto *const pDataEnd = positionPool.end<1>();
+
+    for (auto *pData = positionPool.begin<1>(); pData != pDataEnd; ++pData) {
         VkDescriptorSet set;
         *reinterpret_cast<glm::mat4 *>(pBufferData) =
-            glm::mat4_cast(it.second->orientation) *
-            glm::translate(glm::mat4(1.f), it.second->position);
+            glm::mat4_cast(pData->get()->orientation) *
+            glm::translate(glm::mat4(1.f), pData->get()->position);
 
         { // Descriptor Set
             VkDescriptorSetAllocateInfo setAI{
@@ -161,7 +163,7 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(
             vkUpdateDescriptorSets(mDevice, 1, &writeSet, 0, nullptr);
         }
 
-        it.second->descriptorSet = set;
+        pData->get()->descriptorSet = set;
 
         pBufferData += mMinUniformBufferOffsetAlignment;
         offset += mMinUniformBufferOffsetAlignment;

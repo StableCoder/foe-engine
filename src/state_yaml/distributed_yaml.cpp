@@ -21,6 +21,7 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/log.hpp>
+#include <foe/physics/resource/collision_shape.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <vk_struct_cleanup.hpp>
@@ -204,6 +205,7 @@ bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
     return true;
 }
 
+// @todo Add group translations for imported resource definitions
 bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
                                                            ResourcePools *pResourcePools,
                                                            ResourceLoaders *pResourceLoaders) {
@@ -283,6 +285,13 @@ bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNa
                 auto image = std::make_unique<foeImage>(resource, &pResourceLoaders->image);
 
                 pResourcePools->image.add(image.release());
+            } else if (auto pCollisionShapeCI =
+                           dynamic_cast<foePhysCollisionShapeCreateInfo *>(pCreateInfo);
+                       pCollisionShapeCI) {
+                auto collisionShape = std::make_unique<foePhysCollisionShape>(
+                    resource, &pResourceLoaders->collisionShape);
+
+                pResourcePools->collisionShape.add(collisionShape.release());
             }
         } catch (foeYamlException const &e) {
             FOE_LOG(General, Error, "Failed to import resource definition: {}", e.what());
@@ -306,6 +315,7 @@ bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNa
 foeResourceCreateInfoBase *foeDistributedYamlImporter::getResource(foeId id) {
     YAML::Node rootNode;
     foeIdIndex index = foeIdGetIndex(id);
+
     for (auto &dirEntry :
          std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
         if (std::filesystem::is_directory(dirEntry))

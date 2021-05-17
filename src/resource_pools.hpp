@@ -17,6 +17,7 @@
 #ifndef RESOURCE_POOLS_HPP
 #define RESOURCE_POOLS_HPP
 
+#include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/image_pool.hpp>
 #include <foe/resource/material_pool.hpp>
@@ -27,6 +28,7 @@
 struct ResourcePools {
     // Other Resources
     foeArmaturePool armature;
+    foePhysCollisionShapePool collisionShape;
 
     // Graphics Resources
     foeShaderPool shader;
@@ -36,6 +38,7 @@ struct ResourcePools {
     foeMeshPool mesh;
 };
 
+#include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/image_loader.hpp>
 #include <foe/resource/material_loader.hpp>
@@ -46,6 +49,7 @@ struct ResourcePools {
 struct ResourceLoaders {
     // Other Resources
     foeArmatureLoader armature;
+    foePhysCollisionShapeLoader collisionShape;
 
     // Graphics Resources
     foeShaderLoader shader;

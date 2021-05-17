@@ -17,7 +17,9 @@
 #ifndef STATE_POOLS_HPP
 #define STATE_POOLS_HPP
 
+#include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
+#include <foe/physics/rigid_body.hpp>
 #include <foe/position/3d.hpp>
 
 #include <map>
@@ -27,9 +29,16 @@
 #include "render_state.hpp"
 
 struct StatePools {
-    std::map<foeId, std::unique_ptr<Position3D>> position;
     std::map<foeId, foeRenderState> renderStates;
     std::map<foeId, foeArmatureState> armatureStates;
+
+    foeDataPool<foeEntityID, std::unique_ptr<Position3D>> position;
+    foeDataPool<foeEntityID, foePhysRigidBody> rigidBody;
+
+    void maintenance() {
+        position.maintenance();
+        rigidBody.maintenance();
+    }
 };
 
 #endif // STATE_POOLS_HPP

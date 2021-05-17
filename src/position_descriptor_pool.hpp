@@ -17,6 +17,7 @@
 #ifndef POSITION_DESCRIPTOR_POOL_HPP
 #define POSITION_DESCRIPTOR_POOL_HPP
 
+#include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
@@ -25,25 +26,18 @@
 #include <vulkan/vulkan.h>
 
 #include <array>
-#include <map>
 #include <memory>
 #include <vector>
 
 struct PositionDescriptorPool {
   public:
-    struct PositionDescriptor {
-        Position3D *pPosition3D;
-
-        VkDescriptorSet descriptor{VK_NULL_HANDLE};
-    };
-
     VkResult initialize(foeGfxSession gfxSession,
                         VkDescriptorSetLayout modelMatrixLayout,
                         uint32_t modelMatrixBinding);
     void deinitialize();
 
-    VkResult generatePositionDescriptors(uint32_t frameIndex,
-                                         std::map<foeId, std::unique_ptr<Position3D>> &positions);
+    VkResult generatePositionDescriptors(
+        uint32_t frameIndex, foeDataPool<foeEntityID, std::unique_ptr<Position3D>> &positionPool);
 
   private:
     struct UniformBuffer {

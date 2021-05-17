@@ -16,6 +16,7 @@
 
 #include "function_registrar.hpp"
 
+#include <foe/physics/yaml/collision_shape.hpp>
 #include <foe/resource/yaml/armature.hpp>
 #include <foe/resource/yaml/image.hpp>
 #include <foe/resource/yaml/material.hpp>
@@ -34,6 +35,8 @@ bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerato
         pYamlImporter->addImporter("vertex_descriptor_v1", yaml_read_vertex_descriptor_definition);
         pYamlImporter->addImporter("shader_v1", yaml_read_shader_definition);
         pYamlImporter->addImporter("image_v1", yaml_read_image_definition);
+
+        pYamlImporter->addImporter("collision_shape_v1", yaml_read_collision_shape_definition);
     }
 
     return true;
@@ -48,6 +51,8 @@ bool foeYamlCoreResourceFunctionRegistrar::deregisterFunctions(foeImporterGenera
         pYamlImporter->removeImporter("vertex_descriptor_v1");
         pYamlImporter->removeImporter("shader_v1");
         pYamlImporter->removeImporter("image_v1");
+
+        pYamlImporter->removeImporter("collision_shape_v1");
     }
 
     return true;

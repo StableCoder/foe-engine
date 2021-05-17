@@ -18,6 +18,7 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/physics/yaml/rigid_body.hpp>
 #include <foe/position/3d.hpp>
 #include <foe/position/yaml/3d.hpp>
 #include <foe/yaml/exception.hpp>
@@ -38,7 +39,7 @@ auto yaml_read_entity(YAML::Node const &node,
         try {
             std::unique_ptr<Position3D> pPos(new Position3D);
             *pPos = yaml_read_Position3D(dataNode);
-            pStatePools->position[entity] = std::move(pPos);
+            pStatePools->position.insert(entity, std::move(pPos));
         } catch (foeYamlException const &e) {
             throw foeYamlException{"position_3d::" + e.whatStr()};
         }
@@ -62,6 +63,15 @@ auto yaml_read_entity(YAML::Node const &node,
         }
     }
 
+    if (auto dataNode = node["rigid_body"]; dataNode) {
+        try {
+            foePhysRigidBody rigidBody = yaml_read_RigidBody(dataNode, pGroupTranslator);
+            pStatePools->rigidBody.insert(entity, std::move(rigidBody));
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{"armature_state::" + e.whatStr()};
+        }
+    }
+
     return entity;
 }
 
@@ -80,8 +90,9 @@ auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStateP
     }
 
     // Position3D
-    if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.end()) {
-        outNode["position_3d"] = yaml_write_Position3D(*searchIt->second.get());
+    if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.size()) {
+        outNode["position_3d"] =
+            yaml_write_Position3D(*pStatePools->position.begin<1>()[searchIt].get());
     }
     // RenderState
     if (auto searchIt = pStatePools->renderStates.find(id);
@@ -92,6 +103,10 @@ auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStateP
     if (auto searchIt = pStatePools->armatureStates.find(id);
         searchIt != pStatePools->armatureStates.end()) {
         outNode["armature_state"] = yaml_write_ArmatureState(searchIt->second);
+    }
+    // RigidBody
+    if (auto offset = pStatePools->rigidBody.find(id); offset != pStatePools->rigidBody.size()) {
+        outNode["rigid_body"] = yaml_write_RigidBody(*(pStatePools->rigidBody.begin<1>() + offset));
     }
 
     return outNode;
