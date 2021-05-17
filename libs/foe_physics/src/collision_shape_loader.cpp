@@ -16,15 +16,16 @@
 
 #include <foe/physics/resource/collision_shape_loader.hpp>
 
-#include <foe/log.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/resource/error_code.hpp>
 
 #include "bt_glm_conversion.hpp"
+#include "log.hpp"
 
 foePhysCollisionShapeLoader::~foePhysCollisionShapeLoader() {
     if (mActiveJobs > 0) {
-        FOE_LOG(General, Fatal, "foePhysCollisionShapeLoader being destructed with {} active jobs!",
+        FOE_LOG(foePhysics, Fatal,
+                "foePhysCollisionShapeLoader being destructed with {} active jobs!",
                 mActiveJobs.load());
     }
 }
@@ -53,7 +54,7 @@ INITIALIZATION_FAILED:
 
 void foePhysCollisionShapeLoader::deinitialize() {
     if (mActiveJobs > 0) {
-        FOE_LOG(General, Fatal,
+        FOE_LOG(foePhysics, Fatal,
                 "foePhysCollisionShapeLoader being deinitialized with {} active jobs!",
                 mActiveJobs.load());
     }
@@ -89,7 +90,7 @@ bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foePhysCollisionS
 } // namespace
 
 void foePhysCollisionShapeLoader::loadResource(foePhysCollisionShape *pCollisionShape) {
-    FOE_LOG(General, Warning, "Attempted to load foePhysCollisionShape {}",
+    FOE_LOG(foePhysics, Warning, "Attempted to load foePhysCollisionShape {}",
             static_cast<void *>(pCollisionShape))
     // First, try to enter the 'loading' state
     auto expected = pCollisionShape->loadState.load();
@@ -99,7 +100,7 @@ void foePhysCollisionShapeLoader::loadResource(foePhysCollisionShape *pCollision
             break;
     }
     if (expected == foeResourceLoadState::Loading) {
-        FOE_LOG(General, Warning, "Attempted to load foePhysCollisionShape {} in parrallel",
+        FOE_LOG(foePhysics, Warning, "Attempted to load foePhysCollisionShape {} in parrallel",
                 static_cast<void *>(pCollisionShape))
         return;
     }
@@ -126,7 +127,7 @@ void foePhysCollisionShapeLoader::loadResource(foePhysCollisionShape *pCollision
 
 LOADING_FAILED:
     if (errC) {
-        FOE_LOG(General, Error, "Failed to load foePhysCollisionShape {} with error {}:{}",
+        FOE_LOG(foePhysics, Error, "Failed to load foePhysCollisionShape {} with error {}:{}",
                 static_cast<void *>(pCollisionShape), errC.value(), errC.message())
 
         pCollisionShape->loadState = foeResourceLoadState::Failed;

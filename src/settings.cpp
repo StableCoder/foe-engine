@@ -17,10 +17,11 @@
 #include "settings.hpp"
 
 #include <CLI/CLI11.hpp>
-#include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>
+
+#include "log.hpp"
 
 #include <fstream>
 #include <string>

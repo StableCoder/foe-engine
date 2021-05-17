@@ -17,9 +17,9 @@
 #include "import_state.hpp"
 
 #include <foe/ecs/group_translator.hpp>
-#include <foe/log.hpp>
 #include <foe/search_paths.hpp>
 
+#include "../log.hpp"
 #include "../simulation_set.hpp"
 #include "error_code.hpp"
 #include "importer_base.hpp"

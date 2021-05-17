@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,6 +14,6 @@
     limitations under the License.
 */
 
-#include "log.hpp"
+#include <foe/log.hpp>
 
-FOE_DEFINE_LOG_CATEGORY(foeCore)
+FOE_DECLARE_LOG_CATEGORY(General, All, All)

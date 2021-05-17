@@ -16,8 +16,7 @@
 
 #include "distributed_yaml_generator.hpp"
 
-#include <foe/log.hpp>
-
+#include "../log.hpp"
 #include "distributed_yaml.hpp"
 
 namespace {

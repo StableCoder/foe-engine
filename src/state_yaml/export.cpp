@@ -18,7 +18,6 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
-#include <foe/log.hpp>
 #include <foe/resource/yaml/armature.hpp>
 #include <foe/resource/yaml/image.hpp>
 #include <foe/resource/yaml/material.hpp>
@@ -28,6 +27,7 @@
 #include <foe/yaml/exception.hpp>
 
 #include "../group_data.hpp"
+#include "../log.hpp"
 #include "entity.hpp"
 
 #include <fstream>

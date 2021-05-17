@@ -23,7 +23,6 @@
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
-#include <foe/log.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/search_paths.hpp>
@@ -33,6 +32,7 @@
 
 #include "animation_processing.hpp"
 #include "graphics.hpp"
+#include "log.hpp"
 #include "logging.hpp"
 
 #ifdef FOE_XR_SUPPORT

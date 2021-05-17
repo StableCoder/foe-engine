@@ -16,7 +16,7 @@
 
 #include "group_data.hpp"
 
-#include <foe/log.hpp>
+#include "log.hpp"
 
 bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntityIndices,
                                    std::unique_ptr<foeIdIndexGenerator> &&pResourceIndices,

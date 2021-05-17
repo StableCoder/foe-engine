@@ -16,7 +16,6 @@
 
 #include <foe/physics/system.hpp>
 
-#include <foe/log.hpp>
 #include <foe/physics/component/rigid_body.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
@@ -227,11 +226,5 @@ void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
             pPosition->position = translation;
             pPosition->orientation = rotation;
         }
-    }
-
-    if (rigidBodyPool.size() > 0 && rigidBodyPool.begin<1>()->rigidBody != nullptr) {
-        glm::vec3 pos =
-            btToGlmVec3(rigidBodyPool.begin<1>()->rigidBody->getWorldTransform().getOrigin());
-        // FOE_LOG(General, Info, "Y Pos: {}", pos.y);
     }
 }

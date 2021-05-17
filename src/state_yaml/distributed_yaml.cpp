@@ -20,12 +20,12 @@
 #include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
-#include <foe/log.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <vk_struct_cleanup.hpp>
 
+#include "../log.hpp"
 #include "../resource_pools.hpp"
 #include "distributed_yaml_generator.hpp"
 #include "entity.hpp"

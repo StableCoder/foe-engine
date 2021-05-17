@@ -19,8 +19,6 @@
 
 #include <foe/physics/export.h>
 
-#include <memory>
-
 class foePhysCollisionShapeLoader;
 class foePhysCollisionShapePool;
 class foeRigidBodyPool;

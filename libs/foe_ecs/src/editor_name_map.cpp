@@ -16,7 +16,7 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 
-#include <foe/log.hpp>
+#include "log.hpp"
 
 foeId foeEditorNameMap::find(std::string_view editorName) {
     foeId id = FOE_INVALID_ID;
@@ -48,12 +48,12 @@ std::string foeEditorNameMap::find(foeId id) {
 
 bool foeEditorNameMap::add(foeId id, std::string editorName) {
     if (id == FOE_INVALID_ID) {
-        FOE_LOG(General, Warning, "Attempted to add an invalid ID with an editor name of '{}'",
+        FOE_LOG(foeECS, Warning, "Attempted to add an invalid ID with an editor name of '{}'",
                 editorName)
         return false;
     }
     if (editorName.empty()) {
-        FOE_LOG(General, Warning, "Attempted to add ID {} with a blank editor name",
+        FOE_LOG(foeECS, Warning, "Attempted to add ID {} with a blank editor name",
                 foeIdToString(id))
         return false;
     }
@@ -61,12 +61,12 @@ bool foeEditorNameMap::add(foeId id, std::string editorName) {
     std::scoped_lock lock{mSync};
 
     if (mIdToEditor.find(id) != mIdToEditor.end()) {
-        FOE_LOG(General, Warning, "Attempted to add ID {} that already has an editor name",
+        FOE_LOG(foeECS, Warning, "Attempted to add ID {} that already has an editor name",
                 foeIdToString(id))
         return false;
     }
     if (mEditorToId.find(editorName) != mEditorToId.end()) {
-        FOE_LOG(General, Warning,
+        FOE_LOG(foeECS, Warning,
                 "Attempted to add ID {} that with editor name {} that is already used by ID {}",
                 foeIdToString(id), editorName, foeIdToString(mEditorToId.find(editorName)->second))
         return false;
@@ -80,14 +80,14 @@ bool foeEditorNameMap::add(foeId id, std::string editorName) {
 
 bool foeEditorNameMap::update(foeId id, std::string editorName) {
     if (editorName.empty()) {
-        FOE_LOG(General, Warning, "Attempted to update ID {} with a blank editor name",
+        FOE_LOG(foeECS, Warning, "Attempted to update ID {} with a blank editor name",
                 foeIdToString(id))
         return false;
     }
 
     // Make sure editor name not already in use
     if (mEditorToId.find(editorName) != mEditorToId.end()) {
-        FOE_LOG(General, Warning,
+        FOE_LOG(foeECS, Warning,
                 "Attempted to update ID {} with editor name '{}' already used by ID {}",
                 foeIdToString(id), editorName, foeIdToString(mEditorToId.find(editorName)->second))
         return false;
@@ -96,7 +96,7 @@ bool foeEditorNameMap::update(foeId id, std::string editorName) {
     std::scoped_lock lock{mSync};
     auto searchIt = mIdToEditor.find(id);
     if (searchIt == mIdToEditor.end()) {
-        FOE_LOG(General, Info, "Attempted to update ID {} that did not have an editorName",
+        FOE_LOG(foeECS, Info, "Attempted to update ID {} that did not have an editorName",
                 foeIdToString(id))
         return false;
     }
@@ -114,7 +114,7 @@ bool foeEditorNameMap::remove(foeId id) {
 
     auto searchIt = mIdToEditor.find(id);
     if (searchIt == mIdToEditor.end()) {
-        FOE_LOG(General, Info, "Attempted to remove ID {} that did not have an editorName",
+        FOE_LOG(foeECS, Info, "Attempted to remove ID {} that did not have an editorName",
                 foeIdToString(id))
         return false;
     }

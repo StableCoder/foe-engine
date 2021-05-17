@@ -75,7 +75,4 @@
     CATEGORY::CATEGORY(std::string_view category, foeLogLevel maxLevel) :                          \
         foeLogCategory{category, maxLevel} {}
 
-/// Universal 'general' log for non-specific use.
-FOE_DECLARE_LOG_CATEGORY_SHARED(FOE_EXPORT, General, All, All)
-
 #endif // FOE_LOG_HPP

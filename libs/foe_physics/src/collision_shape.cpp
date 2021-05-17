@@ -16,20 +16,21 @@
 
 #include <foe/physics/resource/collision_shape.hpp>
 
-#include <foe/log.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
+
+#include "log.hpp"
 
 foePhysCollisionShape::foePhysCollisionShape(foeId id, foePhysCollisionShapeLoader *pLoader) :
     id{id}, pLoader{pLoader} {}
 
 foePhysCollisionShape::~foePhysCollisionShape() {
     if (useCount > 0) {
-        FOE_LOG(General, Warning,
+        FOE_LOG(foePhysics, Warning,
                 "foePhysCollisionShape {} being destroyed despite having active uses",
                 static_cast<void *>(this));
     }
     if (refCount > 0) {
-        FOE_LOG(General, Warning,
+        FOE_LOG(foePhysics, Warning,
                 "foePhysCollisionShape {} being destroyed despite having active references",
                 static_cast<void *>(this));
     }
@@ -44,7 +45,7 @@ int foePhysCollisionShape::incrementRefCount() noexcept { return ++refCount; }
 int foePhysCollisionShape::decrementRefCount() noexcept {
     auto newCount = --refCount;
     if (newCount < 0) {
-        FOE_LOG(General, Warning, "foePhysCollisionShape {} has a negative reference count",
+        FOE_LOG(foePhysics, Warning, "foePhysCollisionShape {} has a negative reference count",
                 static_cast<void *>(this))
     }
     return newCount;
@@ -66,7 +67,7 @@ int foePhysCollisionShape::incrementUseCount() noexcept {
 int foePhysCollisionShape::decrementUseCount() noexcept {
     auto newCount = --useCount;
     if (newCount < 0) {
-        FOE_LOG(General, Warning, "foePhysCollisionShape {} has a negative use count",
+        FOE_LOG(foePhysics, Warning, "foePhysCollisionShape {} has a negative use count",
                 static_cast<void *>(this))
     }
     return --newCount;

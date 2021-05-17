@@ -16,7 +16,7 @@
 
 #include <foe/plugin.h>
 
-#include <foe/log.hpp>
+#include "log.hpp"
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>
@@ -38,7 +38,7 @@ void *loadUnixPlugin(char const *pPluginPath) {
     void *pModule = dlopen(pPluginPath, RTLD_LAZY);
     if (pModule == nullptr) {
         auto *pErrStr = dlerror();
-        FOE_LOG(General, Error, "Could not load plugin file {} due to error: {}", pPluginPath,
+        FOE_LOG(foeCore, Error, "Could not load plugin file {} due to error: {}", pPluginPath,
                 pErrStr);
     }
 
@@ -52,7 +52,7 @@ void *getUnixPluginSymbolAddr(void *pModule, char const *pSymbol) {
     void *pSymbolAddr = dlsym(pModule, pSymbol);
     if (pSymbolAddr == nullptr) {
         auto *pErrStr = dlerror();
-        FOE_LOG(General, Error,
+        FOE_LOG(foeCore, Error,
                 "Could not find plugin symbol {} in plugin module {} due to error: {}", pSymbol,
                 pModule, pErrStr);
     }
@@ -71,7 +71,7 @@ void *loadWindowsPlugin(char const *pPluginPath) {
     HMODULE module = LoadLibraryA(pPluginPath);
     if (module == NULL) {
         auto errC = GetLastError();
-        FOE_LOG(General, Error, "Could not load plugin {} due to error: {}", pPluginPath, errC);
+        FOE_LOG(foeCore, Error, "Could not load plugin {} due to error: {}", pPluginPath, errC);
     }
 
     return module;
@@ -81,7 +81,7 @@ void *getWindowsPluginSymbolAddr(HMODULE module, char const *pSymbol) {
     void *pSymbolAddr = GetProcAddress(module, pSymbol);
     if (pSymbolAddr == nullptr) {
         auto errC = GetLastError();
-        FOE_LOG(General, Error,
+        FOE_LOG(foeCore, Error,
                 "Could not find plugin symbol {} in plugin module {} due to error: {}", pSymbol,
                 static_cast<void *>(module), errC);
     }
