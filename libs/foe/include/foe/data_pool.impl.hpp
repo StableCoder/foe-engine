@@ -19,6 +19,7 @@
 
 #include <foe/data_pool.hpp>
 
+#include <algorithm>
 #include <cstring>
 
 template <typename IdType, typename... Components>
