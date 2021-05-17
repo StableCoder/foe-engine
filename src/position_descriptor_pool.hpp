@@ -21,13 +21,14 @@
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/position/3d.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <array>
 #include <memory>
 #include <vector>
+
+class foePosition3dPool;
 
 struct PositionDescriptorPool {
   public:
@@ -36,8 +37,7 @@ struct PositionDescriptorPool {
                         uint32_t modelMatrixBinding);
     void deinitialize();
 
-    VkResult generatePositionDescriptors(
-        uint32_t frameIndex, foeDataPool<foeEntityID, std::unique_ptr<Position3D>> &positionPool);
+    VkResult generatePositionDescriptors(uint32_t frameIndex, foePosition3dPool &positionPool);
 
   private:
     struct UniformBuffer {

@@ -20,7 +20,7 @@
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
 #include <foe/physics/rigid_body.hpp>
-#include <foe/position/3d.hpp>
+#include <foe/position/component/3d_pool.hpp>
 
 #include <map>
 #include <memory>
@@ -32,7 +32,7 @@ struct StatePools {
     std::map<foeId, foeRenderState> renderStates;
     std::map<foeId, foeArmatureState> armatureStates;
 
-    foeDataPool<foeEntityID, std::unique_ptr<Position3D>> position;
+    foePosition3dPool position;
     foeDataPool<foeEntityID, foePhysRigidBody> rigidBody;
 
     void maintenance() {

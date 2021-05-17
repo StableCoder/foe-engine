@@ -14,24 +14,15 @@
     limitations under the License.
 */
 
-#include <foe/position/yaml/component/3d.hpp>
+#ifndef FOE_POSITION_YAML_COMPONENT_3D_HPP
+#define FOE_POSITION_YAML_COMPONENT_3D_HPP
 
-#include <foe/yaml/parsing.hpp>
+#include <foe/position/component/3d.hpp>
+#include <foe/position/yaml/export.h>
+#include <yaml-cpp/yaml.h>
 
-auto yaml_read_Position3D(YAML::Node const &node) -> foePosition3d {
-    foePosition3d position;
+FOE_POSITION_YAML_EXPORT auto yaml_read_Position3D(YAML::Node const &node) -> foePosition3d;
 
-    yaml_read_required("position", node, position.position);
-    yaml_read_required("orientation", node, position.orientation);
+FOE_POSITION_YAML_EXPORT auto yaml_write_Position3D(foePosition3d const &data) -> YAML::Node;
 
-    return position;
-}
-
-auto yaml_write_Position3D(foePosition3d const &data) -> YAML::Node {
-    YAML::Node writeNode;
-
-    yaml_write_required("position", data.position, writeNode);
-    yaml_write_required("orientation", data.orientation, writeNode);
-
-    return writeNode;
-}
+#endif // FOE_POSITION_YAML_COMPONENT_3D_HPP

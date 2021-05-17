@@ -17,7 +17,7 @@
 #include "position_descriptor_pool.hpp"
 
 #include <foe/graphics/vk/session.hpp>
-#include <foe/position/3d.hpp>
+#include <foe/position/component/3d_pool.hpp>
 
 VkResult PositionDescriptorPool::initialize(foeGfxSession session,
                                             VkDescriptorSetLayout modelMatrixLayout,
@@ -84,8 +84,8 @@ void PositionDescriptorPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult PositionDescriptorPool::generatePositionDescriptors(
-    uint32_t frameIndex, foeDataPool<foeEntityID, std::unique_ptr<Position3D>> &positionPool) {
+VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex,
+                                                             foePosition3dPool &positionPool) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];

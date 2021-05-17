@@ -20,6 +20,7 @@
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/rigid_body.hpp>
+#include <foe/position/component/3d_pool.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "bt_glm_conversion.hpp"
@@ -75,10 +76,10 @@ void removeObject(foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
 void addObject(foePhysCollisionShapeLoader &collisionShapeLoader,
                foePhysCollisionShapePool &collisionShapePool,
                foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
-               foeDataPool<foeEntityID, std::unique_ptr<Position3D>> &positionPool,
+               foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> &positionPool,
                foeEntityID entity,
                foePhysRigidBody *pRigidBody,
-               Position3D *pPosition,
+               foePosition3d *pPosition,
                foePhysCollisionShape *pCollisionShape) {
     // RigidBody
     if (pRigidBody == nullptr) {
@@ -94,7 +95,7 @@ void addObject(foePhysCollisionShapeLoader &collisionShapeLoader,
     if (pRigidBody->rigidBody != nullptr)
         return;
 
-    // Position3D
+    // foePosition3d
     if (pPosition == nullptr) {
         size_t dataOffset = positionPool.find(entity);
         if (dataOffset != positionPool.size()) {
@@ -147,7 +148,7 @@ void addObject(foePhysCollisionShapeLoader &collisionShapeLoader,
 void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
                     foePhysCollisionShapePool &collisionShapePool,
                     foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
-                    foeDataPool<foeEntityID, std::unique_ptr<Position3D>> &positionPool,
+                    foePosition3dPool &positionPool,
                     float timePassed) {
     // Any previously attempted items that were waiting for external resources to be loaded
     auto awaitingResources = std::move(mAwaitingResources);
@@ -167,7 +168,7 @@ void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
         }
     }
 
-    { // Position3D
+    { // foePosition3d
         auto *pId = rigidBodyPool.rmbegin();
         auto *const pIdEnd = rigidBodyPool.rmend();
 
@@ -189,7 +190,7 @@ void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
         }
     }
 
-    { // Position3D
+    { // foePosition3d
         auto offsetIt = positionPool.inbegin();
         auto offsetEndIt = positionPool.inend();
         auto *const pId = positionPool.begin();
@@ -203,7 +204,7 @@ void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
 
     physWorld->stepSimulation(timePassed);
 
-    { // Copy position data to Position3D objects
+    { // Copy position data to foePosition3d objects
         auto *pId = rigidBodyPool.begin();
         auto *const pEndId = rigidBodyPool.end();
         auto *pData = rigidBodyPool.begin<1>();
@@ -215,7 +216,7 @@ void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
             auto posOffset = positionPool.find(*pId);
             assert(posOffset != positionPool.size());
 
-            Position3D *pPosition = positionPool.begin<1>()[posOffset].get();
+            foePosition3d *pPosition = positionPool.begin<1>()[posOffset].get();
 
             glm::mat4 transform = btToGlmMat4(pData->rigidBody->getWorldTransform());
             glm::vec3 scale;

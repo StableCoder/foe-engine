@@ -31,7 +31,7 @@ struct foeXrCamera : public foeCameraBase {
     }
 
     // View Data
-    Position3D *pPosition3D;
+    foePosition3d *pPosition3D;
     XrPosef pose;
 
     glm::mat4 viewMatrix() const noexcept override {

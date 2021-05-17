@@ -19,8 +19,8 @@
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/physics/yaml/rigid_body.hpp>
-#include <foe/position/3d.hpp>
-#include <foe/position/yaml/3d.hpp>
+#include <foe/position/component/3d.hpp>
+#include <foe/position/yaml/component/3d.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -37,7 +37,7 @@ auto yaml_read_entity(YAML::Node const &node,
 
     if (auto dataNode = node["position_3d"]; dataNode) {
         try {
-            std::unique_ptr<Position3D> pPos(new Position3D);
+            std::unique_ptr<foePosition3d> pPos(new foePosition3d);
             *pPos = yaml_read_Position3D(dataNode);
             pStatePools->position.insert(entity, std::move(pPos));
         } catch (foeYamlException const &e) {
@@ -89,7 +89,7 @@ auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStateP
         }
     }
 
-    // Position3D
+    // foePosition3d
     if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.size()) {
         outNode["position_3d"] =
             yaml_write_Position3D(*pStatePools->position.begin<1>()[searchIt].get());

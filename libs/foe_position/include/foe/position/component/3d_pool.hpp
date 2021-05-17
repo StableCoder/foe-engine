@@ -14,15 +14,14 @@
     limitations under the License.
 */
 
-#ifndef FOE_POSITION_YAML_3D_HPP
-#define FOE_POSITION_YAML_3D_HPP
+#ifndef FOE_POSITION_COMPONENT_3D_POOL_HPP
+#define FOE_POSITION_COMPONENT_3D_POOL_HPP
 
-#include <foe/position/3d.hpp>
-#include <foe/position/yaml/export.h>
-#include <yaml-cpp/yaml.h>
+#include <foe/data_pool.hpp>
+#include <foe/ecs/id.hpp>
+#include <foe/position/component/3d.hpp>
 
-FOE_POSITION_YAML_EXPORT auto yaml_read_Position3D(YAML::Node const &node) -> Position3D;
+class foePosition3dPool : public foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> {
+};
 
-FOE_POSITION_YAML_EXPORT auto yaml_write_Position3D(Position3D const &data) -> YAML::Node;
-
-#endif // FOE_POSITION_YAML_3D_HPP
+#endif // FOE_POSITION_COMPONENT_3D_POOL_HPP

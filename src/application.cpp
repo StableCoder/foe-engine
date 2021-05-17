@@ -107,14 +107,8 @@ int Application::initialize(int argc, char **argv) {
     renderMeshID = pSimulationSet->groupData.persistentEntityIndices()->generate();
     pSimulationSet->entityNameMap.add(renderMeshID, "renderMesh");
 
-    /*
-    pSimulationSet->state.position[cameraID].reset(new Position3D{
-        .position = glm::vec3(0.f, 0.f, -5.f),
-        .orientation = glm::quat(glm::vec3(0, 0, 0)),
-    });
-    */
     // Camera
-    std::unique_ptr<Position3D> pPosition(new Position3D{
+    std::unique_ptr<foePosition3d> pPosition(new foePosition3d{
         .position = glm::vec3(0.f, 0.f, -5.f),
         .orientation = glm::quat(glm::vec3(0, 0, 0)),
     });
@@ -133,25 +127,13 @@ int Application::initialize(int argc, char **argv) {
     pSimulationSet->state.position.insert(cameraID, std::move(pPosition));
 
     { // Render item
-        /*
-            pSimulationSet->state.position[renderTriangleID].reset(new Position3D{
-                .position = glm::vec3(0.f, 0.f, 0.f),
-                .orientation = glm::quat(glm::vec3(0, 0, 0)),
-            });
-            */
-        pPosition.reset(new Position3D{
+        pPosition.reset(new foePosition3d{
             .position = glm::vec3(0.f, 0.f, 0.f),
             .orientation = glm::quat(glm::vec3(0, 0, 0)),
         });
         pSimulationSet->state.position.insert(renderTriangleID, std::move(pPosition));
 
-        /*
-            pSimulationSet->state.position[renderMeshID].reset(new Position3D{
-                .position = glm::vec3(0.f, 4.f, 0.f),
-                .orientation = glm::quat(glm::vec3(0, 0, 0)),
-            });
-            */
-        pPosition.reset(new Position3D{
+        pPosition.reset(new foePosition3d{
             .position = glm::vec3(0.f, 4.f, 0.f),
             .orientation = glm::quat(glm::vec3(0, 0, 0)),
         });
@@ -712,7 +694,7 @@ namespace {
 void processUserInput(double timeElapsedInSeconds,
                       foeKeyboard const *pKeyboard,
                       foeMouse const *pMouse,
-                      Position3D *pCamera) {
+                      foePosition3d *pCamera) {
     constexpr float movementMultiplier = 10.f;
     constexpr float rorationMultiplier = 40.f;
     float multiplier = timeElapsedInSeconds * 3.f; // 3 units per second

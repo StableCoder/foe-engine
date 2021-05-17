@@ -17,7 +17,7 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
-#include <foe/position/3d.hpp>
+#include <foe/position/component/3d.hpp>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
@@ -46,7 +46,7 @@ struct Camera : public foeCameraBase {
     }
 
     // View Data
-    Position3D *pPosition3D;
+    foePosition3d *pPosition3D;
 
     glm::mat4 viewMatrix() const noexcept override {
         // Rotate * Translate
