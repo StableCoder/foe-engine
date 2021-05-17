@@ -17,22 +17,20 @@
 #ifndef FOE_PHYSICS_SYSTEM_HPP
 #define FOE_PHYSICS_SYSTEM_HPP
 
-#include <foe/data_pool.hpp>
-#include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
-#include <foe/physics/rigid_body.hpp>
 
 #include <memory>
 
 class foePhysCollisionShapeLoader;
 class foePhysCollisionShapePool;
+class foeRigidBodyPool;
 class foePosition3dPool;
 
 FOE_PHYSICS_EXPORT void initPhysics();
 
 FOE_PHYSICS_EXPORT void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
                                        foePhysCollisionShapePool &collisionShapePool,
-                                       foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
+                                       foeRigidBodyPool &rigidBodyPool,
                                        foePosition3dPool &positionPool,
                                        float timePassed);
 

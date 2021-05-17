@@ -17,9 +17,10 @@
 #include <foe/physics/system.hpp>
 
 #include <foe/log.hpp>
+#include <foe/physics/component/rigid_body.hpp>
+#include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
-#include <foe/physics/rigid_body.hpp>
 #include <foe/position/component/3d_pool.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -52,9 +53,7 @@ void initPhysics() { physWorld->setGravity(btVector3{0, -9.8, 0}); }
 
 namespace {
 
-void removeObject(foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
-                  foeEntityID entity,
-                  foePhysRigidBody *pRigidBody) {
+void removeObject(foeRigidBodyPool &rigidBodyPool, foeEntityID entity, foeRigidBody *pRigidBody) {
     // RigidBody
     if (pRigidBody == nullptr) {
         size_t dataOffset = rigidBodyPool.find(entity);
@@ -75,10 +74,10 @@ void removeObject(foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
 
 void addObject(foePhysCollisionShapeLoader &collisionShapeLoader,
                foePhysCollisionShapePool &collisionShapePool,
-               foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
+               foeRigidBodyPool &rigidBodyPool,
                foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> &positionPool,
                foeEntityID entity,
-               foePhysRigidBody *pRigidBody,
+               foeRigidBody *pRigidBody,
                foePosition3d *pPosition,
                foePhysCollisionShape *pCollisionShape) {
     // RigidBody
@@ -147,7 +146,7 @@ void addObject(foePhysCollisionShapeLoader &collisionShapeLoader,
 
 void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
                     foePhysCollisionShapePool &collisionShapePool,
-                    foeDataPool<foeEntityID, foePhysRigidBody> &rigidBodyPool,
+                    foeRigidBodyPool &rigidBodyPool,
                     foePosition3dPool &positionPool,
                     float timePassed) {
     // Any previously attempted items that were waiting for external resources to be loaded

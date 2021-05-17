@@ -18,8 +18,7 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/physics/yaml/rigid_body.hpp>
-#include <foe/position/component/3d.hpp>
+#include <foe/physics/yaml/component/rigid_body.hpp>
 #include <foe/position/yaml/component/3d.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -65,7 +64,7 @@ auto yaml_read_entity(YAML::Node const &node,
 
     if (auto dataNode = node["rigid_body"]; dataNode) {
         try {
-            foePhysRigidBody rigidBody = yaml_read_RigidBody(dataNode, pGroupTranslator);
+            foeRigidBody rigidBody = yaml_read_RigidBody(dataNode, pGroupTranslator);
             pStatePools->rigidBody.insert(entity, std::move(rigidBody));
         } catch (foeYamlException const &e) {
             throw foeYamlException{"armature_state::" + e.whatStr()};

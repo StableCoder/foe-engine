@@ -165,7 +165,7 @@ int Application::initialize(int argc, char **argv) {
         };
 
         pSimulationSet->state.rigidBody.insert(
-            renderMeshID, foePhysRigidBody{
+            renderMeshID, foeRigidBody{
                               .mass = 1.f,
                               .collisionShape = foeIdCreate(foeIdPersistentGroup, 17),
                           });

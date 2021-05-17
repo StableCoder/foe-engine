@@ -14,19 +14,22 @@
     limitations under the License.
 */
 
-#ifndef FOE_PHYSICS_YAML_RIGID_BODY_HPP
-#define FOE_PHYSICS_YAML_RIGID_BODY_HPP
+#ifndef FOE_PHYSICS_YAML_RESOURCE_COLLISION_SHAPE_HPP
+#define FOE_PHYSICS_YAML_RESOURCE_COLLISION_SHAPE_HPP
 
-#include <foe/physics/rigid_body.hpp>
 #include <foe/physics/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
+struct foeResourceCreateInfoBase;
+struct foePhysCollisionShapeCreateInfo;
 
-FOE_PHYSICS_YAML_EXPORT auto yaml_read_RigidBody(YAML::Node const &node,
-                                                 foeIdGroupTranslator *pIdGroupTranslator)
-    -> foePhysRigidBody;
+FOE_PHYSICS_YAML_EXPORT void yaml_read_collision_shape_definition(
+    YAML::Node const &node,
+    foeIdGroupTranslator const *pTranslator,
+    foeResourceCreateInfoBase **ppCreateInfo);
 
-FOE_PHYSICS_YAML_EXPORT auto yaml_write_RigidBody(foePhysRigidBody const &data) -> YAML::Node;
+FOE_PHYSICS_YAML_EXPORT auto yaml_write_collision_shape_definition(
+    foePhysCollisionShapeCreateInfo &data) -> YAML::Node;
 
-#endif // FOE_PHYSICS_YAML_RIGID_BODY_HPP
+#endif // FOE_PHYSICS_YAML_RESOURCE_COLLISION_SHAPE_HPP

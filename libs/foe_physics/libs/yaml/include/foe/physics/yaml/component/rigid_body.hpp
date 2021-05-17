@@ -14,18 +14,19 @@
     limitations under the License.
 */
 
-#ifndef FOE_PHYSICS_RIGID_BODY_HPP
-#define FOE_PHYSICS_RIGID_BODY_HPP
+#ifndef FOE_PHYSICS_YAML_COMPONENT_RIGID_BODY_HPP
+#define FOE_PHYSICS_YAML_COMPONENT_RIGID_BODY_HPP
 
-#include <btBulletDynamicsCommon.h>
-#include <foe/ecs/id.hpp>
+#include <foe/physics/component/rigid_body.hpp>
+#include <foe/physics/yaml/export.h>
+#include <yaml-cpp/yaml.h>
 
-#include <memory>
+struct foeIdGroupTranslator;
 
-struct foePhysRigidBody {
-    std::unique_ptr<btRigidBody> rigidBody;
-    float mass;
-    foeResourceID collisionShape;
-};
+FOE_PHYSICS_YAML_EXPORT auto yaml_read_RigidBody(YAML::Node const &node,
+                                                 foeIdGroupTranslator *pIdGroupTranslator)
+    -> foeRigidBody;
 
-#endif // FOE_PHYSICS_RIGID_BODY_HPP
+FOE_PHYSICS_YAML_EXPORT auto yaml_write_RigidBody(foeRigidBody const &data) -> YAML::Node;
+
+#endif // FOE_PHYSICS_YAML_COMPONENT_RIGID_BODY_HPP

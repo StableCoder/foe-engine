@@ -14,14 +14,14 @@
     limitations under the License.
 */
 
-#include <foe/physics/yaml/rigid_body.hpp>
+#include <foe/physics/yaml/component/rigid_body.hpp>
 
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/parsing.hpp>
 
 auto yaml_read_RigidBody(YAML::Node const &node, foeIdGroupTranslator *pIdGroupTranslator)
-    -> foePhysRigidBody {
-    foePhysRigidBody rigidBody;
+    -> foeRigidBody {
+    foeRigidBody rigidBody;
 
     yaml_read_required("mass", node, rigidBody.mass);
     yaml_read_id_optional("collision_shape", node, pIdGroupTranslator, rigidBody.collisionShape);
@@ -29,7 +29,7 @@ auto yaml_read_RigidBody(YAML::Node const &node, foeIdGroupTranslator *pIdGroupT
     return rigidBody;
 }
 
-auto yaml_write_RigidBody(foePhysRigidBody const &data) -> YAML::Node {
+auto yaml_write_RigidBody(foeRigidBody const &data) -> YAML::Node {
     YAML::Node writeNode;
 
     yaml_write_required("mass", data.mass, writeNode);

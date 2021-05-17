@@ -14,31 +14,14 @@
     limitations under the License.
 */
 
-#ifndef STATE_POOLS_HPP
-#define STATE_POOLS_HPP
+#ifndef FOE_PHYSICS_COMPONENT_RIGID_BODY_POOL_HPP
+#define FOE_PHYSICS_COMPONENT_RIGID_BODY_POOL_HPP
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
-#include <foe/physics/component/rigid_body_pool.hpp>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/physics/component/rigid_body.hpp>
 
-#include <map>
-#include <memory>
-
-#include "armature_state.hpp"
-#include "render_state.hpp"
-
-struct StatePools {
-    std::map<foeId, foeRenderState> renderStates;
-    std::map<foeId, foeArmatureState> armatureStates;
-
-    foePosition3dPool position;
-    foeRigidBodyPool rigidBody;
-
-    void maintenance() {
-        position.maintenance();
-        rigidBody.maintenance();
-    }
+class foeRigidBodyPool : public foeDataPool<foeEntityID, foeRigidBody> {
 };
 
-#endif // STATE_POOLS_HPP
+#endif // FOE_PHYSICS_COMPONENT_RIGID_BODY_POOL_HPP

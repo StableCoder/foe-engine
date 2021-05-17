@@ -16,7 +16,7 @@
 
 #include "function_registrar.hpp"
 
-#include <foe/physics/yaml/collision_shape.hpp>
+#include <foe/physics/yaml/resource/collision_shape.hpp>
 #include <foe/resource/yaml/armature.hpp>
 #include <foe/resource/yaml/image.hpp>
 #include <foe/resource/yaml/material.hpp>
