@@ -54,7 +54,7 @@ auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
     return nullptr;
 }
 
-bool foeDistributedYamlImporterGenerator::addImporter(std::string key, ImportFunc function) {
+bool foeDistributedYamlImporterGenerator::addImporter(std::string key, ImportFunc pFunction) {
     auto searchIt = mImportFunctions.find(key);
     if (searchIt != mImportFunctions.end()) {
         FOE_LOG(General, Error,
@@ -63,15 +63,22 @@ bool foeDistributedYamlImporterGenerator::addImporter(std::string key, ImportFun
     }
 
     FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}", key);
-    mImportFunctions[key] = function;
+    mImportFunctions[key] = pFunction;
     return true;
 }
 
-bool foeDistributedYamlImporterGenerator::removeImporter(std::string key) {
+bool foeDistributedYamlImporterGenerator::removeImporter(std::string key, ImportFunc pFunction) {
     auto searchIt = mImportFunctions.find(key);
     if (searchIt == mImportFunctions.end()) {
         FOE_LOG(General, Error,
                 "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);
+        return false;
+    }
+    if (searchIt->second != pFunction) {
+        FOE_LOG(General, Warning,
+                "Attempted to remove DistributedYamlImporter function for {}, but the provided "
+                "function pointer isn't the same as was added, (Provided){} vs (Added){}",
+                key, pFunction, searchIt->second);
         return false;
     }
 

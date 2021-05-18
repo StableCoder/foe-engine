@@ -38,8 +38,25 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
     auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * override;
 
-    bool addImporter(std::string key, ImportFunc function);
-    bool removeImporter(std::string key);
+    /**
+     * @brief Adds a string/function pointer pair to the importer map
+     * @param key String key corresponding to the Yaml node key it parses
+     * @param pFunction Function that properly parses a given node
+     * @return True if the key/function was added, false otherwise
+     * @note Reasons for failure are recorded in the log
+     * @todo Change to return appropriate error code
+     */
+    bool addImporter(std::string key, ImportFunc pFunction);
+
+    /**
+     * @brief Removes the given key/function pair from the importer map
+     * @param key Yaml node key of the associated importer function
+     * @param pFunction Function pointer that is to be removed
+     * @return True if the pair was successfully removed, false otherwise.
+     * @note Reasons for failure are recorded in the log
+     * @todo Change to return appropriate error code
+     */
+    bool removeImporter(std::string key, ImportFunc pFunction);
 
   private:
     friend class foeDistributedYamlImporter;

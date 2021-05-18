@@ -29,30 +29,51 @@
 bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeDistributedYamlImporterGenerator *>(pGenerator);
         pYamlImporter) {
-        pYamlImporter->addImporter("armature_v1", yaml_read_armature_definition);
-        pYamlImporter->addImporter("mesh_v1", yaml_read_mesh_definition);
-        pYamlImporter->addImporter("material_v1", yaml_read_material_definition);
-        pYamlImporter->addImporter("vertex_descriptor_v1", yaml_read_vertex_descriptor_definition);
-        pYamlImporter->addImporter("shader_v1", yaml_read_shader_definition);
-        pYamlImporter->addImporter("image_v1", yaml_read_image_definition);
+        if (!pYamlImporter->addImporter("collision_shape_v1", yaml_read_collision_shape_definition))
+            goto FAILED_TO_ADD;
 
-        pYamlImporter->addImporter("collision_shape_v1", yaml_read_collision_shape_definition);
+        if (!pYamlImporter->addImporter("armature_v1", yaml_read_armature_definition))
+            goto FAILED_TO_ADD;
+
+        if (!pYamlImporter->addImporter("mesh_v1", yaml_read_mesh_definition))
+            goto FAILED_TO_ADD;
+
+        if (!pYamlImporter->addImporter("material_v1", yaml_read_material_definition))
+            goto FAILED_TO_ADD;
+
+        if (!pYamlImporter->addImporter("vertex_descriptor_v1",
+                                        yaml_read_vertex_descriptor_definition))
+            goto FAILED_TO_ADD;
+
+        if (!pYamlImporter->addImporter("shader_v1", yaml_read_shader_definition))
+            goto FAILED_TO_ADD;
+
+        if (!pYamlImporter->addImporter("image_v1", yaml_read_image_definition))
+            goto FAILED_TO_ADD;
+
+        if (!pYamlImporter->addImporter("collision_shape_v1", yaml_read_collision_shape_definition))
+            goto FAILED_TO_ADD;
     }
 
     return true;
+
+FAILED_TO_ADD:
+    deregisterFunctions(pGenerator);
+    return false;
 }
 
 bool foeYamlCoreResourceFunctionRegistrar::deregisterFunctions(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeDistributedYamlImporterGenerator *>(pGenerator);
         pYamlImporter) {
-        pYamlImporter->removeImporter("armature_v1");
-        pYamlImporter->removeImporter("mesh_v1");
-        pYamlImporter->removeImporter("material_v1");
-        pYamlImporter->removeImporter("vertex_descriptor_v1");
-        pYamlImporter->removeImporter("shader_v1");
-        pYamlImporter->removeImporter("image_v1");
+        pYamlImporter->removeImporter("armature_v1", yaml_read_armature_definition);
+        pYamlImporter->removeImporter("mesh_v1", yaml_read_mesh_definition);
+        pYamlImporter->removeImporter("material_v1", yaml_read_material_definition);
+        pYamlImporter->removeImporter("vertex_descriptor_v1",
+                                      yaml_read_vertex_descriptor_definition);
+        pYamlImporter->removeImporter("shader_v1", yaml_read_shader_definition);
+        pYamlImporter->removeImporter("image_v1", yaml_read_image_definition);
 
-        pYamlImporter->removeImporter("collision_shape_v1");
+        pYamlImporter->removeImporter("collision_shape_v1", yaml_read_collision_shape_definition);
     }
 
     return true;
