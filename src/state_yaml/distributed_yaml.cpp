@@ -230,7 +230,7 @@ bool foeDistributedYamlImporter::importResourceDefinitions(foeEditorNameMap *pNa
         std::string editorName;
         try {
             // ID
-            yaml_read_id_required("", node, nullptr, resource);
+            yaml_read_id_required("", node, &mGroupTranslator, resource);
 
             // Editor Name
             yaml_read_optional("editor_name", node, editorName);
