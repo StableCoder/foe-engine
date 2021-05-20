@@ -22,6 +22,7 @@
 #include <foe/graphics/upload_context.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/image.hpp>
+#include <foe/resource/loader_base.hpp>
 
 #include <array>
 #include <atomic>
@@ -30,7 +31,7 @@
 #include <system_error>
 #include <vector>
 
-class foeImageLoader {
+class foeImageLoader : public foeResourceLoaderBase {
   public:
     FOE_RES_EXPORT ~foeImageLoader();
 

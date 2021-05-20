@@ -19,6 +19,7 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
+#include <foe/resource/loader_base.hpp>
 
 #include <atomic>
 #include <functional>
@@ -27,7 +28,7 @@
 struct foeResourceCreateInfoBase;
 struct foePhysCollisionShape;
 
-class foePhysCollisionShapeLoader {
+class foePhysCollisionShapeLoader : public foeResourceLoaderBase {
   public:
     FOE_PHYSICS_EXPORT ~foePhysCollisionShapeLoader();
 

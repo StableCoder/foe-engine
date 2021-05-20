@@ -37,6 +37,10 @@ target_link_libraries(
          ${freeimage_LIBRARIES})
 target_code_coverage(foe_resource)
 
+if(NOT MSVC)
+  target_compile_options(foe_resource PRIVATE -fvisibility-ms-compat)
+endif()
+
 add_subdirectory(src)
 
 # Auxiliary Targets

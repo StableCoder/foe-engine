@@ -18,6 +18,10 @@ target_link_libraries(foe_physics PUBLIC foe foe_ecs foe_position foe_resource
                                          ${BULLET_LIBRARIES})
 target_code_coverage(foe_physics)
 
+if(NOT MSVC)
+  target_compile_options(foe_physics PRIVATE -fvisibility-ms-compat)
+endif()
+
 add_subdirectory(src)
 
 # Auxiliary Targets

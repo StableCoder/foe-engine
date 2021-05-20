@@ -19,13 +19,14 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
+#include <foe/resource/pool_base.hpp>
 
 #include <shared_mutex>
 #include <vector>
 
 struct foePhysCollisionShape;
 
-class foePhysCollisionShapePool {
+class foePhysCollisionShapePool : public foeResourcePoolBase {
   public:
     FOE_PHYSICS_EXPORT ~foePhysCollisionShapePool();
 

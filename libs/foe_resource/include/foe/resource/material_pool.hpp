@@ -19,13 +19,14 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/pool_base.hpp>
 
 #include <shared_mutex>
 #include <vector>
 
 struct foeMaterial;
 
-class foeMaterialPool {
+class foeMaterialPool : public foeResourcePoolBase {
   public:
     FOE_RES_EXPORT ~foeMaterialPool();
 

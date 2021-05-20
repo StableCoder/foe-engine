@@ -20,6 +20,7 @@
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/loader_base.hpp>
 #include <foe/resource/shader.hpp>
 #include <vulkan/vulkan.h>
 
@@ -29,7 +30,7 @@
 #include <system_error>
 #include <vector>
 
-class foeShaderLoader {
+class foeShaderLoader : public foeResourceLoaderBase {
   public:
     FOE_RES_EXPORT ~foeShaderLoader();
 

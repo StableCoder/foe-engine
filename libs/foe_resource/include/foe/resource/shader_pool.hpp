@@ -19,13 +19,14 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/pool_base.hpp>
 
 #include <shared_mutex>
 #include <vector>
 
 class foeShader;
 
-class foeShaderPool {
+class foeShaderPool : public foeResourcePoolBase {
   public:
     FOE_RES_EXPORT ~foeShaderPool();
 

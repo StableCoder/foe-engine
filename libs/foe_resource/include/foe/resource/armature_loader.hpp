@@ -19,6 +19,7 @@
 
 #include <foe/resource/armature.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/loader_base.hpp>
 
 #include <atomic>
 #include <functional>
@@ -26,7 +27,7 @@
 #include <string_view>
 #include <vector>
 
-class foeArmatureLoader {
+class foeArmatureLoader : public foeResourceLoaderBase {
   public:
     FOE_RES_EXPORT ~foeArmatureLoader();
 

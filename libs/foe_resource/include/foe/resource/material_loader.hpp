@@ -20,6 +20,7 @@
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/loader_base.hpp>
 #include <foe/resource/material.hpp>
 #include <vulkan/vulkan.h>
 
@@ -35,7 +36,7 @@ class foeGfxVkFragmentDescriptorPool;
 class foeImageLoader;
 class foeImagePool;
 
-class foeMaterialLoader {
+class foeMaterialLoader : public foeResourceLoaderBase {
   public:
     FOE_RES_EXPORT ~foeMaterialLoader();
 

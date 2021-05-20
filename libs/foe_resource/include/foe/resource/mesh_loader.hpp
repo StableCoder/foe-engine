@@ -23,6 +23,7 @@
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
 #include <foe/resource/export.h>
+#include <foe/resource/loader_base.hpp>
 #include <foe/resource/mesh.hpp>
 
 #include <array>
@@ -33,7 +34,7 @@
 #include <system_error>
 #include <vector>
 
-class foeMeshLoader {
+class foeMeshLoader : public foeResourceLoaderBase {
   public:
     FOE_RES_EXPORT ~foeMeshLoader();
 
