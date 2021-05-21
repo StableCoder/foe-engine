@@ -54,34 +54,41 @@ auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
     return nullptr;
 }
 
-bool foeDistributedYamlImporterGenerator::addImporter(std::string key, ImportFunc pFunction) {
-    auto searchIt = mImportFunctions.find(key);
-    if (searchIt != mImportFunctions.end()) {
+bool foeDistributedYamlImporterGenerator::addImporter(std::string key,
+                                                      ImportFn pImportFn,
+                                                      CreateFn pCreateFn) {
+    auto searchIt = mResourceFns.find(key);
+    if (searchIt != mResourceFns.end()) {
         FOE_LOG(General, Error,
                 "Could not add DistributedYamlImporter function for {}, as it already exists", key);
         return false;
     }
 
     FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}", key);
-    mImportFunctions[key] = pFunction;
+    mResourceFns[key] = ResourceFunctions{
+        .pImport = pImportFn,
+        .pCreate = pCreateFn,
+    };
     return true;
 }
 
-bool foeDistributedYamlImporterGenerator::removeImporter(std::string key, ImportFunc pFunction) {
-    auto searchIt = mImportFunctions.find(key);
-    if (searchIt == mImportFunctions.end()) {
+bool foeDistributedYamlImporterGenerator::removeImporter(std::string key,
+                                                         ImportFn pImportFn,
+                                                         CreateFn pCreateFn) {
+    auto searchIt = mResourceFns.find(key);
+    if (searchIt == mResourceFns.end()) {
         FOE_LOG(General, Error,
                 "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);
         return false;
     }
-    if (searchIt->second != pFunction) {
+    if (searchIt->second.pImport != pImportFn || searchIt->second.pCreate != pCreateFn) {
         FOE_LOG(General, Warning,
                 "Attempted to remove DistributedYamlImporter function for {}, but the provided "
-                "function pointer isn't the same as was added, (Provided){} vs (Added){}",
-                key, pFunction, searchIt->second);
+                "function pointers are not the same as was added",
+                key);
         return false;
     }
 
-    mImportFunctions.erase(searchIt);
+    mResourceFns.erase(searchIt);
     return true;
 }

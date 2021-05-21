@@ -36,8 +36,8 @@ class DummyImporter : public foeImporterBase {
     bool importStateData(StatePools *pStatePools) final { return false; }
 
     bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                   ResourcePools *pResourcePools,
-                                   ResourceLoaders *pResourceLoaders) {
+                                   std::vector<foeResourceLoaderBase *> &resourceLoaders,
+                                   std::vector<foeResourcePoolBase *> &resourcePools) {
         return false;
     }
     foeResourceCreateInfoBase *getResource(foeId id) final {

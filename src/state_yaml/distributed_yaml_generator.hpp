@@ -25,14 +25,23 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <vector>
 
 struct foeIdGroupTranslator;
+struct foeResourceCreateInfoBase;
+struct foeResourceLoaderBase;
+struct foeResourcePoolBase;
 
 class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
   public:
-    using ImportFunc = void (*)(YAML::Node const &,
-                                foeIdGroupTranslator const *,
-                                foeResourceCreateInfoBase **);
+    using ImportFn = void (*)(YAML::Node const &,
+                              foeIdGroupTranslator const *,
+                              foeResourceCreateInfoBase **);
+
+    using CreateFn = bool (*)(foeResourceID,
+                              foeResourceCreateInfoBase *,
+                              std::vector<foeResourceLoaderBase *> &,
+                              std::vector<foeResourcePoolBase *> &);
 
     auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * override;
@@ -40,27 +49,34 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
     /**
      * @brief Adds a string/function pointer pair to the importer map
      * @param key String key corresponding to the Yaml node key it parses
-     * @param pFunction Function that properly parses a given node
+     * @param pImportFn Function that properly parses a given node of the given key
+     * @param pCreateFn Function that creates a resource of the proper type based on the node
      * @return True if the key/function was added, false otherwise
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool addImporter(std::string key, ImportFunc pFunction);
+    bool addImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
 
     /**
      * @brief Removes the given key/function pair from the importer map
      * @param key Yaml node key of the associated importer function
-     * @param pFunction Function pointer that is to be removed
+     * @param pImportFn Function that properly parses a given node of the given key
+     * @param pCreateFn Function that creates a resource of the proper type based on the node
      * @return True if the pair was successfully removed, false otherwise.
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool removeImporter(std::string key, ImportFunc pFunction);
+    bool removeImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
 
   private:
     friend class foeDistributedYamlImporter;
 
-    std::map<std::string, ImportFunc> mImportFunctions;
+    struct ResourceFunctions {
+        ImportFn pImport;
+        CreateFn pCreate;
+    };
+
+    std::map<std::string, ResourceFunctions> mResourceFns;
 };
 
 #endif // DISTRIBUTED_YAML_GENERATOR_HPP

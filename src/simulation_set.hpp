@@ -23,9 +23,16 @@
 #include "resource_pools.hpp"
 #include "state_pools.hpp"
 
+#include <vector>
+
+struct foeResourceLoaderBase;
+struct foeResourcePoolBase;
+
 struct SimulationSet {
     foeGroupData groupData;
 
+    std::vector<foeResourceLoaderBase *> resourceLoaders2;
+    std::vector<foeResourcePoolBase *> resourcePools;
     ResourcePools resources;
     ResourceLoaders resourceLoaders;
     foeEditorNameMap resourceNameMap;
@@ -33,6 +40,28 @@ struct SimulationSet {
     StatePools state;
     foeEditorNameMap entityNameMap;
     // StateSystems systems;
+
+    SimulationSet() {
+        // Loaders
+        resourceLoaders2.emplace_back(&resourceLoaders.armature);
+        resourceLoaders2.emplace_back(&resourceLoaders.collisionShape);
+
+        resourceLoaders2.emplace_back(&resourceLoaders.shader);
+        resourceLoaders2.emplace_back(&resourceLoaders.vertexDescriptor);
+        resourceLoaders2.emplace_back(&resourceLoaders.image);
+        resourceLoaders2.emplace_back(&resourceLoaders.material);
+        resourceLoaders2.emplace_back(&resourceLoaders.mesh);
+
+        // Pools
+        resourcePools.emplace_back(&resources.armature);
+        resourcePools.emplace_back(&resources.collisionShape);
+
+        resourcePools.emplace_back(&resources.shader);
+        resourcePools.emplace_back(&resources.vertexDescriptor);
+        resourcePools.emplace_back(&resources.image);
+        resourcePools.emplace_back(&resources.material);
+        resourcePools.emplace_back(&resources.mesh);
+    }
 };
 
 #endif // SIMULATION_SET_HPP

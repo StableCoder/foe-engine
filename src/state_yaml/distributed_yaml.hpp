@@ -44,8 +44,8 @@ class foeDistributedYamlImporter : public foeImporterBase {
     bool importStateData(StatePools *pStatePools) override;
 
     bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                   ResourcePools *pResourcePools,
-                                   ResourceLoaders *pResourceLoaders) override;
+                                   std::vector<foeResourceLoaderBase *> &resourceLoaders,
+                                   std::vector<foeResourcePoolBase *> &resourcePools) override;
     foeResourceCreateInfoBase *getResource(foeId id) override;
 
   public:
