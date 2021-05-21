@@ -14,34 +14,16 @@
     limitations under the License.
 */
 
-#ifndef STATE_POOLS_HPP
-#define STATE_POOLS_HPP
+#ifndef CAMERA_POOL_HPP
+#define CAMERA_POOL_HPP
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
-#include <foe/physics/component/rigid_body_pool.hpp>
-#include <foe/position/component/3d_pool.hpp>
 
-#include <map>
+#include "camera.hpp"
+
 #include <memory>
 
-#include "armature_state.hpp"
-#include "camera_pool.hpp"
-#include "render_state.hpp"
+class foeCameraPool : public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {};
 
-struct StatePools {
-    std::map<foeId, foeRenderState> renderStates;
-    std::map<foeId, foeArmatureState> armatureStates;
-
-    foePosition3dPool position;
-    foeCameraPool camera;
-    foeRigidBodyPool rigidBody;
-
-    void maintenance() {
-        position.maintenance();
-        camera.maintenance();
-        rigidBody.maintenance();
-    }
-};
-
-#endif // STATE_POOLS_HPP
+#endif // CAMERA_POOL_HPP

@@ -33,8 +33,7 @@
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
-#include "camera.hpp"
-#include "camera_descriptor_pool.hpp"
+#include "camera_system.hpp"
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
 #include "position_descriptor_pool.hpp"
@@ -123,8 +122,7 @@ struct Application {
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
 
-    Camera camera;
-    CameraDescriptorPool cameraDescriptorPool;
+    foeCameraSystem cameraSystem;
     PositionDescriptorPool positionDescriptorPool;
 
     // Other

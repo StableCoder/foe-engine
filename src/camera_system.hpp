@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef CAMERA_DESCRIPTOR_POOL_HPP
-#define CAMERA_DESCRIPTOR_POOL_HPP
+#ifndef CAMERA_SYSTEM_HPP
+#define CAMERA_SYSTEM_HPP
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
@@ -25,22 +25,21 @@
 #include <array>
 #include <vector>
 
-struct foeCameraBase;
-class CameraDescriptorPool {
+class foePosition3dPool;
+class foeCameraPool;
+
+class foeCameraSystem {
   public:
     VkResult initialize(foeGfxSession gfxSession,
                         VkDescriptorSetLayout projectionViewLayout,
                         uint32_t projectionViewBinding);
     void deinitialize();
 
-    VkResult generateCameraDescriptors(uint32_t frameIndex);
-
-    void linkCamera(foeCameraBase *pCamera);
-    void delinkCamera(foeCameraBase *pCamera);
+    VkResult processCameras(uint32_t frameIndex,
+                            foePosition3dPool &positionPool,
+                            foeCameraPool &cameraPool);
 
   private:
-    std::vector<foeCameraBase *> mLinkedCameras;
-
     struct UniformBuffer {
         VkBuffer buffer;
         VmaAllocation alloc;
@@ -59,4 +58,4 @@ class CameraDescriptorPool {
     std::array<VkDescriptorPool, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> mDescriptorPools{};
 };
 
-#endif // CAMERA_DESCRIPTOR_POOL_HPP
+#endif // CAMERA_SYSTEM_HPP

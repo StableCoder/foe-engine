@@ -34,7 +34,7 @@ struct foeXrCamera : public foeCameraBase {
     foePosition3d *pPosition3D;
     XrPosef pose;
 
-    glm::mat4 viewMatrix() const noexcept override {
+    glm::mat4 viewMatrix() const noexcept {
         glm::mat4 rot = glm::mat4_cast(foeXrPoseOrientation(pose));
         glm::vec3 pos = pPosition3D->position + foeXrPosePosition(pose);
 

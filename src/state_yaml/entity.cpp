@@ -24,6 +24,7 @@
 #include <foe/yaml/parsing.hpp>
 
 #include "../armature_state.hpp"
+#include "../camera.hpp"
 #include "../render_state.hpp"
 #include "../state_pools.hpp"
 
@@ -39,6 +40,16 @@ auto yaml_read_entity(YAML::Node const &node,
             std::unique_ptr<foePosition3d> pPos(new foePosition3d);
             *pPos = yaml_read_Position3D(dataNode);
             pStatePools->position.insert(entity, std::move(pPos));
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{"position_3d::" + e.whatStr()};
+        }
+    }
+
+    if (auto dataNode = node["camera"]; dataNode) {
+        try {
+            std::unique_ptr<Camera> pCamera(new Camera);
+            *pCamera = yaml_read_Camera(dataNode);
+            pStatePools->camera.insert(entity, std::move(pCamera));
         } catch (foeYamlException const &e) {
             throw foeYamlException{"position_3d::" + e.whatStr()};
         }
@@ -92,6 +103,10 @@ auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStateP
     if (auto searchIt = pStatePools->position.find(id); searchIt != pStatePools->position.size()) {
         outNode["position_3d"] =
             yaml_write_Position3D(*pStatePools->position.begin<1>()[searchIt].get());
+    }
+    // Camera
+    if (auto searchIt = pStatePools->camera.find(id); searchIt != pStatePools->camera.size()) {
+        outNode["camera"] = yaml_write_Camera(*pStatePools->camera.begin<1>()[searchIt].get());
     }
     // RenderState
     if (auto searchIt = pStatePools->renderStates.find(id);

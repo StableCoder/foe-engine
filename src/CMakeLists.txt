@@ -4,7 +4,7 @@ target_sources(
   foe_engine_lib
   PRIVATE animation_processing.cpp
           application.cpp
-          camera_descriptor_pool.cpp
+          camera_system.cpp
           frame_timer.cpp
           graphics.cpp
           group_data.cpp

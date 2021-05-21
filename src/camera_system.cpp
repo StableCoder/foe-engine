@@ -14,15 +14,26 @@
     limitations under the License.
 */
 
-#include "camera_descriptor_pool.hpp"
+#include "camera_system.hpp"
 
 #include <foe/graphics/vk/session.hpp>
+#include <foe/position/component/3d_pool.hpp>
 
 #include "camera.hpp"
+#include "camera_pool.hpp"
 
-VkResult CameraDescriptorPool::initialize(foeGfxSession session,
-                                          VkDescriptorSetLayout projectionViewLayout,
-                                          uint32_t projectionViewBinding) {
+namespace {
+
+glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
+    // Rotate * Translate
+    return glm::mat4_cast(position.orientation) * glm::translate(glm::mat4(1.f), position.position);
+}
+
+} // namespace
+
+VkResult foeCameraSystem::initialize(foeGfxSession session,
+                                     VkDescriptorSetLayout projectionViewLayout,
+                                     uint32_t projectionViewBinding) {
     VkResult res;
 
     mDevice = foeGfxVkGetDevice(session);
@@ -65,7 +76,7 @@ INITIALIZATION_FAILED:
     return res;
 }
 
-void CameraDescriptorPool::deinitialize() {
+void foeCameraSystem::deinitialize() {
     for (auto &it : mDescriptorPools) {
         if (it != VK_NULL_HANDLE) {
             vkDestroyDescriptorPool(mDevice, it, nullptr);
@@ -85,20 +96,22 @@ void CameraDescriptorPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
+VkResult foeCameraSystem::processCameras(uint32_t frameIndex,
+                                         foePosition3dPool &positionPool,
+                                         foeCameraPool &cameraPool) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];
 
     // Make sure the frame data buffer is large enough
-    if (uniform.capacity < mLinkedCameras.size()) {
+    if (uniform.capacity < cameraPool.size()) {
         if (uniform.buffer != VK_NULL_HANDLE) {
             vmaDestroyBuffer(mAllocator, uniform.buffer, uniform.alloc);
         }
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = mMinUniformBufferOffsetAlignment * mLinkedCameras.size(),
+            .size = mMinUniformBufferOffsetAlignment * cameraPool.size(),
             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         };
 
@@ -112,7 +125,7 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
             return res;
         }
 
-        uniform.capacity = mLinkedCameras.size();
+        uniform.capacity = cameraPool.size();
     }
 
     // Reset the DescriptorPool
@@ -123,9 +136,18 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
 
     vmaMapMemory(mAllocator, uniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    for (auto it : mLinkedCameras) {
+    auto *pCameraData = cameraPool.begin<1>();
+
+    for (auto it = cameraPool.begin(); it != cameraPool.end(); ++it, ++pCameraData) {
+        auto posOffset = positionPool.find(*it);
+        if (posOffset == positionPool.size())
+            continue;
+
+        auto *pPosition = positionPool.begin<1>() + posOffset;
+
         VkDescriptorSet set;
-        *reinterpret_cast<glm::mat4 *>(pBufferData) = it->projectionMatrix() * it->viewMatrix();
+        *reinterpret_cast<glm::mat4 *>(pBufferData) =
+            (*pCameraData)->projectionMatrix() * viewMatrix(*pPosition->get());
         // Invert Y-axis for Y-Up
         (*reinterpret_cast<glm::mat4 *>(pBufferData))[1][1] =
             -(*reinterpret_cast<glm::mat4 *>(pBufferData))[1][1];
@@ -161,7 +183,7 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
             vkUpdateDescriptorSets(mDevice, 1, &writeSet, 0, nullptr);
         }
 
-        it->descriptor = set;
+        (*pCameraData)->descriptor = set;
 
         pBufferData += mMinUniformBufferOffsetAlignment;
         offset += mMinUniformBufferOffsetAlignment;
@@ -170,23 +192,4 @@ VkResult CameraDescriptorPool::generateCameraDescriptors(uint32_t frameIndex) {
     vmaUnmapMemory(mAllocator, uniform.alloc);
 
     return res;
-}
-
-void CameraDescriptorPool::linkCamera(foeCameraBase *pCamera) {
-    if (pCamera->cameraDescriptorPool != nullptr) {
-        return;
-    }
-
-    mLinkedCameras.emplace_back(pCamera);
-    pCamera->cameraDescriptorPool = this;
-}
-
-void CameraDescriptorPool::delinkCamera(foeCameraBase *pCamera) {
-    for (auto it = mLinkedCameras.begin(); it != mLinkedCameras.end(); ++it) {
-        if (*it == pCamera) {
-            mLinkedCameras.erase(it);
-            (*it)->cameraDescriptorPool = nullptr;
-            break;
-        }
-    }
 }

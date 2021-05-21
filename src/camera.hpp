@@ -27,11 +27,11 @@
 
 class CameraDescriptorPool;
 struct foeCameraBase {
+    virtual ~foeCameraBase() = default;
+
     virtual glm::mat4 projectionMatrix() const noexcept = 0;
-    virtual glm::mat4 viewMatrix() const noexcept = 0;
 
     // Graphics Data
-    CameraDescriptorPool *cameraDescriptorPool{nullptr};
     VkDescriptorSet descriptor{VK_NULL_HANDLE};
 };
 
@@ -44,15 +44,37 @@ struct Camera : public foeCameraBase {
     glm::mat4 projectionMatrix() const noexcept override {
         return glm::perspectiveFov(glm::radians(fieldOfViewY), viewX, viewY, nearZ, farZ);
     }
-
-    // View Data
-    foePosition3d *pPosition3D;
-
-    glm::mat4 viewMatrix() const noexcept override {
-        // Rotate * Translate
-        return glm::mat4_cast(pPosition3D->orientation) *
-               glm::translate(glm::mat4(1.f), pPosition3D->position);
-    }
 };
+
+#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/yaml/id.hpp>
+#include <foe/yaml/parsing.hpp>
+#include <yaml-cpp/yaml.h>
+
+inline auto yaml_read_Camera(YAML::Node const &node) -> Camera {
+    Camera data;
+
+    yaml_read_required("fov_y", node, data.fieldOfViewY);
+    yaml_read_required("near_z", node, data.nearZ);
+    yaml_read_required("far_z", node, data.farZ);
+
+    return data;
+}
+
+inline auto yaml_write_Camera(Camera const &data) -> YAML::Node {
+    YAML::Node outNode;
+
+    if (data.fieldOfViewY != FOE_INVALID_ID) {
+        yaml_write_required("fov_y", data.fieldOfViewY, outNode);
+    }
+    if (data.nearZ != FOE_INVALID_ID) {
+        yaml_write_required("near_z", data.nearZ, outNode);
+    }
+    if (data.farZ != FOE_INVALID_ID) {
+        yaml_write_required("far_z", data.farZ, outNode);
+    }
+
+    return outNode;
+}
 
 #endif // CAMERA_HPP

@@ -107,26 +107,25 @@ int Application::initialize(int argc, char **argv) {
     renderMeshID = pSimulationSet->groupData.persistentEntityIndices()->generate();
     pSimulationSet->entityNameMap.add(renderMeshID, "renderMesh");
 
-    // Camera
-    std::unique_ptr<foePosition3d> pPosition(new foePosition3d{
-        .position = glm::vec3(0.f, 0.f, -5.f),
-        .orientation = glm::quat(glm::vec3(0, 0, 0)),
-    });
+    { // Camera
+        std::unique_ptr<foePosition3d> pPosition(new foePosition3d{
+            .position = glm::vec3(0.f, 0.f, -5.f),
+            .orientation = glm::quat(glm::vec3(0, 0, 0)),
+        });
+        pSimulationSet->state.position.insert(cameraID, std::move(pPosition));
 
-    {
+        Camera camera;
         camera.viewX = settings.window.width;
         camera.viewY = settings.window.height;
         camera.fieldOfViewY = 60.f;
         camera.nearZ = 2.f;
         camera.farZ = 50.f;
-
-        auto posOffset = pSimulationSet->state.position.find(cameraID);
-        camera.pPosition3D = pPosition.get();
+        std::unique_ptr<Camera> pCamera{new Camera{camera}};
+        pSimulationSet->state.camera.insert(cameraID, std::move(pCamera));
     }
 
-    pSimulationSet->state.position.insert(cameraID, std::move(pPosition));
-
     { // Render item
+        std::unique_ptr<foePosition3d> pPosition;
         pPosition.reset(new foePosition3d{
             .position = glm::vec3(0.f, 0.f, 0.f),
             .orientation = glm::quat(glm::vec3(0, 0, 0)),
@@ -172,8 +171,6 @@ int Application::initialize(int argc, char **argv) {
     }
 
     initPhysics();
-
-    cameraDescriptorPool.linkCamera(&camera);
 
 #ifdef EDITOR_MODE
     imguiState.addUI(&fileTermination);
@@ -301,7 +298,7 @@ int Application::initialize(int argc, char **argv) {
         ERRC_END_PROGRAM
     }
 
-    vkRes = cameraDescriptorPool.initialize(
+    vkRes = cameraSystem.initialize(
         gfxSession,
         foeGfxVkGetBuiltinLayout(gfxSession,
                                  foeBuiltinDescriptorSetLayoutFlagBits::
@@ -508,10 +505,10 @@ int Application::initialize(int argc, char **argv) {
         }
 
         for (auto &it : xrViews) {
-            it.camera.pPosition3D = camera.pPosition3D;
-            it.camera.nearZ = camera.nearZ;
-            it.camera.farZ = camera.farZ;
-            cameraDescriptorPool.linkCamera(&it.camera);
+            //    it.camera.pPosition3D = camera.pPosition3D;
+            //    it.camera.nearZ = camera.nearZ;
+            //    it.camera.farZ = camera.farZ;
+            //    cameraDescriptorPool.linkCamera(&it.camera);
         }
 
         // OpenXR Session Begin
@@ -654,7 +651,7 @@ void Application::deinitialize() {
         vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
     positionDescriptorPool.deinitialize();
-    cameraDescriptorPool.deinitialize();
+    cameraSystem.deinitialize();
 
     pipelinePool.deinitialize();
 
@@ -774,7 +771,9 @@ int Application::mainloop() {
         if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
 #endif
         {
-            processUserInput(timeElapsedInSec, pKeyboard, pMouse, camera.pPosition3D);
+            auto *pCameraPosition = (pSimulationSet->state.position.begin<1>() +
+                                     pSimulationSet->state.position.find(cameraID));
+            processUserInput(timeElapsedInSec, pKeyboard, pMouse, pCameraPosition->get());
         }
 
         if (foeWindowResized()) {
@@ -996,6 +995,7 @@ int Application::mainloop() {
             };
 
 #ifdef FOE_XR_SUPPORT
+            /*
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
                 XrResult xrRes{XR_SUCCESS};
@@ -1042,7 +1042,8 @@ int Application::mainloop() {
                         xrViews[i].camera.pose = views[i].pose;
                     }
 
-                    cameraDescriptorPool.generateCameraDescriptors(frameIndex);
+                    xrCameraSystem.processCameras(frameIndex, pSimulationSet->state.position,
+                                                  xrCameras);
                     camerasRemade = true;
 
                     // Render Code
@@ -1267,10 +1268,11 @@ int Application::mainloop() {
                     XR_END_PROGRAM
                 }
             }
+            */
 #endif
 
-            if (!camerasRemade)
-                cameraDescriptorPool.generateCameraDescriptors(frameIndex);
+            cameraSystem.processCameras(frameIndex, pSimulationSet->state.position,
+                                        pSimulationSet->state.camera);
 
             // Render passes
             VkRenderPass swapImageRenderPass = renderPassPool.renderPass({VkAttachmentDescription{
@@ -1359,6 +1361,9 @@ int Application::mainloop() {
                     vkCmdBeginRenderPass(commandBuffer, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
 
                     { // Set Drawing Parameters
+                        auto *pCamera = (pSimulationSet->state.camera.begin<1>() +
+                                         pSimulationSet->state.camera.find(cameraID));
+
                         VkViewport viewport{
                             .width = static_cast<float>(swapchainExtent.width),
                             .height = static_cast<float>(swapchainExtent.height),
@@ -1405,7 +1410,8 @@ int Application::mainloop() {
                                 &layout, &descriptorSetLayoutCount, &pipeline);
 
                             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                    layout, 0, 1, &camera.descriptor, 0, nullptr);
+                                                    layout, 0, 1, &(*pCamera)->descriptor, 0,
+                                                    nullptr);
 
                             auto posOffset = pSimulationSet->state.position.find(renderTriangleID);
                             auto *pPosition =
@@ -1428,7 +1434,7 @@ int Application::mainloop() {
                             vkCmdDraw(commandBuffer, 4, 1, 0, 0);
                         }
 
-                        renderCall(renderMeshID, commandBuffer, camera.descriptor,
+                        renderCall(renderMeshID, commandBuffer, (*pCamera)->descriptor,
                                    swapImageRenderPass);
 
                     SKIP_DRAW:;
