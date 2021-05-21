@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include "importers.hpp"
+#include <foe/imex/importers.hpp>
 
 #include <mutex>
 #include <vector>

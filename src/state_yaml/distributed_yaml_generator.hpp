@@ -18,10 +18,9 @@
 #define DISTRIBUTED_YAML_GENERATOR_HPP
 
 #include <foe/ecs/id.hpp>
+#include <foe/imex/importers.hpp>
 #include <foe/resource/create_info_base.hpp>
 #include <yaml-cpp/yaml.h>
-
-#include "../state_import/importers.hpp"
 
 #include <filesystem>
 #include <functional>

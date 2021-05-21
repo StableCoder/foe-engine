@@ -18,6 +18,7 @@
 #define IMPORTERS_HPP
 
 #include <foe/ecs/id.hpp>
+#include <foe/imex/export.h>
 
 #include <filesystem>
 #include <vector>
@@ -36,12 +37,13 @@ class foeImporterFunctionRegistrar {
     virtual bool deregisterFunctions(foeImporterGenerator *pGenerator) = 0;
 };
 
-bool addImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar);
-bool removeImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar);
+FOE_IMEX_EXPORT bool addImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar);
+FOE_IMEX_EXPORT bool removeImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar);
 
-bool addImporterGenerator(foeImporterGenerator *pGenerator);
-bool removeImporterGenerator(foeImporterGenerator *pGenerator);
+FOE_IMEX_EXPORT bool addImporterGenerator(foeImporterGenerator *pGenerator);
+FOE_IMEX_EXPORT bool removeImporterGenerator(foeImporterGenerator *pGenerator);
 
-auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> foeImporterBase *;
+FOE_IMEX_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
+    -> foeImporterBase *;
 
 #endif // IMPORTERS_HPP

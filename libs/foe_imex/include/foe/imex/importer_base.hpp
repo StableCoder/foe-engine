@@ -14,22 +14,22 @@
     limitations under the License.
 */
 
-#ifndef IMPORTER_BASE_HPP
-#define IMPORTER_BASE_HPP
+#ifndef FOE_IMEX_IMPORTER_BASE_HPP
+#define FOE_IMEX_IMPORTER_BASE_HPP
 
 #include <foe/ecs/id.hpp>
 
 #include <string>
 #include <vector>
 
-class foeEditorNameMap;
-class foeIdIndexGenerator;
-struct StatePools;
-struct ResourcePools;
-struct ResourceLoaders;
-struct foeResourceCreateInfoBase;
 struct foeIdGroupTranslator;
 struct foeIdGroupValueNameSet;
+class foeIdIndexGenerator;
+struct StatePools;
+class foeEditorNameMap;
+struct foeResourceLoaderBase;
+struct foeResourcePoolBase;
+struct foeResourceCreateInfoBase;
 
 class foeImporterBase {
   public:
@@ -45,9 +45,9 @@ class foeImporterBase {
     virtual bool importStateData(StatePools *pStatePools) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                           ResourcePools *pResourcePools,
-                                           ResourceLoaders *pResourceLoaders) = 0;
+                                           std::vector<foeResourceLoaderBase *> &resourceLoaders,
+                                           std::vector<foeResourcePoolBase *> &resourcePools) = 0;
     virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
 };
 
-#endif // IMPORTER_BASE_HPP
+#endif // FOE_IMEX_IMPORTER_BASE_HPP

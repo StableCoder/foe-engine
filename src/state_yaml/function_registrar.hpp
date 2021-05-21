@@ -17,7 +17,7 @@
 #ifndef STATE_YAML_FUNCTION_REGISTRAR_HPP
 #define STATE_YAML_FUNCTION_REGISTRAR_HPP
 
-#include "../state_import/importers.hpp"
+#include <foe/imex/importers.hpp>
 
 class foeYamlCoreResourceFunctionRegistrar : public foeImporterFunctionRegistrar {
     bool registerFunctions(foeImporterGenerator *pGenerator) final;

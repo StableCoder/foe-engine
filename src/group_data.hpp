@@ -20,13 +20,11 @@
 #include <foe/ecs/id.hpp>
 #include <foe/ecs/index_generator.hpp>
 
-#include "state_import/importer_base.hpp"
+#include <foe/imex/importer_base.hpp>
 
 #include <array>
 #include <memory>
 #include <string_view>
-
-struct foeResourceCreateInfo;
 
 class foeGroupData {
   public:

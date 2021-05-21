@@ -16,10 +16,9 @@
 
 #include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/id.hpp>
+#include <foe/imex/importer_base.hpp>
 #include <foe/resource/create_info_base.hpp>
 #include <yaml-cpp/yaml.h>
-
-#include "../state_import/importer_base.hpp"
 
 #include <filesystem>
 #include <functional>
