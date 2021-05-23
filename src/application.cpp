@@ -808,6 +808,17 @@ int Application::mainloop() {
 
             // Rebuild swapchains
             if (!swapchain || swapchain.needRebuild()) {
+                int width, height;
+                foeWindowGetSize(&width, &height);
+
+                // All Cameras are currently ties to the single window X/Y viewport size
+                auto *pCameraData = pSimulationSet->state.camera.begin<1>();
+                for (auto *pCameraData = pSimulationSet->state.camera.begin<1>();
+                     pCameraData != pSimulationSet->state.camera.end<1>(); ++pCameraData) {
+                    pCameraData->get()->viewX = width;
+                    pCameraData->get()->viewY = height;
+                }
+
                 // If no swapchain, then that means we need to get the surface format and
                 // presentation mode first
                 if (!swapchain) {
@@ -849,9 +860,6 @@ int Application::mainloop() {
                 }
 
                 foeSwapchain newSwapchain;
-
-                int width, height;
-                foeWindowGetSize(&width, &height);
                 vkRes = newSwapchain.create(foeGfxVkGetPhysicalDevice(gfxSession),
                                             foeGfxVkGetDevice(gfxSession), windowSurface,
                                             swapchain.surfaceFormat(), swapchain.presentMode(),
@@ -895,15 +903,18 @@ int Application::mainloop() {
             pSimulationSet->resourceLoaders.image.processLoadRequests();
             pSimulationSet->resourceLoaders.mesh.processLoadRequests();
 
-            // Set camera descriptors
-            bool camerasRemade = false;
+            // Generate camera descriptors
+            cameraSystem.processCameras(frameIndex, pSimulationSet->state.position,
+                                        pSimulationSet->state.camera);
 
             // Rendering
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool, 0);
 
+            // Generate object position descriptors
             positionDescriptorPool.generatePositionDescriptors(frameIndex,
                                                                pSimulationSet->state.position);
 
+            // Generate any bone data
             vkAnimationPool.uploadBoneOffsets(frameIndex, &pSimulationSet->state.armatureStates,
                                               &pSimulationSet->state.renderStates,
                                               &pSimulationSet->resources.armature,
@@ -1270,9 +1281,6 @@ int Application::mainloop() {
             }
             */
 #endif
-
-            cameraSystem.processCameras(frameIndex, pSimulationSet->state.position,
-                                        pSimulationSet->state.camera);
 
             // Render passes
             VkRenderPass swapImageRenderPass = renderPassPool.renderPass({VkAttachmentDescription{
