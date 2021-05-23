@@ -99,76 +99,10 @@ int Application::initialize(int argc, char **argv) {
         return retVal;
     }
 
-    // Groups/Entities
-    cameraID = pSimulationSet->groupData.persistentEntityIndices()->generate();
-    pSimulationSet->entityNameMap.add(cameraID, "camera");
-    renderTriangleID = pSimulationSet->groupData.persistentEntityIndices()->generate();
-    pSimulationSet->entityNameMap.add(renderTriangleID, "renderTri");
-    renderMeshID = pSimulationSet->groupData.persistentEntityIndices()->generate();
-    pSimulationSet->entityNameMap.add(renderMeshID, "renderMesh");
-
-    { // Camera
-        std::unique_ptr<foePosition3d> pPosition(new foePosition3d{
-            .position = glm::vec3(0.f, 0.f, -5.f),
-            .orientation = glm::quat(glm::vec3(0, 0, 0)),
-        });
-        pSimulationSet->state.position.insert(cameraID, std::move(pPosition));
-
-        Camera camera;
-        camera.viewX = settings.window.width;
-        camera.viewY = settings.window.height;
-        camera.fieldOfViewY = 60.f;
-        camera.nearZ = 2.f;
-        camera.farZ = 50.f;
-        std::unique_ptr<Camera> pCamera{new Camera{camera}};
-        pSimulationSet->state.camera.insert(cameraID, std::move(pCamera));
-    }
-
-    { // Render item
-        std::unique_ptr<foePosition3d> pPosition;
-        pPosition.reset(new foePosition3d{
-            .position = glm::vec3(0.f, 0.f, 0.f),
-            .orientation = glm::quat(glm::vec3(0, 0, 0)),
-        });
-        pSimulationSet->state.position.insert(renderTriangleID, std::move(pPosition));
-
-        pPosition.reset(new foePosition3d{
-            .position = glm::vec3(0.f, 4.f, 0.f),
-            .orientation = glm::quat(glm::vec3(0, 0, 0)),
-        });
-        pSimulationSet->state.position.insert(renderMeshID, std::move(pPosition));
-
-        // Triangle
-        pSimulationSet->state.renderStates[renderTriangleID] = foeRenderState{
-            .vertexDescriptor = foeIdCreate(foeIdPersistentGroup, 16),
-            .bonedVertexDescriptor = FOE_INVALID_ID,
-            .material = foeIdCreate(foeIdPersistentGroup, 4),
-            .mesh = FOE_INVALID_ID,
-        };
-
-        // Mesh/Model
-        pSimulationSet->state.renderStates[renderMeshID] = foeRenderState{
-            .vertexDescriptor = foeIdCreate(foeIdPersistentGroup, 1),
-            .bonedVertexDescriptor = foeIdCreate(foeIdPersistentGroup, 2),
-            .material = foeIdCreate(foeIdPersistentGroup, 5),
-            .mesh = foeIdCreate(foeIdPersistentGroup, 13),
-
-            .boneDescriptorSet = VK_NULL_HANDLE,
-        };
-
-        pSimulationSet->state.armatureStates[renderMeshID] = foeArmatureState{
-            .armatureID = foeIdCreate(foeIdPersistentGroup, 12),
-            // .armatureState =
-            .animationID = 1,
-            .time = 0.f,
-        };
-
-        pSimulationSet->state.rigidBody.insert(
-            renderMeshID, foeRigidBody{
-                              .mass = 1.f,
-                              .collisionShape = foeIdCreate(foeIdPersistentGroup, 17),
-                          });
-    }
+    // Special Entities
+    cameraID = pSimulationSet->entityNameMap.find("camera");
+    renderTriangleID = pSimulationSet->entityNameMap.find("renderTri");
+    renderMeshID = pSimulationSet->entityNameMap.find("renderMesh");
 
     initPhysics();
 
