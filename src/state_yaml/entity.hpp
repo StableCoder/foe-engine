@@ -30,8 +30,10 @@ class foeEditorNameMap;
 auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroup targetedGroupID,
                       foeIdGroupTranslator *pGroupTranslator,
+                      foeEditorNameMap *pEntityNameMap,
                       StatePools *pStatePools) -> foeId;
 
-auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStatePools) -> YAML::Node;
+auto yaml_write_entity(foeId id, foeEditorNameMap *pEntityNameMap, StatePools *pStatePools)
+    -> YAML::Node;
 
 #endif // STATE_YAML_ENTITY_HPP

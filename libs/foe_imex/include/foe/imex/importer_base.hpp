@@ -25,8 +25,8 @@
 struct foeIdGroupTranslator;
 struct foeIdGroupValueNameSet;
 class foeIdIndexGenerator;
-struct StatePools;
 class foeEditorNameMap;
+struct StatePools;
 struct foeResourceLoaderBase;
 struct foeResourcePoolBase;
 struct foeResourceCreateInfoBase;
@@ -42,7 +42,7 @@ class foeImporterBase {
     virtual bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) = 0;
     virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) = 0;
-    virtual bool importStateData(StatePools *pStatePools) = 0;
+    virtual bool importStateData(foeEditorNameMap *pEntityNameMap, StatePools *pStatePools) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
                                            std::vector<foeResourceLoaderBase *> &resourceLoaders,

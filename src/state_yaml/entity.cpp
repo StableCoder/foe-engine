@@ -31,9 +31,19 @@
 auto yaml_read_entity(YAML::Node const &node,
                       foeIdGroup targetedGroupID,
                       foeIdGroupTranslator *pGroupTranslator,
+                      foeEditorNameMap *pEntityNameMap,
                       StatePools *pStatePools) -> foeId {
     foeId entity;
     yaml_read_id_required("", node, pGroupTranslator, entity);
+
+    if (pEntityNameMap != nullptr) {
+        std::string editorName;
+        yaml_read_optional("editor_name", node, editorName);
+
+        if (!editorName.empty()) {
+            pEntityNameMap->add(entity, editorName);
+        }
+    }
 
     if (auto dataNode = node["position_3d"]; dataNode) {
         try {
@@ -85,14 +95,14 @@ auto yaml_read_entity(YAML::Node const &node,
     return entity;
 }
 
-auto yaml_write_entity(foeId id, foeEditorNameMap *pNameMap, StatePools *pStatePools)
+auto yaml_write_entity(foeId id, foeEditorNameMap *pEntityNameMap, StatePools *pStatePools)
     -> YAML::Node {
     YAML::Node outNode;
 
     yaml_write_id("", id, outNode);
 
-    if (pNameMap != nullptr) {
-        auto name = pNameMap->find(id);
+    if (pEntityNameMap != nullptr) {
+        auto name = pEntityNameMap->find(id);
 
         if (!name.empty()) {
             yaml_write_required("editor_name", name, outNode);

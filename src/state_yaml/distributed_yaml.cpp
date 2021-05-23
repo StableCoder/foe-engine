@@ -169,7 +169,8 @@ bool foeDistributedYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &
     return getGroupIndexData(mRootDir / resourceIndexDataFilePath, ecsGroup);
 }
 
-bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
+bool foeDistributedYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
+                                                 StatePools *pStatePools) {
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / stateDirectoryPath}) {
         FOE_LOG(General, Info, "Visiting: {}", dirIt.path().string())
@@ -190,7 +191,8 @@ bool foeDistributedYamlImporter::importStateData(StatePools *pStatePools) {
             return false;
 
         try {
-            auto entity = yaml_read_entity(entityNode, mGroup, &mGroupTranslator, pStatePools);
+            auto entity = yaml_read_entity(entityNode, mGroup, &mGroupTranslator, pEntityNameMap,
+                                           pStatePools);
             if (entity == FOE_INVALID_ID) {
                 return false;
             } else {
@@ -228,13 +230,20 @@ bool foeDistributedYamlImporter::importResourceDefinitions(
             return false;
 
         foeId resource;
-        std::string editorName;
+
         try {
             // ID
             yaml_read_id_required("", node, &mGroupTranslator, resource);
 
             // Editor Name
-            yaml_read_optional("editor_name", node, editorName);
+            if (pNameMap != nullptr) {
+                std::string editorName;
+                yaml_read_optional("editor_name", node, editorName);
+
+                if (!editorName.empty()) {
+                    pNameMap->add(resource, editorName);
+                }
+            }
 
             // Resource Type
             for (auto const &it : mGenerator->mResourceFns) {
@@ -261,10 +270,6 @@ bool foeDistributedYamlImporter::importResourceDefinitions(
         } catch (...) {
             FOE_LOG(General, Error, "Failed to import resource definition with unknown exception");
             return false;
-        }
-
-        if (pNameMap != nullptr) {
-            pNameMap->add(resource, editorName);
         }
     }
 
