@@ -26,20 +26,20 @@
 
 class foeImage;
 
-class foeImagePool : public foeResourcePoolBase {
+class FOE_RES_EXPORT foeImagePool : public foeResourcePoolBase {
   public:
-    FOE_RES_EXPORT ~foeImagePool();
+    ~foeImagePool();
 
-    FOE_RES_EXPORT bool add(foeImage *pImage);
-    FOE_RES_EXPORT foeImage *find(foeId id);
+    bool add(foeImage *pImage);
+    foeImage *find(foeId id);
 
-    FOE_RES_EXPORT void unloadAll();
+    void unloadAll();
 
-    FOE_RES_EXPORT auto getDataVector() { return mImages; }
+    auto getDataVector() { return mImages; }
 
   private:
-    std::shared_mutex mSync;
-    std::vector<foeImage *> mImages;
+    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_RESOURCE_NO_EXPORT std::vector<foeImage *> mImages;
 };
 
 #endif // FOE_RESOURCE_IMAGE_POOL_HPP

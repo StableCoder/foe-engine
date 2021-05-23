@@ -26,22 +26,22 @@
 
 class foeShader;
 
-class foeShaderPool : public foeResourcePoolBase {
+class FOE_RES_EXPORT foeShaderPool : public foeResourcePoolBase {
   public:
-    FOE_RES_EXPORT ~foeShaderPool();
+    ~foeShaderPool();
 
-    FOE_RES_EXPORT bool add(foeShader *pShader);
-    FOE_RES_EXPORT foeShader *find(foeId resource);
+    bool add(foeShader *pShader);
+    foeShader *find(foeId resource);
 
-    FOE_RES_EXPORT void unloadAll();
+    void unloadAll();
 
     std::vector<foeShader *> const &getEntries() const noexcept { return mShaders; }
 
-    FOE_RES_EXPORT auto getDataVector() { return mShaders; }
+    auto getDataVector() { return mShaders; }
 
   private:
-    std::shared_mutex mSync;
-    std::vector<foeShader *> mShaders;
+    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_RESOURCE_NO_EXPORT std::vector<foeShader *> mShaders;
 };
 
 #endif // FOE_RESOURCE_SHADER_POOL_HPP

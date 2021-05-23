@@ -26,20 +26,20 @@
 
 struct foeArmature;
 
-class foeArmaturePool : public foeResourcePoolBase {
+class FOE_RES_EXPORT foeArmaturePool : public foeResourcePoolBase {
   public:
-    FOE_RES_EXPORT ~foeArmaturePool();
+    ~foeArmaturePool();
 
-    FOE_RES_EXPORT bool add(foeArmature *pArmature);
-    FOE_RES_EXPORT foeArmature *find(foeId id);
+    bool add(foeArmature *pArmature);
+    foeArmature *find(foeId id);
 
-    FOE_RES_EXPORT void unloadAll();
+    void unloadAll();
 
-    FOE_RES_EXPORT auto getDataVector() { return mArmatures; }
+    auto getDataVector() { return mArmatures; }
 
   private:
-    std::shared_mutex mSync;
-    std::vector<foeArmature *> mArmatures;
+    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_RESOURCE_NO_EXPORT std::vector<foeArmature *> mArmatures;
 };
 
 #endif // FOE_RESOURCE_ARMATURE_POOL_HPP

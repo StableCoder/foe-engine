@@ -36,51 +36,53 @@ class foeGfxVkFragmentDescriptorPool;
 class foeImageLoader;
 class foeImagePool;
 
-class foeMaterialLoader : public foeResourceLoaderBase {
+class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
   public:
-    FOE_RES_EXPORT ~foeMaterialLoader();
+    ~foeMaterialLoader();
 
-    FOE_RES_EXPORT std::error_code initialize(
-        foeShaderLoader *pShaderLoader,
-        foeShaderPool *pShaderPool,
-        foeGfxVkFragmentDescriptorPool *pGfxFragmentDescriptorPool,
-        foeImageLoader *pImageLoader,
-        foeImagePool *pImagePool,
-        foeGfxSession session,
-        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-        std::function<void(std::function<void()>)> asynchronousJobs);
-    FOE_RES_EXPORT void deinitialize();
-    FOE_RES_EXPORT bool initialized() const noexcept;
+    std::error_code initialize(foeShaderLoader *pShaderLoader,
+                               foeShaderPool *pShaderPool,
+                               foeGfxVkFragmentDescriptorPool *pGfxFragmentDescriptorPool,
+                               foeImageLoader *pImageLoader,
+                               foeImagePool *pImagePool,
+                               foeGfxSession session,
+                               std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+                               std::function<void(std::function<void()>)> asynchronousJobs);
+    void deinitialize();
+    bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processUnloadRequests();
+    void processUnloadRequests();
 
-    FOE_RES_EXPORT void requestResourceLoad(foeMaterial *pMaterial);
-    FOE_RES_EXPORT void requestResourceUnload(foeMaterial *pMaterial);
+    void requestResourceLoad(foeMaterial *pMaterial);
+    void requestResourceUnload(foeMaterial *pMaterial);
 
-    FOE_RES_EXPORT VkDescriptorSet createDescriptorSet(foeMaterial *pMaterial, uint32_t frameIndex);
+    VkDescriptorSet createDescriptorSet(foeMaterial *pMaterial, uint32_t frameIndex);
 
   private:
-    void loadResource(foeMaterial *pMaterial);
+    FOE_RESOURCE_NO_EXPORT void loadResource(foeMaterial *pMaterial);
 
-    foeShaderLoader *mShaderLoader{nullptr};
-    foeShaderPool *mShaderPool{nullptr};
-    foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
-    foeImageLoader *mImageLoader{nullptr};
-    foeImagePool *mImagePool{nullptr};
+    FOE_RESOURCE_NO_EXPORT foeShaderLoader *mShaderLoader{nullptr};
+    FOE_RESOURCE_NO_EXPORT foeShaderPool *mShaderPool{nullptr};
+    FOE_RESOURCE_NO_EXPORT foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
+    FOE_RESOURCE_NO_EXPORT foeImageLoader *mImageLoader{nullptr};
+    FOE_RESOURCE_NO_EXPORT foeImagePool *mImagePool{nullptr};
 
-    std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
-    std::function<void(std::function<void()>)> mAsyncJobs;
-    std::atomic_int mActiveJobs;
+    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
+    FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
+    FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
 
-    std::mutex mUnloadSync{};
-    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mUnloadRequestLists{};
-    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
-        mCurrentUnloadRequests{mUnloadRequestLists.begin()};
+    FOE_RESOURCE_NO_EXPORT std::mutex mUnloadSync{};
+    FOE_RESOURCE_NO_EXPORT
+        std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+            mUnloadRequestLists{};
+    FOE_RESOURCE_NO_EXPORT
+        std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+            mCurrentUnloadRequests{mUnloadRequestLists.begin()};
 
     // VULKAN DESCRIPTORS
-    foeGfxSession mGfxSession;
-    std::array<VkDescriptorPool, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> mDescriptorPools{};
+    FOE_RESOURCE_NO_EXPORT foeGfxSession mGfxSession;
+    FOE_RESOURCE_NO_EXPORT std::array<VkDescriptorPool, FOE_GRAPHICS_MAX_BUFFERED_FRAMES>
+        mDescriptorPools{};
 };
 
 #endif // FOE_RESOURCE_MATERIAL_LOADER_HPP

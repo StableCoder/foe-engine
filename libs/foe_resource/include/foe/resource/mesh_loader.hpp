@@ -34,55 +34,56 @@
 #include <system_error>
 #include <vector>
 
-class foeMeshLoader : public foeResourceLoaderBase {
+class FOE_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
   public:
-    FOE_RES_EXPORT ~foeMeshLoader();
+    ~foeMeshLoader();
 
-    FOE_RES_EXPORT std::error_code initialize(
-        foeGfxSession session,
-        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-        std::function<void(std::function<void()>)> asynchronousJobs);
-    FOE_RES_EXPORT void deinitialize();
-    FOE_RES_EXPORT bool initialized() const noexcept;
+    std::error_code initialize(foeGfxSession session,
+                               std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+                               std::function<void(std::function<void()>)> asynchronousJobs);
+    void deinitialize();
+    bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processLoadRequests();
-    FOE_RES_EXPORT void processUnloadRequests();
+    void processLoadRequests();
+    void processUnloadRequests();
 
-    FOE_RES_EXPORT void requestResourceLoad(foeMesh *pMesh);
-    FOE_RES_EXPORT void requestResourceUnload(foeMesh *pMesh);
+    void requestResourceLoad(foeMesh *pMesh);
+    void requestResourceUnload(foeMesh *pMesh);
 
   private:
-    struct MeshUpload {
+    FOE_RESOURCE_NO_EXPORT struct MeshUpload {
         foeMesh *pMesh;
         foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
         foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
         foeMesh::Data data{};
     };
 
-    void startUpload(foeMesh *pMesh);
+    FOE_RESOURCE_NO_EXPORT void startUpload(foeMesh *pMesh);
 
     // If pMesh is nullptr, then once the upload is complete, the data is just discarded
-    void processUpload(foeMesh *pMesh,
-                       foeGfxUploadRequest uploadRequest,
-                       foeGfxUploadBuffer uploadBuffer,
-                       foeMesh::Data data);
+    FOE_RESOURCE_NO_EXPORT void processUpload(foeMesh *pMesh,
+                                              foeGfxUploadRequest uploadRequest,
+                                              foeGfxUploadBuffer uploadBuffer,
+                                              foeMesh::Data data);
 
-    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
-    foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
+    FOE_RESOURCE_NO_EXPORT foeGfxSession mGfxSession{FOE_NULL_HANDLE};
+    FOE_RESOURCE_NO_EXPORT foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
 
-    std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
-    std::function<void(std::function<void()>)> mAsyncJobs;
-    std::atomic_int mActiveJobs;
+    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
+    FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
+    FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
 
-    std::mutex mUploadingSync{};
-    std::vector<MeshUpload> mUploadingData;
-    std::atomic_int mActiveUploads;
+    FOE_RESOURCE_NO_EXPORT std::mutex mUploadingSync{};
+    FOE_RESOURCE_NO_EXPORT std::vector<MeshUpload> mUploadingData;
+    FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveUploads;
 
-    std::mutex mUnloadSync{};
-    std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mUnloadRequestLists{};
-    std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
-        mCurrentUnloadRequests{&mUnloadRequestLists[0]};
+    FOE_RESOURCE_NO_EXPORT std::mutex mUnloadSync{};
+    FOE_RESOURCE_NO_EXPORT
+        std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+            mUnloadRequestLists{};
+    FOE_RESOURCE_NO_EXPORT
+        std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+            mCurrentUnloadRequests{&mUnloadRequestLists[0]};
 };
 
 #endif // FOE_RESOURCE_MESH_LOADER_HPP

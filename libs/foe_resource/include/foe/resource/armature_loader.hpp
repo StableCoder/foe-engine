@@ -27,26 +27,25 @@
 #include <string_view>
 #include <vector>
 
-class foeArmatureLoader : public foeResourceLoaderBase {
+class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
   public:
-    FOE_RES_EXPORT ~foeArmatureLoader();
+    ~foeArmatureLoader();
 
-    FOE_RES_EXPORT std::error_code initialize(
-        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-        std::function<void(std::function<void()>)> asynchronousJobs);
-    FOE_RES_EXPORT void deinitialize();
-    FOE_RES_EXPORT bool initialized() const noexcept;
+    std::error_code initialize(std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+                               std::function<void(std::function<void()>)> asynchronousJobs);
+    void deinitialize();
+    bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void requestResourceLoad(foeArmature *pArmature);
-    FOE_RES_EXPORT void requestResourceUnload(foeArmature *pArmature);
+    void requestResourceLoad(foeArmature *pArmature);
+    void requestResourceUnload(foeArmature *pArmature);
 
   private:
-    void loadResource(foeArmature *pArmature);
+    FOE_RESOURCE_NO_EXPORT void loadResource(foeArmature *pArmature);
 
-    bool mInitialized{false};
-    std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
-    std::function<void(std::function<void()>)> mAsyncJobs;
-    std::atomic_int mActiveJobs;
+    FOE_RESOURCE_NO_EXPORT bool mInitialized{false};
+    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
+    FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
+    FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
 };
 
 #endif // FOE_RESOURCE_ARMATURE_LOADER_HPP

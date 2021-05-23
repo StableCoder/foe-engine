@@ -28,30 +28,29 @@
 struct foeResourceCreateInfoBase;
 struct foePhysCollisionShape;
 
-class foePhysCollisionShapeLoader : public foeResourceLoaderBase {
+class FOE_PHYSICS_EXPORT foePhysCollisionShapeLoader : public foeResourceLoaderBase {
   public:
-    FOE_PHYSICS_EXPORT ~foePhysCollisionShapeLoader();
+    ~foePhysCollisionShapeLoader();
 
-    FOE_PHYSICS_EXPORT std::error_code initialize(
-        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-        std::function<void(std::function<void()>)> asynchronousJobs);
-    FOE_PHYSICS_EXPORT void deinitialize();
-    FOE_PHYSICS_EXPORT bool initialized() const noexcept;
+    std::error_code initialize(std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+                               std::function<void(std::function<void()>)> asynchronousJobs);
+    void deinitialize();
+    bool initialized() const noexcept;
 
-    FOE_PHYSICS_EXPORT void processLoadRequests();
-    FOE_PHYSICS_EXPORT void processUnloadRequests();
+    void processLoadRequests();
+    void processUnloadRequests();
 
-    FOE_PHYSICS_EXPORT void requestResourceLoad(foePhysCollisionShape *pCollisionShape);
-    FOE_PHYSICS_EXPORT void requestResourceUnload(foePhysCollisionShape *pCollisionShape);
+    void requestResourceLoad(foePhysCollisionShape *pCollisionShape);
+    void requestResourceUnload(foePhysCollisionShape *pCollisionShape);
 
   private:
-    void loadResource(foePhysCollisionShape *pCollisionShape);
+    FOE_PHYSICS_NO_EXPORT void loadResource(foePhysCollisionShape *pCollisionShape);
 
-    bool mInitialized{false};
-    std::function<foeResourceCreateInfoBase *(foeResourceID)> mImportFunction;
+    FOE_PHYSICS_NO_EXPORT bool mInitialized{false};
+    FOE_PHYSICS_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeResourceID)> mImportFunction;
 
-    std::function<void(std::function<void()>)> mAsyncJobs;
-    std::atomic_int mActiveJobs;
+    FOE_PHYSICS_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
+    FOE_PHYSICS_NO_EXPORT std::atomic_int mActiveJobs;
 };
 
 #endif // FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_LOADER_HPP

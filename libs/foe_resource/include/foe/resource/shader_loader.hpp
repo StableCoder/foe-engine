@@ -30,36 +30,37 @@
 #include <system_error>
 #include <vector>
 
-class foeShaderLoader : public foeResourceLoaderBase {
+class FOE_RES_EXPORT foeShaderLoader : public foeResourceLoaderBase {
   public:
-    FOE_RES_EXPORT ~foeShaderLoader();
+    ~foeShaderLoader();
 
-    FOE_RES_EXPORT std::error_code initialize(
-        foeGfxSession gfxSession,
-        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-        std::function<void(std::function<void()>)> asynchronousJobs);
-    FOE_RES_EXPORT void deinitialize();
-    FOE_RES_EXPORT bool initialized() const noexcept;
+    std::error_code initialize(foeGfxSession gfxSession,
+                               std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+                               std::function<void(std::function<void()>)> asynchronousJobs);
+    void deinitialize();
+    bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processUnloadRequests();
+    void processUnloadRequests();
 
-    FOE_RES_EXPORT void requestResourceLoad(foeShader *pShader);
-    FOE_RES_EXPORT void requestResourceUnload(foeShader *pShader);
+    void requestResourceLoad(foeShader *pShader);
+    void requestResourceUnload(foeShader *pShader);
 
   private:
-    void loadResource(foeShader *pShader);
+    FOE_RESOURCE_NO_EXPORT void loadResource(foeShader *pShader);
 
-    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
+    FOE_RESOURCE_NO_EXPORT foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
-    std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
-    std::function<void(std::function<void()>)> mAsyncJobs;
-    std::atomic_int mActiveJobs;
+    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
+    FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
+    FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
 
-    std::mutex mUnloadSync{};
-    std::array<std::vector<foeShader::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mUnloadRequestLists{};
-    std::array<std::vector<foeShader::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
-        mCurrentUnloadRequests{mUnloadRequestLists.begin()};
+    FOE_RESOURCE_NO_EXPORT std::mutex mUnloadSync{};
+    FOE_RESOURCE_NO_EXPORT
+        std::array<std::vector<foeShader::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+            mUnloadRequestLists{};
+    FOE_RESOURCE_NO_EXPORT
+        std::array<std::vector<foeShader::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+            mCurrentUnloadRequests{mUnloadRequestLists.begin()};
 };
 
 #endif // FOE_RESOURCE_SHADER_LOADER_HPP

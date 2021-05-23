@@ -26,20 +26,20 @@
 
 struct foeMesh;
 
-class foeMeshPool : public foeResourcePoolBase {
+class FOE_RES_EXPORT foeMeshPool : public foeResourcePoolBase {
   public:
-    FOE_RES_EXPORT ~foeMeshPool();
+    ~foeMeshPool();
 
-    FOE_RES_EXPORT bool add(foeMesh *pMesh);
-    FOE_RES_EXPORT foeMesh *find(foeId id);
+    bool add(foeMesh *pMesh);
+    foeMesh *find(foeId id);
 
-    FOE_RES_EXPORT void unloadAll();
+    void unloadAll();
 
-    FOE_RES_EXPORT auto getDataVector() { return mMeshs; }
+    auto getDataVector() { return mMeshs; }
 
   private:
-    std::shared_mutex mSync;
-    std::vector<foeMesh *> mMeshs;
+    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_RESOURCE_NO_EXPORT std::vector<foeMesh *> mMeshs;
 };
 
 #endif // FOE_RESOURCE_MESH_POOL_HPP

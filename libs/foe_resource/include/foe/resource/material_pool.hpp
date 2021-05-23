@@ -26,20 +26,20 @@
 
 struct foeMaterial;
 
-class foeMaterialPool : public foeResourcePoolBase {
+class FOE_RES_EXPORT foeMaterialPool : public foeResourcePoolBase {
   public:
-    FOE_RES_EXPORT ~foeMaterialPool();
+    ~foeMaterialPool();
 
-    FOE_RES_EXPORT bool add(foeMaterial *pMaterial);
-    FOE_RES_EXPORT foeMaterial *find(foeId id);
+    bool add(foeMaterial *pMaterial);
+    foeMaterial *find(foeId id);
 
-    FOE_RES_EXPORT void unloadAll();
+    void unloadAll();
 
-    FOE_RES_EXPORT auto getDataVector() { return mMaterials; }
+    auto getDataVector() { return mMaterials; }
 
   private:
-    std::shared_mutex mSync;
-    std::vector<foeMaterial *> mMaterials;
+    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_RESOURCE_NO_EXPORT std::vector<foeMaterial *> mMaterials;
 };
 
 #endif // FOE_RESOURCE_MATERIAL_POOL_HPP

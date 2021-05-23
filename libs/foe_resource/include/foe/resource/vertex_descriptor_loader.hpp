@@ -31,39 +31,39 @@
 class foeShaderLoader;
 class foeShaderPool;
 
-class foeVertexDescriptorLoader : public foeResourceLoaderBase {
+class FOE_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
   public:
-    FOE_RES_EXPORT ~foeVertexDescriptorLoader();
+    ~foeVertexDescriptorLoader();
 
-    FOE_RES_EXPORT std::error_code initialize(
-        foeShaderLoader *pShaderLoader,
-        foeShaderPool *pShaderPool,
-        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-        std::function<void(std::function<void()>)> asynchronousJobs);
-    FOE_RES_EXPORT void deinitialize();
-    FOE_RES_EXPORT bool initialized() const noexcept;
+    std::error_code initialize(foeShaderLoader *pShaderLoader,
+                               foeShaderPool *pShaderPool,
+                               std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+                               std::function<void(std::function<void()>)> asynchronousJobs);
+    void deinitialize();
+    bool initialized() const noexcept;
 
-    FOE_RES_EXPORT void processUnloadRequests();
+    void processUnloadRequests();
 
-    FOE_RES_EXPORT void requestResourceLoad(foeVertexDescriptor *pVertexDescriptor);
-    FOE_RES_EXPORT void requestResourceUnload(foeVertexDescriptor *pVertexDescriptor);
+    void requestResourceLoad(foeVertexDescriptor *pVertexDescriptor);
+    void requestResourceUnload(foeVertexDescriptor *pVertexDescriptor);
 
   private:
-    void loadResource(foeVertexDescriptor *pVertexDescriptor);
+    FOE_RESOURCE_NO_EXPORT void loadResource(foeVertexDescriptor *pVertexDescriptor);
 
-    foeShaderLoader *mShaderLoader{nullptr};
-    foeShaderPool *mShaderPool{nullptr};
+    FOE_RESOURCE_NO_EXPORT foeShaderLoader *mShaderLoader{nullptr};
+    FOE_RESOURCE_NO_EXPORT foeShaderPool *mShaderPool{nullptr};
 
-    std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
-    std::function<void(std::function<void()>)> mAsyncJobs;
-    std::atomic_int mActiveJobs;
+    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
+    FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
+    FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
 
-    std::mutex mUnloadSync{};
-    std::array<std::vector<foeVertexDescriptor::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mUnloadRequestLists{};
-    std::array<std::vector<foeVertexDescriptor::Data>,
-               FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator mCurrentUnloadRequests{
-        mUnloadRequestLists.begin()};
+    FOE_RESOURCE_NO_EXPORT std::mutex mUnloadSync{};
+    FOE_RESOURCE_NO_EXPORT
+        std::array<std::vector<foeVertexDescriptor::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+            mUnloadRequestLists{};
+    FOE_RESOURCE_NO_EXPORT std::array<std::vector<foeVertexDescriptor::Data>,
+                                      FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+        mCurrentUnloadRequests{mUnloadRequestLists.begin()};
 };
 
 #endif // FOE_RESOURCE_VERTEX_DESCRIPTOR_LOADER_HPP
