@@ -28,7 +28,8 @@ foeArmatureLoader::~foeArmatureLoader() {
 }
 
 std::error_code foeArmatureLoader::initialize(
-    std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+    std::function<foeResourceCreateInfoBase *(foeId)> importFn,
+    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -36,7 +37,8 @@ std::error_code foeArmatureLoader::initialize(
 
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
-    mImportFunction = importFunction;
+    mImportFn = importFn;
+    mExternalFileSearchFn = externalFileSearchFn;
     mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
@@ -74,7 +76,10 @@ void foeArmatureLoader::requestResourceUnload(foeArmature *pArmature) {}
 
 namespace {
 
-bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foeArmature::Data &data) {
+bool processCreateInfo(
+    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
+    foeResourceCreateInfoBase *pCreateInfo,
+    foeArmature::Data &data) {
     auto *createInfo = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo);
     if (createInfo == nullptr) {
         return false;
@@ -83,7 +88,8 @@ bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foeArmature::Data
     auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
     { // Armature
-        auto modelLoader = modelImporterPlugin->createImporter(createInfo->fileName.c_str());
+        std::filesystem::path filePath = externalFileSearchFn(createInfo->fileName);
+        auto modelLoader = modelImporterPlugin->createImporter(filePath.c_str());
         assert(modelLoader->loaded());
 
         auto tempArmature = modelLoader->importArmature();
@@ -96,7 +102,8 @@ bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foeArmature::Data
 
     { // Animations
         for (auto const &it : createInfo->animations) {
-            auto modelLoader = modelImporterPlugin->createImporter(it.file.c_str());
+            std::filesystem::path filePath = externalFileSearchFn(it.file);
+            auto modelLoader = modelImporterPlugin->createImporter(filePath.c_str());
             assert(modelLoader->loaded());
 
             for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
@@ -134,14 +141,14 @@ void foeArmatureLoader::loadResource(foeArmature *pArmature) {
     foeArmature::Data data;
 
     // Read in the definition
-    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFunction(pArmature->getID())};
+    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFn(pArmature->getID())};
     if (createInfo == nullptr) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     }
 
     // Process the imported definition
-    if (!processCreateInfo(createInfo.get(), data)) {
+    if (!processCreateInfo(mExternalFileSearchFn, createInfo.get(), data)) {
         errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
         goto LOADING_FAILED;
     } else {

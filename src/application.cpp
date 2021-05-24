@@ -179,6 +179,8 @@ int Application::initialize(int argc, char **argv) {
     errC = pSimulationSet->resourceLoaders.shader.initialize(
         gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -195,6 +197,8 @@ int Application::initialize(int argc, char **argv) {
     errC = pSimulationSet->resourceLoaders.image.initialize(
         gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -213,6 +217,8 @@ int Application::initialize(int argc, char **argv) {
     errC = pSimulationSet->resourceLoaders.mesh.initialize(
         gfxSession,
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -220,6 +226,8 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.armature.initialize(
         std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM

@@ -59,8 +59,8 @@ class FOE_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
 
     FOE_RESOURCE_NO_EXPORT std::mutex mUnloadSync{};
     FOE_RESOURCE_NO_EXPORT
-        std::array<std::vector<foeVertexDescriptor::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-            mUnloadRequestLists{};
+    std::array<std::vector<foeVertexDescriptor::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+        mUnloadRequestLists{};
     FOE_RESOURCE_NO_EXPORT std::array<std::vector<foeVertexDescriptor::Data>,
                                       FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
         mCurrentUnloadRequests{mUnloadRequestLists.begin()};

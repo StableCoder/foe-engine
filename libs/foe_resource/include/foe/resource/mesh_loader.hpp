@@ -28,6 +28,7 @@
 
 #include <array>
 #include <atomic>
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -38,9 +39,11 @@ class FOE_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
   public:
     ~foeMeshLoader();
 
-    std::error_code initialize(foeGfxSession session,
-                               std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-                               std::function<void(std::function<void()>)> asynchronousJobs);
+    std::error_code initialize(
+        foeGfxSession session,
+        std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
+        std::function<void(std::function<void()>)> asynchronousJobs);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -70,6 +73,8 @@ class FOE_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
     FOE_RESOURCE_NO_EXPORT foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
 
     FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
+    FOE_RESOURCE_NO_EXPORT std::function<std::filesystem::path(std::filesystem::path)>
+        mExternalFileSearchFn;
     FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
     FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
 
@@ -79,11 +84,11 @@ class FOE_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
 
     FOE_RESOURCE_NO_EXPORT std::mutex mUnloadSync{};
     FOE_RESOURCE_NO_EXPORT
-        std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-            mUnloadRequestLists{};
+    std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+        mUnloadRequestLists{};
     FOE_RESOURCE_NO_EXPORT
-        std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
-            mCurrentUnloadRequests{&mUnloadRequestLists[0]};
+    std::array<std::vector<foeMesh::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+        mCurrentUnloadRequests{&mUnloadRequestLists[0]};
 };
 
 #endif // FOE_RESOURCE_MESH_LOADER_HPP

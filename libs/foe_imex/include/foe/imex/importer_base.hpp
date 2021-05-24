@@ -19,6 +19,7 @@
 
 #include <foe/ecs/id.hpp>
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,8 @@ class foeImporterBase {
                                            std::vector<foeResourceLoaderBase *> &resourceLoaders,
                                            std::vector<foeResourcePoolBase *> &resourcePools) = 0;
     virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
+
+    virtual std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) = 0;
 };
 
 #endif // FOE_IMEX_IMPORTER_BASE_HPP

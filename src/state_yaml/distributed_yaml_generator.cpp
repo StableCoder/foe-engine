@@ -24,6 +24,7 @@ namespace {
 constexpr std::string_view dependenciesFilePath = "dependencies.yml";
 constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
 constexpr std::string_view resourceDirectoryPath = "resources";
+constexpr std::string_view externalDirectoryPath = "external";
 constexpr std::string_view stateIndexDataFilePath = "state_index_data.yml";
 constexpr std::string_view stateDirectoryPath = "state";
 
@@ -39,15 +40,27 @@ auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
         // Resource Index Data
         (std::filesystem::exists(stateDataPath / resourceIndexDataFilePath) &&
          std::filesystem::is_regular_file(stateDataPath / resourceIndexDataFilePath)) &&
-        // Resources
-        (std::filesystem::exists(stateDataPath / resourceDirectoryPath) &&
-         std::filesystem::is_directory(stateDataPath / resourceDirectoryPath)) &&
         // State Index Data
         (std::filesystem::exists(stateDataPath / stateIndexDataFilePath) &&
-         std::filesystem::is_regular_file(stateDataPath / stateIndexDataFilePath)) &&
-        // State
-        (std::filesystem::exists(stateDataPath / stateDirectoryPath) &&
-         std::filesystem::is_directory(stateDataPath / stateDirectoryPath))) {
+         std::filesystem::is_regular_file(stateDataPath / stateIndexDataFilePath))) {
+
+        // Check optional directories (state data, resources and external data), fail if they fail
+
+        // Resources Directory
+        if (std::filesystem::exists(stateDataPath / resourceDirectoryPath) &&
+            !std::filesystem::is_directory(stateDataPath / resourceDirectoryPath))
+            return nullptr;
+
+        // External Data Directory
+        if (std::filesystem::exists(stateDataPath / externalDirectoryPath) &&
+            !std::filesystem::is_directory(stateDataPath / externalDirectoryPath))
+            return nullptr;
+
+        // State Data Directory
+        if (std::filesystem::exists(stateDataPath / stateDirectoryPath) &&
+            !std::filesystem::is_directory(stateDataPath / stateDirectoryPath))
+            return nullptr;
+
         return new foeDistributedYamlImporter{this, group, stateDataPath};
     }
 

@@ -30,6 +30,7 @@ foeShaderLoader::~foeShaderLoader() {
 std::error_code foeShaderLoader::initialize(
     foeGfxSession gfxSession,
     std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -40,6 +41,7 @@ std::error_code foeShaderLoader::initialize(
     mGfxSession = gfxSession;
 
     mImportFunction = importFunction;
+    mExternalFileSearchFn = externalFileSearchFn;
     mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
@@ -125,7 +127,8 @@ void foeShaderLoader::loadResource(foeShader *pShader) {
     }
 
     {
-        auto shaderCode = loadShaderDataFromFile(pShaderCI->shaderCodeFile);
+        auto filePath = mExternalFileSearchFn(pShaderCI->shaderCodeFile);
+        auto shaderCode = loadShaderDataFromFile(filePath);
 
         errC = foeGfxVkCreateShader(mGfxSession, &pShaderCI->gfxCreateInfo, shaderCode.size(),
                                     reinterpret_cast<uint32_t *>(shaderCode.data()), &newShader);

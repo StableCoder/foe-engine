@@ -38,6 +38,7 @@ namespace {
 constexpr std::string_view dependenciesFilePath = "dependencies.yml";
 constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
 constexpr std::string_view resourceDirectoryPath = "resources";
+constexpr std::string_view externalDirectoryPath = "external";
 constexpr std::string_view stateIndexDataFilePath = "state_index_data.yml";
 constexpr std::string_view stateDirectoryPath = "state";
 
@@ -324,3 +325,12 @@ GOT_RESOURCE_NODE:
 
     return nullptr;
 }
+
+std::filesystem::path foeDistributedYamlImporter::findExternalFile(
+    std::filesystem::path externalFilePath) {
+        if(std::filesystem::exists(mRootDir / externalDirectoryPath / externalFilePath)) {
+            return mRootDir / externalDirectoryPath / externalFilePath;
+        }
+
+        return std::filesystem::path{};
+    }

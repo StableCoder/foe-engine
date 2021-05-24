@@ -35,6 +35,7 @@ foeMeshLoader::~foeMeshLoader() {
 std::error_code foeMeshLoader::initialize(
     foeGfxSession session,
     std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -44,6 +45,7 @@ std::error_code foeMeshLoader::initialize(
 
     mGfxSession = session;
     mImportFunction = importFunction;
+    mExternalFileSearchFn = externalFileSearchFn;
     mAsyncJobs = asynchronousJobs;
 
     errC = foeGfxCreateUploadContext(session, &mGfxUploadContext);
@@ -167,9 +169,10 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
     }
 
     if (auto pCI = dynamic_cast<foeMeshFileSource *>(pMeshCI->source.get()); pCI) {
+        std::filesystem::path filePath = mExternalFileSearchFn(pCI->fileName);
         auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
-        auto modelLoader = modelImporterPlugin->createImporter(pCI->fileName.c_str());
+        auto modelLoader = modelImporterPlugin->createImporter(filePath.c_str());
         assert(modelLoader->loaded());
 
         unsigned int meshIndex;

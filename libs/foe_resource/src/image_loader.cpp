@@ -36,6 +36,7 @@ foeImageLoader::~foeImageLoader() {
 std::error_code foeImageLoader::initialize(
     foeGfxSession session,
     std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
+    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
     std::function<void(std::function<void()>)> asynchronousJobs) {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
@@ -45,6 +46,7 @@ std::error_code foeImageLoader::initialize(
 
     mGfxSession = session;
     mImportFunction = importFunction;
+    mExternalFileSearchFn = externalFileSearchFn;
     mAsyncJobs = asynchronousJobs;
 
     errC = foeGfxCreateUploadContext(session, &mGfxUploadContext);
@@ -175,22 +177,24 @@ void foeImageLoader::startUpload(foeImage *pImage) {
     }
 
     { // Import the data
+      // Find the file path first
+        std::filesystem::path filePath = mExternalFileSearchFn(pImageCI->fileName);
         // Determine the image format
-        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(pImageCI->fileName.c_str());
+        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(filePath.c_str());
         if (imageFormat == FIF_UNKNOWN) {
-            FreeImage_GetFIFFromFilename(pImageCI->fileName.c_str());
+            FreeImage_GetFIFFromFilename(filePath.c_str());
         }
         if (imageFormat == FIF_UNKNOWN) {
             FOE_LOG(foeResource, Error, "Could not determine image format for: {}",
-                    pImageCI->fileName)
+                    filePath.native())
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }
 
         // Load the image into memory
-        auto *bitmap = FreeImage_Load(imageFormat, pImageCI->fileName.c_str(), 0);
+        auto *bitmap = FreeImage_Load(imageFormat, filePath.c_str(), 0);
         if (bitmap == nullptr) {
-            FOE_LOG(foeResource, Error, "Failed to load image: {}", pImageCI->fileName)
+            FOE_LOG(foeResource, Error, "Failed to load image: {}", filePath.native())
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }

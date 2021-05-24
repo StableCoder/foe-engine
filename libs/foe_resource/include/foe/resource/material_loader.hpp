@@ -73,11 +73,11 @@ class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
 
     FOE_RESOURCE_NO_EXPORT std::mutex mUnloadSync{};
     FOE_RESOURCE_NO_EXPORT
-        std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-            mUnloadRequestLists{};
+    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
+        mUnloadRequestLists{};
     FOE_RESOURCE_NO_EXPORT
-        std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
-            mCurrentUnloadRequests{mUnloadRequestLists.begin()};
+    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>::iterator
+        mCurrentUnloadRequests{mUnloadRequestLists.begin()};
 
     // VULKAN DESCRIPTORS
     FOE_RESOURCE_NO_EXPORT foeGfxSession mGfxSession;

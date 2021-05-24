@@ -22,6 +22,7 @@
 #include <foe/resource/loader_base.hpp>
 
 #include <atomic>
+#include <filesystem>
 #include <functional>
 #include <string>
 #include <string_view>
@@ -31,8 +32,10 @@ class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
   public:
     ~foeArmatureLoader();
 
-    std::error_code initialize(std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-                               std::function<void(std::function<void()>)> asynchronousJobs);
+    std::error_code initialize(
+        std::function<foeResourceCreateInfoBase *(foeId)> importFn,
+        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
+        std::function<void(std::function<void()>)> asynchronousJobs);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -43,7 +46,9 @@ class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
     FOE_RESOURCE_NO_EXPORT void loadResource(foeArmature *pArmature);
 
     FOE_RESOURCE_NO_EXPORT bool mInitialized{false};
-    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;
+    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFn;
+    FOE_RESOURCE_NO_EXPORT std::function<std::filesystem::path(std::filesystem::path)>
+        mExternalFileSearchFn;
     FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
     FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
 };

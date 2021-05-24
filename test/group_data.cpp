@@ -46,6 +46,10 @@ class DummyImporter : public foeImporterBase {
         return static_cast<foeResourceCreateInfoBase *>(mResReturn);
     }
 
+    std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) final {
+        return {};
+    }
+
   private:
     std::string mName;
     foeIdGroup mGroup;

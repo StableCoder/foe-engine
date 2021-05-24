@@ -48,6 +48,8 @@ class foeDistributedYamlImporter : public foeImporterBase {
                                    std::vector<foeResourcePoolBase *> &resourcePools) override;
     foeResourceCreateInfoBase *getResource(foeId id) override;
 
+    std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) override;
+
   public:
     std::filesystem::path mRootDir;
     foeIdGroup mGroup;
