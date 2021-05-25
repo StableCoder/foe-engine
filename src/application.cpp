@@ -178,9 +178,10 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.shader.initialize(
         gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
-        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
                   std::placeholders::_1),
+        std::bind(&foeImporterBase::findExternalFile,
+                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -188,7 +189,8 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.vertexDescriptor.initialize(
         &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -196,9 +198,10 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.image.initialize(
         gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
-        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
                   std::placeholders::_1),
+        std::bind(&foeImporterBase::findExternalFile,
+                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -208,7 +211,8 @@ int Application::initialize(int argc, char **argv) {
         &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
         &fragmentDescriptorPool, &pSimulationSet->resourceLoaders.image,
         &pSimulationSet->resources.image, gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -216,25 +220,28 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.mesh.initialize(
         gfxSession,
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
-        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
                   std::placeholders::_1),
+        std::bind(&foeImporterBase::findExternalFile,
+                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
     errC = pSimulationSet->resourceLoaders.armature.initialize(
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
-        std::bind(&foeDistributedYamlImporter::findExternalFile, &yamlImporter,
+        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
                   std::placeholders::_1),
+        std::bind(&foeImporterBase::findExternalFile,
+                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
     errC = pSimulationSet->resourceLoaders.collisionShape.initialize(
-        std::bind(&foeDistributedYamlImporter::getResource, &yamlImporter, std::placeholders::_1),
+        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM

@@ -39,7 +39,6 @@
 #include "position_descriptor_pool.hpp"
 #include "settings.hpp"
 #include "simulation_set.hpp"
-#include "state_yaml/distributed_yaml.hpp"
 #include "state_yaml/distributed_yaml_generator.hpp"
 #include "vk_animation.hpp"
 
@@ -78,8 +77,7 @@ struct Application {
 
     // Groups/Entities
     foeDistributedYamlImporterGenerator testGenerator;
-    foeDistributedYamlImporter yamlImporter{&testGenerator, foeIdPersistentGroup,
-                                            "data/state/theDataA"};
+
     foeId cameraID = FOE_INVALID_ID;
     foeId renderTriangleID = FOE_INVALID_ID;
     foeId renderMeshID = FOE_INVALID_ID;
