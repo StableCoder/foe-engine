@@ -172,6 +172,9 @@ bool foeDistributedYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &
 
 bool foeDistributedYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
                                                  StatePools *pStatePools) {
+    if (!std::filesystem::exists(mRootDir / stateDirectoryPath))
+        return true;
+
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / stateDirectoryPath}) {
         FOE_LOG(General, Info, "Visiting: {}", dirIt.path().string())
@@ -213,6 +216,9 @@ bool foeDistributedYamlImporter::importResourceDefinitions(
     foeEditorNameMap *pNameMap,
     std::vector<foeResourceLoaderBase *> &resourceLoaders,
     std::vector<foeResourcePoolBase *> &resourcePools) {
+    if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
+        return true;
+
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
         if (std::filesystem::is_directory(dirIt))
@@ -278,6 +284,9 @@ bool foeDistributedYamlImporter::importResourceDefinitions(
 }
 
 foeResourceCreateInfoBase *foeDistributedYamlImporter::getResource(foeId id) {
+    if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
+        return nullptr;
+
     YAML::Node rootNode;
     foeIdIndex index = foeIdGetIndex(id);
 
@@ -328,9 +337,9 @@ GOT_RESOURCE_NODE:
 
 std::filesystem::path foeDistributedYamlImporter::findExternalFile(
     std::filesystem::path externalFilePath) {
-        if(std::filesystem::exists(mRootDir / externalDirectoryPath / externalFilePath)) {
-            return mRootDir / externalDirectoryPath / externalFilePath;
-        }
-
-        return std::filesystem::path{};
+    if (std::filesystem::exists(mRootDir / externalDirectoryPath / externalFilePath)) {
+        return mRootDir / externalDirectoryPath / externalFilePath;
     }
+
+    return std::filesystem::path{};
+}
