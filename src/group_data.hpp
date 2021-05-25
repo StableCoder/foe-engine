@@ -52,6 +52,11 @@ class foeGroupData {
 
     bool getResourceDefinition(foeId id, foeResourceCreateInfoBase **ppCreateInfo);
 
+    // Used for resource loaders
+    foeResourceCreateInfoBase *getResourceDefinition2(foeId id);
+    // Used for resource loaders
+    std::filesystem::path findExternalFile(std::filesystem::path externalFilePath);
+
   private:
     struct CombinedGroup {
         std::unique_ptr<foeIdIndexGenerator> pEntityIndices;

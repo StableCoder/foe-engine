@@ -223,3 +223,28 @@ bool foeGroupData::getResourceDefinition(foeId id, foeResourceCreateInfoBase **p
 
     return false;
 }
+
+foeResourceCreateInfoBase *foeGroupData::getResourceDefinition2(foeId id) {
+    foeResourceCreateInfoBase *pCreateInfo{nullptr};
+    getResourceDefinition(id, &pCreateInfo);
+    return pCreateInfo;
+}
+
+std::filesystem::path foeGroupData::findExternalFile(std::filesystem::path externalFilePath) {
+    std::filesystem::path foundPath;
+    if (mPersistentImporter != nullptr) {
+        foundPath = mPersistentImporter->findExternalFile(externalFilePath);
+        if (!foundPath.empty())
+            return foundPath;
+    }
+
+    for (auto it = mDynamicGroups.rbegin(); it != mDynamicGroups.rend(); ++it) {
+        if (it->pImporter != nullptr) {
+            foundPath = it->pImporter->findExternalFile(externalFilePath);
+            if (!foundPath.empty())
+                return foundPath;
+        }
+    }
+
+    return foundPath;
+}

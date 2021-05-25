@@ -178,10 +178,10 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.shader.initialize(
         gfxSession,
-        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
                   std::placeholders::_1),
-        std::bind(&foeImporterBase::findExternalFile,
-                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
+        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -189,7 +189,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.vertexDescriptor.initialize(
         &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
-        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
                   std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
@@ -198,10 +198,10 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.image.initialize(
         gfxSession,
-        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
                   std::placeholders::_1),
-        std::bind(&foeImporterBase::findExternalFile,
-                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
+        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
@@ -211,7 +211,7 @@ int Application::initialize(int argc, char **argv) {
         &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
         &fragmentDescriptorPool, &pSimulationSet->resourceLoaders.image,
         &pSimulationSet->resources.image, gfxSession,
-        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
                   std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
@@ -220,27 +220,27 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.mesh.initialize(
         gfxSession,
-        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
                   std::placeholders::_1),
-        std::bind(&foeImporterBase::findExternalFile,
-                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
+        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
     errC = pSimulationSet->resourceLoaders.armature.initialize(
-        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
                   std::placeholders::_1),
-        std::bind(&foeImporterBase::findExternalFile,
-                  pSimulationSet->groupData.persistentImporter(), std::placeholders::_1),
+        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
+                  std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
     errC = pSimulationSet->resourceLoaders.collisionShape.initialize(
-        std::bind(&foeImporterBase::getResource, pSimulationSet->groupData.persistentImporter(),
+        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
                   std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
