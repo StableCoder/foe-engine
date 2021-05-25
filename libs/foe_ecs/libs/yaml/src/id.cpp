@@ -53,15 +53,13 @@ bool yaml_read_id_optional(std::string const &nodeName,
 
     try {
         // Group
-        foeIdGroup group = foeIdPersistentGroup;
-        foeIdGroupValue groupValue;
-        if (yaml_read_optional("group_id", subNode, groupValue)) {
-            // If we were given a translator, use it otherwise the value is just converted
-            if (pTranslator != nullptr) {
-                group = foeIdTranslateGroupValue(pTranslator, groupValue);
-            } else {
-                group = foeIdValueToGroup(groupValue);
-            }
+        foeIdGroup group;
+        foeIdGroupValue groupValue = foeIdPersistentGroupValue;
+        yaml_read_optional("group_id", subNode, groupValue);
+        if (pTranslator != nullptr) {
+            group = foeIdTranslateGroupValue(pTranslator, groupValue);
+        } else {
+            group = foeIdValueToGroup(groupValue);
         }
 
         // Index

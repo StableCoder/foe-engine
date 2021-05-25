@@ -139,7 +139,8 @@ auto importState(std::filesystem::path stateDataPath,
             it->getDependencies(groupDependencies);
 
             foeIdGroupTranslator newTranslator;
-            auto errC = foeIdCreateTranslator(groupDependencies, dependencies, &newTranslator);
+            auto errC = foeIdCreateTranslator(groupDependencies, dependencies,
+                                              foeIdValueToGroup(groupValue), &newTranslator);
 
             it->setGroupTranslator(std::move(newTranslator));
 

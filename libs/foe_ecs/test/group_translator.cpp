@@ -23,7 +23,7 @@ TEST_CASE("GroupTranslator - Creation", "[foe][ecs]") {
     std::vector<foeIdGroupValueNameSet> destinations;
 
     SECTION("Generating with no sources/destinations succeeds") {
-        REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, &test));
+        REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, foeIdPersistentGroup, &test));
     }
 
     SECTION("Generating with no sources but with destinations succeeds") {
@@ -31,7 +31,7 @@ TEST_CASE("GroupTranslator - Creation", "[foe][ecs]") {
             {0, "0"},
             {1, "1"},
         };
-        REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, &test));
+        REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, foeIdPersistentGroup, &test));
     }
 
     SECTION("Generating with sources and matching destinations succeeds") {
@@ -44,7 +44,7 @@ TEST_CASE("GroupTranslator - Creation", "[foe][ecs]") {
             {4, "1"},
         };
 
-        REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, &test));
+        REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, foeIdPersistentGroup, &test));
     }
 
     SECTION("Generating with sources with missing destinations fails") {
@@ -55,7 +55,7 @@ TEST_CASE("GroupTranslator - Creation", "[foe][ecs]") {
         destinations = {
             {0, "0"},
         };
-        REQUIRE(foeIdCreateTranslator(sources, destinations, &test));
+        REQUIRE(foeIdCreateTranslator(sources, destinations, foeIdPersistentGroup, &test));
     }
 }
 
@@ -71,7 +71,7 @@ TEST_CASE("GroupTranslator - Translating Values", "[foe][ecs]") {
         {15, "15"},
     };
 
-    REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, &test));
+    REQUIRE_FALSE(foeIdCreateTranslator(sources, destinations, foeIdPersistentGroup, &test));
 
     SECTION("Valid source values return valid groups") {
         REQUIRE(foeIdTranslateGroupValue(&test, 0) == foeIdValueToGroup(3));
