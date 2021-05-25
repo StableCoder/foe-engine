@@ -86,7 +86,7 @@ auto write_yaml_dependencies(foeGroupData &groups) -> YAML::Node {
     for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
         foeIdGroup groupID = foeIdValueToGroup(i);
 
-        foeImporterBase const *pGroup = groups.importer(foeIdValueToGroup(groupID));
+        foeImporterBase const *pGroup = groups.importer(groupID);
         if (pGroup == nullptr) {
             continue;
         }
