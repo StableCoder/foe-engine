@@ -43,12 +43,10 @@ struct foeIdGroupTranslator {
  * @param source Set of GroupIDs that the dataset was originally created with
  * @param destination Set of GroupIDs that the dataset is being imported to, which the source Groups
  * will need to be translatable to
- * @param defaultGroup The default GroupID that the dataset data is translated to
  * @param pTranslator The new translator, nullptr if an issue occurred
  */
 FOE_ECS_EXPORT auto foeIdCreateTranslator(std::vector<foeIdGroupValueNameSet> const &source,
                                           std::vector<foeIdGroupValueNameSet> const &destination,
-                                          foeIdGroup defaultGroup,
                                           foeIdGroupTranslator *pTranslator) -> std::error_code;
 
 FOE_ECS_EXPORT auto foeIdTranslateGroupValue(foeIdGroupTranslator const *pTranslator,

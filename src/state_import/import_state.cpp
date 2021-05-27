@@ -135,12 +135,15 @@ auto importState(std::filesystem::path stateDataPath,
         foeIdGroup groupValue = 0;
         for (auto &it : dependencyImporters) {
             // Setup importer translations
-            std::vector<foeIdGroupValueNameSet> groupDependencies;
-            it->getDependencies(groupDependencies);
+            std::vector<foeIdGroupValueNameSet> srcDependencies;
+            it->getDependencies(srcDependencies);
+
+            srcDependencies.emplace_back(foeIdPersistentGroupValue, "Persistent");
+            auto dstDependencies = dependencies;
+            dstDependencies.emplace_back(foeIdValueToGroup(groupValue), "Persistent");
 
             foeIdGroupTranslator newTranslator;
-            auto errC = foeIdCreateTranslator(groupDependencies, dependencies,
-                                              foeIdValueToGroup(groupValue), &newTranslator);
+            auto errC = foeIdCreateTranslator(srcDependencies, dstDependencies, &newTranslator);
 
             it->setGroupTranslator(std::move(newTranslator));
 

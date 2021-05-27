@@ -20,20 +20,21 @@
 
 auto foeIdCreateTranslator(std::vector<foeIdGroupValueNameSet> const &source,
                            std::vector<foeIdGroupValueNameSet> const &destination,
-                           foeIdGroup defaultGroup,
                            foeIdGroupTranslator *pTranslator) -> std::error_code {
     foeIdGroupTranslator newTranslator;
 
     for (auto const &src : source) {
-        foeIdGroup dstGroup = FOE_INVALID_ID;
+        bool found{false};
+        foeIdGroup dstGroup;
         for (auto const &dst : destination) {
             if (src.name == dst.name) {
                 dstGroup = foeIdValueToGroup(dst.groupValue);
+                found = true;
                 break;
             }
         }
 
-        if (dstGroup == FOE_INVALID_ID) {
+        if (!found) {
             // Failed to find the matching group
             return FOE_ECS_ERROR_NO_MATCHING_DESTINATION_GROUP;
         }
@@ -44,12 +45,6 @@ auto foeIdCreateTranslator(std::vector<foeIdGroupValueNameSet> const &source,
             .destinationGroup = dstGroup,
         });
     }
-
-    // Add the default value that 'persistent' IDs translate to
-    newTranslator.translations.emplace_back(foeIdGroupValueTranslation{
-        .sourceGroupValue = foeIdPersistentGroupValue,
-        .destinationGroup = defaultGroup,
-    });
 
     *pTranslator = std::move(newTranslator);
 
