@@ -19,8 +19,10 @@
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
+#include <foe/imex/component_pool_base.hpp>
 #include <foe/physics/component/rigid_body.hpp>
 
-class foeRigidBodyPool : public foeDataPool<foeEntityID, foeRigidBody> {};
+class foeRigidBodyPool : public foeComponentPoolBase,
+                         public foeDataPool<foeEntityID, foeRigidBody> {};
 
 #endif // FOE_PHYSICS_COMPONENT_RIGID_BODY_POOL_HPP

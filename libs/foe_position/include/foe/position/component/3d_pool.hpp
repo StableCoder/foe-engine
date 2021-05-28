@@ -19,10 +19,12 @@
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
+#include <foe/imex/component_pool_base.hpp>
 #include <foe/position/component/3d.hpp>
 
 #include <memory>
 
-class foePosition3dPool : public foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> {};
+class foePosition3dPool : public foeComponentPoolBase,
+                          public foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> {};
 
 #endif // FOE_POSITION_COMPONENT_3D_POOL_HPP

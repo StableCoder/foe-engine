@@ -14,8 +14,8 @@ generate_export_header(foe_physics EXPORT_FILE_NAME
 target_include_directories(
   foe_physics PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports
                      ${BULLET_INCLUDE_DIRS})
-target_link_libraries(foe_physics PUBLIC foe foe_ecs foe_position foe_resource
-                                         ${BULLET_LIBRARIES})
+target_link_libraries(foe_physics PUBLIC foe foe_ecs foe_imex foe_position
+                                         foe_resource ${BULLET_LIBRARIES})
 target_code_coverage(foe_physics)
 
 add_subdirectory(src)

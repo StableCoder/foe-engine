@@ -19,11 +19,13 @@
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
+#include <foe/imex/component_pool_base.hpp>
 
 #include "camera.hpp"
 
 #include <memory>
 
-class foeCameraPool : public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {};
+class foeCameraPool : public foeComponentPoolBase,
+                      public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {};
 
 #endif // CAMERA_POOL_HPP

@@ -209,6 +209,12 @@ bool foeDistributedYamlImporter::importStateData(
                 }
             }
 
+            for (auto const &it : mGenerator->mComponentFns) {
+                if (auto subNode = entityNode[it.first]; subNode) {
+                    it.second(entityNode, &mGroupTranslator, entity, componentPools);
+                }
+            }
+
             bool parsed = yaml_read_entity(entityNode, entity, &mGroupTranslator, pStatePools);
             if (!parsed) {
                 FOE_LOG(General, Error, "Failed to parse entity {}", foeIdToString(entity))

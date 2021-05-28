@@ -32,26 +32,6 @@ bool yaml_read_entity(YAML::Node const &node,
                       foeEntityID entity,
                       foeIdGroupTranslator *pGroupTranslator,
                       StatePools *pStatePools) {
-    if (auto dataNode = node["position_3d"]; dataNode) {
-        try {
-            std::unique_ptr<foePosition3d> pPos(new foePosition3d);
-            *pPos = yaml_read_Position3D(dataNode);
-            pStatePools->position.insert(entity, std::move(pPos));
-        } catch (foeYamlException const &e) {
-            throw foeYamlException{"position_3d::" + e.whatStr()};
-        }
-    }
-
-    if (auto dataNode = node["camera"]; dataNode) {
-        try {
-            std::unique_ptr<Camera> pCamera(new Camera);
-            *pCamera = yaml_read_Camera(dataNode);
-            pStatePools->camera.insert(entity, std::move(pCamera));
-        } catch (foeYamlException const &e) {
-            throw foeYamlException{"position_3d::" + e.whatStr()};
-        }
-    }
-
     if (auto dataNode = node["render_state"]; dataNode) {
         try {
             foeRenderState renderState = yaml_read_RenderState(dataNode, pGroupTranslator);
@@ -65,15 +45,6 @@ bool yaml_read_entity(YAML::Node const &node,
         try {
             foeArmatureState armatureState = yaml_read_ArmatureState(dataNode, pGroupTranslator);
             pStatePools->armatureStates[entity] = std::move(armatureState);
-        } catch (foeYamlException const &e) {
-            throw foeYamlException{"armature_state::" + e.whatStr()};
-        }
-    }
-
-    if (auto dataNode = node["rigid_body"]; dataNode) {
-        try {
-            foeRigidBody rigidBody = yaml_read_RigidBody(dataNode, pGroupTranslator);
-            pStatePools->rigidBody.insert(entity, std::move(rigidBody));
         } catch (foeYamlException const &e) {
             throw foeYamlException{"armature_state::" + e.whatStr()};
         }

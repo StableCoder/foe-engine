@@ -9,7 +9,7 @@ add_library(foe_position INTERFACE)
 
 # Definition
 target_include_directories(foe_position INTERFACE include)
-target_link_libraries(foe_position INTERFACE glm)
+target_link_libraries(foe_position INTERFACE foe foe_imex glm)
 target_code_coverage(foe_position INTERFACE)
 
 # Auxiliary Targets

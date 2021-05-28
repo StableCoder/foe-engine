@@ -42,7 +42,7 @@ struct SimulationSet {
     foeEditorNameMap entityNameMap;
 
     SimulationSet() {
-        // Loaders
+        // Resource Loaders
         resourceLoaders2.emplace_back(&resourceLoaders.armature);
         resourceLoaders2.emplace_back(&resourceLoaders.collisionShape);
 
@@ -52,7 +52,7 @@ struct SimulationSet {
         resourceLoaders2.emplace_back(&resourceLoaders.material);
         resourceLoaders2.emplace_back(&resourceLoaders.mesh);
 
-        // Pools
+        // Resource Pools
         resourcePools.emplace_back(&resources.armature);
         resourcePools.emplace_back(&resources.collisionShape);
 
@@ -61,6 +61,11 @@ struct SimulationSet {
         resourcePools.emplace_back(&resources.image);
         resourcePools.emplace_back(&resources.material);
         resourcePools.emplace_back(&resources.mesh);
+
+        // Component Pools
+        componentPools.emplace_back(&state.position);
+        componentPools.emplace_back(&state.camera);
+        componentPools.emplace_back(&state.rigidBody);
     }
 };
 

@@ -24,7 +24,7 @@
 struct foeIdGroupTranslator;
 
 FOE_PHYSICS_YAML_EXPORT auto yaml_read_RigidBody(YAML::Node const &node,
-                                                 foeIdGroupTranslator *pIdGroupTranslator)
+                                                 foeIdGroupTranslator const *pIdGroupTranslator)
     -> foeRigidBody;
 
 FOE_PHYSICS_YAML_EXPORT auto yaml_write_RigidBody(foeRigidBody const &data) -> YAML::Node;
