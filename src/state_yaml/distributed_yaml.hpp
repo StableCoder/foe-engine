@@ -41,7 +41,9 @@ class foeDistributedYamlImporter : public foeImporterBase {
     bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) override;
     bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) override;
     bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) override;
-    bool importStateData(foeEditorNameMap *pEntityNameMap, StatePools *pStatePools) override;
+    bool importStateData(foeEditorNameMap *pEntityNameMap,
+                         StatePools *pStatePools,
+                         std::vector<foeComponentPoolBase *> &componentPools) override;
 
     bool importResourceDefinitions(foeEditorNameMap *pNameMap,
                                    std::vector<foeResourceLoaderBase *> &resourceLoaders,

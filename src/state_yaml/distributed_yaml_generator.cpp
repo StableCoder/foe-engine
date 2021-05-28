@@ -105,3 +105,38 @@ bool foeDistributedYamlImporterGenerator::removeImporter(std::string key,
     mResourceFns.erase(searchIt);
     return true;
 }
+
+bool foeDistributedYamlImporterGenerator::addComponentImporter(std::string key,
+                                                               ComponentImportFn pImportFn) {
+    auto searchIt = mComponentFns.find(key);
+    if (searchIt != mComponentFns.end()) {
+        FOE_LOG(General, Error,
+                "Could not add DistributedYamlImporter function for {}, as it already exists", key);
+        return false;
+    }
+
+    FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}", key);
+    mComponentFns[key] = pImportFn;
+
+    return true;
+}
+
+bool foeDistributedYamlImporterGenerator::removeComponentImporter(std::string key,
+                                                                  ComponentImportFn pImportFn) {
+    auto searchIt = mComponentFns.find(key);
+    if (searchIt == mComponentFns.end()) {
+        FOE_LOG(General, Error,
+                "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);
+        return false;
+    }
+    if (searchIt->second != pImportFn) {
+        FOE_LOG(General, Warning,
+                "Attempted to remove DistributedYamlImporter function for {}, but the provided "
+                "function pointers are not the same as was added",
+                key);
+        return false;
+    }
+
+    mComponentFns.erase(searchIt);
+    return true;
+}

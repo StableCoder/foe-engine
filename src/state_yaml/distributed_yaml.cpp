@@ -170,8 +170,10 @@ bool foeDistributedYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &
     return getGroupIndexData(mRootDir / resourceIndexDataFilePath, ecsGroup);
 }
 
-bool foeDistributedYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
-                                                 StatePools *pStatePools) {
+bool foeDistributedYamlImporter::importStateData(
+    foeEditorNameMap *pEntityNameMap,
+    StatePools *pStatePools,
+    std::vector<foeComponentPoolBase *> &componentPools) {
     if (!std::filesystem::exists(mRootDir / stateDirectoryPath))
         return true;
 

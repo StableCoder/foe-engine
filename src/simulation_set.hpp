@@ -37,9 +37,9 @@ struct SimulationSet {
     ResourceLoaders resourceLoaders;
     foeEditorNameMap resourceNameMap;
 
+    std::vector<foeComponentPoolBase *> componentPools;
     StatePools state;
     foeEditorNameMap entityNameMap;
-    // StateSystems systems;
 
     SimulationSet() {
         // Loaders
