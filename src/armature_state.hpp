@@ -17,7 +17,9 @@
 #ifndef ARMATURE_STATE_HPP
 #define ARMATURE_STATE_HPP
 
+#include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
+#include <foe/imex/component_pool_base.hpp>
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -31,6 +33,9 @@ struct foeArmatureState {
     uint32_t animationID{UINT32_MAX};
     float time{0.f};
 };
+
+class foeArmatureStatePool : public foeComponentPoolBase,
+                             public foeDataPool<foeEntityID, foeArmatureState> {};
 
 #include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>

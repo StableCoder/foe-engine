@@ -17,7 +17,9 @@
 #include "animation_processing.hpp"
 
 #include <foe/resource/armature.hpp>
+#include <foe/resource/armature_pool.hpp>
 
+#include "armature_state.hpp"
 namespace {
 
 void originalArmatureNode(foeArmatureNode const *pNode,
@@ -72,36 +74,37 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 
 } // namespace
 
-void processArmatureStates(std::map<foeId, foeArmatureState> *pArmatureStates,
+void processArmatureStates(foeArmatureStatePool *pArmatureStatePool,
                            foeArmaturePool *pArmaturePool) {
-    for (auto it = pArmatureStates->begin(); it != pArmatureStates->end(); ++it) {
-        foeArmatureState &armatureState = it->second;
+    auto *pArmatureState = pArmatureStatePool->begin<1>();
+    auto const *pEndArmatureState = pArmatureStatePool->end<1>();
 
+    for (; pArmatureState != pEndArmatureState; ++pArmatureState) {
         // If there's no valid armature associated with this data, skip it
-        if (armatureState.armatureID == FOE_INVALID_ID)
+        if (pArmatureState->armatureID == FOE_INVALID_ID)
             continue;
 
-        foeArmature *pArmature = pArmaturePool->find(armatureState.armatureID);
+        foeArmature *pArmature = pArmaturePool->find(pArmatureState->armatureID);
         // If the armature we're trying to use isn't here, skip this entry
         if (pArmature == nullptr || pArmature->getLoadState() != foeResourceLoadState::Loaded)
             continue;
 
         // If the animation index isn't on the given armature, then just set the default armature
         // values
-        armatureState.armatureState.resize(pArmature->data.armature.size());
-        if (pArmature->data.animations.size() <= armatureState.animationID) {
+        pArmatureState->armatureState.resize(pArmature->data.armature.size());
+        if (pArmature->data.animations.size() <= pArmatureState->animationID) {
             // The original armature matrices
             originalArmatureNode(&pArmature->data.armature[0], glm::mat4{1.f},
-                                 &armatureState.armatureState[0]);
+                                 &pArmatureState->armatureState[0]);
 
             // Not applying animations, so continue to next entity
             continue;
         }
 
-        foeAnimation &animation = pArmature->data.animations[armatureState.animationID];
+        foeAnimation &animation = pArmature->data.animations[pArmatureState->animationID];
 
         auto const animationDuration = animation.duration / animation.ticksPerSecond;
-        auto animationTime = armatureState.time;
+        auto animationTime = pArmatureState->time;
         while (animationTime > animationDuration) {
             animationTime -= animationDuration;
         }
@@ -110,6 +113,6 @@ void processArmatureStates(std::map<foeId, foeArmatureState> *pArmatureStates,
         animationTime *= animation.ticksPerSecond;
 
         animateArmatureNode(&pArmature->data.armature[0], animation.nodeChannels, animationTime,
-                            glm::mat4{1.f}, &armatureState.armatureState[0]);
+                            glm::mat4{1.f}, &pArmatureState->armatureState[0]);
     }
 }

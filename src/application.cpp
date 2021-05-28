@@ -89,7 +89,7 @@ int Application::initialize(int argc, char **argv) {
     addImporterFunctionRegistrar(&testRegistrar);
 
     SimulationSet *pNewSimulationSet{nullptr};
-    std::error_code errC = importState("data/state/theDataA", &searchPaths, &pNewSimulationSet);
+    std::error_code errC = importState("data/state/persistent", &searchPaths, &pNewSimulationSet);
     pSimulationSet.reset(pNewSimulationSet);
 
     synchronousThreadPool.start(1);
@@ -736,13 +736,14 @@ int Application::mainloop() {
 #endif
         }
 
-        for (auto &it : pSimulationSet->state.armatureStates) {
-            it.second.time =
+        for (auto pData = pSimulationSet->state.armatureState.begin<1>();
+             pData != pSimulationSet->state.armatureState.end<1>(); ++pData) {
+            pData->time =
                 static_cast<float>(simulationClock.time<std::chrono::milliseconds>().count()) /
                 1000.f;
         }
 
-        processArmatureStates(&pSimulationSet->state.armatureStates,
+        processArmatureStates(&pSimulationSet->state.armatureState,
                               &pSimulationSet->resources.armature);
 
         processPhysics(pSimulationSet->resourceLoaders.collisionShape,
@@ -864,8 +865,8 @@ int Application::mainloop() {
                                                                pSimulationSet->state.position);
 
             // Generate any bone data
-            vkAnimationPool.uploadBoneOffsets(frameIndex, &pSimulationSet->state.armatureStates,
-                                              &pSimulationSet->state.renderStates,
+            vkAnimationPool.uploadBoneOffsets(frameIndex, &pSimulationSet->state.armatureState,
+                                              &pSimulationSet->state.renderState,
                                               &pSimulationSet->resources.armature,
                                               &pSimulationSet->resources.mesh);
 
@@ -874,24 +875,30 @@ int Application::mainloop() {
                                   VkRenderPass renderPass) -> bool {
                 VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
-                foeRenderState &renderState = pSimulationSet->state.renderStates[entity];
+                foeRenderState *pRenderState{nullptr};
+                auto searchOffset = pSimulationSet->state.renderState.find(entity);
+                if (searchOffset != pSimulationSet->state.renderState.size()) {
+                    pRenderState = pSimulationSet->state.renderState.begin<1>() + searchOffset;
+                } else {
+                    return false;
+                }
 
                 foeVertexDescriptor *pVertexDescriptor{nullptr};
                 bool boned{false};
-                if (renderState.bonedVertexDescriptor != FOE_INVALID_ID &&
-                    renderState.boneDescriptorSet != VK_NULL_HANDLE) {
+                if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
+                    pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
                     boned = true;
                     pVertexDescriptor = pSimulationSet->resources.vertexDescriptor.find(
-                        renderState.bonedVertexDescriptor);
+                        pRenderState->bonedVertexDescriptor);
                 }
 
                 if (pVertexDescriptor == nullptr) {
                     pVertexDescriptor = pSimulationSet->resources.vertexDescriptor.find(
-                        renderState.vertexDescriptor);
+                        pRenderState->vertexDescriptor);
                 }
 
-                auto *pMaterial = pSimulationSet->resources.material.find(renderState.material);
-                auto *pMesh = pSimulationSet->resources.mesh.find(renderState.mesh);
+                auto *pMaterial = pSimulationSet->resources.material.find(pRenderState->material);
+                auto *pMesh = pSimulationSet->resources.mesh.find(pRenderState->mesh);
 
                 if (pVertexDescriptor == nullptr || pMaterial == nullptr || pMesh == nullptr) {
                     return false;
@@ -937,7 +944,7 @@ int Application::mainloop() {
                 if (boned) {
                     // If we have bone information, bind that too
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            2, 1, &renderState.boneDescriptorSet, 0, nullptr);
+                                            2, 1, &pRenderState->boneDescriptorSet, 0, nullptr);
                 }
                 // Bind the fragment descriptor set *if* it exists?
                 if (auto set = pMaterial->getVkDescriptorSet(frameIndex); set != VK_NULL_HANDLE) {
@@ -1345,14 +1352,22 @@ int Application::mainloop() {
 
                         if constexpr (true) {
                             foeId itemToRender = renderTriangleID;
-                            auto &renderState =
-                                pSimulationSet->state.renderStates[renderTriangleID];
+
+                            foeRenderState *pRenderState{nullptr};
+                            auto searchOffset =
+                                pSimulationSet->state.renderState.find(renderTriangleID);
+                            if (searchOffset != pSimulationSet->state.renderState.size()) {
+                                pRenderState =
+                                    pSimulationSet->state.renderState.begin<1>() + searchOffset;
+                            } else {
+                                goto SKIP_DRAW;
+                            }
 
                             auto *theVertexDescriptor =
                                 pSimulationSet->resources.vertexDescriptor.find(
-                                    renderState.vertexDescriptor);
+                                    pRenderState->vertexDescriptor);
                             auto *theMaterial =
-                                pSimulationSet->resources.material.find(renderState.material);
+                                pSimulationSet->resources.material.find(pRenderState->material);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||

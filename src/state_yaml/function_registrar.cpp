@@ -47,8 +47,10 @@
 #include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/yaml/exception.hpp>
 
+#include "../armature_state.hpp"
 #include "../camera.hpp"
 #include "../camera_pool.hpp"
+#include "../render_state.hpp"
 
 struct foeResourceCreateInfoBase;
 struct foeResourceLoaderBase;
@@ -287,6 +289,66 @@ bool collisionShapeCreateProcessing(foeResourceID resource,
     return true;
 }
 
+bool importArmature(YAML::Node const &node,
+                    foeIdGroupTranslator const *pGroupTranslator,
+                    foeEntityID entity,
+                    std::vector<foeComponentPoolBase *> &componentPools) {
+    if (auto dataNode = node["armature_state"]; dataNode) {
+        foeArmatureStatePool *pPool;
+
+        for (auto it : componentPools) {
+            pPool = dynamic_cast<foeArmatureStatePool *>(it);
+            if (pPool != nullptr)
+                break;
+        }
+
+        if (pPool == nullptr)
+            return false;
+
+        try {
+            foeArmatureState data = yaml_read_ArmatureState(dataNode, pGroupTranslator);
+
+            pPool->insert(entity, std::move(data));
+
+            return true;
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{"armature_state::" + e.whatStr()};
+        }
+    }
+
+    return false;
+}
+
+bool importRenderState(YAML::Node const &node,
+                       foeIdGroupTranslator const *pGroupTranslator,
+                       foeEntityID entity,
+                       std::vector<foeComponentPoolBase *> &componentPools) {
+    if (auto dataNode = node["render_state"]; dataNode) {
+        foeRenderStatePool *pPool;
+
+        for (auto it : componentPools) {
+            pPool = dynamic_cast<foeRenderStatePool *>(it);
+            if (pPool != nullptr)
+                break;
+        }
+
+        if (pPool == nullptr)
+            return false;
+
+        try {
+            foeRenderState data = yaml_read_RenderState(dataNode, pGroupTranslator);
+
+            pPool->insert(entity, std::move(data));
+
+            return true;
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{"render_state::" + e.whatStr()};
+        }
+    }
+
+    return false;
+}
+
 bool importPosition3D(YAML::Node const &node,
                       foeIdGroupTranslator const *,
                       foeEntityID entity,
@@ -414,6 +476,8 @@ bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerato
             goto FAILED_TO_ADD;
 
         // Component
+        pYamlImporter->addComponentImporter("armature_state", importArmature);
+        pYamlImporter->addComponentImporter("render_state", importRenderState);
         pYamlImporter->addComponentImporter("position_3d", importPosition3D);
         pYamlImporter->addComponentImporter("camera", importCamera);
         pYamlImporter->addComponentImporter("rigid_body", importRigidBody);
@@ -452,6 +516,8 @@ bool foeYamlCoreResourceFunctionRegistrar::deregisterFunctions(foeImporterGenera
                                       collisionShapeCreateProcessing);
 
         // Component
+        pYamlImporter->removeComponentImporter("armature_state", importArmature);
+        pYamlImporter->removeComponentImporter("render_state", importRenderState);
         pYamlImporter->removeComponentImporter("position_3d", importPosition3D);
         pYamlImporter->removeComponentImporter("camera", importCamera);
         pYamlImporter->removeComponentImporter("rigid_body", importRigidBody);

@@ -28,7 +28,6 @@
 #include "../log.hpp"
 #include "../resource_pools.hpp"
 #include "distributed_yaml_generator.hpp"
-#include "entity.hpp"
 
 #include <string>
 #include <string_view>
@@ -215,13 +214,7 @@ bool foeDistributedYamlImporter::importStateData(
                 }
             }
 
-            bool parsed = yaml_read_entity(entityNode, entity, &mGroupTranslator, pStatePools);
-            if (!parsed) {
-                FOE_LOG(General, Error, "Failed to parse entity {}", foeIdToString(entity))
-                return false;
-            } else {
-                FOE_LOG(General, Info, "Successfully parsed entity {}", foeIdToString(entity))
-            }
+            FOE_LOG(General, Info, "Parsed entity {}", foeIdToString(entity))
         } catch (foeYamlException const &e) {
             FOE_LOG(General, Error, "Failed to parse entity state data: {}", e.what())
             return false;

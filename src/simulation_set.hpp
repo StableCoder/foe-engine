@@ -63,6 +63,8 @@ struct SimulationSet {
         resourcePools.emplace_back(&resources.mesh);
 
         // Component Pools
+        componentPools.emplace_back(&state.armatureState);
+        componentPools.emplace_back(&state.renderState);
         componentPools.emplace_back(&state.position);
         componentPools.emplace_back(&state.camera);
         componentPools.emplace_back(&state.rigidBody);

@@ -17,7 +17,9 @@
 #ifndef RENDER_STATE_HPP
 #define RENDER_STATE_HPP
 
+#include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
+#include <foe/imex/component_pool_base.hpp>
 #include <vulkan/vulkan.h>
 
 struct foeRenderState {
@@ -29,6 +31,9 @@ struct foeRenderState {
     // Runtime info
     VkDescriptorSet boneDescriptorSet;
 };
+
+class foeRenderStatePool : public foeComponentPoolBase,
+                           public foeDataPool<foeEntityID, foeRenderState> {};
 
 #include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>

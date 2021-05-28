@@ -17,18 +17,15 @@
 #ifndef VK_ANIMATION_HPP
 #define VK_ANIMATION_HPP
 
-#include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-#include "armature_state.hpp"
-#include "render_state.hpp"
-
 #include <array>
-#include <map>
 
+class foeArmatureStatePool;
+class foeRenderStatePool;
 class foeArmaturePool;
 class foeMeshPool;
 
@@ -40,8 +37,8 @@ class VkAnimationPool {
     void deinitialize();
 
     VkResult uploadBoneOffsets(uint32_t frameIndex,
-                               std::map<foeId, foeArmatureState> const *pArmatureStates,
-                               std::map<foeId, foeRenderState> *pRenderStates,
+                               foeArmatureStatePool *pArmatureStatePool,
+                               foeRenderStatePool *pRenderStatePool,
                                foeArmaturePool *pArmaturePool,
                                foeMeshPool *pMeshPool);
 

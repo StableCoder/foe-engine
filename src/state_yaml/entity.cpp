@@ -28,31 +28,6 @@
 #include "../render_state.hpp"
 #include "../state_pools.hpp"
 
-bool yaml_read_entity(YAML::Node const &node,
-                      foeEntityID entity,
-                      foeIdGroupTranslator *pGroupTranslator,
-                      StatePools *pStatePools) {
-    if (auto dataNode = node["render_state"]; dataNode) {
-        try {
-            foeRenderState renderState = yaml_read_RenderState(dataNode, pGroupTranslator);
-            pStatePools->renderStates[entity] = std::move(renderState);
-        } catch (foeYamlException const &e) {
-            throw foeYamlException{"render_state::" + e.whatStr()};
-        }
-    }
-
-    if (auto dataNode = node["armature_state"]; dataNode) {
-        try {
-            foeArmatureState armatureState = yaml_read_ArmatureState(dataNode, pGroupTranslator);
-            pStatePools->armatureStates[entity] = std::move(armatureState);
-        } catch (foeYamlException const &e) {
-            throw foeYamlException{"armature_state::" + e.whatStr()};
-        }
-    }
-
-    return entity;
-}
-
 auto yaml_write_entity(foeId id, foeEditorNameMap *pEntityNameMap, StatePools *pStatePools)
     -> YAML::Node {
     YAML::Node outNode;
@@ -77,14 +52,16 @@ auto yaml_write_entity(foeId id, foeEditorNameMap *pEntityNameMap, StatePools *p
         outNode["camera"] = yaml_write_Camera(*pStatePools->camera.begin<1>()[searchIt].get());
     }
     // RenderState
-    if (auto searchIt = pStatePools->renderStates.find(id);
-        searchIt != pStatePools->renderStates.end()) {
-        outNode["render_state"] = yaml_write_RenderState(searchIt->second);
+    if (auto searchIt = pStatePools->renderState.find(id);
+        searchIt != pStatePools->renderState.size()) {
+        outNode["render_state"] =
+            yaml_write_RenderState(pStatePools->renderState.begin<1>()[searchIt]);
     }
     // ArmatureState
-    if (auto searchIt = pStatePools->armatureStates.find(id);
-        searchIt != pStatePools->armatureStates.end()) {
-        outNode["armature_state"] = yaml_write_ArmatureState(searchIt->second);
+    if (auto searchIt = pStatePools->armatureState.find(id);
+        searchIt != pStatePools->armatureState.size()) {
+        outNode["armature_state"] =
+            yaml_write_ArmatureState(pStatePools->armatureState.begin<1>()[searchIt]);
     }
     // RigidBody
     if (auto offset = pStatePools->rigidBody.find(id); offset != pStatePools->rigidBody.size()) {

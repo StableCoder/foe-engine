@@ -22,15 +22,9 @@
 
 #include <vector>
 
-struct foeIdGroupTranslator;
 struct StatePools;
 
 class foeEditorNameMap;
-
-bool yaml_read_entity(YAML::Node const &node,
-                      foeEntityID entity,
-                      foeIdGroupTranslator *pGroupTranslator,
-                      StatePools *pStatePools);
 
 auto yaml_write_entity(foeId id, foeEditorNameMap *pEntityNameMap, StatePools *pStatePools)
     -> YAML::Node;

@@ -7,6 +7,9 @@
 #include <foe/resource/mesh_pool.hpp>
 #include <glm/glm.hpp>
 
+#include "armature_state.hpp"
+#include "render_state.hpp"
+
 VkResult VkAnimationPool::initialize(foeGfxSession gfxSession,
                                      VkDescriptorSetLayout boneSetLayout,
                                      uint32_t boneSetBinding) {
@@ -92,12 +95,11 @@ void VkAnimationPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult VkAnimationPool::uploadBoneOffsets(
-    uint32_t frameIndex,
-    std::map<foeId, foeArmatureState> const *pArmatureStates,
-    std::map<foeId, foeRenderState> *pRenderStates,
-    foeArmaturePool *pArmaturePool,
-    foeMeshPool *pMeshPool) {
+VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex,
+                                            foeArmatureStatePool *pArmatureStatePool,
+                                            foeRenderStatePool *pRenderStatePool,
+                                            foeArmaturePool *pArmaturePool,
+                                            foeMeshPool *pMeshPool) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &modelUniform = mModelBuffers[frameIndex];
@@ -149,7 +151,11 @@ VkResult VkAnimationPool::uploadBoneOffsets(
     VkDeviceSize offset = 0;
     vmaMapMemory(mAllocator, boneUniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    for (auto it = pRenderStates->begin(); it != pRenderStates->end(); ++it) {
+    auto *pID = pRenderStatePool->begin();
+    auto const *pEndID = pRenderStatePool->end();
+    auto *pRenderState = pRenderStatePool->begin<1>();
+
+    for (; pID != pEndID; ++pID, ++pRenderState) {
         // Make sure the buffer offset matches the minimum allowed alignment
         {
             auto alignment = offset / mMinUniformBufferOffsetAlignment;
@@ -159,17 +165,17 @@ VkResult VkAnimationPool::uploadBoneOffsets(
             }
         }
 
-        foeRenderState &renderState = it->second;
-
         // Only need bone state data if we have an associated armature.
         foeArmatureState const *pArmatureState{nullptr};
-        if (auto searchIt = pArmatureStates->find(it->first); searchIt != pArmatureStates->end()) {
-            pArmatureState = &searchIt->second;
+
+        auto searchOffset = pArmatureStatePool->find(*pID);
+        if (searchOffset != pArmatureStatePool->size()) {
+            pArmatureState = pArmatureStatePool->begin<1>() + searchOffset;
         } else {
             continue;
         }
 
-        foeMesh *pMesh = pMeshPool->find(renderState.mesh);
+        foeMesh *pMesh = pMeshPool->find(pRenderState->mesh);
         foeArmature *pArmature = pArmaturePool->find(pArmatureState->armatureID);
 
         if (pMesh == nullptr || pArmature == nullptr ||
@@ -212,7 +218,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(
                 .pSetLayouts = &mBoneSetLayout,
             };
 
-            res = vkAllocateDescriptorSets(mDevice, &setAI, &renderState.boneDescriptorSet);
+            res = vkAllocateDescriptorSets(mDevice, &setAI, &pRenderState->boneDescriptorSet);
             if (res != VK_SUCCESS) {
                 return res;
             }
@@ -225,7 +231,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(
 
             VkWriteDescriptorSet writeSet{
                 .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                .dstSet = renderState.boneDescriptorSet,
+                .dstSet = pRenderState->boneDescriptorSet,
                 .dstBinding = mBoneSetBinding,
                 .descriptorCount = 1,
                 .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

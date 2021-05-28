@@ -17,13 +17,10 @@
 #ifndef ANIMATION_PROCESSING_HPP
 #define ANIMATION_PROCESSING_HPP
 
-#include <foe/resource/armature_pool.hpp>
+class foeArmatureStatePool;
+class foeArmaturePool;
 
-#include "armature_state.hpp"
-
-#include <map>
-
-void processArmatureStates(std::map<foeId, foeArmatureState> *pArmatureStates,
+void processArmatureStates(foeArmatureStatePool *pArmatureStatePool,
                            foeArmaturePool *pArmaturePool);
 
 #endif // ANIMATION_PROCESSING_HPP
