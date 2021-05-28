@@ -28,23 +28,10 @@
 #include "../render_state.hpp"
 #include "../state_pools.hpp"
 
-auto yaml_read_entity(YAML::Node const &node,
-                      foeIdGroup targetedGroupID,
+bool yaml_read_entity(YAML::Node const &node,
+                      foeEntityID entity,
                       foeIdGroupTranslator *pGroupTranslator,
-                      foeEditorNameMap *pEntityNameMap,
-                      StatePools *pStatePools) -> foeId {
-    foeId entity;
-    yaml_read_id_required("", node, pGroupTranslator, entity);
-
-    if (pEntityNameMap != nullptr) {
-        std::string editorName;
-        yaml_read_optional("editor_name", node, editorName);
-
-        if (!editorName.empty()) {
-            pEntityNameMap->add(entity, editorName);
-        }
-    }
-
+                      StatePools *pStatePools) {
     if (auto dataNode = node["position_3d"]; dataNode) {
         try {
             std::unique_ptr<foePosition3d> pPos(new foePosition3d);

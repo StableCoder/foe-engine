@@ -195,9 +195,21 @@ bool foeDistributedYamlImporter::importStateData(foeEditorNameMap *pEntityNameMa
             return false;
 
         try {
-            auto entity = yaml_read_entity(entityNode, mGroup, &mGroupTranslator, pEntityNameMap,
-                                           pStatePools);
-            if (entity == FOE_INVALID_ID) {
+            foeId entity;
+            yaml_read_id_required("", entityNode, &mGroupTranslator, entity);
+
+            if (pEntityNameMap != nullptr) {
+                std::string editorName;
+                yaml_read_optional("editor_name", entityNode, editorName);
+
+                if (!editorName.empty()) {
+                    pEntityNameMap->add(entity, editorName);
+                }
+            }
+
+            bool parsed = yaml_read_entity(entityNode, entity, &mGroupTranslator, pStatePools);
+            if (!parsed) {
+                FOE_LOG(General, Error, "Failed to parse entity {}", foeIdToString(entity))
                 return false;
             } else {
                 FOE_LOG(General, Info, "Successfully parsed entity {}", foeIdToString(entity))
