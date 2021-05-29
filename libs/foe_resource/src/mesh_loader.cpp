@@ -172,7 +172,7 @@ void foeMeshLoader::startUpload(foeMesh *pMesh) {
         std::filesystem::path filePath = mExternalFileSearchFn(pCI->fileName);
         auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
-        auto modelLoader = modelImporterPlugin->createImporter(filePath.c_str());
+        auto modelLoader = modelImporterPlugin->createImporter(filePath.string().c_str());
         assert(modelLoader->loaded());
 
         unsigned int meshIndex;

@@ -180,21 +180,21 @@ void foeImageLoader::startUpload(foeImage *pImage) {
       // Find the file path first
         std::filesystem::path filePath = mExternalFileSearchFn(pImageCI->fileName);
         // Determine the image format
-        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(filePath.c_str());
+        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(filePath.string().c_str());
         if (imageFormat == FIF_UNKNOWN) {
-            FreeImage_GetFIFFromFilename(filePath.c_str());
+            FreeImage_GetFIFFromFilename(filePath.string().c_str());
         }
         if (imageFormat == FIF_UNKNOWN) {
             FOE_LOG(foeResource, Error, "Could not determine image format for: {}",
-                    filePath.native())
+                    filePath.string())
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }
 
         // Load the image into memory
-        auto *bitmap = FreeImage_Load(imageFormat, filePath.c_str(), 0);
+        auto *bitmap = FreeImage_Load(imageFormat, filePath.string().c_str(), 0);
         if (bitmap == nullptr) {
-            FOE_LOG(foeResource, Error, "Failed to load image: {}", filePath.native())
+            FOE_LOG(foeResource, Error, "Failed to load image: {}", filePath.string())
             errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
             goto LOADING_FAILED;
         }

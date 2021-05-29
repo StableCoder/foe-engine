@@ -89,7 +89,7 @@ bool processCreateInfo(
 
     { // Armature
         std::filesystem::path filePath = externalFileSearchFn(createInfo->fileName);
-        auto modelLoader = modelImporterPlugin->createImporter(filePath.c_str());
+        auto modelLoader = modelImporterPlugin->createImporter(filePath.string().c_str());
         assert(modelLoader->loaded());
 
         auto tempArmature = modelLoader->importArmature();
@@ -103,7 +103,7 @@ bool processCreateInfo(
     { // Animations
         for (auto const &it : createInfo->animations) {
             std::filesystem::path filePath = externalFileSearchFn(it.file);
-            auto modelLoader = modelImporterPlugin->createImporter(filePath.c_str());
+            auto modelLoader = modelImporterPlugin->createImporter(filePath.string().c_str());
             assert(modelLoader->loaded());
 
             for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
