@@ -18,7 +18,7 @@ variables:
   dependencies: []
   script:
     - mkdir build && cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ${CMAKE_OPTIONS}
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON ${CMAKE_OPTIONS}
     - ninja
     - ninja test
 
@@ -30,7 +30,7 @@ variables:
   dependencies: []
   script:
     - mkdir build && cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ${CMAKE_OPTIONS}
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON ${CMAKE_OPTIONS}
     - ninja
     - ninja test
 
@@ -43,7 +43,7 @@ variables:
   dependencies: []
   script:
     - mkdir build; cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON $env:CMAKE_OPTIONS
+    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON $env:CMAKE_OPTIONS
     - ninja
     - ninja test
 
@@ -158,7 +158,7 @@ Windows/MSVC Static:
   variables:
   <<: *platform_windows_template
 
-.Windows/MSVC Shared: # Disabled while MSVC can't build imgui library dynamically
+Windows/MSVC Shared:
   variables:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
