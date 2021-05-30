@@ -17,9 +17,7 @@
 #ifndef FOE_RESOURCE_CREATE_INFO_BASE_HPP
 #define FOE_RESOURCE_CREATE_INFO_BASE_HPP
 
-#include <foe/resource/export.h>
-
-struct FOE_RES_EXPORT foeResourceCreateInfoBase {
+struct foeResourceCreateInfoBase {
     virtual ~foeResourceCreateInfoBase() = default;
 };
 
