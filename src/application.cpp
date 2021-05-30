@@ -75,6 +75,8 @@
 #include "state_import/import_state.hpp"
 #include "state_yaml/export.hpp"
 #include "state_yaml/function_registrar.hpp"
+#include <foe/physics/yaml/registrar.hpp>
+#include <foe/resource/yaml/registrar.hpp>
 
 int Application::initialize(int argc, char **argv) {
     initializeLogging();
@@ -87,6 +89,12 @@ int Application::initialize(int argc, char **argv) {
     foeYamlCoreResourceFunctionRegistrar testRegistrar;
     addImporterGenerator(&testGenerator);
     addImporterFunctionRegistrar(&testRegistrar);
+
+    foePhysicsYamlRegistrar physicsRegistrar;
+    addImporterFunctionRegistrar(&physicsRegistrar);
+
+    foeResourceYamlRegistrar resourceRegistrar;
+    addImporterFunctionRegistrar(&resourceRegistrar);
 
     SimulationSet *pNewSimulationSet{nullptr};
     std::error_code errC = importState("data/state/persistent", &searchPaths, &pNewSimulationSet);

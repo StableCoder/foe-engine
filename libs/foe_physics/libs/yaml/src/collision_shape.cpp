@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/physics/yaml/resource/collision_shape.hpp>
+#include "collision_shape.hpp"
 
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/yaml/exception.hpp>
