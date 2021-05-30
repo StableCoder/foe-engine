@@ -141,19 +141,18 @@ if(BUILD_SHADERS)
   file(
     GLOB_RECURSE
     GLSL_FILES
-    data/shaders/*.vert
-    data/shaders/*.tese
-    data/shaders/*.tesc
-    data/shaders/*.geom
-    data/shaders/*.frag
-    data/shaders/*.comp)
+    data/*.vert
+    data/*.tese
+    data/*.tesc
+    data/*.geom
+    data/*.frag
+    data/*.comp)
 
   target_glsl_shaders(foe_engine PRIVATE ${GLSL_FILES})
   clang_format(format_shaders ${GLSL_FILES})
 endif()
 
 # Auxiliary Items
-add_subdirectory(data)
 if(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
   add_subdirectory(test)
 endif()
