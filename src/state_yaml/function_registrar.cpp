@@ -24,7 +24,7 @@
 #include <foe/resource/yaml/shader.hpp>
 #include <foe/resource/yaml/vertex_descriptor.hpp>
 
-#include "distributed_yaml_generator.hpp"
+#include <foe/imex/yaml/generator.hpp>
 
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
@@ -444,8 +444,7 @@ bool importRigidBody(YAML::Node const &node,
 } // namespace
 
 bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeDistributedYamlImporterGenerator *>(pGenerator);
-        pYamlImporter) {
+    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resource
         if (!pYamlImporter->addImporter("armature_v1", yaml_read_armature_definition,
                                         armatureCreateProcessing))
@@ -491,8 +490,7 @@ FAILED_TO_ADD:
 }
 
 bool foeYamlCoreResourceFunctionRegistrar::deregisterFunctions(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeDistributedYamlImporterGenerator *>(pGenerator);
-        pYamlImporter) {
+    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resource
         pYamlImporter->removeImporter("armature_v1", yaml_read_armature_definition,
                                       armatureCreateProcessing);

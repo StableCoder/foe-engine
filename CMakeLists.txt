@@ -110,6 +110,7 @@ target_link_libraries(
          foe_ecs_yaml
          foe_graphics_vk
          foe_imex
+         foe_imex_yaml
          foe_model
          foe_physics
          foe_physics_yaml

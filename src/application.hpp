@@ -29,6 +29,7 @@
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
+#include <foe/imex/yaml/generator.hpp>
 #include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
@@ -39,7 +40,6 @@
 #include "position_descriptor_pool.hpp"
 #include "settings.hpp"
 #include "simulation_set.hpp"
-#include "state_yaml/distributed_yaml_generator.hpp"
 #include "vk_animation.hpp"
 
 #include <array>
@@ -76,7 +76,7 @@ struct Application {
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
 
     // Groups/Entities
-    foeDistributedYamlImporterGenerator testGenerator;
+    foeYamlImporterGenerator testGenerator;
 
     foeId cameraID = FOE_INVALID_ID;
     foeId renderTriangleID = FOE_INVALID_ID;

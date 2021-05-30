@@ -14,12 +14,12 @@
     limitations under the License.
 */
 
-#ifndef DISTRIBUTED_YAML_GENERATOR_HPP
-#define DISTRIBUTED_YAML_GENERATOR_HPP
+#ifndef FOE_IMEX_YAML_GENERATOR_HPP
+#define FOE_IMEX_YAML_GENERATOR_HPP
 
 #include <foe/ecs/id.hpp>
 #include <foe/imex/importers.hpp>
-#include <foe/resource/create_info_base.hpp>
+#include <foe/imex/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
 #include <filesystem>
@@ -33,7 +33,7 @@ struct foeResourceLoaderBase;
 struct foeResourcePoolBase;
 struct foeComponentPoolBase;
 
-class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
+class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerator {
   public:
     using ImportFn = void (*)(YAML::Node const &,
                               foeIdGroupTranslator const *,
@@ -49,7 +49,7 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
                                        foeEntityID,
                                        std::vector<foeComponentPoolBase *> &);
 
-    auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
+    FOE_IMEX_YAML_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * override;
 
     /**
@@ -61,7 +61,7 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool addImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
+    FOE_IMEX_YAML_EXPORT bool addImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
 
     /**
      * @brief Removes the given key/function pair from the importer map
@@ -72,7 +72,9 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool removeImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
+    FOE_IMEX_YAML_EXPORT bool removeImporter(std::string key,
+                                             ImportFn pImportFn,
+                                             CreateFn pCreateFn);
 
     /**
      * @brief Adds a string/function pointer pair to the importer map
@@ -82,7 +84,7 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool addComponentImporter(std::string key, ComponentImportFn pImportFn);
+    FOE_IMEX_YAML_EXPORT bool addComponentImporter(std::string key, ComponentImportFn pImportFn);
 
     /**
      * @brief Removes the given key/function pair from the importer map
@@ -92,10 +94,10 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool removeComponentImporter(std::string key, ComponentImportFn pImportFn);
+    FOE_IMEX_YAML_EXPORT bool removeComponentImporter(std::string key, ComponentImportFn pImportFn);
 
   private:
-    friend class foeDistributedYamlImporter;
+    friend class foeYamlImporter;
 
     struct ResourceFunctions {
         ImportFn pImport;
@@ -106,4 +108,4 @@ class foeDistributedYamlImporterGenerator : public foeImporterGenerator {
     std::map<std::string, ComponentImportFn> mComponentFns;
 };
 
-#endif // DISTRIBUTED_YAML_GENERATOR_HPP
+#endif // FOE_IMEX_YAML_GENERATOR_HPP

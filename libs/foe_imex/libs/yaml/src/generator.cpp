@@ -14,10 +14,11 @@
     limitations under the License.
 */
 
-#include "distributed_yaml_generator.hpp"
+#include <foe/imex/yaml/generator.hpp>
 
-#include "../log.hpp"
-#include "distributed_yaml.hpp"
+#include <foe/imex/yaml/importer.hpp>
+
+#include "log.hpp"
 
 namespace {
 
@@ -30,8 +31,7 @@ constexpr std::string_view stateDirectoryPath = "state";
 
 } // namespace
 
-auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
-                                                         std::filesystem::path stateDataPath)
+auto foeYamlImporterGenerator::createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
     -> foeImporterBase * {
     if (std::filesystem::is_directory(stateDataPath) &&
         // Dependencies
@@ -61,23 +61,23 @@ auto foeDistributedYamlImporterGenerator::createImporter(foeIdGroup group,
             !std::filesystem::is_directory(stateDataPath / stateDirectoryPath))
             return nullptr;
 
-        return new foeDistributedYamlImporter{this, group, stateDataPath};
+        return new foeYamlImporter{this, group, stateDataPath};
     }
 
     return nullptr;
 }
 
-bool foeDistributedYamlImporterGenerator::addImporter(std::string key,
-                                                      ImportFn pImportFn,
-                                                      CreateFn pCreateFn) {
+bool foeYamlImporterGenerator::addImporter(std::string key,
+                                           ImportFn pImportFn,
+                                           CreateFn pCreateFn) {
     auto searchIt = mResourceFns.find(key);
     if (searchIt != mResourceFns.end()) {
-        FOE_LOG(General, Error,
+        FOE_LOG(ImexYaml, Error,
                 "Could not add DistributedYamlImporter function for {}, as it already exists", key);
         return false;
     }
 
-    FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}", key);
+    FOE_LOG(ImexYaml, Info, "Adding DistributedYamlImporter function for {}", key);
     mResourceFns[key] = ResourceFunctions{
         .pImport = pImportFn,
         .pCreate = pCreateFn,
@@ -85,17 +85,17 @@ bool foeDistributedYamlImporterGenerator::addImporter(std::string key,
     return true;
 }
 
-bool foeDistributedYamlImporterGenerator::removeImporter(std::string key,
-                                                         ImportFn pImportFn,
-                                                         CreateFn pCreateFn) {
+bool foeYamlImporterGenerator::removeImporter(std::string key,
+                                              ImportFn pImportFn,
+                                              CreateFn pCreateFn) {
     auto searchIt = mResourceFns.find(key);
     if (searchIt == mResourceFns.end()) {
-        FOE_LOG(General, Error,
+        FOE_LOG(ImexYaml, Error,
                 "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);
         return false;
     }
     if (searchIt->second.pImport != pImportFn || searchIt->second.pCreate != pCreateFn) {
-        FOE_LOG(General, Warning,
+        FOE_LOG(ImexYaml, Warning,
                 "Attempted to remove DistributedYamlImporter function for {}, but the provided "
                 "function pointers are not the same as was added",
                 key);
@@ -106,31 +106,30 @@ bool foeDistributedYamlImporterGenerator::removeImporter(std::string key,
     return true;
 }
 
-bool foeDistributedYamlImporterGenerator::addComponentImporter(std::string key,
-                                                               ComponentImportFn pImportFn) {
+bool foeYamlImporterGenerator::addComponentImporter(std::string key, ComponentImportFn pImportFn) {
     auto searchIt = mComponentFns.find(key);
     if (searchIt != mComponentFns.end()) {
-        FOE_LOG(General, Error,
+        FOE_LOG(ImexYaml, Error,
                 "Could not add DistributedYamlImporter function for {}, as it already exists", key);
         return false;
     }
 
-    FOE_LOG(General, Info, "Adding DistributedYamlImporter function for {}", key);
+    FOE_LOG(ImexYaml, Info, "Adding DistributedYamlImporter function for {}", key);
     mComponentFns[key] = pImportFn;
 
     return true;
 }
 
-bool foeDistributedYamlImporterGenerator::removeComponentImporter(std::string key,
-                                                                  ComponentImportFn pImportFn) {
+bool foeYamlImporterGenerator::removeComponentImporter(std::string key,
+                                                       ComponentImportFn pImportFn) {
     auto searchIt = mComponentFns.find(key);
     if (searchIt == mComponentFns.end()) {
-        FOE_LOG(General, Error,
+        FOE_LOG(ImexYaml, Error,
                 "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);
         return false;
     }
     if (searchIt->second != pImportFn) {
-        FOE_LOG(General, Warning,
+        FOE_LOG(ImexYaml, Warning,
                 "Attempted to remove DistributedYamlImporter function for {}, but the provided "
                 "function pointers are not the same as was added",
                 key);
