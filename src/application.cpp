@@ -72,6 +72,47 @@
         return 1;                                                                                  \
     }
 
+namespace {
+
+template <typename ResourcePool>
+auto getResourcePool(foeResourcePoolBase **pResourcePools, size_t poolCount) -> ResourcePool * {
+    ResourcePool *pPool{nullptr};
+    for (size_t i = 0; i < poolCount; ++i) {
+        pPool = dynamic_cast<ResourcePool *>(pResourcePools[i]);
+        if (pPool != nullptr)
+            break;
+    }
+
+    return pPool;
+}
+
+template <typename ResourceLoader>
+auto getResourceLoader(foeResourceLoaderBase **pResourceLoaders, size_t poolCount)
+    -> ResourceLoader * {
+    ResourceLoader *pLoader{nullptr};
+    for (size_t i = 0; i < poolCount; ++i) {
+        pLoader = dynamic_cast<ResourceLoader *>(pResourceLoaders[i]);
+        if (pLoader != nullptr)
+            break;
+    }
+
+    return pLoader;
+}
+
+template <typename ComponentPool>
+auto getComponentPool(foeComponentPoolBase **pComponentPools, size_t poolCount) -> ComponentPool * {
+    ComponentPool *pPool{nullptr};
+    for (size_t i = 0; i < poolCount; ++i) {
+        pPool = dynamic_cast<ComponentPool *>(pComponentPools[i]);
+        if (pPool != nullptr)
+            break;
+    }
+
+    return pPool;
+}
+
+} // namespace
+
 #include "state_import/import_state.hpp"
 #include "state_yaml/export.hpp"
 #include "state_yaml/function_registrar.hpp"
