@@ -14,13 +14,25 @@
     limitations under the License.
 */
 
-#ifndef ANIMATION_PROCESSING_HPP
-#define ANIMATION_PROCESSING_HPP
+#ifndef ARMATURE_SYSTEM_HPP
+#define ARMATURE_SYSTEM_HPP
 
 class foeArmatureStatePool;
 class foeArmaturePool;
 
-void processArmatureStates(foeArmatureStatePool *pArmatureStatePool,
-                           foeArmaturePool *pArmaturePool);
+class foeArmatureSystem {
+  public:
+    void initialize(foeArmaturePool *pArmaturePool, foeArmatureStatePool *pArmatureStatePool);
+    void deinitialize();
 
-#endif // ANIMATION_PROCESSING_HPP
+    void process(float timePassed);
+
+  private:
+    // Resources
+    foeArmaturePool *mpArmaturePool;
+
+    // Components
+    foeArmatureStatePool *mpArmatureStatePool;
+};
+
+#endif // ARMATURE_SYSTEM_HPP

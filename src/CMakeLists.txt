@@ -2,8 +2,8 @@ target_sources(foe_engine PRIVATE main.cpp)
 
 target_sources(
   foe_engine_lib
-  PRIVATE animation_processing.cpp
-          application.cpp
+  PRIVATE application.cpp
+          armature_system.cpp
           camera_system.cpp
           frame_timer.cpp
           graphics.cpp

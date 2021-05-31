@@ -26,10 +26,8 @@
 #include <foe/quaternion_math.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/wsi_vulkan.hpp>
-
 #include <vk_error_code.hpp>
 
-#include "animation_processing.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
@@ -330,6 +328,12 @@ int Application::initialize(int argc, char **argv) {
     }
 
     // Systems Initialization
+    pSimulationSet->armatureSystem.initialize(
+        getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
+                                         pSimulationSet->resourcePools.size()),
+        getComponentPool<foeArmatureStatePool>(pSimulationSet->componentPools.data(),
+                                               pSimulationSet->componentPools.size()));
+
     pSimulationSet->physicsSystem.initialize(
         getResourceLoader<foePhysCollisionShapeLoader>(pSimulationSet->resourceLoaders2.data(),
                                                        pSimulationSet->resourceLoaders2.size()),
@@ -570,6 +574,8 @@ void Application::deinitialize() {
     // Systems Deinitialization
     pSimulationSet->physicsSystem.deinitialize();
 
+    pSimulationSet->armatureSystem.deinitialize();
+
     { // Resource Unloading
         pSimulationSet->resources.armature.unloadAll();
 
@@ -796,16 +802,7 @@ int Application::mainloop() {
 #endif
         }
 
-        for (auto pData = pSimulationSet->state.armatureState.begin<1>();
-             pData != pSimulationSet->state.armatureState.end<1>(); ++pData) {
-            pData->time =
-                static_cast<float>(simulationClock.time<std::chrono::milliseconds>().count()) /
-                1000.f;
-        }
-
-        processArmatureStates(&pSimulationSet->state.armatureState,
-                              &pSimulationSet->resources.armature);
-
+        pSimulationSet->armatureSystem.process(timeElapsedInSec);
         pSimulationSet->physicsSystem.process(timeElapsedInSec);
 
         // Vulkan Render Section

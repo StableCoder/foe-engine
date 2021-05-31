@@ -20,6 +20,7 @@
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/physics/system.hpp>
 
+#include "armature_system.hpp"
 #include "group_data.hpp"
 #include "resource_pools.hpp"
 #include "state_pools.hpp"
@@ -42,6 +43,7 @@ struct SimulationSet {
     StatePools state;
     foeEditorNameMap entityNameMap;
 
+    foeArmatureSystem armatureSystem;
     foePhysicsSystem physicsSystem;
 
     SimulationSet() {

@@ -14,12 +14,13 @@
     limitations under the License.
 */
 
-#include "animation_processing.hpp"
+#include "armature_system.hpp"
 
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_pool.hpp>
 
 #include "armature_state.hpp"
+
 namespace {
 
 void originalArmatureNode(foeArmatureNode const *pNode,
@@ -74,17 +75,27 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 
 } // namespace
 
-void processArmatureStates(foeArmatureStatePool *pArmatureStatePool,
-                           foeArmaturePool *pArmaturePool) {
-    auto *pArmatureState = pArmatureStatePool->begin<1>();
-    auto const *pEndArmatureState = pArmatureStatePool->end<1>();
+void foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
+                                   foeArmatureStatePool *pArmatureStatePool) {
+    mpArmaturePool = pArmaturePool;
+    mpArmatureStatePool = pArmatureStatePool;
+}
+
+void foeArmatureSystem::deinitialize() {}
+
+void foeArmatureSystem::process(float timePassed) {
+    auto *pArmatureState = mpArmatureStatePool->begin<1>();
+    auto const *pEndArmatureState = mpArmatureStatePool->end<1>();
 
     for (; pArmatureState != pEndArmatureState; ++pArmatureState) {
+        // Add the time that has passed to the armature/animation
+        pArmatureState->time += timePassed;
+
         // If there's no valid armature associated with this data, skip it
         if (pArmatureState->armatureID == FOE_INVALID_ID)
             continue;
 
-        foeArmature *pArmature = pArmaturePool->find(pArmatureState->armatureID);
+        foeArmature *pArmature = mpArmaturePool->find(pArmatureState->armatureID);
         // If the armature we're trying to use isn't here, skip this entry
         if (pArmature == nullptr || pArmature->getLoadState() != foeResourceLoadState::Loaded)
             continue;
