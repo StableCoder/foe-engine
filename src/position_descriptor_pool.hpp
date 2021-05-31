@@ -32,12 +32,13 @@ class foePosition3dPool;
 
 struct PositionDescriptorPool {
   public:
-    VkResult initialize(foeGfxSession gfxSession,
+    VkResult initialize(foePosition3dPool *pPosition3dPool,
+                        foeGfxSession gfxSession,
                         VkDescriptorSetLayout modelMatrixLayout,
                         uint32_t modelMatrixBinding);
     void deinitialize();
 
-    VkResult generatePositionDescriptors(uint32_t frameIndex, foePosition3dPool &positionPool);
+    VkResult generatePositionDescriptors(uint32_t frameIndex);
 
   private:
     struct UniformBuffer {
@@ -46,6 +47,10 @@ struct PositionDescriptorPool {
         uint32_t capacity;
     };
 
+    // Components
+    foePosition3dPool *mpPosition3dPool;
+
+    // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};
     VmaAllocator mAllocator{VK_NULL_HANDLE};
 

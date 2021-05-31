@@ -292,6 +292,10 @@ int Application::initialize(int argc, char **argv) {
     }
 
     vkRes = cameraSystem.initialize(
+        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
+                                            pSimulationSet->componentPools.size()),
+        getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
+                                        pSimulationSet->componentPools.size()),
         gfxSession,
         foeGfxVkGetBuiltinLayout(gfxSession,
                                  foeBuiltinDescriptorSetLayoutFlagBits::
@@ -304,6 +308,8 @@ int Application::initialize(int argc, char **argv) {
     }
 
     vkRes = positionDescriptorPool.initialize(
+        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
+                                            pSimulationSet->componentPools.size()),
         gfxSession,
         foeGfxVkGetBuiltinLayout(
             gfxSession,
@@ -316,6 +322,14 @@ int Application::initialize(int argc, char **argv) {
     }
 
     vkRes = vkAnimationPool.initialize(
+        getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
+                                         pSimulationSet->resourcePools.size()),
+        getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
+                                     pSimulationSet->resourcePools.size()),
+        getComponentPool<foeArmatureStatePool>(pSimulationSet->componentPools.data(),
+                                               pSimulationSet->componentPools.size()),
+        getComponentPool<foeRenderStatePool>(pSimulationSet->componentPools.data(),
+                                             pSimulationSet->componentPools.size()),
         gfxSession,
         foeGfxVkGetBuiltinLayout(gfxSession,
                                  foeBuiltinDescriptorSetLayoutFlagBits::
@@ -788,8 +802,9 @@ int Application::mainloop() {
         if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
 #endif
         {
-            auto *pCameraPosition = (pSimulationSet->state.position.begin<1>() +
-                                     pSimulationSet->state.position.find(cameraID));
+            auto pPosition3dPool = getComponentPool<foePosition3dPool>(
+                pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+            auto *pCameraPosition = (pPosition3dPool->begin<1>() + pPosition3dPool->find(cameraID));
             processUserInput(timeElapsedInSec, pKeyboard, pMouse, pCameraPosition->get());
         }
 
@@ -819,9 +834,12 @@ int Application::mainloop() {
                 foeWindowGetSize(&width, &height);
 
                 // All Cameras are currently ties to the single window X/Y viewport size
-                auto *pCameraData = pSimulationSet->state.camera.begin<1>();
-                for (auto *pCameraData = pSimulationSet->state.camera.begin<1>();
-                     pCameraData != pSimulationSet->state.camera.end<1>(); ++pCameraData) {
+                auto pCameraPool = getComponentPool<foeCameraPool>(
+                    pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+
+                auto *pCameraData = pCameraPool->begin<1>();
+                for (auto *pCameraData = pCameraPool->begin<1>();
+                     pCameraData != pCameraPool->end<1>(); ++pCameraData) {
                     pCameraData->get()->viewX = width;
                     pCameraData->get()->viewY = height;
                 }
@@ -910,22 +928,13 @@ int Application::mainloop() {
             pSimulationSet->resourceLoaders.image.processLoadRequests();
             pSimulationSet->resourceLoaders.mesh.processLoadRequests();
 
-            // Generate camera descriptors
-            cameraSystem.processCameras(frameIndex, pSimulationSet->state.position,
-                                        pSimulationSet->state.camera);
-
             // Rendering
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool, 0);
 
-            // Generate object position descriptors
-            positionDescriptorPool.generatePositionDescriptors(frameIndex,
-                                                               pSimulationSet->state.position);
-
-            // Generate any bone data
-            vkAnimationPool.uploadBoneOffsets(frameIndex, &pSimulationSet->state.armatureState,
-                                              &pSimulationSet->state.renderState,
-                                              &pSimulationSet->resources.armature,
-                                              &pSimulationSet->resources.mesh);
+            // Generate position descriptors
+            cameraSystem.processCameras(frameIndex);
+            positionDescriptorPool.generatePositionDescriptors(frameIndex);
+            vkAnimationPool.uploadBoneOffsets(frameIndex);
 
             auto renderCall = [&](foeId entity, VkCommandBuffer commandBuffer,
                                   VkDescriptorSet projViewDescriptor,
@@ -933,9 +942,13 @@ int Application::mainloop() {
                 VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
                 foeRenderState *pRenderState{nullptr};
-                auto searchOffset = pSimulationSet->state.renderState.find(entity);
-                if (searchOffset != pSimulationSet->state.renderState.size()) {
-                    pRenderState = pSimulationSet->state.renderState.begin<1>() + searchOffset;
+
+                auto pRenderStatePool = getComponentPool<foeRenderStatePool>(
+                    pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+
+                auto searchOffset = pRenderStatePool->find(entity);
+                if (searchOffset != pRenderStatePool->size()) {
+                    pRenderState = pRenderStatePool->begin<1>() + searchOffset;
                 } else {
                     return false;
                 }
@@ -988,9 +1001,12 @@ int Application::mainloop() {
                                             0, 1, &dummyDescriptorSet, 0, nullptr);
                 }
                 if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
-                    auto posOffset = pSimulationSet->state.position.find(entity);
-                    auto *pPosition =
-                        (pSimulationSet->state.position.begin<1>() + posOffset)->get();
+                    auto *pPosition3dPool =
+                        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
+                                                            pSimulationSet->componentPools.size());
+
+                    auto posOffset = pPosition3dPool->find(entity);
+                    auto *pPosition = (pPosition3dPool->begin<1>() + posOffset)->get();
                     // Bind the object's position *if* the descriptor supports it
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                             1, 1, &pPosition->descriptorSet, 0, nullptr);
@@ -1382,8 +1398,11 @@ int Application::mainloop() {
                     vkCmdBeginRenderPass(commandBuffer, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
 
                     { // Set Drawing Parameters
-                        auto *pCamera = (pSimulationSet->state.camera.begin<1>() +
-                                         pSimulationSet->state.camera.find(cameraID));
+                        auto pCameraPool =
+                            getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
+                                                            pSimulationSet->componentPools.size());
+
+                        auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
                         VkViewport viewport{
                             .width = static_cast<float>(swapchainExtent.width),
@@ -1411,11 +1430,14 @@ int Application::mainloop() {
                             foeId itemToRender = renderTriangleID;
 
                             foeRenderState *pRenderState{nullptr};
-                            auto searchOffset =
-                                pSimulationSet->state.renderState.find(renderTriangleID);
-                            if (searchOffset != pSimulationSet->state.renderState.size()) {
-                                pRenderState =
-                                    pSimulationSet->state.renderState.begin<1>() + searchOffset;
+
+                            auto pRenderStatePool = getComponentPool<foeRenderStatePool>(
+                                pSimulationSet->componentPools.data(),
+                                pSimulationSet->componentPools.size());
+
+                            auto searchOffset = pRenderStatePool->find(renderTriangleID);
+                            if (searchOffset != pRenderStatePool->size()) {
+                                pRenderState = pRenderStatePool->begin<1>() + searchOffset;
                             } else {
                                 goto SKIP_DRAW;
                             }
@@ -1442,9 +1464,12 @@ int Application::mainloop() {
                                                     layout, 0, 1, &(*pCamera)->descriptor, 0,
                                                     nullptr);
 
-                            auto posOffset = pSimulationSet->state.position.find(renderTriangleID);
-                            auto *pPosition =
-                                (pSimulationSet->state.position.begin<1>() + posOffset)->get();
+                            auto *pPosition3dPool = getComponentPool<foePosition3dPool>(
+                                pSimulationSet->componentPools.data(),
+                                pSimulationSet->componentPools.size());
+
+                            auto posOffset = pPosition3dPool->find(renderTriangleID);
+                            auto *pPosition = (pPosition3dPool->begin<1>() + posOffset)->get();
                             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                     layout, 1, 1, &pPosition->descriptorSet, 0,
                                                     nullptr);

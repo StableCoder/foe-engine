@@ -10,9 +10,19 @@
 #include "armature_state.hpp"
 #include "render_state.hpp"
 
-VkResult VkAnimationPool::initialize(foeGfxSession gfxSession,
+VkResult VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
+                                     foeMeshPool *pMeshPool,
+                                     foeArmatureStatePool *pArmatureStatePool,
+                                     foeRenderStatePool *pRenderStatePool,
+                                     foeGfxSession gfxSession,
                                      VkDescriptorSetLayout boneSetLayout,
                                      uint32_t boneSetBinding) {
+    mpArmaturePool = pArmaturePool;
+    mpMeshPool = pMeshPool;
+
+    mpArmatureStatePool = pArmatureStatePool;
+    mpRenderStatePool = pRenderStatePool;
+
     VkResult res;
 
     mDevice = foeGfxVkGetDevice(gfxSession);
@@ -95,11 +105,7 @@ void VkAnimationPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex,
-                                            foeArmatureStatePool *pArmatureStatePool,
-                                            foeRenderStatePool *pRenderStatePool,
-                                            foeArmaturePool *pArmaturePool,
-                                            foeMeshPool *pMeshPool) {
+VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &modelUniform = mModelBuffers[frameIndex];
@@ -151,9 +157,9 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex,
     VkDeviceSize offset = 0;
     vmaMapMemory(mAllocator, boneUniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    auto *pID = pRenderStatePool->begin();
-    auto const *pEndID = pRenderStatePool->end();
-    auto *pRenderState = pRenderStatePool->begin<1>();
+    auto *pID = mpRenderStatePool->begin();
+    auto const *pEndID = mpRenderStatePool->end();
+    auto *pRenderState = mpRenderStatePool->begin<1>();
 
     for (; pID != pEndID; ++pID, ++pRenderState) {
         // Make sure the buffer offset matches the minimum allowed alignment
@@ -168,15 +174,15 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex,
         // Only need bone state data if we have an associated armature.
         foeArmatureState const *pArmatureState{nullptr};
 
-        auto searchOffset = pArmatureStatePool->find(*pID);
-        if (searchOffset != pArmatureStatePool->size()) {
-            pArmatureState = pArmatureStatePool->begin<1>() + searchOffset;
+        auto searchOffset = mpArmatureStatePool->find(*pID);
+        if (searchOffset != mpArmatureStatePool->size()) {
+            pArmatureState = mpArmatureStatePool->begin<1>() + searchOffset;
         } else {
             continue;
         }
 
-        foeMesh *pMesh = pMeshPool->find(pRenderState->mesh);
-        foeArmature *pArmature = pArmaturePool->find(pArmatureState->armatureID);
+        foeMesh *pMesh = mpMeshPool->find(pRenderState->mesh);
+        foeArmature *pArmature = mpArmaturePool->find(pArmatureState->armatureID);
 
         if (pMesh == nullptr || pArmature == nullptr ||
             pMesh->getLoadState() != foeResourceLoadState::Loaded ||

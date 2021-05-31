@@ -24,23 +24,23 @@
 
 #include <array>
 
-class foeArmatureStatePool;
-class foeRenderStatePool;
 class foeArmaturePool;
 class foeMeshPool;
+class foeArmatureStatePool;
+class foeRenderStatePool;
 
 class VkAnimationPool {
   public:
-    VkResult initialize(foeGfxSession gfxSession,
+    VkResult initialize(foeArmaturePool *pArmaturePool,
+                        foeMeshPool *pMeshPool,
+                        foeArmatureStatePool *pArmatureStatePool,
+                        foeRenderStatePool *pRenderStatePool,
+                        foeGfxSession gfxSession,
                         VkDescriptorSetLayout boneSetLayout,
                         uint32_t boneSetBinding);
     void deinitialize();
 
-    VkResult uploadBoneOffsets(uint32_t frameIndex,
-                               foeArmatureStatePool *pArmatureStatePool,
-                               foeRenderStatePool *pRenderStatePool,
-                               foeArmaturePool *pArmaturePool,
-                               foeMeshPool *pMeshPool);
+    VkResult uploadBoneOffsets(uint32_t frameIndex);
 
   public:
     struct UniformBuffer {
@@ -49,6 +49,15 @@ class VkAnimationPool {
         uint32_t capacity;
     };
 
+    // Resources
+    foeArmaturePool *mpArmaturePool;
+    foeMeshPool *mpMeshPool;
+
+    // Components
+    foeArmatureStatePool *mpArmatureStatePool;
+    foeRenderStatePool *mpRenderStatePool;
+
+    // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};
     VmaAllocator mAllocator{VK_NULL_HANDLE};
 

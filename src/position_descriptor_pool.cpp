@@ -19,9 +19,12 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
 
-VkResult PositionDescriptorPool::initialize(foeGfxSession session,
+VkResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool,
+                                            foeGfxSession session,
                                             VkDescriptorSetLayout modelMatrixLayout,
                                             uint32_t modelMatrixBinding) {
+    mpPosition3dPool = pPosition3dPool;
+
     VkResult res;
 
     mDevice = foeGfxVkGetDevice(session);
@@ -84,21 +87,20 @@ void PositionDescriptorPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex,
-                                                             foePosition3dPool &positionPool) {
+VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];
 
     // Make sure the frame data buffer is large enough
-    if (uniform.capacity < positionPool.size()) {
+    if (uniform.capacity < mpPosition3dPool->size()) {
         if (uniform.buffer != VK_NULL_HANDLE) {
             vmaDestroyBuffer(mAllocator, uniform.buffer, uniform.alloc);
         }
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = mMinUniformBufferOffsetAlignment * positionPool.size(),
+            .size = mMinUniformBufferOffsetAlignment * mpPosition3dPool->size(),
             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         };
 
@@ -112,7 +114,7 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex
             return res;
         }
 
-        uniform.capacity = positionPool.size();
+        uniform.capacity = mpPosition3dPool->size();
     }
 
     // Reset the DescriptorPool
@@ -124,9 +126,9 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex
 
     vmaMapMemory(mAllocator, uniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    auto *const pDataEnd = positionPool.end<1>();
+    auto *const pDataEnd = mpPosition3dPool->end<1>();
 
-    for (auto *pData = positionPool.begin<1>(); pData != pDataEnd; ++pData) {
+    for (auto *pData = mpPosition3dPool->begin<1>(); pData != pDataEnd; ++pData) {
         VkDescriptorSet set;
         *reinterpret_cast<glm::mat4 *>(pBufferData) =
             glm::mat4_cast(pData->get()->orientation) *

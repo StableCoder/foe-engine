@@ -30,14 +30,14 @@ class foeCameraPool;
 
 class foeCameraSystem {
   public:
-    VkResult initialize(foeGfxSession gfxSession,
+    VkResult initialize(foePosition3dPool *pPosition3dPool,
+                        foeCameraPool *pCameraPool,
+                        foeGfxSession gfxSession,
                         VkDescriptorSetLayout projectionViewLayout,
                         uint32_t projectionViewBinding);
     void deinitialize();
 
-    VkResult processCameras(uint32_t frameIndex,
-                            foePosition3dPool &positionPool,
-                            foeCameraPool &cameraPool);
+    VkResult processCameras(uint32_t frameIndex);
 
   private:
     struct UniformBuffer {
@@ -46,6 +46,11 @@ class foeCameraSystem {
         uint32_t capacity;
     };
 
+    // Components
+    foePosition3dPool *mpPosition3dPool;
+    foeCameraPool *mpCameraPool;
+
+    // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};
     VmaAllocator mAllocator{VK_NULL_HANDLE};
 

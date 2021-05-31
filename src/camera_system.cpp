@@ -31,9 +31,14 @@ glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
 
 } // namespace
 
-VkResult foeCameraSystem::initialize(foeGfxSession session,
+VkResult foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
+                                     foeCameraPool *pCameraPool,
+                                     foeGfxSession session,
                                      VkDescriptorSetLayout projectionViewLayout,
                                      uint32_t projectionViewBinding) {
+    mpPosition3dPool = pPosition3dPool;
+    mpCameraPool = pCameraPool;
+
     VkResult res;
 
     mDevice = foeGfxVkGetDevice(session);
@@ -96,22 +101,20 @@ void foeCameraSystem::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult foeCameraSystem::processCameras(uint32_t frameIndex,
-                                         foePosition3dPool &positionPool,
-                                         foeCameraPool &cameraPool) {
+VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];
 
     // Make sure the frame data buffer is large enough
-    if (uniform.capacity < cameraPool.size()) {
+    if (uniform.capacity < mpCameraPool->size()) {
         if (uniform.buffer != VK_NULL_HANDLE) {
             vmaDestroyBuffer(mAllocator, uniform.buffer, uniform.alloc);
         }
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = mMinUniformBufferOffsetAlignment * cameraPool.size(),
+            .size = mMinUniformBufferOffsetAlignment * mpCameraPool->size(),
             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         };
 
@@ -125,7 +128,7 @@ VkResult foeCameraSystem::processCameras(uint32_t frameIndex,
             return res;
         }
 
-        uniform.capacity = cameraPool.size();
+        uniform.capacity = mpCameraPool->size();
     }
 
     // Reset the DescriptorPool
@@ -136,14 +139,14 @@ VkResult foeCameraSystem::processCameras(uint32_t frameIndex,
 
     vmaMapMemory(mAllocator, uniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    auto *pCameraData = cameraPool.begin<1>();
+    auto *pCameraData = mpCameraPool->begin<1>();
 
-    for (auto it = cameraPool.begin(); it != cameraPool.end(); ++it, ++pCameraData) {
-        auto posOffset = positionPool.find(*it);
-        if (posOffset == positionPool.size())
+    for (auto it = mpCameraPool->begin(); it != mpCameraPool->end(); ++it, ++pCameraData) {
+        auto posOffset = mpPosition3dPool->find(*it);
+        if (posOffset == mpPosition3dPool->size())
             continue;
 
-        auto *pPosition = positionPool.begin<1>() + posOffset;
+        auto *pPosition = mpPosition3dPool->begin<1>() + posOffset;
 
         VkDescriptorSet set;
         *reinterpret_cast<glm::mat4 *>(pBufferData) =
