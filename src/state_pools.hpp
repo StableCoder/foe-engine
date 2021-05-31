@@ -31,15 +31,6 @@ struct StatePools {
     foePosition3dPool position;
     foeCameraPool camera;
     foeRigidBodyPool rigidBody;
-
-    void maintenance() {
-        armatureState.maintenance();
-        renderState.maintenance();
-
-        position.maintenance();
-        camera.maintenance();
-        rigidBody.maintenance();
-    }
 };
 
 #endif // STATE_POOLS_HPP

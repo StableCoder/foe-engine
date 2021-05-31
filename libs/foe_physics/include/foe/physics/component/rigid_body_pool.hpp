@@ -23,6 +23,9 @@
 #include <foe/physics/component/rigid_body.hpp>
 
 class foeRigidBodyPool : public foeComponentPoolBase,
-                         public foeDataPool<foeEntityID, foeRigidBody> {};
+                         public foeDataPool<foeEntityID, foeRigidBody> {
+  public:
+    void maintenance() override { foeDataPool<foeEntityID, foeRigidBody>::maintenance(); }
+};
 
 #endif // FOE_PHYSICS_COMPONENT_RIGID_BODY_POOL_HPP

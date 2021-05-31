@@ -33,7 +33,10 @@ struct foeRenderState {
 };
 
 class foeRenderStatePool : public foeComponentPoolBase,
-                           public foeDataPool<foeEntityID, foeRenderState> {};
+                           public foeDataPool<foeEntityID, foeRenderState> {
+  public:
+    void maintenance() override { foeDataPool<foeEntityID, foeRenderState>::maintenance(); }
+};
 
 #include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>

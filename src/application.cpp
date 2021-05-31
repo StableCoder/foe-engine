@@ -777,7 +777,9 @@ int Application::mainloop() {
         auto *pMouse = foeGetMouse();
         auto *pKeyboard = foeGetKeyboard();
 
-        pSimulationSet->state.maintenance();
+        for (auto &it : pSimulationSet->componentPools) {
+            it->maintenance();
+        }
 
 #ifdef EDITOR_MODE
         // User input processing

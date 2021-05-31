@@ -35,7 +35,10 @@ struct foeArmatureState {
 };
 
 class foeArmatureStatePool : public foeComponentPoolBase,
-                             public foeDataPool<foeEntityID, foeArmatureState> {};
+                             public foeDataPool<foeEntityID, foeArmatureState> {
+  public:
+    void maintenance() override { foeDataPool<foeEntityID, foeArmatureState>::maintenance(); }
+};
 
 #include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>

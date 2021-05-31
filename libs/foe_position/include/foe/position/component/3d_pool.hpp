@@ -25,6 +25,11 @@
 #include <memory>
 
 class foePosition3dPool : public foeComponentPoolBase,
-                          public foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> {};
+                          public foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> {
+  public:
+    void maintenance() override {
+        foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>>::maintenance();
+    }
+};
 
 #endif // FOE_POSITION_COMPONENT_3D_POOL_HPP

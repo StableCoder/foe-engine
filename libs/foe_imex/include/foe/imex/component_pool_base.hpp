@@ -19,6 +19,8 @@
 
 struct foeComponentPoolBase {
     virtual ~foeComponentPoolBase() {}
+
+    virtual void maintenance() = 0;
 };
 
 #endif // FOE_IMEX_COMPONENT_POOL_BASE_HPP

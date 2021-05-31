@@ -26,6 +26,11 @@
 #include <memory>
 
 class foeCameraPool : public foeComponentPoolBase,
-                      public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {};
+                      public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {
+  public:
+    void maintenance() override {
+        foeDataPool<foeEntityID, std::unique_ptr<Camera>>::maintenance();
+    }
+};
 
 #endif // CAMERA_POOL_HPP
