@@ -21,8 +21,8 @@
 #include <foe/physics/yaml/export.h>
 
 class FOE_PHYSICS_YAML_EXPORT foePhysicsYamlRegistrar : public foeImporterFunctionRegistrar {
-    FOE_PHYSICS_YAML_EXPORT bool registerFunctions(foeImporterGenerator *pGenerator) final;
-    FOE_PHYSICS_YAML_EXPORT bool deregisterFunctions(foeImporterGenerator *pGenerator) final;
+    bool registerFunctions(foeImporterGenerator *pGenerator) final;
+    bool deregisterFunctions(foeImporterGenerator *pGenerator) final;
 };
 
 #endif // FOE_PHYSICS_YAML_REGISTRAR_HPP

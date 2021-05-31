@@ -21,8 +21,8 @@
 #include <foe/resource/yaml/export.h>
 
 class FOE_RES_YAML_EXPORT foeResourceYamlRegistrar : public foeImporterFunctionRegistrar {
-    FOE_RES_YAML_EXPORT bool registerFunctions(foeImporterGenerator *pGenerator) final;
-    FOE_RES_YAML_EXPORT bool deregisterFunctions(foeImporterGenerator *pGenerator) final;
+    bool registerFunctions(foeImporterGenerator *pGenerator) final;
+    bool deregisterFunctions(foeImporterGenerator *pGenerator) final;
 };
 
 #endif // FOE_RESOURCE_YAML_REGISTRAR_HPP

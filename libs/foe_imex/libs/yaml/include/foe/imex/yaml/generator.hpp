@@ -49,7 +49,7 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
                                        foeEntityID,
                                        std::vector<foeComponentPoolBase *> &);
 
-    FOE_IMEX_YAML_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
+    auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * override;
 
     /**
@@ -61,7 +61,7 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    FOE_IMEX_YAML_EXPORT bool addImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
+    bool addImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
 
     /**
      * @brief Removes the given key/function pair from the importer map
@@ -72,9 +72,7 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    FOE_IMEX_YAML_EXPORT bool removeImporter(std::string key,
-                                             ImportFn pImportFn,
-                                             CreateFn pCreateFn);
+    bool removeImporter(std::string key, ImportFn pImportFn, CreateFn pCreateFn);
 
     /**
      * @brief Adds a string/function pointer pair to the importer map
@@ -84,7 +82,7 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    FOE_IMEX_YAML_EXPORT bool addComponentImporter(std::string key, ComponentImportFn pImportFn);
+    bool addComponentImporter(std::string key, ComponentImportFn pImportFn);
 
     /**
      * @brief Removes the given key/function pair from the importer map
@@ -94,7 +92,7 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    FOE_IMEX_YAML_EXPORT bool removeComponentImporter(std::string key, ComponentImportFn pImportFn);
+    bool removeComponentImporter(std::string key, ComponentImportFn pImportFn);
 
   private:
     friend class foeYamlImporter;
