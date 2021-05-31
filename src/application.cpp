@@ -23,7 +23,6 @@
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
-#include <foe/physics/system.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/wsi_vulkan.hpp>
@@ -152,8 +151,6 @@ int Application::initialize(int argc, char **argv) {
     cameraID = pSimulationSet->entityNameMap.find("camera");
     renderTriangleID = pSimulationSet->entityNameMap.find("renderTri");
     renderMeshID = pSimulationSet->entityNameMap.find("renderMesh");
-
-    initPhysics();
 
 #ifdef EDITOR_MODE
     imguiState.addUI(&fileTermination);
@@ -331,6 +328,17 @@ int Application::initialize(int argc, char **argv) {
     if (vkRes != VK_SUCCESS) {
         VK_END_PROGRAM
     }
+
+    // Systems Initialization
+    pSimulationSet->physicsSystem.initialize(
+        getResourceLoader<foePhysCollisionShapeLoader>(pSimulationSet->resourceLoaders2.data(),
+                                                       pSimulationSet->resourceLoaders2.size()),
+        getResourcePool<foePhysCollisionShapePool>(pSimulationSet->resourcePools.data(),
+                                                   pSimulationSet->resourcePools.size()),
+        getComponentPool<foeRigidBodyPool>(pSimulationSet->componentPools.data(),
+                                           pSimulationSet->componentPools.size()),
+        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
+                                            pSimulationSet->componentPools.size()));
 
     {
         for (auto *ptr : pSimulationSet->resources.armature.getDataVector()) {
@@ -558,6 +566,9 @@ void Application::deinitialize() {
     exportGroupState("testExport", gfxSession, pSimulationSet->groupData,
                      &pSimulationSet->entityNameMap, pSimulationSet->state,
                      &pSimulationSet->resourceNameMap, pSimulationSet->resources);
+
+    // Systems Deinitialization
+    pSimulationSet->physicsSystem.deinitialize();
 
     { // Resource Unloading
         pSimulationSet->resources.armature.unloadAll();
@@ -795,9 +806,7 @@ int Application::mainloop() {
         processArmatureStates(&pSimulationSet->state.armatureState,
                               &pSimulationSet->resources.armature);
 
-        processPhysics(pSimulationSet->resourceLoaders.collisionShape,
-                       pSimulationSet->resources.collisionShape, pSimulationSet->state.rigidBody,
-                       pSimulationSet->state.position, timeElapsedInSec);
+        pSimulationSet->physicsSystem.process(timeElapsedInSec);
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();

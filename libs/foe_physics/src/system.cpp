@@ -25,196 +25,133 @@
 
 #include "bt_glm_conversion.hpp"
 
-#include <cassert>
-#include <memory>
-
-namespace {
-
-std::vector<foeEntityID> mAwaitingResources;
-
-std::unique_ptr<btBroadphaseInterface> broadphase{new btDbvtBroadphase{}};
-
-std::unique_ptr<btDefaultCollisionConfiguration> collisionConfig{
-    new btDefaultCollisionConfiguration{}};
-
-std::unique_ptr<btCollisionDispatcher> collisionDispatcher{
-    new btCollisionDispatcher{collisionConfig.get()}};
-
-std::unique_ptr<btSequentialImpulseConstraintSolver> solver{
-    new btSequentialImpulseConstraintSolver{}};
-
-std::unique_ptr<btDiscreteDynamicsWorld> physWorld{new btDiscreteDynamicsWorld{
-    collisionDispatcher.get(), broadphase.get(), solver.get(), collisionConfig.get()}};
-
-} // namespace
-
-void initPhysics() { physWorld->setGravity(btVector3{0, -9.8, 0}); }
-
-namespace {
-
-void removeObject(foeRigidBodyPool &rigidBodyPool, foeEntityID entity, foeRigidBody *pRigidBody) {
-    // RigidBody
-    if (pRigidBody == nullptr) {
-        size_t dataOffset = rigidBodyPool.find(entity);
-        if (dataOffset != rigidBodyPool.size()) {
-            pRigidBody = rigidBodyPool.begin<1>() + dataOffset;
-        } else {
-            return;
-        }
-    }
-
-    // If inactive
-    if (pRigidBody->rigidBody == nullptr)
-        return;
-
-    physWorld->removeRigidBody(pRigidBody->rigidBody.get());
-    pRigidBody->rigidBody.reset();
+foePhysicsSystem::foePhysicsSystem() :
+    mpBroadphase{new btDbvtBroadphase{}},
+    mpCollisionConfig{new btDefaultCollisionConfiguration{}},
+    mpCollisionDispatcher{new btCollisionDispatcher{mpCollisionConfig.get()}},
+    mpSolver{new btSequentialImpulseConstraintSolver{}},
+    mpWorld{new btDiscreteDynamicsWorld{mpCollisionDispatcher.get(), mpBroadphase.get(),
+                                        mpSolver.get(), mpCollisionConfig.get()}} {
+    mpWorld->setGravity(btVector3{0, -9.8, 0});
 }
 
-void addObject(foePhysCollisionShapeLoader &collisionShapeLoader,
-               foePhysCollisionShapePool &collisionShapePool,
-               foeRigidBodyPool &rigidBodyPool,
-               foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> &positionPool,
-               foeEntityID entity,
-               foeRigidBody *pRigidBody,
-               foePosition3d *pPosition,
-               foePhysCollisionShape *pCollisionShape) {
-    // RigidBody
-    if (pRigidBody == nullptr) {
-        size_t dataOffset = rigidBodyPool.find(entity);
-        if (dataOffset != rigidBodyPool.size()) {
-            pRigidBody = rigidBodyPool.begin<1>() + dataOffset;
-        } else {
-            return;
+foePhysicsSystem::~foePhysicsSystem() {}
+
+void foePhysicsSystem::initialize(foePhysCollisionShapeLoader *pCollisionShapeLoader,
+                                  foePhysCollisionShapePool *pCollisionShapePool,
+                                  foeRigidBodyPool *pRigidBodyPool,
+                                  foePosition3dPool *pPosition3dPool) {
+    mpCollisionShapeLoader = pCollisionShapeLoader;
+    mpCollisionShapePool = pCollisionShapePool;
+
+    mpRigidBodyPool = pRigidBodyPool;
+    mpPosition3dPool = pPosition3dPool;
+
+    mAwaitingLoadingResources.clear();
+
+    // As we're initializing, we need to go through and process any already available data, so that
+    // per-tick processing can be streamlined to operate more quickly using deltas
+    { // Iterate through active rigid bodies, the primary for this system
+        auto *pId = mpRigidBodyPool->begin();
+        auto const *const pEndId = mpRigidBodyPool->end();
+        auto *pData = mpRigidBodyPool->begin<1>();
+
+        for (; pId != pEndId; ++pId, ++pData) {
+            addObject(*pId, pData, nullptr, nullptr);
         }
     }
-
-    // If already active
-    if (pRigidBody->rigidBody != nullptr)
-        return;
-
-    // foePosition3d
-    if (pPosition == nullptr) {
-        size_t dataOffset = positionPool.find(entity);
-        if (dataOffset != positionPool.size()) {
-            pPosition = (positionPool.begin<1>() + dataOffset)->get();
-        } else {
-            return;
-        }
-    }
-
-    // CollisionShape
-    while (pCollisionShape == nullptr) {
-        pCollisionShape = collisionShapePool.find(pRigidBody->collisionShape);
-        if (pCollisionShape == nullptr) {
-            // Make sure it's not an invalid ID, as if it is, leave
-            if (pRigidBody->collisionShape != FOE_INVALID_ID)
-                return;
-
-            // Not found, a valid ID, add it as a resource now
-            auto *pNewCollisionShape =
-                new foePhysCollisionShape{pRigidBody->collisionShape, &collisionShapeLoader};
-
-            if (!collisionShapePool.add(pNewCollisionShape)) {
-                delete pNewCollisionShape;
-            }
-        }
-    }
-    if (pCollisionShape->loadState != foeResourceLoadState::Loaded) {
-        if (pCollisionShape->loadState == foeResourceLoadState::Failed) {
-            return;
-        }
-
-        pCollisionShape->requestLoad();
-        mAwaitingResources.emplace_back(entity);
-        return;
-    }
-
-    // We have everything we need now
-    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI{
-        pRigidBody->mass, nullptr, pCollisionShape->data.collisionShape.get()};
-    rigidBodyCI.m_startWorldTransform =
-        glmToBtTransform(glm::vec3{0, 4, 0}, glm::quat{glm::vec3{0, 0, 0}});
-
-    pRigidBody->rigidBody.reset(new btRigidBody{rigidBodyCI});
-
-    physWorld->addRigidBody(pRigidBody->rigidBody.get());
 }
 
-} // namespace
+void foePhysicsSystem::deinitialize() {
+    // On the way out, go through ALL and remove from any worlds
+    mAwaitingLoadingResources.clear();
 
-void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
-                    foePhysCollisionShapePool &collisionShapePool,
-                    foeRigidBodyPool &rigidBodyPool,
-                    foePosition3dPool &positionPool,
-                    float timePassed) {
+    { // Iterate through 'active' rigid bodies, the primary for this system
+        auto *pId = mpRigidBodyPool->begin();
+        auto const *const pEndId = mpRigidBodyPool->end();
+        auto *pData = mpRigidBodyPool->begin<1>();
+
+        for (; pId != pEndId; ++pId, ++pData) {
+            removeObject(*pId, pData);
+        }
+    }
+
+    { // Iterate through 'removed' rigid bodies, the primary for this system
+        auto *pId = mpRigidBodyPool->rmbegin();
+        auto const *const pEndId = mpRigidBodyPool->rmend();
+        auto *pData = mpRigidBodyPool->rmbegin<1>();
+
+        for (; pId != pEndId; ++pId, ++pData) {
+            removeObject(*pId, pData);
+        }
+    }
+}
+
+void foePhysicsSystem::process(float timePassed) {
     // Any previously attempted items that were waiting for external resources to be loaded
-    auto awaitingResources = std::move(mAwaitingResources);
+    auto awaitingResources = std::move(mAwaitingLoadingResources);
     for (auto const &it : awaitingResources) {
-        addObject(collisionShapeLoader, collisionShapePool, rigidBodyPool, positionPool, it,
-                  nullptr, nullptr, nullptr);
+        addObject(it, nullptr, nullptr, nullptr);
     }
 
     // Removals
     { // RigidBodies
-        auto *pId = rigidBodyPool.rmbegin();
-        auto *const pIdEnd = rigidBodyPool.rmend();
-        auto *pData = rigidBodyPool.rmbegin<1>();
+        auto *pId = mpRigidBodyPool->rmbegin();
+        auto *const pIdEnd = mpRigidBodyPool->rmend();
+        auto *pData = mpRigidBodyPool->rmbegin<1>();
 
         for (; pId != pIdEnd; ++pId, ++pData) {
-            removeObject(rigidBodyPool, *pId, pData);
+            removeObject(*pId, pData);
         }
     }
 
     { // foePosition3d
-        auto *pId = rigidBodyPool.rmbegin();
-        auto *const pIdEnd = rigidBodyPool.rmend();
+        auto *pId = mpRigidBodyPool->rmbegin();
+        auto *const pIdEnd = mpRigidBodyPool->rmend();
 
         for (; pId != pIdEnd; ++pId) {
-            removeObject(rigidBodyPool, *pId, nullptr);
+            removeObject(*pId, nullptr);
         }
     }
 
     // Insertions
     { // RigidBodies
-        auto offsetIt = rigidBodyPool.inbegin();
-        auto offsetEndIt = rigidBodyPool.inend();
-        auto *const pId = rigidBodyPool.begin();
-        auto *const pData = rigidBodyPool.begin<1>();
+        auto offsetIt = mpRigidBodyPool->inbegin();
+        auto offsetEndIt = mpRigidBodyPool->inend();
+        auto *const pId = mpRigidBodyPool->begin();
+        auto *const pData = mpRigidBodyPool->begin<1>();
 
         for (; offsetIt != offsetEndIt; ++offsetIt) {
-            addObject(collisionShapeLoader, collisionShapePool, rigidBodyPool, positionPool,
-                      pId[*offsetIt], &pData[*offsetIt], nullptr, nullptr);
+            addObject(pId[*offsetIt], &pData[*offsetIt], nullptr, nullptr);
         }
     }
 
     { // foePosition3d
-        auto offsetIt = positionPool.inbegin();
-        auto offsetEndIt = positionPool.inend();
-        auto *const pId = positionPool.begin();
-        auto *const pData = positionPool.begin<1>();
+        auto offsetIt = mpPosition3dPool->inbegin();
+        auto offsetEndIt = mpPosition3dPool->inend();
+        auto *const pId = mpPosition3dPool->begin();
+        auto *const pData = mpPosition3dPool->begin<1>();
 
         for (; offsetIt != offsetEndIt; ++offsetIt) {
-            addObject(collisionShapeLoader, collisionShapePool, rigidBodyPool, positionPool,
-                      pId[*offsetIt], nullptr, pData[*offsetIt].get(), nullptr);
+            addObject(pId[*offsetIt], nullptr, pData[*offsetIt].get(), nullptr);
         }
     }
 
-    physWorld->stepSimulation(timePassed);
+    mpWorld->stepSimulation(timePassed);
 
     { // Copy position data to foePosition3d objects
-        auto *pId = rigidBodyPool.begin();
-        auto *const pEndId = rigidBodyPool.end();
-        auto *pData = rigidBodyPool.begin<1>();
+        auto *pId = mpRigidBodyPool->begin();
+        auto *const pEndId = mpRigidBodyPool->end();
+        auto *pData = mpRigidBodyPool->begin<1>();
 
         for (; pId != pEndId; ++pId, ++pData) {
             if (pData->rigidBody == nullptr)
                 continue;
 
-            auto posOffset = positionPool.find(*pId);
-            assert(posOffset != positionPool.size());
+            auto posOffset = mpPosition3dPool->find(*pId);
+            assert(posOffset != mpPosition3dPool->size());
 
-            foePosition3d *pPosition = positionPool.begin<1>()[posOffset].get();
+            foePosition3d *pPosition = mpPosition3dPool->begin<1>()[posOffset].get();
 
             glm::mat4 transform = btToGlmMat4(pData->rigidBody->getWorldTransform());
             glm::vec3 scale;
@@ -227,4 +164,89 @@ void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
             pPosition->orientation = rotation;
         }
     }
+}
+
+void foePhysicsSystem::addObject(foeEntityID entity,
+                                 foeRigidBody *pRigidBody,
+                                 foePosition3d *pPosition,
+                                 foePhysCollisionShape *pCollisionShape) {
+    // RigidBody
+    if (pRigidBody == nullptr) {
+        size_t dataOffset = mpRigidBodyPool->find(entity);
+        if (dataOffset != mpRigidBodyPool->size()) {
+            pRigidBody = mpRigidBodyPool->begin<1>() + dataOffset;
+        } else {
+            return;
+        }
+    }
+
+    // If already active
+    if (pRigidBody->rigidBody != nullptr)
+        return;
+
+    // foePosition3d
+    if (pPosition == nullptr) {
+        size_t dataOffset = mpPosition3dPool->find(entity);
+        if (dataOffset != mpPosition3dPool->size()) {
+            pPosition = (mpPosition3dPool->begin<1>() + dataOffset)->get();
+        } else {
+            return;
+        }
+    }
+
+    // CollisionShape
+    while (pCollisionShape == nullptr) {
+        pCollisionShape = mpCollisionShapePool->find(pRigidBody->collisionShape);
+        if (pCollisionShape == nullptr) {
+            // Make sure it's not an invalid ID, as if it is, leave
+            if (pRigidBody->collisionShape != FOE_INVALID_ID)
+                return;
+
+            // Not found, a valid ID, add it as a resource now
+            auto *pNewCollisionShape =
+                new foePhysCollisionShape{pRigidBody->collisionShape, mpCollisionShapeLoader};
+
+            if (!mpCollisionShapePool->add(pNewCollisionShape)) {
+                delete pNewCollisionShape;
+            }
+        }
+    }
+    if (pCollisionShape->loadState != foeResourceLoadState::Loaded) {
+        if (pCollisionShape->loadState == foeResourceLoadState::Failed) {
+            return;
+        }
+
+        pCollisionShape->requestLoad();
+        mAwaitingLoadingResources.emplace_back(entity);
+        return;
+    }
+
+    // We have everything we need now
+    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI{
+        pRigidBody->mass, nullptr, pCollisionShape->data.collisionShape.get()};
+    rigidBodyCI.m_startWorldTransform =
+        glmToBtTransform(glm::vec3{0, 4, 0}, glm::quat{glm::vec3{0, 0, 0}});
+
+    pRigidBody->rigidBody.reset(new btRigidBody{rigidBodyCI});
+
+    mpWorld->addRigidBody(pRigidBody->rigidBody.get());
+}
+
+void foePhysicsSystem::removeObject(foeEntityID entity, foeRigidBody *pRigidBody) {
+    // RigidBody
+    if (pRigidBody == nullptr) {
+        size_t dataOffset = mpRigidBodyPool->find(entity);
+        if (dataOffset != mpRigidBodyPool->size()) {
+            pRigidBody = mpRigidBodyPool->begin<1>() + dataOffset;
+        } else {
+            return;
+        }
+    }
+
+    // If inactive
+    if (pRigidBody->rigidBody == nullptr)
+        return;
+
+    mpWorld->removeRigidBody(pRigidBody->rigidBody.get());
+    pRigidBody->rigidBody.reset();
 }

@@ -18,6 +18,7 @@
 #define SIMULATION_SET_HPP
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/physics/system.hpp>
 
 #include "group_data.hpp"
 #include "resource_pools.hpp"
@@ -40,6 +41,8 @@ struct SimulationSet {
     std::vector<foeComponentPoolBase *> componentPools;
     StatePools state;
     foeEditorNameMap entityNameMap;
+
+    foePhysicsSystem physicsSystem;
 
     SimulationSet() {
         // Resource Loaders

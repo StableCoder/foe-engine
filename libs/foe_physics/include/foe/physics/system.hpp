@@ -17,19 +17,59 @@
 #ifndef FOE_PHYSICS_SYSTEM_HPP
 #define FOE_PHYSICS_SYSTEM_HPP
 
+#include <btBulletDynamicsCommon.h>
+#include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
+
+#include <memory>
+#include <vector>
 
 class foePhysCollisionShapeLoader;
 class foePhysCollisionShapePool;
 class foeRigidBodyPool;
 class foePosition3dPool;
 
-FOE_PHYSICS_EXPORT void initPhysics();
+struct foeRigidBody;
+struct foePosition3d;
+struct foePhysCollisionShape;
 
-FOE_PHYSICS_EXPORT void processPhysics(foePhysCollisionShapeLoader &collisionShapeLoader,
-                                       foePhysCollisionShapePool &collisionShapePool,
-                                       foeRigidBodyPool &rigidBodyPool,
-                                       foePosition3dPool &positionPool,
-                                       float timePassed);
+class foePhysicsSystem {
+  public:
+    FOE_PHYSICS_EXPORT foePhysicsSystem();
+    FOE_PHYSICS_EXPORT ~foePhysicsSystem();
+
+    FOE_PHYSICS_EXPORT void initialize(foePhysCollisionShapeLoader *pCollisionShapeLoader,
+                                       foePhysCollisionShapePool *pCollisionShapePool,
+                                       foeRigidBodyPool *pRigidBodyPool,
+                                       foePosition3dPool *pPosition3dPool);
+    FOE_PHYSICS_EXPORT void deinitialize();
+
+    FOE_PHYSICS_EXPORT void process(float timePassed);
+
+  private:
+    void addObject(foeEntityID entity,
+                   foeRigidBody *pRigidBody,
+                   foePosition3d *pPosition3d,
+                   foePhysCollisionShape *pCollisionShape);
+    void removeObject(foeEntityID entity, foeRigidBody *pRigidBody);
+
+    // Resources
+    foePhysCollisionShapeLoader *mpCollisionShapeLoader;
+    foePhysCollisionShapePool *mpCollisionShapePool;
+
+    // Components
+    foeRigidBodyPool *mpRigidBodyPool;
+    foePosition3dPool *mpPosition3dPool;
+
+    // Physics World Instance Items
+    std::unique_ptr<btBroadphaseInterface> mpBroadphase;
+    std::unique_ptr<btDefaultCollisionConfiguration> mpCollisionConfig;
+    std::unique_ptr<btCollisionDispatcher> mpCollisionDispatcher;
+    std::unique_ptr<btSequentialImpulseConstraintSolver> mpSolver;
+    std::unique_ptr<btDiscreteDynamicsWorld> mpWorld;
+
+    // Lists entities that need some resources to load before being added to a world
+    std::vector<foeEntityID> mAwaitingLoadingResources;
+};
 
 #endif // FOE_PHYSICS_SYSTEM_HPP
