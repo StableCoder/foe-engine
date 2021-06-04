@@ -50,10 +50,8 @@ class foeGroupData {
     auto temporaryEntityIndices() noexcept -> foeIdIndexGenerator *;
     auto temporaryResourceIndices() noexcept -> foeIdIndexGenerator *;
 
-    bool getResourceDefinition(foeId id, foeResourceCreateInfoBase **ppCreateInfo);
-
     // Used for resource loaders
-    foeResourceCreateInfoBase *getResourceDefinition2(foeId id);
+    foeResourceCreateInfoBase *getResourceDefinition(foeId id);
     // Used for resource loaders
     std::filesystem::path findExternalFile(std::filesystem::path externalFilePath);
 

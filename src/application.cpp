@@ -222,7 +222,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.shader.initialize(
         gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                   std::placeholders::_1),
         std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
                   std::placeholders::_1),
@@ -233,7 +233,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.vertexDescriptor.initialize(
         &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
-        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                   std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
@@ -242,7 +242,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.image.initialize(
         gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                   std::placeholders::_1),
         std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
                   std::placeholders::_1),
@@ -255,7 +255,7 @@ int Application::initialize(int argc, char **argv) {
         &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
         &fragmentDescriptorPool, &pSimulationSet->resourceLoaders.image,
         &pSimulationSet->resources.image, gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                   std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {
@@ -264,7 +264,7 @@ int Application::initialize(int argc, char **argv) {
 
     errC = pSimulationSet->resourceLoaders.mesh.initialize(
         gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                   std::placeholders::_1),
         std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
                   std::placeholders::_1),
@@ -274,7 +274,7 @@ int Application::initialize(int argc, char **argv) {
     }
 
     errC = pSimulationSet->resourceLoaders.armature.initialize(
-        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                   std::placeholders::_1),
         std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
                   std::placeholders::_1),
@@ -284,7 +284,7 @@ int Application::initialize(int argc, char **argv) {
     }
 
     errC = pSimulationSet->resourceLoaders.collisionShape.initialize(
-        std::bind(&foeGroupData::getResourceDefinition2, &pSimulationSet->groupData,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                   std::placeholders::_1),
         asyncTaskFunc);
     if (errC) {

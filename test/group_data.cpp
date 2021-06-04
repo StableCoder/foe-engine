@@ -332,7 +332,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
     foeResourceCreateInfoBase *pCreateInfo;
 
     SECTION("No importers always fails") {
-        REQUIRE_FALSE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));
+        REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
     }
 
     SECTION("Persistent importer added") {
@@ -341,14 +341,14 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
                 "testPersistent", foeIdPersistentGroup, static_cast<int *>(NULL) + 1);
             REQUIRE(test.setPersistentImporter(std::move(persistentImporter)));
 
-            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));
+            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             auto persistentImporter =
                 std::make_unique<DummyImporter>("testPersistent", foeIdPersistentGroup);
             REQUIRE(test.setPersistentImporter(std::move(persistentImporter)));
 
-            REQUIRE_FALSE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));
+            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
         }
     }
 
@@ -364,7 +364,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
             REQUIRE(test.addDynamicGroup(std::move(testEntityIndices),
                                          std::move(testResourceIndices), std::move(testImporter)));
 
-            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));
+            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             auto testEntityIndices =
@@ -375,7 +375,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
 
             REQUIRE(test.addDynamicGroup(std::move(testEntityIndices),
                                          std::move(testResourceIndices), std::move(testImporter)));
-            REQUIRE_FALSE(test.getResourceDefinition(FOE_INVALID_ID, &pCreateInfo));
+            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
         }
     }
 }

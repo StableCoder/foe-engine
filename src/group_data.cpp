@@ -204,30 +204,22 @@ auto foeGroupData::temporaryResourceIndices() noexcept -> foeIdIndexGenerator * 
     return &mTemporaryResourceIndices;
 }
 
-bool foeGroupData::getResourceDefinition(foeId id, foeResourceCreateInfoBase **ppCreateInfo) {
+foeResourceCreateInfoBase *foeGroupData::getResourceDefinition(foeId id) {
     if (mPersistentImporter != nullptr) {
         if (auto *pCreateInfo = mPersistentImporter->getResource(id); pCreateInfo) {
-            *ppCreateInfo = pCreateInfo;
-            return true;
+            return pCreateInfo;
         }
     }
 
     for (auto it = mDynamicGroups.rbegin(); it != mDynamicGroups.rend(); ++it) {
         if (it->pImporter != nullptr) {
             if (auto *pCreateInfo = it->pImporter->getResource(id)) {
-                *ppCreateInfo = pCreateInfo;
-                return true;
+                return pCreateInfo;
             }
         }
     }
 
-    return false;
-}
-
-foeResourceCreateInfoBase *foeGroupData::getResourceDefinition2(foeId id) {
-    foeResourceCreateInfoBase *pCreateInfo{nullptr};
-    getResourceDefinition(id, &pCreateInfo);
-    return pCreateInfo;
+    return nullptr;
 }
 
 std::filesystem::path foeGroupData::findExternalFile(std::filesystem::path externalFilePath) {
