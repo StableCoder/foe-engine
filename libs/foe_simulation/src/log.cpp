@@ -14,13 +14,6 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_LOADER_BASE_HPP
-#define FOE_RESOURCE_LOADER_BASE_HPP
+#include "log.hpp"
 
-struct foeResourceLoaderBase {
-    virtual ~foeResourceLoaderBase() {}
-
-    virtual void deinitialize() = 0;
-};
-
-#endif // FOE_RESOURCE_LOADER_BASE_HPP
+FOE_DEFINE_LOG_CATEGORY(SimulationState)

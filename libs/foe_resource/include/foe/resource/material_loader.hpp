@@ -48,7 +48,7 @@ class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
                                foeGfxSession session,
                                std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
                                std::function<void(std::function<void()>)> asynchronousJobs);
-    void deinitialize();
+    void deinitialize() override;
     bool initialized() const noexcept;
 
     void processUnloadRequests();

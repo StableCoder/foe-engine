@@ -118,6 +118,7 @@ target_link_libraries(
          foe_position_yaml
          foe_resource
          foe_resource_yaml
+         foe_simulation
          foe_wsi
          foe_xr)
 target_code_coverage(foe_engine_lib)
@@ -154,6 +155,3 @@ if(BUILD_SHADERS)
 endif()
 
 # Auxiliary Items
-if(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test)
-  add_subdirectory(test)
-endif()

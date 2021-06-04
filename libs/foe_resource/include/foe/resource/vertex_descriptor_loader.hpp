@@ -39,7 +39,7 @@ class FOE_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
                                foeShaderPool *pShaderPool,
                                std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
                                std::function<void(std::function<void()>)> asynchronousJobs);
-    void deinitialize();
+    void deinitialize() override;
     bool initialized() const noexcept;
 
     void processUnloadRequests();

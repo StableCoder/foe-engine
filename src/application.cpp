@@ -146,9 +146,9 @@ int Application::initialize(int argc, char **argv) {
     }
 
     // Special Entities
-    cameraID = pSimulationSet->entityNameMap.find("camera");
-    renderTriangleID = pSimulationSet->entityNameMap.find("renderTri");
-    renderMeshID = pSimulationSet->entityNameMap.find("renderMesh");
+    cameraID = pSimulationSet->pEntityNameMap->find("camera");
+    renderTriangleID = pSimulationSet->pEntityNameMap->find("renderTri");
+    renderMeshID = pSimulationSet->pEntityNameMap->find("renderMesh");
 
 #ifdef EDITOR_MODE
     imguiState.addUI(&fileTermination);
@@ -220,73 +220,82 @@ int Application::initialize(int argc, char **argv) {
         asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
-    errC = pSimulationSet->resourceLoaders.shader.initialize(
-        gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
+    auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
+        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+    errC = pShaderLoader->initialize(gfxSession,
+                                     std::bind(&foeGroupData::getResourceDefinition,
+                                               &pSimulationSet->groupData, std::placeholders::_1),
+                                     std::bind(&foeGroupData::findExternalFile,
+                                               &pSimulationSet->groupData, std::placeholders::_1),
+                                     asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = pSimulationSet->resourceLoaders.vertexDescriptor.initialize(
-        &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
+    auto *pVertexDescriptorLoader = getResourceLoader<foeVertexDescriptorLoader>(
+        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+    errC = pVertexDescriptorLoader->initialize(pShaderLoader, &pSimulationSet->resources.shader,
+                                               std::bind(&foeGroupData::getResourceDefinition,
+                                                         &pSimulationSet->groupData,
+                                                         std::placeholders::_1),
+                                               asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = pSimulationSet->resourceLoaders.image.initialize(
-        gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
+    auto *pImageLoader = getResourceLoader<foeImageLoader>(pSimulationSet->resourceLoaders.data(),
+                                                           pSimulationSet->resourceLoaders.size());
+    errC = pImageLoader->initialize(gfxSession,
+                                    std::bind(&foeGroupData::getResourceDefinition,
+                                              &pSimulationSet->groupData, std::placeholders::_1),
+                                    std::bind(&foeGroupData::findExternalFile,
+                                              &pSimulationSet->groupData, std::placeholders::_1),
+                                    asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = pSimulationSet->resourceLoaders.material.initialize(
-        &pSimulationSet->resourceLoaders.shader, &pSimulationSet->resources.shader,
-        &fragmentDescriptorPool, &pSimulationSet->resourceLoaders.image,
-        &pSimulationSet->resources.image, gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
+    auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
+        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+    errC = pMaterialLoader->initialize(pShaderLoader, &pSimulationSet->resources.shader,
+                                       &fragmentDescriptorPool, pImageLoader,
+                                       &pSimulationSet->resources.image, gfxSession,
+                                       std::bind(&foeGroupData::getResourceDefinition,
+                                                 &pSimulationSet->groupData, std::placeholders::_1),
+                                       asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = pSimulationSet->resourceLoaders.mesh.initialize(
-        gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
+    auto *pMeshLoader = getResourceLoader<foeMeshLoader>(pSimulationSet->resourceLoaders.data(),
+                                                         pSimulationSet->resourceLoaders.size());
+    errC = pMeshLoader->initialize(gfxSession,
+                                   std::bind(&foeGroupData::getResourceDefinition,
+                                             &pSimulationSet->groupData, std::placeholders::_1),
+                                   std::bind(&foeGroupData::findExternalFile,
+                                             &pSimulationSet->groupData, std::placeholders::_1),
+                                   asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = pSimulationSet->resourceLoaders.armature.initialize(
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
+    auto *pArmatureLoader = getResourceLoader<foeArmatureLoader>(
+        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+    errC = pArmatureLoader->initialize(std::bind(&foeGroupData::getResourceDefinition,
+                                                 &pSimulationSet->groupData, std::placeholders::_1),
+                                       std::bind(&foeGroupData::findExternalFile,
+                                                 &pSimulationSet->groupData, std::placeholders::_1),
+                                       asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
 
-    errC = pSimulationSet->resourceLoaders.collisionShape.initialize(
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
+    auto *pCollisionShapeLoader = getResourceLoader<foePhysCollisionShapeLoader>(
+        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+    errC = pCollisionShapeLoader->initialize(std::bind(&foeGroupData::getResourceDefinition,
+                                                       &pSimulationSet->groupData,
+                                                       std::placeholders::_1),
+                                             asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -349,8 +358,8 @@ int Application::initialize(int argc, char **argv) {
                                                pSimulationSet->componentPools.size()));
 
     pSimulationSet->physicsSystem.initialize(
-        getResourceLoader<foePhysCollisionShapeLoader>(pSimulationSet->resourceLoaders2.data(),
-                                                       pSimulationSet->resourceLoaders2.size()),
+        getResourceLoader<foePhysCollisionShapeLoader>(pSimulationSet->resourceLoaders.data(),
+                                                       pSimulationSet->resourceLoaders.size()),
         getResourcePool<foePhysCollisionShapePool>(pSimulationSet->resourcePools.data(),
                                                    pSimulationSet->resourcePools.size()),
         getComponentPool<foeRigidBodyPool>(pSimulationSet->componentPools.data(),
@@ -582,8 +591,8 @@ void Application::deinitialize() {
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
 
     exportGroupState("testExport", gfxSession, pSimulationSet->groupData,
-                     &pSimulationSet->entityNameMap, pSimulationSet->state,
-                     &pSimulationSet->resourceNameMap, pSimulationSet->resources);
+                     pSimulationSet->pEntityNameMap, pSimulationSet->state,
+                     pSimulationSet->pResourceNameMap, pSimulationSet->resources);
 
     // Systems Deinitialization
     pSimulationSet->physicsSystem.deinitialize();
@@ -591,31 +600,53 @@ void Application::deinitialize() {
     pSimulationSet->armatureSystem.deinitialize();
 
     { // Resource Unloading
-        pSimulationSet->resources.armature.unloadAll();
+        auto *pArmaturePool = getResourcePool<foeArmaturePool>(
+            pSimulationSet->resourcePools.data(), pSimulationSet->resourcePools.size());
+        pArmaturePool->unloadAll();
 
-        pSimulationSet->resources.mesh.unloadAll();
+        auto *pMeshPool = getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
+                                                       pSimulationSet->resourcePools.size());
+        pMeshPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            pSimulationSet->resourceLoaders.mesh.processUnloadRequests();
+            auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
+                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            pMeshLoader->processUnloadRequests();
         }
 
-        pSimulationSet->resources.material.unloadAll();
+        auto *pMaterialPool = getResourcePool<foeMaterialPool>(
+            pSimulationSet->resourcePools.data(), pSimulationSet->resourcePools.size());
+        pMaterialPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            pSimulationSet->resourceLoaders.material.processUnloadRequests();
+            auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
+                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            pMaterialLoader->processUnloadRequests();
         }
 
-        pSimulationSet->resources.image.unloadAll();
+        auto *pImagePool = getResourcePool<foeImagePool>(pSimulationSet->resourcePools.data(),
+                                                         pSimulationSet->resourcePools.size());
+        pImagePool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            pSimulationSet->resourceLoaders.image.processUnloadRequests();
+            auto *pImageLoader = getResourceLoader<foeImageLoader>(
+                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            pImageLoader->processUnloadRequests();
         }
 
-        pSimulationSet->resources.vertexDescriptor.unloadAll();
+        auto *pVertexDescriptorPool = getResourcePool<foeVertexDescriptorPool>(
+            pSimulationSet->resourcePools.data(), pSimulationSet->resourcePools.size());
+        pVertexDescriptorPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            pSimulationSet->resourceLoaders.vertexDescriptor.processUnloadRequests();
+            auto *pVertexDescriptorLoader = getResourceLoader<foeVertexDescriptorLoader>(
+                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            pVertexDescriptorLoader->processUnloadRequests();
         }
 
-        pSimulationSet->resources.shader.unloadAll();
+        auto *pShaderPool = getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
+                                                           pSimulationSet->resourcePools.size());
+        pShaderPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            pSimulationSet->resourceLoaders.shader.processUnloadRequests();
+            auto *pShaderLoader = getResourceLoader<foeVertexDescriptorLoader>(
+                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            pShaderLoader->processUnloadRequests();
         }
     }
 
@@ -662,15 +693,10 @@ void Application::deinitialize() {
 
     vkAnimationPool.deinitialize();
 
-    // Graphics Resource Deinitialization
-    pSimulationSet->resourceLoaders.mesh.deinitialize();
-    pSimulationSet->resourceLoaders.material.deinitialize();
-    pSimulationSet->resourceLoaders.image.deinitialize();
-    pSimulationSet->resourceLoaders.vertexDescriptor.deinitialize();
-    pSimulationSet->resourceLoaders.shader.deinitialize();
-
-    // Other Resource Deinitialization
-    pSimulationSet->resourceLoaders.armature.deinitialize();
+    // Resource Loader Deinitialization
+    for (auto const &it : pSimulationSet->resourceLoaders) {
+        it->deinitialize();
+    }
 
     for (auto &it : frameData) {
         it.destroy(foeGfxVkGetDevice(gfxSession));
@@ -918,15 +944,33 @@ int Application::mainloop() {
                           &frameData[nextFrameIndex].frameComplete);
             frameIndex = nextFrameIndex;
 
-            // Resource Unload Requests
-            pSimulationSet->resourceLoaders.shader.processUnloadRequests();
-            pSimulationSet->resourceLoaders.image.processUnloadRequests();
-            pSimulationSet->resourceLoaders.material.processUnloadRequests();
-            pSimulationSet->resourceLoaders.mesh.processUnloadRequests();
+            { // Resource Unload Requests
+                auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
+                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+                pShaderLoader->processUnloadRequests();
 
-            // Resource Load Requests
-            pSimulationSet->resourceLoaders.image.processLoadRequests();
-            pSimulationSet->resourceLoaders.mesh.processLoadRequests();
+                auto *pImageLoader = getResourceLoader<foeImageLoader>(
+                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+                pImageLoader->processUnloadRequests();
+
+                auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
+                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+                pMaterialLoader->processUnloadRequests();
+
+                auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
+                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+                pMeshLoader->processUnloadRequests();
+            }
+
+            { // Resource Load Requests
+                auto *pImageLoader = getResourceLoader<foeImageLoader>(
+                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+                pImageLoader->processLoadRequests();
+
+                auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
+                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+                pMeshLoader->processLoadRequests();
+            }
 
             // Rendering
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool, 0);

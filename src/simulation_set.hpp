@@ -19,43 +19,37 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/physics/system.hpp>
+#include <foe/simulation/group_data.hpp>
+#include <foe/simulation/state.hpp>
 
 #include "armature_system.hpp"
-#include "group_data.hpp"
 #include "resource_pools.hpp"
 #include "state_pools.hpp"
 
 #include <vector>
 
-struct foeResourceLoaderBase;
-struct foeResourcePoolBase;
-
-struct SimulationSet {
-    foeGroupData groupData;
-
-    std::vector<foeResourceLoaderBase *> resourceLoaders2;
-    std::vector<foeResourcePoolBase *> resourcePools;
+struct SimulationSet : public foeSimulationState {
     ResourcePools resources;
-    ResourceLoaders resourceLoaders;
-    foeEditorNameMap resourceNameMap;
+    ResourceLoaders resourceLoaders3;
 
-    std::vector<foeComponentPoolBase *> componentPools;
     StatePools state;
-    foeEditorNameMap entityNameMap;
 
     foeArmatureSystem armatureSystem;
     foePhysicsSystem physicsSystem;
 
     SimulationSet() {
-        // Resource Loaders
-        resourceLoaders2.emplace_back(&resourceLoaders.armature);
-        resourceLoaders2.emplace_back(&resourceLoaders.collisionShape);
+        pResourceNameMap = new foeEditorNameMap;
+        pEntityNameMap = new foeEditorNameMap;
 
-        resourceLoaders2.emplace_back(&resourceLoaders.shader);
-        resourceLoaders2.emplace_back(&resourceLoaders.vertexDescriptor);
-        resourceLoaders2.emplace_back(&resourceLoaders.image);
-        resourceLoaders2.emplace_back(&resourceLoaders.material);
-        resourceLoaders2.emplace_back(&resourceLoaders.mesh);
+        // Resource Loaders
+        resourceLoaders.emplace_back(&resourceLoaders3.armature);
+        resourceLoaders.emplace_back(&resourceLoaders3.collisionShape);
+
+        resourceLoaders.emplace_back(&resourceLoaders3.shader);
+        resourceLoaders.emplace_back(&resourceLoaders3.vertexDescriptor);
+        resourceLoaders.emplace_back(&resourceLoaders3.image);
+        resourceLoaders.emplace_back(&resourceLoaders3.material);
+        resourceLoaders.emplace_back(&resourceLoaders3.mesh);
 
         // Resource Pools
         resourcePools.emplace_back(&resources.armature);
@@ -73,6 +67,11 @@ struct SimulationSet {
         componentPools.emplace_back(&state.position);
         componentPools.emplace_back(&state.camera);
         componentPools.emplace_back(&state.rigidBody);
+    }
+
+    ~SimulationSet() {
+        delete pEntityNameMap;
+        delete pResourceNameMap;
     }
 };
 

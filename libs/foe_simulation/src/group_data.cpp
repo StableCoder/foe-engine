@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include "group_data.hpp"
+#include <foe/simulation/group_data.hpp>
 
 #include "log.hpp"
 
@@ -23,21 +23,22 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
                                    std::unique_ptr<foeImporterBase> &&pImporter) {
     // Make sure both items are valid pointers
     if (pEntityIndices == nullptr || pResourceIndices == nullptr || pImporter == nullptr) {
-        FOE_LOG(General, Error,
+        FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - Either the given indices or importer are nullptr");
         return false;
     }
 
     // Check against blank name for the importer
     if (pImporter->name().empty()) {
-        FOE_LOG(General, Error, "foeGroupData::addDynamicGroup - Importer had a blank group name");
+        FOE_LOG(SimulationState, Error,
+                "foeGroupData::addDynamicGroup - Importer had a blank group name");
         return false;
     }
 
     // Check both have the same ID Group
     if (pEntityIndices->groupID() != pImporter->group() ||
         pResourceIndices->groupID() != pImporter->group()) {
-        FOE_LOG(General, Error,
+        FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - ID Groups don't match between the indices and "
                 "importer");
         return false;
@@ -46,7 +47,7 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
     // Must be within the dynamic groups valid range
     auto groupValue = foeIdGroupToValue(pEntityIndices->groupID());
     if (groupValue >= foeIdNumDynamicGroups) {
-        FOE_LOG(General, Error,
+        FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - ID Group is not within the valid dynamic group "
                 "value range");
         return false;
@@ -54,14 +55,14 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
 
     // Check that the group isn't already used
     if (mDynamicGroups[groupValue].pEntityIndices != nullptr) {
-        FOE_LOG(General, Error,
+        FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - Attempted to add ID group that is already used")
         return false;
     }
 
     // Check against duplicate names
     if (pImporter->name() == cPersistentName || pImporter->name() == cTemporaryName) {
-        FOE_LOG(General, Error,
+        FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - Importer group name is a reserved name, either "
                 "'Persistent' or 'Temporary'");
         return false;
@@ -69,7 +70,7 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
 
     for (auto const &it : mDynamicGroups) {
         if (it.pImporter != nullptr && it.pImporter->name() == pImporter->name()) {
-            FOE_LOG(General, Error,
+            FOE_LOG(SimulationState, Error,
                     "foeGroupData::addDynamicGroup - Importer group name already exists");
             return false;
         }
@@ -83,14 +84,14 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
 
 bool foeGroupData::setPersistentImporter(std::unique_ptr<foeImporterBase> &&pImporter) {
     if (pImporter == nullptr) {
-        FOE_LOG(General, Error,
+        FOE_LOG(SimulationState, Error,
                 "foeGroupData::setPersistentImporter - Importer group not given (nullptr)");
         return false;
     }
 
     if (pImporter->group() != foeIdPersistentGroup) {
         FOE_LOG(
-            General, Error,
+            SimulationState, Error,
             "foeGroupData::setPersistentImporter - Importer group given not foeIdPersistentGroup");
         return false;
     }

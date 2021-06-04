@@ -16,8 +16,7 @@
 
 #include <catch.hpp>
 #include <foe/ecs/id.hpp>
-
-#include "group_data.hpp"
+#include <foe/simulation/group_data.hpp>
 
 #include <string>
 

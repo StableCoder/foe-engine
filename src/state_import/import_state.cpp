@@ -188,15 +188,15 @@ auto importState(std::filesystem::path stateDataPath,
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            pGroupImporter->importResourceDefinitions(&pSimulationSet->resourceNameMap,
-                                                      pSimulationSet->resourceLoaders2,
+            pGroupImporter->importResourceDefinitions(pSimulationSet->pResourceNameMap,
+                                                      pSimulationSet->resourceLoaders,
                                                       pSimulationSet->resourcePools);
         }
     }
 
     // Load dependency resource definitions
     retVal = pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
-        &pSimulationSet->resourceNameMap, pSimulationSet->resourceLoaders2,
+        pSimulationSet->pResourceNameMap, pSimulationSet->resourceLoaders,
         pSimulationSet->resourcePools);
     if (!retVal)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE;
@@ -205,14 +205,14 @@ auto importState(std::filesystem::path stateDataPath,
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            pGroupImporter->importStateData(&pSimulationSet->entityNameMap, &pSimulationSet->state,
+            pGroupImporter->importStateData(pSimulationSet->pEntityNameMap, &pSimulationSet->state,
                                             pSimulationSet->componentPools);
         }
     }
 
     // Importing Persistent State Data
     pSimulationSet->groupData.persistentImporter()->importStateData(
-        &pSimulationSet->entityNameMap, &pSimulationSet->state, pSimulationSet->componentPools);
+        pSimulationSet->pEntityNameMap, &pSimulationSet->state, pSimulationSet->componentPools);
 
     // Successfully returning
     *ppSimulationSet = pSimulationSet.release();

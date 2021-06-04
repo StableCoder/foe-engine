@@ -14,13 +14,27 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_LOADER_BASE_HPP
-#define FOE_RESOURCE_LOADER_BASE_HPP
+#ifndef FOE_SIMULATION_STATE_HPP
+#define FOE_SIMULATION_STATE_HPP
 
-struct foeResourceLoaderBase {
-    virtual ~foeResourceLoaderBase() {}
+#include <foe/simulation/group_data.hpp>
 
-    virtual void deinitialize() = 0;
+#include <vector>
+
+class foeEditorNameMap;
+struct foeResourceLoaderBase;
+struct foeResourcePoolBase;
+struct foeComponentPoolBase;
+
+struct foeSimulationState {
+    foeGroupData groupData;
+
+    foeEditorNameMap *pResourceNameMap;
+    std::vector<foeResourceLoaderBase *> resourceLoaders;
+    std::vector<foeResourcePoolBase *> resourcePools;
+
+    foeEditorNameMap *pEntityNameMap;
+    std::vector<foeComponentPoolBase *> componentPools;
 };
 
-#endif // FOE_RESOURCE_LOADER_BASE_HPP
+#endif // FOE_SIMULATION_STATE_HPP

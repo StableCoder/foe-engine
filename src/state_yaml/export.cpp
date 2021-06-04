@@ -24,9 +24,9 @@
 #include <foe/resource/yaml/mesh.hpp>
 #include <foe/resource/yaml/shader.hpp>
 #include <foe/resource/yaml/vertex_descriptor.hpp>
+#include <foe/simulation/group_data.hpp>
 #include <foe/yaml/exception.hpp>
 
-#include "../group_data.hpp"
 #include "../log.hpp"
 #include "entity.hpp"
 
