@@ -205,14 +205,14 @@ auto importState(std::filesystem::path stateDataPath,
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            pGroupImporter->importStateData(pSimulationSet->pEntityNameMap, &pSimulationSet->state,
+            pGroupImporter->importStateData(pSimulationSet->pEntityNameMap,
                                             pSimulationSet->componentPools);
         }
     }
 
     // Importing Persistent State Data
-    pSimulationSet->groupData.persistentImporter()->importStateData(
-        pSimulationSet->pEntityNameMap, &pSimulationSet->state, pSimulationSet->componentPools);
+    pSimulationSet->groupData.persistentImporter()->importStateData(pSimulationSet->pEntityNameMap,
+                                                                    pSimulationSet->componentPools);
 
     // Successfully returning
     *ppSimulationSet = pSimulationSet.release();

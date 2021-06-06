@@ -45,7 +45,6 @@ class foeImporterBase {
     virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(foeEditorNameMap *pEntityNameMap,
-                                 StatePools *pStatePools,
                                  std::vector<foeComponentPoolBase *> &componentPools) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,

@@ -166,7 +166,6 @@ bool foeYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) {
 }
 
 bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
-                                      StatePools *pStatePools,
                                       std::vector<foeComponentPoolBase *> &componentPools) {
     if (!std::filesystem::exists(mRootDir / stateDirectoryPath))
         return true;

@@ -47,7 +47,6 @@ class foeYamlImporter : public foeImporterBase {
     FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool importStateData(
         foeEditorNameMap *pEntityNameMap,
-        StatePools *pStatePools,
         std::vector<foeComponentPoolBase *> &componentPools) override;
 
     FOE_IMEX_YAML_EXPORT bool importResourceDefinitions(

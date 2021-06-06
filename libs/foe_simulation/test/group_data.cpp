@@ -33,7 +33,6 @@ class DummyImporter : public foeImporterBase {
     bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool importStateData(foeEditorNameMap *pEntityNameMap,
-                         StatePools *pStatePools,
                          std::vector<foeComponentPoolBase *> &) final {
         return false;
     }
