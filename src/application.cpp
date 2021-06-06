@@ -616,11 +616,11 @@ int Application::initialize(int argc, char **argv) {
 void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
-
+    /*
     exportGroupState("testExport", gfxSession, pSimulationSet->groupData,
                      pSimulationSet->pEntityNameMap, pSimulationSet->state,
                      pSimulationSet->pResourceNameMap, pSimulationSet->resources);
-
+    */
     // Systems Deinitialization
     getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
         ->deinitialize();
