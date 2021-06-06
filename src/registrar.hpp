@@ -14,27 +14,11 @@
     limitations under the License.
 */
 
-#ifndef ARMATURE_SYSTEM_HPP
-#define ARMATURE_SYSTEM_HPP
+#ifndef BRINGUP_REGISTRAR_HPP
+#define BRINGUP_REGISTRAR_HPP
 
-#include <foe/simulation/system_base.hpp>
+void foeBringupRegisterFunctionality();
 
-class foeArmatureStatePool;
-class foeArmaturePool;
+void foeBringupDeregisterFunctionality();
 
-class foeArmatureSystem : public foeSystemBase {
-  public:
-    void initialize(foeArmaturePool *pArmaturePool, foeArmatureStatePool *pArmatureStatePool);
-    void deinitialize();
-
-    void process(float timePassed);
-
-  private:
-    // Resources
-    foeArmaturePool *mpArmaturePool;
-
-    // Components
-    foeArmatureStatePool *mpArmatureStatePool;
-};
-
-#endif // ARMATURE_SYSTEM_HPP
+#endif // BRINGUP_REGISTRAR_HPP

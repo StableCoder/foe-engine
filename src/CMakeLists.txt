@@ -10,6 +10,7 @@ target_sources(
           log.cpp
           logging.cpp
           position_descriptor_pool.cpp
+          registrar.cpp
           settings.cpp
           vk_animation.cpp)
 

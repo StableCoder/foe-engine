@@ -1,0 +1,141 @@
+/*
+    Copyright (C) 2021 George Cave.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+#include "registrar.hpp"
+
+#include <foe/resource/armature_pool.hpp>
+#include <foe/simulation/core.hpp>
+#include <foe/simulation/state.hpp>
+
+#include "armature_state.hpp"
+#include "armature_system.hpp"
+#include "camera_pool.hpp"
+#include "log.hpp"
+#include "render_state.hpp"
+
+namespace {
+
+void onCreate(foeSimulationState *pSimulationState) {
+    // Components
+    pSimulationState->componentPools.emplace_back(new foeArmatureStatePool);
+    pSimulationState->componentPools.emplace_back(new foeCameraPool);
+    pSimulationState->componentPools.emplace_back(new foeRenderStatePool);
+
+    // Systems
+    pSimulationState->systems.emplace_back(new foeArmatureSystem);
+}
+
+template <typename DestroyType, typename InType>
+void searchAndDestroy(InType &ptr) noexcept {
+    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
+    if (dynPtr) {
+        delete dynPtr;
+        ptr = nullptr;
+    }
+}
+
+void onDestroy(foeSimulationState *pSimulationState) {
+    // Systems
+    for (auto &pSystem : pSimulationState->systems) {
+        searchAndDestroy<foeArmatureSystem>(pSystem);
+    }
+
+    // Components
+    for (auto &pPool : pSimulationState->componentPools) {
+        searchAndDestroy<foeRenderStatePool>(pPool);
+        searchAndDestroy<foeCameraPool>(pPool);
+        searchAndDestroy<foeArmatureStatePool>(pPool);
+    }
+}
+
+template <typename SearchType, typename InputIt>
+SearchType *search(InputIt start, InputIt end) noexcept {
+    for (; start != end; ++start) {
+        auto *dynPtr = dynamic_cast<SearchType *>(*start);
+        if (dynPtr)
+            return dynPtr;
+    }
+
+    return nullptr;
+}
+
+void onInitialization(foeSimulationInitInfo const *pInitInfo) {
+    // Systems
+    auto *pIt = pInitInfo->pSystems;
+    auto const *pEndIt = pInitInfo->pSystems + pInitInfo->systemCount;
+
+    for (; pIt != pEndIt; ++pIt) {
+        auto *pArmatureSystem = dynamic_cast<foeArmatureSystem *>(*pIt);
+        if (pArmatureSystem) {
+            auto *pArmaturePool =
+                search<foeArmaturePool>(pInitInfo->pResourcePools,
+                                        pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+
+            auto *pArmatureStatePool = search<foeArmatureStatePool>(
+                pInitInfo->pComponentPools,
+                pInitInfo->pComponentPools + pInitInfo->componentPoolCount);
+
+            pArmatureSystem->initialize(pArmaturePool, pArmatureStatePool);
+        }
+    }
+}
+
+template <typename DestroyType, typename InType>
+void searchAndDeinit(InType &ptr) noexcept {
+    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
+    if (dynPtr) {
+        dynPtr->deinitialize();
+    }
+}
+
+void onDeinitialization(foeSimulationState const *pSimulationState) {
+    // Systems
+    for (auto *pSystem : pSimulationState->systems) {
+        searchAndDeinit<foeArmatureSystem>(pSystem);
+    }
+}
+
+} // namespace
+
+void foeBringupRegisterFunctionality() {
+    FOE_LOG(foeBringup, Verbose,
+            "foeBringupRegisterFunctionality - Starting to register functionality")
+
+    foeRegisterFunctionality(foeSimulationFunctionalty{
+        .onCreate = onCreate,
+        .onDestroy = onDestroy,
+        .onInitialization = onInitialization,
+        .onDeinitialization = onDeinitialization,
+    });
+
+    FOE_LOG(foeBringup, Verbose,
+            "foeBringupRegisterFunctionality - Completed deregistering functionality")
+}
+
+void foeBringupDeregisterFunctionality() {
+    FOE_LOG(foeBringup, Verbose,
+            "foeBringupDeregisterFunctionality - Starting to register functionality")
+
+    foeDeregisterFunctionality(foeSimulationFunctionalty{
+        .onCreate = onCreate,
+        .onDestroy = onDestroy,
+        .onInitialization = onInitialization,
+        .onDeinitialization = onDeinitialization,
+    });
+
+    FOE_LOG(foeBringup, Verbose,
+            "foeBringupDeregisterFunctionality - Completed deregistering functionality")
+}

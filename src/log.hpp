@@ -17,3 +17,5 @@
 #include <foe/log.hpp>
 
 FOE_DECLARE_LOG_CATEGORY(General, All, All)
+
+FOE_DECLARE_LOG_CATEGORY(foeBringup, All, All)
