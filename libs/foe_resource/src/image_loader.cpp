@@ -74,6 +74,7 @@ void foeImageLoader::deinitialize() {
 
     if (mGfxUploadContext != FOE_NULL_HANDLE)
         foeGfxDestroyUploadContext(mGfxUploadContext);
+    mGfxUploadContext = FOE_NULL_HANDLE;
 
     mGfxSession = FOE_NULL_HANDLE;
 }
