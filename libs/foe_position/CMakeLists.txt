@@ -5,12 +5,18 @@ project(foe_position)
 find_package(glm REQUIRED)
 
 # Declaration
-add_library(foe_position INTERFACE)
+add_library(foe_position)
 
 # Definition
-target_include_directories(foe_position INTERFACE include)
-target_link_libraries(foe_position INTERFACE foe foe_imex glm)
-target_code_coverage(foe_position INTERFACE)
+generate_export_header(
+  foe_position EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/position/export.h)
+target_include_directories(foe_position
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+target_link_libraries(foe_position PUBLIC foe foe_imex foe_simulation glm)
+target_code_coverage(foe_position PUBLIC)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/yaml)
