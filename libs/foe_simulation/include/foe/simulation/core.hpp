@@ -77,7 +77,7 @@ struct foeSimulationFunctionalty {
 FOE_SIM_EXPORT bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
 FOE_SIM_EXPORT void foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality);
 
-FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation();
+FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(bool addNameMaps);
 FOE_SIM_EXPORT void foeDestroySimulation(foeSimulationState *pSimulationState);
 
 FOE_SIM_EXPORT void foeInitializeSimulation(foeSimulationState *pSimulationState,

@@ -16,6 +16,7 @@
 
 #include <foe/simulation/core.hpp>
 
+#include <foe/ecs/editor_name_map.hpp>
 #include <foe/simulation/state.hpp>
 
 #include "log.hpp"
@@ -73,12 +74,19 @@ void foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
         "registerFunctionality - Attempted to deregister functionality that was never registered");
 }
 
-foeSimulationState *foeCreateSimulation() {
+foeSimulationState *foeCreateSimulation(bool addNameMaps) {
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulationState> newSimState{new foeSimulationState};
-    newSimState->pResourceNameMap = nullptr;
-    newSimState->pEntityNameMap = nullptr;
+
+    // Editor Name Maps, if requested
+    if (addNameMaps) {
+        newSimState->pResourceNameMap = new foeEditorNameMap;
+        newSimState->pEntityNameMap = new foeEditorNameMap;
+    } else {
+        newSimState->pResourceNameMap = nullptr;
+        newSimState->pEntityNameMap = nullptr;
+    }
 
     FOE_LOG(SimulationState, Verbose, "Creating SimulationState: {}",
             static_cast<void *>(newSimState.get()));
