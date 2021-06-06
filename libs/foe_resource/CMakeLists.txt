@@ -33,6 +33,7 @@ target_link_libraries(
          foe_graphics
          foe_graphics_vk
          foe_model
+         foe_simulation
          vk_struct_cleanup
          ${freeimage_LIBRARIES})
 target_code_coverage(foe_resource)
