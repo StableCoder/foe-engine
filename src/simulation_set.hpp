@@ -65,6 +65,9 @@ struct SimulationSet : public foeSimulationState {
         componentPools.emplace_back(&state.position);
         componentPools.emplace_back(&state.camera);
         componentPools.emplace_back(&state.rigidBody);
+
+        // Systems
+        systems.emplace_back(&physicsSystem);
     }
 
     ~SimulationSet() {

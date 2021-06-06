@@ -108,6 +108,18 @@ auto getComponentPool(foeComponentPoolBase **pComponentPools, size_t poolCount) 
     return pPool;
 }
 
+template <typename System>
+auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
+    System *pSystem{nullptr};
+    for (size_t i = 0; i < systemCount; ++i) {
+        pSystem = dynamic_cast<System *>(pSystems[i]);
+        if (pSystem != nullptr)
+            break;
+    }
+
+    return pSystem;
+}
+
 } // namespace
 
 #include "state_import/import_state.hpp"
@@ -234,11 +246,13 @@ int Application::initialize(int argc, char **argv) {
 
     auto *pVertexDescriptorLoader = getResourceLoader<foeVertexDescriptorLoader>(
         pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-    errC = pVertexDescriptorLoader->initialize(pShaderLoader, &pSimulationSet->resources.shader,
-                                               std::bind(&foeGroupData::getResourceDefinition,
-                                                         &pSimulationSet->groupData,
-                                                         std::placeholders::_1),
-                                               asyncTaskFunc);
+    errC = pVertexDescriptorLoader->initialize(
+        pShaderLoader,
+        getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
+                                       pSimulationSet->resourcePools.size()),
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
+                  std::placeholders::_1),
+        asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -257,12 +271,17 @@ int Application::initialize(int argc, char **argv) {
 
     auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
         pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-    errC = pMaterialLoader->initialize(pShaderLoader, &pSimulationSet->resources.shader,
-                                       &fragmentDescriptorPool, pImageLoader,
-                                       &pSimulationSet->resources.image, gfxSession,
-                                       std::bind(&foeGroupData::getResourceDefinition,
-                                                 &pSimulationSet->groupData, std::placeholders::_1),
-                                       asyncTaskFunc);
+    errC = pMaterialLoader->initialize(
+        pShaderLoader,
+        getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
+                                       pSimulationSet->resourcePools.size()),
+        &fragmentDescriptorPool, pImageLoader,
+        getResourcePool<foeImagePool>(pSimulationSet->resourcePools.data(),
+                                      pSimulationSet->resourcePools.size()),
+        gfxSession,
+        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
+                  std::placeholders::_1),
+        asyncTaskFunc);
     if (errC) {
         ERRC_END_PROGRAM
     }
@@ -357,48 +376,56 @@ int Application::initialize(int argc, char **argv) {
         getComponentPool<foeArmatureStatePool>(pSimulationSet->componentPools.data(),
                                                pSimulationSet->componentPools.size()));
 
-    pSimulationSet->physicsSystem.initialize(
-        getResourceLoader<foePhysCollisionShapeLoader>(pSimulationSet->resourceLoaders.data(),
-                                                       pSimulationSet->resourceLoaders.size()),
-        getResourcePool<foePhysCollisionShapePool>(pSimulationSet->resourcePools.data(),
-                                                   pSimulationSet->resourcePools.size()),
-        getComponentPool<foeRigidBodyPool>(pSimulationSet->componentPools.data(),
-                                           pSimulationSet->componentPools.size()),
-        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
-                                            pSimulationSet->componentPools.size()));
+    getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+        ->initialize(
+            getResourceLoader<foePhysCollisionShapeLoader>(pSimulationSet->resourceLoaders.data(),
+                                                           pSimulationSet->resourceLoaders.size()),
+            getResourcePool<foePhysCollisionShapePool>(pSimulationSet->resourcePools.data(),
+                                                       pSimulationSet->resourcePools.size()),
+            getComponentPool<foeRigidBodyPool>(pSimulationSet->componentPools.data(),
+                                               pSimulationSet->componentPools.size()),
+            getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
+                                                pSimulationSet->componentPools.size()));
 
     {
-        for (auto *ptr : pSimulationSet->resources.armature.getDataVector()) {
+        for (auto *ptr : getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
+                                                          pSimulationSet->resourcePools.size())
+                             ->getDataVector()) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
         }
-        /*
-                for (auto *ptr : pSimulationSet->resources.collisionShape.getDataVector()) {
-                    ptr->incrementUseCount();
-                    ptr->decrementUseCount();
-                }
-        */
-        for (auto *ptr : pSimulationSet->resources.image.getDataVector()) {
-            ptr->incrementUseCount();
-            ptr->decrementUseCount();
-        }
-
-        for (auto *ptr : pSimulationSet->resources.material.getDataVector()) {
+        for (auto *ptr : getResourcePool<foeImagePool>(pSimulationSet->resourcePools.data(),
+                                                       pSimulationSet->resourcePools.size())
+                             ->getDataVector()) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
         }
 
-        for (auto *ptr : pSimulationSet->resources.mesh.getDataVector()) {
+        for (auto *ptr : getResourcePool<foeMaterialPool>(pSimulationSet->resourcePools.data(),
+                                                          pSimulationSet->resourcePools.size())
+                             ->getDataVector()) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
         }
 
-        for (auto *ptr : pSimulationSet->resources.shader.getDataVector()) {
+        for (auto *ptr : getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
+                                                      pSimulationSet->resourcePools.size())
+                             ->getDataVector()) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
         }
 
-        for (auto *ptr : pSimulationSet->resources.vertexDescriptor.getDataVector()) {
+        for (auto *ptr : getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
+                                                        pSimulationSet->resourcePools.size())
+                             ->getDataVector()) {
+            ptr->incrementUseCount();
+            ptr->decrementUseCount();
+        }
+
+        for (auto *ptr :
+             getResourcePool<foeVertexDescriptorPool>(pSimulationSet->resourcePools.data(),
+                                                      pSimulationSet->resourcePools.size())
+                 ->getDataVector()) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
         }
@@ -595,7 +622,8 @@ void Application::deinitialize() {
                      pSimulationSet->pResourceNameMap, pSimulationSet->resources);
 
     // Systems Deinitialization
-    pSimulationSet->physicsSystem.deinitialize();
+    getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+        ->deinitialize();
 
     armatureSystem.deinitialize();
 
@@ -846,6 +874,8 @@ int Application::mainloop() {
         }
 
         armatureSystem.process(timeElapsedInSec);
+        getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+            ->process(timeElapsedInSec);
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
@@ -1001,17 +1031,26 @@ int Application::mainloop() {
                 if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
                     pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
                     boned = true;
-                    pVertexDescriptor = pSimulationSet->resources.vertexDescriptor.find(
-                        pRenderState->bonedVertexDescriptor);
+                    pVertexDescriptor = getResourcePool<foeVertexDescriptorPool>(
+                                            pSimulationSet->resourcePools.data(),
+                                            pSimulationSet->resourcePools.size())
+                                            ->find(pRenderState->bonedVertexDescriptor);
                 }
 
                 if (pVertexDescriptor == nullptr) {
-                    pVertexDescriptor = pSimulationSet->resources.vertexDescriptor.find(
-                        pRenderState->vertexDescriptor);
+                    pVertexDescriptor = getResourcePool<foeVertexDescriptorPool>(
+                                            pSimulationSet->resourcePools.data(),
+                                            pSimulationSet->resourcePools.size())
+                                            ->find(pRenderState->vertexDescriptor);
                 }
 
-                auto *pMaterial = pSimulationSet->resources.material.find(pRenderState->material);
-                auto *pMesh = pSimulationSet->resources.mesh.find(pRenderState->mesh);
+                auto *pMaterial =
+                    getResourcePool<foeMaterialPool>(pSimulationSet->resourcePools.data(),
+                                                     pSimulationSet->resourcePools.size())
+                        ->find(pRenderState->material);
+                auto *pMesh = getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
+                                                           pSimulationSet->resourcePools.size())
+                                  ->find(pRenderState->mesh);
 
                 if (pVertexDescriptor == nullptr || pMaterial == nullptr || pMesh == nullptr) {
                     return false;
@@ -1485,11 +1524,14 @@ int Application::mainloop() {
                                 goto SKIP_DRAW;
                             }
 
-                            auto *theVertexDescriptor =
-                                pSimulationSet->resources.vertexDescriptor.find(
-                                    pRenderState->vertexDescriptor);
-                            auto *theMaterial =
-                                pSimulationSet->resources.material.find(pRenderState->material);
+                            auto *theVertexDescriptor = getResourcePool<foeVertexDescriptorPool>(
+                                                            pSimulationSet->resourcePools.data(),
+                                                            pSimulationSet->resourcePools.size())
+                                                            ->find(pRenderState->vertexDescriptor);
+                            auto *theMaterial = getResourcePool<foeMaterialPool>(
+                                                    pSimulationSet->resourcePools.data(),
+                                                    pSimulationSet->resourcePools.size())
+                                                    ->find(pRenderState->material);
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||
