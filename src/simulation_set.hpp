@@ -22,7 +22,6 @@
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/state.hpp>
 
-#include "armature_system.hpp"
 #include "resource_pools.hpp"
 #include "state_pools.hpp"
 
@@ -34,7 +33,6 @@ struct SimulationSet : public foeSimulationState {
 
     StatePools state;
 
-    foeArmatureSystem armatureSystem;
     foePhysicsSystem physicsSystem;
 
     SimulationSet() {

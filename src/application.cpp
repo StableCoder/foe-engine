@@ -351,7 +351,7 @@ int Application::initialize(int argc, char **argv) {
     }
 
     // Systems Initialization
-    pSimulationSet->armatureSystem.initialize(
+    armatureSystem.initialize(
         getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
                                          pSimulationSet->resourcePools.size()),
         getComponentPool<foeArmatureStatePool>(pSimulationSet->componentPools.data(),
@@ -597,7 +597,7 @@ void Application::deinitialize() {
     // Systems Deinitialization
     pSimulationSet->physicsSystem.deinitialize();
 
-    pSimulationSet->armatureSystem.deinitialize();
+    armatureSystem.deinitialize();
 
     { // Resource Unloading
         auto *pArmaturePool = getResourcePool<foeArmaturePool>(
@@ -845,8 +845,7 @@ int Application::mainloop() {
 #endif
         }
 
-        pSimulationSet->armatureSystem.process(timeElapsedInSec);
-        pSimulationSet->physicsSystem.process(timeElapsedInSec);
+        armatureSystem.process(timeElapsedInSec);
 
         // Vulkan Render Section
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();

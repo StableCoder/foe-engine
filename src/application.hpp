@@ -34,6 +34,7 @@
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
+#include "armature_system.hpp"
 #include "camera_system.hpp"
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
@@ -124,6 +125,7 @@ struct Application {
     PositionDescriptorPool positionDescriptorPool;
 
     // Other
+    foeArmatureSystem armatureSystem;
     VkAnimationPool vkAnimationPool;
 
 #ifdef EDITOR_MODE
