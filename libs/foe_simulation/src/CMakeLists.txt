@@ -1,1 +1,1 @@
-target_sources(foe_simulation PRIVATE group_data.cpp log.cpp)
+target_sources(foe_simulation PRIVATE core.cpp group_data.cpp log.cpp)

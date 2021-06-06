@@ -25,6 +25,7 @@ class foeEditorNameMap;
 struct foeResourceLoaderBase;
 struct foeResourcePoolBase;
 struct foeComponentPoolBase;
+struct foeSystemBase;
 
 struct foeSimulationState {
     foeGroupData groupData;
@@ -35,6 +36,8 @@ struct foeSimulationState {
 
     foeEditorNameMap *pEntityNameMap;
     std::vector<foeComponentPoolBase *> componentPools;
+
+    std::vector<foeSystemBase *> systems;
 };
 
 #endif // FOE_SIMULATION_STATE_HPP
