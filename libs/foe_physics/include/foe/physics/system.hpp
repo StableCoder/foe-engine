@@ -20,6 +20,7 @@
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
+#include <foe/simulation/system_base.hpp>
 
 #include <memory>
 #include <vector>
@@ -33,7 +34,7 @@ struct foeRigidBody;
 struct foePosition3d;
 struct foePhysCollisionShape;
 
-class foePhysicsSystem {
+class foePhysicsSystem : public foeSystemBase {
   public:
     FOE_PHYSICS_EXPORT foePhysicsSystem();
     FOE_PHYSICS_EXPORT ~foePhysicsSystem();
