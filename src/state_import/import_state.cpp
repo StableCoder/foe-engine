@@ -61,10 +61,13 @@ bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &depe
 
 } // namespace
 
+#include <foe/simulation/core.hpp>
+
 auto importState(std::filesystem::path stateDataPath,
                  foeSearchPaths *pSearchPaths,
-                 SimulationSet **ppSimulationSet) -> std::error_code {
-    auto pSimulationSet = std::make_unique<SimulationSet>();
+                 foeSimulationState **ppSimulationSet) -> std::error_code {
+    std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet{
+        foeCreateSimulation(true), [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
 
     // Find the importer for the starting path
     std::unique_ptr<foeImporterBase> persistentImporter{
@@ -108,8 +111,8 @@ auto importState(std::filesystem::path stateDataPath,
                 return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
             }
 
-            // Check that all required transitive dependencies are available *before* it is loaded,
-            // and in the correct order
+            // Check that all required transitive dependencies are available *before* it is
+            // loaded, and in the correct order
             auto checkIt = dependencies.begin();
             for (auto const &transIt : transitiveDependencies) {
                 bool depFound{false};

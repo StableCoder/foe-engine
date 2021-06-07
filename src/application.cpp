@@ -17,20 +17,25 @@
 #include "application.hpp"
 
 #include <GLFW/glfw3.h>
+#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
+#include <foe/physics/system.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/search_paths.hpp>
+#include <foe/simulation/core.hpp>
 #include <foe/wsi_vulkan.hpp>
 #include <vk_error_code.hpp>
 
+#include "armature_system.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
+#include "register_basic_functionality.hpp"
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/core.hpp>
@@ -130,6 +135,7 @@ auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
 
 int Application::initialize(int argc, char **argv) {
     initializeLogging();
+    registerBasicFunctionality();
 
     foeSearchPaths searchPaths;
     auto writer = searchPaths.getWriter();
@@ -146,7 +152,7 @@ int Application::initialize(int argc, char **argv) {
     foeResourceYamlRegistrar resourceRegistrar;
     addImporterFunctionRegistrar(&resourceRegistrar);
 
-    SimulationSet *pNewSimulationSet{nullptr};
+    foeSimulationState *pNewSimulationSet{nullptr};
     std::error_code errC = importState("data/state/persistent", &searchPaths, &pNewSimulationSet);
     pSimulationSet.reset(pNewSimulationSet);
 
@@ -232,92 +238,19 @@ int Application::initialize(int argc, char **argv) {
         asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
-    auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
-        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-    errC = pShaderLoader->initialize(gfxSession,
-                                     std::bind(&foeGroupData::getResourceDefinition,
-                                               &pSimulationSet->groupData, std::placeholders::_1),
-                                     std::bind(&foeGroupData::findExternalFile,
-                                               &pSimulationSet->groupData, std::placeholders::_1),
-                                     asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    auto *pVertexDescriptorLoader = getResourceLoader<foeVertexDescriptorLoader>(
-        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-    errC = pVertexDescriptorLoader->initialize(
-        pShaderLoader,
-        getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
-                                       pSimulationSet->resourcePools.size()),
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    auto *pImageLoader = getResourceLoader<foeImageLoader>(pSimulationSet->resourceLoaders.data(),
-                                                           pSimulationSet->resourceLoaders.size());
-    errC = pImageLoader->initialize(gfxSession,
-                                    std::bind(&foeGroupData::getResourceDefinition,
+    // Initialize simulation functionality
+    foeInitializeSimulation(
+        pSimulationSet.get(),
+        foeSimulationInitInfo{
+            .gfxSession = gfxSession,
+            .pVkFragDescriptorPool = &fragmentDescriptorPool,
+            .resourceDefinitionImportFn =
+                std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
+                          std::placeholders::_1),
+            .externalFileSearchFn = std::bind(&foeGroupData::findExternalFile,
                                               &pSimulationSet->groupData, std::placeholders::_1),
-                                    std::bind(&foeGroupData::findExternalFile,
-                                              &pSimulationSet->groupData, std::placeholders::_1),
-                                    asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
-        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-    errC = pMaterialLoader->initialize(
-        pShaderLoader,
-        getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
-                                       pSimulationSet->resourcePools.size()),
-        &fragmentDescriptorPool, pImageLoader,
-        getResourcePool<foeImagePool>(pSimulationSet->resourcePools.data(),
-                                      pSimulationSet->resourcePools.size()),
-        gfxSession,
-        std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                  std::placeholders::_1),
-        asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    auto *pMeshLoader = getResourceLoader<foeMeshLoader>(pSimulationSet->resourceLoaders.data(),
-                                                         pSimulationSet->resourceLoaders.size());
-    errC = pMeshLoader->initialize(gfxSession,
-                                   std::bind(&foeGroupData::getResourceDefinition,
-                                             &pSimulationSet->groupData, std::placeholders::_1),
-                                   std::bind(&foeGroupData::findExternalFile,
-                                             &pSimulationSet->groupData, std::placeholders::_1),
-                                   asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    auto *pArmatureLoader = getResourceLoader<foeArmatureLoader>(
-        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-    errC = pArmatureLoader->initialize(std::bind(&foeGroupData::getResourceDefinition,
-                                                 &pSimulationSet->groupData, std::placeholders::_1),
-                                       std::bind(&foeGroupData::findExternalFile,
-                                                 &pSimulationSet->groupData, std::placeholders::_1),
-                                       asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
-
-    auto *pCollisionShapeLoader = getResourceLoader<foePhysCollisionShapeLoader>(
-        pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-    errC = pCollisionShapeLoader->initialize(std::bind(&foeGroupData::getResourceDefinition,
-                                                       &pSimulationSet->groupData,
-                                                       std::placeholders::_1),
-                                             asyncTaskFunc);
-    if (errC) {
-        ERRC_END_PROGRAM
-    }
+            .asyncJobFn = asyncTaskFunc,
+        });
 
     vkRes = cameraSystem.initialize(
         getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
@@ -368,24 +301,6 @@ int Application::initialize(int argc, char **argv) {
     if (vkRes != VK_SUCCESS) {
         VK_END_PROGRAM
     }
-
-    // Systems Initialization
-    getSystem<foeArmatureSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
-        ->initialize(getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
-                                                      pSimulationSet->resourcePools.size()),
-                     getComponentPool<foeArmatureStatePool>(pSimulationSet->componentPools.data(),
-                                                            pSimulationSet->componentPools.size()));
-
-    getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
-        ->initialize(
-            getResourceLoader<foePhysCollisionShapeLoader>(pSimulationSet->resourceLoaders.data(),
-                                                           pSimulationSet->resourceLoaders.size()),
-            getResourcePool<foePhysCollisionShapePool>(pSimulationSet->resourcePools.data(),
-                                                       pSimulationSet->resourcePools.size()),
-            getComponentPool<foeRigidBodyPool>(pSimulationSet->componentPools.data(),
-                                               pSimulationSet->componentPools.size()),
-            getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
-                                                pSimulationSet->componentPools.size()));
 
     {
         for (auto *ptr : getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
@@ -766,6 +681,8 @@ void Application::deinitialize() {
     asynchronousThreadPool.terminate();
     synchronousThreadPool.terminate();
 
+    deregisterBasicFunctionality();
+
     // Output configuration settings to a YAML configuration file
     // saveSettings(settings);
 }
@@ -875,6 +792,8 @@ int Application::mainloop() {
         }
 
         getSystem<foeArmatureSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+            ->process(timeElapsedInSec);
+        getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
             ->process(timeElapsedInSec);
 
         // Vulkan Render Section

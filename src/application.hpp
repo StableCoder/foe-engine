@@ -30,17 +30,16 @@
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/imex/yaml/generator.hpp>
+#include <foe/simulation/state.hpp>
 #include <foe/thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
-#include "armature_system.hpp"
 #include "camera_system.hpp"
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
 #include "position_descriptor_pool.hpp"
 #include "settings.hpp"
-#include "simulation_set.hpp"
 #include "vk_animation.hpp"
 
 #include <array>
@@ -83,7 +82,7 @@ struct Application {
     foeId renderTriangleID = FOE_INVALID_ID;
     foeId renderMeshID = FOE_INVALID_ID;
 
-    std::unique_ptr<SimulationSet> pSimulationSet;
+    std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet;
 
     FrameTimer frameTime;
 
@@ -125,7 +124,6 @@ struct Application {
     PositionDescriptorPool positionDescriptorPool;
 
     // Other
-    foeArmatureSystem armatureSystem;
     VkAnimationPool vkAnimationPool;
 
 #ifdef EDITOR_MODE

@@ -34,18 +34,18 @@ struct foeRigidBody;
 struct foePosition3d;
 struct foePhysCollisionShape;
 
-class foePhysicsSystem : public foeSystemBase {
+class FOE_PHYSICS_EXPORT foePhysicsSystem : public foeSystemBase {
   public:
-    FOE_PHYSICS_EXPORT foePhysicsSystem();
-    FOE_PHYSICS_EXPORT ~foePhysicsSystem();
+    foePhysicsSystem();
+    ~foePhysicsSystem();
 
-    FOE_PHYSICS_EXPORT void initialize(foePhysCollisionShapeLoader *pCollisionShapeLoader,
-                                       foePhysCollisionShapePool *pCollisionShapePool,
-                                       foeRigidBodyPool *pRigidBodyPool,
-                                       foePosition3dPool *pPosition3dPool);
-    FOE_PHYSICS_EXPORT void deinitialize();
+    void initialize(foePhysCollisionShapeLoader *pCollisionShapeLoader,
+                    foePhysCollisionShapePool *pCollisionShapePool,
+                    foeRigidBodyPool *pRigidBodyPool,
+                    foePosition3dPool *pPosition3dPool);
+    void deinitialize();
 
-    FOE_PHYSICS_EXPORT void process(float timePassed);
+    void process(float timePassed);
 
   private:
     void addObject(foeEntityID entity,

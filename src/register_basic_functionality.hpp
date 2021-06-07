@@ -14,16 +14,11 @@
     limitations under the License.
 */
 
-#ifndef IMPORT_STATE_HPP
-#define IMPORT_STATE_HPP
+#ifndef REGISTER_BASIC_FUNCTIONALITY_HPP
+#define REGISTER_BASIC_FUNCTIONALITY_HPP
 
-#include <filesystem>
+void registerBasicFunctionality() noexcept;
 
-class foeSearchPaths;
-struct foeSimulationState;
+void deregisterBasicFunctionality() noexcept;
 
-auto importState(std::filesystem::path stateDataPath,
-                 foeSearchPaths *pSearchPaths,
-                 foeSimulationState **ppSimulationSet) -> std::error_code;
-
-#endif // IMPORT_STATE_HPP
+#endif // REGISTER_BASIC_FUNCTIONALITY_HPP
