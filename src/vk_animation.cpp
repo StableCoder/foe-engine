@@ -14,9 +14,7 @@ VkResult VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
                                      foeMeshPool *pMeshPool,
                                      foeArmatureStatePool *pArmatureStatePool,
                                      foeRenderStatePool *pRenderStatePool,
-                                     foeGfxSession gfxSession,
-                                     VkDescriptorSetLayout boneSetLayout,
-                                     uint32_t boneSetBinding) {
+                                     foeGfxSession gfxSession) {
     mpArmaturePool = pArmaturePool;
     mpMeshPool = pMeshPool;
 
@@ -28,8 +26,13 @@ VkResult VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
     mDevice = foeGfxVkGetDevice(gfxSession);
     mAllocator = foeGfxVkGetAllocator(gfxSession);
 
-    mBoneSetLayout = boneSetLayout;
-    mBoneSetBinding = boneSetBinding;
+    mBoneSetLayout = foeGfxVkGetBuiltinLayout(
+        gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
+                        FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES);
+
+    mBoneSetBinding = foeGfxVkGetBuiltinSetLayoutIndex(
+        gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
+                        FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES);
 
     auto physicalDevice = foeGfxVkGetPhysicalDevice(gfxSession);
     VkPhysicalDeviceProperties properties;

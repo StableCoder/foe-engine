@@ -33,9 +33,7 @@ glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
 
 VkResult foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
                                      foeCameraPool *pCameraPool,
-                                     foeGfxSession session,
-                                     VkDescriptorSetLayout projectionViewLayout,
-                                     uint32_t projectionViewBinding) {
+                                     foeGfxSession session) {
     mpPosition3dPool = pPosition3dPool;
     mpCameraPool = pCameraPool;
 
@@ -51,8 +49,12 @@ VkResult foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
         std::max(static_cast<VkDeviceSize>(sizeof(glm::mat4)),
                  devProperties.limits.minUniformBufferOffsetAlignment);
 
-    mProjecionViewLayout = projectionViewLayout;
-    mProjectionViewBinding = projectionViewBinding;
+    mProjecionViewLayout = foeGfxVkGetBuiltinLayout(
+        session, foeBuiltinDescriptorSetLayoutFlagBits::
+                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX);
+    mProjectionViewBinding = foeGfxVkGetBuiltinSetLayoutIndex(
+        session, foeBuiltinDescriptorSetLayoutFlagBits::
+                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX);
 
     VkDescriptorPoolSize size{
         .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

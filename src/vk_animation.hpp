@@ -19,6 +19,7 @@
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/simulation/system_base.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -29,15 +30,13 @@ class foeMeshPool;
 class foeArmatureStatePool;
 class foeRenderStatePool;
 
-class VkAnimationPool {
+class VkAnimationPool : public foeSystemBase {
   public:
     VkResult initialize(foeArmaturePool *pArmaturePool,
                         foeMeshPool *pMeshPool,
                         foeArmatureStatePool *pArmatureStatePool,
                         foeRenderStatePool *pRenderStatePool,
-                        foeGfxSession gfxSession,
-                        VkDescriptorSetLayout boneSetLayout,
-                        uint32_t boneSetBinding);
+                        foeGfxSession gfxSession);
     void deinitialize();
 
     VkResult uploadBoneOffsets(uint32_t frameIndex);

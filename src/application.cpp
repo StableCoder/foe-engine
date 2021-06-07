@@ -32,10 +32,13 @@
 #include <vk_error_code.hpp>
 
 #include "armature_system.hpp"
+#include "camera_system.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
+#include "position_descriptor_pool.hpp"
 #include "register_basic_functionality.hpp"
+#include "vk_animation.hpp"
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/core.hpp>
@@ -251,56 +254,6 @@ int Application::initialize(int argc, char **argv) {
                                               &pSimulationSet->groupData, std::placeholders::_1),
             .asyncJobFn = asyncTaskFunc,
         });
-
-    vkRes = cameraSystem.initialize(
-        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
-                                            pSimulationSet->componentPools.size()),
-        getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
-                                        pSimulationSet->componentPools.size()),
-        gfxSession,
-        foeGfxVkGetBuiltinLayout(gfxSession,
-                                 foeBuiltinDescriptorSetLayoutFlagBits::
-                                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX),
-        foeGfxVkGetBuiltinSetLayoutIndex(
-            gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
-                            FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX));
-    if (vkRes != VK_SUCCESS) {
-        VK_END_PROGRAM
-    }
-
-    vkRes = positionDescriptorPool.initialize(
-        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
-                                            pSimulationSet->componentPools.size()),
-        gfxSession,
-        foeGfxVkGetBuiltinLayout(
-            gfxSession,
-            foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX),
-        foeGfxVkGetBuiltinSetLayoutIndex(
-            gfxSession,
-            foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX));
-    if (vkRes != VK_SUCCESS) {
-        VK_END_PROGRAM
-    }
-
-    vkRes = vkAnimationPool.initialize(
-        getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
-                                         pSimulationSet->resourcePools.size()),
-        getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
-                                     pSimulationSet->resourcePools.size()),
-        getComponentPool<foeArmatureStatePool>(pSimulationSet->componentPools.data(),
-                                               pSimulationSet->componentPools.size()),
-        getComponentPool<foeRenderStatePool>(pSimulationSet->componentPools.data(),
-                                             pSimulationSet->componentPools.size()),
-        gfxSession,
-        foeGfxVkGetBuiltinLayout(gfxSession,
-                                 foeBuiltinDescriptorSetLayoutFlagBits::
-                                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES),
-        foeGfxVkGetBuiltinSetLayoutIndex(
-            gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
-                            FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES));
-    if (vkRes != VK_SUCCESS) {
-        VK_END_PROGRAM
-    }
 
     {
         for (auto *ptr : getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
@@ -635,8 +588,6 @@ void Application::deinitialize() {
     }
 #endif
 
-    vkAnimationPool.deinitialize();
-
     // Resource Loader Deinitialization
     for (auto const &it : pSimulationSet->resourceLoaders) {
         it->deinitialize();
@@ -648,9 +599,6 @@ void Application::deinitialize() {
 
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
-
-    positionDescriptorPool.deinitialize();
-    cameraSystem.deinitialize();
 
     pipelinePool.deinitialize();
 
@@ -924,9 +872,17 @@ int Application::mainloop() {
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool, 0);
 
             // Generate position descriptors
-            cameraSystem.processCameras(frameIndex);
-            positionDescriptorPool.generatePositionDescriptors(frameIndex);
-            vkAnimationPool.uploadBoneOffsets(frameIndex);
+            getSystem<foeCameraSystem>(pSimulationSet->systems.data(),
+                                       pSimulationSet->systems.size())
+                ->processCameras(frameIndex);
+
+            getSystem<PositionDescriptorPool>(pSimulationSet->systems.data(),
+                                              pSimulationSet->systems.size())
+                ->generatePositionDescriptors(frameIndex);
+
+            getSystem<VkAnimationPool>(pSimulationSet->systems.data(),
+                                       pSimulationSet->systems.size())
+                ->uploadBoneOffsets(frameIndex);
 
             auto renderCall = [&](foeId entity, VkCommandBuffer commandBuffer,
                                   VkDescriptorSet projViewDescriptor,

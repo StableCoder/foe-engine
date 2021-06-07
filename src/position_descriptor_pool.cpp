@@ -20,9 +20,7 @@
 #include <foe/position/component/3d_pool.hpp>
 
 VkResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool,
-                                            foeGfxSession session,
-                                            VkDescriptorSetLayout modelMatrixLayout,
-                                            uint32_t modelMatrixBinding) {
+                                            foeGfxSession session) {
     mpPosition3dPool = pPosition3dPool;
 
     VkResult res;
@@ -37,8 +35,12 @@ VkResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool,
         std::max(static_cast<VkDeviceSize>(sizeof(glm::mat4)),
                  devProperties.limits.minUniformBufferOffsetAlignment);
 
-    mModelMatrixLayout = modelMatrixLayout;
-    mModelMatrixBinding = modelMatrixBinding;
+    mModelMatrixLayout = foeGfxVkGetBuiltinLayout(
+        session,
+        foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX);
+    mModelMatrixBinding = foeGfxVkGetBuiltinSetLayoutIndex(
+        session,
+        foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX);
 
     VkDescriptorPoolSize size{
         .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

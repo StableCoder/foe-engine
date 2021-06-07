@@ -19,6 +19,7 @@
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/simulation/system_base.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -28,13 +29,11 @@
 class foePosition3dPool;
 class foeCameraPool;
 
-class foeCameraSystem {
+class foeCameraSystem : public foeSystemBase {
   public:
     VkResult initialize(foePosition3dPool *pPosition3dPool,
                         foeCameraPool *pCameraPool,
-                        foeGfxSession gfxSession,
-                        VkDescriptorSetLayout projectionViewLayout,
-                        uint32_t projectionViewBinding);
+                        foeGfxSession gfxSession);
     void deinitialize();
 
     VkResult processCameras(uint32_t frameIndex);

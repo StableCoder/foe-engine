@@ -21,6 +21,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/simulation/system_base.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -30,12 +31,9 @@
 
 class foePosition3dPool;
 
-struct PositionDescriptorPool {
+struct PositionDescriptorPool : public foeSystemBase {
   public:
-    VkResult initialize(foePosition3dPool *pPosition3dPool,
-                        foeGfxSession gfxSession,
-                        VkDescriptorSetLayout modelMatrixLayout,
-                        uint32_t modelMatrixBinding);
+    VkResult initialize(foePosition3dPool *pPosition3dPool, foeGfxSession gfxSession);
     void deinitialize();
 
     VkResult generatePositionDescriptors(uint32_t frameIndex);

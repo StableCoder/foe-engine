@@ -35,12 +35,9 @@
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
-#include "camera_system.hpp"
 #include "frame_timer.hpp"
 #include "per_frame_data.hpp"
-#include "position_descriptor_pool.hpp"
 #include "settings.hpp"
-#include "vk_animation.hpp"
 
 #include <array>
 #include <map>
@@ -106,8 +103,7 @@ struct Application {
 
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
-
-    foeGfxUploadContext resUploader;
+    foeGfxUploadContext resUploader{FOE_NULL_HANDLE};
 
     VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
     foeSwapchain swapchain;
@@ -119,12 +115,6 @@ struct Application {
 
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
-
-    foeCameraSystem cameraSystem;
-    PositionDescriptorPool positionDescriptorPool;
-
-    // Other
-    VkAnimationPool vkAnimationPool;
 
 #ifdef EDITOR_MODE
     foeImGuiRenderer imguiRenderer;
