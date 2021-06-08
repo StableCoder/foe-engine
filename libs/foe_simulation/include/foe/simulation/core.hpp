@@ -72,6 +72,9 @@ struct foeSimulationFunctionalty {
 
     void (*onInitialization)(foeSimulationInitInfo const *);
     void (*onDeinitialization)(foeSimulationState const *);
+
+    bool operator==(foeSimulationFunctionalty const &) const noexcept;
+    bool operator!=(foeSimulationFunctionalty const &) const noexcept;
 };
 
 FOE_SIM_EXPORT bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);

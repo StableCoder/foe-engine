@@ -43,11 +43,20 @@ void deinitSimulation(foeSimulationState *pSimulationState) {
 
 } // namespace
 
+bool foeSimulationFunctionalty::operator==(foeSimulationFunctionalty const &rhs) const noexcept {
+    return onCreate == rhs.onCreate && onDestroy == rhs.onDestroy &&
+           onInitialization == rhs.onInitialization && onDeinitialization == rhs.onDeinitialization;
+}
+
+bool foeSimulationFunctionalty::operator!=(foeSimulationFunctionalty const &rhs) const noexcept {
+    return !(*this == rhs);
+}
+
 bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mRegistered) {
-        if (it.onCreate == functionality.onCreate && it.onDestroy == functionality.onDestroy) {
+        if (it == functionality) {
             FOE_LOG(SimulationState, Warning,
                     "registerFunctionality - Attempted to re-register functionality");
             return false;
@@ -64,7 +73,7 @@ void foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
     std::scoped_lock lock{mSync};
 
     for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it)
-        if (it->onCreate == functionality.onCreate && it->onDestroy == functionality.onDestroy) {
+        if (*it == functionality) {
             mRegistered.erase(it);
             return;
         }
