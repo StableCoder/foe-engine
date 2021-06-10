@@ -176,7 +176,19 @@ auto importState(std::filesystem::path stateDataPath,
         pSimulationSet->groupData.setPersistentImporter(std::move(persistentImporter));
     }
 
-    // Persistent Group Index Data
+    // Dependency Indice Data
+    for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
+        auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
+        if (pGroupImporter != nullptr) {
+            pGroupImporter->getGroupResourceIndexData(
+                *pSimulationSet->groupData.resourceIndices(foeIdValueToGroup(groupValue)));
+
+            pGroupImporter->getGroupEntityIndexData(
+                *pSimulationSet->groupData.entityIndices(foeIdValueToGroup(groupValue)));
+        }
+    }
+
+    // Persistent Indice Data
     bool retVal = pSimulationSet->groupData.persistentImporter()->getGroupEntityIndexData(
         *pSimulationSet->groupData.persistentEntityIndices());
     if (!retVal)
