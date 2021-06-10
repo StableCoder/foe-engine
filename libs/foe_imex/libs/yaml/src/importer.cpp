@@ -81,10 +81,10 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
     try {
         rootNode = YAML::LoadFile(path.string());
     } catch (YAML::ParserException const &e) {
-        FOE_LOG(ImexYaml, Fatal, "Failed to load Yaml file: {}", e.what());
+        FOE_LOG(foeImexYaml, Fatal, "Failed to load Yaml file: {}", e.what());
         return false;
     } catch (YAML::BadFile const &e) {
-        FOE_LOG(ImexYaml, Fatal, "YAML::LoadFile failed: {}", e.what());
+        FOE_LOG(foeImexYaml, Fatal, "YAML::LoadFile failed: {}", e.what());
         return false;
     }
 
@@ -112,7 +112,7 @@ bool importDependenciesFromNode(YAML::Node const &dependenciesNode,
             dependencies.emplace_back(newDependency);
         }
     } catch (YAML::Exception const &e) {
-        FOE_LOG(ImexYaml, Error, "{}", e.what())
+        FOE_LOG(foeImexYaml, Error, "{}", e.what())
         return false;
     }
 
@@ -147,7 +147,7 @@ bool getGroupIndexData(std::filesystem::path path, foeIdIndexGenerator &ecsGroup
     try {
         yaml_read_index_generator("", node, ecsGroup);
     } catch (foeYamlException const &e) {
-        FOE_LOG(ImexYaml, Error, "Failed to parse Group State Index Data from Yaml file: {}",
+        FOE_LOG(foeImexYaml, Error, "Failed to parse Group State Index Data from Yaml file: {}",
                 e.what())
         return false;
     }
@@ -172,12 +172,12 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / stateDirectoryPath}) {
-        FOE_LOG(ImexYaml, Info, "Visiting: {}", dirIt.path().string())
+        FOE_LOG(foeImexYaml, Info, "Visiting: {}", dirIt.path().string())
         if (std::filesystem::is_directory(dirIt))
             continue;
 
         if (!std::filesystem::is_regular_file(dirIt)) {
-            FOE_LOG(ImexYaml, Warning,
+            FOE_LOG(foeImexYaml, Warning,
                     "State data directory entry '{}' not a directory or regular file! Possible "
                     "corruption!",
                     dirIt.path().string())
@@ -208,9 +208,9 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
                 }
             }
 
-            FOE_LOG(ImexYaml, Info, "Parsed entity {}", foeIdToString(entity))
+            FOE_LOG(foeImexYaml, Info, "Parsed entity {}", foeIdToString(entity))
         } catch (foeYamlException const &e) {
-            FOE_LOG(ImexYaml, Error, "Failed to parse entity state data: {}", e.what())
+            FOE_LOG(foeImexYaml, Error, "Failed to parse entity state data: {}", e.what())
             return false;
         }
     }
@@ -232,7 +232,7 @@ bool foeYamlImporter::importResourceDefinitions(
             continue;
 
         if (!std::filesystem::is_regular_file(dirIt)) {
-            FOE_LOG(ImexYaml, Warning,
+            FOE_LOG(foeImexYaml, Warning,
                     "Resource file '{}' not a directory or regular file! Possible corruption!",
                     dirIt.path().string())
             return false;
@@ -276,13 +276,14 @@ bool foeYamlImporter::importResourceDefinitions(
                 }
             }
         } catch (foeYamlException const &e) {
-            FOE_LOG(ImexYaml, Error, "Failed to import resource definition: {}", e.what());
+            FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
             return false;
         } catch (std::exception const &e) {
-            FOE_LOG(ImexYaml, Error, "Failed to import resource definition: {}", e.what());
+            FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
             return false;
         } catch (...) {
-            FOE_LOG(ImexYaml, Error, "Failed to import resource definition with unknown exception");
+            FOE_LOG(foeImexYaml, Error,
+                    "Failed to import resource definition with unknown exception");
             return false;
         }
     }
@@ -329,13 +330,13 @@ GOT_RESOURCE_NODE:
             }
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(ImexYaml, Error, "Failed to import resource definition: {}", e.what());
+        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
         return nullptr;
     } catch (std::exception const &e) {
-        FOE_LOG(ImexYaml, Error, "Failed to import resource definition: {}", e.what());
+        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
         return nullptr;
     } catch (...) {
-        FOE_LOG(ImexYaml, Error, "Failed to import resource definition with unknown exception");
+        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition with unknown exception");
         return nullptr;
     }
 

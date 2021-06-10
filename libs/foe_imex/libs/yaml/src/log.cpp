@@ -16,4 +16,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(ImexYaml)
+FOE_DEFINE_LOG_CATEGORY(foeImexYaml)
