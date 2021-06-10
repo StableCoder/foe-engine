@@ -180,12 +180,12 @@ void foeBringupRegisterFunctionality() {
     });
 
     FOE_LOG(foeBringup, Verbose,
-            "foeBringupRegisterFunctionality - Completed deregistering functionality")
+            "foeBringupRegisterFunctionality - Completed registering functionality")
 }
 
 void foeBringupDeregisterFunctionality() {
     FOE_LOG(foeBringup, Verbose,
-            "foeBringupDeregisterFunctionality - Starting to register functionality")
+            "foeBringupDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .onCreate = onCreate,

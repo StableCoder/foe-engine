@@ -50,12 +50,12 @@ void foePositionRegisterFunctionality() {
     });
 
     FOE_LOG(foePosition, Verbose,
-            "foePositionRegisterFunctionality - Completed deregistering functionality")
+            "foePositionRegisterFunctionality - Completed registering functionality")
 }
 
 void foePositionDeregisterFunctionality() {
     FOE_LOG(foePosition, Verbose,
-            "foePositionDeregisterFunctionality - Starting to register functionality")
+            "foePositionDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .onCreate = onCreate,

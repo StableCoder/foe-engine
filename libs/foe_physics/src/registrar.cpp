@@ -162,12 +162,12 @@ void foePhysicsRegisterFunctionality() {
     });
 
     FOE_LOG(foePhysics, Verbose,
-            "foePhysicsRegisterFunctionality - Completed deregistering functionality")
+            "foePhysicsRegisterFunctionality - Completed registering functionality")
 }
 
 void foePhysicsDeregisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,
-            "foePhysicsDeregisterFunctionality - Starting to register functionality")
+            "foePhysicsDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .onCreate = onCreate,

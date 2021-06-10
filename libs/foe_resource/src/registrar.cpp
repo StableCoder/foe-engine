@@ -200,12 +200,12 @@ void foeResourceRegisterFunctionality() {
     });
 
     FOE_LOG(foeResource, Verbose,
-            "foeResourceRegisterFunctionality - Completed deregistering functionality")
+            "foeResourceRegisterFunctionality - Completed registering functionality")
 }
 
 void foeResourceDeregisterFunctionality() {
     FOE_LOG(foeResource, Verbose,
-            "foeResourceDeregisterFunctionality - Starting to register functionality")
+            "foeResourceDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .onCreate = onCreate,
