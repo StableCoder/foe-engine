@@ -8,6 +8,7 @@ target_sources(
           export_registrar.cpp
           frame_timer.cpp
           graphics.cpp
+          import_registrar.cpp
           log.cpp
           logging.cpp
           position_descriptor_pool.cpp
@@ -22,4 +23,3 @@ endif()
 
 add_subdirectory(imgui)
 add_subdirectory(state_import)
-add_subdirectory(state_yaml)

@@ -3,8 +3,8 @@ target_sources(
   PRIVATE armature.cpp
           export_registrar.cpp
           image.cpp
+          import_registrar.cpp
           material.cpp
           mesh.cpp
-          registrar.cpp
           shader.cpp
           vertex_descriptor.cpp)

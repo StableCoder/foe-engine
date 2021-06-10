@@ -14,28 +14,22 @@
     limitations under the License.
 */
 
-#include "function_registrar.hpp"
+#include "import_registrar.hpp"
 
 #include <foe/imex/yaml/generator.hpp>
-#include <foe/position/component/3d_pool.hpp>
-#include <foe/position/yaml/component/3d.hpp>
 #include <foe/yaml/exception.hpp>
 
-#include "../armature_state.hpp"
-#include "../camera.hpp"
-#include "../camera_pool.hpp"
-#include "../render_state.hpp"
-
-struct foeResourceCreateInfoBase;
-struct foeResourceLoaderBase;
-struct foeResourcePoolBase;
+#include "armature_state.hpp"
+#include "camera.hpp"
+#include "camera_pool.hpp"
+#include "render_state.hpp"
 
 namespace {
 
-bool importArmature(YAML::Node const &node,
-                    foeIdGroupTranslator const *pGroupTranslator,
-                    foeEntityID entity,
-                    std::vector<foeComponentPoolBase *> &componentPools) {
+bool importArmatureState(YAML::Node const &node,
+                         foeIdGroupTranslator const *pGroupTranslator,
+                         foeEntityID entity,
+                         std::vector<foeComponentPoolBase *> &componentPools) {
     if (auto dataNode = node["armature_state"]; dataNode) {
         foeArmatureStatePool *pPool;
 
@@ -92,37 +86,6 @@ bool importRenderState(YAML::Node const &node,
     return false;
 }
 
-bool importPosition3D(YAML::Node const &node,
-                      foeIdGroupTranslator const *,
-                      foeEntityID entity,
-                      std::vector<foeComponentPoolBase *> &componentPools) {
-    if (auto dataNode = node["position_3d"]; dataNode) {
-        foePosition3dPool *pPool;
-
-        for (auto it : componentPools) {
-            pPool = dynamic_cast<foePosition3dPool *>(it);
-            if (pPool != nullptr)
-                break;
-        }
-
-        if (pPool == nullptr)
-            return false;
-
-        try {
-            std::unique_ptr<foePosition3d> pData(new foePosition3d);
-            *pData = yaml_read_Position3D(dataNode);
-
-            pPool->insert(entity, std::move(pData));
-
-            return true;
-        } catch (foeYamlException const &e) {
-            throw foeYamlException{"position_3d::" + e.whatStr()};
-        }
-    }
-
-    return false;
-}
-
 bool importCamera(YAML::Node const &node,
                   foeIdGroupTranslator const *,
                   foeEntityID entity,
@@ -154,36 +117,45 @@ bool importCamera(YAML::Node const &node,
     return false;
 }
 
-} // namespace
-
-bool foeYamlCoreResourceFunctionRegistrar::registerFunctions(foeImporterGenerator *pGenerator) {
+void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
 
         // Component
-        pYamlImporter->addComponentImporter("armature_state", importArmature);
+        pYamlImporter->removeComponentImporter("armature_state", importArmatureState);
+        pYamlImporter->removeComponentImporter("render_state", importRenderState);
+        pYamlImporter->removeComponentImporter("camera", importCamera);
+    }
+}
+
+void onRegister(foeImporterGenerator *pGenerator) {
+    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
+        // Resources
+
+        // Component
+        pYamlImporter->addComponentImporter("armature_state", importArmatureState);
         pYamlImporter->addComponentImporter("render_state", importRenderState);
-        pYamlImporter->addComponentImporter("position_3d", importPosition3D);
         pYamlImporter->addComponentImporter("camera", importCamera);
     }
 
-    return true;
+    return;
 
 FAILED_TO_ADD:
-    deregisterFunctions(pGenerator);
-    return false;
+    onDeregister(pGenerator);
 }
 
-bool foeYamlCoreResourceFunctionRegistrar::deregisterFunctions(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
+} // namespace
 
-        // Component
-        pYamlImporter->removeComponentImporter("armature_state", importArmature);
-        pYamlImporter->removeComponentImporter("render_state", importRenderState);
-        pYamlImporter->removeComponentImporter("position_3d", importPosition3D);
-        pYamlImporter->removeComponentImporter("camera", importCamera);
-    }
+void foeBringupRegisterYamlImportFunctionality() {
+    foeRegisterImportFunctionality(foeImportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
+}
 
-    return true;
+void foeBringupDeregisterYamlImportFunctionality() {
+    foeDeregisterImportFunctionality(foeImportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
 }

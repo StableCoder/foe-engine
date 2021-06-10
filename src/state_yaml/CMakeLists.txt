@@ -1,1 +1,0 @@
-target_sources(foe_engine_lib PRIVATE function_registrar.cpp)

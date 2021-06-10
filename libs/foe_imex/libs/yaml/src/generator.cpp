@@ -139,3 +139,11 @@ bool foeYamlImporterGenerator::removeComponentImporter(std::string key,
     mComponentFns.erase(searchIt);
     return true;
 }
+
+namespace {
+foeYamlImporterGenerator gGenerator;
+}
+
+bool foeRegisterYamlImportGenerator() { return foeRegisterImportGenerator(&gGenerator); }
+
+void foeDeregisterYamlImportGenerator() { foeDeregisterImportGenerator(&gGenerator); }

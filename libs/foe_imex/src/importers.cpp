@@ -16,57 +16,22 @@
 
 #include <foe/imex/importers.hpp>
 
+#include "log.hpp"
+
 #include <mutex>
 #include <vector>
 
 namespace {
 
-std::mutex sync;
+std::mutex gSync;
 
-std::vector<foeImporterFunctionRegistrar *> registrars;
 std::vector<foeImporterGenerator *> generators;
+std::vector<foeImportFunctionality> gFunctionality;
 
 } // namespace
 
-bool addImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar) {
-    std::scoped_lock lock{sync};
-
-    for (auto const &it : registrars) {
-        if (it == pRegistrar)
-            return false;
-    }
-
-    // Add the registrar
-    registrars.emplace_back(pRegistrar);
-
-    // Run the registrar on all available generators to register where possible
-    for (auto &it : generators) {
-        pRegistrar->registerFunctions(it);
-    }
-
-    return true;
-}
-
-bool removeImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar) {
-    std::scoped_lock lock{sync};
-
-    for (auto it = registrars.begin(); it != registrars.end(); ++it) {
-        if (*it != pRegistrar)
-            continue;
-
-        // Found, deregister functions from associated generators
-        for (auto &pGenerator : generators) {
-            pRegistrar->deregisterFunctions(pGenerator);
-        }
-
-        registrars.erase(it);
-    }
-
-    return false;
-}
-
-bool addImporterGenerator(foeImporterGenerator *pGenerator) {
-    std::scoped_lock lock{sync};
+bool foeRegisterImportGenerator(foeImporterGenerator *pGenerator) {
+    std::scoped_lock lock{gSync};
 
     for (auto const &it : generators) {
         if (it == pGenerator)
@@ -76,16 +41,11 @@ bool addImporterGenerator(foeImporterGenerator *pGenerator) {
     // Add the generator
     generators.emplace_back(pGenerator);
 
-    // Run all current registrars to it
-    for (auto pRegistrar : registrars) {
-        pRegistrar->registerFunctions(pGenerator);
-    }
-
     return true;
 }
 
-bool removeImporterGenerator(foeImporterGenerator *pGenerator) {
-    std::scoped_lock lock{sync};
+bool foeDeregisterImportGenerator(foeImporterGenerator *pGenerator) {
+    std::scoped_lock lock{gSync};
 
     for (auto it = generators.begin(); it != generators.end(); ++it) {
         if (*it != pGenerator)
@@ -101,7 +61,7 @@ bool removeImporterGenerator(foeImporterGenerator *pGenerator) {
 }
 
 auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> foeImporterBase * {
-    std::scoped_lock lock{sync};
+    std::scoped_lock lock{gSync};
 
     for (auto it : generators) {
         auto *pImporter = it->createImporter(group, stateDataPath);
@@ -110,4 +70,51 @@ auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> fo
     }
 
     return nullptr;
+}
+
+bool foeRegisterImportFunctionality(foeImportFunctionality const &functionality) {
+    std::scoped_lock lock{gSync};
+
+    for (auto const &it : gFunctionality) {
+        if (it == functionality) {
+            FOE_LOG(foeImex, Warning,
+                    "foeRegisterImportFunctionality - Attempted to re-register functionality");
+            return false;
+        }
+    }
+
+    // Not registered, add it now
+    gFunctionality.emplace_back(functionality);
+
+    // Add the *new* functionality to any already-existing importers
+    if (functionality.onRegister) {
+        for (auto const &it : generators) {
+            functionality.onRegister(it);
+        }
+    }
+
+    return true;
+}
+
+void foeDeregisterImportFunctionality(foeImportFunctionality const &functionality) {
+    std::scoped_lock lock{gSync};
+
+    auto registration = gFunctionality.begin();
+    for (; registration != gFunctionality.end(); ++registration) {
+        if (*registration == functionality) {
+            goto CONTINUE_DEREGISTRATION;
+        }
+    }
+
+    FOE_LOG(foeImex, Warning,
+            "foeDeregisterImportFunctionality - Attempted to deregister functionality that was "
+            "never registered");
+    return;
+
+CONTINUE_DEREGISTRATION:
+    if (registration->onDeregister) {
+        for (auto const &it : generators) {
+            registration->onDeregister(it);
+        }
+    }
 }

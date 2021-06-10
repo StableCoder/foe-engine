@@ -33,6 +33,9 @@ struct foeResourceLoaderBase;
 struct foeResourcePoolBase;
 struct foeComponentPoolBase;
 
+FOE_IMEX_YAML_EXPORT bool foeRegisterYamlImportGenerator();
+FOE_IMEX_YAML_EXPORT void foeDeregisterYamlImportGenerator();
+
 class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerator {
   public:
     using ImportFn = void (*)(YAML::Node const &,

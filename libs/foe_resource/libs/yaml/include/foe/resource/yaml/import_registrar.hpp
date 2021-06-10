@@ -14,14 +14,13 @@
     limitations under the License.
 */
 
-#ifndef STATE_YAML_FUNCTION_REGISTRAR_HPP
-#define STATE_YAML_FUNCTION_REGISTRAR_HPP
+#ifndef FOE_RESOURCE_YAML_REGISTRAR_HPP
+#define FOE_RESOURCE_YAML_REGISTRAR_HPP
 
-#include <foe/imex/importers.hpp>
+#include <foe/resource/yaml/export.h>
 
-class foeYamlCoreResourceFunctionRegistrar : public foeImporterFunctionRegistrar {
-    bool registerFunctions(foeImporterGenerator *pGenerator) final;
-    bool deregisterFunctions(foeImporterGenerator *pGenerator) final;
-};
+FOE_RES_YAML_EXPORT bool foeResourceRegisterYamlImportFunctionality();
 
-#endif // STATE_YAML_FUNCTION_REGISTRAR_HPP
+FOE_RES_YAML_EXPORT void foeResourceDeregisterYamlImportFunctionality();
+
+#endif // FOE_RESOURCE_YAML_REGISTRAR_HPP

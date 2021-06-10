@@ -17,12 +17,10 @@
 #ifndef FOE_PHYSICS_YAML_REGISTRAR_HPP
 #define FOE_PHYSICS_YAML_REGISTRAR_HPP
 
-#include <foe/imex/importers.hpp>
 #include <foe/physics/yaml/export.h>
 
-class FOE_PHYSICS_YAML_EXPORT foePhysicsYamlRegistrar : public foeImporterFunctionRegistrar {
-    bool registerFunctions(foeImporterGenerator *pGenerator) final;
-    bool deregisterFunctions(foeImporterGenerator *pGenerator) final;
-};
+FOE_PHYSICS_YAML_EXPORT bool foePhysicsRegisterYamlImportFunctionality();
+
+FOE_PHYSICS_YAML_EXPORT void foePhysicsDeregisterYamlImportFunctionality();
 
 #endif // FOE_PHYSICS_YAML_REGISTRAR_HPP

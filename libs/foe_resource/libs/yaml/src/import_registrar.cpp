@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/registrar.hpp>
+#include <foe/resource/yaml/import_registrar.hpp>
 
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/resource/armature_loader.hpp>
@@ -236,9 +236,32 @@ bool imageCreateProcessing(foeResourceID resource,
     return true;
 }
 
-} // namespace
+void onDeregister(foeImporterGenerator *pGenerator) {
+    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
+        // Resources
+        pYamlImporter->removeImporter("armature_v1", yaml_read_armature_definition,
+                                      armatureCreateProcessing);
 
-bool foeResourceYamlRegistrar::registerFunctions(foeImporterGenerator *pGenerator) {
+        pYamlImporter->removeImporter("mesh_v1", yaml_read_mesh_definition, meshCreateProcessing);
+
+        pYamlImporter->removeImporter("material_v1", yaml_read_material_definition,
+                                      materialCreateProcessing);
+
+        pYamlImporter->removeImporter("vertex_descriptor_v1",
+                                      yaml_read_vertex_descriptor_definition,
+                                      vertexDescriptorCreateProcessing);
+
+        pYamlImporter->removeImporter("shader_v1", yaml_read_shader_definition,
+                                      shaderCreateProcessing);
+
+        pYamlImporter->removeImporter("image_v1", yaml_read_image_definition,
+                                      imageCreateProcessing);
+
+        // Components
+    }
+}
+
+void onRegister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         if (!pYamlImporter->addImporter("armature_v1", yaml_read_armature_definition,
@@ -268,36 +291,24 @@ bool foeResourceYamlRegistrar::registerFunctions(foeImporterGenerator *pGenerato
         // Components
     }
 
-    return true;
+    return;
 
 FAILED_TO_ADD:
-    deregisterFunctions(pGenerator);
-    return false;
+    onDeregister(pGenerator);
 }
 
-bool foeResourceYamlRegistrar::deregisterFunctions(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-        pYamlImporter->removeImporter("armature_v1", yaml_read_armature_definition,
-                                      armatureCreateProcessing);
+} // namespace
 
-        pYamlImporter->removeImporter("mesh_v1", yaml_read_mesh_definition, meshCreateProcessing);
+bool foeResourceRegisterYamlImportFunctionality() {
+    return foeRegisterImportFunctionality(foeImportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
+}
 
-        pYamlImporter->removeImporter("material_v1", yaml_read_material_definition,
-                                      materialCreateProcessing);
-
-        pYamlImporter->removeImporter("vertex_descriptor_v1",
-                                      yaml_read_vertex_descriptor_definition,
-                                      vertexDescriptorCreateProcessing);
-
-        pYamlImporter->removeImporter("shader_v1", yaml_read_shader_definition,
-                                      shaderCreateProcessing);
-
-        pYamlImporter->removeImporter("image_v1", yaml_read_image_definition,
-                                      imageCreateProcessing);
-
-        // Components
-    }
-
-    return true;
+void foeResourceDeregisterYamlImportFunctionality() {
+    foeDeregisterImportFunctionality(foeImportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
 }

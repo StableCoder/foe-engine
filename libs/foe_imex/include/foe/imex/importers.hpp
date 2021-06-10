@@ -31,17 +31,23 @@ class foeImporterGenerator {
         -> foeImporterBase * = 0;
 };
 
-class foeImporterFunctionRegistrar {
-  public:
-    virtual bool registerFunctions(foeImporterGenerator *pGenerator) = 0;
-    virtual bool deregisterFunctions(foeImporterGenerator *pGenerator) = 0;
+FOE_IMEX_EXPORT bool foeRegisterImportGenerator(foeImporterGenerator *pGenerator);
+FOE_IMEX_EXPORT bool foeDeregisterImportGenerator(foeImporterGenerator *pGenerator);
+
+struct foeImportFunctionality {
+    void (*onRegister)(foeImporterGenerator *);
+    void (*onDeregister)(foeImporterGenerator *);
+
+    inline bool operator==(foeImportFunctionality const &rhs) const noexcept {
+        return onRegister == rhs.onRegister && onDeregister == rhs.onDeregister;
+    }
+    inline bool operator!=(foeImportFunctionality const &rhs) const noexcept {
+        return !(this == &rhs);
+    }
 };
 
-FOE_IMEX_EXPORT bool addImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar);
-FOE_IMEX_EXPORT bool removeImporterFunctionRegistrar(foeImporterFunctionRegistrar *pRegistrar);
-
-FOE_IMEX_EXPORT bool addImporterGenerator(foeImporterGenerator *pGenerator);
-FOE_IMEX_EXPORT bool removeImporterGenerator(foeImporterGenerator *pGenerator);
+FOE_IMEX_EXPORT bool foeRegisterImportFunctionality(foeImportFunctionality const &functionality);
+FOE_IMEX_EXPORT void foeDeregisterImportFunctionality(foeImportFunctionality const &functionality);
 
 FOE_IMEX_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
     -> foeImporterBase *;

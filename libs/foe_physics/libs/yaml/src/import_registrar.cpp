@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/physics/yaml/registrar.hpp>
+#include <foe/physics/yaml/import_registrar.hpp>
 
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
@@ -91,9 +91,18 @@ bool importRigidBody(YAML::Node const &node,
     return false;
 }
 
-} // namespace
+void onDeregister(foeImporterGenerator *pGenerator) {
+    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
+        // Resources
+        pYamlImporter->removeImporter("collision_shape_v1", yaml_read_collision_shape_definition,
+                                      collisionShapeCreateProcessing);
 
-bool foePhysicsYamlRegistrar::registerFunctions(foeImporterGenerator *pGenerator) {
+        // Components
+        pYamlImporter->removeComponentImporter("rigid_body", importRigidBody);
+    }
+}
+
+void onRegister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         if (!pYamlImporter->addImporter("collision_shape_v1", yaml_read_collision_shape_definition,
@@ -104,22 +113,24 @@ bool foePhysicsYamlRegistrar::registerFunctions(foeImporterGenerator *pGenerator
         pYamlImporter->addComponentImporter("rigid_body", importRigidBody);
     }
 
-    return true;
+    return;
 
 FAILED_TO_ADD:
-    deregisterFunctions(pGenerator);
-    return false;
+    onDeregister(pGenerator);
 }
 
-bool foePhysicsYamlRegistrar::deregisterFunctions(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-        pYamlImporter->removeImporter("collision_shape_v1", yaml_read_collision_shape_definition,
-                                      collisionShapeCreateProcessing);
+} // namespace
 
-        // Components
-        pYamlImporter->removeComponentImporter("rigid_body", importRigidBody);
-    }
+bool foePhysicsRegisterYamlImportFunctionality() {
+    return foeRegisterImportFunctionality(foeImportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
+}
 
-    return true;
+void foePhysicsDeregisterYamlImportFunctionality() {
+    foeDeregisterImportFunctionality(foeImportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
 }
