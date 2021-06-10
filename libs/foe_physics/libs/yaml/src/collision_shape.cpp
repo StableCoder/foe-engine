@@ -85,7 +85,7 @@ void yaml_read_collision_shape_definition(YAML::Node const &node,
 auto yaml_write_collision_shape_definition(foePhysCollisionShapeCreateInfo &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_collision_shape_definition_internal(std::string{cNodeName}, data, outNode);
+    yaml_write_collision_shape_definition_internal("", data, outNode);
 
     return outNode;
 }

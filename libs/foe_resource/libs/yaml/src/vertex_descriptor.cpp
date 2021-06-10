@@ -133,7 +133,7 @@ auto yaml_write_vertex_descriptor_definition(foeVertexDescriptor const &vertexDe
     -> YAML::Node {
     YAML::Node definition;
 
-    yaml_write_vertex_descriptor_internal(std::string{cNodeName}, vertexDescriptor, definition);
+    yaml_write_vertex_descriptor_internal("", vertexDescriptor, definition);
 
     return definition;
 }

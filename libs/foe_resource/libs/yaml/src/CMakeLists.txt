@@ -1,6 +1,7 @@
 target_sources(
   foe_resource_yaml
   PRIVATE armature.cpp
+          export_registrar.cpp
           image.cpp
           material.cpp
           mesh.cpp

@@ -116,7 +116,7 @@ void yaml_read_mesh_definition(YAML::Node const &node,
 auto yaml_write_mesh_definition(foeMeshCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_mesh_internal(std::string{cNodeName}, data, outNode);
+    yaml_write_mesh_internal("", data, outNode);
 
     return outNode;
 }

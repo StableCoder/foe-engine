@@ -21,16 +21,35 @@
 #include <foe/resource/registrar.hpp>
 #include <foe/simulation/core.hpp>
 
+#include <foe/physics/yaml/export_registrar.hpp>
+#include <foe/position/yaml/export_registrar.hpp>
+#include <foe/resource/yaml/export_registrar.hpp>
+
+#include "export_registrar.hpp"
 #include "registrar.hpp"
 
 void registerBasicFunctionality() noexcept {
+    // Core
     foePhysicsRegisterFunctionality();
     foePositionRegisterFunctionality();
     foeResourceRegisterFunctionality();
     foeBringupRegisterFunctionality();
+
+    // Export
+    foePhysicsRegisterYamlExportFunctionality();
+    foePositionRegisterYamlExportFunctionality();
+    foeResourceRegisterYamlExportFunctionality();
+    foeBringupRegisterYamlExportFunctionality();
 }
 
 void deregisterBasicFunctionality() noexcept {
+    // Export
+    foeBringupDeregisterYamlExportFunctionality();
+    foeResourceDeregisterYamlExportFunctionality();
+    foePositionDeregisterYamlExportFunctionality();
+    foePhysicsDeregisterYamlExportFunctionality();
+
+    // Core
     foeBringupDeregisterFunctionality();
     foeResourceDeregisterFunctionality();
     foePhysicsDeregisterFunctionality();

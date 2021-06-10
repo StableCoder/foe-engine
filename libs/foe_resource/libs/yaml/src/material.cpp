@@ -122,7 +122,7 @@ auto yaml_write_material_definition(foeMaterialCreateInfo const &data,
                                     foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_material_internal(std::string{cNodeName}, data, *pFragmentDescriptor, outNode);
+    yaml_write_material_internal("", data, *pFragmentDescriptor, outNode);
 
     return outNode;
 }

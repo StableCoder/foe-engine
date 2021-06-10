@@ -481,14 +481,15 @@ int Application::initialize(int argc, char **argv) {
     return 0;
 }
 
+#include <foe/imex/yaml/exporter.hpp>
+
 void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
-    /*
-    exportGroupState("testExport", gfxSession, pSimulationSet->groupData,
-                     pSimulationSet->pEntityNameMap, pSimulationSet->state,
-                     pSimulationSet->pResourceNameMap, pSimulationSet->resources);
-    */
+
+    foeYamlExporter yamlExporter;
+    yamlExporter.exportState("testExport", pSimulationSet.get());
+
     // Systems Deinitialization
     getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
         ->deinitialize();

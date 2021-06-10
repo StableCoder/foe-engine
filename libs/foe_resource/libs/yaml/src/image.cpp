@@ -84,7 +84,7 @@ void yaml_read_image_definition(YAML::Node const &node,
 auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_image_internal(std::string{cNodeName}, data, outNode);
+    yaml_write_image_internal("", data, outNode);
 
     return outNode;
 }

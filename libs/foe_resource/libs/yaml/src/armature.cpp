@@ -133,7 +133,7 @@ void yaml_read_armature_definition(YAML::Node const &node,
 auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_armature_internal(std::string{cNodeName}, data, outNode);
+    yaml_write_armature_internal("", data, outNode);
 
     return outNode;
 }

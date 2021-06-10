@@ -1,1 +1,1 @@
-target_sources(foe_position_yaml PRIVATE 3d.cpp)
+target_sources(foe_position_yaml PRIVATE 3d.cpp export_registrar.cpp)

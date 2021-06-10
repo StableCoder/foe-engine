@@ -1,0 +1,152 @@
+/*
+    Copyright (C) 2021 George Cave.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+#include <foe/resource/yaml/export_registrar.hpp>
+
+#include <foe/imex/exporters.hpp>
+#include <foe/imex/yaml/exporter.hpp>
+
+#include <foe/resource/armature_pool.hpp>
+#include <foe/resource/image_pool.hpp>
+#include <foe/resource/material_pool.hpp>
+#include <foe/resource/mesh_pool.hpp>
+#include <foe/resource/shader_pool.hpp>
+#include <foe/resource/vertex_descriptor_pool.hpp>
+#include <foe/resource/yaml/armature.hpp>
+#include <foe/resource/yaml/image.hpp>
+#include <foe/resource/yaml/material.hpp>
+#include <foe/resource/yaml/mesh.hpp>
+#include <foe/resource/yaml/shader.hpp>
+#include <foe/resource/yaml/vertex_descriptor.hpp>
+
+namespace {
+
+std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
+                                            foeResourcePoolBase **pResourcePools,
+                                            uint32_t resourcePoolCount) {
+    std::vector<foeKeyYamlPair> keyDataPairs;
+    auto const *pEndPools = pResourcePools + resourcePoolCount;
+
+    for (; pResourcePools != pEndPools; ++pResourcePools) {
+
+        // Armature
+        auto *pArmaturePool = dynamic_cast<foeArmaturePool *>(*pResourcePools);
+        if (pArmaturePool) {
+            auto const *pArmature = pArmaturePool->find(resource);
+            if (pArmature && pArmature->createInfo) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = "armature_v1",
+                    .data = yaml_write_armature_definition(*pArmature->createInfo.get()),
+                });
+            }
+        }
+
+        // Image
+        auto *pImagePool = dynamic_cast<foeImagePool *>(*pResourcePools);
+        if (pImagePool) {
+            auto const *pImage = pImagePool->find(resource);
+            if (pImage && pImage->createInfo) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = "image_v1",
+                    .data = yaml_write_image_definition(*pImage->createInfo.get()),
+                });
+            }
+        }
+
+        // Material
+        auto *pMaterialPool = dynamic_cast<foeMaterialPool *>(*pResourcePools);
+        if (pMaterialPool) {
+            auto const *pMaterial = pMaterialPool->find(resource);
+            if (pMaterial && pMaterial->createInfo) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = "material_v1",
+                    .data = yaml_write_material_definition(*pMaterial->createInfo.get(),
+                                                           pMaterial->getGfxFragmentDescriptor()),
+                });
+            }
+        }
+
+        // Mesh
+        auto *pMeshPool = dynamic_cast<foeMeshPool *>(*pResourcePools);
+        if (pMeshPool) {
+            auto const *pMesh = pMeshPool->find(resource);
+            if (pMesh && pMesh->createInfo) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = "mesh_v1",
+                    .data = yaml_write_mesh_definition(*pMesh->createInfo.get()),
+                });
+            }
+        }
+
+        // Shader
+        auto *pShaderPool = dynamic_cast<foeShaderPool *>(*pResourcePools);
+        if (pShaderPool) {
+            auto const *pShader = pShaderPool->find(resource);
+            if (pShader && pShader->createInfo) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = "shader_v1",
+                    .data = yaml_write_shader_definition(*pShader->createInfo.get()),
+                });
+            }
+        }
+
+        // VertexDescriptor
+        auto *pVertexDescriptorPool = dynamic_cast<foeVertexDescriptorPool *>(*pResourcePools);
+        if (pVertexDescriptorPool) {
+            auto const *pVertexDescriptor = pVertexDescriptorPool->find(resource);
+            if (pVertexDescriptor && pVertexDescriptor->createInfo) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = "vertex_descriptor_v1",
+                    .data = yaml_write_vertex_descriptor_definition(*pVertexDescriptor),
+                });
+            }
+        }
+    }
+
+    return keyDataPairs;
+}
+
+void onRegister(foeExporterBase *pExporter) {
+    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
+    if (pYamlExporter) {
+        // Resource
+        pYamlExporter->registerResourceFn(exportResources);
+    }
+}
+
+void onDeregister(foeExporterBase *pExporter) {
+    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
+    if (pYamlExporter) {
+        // Resource
+        pYamlExporter->deregisterResourceFn(exportResources);
+    }
+}
+
+} // namespace
+
+void foeResourceRegisterYamlExportFunctionality() {
+    foeRegisterExportFunctionality(foeExportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
+}
+
+void foeResourceDeregisterYamlExportFunctionality() {
+    foeDeregisterExportFunctionality(foeExportFunctionality{
+        .onRegister = onRegister,
+        .onDeregister = onDeregister,
+    });
+}

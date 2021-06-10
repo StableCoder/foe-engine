@@ -85,7 +85,7 @@ void yaml_read_shader_definition(YAML::Node const &node,
 auto yaml_write_shader_definition(foeShaderCreateInfo const &data) -> YAML::Node {
     YAML::Node definition;
 
-    yaml_write_shader_internal(std::string{cNodeName}, data, definition);
+    yaml_write_shader_internal("", data, definition);
 
     return definition;
 }
