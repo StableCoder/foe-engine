@@ -25,19 +25,40 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
 #include <foe/physics/system.hpp>
+#include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
+#include <foe/resource/armature.hpp>
+#include <foe/resource/armature_loader.hpp>
+#include <foe/resource/armature_pool.hpp>
+#include <foe/resource/image.hpp>
+#include <foe/resource/image_loader.hpp>
+#include <foe/resource/image_pool.hpp>
+#include <foe/resource/material.hpp>
+#include <foe/resource/material_loader.hpp>
+#include <foe/resource/material_pool.hpp>
+#include <foe/resource/mesh.hpp>
+#include <foe/resource/mesh_loader.hpp>
+#include <foe/resource/mesh_pool.hpp>
+#include <foe/resource/shader.hpp>
+#include <foe/resource/shader_loader.hpp>
+#include <foe/resource/shader_pool.hpp>
+#include <foe/resource/vertex_descriptor.hpp>
+#include <foe/resource/vertex_descriptor_loader.hpp>
+#include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/core.hpp>
 #include <foe/wsi_vulkan.hpp>
 #include <vk_error_code.hpp>
 
 #include "armature_system.hpp"
+#include "camera_pool.hpp"
 #include "camera_system.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
 #include "position_descriptor_pool.hpp"
 #include "register_basic_functionality.hpp"
+#include "render_state.hpp"
 #include "vk_animation.hpp"
 
 #ifdef FOE_XR_SUPPORT
@@ -131,7 +152,6 @@ auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
 } // namespace
 
 #include "state_import/import_state.hpp"
-#include "state_yaml/export.hpp"
 #include "state_yaml/function_registrar.hpp"
 #include <foe/physics/yaml/registrar.hpp>
 #include <foe/resource/yaml/registrar.hpp>
