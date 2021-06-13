@@ -22,11 +22,13 @@
 
 struct foeIdGroupTranslator;
 
-void yaml_read_material_definition(YAML::Node const &node,
+char const* yaml_material_key();
+
+void yaml_read_material(YAML::Node const &node,
                                    foeIdGroupTranslator const *pTranslator,
                                    foeResourceCreateInfoBase **ppCreateInfo);
 
-auto yaml_write_material_definition(foeMaterialCreateInfo const &data,
+auto yaml_write_material(foeMaterialCreateInfo const &data,
                                     foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node;
 
 #endif // MATERIAL_HPP

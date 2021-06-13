@@ -65,7 +65,7 @@ bool importRigidBody(YAML::Node const &node,
                      foeIdGroupTranslator const *pGroupTranslator,
                      foeEntityID entity,
                      std::vector<foeComponentPoolBase *> &componentPools) {
-    if (auto dataNode = node["rigid_body"]; dataNode) {
+    if (auto dataNode = node[yaml_rigid_body_key()]; dataNode) {
         foeRigidBodyPool *pPool;
 
         for (auto it : componentPools) {
@@ -78,13 +78,13 @@ bool importRigidBody(YAML::Node const &node,
             return false;
 
         try {
-            foeRigidBody data = yaml_read_RigidBody(dataNode, pGroupTranslator);
+            foeRigidBody data = yaml_read_rigid_body(dataNode, pGroupTranslator);
 
             pPool->insert(entity, std::move(data));
 
             return true;
         } catch (foeYamlException const &e) {
-            throw foeYamlException{"rigid_body::" + e.whatStr()};
+            throw foeYamlException{std::string{yaml_rigid_body_key()} + "::" + e.whatStr()};
         }
     }
 
@@ -94,23 +94,23 @@ bool importRigidBody(YAML::Node const &node,
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        pYamlImporter->deregisterResourceFns("collision_shape_v1", yaml_read_collision_shape_definition,
+        pYamlImporter->deregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
                                       collisionShapeCreateProcessing);
 
         // Components
-        pYamlImporter->deregisterComponentFn("rigid_body", importRigidBody);
+        pYamlImporter->deregisterComponentFn(yaml_rigid_body_key(), importRigidBody);
     }
 }
 
 void onRegister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        if (!pYamlImporter->registerResourceFns("collision_shape_v1", yaml_read_collision_shape_definition,
+        if (!pYamlImporter->registerResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
                                         collisionShapeCreateProcessing))
             goto FAILED_TO_ADD;
 
         // Components
-        pYamlImporter->registerComponentFn("rigid_body", importRigidBody);
+        pYamlImporter->registerComponentFn(yaml_rigid_body_key(), importRigidBody);
     }
 
     return;

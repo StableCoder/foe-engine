@@ -22,10 +22,12 @@
 
 struct foeIdGroupTranslator;
 
-void yaml_read_mesh_definition(YAML::Node const &node,
+char const* yaml_mesh_key();
+
+void yaml_read_mesh(YAML::Node const &node,
                                foeIdGroupTranslator const *pTranslator,
                                foeResourceCreateInfoBase **ppCreateInfo);
 
-auto yaml_write_mesh_definition(foeMeshCreateInfo const &data) -> YAML::Node;
+auto yaml_write_mesh(foeMeshCreateInfo const &data) -> YAML::Node;
 
 #endif // MESH_HPP

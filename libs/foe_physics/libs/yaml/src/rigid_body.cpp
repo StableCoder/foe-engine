@@ -19,7 +19,9 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/parsing.hpp>
 
-auto yaml_read_RigidBody(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
+char const* yaml_rigid_body_key() { return "rigid_body"; }
+
+auto yaml_read_rigid_body(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
     -> foeRigidBody {
     foeRigidBody rigidBody;
 
@@ -29,7 +31,7 @@ auto yaml_read_RigidBody(YAML::Node const &node, foeIdGroupTranslator const *pId
     return rigidBody;
 }
 
-auto yaml_write_RigidBody(foeRigidBody const &data) -> YAML::Node {
+auto yaml_write_rigid_body(foeRigidBody const &data) -> YAML::Node {
     YAML::Node writeNode;
 
     yaml_write_required("mass", data.mass, writeNode);

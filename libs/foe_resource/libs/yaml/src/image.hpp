@@ -22,10 +22,12 @@
 
 struct foeIdGroupTranslator;
 
-void yaml_read_image_definition(YAML::Node const &node,
+char const* yaml_image_key();
+
+void yaml_read_image(YAML::Node const &node,
                                 foeIdGroupTranslator const *pTranslator,
                                 foeResourceCreateInfoBase **ppCreateInfo);
 
-auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node;
+auto yaml_write_image(foeImageCreateInfo const &data) -> YAML::Node;
 
 #endif // IMAGE_HPP

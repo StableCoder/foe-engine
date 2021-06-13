@@ -30,7 +30,7 @@ bool importPosition3D(YAML::Node const &node,
                       foeIdGroupTranslator const *,
                       foeEntityID entity,
                       std::vector<foeComponentPoolBase *> &componentPools) {
-    if (auto dataNode = node["position_3d"]; dataNode) {
+    if (auto dataNode = node[yaml_position3d_key()]; dataNode) {
         foePosition3dPool *pPool;
 
         for (auto it : componentPools) {
@@ -44,13 +44,13 @@ bool importPosition3D(YAML::Node const &node,
 
         try {
             std::unique_ptr<foePosition3d> pData(new foePosition3d);
-            *pData = yaml_read_Position3D(dataNode);
+            *pData = yaml_read_position3d(dataNode);
 
             pPool->insert(entity, std::move(pData));
 
             return true;
         } catch (foeYamlException const &e) {
-            throw foeYamlException{"position_3d::" + e.whatStr()};
+            throw foeYamlException{std::string{yaml_position3d_key()} + "::" + e.whatStr()};
         }
     }
 
@@ -62,7 +62,7 @@ void onDeregister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->deregisterComponentFn("position_3d", importPosition3D);
+        pYamlImporter->deregisterComponentFn(yaml_position3d_key(), importPosition3D);
     }
 }
 
@@ -71,7 +71,7 @@ void onRegister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->registerComponentFn("position_3d", importPosition3D);
+        pYamlImporter->registerComponentFn(yaml_position3d_key(), importPosition3D);
     }
 
     return;

@@ -36,8 +36,8 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
             if (auto searchIt = pPosition3dPool->find(entity);
                 searchIt != pPosition3dPool->size()) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "position_3d",
-                    .data = yaml_write_Position3D(*pPosition3dPool->begin<1>()[searchIt].get()),
+                    .key = yaml_position3d_key(),
+                    .data = yaml_write_position3d(*pPosition3dPool->begin<1>()[searchIt].get()),
                 });
             }
         }

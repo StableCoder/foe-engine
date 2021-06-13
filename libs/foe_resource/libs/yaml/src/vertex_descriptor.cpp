@@ -28,8 +28,6 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "vertex_descriptor_v1";
-
 bool yaml_read_vertex_descriptor_internal(std::string const &nodeName,
                                           YAML::Node const &node,
                                           foeIdGroupTranslator const *pTranslator,
@@ -119,17 +117,19 @@ bool yaml_write_vertex_descriptor_internal(std::string const &nodeName,
 
 } // namespace
 
-void yaml_read_vertex_descriptor_definition(YAML::Node const &node,
+char const* yaml_vertex_descriptor_key() { return "vertex_descriptor_v1"; }
+
+void yaml_read_vertex_descriptor(YAML::Node const &node,
                                             foeIdGroupTranslator const *pTranslator,
                                             foeResourceCreateInfoBase **ppCreateInfo) {
     foeVertexDescriptorCreateInfo ci;
 
-    yaml_read_vertex_descriptor_internal(std::string{cNodeName}, node, pTranslator, ci);
+    yaml_read_vertex_descriptor_internal(yaml_vertex_descriptor_key(), node, pTranslator, ci);
 
     *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
 }
 
-auto yaml_write_vertex_descriptor_definition(foeVertexDescriptor const &vertexDescriptor)
+auto yaml_write_vertex_descriptor(foeVertexDescriptor const &vertexDescriptor)
     -> YAML::Node {
     YAML::Node definition;
 

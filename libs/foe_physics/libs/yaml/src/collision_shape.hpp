@@ -23,10 +23,12 @@ struct foeIdGroupTranslator;
 struct foeResourceCreateInfoBase;
 struct foePhysCollisionShapeCreateInfo;
 
-void yaml_read_collision_shape_definition(YAML::Node const &node,
+char const* yaml_collision_shape_key();
+
+void yaml_read_collision_shape(YAML::Node const &node,
                                           foeIdGroupTranslator const *pTranslator,
                                           foeResourceCreateInfoBase **ppCreateInfo);
 
-auto yaml_write_collision_shape_definition(foePhysCollisionShapeCreateInfo &data) -> YAML::Node;
+auto yaml_write_collision_shape(foePhysCollisionShapeCreateInfo &data) -> YAML::Node;
 
 #endif // COLLISION_SHAPE_HPP

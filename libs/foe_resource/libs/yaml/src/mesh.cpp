@@ -22,8 +22,6 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "mesh_v1";
-
 bool yaml_read_mesh_definition_internal(std::string const &nodeName,
                                         YAML::Node const &node,
                                         foeIdGroupTranslator const *pTranslator,
@@ -103,17 +101,19 @@ void yaml_write_mesh_internal(std::string const &nodeName,
 
 } // namespace
 
-void yaml_read_mesh_definition(YAML::Node const &node,
+char const* yaml_mesh_key() { return "mesh_v1"; }
+
+void yaml_read_mesh(YAML::Node const &node,
                                foeIdGroupTranslator const *pTranslator,
                                foeResourceCreateInfoBase **ppCreateInfo) {
     foeMeshCreateInfo ci;
 
-    yaml_read_mesh_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
+    yaml_read_mesh_definition_internal(yaml_mesh_key(), node, pTranslator, ci);
 
     *ppCreateInfo = new foeMeshCreateInfo(std::move(ci));
 }
 
-auto yaml_write_mesh_definition(foeMeshCreateInfo const &data) -> YAML::Node {
+auto yaml_write_mesh(foeMeshCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
     yaml_write_mesh_internal("", data, outNode);

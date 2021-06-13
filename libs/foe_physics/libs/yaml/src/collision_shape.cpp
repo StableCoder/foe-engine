@@ -24,8 +24,6 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "collision_shape_v1";
-
 bool yaml_read_collision_shape_definition_internal(std::string const &nodeName,
                                                    YAML::Node const &node,
                                                    foeIdGroupTranslator const *pTranslator,
@@ -72,17 +70,19 @@ void yaml_write_collision_shape_definition_internal(std::string const &nodeName,
 
 } // namespace
 
-void yaml_read_collision_shape_definition(YAML::Node const &node,
+char const* yaml_collision_shape_key() { return "collision_shape_v1"; }
+
+void yaml_read_collision_shape(YAML::Node const &node,
                                           foeIdGroupTranslator const *pTranslator,
                                           foeResourceCreateInfoBase **ppCreateInfo) {
     foePhysCollisionShapeCreateInfo ci;
 
-    yaml_read_collision_shape_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
+    yaml_read_collision_shape_definition_internal(yaml_collision_shape_key(), node, pTranslator, ci);
 
     *ppCreateInfo = new foePhysCollisionShapeCreateInfo(std::move(ci));
 }
 
-auto yaml_write_collision_shape_definition(foePhysCollisionShapeCreateInfo &data) -> YAML::Node {
+auto yaml_write_collision_shape(foePhysCollisionShapeCreateInfo &data) -> YAML::Node {
     YAML::Node outNode;
 
     yaml_write_collision_shape_definition_internal("", data, outNode);

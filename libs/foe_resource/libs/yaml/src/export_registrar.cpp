@@ -49,8 +49,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             auto const *pArmature = pArmaturePool->find(resource);
             if (pArmature && pArmature->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "armature_v1",
-                    .data = yaml_write_armature_definition(*pArmature->createInfo.get()),
+                    .key = yaml_armature_key(),
+                    .data = yaml_write_armature(*pArmature->createInfo.get()),
                 });
             }
         }
@@ -61,8 +61,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             auto const *pImage = pImagePool->find(resource);
             if (pImage && pImage->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "image_v1",
-                    .data = yaml_write_image_definition(*pImage->createInfo.get()),
+                    .key = yaml_image_key(),
+                    .data = yaml_write_image(*pImage->createInfo.get()),
                 });
             }
         }
@@ -73,8 +73,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             auto const *pMaterial = pMaterialPool->find(resource);
             if (pMaterial && pMaterial->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "material_v1",
-                    .data = yaml_write_material_definition(*pMaterial->createInfo.get(),
+                    .key = yaml_material_key(),
+                    .data = yaml_write_material(*pMaterial->createInfo.get(),
                                                            pMaterial->getGfxFragmentDescriptor()),
                 });
             }
@@ -86,8 +86,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             auto const *pMesh = pMeshPool->find(resource);
             if (pMesh && pMesh->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "mesh_v1",
-                    .data = yaml_write_mesh_definition(*pMesh->createInfo.get()),
+                    .key = yaml_mesh_key(),
+                    .data = yaml_write_mesh(*pMesh->createInfo.get()),
                 });
             }
         }
@@ -98,8 +98,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             auto const *pShader = pShaderPool->find(resource);
             if (pShader && pShader->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "shader_v1",
-                    .data = yaml_write_shader_definition(*pShader->createInfo.get()),
+                    .key = yaml_shader_key(),
+                    .data = yaml_write_shader(*pShader->createInfo.get()),
                 });
             }
         }
@@ -110,8 +110,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             auto const *pVertexDescriptor = pVertexDescriptorPool->find(resource);
             if (pVertexDescriptor && pVertexDescriptor->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "vertex_descriptor_v1",
-                    .data = yaml_write_vertex_descriptor_definition(*pVertexDescriptor),
+                    .key = yaml_vertex_descriptor_key(),
+                    .data = yaml_write_vertex_descriptor(*pVertexDescriptor),
                 });
             }
         }

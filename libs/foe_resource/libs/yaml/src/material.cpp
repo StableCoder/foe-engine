@@ -26,8 +26,6 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "material_v1";
-
 bool yaml_read_material_definition_internal(std::string const &nodeName,
                                             YAML::Node const &node,
                                             foeIdGroupTranslator const *pTranslator,
@@ -108,17 +106,19 @@ void yaml_write_material_internal(std::string const &nodeName,
 
 } // namespace
 
-void yaml_read_material_definition(YAML::Node const &node,
+char const* yaml_material_key() { return "material_v1"; }
+
+void yaml_read_material(YAML::Node const &node,
                                    foeIdGroupTranslator const *pTranslator,
                                    foeResourceCreateInfoBase **ppCreateInfo) {
     foeMaterialCreateInfo ci;
 
-    yaml_read_material_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
+    yaml_read_material_definition_internal(yaml_material_key(), node, pTranslator, ci);
 
     *ppCreateInfo = new foeMaterialCreateInfo(std::move(ci));
 }
 
-auto yaml_write_material_definition(foeMaterialCreateInfo const &data,
+auto yaml_write_material(foeMaterialCreateInfo const &data,
                                     foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node {
     YAML::Node outNode;
 

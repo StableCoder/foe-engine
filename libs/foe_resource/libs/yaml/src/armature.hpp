@@ -24,10 +24,12 @@ struct foeIdGroupTranslator;
 
 class foeArmature;
 
-void yaml_read_armature_definition(YAML::Node const &node,
+char const *yaml_armature_key();
+
+void yaml_read_armature(YAML::Node const &node,
                                    foeIdGroupTranslator const *pTranslator,
                                    foeResourceCreateInfoBase **ppCreateInfo);
 
-auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node;
+auto yaml_write_armature(foeArmatureCreateInfo &data) -> YAML::Node;
 
 #endif // ARMATURE_HPP

@@ -22,9 +22,11 @@
 
 struct foeIdGroupTranslator;
 
-auto yaml_read_RigidBody(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
+char const* yaml_rigid_body_key();
+
+auto yaml_read_rigid_body(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
     -> foeRigidBody;
 
-auto yaml_write_RigidBody(foeRigidBody const &data) -> YAML::Node;
+auto yaml_write_rigid_body(foeRigidBody const &data) -> YAML::Node;
 
 #endif // RIGID_BODY_HPP

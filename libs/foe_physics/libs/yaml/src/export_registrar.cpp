@@ -39,9 +39,9 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             auto const *pCollisionShape = pCollisionShapePool->find(resource);
             if (pCollisionShape && pCollisionShape->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "collision_shape_v1",
+                    .key = yaml_collision_shape_key(),
                     .data =
-                        yaml_write_collision_shape_definition(*pCollisionShape->createInfo.get()),
+                        yaml_write_collision_shape(*pCollisionShape->createInfo.get()),
                 });
             }
         }
@@ -61,8 +61,8 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
         if (pRigidBodyPool) {
             if (auto offset = pRigidBodyPool->find(entity); offset != pRigidBodyPool->size()) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "rigid_body",
-                    .data = yaml_write_RigidBody(*(pRigidBodyPool->begin<1>() + offset)),
+                    .key = yaml_rigid_body_key(),
+                    .data = yaml_write_rigid_body(*(pRigidBodyPool->begin<1>() + offset)),
                 });
             }
         }

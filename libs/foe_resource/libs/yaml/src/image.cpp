@@ -22,8 +22,6 @@
 
 namespace {
 
-constexpr std::string_view cNodeName = "image_v1";
-
 bool yaml_read_image_definition_internal(std::string const &nodeName,
                                          YAML::Node const &node,
                                          foeIdGroupTranslator const *pTranslator,
@@ -71,17 +69,19 @@ void yaml_write_image_internal(std::string const &nodeName,
 
 } // namespace
 
-void yaml_read_image_definition(YAML::Node const &node,
+char const* yaml_image_key() { return "image_v1"; }
+
+void yaml_read_image(YAML::Node const &node,
                                 foeIdGroupTranslator const *pTranslator,
                                 foeResourceCreateInfoBase **ppCreateInfo) {
     foeImageCreateInfo ci;
 
-    yaml_read_image_definition_internal(std::string{cNodeName}, node, pTranslator, ci);
+    yaml_read_image_definition_internal(yaml_image_key(), node, pTranslator, ci);
 
     *ppCreateInfo = new foeImageCreateInfo(std::move(ci));
 }
 
-auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node {
+auto yaml_write_image(foeImageCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
     yaml_write_image_internal("", data, outNode);

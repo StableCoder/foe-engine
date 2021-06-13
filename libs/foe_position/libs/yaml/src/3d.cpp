@@ -18,7 +18,9 @@
 
 #include <foe/yaml/parsing.hpp>
 
-auto yaml_read_Position3D(YAML::Node const &node) -> foePosition3d {
+char const* yaml_position3d_key() { return "position_3d"; }
+
+auto yaml_read_position3d(YAML::Node const &node) -> foePosition3d {
     foePosition3d position;
 
     yaml_read_required("position", node, position.position);
@@ -27,7 +29,7 @@ auto yaml_read_Position3D(YAML::Node const &node) -> foePosition3d {
     return position;
 }
 
-auto yaml_write_Position3D(foePosition3d const &data) -> YAML::Node {
+auto yaml_write_position3d(foePosition3d const &data) -> YAML::Node {
     YAML::Node writeNode;
 
     yaml_write_required("position", data.position, writeNode);
