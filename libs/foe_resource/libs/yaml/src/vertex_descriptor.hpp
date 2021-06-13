@@ -18,10 +18,8 @@
 #define VERTEX_DESCRIPTOR_HPP
 
 #include <foe/resource/vertex_descriptor.hpp>
-#include <foe/resource/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
-#include <string>
 
 struct foeIdGroupTranslator;
 

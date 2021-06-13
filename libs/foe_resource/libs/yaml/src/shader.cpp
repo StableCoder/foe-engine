@@ -17,11 +17,8 @@
 #include "shader.hpp"
 
 #include <foe/graphics/vk/yaml/shader.hpp>
-#include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-
-#include <fstream>
 
 namespace {
 

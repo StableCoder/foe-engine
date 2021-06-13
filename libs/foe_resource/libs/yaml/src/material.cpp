@@ -17,12 +17,9 @@
 #include "material.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include <fstream>
-#include <string_view>
 
 namespace {
 
