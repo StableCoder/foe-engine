@@ -333,7 +333,7 @@ int Application::initialize(int argc, char **argv) {
         }
         xrViews.clear();
         for (auto const &it : viewConfigs) {
-            xrViews.emplace_back(foeXrSessionView{.viewConfig = it});
+            xrViews.emplace_back(foeXrVkSessionView{.viewConfig = it});
         }
 
         // OpenXR Swapchains
@@ -467,6 +467,11 @@ int Application::initialize(int argc, char **argv) {
                 } break;
                 }
             }
+        }
+
+        vkRes = xrVkCameraSystem.initialize(gfxSession);
+        if (vkRes) {
+            return vkRes;
         }
 
     SESSION_READY:
@@ -1001,7 +1006,6 @@ int Application::mainloop() {
             };
 
 #ifdef FOE_XR_SUPPORT
-            /*
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
                 XrResult xrRes{XR_SUCCESS};
@@ -1044,13 +1048,21 @@ int Application::mainloop() {
                         projectionViews[i].pose = views[i].pose;
                         projectionViews[i].fov = views[i].fov;
 
+                        xrViews[i].camera.nearZ = 1;
+                        xrViews[i].camera.farZ = 100;
+
                         xrViews[i].camera.fov = views[i].fov;
                         xrViews[i].camera.pose = views[i].pose;
+
+                        auto pPosition3dPool = getComponentPool<foePosition3dPool>(
+                            pSimulationSet->componentPools.data(),
+                            pSimulationSet->componentPools.size());
+                        auto *pCameraPosition =
+                            (pPosition3dPool->begin<1>() + pPosition3dPool->find(cameraID));
+                        xrViews[i].camera.pPosition3D = pCameraPosition->get();
                     }
 
-                    xrCameraSystem.processCameras(frameIndex, pSimulationSet->state.position,
-                                                  xrCameras);
-                    camerasRemade = true;
+                    xrVkCameraSystem.processCameras(frameIndex, xrViews);
 
                     // Render Code
                     std::vector<uint32_t> swapchainIndex;
@@ -1152,17 +1164,36 @@ int Application::mainloop() {
                                         uint32_t descriptorSetLayoutCount;
                                         VkPipeline pipeline;
 
-                                        if constexpr (false) {
+                                        if constexpr (true) {
+                                            // Render Special Triangle
                                             foeId itemToRender = renderTriangleID;
-                                            auto &renderState = pSimulationSet->state
-                                                                    .renderStates[renderTriangleID];
+
+                                            foeRenderState *pRenderState{nullptr};
+
+                                            auto pRenderStatePool =
+                                                getComponentPool<foeRenderStatePool>(
+                                                    pSimulationSet->componentPools.data(),
+                                                    pSimulationSet->componentPools.size());
+
+                                            auto searchOffset =
+                                                pRenderStatePool->find(renderTriangleID);
+                                            if (searchOffset != pRenderStatePool->size()) {
+                                                pRenderState =
+                                                    pRenderStatePool->begin<1>() + searchOffset;
+                                            } else {
+                                                goto SKIP_XR_DRAW;
+                                            }
 
                                             auto *theVertexDescriptor =
-                                                pSimulationSet->resources.vertexDescriptor.find(
-                                                    renderState.vertexDescriptor);
+                                                getResourcePool<foeVertexDescriptorPool>(
+                                                    pSimulationSet->resourcePools.data(),
+                                                    pSimulationSet->resourcePools.size())
+                                                    ->find(pRenderState->vertexDescriptor);
                                             auto *theMaterial =
-                                                pSimulationSet->resources.material.find(
-                                                    renderState.material);
+                                                getResourcePool<foeMaterialPool>(
+                                                    pSimulationSet->resourcePools.data(),
+                                                    pSimulationSet->resourcePools.size())
+                                                    ->find(pRenderState->material);
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
@@ -1181,12 +1212,16 @@ int Application::mainloop() {
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 0, 1, &it.camera.descriptor, 0, nullptr);
-                                            auto posOffset = pSimulationSet->state.position.find(
-                                                renderTriangleID);
+
+                                            auto *pPosition3dPool =
+                                                getComponentPool<foePosition3dPool>(
+                                                    pSimulationSet->componentPools.data(),
+                                                    pSimulationSet->componentPools.size());
+
+                                            auto posOffset =
+                                                pPosition3dPool->find(renderTriangleID);
                                             auto *pPosition =
-                                                (pSimulationSet->state.position.begin<1>() +
-                                                 posOffset)
-                                                    ->get();
+                                                (pPosition3dPool->begin<1>() + posOffset)->get();
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                 layout, 1, 1, &pPosition->descriptorSet, 0,
@@ -1274,7 +1309,6 @@ int Application::mainloop() {
                     XR_END_PROGRAM
                 }
             }
-            */
 #endif
 
             // Render passes
@@ -1393,6 +1427,7 @@ int Application::mainloop() {
                         VkPipeline pipeline;
 
                         if constexpr (true) {
+                            // Render Special Triangle
                             foeId itemToRender = renderTriangleID;
 
                             foeRenderState *pRenderState{nullptr};

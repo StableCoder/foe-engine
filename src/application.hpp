@@ -42,6 +42,8 @@
 #include <foe/xr/vulkan.hpp>
 
 #include "xr_camera.hpp"
+#include "xr_vk_camera_system.hpp"
+#include "xr_vk_session_view.hpp"
 #endif
 
 #ifdef EDITOR_MODE
@@ -71,25 +73,17 @@ struct Application {
     foeId renderMeshID = FOE_INVALID_ID;
 
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet;
+    // std::unique_ptr<foeSimulationState> pSimulationSet;
 
     FrameTimer frameTime;
 
     foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
 
 #ifdef FOE_XR_SUPPORT
-    struct foeXrSessionView {
-        XrViewConfigurationView viewConfig;
-        XrSwapchain swapchain;
-        VkFormat format;
-        std::vector<XrSwapchainImageVulkanKHR> images;
-        std::vector<VkImageView> imageViews;
-        std::vector<VkFramebuffer> framebuffers;
-        foeXrCamera camera;
-    };
-
     foeXrSession xrSession{};
     VkRenderPass xrRenderPass;
-    std::vector<foeXrSessionView> xrViews;
+    std::vector<foeXrVkSessionView> xrViews;
+    foeXrVkCameraSystem xrVkCameraSystem;
 #endif
 
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
