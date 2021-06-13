@@ -17,6 +17,8 @@
 #include "application.hpp"
 
 #include <GLFW/glfw3.h>
+#include <foe/chrono/dilated_long_clock.hpp>
+#include <foe/chrono/program_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/vk/mesh.hpp>
@@ -27,22 +29,16 @@
 #include <foe/physics/system.hpp>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
-#include <foe/resource/armature.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/image.hpp>
 #include <foe/resource/image_loader.hpp>
 #include <foe/resource/image_pool.hpp>
-#include <foe/resource/material.hpp>
 #include <foe/resource/material_loader.hpp>
 #include <foe/resource/material_pool.hpp>
-#include <foe/resource/mesh.hpp>
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/mesh_pool.hpp>
-#include <foe/resource/shader.hpp>
 #include <foe/resource/shader_loader.hpp>
 #include <foe/resource/shader_pool.hpp>
-#include <foe/resource/vertex_descriptor.hpp>
 #include <foe/resource/vertex_descriptor_loader.hpp>
 #include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/search_paths.hpp>
@@ -696,6 +692,9 @@ void processUserInput(double timeElapsedInSeconds,
 } // namespace
 
 int Application::mainloop() {
+    foeEasyProgramClock programClock;
+    foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
+
     VkResult vkRes{VK_SUCCESS};
 
     foeWindowShow();

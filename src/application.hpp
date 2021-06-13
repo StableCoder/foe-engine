@@ -17,16 +17,12 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
-#include <foe/chrono/dilated_long_clock.hpp>
-#include <foe/chrono/program_clock.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
-#include <foe/graphics/shader.hpp>
 #include <foe/graphics/swapchain.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
-#include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/simulation/state.hpp>
@@ -68,8 +64,6 @@ struct Application {
 
     foeThreadPool synchronousThreadPool;
     foeThreadPool asynchronousThreadPool;
-    foeEasyProgramClock programClock;
-    foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
 
     // Groups/Entities
     foeId cameraID = FOE_INVALID_ID;
