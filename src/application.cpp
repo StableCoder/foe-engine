@@ -160,7 +160,9 @@ int Application::initialize(int argc, char **argv) {
 
     foeSimulationState *pNewSimulationSet{nullptr};
     std::error_code errC = importState("data/state/persistent", &searchPaths, &pNewSimulationSet);
-    pSimulationSet.reset(pNewSimulationSet);
+    std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> tempSimState{
+        pNewSimulationSet, [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
+    pSimulationSet = std::move(tempSimState);
 
     synchronousThreadPool.start(1);
     asynchronousThreadPool.start(1);
