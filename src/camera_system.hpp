@@ -24,7 +24,6 @@
 #include <vulkan/vulkan.h>
 
 #include <array>
-#include <vector>
 
 class foePosition3dPool;
 class foeCameraPool;

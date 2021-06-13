@@ -151,11 +151,9 @@ VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
         auto *pPosition = mpPosition3dPool->begin<1>() + posOffset;
 
         VkDescriptorSet set;
-        *reinterpret_cast<glm::mat4 *>(pBufferData) =
-            (*pCameraData)->projectionMatrix() * viewMatrix(*pPosition->get());
-        // Invert Y-axis for Y-Up
-        (*reinterpret_cast<glm::mat4 *>(pBufferData))[1][1] =
-            -(*reinterpret_cast<glm::mat4 *>(pBufferData))[1][1];
+        glm::mat4 *pMatrix = reinterpret_cast<glm::mat4 *>(pBufferData);
+
+        *pMatrix = (*pCameraData)->projectionMatrix() * viewMatrix(*pPosition->get());
 
         { // Descriptor Set
             VkDescriptorSetAllocateInfo setAI{
