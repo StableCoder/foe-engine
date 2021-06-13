@@ -302,17 +302,19 @@ bool foeYamlExporter::exportDependencies(std::filesystem::path rootOutPath,
 bool foeYamlExporter::exportGroupResourceIndexData(std::filesystem::path rootOutPath,
                                                    foeSimulationState *pSimState) {
     mSync.lock_shared();
-    return exportIndexDataToFile(rootOutPath / resourceIndexDataFilePath,
-                                 pSimState->groupData.persistentResourceIndices());
+    bool retVal = exportIndexDataToFile(rootOutPath / resourceIndexDataFilePath,
+                                        pSimState->groupData.persistentResourceIndices());
     mSync.unlock_shared();
+    return retVal;
 }
 
 bool foeYamlExporter::exportGroupEntityIndexData(std::filesystem::path rootOutPath,
                                                  foeSimulationState *pSimState) {
     mSync.lock_shared();
-    return exportIndexDataToFile(rootOutPath / entityIndexDataFilePath,
-                                 pSimState->groupData.persistentResourceIndices());
+    bool retVal = exportIndexDataToFile(rootOutPath / entityIndexDataFilePath,
+                                        pSimState->groupData.persistentResourceIndices());
     mSync.unlock_shared();
+    return retVal;
 }
 
 bool foeYamlExporter::exportResources(std::filesystem::path rootOutPath,
