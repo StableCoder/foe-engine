@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/material.hpp>
+#include "material.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/log.hpp>

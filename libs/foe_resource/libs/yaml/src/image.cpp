@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/image.hpp>
+#include "image.hpp"
 
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>

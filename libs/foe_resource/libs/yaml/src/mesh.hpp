@@ -14,21 +14,18 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_MATERIAL_HPP
-#define FOE_RESOURCE_YAML_MATERIAL_HPP
+#ifndef MESH_HPP
+#define MESH_HPP
 
-#include <foe/resource/material.hpp>
-#include <foe/resource/yaml/export.h>
+#include <foe/resource/mesh_loader.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
 
-FOE_RES_YAML_EXPORT void yaml_read_material_definition(YAML::Node const &node,
-                                                       foeIdGroupTranslator const *pTranslator,
-                                                       foeResourceCreateInfoBase **ppCreateInfo);
+void yaml_read_mesh_definition(YAML::Node const &node,
+                               foeIdGroupTranslator const *pTranslator,
+                               foeResourceCreateInfoBase **ppCreateInfo);
 
-FOE_RES_YAML_EXPORT auto yaml_write_material_definition(
-    foeMaterialCreateInfo const &data, foeGfxVkFragmentDescriptor *pFragmentDescriptor)
-    -> YAML::Node;
+auto yaml_write_mesh_definition(foeMeshCreateInfo const &data) -> YAML::Node;
 
-#endif // FOE_RESOURCE_YAML_MATERIAL_HPP
+#endif // MESH_HPP

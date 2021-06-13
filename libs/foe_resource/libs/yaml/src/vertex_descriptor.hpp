@@ -14,20 +14,22 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_SHADER_HPP
-#define FOE_RESOURCE_YAML_SHADER_HPP
+#ifndef VERTEX_DESCRIPTOR_HPP
+#define VERTEX_DESCRIPTOR_HPP
 
-#include <foe/resource/shader.hpp>
+#include <foe/resource/vertex_descriptor.hpp>
 #include <foe/resource/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
+#include <string>
+
 struct foeIdGroupTranslator;
 
-FOE_RES_YAML_EXPORT void yaml_read_shader_definition(YAML::Node const &node,
-                                                     foeIdGroupTranslator const *pTranslator,
-                                                     foeResourceCreateInfoBase **ppCreateInfo);
+void yaml_read_vertex_descriptor_definition(YAML::Node const &node,
+                                            foeIdGroupTranslator const *pTranslator,
+                                            foeResourceCreateInfoBase **ppCreateInfo);
 
-FOE_RES_YAML_EXPORT auto yaml_write_shader_definition(foeShaderCreateInfo const &data)
+auto yaml_write_vertex_descriptor_definition(foeVertexDescriptor const &vertexDescriptor)
     -> YAML::Node;
 
-#endif // FOE_RESOURCE_YAML_SHADER_HPP
+#endif // VERTEX_DESCRIPTOR_HPP

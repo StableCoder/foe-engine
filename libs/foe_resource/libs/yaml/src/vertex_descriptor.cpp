@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/vertex_descriptor.hpp>
+#include "vertex_descriptor.hpp"
 
 #include <foe/ecs/id.hpp>
 #include <foe/ecs/yaml/id.hpp>

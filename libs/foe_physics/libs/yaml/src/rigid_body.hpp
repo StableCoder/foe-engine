@@ -14,21 +14,17 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_ARMATURE_HPP
-#define FOE_RESOURCE_YAML_ARMATURE_HPP
+#ifndef RIGID_BODY_HPP
+#define RIGID_BODY_HPP
 
-#include <foe/resource/armature.hpp>
-#include <foe/resource/yaml/export.h>
+#include <foe/physics/component/rigid_body.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
 
-class foeArmature;
+auto yaml_read_RigidBody(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
+    -> foeRigidBody;
 
-FOE_RES_YAML_EXPORT void yaml_read_armature_definition(YAML::Node const &node,
-                                                       foeIdGroupTranslator const *pTranslator,
-                                                       foeResourceCreateInfoBase **ppCreateInfo);
+auto yaml_write_RigidBody(foeRigidBody const &data) -> YAML::Node;
 
-FOE_RES_YAML_EXPORT auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node;
-
-#endif // FOE_RESOURCE_YAML_ARMATURE_HPP
+#endif // RIGID_BODY_HPP

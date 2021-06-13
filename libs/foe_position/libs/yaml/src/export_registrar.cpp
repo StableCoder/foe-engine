@@ -19,7 +19,8 @@
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/position/component/3d_pool.hpp>
-#include <foe/position/yaml/component/3d.hpp>
+
+#include "3d.hpp"
 
 namespace {
 

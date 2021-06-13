@@ -14,19 +14,18 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_IMAGE_HPP
-#define FOE_RESOURCE_YAML_IMAGE_HPP
+#ifndef IMAGE_HPP
+#define IMAGE_HPP
 
 #include <foe/resource/image.hpp>
-#include <foe/resource/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
 
-FOE_RES_YAML_EXPORT void yaml_read_image_definition(YAML::Node const &node,
-                                                    foeIdGroupTranslator const *pTranslator,
-                                                    foeResourceCreateInfoBase **ppCreateInfo);
+void yaml_read_image_definition(YAML::Node const &node,
+                                foeIdGroupTranslator const *pTranslator,
+                                foeResourceCreateInfoBase **ppCreateInfo);
 
-FOE_RES_YAML_EXPORT auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node;
+auto yaml_write_image_definition(foeImageCreateInfo const &data) -> YAML::Node;
 
-#endif // FOE_RESOURCE_YAML_IMAGE_HPP
+#endif // IMAGE_HPP

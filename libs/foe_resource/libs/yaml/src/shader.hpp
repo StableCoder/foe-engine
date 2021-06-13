@@ -14,15 +14,18 @@
     limitations under the License.
 */
 
-#ifndef FOE_POSITION_YAML_COMPONENT_3D_HPP
-#define FOE_POSITION_YAML_COMPONENT_3D_HPP
+#ifndef SHADER_HPP
+#define SHADER_HPP
 
-#include <foe/position/component/3d.hpp>
-#include <foe/position/yaml/export.h>
+#include <foe/resource/shader.hpp>
 #include <yaml-cpp/yaml.h>
 
-FOE_POSITION_YAML_EXPORT auto yaml_read_Position3D(YAML::Node const &node) -> foePosition3d;
+struct foeIdGroupTranslator;
 
-FOE_POSITION_YAML_EXPORT auto yaml_write_Position3D(foePosition3d const &data) -> YAML::Node;
+void yaml_read_shader_definition(YAML::Node const &node,
+                                 foeIdGroupTranslator const *pTranslator,
+                                 foeResourceCreateInfoBase **ppCreateInfo);
 
-#endif // FOE_POSITION_YAML_COMPONENT_3D_HPP
+auto yaml_write_shader_definition(foeShaderCreateInfo const &data) -> YAML::Node;
+
+#endif // SHADER_HPP

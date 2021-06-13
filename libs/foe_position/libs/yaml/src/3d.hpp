@@ -14,19 +14,14 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_MESH_HPP
-#define FOE_RESOURCE_YAML_MESH_HPP
+#ifndef POSITION_3D_HPP
+#define POSITION_3D_HPP
 
-#include <foe/resource/mesh_loader.hpp>
-#include <foe/resource/yaml/export.h>
+#include <foe/position/component/3d.hpp>
 #include <yaml-cpp/yaml.h>
 
-struct foeIdGroupTranslator;
+auto yaml_read_Position3D(YAML::Node const &node) -> foePosition3d;
 
-FOE_RES_YAML_EXPORT void yaml_read_mesh_definition(YAML::Node const &node,
-                                                   foeIdGroupTranslator const *pTranslator,
-                                                   foeResourceCreateInfoBase **ppCreateInfo);
+auto yaml_write_Position3D(foePosition3d const &data) -> YAML::Node;
 
-FOE_RES_YAML_EXPORT auto yaml_write_mesh_definition(foeMeshCreateInfo const &data) -> YAML::Node;
-
-#endif // FOE_RESOURCE_YAML_MESH_HPP
+#endif // POSITION_3D_HPP

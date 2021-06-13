@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/physics/yaml/component/rigid_body.hpp>
+#include "rigid_body.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/parsing.hpp>

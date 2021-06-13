@@ -23,7 +23,7 @@
 #include <foe/physics/resource/collision_shape_pool.hpp>
 
 #include "collision_shape.hpp"
-#include <foe/physics/yaml/component/rigid_body.hpp>
+#include "rigid_body.hpp"
 
 namespace {
 

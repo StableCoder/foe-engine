@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/mesh.hpp>
+#include "mesh.hpp"
 
 #include <foe/log.hpp>
 #include <foe/yaml/exception.hpp>

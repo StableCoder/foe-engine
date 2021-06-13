@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/position/yaml/component/3d.hpp>
+#include "3d.hpp"
 
 #include <foe/yaml/parsing.hpp>
 

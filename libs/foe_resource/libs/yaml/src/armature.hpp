@@ -14,23 +14,20 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_VERTEX_DESCRIPTOR_HPP
-#define FOE_RESOURCE_YAML_VERTEX_DESCRIPTOR_HPP
+#ifndef ARMATURE_HPP
+#define ARMATURE_HPP
 
-#include <foe/resource/vertex_descriptor.hpp>
-#include <foe/resource/yaml/export.h>
+#include <foe/resource/armature.hpp>
 #include <yaml-cpp/yaml.h>
-
-#include <string>
 
 struct foeIdGroupTranslator;
 
-FOE_RES_YAML_EXPORT void yaml_read_vertex_descriptor_definition(
-    YAML::Node const &node,
-    foeIdGroupTranslator const *pTranslator,
-    foeResourceCreateInfoBase **ppCreateInfo);
+class foeArmature;
 
-FOE_RES_YAML_EXPORT auto yaml_write_vertex_descriptor_definition(
-    foeVertexDescriptor const &vertexDescriptor) -> YAML::Node;
+void yaml_read_armature_definition(YAML::Node const &node,
+                                   foeIdGroupTranslator const *pTranslator,
+                                   foeResourceCreateInfoBase **ppCreateInfo);
 
-#endif // FOE_RESOURCE_YAML_VERTEX_DESCRIPTOR_HPP
+auto yaml_write_armature_definition(foeArmatureCreateInfo &data) -> YAML::Node;
+
+#endif // ARMATURE_HPP

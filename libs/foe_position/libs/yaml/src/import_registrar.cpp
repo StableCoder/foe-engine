@@ -20,8 +20,9 @@
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/position/component/3d_pool.hpp>
-#include <foe/position/yaml/component/3d.hpp>
 #include <foe/yaml/exception.hpp>
+
+#include "3d.hpp"
 
 namespace {
 

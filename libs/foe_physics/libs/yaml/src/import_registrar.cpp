@@ -21,10 +21,10 @@
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
-#include <foe/physics/yaml/component/rigid_body.hpp>
 #include <foe/yaml/exception.hpp>
 
 #include "collision_shape.hpp"
+#include "rigid_body.hpp"
 
 namespace {
 

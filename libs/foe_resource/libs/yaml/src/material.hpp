@@ -14,19 +14,19 @@
     limitations under the License.
 */
 
-#ifndef FOE_PHYSICS_YAML_COMPONENT_RIGID_BODY_HPP
-#define FOE_PHYSICS_YAML_COMPONENT_RIGID_BODY_HPP
+#ifndef MATERIAL_HPP
+#define MATERIAL_HPP
 
-#include <foe/physics/component/rigid_body.hpp>
-#include <foe/physics/yaml/export.h>
+#include <foe/resource/material.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
 
-FOE_PHYSICS_YAML_EXPORT auto yaml_read_RigidBody(YAML::Node const &node,
-                                                 foeIdGroupTranslator const *pIdGroupTranslator)
-    -> foeRigidBody;
+void yaml_read_material_definition(YAML::Node const &node,
+                                   foeIdGroupTranslator const *pTranslator,
+                                   foeResourceCreateInfoBase **ppCreateInfo);
 
-FOE_PHYSICS_YAML_EXPORT auto yaml_write_RigidBody(foeRigidBody const &data) -> YAML::Node;
+auto yaml_write_material_definition(foeMaterialCreateInfo const &data,
+                                    foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node;
 
-#endif // FOE_PHYSICS_YAML_COMPONENT_RIGID_BODY_HPP
+#endif // MATERIAL_HPP

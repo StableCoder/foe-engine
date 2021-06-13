@@ -25,12 +25,13 @@
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <foe/resource/vertex_descriptor_pool.hpp>
-#include <foe/resource/yaml/armature.hpp>
-#include <foe/resource/yaml/image.hpp>
-#include <foe/resource/yaml/material.hpp>
-#include <foe/resource/yaml/mesh.hpp>
-#include <foe/resource/yaml/shader.hpp>
-#include <foe/resource/yaml/vertex_descriptor.hpp>
+
+#include "armature.hpp"
+#include "image.hpp"
+#include "material.hpp"
+#include "mesh.hpp"
+#include "shader.hpp"
+#include "vertex_descriptor.hpp"
 
 namespace {
 

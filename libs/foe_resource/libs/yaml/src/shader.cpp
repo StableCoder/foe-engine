@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/shader.hpp>
+#include "shader.hpp"
 
 #include <foe/graphics/vk/yaml/shader.hpp>
 #include <foe/log.hpp>
