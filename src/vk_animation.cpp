@@ -7,8 +7,8 @@
 #include <foe/resource/mesh_pool.hpp>
 #include <glm/glm.hpp>
 
-#include "armature_state.hpp"
-#include "render_state.hpp"
+#include "armature_state_pool.hpp"
+#include "render_state_pool.hpp"
 
 VkResult VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
                                      foeMeshPool *pMeshPool,

@@ -19,10 +19,12 @@
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
 
-#include "armature_state.hpp"
-#include "camera.hpp"
+#include "armature_state_imex.hpp"
+#include "armature_state_pool.hpp"
+#include "camera_imex.hpp"
 #include "camera_pool.hpp"
-#include "render_state.hpp"
+#include "render_state_imex.hpp"
+#include "render_state_pool.hpp"
 
 namespace {
 
@@ -40,7 +42,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
             if (auto searchIt = pArmatureStatePool->find(entity);
                 searchIt != pArmatureStatePool->size()) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "armature_state",
+                    .key = yaml_armature_state_key(),
                     .data = yaml_write_ArmatureState(pArmatureStatePool->begin<1>()[searchIt]),
                 });
             }
@@ -51,7 +53,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
         if (pCameraPool) {
             if (auto searchIt = pCameraPool->find(entity); searchIt != pCameraPool->size()) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "camera",
+                    .key = yaml_camera_key(),
                     .data = yaml_write_Camera(*pCameraPool->begin<1>()[searchIt].get()),
                 });
             }
@@ -63,7 +65,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
             if (auto searchIt = pRenderStatePool->find(entity);
                 searchIt != pRenderStatePool->size()) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = "render_state",
+                    .key = yaml_render_state_key(),
                     .data = yaml_write_RenderState(pRenderStatePool->begin<1>()[searchIt]),
                 });
             }

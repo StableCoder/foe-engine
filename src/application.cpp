@@ -58,7 +58,7 @@
 #include "logging.hpp"
 #include "position_descriptor_pool.hpp"
 #include "register_basic_functionality.hpp"
-#include "render_state.hpp"
+#include "render_state_pool.hpp"
 #include "vk_animation.hpp"
 
 #ifdef FOE_XR_SUPPORT

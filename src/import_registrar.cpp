@@ -19,10 +19,12 @@
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/yaml/exception.hpp>
 
-#include "armature_state.hpp"
-#include "camera.hpp"
+#include "armature_state_imex.hpp"
+#include "armature_state_pool.hpp"
+#include "camera_imex.hpp"
 #include "camera_pool.hpp"
-#include "render_state.hpp"
+#include "render_state_imex.hpp"
+#include "render_state_pool.hpp"
 
 namespace {
 
@@ -30,7 +32,7 @@ bool importArmatureState(YAML::Node const &node,
                          foeIdGroupTranslator const *pGroupTranslator,
                          foeEntityID entity,
                          std::vector<foeComponentPoolBase *> &componentPools) {
-    if (auto dataNode = node["armature_state"]; dataNode) {
+    if (auto dataNode = node[yaml_armature_state_key()]; dataNode) {
         foeArmatureStatePool *pPool;
 
         for (auto it : componentPools) {
@@ -49,7 +51,7 @@ bool importArmatureState(YAML::Node const &node,
 
             return true;
         } catch (foeYamlException const &e) {
-            throw foeYamlException{"armature_state::" + e.whatStr()};
+            throw foeYamlException{std::string{yaml_armature_state_key()} + "::" + e.whatStr()};
         }
     }
 
@@ -60,7 +62,7 @@ bool importRenderState(YAML::Node const &node,
                        foeIdGroupTranslator const *pGroupTranslator,
                        foeEntityID entity,
                        std::vector<foeComponentPoolBase *> &componentPools) {
-    if (auto dataNode = node["render_state"]; dataNode) {
+    if (auto dataNode = node[yaml_render_state_key()]; dataNode) {
         foeRenderStatePool *pPool;
 
         for (auto it : componentPools) {
@@ -79,7 +81,7 @@ bool importRenderState(YAML::Node const &node,
 
             return true;
         } catch (foeYamlException const &e) {
-            throw foeYamlException{"render_state::" + e.whatStr()};
+            throw foeYamlException{std::string{yaml_render_state_key()} + "::" + e.whatStr()};
         }
     }
 
@@ -90,7 +92,7 @@ bool importCamera(YAML::Node const &node,
                   foeIdGroupTranslator const *,
                   foeEntityID entity,
                   std::vector<foeComponentPoolBase *> &componentPools) {
-    if (auto dataNode = node["camera"]; dataNode) {
+    if (auto dataNode = node[yaml_camera_key()]; dataNode) {
         foeCameraPool *pPool;
 
         for (auto it : componentPools) {
@@ -122,9 +124,9 @@ void onDeregister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->deregisterComponentFn("armature_state", importArmatureState);
-        pYamlImporter->deregisterComponentFn("render_state", importRenderState);
-        pYamlImporter->deregisterComponentFn("camera", importCamera);
+        pYamlImporter->deregisterComponentFn(yaml_armature_state_key(), importArmatureState);
+        pYamlImporter->deregisterComponentFn(yaml_render_state_key(), importRenderState);
+        pYamlImporter->deregisterComponentFn(yaml_camera_key(), importCamera);
     }
 }
 
@@ -133,9 +135,9 @@ void onRegister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->registerComponentFn("armature_state", importArmatureState);
-        pYamlImporter->registerComponentFn("render_state", importRenderState);
-        pYamlImporter->registerComponentFn("camera", importCamera);
+        pYamlImporter->registerComponentFn(yaml_armature_state_key(), importArmatureState);
+        pYamlImporter->registerComponentFn(yaml_render_state_key(), importRenderState);
+        pYamlImporter->registerComponentFn(yaml_camera_key(), importCamera);
     }
 
     return;

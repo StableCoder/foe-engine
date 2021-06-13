@@ -20,6 +20,7 @@
 #include <foe/resource/armature_pool.hpp>
 
 #include "armature_state.hpp"
+#include "armature_state_pool.hpp"
 
 namespace {
 

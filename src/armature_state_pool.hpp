@@ -14,24 +14,18 @@
     limitations under the License.
 */
 
-#ifndef ARMATURE_STATE_HPP
-#define ARMATURE_STATE_HPP
+#ifndef ARMATURE_STATE_POOL_HPP
+#define ARMATURE_STATE_POOL_HPP
 
-#include <foe/ecs/id.hpp>
-#include <glm/glm.hpp>
+#include <foe/data_pool.hpp>
+#include <foe/imex/component_pool_base.hpp>
 
-#include <vector>
+#include "armature_state.hpp"
 
-struct foeArmatureState {
-    // Armature information
-    foeId armatureID{FOE_INVALID_ID};
-    std::vector<glm::mat4> armatureState;
-
-    // Animation info
-    uint32_t animationID{UINT32_MAX};
-    float time{0.f};
+class foeArmatureStatePool : public foeComponentPoolBase,
+                             public foeDataPool<foeEntityID, foeArmatureState> {
+  public:
+    void maintenance() override { foeDataPool<foeEntityID, foeArmatureState>::maintenance(); }
 };
 
-
-
-#endif // ARMATURE_STATE_HPP
+#endif // ARMATURE_STATE_POOL_HPP

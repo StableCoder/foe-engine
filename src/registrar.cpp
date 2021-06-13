@@ -22,13 +22,13 @@
 #include <foe/simulation/core.hpp>
 #include <foe/simulation/state.hpp>
 
-#include "armature_state.hpp"
+#include "armature_state_pool.hpp"
 #include "armature_system.hpp"
 #include "camera_pool.hpp"
 #include "camera_system.hpp"
 #include "log.hpp"
 #include "position_descriptor_pool.hpp"
-#include "render_state.hpp"
+#include "render_state_pool.hpp"
 #include "vk_animation.hpp"
 
 namespace {
