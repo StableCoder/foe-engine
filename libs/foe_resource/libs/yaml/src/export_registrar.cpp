@@ -75,7 +75,7 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_material_key(),
                     .data = yaml_write_material(*pMaterial->createInfo.get(),
-                                                           pMaterial->getGfxFragmentDescriptor()),
+                                                pMaterial->getGfxFragmentDescriptor()),
                 });
             }
         }

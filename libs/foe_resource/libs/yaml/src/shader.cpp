@@ -67,11 +67,11 @@ bool yaml_write_shader_internal(std::string const &nodeName,
 
 } // namespace
 
-char const* yaml_shader_key() { return "shader_v1"; }
+char const *yaml_shader_key() { return "shader_v1"; }
 
 void yaml_read_shader(YAML::Node const &node,
-                                 foeIdGroupTranslator const *pTranslator,
-                                 foeResourceCreateInfoBase **ppCreateInfo) {
+                      foeIdGroupTranslator const *pTranslator,
+                      foeResourceCreateInfoBase **ppCreateInfo) {
     foeShaderCreateInfo ci;
 
     yaml_read_shader_internal(yaml_shader_key(), node, pTranslator, ci);

@@ -22,11 +22,11 @@
 
 struct foeIdGroupTranslator;
 
-char const* yaml_image_key();
+char const *yaml_image_key();
 
 void yaml_read_image(YAML::Node const &node,
-                                foeIdGroupTranslator const *pTranslator,
-                                foeResourceCreateInfoBase **ppCreateInfo);
+                     foeIdGroupTranslator const *pTranslator,
+                     foeResourceCreateInfoBase **ppCreateInfo);
 
 auto yaml_write_image(foeImageCreateInfo const &data) -> YAML::Node;
 

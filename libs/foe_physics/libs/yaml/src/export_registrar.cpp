@@ -40,8 +40,7 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
             if (pCollisionShape && pCollisionShape->createInfo) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_collision_shape_key(),
-                    .data =
-                        yaml_write_collision_shape(*pCollisionShape->createInfo.get()),
+                    .data = yaml_write_collision_shape(*pCollisionShape->createInfo.get()),
                 });
             }
         }

@@ -24,7 +24,7 @@
 
 #include "render_state.hpp"
 
-inline char const* yaml_render_state_key() { return  "render_state"; }
+inline char const *yaml_render_state_key() { return "render_state"; }
 
 inline auto yaml_read_RenderState(YAML::Node const &node, foeIdGroupTranslator const *pTranslator)
     -> foeRenderState {

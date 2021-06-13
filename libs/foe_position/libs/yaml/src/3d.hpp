@@ -20,7 +20,7 @@
 #include <foe/position/component/3d.hpp>
 #include <yaml-cpp/yaml.h>
 
-char const* yaml_position3d_key();
+char const *yaml_position3d_key();
 
 auto yaml_read_position3d(YAML::Node const &node) -> foePosition3d;
 

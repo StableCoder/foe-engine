@@ -22,7 +22,7 @@
 
 struct foeIdGroupTranslator;
 
-char const* yaml_rigid_body_key();
+char const *yaml_rigid_body_key();
 
 auto yaml_read_rigid_body(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
     -> foeRigidBody;

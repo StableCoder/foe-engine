@@ -22,11 +22,11 @@
 
 struct foeIdGroupTranslator;
 
-char const* yaml_shader_key();
+char const *yaml_shader_key();
 
 void yaml_read_shader(YAML::Node const &node,
-                                 foeIdGroupTranslator const *pTranslator,
-                                 foeResourceCreateInfoBase **ppCreateInfo);
+                      foeIdGroupTranslator const *pTranslator,
+                      foeResourceCreateInfoBase **ppCreateInfo);
 
 auto yaml_write_shader(foeShaderCreateInfo const &data) -> YAML::Node;
 

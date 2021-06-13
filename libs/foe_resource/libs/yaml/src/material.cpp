@@ -20,7 +20,6 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-
 namespace {
 
 bool yaml_read_material_definition_internal(std::string const &nodeName,
@@ -103,11 +102,11 @@ void yaml_write_material_internal(std::string const &nodeName,
 
 } // namespace
 
-char const* yaml_material_key() { return "material_v1"; }
+char const *yaml_material_key() { return "material_v1"; }
 
 void yaml_read_material(YAML::Node const &node,
-                                   foeIdGroupTranslator const *pTranslator,
-                                   foeResourceCreateInfoBase **ppCreateInfo) {
+                        foeIdGroupTranslator const *pTranslator,
+                        foeResourceCreateInfoBase **ppCreateInfo) {
     foeMaterialCreateInfo ci;
 
     yaml_read_material_definition_internal(yaml_material_key(), node, pTranslator, ci);
@@ -116,7 +115,7 @@ void yaml_read_material(YAML::Node const &node,
 }
 
 auto yaml_write_material(foeMaterialCreateInfo const &data,
-                                    foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node {
+                         foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node {
     YAML::Node outNode;
 
     yaml_write_material_internal("", data, *pFragmentDescriptor, outNode);

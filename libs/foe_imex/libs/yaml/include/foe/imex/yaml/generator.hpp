@@ -25,8 +25,8 @@
 #include <filesystem>
 #include <functional>
 #include <map>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 struct foeIdGroupTranslator;
 struct foeResourceCreateInfoBase;
@@ -41,20 +41,20 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
   public:
     /// Imports the definition of a resource from a YAML node
     using ResourceImportFn = void (*)(YAML::Node const &,
-                              foeIdGroupTranslator const *,
-                              foeResourceCreateInfoBase **);
+                                      foeIdGroupTranslator const *,
+                                      foeResourceCreateInfoBase **);
 
     /// Creates a resource from a given CreateInfo definition
     using ResourceCreateFn = bool (*)(foeResourceID,
-                              foeResourceCreateInfoBase *,
-                              std::vector<foeResourceLoaderBase *> &,
-                              std::vector<foeResourcePoolBase *> &);
+                                      foeResourceCreateInfoBase *,
+                                      std::vector<foeResourceLoaderBase *> &,
+                                      std::vector<foeResourcePoolBase *> &);
 
     /// Imports component data from a YAML node
     using ComponentFn = bool (*)(YAML::Node const &,
-                                       foeIdGroupTranslator const *,
-                                       foeEntityID,
-                                       std::vector<foeComponentPoolBase *> &);
+                                 foeIdGroupTranslator const *,
+                                 foeEntityID,
+                                 std::vector<foeComponentPoolBase *> &);
 
     auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * override;
@@ -68,7 +68,9 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool registerResourceFns(std::string_view key, ResourceImportFn pImportFn, ResourceCreateFn pCreateFn);
+    bool registerResourceFns(std::string_view key,
+                             ResourceImportFn pImportFn,
+                             ResourceCreateFn pCreateFn);
 
     /**
      * @brief Removes the given key/function pair from the importer map
@@ -79,7 +81,9 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
      * @note Reasons for failure are recorded in the log
      * @todo Change to return appropriate error code
      */
-    bool deregisterResourceFns(std::string_view key, ResourceImportFn pImportFn, ResourceCreateFn pCreateFn);
+    bool deregisterResourceFns(std::string_view key,
+                               ResourceImportFn pImportFn,
+                               ResourceCreateFn pCreateFn);
 
     /**
      * @brief Adds a string/function pointer pair to the importer map

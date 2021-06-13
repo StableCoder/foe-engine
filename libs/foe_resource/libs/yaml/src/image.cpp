@@ -68,11 +68,11 @@ void yaml_write_image_internal(std::string const &nodeName,
 
 } // namespace
 
-char const* yaml_image_key() { return "image_v1"; }
+char const *yaml_image_key() { return "image_v1"; }
 
 void yaml_read_image(YAML::Node const &node,
-                                foeIdGroupTranslator const *pTranslator,
-                                foeResourceCreateInfoBase **ppCreateInfo) {
+                     foeIdGroupTranslator const *pTranslator,
+                     foeResourceCreateInfoBase **ppCreateInfo) {
     foeImageCreateInfo ci;
 
     yaml_read_image_definition_internal(yaml_image_key(), node, pTranslator, ci);

@@ -68,8 +68,8 @@ auto foeYamlImporterGenerator::createImporter(foeIdGroup group, std::filesystem:
 }
 
 bool foeYamlImporterGenerator::registerResourceFns(std::string_view key,
-                                           ResourceImportFn pImportFn,
-                                           ResourceCreateFn pCreateFn) {
+                                                   ResourceImportFn pImportFn,
+                                                   ResourceCreateFn pCreateFn) {
     auto localKey = std::string{key};
     auto searchIt = mResourceFns.find(localKey);
     if (searchIt != mResourceFns.end()) {
@@ -87,8 +87,8 @@ bool foeYamlImporterGenerator::registerResourceFns(std::string_view key,
 }
 
 bool foeYamlImporterGenerator::deregisterResourceFns(std::string_view key,
-                                              ResourceImportFn pImportFn,
-                                              ResourceCreateFn pCreateFn) {
+                                                     ResourceImportFn pImportFn,
+                                                     ResourceCreateFn pCreateFn) {
     auto searchIt = mResourceFns.find(std::string{key});
     if (searchIt == mResourceFns.end()) {
         FOE_LOG(foeImexYaml, Error,
@@ -107,9 +107,8 @@ bool foeYamlImporterGenerator::deregisterResourceFns(std::string_view key,
     return true;
 }
 
-bool foeYamlImporterGenerator::registerComponentFn(std::string_view key,
-                                                    ComponentFn pImportFn) {
-                                                        auto localKey = std::string{key};
+bool foeYamlImporterGenerator::registerComponentFn(std::string_view key, ComponentFn pImportFn) {
+    auto localKey = std::string{key};
     auto searchIt = mComponentFns.find(localKey);
     if (searchIt != mComponentFns.end()) {
         FOE_LOG(foeImexYaml, Error,
@@ -123,8 +122,7 @@ bool foeYamlImporterGenerator::registerComponentFn(std::string_view key,
     return true;
 }
 
-bool foeYamlImporterGenerator::deregisterComponentFn(std::string_view key,
-                                                       ComponentFn pImportFn) {
+bool foeYamlImporterGenerator::deregisterComponentFn(std::string_view key, ComponentFn pImportFn) {
     auto searchIt = mComponentFns.find(std::string{key});
     if (searchIt == mComponentFns.end()) {
         FOE_LOG(foeImexYaml, Error,

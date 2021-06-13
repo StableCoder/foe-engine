@@ -32,6 +32,4 @@ struct foeArmatureState {
     float time{0.f};
 };
 
-
-
 #endif // ARMATURE_STATE_HPP

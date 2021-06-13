@@ -241,22 +241,22 @@ void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         pYamlImporter->deregisterResourceFns(yaml_armature_key(), yaml_read_armature,
-                                      armatureCreateProcessing);
+                                             armatureCreateProcessing);
 
         pYamlImporter->deregisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing);
 
         pYamlImporter->deregisterResourceFns(yaml_material_key(), yaml_read_material,
-                                      materialCreateProcessing);
+                                             materialCreateProcessing);
 
         pYamlImporter->deregisterResourceFns(yaml_vertex_descriptor_key(),
-                                      yaml_read_vertex_descriptor,
-                                      vertexDescriptorCreateProcessing);
+                                             yaml_read_vertex_descriptor,
+                                             vertexDescriptorCreateProcessing);
 
         pYamlImporter->deregisterResourceFns(yaml_shader_key(), yaml_read_shader,
-                                      shaderCreateProcessing);
+                                             shaderCreateProcessing);
 
         pYamlImporter->deregisterResourceFns(yaml_image_key(), yaml_read_image,
-                                      imageCreateProcessing);
+                                             imageCreateProcessing);
 
         // Components
     }
@@ -266,27 +266,28 @@ void onRegister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         if (!pYamlImporter->registerResourceFns(yaml_armature_key(), yaml_read_armature,
-                                        armatureCreateProcessing))
+                                                armatureCreateProcessing))
             goto FAILED_TO_ADD;
 
-        if (!pYamlImporter->registerResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing))
+        if (!pYamlImporter->registerResourceFns(yaml_mesh_key(), yaml_read_mesh,
+                                                meshCreateProcessing))
             goto FAILED_TO_ADD;
 
         if (!pYamlImporter->registerResourceFns(yaml_material_key(), yaml_read_material,
-                                        materialCreateProcessing))
+                                                materialCreateProcessing))
             goto FAILED_TO_ADD;
 
         if (!pYamlImporter->registerResourceFns(yaml_vertex_descriptor_key(),
-                                        yaml_read_vertex_descriptor,
-                                        vertexDescriptorCreateProcessing))
+                                                yaml_read_vertex_descriptor,
+                                                vertexDescriptorCreateProcessing))
             goto FAILED_TO_ADD;
 
         if (!pYamlImporter->registerResourceFns(yaml_shader_key(), yaml_read_shader,
-                                        shaderCreateProcessing))
+                                                shaderCreateProcessing))
             goto FAILED_TO_ADD;
 
         if (!pYamlImporter->registerResourceFns(yaml_image_key(), yaml_read_image,
-                                        imageCreateProcessing))
+                                                imageCreateProcessing))
             goto FAILED_TO_ADD;
 
         // Components

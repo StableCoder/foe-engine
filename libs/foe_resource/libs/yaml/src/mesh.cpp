@@ -100,11 +100,11 @@ void yaml_write_mesh_internal(std::string const &nodeName,
 
 } // namespace
 
-char const* yaml_mesh_key() { return "mesh_v1"; }
+char const *yaml_mesh_key() { return "mesh_v1"; }
 
 void yaml_read_mesh(YAML::Node const &node,
-                               foeIdGroupTranslator const *pTranslator,
-                               foeResourceCreateInfoBase **ppCreateInfo) {
+                    foeIdGroupTranslator const *pTranslator,
+                    foeResourceCreateInfoBase **ppCreateInfo) {
     foeMeshCreateInfo ci;
 
     yaml_read_mesh_definition_internal(yaml_mesh_key(), node, pTranslator, ci);

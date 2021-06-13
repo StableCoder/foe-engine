@@ -22,11 +22,11 @@
 
 struct foeIdGroupTranslator;
 
-char const* yaml_mesh_key();
+char const *yaml_mesh_key();
 
 void yaml_read_mesh(YAML::Node const &node,
-                               foeIdGroupTranslator const *pTranslator,
-                               foeResourceCreateInfoBase **ppCreateInfo);
+                    foeIdGroupTranslator const *pTranslator,
+                    foeResourceCreateInfoBase **ppCreateInfo);
 
 auto yaml_write_mesh(foeMeshCreateInfo const &data) -> YAML::Node;
 

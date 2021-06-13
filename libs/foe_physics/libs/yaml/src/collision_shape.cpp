@@ -70,14 +70,15 @@ void yaml_write_collision_shape_definition_internal(std::string const &nodeName,
 
 } // namespace
 
-char const* yaml_collision_shape_key() { return "collision_shape_v1"; }
+char const *yaml_collision_shape_key() { return "collision_shape_v1"; }
 
 void yaml_read_collision_shape(YAML::Node const &node,
-                                          foeIdGroupTranslator const *pTranslator,
-                                          foeResourceCreateInfoBase **ppCreateInfo) {
+                               foeIdGroupTranslator const *pTranslator,
+                               foeResourceCreateInfoBase **ppCreateInfo) {
     foePhysCollisionShapeCreateInfo ci;
 
-    yaml_read_collision_shape_definition_internal(yaml_collision_shape_key(), node, pTranslator, ci);
+    yaml_read_collision_shape_definition_internal(yaml_collision_shape_key(), node, pTranslator,
+                                                  ci);
 
     *ppCreateInfo = new foePhysCollisionShapeCreateInfo(std::move(ci));
 }

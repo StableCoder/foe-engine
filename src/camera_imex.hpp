@@ -24,7 +24,7 @@
 
 #include "camera.hpp"
 
-inline char const* yaml_camera_key() { return "camera"; }
+inline char const *yaml_camera_key() { return "camera"; }
 
 inline auto yaml_read_Camera(YAML::Node const &node) -> Camera {
     Camera data;
@@ -51,6 +51,5 @@ inline auto yaml_write_Camera(Camera const &data) -> YAML::Node {
 
     return outNode;
 }
-
 
 #endif // CAMERA_IMEX_HPP

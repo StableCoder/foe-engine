@@ -95,7 +95,7 @@ void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         pYamlImporter->deregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
-                                      collisionShapeCreateProcessing);
+                                             collisionShapeCreateProcessing);
 
         // Components
         pYamlImporter->deregisterComponentFn(yaml_rigid_body_key(), importRigidBody);
@@ -105,8 +105,9 @@ void onDeregister(foeImporterGenerator *pGenerator) {
 void onRegister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        if (!pYamlImporter->registerResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
-                                        collisionShapeCreateProcessing))
+        if (!pYamlImporter->registerResourceFns(yaml_collision_shape_key(),
+                                                yaml_read_collision_shape,
+                                                collisionShapeCreateProcessing))
             goto FAILED_TO_ADD;
 
         // Components

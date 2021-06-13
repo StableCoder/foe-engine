@@ -120,8 +120,8 @@ void yaml_write_armature_internal(std::string const &nodeName,
 char const *yaml_armature_key() { return "armature_v1"; }
 
 void yaml_read_armature(YAML::Node const &node,
-                                   foeIdGroupTranslator const *pTranslator,
-                                   foeResourceCreateInfoBase **ppCreateInfo) {
+                        foeIdGroupTranslator const *pTranslator,
+                        foeResourceCreateInfoBase **ppCreateInfo) {
     foeArmatureCreateInfo ci;
 
     yaml_read_armature_definition_internal(yaml_armature_key(), node, pTranslator, ci);

@@ -20,16 +20,14 @@
 #include <foe/resource/vertex_descriptor.hpp>
 #include <yaml-cpp/yaml.h>
 
-
 struct foeIdGroupTranslator;
 
-char const* yaml_vertex_descriptor_key();
+char const *yaml_vertex_descriptor_key();
 
 void yaml_read_vertex_descriptor(YAML::Node const &node,
-                                            foeIdGroupTranslator const *pTranslator,
-                                            foeResourceCreateInfoBase **ppCreateInfo);
+                                 foeIdGroupTranslator const *pTranslator,
+                                 foeResourceCreateInfoBase **ppCreateInfo);
 
-auto yaml_write_vertex_descriptor(foeVertexDescriptor const &vertexDescriptor)
-    -> YAML::Node;
+auto yaml_write_vertex_descriptor(foeVertexDescriptor const &vertexDescriptor) -> YAML::Node;
 
 #endif // VERTEX_DESCRIPTOR_HPP

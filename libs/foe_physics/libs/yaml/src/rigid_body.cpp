@@ -19,7 +19,7 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/parsing.hpp>
 
-char const* yaml_rigid_body_key() { return "rigid_body"; }
+char const *yaml_rigid_body_key() { return "rigid_body"; }
 
 auto yaml_read_rigid_body(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
     -> foeRigidBody {
