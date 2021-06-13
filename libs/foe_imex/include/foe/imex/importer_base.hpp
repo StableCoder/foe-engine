@@ -27,7 +27,6 @@ struct foeIdGroupTranslator;
 struct foeIdGroupValueNameSet;
 class foeIdIndexGenerator;
 class foeEditorNameMap;
-struct StatePools;
 struct foeComponentPoolBase;
 struct foeResourceLoaderBase;
 struct foeResourcePoolBase;
