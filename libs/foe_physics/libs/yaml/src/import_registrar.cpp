@@ -94,23 +94,23 @@ bool importRigidBody(YAML::Node const &node,
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        pYamlImporter->removeImporter("collision_shape_v1", yaml_read_collision_shape_definition,
+        pYamlImporter->deregisterResourceFns("collision_shape_v1", yaml_read_collision_shape_definition,
                                       collisionShapeCreateProcessing);
 
         // Components
-        pYamlImporter->removeComponentImporter("rigid_body", importRigidBody);
+        pYamlImporter->deregisterComponentFn("rigid_body", importRigidBody);
     }
 }
 
 void onRegister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        if (!pYamlImporter->addImporter("collision_shape_v1", yaml_read_collision_shape_definition,
+        if (!pYamlImporter->registerResourceFns("collision_shape_v1", yaml_read_collision_shape_definition,
                                         collisionShapeCreateProcessing))
             goto FAILED_TO_ADD;
 
         // Components
-        pYamlImporter->addComponentImporter("rigid_body", importRigidBody);
+        pYamlImporter->registerComponentFn("rigid_body", importRigidBody);
     }
 
     return;

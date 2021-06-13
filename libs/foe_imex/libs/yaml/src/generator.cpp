@@ -67,10 +67,11 @@ auto foeYamlImporterGenerator::createImporter(foeIdGroup group, std::filesystem:
     return nullptr;
 }
 
-bool foeYamlImporterGenerator::addImporter(std::string key,
-                                           ImportFn pImportFn,
-                                           CreateFn pCreateFn) {
-    auto searchIt = mResourceFns.find(key);
+bool foeYamlImporterGenerator::registerResourceFns(std::string_view key,
+                                           ResourceImportFn pImportFn,
+                                           ResourceCreateFn pCreateFn) {
+    auto localKey = std::string{key};
+    auto searchIt = mResourceFns.find(localKey);
     if (searchIt != mResourceFns.end()) {
         FOE_LOG(foeImexYaml, Error,
                 "Could not add DistributedYamlImporter function for {}, as it already exists", key);
@@ -78,17 +79,17 @@ bool foeYamlImporterGenerator::addImporter(std::string key,
     }
 
     FOE_LOG(foeImexYaml, Info, "Adding DistributedYamlImporter function for {}", key);
-    mResourceFns[key] = ResourceFunctions{
+    mResourceFns[localKey] = ResourceFns{
         .pImport = pImportFn,
         .pCreate = pCreateFn,
     };
     return true;
 }
 
-bool foeYamlImporterGenerator::removeImporter(std::string key,
-                                              ImportFn pImportFn,
-                                              CreateFn pCreateFn) {
-    auto searchIt = mResourceFns.find(key);
+bool foeYamlImporterGenerator::deregisterResourceFns(std::string_view key,
+                                              ResourceImportFn pImportFn,
+                                              ResourceCreateFn pCreateFn) {
+    auto searchIt = mResourceFns.find(std::string{key});
     if (searchIt == mResourceFns.end()) {
         FOE_LOG(foeImexYaml, Error,
                 "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);
@@ -106,8 +107,10 @@ bool foeYamlImporterGenerator::removeImporter(std::string key,
     return true;
 }
 
-bool foeYamlImporterGenerator::addComponentImporter(std::string key, ComponentImportFn pImportFn) {
-    auto searchIt = mComponentFns.find(key);
+bool foeYamlImporterGenerator::registerComponentFn(std::string_view key,
+                                                    ComponentFn pImportFn) {
+                                                        auto localKey = std::string{key};
+    auto searchIt = mComponentFns.find(localKey);
     if (searchIt != mComponentFns.end()) {
         FOE_LOG(foeImexYaml, Error,
                 "Could not add DistributedYamlImporter function for {}, as it already exists", key);
@@ -115,14 +118,14 @@ bool foeYamlImporterGenerator::addComponentImporter(std::string key, ComponentIm
     }
 
     FOE_LOG(foeImexYaml, Info, "Adding DistributedYamlImporter function for {}", key);
-    mComponentFns[key] = pImportFn;
+    mComponentFns[localKey] = pImportFn;
 
     return true;
 }
 
-bool foeYamlImporterGenerator::removeComponentImporter(std::string key,
-                                                       ComponentImportFn pImportFn) {
-    auto searchIt = mComponentFns.find(key);
+bool foeYamlImporterGenerator::deregisterComponentFn(std::string_view key,
+                                                       ComponentFn pImportFn) {
+    auto searchIt = mComponentFns.find(std::string{key});
     if (searchIt == mComponentFns.end()) {
         FOE_LOG(foeImexYaml, Error,
                 "Could not remove DistributedYamlImporter function for {}, as it isn't added", key);

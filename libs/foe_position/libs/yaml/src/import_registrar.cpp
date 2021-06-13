@@ -62,7 +62,7 @@ void onDeregister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->removeComponentImporter("position_3d", importPosition3D);
+        pYamlImporter->deregisterComponentFn("position_3d", importPosition3D);
     }
 }
 
@@ -71,7 +71,7 @@ void onRegister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->addComponentImporter("position_3d", importPosition3D);
+        pYamlImporter->registerComponentFn("position_3d", importPosition3D);
     }
 
     return;

@@ -122,9 +122,9 @@ void onDeregister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->removeComponentImporter("armature_state", importArmatureState);
-        pYamlImporter->removeComponentImporter("render_state", importRenderState);
-        pYamlImporter->removeComponentImporter("camera", importCamera);
+        pYamlImporter->deregisterComponentFn("armature_state", importArmatureState);
+        pYamlImporter->deregisterComponentFn("render_state", importRenderState);
+        pYamlImporter->deregisterComponentFn("camera", importCamera);
     }
 }
 
@@ -133,9 +133,9 @@ void onRegister(foeImporterGenerator *pGenerator) {
         // Resources
 
         // Component
-        pYamlImporter->addComponentImporter("armature_state", importArmatureState);
-        pYamlImporter->addComponentImporter("render_state", importRenderState);
-        pYamlImporter->addComponentImporter("camera", importCamera);
+        pYamlImporter->registerComponentFn("armature_state", importArmatureState);
+        pYamlImporter->registerComponentFn("render_state", importRenderState);
+        pYamlImporter->registerComponentFn("camera", importCamera);
     }
 
     return;

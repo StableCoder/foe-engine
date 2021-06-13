@@ -240,22 +240,22 @@ bool imageCreateProcessing(foeResourceID resource,
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        pYamlImporter->removeImporter("armature_v1", yaml_read_armature_definition,
+        pYamlImporter->deregisterResourceFns("armature_v1", yaml_read_armature_definition,
                                       armatureCreateProcessing);
 
-        pYamlImporter->removeImporter("mesh_v1", yaml_read_mesh_definition, meshCreateProcessing);
+        pYamlImporter->deregisterResourceFns("mesh_v1", yaml_read_mesh_definition, meshCreateProcessing);
 
-        pYamlImporter->removeImporter("material_v1", yaml_read_material_definition,
+        pYamlImporter->deregisterResourceFns("material_v1", yaml_read_material_definition,
                                       materialCreateProcessing);
 
-        pYamlImporter->removeImporter("vertex_descriptor_v1",
+        pYamlImporter->deregisterResourceFns("vertex_descriptor_v1",
                                       yaml_read_vertex_descriptor_definition,
                                       vertexDescriptorCreateProcessing);
 
-        pYamlImporter->removeImporter("shader_v1", yaml_read_shader_definition,
+        pYamlImporter->deregisterResourceFns("shader_v1", yaml_read_shader_definition,
                                       shaderCreateProcessing);
 
-        pYamlImporter->removeImporter("image_v1", yaml_read_image_definition,
+        pYamlImporter->deregisterResourceFns("image_v1", yaml_read_image_definition,
                                       imageCreateProcessing);
 
         // Components
@@ -265,27 +265,27 @@ void onDeregister(foeImporterGenerator *pGenerator) {
 void onRegister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        if (!pYamlImporter->addImporter("armature_v1", yaml_read_armature_definition,
+        if (!pYamlImporter->registerResourceFns("armature_v1", yaml_read_armature_definition,
                                         armatureCreateProcessing))
             goto FAILED_TO_ADD;
 
-        if (!pYamlImporter->addImporter("mesh_v1", yaml_read_mesh_definition, meshCreateProcessing))
+        if (!pYamlImporter->registerResourceFns("mesh_v1", yaml_read_mesh_definition, meshCreateProcessing))
             goto FAILED_TO_ADD;
 
-        if (!pYamlImporter->addImporter("material_v1", yaml_read_material_definition,
+        if (!pYamlImporter->registerResourceFns("material_v1", yaml_read_material_definition,
                                         materialCreateProcessing))
             goto FAILED_TO_ADD;
 
-        if (!pYamlImporter->addImporter("vertex_descriptor_v1",
+        if (!pYamlImporter->registerResourceFns("vertex_descriptor_v1",
                                         yaml_read_vertex_descriptor_definition,
                                         vertexDescriptorCreateProcessing))
             goto FAILED_TO_ADD;
 
-        if (!pYamlImporter->addImporter("shader_v1", yaml_read_shader_definition,
+        if (!pYamlImporter->registerResourceFns("shader_v1", yaml_read_shader_definition,
                                         shaderCreateProcessing))
             goto FAILED_TO_ADD;
 
-        if (!pYamlImporter->addImporter("image_v1", yaml_read_image_definition,
+        if (!pYamlImporter->registerResourceFns("image_v1", yaml_read_image_definition,
                                         imageCreateProcessing))
             goto FAILED_TO_ADD;
 
