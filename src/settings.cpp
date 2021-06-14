@@ -17,6 +17,7 @@
 #include "settings.hpp"
 
 #include <CLI/CLI11.hpp>
+#include <foe/search_paths.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>
@@ -28,7 +29,9 @@
 
 namespace {
 
-void addCommandLineOptions(CLI::App *pParser, Settings *pOptions) {
+std::string outCfgFile = "out-foe-settings.yml";
+
+void addCommandLineOptions(CLI::App *pParser, Settings *pOptions, foeSearchPaths &searchPaths) {
     // Window
     pParser->add_flag("--window,!--no-window", pOptions->window.enableWSI,
                       "Whether or not to start with an initial window");
@@ -51,11 +54,26 @@ void addCommandLineOptions(CLI::App *pParser, Settings *pOptions) {
     pParser->add_flag("--vr-validation", pOptions->xr.validation, "Turns on vr validation layers");
     pParser->add_option("--vr-debug-logging", pOptions->xr.debugLogging,
                         "Turns on OpenXR debug logging");
+
+    // Non-Specific
+    pParser->add_option("--dump-config", outCfgFile,
+                        "If specified, the config on exit will be written to this file (default: "
+                        "out-foe-settings.yml)");
+
+    pParser->add_option_function<std::string>(
+        "--search-path",
+        [&](std::string const &data) {
+            auto writer = searchPaths.getWriter();
+            writer.searchPaths()->push_back(data);
+        },
+        "Adds a path that the program uses to search for data sets");
 }
 
-bool parseEngineConfigFile(Settings *pOptions, std::string_view configFilePath) {
+bool parseEngineConfigFile(Settings *pOptions,
+                           foeSearchPaths &searchPaths,
+                           std::string_view configFilePath) {
     if (configFilePath.empty()) {
-        FOE_LOG(General, Info, "No config file found");
+        FOE_LOG(General, Info, "Config file not found: {}", configFilePath);
         return true;
     }
 
@@ -70,27 +88,54 @@ bool parseEngineConfigFile(Settings *pOptions, std::string_view configFilePath) 
     try {
         // Window
         if (auto windowNode = config["window"]; windowNode) {
-            yaml_read_optional("have_window", windowNode, pOptions->window.enableWSI);
-            yaml_read_optional("width", windowNode, pOptions->window.width);
-            yaml_read_optional("height", windowNode, pOptions->window.height);
-            yaml_read_optional("vsync", windowNode, pOptions->window.vsync);
+            try {
+                yaml_read_optional("have_window", windowNode, pOptions->window.enableWSI);
+                yaml_read_optional("width", windowNode, pOptions->window.width);
+                yaml_read_optional("height", windowNode, pOptions->window.height);
+                yaml_read_optional("vsync", windowNode, pOptions->window.vsync);
+            } catch (foeYamlException const &e) {
+                throw foeYamlException{"window::" + e.whatStr()};
+            }
         }
 
         // Graphics
         if (auto graphicsNode = config["graphics"]; graphicsNode) {
-            yaml_read_optional("gpu", graphicsNode, pOptions->graphics.gpu);
-            yaml_read_optional("max_frame_buffering", graphicsNode,
-                               pOptions->graphics.maxFrameBuffering);
-            yaml_read_optional("validation", graphicsNode, pOptions->graphics.validation);
-            yaml_read_optional("debug_logging", graphicsNode, pOptions->graphics.debugLogging);
+            try {
+                yaml_read_optional("gpu", graphicsNode, pOptions->graphics.gpu);
+                yaml_read_optional("max_frame_buffering", graphicsNode,
+                                   pOptions->graphics.maxFrameBuffering);
+                yaml_read_optional("validation", graphicsNode, pOptions->graphics.validation);
+                yaml_read_optional("debug_logging", graphicsNode, pOptions->graphics.debugLogging);
+            } catch (foeYamlException const &e) {
+                throw foeYamlException{"graphics::" + e.whatStr()};
+            }
         }
 
         // Xr
         if (auto xrNode = config["xr"]; xrNode) {
-            yaml_read_optional("enable", xrNode, pOptions->xr.enableXr);
-            yaml_read_optional("force", xrNode, pOptions->xr.forceXr);
-            yaml_read_optional("validation", xrNode, pOptions->xr.validation);
-            yaml_read_optional("debug_logging", xrNode, pOptions->xr.debugLogging);
+            try {
+                yaml_read_optional("enable", xrNode, pOptions->xr.enableXr);
+                yaml_read_optional("force", xrNode, pOptions->xr.forceXr);
+                yaml_read_optional("validation", xrNode, pOptions->xr.validation);
+                yaml_read_optional("debug_logging", xrNode, pOptions->xr.debugLogging);
+            } catch (foeYamlException const &e) {
+                throw foeYamlException{"xr::" + e.whatStr()};
+            }
+        }
+
+        // Non-specific
+        if (auto searchPathsNode = config["search_paths"]; searchPathsNode) {
+            try {
+                for (auto it = searchPathsNode.begin(); it != searchPathsNode.end(); ++it) {
+                    std::string newPath;
+                    yaml_read_required("", *it, newPath);
+
+                    auto writer = searchPaths.getWriter();
+                    writer.searchPaths()->emplace_back(std::move(newPath));
+                }
+            } catch (foeYamlException const &e) {
+                throw foeYamlException{"search_paths" + e.whatStr()};
+            }
         }
 
     } catch (foeYamlException const &e) {
@@ -140,35 +185,42 @@ void emitSettingsYaml(Settings const *pOptions, YAML::Node *pNode) {
     }
 }
 
-std::string outCfgFile;
-
 } // namespace
 
-int loadSettings(int argc, char **argv, Settings &settings) {
-    std::string cfgFile = ".foe-settings.yml";
+auto loadSettings(int argc, char **argv, Settings &settings, foeSearchPaths &searchPaths)
+    -> std::tuple<bool, int> {
+    std::string cfgFile = "foe-settings.yml";
 
-    outCfgFile = cfgFile;
     { // Load settings from command line
-        CLI::App clParser{"This is the FoE Engine Development"};
+        CLI::App clParser{"This is the FoE Engine Bringup Application"};
 
-        clParser.add_option("--config", cfgFile, "Configuration file to load settings from");
-        clParser.add_option("--dump-config", outCfgFile,
-                            "If specified, on exit the settings will be written to this file");
+        clParser.add_option("--config", cfgFile,
+                            "Configuration file to load settings from (default: foe-settings.yml)");
 
-        addCommandLineOptions(&clParser, &settings);
-
-        CLI11_PARSE(clParser, argc, argv);
-
-        { // Load settings from a configuration file (YAML)
-            if (!parseEngineConfigFile(&settings, cfgFile)) {
-                return 1;
+        try {
+            (clParser).parse((argc), (argv));
+        } catch (const CLI::ParseError &e) {
+            if (e.get_name() != "CallForHelp") {
+                return std::make_tuple(false, (clParser).exit(e));
             }
         }
 
-        CLI11_PARSE(clParser, argc, argv);
+        { // Load settings from a configuration file (YAML)
+            if (!parseEngineConfigFile(&settings, searchPaths, cfgFile)) {
+                return std::make_tuple(false, 1);
+            }
+        }
+
+        addCommandLineOptions(&clParser, &settings, searchPaths);
+
+        try {
+            (clParser).parse((argc), (argv));
+        } catch (const CLI::ParseError &e) {
+            return std::make_tuple(false, (clParser).exit(e));
+        }
     }
 
-    return 0;
+    return std::make_tuple(true, 0);
 }
 
 bool saveSettings(Settings const &settings) {

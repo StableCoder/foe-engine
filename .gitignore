@@ -32,3 +32,5 @@ build*/
 *.ini
 *.spv
 .foe-settings.yml
+foe-settings.yml
+out-foe-settings.yml

@@ -19,13 +19,11 @@
 int main(int argc, char **argv) {
     Application app;
 
-    int retVal = app.initialize(argc, argv);
-    if (retVal == 0) {
+    auto [continueRun, retVal] = app.initialize(argc, argv);
+    if (continueRun) {
         retVal = app.mainloop();
     }
     app.deinitialize();
 
     return retVal;
-
-    return 0;
 }

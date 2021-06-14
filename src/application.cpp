@@ -65,11 +65,26 @@
 #include "xr.hpp"
 #endif
 
+#define ERRC_END_PROGRAM_TUPLE                                                                     \
+    {                                                                                              \
+        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
+                errC.message());                                                                   \
+        return std::make_tuple(false, errC.value());                                               \
+    }
+
 #define ERRC_END_PROGRAM                                                                           \
     {                                                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
                 errC.message());                                                                   \
         return errC.value();                                                                       \
+    }
+
+#define XR_END_PROGRAM_TUPLE                                                                       \
+    {                                                                                              \
+        std::error_code errC = xrRes;                                                              \
+        FOE_LOG(General, Fatal, "End called from {}:{} with OpenXR error {}", __FILE__, __LINE__,  \
+                errC.message());                                                                   \
+        return std::make_tuple(false, errC.value());                                               \
     }
 
 #define XR_END_PROGRAM                                                                             \
@@ -80,12 +95,26 @@
         return errC.value();                                                                       \
     }
 
+#define VK_END_PROGRAM_TUPLE                                                                       \
+    {                                                                                              \
+        std::error_code errC = vkRes;                                                              \
+        FOE_LOG(General, Fatal, "End called from {}:{} with Vulkan error {}", __FILE__, __LINE__,  \
+                errC.message());                                                                   \
+        return std::make_tuple(false, errC.value());                                               \
+    }
+
 #define VK_END_PROGRAM                                                                             \
     {                                                                                              \
         std::error_code errC = vkRes;                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{} with Vulkan error {}", __FILE__, __LINE__,  \
                 errC.message());                                                                   \
         return errC.value();                                                                       \
+    }
+
+#define END_PROGRAM_TUPLE                                                                          \
+    {                                                                                              \
+        FOE_LOG(General, Fatal, "End called from {}:{}", __FILE__, __LINE__);                      \
+        return std::make_tuple(false, 1);                                                          \
     }
 
 #define END_PROGRAM                                                                                \
@@ -149,14 +178,16 @@ auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
 
 #include "state_import/import_state.hpp"
 
-int Application::initialize(int argc, char **argv) {
+auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     initializeLogging();
     registerBasicFunctionality();
 
     foeSearchPaths searchPaths;
-    auto writer = searchPaths.getWriter();
-    writer.searchPaths()->push_back("data/state");
-    writer.release();
+
+    auto [continueRun, retVal] = loadSettings(argc, argv, settings, searchPaths);
+    if (!continueRun) {
+        return std::make_tuple(false, retVal);
+    }
 
     foeSimulationState *pNewSimulationSet{nullptr};
     std::error_code errC = importState("data/state/persistent", &searchPaths, &pNewSimulationSet);
@@ -166,10 +197,6 @@ int Application::initialize(int argc, char **argv) {
 
     synchronousThreadPool.start(1);
     asynchronousThreadPool.start(1);
-
-    if (auto retVal = loadSettings(argc, argv, settings); retVal != 0) {
-        return retVal;
-    }
 
     // Special Entities
     cameraID = pSimulationSet->pEntityNameMap->find("camera");
@@ -184,14 +211,14 @@ int Application::initialize(int argc, char **argv) {
     VkResult vkRes{VK_SUCCESS};
     {
         if (!foeCreateWindow(settings.window.width, settings.window.height, "FoE Engine", true)) {
-            END_PROGRAM
+            END_PROGRAM_TUPLE
         }
 
 #ifdef FOE_XR_SUPPORT
         if (settings.xr.enableXr || settings.xr.forceXr) {
             errC = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
             if (errC && settings.xr.forceXr) {
-                ERRC_END_PROGRAM
+                ERRC_END_PROGRAM_TUPLE
             }
         }
 #endif
@@ -199,24 +226,24 @@ int Application::initialize(int argc, char **argv) {
         errC = createGfxRuntime(xrRuntime, settings.window.enableWSI, settings.graphics.validation,
                                 settings.graphics.debugLogging, &gfxRuntime);
         if (errC) {
-            ERRC_END_PROGRAM
+            ERRC_END_PROGRAM_TUPLE
         }
 
         vkRes = foeWindowGetVkSurface(foeGfxVkGetInstance(gfxRuntime), &windowSurface);
         if (vkRes != VK_SUCCESS) {
-            VK_END_PROGRAM
+            VK_END_PROGRAM_TUPLE
         }
 
         errC = createGfxSession(gfxRuntime, xrRuntime, settings.window.enableWSI, {windowSurface},
                                 settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
         if (errC) {
-            ERRC_END_PROGRAM
+            ERRC_END_PROGRAM_TUPLE
         }
     }
 
     errC = foeGfxCreateUploadContext(gfxSession, &resUploader);
     if (errC) {
-        ERRC_END_PROGRAM
+        ERRC_END_PROGRAM_TUPLE
     }
 
 #ifdef EDITOR_MODE
@@ -229,17 +256,17 @@ int Application::initialize(int argc, char **argv) {
     for (auto &it : frameData) {
         vkRes = it.create(foeGfxVkGetDevice(gfxSession));
         if (vkRes != VK_SUCCESS) {
-            VK_END_PROGRAM
+            VK_END_PROGRAM_TUPLE
         }
     }
 
     vkRes = renderPassPool.initialize(foeGfxVkGetDevice(gfxSession));
     if (vkRes != VK_SUCCESS)
-        VK_END_PROGRAM
+        VK_END_PROGRAM_TUPLE
 
     vkRes = pipelinePool.initialize(gfxSession);
     if (vkRes != VK_SUCCESS) {
-        VK_END_PROGRAM
+        VK_END_PROGRAM_TUPLE
     }
 
     auto asyncTaskFunc = [&](std::function<void()> task) {
@@ -310,7 +337,7 @@ int Application::initialize(int argc, char **argv) {
 
         errC = createXrSession(xrRuntime, gfxSession, &xrSession);
         if (errC) {
-            ERRC_END_PROGRAM
+            ERRC_END_PROGRAM_TUPLE
         }
 
         // Session Views
@@ -319,7 +346,7 @@ int Application::initialize(int argc, char **argv) {
             xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime), xrSession.systemId,
                                               xrSession.type, 0, &viewConfigViewCount, nullptr);
         if (xrRes != XR_SUCCESS) {
-            return xrRes;
+            XR_END_PROGRAM_TUPLE
         }
 
         std::vector<XrViewConfigurationView> viewConfigs;
@@ -329,7 +356,7 @@ int Application::initialize(int argc, char **argv) {
             foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
             &viewConfigViewCount, viewConfigs.data());
         if (xrRes != XR_SUCCESS) {
-            return xrRes;
+            XR_END_PROGRAM_TUPLE
         }
         xrViews.clear();
         for (auto const &it : viewConfigs) {
@@ -340,7 +367,7 @@ int Application::initialize(int argc, char **argv) {
         std::vector<int64_t> swapchainFormats;
         xrRes = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
         if (xrRes != XR_SUCCESS) {
-            return xrRes;
+            XR_END_PROGRAM_TUPLE
         }
         for (auto &it : xrViews) {
             it.format = static_cast<VkFormat>(swapchainFormats[0]);
@@ -374,13 +401,13 @@ int Application::initialize(int argc, char **argv) {
 
             xrRes = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
             if (xrRes != XR_SUCCESS) {
-                return xrRes;
+                XR_END_PROGRAM_TUPLE
             }
 
             // Images
             xrRes = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
             if (xrRes != XR_SUCCESS) {
-                return xrRes;
+                XR_END_PROGRAM_TUPLE
             }
 
             // Image Views
@@ -408,7 +435,7 @@ int Application::initialize(int argc, char **argv) {
                 VkResult vkRes =
                     vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
                 if (vkRes != VK_SUCCESS) {
-                    return vkRes;
+                    VK_END_PROGRAM_TUPLE
                 }
 
                 view.imageViews.emplace_back(vkView);
@@ -430,7 +457,7 @@ int Application::initialize(int argc, char **argv) {
                 VkResult vkRes = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI,
                                                      nullptr, &newFramebuffer);
                 if (vkRes != VK_SUCCESS) {
-                    return vkRes;
+                    VK_END_PROGRAM_TUPLE
                 }
 
                 view.framebuffers.emplace_back(newFramebuffer);
@@ -453,7 +480,7 @@ int Application::initialize(int argc, char **argv) {
                 // No events currently
             } else if (errC) {
                 // Error
-                ERRC_END_PROGRAM
+                ERRC_END_PROGRAM_TUPLE
             } else {
                 // Got an event, process it
                 switch (event.type) {
@@ -471,24 +498,25 @@ int Application::initialize(int argc, char **argv) {
 
         vkRes = xrVkCameraSystem.initialize(gfxSession);
         if (vkRes) {
-            return vkRes;
+            VK_END_PROGRAM_TUPLE
         }
 
     SESSION_READY:
         errC = xrSession.beginSession();
         if (errC) {
-            ERRC_END_PROGRAM
+            ERRC_END_PROGRAM_TUPLE
         }
     }
 #endif
 
 #ifdef FOE_XR_SUPPORT
     if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
-        return -1;
+        FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
+        return std::make_tuple(false, 1);
     }
 #endif
 
-    return 0;
+    return std::make_tuple(true, 0);
 }
 
 #include <foe/imex/yaml/exporter.hpp>

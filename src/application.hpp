@@ -36,6 +36,7 @@
 
 #include <array>
 #include <map>
+#include <tuple>
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/session.hpp>
@@ -56,7 +57,7 @@
 #endif
 
 struct Application {
-    int initialize(int argc, char **argv);
+    auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
     void deinitialize();
 
     int mainloop();
@@ -73,7 +74,6 @@ struct Application {
     foeId renderMeshID = FOE_INVALID_ID;
 
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet;
-    // std::unique_ptr<foeSimulationState> pSimulationSet;
 
     FrameTimer frameTime;
 
