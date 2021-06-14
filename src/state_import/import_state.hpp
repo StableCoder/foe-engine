@@ -17,12 +17,14 @@
 #ifndef IMPORT_STATE_HPP
 #define IMPORT_STATE_HPP
 
-#include <filesystem>
+#include <string_view>
+#include <system_error>
 
 class foeSearchPaths;
 struct foeSimulationState;
 
-auto importState(std::filesystem::path stateDataPath,
+/// Imports data set and its dependencies
+auto importState(std::string_view topLevelDataSet,
                  foeSearchPaths *pSearchPaths,
                  foeSimulationState **ppSimulationSet) -> std::error_code;
 

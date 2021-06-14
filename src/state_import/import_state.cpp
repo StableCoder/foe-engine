@@ -19,12 +19,42 @@
 #include <foe/ecs/group_translator.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/search_paths.hpp>
+#include <foe/simulation/core.hpp>
 #include <foe/simulation/state.hpp>
 
 #include "../log.hpp"
 #include "error_code.hpp"
 
 namespace {
+
+std::unique_ptr<foeImporterBase> searchAndCreateImporter(std::string_view dataSetName,
+                                                         foeIdGroup group,
+                                                         foeSearchPaths &searchPaths) {
+    auto pathReader = searchPaths.getReader();
+
+    for (auto searchPath : *pathReader.searchPaths()) {
+        if (std::filesystem::exists(searchPath / dataSetName)) {
+            std::unique_ptr<foeImporterBase> importer{
+                createImporter(group, searchPath / dataSetName)};
+            if (importer != nullptr) {
+                return importer;
+            }
+        }
+
+        for (auto dirIt : std::filesystem::directory_iterator{searchPath}) {
+            auto path = dirIt.path();
+
+            if (path.stem() == dataSetName) {
+                std::unique_ptr<foeImporterBase> importer{createImporter(group, path)};
+                if (importer != nullptr) {
+                    return importer;
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
 
 bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &dependencies,
                                  foeSearchPaths *pSearchPaths,
@@ -34,25 +64,16 @@ bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &depe
     auto pathReader = pSearchPaths->getReader();
 
     for (auto const &depIt : dependencies) {
-        for (auto searchPath : *pathReader.searchPaths()) {
-            for (auto dirIt : std::filesystem::directory_iterator{searchPath}) {
-                auto path = dirIt.path();
+        auto pImporter =
+            searchAndCreateImporter(depIt.name, foeIdValueToGroup(depIt.groupValue), *pSearchPaths);
 
-                if (path.stem() == depIt.name) {
-                    std::unique_ptr<foeImporterBase> importer{
-                        createImporter(foeIdValueToGroup(depIt.groupValue), path)};
-                    if (importer != nullptr) {
-                        newImporters.emplace_back(std::move(importer));
-                        goto DEPENDENCY_FOUND;
-                    } else {
-                        FOE_LOG(General, Error, "Failed to find importer for dependency at: {}",
-                                path.string())
-                        return false;
-                    }
-                }
-            }
+        if (pImporter != nullptr) {
+            newImporters.emplace_back(std::move(pImporter));
+        } else {
+            FOE_LOG(General, Error, "Failed to find dataset and/or importer for dependency: {}",
+                    depIt.name)
+            return false;
         }
-    DEPENDENCY_FOUND:;
     }
 
     importers = std::move(newImporters);
@@ -61,21 +82,26 @@ bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &depe
 
 } // namespace
 
-#include <foe/simulation/core.hpp>
-
-auto importState(std::filesystem::path stateDataPath,
+auto importState(std::string_view topLevelDataSet,
                  foeSearchPaths *pSearchPaths,
                  foeSimulationState **ppSimulationSet) -> std::error_code {
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet{
         foeCreateSimulation(true), [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
 
-    // Find the importer for the starting path
+    // Find the to-level data set, initially as if the full path were given
     std::unique_ptr<foeImporterBase> persistentImporter{
-        createImporter(foeIdPersistentGroup, stateDataPath)};
+        createImporter(foeIdPersistentGroup, topLevelDataSet)};
+
+    // If not found, try search paths
     if (persistentImporter == nullptr) {
-        FOE_LOG(General, Error, "Could not find importer for state data at path: {}",
-                stateDataPath.string())
-        return FOE_STATE_IMPORT_ERROR_NO_IMPORTER;
+        persistentImporter =
+            searchAndCreateImporter(topLevelDataSet, foeIdPersistentGroup, *pSearchPaths);
+        if (persistentImporter == nullptr) {
+            FOE_LOG(General, Error,
+                    "Could not find dataset and/or importer for top-level data set: {}",
+                    topLevelDataSet)
+            return FOE_STATE_IMPORT_ERROR_NO_IMPORTER;
+        }
     }
 
     // Get the list of dependencies

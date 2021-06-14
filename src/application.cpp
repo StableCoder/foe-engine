@@ -190,7 +190,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
     foeSimulationState *pNewSimulationSet{nullptr};
-    std::error_code errC = importState("data/state/persistent", &searchPaths, &pNewSimulationSet);
+    std::error_code errC = importState("persistent", &searchPaths, &pNewSimulationSet);
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> tempSimState{
         pNewSimulationSet, [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
     pSimulationSet = std::move(tempSimState);
