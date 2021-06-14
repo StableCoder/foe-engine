@@ -37,7 +37,6 @@
  * safely.
  */
 
-struct foeGfxVkFragmentDescriptorPool;
 struct foeResourceCreateInfoBase;
 struct foeResourcePoolBase;
 struct foeResourceLoaderBase;
@@ -48,7 +47,6 @@ struct foeSimulationState;
 
 struct foeSimulationInitInfo {
     foeGfxSession gfxSession;
-    foeGfxVkFragmentDescriptorPool *pVkFragDescriptorPool;
     std::function<foeResourceCreateInfoBase *(foeId)> resourceDefinitionImportFn;
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn;
     std::function<void(std::function<void()>)> asyncJobFn;

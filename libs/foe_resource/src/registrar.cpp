@@ -132,9 +132,8 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo) {
                                                             pInitInfo->resourceLoaderCount);
 
             pMaterialLoader->initialize(
-                pShaderLoader, pShaderPool, pInitInfo->pVkFragDescriptorPool, pImageLoader,
-                pImagePool, pInitInfo->gfxSession, pInitInfo->resourceDefinitionImportFn,
-                pInitInfo->asyncJobFn);
+                pShaderLoader, pShaderPool, pImageLoader, pImagePool, pInitInfo->gfxSession,
+                pInitInfo->resourceDefinitionImportFn, pInitInfo->asyncJobFn);
         }
 
         auto *pMeshLoader = dynamic_cast<foeMeshLoader *>(*pIt);

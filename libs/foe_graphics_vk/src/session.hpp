@@ -19,6 +19,7 @@
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -41,6 +42,8 @@ struct foeGfxVkSession {
 
     foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
+
+    foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
 };
 
 FOE_DEFINE_HANDLE_CASTS(session, foeGfxVkSession, foeGfxSession)

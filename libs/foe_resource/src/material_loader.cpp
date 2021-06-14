@@ -39,7 +39,6 @@ foeMaterialLoader::~foeMaterialLoader() {
 std::error_code foeMaterialLoader::initialize(
     foeShaderLoader *pShaderLoader,
     foeShaderPool *pShaderPool,
-    foeGfxVkFragmentDescriptorPool *pGfxFragmentDescriptorPool,
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
@@ -51,9 +50,10 @@ std::error_code foeMaterialLoader::initialize(
 
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
+    mGfxFragmentDescriptorPool = foeGfxVkGetFragmentDescriptorPool(session);
+
     mShaderLoader = pShaderLoader;
     mShaderPool = pShaderPool;
-    mGfxFragmentDescriptorPool = pGfxFragmentDescriptorPool;
     mImageLoader = pImageLoader;
     mImagePool = pImagePool;
 
@@ -103,13 +103,14 @@ void foeMaterialLoader::deinitialize() {
         }
     }
 
+    mAsyncJobs = std::function<void(std::function<void()>)>{};
+
     mImagePool = nullptr;
     mImageLoader = nullptr;
-    mGfxFragmentDescriptorPool = nullptr;
     mShaderPool = nullptr;
     mShaderLoader = nullptr;
 
-    mAsyncJobs = std::function<void(std::function<void()>)>{};
+    mGfxFragmentDescriptorPool = nullptr;
 }
 
 bool foeMaterialLoader::initialized() const noexcept { return mShaderLoader != nullptr; }

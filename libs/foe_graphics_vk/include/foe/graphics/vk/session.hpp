@@ -28,6 +28,8 @@
 #include <system_error>
 #include <vector>
 
+class foeGfxVkFragmentDescriptorPool;
+
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                                      VkPhysicalDevice vkPhysicalDevice,
                                                      std::vector<std::string> layers,
@@ -52,5 +54,8 @@ FOE_GFX_EXPORT auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
 
 FOE_GFX_EXPORT auto foeGfxVkGetBuiltinSetLayoutIndex(
     foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout) -> uint32_t;
+
+FOE_GFX_EXPORT auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session)
+    -> foeGfxVkFragmentDescriptorPool *;
 
 #endif // FOE_GRAPHICS_VK_SESSION_HPP

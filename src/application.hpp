@@ -98,7 +98,6 @@ struct Application {
 
     foeRenderPassPool renderPassPool;
 
-    foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool;
 
 #ifdef EDITOR_MODE

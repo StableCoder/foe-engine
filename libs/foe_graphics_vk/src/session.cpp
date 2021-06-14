@@ -262,3 +262,9 @@ auto foeGfxVkGetBuiltinSetLayoutIndex(foeGfxSession session,
 
     return pSession->builtinDescriptorSets.getBuiltinSetLayoutIndex(builtinLayout);
 }
+
+auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session) -> foeGfxVkFragmentDescriptorPool * {
+    auto *pSession = session_from_handle(session);
+
+    return &pSession->fragmentDescriptorPool;
+}

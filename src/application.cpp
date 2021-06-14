@@ -278,7 +278,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         pSimulationSet.get(),
         foeSimulationInitInfo{
             .gfxSession = gfxSession,
-            .pVkFragDescriptorPool = &fragmentDescriptorPool,
             .resourceDefinitionImportFn =
                 std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
                           std::placeholders::_1),
