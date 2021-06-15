@@ -24,14 +24,16 @@
 #include <foe/yaml/exception.hpp>
 
 #include "collision_shape.hpp"
+#include "error_code.hpp"
 #include "rigid_body.hpp"
 
 namespace {
 
-bool collisionShapeCreateProcessing(foeResourceID resource,
-                                    foeResourceCreateInfoBase *pCreateInfo,
-                                    std::vector<foeResourceLoaderBase *> &resourceLoaders,
-                                    std::vector<foeResourcePoolBase *> &resourcePools) {
+std::error_code collisionShapeCreateProcessing(
+    foeResourceID resource,
+    foeResourceCreateInfoBase *pCreateInfo,
+    std::vector<foeResourceLoaderBase *> &resourceLoaders,
+    std::vector<foeResourcePoolBase *> &resourcePools) {
     foePhysCollisionShapePool *pCollisionShapePool{nullptr};
     for (auto &it : resourcePools) {
         pCollisionShapePool = dynamic_cast<foePhysCollisionShapePool *>(it);
@@ -48,17 +50,19 @@ bool collisionShapeCreateProcessing(foeResourceID resource,
             break;
     }
 
-    if (pCollisionShapePool == nullptr || pCollisionShapeLoader == nullptr)
-        return false;
+    if (pCollisionShapePool == nullptr)
+        return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND;
+    if (pCollisionShapeLoader == nullptr)
+        return FOE_PHYSICS_YAML_ERROR_UNSPECIFIED;
 
     auto *pCollisionShape = new foePhysCollisionShape{resource, pCollisionShapeLoader};
 
     if (!pCollisionShapePool->add(pCollisionShape)) {
         delete pCollisionShape;
-        return false;
+        return FOE_PHYSICS_YAML_ERROR_UNSPECIFIED;
     }
 
-    return true;
+    return FOE_PHYSICS_YAML_SUCCESS;
 }
 
 bool importRigidBody(YAML::Node const &node,

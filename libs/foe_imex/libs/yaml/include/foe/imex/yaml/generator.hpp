@@ -26,6 +26,7 @@
 #include <functional>
 #include <map>
 #include <string_view>
+#include <system_error>
 #include <vector>
 
 struct foeIdGroupTranslator;
@@ -45,10 +46,10 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
                                       foeResourceCreateInfoBase **);
 
     /// Creates a resource from a given CreateInfo definition
-    using ResourceCreateFn = bool (*)(foeResourceID,
-                                      foeResourceCreateInfoBase *,
-                                      std::vector<foeResourceLoaderBase *> &,
-                                      std::vector<foeResourcePoolBase *> &);
+    using ResourceCreateFn = std::error_code (*)(foeResourceID,
+                                                 foeResourceCreateInfoBase *,
+                                                 std::vector<foeResourceLoaderBase *> &,
+                                                 std::vector<foeResourcePoolBase *> &);
 
     /// Imports component data from a YAML node
     using ComponentFn = bool (*)(YAML::Node const &,

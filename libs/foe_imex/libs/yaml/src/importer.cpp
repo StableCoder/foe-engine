@@ -266,8 +266,9 @@ bool foeYamlImporter::importResourceDefinitions(
                     it.second.pImport(node, &mGroupTranslator, &pCreateInfo);
 
                     if (it.second.pCreate != nullptr) {
-                        if (!it.second.pCreate(resource, pCreateInfo, resourceLoaders,
-                                               resourcePools))
+                        auto errC = it.second.pCreate(resource, pCreateInfo, resourceLoaders,
+                                                      resourcePools);
+                        if (errC)
                             return false;
                     }
 
