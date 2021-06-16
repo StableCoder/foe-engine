@@ -38,7 +38,6 @@ foeMaterialLoader::~foeMaterialLoader() {
 
 std::error_code foeMaterialLoader::initialize(
     foeShaderPool *pShaderPool,
-    foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
     foeGfxSession session,
     std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
@@ -52,7 +51,6 @@ std::error_code foeMaterialLoader::initialize(
     mGfxFragmentDescriptorPool = foeGfxVkGetFragmentDescriptorPool(session);
 
     mShaderPool = pShaderPool;
-    mImageLoader = pImageLoader;
     mImagePool = pImagePool;
 
     mImportFunction = importFunction;
@@ -104,13 +102,12 @@ void foeMaterialLoader::deinitialize() {
     mAsyncJobs = std::function<void(std::function<void()>)>{};
 
     mImagePool = nullptr;
-    mImageLoader = nullptr;
     mShaderPool = nullptr;
 
     mGfxFragmentDescriptorPool = nullptr;
 }
 
-bool foeMaterialLoader::initialized() const noexcept { return mImageLoader != nullptr; }
+bool foeMaterialLoader::initialized() const noexcept { return mShaderPool != nullptr; }
 
 void foeMaterialLoader::processUnloadRequests() {
     mUnloadSync.lock();

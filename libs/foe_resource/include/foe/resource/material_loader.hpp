@@ -32,7 +32,6 @@
 
 class foeShaderPool;
 class foeGfxVkFragmentDescriptorPool;
-class foeImageLoader;
 class foeImagePool;
 
 class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
@@ -40,7 +39,6 @@ class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
     ~foeMaterialLoader();
 
     std::error_code initialize(foeShaderPool *pShaderPool,
-                               foeImageLoader *pImageLoader,
                                foeImagePool *pImagePool,
                                foeGfxSession session,
                                std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
@@ -61,7 +59,6 @@ class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
     FOE_RESOURCE_NO_EXPORT foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
 
     FOE_RESOURCE_NO_EXPORT foeShaderPool *mShaderPool{nullptr};
-    FOE_RESOURCE_NO_EXPORT foeImageLoader *mImageLoader{nullptr};
     FOE_RESOURCE_NO_EXPORT foeImagePool *mImagePool{nullptr};
 
     FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;

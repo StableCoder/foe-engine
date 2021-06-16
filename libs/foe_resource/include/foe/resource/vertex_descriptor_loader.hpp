@@ -28,15 +28,13 @@
 #include <system_error>
 #include <vector>
 
-class foeShaderLoader;
 class foeShaderPool;
 
 class FOE_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
   public:
     ~foeVertexDescriptorLoader();
 
-    std::error_code initialize(foeShaderLoader *pShaderLoader,
-                               foeShaderPool *pShaderPool,
+    std::error_code initialize(foeShaderPool *pShaderPool,
                                std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
                                std::function<void(std::function<void()>)> asynchronousJobs);
     void deinitialize() override;
@@ -50,7 +48,6 @@ class FOE_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
   private:
     FOE_RESOURCE_NO_EXPORT void loadResource(foeVertexDescriptor *pVertexDescriptor);
 
-    FOE_RESOURCE_NO_EXPORT foeShaderLoader *mShaderLoader{nullptr};
     FOE_RESOURCE_NO_EXPORT foeShaderPool *mShaderPool{nullptr};
 
     FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFunction;

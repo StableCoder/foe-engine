@@ -31,7 +31,6 @@ foeVertexDescriptorLoader::~foeVertexDescriptorLoader() {
 }
 
 std::error_code foeVertexDescriptorLoader::initialize(
-    foeShaderLoader *pShaderLoader,
     foeShaderPool *pShaderPool,
     std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
     std::function<void(std::function<void()>)> asynchronousJobs) {
@@ -41,7 +40,6 @@ std::error_code foeVertexDescriptorLoader::initialize(
 
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
-    mShaderLoader = pShaderLoader;
     mShaderPool = pShaderPool;
 
     mImportFunction = importFunction;
@@ -55,12 +53,9 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void foeVertexDescriptorLoader::deinitialize() {
-    mShaderPool = nullptr;
-    mShaderLoader = nullptr;
-}
+void foeVertexDescriptorLoader::deinitialize() { mShaderPool = nullptr; }
 
-bool foeVertexDescriptorLoader::initialized() const noexcept { return mShaderLoader != nullptr; }
+bool foeVertexDescriptorLoader::initialized() const noexcept { return mShaderPool != nullptr; }
 
 void foeVertexDescriptorLoader::processUnloadRequests() {
     mUnloadSync.lock();

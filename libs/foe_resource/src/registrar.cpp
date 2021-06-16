@@ -131,17 +131,9 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo) {
                 search<foeImagePool>(pInitInfo->pResourcePools,
                                      pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
 
-            auto *pShaderLoader = search<foeShaderLoader>(pInitInfo->pResourceLoaders,
-                                                          pInitInfo->pResourceLoaders +
-                                                              pInitInfo->resourceLoaderCount);
-
-            auto *pImageLoader = search<foeImageLoader>(pInitInfo->pResourceLoaders,
-                                                        pInitInfo->pResourceLoaders +
-                                                            pInitInfo->resourceLoaderCount);
-
-            pMaterialLoader->initialize(
-                pShaderPool, pImageLoader, pImagePool, pInitInfo->gfxSession,
-                pInitInfo->resourceDefinitionImportFn, pInitInfo->asyncJobFn);
+            pMaterialLoader->initialize(pShaderPool, pImagePool, pInitInfo->gfxSession,
+                                        pInitInfo->resourceDefinitionImportFn,
+                                        pInitInfo->asyncJobFn);
         }
 
         auto *pMeshLoader = dynamic_cast<foeMeshLoader *>(*pIt);
@@ -162,12 +154,7 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo) {
                 search<foeShaderPool>(pInitInfo->pResourcePools,
                                       pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
 
-            auto *pShaderLoader = search<foeShaderLoader>(pInitInfo->pResourceLoaders,
-                                                          pInitInfo->pResourceLoaders +
-                                                              pInitInfo->resourceLoaderCount);
-
-            pVertexDescriptorLoader->initialize(pShaderLoader, pShaderPool,
-                                                pInitInfo->resourceDefinitionImportFn,
+            pVertexDescriptorLoader->initialize(pShaderPool, pInitInfo->resourceDefinitionImportFn,
                                                 pInitInfo->asyncJobFn);
         }
     }
