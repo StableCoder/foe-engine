@@ -50,7 +50,9 @@ struct foeSimulationInitInfo {
     std::function<foeResourceCreateInfoBase *(foeId)> resourceDefinitionImportFn;
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn;
     std::function<void(std::function<void()>)> asyncJobFn;
+};
 
+struct foeSimulationStateLists {
     foeResourcePoolBase **pResourcePools;
     uint32_t resourcePoolCount;
 
@@ -68,7 +70,7 @@ struct foeSimulationFunctionalty {
     void (*onCreate)(foeSimulationState *);
     void (*onDestroy)(foeSimulationState *);
 
-    void (*onInitialization)(foeSimulationInitInfo const *);
+    void (*onInitialization)(foeSimulationInitInfo const *, foeSimulationStateLists const *);
     void (*onDeinitialization)(foeSimulationState const *);
 
     bool operator==(foeSimulationFunctionalty const &) const noexcept;
@@ -82,7 +84,7 @@ FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(bool addNameMaps);
 FOE_SIM_EXPORT void foeDestroySimulation(foeSimulationState *pSimulationState);
 
 FOE_SIM_EXPORT void foeInitializeSimulation(foeSimulationState *pSimulationState,
-                                            foeSimulationInitInfo pInitInfo);
+                                            foeSimulationInitInfo const *pInitInfo);
 FOE_SIM_EXPORT void foeDeinitializeSimulation(foeSimulationState *pSimulationState);
 
 #endif // FOE_SIMULATION_CORE_HPP

@@ -273,10 +273,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
-    // Initialize simulation functionality
-    foeInitializeSimulation(
-        pSimulationSet.get(),
-        foeSimulationInitInfo{
+    { // Initialize simulation functionality
+        foeSimulationInitInfo simInitInfo{
             .gfxSession = gfxSession,
             .resourceDefinitionImportFn =
                 std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
@@ -284,7 +282,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             .externalFileSearchFn = std::bind(&foeGroupData::findExternalFile,
                                               &pSimulationSet->groupData, std::placeholders::_1),
             .asyncJobFn = asyncTaskFunc,
-        });
+        };
+        foeInitializeSimulation(pSimulationSet.get(), &simInitInfo);
+    }
 
     {
         for (auto *ptr : getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),

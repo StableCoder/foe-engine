@@ -103,10 +103,11 @@ SearchType *search(InputIt start, InputIt end) noexcept {
     return nullptr;
 }
 
-void onInitialize(foeSimulationInitInfo const *pInitInfo) {
+void onInitialize(foeSimulationInitInfo const *pInitInfo,
+                  foeSimulationStateLists const *pSimStateData) {
     // Resource Loaders
-    auto *pIt = pInitInfo->pResourceLoaders;
-    auto const *pEndIt = pInitInfo->pResourceLoaders + pInitInfo->resourceLoaderCount;
+    auto *pIt = pSimStateData->pResourceLoaders;
+    auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
 
     for (; pIt != pEndIt; ++pIt) {
         auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(*pIt);
@@ -124,12 +125,12 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo) {
         auto *pMaterialLoader = dynamic_cast<foeMaterialLoader *>(*pIt);
         if (pMaterialLoader) {
             auto *pShaderPool =
-                search<foeShaderPool>(pInitInfo->pResourcePools,
-                                      pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+                search<foeShaderPool>(pSimStateData->pResourcePools,
+                                      pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
 
             auto *pImagePool =
-                search<foeImagePool>(pInitInfo->pResourcePools,
-                                     pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+                search<foeImagePool>(pSimStateData->pResourcePools,
+                                     pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
 
             pMaterialLoader->initialize(pShaderPool, pImagePool, pInitInfo->gfxSession,
                                         pInitInfo->resourceDefinitionImportFn,
@@ -151,8 +152,8 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo) {
         auto *pVertexDescriptorLoader = dynamic_cast<foeVertexDescriptorLoader *>(*pIt);
         if (pVertexDescriptorLoader) {
             auto *pShaderPool =
-                search<foeShaderPool>(pInitInfo->pResourcePools,
-                                      pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+                search<foeShaderPool>(pSimStateData->pResourcePools,
+                                      pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
 
             pVertexDescriptorLoader->initialize(pShaderPool, pInitInfo->resourceDefinitionImportFn,
                                                 pInitInfo->asyncJobFn);

@@ -162,18 +162,20 @@ void foeInitializeSimulation(foeSimulationState *pSimulationState,
     FOE_LOG(SimulationState, Verbose, "Initializing SimulationState: {}",
             static_cast<void *>(pSimulationState));
 
-    pInitInfo.pResourcePools = pSimulationState->resourcePools.data();
-    pInitInfo.resourcePoolCount = pSimulationState->resourcePools.size();
-    pInitInfo.pResourceLoaders = pSimulationState->resourceLoaders.data();
-    pInitInfo.resourceLoaderCount = pSimulationState->resourceLoaders.size();
-    pInitInfo.pComponentPools = pSimulationState->componentPools.data();
-    pInitInfo.componentPoolCount = pSimulationState->componentPools.size();
-    pInitInfo.pSystems = pSimulationState->systems.data();
-    pInitInfo.systemCount = pSimulationState->systems.size();
+    auto stateLists = foeSimulationStateLists{
+        .pResourcePools = pSimulationState->resourcePools.data(),
+        .resourcePoolCount = static_cast<uint32_t>(pSimulationState->resourcePools.size()),
+        .pResourceLoaders = pSimulationState->resourceLoaders.data(),
+        .resourceLoaderCount = static_cast<uint32_t>(pSimulationState->resourceLoaders.size()),
+        .pComponentPools = pSimulationState->componentPools.data(),
+        .componentPoolCount = static_cast<uint32_t>(pSimulationState->componentPools.size()),
+        .pSystems = pSimulationState->systems.data(),
+        .systemCount = static_cast<uint32_t>(pSimulationState->systems.size()),
+    };
 
     for (auto const &functionality : mRegistered) {
         if (functionality.onInitialization) {
-            functionality.onInitialization(&pInitInfo);
+            functionality.onInitialization(pInitInfo, &stateLists);
         }
     }
 

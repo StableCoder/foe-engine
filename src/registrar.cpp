@@ -83,64 +83,65 @@ SearchType *search(InputIt start, InputIt end) noexcept {
     return nullptr;
 }
 
-void onInitialization(foeSimulationInitInfo const *pInitInfo) {
+void onInitialization(foeSimulationInitInfo const *pInitInfo,
+                      foeSimulationStateLists const *pSimStateData) {
     // Systems
-    auto *pIt = pInitInfo->pSystems;
-    auto const *pEndIt = pInitInfo->pSystems + pInitInfo->systemCount;
+    auto *pIt = pSimStateData->pSystems;
+    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
 
     for (; pIt != pEndIt; ++pIt) {
         auto *pArmatureSystem = dynamic_cast<foeArmatureSystem *>(*pIt);
         if (pArmatureSystem) {
-            auto *pArmaturePool =
-                search<foeArmaturePool>(pInitInfo->pResourcePools,
-                                        pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+            auto *pArmaturePool = search<foeArmaturePool>(pSimStateData->pResourcePools,
+                                                          pSimStateData->pResourcePools +
+                                                              pSimStateData->resourcePoolCount);
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
-                pInitInfo->pComponentPools,
-                pInitInfo->pComponentPools + pInitInfo->componentPoolCount);
+                pSimStateData->pComponentPools,
+                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
             pArmatureSystem->initialize(pArmaturePool, pArmatureStatePool);
         }
 
         auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt);
         if (pCameraSystem) {
-            auto *pPosition3dPool = search<foePosition3dPool>(pInitInfo->pComponentPools,
-                                                              pInitInfo->pComponentPools +
-                                                                  pInitInfo->componentPoolCount);
+            auto *pPosition3dPool = search<foePosition3dPool>(pSimStateData->pComponentPools,
+                                                              pSimStateData->pComponentPools +
+                                                                  pSimStateData->componentPoolCount);
 
-            auto *pCameraPool =
-                search<foeCameraPool>(pInitInfo->pComponentPools,
-                                      pInitInfo->pComponentPools + pInitInfo->componentPoolCount);
+            auto *pCameraPool = search<foeCameraPool>(pSimStateData->pComponentPools,
+                                                      pSimStateData->pComponentPools +
+                                                          pSimStateData->componentPoolCount);
 
             pCameraSystem->initialize(pPosition3dPool, pCameraPool, pInitInfo->gfxSession);
         }
 
         auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
         if (pPositionDescriptorPool) {
-            auto *pPosition3dPool = search<foePosition3dPool>(pInitInfo->pComponentPools,
-                                                              pInitInfo->pComponentPools +
-                                                                  pInitInfo->componentPoolCount);
+            auto *pPosition3dPool = search<foePosition3dPool>(pSimStateData->pComponentPools,
+                                                              pSimStateData->pComponentPools +
+                                                                  pSimStateData->componentPoolCount);
 
             pPositionDescriptorPool->initialize(pPosition3dPool, pInitInfo->gfxSession);
         }
 
         auto *pVkAnimationPool = dynamic_cast<VkAnimationPool *>(*pIt);
         if (pVkAnimationPool) {
-            auto *pArmaturePool =
-                search<foeArmaturePool>(pInitInfo->pResourcePools,
-                                        pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+            auto *pArmaturePool = search<foeArmaturePool>(pSimStateData->pResourcePools,
+                                                          pSimStateData->pResourcePools +
+                                                              pSimStateData->resourcePoolCount);
 
             auto *pMeshPool =
-                search<foeMeshPool>(pInitInfo->pResourcePools,
-                                    pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+                search<foeMeshPool>(pSimStateData->pResourcePools,
+                                    pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
-                pInitInfo->pComponentPools,
-                pInitInfo->pComponentPools + pInitInfo->componentPoolCount);
+                pSimStateData->pComponentPools,
+                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
-            auto *pRenderStatePool = search<foeRenderStatePool>(pInitInfo->pComponentPools,
-                                                                pInitInfo->pComponentPools +
-                                                                    pInitInfo->componentPoolCount);
+            auto *pRenderStatePool = search<foeRenderStatePool>(
+                pSimStateData->pComponentPools,
+                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
             pVkAnimationPool->initialize(pArmaturePool, pMeshPool, pArmatureStatePool,
                                          pRenderStatePool, pInitInfo->gfxSession);

@@ -87,10 +87,11 @@ SearchType *search(InputIt start, InputIt end) noexcept {
     return nullptr;
 }
 
-void onInitialization(foeSimulationInitInfo const *pInitInfo) {
+void onInitialization(foeSimulationInitInfo const *pInitInfo,
+                      foeSimulationStateLists const *pSimStateData) {
     { // Loaders
-        auto *pIt = pInitInfo->pResourceLoaders;
-        auto const *pEndIt = pInitInfo->pResourceLoaders + pInitInfo->resourceLoaderCount;
+        auto *pIt = pSimStateData->pResourceLoaders;
+        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
 
         for (; pIt != pEndIt; ++pIt) {
             auto *pCollisionShapeLoader = dynamic_cast<foePhysCollisionShapeLoader *>(*pIt);
@@ -102,27 +103,27 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo) {
     }
 
     { // Systems
-        auto *pIt = pInitInfo->pSystems;
-        auto const *pEndIt = pInitInfo->pSystems + pInitInfo->systemCount;
+        auto *pIt = pSimStateData->pSystems;
+        auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
 
         for (; pIt != pEndIt; ++pIt) {
             auto *pPhysicsSystem = dynamic_cast<foePhysicsSystem *>(*pIt);
             if (pPhysicsSystem) {
                 auto *pCollisionShapeLoader = search<foePhysCollisionShapeLoader>(
-                    pInitInfo->pResourceLoaders,
-                    pInitInfo->pResourceLoaders + pInitInfo->resourceLoaderCount);
+                    pSimStateData->pResourceLoaders,
+                    pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount);
 
                 auto *pCollisionShapePool = search<foePhysCollisionShapePool>(
-                    pInitInfo->pResourcePools,
-                    pInitInfo->pResourcePools + pInitInfo->resourcePoolCount);
+                    pSimStateData->pResourcePools,
+                    pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
 
-                auto *pRigidBodyPool = search<foeRigidBodyPool>(pInitInfo->pComponentPools,
-                                                                pInitInfo->pComponentPools +
-                                                                    pInitInfo->componentPoolCount);
+                auto *pRigidBodyPool = search<foeRigidBodyPool>(
+                    pSimStateData->pComponentPools,
+                    pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
                 auto *pPosition3dPool = search<foePosition3dPool>(
-                    pInitInfo->pComponentPools,
-                    pInitInfo->pComponentPools + pInitInfo->componentPoolCount);
+                    pSimStateData->pComponentPools,
+                    pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
                 pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool,
                                            pRigidBodyPool, pPosition3dPool);
