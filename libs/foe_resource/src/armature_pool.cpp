@@ -17,6 +17,22 @@
 #include <foe/resource/armature_pool.hpp>
 
 #include <foe/resource/armature.hpp>
+#include <foe/resource/armature_loader.hpp>
+
+namespace {
+
+void armatureLoadFn(void *pContext, void *pResource, bool load) {
+    auto *pArmatureLoader = reinterpret_cast<foeArmatureLoader *>(pContext);
+    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
+
+    if (load) {
+        pArmatureLoader->requestResourceLoad(pArmature);
+    } else {
+        pArmatureLoader->requestResourceUnload(pArmature);
+    }
+}
+
+} // namespace
 
 foeArmaturePool::~foeArmaturePool() {
     for (auto *pArmature : mArmatures) {
@@ -26,18 +42,41 @@ foeArmaturePool::~foeArmaturePool() {
     }
 }
 
-bool foeArmaturePool::add(foeArmature *pArmature) {
+foeArmature *foeArmaturePool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pOld : mArmatures) {
-        if (pOld->getID() == pArmature->getID())
-            return false;
+    // If it finds it, return nullptr
+    for (auto *pArmature : mArmatures) {
+        if (pArmature->getID() == resource) {
+            return nullptr;
+        }
     }
 
+    // Not found, add it
+    foeArmature *pArmature = new foeArmature{resource, armatureLoadFn, mpArmatureLoader};
     pArmature->incrementRefCount();
+
     mArmatures.emplace_back(pArmature);
 
-    return true;
+    return pArmature;
+}
+
+foeArmature *foeArmaturePool::findOrAdd(foeResourceID resource) {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pArmature : mArmatures) {
+        if (pArmature->getID() == resource) {
+            return pArmature;
+        }
+    }
+
+    // Not found, create it now
+    foeArmature *pArmature = new foeArmature{resource, armatureLoadFn, mpArmatureLoader};
+    pArmature->incrementRefCount();
+
+    mArmatures.emplace_back(pArmature);
+
+    return pArmature;
 }
 
 foeArmature *foeArmaturePool::find(foeId id) {

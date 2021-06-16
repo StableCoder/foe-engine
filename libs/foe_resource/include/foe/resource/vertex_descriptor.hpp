@@ -44,7 +44,9 @@ struct foeVertexDescriptorCreateInfo : public foeResourceCreateInfoBase {
 
 class foeVertexDescriptor {
   public:
-    FOE_RES_EXPORT foeVertexDescriptor(foeId id, foeVertexDescriptorLoader *pLoader);
+    FOE_RES_EXPORT foeVertexDescriptor(foeId id,
+                                       void (*pLoadFn)(void *, void *, bool),
+                                       void *pLoadContext);
     FOE_RES_EXPORT ~foeVertexDescriptor();
 
     FOE_RES_EXPORT foeId getID() const noexcept;
@@ -96,7 +98,8 @@ class foeVertexDescriptor {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeVertexDescriptorLoader *const pLoader;
+    void (*mpLoadFn)(void *, void *, bool);
+    void *mpLoadContext;
 
     std::mutex dataWriteLock{};
 

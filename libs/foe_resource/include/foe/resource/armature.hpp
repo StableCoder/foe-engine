@@ -45,7 +45,7 @@ struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
 
 struct foeArmature {
   public:
-    FOE_RES_EXPORT foeArmature(foeId id, foeArmatureLoader *pLoader);
+    FOE_RES_EXPORT foeArmature(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext);
     FOE_RES_EXPORT ~foeArmature();
 
     FOE_RES_EXPORT foeId getID() const noexcept;
@@ -72,7 +72,8 @@ struct foeArmature {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeArmatureLoader *const pLoader;
+    void (*mpLoadFn)(void *, void *, bool);
+    void *mpLoadContext;
 
     std::mutex dataWriteLock{};
 

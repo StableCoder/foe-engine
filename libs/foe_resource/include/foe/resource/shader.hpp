@@ -44,7 +44,7 @@ struct FOE_RES_EXPORT foeShaderCreateInfo : public foeResourceCreateInfoBase {
 
 class foeShader {
   public:
-    FOE_RES_EXPORT foeShader(foeId id, foeShaderLoader *pLoader);
+    FOE_RES_EXPORT foeShader(foeId id, void (*pLoaderFn)(void *, void *, bool), void *pLoadContext);
     FOE_RES_EXPORT ~foeShader();
 
     FOE_RES_EXPORT foeId getID() const noexcept;
@@ -73,7 +73,9 @@ class foeShader {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeShaderLoader *const pLoader;
+    // Call to load a shader
+    void (*mpLoadFn)(void *, void *, bool);
+    void *mpLoadContext;
 
     std::mutex dataWriteLock{};
 

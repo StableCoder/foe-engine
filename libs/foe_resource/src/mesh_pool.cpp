@@ -17,6 +17,22 @@
 #include <foe/resource/mesh_pool.hpp>
 
 #include <foe/resource/mesh.hpp>
+#include <foe/resource/mesh_loader.hpp>
+
+namespace {
+
+void meshLoadFn(void *pContext, void *pResource, bool load) {
+    auto *pMeshLoader = reinterpret_cast<foeMeshLoader *>(pContext);
+    auto *pMesh = reinterpret_cast<foeMesh *>(pResource);
+
+    if (load) {
+        pMeshLoader->requestResourceLoad(pMesh);
+    } else {
+        pMeshLoader->requestResourceUnload(pMesh);
+    }
+}
+
+} // namespace
 
 foeMeshPool::~foeMeshPool() {
     for (auto *pMesh : mMeshs) {
@@ -26,18 +42,41 @@ foeMeshPool::~foeMeshPool() {
     }
 }
 
-bool foeMeshPool::add(foeMesh *pMesh) {
+foeMesh *foeMeshPool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pOld : mMeshs) {
-        if (pOld->getID() == pMesh->getID())
-            return false;
+    // If it finds it, return nullptr
+    for (auto *pMesh : mMeshs) {
+        if (pMesh->getID() == resource) {
+            return nullptr;
+        }
     }
 
+    // Not found, add it
+    foeMesh *pMesh = new foeMesh{resource, meshLoadFn, mpMeshLoader};
     pMesh->incrementRefCount();
+
     mMeshs.emplace_back(pMesh);
 
-    return true;
+    return pMesh;
+}
+
+foeMesh *foeMeshPool::findOrAdd(foeResourceID resource) {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pMesh : mMeshs) {
+        if (pMesh->getID() == resource) {
+            return pMesh;
+        }
+    }
+
+    // Not found, create it now
+    foeMesh *pMesh = new foeMesh{resource, meshLoadFn, mpMeshLoader};
+    pMesh->incrementRefCount();
+
+    mMeshs.emplace_back(pMesh);
+
+    return pMesh;
 }
 
 foeMesh *foeMeshPool::find(foeId id) {

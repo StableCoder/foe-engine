@@ -21,8 +21,10 @@
 
 #include "log.hpp"
 
-foeVertexDescriptor::foeVertexDescriptor(foeId id, foeVertexDescriptorLoader *pLoader) :
-    id{id}, pLoader{pLoader} {}
+foeVertexDescriptor::foeVertexDescriptor(foeId id,
+                                         void (*pLoadFn)(void *, void *, bool),
+                                         void *pLoadContext) :
+    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
 
 foeVertexDescriptor::~foeVertexDescriptor() {
     if (useCount > 0) {
@@ -78,10 +80,10 @@ int foeVertexDescriptor::getUseCount() const noexcept { return useCount; }
 
 void foeVertexDescriptor::requestLoad() {
     incrementRefCount();
-    pLoader->requestResourceLoad(this);
+    mpLoadFn(mpLoadContext, this, true);
 }
 
-void foeVertexDescriptor::requestUnload() { pLoader->requestResourceUnload(this); }
+void foeVertexDescriptor::requestUnload() { mpLoadFn(mpLoadContext, this, false); }
 
 foeShader *foeVertexDescriptor::getVertexShader() const noexcept {
     return data.subResources.pVertex;

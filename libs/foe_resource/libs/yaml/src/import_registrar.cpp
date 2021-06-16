@@ -52,25 +52,13 @@ std::error_code armatureCreateProcessing(foeResourceID resource,
             break;
     }
 
-    foeArmatureLoader *pArmatureLoader{nullptr};
-    for (auto &it : resourceLoaders) {
-        pArmatureLoader = dynamic_cast<foeArmatureLoader *>(it);
-
-        if (pArmatureLoader != nullptr)
-            break;
-    }
-
     if (pArmaturePool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;
-    if (pArmatureLoader == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
 
-    auto *pArmature = new foeArmature{resource, pArmatureLoader};
+    auto *pArmature = pArmaturePool->add(resource);
 
-    if (!pArmaturePool->add(pArmature)) {
-        delete pArmature;
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
-    }
+    if (!pArmature)
+        return FOE_RESOURCE_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS;
 
     return FOE_RESOURCE_YAML_SUCCESS;
 }
@@ -87,25 +75,13 @@ std::error_code meshCreateProcessing(foeResourceID resource,
             break;
     }
 
-    foeMeshLoader *pMeshLoader{nullptr};
-    for (auto &it : resourceLoaders) {
-        pMeshLoader = dynamic_cast<foeMeshLoader *>(it);
-
-        if (pMeshLoader != nullptr)
-            break;
-    }
-
     if (pMeshPool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND;
-    if (pMeshLoader == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
 
-    auto *pMesh = new foeMesh{resource, pMeshLoader};
+    auto *pMesh = pMeshPool->add(resource);
 
-    if (!pMeshPool->add(pMesh)) {
-        delete pMesh;
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
-    }
+    if (!pMesh)
+        return FOE_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS;
 
     return FOE_RESOURCE_YAML_SUCCESS;
 }
@@ -122,25 +98,13 @@ std::error_code materialCreateProcessing(foeResourceID resource,
             break;
     }
 
-    foeMaterialLoader *pMaterialLoader{nullptr};
-    for (auto &it : resourceLoaders) {
-        pMaterialLoader = dynamic_cast<foeMaterialLoader *>(it);
-
-        if (pMaterialLoader != nullptr)
-            break;
-    }
-
     if (pMaterialPool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_MATERIAL_POOL_NOT_FOUND;
-    if (pMaterialLoader == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
 
-    auto *pMaterial = new foeMaterial{resource, pMaterialLoader};
+    auto *pMaterial = pMaterialPool->add(resource);
 
-    if (!pMaterialPool->add(pMaterial)) {
-        delete pMaterial;
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
-    }
+    if (!pMaterial)
+        return FOE_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS;
 
     return FOE_RESOURCE_YAML_SUCCESS;
 }
@@ -158,25 +122,13 @@ std::error_code vertexDescriptorCreateProcessing(
             break;
     }
 
-    foeVertexDescriptorLoader *pVertexDescriptorLoader{nullptr};
-    for (auto &it : resourceLoaders) {
-        pVertexDescriptorLoader = dynamic_cast<foeVertexDescriptorLoader *>(it);
-
-        if (pVertexDescriptorLoader != nullptr)
-            break;
-    }
-
     if (pVertexDescriptorPool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_POOL_NOT_FOUND;
-    if (pVertexDescriptorLoader == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
 
-    auto *pVertexDescriptor = new foeVertexDescriptor{resource, pVertexDescriptorLoader};
+    auto *pVertexDescriptor = pVertexDescriptorPool->add(resource);
 
-    if (!pVertexDescriptorPool->add(pVertexDescriptor)) {
-        delete pVertexDescriptor;
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
-    }
+    if (!pVertexDescriptor)
+        return FOE_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS;
 
     return FOE_RESOURCE_YAML_SUCCESS;
 }
@@ -193,26 +145,12 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
             break;
     }
 
-    foeShaderLoader *pShaderLoader{nullptr};
-    for (auto &it : resourceLoaders) {
-        pShaderLoader = dynamic_cast<foeShaderLoader *>(it);
-
-        if (pShaderLoader != nullptr)
-            break;
-    }
-
     if (pShaderPool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_SHADER_POOL_NOT_FOUND;
 
-    if (pShaderLoader == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
-
-    auto *pShader = new foeShader{resource, pShaderLoader};
-
-    if (!pShaderPool->add(pShader)) {
-        delete pShader;
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
-    }
+    auto *pShader = pShaderPool->add(resource);
+    if (!pShader)
+        return FOE_RESOURCE_YAML_ERROR_SHADER_RESOURCE_ALREADY_EXISTS;
 
     return FOE_RESOURCE_YAML_SUCCESS;
 }
@@ -229,25 +167,12 @@ std::error_code imageCreateProcessing(foeResourceID resource,
             break;
     }
 
-    foeImageLoader *pImageLoader{nullptr};
-    for (auto &it : resourceLoaders) {
-        pImageLoader = dynamic_cast<foeImageLoader *>(it);
-
-        if (pImageLoader != nullptr)
-            break;
-    }
-
     if (pImagePool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_IMAGE_POOL_NOT_FOUND;
-    if (pImageLoader == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
 
-    auto *pImage = new foeImage{resource, pImageLoader};
-
-    if (!pImagePool->add(pImage)) {
-        delete pImage;
-        return FOE_RESOURCE_YAML_ERROR_UNSPECIFIED;
-    }
+    auto *pImage = pImagePool->add(resource);
+    if (!pImage)
+        return FOE_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS;
 
     return FOE_RESOURCE_YAML_SUCCESS;
 }

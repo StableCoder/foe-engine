@@ -48,7 +48,7 @@ struct foeMaterialCreateInfo : public foeResourceCreateInfoBase {
 
 struct foeMaterial {
   public:
-    FOE_RES_EXPORT foeMaterial(foeId id, foeMaterialLoader *pLoader);
+    FOE_RES_EXPORT foeMaterial(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext);
     FOE_RES_EXPORT ~foeMaterial();
 
     FOE_RES_EXPORT foeId getID() const noexcept;
@@ -101,7 +101,8 @@ struct foeMaterial {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeMaterialLoader *pLoader;
+    void (*mpLoadFn)(void *, void *, bool);
+    void *mpLoadContext;
 
   public:
     std::mutex dataWriteLock{};

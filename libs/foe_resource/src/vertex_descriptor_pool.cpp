@@ -17,6 +17,22 @@
 #include <foe/resource/vertex_descriptor_pool.hpp>
 
 #include <foe/resource/vertex_descriptor.hpp>
+#include <foe/resource/vertex_descriptor_loader.hpp>
+
+namespace {
+
+void vertexDescriptorLoadFn(void *pContext, void *pResource, bool load) {
+    auto *pVertexDescriptorLoader = reinterpret_cast<foeVertexDescriptorLoader *>(pContext);
+    auto *pVertexDescriptor = reinterpret_cast<foeVertexDescriptor *>(pResource);
+
+    if (load) {
+        pVertexDescriptorLoader->requestResourceLoad(pVertexDescriptor);
+    } else {
+        pVertexDescriptorLoader->requestResourceUnload(pVertexDescriptor);
+    }
+}
+
+} // namespace
 
 foeVertexDescriptorPool::~foeVertexDescriptorPool() {
     for (auto *pVertexDescriptor : mVertexDescriptors) {
@@ -26,18 +42,43 @@ foeVertexDescriptorPool::~foeVertexDescriptorPool() {
     }
 }
 
-bool foeVertexDescriptorPool::add(foeVertexDescriptor *pVertexDescriptor) {
+foeVertexDescriptor *foeVertexDescriptorPool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pOld : mVertexDescriptors) {
-        if (pOld->getID() == pVertexDescriptor->getID())
-            return false;
+    // If it finds it, return nullptr
+    for (auto *pVertexDescriptor : mVertexDescriptors) {
+        if (pVertexDescriptor->getID() == resource) {
+            return nullptr;
+        }
     }
 
+    // Not found, add it
+    foeVertexDescriptor *pVertexDescriptor =
+        new foeVertexDescriptor{resource, vertexDescriptorLoadFn, mpVertexDescriptorLoader};
     pVertexDescriptor->incrementRefCount();
+
     mVertexDescriptors.emplace_back(pVertexDescriptor);
 
-    return true;
+    return pVertexDescriptor;
+}
+
+foeVertexDescriptor *foeVertexDescriptorPool::findOrAdd(foeResourceID resource) {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pVertexDescriptor : mVertexDescriptors) {
+        if (pVertexDescriptor->getID() == resource) {
+            return pVertexDescriptor;
+        }
+    }
+
+    // Not found, create it now
+    foeVertexDescriptor *pVertexDescriptor =
+        new foeVertexDescriptor{resource, vertexDescriptorLoadFn, mpVertexDescriptorLoader};
+    pVertexDescriptor->incrementRefCount();
+
+    mVertexDescriptors.emplace_back(pVertexDescriptor);
+
+    return pVertexDescriptor;
 }
 
 foeVertexDescriptor *foeVertexDescriptorPool::find(foeId resource) {

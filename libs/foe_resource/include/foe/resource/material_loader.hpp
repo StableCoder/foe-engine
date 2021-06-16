@@ -30,7 +30,6 @@
 #include <system_error>
 #include <vector>
 
-class foeShaderLoader;
 class foeShaderPool;
 class foeGfxVkFragmentDescriptorPool;
 class foeImageLoader;
@@ -40,8 +39,7 @@ class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
   public:
     ~foeMaterialLoader();
 
-    std::error_code initialize(foeShaderLoader *pShaderLoader,
-                               foeShaderPool *pShaderPool,
+    std::error_code initialize(foeShaderPool *pShaderPool,
                                foeImageLoader *pImageLoader,
                                foeImagePool *pImagePool,
                                foeGfxSession session,
@@ -62,7 +60,6 @@ class FOE_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
 
     FOE_RESOURCE_NO_EXPORT foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
 
-    FOE_RESOURCE_NO_EXPORT foeShaderLoader *mShaderLoader{nullptr};
     FOE_RESOURCE_NO_EXPORT foeShaderPool *mShaderPool{nullptr};
     FOE_RESOURCE_NO_EXPORT foeImageLoader *mImageLoader{nullptr};
     FOE_RESOURCE_NO_EXPORT foeImagePool *mImagePool{nullptr};

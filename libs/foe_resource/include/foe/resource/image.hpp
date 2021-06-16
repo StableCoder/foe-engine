@@ -39,7 +39,7 @@ struct foeImageCreateInfo : public foeResourceCreateInfoBase {
 
 class foeImage {
   public:
-    FOE_RES_EXPORT foeImage(foeId id, foeImageLoader *pLoader);
+    FOE_RES_EXPORT foeImage(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext);
     FOE_RES_EXPORT ~foeImage();
 
     FOE_RES_EXPORT foeId getID() const noexcept;
@@ -67,7 +67,8 @@ class foeImage {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeImageLoader *const pLoader;
+    void (*mpLoadFn)(void *, void *, bool);
+    void *mpLoadContext;
 
   public:
     std::mutex dataWriteLock{};

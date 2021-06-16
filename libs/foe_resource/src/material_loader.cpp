@@ -37,7 +37,6 @@ foeMaterialLoader::~foeMaterialLoader() {
 }
 
 std::error_code foeMaterialLoader::initialize(
-    foeShaderLoader *pShaderLoader,
     foeShaderPool *pShaderPool,
     foeImageLoader *pImageLoader,
     foeImagePool *pImagePool,
@@ -52,7 +51,6 @@ std::error_code foeMaterialLoader::initialize(
 
     mGfxFragmentDescriptorPool = foeGfxVkGetFragmentDescriptorPool(session);
 
-    mShaderLoader = pShaderLoader;
     mShaderPool = pShaderPool;
     mImageLoader = pImageLoader;
     mImagePool = pImagePool;
@@ -108,12 +106,11 @@ void foeMaterialLoader::deinitialize() {
     mImagePool = nullptr;
     mImageLoader = nullptr;
     mShaderPool = nullptr;
-    mShaderLoader = nullptr;
 
     mGfxFragmentDescriptorPool = nullptr;
 }
 
-bool foeMaterialLoader::initialized() const noexcept { return mShaderLoader != nullptr; }
+bool foeMaterialLoader::initialized() const noexcept { return mImageLoader != nullptr; }
 
 void foeMaterialLoader::processUnloadRequests() {
     mUnloadSync.lock();
@@ -240,34 +237,15 @@ void foeMaterialLoader::loadResource(foeMaterial *pMaterial) {
     { // Resource Dependencies
         // Fragment Shader
         if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {
-            subResources.pFragmentShader = mShaderPool->find(pMaterialCI->fragmentShader);
-            if (subResources.pFragmentShader == nullptr) {
-                subResources.pFragmentShader =
-                    new foeShader{pMaterialCI->fragmentShader, mShaderLoader};
-                if (!mShaderPool->add(subResources.pFragmentShader)) {
-                    // Failed to add a 'new' shader, must've been added by another loading process
-                    delete subResources.pFragmentShader;
-                    subResources.pFragmentShader = mShaderPool->find(pMaterialCI->fragmentShader);
-                }
-            }
+            subResources.pFragmentShader = mShaderPool->findOrAdd(pMaterialCI->fragmentShader);
+
             subResources.pFragmentShader->incrementRefCount();
             subResources.pFragmentShader->incrementUseCount();
         }
 
         // Image
         if (pMaterialCI->image != FOE_INVALID_ID) {
-            subResources.pImage = mImagePool->find(pMaterialCI->image);
-
-            if (subResources.pImage == nullptr) {
-                subResources.pImage = new foeImage{pMaterialCI->image, mImageLoader};
-
-                if (!mImagePool->add(subResources.pImage)) {
-                    delete subResources.pImage;
-
-                    subResources.pImage = mImagePool->find(pMaterialCI->image);
-                }
-            }
-
+            subResources.pImage = mImagePool->findOrAdd(pMaterialCI->image);
             subResources.pImage->incrementRefCount();
             subResources.pImage->incrementUseCount();
         }

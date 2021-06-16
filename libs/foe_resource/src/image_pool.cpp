@@ -17,6 +17,22 @@
 #include <foe/resource/image_pool.hpp>
 
 #include <foe/resource/image.hpp>
+#include <foe/resource/image_loader.hpp>
+
+namespace {
+
+void imageLoadFn(void *pContext, void *pResource, bool load) {
+    auto *pImageLoader = reinterpret_cast<foeImageLoader *>(pContext);
+    auto *pImage = reinterpret_cast<foeImage *>(pResource);
+
+    if (load) {
+        pImageLoader->requestResourceLoad(pImage);
+    } else {
+        pImageLoader->requestResourceUnload(pImage);
+    }
+}
+
+} // namespace
 
 foeImagePool::~foeImagePool() {
     for (auto *pImage : mImages) {
@@ -26,18 +42,41 @@ foeImagePool::~foeImagePool() {
     }
 }
 
-bool foeImagePool::add(foeImage *pImage) {
+foeImage *foeImagePool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pOld : mImages) {
-        if (pOld->getID() == pImage->getID())
-            return false;
+    // If it finds it, return nullptr
+    for (auto *pImage : mImages) {
+        if (pImage->getID() == resource) {
+            return nullptr;
+        }
     }
 
+    // Not found, add it
+    foeImage *pImage = new foeImage{resource, imageLoadFn, mpImageLoader};
     pImage->incrementRefCount();
+
     mImages.emplace_back(pImage);
 
-    return true;
+    return pImage;
+}
+
+foeImage *foeImagePool::findOrAdd(foeResourceID resource) {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pImage : mImages) {
+        if (pImage->getID() == resource) {
+            return pImage;
+        }
+    }
+
+    // Not found, create it now
+    foeImage *pImage = new foeImage{resource, imageLoadFn, mpImageLoader};
+    pImage->incrementRefCount();
+
+    mImages.emplace_back(pImage);
+
+    return pImage;
 }
 
 foeImage *foeImagePool::find(foeId id) {

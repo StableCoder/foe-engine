@@ -25,12 +25,16 @@
 #include <vector>
 
 struct foePhysCollisionShape;
+class foePhysCollisionShapeLoader;
 
 class FOE_PHYSICS_EXPORT foePhysCollisionShapePool : public foeResourcePoolBase {
   public:
+    foePhysCollisionShapePool(foePhysCollisionShapeLoader *pCollisionShapeLoader) :
+        mpCollisionShapeLoader{pCollisionShapeLoader} {}
     ~foePhysCollisionShapePool();
 
-    bool add(foePhysCollisionShape *pCollisionShape);
+    foePhysCollisionShape *add(foeResourceID resource);
+    foePhysCollisionShape *findOrAdd(foeResourceID resource);
     foePhysCollisionShape *find(foeResourceID id);
 
     void unloadAll();
@@ -38,6 +42,7 @@ class FOE_PHYSICS_EXPORT foePhysCollisionShapePool : public foeResourcePoolBase 
     auto getDataVector() { return mCollisionShapes; }
 
   private:
+    foePhysCollisionShapeLoader *mpCollisionShapeLoader;
     FOE_PHYSICS_NO_EXPORT std::shared_mutex mSync;
     FOE_PHYSICS_NO_EXPORT std::vector<foePhysCollisionShape *> mCollisionShapes;
 };

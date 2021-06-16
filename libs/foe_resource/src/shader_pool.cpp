@@ -17,6 +17,22 @@
 #include <foe/resource/shader_pool.hpp>
 
 #include <foe/resource/shader.hpp>
+#include <foe/resource/shader_loader.hpp>
+
+namespace {
+
+void shaderLoadFn(void *pContext, void *pResource, bool load) {
+    auto *pShaderLoader = reinterpret_cast<foeShaderLoader *>(pContext);
+    auto *pShader = reinterpret_cast<foeShader *>(pResource);
+
+    if (load) {
+        pShaderLoader->requestResourceLoad(pShader);
+    } else {
+        pShaderLoader->requestResourceUnload(pShader);
+    }
+}
+
+} // namespace
 
 foeShaderPool::~foeShaderPool() {
     for (auto *pShader : mShaders) {
@@ -26,18 +42,41 @@ foeShaderPool::~foeShaderPool() {
     }
 }
 
-bool foeShaderPool::add(foeShader *pShader) {
+foeShader *foeShaderPool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pOld : mShaders) {
-        if (pOld->getID() == pShader->getID())
-            return false;
+    // If it finds it, return nullptr
+    for (auto *pShader : mShaders) {
+        if (pShader->getID() == resource) {
+            return nullptr;
+        }
     }
 
+    // Not found, add it
+    foeShader *pShader = new foeShader{resource, shaderLoadFn, mpShaderLoader};
     pShader->incrementRefCount();
+
     mShaders.emplace_back(pShader);
 
-    return true;
+    return pShader;
+}
+
+foeShader *foeShaderPool::findOrAdd(foeResourceID resource) {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pShader : mShaders) {
+        if (pShader->getID() == resource) {
+            return pShader;
+        }
+    }
+
+    // Not found, create it now
+    foeShader *pShader = new foeShader{resource, shaderLoadFn, mpShaderLoader};
+    pShader->incrementRefCount();
+
+    mShaders.emplace_back(pShader);
+
+    return pShader;
 }
 
 foeShader *foeShaderPool::find(foeId id) {

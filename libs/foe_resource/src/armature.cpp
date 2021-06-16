@@ -16,11 +16,10 @@
 
 #include <foe/resource/armature.hpp>
 
-#include <foe/resource/armature_loader.hpp>
-
 #include "log.hpp"
 
-foeArmature::foeArmature(foeId id, foeArmatureLoader *pLoader) : id{id}, pLoader{pLoader} {}
+foeArmature::foeArmature(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext) :
+    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
 
 foeArmature::~foeArmature() {
     if (useCount > 0) {
@@ -75,7 +74,7 @@ int foeArmature::getUseCount() const noexcept { return useCount; }
 
 void foeArmature::requestLoad() {
     incrementRefCount();
-    pLoader->requestResourceLoad(this);
+    mpLoadFn(mpLoadContext, this, true);
 }
 
-void foeArmature::requestUnload() { pLoader->requestResourceUnload(this); }
+void foeArmature::requestUnload() { mpLoadFn(mpLoadContext, this, false); }

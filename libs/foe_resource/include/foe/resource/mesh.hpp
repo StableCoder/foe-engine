@@ -54,7 +54,7 @@ struct foeMeshCreateInfo : public foeResourceCreateInfoBase {
 
 struct foeMesh {
   public:
-    FOE_RES_EXPORT foeMesh(foeId id, foeMeshLoader *pLoader);
+    FOE_RES_EXPORT foeMesh(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext);
     FOE_RES_EXPORT ~foeMesh();
 
     FOE_RES_EXPORT foeId getID() const noexcept;
@@ -81,7 +81,8 @@ struct foeMesh {
     std::atomic_int useCount{0};
 
     // Specialization
-    foeMeshLoader *const pLoader;
+    void (*mpLoadFn)(void *, void *, bool);
+    void *mpLoadContext;
 
     std::mutex dataWriteLock{};
 

@@ -42,25 +42,13 @@ std::error_code collisionShapeCreateProcessing(
             break;
     }
 
-    foePhysCollisionShapeLoader *pCollisionShapeLoader{nullptr};
-    for (auto &it : resourceLoaders) {
-        pCollisionShapeLoader = dynamic_cast<foePhysCollisionShapeLoader *>(it);
-
-        if (pCollisionShapeLoader != nullptr)
-            break;
-    }
-
     if (pCollisionShapePool == nullptr)
         return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND;
-    if (pCollisionShapeLoader == nullptr)
-        return FOE_PHYSICS_YAML_ERROR_UNSPECIFIED;
 
-    auto *pCollisionShape = new foePhysCollisionShape{resource, pCollisionShapeLoader};
+    auto *pCollisionShape = pCollisionShapePool->add(resource);
 
-    if (!pCollisionShapePool->add(pCollisionShape)) {
-        delete pCollisionShape;
-        return FOE_PHYSICS_YAML_ERROR_UNSPECIFIED;
-    }
+    if (!pCollisionShape)
+        return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS;
 
     return FOE_PHYSICS_YAML_SUCCESS;
 }

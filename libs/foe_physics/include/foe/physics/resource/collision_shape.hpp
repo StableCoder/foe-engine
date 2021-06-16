@@ -37,7 +37,9 @@ struct foePhysCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
 struct FOE_PHYSICS_EXPORT foePhysCollisionShape {
     friend foePhysCollisionShapeLoader;
 
-    foePhysCollisionShape(foeResourceID id, foePhysCollisionShapeLoader *pLoader);
+    foePhysCollisionShape(foeResourceID id,
+                          void (*pLoadFn)(void *, void *, bool),
+                          void *pLoadContext);
     ~foePhysCollisionShape();
 
     foeId getID() const noexcept;
@@ -61,7 +63,8 @@ struct FOE_PHYSICS_EXPORT foePhysCollisionShape {
     std::atomic_int useCount{0};
 
     // Specialization
-    foePhysCollisionShapeLoader *const pLoader;
+    void (*mpLoadFn)(void *, void *, bool);
+    void *mpLoadContext;
 
     std::mutex dataWriteLock{};
     std::unique_ptr<foePhysCollisionShapeCreateInfo> createInfo{nullptr};

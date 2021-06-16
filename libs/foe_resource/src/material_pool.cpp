@@ -17,6 +17,22 @@
 #include <foe/resource/material_pool.hpp>
 
 #include <foe/resource/material.hpp>
+#include <foe/resource/material_loader.hpp>
+
+namespace {
+
+void materialLoadFn(void *pContext, void *pResource, bool load) {
+    auto *pMaterialLoader = reinterpret_cast<foeMaterialLoader *>(pContext);
+    auto *pMaterial = reinterpret_cast<foeMaterial *>(pResource);
+
+    if (load) {
+        pMaterialLoader->requestResourceLoad(pMaterial);
+    } else {
+        pMaterialLoader->requestResourceUnload(pMaterial);
+    }
+}
+
+} // namespace
 
 foeMaterialPool::~foeMaterialPool() {
     for (auto *pMaterial : mMaterials) {
@@ -26,18 +42,41 @@ foeMaterialPool::~foeMaterialPool() {
     }
 }
 
-bool foeMaterialPool::add(foeMaterial *pMaterial) {
+foeMaterial *foeMaterialPool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pOld : mMaterials) {
-        if (pOld->getID() == pMaterial->getID())
-            return false;
+    // If it finds it, return nullptr
+    for (auto *pMaterial : mMaterials) {
+        if (pMaterial->getID() == resource) {
+            return nullptr;
+        }
     }
 
+    // Not found, add it
+    foeMaterial *pMaterial = new foeMaterial{resource, materialLoadFn, mpMaterialLoader};
     pMaterial->incrementRefCount();
+
     mMaterials.emplace_back(pMaterial);
 
-    return true;
+    return pMaterial;
+}
+
+foeMaterial *foeMaterialPool::findOrAdd(foeResourceID resource) {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pMaterial : mMaterials) {
+        if (pMaterial->getID() == resource) {
+            return pMaterial;
+        }
+    }
+
+    // Not found, create it now
+    foeMaterial *pMaterial = new foeMaterial{resource, materialLoadFn, mpMaterialLoader};
+    pMaterial->incrementRefCount();
+
+    mMaterials.emplace_back(pMaterial);
+
+    return pMaterial;
 }
 
 foeMaterial *foeMaterialPool::find(foeId id) {

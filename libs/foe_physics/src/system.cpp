@@ -196,20 +196,7 @@ void foePhysicsSystem::addObject(foeEntityID entity,
 
     // CollisionShape
     while (pCollisionShape == nullptr) {
-        pCollisionShape = mpCollisionShapePool->find(pRigidBody->collisionShape);
-        if (pCollisionShape == nullptr) {
-            // Make sure it's not an invalid ID, as if it is, leave
-            if (pRigidBody->collisionShape != FOE_INVALID_ID)
-                return;
-
-            // Not found, a valid ID, add it as a resource now
-            auto *pNewCollisionShape =
-                new foePhysCollisionShape{pRigidBody->collisionShape, mpCollisionShapeLoader};
-
-            if (!mpCollisionShapePool->add(pNewCollisionShape)) {
-                delete pNewCollisionShape;
-            }
-        }
+        pCollisionShape = mpCollisionShapePool->findOrAdd(pRigidBody->collisionShape);
     }
     if (pCollisionShape->loadState != foeResourceLoadState::Loaded) {
         if (pCollisionShape->loadState == foeResourceLoadState::Failed) {

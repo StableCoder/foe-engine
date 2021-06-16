@@ -25,12 +25,15 @@
 #include <vector>
 
 struct foeMaterial;
+class foeMaterialLoader;
 
 class FOE_RES_EXPORT foeMaterialPool : public foeResourcePoolBase {
   public:
+    foeMaterialPool(foeMaterialLoader *pMaterialLoader) : mpMaterialLoader{pMaterialLoader} {}
     ~foeMaterialPool();
 
-    bool add(foeMaterial *pMaterial);
+    foeMaterial *add(foeResourceID resource);
+    foeMaterial *findOrAdd(foeResourceID resource);
     foeMaterial *find(foeId id);
 
     void unloadAll();
@@ -38,6 +41,7 @@ class FOE_RES_EXPORT foeMaterialPool : public foeResourcePoolBase {
     auto getDataVector() { return mMaterials; }
 
   private:
+    foeMaterialLoader *mpMaterialLoader;
     FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
     FOE_RESOURCE_NO_EXPORT std::vector<foeMaterial *> mMaterials;
 };

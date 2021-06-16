@@ -36,21 +36,29 @@
 namespace {
 
 void onCreate(foeSimulationState *pSimulationState) {
+    auto *pArmatureLoader = new foeArmatureLoader;
+    auto *pImageLoader = new foeImageLoader;
+    auto *pMaterialLoader = new foeMaterialLoader;
+    auto *pShaderLoader = new foeShaderLoader;
+    auto *pMeshLoader = new foeMeshLoader;
+    auto *pVertexDescriptorLoader = new foeVertexDescriptorLoader;
+
     // Resource Pools
-    pSimulationState->resourcePools.emplace_back(new foeArmaturePool);
-    pSimulationState->resourcePools.emplace_back(new foeImagePool);
-    pSimulationState->resourcePools.emplace_back(new foeMaterialPool);
-    pSimulationState->resourcePools.emplace_back(new foeMeshPool);
-    pSimulationState->resourcePools.emplace_back(new foeShaderPool);
-    pSimulationState->resourcePools.emplace_back(new foeVertexDescriptorPool);
+    pSimulationState->resourcePools.emplace_back(new foeArmaturePool{pArmatureLoader});
+    pSimulationState->resourcePools.emplace_back(new foeImagePool{pImageLoader});
+    pSimulationState->resourcePools.emplace_back(new foeMaterialPool{pMaterialLoader});
+    pSimulationState->resourcePools.emplace_back(new foeMeshPool{pMeshLoader});
+    pSimulationState->resourcePools.emplace_back(new foeShaderPool{pShaderLoader});
+    pSimulationState->resourcePools.emplace_back(
+        new foeVertexDescriptorPool{pVertexDescriptorLoader});
 
     // Resource Loaders
-    pSimulationState->resourceLoaders.emplace_back(new foeArmatureLoader);
-    pSimulationState->resourceLoaders.emplace_back(new foeImageLoader);
-    pSimulationState->resourceLoaders.emplace_back(new foeMaterialLoader);
-    pSimulationState->resourceLoaders.emplace_back(new foeMeshLoader);
-    pSimulationState->resourceLoaders.emplace_back(new foeShaderLoader);
-    pSimulationState->resourceLoaders.emplace_back(new foeVertexDescriptorLoader);
+    pSimulationState->resourceLoaders.emplace_back(pArmatureLoader);
+    pSimulationState->resourceLoaders.emplace_back(pImageLoader);
+    pSimulationState->resourceLoaders.emplace_back(pMaterialLoader);
+    pSimulationState->resourceLoaders.emplace_back(pMeshLoader);
+    pSimulationState->resourceLoaders.emplace_back(pShaderLoader);
+    pSimulationState->resourceLoaders.emplace_back(pVertexDescriptorLoader);
 }
 
 template <typename DestroyType, typename InType>
@@ -132,7 +140,7 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo) {
                                                             pInitInfo->resourceLoaderCount);
 
             pMaterialLoader->initialize(
-                pShaderLoader, pShaderPool, pImageLoader, pImagePool, pInitInfo->gfxSession,
+                pShaderPool, pImageLoader, pImagePool, pInitInfo->gfxSession,
                 pInitInfo->resourceDefinitionImportFn, pInitInfo->asyncJobFn);
         }
 

@@ -16,11 +16,10 @@
 
 #include <foe/resource/mesh.hpp>
 
-#include <foe/resource/mesh_loader.hpp>
-
 #include "log.hpp"
 
-foeMesh::foeMesh(foeId id, foeMeshLoader *pLoader) : id{id}, pLoader{pLoader} {}
+foeMesh::foeMesh(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext) :
+    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
 
 foeMesh::~foeMesh() {
     if (useCount > 0) {
@@ -74,7 +73,7 @@ int foeMesh::getUseCount() const noexcept { return useCount; }
 
 void foeMesh::requestLoad() {
     incrementRefCount();
-    pLoader->requestResourceLoad(this);
+    mpLoadFn(mpLoadContext, this, true);
 }
 
-void foeMesh::requestUnload() { pLoader->requestResourceUnload(this); }
+void foeMesh::requestUnload() { mpLoadFn(mpLoadContext, this, false); }

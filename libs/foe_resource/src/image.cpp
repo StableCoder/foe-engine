@@ -16,11 +16,10 @@
 
 #include <foe/resource/image.hpp>
 
-#include <foe/resource/image_loader.hpp>
-
 #include "log.hpp"
 
-foeImage::foeImage(foeId id, foeImageLoader *pLoader) : id{id}, pLoader{pLoader} {}
+foeImage::foeImage(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext) :
+    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
 
 foeImage::~foeImage() {
     if (useCount > 0) {
@@ -75,7 +74,7 @@ int foeImage::getUseCount() const noexcept { return useCount; }
 
 void foeImage::requestLoad() {
     incrementRefCount();
-    pLoader->requestResourceLoad(this);
+    mpLoadFn(mpLoadContext, this, true);
 }
 
-void foeImage::requestUnload() { pLoader->requestResourceUnload(this); }
+void foeImage::requestUnload() { mpLoadFn(mpLoadContext, this, false); }

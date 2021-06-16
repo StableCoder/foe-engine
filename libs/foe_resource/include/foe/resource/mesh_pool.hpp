@@ -25,12 +25,15 @@
 #include <vector>
 
 struct foeMesh;
+class foeMeshLoader;
 
 class FOE_RES_EXPORT foeMeshPool : public foeResourcePoolBase {
   public:
+    foeMeshPool(foeMeshLoader *pMeshLoader) : mpMeshLoader{pMeshLoader} {}
     ~foeMeshPool();
 
-    bool add(foeMesh *pMesh);
+    foeMesh *add(foeResourceID resource);
+    foeMesh *findOrAdd(foeResourceID resource);
     foeMesh *find(foeId id);
 
     void unloadAll();
@@ -38,6 +41,7 @@ class FOE_RES_EXPORT foeMeshPool : public foeResourcePoolBase {
     auto getDataVector() { return mMeshs; }
 
   private:
+    foeMeshLoader *mpMeshLoader;
     FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
     FOE_RESOURCE_NO_EXPORT std::vector<foeMesh *> mMeshs;
 };

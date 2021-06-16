@@ -25,12 +25,18 @@
 #include <vector>
 
 class foeShader;
+class foeShaderLoader;
 
 class FOE_RES_EXPORT foeShaderPool : public foeResourcePoolBase {
   public:
+    foeShaderPool(foeShaderLoader *pShaderLoader) : mpShaderLoader{pShaderLoader} {}
     ~foeShaderPool();
 
-    bool add(foeShader *pShader);
+    // Only adds the resource if it doesn't already exists, returns nullptr if it already exists
+    foeShader *add(foeResourceID resource);
+    // Returns ptr, add if not found
+    foeShader *findOrAdd(foeResourceID resource);
+    // Only finds
     foeShader *find(foeId resource);
 
     void unloadAll();
@@ -40,6 +46,7 @@ class FOE_RES_EXPORT foeShaderPool : public foeResourcePoolBase {
     auto getDataVector() { return mShaders; }
 
   private:
+    FOE_RESOURCE_NO_EXPORT foeShaderLoader *mpShaderLoader;
     FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
     FOE_RESOURCE_NO_EXPORT std::vector<foeShader *> mShaders;
 };

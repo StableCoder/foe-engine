@@ -25,12 +25,15 @@
 #include <vector>
 
 struct foeArmature;
+class foeArmatureLoader;
 
 class FOE_RES_EXPORT foeArmaturePool : public foeResourcePoolBase {
   public:
+    foeArmaturePool(foeArmatureLoader *pArmatureLoader) : mpArmatureLoader{pArmatureLoader} {}
     ~foeArmaturePool();
 
-    bool add(foeArmature *pArmature);
+    foeArmature *add(foeResourceID resource);
+    foeArmature *findOrAdd(foeResourceID resource);
     foeArmature *find(foeId id);
 
     void unloadAll();
@@ -38,6 +41,7 @@ class FOE_RES_EXPORT foeArmaturePool : public foeResourcePoolBase {
     auto getDataVector() { return mArmatures; }
 
   private:
+    foeArmatureLoader *mpArmatureLoader;
     FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
     FOE_RESOURCE_NO_EXPORT std::vector<foeArmature *> mArmatures;
 };

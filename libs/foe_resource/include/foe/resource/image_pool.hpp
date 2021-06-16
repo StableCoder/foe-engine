@@ -25,12 +25,15 @@
 #include <vector>
 
 class foeImage;
+class foeImageLoader;
 
 class FOE_RES_EXPORT foeImagePool : public foeResourcePoolBase {
   public:
+    foeImagePool(foeImageLoader *pImageLoader) : mpImageLoader{pImageLoader} {}
     ~foeImagePool();
 
-    bool add(foeImage *pImage);
+    foeImage *add(foeResourceID resource);
+    foeImage *findOrAdd(foeResourceID resource);
     foeImage *find(foeId id);
 
     void unloadAll();
@@ -38,6 +41,7 @@ class FOE_RES_EXPORT foeImagePool : public foeResourcePoolBase {
     auto getDataVector() { return mImages; }
 
   private:
+    foeImageLoader *mpImageLoader;
     FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
     FOE_RESOURCE_NO_EXPORT std::vector<foeImage *> mImages;
 };

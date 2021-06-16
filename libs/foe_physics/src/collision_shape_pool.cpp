@@ -17,6 +17,22 @@
 #include <foe/physics/resource/collision_shape_pool.hpp>
 
 #include <foe/physics/resource/collision_shape.hpp>
+#include <foe/physics/resource/collision_shape_loader.hpp>
+
+namespace {
+
+void collisionShapeLoadFn(void *pContext, void *pResource, bool load) {
+    auto *pCollisionShapeLoader = reinterpret_cast<foePhysCollisionShapeLoader *>(pContext);
+    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
+
+    if (load) {
+        pCollisionShapeLoader->requestResourceLoad(pCollisionShape);
+    } else {
+        pCollisionShapeLoader->requestResourceUnload(pCollisionShape);
+    }
+}
+
+} // namespace
 
 foePhysCollisionShapePool::~foePhysCollisionShapePool() {
     for (auto *pCollisionShape : mCollisionShapes) {
@@ -26,18 +42,43 @@ foePhysCollisionShapePool::~foePhysCollisionShapePool() {
     }
 }
 
-bool foePhysCollisionShapePool::add(foePhysCollisionShape *pCollisionShape) {
+foePhysCollisionShape *foePhysCollisionShapePool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pOld : mCollisionShapes) {
-        if (pOld->getID() == pCollisionShape->getID())
-            return false;
+    // If it finds it, return nullptr
+    for (auto *pPhysCollisionShape : mCollisionShapes) {
+        if (pPhysCollisionShape->getID() == resource) {
+            return nullptr;
+        }
     }
 
-    pCollisionShape->incrementRefCount();
-    mCollisionShapes.emplace_back(pCollisionShape);
+    // Not found, add it
+    foePhysCollisionShape *pPhysCollisionShape =
+        new foePhysCollisionShape{resource, collisionShapeLoadFn, mpCollisionShapeLoader};
+    pPhysCollisionShape->incrementRefCount();
 
-    return true;
+    mCollisionShapes.emplace_back(pPhysCollisionShape);
+
+    return pPhysCollisionShape;
+}
+
+foePhysCollisionShape *foePhysCollisionShapePool::findOrAdd(foeResourceID resource) {
+    std::scoped_lock lock{mSync};
+
+    for (auto *pPhysCollisionShape : mCollisionShapes) {
+        if (pPhysCollisionShape->getID() == resource) {
+            return pPhysCollisionShape;
+        }
+    }
+
+    // Not found, create it now
+    foePhysCollisionShape *pPhysCollisionShape =
+        new foePhysCollisionShape{resource, collisionShapeLoadFn, mpCollisionShapeLoader};
+    pPhysCollisionShape->incrementRefCount();
+
+    mCollisionShapes.emplace_back(pPhysCollisionShape);
+
+    return pPhysCollisionShape;
 }
 
 foePhysCollisionShape *foePhysCollisionShapePool::find(foeId id) {

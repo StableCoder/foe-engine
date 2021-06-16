@@ -16,12 +16,12 @@
 
 #include <foe/physics/resource/collision_shape.hpp>
 
-#include <foe/physics/resource/collision_shape_loader.hpp>
-
 #include "log.hpp"
 
-foePhysCollisionShape::foePhysCollisionShape(foeId id, foePhysCollisionShapeLoader *pLoader) :
-    id{id}, pLoader{pLoader} {}
+foePhysCollisionShape::foePhysCollisionShape(foeId id,
+                                             void (*pLoadFn)(void *, void *, bool),
+                                             void *pLoadContext) :
+    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
 
 foePhysCollisionShape::~foePhysCollisionShape() {
     if (useCount > 0) {
@@ -77,7 +77,7 @@ int foePhysCollisionShape::getUseCount() const noexcept { return useCount; }
 
 void foePhysCollisionShape::requestLoad() {
     incrementRefCount();
-    pLoader->requestResourceLoad(this);
+    mpLoadFn(mpLoadContext, this, true);
 }
 
-void foePhysCollisionShape::requestUnload() { pLoader->requestResourceUnload(this); }
+void foePhysCollisionShape::requestUnload() { mpLoadFn(mpLoadContext, this, false); }

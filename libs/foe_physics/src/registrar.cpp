@@ -29,11 +29,14 @@
 namespace {
 
 void onCreate(foeSimulationState *pSimulationState) {
+    auto *pCollisionShapeLoader = new foePhysCollisionShapeLoader;
+
     // Resources
-    pSimulationState->resourcePools.emplace_back(new foePhysCollisionShapePool);
+    pSimulationState->resourcePools.emplace_back(
+        new foePhysCollisionShapePool{pCollisionShapeLoader});
 
     // Loaders
-    pSimulationState->resourceLoaders.emplace_back(new foePhysCollisionShapeLoader);
+    pSimulationState->resourceLoaders.emplace_back(pCollisionShapeLoader);
 
     // Components
     pSimulationState->componentPools.emplace_back(new foeRigidBodyPool);

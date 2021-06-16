@@ -16,7 +16,6 @@
 
 #include <foe/resource/shader.hpp>
 
-#include <foe/resource/shader_loader.hpp>
 #include <vk_struct_cleanup.hpp>
 
 #include "log.hpp"
@@ -30,7 +29,8 @@ foeShaderCreateInfo::foeShaderCreateInfo(foeShaderCreateInfo &&rhs) :
     rhs.gfxCreateInfo.descriptorSetLayoutCI = {};
 }
 
-foeShader::foeShader(foeId id, foeShaderLoader *pLoader) : id{id}, pLoader{pLoader} {}
+foeShader::foeShader(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext) :
+    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
 
 foeShader::~foeShader() {
     if (useCount > 0) {
@@ -85,9 +85,9 @@ int foeShader::getUseCount() const noexcept { return useCount; }
 
 void foeShader::requestLoad() {
     incrementRefCount();
-    pLoader->requestResourceLoad(this);
+    mpLoadFn(mpLoadContext, this, true);
 }
 
-void foeShader::requestUnload() { pLoader->requestResourceUnload(this); }
+void foeShader::requestUnload() { mpLoadFn(mpLoadContext, this, false); }
 
 foeGfxShader foeShader::getShader() const noexcept { return data.shader; }

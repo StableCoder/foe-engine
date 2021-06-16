@@ -25,12 +25,16 @@
 #include <vector>
 
 class foeVertexDescriptor;
+class foeVertexDescriptorLoader;
 
 class FOE_RES_EXPORT foeVertexDescriptorPool : public foeResourcePoolBase {
   public:
+    foeVertexDescriptorPool(foeVertexDescriptorLoader *pVertexDescriptorLoader) :
+        mpVertexDescriptorLoader{pVertexDescriptorLoader} {}
     ~foeVertexDescriptorPool();
 
-    bool add(foeVertexDescriptor *pVertexDescriptor);
+    foeVertexDescriptor *add(foeResourceID resource);
+    foeVertexDescriptor *findOrAdd(foeResourceID resource);
     foeVertexDescriptor *find(foeId id);
 
     void unloadAll();
@@ -38,6 +42,7 @@ class FOE_RES_EXPORT foeVertexDescriptorPool : public foeResourcePoolBase {
     auto getDataVector() { return mVertexDescriptors; }
 
   private:
+    foeVertexDescriptorLoader *mpVertexDescriptorLoader;
     FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
     FOE_RESOURCE_NO_EXPORT std::vector<foeVertexDescriptor *> mVertexDescriptors;
 };

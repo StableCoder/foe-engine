@@ -20,7 +20,8 @@
 
 #include "log.hpp"
 
-foeMaterial::foeMaterial(foeId id, foeMaterialLoader *pLoader) : id{id}, pLoader{pLoader} {}
+foeMaterial::foeMaterial(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext) :
+    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
 
 foeMaterial::~foeMaterial() {
     if (useCount > 0) {
@@ -75,10 +76,10 @@ int foeMaterial::getUseCount() const noexcept { return useCount; }
 
 void foeMaterial::requestLoad() {
     incrementRefCount();
-    pLoader->requestResourceLoad(this);
+    mpLoadFn(mpLoadContext, this, true);
 }
 
-void foeMaterial::requestUnload() { pLoader->requestResourceUnload(this); }
+void foeMaterial::requestUnload() { mpLoadFn(mpLoadContext, this, false); }
 
 foeShader *foeMaterial::getFragmentShader() const noexcept {
     return data.subResources.pFragmentShader;
@@ -91,5 +92,6 @@ foeGfxVkFragmentDescriptor *foeMaterial::getGfxFragmentDescriptor() const noexce
 foeImage *foeMaterial::getImage() const noexcept { return data.subResources.pImage; }
 
 VkDescriptorSet foeMaterial::getVkDescriptorSet(uint32_t frameIndex) {
-    return pLoader->createDescriptorSet(this, frameIndex);
+    return reinterpret_cast<foeMaterialLoader *>(mpLoadContext)
+        ->createDescriptorSet(this, frameIndex);
 }
