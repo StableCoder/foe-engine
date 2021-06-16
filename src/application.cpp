@@ -654,6 +654,8 @@ void Application::deinitialize() {
     imguiRenderer.deinitialize(gfxSession);
 #endif
 
+    if (pSimulationSet)
+        foeDeinitializeSimulation(pSimulationSet.get());
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxDestroySession(gfxSession);
     if (gfxRuntime != FOE_NULL_HANDLE)
