@@ -626,11 +626,6 @@ void Application::deinitialize() {
     }
 #endif
 
-    // Resource Loader Deinitialization
-    for (auto const &it : pSimulationSet->resourceLoaders) {
-        it->deinitialize();
-    }
-
     for (auto &it : frameData) {
         it.destroy(foeGfxVkGetDevice(gfxSession));
     }

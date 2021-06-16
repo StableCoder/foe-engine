@@ -41,6 +41,19 @@ void deinitSimulation(foeSimulationState *pSimulationState) {
             static_cast<void *>(pSimulationState));
 }
 
+foeSimulationStateLists createSimStateLists(foeSimulationState *pSimulationState) {
+    return foeSimulationStateLists{
+        .pResourcePools = pSimulationState->resourcePools.data(),
+        .resourcePoolCount = static_cast<uint32_t>(pSimulationState->resourcePools.size()),
+        .pResourceLoaders = pSimulationState->resourceLoaders.data(),
+        .resourceLoaderCount = static_cast<uint32_t>(pSimulationState->resourceLoaders.size()),
+        .pComponentPools = pSimulationState->componentPools.data(),
+        .componentPoolCount = static_cast<uint32_t>(pSimulationState->componentPools.size()),
+        .pSystems = pSimulationState->systems.data(),
+        .systemCount = static_cast<uint32_t>(pSimulationState->systems.size()),
+    };
+}
+
 } // namespace
 
 bool foeSimulationFunctionalty::operator==(foeSimulationFunctionalty const &rhs) const noexcept {
@@ -66,17 +79,37 @@ bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
     // Not already registered, add it.
     mRegistered.emplace_back(functionality);
 
+    // Go through any already existing SimulationState's and add this new functionality to them.
+    for (auto *pSimState : mStates) {
+        if (functionality.onCreate)
+            functionality.onCreate(pSimState);
+        if (foeSimulationIsInitialized(pSimState) && functionality.onInitialization) {
+            auto simStateLists = createSimStateLists(pSimState);
+            functionality.onInitialization(&pSimState->initInfo, &simStateLists);
+        }
+    }
+
     return true;
 }
 
 void foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) {
     std::scoped_lock lock{mSync};
 
-    for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it)
+    for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it) {
         if (*it == functionality) {
+            // Since we're deregistering functionality, we need to deinit/destroy this stuff from
+            // any active SimulationStates
+            for (auto *pSimState : mStates) {
+                if (functionality.onDeinitialization)
+                    functionality.onDeinitialization(pSimState);
+                if (functionality.onDestroy)
+                    functionality.onDestroy(pSimState);
+            }
+
             mRegistered.erase(it);
             return;
         }
+    }
 
     FOE_LOG(
         SimulationState, Warning,
@@ -156,22 +189,22 @@ void foeDestroySimulation(foeSimulationState *pSimulationState) {
 }
 
 void foeInitializeSimulation(foeSimulationState *pSimulationState,
-                             foeSimulationInitInfo pInitInfo) {
+                             foeSimulationInitInfo const *pInitInfo) {
     std::scoped_lock lock{mSync};
+
+    if (pSimulationState->initInfo.gfxSession != FOE_NULL_HANDLE) {
+        FOE_LOG(SimulationState, Error,
+                "Attempting to re-initialize already initialized SimulationState: {}",
+                static_cast<void *>(pSimulationState))
+        return;
+    }
 
     FOE_LOG(SimulationState, Verbose, "Initializing SimulationState: {}",
             static_cast<void *>(pSimulationState));
 
-    auto stateLists = foeSimulationStateLists{
-        .pResourcePools = pSimulationState->resourcePools.data(),
-        .resourcePoolCount = static_cast<uint32_t>(pSimulationState->resourcePools.size()),
-        .pResourceLoaders = pSimulationState->resourceLoaders.data(),
-        .resourceLoaderCount = static_cast<uint32_t>(pSimulationState->resourceLoaders.size()),
-        .pComponentPools = pSimulationState->componentPools.data(),
-        .componentPoolCount = static_cast<uint32_t>(pSimulationState->componentPools.size()),
-        .pSystems = pSimulationState->systems.data(),
-        .systemCount = static_cast<uint32_t>(pSimulationState->systems.size()),
-    };
+    pSimulationState->initInfo = *pInitInfo;
+
+    auto stateLists = createSimStateLists(pSimulationState);
 
     for (auto const &functionality : mRegistered) {
         if (functionality.onInitialization) {

@@ -105,9 +105,9 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
 
         auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt);
         if (pCameraSystem) {
-            auto *pPosition3dPool = search<foePosition3dPool>(pSimStateData->pComponentPools,
-                                                              pSimStateData->pComponentPools +
-                                                                  pSimStateData->componentPoolCount);
+            auto *pPosition3dPool = search<foePosition3dPool>(
+                pSimStateData->pComponentPools,
+                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
             auto *pCameraPool = search<foeCameraPool>(pSimStateData->pComponentPools,
                                                       pSimStateData->pComponentPools +
@@ -118,9 +118,9 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
 
         auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
         if (pPositionDescriptorPool) {
-            auto *pPosition3dPool = search<foePosition3dPool>(pSimStateData->pComponentPools,
-                                                              pSimStateData->pComponentPools +
-                                                                  pSimStateData->componentPoolCount);
+            auto *pPosition3dPool = search<foePosition3dPool>(
+                pSimStateData->pComponentPools,
+                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
             pPositionDescriptorPool->initialize(pPosition3dPool, pInitInfo->gfxSession);
         }
@@ -131,9 +131,9 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                                                           pSimStateData->pResourcePools +
                                                               pSimStateData->resourcePoolCount);
 
-            auto *pMeshPool =
-                search<foeMeshPool>(pSimStateData->pResourcePools,
-                                    pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
+            auto *pMeshPool = search<foeMeshPool>(pSimStateData->pResourcePools,
+                                                  pSimStateData->pResourcePools +
+                                                      pSimStateData->resourcePoolCount);
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
                 pSimStateData->pComponentPools,

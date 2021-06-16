@@ -17,6 +17,7 @@
 #ifndef FOE_SIMULATION_STATE_HPP
 #define FOE_SIMULATION_STATE_HPP
 
+#include <foe/simulation/core.hpp>
 #include <foe/simulation/group_data.hpp>
 
 #include <vector>
@@ -30,6 +31,9 @@ struct foeSystemBase;
 struct foeSimulationState {
     foeGroupData groupData;
 
+    // Information used to initialize functionality (used when functionality added during runtime)
+    foeSimulationInitInfo initInfo{};
+
     foeEditorNameMap *pResourceNameMap;
     std::vector<foeResourceLoaderBase *> resourceLoaders;
     std::vector<foeResourcePoolBase *> resourcePools;
@@ -39,5 +43,7 @@ struct foeSimulationState {
 
     std::vector<foeSystemBase *> systems;
 };
+
+bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState);
 
 #endif // FOE_SIMULATION_STATE_HPP

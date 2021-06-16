@@ -124,13 +124,13 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo,
 
         auto *pMaterialLoader = dynamic_cast<foeMaterialLoader *>(*pIt);
         if (pMaterialLoader) {
-            auto *pShaderPool =
-                search<foeShaderPool>(pSimStateData->pResourcePools,
-                                      pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
+            auto *pShaderPool = search<foeShaderPool>(pSimStateData->pResourcePools,
+                                                      pSimStateData->pResourcePools +
+                                                          pSimStateData->resourcePoolCount);
 
-            auto *pImagePool =
-                search<foeImagePool>(pSimStateData->pResourcePools,
-                                     pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
+            auto *pImagePool = search<foeImagePool>(pSimStateData->pResourcePools,
+                                                    pSimStateData->pResourcePools +
+                                                        pSimStateData->resourcePoolCount);
 
             pMaterialLoader->initialize(pShaderPool, pImagePool, pInitInfo->gfxSession,
                                         pInitInfo->resourceDefinitionImportFn,
@@ -151,9 +151,9 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo,
 
         auto *pVertexDescriptorLoader = dynamic_cast<foeVertexDescriptorLoader *>(*pIt);
         if (pVertexDescriptorLoader) {
-            auto *pShaderPool =
-                search<foeShaderPool>(pSimStateData->pResourcePools,
-                                      pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
+            auto *pShaderPool = search<foeShaderPool>(pSimStateData->pResourcePools,
+                                                      pSimStateData->pResourcePools +
+                                                          pSimStateData->resourcePoolCount);
 
             pVertexDescriptorLoader->initialize(pShaderPool, pInitInfo->resourceDefinitionImportFn,
                                                 pInitInfo->asyncJobFn);
