@@ -132,6 +132,12 @@ void foeDestroySimulation(foeSimulationState *pSimulationState) {
         }
     }
 
+    // Destroy Name Maps
+    if (pSimulationState->pEntityNameMap)
+        delete pSimulationState->pEntityNameMap;
+    if (pSimulationState->pResourceNameMap)
+        delete pSimulationState->pResourceNameMap;
+
     // Delete it anyways
     delete pSimulationState;
 
