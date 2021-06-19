@@ -60,40 +60,77 @@ TEST_CASE("foeGroupData - Initial State", "[foe]") {
     foeGroupData test;
 
     SECTION("Persistent Group") {
-        REQUIRE(test.persistentEntityIndices() != nullptr);
-        REQUIRE(test.persistentEntityIndices() == test.entityIndices(foeIdPersistentGroup));
-        REQUIRE(test.persistentEntityIndices()->groupID() == foeIdPersistentGroup);
-        REQUIRE(test.persistentEntityIndices() == test.entityIndices("Persistent"));
+        SECTION("Resource Indices") {
+            REQUIRE(test.persistentResourceIndices() != nullptr);
+            REQUIRE(test.persistentResourceIndices() == test.resourceIndices(foeIdPersistentGroup));
+            REQUIRE(test.persistentResourceIndices()->groupID() == foeIdPersistentGroup);
+            REQUIRE(test.persistentResourceIndices() == test.resourceIndices("Persistent"));
 
-        REQUIRE(test.entityIndices(foeIdPersistentGroup) != nullptr);
-        REQUIRE(test.entityIndices(foeIdPersistentGroup) ==
-                test.entityIndices(foeIdPersistentGroup));
-        REQUIRE(test.entityIndices(foeIdPersistentGroup)->groupID() == foeIdPersistentGroup);
-        REQUIRE(test.entityIndices(foeIdPersistentGroup) == test.entityIndices("Persistent"));
+            REQUIRE(test.resourceIndices(foeIdPersistentGroup) != nullptr);
+            REQUIRE(test.resourceIndices(foeIdPersistentGroup) ==
+                    test.resourceIndices(foeIdPersistentGroup));
+            REQUIRE(test.resourceIndices(foeIdPersistentGroup)->groupID() == foeIdPersistentGroup);
+            REQUIRE(test.resourceIndices(foeIdPersistentGroup) ==
+                    test.resourceIndices("Persistent"));
+        }
 
-        REQUIRE(test.persistentImporter() == nullptr);
-        REQUIRE(test.persistentImporter() == test.importer(foeIdPersistentGroup));
-        REQUIRE(test.persistentImporter() == test.importer("Persistent"));
+        SECTION("Entity Indices") {
+            REQUIRE(test.persistentEntityIndices() != nullptr);
+            REQUIRE(test.persistentEntityIndices() == test.entityIndices(foeIdPersistentGroup));
+            REQUIRE(test.persistentEntityIndices()->groupID() == foeIdPersistentGroup);
+            REQUIRE(test.persistentEntityIndices() == test.entityIndices("Persistent"));
 
-        REQUIRE(test.importer(foeIdPersistentGroup) == nullptr);
+            REQUIRE(test.entityIndices(foeIdPersistentGroup) != nullptr);
+            REQUIRE(test.entityIndices(foeIdPersistentGroup) ==
+                    test.entityIndices(foeIdPersistentGroup));
+            REQUIRE(test.entityIndices(foeIdPersistentGroup)->groupID() == foeIdPersistentGroup);
+            REQUIRE(test.entityIndices(foeIdPersistentGroup) == test.entityIndices("Persistent"));
+        }
+
+        SECTION("Importer") {
+            REQUIRE(test.persistentImporter() == nullptr);
+            REQUIRE(test.persistentImporter() == test.importer(foeIdPersistentGroup));
+            REQUIRE(test.persistentImporter() == test.importer("Persistent"));
+
+            REQUIRE(test.importer(foeIdPersistentGroup) == nullptr);
+        }
     }
 
     SECTION("Temporary Group") {
-        REQUIRE(test.temporaryEntityIndices() != nullptr);
-        REQUIRE(test.temporaryEntityIndices() == test.entityIndices(foeIdTemporaryGroup));
-        REQUIRE(test.temporaryEntityIndices()->groupID() == foeIdTemporaryGroup);
-        REQUIRE(test.temporaryEntityIndices() == test.entityIndices("Temporary"));
+        SECTION("Resource Indices") {
+            REQUIRE(test.temporaryResourceIndices() != nullptr);
+            REQUIRE(test.temporaryResourceIndices() == test.resourceIndices(foeIdTemporaryGroup));
+            REQUIRE(test.temporaryResourceIndices()->groupID() == foeIdTemporaryGroup);
+            REQUIRE(test.temporaryResourceIndices() == test.resourceIndices("Temporary"));
 
-        REQUIRE(test.entityIndices(foeIdTemporaryGroup) != nullptr);
-        REQUIRE(test.entityIndices(foeIdTemporaryGroup) == test.entityIndices(foeIdTemporaryGroup));
-        REQUIRE(test.entityIndices(foeIdTemporaryGroup)->groupID() == foeIdTemporaryGroup);
-        REQUIRE(test.entityIndices(foeIdTemporaryGroup) == test.entityIndices("Temporary"));
+            REQUIRE(test.resourceIndices(foeIdTemporaryGroup) != nullptr);
+            REQUIRE(test.resourceIndices(foeIdTemporaryGroup) ==
+                    test.resourceIndices(foeIdTemporaryGroup));
+            REQUIRE(test.resourceIndices(foeIdTemporaryGroup)->groupID() == foeIdTemporaryGroup);
+            REQUIRE(test.resourceIndices(foeIdTemporaryGroup) == test.resourceIndices("Temporary"));
+        }
 
-        REQUIRE(test.importer(foeIdTemporaryGroup) == nullptr);
+        SECTION("Entity Indices") {
+            REQUIRE(test.temporaryEntityIndices() != nullptr);
+            REQUIRE(test.temporaryEntityIndices() == test.entityIndices(foeIdTemporaryGroup));
+            REQUIRE(test.temporaryEntityIndices()->groupID() == foeIdTemporaryGroup);
+            REQUIRE(test.temporaryEntityIndices() == test.entityIndices("Temporary"));
+
+            REQUIRE(test.entityIndices(foeIdTemporaryGroup) != nullptr);
+            REQUIRE(test.entityIndices(foeIdTemporaryGroup) ==
+                    test.entityIndices(foeIdTemporaryGroup));
+            REQUIRE(test.entityIndices(foeIdTemporaryGroup)->groupID() == foeIdTemporaryGroup);
+            REQUIRE(test.entityIndices(foeIdTemporaryGroup) == test.entityIndices("Temporary"));
+        }
+
+        SECTION("Never an importer for the Temporary Group") {
+            REQUIRE(test.importer(foeIdTemporaryGroup) == nullptr);
+        }
     }
 
-    SECTION("Dynamic Groups") {
+    SECTION("Dynamic Groups are all empty/nullptr") {
         for (uint32_t i = 0; i < (foeIdGroupMaxValue - 2); ++i) {
+            REQUIRE(test.resourceIndices(foeIdValueToGroup(i)) == nullptr);
             REQUIRE(test.entityIndices(foeIdValueToGroup(i)) == nullptr);
             REQUIRE(test.importer(foeIdValueToGroup(i)) == nullptr);
         }
@@ -251,28 +288,19 @@ TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
     }
 }
 
-TEST_CASE("foeGroupData - Persistent/Temporary group IndexGenerator/Importer retrieval", "[foe]") {
+TEST_CASE("foeGroupData - setPersistentImporter success cases", "[foe]") {
     foeGroupData test;
 
-    auto persistentImporter =
-        std::make_unique<DummyImporter>("testPersistent", foeIdPersistentGroup);
-    test.setPersistentImporter(std::move(persistentImporter));
+    auto tempImporter =
+        std::make_unique<DummyImporter>("testPersistentImporter", foeIdPersistentGroup);
+    auto *pImporter = tempImporter.get();
 
-    SECTION("Persistent Data") {
-        REQUIRE(test.persistentEntityIndices() != nullptr);
-        REQUIRE(test.persistentEntityIndices()->groupID() == foeIdPersistentGroup);
+    REQUIRE(test.setPersistentImporter(std::move(tempImporter)));
 
-        REQUIRE(test.persistentImporter() != nullptr);
-        REQUIRE(test.persistentImporter()->group() == foeIdPersistentGroup);
-        REQUIRE(test.persistentImporter()->name() == "testPersistent");
+    REQUIRE(test.importer(foeIdPersistentGroup) == pImporter);
 
-        REQUIRE(test.importer(foeIdPersistentGroup) != nullptr);
-        REQUIRE(test.importer("testPersistent") != nullptr);
-    }
-
-    SECTION("Temporary Data") {
-        REQUIRE(test.temporaryEntityIndices() != nullptr);
-        REQUIRE(test.temporaryEntityIndices()->groupID() == foeIdTemporaryGroup);
+    SECTION("Persistent importer with a different importer name also works") {
+        REQUIRE(test.importer("testPersistentImporter") == pImporter);
     }
 }
 
@@ -286,6 +314,9 @@ TEST_CASE("foeGroupData - IndexGenerator/Importer retrieval", "[foe]") {
                                  std::move(testImporter)));
 
     SECTION("0x1 Group Data") {
+        REQUIRE(test.resourceIndices(foeIdValueToGroup(0x1)) != nullptr);
+        REQUIRE(test.resourceIndices("0x1") != nullptr);
+
         REQUIRE(test.entityIndices(foeIdValueToGroup(0x1)) != nullptr);
         REQUIRE(test.entityIndices("0x1") != nullptr);
 
@@ -303,6 +334,9 @@ TEST_CASE("foeGroupData - IndexGenerator/Importer retrieval", "[foe]") {
                                  std::move(testImporter)));
 
     SECTION("MaxDynamic Group Data") {
+        REQUIRE(test.resourceIndices(foeIdValueToGroup(foeIdMaxDynamicGroupValue)) != nullptr);
+        REQUIRE(test.resourceIndices("MaxDynamic") != nullptr);
+
         REQUIRE(test.entityIndices(foeIdValueToGroup(foeIdMaxDynamicGroupValue)) != nullptr);
         REQUIRE(test.entityIndices("MaxDynamic") != nullptr);
 
@@ -316,6 +350,9 @@ TEST_CASE("foeGroupData - IndexGenerator/Importer retrieval", "[foe]") {
         }
 
         SECTION("Name not added") {
+            REQUIRE(test.resourceIndices("foeIdNumDynamicGroups") == nullptr);
+            REQUIRE(test.resourceIndices("foeIdNumDynamicGroups") == nullptr);
+
             REQUIRE(test.entityIndices("foeIdNumDynamicGroups") == nullptr);
             REQUIRE(test.entityIndices("foeIdNumDynamicGroups") == nullptr);
 
