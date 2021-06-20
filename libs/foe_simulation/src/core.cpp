@@ -17,6 +17,7 @@
 #include <foe/simulation/core.hpp>
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/simulation/error_code.hpp>
 #include <foe/simulation/state.hpp>
 
 #include "log.hpp"
@@ -68,14 +69,14 @@ bool foeSimulationFunctionalty::operator!=(foeSimulationFunctionalty const &rhs)
     return !(*this == rhs);
 }
 
-bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
+auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) -> std::error_code {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mRegistered) {
         if (it == functionality) {
             FOE_LOG(SimulationState, Warning,
                     "registerFunctionality - Attempted to re-register functionality");
-            return false;
+            return FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED;
         }
     }
 
@@ -92,10 +93,10 @@ bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
         }
     }
 
-    return true;
+    return FOE_SIMULATION_SUCCESS;
 }
 
-bool foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) {
+auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) -> std::error_code {
     std::scoped_lock lock{mSync};
 
     for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it) {
@@ -110,14 +111,14 @@ bool foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
             }
 
             mRegistered.erase(it);
-            return true;
+            return FOE_SIMULATION_SUCCESS;
         }
     }
 
     FOE_LOG(
         SimulationState, Warning,
         "registerFunctionality - Attempted to deregister functionality that was never registered");
-    return false;
+    return FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED;
 }
 
 foeSimulationState *foeCreateSimulation(bool addNameMaps) {
@@ -153,7 +154,7 @@ foeSimulationState *foeCreateSimulation(bool addNameMaps) {
     return newSimState.release();
 }
 
-bool foeDestroySimulation(foeSimulationState *pSimulationState) {
+std::error_code foeDestroySimulation(foeSimulationState *pSimulationState) {
     std::scoped_lock lock{mSync};
 
     FOE_LOG(SimulationState, Verbose, "Destroying SimulationState: {}",
@@ -166,7 +167,7 @@ bool foeDestroySimulation(foeSimulationState *pSimulationState) {
                 "destroySimulation - Given a SimulationState that wasn't created via "
                 "foeCreateSimulation: {}",
                 static_cast<void *>(pSimulationState));
-        return false;
+        return FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED;
     } else {
         mStates.erase(searchIt);
     }
@@ -193,7 +194,7 @@ bool foeDestroySimulation(foeSimulationState *pSimulationState) {
     FOE_LOG(SimulationState, Verbose, "Destroyed SimulationState: {}",
             static_cast<void *>(pSimulationState));
 
-    return true;
+    return FOE_SIMULATION_SUCCESS;
 }
 
 void foeInitializeSimulation(foeSimulationState *pSimulationState,

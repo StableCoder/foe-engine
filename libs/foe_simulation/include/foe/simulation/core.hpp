@@ -24,6 +24,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <system_error>
 
 /**
  * The Simulation 'core' is a static global registry of all simulation functionality that has been
@@ -83,7 +84,7 @@ struct foeSimulationFunctionalty {
 /**
  * @brief Attempts to register a set of simulation functionality globally
  * @param functionality Set of functionality to be registered
- * @return True if the functionality was successfully registered, false otherwise.
+ * @return FOE_SIMULATION_SUCCESS on successful registration. A descriptive error code otherwise.
  *
  * First checks to see if the *exact* same set of functions already exists. If it does this returns
  * false. The same function may be used as part of a different set which would be counted as
@@ -92,18 +93,20 @@ struct foeSimulationFunctionalty {
  * If there are any created simulations, then the provided 'onCreate' function is called on them. If
  * any simulations have been initialized prior, then the 'onInitialize' function is called on them.
  */
-FOE_SIM_EXPORT bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
+FOE_SIM_EXPORT auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality)
+    -> std::error_code;
 
 /**
  * @brief Attempts to deregister a set of simulation functionality globally
  * @param functionality Set of functionality to be deregistered
- * @return False if the functionality had not previously been registered, true otherwise.
+ * @return FOE_SIMULATION_SUCCESS on successful deregistration. A descriptive error code otherwise.
  *
  * If the functionality is found and to be deregistered, it will first iterate through all created
  * simulations and call 'onDeinitialization' and 'onDestroy' to remove the functionality before
  * finally returning.
  */
-FOE_SIM_EXPORT bool foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality);
+FOE_SIM_EXPORT auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality)
+    -> std::error_code;
 
 /**
  * @brief Creates a new SimulationState with any registered functionality available
@@ -117,8 +120,7 @@ FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(bool addNameMaps);
 /**
  * @brief Attempts to destroy a given SimulationState
  * @param pSimulationState Object to attempt to destroy
- * @return True if the SimulationState is successfully destroyed. False if the object was not
- * created via this registry.
+ * @return FOE_SIMULATION_SUCCESS if successfully destroyed. A descriptive error code otherwise.
  *
  * The given SimulationState is first checked to see if it was created by the given registry and if
  * not, returns false without interacting with it.
@@ -126,7 +128,7 @@ FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(bool addNameMaps);
  * If the simulation is valid and was previously initialized, the 'onDeinitialize' is called.
  * 'onDestroy' is called last and the object is then freed.
  */
-FOE_SIM_EXPORT bool foeDestroySimulation(foeSimulationState *pSimulationState);
+FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulationState *pSimulationState) -> std::error_code;
 
 /**
  * @brief Initializes a SimulationState given InitInfo
