@@ -21,6 +21,9 @@
 
 #include "log.hpp"
 
+#include <mutex>
+#include <vector>
+
 namespace {
 std::mutex mSync;
 
@@ -92,7 +95,7 @@ bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
     return true;
 }
 
-void foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) {
+bool foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) {
     std::scoped_lock lock{mSync};
 
     for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it) {
@@ -107,13 +110,14 @@ void foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
             }
 
             mRegistered.erase(it);
-            return;
+            return true;
         }
     }
 
     FOE_LOG(
         SimulationState, Warning,
         "registerFunctionality - Attempted to deregister functionality that was never registered");
+    return false;
 }
 
 foeSimulationState *foeCreateSimulation(bool addNameMaps) {
@@ -149,11 +153,23 @@ foeSimulationState *foeCreateSimulation(bool addNameMaps) {
     return newSimState.release();
 }
 
-void foeDestroySimulation(foeSimulationState *pSimulationState) {
+bool foeDestroySimulation(foeSimulationState *pSimulationState) {
     std::scoped_lock lock{mSync};
 
     FOE_LOG(SimulationState, Verbose, "Destroying SimulationState: {}",
             static_cast<void *>(pSimulationState));
+
+    auto searchIt = std::find(mStates.begin(), mStates.end(), pSimulationState);
+    if (searchIt == mStates.end()) {
+        // We were given a simulation state that wasn't created from here?
+        FOE_LOG(SimulationState, Warning,
+                "destroySimulation - Given a SimulationState that wasn't created via "
+                "foeCreateSimulation: {}",
+                static_cast<void *>(pSimulationState));
+        return false;
+    } else {
+        mStates.erase(searchIt);
+    }
 
     // Deinitialize just in case
     deinitSimulation(pSimulationState);
@@ -171,21 +187,13 @@ void foeDestroySimulation(foeSimulationState *pSimulationState) {
     if (pSimulationState->pResourceNameMap)
         delete pSimulationState->pResourceNameMap;
 
-    // Delete it anyways
+    // Delete it
     delete pSimulationState;
-
-    auto searchIt = std::find(mStates.begin(), mStates.end(), pSimulationState);
-    if (searchIt == mStates.end()) {
-        // We were given a simulation state that wasn't created from here?
-        FOE_LOG(SimulationState, Warning,
-                "destroySimulation - Given a SimulationState that wasn't created via a "
-                "foeCreateSimulation");
-    } else {
-        mStates.erase(searchIt);
-    }
 
     FOE_LOG(SimulationState, Verbose, "Destroyed SimulationState: {}",
             static_cast<void *>(pSimulationState));
+
+    return true;
 }
 
 void foeInitializeSimulation(foeSimulationState *pSimulationState,

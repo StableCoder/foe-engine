@@ -24,8 +24,6 @@
 
 #include <filesystem>
 #include <functional>
-#include <mutex>
-#include <vector>
 
 /**
  * The Simulation 'core' is a static global registry of all simulation functionality that has been
@@ -67,24 +65,88 @@ struct foeSimulationStateLists {
 };
 
 struct foeSimulationFunctionalty {
+    /// Called on any created SimulationState, to create related data pools, uninitialized systems.
     void (*onCreate)(foeSimulationState *);
+    /// Called when destroying any SimulationState to destroy related data pools and systems.
     void (*onDestroy)(foeSimulationState *);
 
+    /// To be called after onCreate when a Simulation is being initialized to start actually running
+    /// a Simulation
     void (*onInitialization)(foeSimulationInitInfo const *, foeSimulationStateLists const *);
+    /// Called before onDestroy to safely destory any running state for an active SimulationState
     void (*onDeinitialization)(foeSimulationState const *);
 
     bool operator==(foeSimulationFunctionalty const &) const noexcept;
     bool operator!=(foeSimulationFunctionalty const &) const noexcept;
 };
 
+/**
+ * @brief Attempts to register a set of simulation functionality globally
+ * @param functionality Set of functionality to be registered
+ * @return True if the functionality was successfully registered, false otherwise.
+ *
+ * First checks to see if the *exact* same set of functions already exists. If it does this returns
+ * false. The same function may be used as part of a different set which would be counted as
+ * 'different'.
+ *
+ * If there are any created simulations, then the provided 'onCreate' function is called on them. If
+ * any simulations have been initialized prior, then the 'onInitialize' function is called on them.
+ */
 FOE_SIM_EXPORT bool foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
-FOE_SIM_EXPORT void foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality);
 
+/**
+ * @brief Attempts to deregister a set of simulation functionality globally
+ * @param functionality Set of functionality to be deregistered
+ * @return False if the functionality had not previously been registered, true otherwise.
+ *
+ * If the functionality is found and to be deregistered, it will first iterate through all created
+ * simulations and call 'onDeinitialization' and 'onDestroy' to remove the functionality before
+ * finally returning.
+ */
+FOE_SIM_EXPORT bool foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality);
+
+/**
+ * @brief Creates a new SimulationState with any registered functionality available
+ * @param addNameMaps If true, the optional NameMaps are also made available
+ * @return A pointer to a valid SimulationState on success. nullptr otherwise.
+ *
+ * The 'onCreate' of any previously registered functionality is called on the created simulation.
+ */
 FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(bool addNameMaps);
-FOE_SIM_EXPORT void foeDestroySimulation(foeSimulationState *pSimulationState);
 
+/**
+ * @brief Attempts to destroy a given SimulationState
+ * @param pSimulationState Object to attempt to destroy
+ * @return True if the SimulationState is successfully destroyed. False if the object was not
+ * created via this registry.
+ *
+ * The given SimulationState is first checked to see if it was created by the given registry and if
+ * not, returns false without interacting with it.
+ *
+ * If the simulation is valid and was previously initialized, the 'onDeinitialize' is called.
+ * 'onDestroy' is called last and the object is then freed.
+ */
+FOE_SIM_EXPORT bool foeDestroySimulation(foeSimulationState *pSimulationState);
+
+/**
+ * @brief Initializes a SimulationState given InitInfo
+ * @param pSimulationState SimulatioState to initialize
+ * @param pInitInfo Required information used to initialize a SimulationState
+ *
+ * Returns immediately if the SimulationState had already been initialized.
+ *
+ * Otherwise iterates through any registered functionality and calls its 'onInitialization'
+ * function.
+ */
 FOE_SIM_EXPORT void foeInitializeSimulation(foeSimulationState *pSimulationState,
                                             foeSimulationInitInfo const *pInitInfo);
+
+/**
+ * @brief Initializes a SimulationState given InitInfo
+ * @param pSimulationState SimulatioState to deinitialize
+ *
+ * Iterates through any registered functionality and calls its 'onDeinitialization' function.
+ */
 FOE_SIM_EXPORT void foeDeinitializeSimulation(foeSimulationState *pSimulationState);
 
 #endif // FOE_SIMULATION_CORE_HPP
