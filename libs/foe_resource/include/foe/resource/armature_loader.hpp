@@ -36,7 +36,7 @@ class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
         std::function<foeResourceCreateInfoBase *(foeId)> importFn,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
         std::function<void(std::function<void()>)> asynchronousJobs);
-    void deinitialize() override;
+    void deinitialize();
     bool initialized() const noexcept;
 
     void requestResourceLoad(foeArmature *pArmature);

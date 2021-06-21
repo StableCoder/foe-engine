@@ -44,7 +44,7 @@ class FOE_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
         std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
         std::function<void(std::function<void()>)> asynchronousJobs);
-    void deinitialize() override;
+    void deinitialize();
     bool initialized() const noexcept;
 
     void processLoadRequests();

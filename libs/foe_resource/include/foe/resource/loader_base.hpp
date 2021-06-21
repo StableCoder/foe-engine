@@ -19,8 +19,6 @@
 
 struct foeResourceLoaderBase {
     virtual ~foeResourceLoaderBase() {}
-
-    virtual void deinitialize() = 0;
 };
 
 #endif // FOE_RESOURCE_LOADER_BASE_HPP
