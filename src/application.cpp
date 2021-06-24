@@ -189,14 +189,19 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         return std::make_tuple(false, retVal);
     }
 
+    synchronousThreadPool.start(1);
+    asynchronousThreadPool.start(1);
+
+    auto asyncTaskFunc = [&](std::function<void()> task) {
+        asynchronousThreadPool.scheduleTask(std::move(task));
+    };
+
     foeSimulationState *pNewSimulationSet{nullptr};
-    std::error_code errC = importState("persistent", &searchPaths, &pNewSimulationSet);
+    std::error_code errC =
+        importState("persistent", &searchPaths, asyncTaskFunc, &pNewSimulationSet);
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> tempSimState{
         pNewSimulationSet, [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
     pSimulationSet = std::move(tempSimState);
-
-    synchronousThreadPool.start(1);
-    asynchronousThreadPool.start(1);
 
     // Special Entities
     cameraID = pSimulationSet->pEntityNameMap->find("camera");
@@ -268,10 +273,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (vkRes != VK_SUCCESS) {
         VK_END_PROGRAM_TUPLE
     }
-
-    auto asyncTaskFunc = [&](std::function<void()> task) {
-        asynchronousThreadPool.scheduleTask(std::move(task));
-    };
 
     { // Initialize simulation functionality
         foeSimulationInitInfo simInitInfo{

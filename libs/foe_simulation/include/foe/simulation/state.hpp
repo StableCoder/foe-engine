@@ -31,6 +31,7 @@ struct foeSystemBase;
 struct foeSimulationState {
     foeGroupData groupData;
 
+    foeSimulationCreateInfo createInfo;
     // Information used to initialize functionality (used when functionality added during runtime)
     foeSimulationInitInfo initInfo{};
 

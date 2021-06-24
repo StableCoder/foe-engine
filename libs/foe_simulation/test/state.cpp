@@ -66,7 +66,7 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
 
 TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
           "[foe][simulation]") {
-    auto *pSimState = foeCreateSimulation(false);
+    auto *pSimState = foeCreateSimulation({}, false);
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap == nullptr);
@@ -76,7 +76,7 @@ TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
 }
 
 TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe][simulation]") {
-    auto *pSimState = foeCreateSimulation(true);
+    auto *pSimState = foeCreateSimulation({}, true);
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap != nullptr);

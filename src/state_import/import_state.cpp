@@ -84,9 +84,15 @@ bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &depe
 
 auto importState(std::string_view topLevelDataSet,
                  foeSearchPaths *pSearchPaths,
+                 std::function<void(std::function<void()>)> asyncTaskFn,
                  foeSimulationState **ppSimulationSet) -> std::error_code {
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet{
-        foeCreateSimulation(true), [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
+        foeCreateSimulation(
+            foeSimulationCreateInfo{
+                .asyncJobFn = asyncTaskFn,
+            },
+            true),
+        [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
 
     // Find the to-level data set, initially as if the full path were given
     std::unique_ptr<foeImporterBase> persistentImporter{

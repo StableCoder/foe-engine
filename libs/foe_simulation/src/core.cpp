@@ -121,10 +121,13 @@ auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
     return FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED;
 }
 
-foeSimulationState *foeCreateSimulation(bool addNameMaps) {
+foeSimulationState *foeCreateSimulation(foeSimulationCreateInfo const &createInfo,
+                                        bool addNameMaps) {
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulationState> newSimState{new foeSimulationState};
+
+    newSimState->createInfo = createInfo;
 
     // Editor Name Maps, if requested
     if (addNameMaps) {

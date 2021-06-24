@@ -44,6 +44,10 @@ struct foeSystemBase;
 
 struct foeSimulationState;
 
+struct foeSimulationCreateInfo {
+    std::function<void(std::function<void()>)> asyncJobFn;
+};
+
 struct foeSimulationInitInfo {
     foeGfxSession gfxSession;
     std::function<foeResourceCreateInfoBase *(foeId)> resourceDefinitionImportFn;
@@ -110,12 +114,14 @@ FOE_SIM_EXPORT auto foeDeregisterFunctionality(foeSimulationFunctionalty const &
 
 /**
  * @brief Creates a new SimulationState with any registered functionality available
+ * @param createInfo Data used during the creation of the simulation and the related functionality
  * @param addNameMaps If true, the optional NameMaps are also made available
  * @return A pointer to a valid SimulationState on success. nullptr otherwise.
  *
  * The 'onCreate' of any previously registered functionality is called on the created simulation.
  */
-FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(bool addNameMaps);
+FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(foeSimulationCreateInfo const &createInfo,
+                                                       bool addNameMaps);
 
 /**
  * @brief Attempts to destroy a given SimulationState

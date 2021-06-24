@@ -14,20 +14,26 @@
     limitations under the License.
 */
 
-#ifndef IMPORT_STATE_HPP
-#define IMPORT_STATE_HPP
+#ifndef FOE_SIMULATION_RESOURCE_FNS_HPP
+#define FOE_SIMULATION_RESOURCE_FNS_HPP
+
+#include <foe/ecs/id.hpp>
 
 #include <functional>
-#include <string_view>
 #include <system_error>
 
-class foeSearchPaths;
-struct foeSimulationState;
+struct foeResourceCreateInfoBase;
 
-/// Imports data set and its dependencies
-auto importState(std::string_view topLevelDataSet,
-                 foeSearchPaths *pSearchPaths,
-                 std::function<void(std::function<void()>)> asyncTaskFn,
-                 foeSimulationState **ppSimulationSet) -> std::error_code;
+/**
+ * Set of functions common to all foeResource types for importing definitions, loading data and
+ * making the importation and loading run asynchronously.
+ */
+struct foeResourceFns {
+    void *pImportContext;
+    foeResourceCreateInfoBase *(*pImportFn)(void *, foeResourceID);
+    void *pLoadContext;
+    void (*pLoadFn)(void *, void *, void (*)(void *, std::error_code));
+    std::function<void(std::function<void()>)> asyncTaskFn;
+};
 
-#endif // IMPORT_STATE_HPP
+#endif // FOE_SIMULATION_RESOURCE_FNS_HPP
