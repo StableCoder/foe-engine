@@ -20,6 +20,7 @@
 #include <foe/simulation/core.hpp>
 #include <foe/simulation/group_data.hpp>
 
+#include <shared_mutex>
 #include <vector>
 
 class foeEditorNameMap;
@@ -29,6 +30,21 @@ struct foeComponentPoolBase;
 struct foeSystemBase;
 
 struct foeSimulationState {
+    /**
+     * @brief Used to synchronize core access to the SimulationState
+     *
+     * Because this needs to support the possibility of registered core functionality operating
+     * asynchronously, when it comes time to deinitialize or destroy functionality, we need to
+     * *absolutely* sure that nothing is running asynchronously.
+     *
+     * To that end, the idea is that any asynchronous task will acquire the shared mutex's 'shared'
+     * lock, and when the core needs to modify a SimulationState, then it acquires an exclusive lock
+     * once all async tasks are complete, and then performs these modifications.
+     *
+     * Acquiring the exclusive lock should be an incredibly rare operation.
+     */
+    std::shared_mutex simSync;
+
     foeGroupData groupData;
 
     foeSimulationCreateInfo createInfo;

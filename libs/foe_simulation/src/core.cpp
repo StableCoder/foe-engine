@@ -16,6 +16,7 @@
 
 #include <foe/simulation/core.hpp>
 
+#include <foe/chrono/easy_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/simulation/error_code.hpp>
 #include <foe/simulation/state.hpp>
@@ -31,15 +32,31 @@ std::mutex mSync;
 std::vector<foeSimulationFunctionalty> mRegistered;
 std::vector<foeSimulationState *> mStates;
 
+void acquireExclusiveLock(foeSimulationState *pSimulationState, char const *pReason) {
+    FOE_LOG(SimulationState, Verbose, "Acquiring exclusive lock for SimulationState {} for {}",
+            static_cast<void *>(pSimulationState), pReason)
+    foeEasyHighResClock waitingTime;
+
+    pSimulationState->simSync.lock();
+
+    waitingTime.update();
+    FOE_LOG(SimulationState, Verbose,
+            "Acquired exclusive lock for SimulationState {} for {} after {}ms",
+            static_cast<void *>(pSimulationState), pReason,
+            waitingTime.elapsed<std::chrono::milliseconds>().count())
+}
+
 void deinitSimulation(foeSimulationState *pSimulationState) {
     FOE_LOG(SimulationState, Verbose, "Deinitializing SimulationState: {}",
             static_cast<void *>(pSimulationState));
 
+    acquireExclusiveLock(pSimulationState, "deinitialization");
     for (auto const &functionality : mRegistered) {
         if (functionality.onDeinitialization) {
             functionality.onDeinitialization(pSimulationState);
         }
     }
+    pSimulationState->simSync.unlock();
 
     FOE_LOG(SimulationState, Verbose, "Deinitialized SimulationState: {}",
             static_cast<void *>(pSimulationState));
@@ -85,12 +102,14 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
 
     // Go through any already existing SimulationState's and add this new functionality to them.
     for (auto *pSimState : mStates) {
+        acquireExclusiveLock(pSimState, "functionality registration");
         if (functionality.onCreate)
             functionality.onCreate(pSimState);
         if (foeSimulationIsInitialized(pSimState) && functionality.onInitialization) {
             auto simStateLists = createSimStateLists(pSimState);
             functionality.onInitialization(&pSimState->initInfo, &simStateLists);
         }
+        pSimState->simSync.unlock();
     }
 
     return FOE_SIMULATION_SUCCESS;
@@ -104,10 +123,12 @@ auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
             // Since we're deregistering functionality, we need to deinit/destroy this stuff from
             // any active SimulationStates
             for (auto *pSimState : mStates) {
+                acquireExclusiveLock(pSimState, "functionality deregistration");
                 if (functionality.onDeinitialization)
                     functionality.onDeinitialization(pSimState);
                 if (functionality.onDestroy)
                     functionality.onDestroy(pSimState);
+                pSimState->simSync.unlock();
             }
 
             mRegistered.erase(it);
@@ -128,6 +149,17 @@ foeSimulationState *foeCreateSimulation(foeSimulationCreateInfo const &createInf
     std::unique_ptr<foeSimulationState> newSimState{new foeSimulationState};
 
     newSimState->createInfo = createInfo;
+
+    { // Wrap asyncTaskFn to lock/unlock a shared mutex
+        auto *pSimulationState = newSimState.get();
+        auto temp = createInfo.asyncTaskFn;
+        newSimState->createInfo.asyncTaskFn = [pSimulationState,
+                                               temp](std::function<void()> asyncTaskFn) {
+            pSimulationState->simSync.lock_shared();
+            temp(asyncTaskFn);
+            pSimulationState->simSync.unlock_shared();
+        };
+    }
 
     // Editor Name Maps, if requested
     if (addNameMaps) {
@@ -179,11 +211,13 @@ std::error_code foeDestroySimulation(foeSimulationState *pSimulationState) {
     deinitSimulation(pSimulationState);
 
     // Call any destroys
+    acquireExclusiveLock(pSimulationState, "simulation destruction");
     for (auto const &registered : mRegistered) {
         if (registered.onDestroy) {
             registered.onDestroy(pSimulationState);
         }
     }
+    pSimulationState->simSync.unlock();
 
     // Destroy Name Maps
     if (pSimulationState->pEntityNameMap)
@@ -218,11 +252,13 @@ void foeInitializeSimulation(foeSimulationState *pSimulationState,
 
     auto stateLists = createSimStateLists(pSimulationState);
 
+    acquireExclusiveLock(pSimulationState, "initialization");
     for (auto const &functionality : mRegistered) {
         if (functionality.onInitialization) {
             functionality.onInitialization(pInitInfo, &stateLists);
         }
     }
+    pSimulationState->simSync.unlock();
 
     FOE_LOG(SimulationState, Verbose, "Initialized SimulationState: {}",
             static_cast<void *>(pSimulationState));

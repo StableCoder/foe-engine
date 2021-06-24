@@ -89,7 +89,7 @@ auto importState(std::string_view topLevelDataSet,
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet{
         foeCreateSimulation(
             foeSimulationCreateInfo{
-                .asyncJobFn = asyncTaskFn,
+                .asyncTaskFn = asyncTaskFn,
             },
             true),
         [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};

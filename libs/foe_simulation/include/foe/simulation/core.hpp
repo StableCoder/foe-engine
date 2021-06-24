@@ -45,7 +45,7 @@ struct foeSystemBase;
 struct foeSimulationState;
 
 struct foeSimulationCreateInfo {
-    std::function<void(std::function<void()>)> asyncJobFn;
+    std::function<void(std::function<void()>)> asyncTaskFn;
 };
 
 struct foeSimulationInitInfo {

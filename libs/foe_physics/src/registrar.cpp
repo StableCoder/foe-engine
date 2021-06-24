@@ -59,7 +59,7 @@ void onCreate(foeSimulationState *pSimulationState) {
         .pImportFn = importFn,
         .pLoadContext = pSimulationState,
         .pLoadFn = collisionShapeLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncJobFn,
+        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
     }});
 
     // Loaders
