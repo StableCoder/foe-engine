@@ -19,6 +19,16 @@
 
 struct foeResourceLoaderBase {
     virtual ~foeResourceLoaderBase() {}
+
+    /**
+     * @brief Performs any required 'maintenance' on related resource requests
+     *
+     * The 'maintenace' phase is supposed to be a section of time during the overall loop where the
+     * referenced resources aren't being used as data sources for other systems, and thus can be
+     * safely modified without causing issues in unrelated systems, and allows for far less
+     * contention when reading/writing to resources.
+     */
+    virtual void maintenance() {}
 };
 
 #endif // FOE_RESOURCE_LOADER_BASE_HPP

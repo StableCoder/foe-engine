@@ -754,6 +754,10 @@ int Application::mainloop() {
             it->maintenance();
         }
 
+        for (auto &it : pSimulationSet->resourceLoaders) {
+            it->maintenance();
+        }
+
 #ifdef EDITOR_MODE
         // User input processing
         imguiRenderer.keyboardInput(pKeyboard);
