@@ -22,9 +22,9 @@
 #include "bt_glm_conversion.hpp"
 #include "log.hpp"
 
-foePhysCollisionShapeLoader::~foePhysCollisionShapeLoader() {}
+foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 
-std::error_code foePhysCollisionShapeLoader::initialize() {
+std::error_code foeCollisionShapeLoader::initialize() {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
     }
@@ -39,11 +39,11 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void foePhysCollisionShapeLoader::deinitialize() {}
+void foeCollisionShapeLoader::deinitialize() {}
 
-bool foePhysCollisionShapeLoader::initialized() const noexcept { return true; }
+bool foeCollisionShapeLoader::initialized() const noexcept { return true; }
 
-void foePhysCollisionShapeLoader::maintenance() {
+void foeCollisionShapeLoader::maintenance() {
     // Process Unloads
     mUnloadRequestsSync.lock();
     auto toUnload = std::move(mUnloadRequests);
@@ -75,14 +75,14 @@ void foePhysCollisionShapeLoader::maintenance() {
     }
 }
 
-bool foePhysCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foePhysCollisionShapeCreateInfo *>(pCreateInfo) != nullptr;
+bool foeCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
+    return dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo) != nullptr;
 }
 
 namespace {
 
-bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foePhysCollisionShape::Data &data) {
-    auto *createInfo = dynamic_cast<foePhysCollisionShapeCreateInfo *>(pCreateInfo);
+bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foeCollisionShape::Data &data) {
+    auto *createInfo = dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo);
     if (createInfo == nullptr) {
         return false;
     }
@@ -94,15 +94,14 @@ bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foePhysCollisionS
 
 } // namespace
 
-void foePhysCollisionShapeLoader::load(
-    void *pResource,
-    std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-    void (*pPostLoadFn)(void *, std::error_code)) {
-    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
+void foeCollisionShapeLoader::load(void *pResource,
+                                   std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                                   void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pCollisionShape = reinterpret_cast<foeCollisionShape *>(pResource);
     auto *pCollisionShapeCreateInfo =
-        reinterpret_cast<foePhysCollisionShapeCreateInfo *>(pCreateInfo.get());
+        reinterpret_cast<foeCollisionShapeCreateInfo *>(pCreateInfo.get());
 
-    foePhysCollisionShape::Data data;
+    foeCollisionShape::Data data;
 
     if (!processCreateInfo(pCollisionShapeCreateInfo, data)) {
         pPostLoadFn(pResource, FOE_RESOURCE_ERROR_IMPORT_FAILED);
@@ -112,7 +111,7 @@ void foePhysCollisionShapeLoader::load(
     std::scoped_lock writeLock{pCollisionShape->modifySync};
 
     data.pUnloadContext = this;
-    data.pUnloadFn = &foePhysCollisionShapeLoader::unloadResource;
+    data.pUnloadFn = &foeCollisionShapeLoader::unloadResource;
     data.pCreateInfo = pCreateInfo;
 
     mLoadSync.lock();
@@ -124,12 +123,12 @@ void foePhysCollisionShapeLoader::load(
     mLoadSync.unlock();
 }
 
-void foePhysCollisionShapeLoader::unloadResource(void *pContext,
-                                                 void *pResource,
-                                                 uint32_t resourceIteration,
-                                                 bool immediateUnload) {
-    auto *pLoader = reinterpret_cast<foePhysCollisionShapeLoader *>(pContext);
-    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
+void foeCollisionShapeLoader::unloadResource(void *pContext,
+                                             void *pResource,
+                                             uint32_t resourceIteration,
+                                             bool immediateUnload) {
+    auto *pLoader = reinterpret_cast<foeCollisionShapeLoader *>(pContext);
+    auto *pCollisionShape = reinterpret_cast<foeCollisionShape *>(pResource);
 
     if (immediateUnload) {
         pCollisionShape->modifySync.lock();

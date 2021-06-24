@@ -538,11 +538,11 @@ void Application::deinitialize() {
         ->deinitialize();
 
     { // Resource Unloading
-        auto *pCollisionShapePool = getResourcePool<foePhysCollisionShapePool>(
+        auto *pCollisionShapePool = getResourcePool<foeCollisionShapePool>(
             pSimulationSet->resourcePools.data(), pSimulationSet->resourcePools.size());
         pCollisionShapePool->unloadAll();
 
-        auto *pCollisionShapeLoader = getResourceLoader<foePhysCollisionShapeLoader>(
+        auto *pCollisionShapeLoader = getResourceLoader<foeCollisionShapeLoader>(
             pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
         pCollisionShapeLoader->maintenance();
 

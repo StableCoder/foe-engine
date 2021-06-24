@@ -37,8 +37,8 @@ foePhysicsSystem::foePhysicsSystem() :
 
 foePhysicsSystem::~foePhysicsSystem() {}
 
-void foePhysicsSystem::initialize(foePhysCollisionShapeLoader *pCollisionShapeLoader,
-                                  foePhysCollisionShapePool *pCollisionShapePool,
+void foePhysicsSystem::initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
+                                  foeCollisionShapePool *pCollisionShapePool,
                                   foeRigidBodyPool *pRigidBodyPool,
                                   foePosition3dPool *pPosition3dPool) {
     mpCollisionShapeLoader = pCollisionShapeLoader;
@@ -169,7 +169,7 @@ void foePhysicsSystem::process(float timePassed) {
 void foePhysicsSystem::addObject(foeEntityID entity,
                                  foeRigidBody *pRigidBody,
                                  foePosition3d *pPosition,
-                                 foePhysCollisionShape *pCollisionShape) {
+                                 foeCollisionShape *pCollisionShape) {
     // RigidBody
     if (pRigidBody == nullptr) {
         size_t dataOffset = mpRigidBodyPool->find(entity);

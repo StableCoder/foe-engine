@@ -25,22 +25,22 @@
 #include <memory>
 #include <vector>
 
-class foePhysCollisionShapeLoader;
-class foePhysCollisionShapePool;
+class foeCollisionShapeLoader;
+class foeCollisionShapePool;
 class foeRigidBodyPool;
 class foePosition3dPool;
 
 struct foeRigidBody;
 struct foePosition3d;
-struct foePhysCollisionShape;
+struct foeCollisionShape;
 
 class FOE_PHYSICS_EXPORT foePhysicsSystem : public foeSystemBase {
   public:
     foePhysicsSystem();
     ~foePhysicsSystem();
 
-    void initialize(foePhysCollisionShapeLoader *pCollisionShapeLoader,
-                    foePhysCollisionShapePool *pCollisionShapePool,
+    void initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
+                    foeCollisionShapePool *pCollisionShapePool,
                     foeRigidBodyPool *pRigidBodyPool,
                     foePosition3dPool *pPosition3dPool);
     void deinitialize();
@@ -51,12 +51,12 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem : public foeSystemBase {
     void addObject(foeEntityID entity,
                    foeRigidBody *pRigidBody,
                    foePosition3d *pPosition3d,
-                   foePhysCollisionShape *pCollisionShape);
+                   foeCollisionShape *pCollisionShape);
     void removeObject(foeEntityID entity, foeRigidBody *pRigidBody);
 
     // Resources
-    foePhysCollisionShapeLoader *mpCollisionShapeLoader;
-    foePhysCollisionShapePool *mpCollisionShapePool;
+    foeCollisionShapeLoader *mpCollisionShapeLoader;
+    foeCollisionShapePool *mpCollisionShapePool;
 
     // Components
     foeRigidBodyPool *mpRigidBodyPool;

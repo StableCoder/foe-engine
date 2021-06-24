@@ -34,11 +34,11 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
     auto const *pEndPools = pResourcePools + resourcePoolCount;
 
     for (; pResourcePools != pEndPools; ++pResourcePools) {
-        auto *pCollisionShapePool = dynamic_cast<foePhysCollisionShapePool *>(*pResourcePools);
+        auto *pCollisionShapePool = dynamic_cast<foeCollisionShapePool *>(*pResourcePools);
         if (pCollisionShapePool) {
             auto const *pCollisionShape = pCollisionShapePool->find(resource);
             if (pCollisionShape && pCollisionShape->pCreateInfo) {
-                if (auto dynPtr = dynamic_cast<foePhysCollisionShapeCreateInfo *>(
+                if (auto dynPtr = dynamic_cast<foeCollisionShapeCreateInfo *>(
                         pCollisionShape->pCreateInfo.get());
                     dynPtr)
                     keyDataPairs.emplace_back(foeKeyYamlPair{

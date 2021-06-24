@@ -34,9 +34,9 @@ std::error_code collisionShapeCreateProcessing(
     foeResourceCreateInfoBase *pCreateInfo,
     std::vector<foeResourceLoaderBase *> &resourceLoaders,
     std::vector<foeResourcePoolBase *> &resourcePools) {
-    foePhysCollisionShapePool *pCollisionShapePool{nullptr};
+    foeCollisionShapePool *pCollisionShapePool{nullptr};
     for (auto &it : resourcePools) {
-        pCollisionShapePool = dynamic_cast<foePhysCollisionShapePool *>(it);
+        pCollisionShapePool = dynamic_cast<foeCollisionShapePool *>(it);
 
         if (pCollisionShapePool != nullptr)
             break;

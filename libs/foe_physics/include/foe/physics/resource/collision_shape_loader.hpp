@@ -28,13 +28,13 @@
 #include <system_error>
 #include <vector>
 
-struct foePhysCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
+struct foeCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
     glm::vec3 boxSize;
 };
 
-class FOE_PHYSICS_EXPORT foePhysCollisionShapeLoader : public foeResourceLoaderBase {
+class FOE_PHYSICS_EXPORT foeCollisionShapeLoader : public foeResourceLoaderBase {
   public:
-    ~foePhysCollisionShapeLoader();
+    ~foeCollisionShapeLoader();
 
     std::error_code initialize();
     void deinitialize();
@@ -57,16 +57,16 @@ class FOE_PHYSICS_EXPORT foePhysCollisionShapeLoader : public foeResourceLoaderB
                                bool immediateUnload);
 
     struct LoadData {
-        foePhysCollisionShape *pCollisionShape;
+        foeCollisionShape *pCollisionShape;
         void (*pPostLoadFn)(void *, std::error_code);
-        foePhysCollisionShape::Data data;
+        foeCollisionShape::Data data;
     };
 
     std::mutex mLoadSync;
     std::vector<LoadData> mToLoad;
 
     struct UnloadData {
-        foePhysCollisionShape *pCollisionShape;
+        foeCollisionShape *pCollisionShape;
         uint32_t iteration;
     };
 

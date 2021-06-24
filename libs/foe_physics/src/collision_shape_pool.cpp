@@ -19,10 +19,10 @@
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 
-foePhysCollisionShapePool::foePhysCollisionShapePool(foeResourceFns const &resourceFns) :
+foeCollisionShapePool::foeCollisionShapePool(foeResourceFns const &resourceFns) :
     mResourceFns{resourceFns} {}
 
-foePhysCollisionShapePool::~foePhysCollisionShapePool() {
+foeCollisionShapePool::~foeCollisionShapePool() {
     for (auto *pCollisionShape : mCollisionShapes) {
         pCollisionShape->decrementRefCount();
 
@@ -30,7 +30,7 @@ foePhysCollisionShapePool::~foePhysCollisionShapePool() {
     }
 }
 
-foePhysCollisionShape *foePhysCollisionShapePool::add(foeResourceID resource) {
+foeCollisionShape *foeCollisionShapePool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
     // If it finds it, return nullptr
@@ -41,7 +41,7 @@ foePhysCollisionShape *foePhysCollisionShapePool::add(foeResourceID resource) {
     }
 
     // Not found, add it
-    foePhysCollisionShape *pPhysCollisionShape = new foePhysCollisionShape{resource, &mResourceFns};
+    foeCollisionShape *pPhysCollisionShape = new foeCollisionShape{resource, &mResourceFns};
     pPhysCollisionShape->incrementRefCount();
 
     mCollisionShapes.emplace_back(pPhysCollisionShape);
@@ -49,7 +49,7 @@ foePhysCollisionShape *foePhysCollisionShapePool::add(foeResourceID resource) {
     return pPhysCollisionShape;
 }
 
-foePhysCollisionShape *foePhysCollisionShapePool::findOrAdd(foeResourceID resource) {
+foeCollisionShape *foeCollisionShapePool::findOrAdd(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
     for (auto *pPhysCollisionShape : mCollisionShapes) {
@@ -59,7 +59,7 @@ foePhysCollisionShape *foePhysCollisionShapePool::findOrAdd(foeResourceID resour
     }
 
     // Not found, create it now
-    foePhysCollisionShape *pPhysCollisionShape = new foePhysCollisionShape{resource, &mResourceFns};
+    foeCollisionShape *pPhysCollisionShape = new foeCollisionShape{resource, &mResourceFns};
     pPhysCollisionShape->incrementRefCount();
 
     mCollisionShapes.emplace_back(pPhysCollisionShape);
@@ -67,8 +67,8 @@ foePhysCollisionShape *foePhysCollisionShapePool::findOrAdd(foeResourceID resour
     return pPhysCollisionShape;
 }
 
-foePhysCollisionShape *foePhysCollisionShapePool::find(foeId id) {
-    foePhysCollisionShape *pCollisionShape{nullptr};
+foeCollisionShape *foeCollisionShapePool::find(foeId id) {
+    foeCollisionShape *pCollisionShape{nullptr};
 
     mSync.lock_shared();
     for (auto *pOld : mCollisionShapes) {
@@ -82,7 +82,7 @@ foePhysCollisionShape *foePhysCollisionShapePool::find(foeId id) {
     return pCollisionShape;
 }
 
-void foePhysCollisionShapePool::unloadAll() {
+void foeCollisionShapePool::unloadAll() {
     std::scoped_lock lock{mSync};
 
     for (auto *pCollisionShape : mCollisionShapes) {
