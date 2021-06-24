@@ -20,17 +20,19 @@
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
 #include <foe/resource/pool_base.hpp>
+#include <foe/simulation/resource_fns.hpp>
 
+#include <functional>
 #include <shared_mutex>
 #include <vector>
 
 struct foePhysCollisionShape;
 class foePhysCollisionShapeLoader;
+struct foeResourceCreateInfoBase;
 
 class FOE_PHYSICS_EXPORT foePhysCollisionShapePool : public foeResourcePoolBase {
   public:
-    foePhysCollisionShapePool(foePhysCollisionShapeLoader *pCollisionShapeLoader) :
-        mpCollisionShapeLoader{pCollisionShapeLoader} {}
+    foePhysCollisionShapePool(foeResourceFns const &resourceFns);
     ~foePhysCollisionShapePool();
 
     foePhysCollisionShape *add(foeResourceID resource);
@@ -42,7 +44,7 @@ class FOE_PHYSICS_EXPORT foePhysCollisionShapePool : public foeResourcePoolBase 
     auto getDataVector() { return mCollisionShapes; }
 
   private:
-    foePhysCollisionShapeLoader *mpCollisionShapeLoader;
+    FOE_PHYSICS_NO_EXPORT foeResourceFns const mResourceFns;
     FOE_PHYSICS_NO_EXPORT std::shared_mutex mSync;
     FOE_PHYSICS_NO_EXPORT std::vector<foePhysCollisionShape *> mCollisionShapes;
 };

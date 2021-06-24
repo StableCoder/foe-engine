@@ -26,6 +26,8 @@
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
+#include <foe/physics/resource/collision_shape_loader.hpp>
+#include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
@@ -536,6 +538,14 @@ void Application::deinitialize() {
         ->deinitialize();
 
     { // Resource Unloading
+        auto *pCollisionShapePool = getResourcePool<foePhysCollisionShapePool>(
+            pSimulationSet->resourcePools.data(), pSimulationSet->resourcePools.size());
+        pCollisionShapePool->unloadAll();
+
+        auto *pCollisionShapeLoader = getResourceLoader<foePhysCollisionShapeLoader>(
+            pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+        pCollisionShapeLoader->maintenance();
+
         auto *pArmaturePool = getResourcePool<foeArmaturePool>(
             pSimulationSet->resourcePools.data(), pSimulationSet->resourcePools.size());
         pArmaturePool->unloadAll();

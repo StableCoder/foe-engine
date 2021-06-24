@@ -19,38 +19,59 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
+#include <foe/physics/resource/collision_shape.hpp>
+#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/loader_base.hpp>
+#include <glm/glm.hpp>
 
-#include <atomic>
-#include <functional>
+#include <mutex>
 #include <system_error>
+#include <vector>
 
-struct foeResourceCreateInfoBase;
-struct foePhysCollisionShape;
+struct foePhysCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
+    glm::vec3 boxSize;
+};
 
 class FOE_PHYSICS_EXPORT foePhysCollisionShapeLoader : public foeResourceLoaderBase {
   public:
     ~foePhysCollisionShapeLoader();
 
-    std::error_code initialize(std::function<foeResourceCreateInfoBase *(foeId)> importFunction,
-                               std::function<void(std::function<void()>)> asynchronousJobs);
+    std::error_code initialize();
     void deinitialize();
     bool initialized() const noexcept;
+
+    void maintenance() final;
 
     void processLoadRequests();
     void processUnloadRequests();
 
-    void requestResourceLoad(foePhysCollisionShape *pCollisionShape);
-    void requestResourceUnload(foePhysCollisionShape *pCollisionShape);
+    bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) final;
+    void load(void *pResource,
+              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              void (*pPostLoadFn)(void *, std::error_code)) final;
 
   private:
-    FOE_PHYSICS_NO_EXPORT void loadResource(foePhysCollisionShape *pCollisionShape);
+    static void unloadResource(void *pContext,
+                               void *pResource,
+                               uint32_t resourceIteration,
+                               bool immediateUnload);
 
-    FOE_PHYSICS_NO_EXPORT bool mInitialized{false};
-    FOE_PHYSICS_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeResourceID)> mImportFunction;
+    struct LoadData {
+        foePhysCollisionShape *pCollisionShape;
+        void (*pPostLoadFn)(void *, std::error_code);
+        foePhysCollisionShape::Data data;
+    };
 
-    FOE_PHYSICS_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
-    FOE_PHYSICS_NO_EXPORT std::atomic_int mActiveJobs;
+    std::mutex mLoadSync;
+    std::vector<LoadData> mToLoad;
+
+    struct UnloadData {
+        foePhysCollisionShape *pCollisionShape;
+        uint32_t iteration;
+    };
+
+    std::mutex mUnloadRequestsSync;
+    std::vector<UnloadData> mUnloadRequests;
 };
 
 #endif // FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_LOADER_HPP

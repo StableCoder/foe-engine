@@ -15,69 +15,104 @@
 */
 
 #include <foe/physics/resource/collision_shape.hpp>
+#include <foe/simulation/resource_fns.hpp>
 
 #include "log.hpp"
 
-foePhysCollisionShape::foePhysCollisionShape(foeId id,
-                                             void (*pLoadFn)(void *, void *, bool),
-                                             void *pLoadContext) :
-    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
+foePhysCollisionShape::foePhysCollisionShape(foeResourceID resource,
+                                             foeResourceFns const *pResourceFns) :
+    foeResourceBase{resource, pResourceFns} {}
 
 foePhysCollisionShape::~foePhysCollisionShape() {
     if (useCount > 0) {
         FOE_LOG(foePhysics, Warning,
                 "foePhysCollisionShape {} being destroyed despite having active uses",
-                static_cast<void *>(this));
+                foeIdToString(resource));
     }
     if (refCount > 0) {
         FOE_LOG(foePhysics, Warning,
                 "foePhysCollisionShape {} being destroyed despite having active references",
-                static_cast<void *>(this));
+                foeIdToString(resource));
     }
 }
 
-foeId foePhysCollisionShape::getID() const noexcept { return id; }
-
-foeResourceLoadState foePhysCollisionShape::getLoadState() const noexcept { return loadState; }
-
-int foePhysCollisionShape::incrementRefCount() noexcept { return ++refCount; }
-
-int foePhysCollisionShape::decrementRefCount() noexcept {
-    auto newCount = --refCount;
-    if (newCount < 0) {
-        FOE_LOG(foePhysics, Warning, "foePhysCollisionShape {} has a negative reference count",
-                static_cast<void *>(this))
-    }
-    return newCount;
-}
-
-int foePhysCollisionShape::getRefCount() const noexcept { return refCount; }
-
-int foePhysCollisionShape::incrementUseCount() noexcept {
-    auto newCount = ++useCount;
-
-    // If the count was (presumably 1) and it's in the 'loading' state
-    if (newCount == 1 && loadState == foeResourceLoadState::Unloaded) {
-        requestLoad();
-    }
-
-    return newCount;
-}
-
-int foePhysCollisionShape::decrementUseCount() noexcept {
-    auto newCount = --useCount;
-    if (newCount < 0) {
-        FOE_LOG(foePhysics, Warning, "foePhysCollisionShape {} has a negative use count",
-                static_cast<void *>(this))
-    }
-    return --newCount;
-}
-
-int foePhysCollisionShape::getUseCount() const noexcept { return useCount; }
-
-void foePhysCollisionShape::requestLoad() {
+void foePhysCollisionShape::loadCreateInfo() {
     incrementRefCount();
-    mpLoadFn(mpLoadContext, this, true);
+
+    // Acquire exclusive loading rights
+    bool expected{false};
+    if (!isLoading.compare_exchange_strong(expected, true)) {
+        // Another thread is already loading this resource
+        FOE_LOG(foePhysics, Warning, "Attempted to load foePhysCollisionShape {} in parrallel",
+                foeIdToString(resource))
+        decrementRefCount();
+        return;
+    }
+
+    pResourceFns->asyncTaskFn([this]() {
+        auto *pNewCreateInfo = pResourceFns->pImportFn(pResourceFns->pImportContext, resource);
+        if (pNewCreateInfo != nullptr) {
+            pCreateInfo.reset(pNewCreateInfo);
+        }
+
+        isLoading = false;
+        decrementRefCount();
+    });
 }
 
-void foePhysCollisionShape::requestUnload() { mpLoadFn(mpLoadContext, this, false); }
+namespace {
+
+void postLoadFn(void *pResource, std::error_code errC) {
+    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
+
+    if (!errC) {
+        // Loading went fine
+        pCollisionShape->state = foeResourceState::Loaded;
+    } else {
+        // Loading didn't go well
+        FOE_LOG(foePhysics, Error, "Failed to load foePhysCollisionShape {} with error {}:{}",
+                foeIdToString(pCollisionShape->getID()), errC.value(), errC.message())
+        pCollisionShape->state = foeResourceState::Failed;
+    }
+
+    pCollisionShape->isLoading = false;
+    pCollisionShape->decrementRefCount();
+}
+
+} // namespace
+
+void foePhysCollisionShape::loadResource(bool refreshCreateInfo) {
+    incrementRefCount();
+
+    // Acquire exclusive loading rights
+    bool expected{false};
+    if (!isLoading.compare_exchange_strong(expected, true)) {
+        // Another thread is already loading this resource
+        FOE_LOG(foePhysics, Warning, "Attempted to load foePhysCollisionShape {} in parrallel",
+                foeIdToString(resource))
+        decrementRefCount();
+        return;
+    }
+
+    pResourceFns->asyncTaskFn([this, refreshCreateInfo]() {
+        auto pLocalCreateInfo = pCreateInfo;
+
+        if (refreshCreateInfo || pLocalCreateInfo == nullptr) {
+            auto *pNewCreateInfo = pResourceFns->pImportFn(pResourceFns->pImportContext, resource);
+            if (pNewCreateInfo != nullptr) {
+                pLocalCreateInfo.reset(pNewCreateInfo);
+            }
+            pCreateInfo = pLocalCreateInfo;
+        }
+
+        pResourceFns->pLoadFn(pResourceFns->pLoadContext, this, postLoadFn);
+    });
+}
+
+void foePhysCollisionShape::unloadResource() {
+    modifySync.lock();
+    if (data.pUnloadFn != nullptr) {
+        data.pUnloadFn(data.pUnloadContext, this, iteration, false);
+    }
+    modifySync.unlock();
+}

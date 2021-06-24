@@ -16,7 +16,7 @@
 
 #include "collision_shape.hpp"
 
-#include <foe/physics/resource/collision_shape.hpp>
+#include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 

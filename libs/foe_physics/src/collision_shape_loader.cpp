@@ -22,57 +22,62 @@
 #include "bt_glm_conversion.hpp"
 #include "log.hpp"
 
-foePhysCollisionShapeLoader::~foePhysCollisionShapeLoader() {
-    if (mActiveJobs > 0) {
-        FOE_LOG(foePhysics, Fatal,
-                "foePhysCollisionShapeLoader being destructed with {} active jobs!",
-                mActiveJobs.load());
-    }
-}
+foePhysCollisionShapeLoader::~foePhysCollisionShapeLoader() {}
 
-std::error_code foePhysCollisionShapeLoader::initialize(
-    std::function<foeResourceCreateInfoBase *(foeResourceID)> importFunction,
-    std::function<void(std::function<void()>)> asynchronousJobs) {
+std::error_code foePhysCollisionShapeLoader::initialize() {
     if (initialized()) {
         return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
     }
 
     std::error_code errC{FOE_RESOURCE_SUCCESS};
 
-    mImportFunction = importFunction;
-    mAsyncJobs = asynchronousJobs;
-
 INITIALIZATION_FAILED:
     if (errC) {
         deinitialize();
-    } else {
-        mInitialized = true;
     }
 
     return errC;
 }
 
-void foePhysCollisionShapeLoader::deinitialize() {
-    if (mActiveJobs > 0) {
-        FOE_LOG(foePhysics, Fatal,
-                "foePhysCollisionShapeLoader being deinitialized with {} active jobs!",
-                mActiveJobs.load());
+void foePhysCollisionShapeLoader::deinitialize() {}
+
+bool foePhysCollisionShapeLoader::initialized() const noexcept { return true; }
+
+void foePhysCollisionShapeLoader::maintenance() {
+    // Process Unloads
+    mUnloadRequestsSync.lock();
+    auto toUnload = std::move(mUnloadRequests);
+    mUnloadRequestsSync.unlock();
+
+    for (auto &it : toUnload) {
+        unloadResource(this, it.pCollisionShape, it.iteration, true);
     }
 
-    mInitialized = false;
+    // Process Loads
+    mLoadSync.lock();
+    auto toLoad = std::move(mToLoad);
+    mLoadSync.unlock();
+
+    for (auto &it : toLoad) {
+        it.pCollisionShape->modifySync.lock();
+
+        if (it.pCollisionShape->data.pUnloadFn != nullptr) {
+            it.pCollisionShape->data.pUnloadFn(it.pCollisionShape->data.pUnloadContext,
+                                               it.pCollisionShape, it.pCollisionShape->iteration,
+                                               true);
+        }
+
+        ++it.pCollisionShape->iteration;
+        it.pCollisionShape->data = std::move(it.data);
+        it.pPostLoadFn(it.pCollisionShape, {});
+
+        it.pCollisionShape->modifySync.unlock();
+    }
 }
 
-bool foePhysCollisionShapeLoader::initialized() const noexcept { return mInitialized; }
-
-void foePhysCollisionShapeLoader::requestResourceLoad(foePhysCollisionShape *pCollisionShape) {
-    ++mActiveJobs;
-    mAsyncJobs([this, pCollisionShape] {
-        loadResource(pCollisionShape);
-        --mActiveJobs;
-    });
+bool foePhysCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
+    return dynamic_cast<foePhysCollisionShapeCreateInfo *>(pCreateInfo) != nullptr;
 }
-
-void foePhysCollisionShapeLoader::requestResourceUnload(foePhysCollisionShape *pCollisionShape) {}
 
 namespace {
 
@@ -89,65 +94,60 @@ bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foePhysCollisionS
 
 } // namespace
 
-void foePhysCollisionShapeLoader::loadResource(foePhysCollisionShape *pCollisionShape) {
-    FOE_LOG(foePhysics, Warning, "Attempted to load foePhysCollisionShape {}",
-            static_cast<void *>(pCollisionShape))
-    // First, try to enter the 'loading' state
-    auto expected = pCollisionShape->loadState.load();
-    while (expected != foeResourceLoadState::Loading) {
-        if (pCollisionShape->loadState.compare_exchange_weak(expected,
-                                                             foeResourceLoadState::Loading))
-            break;
-    }
-    if (expected == foeResourceLoadState::Loading) {
-        FOE_LOG(foePhysics, Warning, "Attempted to load foePhysCollisionShape {} in parrallel",
-                static_cast<void *>(pCollisionShape))
+void foePhysCollisionShapeLoader::load(
+    void *pResource,
+    std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+    void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
+    auto *pCollisionShapeCreateInfo =
+        reinterpret_cast<foePhysCollisionShapeCreateInfo *>(pCreateInfo.get());
+
+    foePhysCollisionShape::Data data;
+
+    if (!processCreateInfo(pCollisionShapeCreateInfo, data)) {
+        pPostLoadFn(pResource, FOE_RESOURCE_ERROR_IMPORT_FAILED);
         return;
     }
 
-    std::error_code errC;
-    foePhysCollisionShape::Data data;
+    std::scoped_lock writeLock{pCollisionShape->modifySync};
 
-    // Read in the definition
-    std::unique_ptr<foeResourceCreateInfoBase> createInfo{
-        mImportFunction(pCollisionShape->getID())};
-    if (createInfo == nullptr) {
-        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
-        goto LOADING_FAILED;
-    }
+    data.pUnloadContext = this;
+    data.pUnloadFn = &foePhysCollisionShapeLoader::unloadResource;
+    data.pCreateInfo = pCreateInfo;
 
-    // Process the imported definition
-    if (!processCreateInfo(createInfo.get(), data)) {
-        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
-        goto LOADING_FAILED;
-    } else {
-        pCollisionShape->createInfo.reset(
-            reinterpret_cast<foePhysCollisionShapeCreateInfo *>(createInfo.release()));
-    }
+    mLoadSync.lock();
+    mToLoad.emplace_back(LoadData{
+        .pCollisionShape = pCollisionShape,
+        .pPostLoadFn = pPostLoadFn,
+        .data = std::move(data),
+    });
+    mLoadSync.unlock();
+}
 
-LOADING_FAILED:
-    if (errC) {
-        FOE_LOG(foePhysics, Error, "Failed to load foePhysCollisionShape {} with error {}:{}",
-                static_cast<void *>(pCollisionShape), errC.value(), errC.message())
+void foePhysCollisionShapeLoader::unloadResource(void *pContext,
+                                                 void *pResource,
+                                                 uint32_t resourceIteration,
+                                                 bool immediateUnload) {
+    auto *pLoader = reinterpret_cast<foePhysCollisionShapeLoader *>(pContext);
+    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
 
-        pCollisionShape->loadState = foeResourceLoadState::Failed;
-    } else {
+    if (immediateUnload) {
+        pCollisionShape->modifySync.lock();
 
-        // Secure the resource, and set the new data/state
-        {
-            std::scoped_lock writeLock{pCollisionShape->dataWriteLock};
-
-            pCollisionShape->data = std::move(data);
-            pCollisionShape->loadState = foeResourceLoadState::Loaded;
+        if (pCollisionShape->iteration == resourceIteration) {
+            pCollisionShape->data = {};
+            ++pCollisionShape->iteration;
         }
 
-        // If there was active old data that we just wrote over, send it to be unloaded
-        {
-            // std::scoped_lock unloadLock{mUnloadSync};
-            // mCurrentUnloadRequests->emplace_back(oldData);
-        }
-    }
+        pCollisionShape->modifySync.unlock();
+    } else {
+        pLoader->mUnloadRequestsSync.lock();
 
-    // No longer using the reference, decrement.
-    pCollisionShape->decrementRefCount();
+        pLoader->mUnloadRequests.emplace_back(UnloadData{
+            .pCollisionShape = pCollisionShape,
+            .iteration = resourceIteration,
+        });
+
+        pLoader->mUnloadRequestsSync.unlock();
+    }
 }

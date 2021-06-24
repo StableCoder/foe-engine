@@ -19,7 +19,7 @@
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
-#include <foe/physics/resource/collision_shape.hpp>
+#include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
 
 #include "collision_shape.hpp"
@@ -37,11 +37,14 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
         auto *pCollisionShapePool = dynamic_cast<foePhysCollisionShapePool *>(*pResourcePools);
         if (pCollisionShapePool) {
             auto const *pCollisionShape = pCollisionShapePool->find(resource);
-            if (pCollisionShape && pCollisionShape->createInfo) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_collision_shape_key(),
-                    .data = yaml_write_collision_shape(*pCollisionShape->createInfo.get()),
-                });
+            if (pCollisionShape && pCollisionShape->pCreateInfo) {
+                if (auto dynPtr = dynamic_cast<foePhysCollisionShapeCreateInfo *>(
+                        pCollisionShape->pCreateInfo.get());
+                    dynPtr)
+                    keyDataPairs.emplace_back(foeKeyYamlPair{
+                        .key = yaml_collision_shape_key(),
+                        .data = yaml_write_collision_shape(*dynPtr),
+                    });
             }
         }
     }

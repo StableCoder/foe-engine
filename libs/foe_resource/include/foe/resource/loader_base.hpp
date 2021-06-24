@@ -17,6 +17,11 @@
 #ifndef FOE_RESOURCE_LOADER_BASE_HPP
 #define FOE_RESOURCE_LOADER_BASE_HPP
 
+#include <memory>
+#include <system_error>
+
+struct foeResourceCreateInfoBase;
+
 struct foeResourceLoaderBase {
     virtual ~foeResourceLoaderBase() {}
 
@@ -29,6 +34,11 @@ struct foeResourceLoaderBase {
      * contention when reading/writing to resources.
      */
     virtual void maintenance() {}
+
+    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) { return false; }
+    virtual void load(void *pResource,
+                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                      void (*pPostLoadFn)(void *, std::error_code)) {}
 };
 
 #endif // FOE_RESOURCE_LOADER_BASE_HPP

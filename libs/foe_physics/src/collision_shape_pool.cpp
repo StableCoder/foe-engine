@@ -19,20 +19,8 @@
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 
-namespace {
-
-void collisionShapeLoadFn(void *pContext, void *pResource, bool load) {
-    auto *pCollisionShapeLoader = reinterpret_cast<foePhysCollisionShapeLoader *>(pContext);
-    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
-
-    if (load) {
-        pCollisionShapeLoader->requestResourceLoad(pCollisionShape);
-    } else {
-        pCollisionShapeLoader->requestResourceUnload(pCollisionShape);
-    }
-}
-
-} // namespace
+foePhysCollisionShapePool::foePhysCollisionShapePool(foeResourceFns const &resourceFns) :
+    mResourceFns{resourceFns} {}
 
 foePhysCollisionShapePool::~foePhysCollisionShapePool() {
     for (auto *pCollisionShape : mCollisionShapes) {
@@ -53,8 +41,7 @@ foePhysCollisionShape *foePhysCollisionShapePool::add(foeResourceID resource) {
     }
 
     // Not found, add it
-    foePhysCollisionShape *pPhysCollisionShape =
-        new foePhysCollisionShape{resource, collisionShapeLoadFn, mpCollisionShapeLoader};
+    foePhysCollisionShape *pPhysCollisionShape = new foePhysCollisionShape{resource, &mResourceFns};
     pPhysCollisionShape->incrementRefCount();
 
     mCollisionShapes.emplace_back(pPhysCollisionShape);
@@ -72,8 +59,7 @@ foePhysCollisionShape *foePhysCollisionShapePool::findOrAdd(foeResourceID resour
     }
 
     // Not found, create it now
-    foePhysCollisionShape *pPhysCollisionShape =
-        new foePhysCollisionShape{resource, collisionShapeLoadFn, mpCollisionShapeLoader};
+    foePhysCollisionShape *pPhysCollisionShape = new foePhysCollisionShape{resource, &mResourceFns};
     pPhysCollisionShape->incrementRefCount();
 
     mCollisionShapes.emplace_back(pPhysCollisionShape);
@@ -100,6 +86,6 @@ void foePhysCollisionShapePool::unloadAll() {
     std::scoped_lock lock{mSync};
 
     for (auto *pCollisionShape : mCollisionShapes) {
-        pCollisionShape->requestUnload();
+        pCollisionShape->unloadResource();
     }
 }

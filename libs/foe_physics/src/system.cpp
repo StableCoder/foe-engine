@@ -198,12 +198,14 @@ void foePhysicsSystem::addObject(foeEntityID entity,
     while (pCollisionShape == nullptr) {
         pCollisionShape = mpCollisionShapePool->findOrAdd(pRigidBody->collisionShape);
     }
-    if (pCollisionShape->loadState != foeResourceLoadState::Loaded) {
-        if (pCollisionShape->loadState == foeResourceLoadState::Failed) {
+
+    if (auto collisionShapeState = pCollisionShape->getState();
+        collisionShapeState != foeResourceState::Loaded) {
+        if (collisionShapeState == foeResourceState::Failed) {
             return;
         }
 
-        pCollisionShape->requestLoad();
+        pCollisionShape->loadResource(false);
         mAwaitingLoadingResources.emplace_back(entity);
         return;
     }

@@ -17,10 +17,12 @@
 #include <foe/physics/registrar.hpp>
 
 #include <foe/physics/component/rigid_body_pool.hpp>
+#include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/position/component/3d_pool.hpp>
+#include <foe/resource/error_code.hpp>
 #include <foe/simulation/core.hpp>
 #include <foe/simulation/state.hpp>
 
@@ -28,15 +30,40 @@
 
 namespace {
 
-void onCreate(foeSimulationState *pSimulationState) {
-    auto *pCollisionShapeLoader = new foePhysCollisionShapeLoader;
+foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
+    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
+    return pGroupData->getResourceDefinition(resource);
+}
 
+void collisionShapeLoadFn(void *pContext,
+                          void *pResource,
+                          void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pSimulationState = reinterpret_cast<foeSimulationState *>(pContext);
+    auto *pCollisionShape = reinterpret_cast<foePhysCollisionShape *>(pResource);
+
+    auto pLocalCreateInfo = pCollisionShape->pCreateInfo;
+
+    for (auto *it : pSimulationState->resourceLoaders) {
+        if (it->canProcessCreateInfo(pLocalCreateInfo.get())) {
+            return it->load(pCollisionShape, pLocalCreateInfo, pPostLoadFn);
+        }
+    }
+
+    pPostLoadFn(pResource, FOE_RESOURCE_ERROR_IMPORT_FAILED);
+}
+
+void onCreate(foeSimulationState *pSimulationState) {
     // Resources
-    pSimulationState->resourcePools.emplace_back(
-        new foePhysCollisionShapePool{pCollisionShapeLoader});
+    pSimulationState->resourcePools.emplace_back(new foePhysCollisionShapePool{foeResourceFns{
+        .pImportContext = &pSimulationState->groupData,
+        .pImportFn = importFn,
+        .pLoadContext = pSimulationState,
+        .pLoadFn = collisionShapeLoadFn,
+        .asyncTaskFn = pSimulationState->createInfo.asyncJobFn,
+    }});
 
     // Loaders
-    pSimulationState->resourceLoaders.emplace_back(pCollisionShapeLoader);
+    pSimulationState->resourceLoaders.emplace_back(new foePhysCollisionShapeLoader);
 
     // Components
     pSimulationState->componentPools.emplace_back(new foeRigidBodyPool);
@@ -96,8 +123,7 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
         for (; pIt != pEndIt; ++pIt) {
             auto *pCollisionShapeLoader = dynamic_cast<foePhysCollisionShapeLoader *>(*pIt);
             if (pCollisionShapeLoader) {
-                pCollisionShapeLoader->initialize(pInitInfo->resourceDefinitionImportFn,
-                                                  pInitInfo->asyncJobFn);
+                pCollisionShapeLoader->initialize();
             }
         }
     }

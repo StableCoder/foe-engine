@@ -18,57 +18,25 @@
 #define FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_HPP
 
 #include <btBulletDynamicsCommon.h>
-#include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
-#include <foe/resource/create_info_base.hpp>
-#include <foe/resource/load_state.hpp>
-#include <glm/glm.hpp>
-
-#include <atomic>
-#include <memory>
-#include <mutex>
+#include <foe/simulation/resource_base.hpp>
 
 class foePhysCollisionShapeLoader;
 
-struct foePhysCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
-    glm::vec3 boxSize;
-};
-
-struct FOE_PHYSICS_EXPORT foePhysCollisionShape {
+struct FOE_PHYSICS_EXPORT foePhysCollisionShape : public foeResourceBase {
     friend foePhysCollisionShapeLoader;
 
-    foePhysCollisionShape(foeResourceID id,
-                          void (*pLoadFn)(void *, void *, bool),
-                          void *pLoadContext);
+    foePhysCollisionShape(foeResourceID resource, foeResourceFns const *pResourceFns);
     ~foePhysCollisionShape();
 
-    foeId getID() const noexcept;
-    foeResourceLoadState getLoadState() const noexcept;
+    void loadCreateInfo();
+    void loadResource(bool refreshCreateInfo);
+    void unloadResource();
 
-    int incrementRefCount() noexcept;
-    int decrementRefCount() noexcept;
-    int getRefCount() const noexcept;
-
-    int incrementUseCount() noexcept;
-    int decrementUseCount() noexcept;
-    int getUseCount() const noexcept;
-
-    void requestLoad();
-    void requestUnload();
-
-    // General
-    foeId id;
-    std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
-    std::atomic_int refCount{0};
-    std::atomic_int useCount{0};
-
-    // Specialization
-    void (*mpLoadFn)(void *, void *, bool);
-    void *mpLoadContext;
-
-    std::mutex dataWriteLock{};
-    std::unique_ptr<foePhysCollisionShapeCreateInfo> createInfo{nullptr};
     struct Data {
+        void *pUnloadContext{nullptr};
+        void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
+        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
         std::unique_ptr<btCollisionShape> collisionShape;
     } data;
 };
