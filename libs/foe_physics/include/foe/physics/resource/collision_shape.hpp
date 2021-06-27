@@ -21,11 +21,7 @@
 #include <foe/physics/export.h>
 #include <foe/simulation/core/resource.hpp>
 
-class foeCollisionShapeLoader;
-
 struct FOE_PHYSICS_EXPORT foeCollisionShape : public foeResourceBase {
-    friend foeCollisionShapeLoader;
-
     foeCollisionShape(foeResourceID resource, foeResourceFns const *pResourceFns);
     ~foeCollisionShape();
 
