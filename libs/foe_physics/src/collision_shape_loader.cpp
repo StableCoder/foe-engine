@@ -51,6 +51,7 @@ void foeCollisionShapeLoader::maintenance() {
 
     for (auto &it : toUnload) {
         unloadResource(this, it.pCollisionShape, it.iteration, true);
+        it.pCollisionShape->decrementRefCount();
     }
 
     // Process Loads
@@ -136,10 +137,12 @@ void foeCollisionShapeLoader::unloadResource(void *pContext,
         if (pCollisionShape->iteration == resourceIteration) {
             pCollisionShape->data = {};
             ++pCollisionShape->iteration;
+            pCollisionShape->state = foeResourceState::Unloaded;
         }
 
         pCollisionShape->modifySync.unlock();
     } else {
+        pCollisionShape->incrementRefCount();
         pLoader->mUnloadRequestsSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{

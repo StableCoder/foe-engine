@@ -27,8 +27,6 @@
 #include <vector>
 
 struct foeCollisionShape;
-class foeCollisionShapeLoader;
-struct foeResourceCreateInfoBase;
 
 class FOE_PHYSICS_EXPORT foeCollisionShapePool : public foeResourcePoolBase {
   public:
@@ -40,8 +38,6 @@ class FOE_PHYSICS_EXPORT foeCollisionShapePool : public foeResourcePoolBase {
     foeCollisionShape *find(foeResourceID id);
 
     void unloadAll();
-
-    auto getDataVector() { return mCollisionShapes; }
 
   private:
     FOE_PHYSICS_NO_EXPORT foeResourceFns const mResourceFns;

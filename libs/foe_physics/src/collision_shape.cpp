@@ -71,7 +71,8 @@ void postLoadFn(void *pResource, std::error_code errC) {
         // Loading didn't go well
         FOE_LOG(foePhysics, Error, "Failed to load foeCollisionShape {} with error {}:{}",
                 foeIdToString(pCollisionShape->getID()), errC.value(), errC.message())
-        pCollisionShape->state = foeResourceState::Failed;
+        auto expected = foeResourceState::Unloaded;
+        pCollisionShape->state.compare_exchange_strong(expected, foeResourceState::Failed);
     }
 
     pCollisionShape->isLoading = false;

@@ -42,9 +42,6 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader : public foeResourceLoaderBase 
 
     void maintenance() final;
 
-    void processLoadRequests();
-    void processUnloadRequests();
-
     bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) final;
     void load(void *pResource,
               std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,

@@ -33,6 +33,7 @@ struct FOE_PHYSICS_EXPORT foeCollisionShape : public foeResourceBase {
         void *pUnloadContext{nullptr};
         void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
         std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+
         std::unique_ptr<btCollisionShape> collisionShape;
     } data;
 };
