@@ -19,8 +19,8 @@
 
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/loader_base.hpp>
 #include <foe/resource/vertex_descriptor.hpp>
+#include <foe/simulation/core/loader.hpp>
 
 #include <atomic>
 #include <functional>

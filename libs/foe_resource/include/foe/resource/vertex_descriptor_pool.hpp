@@ -19,7 +19,7 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/pool_base.hpp>
+#include <foe/simulation/core/pool.hpp>
 
 #include <shared_mutex>
 #include <vector>

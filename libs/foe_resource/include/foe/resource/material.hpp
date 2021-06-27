@@ -19,9 +19,9 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/vk/fragment_descriptor.hpp>
-#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
+#include <foe/simulation/core/create_info.hpp>
 
 #include <atomic>
 #include <memory>

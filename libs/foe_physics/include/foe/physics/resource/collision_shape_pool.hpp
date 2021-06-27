@@ -19,8 +19,8 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
-#include <foe/resource/pool_base.hpp>
-#include <foe/simulation/resource_fns.hpp>
+#include <foe/simulation/core/pool.hpp>
+#include <foe/simulation/core/resource_fns.hpp>
 
 #include <functional>
 #include <shared_mutex>

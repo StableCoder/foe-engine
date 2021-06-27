@@ -20,7 +20,7 @@
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
-#include <foe/simulation/system_base.hpp>
+#include <foe/simulation/core/system.hpp>
 
 #include <memory>
 #include <vector>

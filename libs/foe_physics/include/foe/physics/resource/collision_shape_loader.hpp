@@ -20,8 +20,8 @@
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/resource/create_info_base.hpp>
-#include <foe/resource/loader_base.hpp>
+#include <foe/simulation/core/create_info.hpp>
+#include <foe/simulation/core/loader.hpp>
 #include <glm/glm.hpp>
 
 #include <mutex>

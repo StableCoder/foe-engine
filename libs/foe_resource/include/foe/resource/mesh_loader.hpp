@@ -23,8 +23,8 @@
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/loader_base.hpp>
 #include <foe/resource/mesh.hpp>
+#include <foe/simulation/core/loader.hpp>
 
 #include <array>
 #include <atomic>

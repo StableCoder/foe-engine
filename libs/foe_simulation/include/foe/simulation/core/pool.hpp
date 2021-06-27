@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_POOL_BASE_HPP
-#define FOE_RESOURCE_POOL_BASE_HPP
+#ifndef FOE_SIMULATION_CORE_POOL_HPP
+#define FOE_SIMULATION_CORE_POOL_HPP
 
 struct foeResourcePoolBase {
     virtual ~foeResourcePoolBase() {}
 };
 
-#endif // FOE_RESOURCE_POOL_BASE_HPP
+#endif // FOE_SIMULATION_CORE_POOL_HPP

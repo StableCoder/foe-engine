@@ -21,7 +21,7 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/imex/yaml/generator.hpp>
-#include <foe/resource/create_info_base.hpp>
+#include <foe/simulation/core/create_info.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 

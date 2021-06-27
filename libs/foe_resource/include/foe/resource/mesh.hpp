@@ -21,9 +21,9 @@
 #include <foe/graphics/mesh.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
-#include <foe/resource/create_info_base.hpp>
 #include <foe/resource/export.h>
 #include <foe/resource/load_state.hpp>
+#include <foe/simulation/core/create_info.hpp>
 
 #include <atomic>
 #include <memory>

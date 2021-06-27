@@ -21,7 +21,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/simulation/system_base.hpp>
+#include <foe/simulation/core/system.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 

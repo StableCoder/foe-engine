@@ -15,7 +15,7 @@
 */
 
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/simulation/resource_fns.hpp>
+#include <foe/simulation/core/resource_fns.hpp>
 
 #include "log.hpp"
 

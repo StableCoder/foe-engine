@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_LOADER_BASE_HPP
-#define FOE_RESOURCE_LOADER_BASE_HPP
+#ifndef FOE_SIMULATION_CORE_LOADER_HPP
+#define FOE_SIMULATION_CORE_LOADER_HPP
 
 #include <memory>
 #include <system_error>
@@ -41,4 +41,4 @@ struct foeResourceLoaderBase {
                       void (*pPostLoadFn)(void *, std::error_code)) {}
 };
 
-#endif // FOE_RESOURCE_LOADER_BASE_HPP
+#endif // FOE_SIMULATION_CORE_LOADER_HPP

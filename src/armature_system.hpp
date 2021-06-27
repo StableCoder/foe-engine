@@ -17,7 +17,7 @@
 #ifndef ARMATURE_SYSTEM_HPP
 #define ARMATURE_SYSTEM_HPP
 
-#include <foe/simulation/system_base.hpp>
+#include <foe/simulation/core/system.hpp>
 
 class foeArmatureStatePool;
 class foeArmaturePool;

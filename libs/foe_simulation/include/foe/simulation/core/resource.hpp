@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_RESOURCE_BASE_HPP
-#define FOE_SIMULATION_RESOURCE_BASE_HPP
+#ifndef FOE_SIMULATION_CORE_RESOURCE_HPP
+#define FOE_SIMULATION_CORE_RESOURCE_HPP
 
 #include <foe/ecs/id.hpp>
-#include <foe/resource/create_info_base.hpp>
+#include <foe/simulation/core/create_info.hpp>
 
 #include <atomic>
 #include <memory>
@@ -63,4 +63,4 @@ struct foeResourceBase {
     std::atomic_uint iteration;
 };
 
-#endif // FOE_SIMULATION_RESOURCE_BASE_HPP
+#endif // FOE_SIMULATION_CORE_RESOURCE_HPP

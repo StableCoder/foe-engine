@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_RESOURCE_FNS_HPP
-#define FOE_SIMULATION_RESOURCE_FNS_HPP
+#ifndef FOE_SIMULATION_CORE_RESOURCE_FNS_HPP
+#define FOE_SIMULATION_CORE_RESOURCE_FNS_HPP
 
 #include <foe/ecs/id.hpp>
 
@@ -36,4 +36,4 @@ struct foeResourceFns {
     std::function<void(std::function<void()>)> asyncTaskFn;
 };
 
-#endif // FOE_SIMULATION_RESOURCE_FNS_HPP
+#endif // FOE_SIMULATION_CORE_RESOURCE_FNS_HPP

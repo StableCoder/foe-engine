@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_SYSTEM_BASE_HPP
-#define FOE_SIMULATION_SYSTEM_BASE_HPP
+#ifndef FOE_SIMULATION_CORE_CREATE_INFO_HPP
+#define FOE_SIMULATION_CORE_CREATE_INFO_HPP
 
-struct foeSystemBase {
-    virtual ~foeSystemBase() = default;
+struct foeResourceCreateInfoBase {
+    virtual ~foeResourceCreateInfoBase() = default;
 };
 
-#endif // FOE_SIMULATION_SYSTEM_BASE_HPP
+#endif // FOE_SIMULATION_CORE_CREATE_INFO_HPP

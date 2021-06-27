@@ -19,7 +19,7 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <foe/physics/export.h>
-#include <foe/simulation/resource_base.hpp>
+#include <foe/simulation/core/resource.hpp>
 
 class foeCollisionShapeLoader;
 
