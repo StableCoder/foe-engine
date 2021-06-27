@@ -27,6 +27,7 @@
 #include <foe/resource/vertex_descriptor_pool.hpp>
 
 #include "armature.hpp"
+#include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
 #include "mesh.hpp"
@@ -120,14 +121,6 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
     return keyDataPairs;
 }
 
-void onRegister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
-        // Resource
-        pYamlExporter->registerResourceFn(exportResources);
-    }
-}
-
 void onDeregister(foeExporterBase *pExporter) {
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
@@ -136,10 +129,29 @@ void onDeregister(foeExporterBase *pExporter) {
     }
 }
 
+std::error_code onRegister(foeExporterBase *pExporter) {
+    std::error_code errC;
+
+    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
+    if (pYamlExporter) {
+        // Resource
+        if (!pYamlExporter->registerResourceFn(exportResources)) {
+            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS;
+            goto REGISTRATION_FAILED;
+        }
+    }
+
+REGISTRATION_FAILED:
+    if (errC)
+        onDeregister(pExporter);
+
+    return errC;
+}
+
 } // namespace
 
-void foeResourceRegisterYamlExportFunctionality() {
-    foeRegisterExportFunctionality(foeExportFunctionality{
+auto foeResourceRegisterYamlExportFunctionality() -> std::error_code {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });

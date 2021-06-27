@@ -23,6 +23,7 @@
 #include "armature_state_pool.hpp"
 #include "camera_imex.hpp"
 #include "camera_pool.hpp"
+#include "error_code.hpp"
 #include "render_state_imex.hpp"
 #include "render_state_pool.hpp"
 
@@ -121,8 +122,6 @@ bool importCamera(YAML::Node const &node,
 
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-
         // Component
         pYamlImporter->deregisterComponentFn(yaml_armature_state_key(), importArmatureState);
         pYamlImporter->deregisterComponentFn(yaml_render_state_key(), importRenderState);
@@ -130,26 +129,38 @@ void onDeregister(foeImporterGenerator *pGenerator) {
     }
 }
 
-void onRegister(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
+std::error_code onRegister(foeImporterGenerator *pGenerator) {
+    std::error_code errC;
 
+    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Component
-        pYamlImporter->registerComponentFn(yaml_armature_state_key(), importArmatureState);
-        pYamlImporter->registerComponentFn(yaml_render_state_key(), importRenderState);
-        pYamlImporter->registerComponentFn(yaml_camera_key(), importCamera);
+        if (!pYamlImporter->registerComponentFn(yaml_armature_state_key(), importArmatureState)) {
+            errC = FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
+        if (!pYamlImporter->registerComponentFn(yaml_render_state_key(), importRenderState)) {
+            errC = FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
+        if (!pYamlImporter->registerComponentFn(yaml_camera_key(), importCamera)) {
+            errC = FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
     }
 
-    return;
+REGISTRATION_FAILED:
+    if (errC)
+        onDeregister(pGenerator);
 
-FAILED_TO_ADD:
-    onDeregister(pGenerator);
+    return errC;
 }
 
 } // namespace
 
-void foeBringupRegisterYamlImportFunctionality() {
-    foeRegisterImportFunctionality(foeImportFunctionality{
+auto foeBringupRegisterYamlImportFunctionality() -> std::error_code {
+    return foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });

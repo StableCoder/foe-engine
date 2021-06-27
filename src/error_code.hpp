@@ -14,13 +14,24 @@
     limitations under the License.
 */
 
-#ifndef EXPORT_REGISTRAR_HPP
-#define EXPORT_REGISTRAR_HPP
+#ifndef ERROR_CODE_HPP
+#define ERROR_CODE_HPP
 
 #include <system_error>
 
-auto foeBringupRegisterYamlExportFunctionality() -> std::error_code;
+enum foeBringupResult {
+    FOE_BRINGUP_SUCCESS = 0,
+    FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER,
+    FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER,
+    FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER,
+    FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_EXPORTERS,
+};
 
-void foeBringupDeregisterYamlExportFunctionality();
+namespace std {
+template <>
+struct is_error_code_enum<foeBringupResult> : true_type {};
+} // namespace std
 
-#endif // EXPORT_REGISTRAR_HPP
+std::error_code make_error_code(foeBringupResult);
+
+#endif // ERROR_CODE_HPP

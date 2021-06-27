@@ -23,6 +23,7 @@
 #include <foe/physics/resource/collision_shape_pool.hpp>
 
 #include "collision_shape.hpp"
+#include "error_code.hpp"
 #include "rigid_body.hpp"
 
 namespace {
@@ -73,32 +74,46 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
     return keyDataPairs;
 }
 
-void onRegister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
-        // Resource
-        pYamlExporter->registerResourceFn(exportResources);
-
-        // Component
-        pYamlExporter->registerComponentFn(exportComponents);
-    }
-}
-
 void onDeregister(foeExporterBase *pExporter) {
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
-        // Resource
+        // Resources
         pYamlExporter->deregisterResourceFn(exportResources);
 
-        // Component
+        // Components
         pYamlExporter->deregisterComponentFn(exportComponents);
     }
 }
 
+std::error_code onRegister(foeExporterBase *pExporter) {
+    std::error_code errC;
+
+    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
+    if (pYamlExporter) {
+        // Resources
+        if (!pYamlExporter->registerResourceFn(exportResources)) {
+            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_EXPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
+        // Components
+        if (!pYamlExporter->registerComponentFn(exportComponents)) {
+            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER;
+            goto REGISTRATION_FAILED;
+        }
+    }
+
+REGISTRATION_FAILED:
+    if (errC)
+        onDeregister(pExporter);
+
+    return errC;
+}
+
 } // namespace
 
-void foePhysicsRegisterYamlExportFunctionality() {
-    foeRegisterExportFunctionality(foeExportFunctionality{
+auto foePhysicsRegisterYamlExportFunctionality() -> std::error_code {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });

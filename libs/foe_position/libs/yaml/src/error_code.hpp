@@ -14,13 +14,23 @@
     limitations under the License.
 */
 
-#ifndef EXPORT_REGISTRAR_HPP
-#define EXPORT_REGISTRAR_HPP
+#ifndef ERROR_CODE_HPP
+#define ERROR_CODE_HPP
 
 #include <system_error>
 
-auto foeBringupRegisterYamlExportFunctionality() -> std::error_code;
+enum foePositionYamlResult {
+    FOE_POSITION_YAML_SUCCESS = 0,
+    // Position3D Component
+    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER,
+    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER,
+};
 
-void foeBringupDeregisterYamlExportFunctionality();
+namespace std {
+template <>
+struct is_error_code_enum<foePositionYamlResult> : true_type {};
+} // namespace std
 
-#endif // EXPORT_REGISTRAR_HPP
+std::error_code make_error_code(foePositionYamlResult);
+
+#endif // ERROR_CODE_HPP

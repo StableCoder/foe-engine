@@ -14,13 +14,22 @@
     limitations under the License.
 */
 
-#ifndef EXPORT_REGISTRAR_HPP
-#define EXPORT_REGISTRAR_HPP
+#ifndef ERROR_CODE_HPP
+#define ERROR_CODE_HPP
 
 #include <system_error>
 
-auto foeBringupRegisterYamlExportFunctionality() -> std::error_code;
+enum foeImexResult {
+    FOE_IMEX_SUCCESS = 0,
+    FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED,
+    FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED,
+};
 
-void foeBringupDeregisterYamlExportFunctionality();
+namespace std {
+template <>
+struct is_error_code_enum<foeImexResult> : true_type {};
+} // namespace std
 
-#endif // EXPORT_REGISTRAR_HPP
+std::error_code make_error_code(foeImexResult);
+
+#endif // ERROR_CODE_HPP

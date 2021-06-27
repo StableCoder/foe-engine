@@ -23,6 +23,7 @@
 #include <foe/yaml/exception.hpp>
 
 #include "3d.hpp"
+#include "error_code.hpp"
 
 namespace {
 
@@ -59,31 +60,33 @@ bool importPosition3D(YAML::Node const &node,
 
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-
-        // Component
+        // Components
         pYamlImporter->deregisterComponentFn(yaml_position3d_key(), importPosition3D);
     }
 }
 
-void onRegister(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
+std::error_code onRegister(foeImporterGenerator *pGenerator) {
+    std::error_code errC;
 
-        // Component
-        pYamlImporter->registerComponentFn(yaml_position3d_key(), importPosition3D);
+    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
+        // Components
+        if (!pYamlImporter->registerComponentFn(yaml_position3d_key(), importPosition3D)) {
+            errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER;
+            goto REGISTRATION_ERROR;
+        }
     }
 
-    return;
+REGISTRATION_ERROR:
+    if (errC)
+        onDeregister(pGenerator);
 
-FAILED_TO_ADD:
-    onDeregister(pGenerator);
+    return errC;
 }
 
 } // namespace
 
-void foePositionRegisterYamlImportFunctionality() {
-    foeRegisterImportFunctionality(foeImportFunctionality{
+auto foePositionRegisterYamlImportFunctionality() -> std::error_code {
+    return foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });

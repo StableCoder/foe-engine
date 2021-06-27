@@ -181,8 +181,15 @@ auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
 #include "state_import/import_state.hpp"
 
 auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
+    std::error_code errC;
+
     initializeLogging();
-    registerBasicFunctionality();
+    errC = registerBasicFunctionality();
+    if (errC) {
+        FOE_LOG(General, Fatal, "Error registering basic functionality with error: {} - {}",
+                errC.value(), errC.message())
+        return std::make_tuple(false, errC.value());
+    }
 
     foeSearchPaths searchPaths;
 
@@ -199,8 +206,13 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     };
 
     foeSimulationState *pNewSimulationSet{nullptr};
-    std::error_code errC =
-        importState("persistent", &searchPaths, asyncTaskFunc, &pNewSimulationSet);
+    errC = importState("persistent", &searchPaths, asyncTaskFunc, &pNewSimulationSet);
+    if (errC) {
+        FOE_LOG(General, Fatal, "Error importing '{}' state with error: {} - {}", "persistent",
+                errC.value(), errC.message())
+        return std::make_tuple(false, errC.value());
+    }
+
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> tempSimState{
         pNewSimulationSet, [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
     pSimulationSet = std::move(tempSimState);

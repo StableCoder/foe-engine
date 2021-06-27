@@ -19,7 +19,9 @@
 
 #include <foe/resource/yaml/export.h>
 
-FOE_RES_YAML_EXPORT void foeResourceRegisterYamlExportFunctionality();
+#include <system_error>
+
+FOE_RES_YAML_EXPORT auto foeResourceRegisterYamlExportFunctionality() -> std::error_code;
 
 FOE_RES_YAML_EXPORT void foeResourceDeregisterYamlExportFunctionality();
 

@@ -5,6 +5,7 @@ target_sources(
   PRIVATE application.cpp
           armature_system.cpp
           camera_system.cpp
+          error_code.cpp
           export_registrar.cpp
           frame_timer.cpp
           graphics.cpp

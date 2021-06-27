@@ -16,6 +16,7 @@
 
 #include <foe/imex/exporters.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 #include <mutex>
@@ -31,28 +32,39 @@ std::vector<foeExportFunctionality> mRegisteredFunctionality;
 
 } // namespace
 
-bool foeRegisterExportFunctionality(foeExportFunctionality const &functionality) {
+auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
+    -> std::error_code {
+    std::error_code errC;
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mRegisteredFunctionality) {
         if (it == functionality) {
             FOE_LOG(foeImex, Warning,
                     "foeRegisterExportFunctionality - Attempted to re-register functionality");
-            return false;
+            return FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED;
         }
     }
 
     // Add the *new* functionality to any already-existing exporters
     if (functionality.onRegister) {
         for (auto const &it : mRegisteredExporters) {
-            functionality.onRegister(it);
+            errC = functionality.onRegister(it);
+            if (errC)
+                goto REGISTRATION_FAILED;
         }
     }
 
     // Not already registered, add it
     mRegisteredFunctionality.emplace_back(functionality);
 
-    return true;
+REGISTRATION_FAILED:
+    if (errC && functionality.onDeregister) {
+        for (auto const &it : mRegisteredExporters) {
+            functionality.onDeregister(it);
+        }
+    }
+
+    return errC;
 }
 
 void foeDeregisterExportFunctionality(foeExportFunctionality const &functionality) {
@@ -78,25 +90,36 @@ CONTINUE_DEREGISTRATION:
     }
 }
 
-bool foeRegisterExporter(foeExporterBase *pExporter) {
+auto foeRegisterExporter(foeExporterBase *pExporter) -> std::error_code {
+    std::error_code errC;
     std::scoped_lock lock{mSync};
 
     // Check to make sure not already registered
     for (auto const &it : mRegisteredExporters) {
         if (it == pExporter) {
             FOE_LOG(foeImex, Warning, "foeRegisterExporter - Attempted to re-register exporter");
-            return false;
+            return FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED;
         }
     }
 
     for (auto const &it : mRegisteredFunctionality) {
         if (it.onRegister)
-            it.onRegister(pExporter);
+            errC = it.onRegister(pExporter);
+        if (errC)
+            goto REGISTRATION_FAILED;
     }
 
     mRegisteredExporters.emplace_back(pExporter);
 
-    return true;
+REGISTRATION_FAILED:
+    if (errC) {
+        for (auto const &it : mRegisteredFunctionality) {
+            if (it.onDeregister)
+                it.onDeregister(pExporter);
+        }
+    }
+
+    return errC;
 }
 
 void foeDeregisterExporter(foeExporterBase *pExporter) {

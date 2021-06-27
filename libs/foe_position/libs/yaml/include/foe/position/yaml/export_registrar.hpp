@@ -19,7 +19,9 @@
 
 #include <foe/position/yaml/export.h>
 
-FOE_POSITION_YAML_EXPORT void foePositionRegisterYamlExportFunctionality();
+#include <system_error>
+
+FOE_POSITION_YAML_EXPORT auto foePositionRegisterYamlExportFunctionality() -> std::error_code;
 
 FOE_POSITION_YAML_EXPORT void foePositionDeregisterYamlExportFunctionality();
 

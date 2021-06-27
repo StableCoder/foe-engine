@@ -16,6 +16,7 @@
 
 #include <foe/imex/importers.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 #include <mutex>
@@ -72,28 +73,40 @@ auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> fo
     return nullptr;
 }
 
-bool foeRegisterImportFunctionality(foeImportFunctionality const &functionality) {
+auto foeRegisterImportFunctionality(foeImportFunctionality const &functionality)
+    -> std::error_code {
+    std::error_code errC;
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gFunctionality) {
         if (it == functionality) {
             FOE_LOG(foeImex, Warning,
                     "foeRegisterImportFunctionality - Attempted to re-register functionality");
-            return false;
+            return FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED;
         }
     }
-
-    // Not registered, add it now
-    gFunctionality.emplace_back(functionality);
 
     // Add the *new* functionality to any already-existing importers
     if (functionality.onRegister) {
         for (auto const &it : generators) {
-            functionality.onRegister(it);
+            errC = functionality.onRegister(it);
+            if (errC)
+                goto REGISTRATION_ERROR;
         }
     }
 
-    return true;
+    // Add functionality to the list
+    gFunctionality.emplace_back(functionality);
+
+REGISTRATION_ERROR:
+    // On an error, deregister from all that it did get into
+    if (errC && functionality.onDeregister) {
+        for (auto const &it : generators) {
+            functionality.onDeregister(it);
+        }
+    }
+
+    return errC;
 }
 
 void foeDeregisterImportFunctionality(foeImportFunctionality const &functionality) {

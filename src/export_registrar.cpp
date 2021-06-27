@@ -23,6 +23,7 @@
 #include "armature_state_pool.hpp"
 #include "camera_imex.hpp"
 #include "camera_pool.hpp"
+#include "error_code.hpp"
 #include "render_state_imex.hpp"
 #include "render_state_pool.hpp"
 
@@ -75,14 +76,6 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
     return keyDataPairs;
 }
 
-void onRegister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
-        // Component
-        pYamlExporter->registerComponentFn(exportComponents);
-    }
-}
-
 void onDeregister(foeExporterBase *pExporter) {
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
@@ -91,10 +84,29 @@ void onDeregister(foeExporterBase *pExporter) {
     }
 }
 
+std::error_code onRegister(foeExporterBase *pExporter) {
+    std::error_code errC;
+
+    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
+    if (pYamlExporter) {
+        // Component
+        if (!pYamlExporter->registerComponentFn(exportComponents)) {
+            errC = FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_EXPORTERS;
+            goto REGISTRATION_FAILED;
+        }
+    }
+
+REGISTRATION_FAILED:
+    if (errC)
+        onDeregister(pExporter);
+
+    return errC;
+}
+
 } // namespace
 
-void foeBringupRegisterYamlExportFunctionality() {
-    foeRegisterExportFunctionality(foeExportFunctionality{
+auto foeBringupRegisterYamlExportFunctionality() -> std::error_code {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });

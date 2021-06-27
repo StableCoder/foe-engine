@@ -21,6 +21,7 @@
 #include <foe/imex/export.h>
 
 #include <filesystem>
+#include <system_error>
 #include <vector>
 
 class foeImporterBase;
@@ -35,7 +36,7 @@ FOE_IMEX_EXPORT bool foeRegisterImportGenerator(foeImporterGenerator *pGenerator
 FOE_IMEX_EXPORT bool foeDeregisterImportGenerator(foeImporterGenerator *pGenerator);
 
 struct foeImportFunctionality {
-    void (*onRegister)(foeImporterGenerator *);
+    std::error_code (*onRegister)(foeImporterGenerator *);
     void (*onDeregister)(foeImporterGenerator *);
 
     inline bool operator==(foeImportFunctionality const &rhs) const noexcept {
@@ -46,7 +47,8 @@ struct foeImportFunctionality {
     }
 };
 
-FOE_IMEX_EXPORT bool foeRegisterImportFunctionality(foeImportFunctionality const &functionality);
+FOE_IMEX_EXPORT auto foeRegisterImportFunctionality(foeImportFunctionality const &functionality)
+    -> std::error_code;
 FOE_IMEX_EXPORT void foeDeregisterImportFunctionality(foeImportFunctionality const &functionality);
 
 FOE_IMEX_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)

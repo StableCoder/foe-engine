@@ -34,7 +34,9 @@
 #include "import_registrar.hpp"
 #include "registrar.hpp"
 
-void registerBasicFunctionality() noexcept {
+auto registerBasicFunctionality() noexcept -> std::error_code {
+    std::error_code errC;
+
     // Core
     foePhysicsRegisterFunctionality();
     foePositionRegisterFunctionality();
@@ -42,17 +44,42 @@ void registerBasicFunctionality() noexcept {
     foeBringupRegisterFunctionality();
 
     // Export
-    foePhysicsRegisterYamlExportFunctionality();
-    foePositionRegisterYamlExportFunctionality();
-    foeResourceRegisterYamlExportFunctionality();
-    foeBringupRegisterYamlExportFunctionality();
+    errC = foePhysicsRegisterYamlExportFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foePositionRegisterYamlExportFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foeResourceRegisterYamlExportFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foeBringupRegisterYamlExportFunctionality();
+    if (errC)
+        return errC;
 
     // Import
     foeRegisterYamlImportGenerator();
-    foePhysicsRegisterYamlImportFunctionality();
-    foePositionRegisterYamlImportFunctionality();
-    foeResourceRegisterYamlImportFunctionality();
-    foeBringupRegisterYamlImportFunctionality();
+
+    errC = foePhysicsRegisterYamlImportFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foePositionRegisterYamlImportFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foeResourceRegisterYamlImportFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foeBringupRegisterYamlImportFunctionality();
+    if (errC)
+        return errC;
+
+    return errC;
 }
 
 void deregisterBasicFunctionality() noexcept {

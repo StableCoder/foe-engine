@@ -19,7 +19,9 @@
 
 #include <foe/physics/yaml/export.h>
 
-FOE_PHYSICS_YAML_EXPORT bool foePhysicsRegisterYamlImportFunctionality();
+#include <system_error>
+
+FOE_PHYSICS_YAML_EXPORT auto foePhysicsRegisterYamlImportFunctionality() -> std::error_code;
 
 FOE_PHYSICS_YAML_EXPORT void foePhysicsDeregisterYamlImportFunctionality();
 

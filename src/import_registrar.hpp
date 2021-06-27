@@ -17,7 +17,9 @@
 #ifndef IMPORT_REGISTRAR_HPP
 #define IMPORT_REGISTRAR_HPP
 
-void foeBringupRegisterYamlImportFunctionality();
+#include <system_error>
+
+auto foeBringupRegisterYamlImportFunctionality() -> std::error_code;
 
 void foeBringupDeregisterYamlImportFunctionality();
 

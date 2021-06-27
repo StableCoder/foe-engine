@@ -21,8 +21,10 @@
 #include <foe/imex/export.h>
 #include <foe/imex/exporter_base.hpp>
 
+#include <system_error>
+
 struct foeExportFunctionality {
-    void (*onRegister)(foeExporterBase *);
+    std::error_code (*onRegister)(foeExporterBase *);
     void (*onDeregister)(foeExporterBase *);
 
     inline bool operator==(foeExportFunctionality const &rhs) const noexcept {
@@ -33,10 +35,11 @@ struct foeExportFunctionality {
     }
 };
 
-FOE_IMEX_EXPORT bool foeRegisterExportFunctionality(foeExportFunctionality const &functionality);
+FOE_IMEX_EXPORT auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
+    -> std::error_code;
 FOE_IMEX_EXPORT void foeDeregisterExportFunctionality(foeExportFunctionality const &functionality);
 
-FOE_IMEX_EXPORT bool foeRegisterExporter(foeExporterBase *pExporter);
+FOE_IMEX_EXPORT auto foeRegisterExporter(foeExporterBase *pExporter) -> std::error_code;
 FOE_IMEX_EXPORT void foeDeregisterExporter(foeExporterBase *pExporter);
 
 #endif // FOE_IMEX_EXPORTERS_HPP

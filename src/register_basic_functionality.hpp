@@ -17,7 +17,9 @@
 #ifndef REGISTER_BASIC_FUNCTIONALITY_HPP
 #define REGISTER_BASIC_FUNCTIONALITY_HPP
 
-void registerBasicFunctionality() noexcept;
+#include <system_error>
+
+auto registerBasicFunctionality() noexcept -> std::error_code;
 
 void deregisterBasicFunctionality() noexcept;
 

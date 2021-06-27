@@ -21,6 +21,7 @@
 #include <foe/position/component/3d_pool.hpp>
 
 #include "3d.hpp"
+#include "error_code.hpp"
 
 namespace {
 
@@ -46,26 +47,37 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
     return keyDataPairs;
 }
 
-void onRegister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
-        // Component
-        pYamlExporter->registerComponentFn(exportComponents);
-    }
-}
-
 void onDeregister(foeExporterBase *pExporter) {
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
-        // Component
+        // Components
         pYamlExporter->deregisterComponentFn(exportComponents);
     }
 }
 
+std::error_code onRegister(foeExporterBase *pExporter) {
+    std::error_code errC;
+
+    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
+    if (pYamlExporter) {
+        // Components
+        if (!pYamlExporter->registerComponentFn(exportComponents)) {
+            errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER;
+            goto REGISTRATION_FAILED;
+        }
+    }
+
+REGISTRATION_FAILED:
+    if (errC)
+        onDeregister(pExporter);
+
+    return errC;
+}
+
 } // namespace
 
-void foePositionRegisterYamlExportFunctionality() {
-    foeRegisterExportFunctionality(foeExportFunctionality{
+auto foePositionRegisterYamlExportFunctionality() -> std::error_code {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });

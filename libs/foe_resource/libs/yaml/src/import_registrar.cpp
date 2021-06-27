@@ -197,51 +197,62 @@ void onDeregister(foeImporterGenerator *pGenerator) {
 
         pYamlImporter->deregisterResourceFns(yaml_image_key(), yaml_read_image,
                                              imageCreateProcessing);
-
-        // Components
     }
 }
 
-void onRegister(foeImporterGenerator *pGenerator) {
+std::error_code onRegister(foeImporterGenerator *pGenerator) {
+    std::error_code errC;
+
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         if (!pYamlImporter->registerResourceFns(yaml_armature_key(), yaml_read_armature,
-                                                armatureCreateProcessing))
-            goto FAILED_TO_ADD;
+                                                armatureCreateProcessing)) {
+            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
 
         if (!pYamlImporter->registerResourceFns(yaml_mesh_key(), yaml_read_mesh,
-                                                meshCreateProcessing))
-            goto FAILED_TO_ADD;
+                                                meshCreateProcessing)) {
+            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
 
         if (!pYamlImporter->registerResourceFns(yaml_material_key(), yaml_read_material,
-                                                materialCreateProcessing))
-            goto FAILED_TO_ADD;
+                                                materialCreateProcessing)) {
+            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
 
         if (!pYamlImporter->registerResourceFns(yaml_vertex_descriptor_key(),
                                                 yaml_read_vertex_descriptor,
-                                                vertexDescriptorCreateProcessing))
-            goto FAILED_TO_ADD;
+                                                vertexDescriptorCreateProcessing)) {
+            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
 
         if (!pYamlImporter->registerResourceFns(yaml_shader_key(), yaml_read_shader,
-                                                shaderCreateProcessing))
-            goto FAILED_TO_ADD;
+                                                shaderCreateProcessing)) {
+            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
 
         if (!pYamlImporter->registerResourceFns(yaml_image_key(), yaml_read_image,
-                                                imageCreateProcessing))
-            goto FAILED_TO_ADD;
-
-        // Components
+                                                imageCreateProcessing)) {
+            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
     }
 
-    return;
+REGISTRATION_FAILED:
+    if (errC)
+        onDeregister(pGenerator);
 
-FAILED_TO_ADD:
-    onDeregister(pGenerator);
+    return errC;
 }
 
 } // namespace
 
-bool foeResourceRegisterYamlImportFunctionality() {
+auto foeResourceRegisterYamlImportFunctionality() -> std::error_code {
     return foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

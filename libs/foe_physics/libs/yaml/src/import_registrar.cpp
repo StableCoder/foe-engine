@@ -94,27 +94,35 @@ void onDeregister(foeImporterGenerator *pGenerator) {
     }
 }
 
-void onRegister(foeImporterGenerator *pGenerator) {
+std::error_code onRegister(foeImporterGenerator *pGenerator) {
+    std::error_code errC;
+
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         if (!pYamlImporter->registerResourceFns(yaml_collision_shape_key(),
                                                 yaml_read_collision_shape,
-                                                collisionShapeCreateProcessing))
-            goto FAILED_TO_ADD;
+                                                collisionShapeCreateProcessing)) {
+            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
 
         // Components
-        pYamlImporter->registerComponentFn(yaml_rigid_body_key(), importRigidBody);
+        if (!pYamlImporter->registerComponentFn(yaml_rigid_body_key(), importRigidBody)) {
+            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
     }
 
-    return;
+REGISTRATION_FAILED:
+    if (errC)
+        onDeregister(pGenerator);
 
-FAILED_TO_ADD:
-    onDeregister(pGenerator);
+    return errC;
 }
 
 } // namespace
 
-bool foePhysicsRegisterYamlImportFunctionality() {
+auto foePhysicsRegisterYamlImportFunctionality() -> std::error_code {
     return foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

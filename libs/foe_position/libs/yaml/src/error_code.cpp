@@ -18,40 +18,36 @@
 
 namespace {
 
-struct foePhysicsYamlErrorCategory : std::error_category {
+struct foePositionYamlErrorCategory : std::error_category {
     const char *name() const noexcept override;
     std::string message(int ev) const override;
 };
 
-const char *foePhysicsYamlErrorCategory::name() const noexcept { return "foePhysicsYamlResult"; }
+const char *foePositionYamlErrorCategory::name() const noexcept { return "foePositionYamlResult"; }
 
 #define ENUM_CASE(X)                                                                               \
     case X:                                                                                        \
         return #X;
 
-std::string foePhysicsYamlErrorCategory::message(int ev) const {
-    switch (static_cast<foePhysicsYamlResult>(ev)) {
-        ENUM_CASE(FOE_PHYSICS_YAML_SUCCESS)
-        // Collision Shape
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_EXPORTER)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_IMPORTER)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER)
+std::string foePositionYamlErrorCategory::message(int ev) const {
+    switch (static_cast<foePositionYamlResult>(ev)) {
+        ENUM_CASE(FOE_POSITION_YAML_SUCCESS)
+        // Position3D
+        ENUM_CASE(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER)
+        ENUM_CASE(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER)
 
     default:
         if (ev > 0)
-            return "(unrecognized positive foePhysicsYamlResult value)";
+            return "(unrecognized positive foePositionYamlResult value)";
         else
-            return "(unrecognized negative foePhysicsYamlResult value)";
+            return "(unrecognized negative foePositionYamlResult value)";
     }
 }
 
-const foePhysicsYamlErrorCategory errorCategory{};
+const foePositionYamlErrorCategory errorCategory{};
 
 } // namespace
 
-std::error_code make_error_code(foePhysicsYamlResult e) {
+std::error_code make_error_code(foePositionYamlResult e) {
     return {static_cast<int>(e), errorCategory};
 }
