@@ -23,7 +23,7 @@
 #include <foe/physics/system.hpp>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/resource/error_code.hpp>
-#include <foe/simulation/core.hpp>
+#include <foe/simulation/registration.hpp>
 #include <foe/simulation/state.hpp>
 
 #include "log.hpp"

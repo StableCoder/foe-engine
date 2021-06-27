@@ -15,6 +15,7 @@
 */
 
 #include <foe/simulation/core.hpp>
+#include <foe/simulation/registration.hpp>
 
 #include <foe/chrono/easy_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>

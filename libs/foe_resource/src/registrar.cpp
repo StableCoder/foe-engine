@@ -28,7 +28,7 @@
 #include <foe/resource/shader_pool.hpp>
 #include <foe/resource/vertex_descriptor_loader.hpp>
 #include <foe/resource/vertex_descriptor_pool.hpp>
-#include <foe/simulation/core.hpp>
+#include <foe/simulation/registration.hpp>
 #include <foe/simulation/state.hpp>
 
 #include "log.hpp"
