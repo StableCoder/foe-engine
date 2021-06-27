@@ -19,7 +19,7 @@
 #include <foe/physics/registrar.hpp>
 #include <foe/position/registrar.hpp>
 #include <foe/resource/registrar.hpp>
-#include <foe/simulation/core.hpp>
+#include <foe/simulation/simulation.hpp>
 
 #include <foe/physics/yaml/export_registrar.hpp>
 #include <foe/position/yaml/export_registrar.hpp>

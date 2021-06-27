@@ -17,13 +17,14 @@
 #ifndef FOE_SIMULATION_CORE_HPP
 #define FOE_SIMULATION_CORE_HPP
 
-#include <foe/simulation/export.h>
-
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
+#include <foe/simulation/export.h>
+#include <foe/simulation/group_data.hpp>
 
 #include <filesystem>
 #include <functional>
+#include <shared_mutex>
 #include <system_error>
 
 /**
@@ -41,8 +42,6 @@ struct foeResourcePoolBase;
 struct foeResourceLoaderBase;
 struct foeComponentPoolBase;
 struct foeSystemBase;
-
-struct foeSimulationState;
 
 struct foeSimulationCreateInfo {
     std::function<void(std::function<void()>)> asyncTaskFn;
@@ -68,6 +67,40 @@ struct foeSimulationStateLists {
     foeSystemBase **pSystems;
     uint32_t systemCount;
 };
+
+struct foeSimulationState {
+    /**
+     * @brief Used to synchronize core access to the SimulationState
+     *
+     * Because this needs to support the possibility of registered core functionality operating
+     * asynchronously, when it comes time to deinitialize or destroy functionality, we need to
+     * *absolutely* sure that nothing is running asynchronously.
+     *
+     * To that end, the idea is that any asynchronous task will acquire the shared mutex's 'shared'
+     * lock, and when the core needs to modify a SimulationState, then it acquires an exclusive lock
+     * once all async tasks are complete, and then performs these modifications.
+     *
+     * Acquiring the exclusive lock should be an incredibly rare operation.
+     */
+    std::shared_mutex simSync;
+
+    foeGroupData groupData;
+
+    foeSimulationCreateInfo createInfo;
+    // Information used to initialize functionality (used when functionality added during runtime)
+    foeSimulationInitInfo initInfo{};
+
+    foeEditorNameMap *pResourceNameMap;
+    std::vector<foeResourceLoaderBase *> resourceLoaders;
+    std::vector<foeResourcePoolBase *> resourcePools;
+
+    foeEditorNameMap *pEntityNameMap;
+    std::vector<foeComponentPoolBase *> componentPools;
+
+    std::vector<foeSystemBase *> systems;
+};
+
+bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState);
 
 /**
  * @brief Creates a new SimulationState with any registered functionality available

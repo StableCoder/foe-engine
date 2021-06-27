@@ -19,8 +19,7 @@
 #include <foe/ecs/group_translator.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/search_paths.hpp>
-#include <foe/simulation/core.hpp>
-#include <foe/simulation/state.hpp>
+#include <foe/simulation/simulation.hpp>
 
 #include "../log.hpp"
 #include "error_code.hpp"

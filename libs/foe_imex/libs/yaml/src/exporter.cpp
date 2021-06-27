@@ -20,7 +20,7 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/imex/exporters.hpp>
-#include <foe/simulation/state.hpp>
+#include <foe/simulation/simulation.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>

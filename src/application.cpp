@@ -44,7 +44,7 @@
 #include <foe/resource/vertex_descriptor_loader.hpp>
 #include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/search_paths.hpp>
-#include <foe/simulation/core.hpp>
+#include <foe/simulation/simulation.hpp>
 #include <foe/wsi_vulkan.hpp>
 #include <vk_error_code.hpp>
 

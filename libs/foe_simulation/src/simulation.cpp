@@ -14,13 +14,12 @@
     limitations under the License.
 */
 
-#include <foe/simulation/core.hpp>
 #include <foe/simulation/registration.hpp>
+#include <foe/simulation/simulation.hpp>
 
 #include <foe/chrono/easy_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/simulation/error_code.hpp>
-#include <foe/simulation/state.hpp>
 
 #include "log.hpp"
 
@@ -141,6 +140,10 @@ auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
         SimulationState, Warning,
         "registerFunctionality - Attempted to deregister functionality that was never registered");
     return FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED;
+}
+
+bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState) {
+    return pSimulationState->initInfo.gfxSession != FOE_NULL_HANDLE;
 }
 
 foeSimulationState *foeCreateSimulation(foeSimulationCreateInfo const &createInfo,

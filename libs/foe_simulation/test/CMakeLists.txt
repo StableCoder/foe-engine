@@ -2,7 +2,7 @@
 prepare_catch(COMPILED_CATCH)
 
 # Declaration
-add_executable(test_foe_simulation group_data.cpp state.cpp)
+add_executable(test_foe_simulation group_data.cpp simulation.cpp)
 add_test(NAME FoE-Simulation-Test COMMAND test_foe_simulation)
 
 target_compile_definitions(

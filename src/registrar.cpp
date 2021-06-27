@@ -20,7 +20,7 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/simulation/registration.hpp>
-#include <foe/simulation/state.hpp>
+#include <foe/simulation/simulation.hpp>
 
 #include "armature_state_pool.hpp"
 #include "armature_system.hpp"
