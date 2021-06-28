@@ -42,7 +42,6 @@ namespace {
 
 std::error_code armatureCreateProcessing(foeResourceID resource,
                                          foeResourceCreateInfoBase *pCreateInfo,
-                                         std::vector<foeResourceLoaderBase *> &resourceLoaders,
                                          std::vector<foeResourcePoolBase *> &resourcePools) {
     foeArmaturePool *pArmaturePool{nullptr};
     for (auto &it : resourcePools) {
@@ -65,7 +64,6 @@ std::error_code armatureCreateProcessing(foeResourceID resource,
 
 std::error_code meshCreateProcessing(foeResourceID resource,
                                      foeResourceCreateInfoBase *pCreateInfo,
-                                     std::vector<foeResourceLoaderBase *> &resourceLoaders,
                                      std::vector<foeResourcePoolBase *> &resourcePools) {
     foeMeshPool *pMeshPool{nullptr};
     for (auto &it : resourcePools) {
@@ -88,7 +86,6 @@ std::error_code meshCreateProcessing(foeResourceID resource,
 
 std::error_code materialCreateProcessing(foeResourceID resource,
                                          foeResourceCreateInfoBase *pCreateInfo,
-                                         std::vector<foeResourceLoaderBase *> &resourceLoaders,
                                          std::vector<foeResourcePoolBase *> &resourcePools) {
     foeMaterialPool *pMaterialPool{nullptr};
     for (auto &it : resourcePools) {
@@ -112,7 +109,6 @@ std::error_code materialCreateProcessing(foeResourceID resource,
 std::error_code vertexDescriptorCreateProcessing(
     foeResourceID resource,
     foeResourceCreateInfoBase *pCreateInfo,
-    std::vector<foeResourceLoaderBase *> &resourceLoaders,
     std::vector<foeResourcePoolBase *> &resourcePools) {
     foeVertexDescriptorPool *pVertexDescriptorPool{nullptr};
     for (auto &it : resourcePools) {
@@ -135,7 +131,6 @@ std::error_code vertexDescriptorCreateProcessing(
 
 std::error_code shaderCreateProcessing(foeResourceID resource,
                                        foeResourceCreateInfoBase *pCreateInfo,
-                                       std::vector<foeResourceLoaderBase *> &resourceLoaders,
                                        std::vector<foeResourcePoolBase *> &resourcePools) {
     foeShaderPool *pShaderPool{nullptr};
     for (auto &it : resourcePools) {
@@ -157,7 +152,6 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
 
 std::error_code imageCreateProcessing(foeResourceID resource,
                                       foeResourceCreateInfoBase *pCreateInfo,
-                                      std::vector<foeResourceLoaderBase *> &resourceLoaders,
                                       std::vector<foeResourcePoolBase *> &resourcePools) {
     foeImagePool *pImagePool{nullptr};
     for (auto &it : resourcePools) {

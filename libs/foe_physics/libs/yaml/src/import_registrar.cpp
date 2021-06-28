@@ -29,11 +29,9 @@
 
 namespace {
 
-std::error_code collisionShapeCreateProcessing(
-    foeResourceID resource,
-    foeResourceCreateInfoBase *pCreateInfo,
-    std::vector<foeResourceLoaderBase *> &resourceLoaders,
-    std::vector<foeResourcePoolBase *> &resourcePools) {
+std::error_code collisionShapeCreateProcessing(foeResourceID resource,
+                                               foeResourceCreateInfoBase *pCreateInfo,
+                                               std::vector<foeResourcePoolBase *> &resourcePools) {
     foeCollisionShapePool *pCollisionShapePool{nullptr};
     for (auto &it : resourcePools) {
         pCollisionShapePool = dynamic_cast<foeCollisionShapePool *>(it);

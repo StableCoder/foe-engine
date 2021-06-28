@@ -28,7 +28,6 @@ struct foeIdGroupValueNameSet;
 class foeIdIndexGenerator;
 class foeEditorNameMap;
 struct foeComponentPoolBase;
-struct foeResourceLoaderBase;
 struct foeResourcePoolBase;
 struct foeResourceCreateInfoBase;
 
@@ -47,7 +46,6 @@ class foeImporterBase {
                                  std::vector<foeComponentPoolBase *> &componentPools) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                           std::vector<foeResourceLoaderBase *> &resourceLoaders,
                                            std::vector<foeResourcePoolBase *> &resourcePools) = 0;
     virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
 

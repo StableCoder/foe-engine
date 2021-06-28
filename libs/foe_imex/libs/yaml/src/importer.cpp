@@ -219,10 +219,8 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 }
 
 // @todo Add group translations for imported resource definitions
-bool foeYamlImporter::importResourceDefinitions(
-    foeEditorNameMap *pNameMap,
-    std::vector<foeResourceLoaderBase *> &resourceLoaders,
-    std::vector<foeResourcePoolBase *> &resourcePools) {
+bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
+                                                std::vector<foeResourcePoolBase *> &resourcePools) {
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
         return true;
 
@@ -266,8 +264,7 @@ bool foeYamlImporter::importResourceDefinitions(
                     it.second.pImport(node, &mGroupTranslator, &pCreateInfo);
 
                     if (it.second.pCreate != nullptr) {
-                        auto errC = it.second.pCreate(resource, pCreateInfo, resourceLoaders,
-                                                      resourcePools);
+                        auto errC = it.second.pCreate(resource, pCreateInfo, resourcePools);
                         if (errC)
                             return false;
                     }

@@ -31,7 +31,7 @@
 
 struct foeIdGroupTranslator;
 struct foeResourceCreateInfoBase;
-struct foeResourceLoaderBase;
+struct foeSimulationLoaderData;
 struct foeResourcePoolBase;
 struct foeComponentPoolBase;
 
@@ -48,7 +48,6 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
     /// Creates a resource from a given CreateInfo definition
     using ResourceCreateFn = std::error_code (*)(foeResourceID,
                                                  foeResourceCreateInfoBase *,
-                                                 std::vector<foeResourceLoaderBase *> &,
                                                  std::vector<foeResourcePoolBase *> &);
 
     /// Imports component data from a YAML node

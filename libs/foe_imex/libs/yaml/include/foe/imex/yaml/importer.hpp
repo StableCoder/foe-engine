@@ -50,9 +50,7 @@ class foeYamlImporter : public foeImporterBase {
         std::vector<foeComponentPoolBase *> &componentPools) override;
 
     FOE_IMEX_YAML_EXPORT bool importResourceDefinitions(
-        foeEditorNameMap *pNameMap,
-        std::vector<foeResourceLoaderBase *> &resourceLoaders,
-        std::vector<foeResourcePoolBase *> &resourcePools) override;
+        foeEditorNameMap *pNameMap, std::vector<foeResourcePoolBase *> &resourcePools) override;
     FOE_IMEX_YAML_EXPORT foeResourceCreateInfoBase *getResource(foeId id) override;
 
     FOE_IMEX_YAML_EXPORT std::filesystem::path findExternalFile(
