@@ -20,14 +20,12 @@
 #include <foe/imex/yaml/exporter.hpp>
 
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/image_pool.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <foe/resource/vertex_descriptor_pool.hpp>
 
 #include "armature.hpp"
 #include "error_code.hpp"
-#include "image.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
 #include "vertex_descriptor.hpp"
@@ -50,18 +48,6 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_armature_key(),
                     .data = yaml_write_armature(*pArmature->createInfo.get()),
-                });
-            }
-        }
-
-        // Image
-        auto *pImagePool = dynamic_cast<foeImagePool *>(*pResourcePools);
-        if (pImagePool) {
-            auto const *pImage = pImagePool->find(resource);
-            if (pImage && pImage->createInfo) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_image_key(),
-                    .data = yaml_write_image(*pImage->createInfo.get()),
                 });
             }
         }

@@ -14,22 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_IMAGE_POOL_HPP
-#define FOE_RESOURCE_IMAGE_POOL_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_IMAGE_POOL_HPP
+#define FOE_GRAPHICS_RESOURCE_IMAGE_POOL_HPP
 
-#include <foe/ecs/id.hpp>
-#include <foe/resource/export.h>
+#include <foe/graphics/resource/export.h>
 #include <foe/simulation/core/pool.hpp>
+#include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
 
-class foeImage;
-class foeImageLoader;
+struct foeImage;
 
-class FOE_RES_EXPORT foeImagePool : public foeResourcePoolBase {
+class FOE_GFX_RES_EXPORT foeImagePool : public foeResourcePoolBase {
   public:
-    foeImagePool(foeImageLoader *pImageLoader) : mpImageLoader{pImageLoader} {}
+    foeImagePool(foeResourceFns const &resourceFns);
     ~foeImagePool();
 
     foeImage *add(foeResourceID resource);
@@ -38,12 +37,12 @@ class FOE_RES_EXPORT foeImagePool : public foeResourcePoolBase {
 
     void unloadAll();
 
-    auto getDataVector() { return mImages; }
+    auto getDataVector() { return mResources; }
 
   private:
-    foeImageLoader *mpImageLoader;
-    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
-    FOE_RESOURCE_NO_EXPORT std::vector<foeImage *> mImages;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT foeResourceFns const mResourceFns;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeImage *> mResources;
 };
 
-#endif // FOE_RESOURCE_IMAGE_POOL_HPP
+#endif // FOE_GRAPHICS_RESOURCE_IMAGE_POOL_HPP

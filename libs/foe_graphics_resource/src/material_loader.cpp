@@ -16,10 +16,10 @@
 
 #include <foe/graphics/resource/material_loader.hpp>
 
+#include <foe/graphics/resource/image.hpp>
+#include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/resource/image.hpp>
-#include <foe/resource/image_pool.hpp>
 #include <foe/resource/shader.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <vk_error_code.hpp>
@@ -29,15 +29,26 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
+#include <type_traits>
+
 namespace {
 
 template <typename SubResource, typename... SubResources>
-foeResourceLoadState getWorstSubResourceState(SubResource *pSubResource,
-                                              SubResources *...pSubResources) {
-    if (pSubResource != nullptr) {
-        auto state = pSubResource->getLoadState();
-        if (state != foeResourceLoadState::Loaded) {
-            return state;
+foeResourceState getWorstSubResourceState(SubResource *pSubResource,
+                                          SubResources *...pSubResources) {
+    if constexpr (std::is_base_of<foeResourceBase, SubResource>::value) {
+        if (pSubResource != nullptr) {
+            auto state = pSubResource->getState();
+            if (state != foeResourceState::Loaded) {
+                return state;
+            }
+        }
+    } else {
+        if (pSubResource != nullptr) {
+            auto state = pSubResource->getLoadState();
+            if (state != foeResourceLoadState::Loaded) {
+                return foeResourceState::Unloaded;
+            }
         }
     }
 
@@ -46,7 +57,7 @@ foeResourceLoadState getWorstSubResourceState(SubResource *pSubResource,
         return getWorstSubResourceState(pSubResources...);
     } else {
         // End of the line, return that they're all at least in the good 'loaded' state
-        return foeResourceLoadState::Loaded;
+        return foeResourceState::Loaded;
     }
 }
 
@@ -160,7 +171,7 @@ void foeMaterialLoader::gfxMaintenance() {
         // Check to see if what we need has been loaded yet
         auto subResLoadState = getWorstSubResourceState(it.data.pFragmentShader, it.data.pImage);
 
-        if (subResLoadState == foeResourceLoadState::Loaded) {
+        if (subResLoadState == foeResourceState::Loaded) {
             { // Using the sub-resources that are loaded, and definition data, create the resource
                 foeGfxShader fragShader = (it.data.pFragmentShader != nullptr)
                                               ? it.data.pFragmentShader->getShader()
@@ -193,7 +204,7 @@ void foeMaterialLoader::gfxMaintenance() {
             it.pPostLoadFn(it.pMaterial, {});
 
             it.pMaterial->modifySync.unlock();
-        } else if (subResLoadState == foeResourceLoadState::Failed) {
+        } else if (subResLoadState == foeResourceState::Failed) {
         DESCRIPTOR_CREATE_FAILED:
             // One of them failed to load, we're not proceeding with this resource
             it.pPostLoadFn(it.pMaterial,
@@ -252,7 +263,7 @@ void foeMaterialLoader::load(void *pResource,
 
         materialData.pImage->incrementRefCount();
         materialData.pImage->incrementUseCount();
-        materialData.pImage->requestLoad();
+        materialData.pImage->loadResource(false);
     }
 
     // Send to the loading queue to await results

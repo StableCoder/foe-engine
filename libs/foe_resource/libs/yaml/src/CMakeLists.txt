@@ -3,7 +3,6 @@ target_sources(
   PRIVATE armature.cpp
           error_code.cpp
           export_registrar.cpp
-          image.cpp
           import_registrar.cpp
           mesh.cpp
           shader.cpp

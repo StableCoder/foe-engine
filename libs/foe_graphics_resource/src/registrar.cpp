@@ -16,10 +16,12 @@
 
 #include <foe/graphics/resource/registrar.hpp>
 
+#include <foe/graphics/resource/image.hpp>
+#include <foe/graphics/resource/image_loader.hpp>
+#include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
-#include <foe/resource/image_pool.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/registration.hpp>
@@ -33,6 +35,21 @@ namespace {
 foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
     auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
     return pGroupData->getResourceDefinition(resource);
+}
+
+void imageLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pSimulationState = reinterpret_cast<foeSimulationState *>(pContext);
+    auto *pImage = reinterpret_cast<foeImage *>(pResource);
+
+    auto pLocalCreateInfo = pImage->pCreateInfo;
+
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
+            return it.pLoader->load(pImage, pLocalCreateInfo, pPostLoadFn);
+        }
+    }
+
+    pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
 void materialLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
@@ -52,6 +69,14 @@ void materialLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Resources
+    pSimulationState->resourcePools.emplace_back(new foeImagePool{foeResourceFns{
+        .pImportContext = &pSimulationState->groupData,
+        .pImportFn = importFn,
+        .pLoadContext = pSimulationState,
+        .pLoadFn = imageLoadFn,
+        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+    }});
+
     pSimulationState->resourcePools.emplace_back(new foeMaterialPool{foeResourceFns{
         .pImportContext = &pSimulationState->groupData,
         .pImportFn = importFn,
@@ -61,6 +86,12 @@ void onCreate(foeSimulationState *pSimulationState) {
     }});
 
     // Loaders
+    pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
+        .pLoader = new foeImageLoader, .pGfxMaintenanceFn = [](foeResourceLoaderBase *pLoader) {
+            auto *pImageLoader = reinterpret_cast<foeImageLoader *>(pLoader);
+            pImageLoader->gfxMaintenance();
+        }});
+
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
         .pLoader = new foeMaterialLoader, .pGfxMaintenanceFn = [](foeResourceLoaderBase *pLoader) {
             auto *pMaterialLoader = reinterpret_cast<foeMaterialLoader *>(pLoader);
@@ -81,11 +112,13 @@ void onDestroy(foeSimulationState *pSimulationState) {
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
         searchAndDestroy<foeMaterialLoader>(it.pLoader);
+        searchAndDestroy<foeImageLoader>(it.pLoader);
     }
 
     // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
         searchAndDestroy<foeMaterialPool>(pPool);
+        searchAndDestroy<foeImagePool>(pPool);
     }
 }
 
@@ -107,6 +140,11 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
         auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
 
         for (; pIt != pEndIt; ++pIt) {
+            auto *pImageLoader = dynamic_cast<foeImageLoader *>(pIt->pLoader);
+            if (pImageLoader) {
+                pImageLoader->initialize(pInitInfo->gfxSession, pInitInfo->externalFileSearchFn);
+            }
+
             auto *pMaterialLoader = dynamic_cast<foeMaterialLoader *>(pIt->pLoader);
             if (pMaterialLoader) {
                 auto *pShaderPool = search<foeShaderPool>(pSimStateData->pResourcePools,
@@ -135,6 +173,7 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
     // Loaders
     for (auto const &it : pSimulationState->resourceLoaders) {
         searchAndDeinit<foeMaterialLoader>(it.pLoader);
+        searchAndDeinit<foeImageLoader>(it.pLoader);
     }
 }
 

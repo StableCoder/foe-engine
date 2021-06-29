@@ -16,6 +16,9 @@
 
 #include <foe/graphics/resource/yaml/export_registrar.hpp>
 
+#include <foe/graphics/resource/image.hpp>
+#include <foe/graphics/resource/image_loader.hpp>
+#include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
@@ -23,9 +26,34 @@
 #include <foe/imex/yaml/exporter.hpp>
 
 #include "error_code.hpp"
+#include "image.hpp"
 #include "material.hpp"
 
 namespace {
+
+std::vector<foeKeyYamlPair> exportImage(foeResourceID resource,
+                                        foeResourcePoolBase **pResourcePools,
+                                        uint32_t resourcePoolCount) {
+    std::vector<foeKeyYamlPair> keyDataPairs;
+    auto const *pEndPools = pResourcePools + resourcePoolCount;
+
+    for (; pResourcePools != pEndPools; ++pResourcePools) {
+        auto *pImagePool = dynamic_cast<foeImagePool *>(*pResourcePools);
+        if (pImagePool) {
+            auto const *pImage = pImagePool->find(resource);
+            if (pImage && pImage->pCreateInfo) {
+                if (auto pImageCI = dynamic_cast<foeImageCreateInfo *>(pImage->pCreateInfo.get());
+                    pImageCI)
+                    keyDataPairs.emplace_back(foeKeyYamlPair{
+                        .key = yaml_image_key(),
+                        .data = yaml_write_image(*pImageCI),
+                    });
+            }
+        }
+    }
+
+    return keyDataPairs;
+}
 
 std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
                                            foeResourcePoolBase **pResourcePools,
@@ -58,6 +86,7 @@ void onDeregister(foeExporterBase *pExporter) {
     if (pYamlExporter) {
         // Resource
         pYamlExporter->deregisterResourceFn(exportMaterial);
+        pYamlExporter->deregisterResourceFn(exportImage);
     }
 }
 
@@ -67,6 +96,11 @@ std::error_code onRegister(foeExporterBase *pExporter) {
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
         // Resource
+        if (!pYamlExporter->registerResourceFn(exportImage)) {
+            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_EXPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
         if (!pYamlExporter->registerResourceFn(exportMaterial)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_EXPORTER;
             goto REGISTRATION_FAILED;

@@ -21,6 +21,8 @@
 #include <foe/chrono/program_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/graphics/resource/image_loader.hpp>
+#include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
@@ -36,8 +38,6 @@
 #include <foe/quaternion_math.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/image_loader.hpp>
-#include <foe/resource/image_pool.hpp>
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
@@ -305,12 +305,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     {
         for (auto *ptr : getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
                                                           pSimulationSet->resourcePools.size())
-                             ->getDataVector()) {
-            ptr->incrementUseCount();
-            ptr->decrementUseCount();
-        }
-        for (auto *ptr : getResourcePool<foeImagePool>(pSimulationSet->resourcePools.data(),
-                                                       pSimulationSet->resourcePools.size())
                              ->getDataVector()) {
             ptr->incrementUseCount();
             ptr->decrementUseCount();
@@ -586,7 +580,7 @@ void Application::deinitialize() {
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             auto *pImageLoader = getResourceLoader<foeImageLoader>(
                 pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-            pImageLoader->processUnloadRequests();
+            pImageLoader->gfxMaintenance();
         }
 
         auto *pVertexDescriptorPool = getResourcePool<foeVertexDescriptorPool>(
@@ -919,20 +913,12 @@ int Application::mainloop() {
                     pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
                 pShaderLoader->processUnloadRequests();
 
-                auto *pImageLoader = getResourceLoader<foeImageLoader>(
-                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-                pImageLoader->processUnloadRequests();
-
                 auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
                     pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
                 pMeshLoader->processUnloadRequests();
             }
 
             { // Resource Load Requests
-                auto *pImageLoader = getResourceLoader<foeImageLoader>(
-                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-                pImageLoader->processLoadRequests();
-
                 auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
                     pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
                 pMeshLoader->processLoadRequests();

@@ -19,8 +19,6 @@
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/image_loader.hpp>
-#include <foe/resource/image_pool.hpp>
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
@@ -30,7 +28,6 @@
 
 #include "armature.hpp"
 #include "error_code.hpp"
-#include "image.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
 #include "vertex_descriptor.hpp"
@@ -125,27 +122,6 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
     return FOE_RESOURCE_YAML_SUCCESS;
 }
 
-std::error_code imageCreateProcessing(foeResourceID resource,
-                                      foeResourceCreateInfoBase *pCreateInfo,
-                                      std::vector<foeResourcePoolBase *> &resourcePools) {
-    foeImagePool *pImagePool{nullptr};
-    for (auto &it : resourcePools) {
-        pImagePool = dynamic_cast<foeImagePool *>(it);
-
-        if (pImagePool != nullptr)
-            break;
-    }
-
-    if (pImagePool == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_IMAGE_POOL_NOT_FOUND;
-
-    auto *pImage = pImagePool->add(resource);
-    if (!pImage)
-        return FOE_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS;
-
-    return FOE_RESOURCE_YAML_SUCCESS;
-}
-
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
@@ -160,9 +136,6 @@ void onDeregister(foeImporterGenerator *pGenerator) {
 
         pYamlImporter->deregisterResourceFns(yaml_shader_key(), yaml_read_shader,
                                              shaderCreateProcessing);
-
-        pYamlImporter->deregisterResourceFns(yaml_image_key(), yaml_read_image,
-                                             imageCreateProcessing);
     }
 }
 
@@ -193,12 +166,6 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
         if (!pYamlImporter->registerResourceFns(yaml_shader_key(), yaml_read_shader,
                                                 shaderCreateProcessing)) {
             errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
-
-        if (!pYamlImporter->registerResourceFns(yaml_image_key(), yaml_read_image,
-                                                imageCreateProcessing)) {
-            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER;
             goto REGISTRATION_FAILED;
         }
     }

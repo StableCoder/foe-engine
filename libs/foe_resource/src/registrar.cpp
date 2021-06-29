@@ -18,8 +18,6 @@
 
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/image_loader.hpp>
-#include <foe/resource/image_pool.hpp>
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
@@ -35,14 +33,12 @@ namespace {
 
 void onCreate(foeSimulationState *pSimulationState) {
     auto *pArmatureLoader = new foeArmatureLoader;
-    auto *pImageLoader = new foeImageLoader;
     auto *pShaderLoader = new foeShaderLoader;
     auto *pMeshLoader = new foeMeshLoader;
     auto *pVertexDescriptorLoader = new foeVertexDescriptorLoader;
 
     // Resource Pools
     pSimulationState->resourcePools.emplace_back(new foeArmaturePool{pArmatureLoader});
-    pSimulationState->resourcePools.emplace_back(new foeImagePool{pImageLoader});
     pSimulationState->resourcePools.emplace_back(new foeMeshPool{pMeshLoader});
     pSimulationState->resourcePools.emplace_back(new foeShaderPool{pShaderLoader});
     pSimulationState->resourcePools.emplace_back(
@@ -51,10 +47,6 @@ void onCreate(foeSimulationState *pSimulationState) {
     // Resource Loaders
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
         .pLoader = pArmatureLoader,
-    });
-
-    pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
-        .pLoader = pImageLoader,
     });
 
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
@@ -85,7 +77,6 @@ void onDestroy(foeSimulationState *pSimulationState) {
         searchAndDestroy<foeVertexDescriptorLoader>(it.pLoader);
         searchAndDestroy<foeShaderLoader>(it.pLoader);
         searchAndDestroy<foeMeshLoader>(it.pLoader);
-        searchAndDestroy<foeImageLoader>(it.pLoader);
         searchAndDestroy<foeArmatureLoader>(it.pLoader);
     }
 
@@ -94,7 +85,6 @@ void onDestroy(foeSimulationState *pSimulationState) {
         searchAndDestroy<foeVertexDescriptorPool>(pPool);
         searchAndDestroy<foeShaderPool>(pPool);
         searchAndDestroy<foeMeshPool>(pPool);
-        searchAndDestroy<foeImagePool>(pPool);
         searchAndDestroy<foeArmaturePool>(pPool);
     }
 }
@@ -121,12 +111,6 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo,
         if (pArmatureLoader) {
             pArmatureLoader->initialize(pInitInfo->resourceDefinitionImportFn,
                                         pInitInfo->externalFileSearchFn, pInitInfo->asyncJobFn);
-        }
-
-        auto *pImageLoader = dynamic_cast<foeImageLoader *>(pIt->pLoader);
-        if (pImageLoader) {
-            pImageLoader->initialize(pInitInfo->gfxSession, pInitInfo->resourceDefinitionImportFn,
-                                     pInitInfo->externalFileSearchFn, pInitInfo->asyncJobFn);
         }
 
         auto *pMeshLoader = dynamic_cast<foeMeshLoader *>(pIt->pLoader);
@@ -167,7 +151,6 @@ void onDeinitialize(foeSimulationState const *pSimulationState) {
         searchAndDeinit<foeVertexDescriptorLoader>(it.pLoader);
         searchAndDeinit<foeShaderLoader>(it.pLoader);
         searchAndDeinit<foeMeshLoader>(it.pLoader);
-        searchAndDeinit<foeImageLoader>(it.pLoader);
         searchAndDeinit<foeArmatureLoader>(it.pLoader);
     }
 }

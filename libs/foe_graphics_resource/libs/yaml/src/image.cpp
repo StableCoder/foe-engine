@@ -16,8 +16,11 @@
 
 #include "image.hpp"
 
+#include <foe/graphics/resource/image_loader.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
+
+#include <memory>
 
 namespace {
 
@@ -73,11 +76,11 @@ char const *yaml_image_key() { return "image_v1"; }
 void yaml_read_image(YAML::Node const &node,
                      foeIdGroupTranslator const *pTranslator,
                      foeResourceCreateInfoBase **ppCreateInfo) {
-    foeImageCreateInfo ci;
+    auto pCI = std::make_unique<foeImageCreateInfo>();
 
-    yaml_read_image_definition_internal(yaml_image_key(), node, pTranslator, ci);
+    yaml_read_image_definition_internal(yaml_image_key(), node, pTranslator, *pCI);
 
-    *ppCreateInfo = new foeImageCreateInfo(std::move(ci));
+    *ppCreateInfo = pCI.release();
 }
 
 auto yaml_write_image(foeImageCreateInfo const &data) -> YAML::Node {

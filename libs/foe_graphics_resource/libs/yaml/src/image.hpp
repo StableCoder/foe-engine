@@ -17,10 +17,11 @@
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 
-#include <foe/resource/image.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
+struct foeResourceCreateInfoBase;
+struct foeImageCreateInfo;
 
 char const *yaml_image_key();
 

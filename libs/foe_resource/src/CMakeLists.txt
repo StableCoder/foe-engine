@@ -4,9 +4,6 @@ target_sources(
           armature_pool.cpp
           armature.cpp
           error_code.cpp
-          image_loader.cpp
-          image_pool.cpp
-          image.cpp
           log.cpp
           mesh_loader.cpp
           mesh_pool.cpp

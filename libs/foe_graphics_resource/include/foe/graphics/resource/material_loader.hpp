@@ -17,8 +17,9 @@
 #ifndef FOE_GRPAHICS_RESOURCE_MATERIAL_LOADER_HPP
 #define FOE_GRPAHICS_RESOURCE_MATERIAL_LOADER_HPP
 
-#include <foe/graphics/resource/export.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
+
+#include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
