@@ -14,21 +14,15 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_CORE_LOADER_HPP
-#define FOE_SIMULATION_CORE_LOADER_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
+#define FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
 
-#include <memory>
+#include <foe/graphics/resource/export.h>
+
 #include <system_error>
 
-struct foeResourceCreateInfoBase;
+FOE_GFX_RES_EXPORT auto foeGraphicsResourceRegisterFunctionality() -> std::error_code;
 
-struct foeResourceLoaderBase {
-    virtual ~foeResourceLoaderBase() {}
+FOE_GFX_RES_EXPORT void foeGraphicsResourceDeregisterFunctionality();
 
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) { return false; }
-    virtual void load(void *pResource,
-                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                      void (*pPostLoadFn)(void *, std::error_code)) {}
-};
-
-#endif // FOE_SIMULATION_CORE_LOADER_HPP
+#endif // FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP

@@ -1,6 +1,7 @@
 add_subdirectory(foe)
 add_subdirectory(foe_ecs)
 add_subdirectory(foe_graphics)
+add_subdirectory(foe_graphics_resource)
 add_subdirectory(foe_graphics_vk)
 add_subdirectory(foe_imex)
 add_subdirectory(foe_imgui)

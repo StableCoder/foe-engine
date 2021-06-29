@@ -14,21 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_CORE_LOADER_HPP
-#define FOE_SIMULATION_CORE_LOADER_HPP
+#ifndef LOG_HPP
+#define LOG_HPP
 
-#include <memory>
-#include <system_error>
+#include <foe/log.hpp>
 
-struct foeResourceCreateInfoBase;
+FOE_DECLARE_LOG_CATEGORY(foeGraphicsResource, All, All)
 
-struct foeResourceLoaderBase {
-    virtual ~foeResourceLoaderBase() {}
-
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) { return false; }
-    virtual void load(void *pResource,
-                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                      void (*pPostLoadFn)(void *, std::error_code)) {}
-};
-
-#endif // FOE_SIMULATION_CORE_LOADER_HPP
+#endif // LOG_HPP

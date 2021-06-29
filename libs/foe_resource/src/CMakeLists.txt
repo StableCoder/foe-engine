@@ -8,10 +8,6 @@ target_sources(
           image_pool.cpp
           image.cpp
           log.cpp
-          material_loader.cpp
-          material_pool.cpp
-          material_subresources.cpp
-          material.cpp
           mesh_loader.cpp
           mesh_pool.cpp
           mesh.cpp

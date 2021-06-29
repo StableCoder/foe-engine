@@ -17,10 +17,12 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
-#include <foe/resource/material.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
+struct foeResourceCreateInfoBase;
+struct foeMaterialCreateInfo;
+class foeGfxVkFragmentDescriptor;
 
 char const *yaml_material_key();
 

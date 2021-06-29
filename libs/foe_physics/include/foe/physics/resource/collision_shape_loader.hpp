@@ -38,9 +38,8 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader : public foeResourceLoaderBase 
 
     std::error_code initialize();
     void deinitialize();
-    bool initialized() const noexcept;
 
-    void maintenance() final;
+    void maintenance();
 
     bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) final;
     void load(void *pResource,

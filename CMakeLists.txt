@@ -108,6 +108,8 @@ target_link_libraries(
          foe
          foe_ecs
          foe_ecs_yaml
+         foe_graphics_resource
+         foe_graphics_resource_yaml
          foe_graphics_vk
          foe_imex
          foe_imex_yaml

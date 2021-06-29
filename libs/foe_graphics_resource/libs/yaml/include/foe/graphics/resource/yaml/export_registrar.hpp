@@ -14,21 +14,16 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_CORE_LOADER_HPP
-#define FOE_SIMULATION_CORE_LOADER_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_YAML_EXPORT_REGISTRAR_HPP
+#define FOE_GRAPHICS_RESOURCE_YAML_EXPORT_REGISTRAR_HPP
 
-#include <memory>
+#include <foe/graphics/resource/yaml/export.h>
+
 #include <system_error>
 
-struct foeResourceCreateInfoBase;
+FOE_GFX_RES_YAML_EXPORT auto foeGraphicsResourceYamlRegisterExportFunctionality()
+    -> std::error_code;
 
-struct foeResourceLoaderBase {
-    virtual ~foeResourceLoaderBase() {}
+FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlDeregisterExportFunctionality();
 
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) { return false; }
-    virtual void load(void *pResource,
-                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                      void (*pPostLoadFn)(void *, std::error_code)) {}
-};
-
-#endif // FOE_SIMULATION_CORE_LOADER_HPP
+#endif // FOE_GRAPHICS_RESOURCE_YAML_EXPORT_REGISTRAR_HPP

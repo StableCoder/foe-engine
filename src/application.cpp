@@ -21,6 +21,9 @@
 #include <foe/chrono/program_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/graphics/resource/material.hpp>
+#include <foe/graphics/resource/material_loader.hpp>
+#include <foe/graphics/resource/material_pool.hpp>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/runtime.hpp>
@@ -35,8 +38,6 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/image_loader.hpp>
 #include <foe/resource/image_pool.hpp>
-#include <foe/resource/material_loader.hpp>
-#include <foe/resource/material_pool.hpp>
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
@@ -140,11 +141,11 @@ auto getResourcePool(foeResourcePoolBase **pResourcePools, size_t poolCount) -> 
 }
 
 template <typename ResourceLoader>
-auto getResourceLoader(foeResourceLoaderBase **pResourceLoaders, size_t poolCount)
+auto getResourceLoader(foeSimulationLoaderData *pResourceLoaders, size_t poolCount)
     -> ResourceLoader * {
     ResourceLoader *pLoader{nullptr};
     for (size_t i = 0; i < poolCount; ++i) {
-        pLoader = dynamic_cast<ResourceLoader *>(pResourceLoaders[i]);
+        pLoader = dynamic_cast<ResourceLoader *>(pResourceLoaders[i].pLoader);
         if (pLoader != nullptr)
             break;
     }
@@ -318,8 +319,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         for (auto *ptr : getResourcePool<foeMaterialPool>(pSimulationSet->resourcePools.data(),
                                                           pSimulationSet->resourcePools.size())
                              ->getDataVector()) {
-            ptr->incrementUseCount();
-            ptr->decrementUseCount();
+            ptr->loadResource(false);
         }
 
         for (auto *ptr : getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
@@ -577,7 +577,7 @@ void Application::deinitialize() {
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
                 pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-            pMaterialLoader->processUnloadRequests();
+            pMaterialLoader->gfxMaintenance();
         }
 
         auto *pImagePool = getResourcePool<foeImagePool>(pSimulationSet->resourcePools.data(),
@@ -777,7 +777,9 @@ int Application::mainloop() {
         }
 
         for (auto &it : pSimulationSet->resourceLoaders) {
-            it->maintenance();
+            if (it.pMaintenanceFn) {
+                it.pMaintenanceFn(it.pLoader);
+            }
         }
 
 #ifdef EDITOR_MODE
@@ -905,6 +907,13 @@ int Application::mainloop() {
                           &frameData[nextFrameIndex].frameComplete);
             frameIndex = nextFrameIndex;
 
+            // Resource Loader Gfx Maintenance
+            for (auto &it : pSimulationSet->resourceLoaders) {
+                if (it.pGfxMaintenanceFn) {
+                    it.pGfxMaintenanceFn(it.pLoader);
+                }
+            }
+
             { // Resource Unload Requests
                 auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
                     pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
@@ -913,10 +922,6 @@ int Application::mainloop() {
                 auto *pImageLoader = getResourceLoader<foeImageLoader>(
                     pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
                 pImageLoader->processUnloadRequests();
-
-                auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
-                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-                pMaterialLoader->processUnloadRequests();
 
                 auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
                     pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
@@ -996,7 +1001,7 @@ int Application::mainloop() {
                     return false;
                 }
                 if (pVertexDescriptor->getLoadState() != foeResourceLoadState::Loaded ||
-                    pMaterial->getLoadState() != foeResourceLoadState::Loaded ||
+                    pMaterial->getState() != foeResourceState::Loaded ||
                     pMesh->getLoadState() != foeResourceLoadState::Loaded) {
                     return false;
                 }
@@ -1008,8 +1013,8 @@ int Application::mainloop() {
                 VkPipeline pipeline;
 
                 pipelinePool.getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
-                                         pMaterial->getGfxFragmentDescriptor(), renderPass, 0,
-                                         &layout, &descriptorSetLayoutCount, &pipeline);
+                                         pMaterial->data.pGfxFragDescriptor, renderPass, 0, &layout,
+                                         &descriptorSetLayoutCount, &pipeline);
 
                 foeGfxVkBindMesh(pMesh->data.gfxData, commandBuffer, boned);
 
@@ -1042,7 +1047,7 @@ int Application::mainloop() {
                                             2, 1, &pRenderState->boneDescriptorSet, 0, nullptr);
                 }
                 // Bind the fragment descriptor set *if* it exists?
-                if (auto set = pMaterial->getVkDescriptorSet(frameIndex); set != VK_NULL_HANDLE) {
+                if (auto set = pMaterial->data.materialDescriptorSet; set != VK_NULL_HANDLE) {
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                             foeDescriptorSetLayoutIndex::FragmentShader, 1, &set, 0,
                                             nullptr);
@@ -1248,17 +1253,15 @@ int Application::mainloop() {
 
                                             if (theVertexDescriptor->getLoadState() !=
                                                     foeResourceLoadState::Loaded ||
-                                                theMaterial->getLoadState() !=
-                                                    foeResourceLoadState::Loaded)
+                                                theMaterial->getState() != foeResourceState::Loaded)
                                                 goto SKIP_XR_DRAW;
 
                                             // Render Triangle
                                             pipelinePool.getPipeline(
                                                 const_cast<foeGfxVertexDescriptor *>(
                                                     theVertexDescriptor->getGfxVertexDescriptor()),
-                                                theMaterial->getGfxFragmentDescriptor(),
-                                                xrRenderPass, 0, &layout, &descriptorSetLayoutCount,
-                                                &pipeline);
+                                                theMaterial->data.pGfxFragDescriptor, xrRenderPass,
+                                                0, &layout, &descriptorSetLayoutCount, &pipeline);
 
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1278,8 +1281,7 @@ int Application::mainloop() {
                                                 layout, 1, 1, &pPosition->descriptorSet, 0,
                                                 nullptr);
 
-                                            if (auto set =
-                                                    theMaterial->getVkDescriptorSet(frameIndex);
+                                            if (auto set = theMaterial->data.materialDescriptorSet;
                                                 set != VK_NULL_HANDLE) {
                                                 vkCmdBindDescriptorSets(
                                                     commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1505,14 +1507,14 @@ int Application::mainloop() {
 
                             if (theVertexDescriptor->getLoadState() !=
                                     foeResourceLoadState::Loaded ||
-                                theMaterial->getLoadState() != foeResourceLoadState::Loaded)
+                                theMaterial->getState() != foeResourceState::Loaded)
                                 goto SKIP_DRAW;
 
                             // Render Triangle
                             pipelinePool.getPipeline(
                                 const_cast<foeGfxVertexDescriptor *>(
                                     theVertexDescriptor->getGfxVertexDescriptor()),
-                                theMaterial->getGfxFragmentDescriptor(), swapImageRenderPass, 0,
+                                theMaterial->data.pGfxFragDescriptor, swapImageRenderPass, 0,
                                 &layout, &descriptorSetLayoutCount, &pipeline);
 
                             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1529,7 +1531,7 @@ int Application::mainloop() {
                                                     layout, 1, 1, &pPosition->descriptorSet, 0,
                                                     nullptr);
 
-                            if (auto set = theMaterial->getVkDescriptorSet(frameIndex);
+                            if (auto set = theMaterial->data.materialDescriptorSet;
                                 set != VK_NULL_HANDLE) {
                                 vkCmdBindDescriptorSets(commandBuffer,
                                                         VK_PIPELINE_BIND_POINT_GRAPHICS, layout,

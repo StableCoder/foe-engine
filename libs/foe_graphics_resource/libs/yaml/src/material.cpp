@@ -17,6 +17,7 @@
 #include "material.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/graphics/resource/material_loader.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -107,11 +108,12 @@ char const *yaml_material_key() { return "material_v1"; }
 void yaml_read_material(YAML::Node const &node,
                         foeIdGroupTranslator const *pTranslator,
                         foeResourceCreateInfoBase **ppCreateInfo) {
-    foeMaterialCreateInfo ci;
+    std::unique_ptr<foeMaterialCreateInfo> pCI{new foeMaterialCreateInfo};
+    *pCI = {};
 
-    yaml_read_material_definition_internal(yaml_material_key(), node, pTranslator, ci);
+    yaml_read_material_definition_internal(yaml_material_key(), node, pTranslator, *pCI);
 
-    *ppCreateInfo = new foeMaterialCreateInfo(std::move(ci));
+    *ppCreateInfo = pCI.release();
 }
 
 auto yaml_write_material(foeMaterialCreateInfo const &data,

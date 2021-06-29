@@ -54,11 +54,20 @@ struct foeSimulationInitInfo {
     std::function<void(std::function<void()>)> asyncJobFn;
 };
 
+struct foeSimulationLoaderData {
+    /// The loader itself
+    foeResourceLoaderBase *pLoader;
+    /// Maintenance to be performed as part of the regular simulation loop
+    void (*pMaintenanceFn)(foeResourceLoaderBase *);
+    /// Maintenance to be performed as part of the graphics loop
+    void (*pGfxMaintenanceFn)(foeResourceLoaderBase *);
+};
+
 struct foeSimulationStateLists {
     foeResourcePoolBase **pResourcePools;
     uint32_t resourcePoolCount;
 
-    foeResourceLoaderBase **pResourceLoaders;
+    foeSimulationLoaderData *pResourceLoaders;
     uint32_t resourceLoaderCount;
 
     foeComponentPoolBase **pComponentPools;
@@ -90,13 +99,16 @@ struct foeSimulationState {
     // Information used to initialize functionality (used when functionality added during runtime)
     foeSimulationInitInfo initInfo{};
 
+    // Resource Data
     foeEditorNameMap *pResourceNameMap;
-    std::vector<foeResourceLoaderBase *> resourceLoaders;
+    std::vector<foeSimulationLoaderData> resourceLoaders;
     std::vector<foeResourcePoolBase *> resourcePools;
 
+    // Entity / Component Data
     foeEditorNameMap *pEntityNameMap;
     std::vector<foeComponentPoolBase *> componentPools;
 
+    // Systems
     std::vector<foeSystemBase *> systems;
 };
 

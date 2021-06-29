@@ -14,21 +14,25 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_CORE_LOADER_HPP
-#define FOE_SIMULATION_CORE_LOADER_HPP
+#ifndef ERROR_CODE_HPP
+#define ERROR_CODE_HPP
 
-#include <memory>
 #include <system_error>
 
-struct foeResourceCreateInfoBase;
-
-struct foeResourceLoaderBase {
-    virtual ~foeResourceLoaderBase() {}
-
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) { return false; }
-    virtual void load(void *pResource,
-                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                      void (*pPostLoadFn)(void *, std::error_code)) {}
+enum foeGraphicsResourceResult {
+    FOE_GRAPHICS_RESOURCE_SUCCESS = 0,
+    // General
+    FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER,
+    // Material Loader
+    FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED,
+    FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD,
 };
 
-#endif // FOE_SIMULATION_CORE_LOADER_HPP
+namespace std {
+template <>
+struct is_error_code_enum<foeGraphicsResourceResult> : true_type {};
+} // namespace std
+
+std::error_code make_error_code(foeGraphicsResourceResult);
+
+#endif // ERROR_CODE_HPP

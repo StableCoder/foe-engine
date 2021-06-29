@@ -25,11 +25,7 @@
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 
 std::error_code foeCollisionShapeLoader::initialize() {
-    if (initialized()) {
-        return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
-    }
-
-    std::error_code errC{FOE_RESOURCE_SUCCESS};
+    std::error_code errC;
 
 INITIALIZATION_FAILED:
     if (errC) {
@@ -40,8 +36,6 @@ INITIALIZATION_FAILED:
 }
 
 void foeCollisionShapeLoader::deinitialize() {}
-
-bool foeCollisionShapeLoader::initialized() const noexcept { return true; }
 
 void foeCollisionShapeLoader::maintenance() {
     // Process Unloads

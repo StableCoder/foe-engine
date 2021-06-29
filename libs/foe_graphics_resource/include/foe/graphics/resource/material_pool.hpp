@@ -14,22 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_MATERIAL_POOL_HPP
-#define FOE_RESOURCE_MATERIAL_POOL_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_MATERIAL_POOL_HPP
+#define FOE_GRAPHICS_RESOURCE_MATERIAL_POOL_HPP
 
-#include <foe/ecs/id.hpp>
-#include <foe/resource/export.h>
+#include <foe/graphics/resource/export.h>
 #include <foe/simulation/core/pool.hpp>
+#include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
 
 struct foeMaterial;
-class foeMaterialLoader;
 
-class FOE_RES_EXPORT foeMaterialPool : public foeResourcePoolBase {
+class FOE_GFX_RES_EXPORT foeMaterialPool : public foeResourcePoolBase {
   public:
-    foeMaterialPool(foeMaterialLoader *pMaterialLoader) : mpMaterialLoader{pMaterialLoader} {}
+    foeMaterialPool(foeResourceFns const &resourceFns);
     ~foeMaterialPool();
 
     foeMaterial *add(foeResourceID resource);
@@ -38,12 +37,12 @@ class FOE_RES_EXPORT foeMaterialPool : public foeResourcePoolBase {
 
     void unloadAll();
 
-    auto getDataVector() { return mMaterials; }
+    auto getDataVector() { return mResources; }
 
   private:
-    foeMaterialLoader *mpMaterialLoader;
-    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
-    FOE_RESOURCE_NO_EXPORT std::vector<foeMaterial *> mMaterials;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT foeResourceFns const mResourceFns;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeMaterial *> mResources;
 };
 
-#endif // FOE_RESOURCE_MATERIAL_POOL_HPP
+#endif // FOE_GRAPHICS_RESOURCE_MATERIAL_POOL_HPP

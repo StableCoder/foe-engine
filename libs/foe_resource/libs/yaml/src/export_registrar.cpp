@@ -21,7 +21,6 @@
 
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/image_pool.hpp>
-#include <foe/resource/material_pool.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <foe/resource/vertex_descriptor_pool.hpp>
@@ -29,7 +28,6 @@
 #include "armature.hpp"
 #include "error_code.hpp"
 #include "image.hpp"
-#include "material.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
 #include "vertex_descriptor.hpp"
@@ -64,19 +62,6 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_image_key(),
                     .data = yaml_write_image(*pImage->createInfo.get()),
-                });
-            }
-        }
-
-        // Material
-        auto *pMaterialPool = dynamic_cast<foeMaterialPool *>(*pResourcePools);
-        if (pMaterialPool) {
-            auto const *pMaterial = pMaterialPool->find(resource);
-            if (pMaterial && pMaterial->createInfo) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_material_key(),
-                    .data = yaml_write_material(*pMaterial->createInfo.get(),
-                                                pMaterial->getGfxFragmentDescriptor()),
                 });
             }
         }
