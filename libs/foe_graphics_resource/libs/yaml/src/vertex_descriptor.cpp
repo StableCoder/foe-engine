@@ -17,6 +17,7 @@
 #include "vertex_descriptor.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/vk/yaml/vertex_descriptor.hpp>
 #include <foe/resource/shader.hpp>
 #include <foe/yaml/exception.hpp>
@@ -65,7 +66,7 @@ bool yaml_read_vertex_descriptor_internal(std::string const &nodeName,
 }
 
 bool yaml_write_vertex_descriptor_internal(std::string const &nodeName,
-                                           foeVertexDescriptor const &vertexDescriptor,
+                                           foeVertexDescriptorCreateInfo const &vertexDescriptor,
                                            YAML::Node &node) {
     YAML::Node writeNode;
 
@@ -73,30 +74,26 @@ bool yaml_write_vertex_descriptor_internal(std::string const &nodeName,
         { // Resources Node
             YAML::Node resNode;
 
-            if (auto *pShader = vertexDescriptor.getVertexShader(); pShader != nullptr) {
-                yaml_write_id("vertex_shader", pShader->getID(), resNode);
+            if (vertexDescriptor.vertexShader != FOE_INVALID_ID) {
+                yaml_write_id("vertex_shader", vertexDescriptor.vertexShader, resNode);
             }
 
-            if (auto *pShader = vertexDescriptor.getTessellationControlShader();
-                pShader != nullptr) {
-                yaml_write_id("tessellation_control_shader", pShader->getID(), resNode);
+            if (vertexDescriptor.tessellationControlShader != FOE_INVALID_ID) {
+                yaml_write_id("tessellation_control_shader",
+                              vertexDescriptor.tessellationControlShader, resNode);
             }
 
-            if (auto *pShader = vertexDescriptor.getTessellationEvaluationShader();
-                pShader != nullptr) {
-                yaml_write_id("tessellation_evaluation_shader", pShader->getID(), resNode);
+            if (vertexDescriptor.tessellationEvaluationShader != FOE_INVALID_ID) {
+                yaml_write_id("tessellation_evaluation_shader",
+                              vertexDescriptor.tessellationEvaluationShader, resNode);
             }
 
-            if (auto *pShader = vertexDescriptor.getGeometryShader(); pShader != nullptr) {
-                yaml_write_id("geometry_shader", pShader->getID(), resNode);
+            if (vertexDescriptor.geometryShader != FOE_INVALID_ID) {
+                yaml_write_id("geometry_shader", vertexDescriptor.geometryShader, resNode);
             }
 
             writeNode["resources"] = resNode;
         }
-
-        // Graphics Data Node
-        yaml_write_gfx_vertex_descriptor("graphics_data", vertexDescriptor.getGfxVertexDescriptor(),
-                                         writeNode);
     } catch (...) {
         throw foeYamlException(nodeName +
                                " - Failed to serialize 'foeVertexDescriptor' definition");
@@ -118,14 +115,15 @@ char const *yaml_vertex_descriptor_key() { return "vertex_descriptor_v1"; }
 void yaml_read_vertex_descriptor(YAML::Node const &node,
                                  foeIdGroupTranslator const *pTranslator,
                                  foeResourceCreateInfoBase **ppCreateInfo) {
-    foeVertexDescriptorCreateInfo ci;
+    foeVertexDescriptorCreateInfo ci{};
 
     yaml_read_vertex_descriptor_internal(yaml_vertex_descriptor_key(), node, pTranslator, ci);
 
     *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
 }
 
-auto yaml_write_vertex_descriptor(foeVertexDescriptor const &vertexDescriptor) -> YAML::Node {
+auto yaml_write_vertex_descriptor(foeVertexDescriptorCreateInfo const &vertexDescriptor)
+    -> YAML::Node {
     YAML::Node definition;
 
     yaml_write_vertex_descriptor_internal("", vertexDescriptor, definition);

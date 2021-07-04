@@ -22,6 +22,9 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
+#include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/resource/shader_pool.hpp>
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/registration.hpp>
@@ -67,6 +70,23 @@ void materialLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
     pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
+void vertexDescriptorLoadFn(void *pContext,
+                            void *pResource,
+                            void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pSimulationState = reinterpret_cast<foeSimulationState *>(pContext);
+    auto *pVertexDescriptor = reinterpret_cast<foeVertexDescriptor *>(pResource);
+
+    auto pLocalCreateInfo = pVertexDescriptor->pCreateInfo;
+
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
+            return it.pLoader->load(pVertexDescriptor, pLocalCreateInfo, pPostLoadFn);
+        }
+    }
+
+    pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+}
+
 void onCreate(foeSimulationState *pSimulationState) {
     // Resources
     pSimulationState->resourcePools.emplace_back(new foeImagePool{foeResourceFns{
@@ -78,6 +98,14 @@ void onCreate(foeSimulationState *pSimulationState) {
     }});
 
     pSimulationState->resourcePools.emplace_back(new foeMaterialPool{foeResourceFns{
+        .pImportContext = &pSimulationState->groupData,
+        .pImportFn = importFn,
+        .pLoadContext = pSimulationState,
+        .pLoadFn = materialLoadFn,
+        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+    }});
+
+    pSimulationState->resourcePools.emplace_back(new foeVertexDescriptorPool{foeResourceFns{
         .pImportContext = &pSimulationState->groupData,
         .pImportFn = importFn,
         .pLoadContext = pSimulationState,
@@ -97,6 +125,13 @@ void onCreate(foeSimulationState *pSimulationState) {
             auto *pMaterialLoader = reinterpret_cast<foeMaterialLoader *>(pLoader);
             pMaterialLoader->gfxMaintenance();
         }});
+
+    pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
+        .pLoader = new foeVertexDescriptorLoader,
+        .pGfxMaintenanceFn = [](foeResourceLoaderBase *pLoader) {
+            auto *pVertexDescriptorLoader = reinterpret_cast<foeVertexDescriptorLoader *>(pLoader);
+            pVertexDescriptorLoader->gfxMaintenance();
+        }});
 }
 
 template <typename DestroyType, typename InType>
@@ -111,12 +146,14 @@ void searchAndDestroy(InType &ptr) noexcept {
 void onDestroy(foeSimulationState *pSimulationState) {
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
+        searchAndDestroy<foeVertexDescriptorLoader>(it.pLoader);
         searchAndDestroy<foeMaterialLoader>(it.pLoader);
         searchAndDestroy<foeImageLoader>(it.pLoader);
     }
 
     // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
+        searchAndDestroy<foeVertexDescriptorLoader>(pPool);
         searchAndDestroy<foeMaterialPool>(pPool);
         searchAndDestroy<foeImagePool>(pPool);
     }
@@ -157,6 +194,15 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
 
                 pMaterialLoader->initialize(pShaderPool, pImagePool, pInitInfo->gfxSession);
             }
+
+            auto *pVertexDescriptorLoader = dynamic_cast<foeVertexDescriptorLoader *>(pIt->pLoader);
+            if (pVertexDescriptorLoader) {
+                auto *pShaderPool = search<foeShaderPool>(pSimStateData->pResourcePools,
+                                                          pSimStateData->pResourcePools +
+                                                              pSimStateData->resourcePoolCount);
+
+                pVertexDescriptorLoader->initialize(pShaderPool);
+            }
         }
     }
 }
@@ -172,6 +218,7 @@ void searchAndDeinit(InType &ptr) noexcept {
 void onDeinitialization(foeSimulationState const *pSimulationState) {
     // Loaders
     for (auto const &it : pSimulationState->resourceLoaders) {
+        searchAndDeinit<foeVertexDescriptorLoader>(it.pLoader);
         searchAndDeinit<foeMaterialLoader>(it.pLoader);
         searchAndDeinit<foeImageLoader>(it.pLoader);
     }

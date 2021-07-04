@@ -22,8 +22,6 @@
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
 #include <foe/resource/shader_pool.hpp>
-#include <foe/resource/vertex_descriptor_loader.hpp>
-#include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 
@@ -35,14 +33,11 @@ void onCreate(foeSimulationState *pSimulationState) {
     auto *pArmatureLoader = new foeArmatureLoader;
     auto *pShaderLoader = new foeShaderLoader;
     auto *pMeshLoader = new foeMeshLoader;
-    auto *pVertexDescriptorLoader = new foeVertexDescriptorLoader;
 
     // Resource Pools
     pSimulationState->resourcePools.emplace_back(new foeArmaturePool{pArmatureLoader});
     pSimulationState->resourcePools.emplace_back(new foeMeshPool{pMeshLoader});
     pSimulationState->resourcePools.emplace_back(new foeShaderPool{pShaderLoader});
-    pSimulationState->resourcePools.emplace_back(
-        new foeVertexDescriptorPool{pVertexDescriptorLoader});
 
     // Resource Loaders
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
@@ -55,10 +50,6 @@ void onCreate(foeSimulationState *pSimulationState) {
 
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
         .pLoader = pShaderLoader,
-    });
-
-    pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
-        .pLoader = pVertexDescriptorLoader,
     });
 }
 
@@ -74,7 +65,6 @@ void searchAndDestroy(InType &ptr) noexcept {
 void onDestroy(foeSimulationState *pSimulationState) {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
-        searchAndDestroy<foeVertexDescriptorLoader>(it.pLoader);
         searchAndDestroy<foeShaderLoader>(it.pLoader);
         searchAndDestroy<foeMeshLoader>(it.pLoader);
         searchAndDestroy<foeArmatureLoader>(it.pLoader);
@@ -82,7 +72,6 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Resource Pools
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy<foeVertexDescriptorPool>(pPool);
         searchAndDestroy<foeShaderPool>(pPool);
         searchAndDestroy<foeMeshPool>(pPool);
         searchAndDestroy<foeArmaturePool>(pPool);
@@ -124,16 +113,6 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo,
             pShaderLoader->initialize(pInitInfo->gfxSession, pInitInfo->resourceDefinitionImportFn,
                                       pInitInfo->externalFileSearchFn, pInitInfo->asyncJobFn);
         }
-
-        auto *pVertexDescriptorLoader = dynamic_cast<foeVertexDescriptorLoader *>(pIt->pLoader);
-        if (pVertexDescriptorLoader) {
-            auto *pShaderPool = search<foeShaderPool>(pSimStateData->pResourcePools,
-                                                      pSimStateData->pResourcePools +
-                                                          pSimStateData->resourcePoolCount);
-
-            pVertexDescriptorLoader->initialize(pShaderPool, pInitInfo->resourceDefinitionImportFn,
-                                                pInitInfo->asyncJobFn);
-        }
     }
 }
 
@@ -148,7 +127,6 @@ void searchAndDeinit(InType &ptr) noexcept {
 void onDeinitialize(foeSimulationState const *pSimulationState) {
     // Loaders
     for (auto const &it : pSimulationState->resourceLoaders) {
-        searchAndDeinit<foeVertexDescriptorLoader>(it.pLoader);
         searchAndDeinit<foeShaderLoader>(it.pLoader);
         searchAndDeinit<foeMeshLoader>(it.pLoader);
         searchAndDeinit<foeArmatureLoader>(it.pLoader);

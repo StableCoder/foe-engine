@@ -14,23 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
-#define FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
+#define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
 
-#include <foe/ecs/id.hpp>
-#include <foe/resource/export.h>
+#include <foe/graphics/resource/export.h>
 #include <foe/simulation/core/pool.hpp>
+#include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
 
-class foeVertexDescriptor;
-class foeVertexDescriptorLoader;
+struct foeVertexDescriptor;
 
-class FOE_RES_EXPORT foeVertexDescriptorPool : public foeResourcePoolBase {
+class FOE_GFX_RES_EXPORT foeVertexDescriptorPool : public foeResourcePoolBase {
   public:
-    foeVertexDescriptorPool(foeVertexDescriptorLoader *pVertexDescriptorLoader) :
-        mpVertexDescriptorLoader{pVertexDescriptorLoader} {}
+    foeVertexDescriptorPool(foeResourceFns const &resourceFns);
     ~foeVertexDescriptorPool();
 
     foeVertexDescriptor *add(foeResourceID resource);
@@ -39,12 +37,12 @@ class FOE_RES_EXPORT foeVertexDescriptorPool : public foeResourcePoolBase {
 
     void unloadAll();
 
-    auto getDataVector() { return mVertexDescriptors; }
+    auto getDataVector() { return mResources; }
 
   private:
-    foeVertexDescriptorLoader *mpVertexDescriptorLoader;
-    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
-    FOE_RESOURCE_NO_EXPORT std::vector<foeVertexDescriptor *> mVertexDescriptors;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT foeResourceFns const mResourceFns;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::shared_mutex mSync;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeVertexDescriptor *> mResources;
 };
 
-#endif // FOE_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
+#endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP

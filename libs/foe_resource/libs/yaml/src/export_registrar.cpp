@@ -22,13 +22,11 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_pool.hpp>
-#include <foe/resource/vertex_descriptor_pool.hpp>
 
 #include "armature.hpp"
 #include "error_code.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
-#include "vertex_descriptor.hpp"
 
 namespace {
 
@@ -72,18 +70,6 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_shader_key(),
                     .data = yaml_write_shader(*pShader->createInfo.get()),
-                });
-            }
-        }
-
-        // VertexDescriptor
-        auto *pVertexDescriptorPool = dynamic_cast<foeVertexDescriptorPool *>(*pResourcePools);
-        if (pVertexDescriptorPool) {
-            auto const *pVertexDescriptor = pVertexDescriptorPool->find(resource);
-            if (pVertexDescriptor && pVertexDescriptor->createInfo) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_vertex_descriptor_key(),
-                    .data = yaml_write_vertex_descriptor(*pVertexDescriptor),
                 });
             }
         }

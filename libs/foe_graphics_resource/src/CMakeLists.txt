@@ -8,4 +8,7 @@ target_sources(
           material_loader.cpp
           material_pool.cpp
           material.cpp
-          registrar.cpp)
+          registrar.cpp
+          vertex_descriptor_loader.cpp
+          vertex_descriptor_pool.cpp
+          vertex_descriptor.cpp)

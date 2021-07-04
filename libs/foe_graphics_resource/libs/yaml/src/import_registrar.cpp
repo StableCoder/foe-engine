@@ -18,6 +18,7 @@
 
 #include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/imex/yaml/importer.hpp>
@@ -25,6 +26,7 @@
 #include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
+#include "vertex_descriptor.hpp"
 
 namespace {
 
@@ -72,9 +74,35 @@ std::error_code materialCreateProcessing(foeResourceID resource,
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
 
+std::error_code vertexDescriptorCreateProcessing(
+    foeResourceID resource,
+    foeResourceCreateInfoBase *pCreateInfo,
+    std::vector<foeResourcePoolBase *> &resourcePools) {
+    foeVertexDescriptorPool *pVertexDescriptorPool{nullptr};
+    for (auto &it : resourcePools) {
+        pVertexDescriptorPool = dynamic_cast<foeVertexDescriptorPool *>(it);
+
+        if (pVertexDescriptorPool != nullptr)
+            break;
+    }
+
+    if (pVertexDescriptorPool == nullptr)
+        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_POOL_NOT_FOUND;
+
+    auto *pVertexResource = pVertexDescriptorPool->add(resource);
+
+    if (!pVertexResource)
+        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS;
+
+    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+}
+
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
+        pYamlImporter->deregisterResourceFns(yaml_vertex_descriptor_key(),
+                                             yaml_read_vertex_descriptor,
+                                             vertexDescriptorCreateProcessing);
         pYamlImporter->deregisterResourceFns(yaml_material_key(), yaml_read_material,
                                              materialCreateProcessing);
         pYamlImporter->deregisterResourceFns(yaml_image_key(), yaml_read_image,
@@ -95,6 +123,12 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
         if (!pYamlImporter->registerResourceFns(yaml_material_key(), yaml_read_material,
                                                 materialCreateProcessing)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+        if (!pYamlImporter->registerResourceFns(yaml_vertex_descriptor_key(),
+                                                yaml_read_vertex_descriptor,
+                                                vertexDescriptorCreateProcessing)) {
+            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER;
             goto REGISTRATION_FAILED;
         }
     }

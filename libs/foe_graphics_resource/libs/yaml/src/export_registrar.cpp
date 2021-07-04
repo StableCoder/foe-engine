@@ -22,12 +22,16 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/vertex_descriptor.hpp>
+#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
+#include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
 
 #include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
+#include "vertex_descriptor.hpp"
 
 namespace {
 
@@ -81,10 +85,36 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
     return keyDataPairs;
 }
 
+std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
+                                                   foeResourcePoolBase **pResourcePools,
+                                                   uint32_t resourcePoolCount) {
+    std::vector<foeKeyYamlPair> keyDataPairs;
+    auto const *pEndPools = pResourcePools + resourcePoolCount;
+
+    for (; pResourcePools != pEndPools; ++pResourcePools) {
+        auto *pVertexDescriptor2Pool = dynamic_cast<foeVertexDescriptorPool *>(*pResourcePools);
+        if (pVertexDescriptor2Pool) {
+            auto const *pVertexDescriptor2 = pVertexDescriptor2Pool->find(resource);
+            if (pVertexDescriptor2 && pVertexDescriptor2->pCreateInfo) {
+                if (auto pVertexDescriptor2CI = dynamic_cast<foeVertexDescriptorCreateInfo *>(
+                        pVertexDescriptor2->pCreateInfo.get());
+                    pVertexDescriptor2CI)
+                    keyDataPairs.emplace_back(foeKeyYamlPair{
+                        .key = yaml_vertex_descriptor_key(),
+                        .data = yaml_write_vertex_descriptor(*pVertexDescriptor2CI),
+                    });
+            }
+        }
+    }
+
+    return keyDataPairs;
+}
+
 void onDeregister(foeExporterBase *pExporter) {
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
         // Resource
+        pYamlExporter->deregisterResourceFn(exportVertexDescriptor);
         pYamlExporter->deregisterResourceFn(exportMaterial);
         pYamlExporter->deregisterResourceFn(exportImage);
     }
@@ -103,6 +133,10 @@ std::error_code onRegister(foeExporterBase *pExporter) {
 
         if (!pYamlExporter->registerResourceFn(exportMaterial)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_EXPORTER;
+            goto REGISTRATION_FAILED;
+        }
+        if (!pYamlExporter->registerResourceFn(exportVertexDescriptor)) {
+            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_EXPORTER;
             goto REGISTRATION_FAILED;
         }
     }

@@ -26,6 +26,8 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
+#include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/runtime.hpp>
@@ -42,8 +44,6 @@
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
 #include <foe/resource/shader_pool.hpp>
-#include <foe/resource/vertex_descriptor_loader.hpp>
-#include <foe/resource/vertex_descriptor_pool.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi_vulkan.hpp>
@@ -334,8 +334,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
              getResourcePool<foeVertexDescriptorPool>(pSimulationSet->resourcePools.data(),
                                                       pSimulationSet->resourcePools.size())
                  ->getDataVector()) {
-            ptr->incrementUseCount();
-            ptr->decrementUseCount();
+            ptr->loadResource(false);
         }
     }
 
@@ -589,14 +588,14 @@ void Application::deinitialize() {
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             auto *pVertexDescriptorLoader = getResourceLoader<foeVertexDescriptorLoader>(
                 pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-            pVertexDescriptorLoader->processUnloadRequests();
+            pVertexDescriptorLoader->gfxMaintenance();
         }
 
         auto *pShaderPool = getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
                                                            pSimulationSet->resourcePools.size());
         pShaderPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pShaderLoader = getResourceLoader<foeVertexDescriptorLoader>(
+            auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
                 pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
             pShaderLoader->processUnloadRequests();
         }
@@ -986,14 +985,14 @@ int Application::mainloop() {
                 if (pVertexDescriptor == nullptr || pMaterial == nullptr || pMesh == nullptr) {
                     return false;
                 }
-                if (pVertexDescriptor->getLoadState() != foeResourceLoadState::Loaded ||
+                if (pVertexDescriptor->getState() != foeResourceState::Loaded ||
                     pMaterial->getState() != foeResourceState::Loaded ||
                     pMesh->getLoadState() != foeResourceLoadState::Loaded) {
                     return false;
                 }
 
                 // Retrieve the pipeline
-                auto *pGfxVertexDescriptor = pVertexDescriptor->getGfxVertexDescriptor();
+                auto *pGfxVertexDescriptor = &pVertexDescriptor->data.vertexDescriptor;
                 VkPipelineLayout layout;
                 uint32_t descriptorSetLayoutCount;
                 VkPipeline pipeline;
@@ -1237,15 +1236,15 @@ int Application::mainloop() {
                                                     pSimulationSet->resourcePools.size())
                                                     ->find(pRenderState->material);
 
-                                            if (theVertexDescriptor->getLoadState() !=
-                                                    foeResourceLoadState::Loaded ||
+                                            if (theVertexDescriptor->getState() !=
+                                                    foeResourceState::Loaded ||
                                                 theMaterial->getState() != foeResourceState::Loaded)
                                                 goto SKIP_XR_DRAW;
 
                                             // Render Triangle
                                             pipelinePool.getPipeline(
                                                 const_cast<foeGfxVertexDescriptor *>(
-                                                    theVertexDescriptor->getGfxVertexDescriptor()),
+                                                    &theVertexDescriptor->data.vertexDescriptor),
                                                 theMaterial->data.pGfxFragDescriptor, xrRenderPass,
                                                 0, &layout, &descriptorSetLayoutCount, &pipeline);
 
@@ -1491,15 +1490,14 @@ int Application::mainloop() {
                                                     pSimulationSet->resourcePools.size())
                                                     ->find(pRenderState->material);
 
-                            if (theVertexDescriptor->getLoadState() !=
-                                    foeResourceLoadState::Loaded ||
+                            if (theVertexDescriptor->getState() != foeResourceState::Loaded ||
                                 theMaterial->getState() != foeResourceState::Loaded)
                                 goto SKIP_DRAW;
 
                             // Render Triangle
                             pipelinePool.getPipeline(
                                 const_cast<foeGfxVertexDescriptor *>(
-                                    theVertexDescriptor->getGfxVertexDescriptor()),
+                                    &theVertexDescriptor->data.vertexDescriptor),
                                 theMaterial->data.pGfxFragDescriptor, swapImageRenderPass, 0,
                                 &layout, &descriptorSetLayoutCount, &pipeline);
 

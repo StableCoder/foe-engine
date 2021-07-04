@@ -23,14 +23,11 @@
 #include <foe/resource/mesh_pool.hpp>
 #include <foe/resource/shader_loader.hpp>
 #include <foe/resource/shader_pool.hpp>
-#include <foe/resource/vertex_descriptor_loader.hpp>
-#include <foe/resource/vertex_descriptor_pool.hpp>
 
 #include "armature.hpp"
 #include "error_code.hpp"
 #include "mesh.hpp"
 #include "shader.hpp"
-#include "vertex_descriptor.hpp"
 
 namespace {
 
@@ -78,29 +75,6 @@ std::error_code meshCreateProcessing(foeResourceID resource,
     return FOE_RESOURCE_YAML_SUCCESS;
 }
 
-std::error_code vertexDescriptorCreateProcessing(
-    foeResourceID resource,
-    foeResourceCreateInfoBase *pCreateInfo,
-    std::vector<foeResourcePoolBase *> &resourcePools) {
-    foeVertexDescriptorPool *pVertexDescriptorPool{nullptr};
-    for (auto &it : resourcePools) {
-        pVertexDescriptorPool = dynamic_cast<foeVertexDescriptorPool *>(it);
-
-        if (pVertexDescriptorPool != nullptr)
-            break;
-    }
-
-    if (pVertexDescriptorPool == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_POOL_NOT_FOUND;
-
-    auto *pVertexDescriptor = pVertexDescriptorPool->add(resource);
-
-    if (!pVertexDescriptor)
-        return FOE_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS;
-
-    return FOE_RESOURCE_YAML_SUCCESS;
-}
-
 std::error_code shaderCreateProcessing(foeResourceID resource,
                                        foeResourceCreateInfoBase *pCreateInfo,
                                        std::vector<foeResourcePoolBase *> &resourcePools) {
@@ -130,10 +104,6 @@ void onDeregister(foeImporterGenerator *pGenerator) {
 
         pYamlImporter->deregisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing);
 
-        pYamlImporter->deregisterResourceFns(yaml_vertex_descriptor_key(),
-                                             yaml_read_vertex_descriptor,
-                                             vertexDescriptorCreateProcessing);
-
         pYamlImporter->deregisterResourceFns(yaml_shader_key(), yaml_read_shader,
                                              shaderCreateProcessing);
     }
@@ -153,13 +123,6 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
         if (!pYamlImporter->registerResourceFns(yaml_mesh_key(), yaml_read_mesh,
                                                 meshCreateProcessing)) {
             errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
-
-        if (!pYamlImporter->registerResourceFns(yaml_vertex_descriptor_key(),
-                                                yaml_read_vertex_descriptor,
-                                                vertexDescriptorCreateProcessing)) {
-            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER;
             goto REGISTRATION_FAILED;
         }
 
