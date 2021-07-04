@@ -21,12 +21,10 @@
 
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/mesh_pool.hpp>
-#include <foe/resource/shader_pool.hpp>
 
 #include "armature.hpp"
 #include "error_code.hpp"
 #include "mesh.hpp"
-#include "shader.hpp"
 
 namespace {
 
@@ -58,18 +56,6 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_mesh_key(),
                     .data = yaml_write_mesh(*pMesh->createInfo.get()),
-                });
-            }
-        }
-
-        // Shader
-        auto *pShaderPool = dynamic_cast<foeShaderPool *>(*pResourcePools);
-        if (pShaderPool) {
-            auto const *pShader = pShaderPool->find(resource);
-            if (pShader && pShader->createInfo) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_shader_key(),
-                    .data = yaml_write_shader(*pShader->createInfo.get()),
                 });
             }
         }

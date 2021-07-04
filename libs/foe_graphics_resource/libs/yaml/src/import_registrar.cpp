@@ -18,6 +18,7 @@
 
 #include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/imex/yaml/generator.hpp>
@@ -26,6 +27,7 @@
 #include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
+#include "shader.hpp"
 #include "vertex_descriptor.hpp"
 
 namespace {
@@ -74,6 +76,28 @@ std::error_code materialCreateProcessing(foeResourceID resource,
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
 
+std::error_code shaderCreateProcessing(foeResourceID resource,
+                                       foeResourceCreateInfoBase *pCreateInfo,
+                                       std::vector<foeResourcePoolBase *> &resourcePools) {
+    foeShaderPool *pShaderPool{nullptr};
+    for (auto &it : resourcePools) {
+        pShaderPool = dynamic_cast<foeShaderPool *>(it);
+
+        if (pShaderPool != nullptr)
+            break;
+    }
+
+    if (pShaderPool == nullptr)
+        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_POOL_NOT_FOUND;
+
+    auto *pShader = pShaderPool->add(resource);
+
+    if (!pShader)
+        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_RESOURCE_ALREADY_EXISTS;
+
+    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+}
+
 std::error_code vertexDescriptorCreateProcessing(
     foeResourceID resource,
     foeResourceCreateInfoBase *pCreateInfo,
@@ -103,6 +127,8 @@ void onDeregister(foeImporterGenerator *pGenerator) {
         pYamlImporter->deregisterResourceFns(yaml_vertex_descriptor_key(),
                                              yaml_read_vertex_descriptor,
                                              vertexDescriptorCreateProcessing);
+        pYamlImporter->deregisterResourceFns(yaml_shader_key(), yaml_read_shader,
+                                             shaderCreateProcessing);
         pYamlImporter->deregisterResourceFns(yaml_material_key(), yaml_read_material,
                                              materialCreateProcessing);
         pYamlImporter->deregisterResourceFns(yaml_image_key(), yaml_read_image,
@@ -123,6 +149,11 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
         if (!pYamlImporter->registerResourceFns(yaml_material_key(), yaml_read_material,
                                                 materialCreateProcessing)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+        if (!pYamlImporter->registerResourceFns(yaml_shader_key(), yaml_read_shader,
+                                                shaderCreateProcessing)) {
+            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER;
             goto REGISTRATION_FAILED;
         }
         if (!pYamlImporter->registerResourceFns(yaml_vertex_descriptor_key(),

@@ -26,6 +26,8 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/shader_loader.hpp>
+#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/graphics/vk/mesh.hpp>
@@ -42,8 +44,6 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/mesh_loader.hpp>
 #include <foe/resource/mesh_pool.hpp>
-#include <foe/resource/shader_loader.hpp>
-#include <foe/resource/shader_pool.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi_vulkan.hpp>
@@ -326,8 +326,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         for (auto *ptr : getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
                                                         pSimulationSet->resourcePools.size())
                              ->getDataVector()) {
-            ptr->incrementUseCount();
-            ptr->decrementUseCount();
+            ptr->loadResource(false);
         }
 
         for (auto *ptr :
@@ -597,7 +596,7 @@ void Application::deinitialize() {
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
                 pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-            pShaderLoader->processUnloadRequests();
+            pShaderLoader->gfxMaintenance();
         }
     }
 
@@ -908,10 +907,6 @@ int Application::mainloop() {
             }
 
             { // Resource Unload Requests
-                auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
-                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-                pShaderLoader->processUnloadRequests();
-
                 auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
                     pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
                 pMeshLoader->processUnloadRequests();

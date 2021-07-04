@@ -16,8 +16,8 @@
 
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 
-#include <foe/resource/shader.hpp>
-#include <foe/resource/shader_pool.hpp>
+#include <foe/graphics/resource/shader.hpp>
+#include <foe/graphics/resource/shader_pool.hpp>
 
 #include "error_code.hpp"
 #include "log.hpp"
@@ -27,19 +27,10 @@ namespace {
 template <typename SubResource, typename... SubResources>
 foeResourceState getWorstSubResourceState(SubResource *pSubResource,
                                           SubResources *...pSubResources) {
-    if constexpr (std::is_base_of<foeResourceBase, SubResource>::value) {
-        if (pSubResource != nullptr) {
-            auto state = pSubResource->getState();
-            if (state != foeResourceState::Loaded) {
-                return state;
-            }
-        }
-    } else {
-        if (pSubResource != nullptr) {
-            auto state = pSubResource->getLoadState();
-            if (state != foeResourceLoadState::Loaded) {
-                return foeResourceState::Unloaded;
-            }
+    if (pSubResource != nullptr) {
+        auto state = pSubResource->getState();
+        if (state != foeResourceState::Loaded) {
+            return state;
         }
     }
 
@@ -198,28 +189,28 @@ void foeVertexDescriptorLoader::load(void *pResource,
 
         data.pVertex->incrementRefCount();
         data.pVertex->incrementUseCount();
-        data.pVertex->requestLoad();
+        data.pVertex->loadResource(false);
     }
     if (pCI->tessellationControlShader != FOE_INVALID_ID) {
         data.pTessellationControl = mShaderPool->findOrAdd(pCI->tessellationControlShader);
 
         data.pTessellationControl->incrementRefCount();
         data.pTessellationControl->incrementUseCount();
-        data.pTessellationControl->requestLoad();
+        data.pTessellationControl->loadResource(false);
     }
     if (pCI->tessellationEvaluationShader != FOE_INVALID_ID) {
         data.pTessellationEvaluation = mShaderPool->findOrAdd(pCI->tessellationEvaluationShader);
 
         data.pTessellationEvaluation->incrementRefCount();
         data.pTessellationEvaluation->incrementUseCount();
-        data.pTessellationEvaluation->requestLoad();
+        data.pTessellationEvaluation->loadResource(false);
     }
     if (pCI->geometryShader != FOE_INVALID_ID) {
         data.pGeometry = mShaderPool->findOrAdd(pCI->geometryShader);
 
         data.pGeometry->incrementRefCount();
         data.pGeometry->incrementUseCount();
-        data.pGeometry->requestLoad();
+        data.pGeometry->loadResource(false);
     }
 
     // Send to the loading queue

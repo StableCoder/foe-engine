@@ -16,6 +16,7 @@
 
 #include "shader.hpp"
 
+#include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/vk/yaml/shader.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>

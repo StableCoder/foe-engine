@@ -9,6 +9,9 @@ target_sources(
           material_pool.cpp
           material.cpp
           registrar.cpp
+          shader_loader.cpp
+          shader_pool.cpp
+          shader.cpp
           vertex_descriptor_loader.cpp
           vertex_descriptor_pool.cpp
           vertex_descriptor.cpp)

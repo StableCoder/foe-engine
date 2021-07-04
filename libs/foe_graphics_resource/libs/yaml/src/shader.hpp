@@ -17,10 +17,11 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
-#include <foe/resource/shader.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
+struct foeResourceCreateInfoBase;
+struct foeShaderCreateInfo;
 
 char const *yaml_shader_key();
 

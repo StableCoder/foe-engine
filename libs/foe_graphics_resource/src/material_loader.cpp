@@ -18,10 +18,11 @@
 
 #include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/image_pool.hpp>
+#include <foe/graphics/resource/shader.hpp>
+#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/resource/shader.hpp>
-#include <foe/resource/shader_pool.hpp>
+#include <foe/graphics/vk/shader.hpp>
 #include <vk_error_code.hpp>
 #include <vk_struct_cleanup.hpp>
 #include <vulkan/vulkan.h>
@@ -36,19 +37,10 @@ namespace {
 template <typename SubResource, typename... SubResources>
 foeResourceState getWorstSubResourceState(SubResource *pSubResource,
                                           SubResources *...pSubResources) {
-    if constexpr (std::is_base_of<foeResourceBase, SubResource>::value) {
-        if (pSubResource != nullptr) {
-            auto state = pSubResource->getState();
-            if (state != foeResourceState::Loaded) {
-                return state;
-            }
-        }
-    } else {
-        if (pSubResource != nullptr) {
-            auto state = pSubResource->getLoadState();
-            if (state != foeResourceLoadState::Loaded) {
-                return foeResourceState::Unloaded;
-            }
+    if (pSubResource != nullptr) {
+        auto state = pSubResource->getState();
+        if (state != foeResourceState::Loaded) {
+            return state;
         }
     }
 
@@ -174,7 +166,7 @@ void foeMaterialLoader::gfxMaintenance() {
         if (subResLoadState == foeResourceState::Loaded) {
             { // Using the sub-resources that are loaded, and definition data, create the resource
                 foeGfxShader fragShader = (it.data.pFragmentShader != nullptr)
-                                              ? it.data.pFragmentShader->getShader()
+                                              ? it.data.pFragmentShader->data.shader
                                               : FOE_NULL_HANDLE;
 
                 auto *pMaterialCI =
@@ -254,7 +246,7 @@ void foeMaterialLoader::load(void *pResource,
 
         materialData.pFragmentShader->incrementRefCount();
         materialData.pFragmentShader->incrementUseCount();
-        materialData.pFragmentShader->requestLoad();
+        materialData.pFragmentShader->loadResource(false);
     }
 
     // Image
@@ -285,8 +277,8 @@ std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial::Data *pMater
     VkDescriptorSet set;
     VkDevice vkDevice = foeGfxVkGetDevice(mGfxSession);
 
-    auto fragShader = pMaterialData->pFragmentShader->getShader();
-    auto descriptorSetLayout = foeGfxVkGetShaderDescriptorSetLayout(fragShader);
+    auto descriptorSetLayout =
+        foeGfxVkGetShaderDescriptorSetLayout(pMaterialData->pFragmentShader->data.shader);
 
     VkDescriptorSetAllocateInfo setAI{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,

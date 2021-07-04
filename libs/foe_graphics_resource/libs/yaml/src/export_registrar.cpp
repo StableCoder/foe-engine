@@ -22,6 +22,9 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/shader.hpp>
+#include <foe/graphics/resource/shader_loader.hpp>
+#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
@@ -31,6 +34,7 @@
 #include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
+#include "shader.hpp"
 #include "vertex_descriptor.hpp"
 
 namespace {
@@ -85,6 +89,31 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
     return keyDataPairs;
 }
 
+std::vector<foeKeyYamlPair> exportShader(foeResourceID resource,
+                                         foeResourcePoolBase **pResourcePools,
+                                         uint32_t resourcePoolCount) {
+    std::vector<foeKeyYamlPair> keyDataPairs;
+    auto const *pEndPools = pResourcePools + resourcePoolCount;
+
+    for (; pResourcePools != pEndPools; ++pResourcePools) {
+        auto *pShaderPool = dynamic_cast<foeShaderPool *>(*pResourcePools);
+        if (pShaderPool) {
+            auto const *pShader = pShaderPool->find(resource);
+            if (pShader && pShader->pCreateInfo) {
+                if (auto pShaderCI =
+                        dynamic_cast<foeShaderCreateInfo *>(pShader->pCreateInfo.get());
+                    pShaderCI)
+                    keyDataPairs.emplace_back(foeKeyYamlPair{
+                        .key = yaml_shader_key(),
+                        .data = yaml_write_shader(*pShaderCI),
+                    });
+            }
+        }
+    }
+
+    return keyDataPairs;
+}
+
 std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
                                                    foeResourcePoolBase **pResourcePools,
                                                    uint32_t resourcePoolCount) {
@@ -115,6 +144,7 @@ void onDeregister(foeExporterBase *pExporter) {
     if (pYamlExporter) {
         // Resource
         pYamlExporter->deregisterResourceFn(exportVertexDescriptor);
+        pYamlExporter->deregisterResourceFn(exportShader);
         pYamlExporter->deregisterResourceFn(exportMaterial);
         pYamlExporter->deregisterResourceFn(exportImage);
     }
@@ -133,6 +163,10 @@ std::error_code onRegister(foeExporterBase *pExporter) {
 
         if (!pYamlExporter->registerResourceFn(exportMaterial)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_EXPORTER;
+            goto REGISTRATION_FAILED;
+        }
+        if (!pYamlExporter->registerResourceFn(exportShader)) {
+            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_EXPORTER;
             goto REGISTRATION_FAILED;
         }
         if (!pYamlExporter->registerResourceFn(exportVertexDescriptor)) {
