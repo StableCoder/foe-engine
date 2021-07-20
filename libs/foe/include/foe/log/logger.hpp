@@ -32,6 +32,8 @@ class foeLogger {
 
     FOE_EXPORT void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message);
 
+#if FMT_VERSION >= 80000
+    /// libfmt v8 is incompatible with v7, need this split.
     template <typename... Args>
     inline void log(foeLogCategory *pCategory,
                     foeLogLevel level,
@@ -39,6 +41,15 @@ class foeLogger {
                     Args &&...args) {
         log(pCategory, level, fmt::format(message, std::forward<Args>(args)...));
     }
+#else
+    template <typename... Args>
+    inline void log(foeLogCategory *pCategory,
+                    foeLogLevel level,
+                    std::string_view message,
+                    Args &&...args) {
+        log(pCategory, level, fmt::format(message, std::forward<Args>(args)...));
+    }
+#endif
 
     FOE_EXPORT bool registerSink(foeLogSink *pSink);
 
