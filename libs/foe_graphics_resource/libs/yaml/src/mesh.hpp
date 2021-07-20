@@ -17,10 +17,11 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-#include <foe/resource/mesh_loader.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
+struct foeResourceCreateInfoBase;
+struct foeMeshCreateInfo;
 
 char const *yaml_mesh_key();
 

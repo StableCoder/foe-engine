@@ -1,10 +1,10 @@
 #include "vk_animation.hpp"
 
+#include <foe/graphics/resource/mesh.hpp>
+#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/mesh.hpp>
-#include <foe/resource/mesh_pool.hpp>
 #include <glm/glm.hpp>
 
 #include "armature_state_pool.hpp"
@@ -188,7 +188,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
         foeArmature *pArmature = mpArmaturePool->find(pArmatureState->armatureID);
 
         if (pMesh == nullptr || pArmature == nullptr ||
-            pMesh->getLoadState() != foeResourceLoadState::Loaded ||
+            pMesh->getState() != foeResourceState::Loaded ||
             pArmature->getLoadState() != foeResourceLoadState::Loaded ||
             pArmatureState->armatureState.empty()) {
             continue;

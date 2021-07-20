@@ -14,16 +14,20 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_RESOURCE_SHADER_HPP
-#define FOE_GRAPHICS_RESOURCE_SHADER_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_MESH_HPP
+#define FOE_GRAPHICS_RESOURCE_MESH_HPP
 
+#include <foe/graphics/mesh.hpp>
 #include <foe/graphics/resource/export.h>
-#include <foe/graphics/shader.hpp>
+#include <foe/model/armature.hpp>
+#include <foe/model/vertex_component.hpp>
 #include <foe/simulation/core/resource.hpp>
 
-struct FOE_GFX_RES_EXPORT foeShader : public foeResourceBase {
-    foeShader(foeResourceID resource, foeResourceFns const *pResourceFns);
-    ~foeShader();
+#include <vector>
+
+struct FOE_GFX_RES_EXPORT foeMesh : public foeResourceBase {
+    foeMesh(foeResourceID resource, foeResourceFns const *pResourceFns);
+    ~foeMesh();
 
     void loadCreateInfo();
     void loadResource(bool refreshCreateInfo);
@@ -34,9 +38,12 @@ struct FOE_GFX_RES_EXPORT foeShader : public foeResourceBase {
         void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
         std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
 
-        foeGfxShader shader{FOE_NULL_HANDLE};
+        foeGfxMesh gfxData{};
+        std::vector<foeMeshBone> gfxBones{};
+        std::vector<foeVertexComponent> gfxVertexComponent{};
+        uint32_t perVertexBoneWeights{0};
     };
     Data data{};
 };
 
-#endif // FOE_GRAPHICS_RESOURCE_SHADER_HPP
+#endif // FOE_GRAPHICS_RESOURCE_MESH_HPP

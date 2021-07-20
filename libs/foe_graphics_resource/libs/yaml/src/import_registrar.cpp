@@ -18,6 +18,7 @@
 
 #include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/imex/importers.hpp>
@@ -27,6 +28,7 @@
 #include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
+#include "mesh.hpp"
 #include "shader.hpp"
 #include "vertex_descriptor.hpp"
 
@@ -72,6 +74,28 @@ std::error_code materialCreateProcessing(foeResourceID resource,
 
     if (!pMaterial)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS;
+
+    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+}
+
+std::error_code meshCreateProcessing(foeResourceID resource,
+                                     foeResourceCreateInfoBase *pCreateInfo,
+                                     std::vector<foeResourcePoolBase *> &resourcePools) {
+    foeMeshPool *pMesh2Pool{nullptr};
+    for (auto &it : resourcePools) {
+        pMesh2Pool = dynamic_cast<foeMeshPool *>(it);
+
+        if (pMesh2Pool != nullptr)
+            break;
+    }
+
+    if (pMesh2Pool == nullptr)
+        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND;
+
+    auto *pMesh2 = pMesh2Pool->add(resource);
+
+    if (!pMesh2)
+        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS;
 
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
@@ -129,6 +153,7 @@ void onDeregister(foeImporterGenerator *pGenerator) {
                                              vertexDescriptorCreateProcessing);
         pYamlImporter->deregisterResourceFns(yaml_shader_key(), yaml_read_shader,
                                              shaderCreateProcessing);
+        pYamlImporter->deregisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing);
         pYamlImporter->deregisterResourceFns(yaml_material_key(), yaml_read_material,
                                              materialCreateProcessing);
         pYamlImporter->deregisterResourceFns(yaml_image_key(), yaml_read_image,
@@ -151,6 +176,13 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER;
             goto REGISTRATION_FAILED;
         }
+
+        if (!pYamlImporter->registerResourceFns(yaml_mesh_key(), yaml_read_mesh,
+                                                meshCreateProcessing)) {
+            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
         if (!pYamlImporter->registerResourceFns(yaml_shader_key(), yaml_read_shader,
                                                 shaderCreateProcessing)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER;

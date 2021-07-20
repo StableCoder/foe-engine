@@ -119,6 +119,8 @@ bool processCreateInfo(
         }
     }
 
+    modelImporterPlugin.release();
+
     return true;
 }
 

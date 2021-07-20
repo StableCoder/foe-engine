@@ -20,11 +20,9 @@
 #include <foe/imex/yaml/exporter.hpp>
 
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/mesh_pool.hpp>
 
 #include "armature.hpp"
 #include "error_code.hpp"
-#include "mesh.hpp"
 
 namespace {
 
@@ -44,18 +42,6 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_armature_key(),
                     .data = yaml_write_armature(*pArmature->createInfo.get()),
-                });
-            }
-        }
-
-        // Mesh
-        auto *pMeshPool = dynamic_cast<foeMeshPool *>(*pResourcePools);
-        if (pMeshPool) {
-            auto const *pMesh = pMeshPool->find(resource);
-            if (pMesh && pMesh->createInfo) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_mesh_key(),
-                    .data = yaml_write_mesh(*pMesh->createInfo.get()),
                 });
             }
         }

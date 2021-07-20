@@ -16,9 +16,9 @@
 
 #include "registrar.hpp"
 
+#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/mesh_pool.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 

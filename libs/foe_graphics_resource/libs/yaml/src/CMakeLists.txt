@@ -5,5 +5,6 @@ target_sources(
           image.cpp
           import_registrar.cpp
           material.cpp
+          mesh.cpp
           shader.cpp
           vertex_descriptor.cpp)

@@ -22,6 +22,9 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/mesh.hpp>
+#include <foe/graphics/resource/mesh_loader.hpp>
+#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
@@ -34,6 +37,7 @@
 #include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
+#include "mesh.hpp"
 #include "shader.hpp"
 #include "vertex_descriptor.hpp"
 
@@ -81,6 +85,30 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
                         .key = yaml_material_key(),
                         .data =
                             yaml_write_material(*pMaterialCI, pMaterial->data.pGfxFragDescriptor),
+                    });
+            }
+        }
+    }
+
+    return keyDataPairs;
+}
+
+std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource,
+                                       foeResourcePoolBase **pResourcePools,
+                                       uint32_t resourcePoolCount) {
+    std::vector<foeKeyYamlPair> keyDataPairs;
+    auto const *pEndPools = pResourcePools + resourcePoolCount;
+
+    for (; pResourcePools != pEndPools; ++pResourcePools) {
+        auto *pMesh2Pool = dynamic_cast<foeMeshPool *>(*pResourcePools);
+        if (pMesh2Pool) {
+            auto const *pMesh2 = pMesh2Pool->find(resource);
+            if (pMesh2 && pMesh2->pCreateInfo) {
+                if (auto pMesh2CI = dynamic_cast<foeMeshCreateInfo *>(pMesh2->pCreateInfo.get());
+                    pMesh2CI)
+                    keyDataPairs.emplace_back(foeKeyYamlPair{
+                        .key = yaml_mesh_key(),
+                        .data = yaml_write_mesh(*pMesh2CI),
                     });
             }
         }
@@ -145,6 +173,7 @@ void onDeregister(foeExporterBase *pExporter) {
         // Resource
         pYamlExporter->deregisterResourceFn(exportVertexDescriptor);
         pYamlExporter->deregisterResourceFn(exportShader);
+        pYamlExporter->deregisterResourceFn(exportMesh);
         pYamlExporter->deregisterResourceFn(exportMaterial);
         pYamlExporter->deregisterResourceFn(exportImage);
     }
@@ -160,9 +189,12 @@ std::error_code onRegister(foeExporterBase *pExporter) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_EXPORTER;
             goto REGISTRATION_FAILED;
         }
-
         if (!pYamlExporter->registerResourceFn(exportMaterial)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_EXPORTER;
+            goto REGISTRATION_FAILED;
+        }
+        if (!pYamlExporter->registerResourceFn(exportMesh)) {
+            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_EXPORTER;
             goto REGISTRATION_FAILED;
         }
         if (!pYamlExporter->registerResourceFn(exportShader)) {

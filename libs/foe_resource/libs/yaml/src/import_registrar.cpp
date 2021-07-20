@@ -19,12 +19,9 @@
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/mesh_loader.hpp>
-#include <foe/resource/mesh_pool.hpp>
 
 #include "armature.hpp"
 #include "error_code.hpp"
-#include "mesh.hpp"
 
 namespace {
 
@@ -50,35 +47,11 @@ std::error_code armatureCreateProcessing(foeResourceID resource,
     return FOE_RESOURCE_YAML_SUCCESS;
 }
 
-std::error_code meshCreateProcessing(foeResourceID resource,
-                                     foeResourceCreateInfoBase *pCreateInfo,
-                                     std::vector<foeResourcePoolBase *> &resourcePools) {
-    foeMeshPool *pMeshPool{nullptr};
-    for (auto &it : resourcePools) {
-        pMeshPool = dynamic_cast<foeMeshPool *>(it);
-
-        if (pMeshPool != nullptr)
-            break;
-    }
-
-    if (pMeshPool == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND;
-
-    auto *pMesh = pMeshPool->add(resource);
-
-    if (!pMesh)
-        return FOE_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS;
-
-    return FOE_RESOURCE_YAML_SUCCESS;
-}
-
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
         pYamlImporter->deregisterResourceFns(yaml_armature_key(), yaml_read_armature,
                                              armatureCreateProcessing);
-
-        pYamlImporter->deregisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing);
     }
 }
 
@@ -90,12 +63,6 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
         if (!pYamlImporter->registerResourceFns(yaml_armature_key(), yaml_read_armature,
                                                 armatureCreateProcessing)) {
             errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
-
-        if (!pYamlImporter->registerResourceFns(yaml_mesh_key(), yaml_read_mesh,
-                                                meshCreateProcessing)) {
-            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER;
             goto REGISTRATION_FAILED;
         }
     }

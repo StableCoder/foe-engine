@@ -26,6 +26,9 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
+#include <foe/graphics/resource/mesh.hpp>
+#include <foe/graphics/resource/mesh_loader.hpp>
+#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
@@ -42,8 +45,6 @@
 #include <foe/quaternion_math.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/mesh_loader.hpp>
-#include <foe/resource/mesh_pool.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi_vulkan.hpp>
@@ -203,7 +204,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     asynchronousThreadPool.start(1);
 
     auto asyncTaskFunc = [&](std::function<void()> task) {
-        asynchronousThreadPool.scheduleTask(std::move(task));
+        task();
+        // asynchronousThreadPool.scheduleTask(std::move(task));
     };
 
     foeSimulationState *pNewSimulationSet{nullptr};
@@ -319,8 +321,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         for (auto *ptr : getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
                                                       pSimulationSet->resourcePools.size())
                              ->getDataVector()) {
-            ptr->incrementUseCount();
-            ptr->decrementUseCount();
+            ptr->loadResource(false);
         }
 
         for (auto *ptr : getResourcePool<foeShaderPool>(pSimulationSet->resourcePools.data(),
@@ -560,7 +561,7 @@ void Application::deinitialize() {
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
             auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
                 pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-            pMeshLoader->processUnloadRequests();
+            pMeshLoader->gfxMaintenance();
         }
 
         auto *pMaterialPool = getResourcePool<foeMaterialPool>(
@@ -906,18 +907,6 @@ int Application::mainloop() {
                 }
             }
 
-            { // Resource Unload Requests
-                auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
-                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-                pMeshLoader->processUnloadRequests();
-            }
-
-            { // Resource Load Requests
-                auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
-                    pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
-                pMeshLoader->processLoadRequests();
-            }
-
             // Rendering
             vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool, 0);
 
@@ -982,7 +971,7 @@ int Application::mainloop() {
                 }
                 if (pVertexDescriptor->getState() != foeResourceState::Loaded ||
                     pMaterial->getState() != foeResourceState::Loaded ||
-                    pMesh->getLoadState() != foeResourceLoadState::Loaded) {
+                    pMesh->getState() != foeResourceState::Loaded) {
                     return false;
                 }
 
