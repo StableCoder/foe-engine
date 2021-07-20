@@ -35,9 +35,9 @@ class foeLogger {
     template <typename... Args>
     inline void log(foeLogCategory *pCategory,
                     foeLogLevel level,
-                    std::string_view message,
-                    Args... args) {
-        log(pCategory, level, fmt::format(message, args...));
+                    fmt::format_string<Args...> message,
+                    Args &&...args) {
+        log(pCategory, level, fmt::format(message, std::forward<Args>(args)...));
     }
 
     FOE_EXPORT bool registerSink(foeLogSink *pSink);

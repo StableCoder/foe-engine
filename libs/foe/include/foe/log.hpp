@@ -20,11 +20,20 @@
 #include <foe/export.h>
 #include <foe/log/logger.hpp>
 
+/// Logs a compile-time message to the global logger with the given parameters
 #define FOE_LOG(CATEGORY, LOG_LEVEL, MESSAGE, ...)                                                 \
     if constexpr (static_cast<int>(foeLogLevel::LOG_LEVEL) <=                                      \
                   static_cast<int>(CATEGORY::maxCompileLevel())) {                                 \
         foeLogger::instance()->log(CATEGORY::instance(), foeLogLevel::LOG_LEVEL, MESSAGE,          \
                                    ##__VA_ARGS__);                                                 \
+    }
+
+/// Logs a run-time message to the global logger. The message string may be runtime changable.
+#define FOE_LOG_RUNTIME(CATEGORY, LOG_LEVEL, MESSAGE, ...)                                         \
+    if constexpr (static_cast<int>(foeLogLevel::LOG_LEVEL) <=                                      \
+                  static_cast<int>(CATEGORY::maxCompileLevel())) {                                 \
+        foeLogger::instance()->log(CATEGORY::instance(), foeLogLevel::LOG_LEVEL,                   \
+                                   fmt::runtime(MESSAGE), ##__VA_ARGS__);                          \
     }
 
 /** Declares a log category for static or scoped environments
