@@ -16,6 +16,7 @@
 
 #include <foe/resource/armature_loader.hpp>
 
+#include <foe/model/assimp/importer.hpp>
 #include <foe/resource/error_code.hpp>
 
 #include "log.hpp"
@@ -72,8 +73,6 @@ void foeArmatureLoader::requestResourceLoad(foeArmature *pArmature) {
 
 void foeArmatureLoader::requestResourceUnload(foeArmature *pArmature) {}
 
-#include <foe/model/file_importer_plugins.hpp>
-
 namespace {
 
 bool processCreateInfo(
@@ -85,11 +84,9 @@ bool processCreateInfo(
         return false;
     }
 
-    auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
-
     { // Armature
         std::filesystem::path filePath = externalFileSearchFn(createInfo->fileName);
-        auto modelLoader = modelImporterPlugin->createImporter(filePath.string().c_str());
+        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str());
         assert(modelLoader->loaded());
 
         auto tempArmature = modelLoader->importArmature();
@@ -103,7 +100,7 @@ bool processCreateInfo(
     { // Animations
         for (auto const &it : createInfo->animations) {
             std::filesystem::path filePath = externalFileSearchFn(it.file);
-            auto modelLoader = modelImporterPlugin->createImporter(filePath.string().c_str());
+            auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str());
             assert(modelLoader->loaded());
 
             for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
@@ -118,8 +115,6 @@ bool processCreateInfo(
             }
         }
     }
-
-    modelImporterPlugin.release();
 
     return true;
 }

@@ -19,8 +19,8 @@
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/model.hpp>
 #include <foe/graphics/vk/session.hpp>
+#include <foe/model/assimp/importer.hpp>
 #include <foe/model/cube.hpp>
-#include <foe/model/file_importer_plugins.hpp>
 #include <foe/model/ico_sphere.hpp>
 #include <vk_error_code.hpp>
 #include <vulkan/vulkan.h>
@@ -160,9 +160,8 @@ void foeMeshLoader::load(void *pResource,
 
     if (auto pCI = dynamic_cast<foeMeshFileSource *>(pMeshCI->source.get()); pCI) {
         std::filesystem::path filePath = mExternalFileSearchFn(pCI->fileName);
-        auto modelImporterPlugin = foeModelLoadFileImporterPlugin(ASSIMP_PLUGIN_PATH);
 
-        auto modelLoader = modelImporterPlugin->createImporter(filePath.string().c_str());
+        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str());
         assert(modelLoader->loaded());
 
         unsigned int meshIndex;
@@ -274,8 +273,6 @@ void foeMeshLoader::load(void *pResource,
         data.perVertexBoneWeights = perVertexBoneWeights;
         data.gfxBones = std::move(meshBones);
         data.gfxVertexComponent = components;
-
-        modelImporterPlugin.release();
     } else if (auto pCI = dynamic_cast<foeMeshCubeSource *>(pMeshCI->source.get()); pCI) {
         std::vector<foeVertexComponent> components{
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
