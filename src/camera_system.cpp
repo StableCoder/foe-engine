@@ -18,6 +18,7 @@
 
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
+#include <vulkan/vulkan_core.h>
 
 #include "camera.hpp"
 #include "camera_pool.hpp"
@@ -102,6 +103,8 @@ void foeCameraSystem::deinitialize() {
     mAllocator = VK_NULL_HANDLE;
     mDevice = VK_NULL_HANDLE;
 }
+
+bool foeCameraSystem::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};

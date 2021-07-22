@@ -17,8 +17,13 @@
 #ifndef FOE_SIMULATION_CORE_SYSTEM_HPP
 #define FOE_SIMULATION_CORE_SYSTEM_HPP
 
+#include <cstddef>
+
 struct foeSystemBase {
     virtual ~foeSystemBase() = default;
+
+    size_t refCount{0};
+    size_t initCount{0};
 };
 
 #endif // FOE_SIMULATION_CORE_SYSTEM_HPP

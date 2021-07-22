@@ -44,6 +44,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem : public foeSystemBase {
                     foeRigidBodyPool *pRigidBodyPool,
                     foePosition3dPool *pPosition3dPool);
     void deinitialize();
+    bool initialized() const noexcept;
 
     void process(float timePassed);
 
@@ -55,12 +56,12 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem : public foeSystemBase {
     void removeObject(foeEntityID entity, foeRigidBody *pRigidBody);
 
     // Resources
-    foeCollisionShapeLoader *mpCollisionShapeLoader;
-    foeCollisionShapePool *mpCollisionShapePool;
+    foeCollisionShapeLoader *mpCollisionShapeLoader{nullptr};
+    foeCollisionShapePool *mpCollisionShapePool{nullptr};
 
     // Components
-    foeRigidBodyPool *mpRigidBodyPool;
-    foePosition3dPool *mpPosition3dPool;
+    foeRigidBodyPool *mpRigidBodyPool{nullptr};
+    foePosition3dPool *mpPosition3dPool{nullptr};
 
     // Physics World Instance Items
     std::unique_ptr<btBroadphaseInterface> mpBroadphase;

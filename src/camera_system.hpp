@@ -34,6 +34,7 @@ class foeCameraSystem : public foeSystemBase {
                         foeCameraPool *pCameraPool,
                         foeGfxSession gfxSession);
     void deinitialize();
+    bool initialized() const noexcept;
 
     VkResult processCameras(uint32_t frameIndex);
 

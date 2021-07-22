@@ -85,23 +85,52 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Components
     for (auto &pPool : pSimulationState->componentPools) {
-        searchAndDestroy2<foeRenderStatePool>(pPool);
-        searchAndDestroy2<foeCameraPool>(pPool);
-        searchAndDestroy2<foeArmatureStatePool>(pPool);
+        searchAndDestroy<foeRenderStatePool>(pPool);
+        searchAndDestroy<foeCameraPool>(pPool);
+        searchAndDestroy<foeArmatureStatePool>(pPool);
+    }
+}
+
+struct Initialized {
+    // Systems
+    bool armature;
+    bool camera;
+    bool positionDescriptor;
+    bool animation;
+};
+
+void deinitialize(Initialized const &initialized, foeSimulationStateLists const *pSimStateData) {
+    // Systems
+    auto *pIt = pSimStateData->pSystems;
+    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+
+    for (; pIt != pEndIt; ++pIt) {
+        if (initialized.armature)
+            searchAndDeinit<foeArmatureSystem>(*pIt);
+        if (initialized.camera)
+            searchAndDeinit<foeCameraSystem>(*pIt);
+        if (initialized.positionDescriptor)
+            searchAndDeinit<PositionDescriptorPool>(*pIt);
+        if (initialized.animation)
+            searchAndDeinit<VkAnimationPool>(*pIt);
     }
 }
 
 std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                                  foeSimulationStateLists const *pSimStateData) {
     std::error_code errC;
+    Initialized initialized{};
 
     // Systems
     auto *pIt = pSimStateData->pSystems;
     auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
 
     for (; pIt != pEndIt; ++pIt) {
-        auto *pArmatureSystem = dynamic_cast<foeArmatureSystem *>(*pIt);
-        if (pArmatureSystem) {
+        if (auto *pArmatureSystem = dynamic_cast<foeArmatureSystem *>(*pIt); pArmatureSystem) {
+            ++pArmatureSystem->initCount;
+            if (pArmatureSystem->initialized())
+                continue;
+
             auto *pArmaturePool = search<foeArmaturePool>(pSimStateData->pResourcePools,
                                                           pSimStateData->pResourcePools +
                                                               pSimStateData->resourcePoolCount);
@@ -111,10 +140,14 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
             pArmatureSystem->initialize(pArmaturePool, pArmatureStatePool);
+            initialized.armature = true;
         }
 
-        auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt);
-        if (pCameraSystem) {
+        if (auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt); pCameraSystem) {
+            ++pCameraSystem->initCount;
+            if (pCameraSystem->initialized())
+                continue;
+
             auto *pPosition3dPool = search<foePosition3dPool>(
                 pSimStateData->pComponentPools,
                 pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
@@ -126,10 +159,15 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
             errC = pCameraSystem->initialize(pPosition3dPool, pCameraPool, pInitInfo->gfxSession);
             if (errC)
                 goto INITIALIZATION_FAILED;
+            initialized.camera = true;
         }
 
-        auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
-        if (pPositionDescriptorPool) {
+        if (auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
+            pPositionDescriptorPool) {
+            ++pPositionDescriptorPool->initCount;
+            if (pPositionDescriptorPool->initialized())
+                continue;
+
             auto *pPosition3dPool = search<foePosition3dPool>(
                 pSimStateData->pComponentPools,
                 pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
@@ -137,10 +175,14 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
             errC = pPositionDescriptorPool->initialize(pPosition3dPool, pInitInfo->gfxSession);
             if (errC)
                 goto INITIALIZATION_FAILED;
+            initialized.positionDescriptor = true;
         }
 
-        auto *pVkAnimationPool = dynamic_cast<VkAnimationPool *>(*pIt);
-        if (pVkAnimationPool) {
+        if (auto *pVkAnimationPool = dynamic_cast<VkAnimationPool *>(*pIt); pVkAnimationPool) {
+            ++pVkAnimationPool->initCount;
+            if (pVkAnimationPool->initialized())
+                continue;
+
             auto *pArmaturePool = search<foeArmaturePool>(pSimStateData->pResourcePools,
                                                           pSimStateData->pResourcePools +
                                                               pSimStateData->resourcePoolCount);
@@ -161,20 +203,24 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                                                 pRenderStatePool, pInitInfo->gfxSession);
             if (errC)
                 goto INITIALIZATION_FAILED;
+            initialized.animation = true;
         }
     }
 
 INITIALIZATION_FAILED:
+    if (errC)
+        deinitialize(initialized, pSimStateData);
+
     return errC;
 }
 
 void onDeinitialization(foeSimulationState const *pSimulationState) {
     // Systems
     for (auto *pSystem : pSimulationState->systems) {
-        searchAndDeinit2<VkAnimationPool>(pSystem);
-        searchAndDeinit2<PositionDescriptorPool>(pSystem);
-        searchAndDeinit2<foeCameraSystem>(pSystem);
-        searchAndDeinit2<foeArmatureSystem>(pSystem);
+        searchAndDeinit<VkAnimationPool>(pSystem);
+        searchAndDeinit<PositionDescriptorPool>(pSystem);
+        searchAndDeinit<foeCameraSystem>(pSystem);
+        searchAndDeinit<foeArmatureSystem>(pSystem);
     }
 }
 

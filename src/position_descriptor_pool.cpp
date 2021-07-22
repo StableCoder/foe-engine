@@ -18,6 +18,7 @@
 
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
+#include <vulkan/vulkan_core.h>
 
 VkResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool,
                                             foeGfxSession session) {
@@ -88,6 +89,8 @@ void PositionDescriptorPool::deinitialize() {
     mAllocator = VK_NULL_HANDLE;
     mDevice = VK_NULL_HANDLE;
 }
+
+bool PositionDescriptorPool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};

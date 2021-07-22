@@ -26,15 +26,16 @@ class foeArmatureSystem : public foeSystemBase {
   public:
     void initialize(foeArmaturePool *pArmaturePool, foeArmatureStatePool *pArmatureStatePool);
     void deinitialize();
+    bool initialized() const noexcept;
 
     void process(float timePassed);
 
   private:
     // Resources
-    foeArmaturePool *mpArmaturePool;
+    foeArmaturePool *mpArmaturePool{nullptr};
 
     // Components
-    foeArmatureStatePool *mpArmatureStatePool;
+    foeArmatureStatePool *mpArmatureStatePool{nullptr};
 };
 
 #endif // ARMATURE_SYSTEM_HPP

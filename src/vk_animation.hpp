@@ -38,6 +38,7 @@ class VkAnimationPool : public foeSystemBase {
                         foeRenderStatePool *pRenderStatePool,
                         foeGfxSession gfxSession);
     void deinitialize();
+    bool initialized() const noexcept;
 
     VkResult uploadBoneOffsets(uint32_t frameIndex);
 

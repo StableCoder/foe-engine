@@ -35,6 +35,7 @@ struct PositionDescriptorPool : public foeSystemBase {
   public:
     VkResult initialize(foePosition3dPool *pPosition3dPool, foeGfxSession gfxSession);
     void deinitialize();
+    bool initialized() const noexcept;
 
     VkResult generatePositionDescriptors(uint32_t frameIndex);
 

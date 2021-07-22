@@ -6,6 +6,7 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_pool.hpp>
 #include <glm/glm.hpp>
+#include <vulkan/vulkan_core.h>
 
 #include "armature_state_pool.hpp"
 #include "render_state_pool.hpp"
@@ -107,6 +108,8 @@ void VkAnimationPool::deinitialize() {
     mAllocator = VK_NULL_HANDLE;
     mDevice = VK_NULL_HANDLE;
 }
+
+bool VkAnimationPool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};

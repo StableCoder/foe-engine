@@ -291,20 +291,20 @@ void onCreate(foeSimulationState *pSimulationState) {
 void onDestroy(foeSimulationState *pSimulationState) {
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
-        searchAndDestroy2<foeMeshLoader>(it.pLoader);
-        searchAndDestroy2<foeVertexDescriptorLoader>(it.pLoader);
-        searchAndDestroy2<foeShaderLoader>(it.pLoader);
-        searchAndDestroy2<foeMaterialLoader>(it.pLoader);
-        searchAndDestroy2<foeImageLoader>(it.pLoader);
+        searchAndDestroy<foeMeshLoader>(it.pLoader);
+        searchAndDestroy<foeVertexDescriptorLoader>(it.pLoader);
+        searchAndDestroy<foeShaderLoader>(it.pLoader);
+        searchAndDestroy<foeMaterialLoader>(it.pLoader);
+        searchAndDestroy<foeImageLoader>(it.pLoader);
     }
 
     // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy2<foeMeshPool>(pPool);
-        searchAndDestroy2<foeVertexDescriptorPool>(pPool);
-        searchAndDestroy2<foeShaderPool>(pPool);
-        searchAndDestroy2<foeMaterialPool>(pPool);
-        searchAndDestroy2<foeImagePool>(pPool);
+        searchAndDestroy<foeMeshPool>(pPool);
+        searchAndDestroy<foeVertexDescriptorPool>(pPool);
+        searchAndDestroy<foeShaderPool>(pPool);
+        searchAndDestroy<foeMaterialPool>(pPool);
+        searchAndDestroy<foeImagePool>(pPool);
     }
 }
 

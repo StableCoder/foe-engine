@@ -88,12 +88,12 @@ void onCreate(foeSimulationState *pSimulationState) {
 void onDestroy(foeSimulationState *pSimulationState) {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
-        searchAndDestroy2<foeArmatureLoader>(it.pLoader);
+        searchAndDestroy<foeArmatureLoader>(it.pLoader);
     }
 
     // Resource Pools
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy2<foeArmaturePool>(pPool);
+        searchAndDestroy<foeArmaturePool>(pPool);
     }
 }
 

@@ -66,26 +66,36 @@ void foePhysicsSystem::deinitialize() {
     // On the way out, go through ALL and remove from any worlds
     mAwaitingLoadingResources.clear();
 
-    { // Iterate through 'active' rigid bodies, the primary for this system
-        auto *pId = mpRigidBodyPool->begin();
-        auto const *const pEndId = mpRigidBodyPool->end();
-        auto *pData = mpRigidBodyPool->begin<1>();
+    if (mpRigidBodyPool) {
+        { // Iterate through 'active' rigid bodies, the primary for this system
+            auto *pId = mpRigidBodyPool->begin();
+            auto const *const pEndId = mpRigidBodyPool->end();
+            auto *pData = mpRigidBodyPool->begin<1>();
 
-        for (; pId != pEndId; ++pId, ++pData) {
-            removeObject(*pId, pData);
+            for (; pId != pEndId; ++pId, ++pData) {
+                removeObject(*pId, pData);
+            }
+        }
+
+        { // Iterate through 'removed' rigid bodies, the primary for this system
+            auto *pId = mpRigidBodyPool->rmbegin();
+            auto const *const pEndId = mpRigidBodyPool->rmend();
+            auto *pData = mpRigidBodyPool->rmbegin<1>();
+
+            for (; pId != pEndId; ++pId, ++pData) {
+                removeObject(*pId, pData);
+            }
         }
     }
 
-    { // Iterate through 'removed' rigid bodies, the primary for this system
-        auto *pId = mpRigidBodyPool->rmbegin();
-        auto const *const pEndId = mpRigidBodyPool->rmend();
-        auto *pData = mpRigidBodyPool->rmbegin<1>();
+    mpPosition3dPool = nullptr;
+    mpRigidBodyPool = nullptr;
 
-        for (; pId != pEndId; ++pId, ++pData) {
-            removeObject(*pId, pData);
-        }
-    }
+    mpCollisionShapePool = nullptr;
+    mpCollisionShapeLoader = nullptr;
 }
+
+bool foePhysicsSystem::initialized() const noexcept { return mpCollisionShapeLoader != nullptr; }
 
 void foePhysicsSystem::process(float timePassed) {
     // Any previously attempted items that were waiting for external resources to be loaded

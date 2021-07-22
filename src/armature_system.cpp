@@ -82,7 +82,12 @@ void foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
     mpArmatureStatePool = pArmatureStatePool;
 }
 
-void foeArmatureSystem::deinitialize() {}
+void foeArmatureSystem::deinitialize() {
+    mpArmatureStatePool = nullptr;
+    mpArmaturePool = nullptr;
+}
+
+bool foeArmatureSystem::initialized() const noexcept { return mpArmaturePool != nullptr; }
 
 void foeArmatureSystem::process(float timePassed) {
     auto *pArmatureState = mpArmatureStatePool->begin<1>();

@@ -43,15 +43,6 @@ SearchType *searchLoaders(InputIt start, InputIt end) noexcept {
 template <typename DestroyType, typename InType>
 void searchAndDestroy(InType &ptr) noexcept {
     auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        delete dynPtr;
-        ptr = nullptr;
-    }
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDestroy2(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
     if (dynPtr && (--dynPtr->refCount == 0)) {
         delete dynPtr;
         ptr = nullptr;
@@ -62,14 +53,6 @@ template <typename DestroyType, typename InType>
 void searchAndDeinit(InType &ptr) noexcept {
     auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
     if (dynPtr && (--dynPtr->initCount == 0)) {
-        dynPtr->deinitialize();
-    }
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDeinit2(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
         dynPtr->deinitialize();
     }
 }
