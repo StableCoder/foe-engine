@@ -253,8 +253,9 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 }
 
-void onInitialization(foeSimulationInitInfo const *pInitInfo,
+std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                       foeSimulationStateLists const *pSimStateData) {
+    std::error_code errC;
     { // Loaders
         auto *pIt = pSimStateData->pResourceLoaders;
         auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
@@ -262,7 +263,10 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
         for (; pIt != pEndIt; ++pIt) {
             auto *pImageLoader = dynamic_cast<foeImageLoader *>(pIt->pLoader);
             if (pImageLoader) {
-                pImageLoader->initialize(pInitInfo->gfxSession, pInitInfo->externalFileSearchFn);
+                errC = pImageLoader->initialize(pInitInfo->gfxSession,
+                                                pInitInfo->externalFileSearchFn);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
             }
 
             auto *pMaterialLoader = dynamic_cast<foeMaterialLoader *>(pIt->pLoader);
@@ -275,12 +279,17 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                                                         pSimStateData->pResourcePools +
                                                             pSimStateData->resourcePoolCount);
 
-                pMaterialLoader->initialize(pShaderPool, pImagePool, pInitInfo->gfxSession);
+                errC = pMaterialLoader->initialize(pShaderPool, pImagePool, pInitInfo->gfxSession);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
             }
 
             auto *pShaderLoader = dynamic_cast<foeShaderLoader *>(pIt->pLoader);
             if (pShaderLoader) {
-                pShaderLoader->initialize(pInitInfo->gfxSession, pInitInfo->externalFileSearchFn);
+                errC = pShaderLoader->initialize(pInitInfo->gfxSession,
+                                                 pInitInfo->externalFileSearchFn);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
             }
 
             auto *pVertexDescriptorLoader = dynamic_cast<foeVertexDescriptorLoader *>(pIt->pLoader);
@@ -289,15 +298,23 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                                                           pSimStateData->pResourcePools +
                                                               pSimStateData->resourcePoolCount);
 
-                pVertexDescriptorLoader->initialize(pShaderPool);
+                errC = pVertexDescriptorLoader->initialize(pShaderPool);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
             }
 
             auto *pMeshLoader = dynamic_cast<foeMeshLoader *>(pIt->pLoader);
             if (pMeshLoader) {
+                errC =
                 pMeshLoader->initialize(pInitInfo->gfxSession, pInitInfo->externalFileSearchFn);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
             }
         }
     }
+
+INITIALIZATION_FAILED:
+    return errC;
 }
 
 void onDeinitialization(foeSimulationState const *pSimulationState) {

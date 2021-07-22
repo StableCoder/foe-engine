@@ -22,6 +22,7 @@
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
+#include <vk_error_code.hpp>
 
 #include "armature_state_pool.hpp"
 #include "armature_system.hpp"
@@ -90,8 +91,10 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 }
 
-void onInitialization(foeSimulationInitInfo const *pInitInfo,
-                      foeSimulationStateLists const *pSimStateData) {
+std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
+                                 foeSimulationStateLists const *pSimStateData) {
+    std::error_code errC;
+
     // Systems
     auto *pIt = pSimStateData->pSystems;
     auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
@@ -120,7 +123,9 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                                                       pSimStateData->pComponentPools +
                                                           pSimStateData->componentPoolCount);
 
-            pCameraSystem->initialize(pPosition3dPool, pCameraPool, pInitInfo->gfxSession);
+            errC = pCameraSystem->initialize(pPosition3dPool, pCameraPool, pInitInfo->gfxSession);
+            if (errC)
+                goto INITIALIZATION_FAILED;
         }
 
         auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
@@ -129,7 +134,9 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                 pSimStateData->pComponentPools,
                 pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
-            pPositionDescriptorPool->initialize(pPosition3dPool, pInitInfo->gfxSession);
+            errC = pPositionDescriptorPool->initialize(pPosition3dPool, pInitInfo->gfxSession);
+            if (errC)
+                goto INITIALIZATION_FAILED;
         }
 
         auto *pVkAnimationPool = dynamic_cast<VkAnimationPool *>(*pIt);
@@ -150,10 +157,15 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                 pSimStateData->pComponentPools,
                 pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
-            pVkAnimationPool->initialize(pArmaturePool, pMeshPool, pArmatureStatePool,
-                                         pRenderStatePool, pInitInfo->gfxSession);
+            errC = pVkAnimationPool->initialize(pArmaturePool, pMeshPool, pArmatureStatePool,
+                                                pRenderStatePool, pInitInfo->gfxSession);
+            if (errC)
+                goto INITIALIZATION_FAILED;
         }
     }
+
+INITIALIZATION_FAILED:
+    return errC;
 }
 
 void onDeinitialization(foeSimulationState const *pSimulationState) {

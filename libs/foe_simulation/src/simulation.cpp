@@ -87,6 +87,7 @@ bool foeSimulationFunctionalty::operator!=(foeSimulationFunctionalty const &rhs)
 }
 
 auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) -> std::error_code {
+    std::error_code errC{FOE_SIMULATION_SUCCESS};
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mRegistered) {
@@ -101,18 +102,37 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
     mRegistered.emplace_back(functionality);
 
     // Go through any already existing SimulationState's and add this new functionality to them.
-    for (auto *pSimState : mStates) {
-        acquireExclusiveLock(pSimState, "functionality registration");
+    foeSimulationState **ppSimState = mStates.data();
+    foeSimulationState **ppEndSimState = mStates.data() + mStates.size();
+    for (; ppSimState != ppEndSimState; ++ppSimState) {
+        acquireExclusiveLock(*ppSimState, "functionality registration");
         if (functionality.onCreate)
-            functionality.onCreate(pSimState);
-        if (foeSimulationIsInitialized(pSimState) && functionality.onInitialization) {
-            auto simStateLists = createSimStateLists(pSimState);
-            functionality.onInitialization(&pSimState->initInfo, &simStateLists);
+            functionality.onCreate(*ppSimState);
+        if (foeSimulationIsInitialized(*ppSimState) && functionality.onInitialization) {
+            auto simStateLists = createSimStateLists(*ppSimState);
+            errC = functionality.onInitialization(&(*ppSimState)->initInfo, &simStateLists);
         }
-        pSimState->simSync.unlock();
+        (*ppSimState)->simSync.unlock();
+        if (errC)
+            break;
     }
 
-    return FOE_SIMULATION_SUCCESS;
+    // If we failed to initialize in one of the simulations above, then we need to go through and
+    // deinitialize/destroy this functionality in all the ones it was already added to successfully
+    if (errC) {
+        --ppSimState;
+        ppEndSimState = mStates.data() - 1;
+        for (; ppSimState != ppEndSimState; --ppSimState) {
+            acquireExclusiveLock(*ppSimState, "functionality deregistration");
+            if (functionality.onDeinitialization && foeSimulationIsInitialized(*ppSimState))
+                functionality.onDeinitialization(*ppSimState);
+            if (functionality.onDestroy)
+                functionality.onDestroy(*ppSimState);
+            (*ppSimState)->simSync.unlock();
+        }
+    }
+
+    return errC;
 }
 
 auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) -> std::error_code {
@@ -124,7 +144,7 @@ auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
             // any active SimulationStates
             for (auto *pSimState : mStates) {
                 acquireExclusiveLock(pSimState, "functionality deregistration");
-                if (functionality.onDeinitialization)
+                if (functionality.onDeinitialization && foeSimulationIsInitialized(pSimState))
                     functionality.onDeinitialization(pSimState);
                 if (functionality.onDestroy)
                     functionality.onDestroy(pSimState);
@@ -146,8 +166,8 @@ bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState) {
     return pSimulationState->initInfo.gfxSession != FOE_NULL_HANDLE;
 }
 
-foeSimulationState *foeCreateSimulation(foeSimulationCreateInfo const &createInfo,
-                                        bool addNameMaps) {
+auto foeCreateSimulation(foeSimulationCreateInfo const &createInfo, bool addNameMaps)
+    -> foeSimulationState * {
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulationState> newSimState{new foeSimulationState};
@@ -212,7 +232,8 @@ std::error_code foeDestroySimulation(foeSimulationState *pSimulationState) {
     }
 
     // Deinitialize just in case
-    deinitSimulation(pSimulationState);
+    if (foeSimulationIsInitialized(pSimulationState))
+        deinitSimulation(pSimulationState);
 
     // Call any destroys
     acquireExclusiveLock(pSimulationState, "simulation destruction");
@@ -238,15 +259,16 @@ std::error_code foeDestroySimulation(foeSimulationState *pSimulationState) {
     return FOE_SIMULATION_SUCCESS;
 }
 
-void foeInitializeSimulation(foeSimulationState *pSimulationState,
-                             foeSimulationInitInfo const *pInitInfo) {
+auto foeInitializeSimulation(foeSimulationState *pSimulationState,
+                             foeSimulationInitInfo const *pInitInfo) -> std::error_code {
+    std::error_code errC;
     std::scoped_lock lock{mSync};
 
     if (pSimulationState->initInfo.gfxSession != FOE_NULL_HANDLE) {
         FOE_LOG(SimulationState, Error,
                 "Attempting to re-initialize already initialized SimulationState: {}",
                 static_cast<void *>(pSimulationState))
-        return;
+        return FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED;
     }
 
     FOE_LOG(SimulationState, Verbose, "Initializing SimulationState: {}",
@@ -259,17 +281,29 @@ void foeInitializeSimulation(foeSimulationState *pSimulationState,
     acquireExclusiveLock(pSimulationState, "initialization");
     for (auto const &functionality : mRegistered) {
         if (functionality.onInitialization) {
-            functionality.onInitialization(pInitInfo, &stateLists);
+            errC = functionality.onInitialization(pInitInfo, &stateLists);
+            if (errC)
+                break;
         }
     }
+
+    if (errC) {
+        deinitSimulation(pSimulationState);
+        FOE_LOG(SimulationState, Error, "Failed to initialize SimulationState: {} due to error: {}",
+                static_cast<void *>(pSimulationState), errC.message());
+    } else {
+        FOE_LOG(SimulationState, Verbose, "Initialized SimulationState: {}",
+                static_cast<void *>(pSimulationState));
+    }
+
     pSimulationState->simSync.unlock();
 
-    FOE_LOG(SimulationState, Verbose, "Initialized SimulationState: {}",
-            static_cast<void *>(pSimulationState));
+    return errC;
 }
 
 void foeDeinitializeSimulation(foeSimulationState *pSimulationState) {
     std::scoped_lock lock{mSync};
 
-    deinitSimulation(pSimulationState);
+    if (foeSimulationIsInitialized(pSimulationState))
+        deinitSimulation(pSimulationState);
 }

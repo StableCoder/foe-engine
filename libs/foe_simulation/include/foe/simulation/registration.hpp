@@ -33,7 +33,8 @@ struct foeSimulationFunctionalty {
 
     /// To be called after onCreate when a Simulation is being initialized to start actually running
     /// a Simulation
-    void (*onInitialization)(foeSimulationInitInfo const *, foeSimulationStateLists const *);
+    std::error_code (*onInitialization)(foeSimulationInitInfo const *,
+                                        foeSimulationStateLists const *);
     /// Called before onDestroy to safely destory any running state for an active SimulationState
     void (*onDeinitialization)(foeSimulationState const *);
 
@@ -52,6 +53,9 @@ struct foeSimulationFunctionalty {
  *
  * If there are any created simulations, then the provided 'onCreate' function is called on them. If
  * any simulations have been initialized prior, then the 'onInitialize' function is called on them.
+ *
+ * If a failure occurs, then the functionality is fully removed from anywhere it may have succeeded
+ * and is then not considered registered.
  */
 FOE_SIM_EXPORT auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality)
     -> std::error_code;

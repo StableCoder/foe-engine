@@ -121,8 +121,8 @@ bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState);
  *
  * The 'onCreate' of any previously registered functionality is called on the created simulation.
  */
-FOE_SIM_EXPORT foeSimulationState *foeCreateSimulation(foeSimulationCreateInfo const &createInfo,
-                                                       bool addNameMaps);
+FOE_SIM_EXPORT auto foeCreateSimulation(foeSimulationCreateInfo const &createInfo, bool addNameMaps)
+    -> foeSimulationState *;
 
 /**
  * @brief Attempts to destroy a given SimulationState
@@ -141,14 +141,17 @@ FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulationState *pSimulationState) -
  * @brief Initializes a SimulationState given InitInfo
  * @param pSimulationState SimulatioState to initialize
  * @param pInitInfo Required information used to initialize a SimulationState
+ * @param FOE_SIMULATION_SUCCESS if successfully destroyed. A descriptive error code otherwise.
  *
  * Returns immediately if the SimulationState had already been initialized.
  *
  * Otherwise iterates through any registered functionality and calls its 'onInitialization'
- * function.
+ * function. If any of these fails, then it backtracks deinitializing anything that did succeed and
+ * returns a state fully deinitialized.
  */
-FOE_SIM_EXPORT void foeInitializeSimulation(foeSimulationState *pSimulationState,
-                                            foeSimulationInitInfo const *pInitInfo);
+FOE_SIM_EXPORT auto foeInitializeSimulation(foeSimulationState *pSimulationState,
+                                            foeSimulationInitInfo const *pInitInfo)
+    -> std::error_code;
 
 /**
  * @brief Initializes a SimulationState given InitInfo

@@ -127,8 +127,10 @@ SearchType *searchLoaders(InputIt start, InputIt end) noexcept {
     return nullptr;
 }
 
-void onInitialization(foeSimulationInitInfo const *pInitInfo,
-                      foeSimulationStateLists const *pSimStateData) {
+std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
+                                 foeSimulationStateLists const *pSimStateData) {
+    std::error_code errC;
+
     { // Loaders
         auto *pIt = pSimStateData->pResourceLoaders;
         auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
@@ -136,7 +138,9 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
         for (; pIt != pEndIt; ++pIt) {
             auto *pCollisionShapeLoader = dynamic_cast<foeCollisionShapeLoader *>(pIt->pLoader);
             if (pCollisionShapeLoader) {
-                pCollisionShapeLoader->initialize();
+                errC = pCollisionShapeLoader->initialize();
+                if (errC)
+                    goto INITIALIZATION_FAILED;
             }
         }
     }
@@ -169,6 +173,9 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
             }
         }
     }
+
+INITIALIZATION_FAILED:
+    return errC;
 }
 
 void onDeinitialization(foeSimulationState const *pSimulationState) {

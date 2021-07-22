@@ -35,6 +35,8 @@ std::string foeSimulationErrCategory::message(int ev) const {
         return "FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED";
     case FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED:
         return "FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED";
+    case FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED:
+        return "FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED";
 
     default:
         if (ev > 0)

@@ -89,17 +89,21 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 }
 
-void onInitialize(foeSimulationInitInfo const *pInitInfo,
-                  foeSimulationStateLists const *pSimStateData) {
+std::error_code onInitialize(foeSimulationInitInfo const *pInitInfo,
+                             foeSimulationStateLists const *pSimStateData) {
+    std::error_code errC;
+
     // Resource Loaders
     auto *pIt = pSimStateData->pResourceLoaders;
     auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
 
     for (; pIt != pEndIt; ++pIt) {
         if (auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader)) {
-            pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
+            errC = pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
         }
     }
+
+    return errC;
 }
 
 void onDeinitialize(foeSimulationState const *pSimulationState) {
