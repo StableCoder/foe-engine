@@ -29,6 +29,17 @@ SearchType *search(InputIt start, InputIt end) noexcept {
     return nullptr;
 }
 
+template <typename SearchType, typename InputIt>
+SearchType *searchLoaders(InputIt start, InputIt end) noexcept {
+    for (; start != end; ++start) {
+        auto *dynPtr = dynamic_cast<SearchType *>(start->pLoader);
+        if (dynPtr)
+            return dynPtr;
+    }
+
+    return nullptr;
+}
+
 template <typename DestroyType, typename InType>
 void searchAndDestroy(InType &ptr) noexcept {
     auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
@@ -49,6 +60,14 @@ void searchAndDestroy2(InType &ptr) noexcept {
 
 template <typename DestroyType, typename InType>
 void searchAndDeinit(InType &ptr) noexcept {
+    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
+    if (dynPtr && (--dynPtr->initCount == 0)) {
+        dynPtr->deinitialize();
+    }
+}
+
+template <typename DestroyType, typename InType>
+void searchAndDeinit2(InType &ptr) noexcept {
     auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
     if (dynPtr) {
         dynPtr->deinitialize();

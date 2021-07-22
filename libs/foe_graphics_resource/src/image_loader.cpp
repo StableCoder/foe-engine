@@ -49,8 +49,11 @@ void foeImageLoader::deinitialize() {
         foeGfxDestroyUploadContext(mGfxUploadContext);
     mGfxUploadContext = FOE_NULL_HANDLE;
 
+    mExternalFileSearchFn = {};
     mGfxSession = FOE_NULL_HANDLE;
 }
+
+bool foeImageLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
 
 void foeImageLoader::gfxMaintenance() {
     // Previous Data Destruction

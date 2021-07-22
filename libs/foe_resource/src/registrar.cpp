@@ -67,20 +67,28 @@ void onCreate(foeSimulationState *pSimulationState) {
     }
 
     // Resource Loaders
-    pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
-        .pLoader = new foeArmatureLoader,
-        .pMaintenanceFn =
-            [](foeResourceLoaderBase *pLoader) {
-                auto *pArmatureLoader = reinterpret_cast<foeArmatureLoader *>(pLoader);
-                pArmatureLoader->maintenance();
-            },
-    });
+    if (auto *pLoader = searchLoaders<foeArmatureLoader>(pSimulationState->resourceLoaders.begin(),
+                                                         pSimulationState->resourceLoaders.end());
+        pLoader) {
+        ++pLoader->refCount;
+    } else {
+        pLoader = new foeArmatureLoader;
+        ++pLoader->refCount;
+        pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
+            .pLoader = pLoader,
+            .pMaintenanceFn =
+                [](foeResourceLoaderBase *pLoader) {
+                    auto *pArmatureLoader = reinterpret_cast<foeArmatureLoader *>(pLoader);
+                    pArmatureLoader->maintenance();
+                },
+        });
+    }
 }
 
 void onDestroy(foeSimulationState *pSimulationState) {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
-        searchAndDestroy<foeArmatureLoader>(it.pLoader);
+        searchAndDestroy2<foeArmatureLoader>(it.pLoader);
     }
 
     // Resource Pools
@@ -98,8 +106,25 @@ std::error_code onInitialize(foeSimulationInitInfo const *pInitInfo,
     auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
 
     for (; pIt != pEndIt; ++pIt) {
-        if (auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader)) {
+        if (auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader);
+            pArmatureLoader) {
+            ++pArmatureLoader->initCount;
+            if (pArmatureLoader->initialized())
+                continue;
+
             errC = pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
+            if (errC)
+                goto INITIALIZATION_FAILED;
+        }
+    }
+
+INITIALIZATION_FAILED:
+    if (errC) {
+        auto *pIt = pSimStateData->pResourceLoaders;
+        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+
+        for (; pIt != pEndIt; ++pIt) {
+            searchAndDeinit<foeArmatureLoader>(pIt->pLoader);
         }
     }
 

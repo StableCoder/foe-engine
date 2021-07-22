@@ -17,6 +17,7 @@
 #ifndef FOE_SIMULATION_CORE_LOADER_HPP
 #define FOE_SIMULATION_CORE_LOADER_HPP
 
+#include <cstddef>
 #include <memory>
 #include <system_error>
 
@@ -29,6 +30,9 @@ struct foeResourceLoaderBase {
     virtual void load(void *pResource,
                       std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                       void (*pPostLoadFn)(void *, std::error_code)) {}
+
+    size_t refCount{0};
+    size_t initCount{0};
 };
 
 #endif // FOE_SIMULATION_CORE_LOADER_HPP

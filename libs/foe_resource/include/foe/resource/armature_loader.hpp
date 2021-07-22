@@ -44,6 +44,7 @@ class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
     std::error_code initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
+    bool initialized() const noexcept;
 
     void maintenance();
 

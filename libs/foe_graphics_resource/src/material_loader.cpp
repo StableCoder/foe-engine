@@ -119,10 +119,11 @@ void foeMaterialLoader::deinitialize() {
     mGfxFragmentDescriptorPool = nullptr;
 
     mGfxSession = FOE_NULL_HANDLE;
-
     mImagePool = nullptr;
     mShaderPool = nullptr;
 }
+
+bool foeMaterialLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
 
 void foeMaterialLoader::gfxMaintenance() {
     // Process Delayed Data Destruction

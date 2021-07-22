@@ -72,12 +72,23 @@ void onCreate(foeSimulationState *pSimulationState) {
     }
 
     // Loaders
-    pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
-        .pLoader = new foeCollisionShapeLoader,
-        .pMaintenanceFn = [](foeResourceLoaderBase *pLoader) {
-            auto *pCollisionShapeLoader = reinterpret_cast<foeCollisionShapeLoader *>(pLoader);
-            pCollisionShapeLoader->maintenance();
-        }});
+    if (auto *pLoader = searchLoaders<foeCollisionShapeLoader>(
+            pSimulationState->resourceLoaders.begin(), pSimulationState->resourceLoaders.end());
+        pLoader) {
+        ++pLoader->refCount;
+    } else {
+        pLoader = new foeCollisionShapeLoader;
+        ++pLoader->refCount;
+        pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
+            .pLoader = pLoader,
+            .pMaintenanceFn =
+                [](foeResourceLoaderBase *pLoader) {
+                    auto *pCollisionShapeLoader =
+                        reinterpret_cast<foeCollisionShapeLoader *>(pLoader);
+                    pCollisionShapeLoader->maintenance();
+                },
+        });
+    }
 
     // Components
     if (auto *pPool = search<foeRigidBodyPool>(pSimulationState->componentPools.begin(),
@@ -107,7 +118,7 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
-        searchAndDestroy<foeCollisionShapeLoader>(it.pLoader);
+        searchAndDestroy2<foeCollisionShapeLoader>(it.pLoader);
     }
 
     // Resources
@@ -116,20 +127,25 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 }
 
-template <typename SearchType, typename InputIt>
-SearchType *searchLoaders(InputIt start, InputIt end) noexcept {
-    for (; start != end; ++start) {
-        auto *dynPtr = dynamic_cast<SearchType *>(start->pLoader);
-        if (dynPtr)
-            return dynPtr;
-    }
+struct Initialized {
+    bool collisionShape;
+};
 
-    return nullptr;
+void deinitialize(Initialized const &initialized, foeSimulationStateLists const *pSimStateData) {
+    // Loaders
+    auto *pIt = pSimStateData->pResourceLoaders;
+    auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+
+    for (; pIt != pEndIt; ++pIt) {
+        if (initialized.collisionShape)
+            searchAndDeinit<foeCollisionShapeLoader>(pIt->pLoader);
+    }
 }
 
 std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                                  foeSimulationStateLists const *pSimStateData) {
     std::error_code errC;
+    Initialized initialized{};
 
     { // Loaders
         auto *pIt = pSimStateData->pResourceLoaders;
@@ -138,9 +154,14 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
         for (; pIt != pEndIt; ++pIt) {
             auto *pCollisionShapeLoader = dynamic_cast<foeCollisionShapeLoader *>(pIt->pLoader);
             if (pCollisionShapeLoader) {
+                ++pCollisionShapeLoader->initCount;
+                if (pCollisionShapeLoader->initialized())
+                    continue;
+
                 errC = pCollisionShapeLoader->initialize();
                 if (errC)
                     goto INITIALIZATION_FAILED;
+                initialized.collisionShape = true;
             }
         }
     }
@@ -175,13 +196,16 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
     }
 
 INITIALIZATION_FAILED:
+    if (errC)
+        deinitialize(initialized, pSimStateData);
+
     return errC;
 }
 
 void onDeinitialization(foeSimulationState const *pSimulationState) {
     // Systems
     for (auto *pSystem : pSimulationState->systems) {
-        searchAndDeinit<foePhysicsSystem>(pSystem);
+        searchAndDeinit2<foePhysicsSystem>(pSystem);
     }
 
     // Loaders

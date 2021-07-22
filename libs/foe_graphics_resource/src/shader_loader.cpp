@@ -66,7 +66,12 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void foeShaderLoader::deinitialize() { mGfxSession = FOE_NULL_HANDLE; }
+void foeShaderLoader::deinitialize() {
+    mExternalFileSearchFn = {};
+    mGfxSession = FOE_NULL_HANDLE;
+}
+
+bool foeShaderLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
 
 void foeShaderLoader::gfxMaintenance() {
     // Destruction

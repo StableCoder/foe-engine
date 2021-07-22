@@ -64,6 +64,10 @@ INITIALIZATION_FAILED:
 
 void foeVertexDescriptorLoader::deinitialize() { mShaderPool = nullptr; }
 
+bool foeVertexDescriptorLoader::initialized() const noexcept {
+    return mShaderPool != FOE_NULL_HANDLE;
+}
+
 void foeVertexDescriptorLoader::gfxMaintenance() {
     // Delayed Data Destroy
 

@@ -41,6 +41,7 @@ class FOE_GFX_RES_EXPORT foeImageLoader : public foeResourceLoaderBase {
         foeGfxSession session,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
+    bool initialized() const noexcept;
 
     void gfxMaintenance();
 

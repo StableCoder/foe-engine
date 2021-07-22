@@ -37,6 +37,8 @@ INITIALIZATION_FAILED:
 
 void foeCollisionShapeLoader::deinitialize() {}
 
+bool foeCollisionShapeLoader::initialized() const noexcept { return false; }
+
 void foeCollisionShapeLoader::maintenance() {
     // Process Unloads
     mUnloadRequestsSync.lock();

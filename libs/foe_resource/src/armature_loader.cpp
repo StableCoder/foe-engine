@@ -36,7 +36,9 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void foeArmatureLoader::deinitialize() {}
+void foeArmatureLoader::deinitialize() { mExternalFileSearchFn = {}; }
+
+bool foeArmatureLoader::initialized() const noexcept { return bool(mExternalFileSearchFn); }
 
 void foeArmatureLoader::maintenance() {
     // Process Unloads

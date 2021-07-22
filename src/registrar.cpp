@@ -171,10 +171,10 @@ INITIALIZATION_FAILED:
 void onDeinitialization(foeSimulationState const *pSimulationState) {
     // Systems
     for (auto *pSystem : pSimulationState->systems) {
-        searchAndDeinit<VkAnimationPool>(pSystem);
-        searchAndDeinit<PositionDescriptorPool>(pSystem);
-        searchAndDeinit<foeCameraSystem>(pSystem);
-        searchAndDeinit<foeArmatureSystem>(pSystem);
+        searchAndDeinit2<VkAnimationPool>(pSystem);
+        searchAndDeinit2<PositionDescriptorPool>(pSystem);
+        searchAndDeinit2<foeCameraSystem>(pSystem);
+        searchAndDeinit2<foeArmatureSystem>(pSystem);
     }
 }
 

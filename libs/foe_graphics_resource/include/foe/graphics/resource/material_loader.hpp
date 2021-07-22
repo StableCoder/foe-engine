@@ -52,6 +52,7 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
                                foeImagePool *pImagePool,
                                foeGfxSession session);
     void deinitialize();
+    bool initialized() const noexcept;
 
     void gfxMaintenance();
 

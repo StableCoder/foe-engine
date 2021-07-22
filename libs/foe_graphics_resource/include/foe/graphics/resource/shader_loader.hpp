@@ -39,6 +39,7 @@ class FOE_GFX_RES_EXPORT foeShaderLoader : public foeResourceLoaderBase {
         foeGfxSession session,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
+    bool initialized() const noexcept;
 
     void gfxMaintenance();
 
@@ -53,7 +54,7 @@ class FOE_GFX_RES_EXPORT foeShaderLoader : public foeResourceLoaderBase {
                                uint32_t resourceIteration,
                                bool immediateUnload);
 
-    foeGfxSession mGfxSession;
+    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
 
     struct LoadData {
