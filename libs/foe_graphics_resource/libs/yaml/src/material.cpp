@@ -33,7 +33,6 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
     }
 
     bool read{false};
-    foeMaterialCreateInfo tempData;
     try {
         // Resources
         read |= yaml_read_id_optional("fragment_shader", subNode, pTranslator,
