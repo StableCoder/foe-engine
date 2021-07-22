@@ -17,10 +17,14 @@
 #ifndef FOE_IMEX_COMPONENT_POOL_BASE_HPP
 #define FOE_IMEX_COMPONENT_POOL_BASE_HPP
 
+#include <cstddef>
+
 struct foeComponentPoolBase {
     virtual ~foeComponentPoolBase() {}
 
     virtual void maintenance() = 0;
+
+    size_t refCount{0};
 };
 
 #endif // FOE_IMEX_COMPONENT_POOL_BASE_HPP

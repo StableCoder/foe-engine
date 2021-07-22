@@ -20,6 +20,7 @@
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/resource/armature_pool.hpp>
 #include <foe/simulation/registration.hpp>
+#include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
 #include "armature_state_pool.hpp"
@@ -35,24 +36,41 @@ namespace {
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Components
-    pSimulationState->componentPools.emplace_back(new foeArmatureStatePool);
-    pSimulationState->componentPools.emplace_back(new foeCameraPool);
-    pSimulationState->componentPools.emplace_back(new foeRenderStatePool);
+    if (auto *pPool = search<foeArmatureStatePool>(pSimulationState->componentPools.begin(),
+                                                   pSimulationState->componentPools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeArmatureStatePool;
+        ++pPool->refCount;
+        pSimulationState->componentPools.emplace_back(pPool);
+    }
+
+    if (auto *pPool = search<foeCameraPool>(pSimulationState->componentPools.begin(),
+                                            pSimulationState->componentPools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeCameraPool;
+        ++pPool->refCount;
+        pSimulationState->componentPools.emplace_back(pPool);
+    }
+
+    if (auto *pPool = search<foeRenderStatePool>(pSimulationState->componentPools.begin(),
+                                                 pSimulationState->componentPools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeRenderStatePool;
+        ++pPool->refCount;
+        pSimulationState->componentPools.emplace_back(pPool);
+    }
 
     // Systems
     pSimulationState->systems.emplace_back(new foeArmatureSystem);
     pSimulationState->systems.emplace_back(new foeCameraSystem);
     pSimulationState->systems.emplace_back(new PositionDescriptorPool);
     pSimulationState->systems.emplace_back(new VkAnimationPool);
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDestroy(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        delete dynPtr;
-        ptr = nullptr;
-    }
 }
 
 void onDestroy(foeSimulationState *pSimulationState) {
@@ -66,21 +84,10 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Components
     for (auto &pPool : pSimulationState->componentPools) {
-        searchAndDestroy<foeRenderStatePool>(pPool);
-        searchAndDestroy<foeCameraPool>(pPool);
-        searchAndDestroy<foeArmatureStatePool>(pPool);
+        searchAndDestroy2<foeRenderStatePool>(pPool);
+        searchAndDestroy2<foeCameraPool>(pPool);
+        searchAndDestroy2<foeArmatureStatePool>(pPool);
     }
-}
-
-template <typename SearchType, typename InputIt>
-SearchType *search(InputIt start, InputIt end) noexcept {
-    for (; start != end; ++start) {
-        auto *dynPtr = dynamic_cast<SearchType *>(*start);
-        if (dynPtr)
-            return dynPtr;
-    }
-
-    return nullptr;
 }
 
 void onInitialization(foeSimulationInitInfo const *pInitInfo,
@@ -146,14 +153,6 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
             pVkAnimationPool->initialize(pArmaturePool, pMeshPool, pArmatureStatePool,
                                          pRenderStatePool, pInitInfo->gfxSession);
         }
-    }
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDeinit(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        dynPtr->deinitialize();
     }
 }
 

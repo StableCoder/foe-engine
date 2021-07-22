@@ -80,7 +80,15 @@ void onCreate(foeSimulationState *pSimulationState) {
         }});
 
     // Components
-    pSimulationState->componentPools.emplace_back(new foeRigidBodyPool);
+    if (auto *pPool = search<foeRigidBodyPool>(pSimulationState->componentPools.begin(),
+                                               pSimulationState->componentPools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeRigidBodyPool;
+        ++pPool->refCount;
+        pSimulationState->componentPools.emplace_back(pPool);
+    }
 
     // Systems
     pSimulationState->systems.emplace_back(new foePhysicsSystem);
@@ -94,7 +102,7 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Components
     for (auto &pPool : pSimulationState->componentPools) {
-        searchAndDestroy<foeRigidBodyPool>(pPool);
+        searchAndDestroy2<foeRigidBodyPool>(pPool);
     }
 
     // Loaders
