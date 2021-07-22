@@ -28,6 +28,7 @@
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/registration.hpp>
+#include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
 #include "error_code.hpp"
@@ -119,45 +120,85 @@ void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Resources
-    pSimulationState->resourcePools.emplace_back(new foeImagePool{foeResourceFns{
-        .pImportContext = &pSimulationState->groupData,
-        .pImportFn = importFn,
-        .pLoadContext = pSimulationState,
-        .pLoadFn = imageLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
-    }});
+    if (auto *pPool = search<foeImagePool>(pSimulationState->resourcePools.begin(),
+                                           pSimulationState->resourcePools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeImagePool{foeResourceFns{
+            .pImportContext = &pSimulationState->groupData,
+            .pImportFn = importFn,
+            .pLoadContext = pSimulationState,
+            .pLoadFn = imageLoadFn,
+            .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+        }};
+        ++pPool->refCount;
+        pSimulationState->resourcePools.emplace_back(pPool);
+    }
 
-    pSimulationState->resourcePools.emplace_back(new foeMaterialPool{foeResourceFns{
-        .pImportContext = &pSimulationState->groupData,
-        .pImportFn = importFn,
-        .pLoadContext = pSimulationState,
-        .pLoadFn = materialLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
-    }});
+    if (auto *pPool = search<foeMaterialPool>(pSimulationState->resourcePools.begin(),
+                                              pSimulationState->resourcePools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeMaterialPool{foeResourceFns{
+            .pImportContext = &pSimulationState->groupData,
+            .pImportFn = importFn,
+            .pLoadContext = pSimulationState,
+            .pLoadFn = materialLoadFn,
+            .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+        }};
+        ++pPool->refCount;
+        pSimulationState->resourcePools.emplace_back(pPool);
+    }
 
-    pSimulationState->resourcePools.emplace_back(new foeShaderPool{foeResourceFns{
-        .pImportContext = &pSimulationState->groupData,
-        .pImportFn = importFn,
-        .pLoadContext = pSimulationState,
-        .pLoadFn = shaderLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
-    }});
+    if (auto *pPool = search<foeShaderPool>(pSimulationState->resourcePools.begin(),
+                                            pSimulationState->resourcePools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeShaderPool{foeResourceFns{
+            .pImportContext = &pSimulationState->groupData,
+            .pImportFn = importFn,
+            .pLoadContext = pSimulationState,
+            .pLoadFn = shaderLoadFn,
+            .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+        }};
+        ++pPool->refCount;
+        pSimulationState->resourcePools.emplace_back(pPool);
+    }
 
-    pSimulationState->resourcePools.emplace_back(new foeVertexDescriptorPool{foeResourceFns{
-        .pImportContext = &pSimulationState->groupData,
-        .pImportFn = importFn,
-        .pLoadContext = pSimulationState,
-        .pLoadFn = materialLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
-    }});
+    if (auto *pPool = search<foeVertexDescriptorPool>(pSimulationState->resourcePools.begin(),
+                                                      pSimulationState->resourcePools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeVertexDescriptorPool{foeResourceFns{
+            .pImportContext = &pSimulationState->groupData,
+            .pImportFn = importFn,
+            .pLoadContext = pSimulationState,
+            .pLoadFn = vertexDescriptorLoadFn,
+            .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+        }};
+        ++pPool->refCount;
+        pSimulationState->resourcePools.emplace_back(pPool);
+    }
 
-    pSimulationState->resourcePools.emplace_back(new foeMeshPool{foeResourceFns{
-        .pImportContext = &pSimulationState->groupData,
-        .pImportFn = importFn,
-        .pLoadContext = pSimulationState,
-        .pLoadFn = meshLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
-    }});
+    if (auto *pPool = search<foeMeshPool>(pSimulationState->resourcePools.begin(),
+                                          pSimulationState->resourcePools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeMeshPool{foeResourceFns{
+            .pImportContext = &pSimulationState->groupData,
+            .pImportFn = importFn,
+            .pLoadContext = pSimulationState,
+            .pLoadFn = meshLoadFn,
+            .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+        }};
+        ++pPool->refCount;
+        pSimulationState->resourcePools.emplace_back(pPool);
+    }
 
     // Loaders
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
@@ -192,15 +233,6 @@ void onCreate(foeSimulationState *pSimulationState) {
         }});
 }
 
-template <typename DestroyType, typename InType>
-void searchAndDestroy(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        delete dynPtr;
-        ptr = nullptr;
-    }
-}
-
 void onDestroy(foeSimulationState *pSimulationState) {
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
@@ -213,23 +245,12 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy<foeMeshPool>(pPool);
-        searchAndDestroy<foeVertexDescriptorLoader>(pPool);
-        searchAndDestroy<foeShaderPool>(pPool);
-        searchAndDestroy<foeMaterialPool>(pPool);
-        searchAndDestroy<foeImagePool>(pPool);
+        searchAndDestroy2<foeMeshPool>(pPool);
+        searchAndDestroy2<foeVertexDescriptorPool>(pPool);
+        searchAndDestroy2<foeShaderPool>(pPool);
+        searchAndDestroy2<foeMaterialPool>(pPool);
+        searchAndDestroy2<foeImagePool>(pPool);
     }
-}
-
-template <typename SearchType, typename InputIt>
-SearchType *search(InputIt start, InputIt end) noexcept {
-    for (; start != end; ++start) {
-        auto *dynPtr = dynamic_cast<SearchType *>(*start);
-        if (dynPtr)
-            return dynPtr;
-    }
-
-    return nullptr;
 }
 
 void onInitialization(foeSimulationInitInfo const *pInitInfo,
@@ -276,14 +297,6 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                 pMeshLoader->initialize(pInitInfo->gfxSession, pInitInfo->externalFileSearchFn);
             }
         }
-    }
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDeinit(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        dynPtr->deinitialize();
     }
 }
 

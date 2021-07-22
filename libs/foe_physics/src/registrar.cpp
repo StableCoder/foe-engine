@@ -24,6 +24,7 @@
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/resource/error_code.hpp>
 #include <foe/simulation/registration.hpp>
+#include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
 #include "log.hpp"
@@ -54,13 +55,21 @@ void collisionShapeLoadFn(void *pContext,
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Resources
-    pSimulationState->resourcePools.emplace_back(new foeCollisionShapePool{foeResourceFns{
-        .pImportContext = &pSimulationState->groupData,
-        .pImportFn = importFn,
-        .pLoadContext = pSimulationState,
-        .pLoadFn = collisionShapeLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
-    }});
+    if (auto *pPool = search<foeCollisionShapePool>(pSimulationState->resourcePools.begin(),
+                                                    pSimulationState->resourcePools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeCollisionShapePool{foeResourceFns{
+            .pImportContext = &pSimulationState->groupData,
+            .pImportFn = importFn,
+            .pLoadContext = pSimulationState,
+            .pLoadFn = collisionShapeLoadFn,
+            .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+        }};
+        ++pPool->refCount;
+        pSimulationState->resourcePools.emplace_back(pPool);
+    }
 
     // Loaders
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
@@ -75,15 +84,6 @@ void onCreate(foeSimulationState *pSimulationState) {
 
     // Systems
     pSimulationState->systems.emplace_back(new foePhysicsSystem);
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDestroy(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        delete dynPtr;
-        ptr = nullptr;
-    }
 }
 
 void onDestroy(foeSimulationState *pSimulationState) {
@@ -104,19 +104,8 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy<foeCollisionShapePool>(pPool);
+        searchAndDestroy2<foeCollisionShapePool>(pPool);
     }
-}
-
-template <typename SearchType, typename InputIt>
-SearchType *search(InputIt start, InputIt end) noexcept {
-    for (; start != end; ++start) {
-        auto *dynPtr = dynamic_cast<SearchType *>(*start);
-        if (dynPtr)
-            return dynPtr;
-    }
-
-    return nullptr;
 }
 
 template <typename SearchType, typename InputIt>
@@ -171,14 +160,6 @@ void onInitialization(foeSimulationInitInfo const *pInitInfo,
                                            pRigidBodyPool, pPosition3dPool);
             }
         }
-    }
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDeinit(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        dynPtr->deinitialize();
     }
 }
 

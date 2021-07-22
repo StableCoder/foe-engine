@@ -17,8 +17,12 @@
 #ifndef FOE_SIMULATION_CORE_POOL_HPP
 #define FOE_SIMULATION_CORE_POOL_HPP
 
+#include <cstddef>
+
 struct foeResourcePoolBase {
     virtual ~foeResourcePoolBase() {}
+
+    size_t refCount{0};
 };
 
 #endif // FOE_SIMULATION_CORE_POOL_HPP

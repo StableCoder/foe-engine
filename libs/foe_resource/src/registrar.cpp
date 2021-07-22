@@ -21,6 +21,7 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/error_code.hpp>
 #include <foe/simulation/registration.hpp>
+#include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
 #include "log.hpp"
@@ -49,13 +50,21 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Resource Pools
-    pSimulationState->resourcePools.emplace_back(new foeArmaturePool{foeResourceFns{
-        .pImportContext = &pSimulationState->groupData,
-        .pImportFn = importFn,
-        .pLoadContext = pSimulationState,
-        .pLoadFn = armatureLoadFn,
-        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
-    }});
+    if (auto *pPool = search<foeArmaturePool>(pSimulationState->resourcePools.begin(),
+                                              pSimulationState->resourcePools.end());
+        pPool) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foeArmaturePool{foeResourceFns{
+            .pImportContext = &pSimulationState->groupData,
+            .pImportFn = importFn,
+            .pLoadContext = pSimulationState,
+            .pLoadFn = armatureLoadFn,
+            .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+        }};
+        ++pPool->refCount;
+        pSimulationState->resourcePools.emplace_back(pPool);
+    }
 
     // Resource Loaders
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
@@ -68,15 +77,6 @@ void onCreate(foeSimulationState *pSimulationState) {
     });
 }
 
-template <typename DestroyType, typename InType>
-void searchAndDestroy(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        delete dynPtr;
-        ptr = nullptr;
-    }
-}
-
 void onDestroy(foeSimulationState *pSimulationState) {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
@@ -85,19 +85,8 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Resource Pools
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy<foeArmaturePool>(pPool);
+        searchAndDestroy2<foeArmaturePool>(pPool);
     }
-}
-
-template <typename SearchType, typename InputIt>
-SearchType *search(InputIt start, InputIt end) noexcept {
-    for (; start != end; ++start) {
-        auto *dynPtr = dynamic_cast<SearchType *>(*start);
-        if (dynPtr)
-            return dynPtr;
-    }
-
-    return nullptr;
 }
 
 void onInitialize(foeSimulationInitInfo const *pInitInfo,
@@ -110,14 +99,6 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo,
         if (auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader)) {
             pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
         }
-    }
-}
-
-template <typename DestroyType, typename InType>
-void searchAndDeinit(InType &ptr) noexcept {
-    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
-    if (dynPtr) {
-        dynPtr->deinitialize();
     }
 }
 
