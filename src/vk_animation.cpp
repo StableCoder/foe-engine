@@ -189,7 +189,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
 
         if (pMesh == nullptr || pArmature == nullptr ||
             pMesh->getState() != foeResourceState::Loaded ||
-            pArmature->getLoadState() != foeResourceLoadState::Loaded ||
+            pArmature->getState() != foeResourceState::Loaded ||
             pArmatureState->armatureState.empty()) {
             continue;
         }

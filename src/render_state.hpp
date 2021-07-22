@@ -27,7 +27,7 @@ struct foeRenderState {
     foeId mesh;
 
     // Runtime info
-    VkDescriptorSet boneDescriptorSet;
+    VkDescriptorSet boneDescriptorSet{};
 };
 
 #endif // RENDER_STATE_HPP

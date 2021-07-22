@@ -33,6 +33,8 @@ std::string foeResourceErrCategory::message(int ev) const {
         return "FOE_RESOURCE_ERROR_ALREADY_INITIALIZED";
     case FOE_RESOURCE_ERROR_IMPORT_FAILED:
         return "FOE_RESOURCE_ERROR_IMPORT_FAILED";
+    case FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER:
+        return "FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER";
 
     default:
         if (ev > 0)

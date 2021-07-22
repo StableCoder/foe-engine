@@ -17,12 +17,11 @@
 #ifndef ARMATURE_HPP
 #define ARMATURE_HPP
 
-#include <foe/resource/armature.hpp>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
-
-class foeArmature;
+struct foeResourceCreateInfoBase;
+struct foeArmatureCreateInfo;
 
 char const *yaml_armature_key();
 

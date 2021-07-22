@@ -16,8 +16,10 @@
 
 #include <foe/resource/registrar.hpp>
 
+#include <foe/resource/armature.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
+#include <foe/resource/error_code.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 
@@ -25,15 +27,44 @@
 
 namespace {
 
-void onCreate(foeSimulationState *pSimulationState) {
-    auto *pArmatureLoader = new foeArmatureLoader;
+foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
+    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
+    return pGroupData->getResourceDefinition(resource);
+}
 
+void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pSimulationState = reinterpret_cast<foeSimulationState *>(pContext);
+    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
+
+    auto pLocalCreateInfo = pArmature->pCreateInfo;
+
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
+            return it.pLoader->load(pArmature, pLocalCreateInfo, pPostLoadFn);
+        }
+    }
+
+    pPostLoadFn(pResource, FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+}
+
+void onCreate(foeSimulationState *pSimulationState) {
     // Resource Pools
-    pSimulationState->resourcePools.emplace_back(new foeArmaturePool{pArmatureLoader});
+    pSimulationState->resourcePools.emplace_back(new foeArmaturePool{foeResourceFns{
+        .pImportContext = &pSimulationState->groupData,
+        .pImportFn = importFn,
+        .pLoadContext = pSimulationState,
+        .pLoadFn = armatureLoadFn,
+        .asyncTaskFn = pSimulationState->createInfo.asyncTaskFn,
+    }});
 
     // Resource Loaders
     pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
-        .pLoader = pArmatureLoader,
+        .pLoader = new foeArmatureLoader,
+        .pMaintenanceFn =
+            [](foeResourceLoaderBase *pLoader) {
+                auto *pArmatureLoader = reinterpret_cast<foeArmatureLoader *>(pLoader);
+                pArmatureLoader->maintenance();
+            },
     });
 }
 
@@ -76,10 +107,8 @@ void onInitialize(foeSimulationInitInfo const *pInitInfo,
     auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
 
     for (; pIt != pEndIt; ++pIt) {
-        auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader);
-        if (pArmatureLoader) {
-            pArmatureLoader->initialize(pInitInfo->resourceDefinitionImportFn,
-                                        pInitInfo->externalFileSearchFn, pInitInfo->asyncJobFn);
+        if (auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader)) {
+            pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
         }
     }
 }

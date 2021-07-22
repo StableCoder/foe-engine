@@ -16,65 +16,103 @@
 
 #include <foe/resource/armature.hpp>
 
+#include <foe/simulation/core/resource_fns.hpp>
+
 #include "log.hpp"
 
-foeArmature::foeArmature(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext) :
-    id{id}, mpLoadFn{pLoadFn}, mpLoadContext{pLoadContext} {}
+foeArmature::foeArmature(foeResourceID resource, foeResourceFns const *pResourceFns) :
+    foeResourceBase{resource, pResourceFns} {}
 
 foeArmature::~foeArmature() {
     if (useCount > 0) {
         FOE_LOG(foeResource, Warning, "foeArmature {} being destroyed despite having active uses",
-                static_cast<void *>(this));
+                foeIdToString(resource));
     }
     if (refCount > 0) {
         FOE_LOG(foeResource, Warning,
                 "foeArmature {} being destroyed despite having active references",
-                static_cast<void *>(this));
+                foeIdToString(resource));
     }
 }
 
-foeId foeArmature::getID() const noexcept { return id; }
-
-foeResourceLoadState foeArmature::getLoadState() const noexcept { return loadState; }
-
-int foeArmature::incrementRefCount() noexcept { return ++refCount; }
-
-int foeArmature::decrementRefCount() noexcept {
-    auto newCount = --refCount;
-    if (newCount < 0) {
-        FOE_LOG(foeResource, Warning, "foeArmature {} has a negative reference count",
-                static_cast<void *>(this))
-    }
-    return newCount;
-}
-
-int foeArmature::getRefCount() const noexcept { return refCount; }
-
-int foeArmature::incrementUseCount() noexcept {
-    auto newCount = ++useCount;
-
-    // If the count was (presumably 1) and it's in the 'loading' state
-    if (newCount == 1 && loadState == foeResourceLoadState::Unloaded) {
-        requestLoad();
-    }
-
-    return newCount;
-}
-
-int foeArmature::decrementUseCount() noexcept {
-    auto newCount = --useCount;
-    if (newCount < 0) {
-        FOE_LOG(foeResource, Warning, "foeArmature {} has a negative use count",
-                static_cast<void *>(this))
-    }
-    return --newCount;
-}
-
-int foeArmature::getUseCount() const noexcept { return useCount; }
-
-void foeArmature::requestLoad() {
+void foeArmature::loadCreateInfo() {
     incrementRefCount();
-    mpLoadFn(mpLoadContext, this, true);
+
+    // Acquire exclusive loading rights
+    bool expected{false};
+    if (!isLoading.compare_exchange_strong(expected, true)) {
+        // Another thread is already loading this resource
+        FOE_LOG(foeResource, Warning, "Attempted to load foeArmature {} in parrallel",
+                foeIdToString(resource))
+        decrementRefCount();
+        return;
+    }
+
+    pResourceFns->asyncTaskFn([this]() {
+        auto *pNewCreateInfo = pResourceFns->pImportFn(pResourceFns->pImportContext, resource);
+        if (pNewCreateInfo != nullptr) {
+            pCreateInfo.reset(pNewCreateInfo);
+        }
+
+        isLoading = false;
+        decrementRefCount();
+    });
 }
 
-void foeArmature::requestUnload() { mpLoadFn(mpLoadContext, this, false); }
+namespace {
+
+void postLoadFn(void *pResource, std::error_code errC) {
+    auto *pImage = reinterpret_cast<foeArmature *>(pResource);
+
+    if (!errC) {
+        // Loading went fine
+        pImage->state = foeResourceState::Loaded;
+    } else {
+        // Loading didn't go well
+        FOE_LOG(foeResource, Error, "Failed to load foeArmature {} with error {}:{}",
+                foeIdToString(pImage->getID()), errC.value(), errC.message())
+        auto expected = foeResourceState::Unloaded;
+        pImage->state.compare_exchange_strong(expected, foeResourceState::Failed);
+    }
+
+    pImage->isLoading = false;
+    pImage->decrementRefCount();
+}
+
+} // namespace
+
+void foeArmature::loadResource(bool refreshCreateInfo) {
+    incrementRefCount();
+
+    // Acquire exclusive loading rights
+    bool expected{false};
+    if (!isLoading.compare_exchange_strong(expected, true)) {
+        // Another thread is already loading this resource
+        FOE_LOG(foeResource, Warning, "Attempted to load foeArmature {} in parrallel",
+                foeIdToString(resource))
+        decrementRefCount();
+        return;
+    }
+
+    pResourceFns->asyncTaskFn([this, refreshCreateInfo]() {
+        auto pLocalCreateInfo = pCreateInfo;
+
+        if (refreshCreateInfo || pLocalCreateInfo == nullptr) {
+            auto *pNewCreateInfo = pResourceFns->pImportFn(pResourceFns->pImportContext, resource);
+            if (pNewCreateInfo != nullptr) {
+                pLocalCreateInfo.reset(pNewCreateInfo);
+            }
+            pCreateInfo = pLocalCreateInfo;
+        }
+
+        pResourceFns->pLoadFn(pResourceFns->pLoadContext, this, postLoadFn);
+    });
+}
+
+void foeArmature::unloadResource() {
+    modifySync.lock();
+    if (data.pUnloadFn != nullptr) {
+        data.pUnloadFn(data.pUnloadContext, this, iteration, false);
+    }
+    modifySync.unlock();
+}

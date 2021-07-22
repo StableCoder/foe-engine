@@ -17,69 +17,24 @@
 #ifndef FOE_RESOURCE_ARMATURE_HPP
 #define FOE_RESOURCE_ARMATURE_HPP
 
-#include <foe/ecs/id.hpp>
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
 #include <foe/resource/export.h>
-#include <foe/resource/load_state.hpp>
-#include <foe/simulation/core/create_info.hpp>
+#include <foe/simulation/core/resource.hpp>
 
-#include <atomic>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <vector>
+struct FOE_RES_EXPORT foeArmature : public foeResourceBase {
+    foeArmature(foeResourceID resource, foeResourceFns const *pResourceFns);
+    ~foeArmature();
 
-class foeArmatureLoader;
+    void loadCreateInfo();
+    void loadResource(bool refreshCreateInfo);
+    void unloadResource();
 
-struct AnimationImportInfo {
-    std::string file;
-    std::vector<std::string> animationNames;
-};
-
-struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
-    std::string fileName;
-    std::string rootArmatureNode;
-    std::vector<AnimationImportInfo> animations;
-};
-
-struct foeArmature {
-  public:
-    FOE_RES_EXPORT foeArmature(foeId id, void (*pLoadFn)(void *, void *, bool), void *pLoadContext);
-    FOE_RES_EXPORT ~foeArmature();
-
-    FOE_RES_EXPORT foeId getID() const noexcept;
-    FOE_RES_EXPORT foeResourceLoadState getLoadState() const noexcept;
-
-    FOE_RES_EXPORT int incrementRefCount() noexcept;
-    FOE_RES_EXPORT int decrementRefCount() noexcept;
-    FOE_RES_EXPORT int getRefCount() const noexcept;
-
-    FOE_RES_EXPORT int incrementUseCount() noexcept;
-    FOE_RES_EXPORT int decrementUseCount() noexcept;
-    FOE_RES_EXPORT int getUseCount() const noexcept;
-
-    FOE_RES_EXPORT void requestLoad();
-    FOE_RES_EXPORT void requestUnload();
-
-  private:
-    friend foeArmatureLoader;
-
-    // General
-    foeId id;
-    std::atomic<foeResourceLoadState> loadState{foeResourceLoadState::Unloaded};
-    std::atomic_int refCount{0};
-    std::atomic_int useCount{0};
-
-    // Specialization
-    void (*mpLoadFn)(void *, void *, bool);
-    void *mpLoadContext;
-
-    std::mutex dataWriteLock{};
-
-  public:
-    std::unique_ptr<foeArmatureCreateInfo> createInfo{nullptr};
     struct Data {
+        void *pUnloadContext{nullptr};
+        void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
+        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+
         std::vector<foeArmatureNode> armature;
         std::vector<foeAnimation> animations;
     } data;

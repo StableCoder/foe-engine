@@ -17,61 +17,62 @@
 #include <foe/resource/armature_loader.hpp>
 
 #include <foe/model/assimp/importer.hpp>
+#include <foe/resource/armature.hpp>
 #include <foe/resource/error_code.hpp>
 
 #include "log.hpp"
 
-foeArmatureLoader::~foeArmatureLoader() {
-    if (mActiveJobs > 0) {
-        FOE_LOG(foeResource, Fatal, "foeArmatureLoader being destructed with {} active jobs!",
-                mActiveJobs.load());
-    }
-}
-
 std::error_code foeArmatureLoader::initialize(
-    std::function<foeResourceCreateInfoBase *(foeId)> importFn,
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
-    std::function<void(std::function<void()>)> asynchronousJobs) {
-    if (initialized()) {
-        return FOE_RESOURCE_ERROR_ALREADY_INITIALIZED;
-    }
+    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
+    std::error_code errC;
 
-    std::error_code errC{FOE_RESOURCE_SUCCESS};
-
-    mImportFn = importFn;
     mExternalFileSearchFn = externalFileSearchFn;
-    mAsyncJobs = asynchronousJobs;
 
 INITIALIZATION_FAILED:
     if (errC) {
         deinitialize();
-    } else {
-        mInitialized = true;
     }
 
     return errC;
 }
 
-void foeArmatureLoader::deinitialize() {
-    if (mActiveJobs > 0) {
-        FOE_LOG(foeResource, Fatal, "foeArmatureLoader being deinitialized with {} active jobs!",
-                mActiveJobs.load());
+void foeArmatureLoader::deinitialize() {}
+
+void foeArmatureLoader::maintenance() {
+    // Process Unloads
+    mUnloadRequestsSync.lock();
+    auto toUnload = std::move(mUnloadRequests);
+    mUnloadRequestsSync.unlock();
+
+    for (auto &it : toUnload) {
+        unloadResource(this, it.pArmature, it.iteration, true);
+        it.pArmature->decrementRefCount();
     }
 
-    mInitialized = false;
+    // Process Loads
+    mLoadSync.lock();
+    auto toLoad = std::move(mToLoad);
+    mLoadSync.unlock();
+
+    for (auto &it : toLoad) {
+        it.pArmature->modifySync.lock();
+
+        if (it.pArmature->data.pUnloadFn != nullptr) {
+            it.pArmature->data.pUnloadFn(it.pArmature->data.pUnloadContext, it.pArmature,
+                                         it.pArmature->iteration, true);
+        }
+
+        ++it.pArmature->iteration;
+        it.pArmature->data = std::move(it.data);
+        it.pPostLoadFn(it.pArmature, {});
+
+        it.pArmature->modifySync.unlock();
+    }
 }
 
-bool foeArmatureLoader::initialized() const noexcept { return mInitialized; }
-
-void foeArmatureLoader::requestResourceLoad(foeArmature *pArmature) {
-    ++mActiveJobs;
-    mAsyncJobs([this, pArmature] {
-        loadResource(pArmature);
-        --mActiveJobs;
-    });
+bool foeArmatureLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
+    return dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo) != nullptr;
 }
-
-void foeArmatureLoader::requestResourceUnload(foeArmature *pArmature) {}
 
 namespace {
 
@@ -121,61 +122,60 @@ bool processCreateInfo(
 
 } // namespace
 
-void foeArmatureLoader::loadResource(foeArmature *pArmature) {
-    // First, try to enter the 'loading' state
-    auto expected = pArmature->loadState.load();
-    while (expected != foeResourceLoadState::Loading) {
-        if (pArmature->loadState.compare_exchange_weak(expected, foeResourceLoadState::Loading))
-            break;
-    }
-    if (expected == foeResourceLoadState::Loading) {
-        FOE_LOG(foeResource, Warning, "Attempted to load foeArmature {} in parrallel",
-                static_cast<void *>(pArmature))
+void foeArmatureLoader::load(void *pResource,
+                             std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                             void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
+    auto *pArmatureCreateInfo = reinterpret_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
+
+    foeArmature::Data data{
+        .pUnloadContext = this,
+        .pUnloadFn = &foeArmatureLoader::unloadResource,
+        .pCreateInfo = pCreateInfo,
+    };
+
+    if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
+        pPostLoadFn(pResource, FOE_RESOURCE_ERROR_IMPORT_FAILED);
         return;
     }
 
-    std::error_code errC;
-    foeArmature::Data data;
+    std::scoped_lock lock{pArmature->modifySync};
 
-    // Read in the definition
-    std::unique_ptr<foeResourceCreateInfoBase> createInfo{mImportFn(pArmature->getID())};
-    if (createInfo == nullptr) {
-        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
-        goto LOADING_FAILED;
-    }
+    mLoadSync.lock();
+    mToLoad.emplace_back(LoadData{
+        .pArmature = pArmature,
+        .pPostLoadFn = pPostLoadFn,
+        .data = std::move(data),
+    });
+    mLoadSync.unlock();
+}
 
-    // Process the imported definition
-    if (!processCreateInfo(mExternalFileSearchFn, createInfo.get(), data)) {
-        errC = FOE_RESOURCE_ERROR_IMPORT_FAILED;
-        goto LOADING_FAILED;
-    } else {
-        pArmature->createInfo.reset(
-            reinterpret_cast<foeArmatureCreateInfo *>(createInfo.release()));
-    }
+void foeArmatureLoader::unloadResource(void *pContext,
+                                       void *pResource,
+                                       uint32_t resourceIteration,
+                                       bool immediateUnload) {
+    auto *pLoader = reinterpret_cast<foeArmatureLoader *>(pContext);
+    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
 
-LOADING_FAILED:
-    if (errC) {
-        FOE_LOG(foeResource, Error, "Failed to load foeArmature {} with error {}:{}",
-                static_cast<void *>(pArmature), errC.value(), errC.message())
+    if (immediateUnload) {
+        pArmature->modifySync.lock();
 
-        pArmature->loadState = foeResourceLoadState::Failed;
-    } else {
-
-        // Secure the resource, and set the new data/state
-        {
-            std::scoped_lock writeLock{pArmature->dataWriteLock};
-
-            pArmature->data = data;
-            pArmature->loadState = foeResourceLoadState::Loaded;
+        if (pArmature->iteration == resourceIteration) {
+            pArmature->data = {};
+            ++pArmature->iteration;
+            pArmature->state = foeResourceState::Unloaded;
         }
 
-        // If there was active old data that we just wrote over, send it to be unloaded
-        {
-            // std::scoped_lock unloadLock{mUnloadSync};
-            // mCurrentUnloadRequests->emplace_back(oldData);
-        }
-    }
+        pArmature->modifySync.unlock();
+    } else {
+        pArmature->incrementRefCount();
+        pLoader->mUnloadRequestsSync.lock();
 
-    // No longer using the reference, decrement.
-    pArmature->decrementRefCount();
+        pLoader->mUnloadRequests.emplace_back(UnloadData{
+            .pArmature = pArmature,
+            .iteration = resourceIteration,
+        });
+
+        pLoader->mUnloadRequestsSync.unlock();
+    }
 }

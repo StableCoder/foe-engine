@@ -16,6 +16,7 @@
 
 #include "armature.hpp"
 
+#include <foe/resource/armature_loader.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 

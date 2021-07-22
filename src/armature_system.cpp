@@ -98,7 +98,7 @@ void foeArmatureSystem::process(float timePassed) {
 
         foeArmature *pArmature = mpArmaturePool->find(pArmatureState->armatureID);
         // If the armature we're trying to use isn't here, skip this entry
-        if (pArmature == nullptr || pArmature->getLoadState() != foeResourceLoadState::Loaded)
+        if (pArmature == nullptr || pArmature->getState() != foeResourceState::Loaded)
             continue;
 
         // If the animation index isn't on the given armature, then just set the default armature

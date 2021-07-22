@@ -43,7 +43,7 @@
 #include <foe/physics/system.hpp>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
-#include <foe/resource/armature_loader.hpp>
+#include <foe/resource/armature.hpp>
 #include <foe/resource/armature_pool.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -308,8 +308,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         for (auto *ptr : getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
                                                           pSimulationSet->resourcePools.size())
                              ->getDataVector()) {
-            ptr->incrementUseCount();
-            ptr->decrementUseCount();
+            ptr->loadResource(false);
         }
 
         for (auto *ptr : getResourcePool<foeMaterialPool>(pSimulationSet->resourcePools.data(),

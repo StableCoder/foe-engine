@@ -18,7 +18,8 @@
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
-
+#include <foe/resource/armature.hpp>
+#include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
 
 #include "armature.hpp"
@@ -38,11 +39,15 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
         auto *pArmaturePool = dynamic_cast<foeArmaturePool *>(*pResourcePools);
         if (pArmaturePool) {
             auto const *pArmature = pArmaturePool->find(resource);
-            if (pArmature && pArmature->createInfo) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_armature_key(),
-                    .data = yaml_write_armature(*pArmature->createInfo.get()),
-                });
+            if (pArmature && pArmature->pCreateInfo) {
+                if (auto dynPtr =
+                        dynamic_cast<foeArmatureCreateInfo *>(pArmature->pCreateInfo.get());
+                    dynPtr) {
+                    keyDataPairs.emplace_back(foeKeyYamlPair{
+                        .key = yaml_armature_key(),
+                        .data = yaml_write_armature(*dynPtr),
+                    });
+                }
             }
         }
     }

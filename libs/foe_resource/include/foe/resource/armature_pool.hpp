@@ -17,19 +17,18 @@
 #ifndef FOE_RESOURCE_ARMATURE_POOL_HPP
 #define FOE_RESOURCE_ARMATURE_POOL_HPP
 
-#include <foe/ecs/id.hpp>
 #include <foe/resource/export.h>
 #include <foe/simulation/core/pool.hpp>
+#include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
 
 struct foeArmature;
-class foeArmatureLoader;
 
 class FOE_RES_EXPORT foeArmaturePool : public foeResourcePoolBase {
   public:
-    foeArmaturePool(foeArmatureLoader *pArmatureLoader) : mpArmatureLoader{pArmatureLoader} {}
+    foeArmaturePool(foeResourceFns const &resourceFns);
     ~foeArmaturePool();
 
     foeArmature *add(foeResourceID resource);
@@ -38,12 +37,12 @@ class FOE_RES_EXPORT foeArmaturePool : public foeResourcePoolBase {
 
     void unloadAll();
 
-    auto getDataVector() { return mArmatures; }
+    auto getDataVector() { return mResources; }
 
   private:
-    foeArmatureLoader *mpArmatureLoader;
-    FOE_RESOURCE_NO_EXPORT std::shared_mutex mSync;
-    FOE_RESOURCE_NO_EXPORT std::vector<foeArmature *> mArmatures;
+    foeResourceFns const mResourceFns;
+    std::shared_mutex mSync;
+    std::vector<foeArmature *> mResources;
 };
 
 #endif // FOE_RESOURCE_ARMATURE_POOL_HPP

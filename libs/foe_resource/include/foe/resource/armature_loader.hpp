@@ -19,38 +19,63 @@
 
 #include <foe/resource/armature.hpp>
 #include <foe/resource/export.h>
+#include <foe/simulation/core/create_info.hpp>
 #include <foe/simulation/core/loader.hpp>
 
-#include <atomic>
 #include <filesystem>
 #include <functional>
 #include <string>
-#include <string_view>
+#include <system_error>
 #include <vector>
+
+struct AnimationImportInfo {
+    std::string file;
+    std::vector<std::string> animationNames;
+};
+
+struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
+    std::string fileName;
+    std::string rootArmatureNode;
+    std::vector<AnimationImportInfo> animations;
+};
 
 class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
   public:
-    ~foeArmatureLoader();
-
     std::error_code initialize(
-        std::function<foeResourceCreateInfoBase *(foeId)> importFn,
-        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
-        std::function<void(std::function<void()>)> asynchronousJobs);
+        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
-    bool initialized() const noexcept;
 
-    void requestResourceLoad(foeArmature *pArmature);
-    void requestResourceUnload(foeArmature *pArmature);
+    void maintenance();
+
+    bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) final;
+    void load(void *pResource,
+              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              void (*pPostLoadFn)(void *, std::error_code)) final;
 
   private:
-    FOE_RESOURCE_NO_EXPORT void loadResource(foeArmature *pArmature);
+    static void unloadResource(void *pContext,
+                               void *pResource,
+                               uint32_t resourceIteration,
+                               bool immediateUnload);
 
-    FOE_RESOURCE_NO_EXPORT bool mInitialized{false};
-    FOE_RESOURCE_NO_EXPORT std::function<foeResourceCreateInfoBase *(foeId)> mImportFn;
-    FOE_RESOURCE_NO_EXPORT std::function<std::filesystem::path(std::filesystem::path)>
-        mExternalFileSearchFn;
-    FOE_RESOURCE_NO_EXPORT std::function<void(std::function<void()>)> mAsyncJobs;
-    FOE_RESOURCE_NO_EXPORT std::atomic_int mActiveJobs;
+    std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
+
+    struct LoadData {
+        foeArmature *pArmature;
+        void (*pPostLoadFn)(void *, std::error_code);
+        foeArmature::Data data;
+    };
+
+    std::mutex mLoadSync;
+    std::vector<LoadData> mToLoad;
+
+    struct UnloadData {
+        foeArmature *pArmature;
+        uint32_t iteration;
+    };
+
+    std::mutex mUnloadRequestsSync;
+    std::vector<UnloadData> mUnloadRequests;
 };
 
 #endif // FOE_RESOURCE_ARMATURE_LOADER_HPP
