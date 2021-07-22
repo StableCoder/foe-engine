@@ -294,9 +294,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     { // Initialize simulation functionality
         foeSimulationInitInfo simInitInfo{
             .gfxSession = gfxSession,
-            .resourceDefinitionImportFn =
-                std::bind(&foeGroupData::getResourceDefinition, &pSimulationSet->groupData,
-                          std::placeholders::_1),
             .externalFileSearchFn = std::bind(&foeGroupData::findExternalFile,
                                               &pSimulationSet->groupData, std::placeholders::_1),
             .asyncJobFn = asyncTaskFunc,

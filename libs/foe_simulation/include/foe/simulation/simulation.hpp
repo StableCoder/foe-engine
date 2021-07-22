@@ -49,7 +49,6 @@ struct foeSimulationCreateInfo {
 
 struct foeSimulationInitInfo {
     foeGfxSession gfxSession;
-    std::function<foeResourceCreateInfoBase *(foeId)> resourceDefinitionImportFn;
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn;
     std::function<void(std::function<void()>)> asyncJobFn;
 };
