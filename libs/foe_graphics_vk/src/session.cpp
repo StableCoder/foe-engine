@@ -236,6 +236,11 @@ foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session) {
     return &pSession->pQueueFamilies[0];
 }
 
+void foeGfxWaitIdle(foeGfxSession session) {
+    auto *pSession = session_from_handle(session);
+    vkDeviceWaitIdle(pSession->device);
+}
+
 void foeGfxDestroySession(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     foeGfxVkDestroySession(pSession);

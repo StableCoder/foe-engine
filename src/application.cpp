@@ -526,7 +526,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
 void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
-        vkDeviceWaitIdle(foeGfxVkGetDevice(gfxSession));
+        foeGfxWaitIdle(gfxSession);
 
     foeYamlExporter yamlExporter;
     yamlExporter.exportState("testExport", pSimulationSet.get());

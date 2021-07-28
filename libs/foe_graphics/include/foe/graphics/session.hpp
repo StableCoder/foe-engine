@@ -24,4 +24,12 @@ FOE_DEFINE_HANDLE(foeGfxSession)
 
 FOE_GFX_EXPORT void foeGfxDestroySession(foeGfxSession session);
 
+/**
+ * @brief Waits until the associated graphics session is idle
+ * @param session Graphics session handle
+ *
+ * By 'idle' it is meant that the graphics session has no more commands to run or process.
+ */
+FOE_GFX_EXPORT void foeGfxWaitIdle(foeGfxSession session);
+
 #endif // FOE_GRAPHICS_SESSION_HPP
