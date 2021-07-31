@@ -20,3 +20,6 @@ target_code_coverage(foe_model_assimp)
 add_subdirectory(src)
 
 # Auxiliary Target
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
