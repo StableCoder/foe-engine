@@ -164,7 +164,8 @@ void foeMeshLoader::load(void *pResource,
     if (auto pCI = dynamic_cast<foeMeshFileSource *>(pMeshCI->source.get()); pCI) {
         std::filesystem::path filePath = mExternalFileSearchFn(pCI->fileName);
 
-        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str());
+        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(),
+                                                                    pCI->postProcessFlags);
         assert(modelLoader->loaded());
 
         unsigned int meshIndex;

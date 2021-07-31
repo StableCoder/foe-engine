@@ -39,6 +39,7 @@ struct foeMeshSource {
 struct foeMeshFileSource : public foeMeshSource {
     std::string fileName;
     std::string meshName;
+    unsigned int postProcessFlags;
 };
 
 struct foeMeshCubeSource : public foeMeshSource {};

@@ -17,6 +17,7 @@
 #include "mesh.hpp"
 
 #include <foe/graphics/resource/mesh_loader.hpp>
+#include <foe/model/assimp/flags.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -36,9 +37,18 @@ bool yaml_read_mesh_definition_internal(std::string const &nodeName,
         if (auto externalFileNode = subNode["external_file"]; externalFileNode) {
             createInfo.source.reset(new foeMeshFileSource);
             foeMeshFileSource *ci = static_cast<foeMeshFileSource *>(createInfo.source.get());
+            *ci = {};
 
             yaml_read_required("file", externalFileNode, ci->fileName);
             yaml_read_required("mesh_name", externalFileNode, ci->meshName);
+
+            // Post process flags
+            std::string temp;
+            yaml_read_optional("post_process", externalFileNode, temp);
+            if (!foe_model_assimp_parse(temp, &ci->postProcessFlags)) {
+                throw foeYamlException{
+                    "external_file::post_process - Failed to parse post-processing flags"};
+            }
         } else if (auto generatedCubeNode = subNode["generated_cube"]; generatedCubeNode) {
             createInfo.source.reset(new foeMeshCubeSource);
             foeMeshCubeSource *ci = static_cast<foeMeshCubeSource *>(createInfo.source.get());
@@ -73,6 +83,14 @@ void yaml_write_mesh_internal(std::string const &nodeName,
             YAML::Node fileNode;
             yaml_write_required("file", pFileMesh->fileName, fileNode);
             yaml_write_required("mesh_name", pFileMesh->meshName, fileNode);
+
+            std::string serialized;
+            if (!foe_model_assimp_serialize(pFileMesh->postProcessFlags, &serialized)) {
+                throw foeYamlException{
+                    "external_file::post_process - Failed to serialize post-processing flags"};
+            }
+            yaml_write_optional("post_process", std::string{}, serialized, fileNode);
+
             writeNode["external_file"] = fileNode;
 
         } else if (auto *pCube = dynamic_cast<foeMeshCubeSource *>(data.source.get()); pCube) {

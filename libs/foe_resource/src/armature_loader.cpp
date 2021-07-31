@@ -89,7 +89,7 @@ bool processCreateInfo(
 
     { // Armature
         std::filesystem::path filePath = externalFileSearchFn(createInfo->fileName);
-        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str());
+        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
         assert(modelLoader->loaded());
 
         auto tempArmature = modelLoader->importArmature();
@@ -103,7 +103,8 @@ bool processCreateInfo(
     { // Animations
         for (auto const &it : createInfo->animations) {
             std::filesystem::path filePath = externalFileSearchFn(it.file);
-            auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str());
+            auto modelLoader =
+                std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
             assert(modelLoader->loaded());
 
             for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {

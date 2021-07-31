@@ -23,8 +23,10 @@
 #include "assimp_mesh_loader.hpp"
 #include "assimp_scene_loader.hpp"
 
-foeModelAssimpImporter::foeModelAssimpImporter(std::string_view filePath) : mpScene{nullptr} {
-    mpScene = aiImportFile(std::string{filePath}.c_str(), 0);
+foeModelAssimpImporter::foeModelAssimpImporter(std::string_view filePath,
+                                               unsigned int postProcessFlags) :
+    mpScene{nullptr} {
+    mpScene = aiImportFile(std::string{filePath}.c_str(), postProcessFlags);
 }
 
 foeModelAssimpImporter::~foeModelAssimpImporter() {

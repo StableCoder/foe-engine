@@ -24,7 +24,8 @@ struct aiScene;
 
 class foeModelAssimpImporter final : public foeModelImporter {
   public:
-    FOE_MODEL_ASSIMP_EXPORT foeModelAssimpImporter(std::string_view filePath);
+    FOE_MODEL_ASSIMP_EXPORT foeModelAssimpImporter(std::string_view filePath,
+                                                   unsigned int postProcessFlags);
     FOE_MODEL_ASSIMP_EXPORT ~foeModelAssimpImporter();
 
     FOE_MODEL_ASSIMP_EXPORT bool loaded() const noexcept;
