@@ -34,16 +34,15 @@ TEST_CASE("Serializing aiProcess flags", "[foe][model][assimp]") {
     }
 
     SECTION("Last enum") {
-        REQUIRE(foe_model_assimp_serialize(aiProcess_GenBoundingBoxes, &serializedStr));
-        REQUIRE(serializedStr == "GenBoundingBoxes");
+        REQUIRE(foe_model_assimp_serialize(aiProcess_Debone, &serializedStr));
+        REQUIRE(serializedStr == "Debone");
     }
 
     SECTION("Cross-section of enums") {
         REQUIRE(foe_model_assimp_serialize(aiProcess_Triangulate | aiProcess_SortByPType |
-                                               aiProcess_GenBoundingBoxes |
-                                               aiProcess_CalcTangentSpace,
+                                               aiProcess_Debone | aiProcess_CalcTangentSpace,
                                            &serializedStr));
-        REQUIRE(serializedStr == "CalcTangentSpace | Triangulate | SortByPType | GenBoundingBoxes");
+        REQUIRE(serializedStr == "CalcTangentSpace | Triangulate | SortByPType | Debone");
     }
 }
 
@@ -66,27 +65,27 @@ TEST_CASE("Parsing aiProcess flags", "[foe][model][assimp]") {
     }
 
     SECTION("Last enum") {
-        REQUIRE(foe_model_assimp_parse("GenBoundingBoxes", &parsed));
-        REQUIRE(parsed == aiProcess_GenBoundingBoxes);
+        REQUIRE(foe_model_assimp_parse("Debone", &parsed));
+        REQUIRE(parsed == aiProcess_Debone);
 
         SECTION("Mixed casing, spaces on sides") {
-            REQUIRE(foe_model_assimp_parse("  \n  GENBOUNDingboxes\n \n \t", &parsed));
-            REQUIRE(parsed == aiProcess_GenBoundingBoxes);
+            REQUIRE(foe_model_assimp_parse("  \n  DEBone\n \n \t", &parsed));
+            REQUIRE(parsed == aiProcess_Debone);
         }
     }
 
     SECTION("Cross-section of enums") {
-        REQUIRE(foe_model_assimp_parse(
-            "GenBoundingBoxes | Triangulate | CalcTangentSpace | SortByPType", &parsed));
-        REQUIRE(parsed == (aiProcess_Triangulate | aiProcess_SortByPType |
-                           aiProcess_GenBoundingBoxes | aiProcess_CalcTangentSpace));
+        REQUIRE(foe_model_assimp_parse("Debone | Triangulate | CalcTangentSpace | SortByPType",
+                                       &parsed));
+        REQUIRE(parsed == (aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_Debone |
+                           aiProcess_CalcTangentSpace));
 
         SECTION("Mixed casing, spaces on sides") {
             REQUIRE(foe_model_assimp_parse(
-                "\n\n\nGenBoundingBoxes | \n\nTrianGULate \t| \tCalcTaNGentSpace | sortbyptype \t ",
+                "\n\n\nDebone | \n\nTrianGULate \t| \tCalcTaNGentSpace | sortbyptype \t ",
                 &parsed));
-            REQUIRE(parsed == (aiProcess_Triangulate | aiProcess_SortByPType |
-                               aiProcess_GenBoundingBoxes | aiProcess_CalcTangentSpace));
+            REQUIRE(parsed == (aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_Debone |
+                               aiProcess_CalcTangentSpace));
         }
     }
 

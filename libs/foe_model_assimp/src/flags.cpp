@@ -24,7 +24,7 @@ namespace {
 
 struct EnumPair {
     std::string_view name;
-    aiPostProcessSteps value;
+    unsigned int value;
 };
 
 // Prefix on all of the enums/flags
@@ -60,11 +60,12 @@ constexpr std::array<EnumPair, 31> cPostProcessFlags = {{
     PAIR_DEF(aiProcess_FlipWindingOrder),
     PAIR_DEF(aiProcess_SplitByBoneCount),
     PAIR_DEF(aiProcess_Debone),
-    PAIR_DEF(aiProcess_GlobalScale),
-    PAIR_DEF(aiProcess_EmbedTextures),
-    PAIR_DEF(aiProcess_ForceGenNormals),
-    PAIR_DEF(aiProcess_DropNormals),
-    PAIR_DEF(aiProcess_GenBoundingBoxes),
+    // Not available in v4 of assimp, only v5, so need to specify them manually
+    {"aiProcess_GlobalScale", 0x8000000},
+    {"aiProcess_EmbedTextures", 0x10000000},
+    {"aiProcess_ForceGenNormals", 0x20000000},
+    {"aiProcess_DropNormals", 0x40000000},
+    {"aiProcess_GenBoundingBoxes", 0x80000000},
 }};
 
 #undef PAIR_DEF
