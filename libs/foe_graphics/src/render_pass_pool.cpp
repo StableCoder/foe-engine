@@ -64,6 +64,52 @@ VkRenderPass foeRenderPassPool::renderPass(
     return generateRenderPass(compatibleKeys, variantKeys, attachments);
 }
 
+auto foeRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
+                                   std::vector<VkSampleCountFlags> const &samples) -> VkRenderPass {
+    std::vector<RenderPassCompatibleKey> compatibleKeys;
+    compatibleKeys.reserve(formats.size());
+
+    for (std::size_t idx = 0; idx < formats.size(); ++idx) {
+        compatibleKeys.emplace_back(RenderPassCompatibleKey{
+            .format = formats[idx],
+            .samples = samples[idx],
+        });
+    }
+
+    // Try to get the renderpass in shared read mode
+    std::shared_lock sharedLock{mSync};
+    VkRenderPass renderPass = findRenderPass(compatibleKeys);
+    if (renderPass != VK_NULL_HANDLE)
+        return renderPass;
+    sharedLock.unlock();
+
+    // If no variant yet exists, create a basic one now
+
+    // Generate attachment descriptions/variant keys
+    std::vector<VkAttachmentDescription> attachments;
+    attachments.reserve(formats.size());
+    for (auto const &key : compatibleKeys) {
+        attachments.emplace_back(VkAttachmentDescription{
+            .flags = 0,
+            .format = key.format,
+            .samples = static_cast<VkSampleCountFlagBits>(key.samples),
+            .loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+        });
+    }
+    auto variantKeys = generateVariantKeys(attachments);
+
+    std::scoped_lock lock{mSync};
+    renderPass = findRenderPass(compatibleKeys);
+    if (renderPass != VK_NULL_HANDLE)
+        return renderPass;
+    return generateRenderPass(compatibleKeys, variantKeys, attachments);
+}
+
 auto foeRenderPassPool::generateCompatibleKeys(
     std::vector<VkAttachmentDescription> const &attachments) const
     -> std::vector<RenderPassCompatibleKey> {
@@ -99,8 +145,8 @@ auto foeRenderPassPool::generateVariantKeys(std::vector<VkAttachmentDescription>
     return key;
 }
 
-auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> compatibleKey,
-                                       std::vector<RenderPassVariantKey> variantKey,
+auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
+                                       std::vector<RenderPassVariantKey> const &variantKey,
                                        std::vector<VkAttachmentDescription> const &attachments)
     -> VkRenderPass {
     for (auto &it : mRenderPasses) {
@@ -111,6 +157,21 @@ auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> comp
                     // Found it
                     return variant.renderPass;
                 }
+            }
+
+            return VK_NULL_HANDLE;
+        }
+    }
+
+    return VK_NULL_HANDLE;
+}
+
+auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey)
+    -> VkRenderPass {
+    for (auto &it : mRenderPasses) {
+        if (it.key == compatibleKey) {
+            for (auto &variant : it.variants) {
+                return variant.renderPass;
             }
 
             return VK_NULL_HANDLE;

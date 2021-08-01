@@ -28,9 +28,33 @@ class foeRenderPassPool {
     FOE_GFX_EXPORT VkResult initialize(VkDevice device) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
 
-    /// Returns a specific render pass for the given attachment
+    /**
+     * @brief Returns a specific render pass for the given attachment
+     * @param attachments Describes the attachment set the render pass is defined by
+     * @return A valid render pass handle, VK_NULL_HANDLE otherwise
+     *
+     * If the render pass described already exists, this will return the handle to that. If it
+     * doesn't it will be generated.
+     */
     FOE_GFX_EXPORT auto renderPass(std::vector<VkAttachmentDescription> const &attachments)
         -> VkRenderPass;
+
+    /**
+     * @brief Returns a compatible render pass for the given formats/samples
+     * @param formats Image formats corresponding to the attached images for the render pass
+     * @param samples Sample counts corresponding to the attached images for the render pass
+     * @return First compatible render pass handle, VK_NULL_HANDLE otherwise
+     * @note This is intended for finding render passes quickly for use in geneating framebuffers
+     * rather than rendering.
+     *
+     * Thanks to the compatability of render passes based on a minimal set of the formnats and
+     * sample count, this function will attempt to find *any* compatable render passes and return
+     * the first found.
+     *
+     * If no render pass is found, it will generate a basic one instead.
+     */
+    FOE_GFX_EXPORT auto renderPass(std::vector<VkFormat> const &formats,
+                                   std::vector<VkSampleCountFlags> const &samples) -> VkRenderPass;
 
   private:
     /// Elements that determine compatability between render passes
@@ -78,9 +102,11 @@ class foeRenderPassPool {
     auto generateVariantKeys(std::vector<VkAttachmentDescription> const &attachments) const
         -> std::vector<RenderPassVariantKey>;
 
-    auto findRenderPass(std::vector<RenderPassCompatibleKey> compatibleKey,
-                        std::vector<RenderPassVariantKey> variantKey,
+    auto findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
+                        std::vector<RenderPassVariantKey> const &variantKey,
                         std::vector<VkAttachmentDescription> const &attachments) -> VkRenderPass;
+
+    auto findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey) -> VkRenderPass;
 
     auto generateRenderPass(std::vector<RenderPassCompatibleKey> compatibleKey,
                             std::vector<RenderPassVariantKey> variantKey,
