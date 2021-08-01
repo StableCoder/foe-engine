@@ -30,11 +30,27 @@ class foeSwapchain {
 
     FOE_GFX_EXPORT operator VkSwapchainKHR() const noexcept;
 
+    /**
+     * @brief Creates a new swapchain
+     * @param physicalDevice Vulkan physical device handle
+     * @param device Vulkan logical device handle
+     * @param surface Vulkan surface handle the swapchain presents on
+     * @param surfaceFormat Chosen format to use on the swapchain
+     * @param presentMode Chosed mode to present swapchain images
+     * @param extraUsage By default all swapchains have the VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+     * usage, however more can be specified here.
+     * @param oldSwapchain If the created swapchain is taking over from another one, specify it here
+     * @param chainSize Desired number of swapchain images
+     * @param width Desired width of the swapchain images
+     * @param height Desired height of the swapchain images
+     * @return VK_SUCCESS on success, an appropriate error enum otherwise
+     */
     FOE_GFX_EXPORT VkResult create(VkPhysicalDevice physicalDevice,
                                    VkDevice device,
                                    VkSurfaceKHR surface,
                                    VkSurfaceFormatKHR surfaceFormat,
                                    VkPresentModeKHR presentMode,
+                                   VkImageUsageFlags extraUsage,
                                    VkSwapchainKHR oldSwapchain,
                                    uint32_t chainSize,
                                    uint32_t width,

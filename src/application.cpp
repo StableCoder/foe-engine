@@ -863,10 +863,10 @@ int Application::mainloop() {
                 }
 
                 foeSwapchain newSwapchain;
-                vkRes = newSwapchain.create(foeGfxVkGetPhysicalDevice(gfxSession),
-                                            foeGfxVkGetDevice(gfxSession), windowSurface,
-                                            swapchain.surfaceFormat(), swapchain.presentMode(),
-                                            swapchain, 3, width, height);
+                vkRes = newSwapchain.create(
+                    foeGfxVkGetPhysicalDevice(gfxSession), foeGfxVkGetDevice(gfxSession),
+                    windowSurface, swapchain.surfaceFormat(), swapchain.presentMode(),
+                    VK_IMAGE_USAGE_TRANSFER_DST_BIT, swapchain, 3, width, height);
                 if (vkRes != VK_SUCCESS)
                     VK_END_PROGRAM
 
