@@ -64,4 +64,6 @@ FOE_GFX_EXPORT VkResult recordImageUploadCommands(foeGfxUploadContext uploadCont
                                                   VkImageLayout dstImageLayout,
                                                   foeGfxUploadRequest *pUploadRequest);
 
+FOE_GFX_EXPORT VkImageAspectFlags formatAspects(VkFormat format) noexcept;
+
 #endif // FOE_GRAPHICS_IMAGE_HPP
