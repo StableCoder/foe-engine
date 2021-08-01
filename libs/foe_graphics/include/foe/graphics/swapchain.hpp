@@ -73,6 +73,7 @@ class foeSwapchain {
     FOE_GFX_EXPORT VkExtent2D extent() const noexcept;
     FOE_GFX_EXPORT uint32_t acquiredIndex() const noexcept;
     FOE_GFX_EXPORT uint32_t chainSize() const noexcept;
+    FOE_GFX_EXPORT VkImage image(uint32_t index) const noexcept;
     FOE_GFX_EXPORT VkImageView imageView(uint32_t index) const noexcept;
 
   private:
@@ -86,6 +87,7 @@ class foeSwapchain {
 
     VkExtent2D mExtent{};
     uint32_t mAcquiredIndex{UINT32_MAX};
+    std::vector<VkImage> mImages{};
     std::vector<VkImageView> mViews{};
 };
 

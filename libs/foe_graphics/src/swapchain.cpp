@@ -107,6 +107,7 @@ void foeSwapchain::destroy(VkDevice device) noexcept {
     for (auto &it : mViews)
         vkDestroyImageView(device, it, nullptr);
     mViews.clear();
+    mImages.clear();
 
     vkDestroySwapchainKHR(device, mSwapchain, nullptr);
     mSwapchain = VK_NULL_HANDLE;
@@ -158,6 +159,8 @@ uint32_t foeSwapchain::acquiredIndex() const noexcept { return mAcquiredIndex; }
 
 uint32_t foeSwapchain::chainSize() const noexcept { return mViews.size(); }
 
+VkImage foeSwapchain::image(uint32_t index) const noexcept { return mImages[index]; }
+
 VkImageView foeSwapchain::imageView(uint32_t index) const noexcept { return mViews[index]; }
 
 VkResult foeSwapchain::createSwapchainViews(VkDevice device) {
@@ -166,8 +169,8 @@ VkResult foeSwapchain::createSwapchainViews(VkDevice device) {
     if (res != VK_SUCCESS)
         return res;
 
-    std::unique_ptr<VkImage[]> images(new VkImage[imageCount]);
-    res = vkGetSwapchainImagesKHR(device, mSwapchain, &imageCount, images.get());
+    mImages.resize(imageCount);
+    res = vkGetSwapchainImagesKHR(device, mSwapchain, &imageCount, mImages.data());
     if (res != VK_SUCCESS)
         return res;
 
@@ -191,7 +194,7 @@ VkResult foeSwapchain::createSwapchainViews(VkDevice device) {
     };
 
     for (uint32_t i = 0; i < imageCount; ++i) {
-        viewCI.image = images.get()[i];
+        viewCI.image = mImages[i];
 
         VkImageView newView;
         res = vkCreateImageView(device, &viewCI, nullptr, &newView);
