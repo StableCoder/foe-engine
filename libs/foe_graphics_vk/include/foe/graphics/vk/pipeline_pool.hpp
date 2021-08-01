@@ -21,6 +21,7 @@
 #include <foe/graphics/session.hpp>
 #include <vulkan/vulkan.h>
 
+#include <array>
 #include <vector>
 
 struct foeGfxVertexDescriptor;
@@ -37,20 +38,25 @@ class foeGfxVkPipelinePool {
                                         foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                         VkRenderPass renderPass,
                                         uint32_t subpass,
+                                        VkSampleCountFlags samples,
                                         VkPipelineLayout *pPipelineLayout,
                                         uint32_t *pDescriptorSetLayoutCount,
                                         VkPipeline *pPipeline);
 
   private:
+    // Counts upto 64, powers of 2.
+    static constexpr size_t cMaxSampleOptions = 7;
+
     VkResult createPipeline(foeGfxVertexDescriptor *vertexDescriptor,
                             foeGfxVkFragmentDescriptor *fragmentDescriptor,
                             VkRenderPass renderPass,
                             uint32_t subpass,
+                            VkSampleCountFlags samples,
                             VkPipelineLayout *pPipelineLayout,
                             uint32_t *pDescriptorSetLayoutCount,
                             VkPipeline *pPipeline) const noexcept;
 
-    struct Pipeline {
+    struct PipelineSet {
         // Key
         foeGfxVertexDescriptor *vertexDescriptor;
         foeGfxVkFragmentDescriptor *fragmentDescriptor;
@@ -61,13 +67,13 @@ class foeGfxVkPipelinePool {
         // Locally Managed
         VkPipelineLayout layout;
         uint32_t descriptorSetLayoutCount;
-        VkPipeline pipeline;
+        std::array<VkPipeline, cMaxSampleOptions> pipelines;
     };
 
     VkDevice mDevice{VK_NULL_HANDLE};
     foeGfxVkBuiltinDescriptorSets *mBuiltinDescriptorSets{nullptr};
 
-    std::vector<Pipeline> mPipelines;
+    std::vector<PipelineSet> mPipelines;
 };
 
 #endif // FOE_GRAPHICS_VK_PIPELINE_POOL_HPP

@@ -41,8 +41,10 @@ VkResult foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {
 
 void foeGfxVkPipelinePool::deinitialize() noexcept {
     for (auto &it : mPipelines) {
-        if (it.pipeline != VK_NULL_HANDLE)
-            vkDestroyPipeline(mDevice, it.pipeline, nullptr);
+        for (auto pipeline : it.pipelines) {
+            if (pipeline != VK_NULL_HANDLE)
+                vkDestroyPipeline(mDevice, pipeline, nullptr);
+        }
         if (it.layout != VK_NULL_HANDLE)
             vkDestroyPipelineLayout(mDevice, it.layout, nullptr);
     }
@@ -53,42 +55,88 @@ void foeGfxVkPipelinePool::deinitialize() noexcept {
 
 bool foeGfxVkPipelinePool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
+namespace {
+
+size_t sampleCountIndex(VkSampleCountFlags samples) {
+    switch (samples) {
+    case VK_SAMPLE_COUNT_1_BIT:
+        return 0;
+    case VK_SAMPLE_COUNT_2_BIT:
+        return 1;
+    case VK_SAMPLE_COUNT_4_BIT:
+        return 2;
+    case VK_SAMPLE_COUNT_8_BIT:
+        return 3;
+    case VK_SAMPLE_COUNT_16_BIT:
+        return 4;
+    case VK_SAMPLE_COUNT_32_BIT:
+        return 5;
+    case VK_SAMPLE_COUNT_64_BIT:
+        return 6;
+
+    default:
+        FOE_LOG(foeVkGraphics, Warning, "Failed to determine given sample count, defaulting to 1")
+        return 0;
+    }
+}
+
+} // namespace
+
 VkResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
                                            foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                            VkRenderPass renderPass,
                                            uint32_t subpass,
+                                           VkSampleCountFlags samples,
                                            VkPipelineLayout *pPipelineLayout,
                                            uint32_t *pDescriptorSetLayoutCount,
                                            VkPipeline *pPipeline) {
+    auto sampleIndex = sampleCountIndex(samples);
+    PipelineSet *pPipelineSet{nullptr};
+
     // Try to retrieve an already-created pipeline
-    for (auto const &pipeline : mPipelines) {
+    for (auto &pipeline : mPipelines) {
         if (pipeline.vertexDescriptor == vertexDescriptor &&
             pipeline.fragmentDescriptor == fragmentDescriptor &&
             pipeline.renderPass == renderPass && pipeline.subpass == subpass) {
+            if (pipeline.pipelines[sampleIndex] != VK_NULL_HANDLE) {
+                // If the pipeline exists for the specified sample count, use it
+                *pPipelineLayout = pipeline.layout;
+                *pDescriptorSetLayoutCount = pipeline.descriptorSetLayoutCount;
+                *pPipeline = pipeline.pipelines[sampleIndex];
 
-            *pPipelineLayout = pipeline.layout;
-            *pDescriptorSetLayoutCount = pipeline.descriptorSetLayoutCount;
-            *pPipeline = pipeline.pipeline;
-
-            return VK_SUCCESS;
+                return VK_SUCCESS;
+            } else {
+                // Otherwise, we'll be creating just a new pipeline for it
+                pPipelineSet = &pipeline;
+                break;
+            }
         }
     }
 
     // Generate a new pipeline
-    FOE_LOG(foeVkGraphics, Verbose, "Generating a new VkPipeline")
+    FOE_LOG(foeVkGraphics, Verbose, "Generating a new Graphics Pipeline")
 
     VkResult res = createPipeline(vertexDescriptor, fragmentDescriptor, renderPass, subpass,
-                                  pPipelineLayout, pDescriptorSetLayoutCount, pPipeline);
+                                  samples, pPipelineLayout, pDescriptorSetLayoutCount, pPipeline);
     if (res == VK_SUCCESS) {
-        mPipelines.emplace_back(Pipeline{
-            .vertexDescriptor = vertexDescriptor,
-            .fragmentDescriptor = fragmentDescriptor,
-            .renderPass = renderPass,
-            .subpass = subpass,
-            .layout = *pPipelineLayout,
-            .descriptorSetLayoutCount = *pDescriptorSetLayoutCount,
-            .pipeline = *pPipeline,
-        });
+        if (pPipelineSet != nullptr) {
+            // Already have the set available, just need the specific sample count variant
+            pPipelineSet->pipelines[sampleIndex] = *pPipeline;
+        } else {
+            // No pipeline like it yet, create new.
+            PipelineSet newEntry{
+                .vertexDescriptor = vertexDescriptor,
+                .fragmentDescriptor = fragmentDescriptor,
+                .renderPass = renderPass,
+                .subpass = subpass,
+                .layout = *pPipelineLayout,
+                .descriptorSetLayoutCount = *pDescriptorSetLayoutCount,
+            };
+            // Make sure the pipeline goes to the specific sample count entry
+            newEntry.pipelines[sampleIndex] = *pPipeline;
+
+            mPipelines.emplace_back(newEntry);
+        }
     }
 
     return res;
@@ -98,6 +146,7 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
                                               foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                               VkRenderPass renderPass,
                                               uint32_t subpass,
+                                              VkSampleCountFlags samples,
                                               VkPipelineLayout *pPipelineLayout,
                                               uint32_t *pDescriptorSetLayoutCount,
                                               VkPipeline *pPipeline) const noexcept {
@@ -331,7 +380,7 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
         // Multisample State
         VkPipelineMultisampleStateCreateInfo multisampleState{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
-            .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
+            .rasterizationSamples = static_cast<VkSampleCountFlagBits>(samples),
         };
 
         // Pipeline
