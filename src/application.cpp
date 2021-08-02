@@ -1574,36 +1574,70 @@ int Application::mainloop() {
                                          VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
                                          nullptr, 1, &imgMemBarrier);
 
-                    VkImageResolve resolveRegion{
-                        .srcSubresource =
-                            VkImageSubresourceLayers{
-                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                .mipLevel = 0,
-                                .baseArrayLayer = 0,
-                                .layerCount = 1,
-                            },
-                        .srcOffset = {},
-                        .dstSubresource =
-                            VkImageSubresourceLayers{
-                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                .mipLevel = 0,
-                                .baseArrayLayer = 0,
-                                .layerCount = 1,
-                            },
-                        .dstOffset = {},
-                        .extent =
-                            {
-                                .width = swapchain.extent().width,
-                                .height = swapchain.extent().height,
-                                .depth = 1,
-                            },
-                    };
+                    if (foeGfxVkGetRenderTargetSamples(gfxOffscreenRenderTarget) !=
+                        VK_SAMPLE_COUNT_1_BIT) {
+                        VkImageResolve resolveRegion{
+                            .srcSubresource =
+                                VkImageSubresourceLayers{
+                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                    .mipLevel = 0,
+                                    .baseArrayLayer = 0,
+                                    .layerCount = 1,
+                                },
+                            .srcOffset = {},
+                            .dstSubresource =
+                                VkImageSubresourceLayers{
+                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                    .mipLevel = 0,
+                                    .baseArrayLayer = 0,
+                                    .layerCount = 1,
+                                },
+                            .dstOffset = {},
+                            .extent =
+                                {
+                                    .width = swapchain.extent().width,
+                                    .height = swapchain.extent().height,
+                                    .depth = 1,
+                                },
+                        };
 
-                    vkCmdResolveImage(commandBuffer,
-                                      foeGfxVkGetRenderTargetImage(gfxOffscreenRenderTarget, 0),
-                                      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                      swapchain.image(swapchain.acquiredIndex()),
-                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveRegion);
+                        vkCmdResolveImage(commandBuffer,
+                                          foeGfxVkGetRenderTargetImage(gfxOffscreenRenderTarget, 0),
+                                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                          swapchain.image(swapchain.acquiredIndex()),
+                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveRegion);
+                    } else {
+                        VkImageCopy imageCopy{
+                            .srcSubresource =
+                                VkImageSubresourceLayers{
+                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                    .mipLevel = 0,
+                                    .baseArrayLayer = 0,
+                                    .layerCount = 1,
+                                },
+                            .srcOffset = {},
+                            .dstSubresource =
+                                VkImageSubresourceLayers{
+                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                    .mipLevel = 0,
+                                    .baseArrayLayer = 0,
+                                    .layerCount = 1,
+                                },
+                            .dstOffset = {},
+                            .extent =
+                                {
+                                    .width = swapchain.extent().width,
+                                    .height = swapchain.extent().height,
+                                    .depth = 1,
+                                },
+                        };
+
+                        vkCmdCopyImage(commandBuffer,
+                                       foeGfxVkGetRenderTargetImage(gfxOffscreenRenderTarget, 0),
+                                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                       swapchain.image(swapchain.acquiredIndex()),
+                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
+                    }
 
                     imgMemBarrier = VkImageMemoryBarrier{
                         .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
