@@ -58,4 +58,7 @@ FOE_GFX_EXPORT auto foeGfxVkGetBuiltinSetLayoutIndex(
 FOE_GFX_EXPORT auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session)
     -> foeGfxVkFragmentDescriptorPool *;
 
+FOE_GFX_EXPORT auto foeGfxVkGetSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags;
+FOE_GFX_EXPORT auto foeGfxVkGetMaxSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags;
+
 #endif // FOE_GRAPHICS_VK_SESSION_HPP
