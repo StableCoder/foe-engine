@@ -28,6 +28,7 @@ namespace {
 
 VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
                            foeGfxVkRenderTargetSpec const &specification,
+                           VkSampleCountFlags samples,
                            VkExtent2D extent,
                            RenderTargetImageData &image) {
     RenderTargetImageData data{
@@ -48,7 +49,7 @@ VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
                 },
             .mipLevels = 1,
             .arrayLayers = 1U,
-            .samples = static_cast<VkSampleCountFlagBits>(specification.samples),
+            .samples = static_cast<VkSampleCountFlagBits>(samples),
             .tiling = VK_IMAGE_TILING_OPTIMAL,
             .usage = specification.usage | VK_IMAGE_USAGE_SAMPLED_BIT,
             .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
@@ -109,19 +110,20 @@ std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
                                            foeRenderPassPool *pRenderPassPool,
                                            foeGfxVkRenderTargetSpec const *pSpecifications,
                                            uint32_t count,
+                                           VkSampleCountFlags samples,
                                            foeGfxRenderTarget *pRenderTarget) {
     auto *pSession = session_from_handle(session);
 
     uint32_t imageCount = 0;
-    std::vector<VkFormat> formats;
-    std::vector<VkSampleCountFlags> samples;
+    std::vector<VkFormat> formatList;
+    std::vector<VkSampleCountFlags> sampleList;
     for (uint32_t i = 0; i < count; ++i) {
         imageCount += pSpecifications[i].count;
-        formats.emplace_back(pSpecifications[i].format);
-        samples.emplace_back(pSpecifications[i].samples);
+        formatList.emplace_back(pSpecifications[i].format);
+        sampleList.emplace_back(samples);
     }
 
-    VkRenderPass compatibleRenderPass = pRenderPassPool->renderPass(formats, samples);
+    VkRenderPass compatibleRenderPass = pRenderPassPool->renderPass(formatList, sampleList);
     if (compatibleRenderPass == VK_NULL_HANDLE) {
         return FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_COULD_NOT_GET_COMPATIBLE_RENDER_PASS;
     }
@@ -131,6 +133,7 @@ std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
         .pDelayedDestructor = delayed_destructor_from_handle(delayedDestructor),
         .imageSpecifications =
             std::vector<foeGfxVkRenderTargetSpec>{pSpecifications, pSpecifications + count},
+        .samples = samples,
         .compatibleRenderPass = compatibleRenderPass,
         .images = std::vector<RenderTargetImageData>{imageCount, RenderTargetImageData{}},
         .indices = std::vector<uint8_t>(count, static_cast<uint8_t>(0)),
@@ -220,7 +223,8 @@ std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
                 image = {};
             }
 
-            errC = createTargetImage(pRenderTarget->pSession, spec, pRenderTarget->extent, image);
+            errC = createTargetImage(pRenderTarget->pSession, spec, pRenderTarget->samples,
+                                     pRenderTarget->extent, image);
             if (errC) {
                 FOE_LOG(foeVkGraphics, Error, "Failed to create RenderTarget Image: {} - {}",
                         errC.value(), errC.message());
@@ -271,7 +275,13 @@ std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
     return errC;
 }
 
-VkImage foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t index) {
+auto foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget) -> VkSampleCountFlags {
+    auto *pRenderTarget = render_target_from_handle(renderTarget);
+
+    return pRenderTarget->samples;
+}
+
+auto foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t index) -> VkImage {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
 
     uint32_t offset = 0;
@@ -285,7 +295,7 @@ VkImage foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t i
     return pRenderTarget->images[offset + pRenderTarget->indices[index]].image;
 }
 
-VkFramebuffer foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget) {
+auto foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget) -> VkFramebuffer {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
 
     return pRenderTarget->framebuffer;

@@ -28,9 +28,8 @@
 
 struct foeGfxVkRenderTargetSpec {
     VkFormat format;
-    VkSampleCountFlags samples;
     VkImageUsageFlags usage;
-
+    // Number of images to rotate through
     uint32_t count;
 };
 
@@ -40,11 +39,16 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateRenderTarget(
     foeRenderPassPool *pRenderPassPool,
     foeGfxVkRenderTargetSpec const *pSpecifications,
     uint32_t count,
+    VkSampleCountFlags samples,
     foeGfxRenderTarget *pRenderTarget);
 
-FOE_GFX_EXPORT VkImage foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget,
-                                                    uint32_t index);
+FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget)
+    -> VkSampleCountFlags;
 
-FOE_GFX_EXPORT VkFramebuffer foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget);
+FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t index)
+    -> VkImage;
+
+FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget)
+    -> VkFramebuffer;
 
 #endif // FOE_GRAPHICS_VK_RENDER_TARGET_HPP

@@ -883,14 +883,12 @@ int Application::mainloop() {
                     std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
                         foeGfxVkRenderTargetSpec{
                             .format = colourFormat,
-                            .samples = maxSupportedSamples,
                             .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                                      VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                             .count = 3,
                         },
                         foeGfxVkRenderTargetSpec{
                             .format = depthFormat,
-                            .samples = maxSupportedSamples,
                             .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                             .count = 3,
                         },
@@ -898,7 +896,7 @@ int Application::mainloop() {
 
                     auto errC = foeGfxVkCreateRenderTarget(
                         gfxSession, gfxDelayedDestructor, &renderPassPool, offscreenSpecs.data(),
-                        offscreenSpecs.size(), &gfxOffscreenRenderTarget);
+                        offscreenSpecs.size(), maxSupportedSamples, &gfxOffscreenRenderTarget);
                     if (errC) {
                         ERRC_END_PROGRAM
                     }

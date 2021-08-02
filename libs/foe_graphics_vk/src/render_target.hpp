@@ -38,6 +38,7 @@ struct foeGfxVkRenderTarget {
     foeGfxVkSession const *const pSession;
     foeGfxVkDelayedDestructor *const pDelayedDestructor;
     std::vector<foeGfxVkRenderTargetSpec> const imageSpecifications;
+    VkSampleCountFlags const samples;
     VkRenderPass const compatibleRenderPass;
 
     VkExtent2D extent;
