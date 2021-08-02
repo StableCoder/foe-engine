@@ -804,8 +804,6 @@ int Application::mainloop() {
         uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
         if (VK_SUCCESS == vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
                                           &frameData[nextFrameIndex].frameComplete, VK_TRUE, 0)) {
-            frameTime.newFrame();
-
             // Rebuild swapchains
             if (!swapchain || swapchain.needRebuild()) {
                 int width, height;
@@ -892,6 +890,7 @@ int Application::mainloop() {
                 // Catastrophic error
                 VK_END_PROGRAM
             }
+            frameTime.newFrame();
             vkResetFences(foeGfxVkGetDevice(gfxSession), 1,
                           &frameData[nextFrameIndex].frameComplete);
             frameIndex = nextFrameIndex;
