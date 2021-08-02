@@ -19,6 +19,7 @@
 
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
+#include <foe/graphics/render_target.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/swapchain.hpp>
@@ -91,6 +92,10 @@ struct Application {
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
     foeGfxUploadContext resUploader{FOE_NULL_HANDLE};
     foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
+    foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
+    VkFormat colourFormat;
+    VkFormat depthFormat;
+    VkSampleCountFlags maxSupportedSamples;
 
     VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
     foeSwapchain swapchain;
