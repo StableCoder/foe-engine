@@ -5,6 +5,7 @@ target_sources(
           debug_callback.cpp
           delayed_destructor.cpp
           descriptor_set_layout_pool.cpp
+          error_code.cpp
           error_colour_image.cpp
           error_depth_stencil_image.cpp
           fragment_descriptor_pool.cpp
@@ -15,6 +16,7 @@ target_sources(
           model.cpp
           pipeline_pool.cpp
           queue_family.cpp
+          render_target.cpp
           runtime.cpp
           session.cpp
           shader_public.cpp
