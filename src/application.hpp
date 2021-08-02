@@ -17,6 +17,7 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
+#include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -89,6 +90,7 @@ struct Application {
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
     foeGfxUploadContext resUploader{FOE_NULL_HANDLE};
+    foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
 
     VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
     foeSwapchain swapchain;

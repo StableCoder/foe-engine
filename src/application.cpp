@@ -268,6 +268,11 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         ERRC_END_PROGRAM_TUPLE
     }
 
+    errC = foeGfxCreateDelayedDestructor(gfxSession, &gfxDelayedDestructor);
+    if (errC) {
+        ERRC_END_PROGRAM_TUPLE
+    }
+
 #ifdef EDITOR_MODE
     imguiRenderer.resize(settings.window.width, settings.window.height);
     float xScale, yScale;
@@ -655,6 +660,11 @@ void Application::deinitialize() {
 
     foeDestroyWindow();
 
+    if (gfxDelayedDestructor != FOE_NULL_HANDLE) {
+        foeGfxDestroyDelayedDestructor(gfxDelayedDestructor);
+        gfxDelayedDestructor = FOE_NULL_HANDLE;
+    }
+
     foeGfxDestroyUploadContext(resUploader);
 
 #ifdef EDITOR_MODE
@@ -894,6 +904,8 @@ int Application::mainloop() {
             vkResetFences(foeGfxVkGetDevice(gfxSession), 1,
                           &frameData[nextFrameIndex].frameComplete);
             frameIndex = nextFrameIndex;
+
+            foeGfxRunDelayedDestructor(gfxDelayedDestructor);
 
             // Resource Loader Gfx Maintenance
             for (auto &it : pSimulationSet->resourceLoaders) {
