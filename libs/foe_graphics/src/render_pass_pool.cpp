@@ -98,7 +98,7 @@ auto foeRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
             .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
             .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+            .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         });
     }
     auto variantKeys = generateVariantKeys(attachments);
@@ -251,7 +251,7 @@ auto foeRenderPassPool::createRenderPass(std::vector<VkAttachmentDescription> co
     for (uint32_t i = 0; i < attachments.size(); ++i) {
         auto &attachment = attachments[i];
 
-        if (isDepthStencilFormat(attachment.format)) {
+        if (isDepthFormat(attachment.format)) {
             if (depthStencilReference.attachment != cInvalidAttachment) {
                 FOE_LOG(Graphics, Error, "Two depth/stencil attachments requested on a Render Pass")
                 return VK_ERROR_INITIALIZATION_FAILED;
@@ -259,15 +259,6 @@ auto foeRenderPassPool::createRenderPass(std::vector<VkAttachmentDescription> co
             depthStencilReference = VkAttachmentReference{
                 .attachment = i,
                 .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            };
-        } else if (isDepthFormat(attachment.format)) {
-            if (depthStencilReference.attachment != cInvalidAttachment) {
-                FOE_LOG(Graphics, Error, "Two depth/stencil attachments requested on a Render Pass")
-                return VK_ERROR_INITIALIZATION_FAILED;
-            }
-            depthStencilReference = VkAttachmentReference{
-                .attachment = i,
-                .layout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
             };
         } else {
             colourReferences.emplace_back(VkAttachmentReference{
