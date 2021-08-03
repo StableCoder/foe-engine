@@ -85,6 +85,8 @@ struct Application {
     foeXrSession xrSession{};
     VkRenderPass xrRenderPass;
     std::vector<foeXrVkSessionView> xrViews;
+    VkRenderPass xrOffscreenRenderPass;
+    std::vector<foeGfxRenderTarget> xrOffscreenRenderTargets;
     foeXrVkCameraSystem xrVkCameraSystem;
 #endif
 
@@ -94,7 +96,7 @@ struct Application {
     foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
     foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
     VkFormat colourFormat;
-    VkFormat depthFormat;
+    VkFormat depthFormat{VK_FORMAT_D16_UNORM};
     VkSampleCountFlags maxSupportedSamples;
 
     VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
