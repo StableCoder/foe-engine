@@ -22,9 +22,9 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-class foeShader;
-class foeImage;
-class foeGfxVkFragmentDescriptor;
+struct foeShader;
+struct foeImage;
+struct foeGfxVkFragmentDescriptor;
 
 struct FOE_GFX_RES_EXPORT foeMaterial : public foeResourceBase {
     foeMaterial(foeResourceID resource, foeResourceFns const *pResourceFns);

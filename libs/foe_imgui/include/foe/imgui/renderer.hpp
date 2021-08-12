@@ -22,6 +22,7 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
+#include <system_error>
 #include <vector>
 
 struct foeKeyboard;
@@ -32,17 +33,17 @@ class foeImGuiRenderer {
     FOE_IMGUI_EXPORT foeImGuiRenderer();
     FOE_IMGUI_EXPORT ~foeImGuiRenderer();
 
-    FOE_IMGUI_EXPORT VkResult initialize(foeGfxSession session,
-                                         VkSampleCountFlags rasterSampleFlags,
-                                         VkRenderPass renderPass,
-                                         uint32_t subpass);
+    FOE_IMGUI_EXPORT auto initialize(foeGfxSession session,
+                                     VkSampleCountFlags rasterSampleFlags,
+                                     VkRenderPass renderPass,
+                                     uint32_t subpass) -> std::error_code;
     FOE_IMGUI_EXPORT void deinitialize(foeGfxSession session);
     FOE_IMGUI_EXPORT bool initialized() const noexcept;
 
     FOE_IMGUI_EXPORT void newFrame();
     FOE_IMGUI_EXPORT void endFrame();
 
-    FOE_IMGUI_EXPORT VkResult update(VmaAllocator allocator, uint32_t bufferedFrame);
+    FOE_IMGUI_EXPORT auto update(VmaAllocator allocator, uint32_t bufferedFrame) -> std::error_code;
     FOE_IMGUI_EXPORT void draw(VkCommandBuffer commandBuffer, uint32_t frameIndex);
 
     FOE_IMGUI_EXPORT void resize(float width, float height);

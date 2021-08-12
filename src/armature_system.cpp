@@ -126,7 +126,6 @@ void foeArmatureSystem::process(float timePassed) {
             animationTime -= animationDuration;
         }
 
-        glm::mat4 transform{1.f};
         animationTime *= animation.ticksPerSecond;
 
         animateArmatureNode(&pArmature->data.armature[0], animation.nodeChannels, animationTime,

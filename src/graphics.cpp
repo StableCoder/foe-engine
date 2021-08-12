@@ -41,7 +41,7 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
     if (enableWindowing) {
         uint32_t extensionCount;
         const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
-        for (int i = 0; i < extensionCount; ++i) {
+        for (uint32_t i = 0; i < extensionCount; ++i) {
             extensions.emplace_back(extensionNames[i]);
         }
     }
@@ -49,7 +49,6 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
 #ifdef FOE_XR_SUPPORT
     // OpenXR
     if (xrRuntime != FOE_NULL_HANDLE) {
-        XrSystemId xrSystemId;
         std::vector<std::string> xrExtensions;
 
         XrResult xrRes =
@@ -184,7 +183,6 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
                                  uint32_t explicitGpu,
                                  bool forceXr,
                                  foeGfxSession *pGfxSession) {
-    VkInstance vkInstance = foeGfxVkGetInstance(gfxRuntime);
     // Determine the physical device
     VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(
         foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces[0], explicitGpu, forceXr);

@@ -184,6 +184,9 @@ auto importState(std::string_view topLevelDataSet,
 
             foeIdGroupTranslator newTranslator;
             auto errC = foeIdCreateTranslator(srcDependencies, dstDependencies, &newTranslator);
+            if (errC) {
+                return errC;
+            }
 
             it->setGroupTranslator(std::move(newTranslator));
 

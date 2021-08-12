@@ -161,8 +161,8 @@ auto importMeshIndexData32(aiMesh const *pMesh, uint32_t offset) -> std::vector<
 }
 namespace {
 
-auto getMeshWeightsPerVertex(aiMesh const *pMesh) -> std::vector<int> {
-    std::vector<int> weightsPerVertex;
+auto getMeshWeightsPerVertex(aiMesh const *pMesh) -> std::vector<unsigned int> {
+    std::vector<unsigned int> weightsPerVertex;
     weightsPerVertex.resize(pMesh->mNumVertices);
 
     for (unsigned int b = 0; b < pMesh->mNumBones; ++b) {
@@ -196,7 +196,7 @@ auto getMeshVerticesByWeight(aiMesh const *pMesh) -> std::vector<int> {
 auto getMeshMaxPerVertexWeights(aiMesh const *pMesh) -> int {
     auto weightsPerVertex = getMeshWeightsPerVertex(pMesh);
 
-    int maxWeightsPerVertex = 0;
+    unsigned int maxWeightsPerVertex = 0;
 
     for (auto it : weightsPerVertex) {
         maxWeightsPerVertex = std::max(maxWeightsPerVertex, it);
@@ -209,7 +209,7 @@ namespace {
 
 using VertexBoneWeights = std::vector<std::tuple<float, uint32_t>>;
 
-auto collapseWeights(VertexBoneWeights weights, int maxWeights) -> VertexBoneWeights {
+auto collapseWeights(VertexBoneWeights weights, unsigned int maxWeights) -> VertexBoneWeights {
     std::sort(weights.begin(), weights.end(),
               [](auto a, auto b) { return std::get<0>(a) > std::get<0>(b); });
 

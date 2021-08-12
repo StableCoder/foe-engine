@@ -118,7 +118,7 @@ void exportResource(foeResourceID resource,
     for (auto const &fn : resourceFns) {
         auto keyDataPairs = fn(resource, ppResourcePools, resourcePoolCount);
 
-        for (auto const it : keyDataPairs) {
+        for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
         }
     }
@@ -149,7 +149,7 @@ void exportComponents(foeEntityID entity,
     for (auto const &fn : componentFns) {
         auto keyDataPairs = fn(entity, ppComponentPools, componentPoolCount);
 
-        for (auto const it : keyDataPairs) {
+        for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
         }
     }

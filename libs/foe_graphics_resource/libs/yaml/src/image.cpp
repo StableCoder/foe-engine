@@ -26,7 +26,7 @@ namespace {
 
 bool yaml_read_image_definition_internal(std::string const &nodeName,
                                          YAML::Node const &node,
-                                         foeIdGroupTranslator const *pTranslator,
+                                         foeIdGroupTranslator const * /*pTranslator*/,
                                          foeImageCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {

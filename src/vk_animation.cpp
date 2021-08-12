@@ -198,7 +198,6 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
         }
 
         glm::mat4 lastBone = glm::mat4{1.f};
-        glm::mat4 transform(1.f);
         for (auto const &bone : pMesh->data.gfxBones) {
             // Find the matching armature node, if it exists
             foeArmatureNode *pArmatureNode{nullptr};

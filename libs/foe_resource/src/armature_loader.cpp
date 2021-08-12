@@ -28,7 +28,6 @@ std::error_code foeArmatureLoader::initialize(
 
     mExternalFileSearchFn = externalFileSearchFn;
 
-INITIALIZATION_FAILED:
     if (errC) {
         deinitialize();
     }

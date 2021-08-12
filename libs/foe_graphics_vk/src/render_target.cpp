@@ -89,7 +89,6 @@ VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
             return vkRes;
     }
 
-CREATE_FAILED:
     if (vkRes != VK_SUCCESS) {
         if (image.view != VK_NULL_HANDLE)
             vkDestroyImageView(pGfxVkSession->device, image.view, nullptr);
@@ -287,7 +286,6 @@ auto foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t inde
     uint32_t offset = 0;
     for (uint32_t i = 0; i < index; ++i) {
         auto const &spec = pRenderTarget->imageSpecifications[i];
-        auto &image = pRenderTarget->images[offset + pRenderTarget->indices[i]];
 
         offset += spec.count;
     }

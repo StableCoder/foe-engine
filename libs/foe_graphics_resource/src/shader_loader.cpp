@@ -59,7 +59,6 @@ std::error_code foeShaderLoader::initialize(
     mGfxSession = session;
     mExternalFileSearchFn = externalFileSearchFn;
 
-INITIALIZATION_FAILED:
     if (errC)
         deinitialize();
 

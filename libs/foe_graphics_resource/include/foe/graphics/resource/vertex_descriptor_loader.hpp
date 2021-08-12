@@ -77,10 +77,6 @@ class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBas
 
     std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
-
-    size_t mDataDestroyIndex{0};
-    std::array<std::vector<foeVertexDescriptor::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mDataDestroyLists{};
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_LOADER_HPP

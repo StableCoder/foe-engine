@@ -22,7 +22,7 @@
 struct foeIdGroupTranslator;
 struct foeResourceCreateInfoBase;
 struct foeMaterialCreateInfo;
-class foeGfxVkFragmentDescriptor;
+struct foeGfxVkFragmentDescriptor;
 
 char const *yaml_material_key();
 

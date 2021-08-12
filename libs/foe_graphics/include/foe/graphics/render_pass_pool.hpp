@@ -103,8 +103,7 @@ class foeRenderPassPool {
         -> std::vector<RenderPassVariantKey>;
 
     auto findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
-                        std::vector<RenderPassVariantKey> const &variantKey,
-                        std::vector<VkAttachmentDescription> const &attachments) -> VkRenderPass;
+                        std::vector<RenderPassVariantKey> const &variantKey) -> VkRenderPass;
 
     auto findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey) -> VkRenderPass;
 

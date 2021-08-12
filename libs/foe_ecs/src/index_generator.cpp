@@ -19,7 +19,7 @@
 #include <cassert>
 
 foeIdIndexGenerator::foeIdIndexGenerator(std::string_view name, foeIdGroup groupId) :
-    cName{name}, cGroupID{groupId}, mNumRecycled{0}, mRecycled{}, mNextFreeID{foeIdIndexMinValue} {
+    cName{name}, cGroupID{groupId}, mNextFreeID{foeIdIndexMinValue}, mRecycled{}, mNumRecycled{0} {
     /// \todo Replace with C++20 contracts
     assert((groupId & foeIdIndexBits) == 0);
 }

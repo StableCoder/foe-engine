@@ -27,7 +27,6 @@ foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 std::error_code foeCollisionShapeLoader::initialize() {
     std::error_code errC;
 
-INITIALIZATION_FAILED:
     if (errC) {
         deinitialize();
     }

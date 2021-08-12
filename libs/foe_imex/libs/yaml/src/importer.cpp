@@ -96,7 +96,7 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 foeYamlImporter::foeYamlImporter(foeYamlImporterGenerator *pGenerator,
                                  foeIdGroup group,
                                  std::filesystem::path rootDir) :
-    mGroup{group}, mRootDir{std::move(rootDir)}, mGenerator{pGenerator} {}
+    mRootDir{std::move(rootDir)}, mGroup{group}, mGenerator{pGenerator} {}
 
 namespace {
 

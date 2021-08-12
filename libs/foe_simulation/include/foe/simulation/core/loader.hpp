@@ -26,10 +26,10 @@ struct foeResourceCreateInfoBase;
 struct foeResourceLoaderBase {
     virtual ~foeResourceLoaderBase() {}
 
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) { return false; }
-    virtual void load(void *pResource,
-                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                      void (*pPostLoadFn)(void *, std::error_code)) {}
+    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase * /*pCreateInfo*/) { return false; }
+    virtual void load(void * /*pResource*/,
+                      std::shared_ptr<foeResourceCreateInfoBase> const & /*pCreateInfo*/,
+                      void (*/*pPostLoadFn*/)(void *, std::error_code)) {}
 
     size_t refCount{0};
     size_t initCount{0};

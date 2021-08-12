@@ -75,7 +75,7 @@ void cubeVertexDataTemplate(uint32_t componentCount,
                             foeVertexComponent const *pComponents,
                             T *pData) {
 
-    for (int v = 0; v < cNumCubeVertices; ++v) {
+    for (size_t v = 0; v < cNumCubeVertices; ++v) {
         for (uint32_t c = 0; c < componentCount; ++c) {
 
             switch (pComponents[c]) {

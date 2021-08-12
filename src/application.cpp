@@ -528,13 +528,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             }
         }
 
-        for (auto &it : xrViews) {
-            //    it.camera.pPosition3D = camera.pPosition3D;
-            //    it.camera.nearZ = camera.nearZ;
-            //    it.camera.farZ = camera.farZ;
-            //    cameraDescriptorPool.linkCamera(&it.camera);
-        }
-
         // OpenXR Session Begin
 
         { // Wait for the session state to be ready
@@ -890,7 +883,6 @@ int Application::mainloop() {
                 auto pCameraPool = getComponentPool<foeCameraPool>(
                     pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
 
-                auto *pCameraData = pCameraPool->begin<1>();
                 for (auto *pCameraData = pCameraPool->begin<1>();
                      pCameraData != pCameraPool->end<1>(); ++pCameraData) {
                     pCameraData->get()->viewX = width;
@@ -1174,7 +1166,7 @@ int Application::mainloop() {
                         XR_END_PROGRAM
                     }
 
-                    for (int i = 0; i < views.size(); ++i) {
+                    for (size_t i = 0; i < views.size(); ++i) {
                         projectionViews[i].pose = views[i].pose;
                         projectionViews[i].fov = views[i].fov;
 
@@ -1196,7 +1188,7 @@ int Application::mainloop() {
 
                     // Render Code
                     std::vector<uint32_t> swapchainIndex;
-                    for (int i = 0; i < xrViews.size(); ++i) {
+                    for (size_t i = 0; i < xrViews.size(); ++i) {
                         auto &it = xrViews[i];
                         auto &renderTarget = xrOffscreenRenderTargets[i];
 
@@ -1306,8 +1298,6 @@ int Application::mainloop() {
 
                                         if constexpr (true) {
                                             // Render Special Triangle
-                                            foeId itemToRender = renderTriangleID;
-
                                             foeRenderState *pRenderState{nullptr};
 
                                             auto pRenderStatePool =
@@ -1511,13 +1501,11 @@ int Application::mainloop() {
                             }
 
                             // Submission
-                            VkPipelineStageFlags waitMask =
-                                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-
                             VkSubmitInfo submitInfo{
                                 .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                                 .commandBufferCount = 1,
                                 .pCommandBuffers = &commandBuffer,
+
                             };
 
                             auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
@@ -1654,8 +1642,6 @@ int Application::mainloop() {
 
                         if constexpr (true) {
                             // Render Special Triangle
-                            foeId itemToRender = renderTriangleID;
-
                             foeRenderState *pRenderState{nullptr};
 
                             auto pRenderStatePool = getComponentPool<foeRenderStatePool>(
@@ -1910,9 +1896,9 @@ int Application::mainloop() {
                         imguiState.runUI();
                         imguiRenderer.endFrame();
 
-                        vkRes = imguiRenderer.update(foeGfxVkGetAllocator(gfxSession), frameIndex);
-                        if (vkRes != VK_SUCCESS) {
-                            VK_END_PROGRAM
+                        errC = imguiRenderer.update(foeGfxVkGetAllocator(gfxSession), frameIndex);
+                        if (errC) {
+                            ERRC_END_PROGRAM
                         }
 
                         imguiRenderer.draw(commandBuffer, frameIndex);

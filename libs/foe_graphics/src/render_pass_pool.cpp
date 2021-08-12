@@ -51,14 +51,14 @@ VkRenderPass foeRenderPassPool::renderPass(
 
     // Try to get the renderpass in shared read mode
     std::shared_lock sharedLock{mSync};
-    VkRenderPass renderPass = findRenderPass(compatibleKeys, variantKeys, attachments);
+    VkRenderPass renderPass = findRenderPass(compatibleKeys, variantKeys);
     if (renderPass != VK_NULL_HANDLE)
         return renderPass;
     sharedLock.unlock();
 
     // Find/create the render pass in exclusive mode
     std::scoped_lock lock{mSync};
-    renderPass = findRenderPass(compatibleKeys, variantKeys, attachments);
+    renderPass = findRenderPass(compatibleKeys, variantKeys);
     if (renderPass != VK_NULL_HANDLE)
         return renderPass;
     return generateRenderPass(compatibleKeys, variantKeys, attachments);
@@ -146,8 +146,7 @@ auto foeRenderPassPool::generateVariantKeys(std::vector<VkAttachmentDescription>
 }
 
 auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
-                                       std::vector<RenderPassVariantKey> const &variantKey,
-                                       std::vector<VkAttachmentDescription> const &attachments)
+                                       std::vector<RenderPassVariantKey> const &variantKey)
     -> VkRenderPass {
     for (auto &it : mRenderPasses) {
         if (it.key == compatibleKey) {

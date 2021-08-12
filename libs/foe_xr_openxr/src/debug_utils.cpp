@@ -51,7 +51,7 @@ std::string to_string(XrDebugUtilsMessageTypeFlagsEXT types) {
 XrBool32 openxrMessengerCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity,
                                  XrDebugUtilsMessageTypeFlagsEXT messageTypes,
                                  const XrDebugUtilsMessengerCallbackDataEXT *callbackData,
-                                 void *userData) {
+                                 void * /*userData*/) {
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
         FOE_LOG(foeXrOpen, Error, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }

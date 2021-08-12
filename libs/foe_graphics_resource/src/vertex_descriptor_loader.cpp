@@ -54,7 +54,6 @@ std::error_code foeVertexDescriptorLoader::initialize(foeShaderPool *pShaderPool
 
     mShaderPool = pShaderPool;
 
-INITIALIZATION_FAILED:
     if (errC) {
         deinitialize();
     }
