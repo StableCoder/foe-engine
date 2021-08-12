@@ -201,7 +201,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
                 yaml_read_required(\"\", *it, *const_cast<$TYPE *>(&newData.$VAR[count]));
                 ++count;
             }
-            newData.${COUNT_NAME} = ${NAME}Node.size();
+            newData.${COUNT_NAME} = static_cast<uint32_t>(${NAME}Node.size());
             read = true;
         } else {
             throw foeYamlException{\"${NAME} - Required node not found\"};
@@ -218,7 +218,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
                 yaml_read_required(\"\", *it, *const_cast<$TYPE *>(&newData.$VAR[count]));
                 ++count;
             }
-            newData.${COUNT_NAME} = ${NAME}Node.size();
+            newData.${COUNT_NAME} = static_cast<uint32_t>(${NAME}Node.size());
             read = true;
         }
 "

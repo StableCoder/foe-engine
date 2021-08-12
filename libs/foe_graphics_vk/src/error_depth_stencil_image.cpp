@@ -116,7 +116,7 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
     VkSampler sampler{VK_NULL_HANDLE};
 
     { // Staging Buffer
-        uint32_t dataByteSize = pixelCount(extent, numMipLevels);
+        VkDeviceSize dataByteSize = pixelCount(extent, numMipLevels);
         dataByteSize *=
             bytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
@@ -227,9 +227,9 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
             .layerCount = 1,
         };
 
-        recordImageUploadCommands(uploadContext, &subresourceRange, copyRegions.size(),
-                                  copyRegions.data(), stagingBuffer, image,
-                                  VK_ACCESS_SHADER_READ_BIT,
+        recordImageUploadCommands(uploadContext, &subresourceRange,
+                                  static_cast<uint32_t>(copyRegions.size()), copyRegions.data(),
+                                  stagingBuffer, image, VK_ACCESS_SHADER_READ_BIT,
                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadRequest);
         if (res != VK_SUCCESS) {
             goto SUBMIT_FAILED;

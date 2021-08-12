@@ -182,7 +182,7 @@ void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
 std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
                                               uint32_t maxBufferedFrames) {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
-    uint32_t const numImages = pRenderTarget->imageSpecifications.size();
+    uint32_t const numImages = static_cast<uint32_t>(pRenderTarget->imageSpecifications.size());
     std::error_code errC;
 
     // Increment the indices, making sure to not go over the specified image counts for each type

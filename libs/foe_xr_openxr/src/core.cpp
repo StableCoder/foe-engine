@@ -31,7 +31,8 @@ XrResult foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &pro
         it.type = XR_TYPE_API_LAYER_PROPERTIES;
     }
 
-    return xrEnumerateApiLayerProperties(properties.size(), &propertyCount, properties.data());
+    return xrEnumerateApiLayerProperties(static_cast<uint32_t>(properties.size()), &propertyCount,
+                                         properties.data());
 }
 
 XrResult foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
@@ -48,8 +49,8 @@ XrResult foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
         it.type = XR_TYPE_EXTENSION_PROPERTIES;
     }
 
-    return xrEnumerateInstanceExtensionProperties(pApiLayerName, properties.size(), &propertyCount,
-                                                  properties.data());
+    return xrEnumerateInstanceExtensionProperties(
+        pApiLayerName, static_cast<uint32_t>(properties.size()), &propertyCount, properties.data());
 }
 
 XrResult foeXrCreateInstance(char const *appName,
@@ -96,7 +97,8 @@ XrResult foeXrEnumerateReferenceSpaces(XrSession xrSession,
     }
 
     spaces.resize(spaceCount);
-    return xrEnumerateReferenceSpaces(xrSession, spaces.size(), &spaceCount, spaces.data());
+    return xrEnumerateReferenceSpaces(xrSession, static_cast<uint32_t>(spaces.size()), &spaceCount,
+                                      spaces.data());
 }
 
 XrResult foeXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats) {
@@ -107,5 +109,6 @@ XrResult foeXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t
     }
 
     formats.resize(formatCount);
-    return xrEnumerateSwapchainFormats(xrSession, formats.size(), &formatCount, formats.data());
+    return xrEnumerateSwapchainFormats(xrSession, static_cast<uint32_t>(formats.size()),
+                                       &formatCount, formats.data());
 }

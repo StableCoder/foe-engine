@@ -42,10 +42,12 @@ struct foeGfxVertexDescriptor {
     }
 
     auto getVertexInputSCI() noexcept -> VkPipelineVertexInputStateCreateInfo const * {
-        mVertexInputSCI.vertexBindingDescriptionCount = mVertexInputBindings.size();
+        mVertexInputSCI.vertexBindingDescriptionCount =
+            static_cast<uint32_t>(mVertexInputBindings.size());
         mVertexInputSCI.pVertexBindingDescriptions = mVertexInputBindings.data();
 
-        mVertexInputSCI.vertexAttributeDescriptionCount = mVertexInputAttributes.size();
+        mVertexInputSCI.vertexAttributeDescriptionCount =
+            static_cast<uint32_t>(mVertexInputAttributes.size());
         mVertexInputSCI.pVertexAttributeDescriptions = mVertexInputAttributes.data();
 
         return &mVertexInputSCI;

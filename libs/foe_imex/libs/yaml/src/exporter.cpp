@@ -379,10 +379,12 @@ bool foeYamlExporter::exportResources(std::filesystem::path rootOutPath,
             resource = foeIdCreate(group, idx);
 
             exportResource(resource, dirPath, pSimState->pResourceNameMap, mResourceFns,
-                           pSimState->resourcePools.data(), pSimState->resourcePools.size());
+                           pSimState->resourcePools.data(),
+                           static_cast<uint32_t>(pSimState->resourcePools.size()));
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to export resource: {}", foeIdToString(resource));
+        FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resource),
+                e.what());
         retVal = false;
     }
 
@@ -452,10 +454,12 @@ bool foeYamlExporter::exportComponentData(std::filesystem::path rootOutPath,
             entity = foeIdCreate(group, idx);
 
             exportComponents(entity, dirPath, pSimState->pEntityNameMap, mComponentFns,
-                             pSimState->componentPools.data(), pSimState->componentPools.size());
+                             pSimState->componentPools.data(),
+                             static_cast<uint32_t>(pSimState->componentPools.size()));
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to export entity: {}", foeIdToString(entity));
+        FOE_LOG(foeImexYaml, Error, "Failed to export entity: {} - {}", foeIdToString(entity),
+                e.what());
         retVal = false;
     }
 

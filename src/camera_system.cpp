@@ -38,7 +38,7 @@ VkResult foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
     mpPosition3dPool = pPosition3dPool;
     mpCameraPool = pCameraPool;
 
-    VkResult res;
+    VkResult res{VK_SUCCESS};
 
     mDevice = foeGfxVkGetDevice(session);
     mAllocator = foeGfxVkGetAllocator(session);

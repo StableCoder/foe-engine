@@ -94,7 +94,7 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
     VkSampler sampler{VK_NULL_HANDLE};
 
     { // Staging Buffer
-        uint32_t dataByteSize = pixelCount(extent, numMipLevels);
+        VkDeviceSize dataByteSize = pixelCount(extent, numMipLevels);
         dataByteSize *= bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
 
         VkBufferCreateInfo bufferCI{
@@ -182,10 +182,10 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
             .layerCount = 1,
         };
 
-        res = recordImageUploadCommands(uploadContext, &subresourceRange, copyRegions.size(),
-                                        copyRegions.data(), stagingBuffer, image,
-                                        VK_ACCESS_SHADER_READ_BIT,
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
+        res = recordImageUploadCommands(
+            uploadContext, &subresourceRange, static_cast<uint32_t>(copyRegions.size()),
+            copyRegions.data(), stagingBuffer, image, VK_ACCESS_SHADER_READ_BIT,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
         if (res != VK_SUCCESS) {
             goto SUBMIT_FAILED;
         }

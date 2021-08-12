@@ -143,9 +143,9 @@ void foeShaderLoader::load(void *pResource,
 
         auto shaderCode = loadShaderDataFromFile(filePath);
 
-        errC = foeGfxVkCreateShader(mGfxSession, &pShaderCI->gfxCreateInfo, shaderCode.size(),
-                                    reinterpret_cast<uint32_t *>(shaderCode.data()),
-                                    &shaderData.shader);
+        errC = foeGfxVkCreateShader(
+            mGfxSession, &pShaderCI->gfxCreateInfo, static_cast<uint32_t>(shaderCode.size()),
+            reinterpret_cast<uint32_t *>(shaderCode.data()), &shaderData.shader);
         if (errC) {
             goto LOAD_FAILED;
         }

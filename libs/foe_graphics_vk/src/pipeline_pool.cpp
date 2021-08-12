@@ -290,7 +290,7 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
             .pPushConstantRanges = pushConstantRanges.data(),
         };
 
-        descriptorSetLayoutCount = descriptorSetLayouts.size();
+        descriptorSetLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
         res = vkCreatePipelineLayout(mDevice, &pipelineLayoutCI, nullptr, &pipelineLayout);
         if (res != VK_SUCCESS) {
             FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipelineLayout with error: {}",
@@ -373,7 +373,7 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
 
         VkPipelineDynamicStateCreateInfo dynamicState{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-            .dynamicStateCount = dynamicStateEnable.size(),
+            .dynamicStateCount = static_cast<uint32_t>(dynamicStateEnable.size()),
             .pDynamicStates = dynamicStateEnable.data(),
         };
 

@@ -167,6 +167,6 @@ XrResult foeXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
 
     images.resize(imageCount);
     return xrEnumerateSwapchainImages(
-        xrSwapchain, images.size(), &imageCount,
+        xrSwapchain, static_cast<uint32_t>(images.size()), &imageCount,
         reinterpret_cast<XrSwapchainImageBaseHeader *>(images.data()));
 }

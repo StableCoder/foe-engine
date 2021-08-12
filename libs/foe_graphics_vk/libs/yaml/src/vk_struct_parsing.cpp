@@ -323,7 +323,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
                     *const_cast<VkDescriptorSetLayoutBinding *>(&newData.pBindings[count]));
                 ++count;
             }
-            newData.bindingCount = bindingsNode.size();
+            newData.bindingCount = static_cast<uint32_t>(bindingsNode.size());
             read = true;
         } else {
             throw foeYamlException{"bindings - Required node not found"};
@@ -370,7 +370,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
                     *const_cast<VkDescriptorSetLayoutBinding *>(&newData.pBindings[count]));
                 ++count;
             }
-            newData.bindingCount = bindingsNode.size();
+            newData.bindingCount = static_cast<uint32_t>(bindingsNode.size());
             read = true;
         }
 
@@ -1394,7 +1394,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateIn
                                        &newData.pAttachments[count]));
                 ++count;
             }
-            newData.attachmentCount = attachmentsNode.size();
+            newData.attachmentCount = static_cast<uint32_t>(attachmentsNode.size());
             read = true;
         } else {
             throw foeYamlException{"attachments - Required node not found"};
@@ -1449,7 +1449,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateIn
                                        &newData.pAttachments[count]));
                 ++count;
             }
-            newData.attachmentCount = attachmentsNode.size();
+            newData.attachmentCount = static_cast<uint32_t>(attachmentsNode.size());
             read = true;
         }
 

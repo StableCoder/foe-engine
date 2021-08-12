@@ -973,8 +973,8 @@ int Application::mainloop() {
             }
 
             // Acquire Target Presentation Images
-            VkResult vkRes = swapchain.acquireNextImage(
-                foeGfxVkGetDevice(gfxSession), frameData[nextFrameIndex].presentImageAcquired);
+            vkRes = swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession),
+                                               frameData[nextFrameIndex].presentImageAcquired);
             if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
                 // Waiting for an image to become ready
                 goto SKIP_FRAME_RENDER;
@@ -1963,7 +1963,7 @@ int Application::mainloop() {
                 };
 
                 auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-                VkResult vkRes = vkQueuePresentKHR(queue, &presentInfo);
+                vkRes = vkQueuePresentKHR(queue, &presentInfo);
                 foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
                 if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
                     // The associated window has been resized, will be fixed for the next frame

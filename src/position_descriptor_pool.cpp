@@ -24,7 +24,7 @@ VkResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool,
                                             foeGfxSession session) {
     mpPosition3dPool = pPosition3dPool;
 
-    VkResult res;
+    VkResult res{VK_SUCCESS};
 
     mDevice = foeGfxVkGetDevice(session);
     mAllocator = foeGfxVkGetAllocator(session);

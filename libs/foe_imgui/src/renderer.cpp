@@ -720,7 +720,7 @@ VkResult foeImGuiRenderer::initializePipeline(VkDevice device,
     };
     VkPipelineDynamicStateCreateInfo dynamicStateCI{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = dynamicStateEnables.size(),
+        .dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size()),
         .pDynamicStates = dynamicStateEnables.data(),
     };
 
@@ -758,9 +758,9 @@ VkResult foeImGuiRenderer::initializePipeline(VkDevice device,
 
     VkPipelineVertexInputStateCreateInfo vertexInputStateCI{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-        .vertexBindingDescriptionCount = vertexInputBindings.size(),
+        .vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindings.size()),
         .pVertexBindingDescriptions = vertexInputBindings.data(),
-        .vertexAttributeDescriptionCount = vertexInputAttributes.size(),
+        .vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size()),
         .pVertexAttributeDescriptions = vertexInputAttributes.data(),
     };
 

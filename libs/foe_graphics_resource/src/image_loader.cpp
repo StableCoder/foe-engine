@@ -167,8 +167,8 @@ void foeImageLoader::load(void *pResource,
 
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
-    foeGfxUploadRequest gfxUploadRequest;
-    foeGfxUploadBuffer gfxUploadBuffer;
+    foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
+    foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
     foeImage::Data imgData{
         .pUnloadContext = this,
         .pUnloadFn = unloadResource,
@@ -361,14 +361,14 @@ void foeImageLoader::load(void *pResource,
                 };
 
                 vkRes = recordImageUploadCommands(
-                    mGfxUploadContext, &subresourceRange, copyRegions.size(), copyRegions.data(),
-                    gfxUploadBuffer, imgData.image, VK_ACCESS_SHADER_READ_BIT,
+                    mGfxUploadContext, &subresourceRange, static_cast<uint32_t>(copyRegions.size()),
+                    copyRegions.data(), gfxUploadBuffer, imgData.image, VK_ACCESS_SHADER_READ_BIT,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &gfxUploadRequest);
                 if (vkRes != VK_SUCCESS) {
                     goto LOADING_FAILED;
                 }
 
-                auto errC = foeSubmitUploadDataCommands(mGfxUploadContext, gfxUploadRequest);
+                errC = foeSubmitUploadDataCommands(mGfxUploadContext, gfxUploadRequest);
                 if (errC) {
                     vkRes = static_cast<VkResult>(errC.value());
                     goto LOADING_FAILED;

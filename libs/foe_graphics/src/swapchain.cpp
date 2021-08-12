@@ -157,7 +157,7 @@ VkExtent2D foeSwapchain::extent() const noexcept { return mExtent; }
 
 uint32_t foeSwapchain::acquiredIndex() const noexcept { return mAcquiredIndex; }
 
-uint32_t foeSwapchain::chainSize() const noexcept { return mViews.size(); }
+uint32_t foeSwapchain::chainSize() const noexcept { return static_cast<uint32_t>(mViews.size()); }
 
 VkImage foeSwapchain::image(uint32_t index) const noexcept { return mImages[index]; }
 

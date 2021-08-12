@@ -142,7 +142,8 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
 
             vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr,
-                                 transitionBarriers.size(), transitionBarriers.data(), 0, nullptr);
+                                 static_cast<uint32_t>(transitionBarriers.size()),
+                                 transitionBarriers.data(), 0, nullptr);
 
             // Transfer data
             VkBufferCopy copyRegion{};
@@ -189,12 +190,14 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
         if (uploadRequest->srcCmdBuffer) {
             vkCmdPipelineBarrier(uploadRequest->srcCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                                  VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr,
-                                 transitionBarriers.size(), transitionBarriers.data(), 0, nullptr);
+                                 static_cast<uint32_t>(transitionBarriers.size()),
+                                 transitionBarriers.data(), 0, nullptr);
         }
 
         vkCmdPipelineBarrier(uploadRequest->dstCmdBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr,
-                             transitionBarriers.size(), transitionBarriers.data(), 0, nullptr);
+                             static_cast<uint32_t>(transitionBarriers.size()),
+                             transitionBarriers.data(), 0, nullptr);
     }
 
     { // End Recording

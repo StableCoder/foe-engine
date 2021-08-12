@@ -29,6 +29,9 @@ std::string to_string(foeLogLevel logLevel) {
         ADD_LEVEL(Warning)
         ADD_LEVEL(Info)
         ADD_LEVEL(Verbose)
+
+    default:
+        return "Unknown Level";
     }
 
 #undef ADD_LEVEL

@@ -39,7 +39,7 @@ void foeGfxVkDestroyUploadContext(foeGfxVkUploadContext *pUploadContext) {
 std::error_code foeGfxCreateUploadContext(foeGfxSession session,
                                           foeGfxUploadContext *pUploadContext) {
     auto *pSession = session_from_handle(session);
-    VkResult res;
+    VkResult res{VK_SUCCESS};
     auto *pNewContext = new foeGfxVkUploadContext;
 
     auto transferQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_TRANSFER_BIT);

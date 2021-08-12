@@ -168,19 +168,15 @@ void foeMeshLoader::load(void *pResource,
                                                                     pCI->postProcessFlags);
         assert(modelLoader->loaded());
 
-        unsigned int meshIndex;
-        {
-            bool found = false;
-            for (unsigned int i = 0; i < modelLoader->getNumMeshes(); ++i) {
-                if (modelLoader->getMeshName(i) == pCI->meshName) {
-                    meshIndex = i;
-                    found = true;
-                    break;
-                }
+        unsigned int meshIndex{UINT32_MAX};
+        for (unsigned int i = 0; i < modelLoader->getNumMeshes(); ++i) {
+            if (modelLoader->getMeshName(i) == pCI->meshName) {
+                meshIndex = i;
+                break;
             }
-            if (!found) {
-                goto LOAD_FAILED;
-            }
+        }
+        if (meshIndex == UINT32_MAX) {
+            goto LOAD_FAILED;
         }
 
         std::vector<foeVertexComponent> components{
@@ -195,12 +191,13 @@ void foeMeshLoader::load(void *pResource,
 
         uint32_t numVertices = modelLoader->getNumMeshVertices(meshIndex);
         // Vertex Data
-        vertexData.resize(
-            (foeGetVertexComponentStride(components.size(), components.data()) * numVertices) /
-            sizeof(float));
-        modelLoader->importMeshVertexData(meshIndex, components.size(), components.data(),
-                                          glm::mat4(1.f), vertexData.data());
-        vertexDataSize = vertexData.size() * sizeof(float);
+        vertexData.resize((foeGetVertexComponentStride(static_cast<uint32_t>(components.size()),
+                                                       components.data()) *
+                           numVertices) /
+                          sizeof(float));
+        modelLoader->importMeshVertexData(meshIndex, static_cast<uint32_t>(components.size()),
+                                          components.data(), glm::mat4(1.f), vertexData.data());
+        vertexDataSize = static_cast<uint32_t>(vertexData.size()) * sizeof(float);
 
         // Index Data
         indexData.resize(modelLoader->getNumFaces(meshIndex) * 3);
@@ -223,9 +220,10 @@ void foeMeshLoader::load(void *pResource,
 
         // Upload to graphics
         bool hostVisible; // If the original buffers are host visible, then no need for staging
-        auto errC = foeGfxVkCreateMesh(
-            mGfxSession, vertexDataSize + vertexWeightDataSize, indexData.size() * sizeof(uint32_t),
-            indexData.size(), VK_INDEX_TYPE_UINT32, vertexDataSize, &hostVisible, &data.gfxData);
+        errC = foeGfxVkCreateMesh(mGfxSession, vertexDataSize + vertexWeightDataSize,
+                                  static_cast<uint32_t>(indexData.size()) * sizeof(uint32_t),
+                                  static_cast<uint32_t>(indexData.size()), VK_INDEX_TYPE_UINT32,
+                                  vertexDataSize, &hostVisible, &data.gfxData);
         if (errC) {
             goto LOAD_FAILED;
         }
@@ -282,11 +280,13 @@ void foeMeshLoader::load(void *pResource,
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
 
         uint32_t vertexDataSize = foeModelCubeNumVertices() *
-                                  foeGetVertexComponentStride(components.size(), components.data());
+                                  foeGetVertexComponentStride(
+                                      static_cast<uint32_t>(components.size()), components.data());
         std::vector<float> vertexData(vertexDataSize);
         vertexDataSize *= sizeof(float);
 
-        foeModelCubeVertexData(components.size(), components.data(), vertexData.data());
+        foeModelCubeVertexData(static_cast<uint32_t>(components.size()), components.data(),
+                               vertexData.data());
 
         uint32_t indexDataSize = foeModelCubeNumIndices();
         std::vector<uint16_t> indexData(indexDataSize);
@@ -297,13 +297,12 @@ void foeMeshLoader::load(void *pResource,
         // Graphics Upload
         bool hostVisible; // If the original buffers are host visible, then no need for staging
 
-        auto errC = foeGfxVkCreateMesh(mGfxSession, vertexDataSize, indexDataSize, indexData.size(),
-                                       VK_INDEX_TYPE_UINT16, 0, &hostVisible, &data.gfxData);
+        errC = foeGfxVkCreateMesh(mGfxSession, vertexDataSize, indexDataSize, indexData.size(),
+                                  VK_INDEX_TYPE_UINT16, 0, &hostVisible, &data.gfxData);
         if (errC) {
             goto LOAD_FAILED;
         }
 
-        VkResult vkRes{VK_SUCCESS};
         auto [vertexBuffer, vertexAlloc] = foeGfxVkGetMeshVertexData(data.gfxData);
         auto [indexBuffer, indexAlloc] = foeGfxVkGetMeshIndexData(data.gfxData);
 
@@ -352,12 +351,13 @@ void foeMeshLoader::load(void *pResource,
         foeModelIcoSphereNums(pCI->recursion, &numVertices, &numIndices);
 
         uint32_t vertexDataSize =
-            numVertices * foeGetVertexComponentStride(components.size(), components.data());
+            numVertices * foeGetVertexComponentStride(static_cast<uint32_t>(components.size()),
+                                                      components.data());
         std::vector<float> vertexData(vertexDataSize);
         vertexDataSize *= sizeof(float);
 
-        foeModelIcoSphereVertexData(pCI->recursion, components.size(), components.data(),
-                                    vertexData.data());
+        foeModelIcoSphereVertexData(pCI->recursion, static_cast<uint32_t>(components.size()),
+                                    components.data(), vertexData.data());
 
         uint32_t indexDataSize = numIndices;
         std::vector<uint16_t> indexData(indexDataSize);
@@ -368,13 +368,13 @@ void foeMeshLoader::load(void *pResource,
         // Graphics Upload
         bool hostVisible; // If the original buffers are host visible, then no need for staging
 
-        auto errC = foeGfxVkCreateMesh(mGfxSession, vertexDataSize, indexDataSize, indexData.size(),
-                                       VK_INDEX_TYPE_UINT16, 0, &hostVisible, &data.gfxData);
+        errC = foeGfxVkCreateMesh(mGfxSession, vertexDataSize, indexDataSize,
+                                  static_cast<uint32_t>(indexData.size()), VK_INDEX_TYPE_UINT16, 0,
+                                  &hostVisible, &data.gfxData);
         if (errC) {
             goto LOAD_FAILED;
         }
 
-        VkResult vkRes{VK_SUCCESS};
         auto [vertexBuffer, vertexAlloc] = foeGfxVkGetMeshVertexData(data.gfxData);
         auto [indexBuffer, indexAlloc] = foeGfxVkGetMeshIndexData(data.gfxData);
 

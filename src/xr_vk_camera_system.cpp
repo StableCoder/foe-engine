@@ -20,7 +20,7 @@
 #include <glm/glm.hpp>
 
 VkResult foeXrVkCameraSystem::initialize(foeGfxSession session) {
-    VkResult res;
+    VkResult res{VK_SUCCESS};
 
     mDevice = foeGfxVkGetDevice(session);
     mAllocator = foeGfxVkGetAllocator(session);
@@ -29,8 +29,8 @@ VkResult foeXrVkCameraSystem::initialize(foeGfxSession session) {
     vkGetPhysicalDeviceProperties(foeGfxVkGetPhysicalDevice(session), &devProperties);
 
     mMinUniformBufferOffsetAlignment =
-        std::max(static_cast<VkDeviceSize>(sizeof(glm::mat4)),
-                 devProperties.limits.minUniformBufferOffsetAlignment);
+        std::max(static_cast<uint32_t>(sizeof(glm::mat4)),
+                 static_cast<uint32_t>(devProperties.limits.minUniformBufferOffsetAlignment));
 
     mProjecionViewLayout = foeGfxVkGetBuiltinLayout(
         session, foeBuiltinDescriptorSetLayoutFlagBits::
@@ -114,7 +114,7 @@ VkResult foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
             return res;
         }
 
-        uniform.capacity = xrViews.size();
+        uniform.capacity = static_cast<uint32_t>(xrViews.size());
     }
 
     // Reset the DescriptorPool
