@@ -652,7 +652,7 @@ VkResult foeImGuiRenderer::initializePipelineLayout(VkDevice device) {
 VkResult foeImGuiRenderer::initializePipeline(VkDevice device,
                                               VkSampleCountFlags rasterSampleFlags,
                                               VkRenderPass renderPass,
-                                              uint32_t subpass) {
+                                              uint32_t subPass) {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyCI{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -809,7 +809,7 @@ VkResult foeImGuiRenderer::initializePipeline(VkDevice device,
         .pDynamicState = &dynamicStateCI,
         .layout = mPipelineLayout,
         .renderPass = renderPass,
-        .subpass = 0,
+        .subpass = subPass,
     };
 
     VkResult res = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineCI,
