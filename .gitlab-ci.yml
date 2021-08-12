@@ -49,23 +49,23 @@ variables:
 
 # Platforms
 
-(Debug) Fedora/GCC Static:
-  image: stabletec/build-foe:fedora
+(Debug) Arch/GCC Static:
+  image: stabletec/build-foe:arch
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
   <<: *platform_unix_template
 
-(Debug) Fedora/GCC Shared:
-  image: stabletec/build-foe:fedora
+(Debug) Arch/GCC Shared:
+  image: stabletec/build-foe:arch
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
   <<: *platform_unix_template
 
-(Debug) Fedora/Clang Static:
+(Debug) Arch/Clang Static:
   image: stabletec/build-foe:fedora
   variables:
     CC: clang
@@ -73,12 +73,42 @@ variables:
     CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
   <<: *platform_unix_template
 
-(Debug) Fedora/Clang Shared:
-  image: stabletec/build-foe:fedora
+(Debug) Arch/Clang Shared:
+  image: stabletec/build-foe:arch
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
+  <<: *platform_unix_template
+
+Arch/GCC Static:
+  image: stabletec/build-foe:arch
+  variables:
+    CC: gcc
+    CXX: g++
+  <<: *platform_unix_template
+
+Arch/GCC Shared:
+  image: stabletec/build-foe:arch
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_unix_template
+
+Arch/Clang Static:
+  image: stabletec/build-foe:arch
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *platform_unix_template
+
+Arch/Clang Shared:
+  image: stabletec/build-foe:arch
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_unix_template
 
 Fedora/GCC Static:
@@ -180,7 +210,7 @@ Windows/Clang-cl Shared:
 
 .analysis_template: &analysis_template
   stage: Analysis
-  image: stabletec/build-foe:fedora
+  image: stabletec/build-foe:arch
   tags:
     - docker-linux
     - amd64
@@ -195,7 +225,7 @@ Windows/Clang-cl Shared:
 
 Formatting:
   stage: Analysis
-  image: stabletec/build-foe:fedora
+  image: stabletec/build-foe:arch
   allow_failure: true
   tags:
     - docker-linux
@@ -208,7 +238,7 @@ Formatting:
 
 Static Analysis:
   stage: Analysis
-  image: stabletec/build-foe:fedora
+  image: stabletec/build-foe:arch
   tags:
     - docker-linux
     - amd64
@@ -223,7 +253,7 @@ Static Analysis:
 
 Code Coverage:
   stage: Analysis
-  image: stabletec/build-foe:fedora
+  image: stabletec/build-foe:arch
   tags:
     - docker-linux
     - amd64
