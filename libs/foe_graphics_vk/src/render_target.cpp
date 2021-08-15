@@ -157,6 +157,8 @@ void foeGfxDestroyRenderTarget(foeGfxRenderTarget renderTarget) {
         if (image.image != VK_NULL_HANDLE)
             vmaDestroyImage(pRenderTarget->pSession->allocator, image.image, image.alloc);
     }
+
+    delete pRenderTarget;
 }
 
 void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
