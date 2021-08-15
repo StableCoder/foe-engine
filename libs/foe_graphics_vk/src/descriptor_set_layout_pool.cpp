@@ -16,7 +16,6 @@
 
 #include "descriptor_set_layout_pool.hpp"
 
-#include <vk_equality_checks.hpp>
 #include <vk_error_code.hpp>
 
 #include "log.hpp"
@@ -42,6 +41,17 @@ void foeGfxVkDescriptorSetLayoutPool::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
+namespace {
+
+bool compare_VkDescriptorSetLayoutBinding(VkDescriptorSetLayoutBinding const &lhs,
+                                          VkDescriptorSetLayoutBinding const &rhs) {
+    return (lhs.binding == rhs.binding) && (lhs.descriptorType == rhs.descriptorType) &&
+           (lhs.descriptorCount == rhs.descriptorCount) && (lhs.stageFlags == rhs.stageFlags) &&
+           (lhs.pImmutableSamplers == rhs.pImmutableSamplers);
+}
+
+} // namespace
+
 auto foeGfxVkDescriptorSetLayoutPool::get(
     VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI) -> VkDescriptorSetLayout {
     std::scoped_lock lock{mSync};
@@ -54,7 +64,8 @@ auto foeGfxVkDescriptorSetLayoutPool::get(
 
         bool same{true};
         for (uint32_t i = 0; i < it.layoutCI.bindingCount; ++i) {
-            if (pDescriptorSetLayoutCI->pBindings[i] != it.layoutBindings[i]) {
+            if (!compare_VkDescriptorSetLayoutBinding(pDescriptorSetLayoutCI->pBindings[i],
+                                                      it.layoutBindings[i])) {
                 same = false;
                 break;
             }

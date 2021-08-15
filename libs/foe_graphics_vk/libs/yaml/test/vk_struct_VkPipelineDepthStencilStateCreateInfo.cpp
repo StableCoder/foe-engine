@@ -17,12 +17,13 @@
 #include <catch.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <vk_equality_checks.hpp>
 #include <vulkan/vulkan.h>
 #include <yaml-cpp/emitter.h>
 
 #include <iostream>
 #include <string>
+
+namespace {
 
 constexpr VkPipelineDepthStencilStateCreateInfo cFilledData{
     .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
@@ -40,6 +41,28 @@ constexpr VkPipelineDepthStencilStateCreateInfo cFilledData{
     .maxDepthBounds = 1024.5f,
 };
 
+bool compare_VkStencilOpState(VkStencilOpState const &lhs, VkStencilOpState const &rhs) noexcept {
+    return (lhs.failOp == rhs.failOp) && (lhs.passOp == rhs.passOp) &&
+           (lhs.depthFailOp == rhs.depthFailOp) && (lhs.compareOp == rhs.compareOp) &&
+           (lhs.compareMask == rhs.compareMask) && (lhs.writeMask == rhs.writeMask) &&
+           (lhs.reference == rhs.reference);
+}
+
+bool compare_VkPipelineDepthStencilStateCreateInfo(
+    VkPipelineDepthStencilStateCreateInfo const &lhs,
+    VkPipelineDepthStencilStateCreateInfo const &rhs) noexcept {
+    return (lhs.flags == rhs.flags) && (lhs.depthTestEnable == rhs.depthTestEnable) &&
+           (lhs.depthWriteEnable == rhs.depthWriteEnable) &&
+           (lhs.depthCompareOp == rhs.depthCompareOp) &&
+           (lhs.depthBoundsTestEnable == rhs.depthBoundsTestEnable) &&
+           (lhs.stencilTestEnable == rhs.stencilTestEnable) &&
+           (compare_VkStencilOpState(lhs.front, rhs.front)) &&
+           (compare_VkStencilOpState(lhs.back, rhs.back)) &&
+           (lhs.minDepthBounds == rhs.minDepthBounds) && (lhs.maxDepthBounds == rhs.maxDepthBounds);
+}
+
+} // namespace
+
 TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
     SECTION("Exists as empty node and is successful") {
         std::string testStr = R"(test_struct: ~)";
@@ -49,9 +72,10 @@ TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][y
         REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
 
         REQUIRE_NOTHROW(yaml_read_required("test_struct", testNode, data));
-        REQUIRE(data == VkPipelineDepthStencilStateCreateInfo{
-                            .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
-                        });
+        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(
+            data, VkPipelineDepthStencilStateCreateInfo{
+                      .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+                  }));
     }
 
     SECTION("Exists as node with data and is successful") {
@@ -71,7 +95,7 @@ TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][y
 
         REQUIRE_NOTHROW(yaml_read_required("test_struct", testNode, data));
 
-        REQUIRE(data == cFilledData);
+        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(data, cFilledData));
     }
 
     SECTION("Node doesn't exist and it throws an appropriate exception") {
@@ -95,7 +119,8 @@ TEST_CASE("yaml_read_optional - VkPipelineDepthStencilStateCreateInfo", "[foe][y
 
         REQUIRE_NOTHROW(yaml_read_optional("test_struct", testNode, data));
 
-        REQUIRE(data == VkPipelineDepthStencilStateCreateInfo{});
+        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(
+            data, VkPipelineDepthStencilStateCreateInfo{}));
     }
 
     SECTION("Exists as node with data and is successful") {
@@ -115,7 +140,7 @@ TEST_CASE("yaml_read_optional - VkPipelineDepthStencilStateCreateInfo", "[foe][y
 
         REQUIRE_NOTHROW(yaml_read_optional("test_struct", testNode, data));
 
-        REQUIRE(data == cFilledData);
+        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(data, cFilledData));
     }
 
     SECTION("Node doesn't exist and it doesn't throw an exception") {
@@ -126,7 +151,7 @@ TEST_CASE("yaml_read_optional - VkPipelineDepthStencilStateCreateInfo", "[foe][y
 
         REQUIRE_NOTHROW(yaml_read_optional("test_struct", testNode, data));
 
-        REQUIRE(data == cFilledData);
+        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(data, cFilledData));
     }
 }
 

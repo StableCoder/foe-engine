@@ -17,11 +17,21 @@
 #include <catch.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <vk_equality_checks.hpp>
 #include <vulkan/vulkan.h>
 #include <yaml-cpp/emitter.h>
 
 #include <string>
+
+namespace {
+
+bool compare_VkStencilOpState(VkStencilOpState const &lhs, VkStencilOpState const &rhs) noexcept {
+    return (lhs.failOp == rhs.failOp) && (lhs.passOp == rhs.passOp) &&
+           (lhs.depthFailOp == rhs.depthFailOp) && (lhs.compareOp == rhs.compareOp) &&
+           (lhs.compareMask == rhs.compareMask) && (lhs.writeMask == rhs.writeMask) &&
+           (lhs.reference == rhs.reference);
+}
+
+} // namespace
 
 TEST_CASE("yaml_read_required - VkStencilOpState", "[foe][yaml][vulkan]") {
     SECTION("Exists as empty node and is successful") {
@@ -32,7 +42,7 @@ TEST_CASE("yaml_read_required - VkStencilOpState", "[foe][yaml][vulkan]") {
         REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
 
         REQUIRE_NOTHROW(yaml_read_required("test_stencil_op_state", testNode, data));
-        REQUIRE(data == VkStencilOpState{});
+        REQUIRE(compare_VkStencilOpState(data, VkStencilOpState{}));
     }
 
     SECTION("Exists as node with data and is successful") {
@@ -48,12 +58,12 @@ TEST_CASE("yaml_read_required - VkStencilOpState", "[foe][yaml][vulkan]") {
 
         REQUIRE_NOTHROW(yaml_read_required("test_stencil_op_state", testNode, data));
 
-        REQUIRE(data == VkStencilOpState{
-                            .failOp = VK_STENCIL_OP_DECREMENT_AND_CLAMP,
-                            .depthFailOp = VK_STENCIL_OP_REPLACE,
-                            .compareMask = 152,
-                            .reference = 12,
-                        });
+        REQUIRE(compare_VkStencilOpState(data, VkStencilOpState{
+                                                   .failOp = VK_STENCIL_OP_DECREMENT_AND_CLAMP,
+                                                   .depthFailOp = VK_STENCIL_OP_REPLACE,
+                                                   .compareMask = 152,
+                                                   .reference = 12,
+                                               }));
     }
 
     SECTION("Node doesn't exist and it throws an appropriate exception") {
@@ -77,7 +87,7 @@ TEST_CASE("yaml_read_optional - VkStencilOpState", "[foe][yaml][vulkan]") {
         REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
 
         REQUIRE_NOTHROW(yaml_read_optional("test_stencil_op_state", testNode, data));
-        REQUIRE(data == VkStencilOpState{});
+        REQUIRE(compare_VkStencilOpState(data, VkStencilOpState{}));
     }
 
     SECTION("Exists as node with data and is successful") {
@@ -93,12 +103,12 @@ TEST_CASE("yaml_read_optional - VkStencilOpState", "[foe][yaml][vulkan]") {
 
         REQUIRE_NOTHROW(yaml_read_optional("test_stencil_op_state", testNode, data));
 
-        REQUIRE(data == VkStencilOpState{
-                            .failOp = VK_STENCIL_OP_DECREMENT_AND_CLAMP,
-                            .depthFailOp = VK_STENCIL_OP_REPLACE,
-                            .compareMask = 152,
-                            .reference = 12,
-                        });
+        REQUIRE(compare_VkStencilOpState(data, VkStencilOpState{
+                                                   .failOp = VK_STENCIL_OP_DECREMENT_AND_CLAMP,
+                                                   .depthFailOp = VK_STENCIL_OP_REPLACE,
+                                                   .compareMask = 152,
+                                                   .reference = 12,
+                                               }));
     }
 
     SECTION("Node doesn't exist and returns without exception") {
