@@ -68,10 +68,21 @@ void onCreate(foeSimulationState *pSimulationState) {
     }
 
     // Systems
-    pSimulationState->systems.emplace_back(new foeArmatureSystem);
-    pSimulationState->systems.emplace_back(new foeCameraSystem);
-    pSimulationState->systems.emplace_back(new PositionDescriptorPool);
-    pSimulationState->systems.emplace_back(new VkAnimationPool);
+    foeSystemBase *pSystemBase = new foeArmatureSystem;
+    ++pSystemBase->refCount;
+    pSimulationState->systems.emplace_back(pSystemBase);
+
+    pSystemBase = new foeCameraSystem;
+    ++pSystemBase->refCount;
+    pSimulationState->systems.emplace_back(pSystemBase);
+
+    pSystemBase = new PositionDescriptorPool;
+    ++pSystemBase->refCount;
+    pSimulationState->systems.emplace_back(pSystemBase);
+
+    pSystemBase = new VkAnimationPool;
+    ++pSystemBase->refCount;
+    pSimulationState->systems.emplace_back(pSystemBase);
 }
 
 void onDestroy(foeSimulationState *pSimulationState) {
