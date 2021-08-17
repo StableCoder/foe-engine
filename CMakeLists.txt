@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(FoE-Engine CXX)
+project(FoE-Engine C CXX)
 
 # Modify CMake modules path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -15,6 +15,11 @@ if(APPLE)
 else()
   option(BUILD_XR "Build with OpenXR support" ON)
 endif()
+
+# C11 standard, no extensions
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
 # C++20 standard, no extensions
 set(CMAKE_CXX_STANDARD 20)
