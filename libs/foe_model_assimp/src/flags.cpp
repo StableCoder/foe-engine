@@ -132,7 +132,7 @@ bool foe_model_assimp_parse(std::string_view string, unsigned int *pValue) {
     auto start = string.begin();
     auto end = start;
     for (; end <= string.end(); ++end) {
-        if (*end == '|' || (end == string.end() && start != end)) {
+        if ((end != string.end() && *end == '|') || (end == string.end() && start != end)) {
             std::string token{start, end};
             token = formatString(token);
             token = formatString(std::string{cPrefix} + token);
@@ -151,6 +151,8 @@ bool foe_model_assimp_parse(std::string_view string, unsigned int *pValue) {
             if (!found)
                 return false;
 
+            if (end == string.end())
+                break;
             start = end + 1;
         }
     }
