@@ -33,7 +33,7 @@ printf "/*
 #include <foe/graphics/vk/yaml/vk_type_parsing.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <vk_struct_cleanup.hpp>
+#include <vk_struct_cleanup.h>
 #include <vulkan/vulkan.h>
 
 #include <cstring>
@@ -92,7 +92,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
         # Complete the struct
         READ_REQUIRED="$READ_REQUIRED
     } catch (foeYamlException const& e) {
-        vk_struct_cleanup(&newData);
+        cleanup_$STRUCT(&newData);
         throw foeYamlException(nodeName + \"::\" + e.what());
     }
 
@@ -102,7 +102,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
 
         READ_OPTIONAL="$READ_OPTIONAL
     } catch (foeYamlException const& e) {
-        vk_struct_cleanup(&newData);
+        cleanup_$STRUCT(&newData);
         throw foeYamlException(nodeName + \"::\" + e.what());
     }
 

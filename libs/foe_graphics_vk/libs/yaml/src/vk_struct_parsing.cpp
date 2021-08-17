@@ -17,7 +17,7 @@
 #include <foe/graphics/vk/yaml/vk_type_parsing.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <vk_struct_cleanup.hpp>
+#include <vk_struct_cleanup.h>
 #include <vulkan/vulkan.h>
 
 #include <cstring>
@@ -47,7 +47,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPushConstantRange>(std::string 
         read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPushConstantRange(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -77,7 +77,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string 
         read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPushConstantRange(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -176,7 +176,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutBinding>(
                                                           subNode, newData.stageFlags);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkDescriptorSetLayoutBinding(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -209,7 +209,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutBinding>(
                                                           subNode, newData.stageFlags);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkDescriptorSetLayoutBinding(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -330,7 +330,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
         }
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkDescriptorSetLayoutCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -375,7 +375,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
         }
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkDescriptorSetLayoutCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -490,7 +490,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkStencilOpState>(std::string con
         read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkStencilOpState(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -531,7 +531,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string con
         read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkStencilOpState(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -692,7 +692,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreat
         read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineRasterizationStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -757,7 +757,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreat
         read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineRasterizationStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -950,7 +950,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreate
         read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineDepthStencilStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1010,7 +1010,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreate
         read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineDepthStencilStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1182,7 +1182,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendAttachmentSta
             "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineColorBlendAttachmentState(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1232,7 +1232,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentSta
             "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineColorBlendAttachmentState(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1401,7 +1401,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateIn
         }
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineColorBlendStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1454,7 +1454,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateIn
         }
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineColorBlendStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1575,7 +1575,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkVertexInputBindingDescription>(
         read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, newData.inputRate);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkVertexInputBindingDescription(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1603,7 +1603,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkVertexInputBindingDescription>(
         read |= yaml_read_optional<VkVertexInputRate>("inputRate", subNode, newData.inputRate);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkVertexInputBindingDescription(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1701,7 +1701,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkVertexInputAttributeDescription
         read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkVertexInputAttributeDescription(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1732,7 +1732,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkVertexInputAttributeDescription
         read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkVertexInputAttributeDescription(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1837,7 +1837,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateI
             "VkPipelineVertexInputStateCreateFlags", "flags", subNode, newData.flags);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineVertexInputStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1868,7 +1868,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateI
             "VkPipelineVertexInputStateCreateFlags", "flags", subNode, newData.flags);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineVertexInputStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -1963,7 +1963,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreat
                                              newData.primitiveRestartEnable);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineInputAssemblyStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -2001,7 +2001,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreat
                                              newData.primitiveRestartEnable);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineInputAssemblyStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -2109,7 +2109,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreate
             yaml_read_optional<uint32_t>("patchControlPoints", subNode, newData.patchControlPoints);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineTessellationStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 
@@ -2144,7 +2144,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreate
             yaml_read_optional<uint32_t>("patchControlPoints", subNode, newData.patchControlPoints);
 
     } catch (foeYamlException const &e) {
-        vk_struct_cleanup(&newData);
+        cleanup_VkPipelineTessellationStateCreateInfo(&newData);
         throw foeYamlException(nodeName + "::" + e.what());
     }
 

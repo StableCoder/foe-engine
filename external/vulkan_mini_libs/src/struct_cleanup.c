@@ -15,4 +15,4 @@
 */
 
 #define VK_STRUCT_CLEANUP_CONFIG_MAIN
-#include <vk_struct_cleanup.hpp>
+#include <vk_struct_cleanup.h>

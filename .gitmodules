@@ -1,3 +1,6 @@
 [submodule "cmake"]
 	path = cmake
 	url = https://git.stabletec.com/other/cmake-scripts.git
+[submodule "external/vulkan_mini_libs/vulkan-mini-libs-2"]
+	path = external/vulkan_mini_libs/vulkan-mini-libs-2
+	url = https://git.stabletec.com/utilities/vulkan-mini-libs-2.git

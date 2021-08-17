@@ -24,7 +24,7 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
 #include <vk_error_code.hpp>
-#include <vk_struct_cleanup.hpp>
+#include <vk_struct_cleanup.h>
 #include <vulkan/vulkan.h>
 
 #include "error_code.hpp"
@@ -57,11 +57,11 @@ foeResourceState getWorstSubResourceState(SubResource *pSubResource,
 
 foeMaterialCreateInfo::~foeMaterialCreateInfo() {
     if (hasColourBlendSCI)
-        vk_struct_cleanup(&colourBlendSCI);
+        cleanup_VkPipelineColorBlendStateCreateInfo(&colourBlendSCI);
     if (hasDepthStencilSCI)
-        vk_struct_cleanup(&depthStencilSCI);
+        cleanup_VkPipelineDepthStencilStateCreateInfo(&depthStencilSCI);
     if (hasRasterizationSCI)
-        vk_struct_cleanup(&rasterizationSCI);
+        cleanup_VkPipelineRasterizationStateCreateInfo(&rasterizationSCI);
 }
 
 std::error_code foeMaterialLoader::initialize(foeShaderPool *pShaderPool,
