@@ -90,6 +90,9 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                       std::vector<std::string> extensions,
                                       foeGfxSession *pSession) {
     auto *pNewSession = new foeGfxVkSession;
+    auto sessionHandle = session_to_handle(pNewSession);
+    std::error_code errC;
+
     pNewSession->instance = reinterpret_cast<foeGfxVkRuntime *>(runtime)->instance;
     pNewSession->physicalDevice = vkPhysicalDevice;
 
@@ -138,7 +141,7 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
         .ppEnabledExtensionNames = finalExtensions.data(),
     };
 
-    VkResult vkRes = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
+    errC = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
 
     // Retrieve the queues
     for (uint32_t i = 0; i < pNewSession->numQueueFamilies; ++i) {
@@ -152,38 +155,38 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
             .device = pNewSession->device,
         };
 
-        vkRes = vmaCreateAllocator(&allocatorCI, &pNewSession->allocator);
-        if (vkRes != VK_SUCCESS) {
+        errC = vmaCreateAllocator(&allocatorCI, &pNewSession->allocator);
+        if (errC) {
             goto CREATE_FAILED;
         }
     }
 
     // Internal pools
-    vkRes = pNewSession->renderPassPool.initialize(pNewSession->device);
-    if (vkRes != VK_SUCCESS)
+    errC = pNewSession->renderPassPool.initialize(pNewSession->device);
+    if (errC)
         goto CREATE_FAILED;
 
-    vkRes = pNewSession->descriptorSetLayoutPool.initialize(pNewSession->device);
-    if (vkRes != VK_SUCCESS)
+    errC = pNewSession->descriptorSetLayoutPool.initialize(pNewSession->device);
+    if (errC)
         goto CREATE_FAILED;
 
-    vkRes = pNewSession->builtinDescriptorSets.initialize(pNewSession->device,
-                                                          &pNewSession->descriptorSetLayoutPool);
-    if (vkRes != VK_SUCCESS)
+    errC = pNewSession->builtinDescriptorSets.initialize(pNewSession->device,
+                                                         &pNewSession->descriptorSetLayoutPool);
+    if (errC)
         goto CREATE_FAILED;
 
-    vkRes = pNewSession->pipelinePool.initialize(session_to_handle(pNewSession));
-    if (vkRes != VK_SUCCESS)
+    errC = pNewSession->pipelinePool.initialize(session_to_handle(pNewSession));
+    if (errC)
         goto CREATE_FAILED;
 
 CREATE_FAILED:
-    if (vkRes != VK_SUCCESS) {
+    if (errC) {
         foeGfxVkDestroySession(pNewSession);
     } else {
-        *pSession = session_to_handle(pNewSession);
+        *pSession = sessionHandle;
     }
 
-    return vkRes;
+    return errC;
 }
 
 uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
