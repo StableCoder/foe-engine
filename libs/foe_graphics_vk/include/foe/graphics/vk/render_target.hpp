@@ -18,9 +18,9 @@
 #define FOE_GRAPHICS_VK_RENDER_TARGET_HPP
 
 #include <foe/graphics/delayed_destructor.hpp>
-#include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/render_target.hpp>
 #include <foe/graphics/session.hpp>
+#include <foe/graphics/vk/render_pass_pool.hpp>
 #include <vulkan/vulkan.h>
 
 #include <cstdint>
@@ -36,7 +36,6 @@ struct foeGfxVkRenderTargetSpec {
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateRenderTarget(
     foeGfxSession session,
     foeGfxDelayedDestructor delayedDestructor,
-    foeRenderPassPool *pRenderPassPool,
     foeGfxVkRenderTargetSpec const *pSpecifications,
     uint32_t count,
     VkSampleCountFlags samples,

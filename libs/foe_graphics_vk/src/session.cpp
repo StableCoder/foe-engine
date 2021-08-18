@@ -67,9 +67,10 @@ void createQueueFamily(VkDevice device,
 }
 
 void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
-    // Descriptor Set Layouts
+    // Internal Pools
     pSession->builtinDescriptorSets.deinitialize(pSession->device);
     pSession->descriptorSetLayoutPool.deinitialize();
+    pSession->renderPassPool.deinitialize();
 
     if (pSession->allocator != VK_NULL_HANDLE)
         vmaDestroyAllocator(pSession->allocator);
@@ -156,16 +157,19 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
         }
     }
 
-    { // Descriptor Set Layouts
-        vkRes = pNewSession->descriptorSetLayoutPool.initialize(pNewSession->device);
-        if (vkRes != VK_SUCCESS)
-            goto CREATE_FAILED;
+    // Internal pools
+    vkRes = pNewSession->renderPassPool.initialize(pNewSession->device);
+    if (vkRes != VK_SUCCESS)
+        goto CREATE_FAILED;
 
-        vkRes = pNewSession->builtinDescriptorSets.initialize(
-            pNewSession->device, &pNewSession->descriptorSetLayoutPool);
-        if (vkRes != VK_SUCCESS)
-            goto CREATE_FAILED;
-    }
+    vkRes = pNewSession->descriptorSetLayoutPool.initialize(pNewSession->device);
+    if (vkRes != VK_SUCCESS)
+        goto CREATE_FAILED;
+
+    vkRes = pNewSession->builtinDescriptorSets.initialize(pNewSession->device,
+                                                          &pNewSession->descriptorSetLayoutPool);
+    if (vkRes != VK_SUCCESS)
+        goto CREATE_FAILED;
 
 CREATE_FAILED:
     if (vkRes != VK_SUCCESS) {
@@ -266,6 +270,12 @@ auto foeGfxVkGetBuiltinSetLayoutIndex(foeGfxSession session,
     auto *pSession = session_from_handle(session);
 
     return pSession->builtinDescriptorSets.getBuiltinSetLayoutIndex(builtinLayout);
+}
+
+auto foeGfxVkGetRenderPassPool(foeGfxSession session) -> foeGfxVkRenderPassPool * {
+    auto *pSession = session_from_handle(session);
+
+    return &pSession->renderPassPool;
 }
 
 auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session) -> foeGfxVkFragmentDescriptorPool * {

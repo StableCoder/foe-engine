@@ -17,6 +17,7 @@
 #include "render_target.hpp"
 
 #include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
 #include "delayed_destructor.hpp"
@@ -106,7 +107,6 @@ VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
 
 std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
                                            foeGfxDelayedDestructor delayedDestructor,
-                                           foeRenderPassPool *pRenderPassPool,
                                            foeGfxVkRenderTargetSpec const *pSpecifications,
                                            uint32_t count,
                                            VkSampleCountFlags samples,
@@ -122,7 +122,8 @@ std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
         sampleList.emplace_back(samples);
     }
 
-    VkRenderPass compatibleRenderPass = pRenderPassPool->renderPass(formatList, sampleList);
+    VkRenderPass compatibleRenderPass =
+        foeGfxVkGetRenderPassPool(session)->renderPass(formatList, sampleList);
     if (compatibleRenderPass == VK_NULL_HANDLE) {
         return FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_COULD_NOT_GET_COMPATIBLE_RENDER_PASS;
     }

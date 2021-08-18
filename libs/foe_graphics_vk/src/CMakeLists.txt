@@ -16,6 +16,7 @@ target_sources(
           model.cpp
           pipeline_pool.cpp
           queue_family.cpp
+          render_pass_pool.cpp
           render_target.cpp
           runtime.cpp
           session.cpp

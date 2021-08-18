@@ -23,6 +23,7 @@
 #include <foe/graphics/vk/queue_family.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
+#include <foe/graphics/vk/render_pass_pool.hpp>
 
 #include <mutex>
 
@@ -43,6 +44,7 @@ struct foeGfxVkSession {
     foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
 
+    foeGfxVkRenderPassPool renderPassPool;
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
 };
 

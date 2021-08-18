@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
     limitations under the License.
 */
 
-#include <foe/graphics/render_pass_pool.hpp>
+#include <foe/graphics/vk/render_pass_pool.hpp>
 
 #include <array>
 #include <mutex>
 
 #include "format.hpp"
-#include "gfx_log.hpp"
+#include "log.hpp"
 
-VkResult foeRenderPassPool::initialize(VkDevice device) noexcept {
+VkResult foeGfxVkRenderPassPool::initialize(VkDevice device) noexcept {
     if (mDevice != VK_NULL_HANDLE)
         return VK_ERROR_INITIALIZATION_FAILED;
 
@@ -31,7 +31,7 @@ VkResult foeRenderPassPool::initialize(VkDevice device) noexcept {
     return VK_SUCCESS;
 }
 
-void foeRenderPassPool::deinitialize() noexcept {
+void foeGfxVkRenderPassPool::deinitialize() noexcept {
     std::scoped_lock lock{mSync};
 
     for (auto &it : mRenderPasses) {
@@ -44,7 +44,7 @@ void foeRenderPassPool::deinitialize() noexcept {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkRenderPass foeRenderPassPool::renderPass(
+VkRenderPass foeGfxVkRenderPassPool::renderPass(
     std::vector<VkAttachmentDescription> const &attachments) {
     auto compatibleKeys = generateCompatibleKeys(attachments);
     auto variantKeys = generateVariantKeys(attachments);
@@ -64,7 +64,7 @@ VkRenderPass foeRenderPassPool::renderPass(
     return generateRenderPass(compatibleKeys, variantKeys, attachments);
 }
 
-auto foeRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
+auto foeGfxVkRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
                                    std::vector<VkSampleCountFlags> const &samples) -> VkRenderPass {
     std::vector<RenderPassCompatibleKey> compatibleKeys;
     compatibleKeys.reserve(formats.size());
@@ -110,7 +110,7 @@ auto foeRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
     return generateRenderPass(compatibleKeys, variantKeys, attachments);
 }
 
-auto foeRenderPassPool::generateCompatibleKeys(
+auto foeGfxVkRenderPassPool::generateCompatibleKeys(
     std::vector<VkAttachmentDescription> const &attachments) const
     -> std::vector<RenderPassCompatibleKey> {
     std::vector<RenderPassCompatibleKey> key;
@@ -126,7 +126,7 @@ auto foeRenderPassPool::generateCompatibleKeys(
     return key;
 }
 
-auto foeRenderPassPool::generateVariantKeys(std::vector<VkAttachmentDescription> const &attachments)
+auto foeGfxVkRenderPassPool::generateVariantKeys(std::vector<VkAttachmentDescription> const &attachments)
     const -> std::vector<RenderPassVariantKey> {
     std::vector<RenderPassVariantKey> key;
     key.reserve(attachments.size());
@@ -145,7 +145,7 @@ auto foeRenderPassPool::generateVariantKeys(std::vector<VkAttachmentDescription>
     return key;
 }
 
-auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
+auto foeGfxVkRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
                                        std::vector<RenderPassVariantKey> const &variantKey)
     -> VkRenderPass {
     for (auto &it : mRenderPasses) {
@@ -165,7 +165,7 @@ auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> cons
     return VK_NULL_HANDLE;
 }
 
-auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey)
+auto foeGfxVkRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey)
     -> VkRenderPass {
     for (auto &it : mRenderPasses) {
         if (it.key == compatibleKey) {
@@ -180,7 +180,7 @@ auto foeRenderPassPool::findRenderPass(std::vector<RenderPassCompatibleKey> cons
     return VK_NULL_HANDLE;
 }
 
-auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> compatibleKey,
+auto foeGfxVkRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> compatibleKey,
                                            std::vector<RenderPassVariantKey> variantKey,
                                            std::vector<VkAttachmentDescription> const &attachments)
     -> VkRenderPass {
@@ -198,7 +198,7 @@ auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> 
             VkRenderPass renderPass{VK_NULL_HANDLE};
             VkResult res = createRenderPass(attachments, &renderPass);
             if (res != VK_SUCCESS) {
-                FOE_LOG(Graphics, Error, "Could not create a requested RenderPass")
+                FOE_LOG(foeVkGraphics, Error, "Could not create a requested RenderPass")
                 return VK_NULL_HANDLE;
             }
 
@@ -215,7 +215,7 @@ auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> 
     VkRenderPass renderPass{VK_NULL_HANDLE};
     VkResult res = createRenderPass(attachments, &renderPass);
     if (res != VK_SUCCESS) {
-        FOE_LOG(Graphics, Error, "Could not create a requested RenderPass")
+        FOE_LOG(foeVkGraphics, Error, "Could not create a requested RenderPass")
         return VK_NULL_HANDLE;
     }
 
@@ -235,7 +235,7 @@ auto foeRenderPassPool::generateRenderPass(std::vector<RenderPassCompatibleKey> 
     return renderPass;
 }
 
-auto foeRenderPassPool::createRenderPass(std::vector<VkAttachmentDescription> const &attachments,
+auto foeGfxVkRenderPassPool::createRenderPass(std::vector<VkAttachmentDescription> const &attachments,
                                          VkRenderPass *pRenderPass) -> VkResult {
     constexpr auto cInvalidAttachment = UINT32_MAX;
 
@@ -252,7 +252,7 @@ auto foeRenderPassPool::createRenderPass(std::vector<VkAttachmentDescription> co
 
         if (isDepthFormat(attachment.format)) {
             if (depthStencilReference.attachment != cInvalidAttachment) {
-                FOE_LOG(Graphics, Error, "Two depth/stencil attachments requested on a Render Pass")
+                FOE_LOG(foeVkGraphics, Error, "Two depth/stencil attachments requested on a Render Pass")
                 return VK_ERROR_INITIALIZATION_FAILED;
             }
             depthStencilReference = VkAttachmentReference{

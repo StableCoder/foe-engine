@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_RENDER_PASS_HPP
-#define FOE_GRAPHICS_RENDER_PASS_HPP
+#ifndef FOE_GRAPHICS_VK_RENDER_PASS_HPP
+#define FOE_GRAPHICS_VK_RENDER_PASS_HPP
 
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
@@ -23,7 +23,7 @@
 #include <shared_mutex>
 #include <vector>
 
-class foeRenderPassPool {
+class foeGfxVkRenderPassPool {
   public:
     FOE_GFX_EXPORT VkResult initialize(VkDevice device) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
@@ -122,4 +122,4 @@ class foeRenderPassPool {
     std::vector<RenderPassSet> mRenderPasses;
 };
 
-#endif // FOE_GRAPHICS_RENDER_PASS_HPP
+#endif // FOE_GRAPHICS_VK_RENDER_PASS_HPP

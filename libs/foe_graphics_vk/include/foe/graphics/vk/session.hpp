@@ -28,6 +28,7 @@
 #include <system_error>
 #include <vector>
 
+class foeGfxVkRenderPassPool;
 class foeGfxVkFragmentDescriptorPool;
 
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
@@ -54,6 +55,8 @@ FOE_GFX_EXPORT auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
 
 FOE_GFX_EXPORT auto foeGfxVkGetBuiltinSetLayoutIndex(
     foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout) -> uint32_t;
+
+FOE_GFX_EXPORT auto foeGfxVkGetRenderPassPool(foeGfxSession session) -> foeGfxVkRenderPassPool *;
 
 FOE_GFX_EXPORT auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session)
     -> foeGfxVkFragmentDescriptorPool *;

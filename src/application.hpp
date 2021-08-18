@@ -18,7 +18,6 @@
 #define APPLICATION_HPP
 
 #include <foe/graphics/delayed_destructor.hpp>
-#include <foe/graphics/render_pass_pool.hpp>
 #include <foe/graphics/render_target.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -104,8 +103,6 @@ struct Application {
 
     uint32_t frameIndex = 0;
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
-
-    foeRenderPassPool renderPassPool;
 
     foeGfxVkPipelinePool pipelinePool;
 

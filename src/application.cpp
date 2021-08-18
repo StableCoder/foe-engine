@@ -35,6 +35,7 @@
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
+#include <foe/graphics/vk/render_pass_pool.hpp>
 #include <foe/graphics/vk/render_target.hpp>
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
@@ -290,10 +291,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         }
     }
 
-    vkRes = renderPassPool.initialize(foeGfxVkGetDevice(gfxSession));
-    if (vkRes != VK_SUCCESS)
-        VK_END_PROGRAM_TUPLE
-
     vkRes = pipelinePool.initialize(gfxSession);
     if (vkRes != VK_SUCCESS) {
         VK_END_PROGRAM_TUPLE
@@ -384,7 +381,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             it.format = static_cast<VkFormat>(swapchainFormats[0]);
         }
 
-        xrRenderPass = renderPassPool.renderPass({VkAttachmentDescription{
+        auto *renderPassPool = foeGfxVkGetRenderPassPool(gfxSession);
+        xrRenderPass = renderPassPool->renderPass({VkAttachmentDescription{
             .format = static_cast<VkFormat>(swapchainFormats[0]),
             .samples = VK_SAMPLE_COUNT_1_BIT,
             .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -395,7 +393,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         }});
 
-        xrOffscreenRenderPass = renderPassPool.renderPass(
+        xrOffscreenRenderPass = renderPassPool->renderPass(
             {VkAttachmentDescription{
                  .format = static_cast<VkFormat>(swapchainFormats[0]),
                  .samples = static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
@@ -433,7 +431,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             };
 
             foeGfxRenderTarget newRenderTarget{FOE_NULL_HANDLE};
-            errC = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor, &renderPassPool,
+            errC = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor,
                                               offscreenSpecs.data(), offscreenSpecs.size(),
                                               maxSupportedSamples, &newRenderTarget);
             if (errC) {
@@ -707,8 +705,6 @@ void Application::deinitialize() {
 
     pipelinePool.deinitialize();
 
-    renderPassPool.deinitialize();
-
     swapchain.destroy(foeGfxVkGetDevice(gfxSession));
     if (windowSurface != VK_NULL_HANDLE)
         vkDestroySurfaceKHR(foeGfxVkGetInstance(gfxRuntime), windowSurface, nullptr);
@@ -945,7 +941,7 @@ int Application::mainloop() {
                     };
 
                     auto errC = foeGfxVkCreateRenderTarget(
-                        gfxSession, gfxDelayedDestructor, &renderPassPool, offscreenSpecs.data(),
+                        gfxSession, gfxDelayedDestructor, offscreenSpecs.data(),
                         offscreenSpecs.size(), maxSupportedSamples, &gfxOffscreenRenderTarget);
                     if (errC) {
                         ERRC_END_PROGRAM
@@ -1564,27 +1560,31 @@ int Application::mainloop() {
                 }
 
                 { // Render to Image
-                    VkRenderPass renderPass = renderPassPool.renderPass(
-                        {VkAttachmentDescription{
-                             .format = colourFormat,
-                             .samples = static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
-                             .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                             .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                             .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                             .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                             .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                         },
-                         VkAttachmentDescription{
-                             .format = depthFormat,
-                             .samples = static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
-                             .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                             .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                             .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                             .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                             .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                         }});
+                    VkRenderPass renderPass =
+                        foeGfxVkGetRenderPassPool(gfxSession)
+                            ->renderPass(
+                                {VkAttachmentDescription{
+                                     .format = colourFormat,
+                                     .samples =
+                                         static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
+                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                     .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                     .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                     .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                                     .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                 },
+                                 VkAttachmentDescription{
+                                     .format = depthFormat,
+                                     .samples =
+                                         static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
+                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                     .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                     .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                     .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                                     .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                 }});
 
                     VkExtent2D swapchainExtent = swapchain.extent();
                     std::array<VkClearValue, 2> clearValues{
@@ -1820,16 +1820,17 @@ int Application::mainloop() {
                     // Render the UI to the resolved swap image
                     // Render passes
                     VkRenderPass swapImageRenderPass =
-                        renderPassPool.renderPass({VkAttachmentDescription{
-                            .format = swapchain.surfaceFormat().format,
-                            .samples = VK_SAMPLE_COUNT_1_BIT,
-                            .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-                            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                            .initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                            .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                        }});
+                        foeGfxVkGetRenderPassPool(gfxSession)
+                            ->renderPass({VkAttachmentDescription{
+                                .format = swapchain.surfaceFormat().format,
+                                .samples = VK_SAMPLE_COUNT_1_BIT,
+                                .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                .initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                            }});
 
                     if (swapchainRebuilt) {
                         for (auto &it : swapImageFramebuffers)
