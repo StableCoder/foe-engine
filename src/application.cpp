@@ -34,6 +34,7 @@
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/graphics/vk/mesh.hpp>
+#include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <foe/graphics/vk/render_target.hpp>
@@ -289,11 +290,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         if (vkRes != VK_SUCCESS) {
             VK_END_PROGRAM_TUPLE
         }
-    }
-
-    vkRes = pipelinePool.initialize(gfxSession);
-    if (vkRes != VK_SUCCESS) {
-        VK_END_PROGRAM_TUPLE
     }
 
     { // Initialize simulation functionality
@@ -703,8 +699,6 @@ void Application::deinitialize() {
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
-    pipelinePool.deinitialize();
-
     swapchain.destroy(foeGfxVkGetDevice(gfxSession));
     if (windowSurface != VK_NULL_HANDLE)
         vkDestroySurfaceKHR(foeGfxVkGetInstance(gfxRuntime), windowSurface, nullptr);
@@ -1074,9 +1068,10 @@ int Application::mainloop() {
                 uint32_t descriptorSetLayoutCount;
                 VkPipeline pipeline;
 
-                pipelinePool.getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
-                                         pMaterial->data.pGfxFragDescriptor, renderPass, 0, samples,
-                                         &layout, &descriptorSetLayoutCount, &pipeline);
+                foeGfxVkGetPipelinePool(gfxSession)
+                    ->getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
+                                  pMaterial->data.pGfxFragDescriptor, renderPass, 0, samples,
+                                  &layout, &descriptorSetLayoutCount, &pipeline);
 
                 foeGfxVkBindMesh(pMesh->data.gfxData, commandBuffer, boned);
 
@@ -1327,13 +1322,15 @@ int Application::mainloop() {
                                                 goto SKIP_XR_DRAW;
 
                                             // Render Triangle
-                                            pipelinePool.getPipeline(
-                                                const_cast<foeGfxVertexDescriptor *>(
-                                                    &theVertexDescriptor->data.vertexDescriptor),
-                                                theMaterial->data.pGfxFragDescriptor,
-                                                xrOffscreenRenderPass, 0,
-                                                foeGfxVkGetRenderTargetSamples(renderTarget),
-                                                &layout, &descriptorSetLayoutCount, &pipeline);
+                                            foeGfxVkGetPipelinePool(gfxSession)
+                                                ->getPipeline(
+                                                    const_cast<foeGfxVertexDescriptor *>(
+                                                        &theVertexDescriptor->data
+                                                             .vertexDescriptor),
+                                                    theMaterial->data.pGfxFragDescriptor,
+                                                    xrOffscreenRenderPass, 0,
+                                                    foeGfxVkGetRenderTargetSamples(renderTarget),
+                                                    &layout, &descriptorSetLayoutCount, &pipeline);
 
                                             vkCmdBindDescriptorSets(
                                                 commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -1669,11 +1666,12 @@ int Application::mainloop() {
                                 goto SKIP_DRAW;
 
                             // Render Triangle
-                            pipelinePool.getPipeline(
-                                const_cast<foeGfxVertexDescriptor *>(
-                                    &theVertexDescriptor->data.vertexDescriptor),
-                                theMaterial->data.pGfxFragDescriptor, renderPass, 0,
-                                maxSupportedSamples, &layout, &descriptorSetLayoutCount, &pipeline);
+                            foeGfxVkGetPipelinePool(gfxSession)
+                                ->getPipeline(const_cast<foeGfxVertexDescriptor *>(
+                                                  &theVertexDescriptor->data.vertexDescriptor),
+                                              theMaterial->data.pGfxFragDescriptor, renderPass, 0,
+                                              maxSupportedSamples, &layout,
+                                              &descriptorSetLayoutCount, &pipeline);
 
                             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                                     layout, 0, 1, &(*pCamera)->descriptor, 0,

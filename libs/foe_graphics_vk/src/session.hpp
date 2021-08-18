@@ -20,10 +20,11 @@
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
+#include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
+#include <foe/graphics/vk/render_pass_pool.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
-#include <foe/graphics/vk/render_pass_pool.hpp>
 
 #include <mutex>
 
@@ -46,6 +47,7 @@ struct foeGfxVkSession {
 
     foeGfxVkRenderPassPool renderPassPool;
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
+    foeGfxVkPipelinePool pipelinePool;
 };
 
 FOE_DEFINE_HANDLE_CASTS(session, foeGfxVkSession, foeGfxSession)

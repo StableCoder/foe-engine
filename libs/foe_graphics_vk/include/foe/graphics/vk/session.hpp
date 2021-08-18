@@ -30,6 +30,7 @@
 
 class foeGfxVkRenderPassPool;
 class foeGfxVkFragmentDescriptorPool;
+class foeGfxVkPipelinePool;
 
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                                      VkPhysicalDevice vkPhysicalDevice,
@@ -60,6 +61,8 @@ FOE_GFX_EXPORT auto foeGfxVkGetRenderPassPool(foeGfxSession session) -> foeGfxVk
 
 FOE_GFX_EXPORT auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session)
     -> foeGfxVkFragmentDescriptorPool *;
+
+FOE_GFX_EXPORT auto foeGfxVkGetPipelinePool(foeGfxSession session) -> foeGfxVkPipelinePool *;
 
 FOE_GFX_EXPORT auto foeGfxVkGetSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags;
 FOE_GFX_EXPORT auto foeGfxVkGetMaxSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags;
