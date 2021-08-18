@@ -18,6 +18,7 @@
 #define FOE_GRAPHICS_VK_RENDER_PASS_HPP
 
 #include <foe/graphics/export.h>
+#include <foe/graphics/session.hpp>
 #include <vulkan/vulkan.h>
 
 #include <shared_mutex>
@@ -25,7 +26,7 @@
 
 class foeGfxVkRenderPassPool {
   public:
-    FOE_GFX_EXPORT VkResult initialize(VkDevice device) noexcept;
+    FOE_GFX_EXPORT auto initialize(foeGfxSession session) noexcept -> std::error_code;
     FOE_GFX_EXPORT void deinitialize() noexcept;
 
     /**

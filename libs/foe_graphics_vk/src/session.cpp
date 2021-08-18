@@ -162,7 +162,7 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
     }
 
     // Internal pools
-    errC = pNewSession->renderPassPool.initialize(pNewSession->device);
+    errC = pNewSession->renderPassPool.initialize(sessionHandle);
     if (errC)
         goto CREATE_FAILED;
 
@@ -175,7 +175,7 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
     if (errC)
         goto CREATE_FAILED;
 
-    errC = pNewSession->pipelinePool.initialize(session_to_handle(pNewSession));
+    errC = pNewSession->pipelinePool.initialize(sessionHandle);
     if (errC)
         goto CREATE_FAILED;
 
