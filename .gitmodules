@@ -4,3 +4,6 @@
 [submodule "external/vulkan_mini_libs/vulkan-mini-libs-2"]
 	path = external/vulkan_mini_libs/vulkan-mini-libs-2
 	url = https://git.stabletec.com/utilities/vulkan-mini-libs-2.git
+[submodule "data/bringup-data-sets"]
+	path = data/bringup-data-sets
+	url = https://git.stabletec.com/foe/bringup-data-sets.git
