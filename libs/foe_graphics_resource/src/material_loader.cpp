@@ -238,6 +238,8 @@ void foeMaterialLoader::load(void *pResource,
     auto *pMaterialCI = reinterpret_cast<foeMaterialCreateInfo *>(pCreateInfo.get());
 
     foeMaterial::Data materialData{
+        .pUnloadContext = this,
+        .pUnloadFn = unloadResource,
         .pCreateInfo = pCreateInfo,
     };
 
