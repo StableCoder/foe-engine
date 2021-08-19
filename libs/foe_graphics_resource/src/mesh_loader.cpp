@@ -73,6 +73,11 @@ void foeMeshLoader::gfxMaintenance() {
 
     auto toDestroy = std::move(mDataDestroyLists[mDataDestroyIndex]);
 
+    for (auto const &it : toDestroy) {
+        if (it.gfxData != FOE_NULL_HANDLE)
+            foeGfxDestroyMesh(mGfxSession, it.gfxData);
+    }
+
     // Unloads
     mUnloadSync.lock();
     auto toUnload = std::move(mUnloadRequests);
@@ -158,6 +163,8 @@ void foeMeshLoader::load(void *pResource,
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
     foeMesh::Data data{
+        .pUnloadContext = this,
+        .pUnloadFn = unloadResource,
         .pCreateInfo = pCreateInfo,
     };
 
