@@ -19,13 +19,13 @@
 foeThreadPool::~foeThreadPool() { terminate(); }
 
 bool foeThreadPool::start(size_t numThreads) {
+    // Make sure number of threads is not 0
+    if (numThreads == 0)
+        return false;
+
     // Check not already running
     bool expected = false;
     if (!mStarted.compare_exchange_strong(expected, true))
-        return false;
-
-    // Make sure number of threads is not 0
-    if (numThreads == 0)
         return false;
 
     mThreads.reserve(numThreads);
