@@ -41,7 +41,7 @@ size_t foeThreadPool::size() const noexcept { return mThreads.size(); }
 void foeThreadPool::terminate() {
     // Make sure it was started
     bool expected = true;
-    if (!mStarted.compare_exchange_strong(expected, false))
+    if (!mStarted.compare_exchange_strong(expected, true))
         return;
 
     mTerminate = true;
@@ -59,6 +59,7 @@ void foeThreadPool::terminate() {
 
 void foeThreadPool::scheduleTask(std::function<void()> &&task) {
     mTaskSync.lock();
+    ++mTasksQueued;
     mTasks.emplace(std::move(task));
     mTaskSync.unlock();
 
@@ -66,9 +67,9 @@ void foeThreadPool::scheduleTask(std::function<void()> &&task) {
 }
 
 void foeThreadPool::waitForAllTasks() {
-    std::unique_lock lock{mTaskSync};
-
-    mTaskComplete.wait(lock, [&] { return mTasks.empty() && mTasksProcessing == 0; });
+    while (mTasksQueued > 0 || mTasksProcessing > 0) {
+        std::this_thread::yield();
+    }
 }
 
 void foeThreadPool::runThread() {
@@ -87,6 +88,7 @@ void foeThreadPool::runThread() {
             // Get work
             task = mTasks.front();
             mTasks.pop();
+            --mTasksQueued;
 
             // Release tasklist lock
             taskLock.unlock();
@@ -96,7 +98,6 @@ void foeThreadPool::runThread() {
 
             // Task complete, cleanup
             --mTasksProcessing;
-            mTaskComplete.notify_all();
         } else if (mTerminate) {
             break;
         } else {

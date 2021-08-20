@@ -82,9 +82,9 @@ class foeThreadPool {
     std::queue<std::function<void()>> mTasks;
     /// Notified when a new task has been scheduled/queued
     std::condition_variable mTaskAvailable;
-    /// Notified when any task is completed
-    std::condition_variable mTaskComplete;
 
+    // number of tasks queued awaiting processing
+    std::atomic_uint mTasksQueued{0};
     /// Tracks the number of tasks currently being processed/run by the pool
     std::atomic_uint mTasksProcessing{0};
     /// Tracks if the threads have been requested to end
