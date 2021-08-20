@@ -20,9 +20,11 @@
 
 #include <cmath>
 
+namespace {
 auto const numThreads = 2;
 
 void testTask() { std::this_thread::sleep_for(std::chrono::milliseconds(50)); }
+} // namespace
 
 TEST_CASE("ThreadPool - Starting the pool") {
     foeThreadPool test;
@@ -60,7 +62,7 @@ TEST_CASE("ThreadPool - Waiting on tasks") {
 
     foeEasySteadyClock timer;
 
-    for (int i = 0; i < 20 * numThreads; ++i) {
+    for (int i = 0; i < 10 * numThreads; ++i) {
         test.scheduleTask(testTask);
     }
 
@@ -69,9 +71,9 @@ TEST_CASE("ThreadPool - Waiting on tasks") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(1000).count());
+          std::chrono::milliseconds(500).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(1300).count());
+    //      std::chrono::milliseconds(650).count());
 }
 
 TEST_CASE("ThreadPool - Termiation") {
@@ -81,7 +83,7 @@ TEST_CASE("ThreadPool - Termiation") {
 
     foeEasySteadyClock timer;
 
-    for (int i = 0; i < 20 * numThreads; ++i) {
+    for (int i = 0; i < 10 * numThreads; ++i) {
         test.scheduleTask(testTask);
     }
 
@@ -90,7 +92,7 @@ TEST_CASE("ThreadPool - Termiation") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(1000).count());
+          std::chrono::milliseconds(500).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(1300).count());
+    //      std::chrono::milliseconds(650).count());
 }
