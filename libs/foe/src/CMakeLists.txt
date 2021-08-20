@@ -8,6 +8,8 @@ target_sources(
           search_paths_reader.cpp
           search_paths_writer.cpp
           search_paths.cpp
+          split_thread_pool.cpp
+          thread_pool_error_code.cpp
           thread_pool.cpp)
 
 add_subdirectory(chrono)

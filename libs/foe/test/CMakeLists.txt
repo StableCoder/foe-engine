@@ -27,13 +27,27 @@ target_code_coverage(
   EXCLUDE
   .*/test/.*)
 
-# Thread
-add_executable(test_foe_thread thread_pool.cpp)
-add_test(NAME FoE-Test-Thread COMMAND test_foe_thread)
+# Thread Pool
+add_executable(test_foe_thread_pool thread_pool.cpp)
+add_test(NAME FoE-Test-Thread-Pool COMMAND test_foe_thread_pool)
 
-target_link_libraries(test_foe_thread PRIVATE catch foe)
+target_link_libraries(test_foe_thread_pool PRIVATE catch foe)
 target_code_coverage(
-  test_foe_thread
+  test_foe_thread_pool
+  AUTO
+  ALL
+  OBJECTS
+  foe
+  EXCLUDE
+  .*/test/.*)
+
+# Split Thread Pool
+add_executable(test_foe_split_thread_pool split_thread_pool.cpp)
+add_test(NAME FoE-Test-Split-Thread-Pool COMMAND test_foe_split_thread_pool)
+
+target_link_libraries(test_foe_split_thread_pool PRIVATE catch foe)
+target_code_coverage(
+  test_foe_split_thread_pool
   AUTO
   ALL
   OBJECTS
