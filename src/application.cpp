@@ -278,7 +278,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         ERRC_END_PROGRAM_TUPLE
     }
 
-    errC = foeGfxCreateDelayedDestructor(gfxSession, &gfxDelayedDestructor);
+    errC = foeGfxCreateDelayedDestructor(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES,
+                                         &gfxDelayedDestructor);
     if (errC) {
         ERRC_END_PROGRAM_TUPLE
     }
@@ -1970,7 +1971,7 @@ int Application::mainloop() {
                 auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
                 vkRes = vkQueuePresentKHR(queue, &presentInfo);
                 foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-                if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
+                if (vkRes == VK_ERROR_OUT_OF_DATE_KHR || vkRes == VK_SUBOPTIMAL_KHR) {
                     // The associated window has been resized, will be fixed for the next frame
                     vkRes = VK_SUCCESS;
                 } else if (vkRes != VK_SUCCESS) {

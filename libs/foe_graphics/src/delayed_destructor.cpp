@@ -14,26 +14,44 @@
     limitations under the License.
 */
 
-#include "delayed_destructor.hpp"
+#include <foe/graphics/delayed_destructor.hpp>
 
-#include <vk_error_code.hpp>
+#include <atomic>
+#include <functional>
+#include <mutex>
+#include <vector>
 
-#include "session.hpp"
+namespace {
+
+struct foeGfxDelayedDestructorImpl {
+    foeGfxSession const session;
+
+    std::atomic_uint currentDelay;
+    std::mutex sync;
+    std::vector<std::vector<foeGfxDelayedDestructorFn>> fnLists;
+    std::vector<std::vector<foeGfxDelayedDestructorFn>>::iterator currentList;
+};
+
+FOE_DEFINE_HANDLE_CASTS(delayed_destructor, foeGfxDelayedDestructorImpl, foeGfxDelayedDestructor)
+
+} // namespace
 
 auto foeGfxCreateDelayedDestructor(foeGfxSession session,
+                                   uint32_t initialDelay,
                                    foeGfxDelayedDestructor *pDelayedDestructor) -> std::error_code {
-    auto *pSession = session_from_handle(session);
 
-    auto *pNewDelayedDestructor = new foeGfxVkDelayedDestructor{
-        .pGfxSession = pSession,
+    auto *pNewDelayedDestructor = new foeGfxDelayedDestructorImpl{
+        .session = session,
+        .currentDelay = initialDelay,
         .fnLists =
-            std::vector<std::vector<foeGfxVkDelayedDestructorFn>>{
-                1, std::vector<foeGfxVkDelayedDestructorFn>{}},
+            std::vector<std::vector<foeGfxDelayedDestructorFn>>{
+                initialDelay, std::vector<foeGfxDelayedDestructorFn>{}},
     };
     pNewDelayedDestructor->currentList = pNewDelayedDestructor->fnLists.begin();
 
     *pDelayedDestructor = delayed_destructor_to_handle(pNewDelayedDestructor);
-    return VK_SUCCESS;
+
+    return std::error_code{};
 }
 
 void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
@@ -50,8 +68,7 @@ void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
         }
 
         for (auto &call : *callList) {
-            call(pDelayedDestructor->pGfxSession->device,
-                 pDelayedDestructor->pGfxSession->allocator);
+            call(pDelayedDestructor->session);
         }
     } while (callList != pDelayedDestructor->currentList);
 
@@ -72,53 +89,62 @@ void foeGfxRunDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
     pDelayedDestructor->sync.unlock();
 
     for (auto &call : callsToRun) {
-        call(pDelayedDestructor->pGfxSession->device, pDelayedDestructor->pGfxSession->allocator);
+        call(pDelayedDestructor->session);
     }
 }
 
-void foeGfxVkAddDelayedDestructionCall(foeGfxVkDelayedDestructor *pVkDelayedDestructor,
-                                       foeGfxVkDelayedDestructorFn fn,
-                                       uint32_t numDelayed) {
-    // if supposed to be 'immediate', set it to be destroyed next run
+void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
+                                     foeGfxDelayedDestructorFn fn) {
+    auto *pDelayedDestructor = delayed_destructor_from_handle(delayedDestructor);
+
+    foeGfxAddDelayedDestructionCall(delayedDestructor, fn, pDelayedDestructor->currentDelay);
+}
+
+void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
+                                     foeGfxDelayedDestructorFn fn,
+                                     uint32_t numDelayed) {
+    auto *pDelayedDestructor = delayed_destructor_from_handle(delayedDestructor);
+
+    // If supposed to be 'immediate', set it to be destroyed next run
     if (numDelayed == 0) {
         numDelayed = 1;
     }
 
-    pVkDelayedDestructor->sync.lock();
+    pDelayedDestructor->sync.lock();
 
-    if (numDelayed > pVkDelayedDestructor->fnLists.size()) {
+    if (numDelayed > pDelayedDestructor->fnLists.size()) {
         // Need to enlarge the number of function lists to accomodate a delayed call for further
         // into the future than currently supported
-        std::vector<std::vector<foeGfxVkDelayedDestructorFn>> newList;
+        std::vector<std::vector<foeGfxDelayedDestructorFn>> newList;
         newList.reserve(numDelayed);
 
-        auto fnList = pVkDelayedDestructor->currentList;
+        auto fnList = pDelayedDestructor->currentList;
         do {
             ++fnList;
-            if (fnList == pVkDelayedDestructor->fnLists.end()) {
-                fnList = pVkDelayedDestructor->fnLists.begin();
+            if (fnList == pDelayedDestructor->fnLists.end()) {
+                fnList = pDelayedDestructor->fnLists.begin();
             }
 
             newList.emplace_back(std::move(*fnList));
-        } while (fnList != pVkDelayedDestructor->currentList);
+        } while (fnList != pDelayedDestructor->currentList);
 
         newList.resize(numDelayed);
 
         // Set the data
-        pVkDelayedDestructor->fnLists = std::move(newList);
-        pVkDelayedDestructor->currentList = pVkDelayedDestructor->fnLists.end() - 1;
+        pDelayedDestructor->fnLists = std::move(newList);
+        pDelayedDestructor->currentList = pDelayedDestructor->fnLists.end() - 1;
     }
 
     // Add the fn at the desired delay
-    auto fnList = pVkDelayedDestructor->currentList;
-    if (numDelayed != pVkDelayedDestructor->fnLists.size()) {
+    auto fnList = pDelayedDestructor->currentList;
+    if (numDelayed != pDelayedDestructor->fnLists.size()) {
         for (; numDelayed > 0; --numDelayed, ++fnList) {
-            if (fnList == pVkDelayedDestructor->fnLists.end()) {
-                fnList = pVkDelayedDestructor->fnLists.begin();
+            if (fnList == pDelayedDestructor->fnLists.end()) {
+                fnList = pDelayedDestructor->fnLists.begin();
             }
         }
     }
     fnList->emplace_back(fn);
 
-    pVkDelayedDestructor->sync.unlock();
+    pDelayedDestructor->sync.unlock();
 }

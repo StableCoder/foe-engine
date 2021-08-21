@@ -21,11 +21,15 @@
 #include <foe/graphics/session.hpp>
 #include <foe/handle.h>
 
+#include <functional>
 #include <system_error>
 
 FOE_DEFINE_HANDLE(foeGfxDelayedDestructor)
 
+using foeGfxDelayedDestructorFn = std::function<void(foeGfxSession)>;
+
 FOE_GFX_EXPORT auto foeGfxCreateDelayedDestructor(foeGfxSession session,
+                                                  uint32_t initialDelay,
                                                   foeGfxDelayedDestructor *pDelayedDestructor)
     -> std::error_code;
 
@@ -34,5 +38,12 @@ FOE_GFX_EXPORT void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delay
 /// Advances to the next set of delayed destruction calls and runs them. Meant to be synchronized to
 /// the frames.
 FOE_GFX_EXPORT void foeGfxRunDelayedDestructor(foeGfxDelayedDestructor delayedDestructor);
+
+FOE_GFX_EXPORT void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
+                                                    foeGfxDelayedDestructorFn fn);
+
+FOE_GFX_EXPORT void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
+                                                    foeGfxDelayedDestructorFn fn,
+                                                    uint32_t numDelayed);
 
 #endif // FOE_GRAPHICS_DELAYED_DESTRUCTOR_HPP

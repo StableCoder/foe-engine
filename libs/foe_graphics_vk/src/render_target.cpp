@@ -20,7 +20,6 @@
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
-#include "delayed_destructor.hpp"
 #include "error_code.hpp"
 #include "log.hpp"
 #include "session.hpp"
@@ -130,7 +129,7 @@ std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
 
     auto *pNewRenderTarget = new foeGfxVkRenderTarget{
         .pSession = pSession,
-        .pDelayedDestructor = delayed_destructor_from_handle(delayedDestructor),
+        .delayedDestructor = delayedDestructor,
         .imageSpecifications =
             std::vector<foeGfxVkRenderTargetSpec>{pSpecifications, pSpecifications + count},
         .samples = samples,
@@ -211,14 +210,16 @@ std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
             if (image.image != VK_NULL_HANDLE) {
                 // @todo Add delayed destruction for old images
                 auto oldImage = image;
-                foeGfxVkAddDelayedDestructionCall(
-                    pRenderTarget->pDelayedDestructor,
-                    [=](VkDevice device, VmaAllocator allocator) {
+                foeGfxAddDelayedDestructionCall(
+                    pRenderTarget->delayedDestructor,
+                    [=](foeGfxSession session) {
+                        auto *pSession = session_from_handle(session);
+
                         if (image.view != VK_NULL_HANDLE)
-                            vkDestroyImageView(device, oldImage.view, nullptr);
+                            vkDestroyImageView(pSession->device, oldImage.view, nullptr);
 
                         if (image.image != VK_NULL_HANDLE)
-                            vmaDestroyImage(allocator, oldImage.image, oldImage.alloc);
+                            vmaDestroyImage(pSession->allocator, oldImage.image, oldImage.alloc);
                     },
                     maxBufferedFrames);
 
@@ -246,10 +247,12 @@ std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
     // Destroy old framebuffer in a delayed manner
     if (pRenderTarget->framebuffer != VK_NULL_HANDLE) {
         VkFramebuffer oldFramebuffer = pRenderTarget->framebuffer;
-        foeGfxVkAddDelayedDestructionCall(
-            pRenderTarget->pDelayedDestructor,
-            [=](VkDevice device, VmaAllocator) {
-                vkDestroyFramebuffer(device, oldFramebuffer, nullptr);
+        foeGfxAddDelayedDestructionCall(
+            pRenderTarget->delayedDestructor,
+            [=](foeGfxSession session) {
+                auto *pSession = session_from_handle(session);
+
+                vkDestroyFramebuffer(pSession->device, oldFramebuffer, nullptr);
             },
             maxBufferedFrames);
         pRenderTarget->framebuffer = VK_NULL_HANDLE;

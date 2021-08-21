@@ -17,6 +17,7 @@
 #ifndef RENDER_TARGET_HPP
 #define RENDER_TARGET_HPP
 
+#include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/render_target.hpp>
 #include <foe/graphics/vk/render_target.hpp>
 #include <vk_mem_alloc.h>
@@ -25,7 +26,6 @@
 #include <vector>
 
 struct foeGfxVkSession;
-struct foeGfxVkDelayedDestructor;
 
 struct RenderTargetImageData {
     VmaAllocation alloc;
@@ -36,7 +36,7 @@ struct RenderTargetImageData {
 
 struct foeGfxVkRenderTarget {
     foeGfxVkSession const *const pSession;
-    foeGfxVkDelayedDestructor *const pDelayedDestructor;
+    foeGfxDelayedDestructor const delayedDestructor;
     std::vector<foeGfxVkRenderTargetSpec> const imageSpecifications;
     VkSampleCountFlags const samples;
     VkRenderPass const compatibleRenderPass;
