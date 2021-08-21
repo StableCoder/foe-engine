@@ -30,6 +30,7 @@ bool foeThreadPool::start(size_t numThreads) {
 
     mThreads.reserve(numThreads);
     for (size_t i = 0; i < numThreads; ++i) {
+        ++mRunners;
         mThreads.emplace_back(&foeThreadPool::runThread, this);
     }
 
@@ -46,8 +47,10 @@ void foeThreadPool::terminate() {
 
     mTerminate = true;
 
-    mTaskAvailable.notify_all();
-    waitForAllTasks();
+    while (mRunners > 0) {
+        mTaskAvailable.notify_all();
+        std::this_thread::yield();
+    }
 
     for (auto &it : mThreads) {
         it.join();
@@ -104,4 +107,6 @@ void foeThreadPool::runThread() {
             taskLock.unlock();
         }
     }
+
+    --mRunners;
 }

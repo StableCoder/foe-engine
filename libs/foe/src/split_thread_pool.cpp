@@ -55,6 +55,8 @@ struct SplitThreadPoolImpl {
     std::atomic_bool started{false};
     /// Tracks if the threads have been requested to end
     std::atomic_bool terminate{false};
+    // Number of threads started
+    std::atomic_uint runners{0};
     /// Threads in the pool
     std::thread *threads;
 
@@ -97,6 +99,8 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
             break;
         }
     }
+
+    --pPool->runners;
 }
 
 void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
@@ -153,6 +157,8 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
             asyncLock.unlock();
         }
     }
+
+    --pPool->runners;
 }
 
 } // namespace
@@ -212,11 +218,13 @@ auto foeStartThreadPool(foeSplitThreadPool pool) -> std::error_code {
 
     // Start sync threads
     for (uint32_t i = 0; i < pPool->syncTasks.threadCount; ++i) {
+        ++pPool->runners;
         new (pPool->threads + i) std::thread(syncTaskRunner, pPool);
     }
 
     // Start async threads
     for (uint32_t i = 0; i < pPool->asyncTasks.threadCount; ++i) {
+        ++pPool->runners;
         new (pPool->threads + pPool->syncTasks.threadCount + i) std::thread(asyncTaskRunner, pPool);
     }
 
@@ -232,10 +240,11 @@ auto foeStopThreadPool(foeSplitThreadPool pool) -> std::error_code {
 
     pPool->terminate = true;
 
-    pPool->syncTasks.available.notify_all();
-    pPool->asyncTasks.available.notify_all();
-
-    foeWaitAllThreads(pool);
+    while (pPool->runners > 0) {
+        pPool->syncTasks.available.notify_all();
+        pPool->asyncTasks.available.notify_all();
+        std::this_thread::yield();
+    }
 
     auto const totalThreadCount = pPool->syncTasks.threadCount + pPool->asyncTasks.threadCount;
     for (uint32_t i = 0; i < totalThreadCount; ++i) {
