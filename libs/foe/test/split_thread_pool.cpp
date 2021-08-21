@@ -23,7 +23,7 @@
 namespace {
 auto const numThreads = 2;
 
-void testTask() { std::this_thread::sleep_for(std::chrono::milliseconds(50)); }
+void testTask() { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }
 } // namespace
 
 TEST_CASE("SplitThreadPool - Creating the pool") {
@@ -137,9 +137,9 @@ TEST_CASE("SplitThreadPool - Waiting on sync tasks") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(500).count());
+          std::chrono::milliseconds(100).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(650).count());
+    //      std::chrono::milliseconds(110).count());
 
     foeDestroyThreadPool(pool);
 }
@@ -166,9 +166,9 @@ TEST_CASE("SplitThreadPool - Waiting on async tasks") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(500).count());
+          std::chrono::milliseconds(100).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(650).count());
+    //      std::chrono::milliseconds(110).count());
 
     foeDestroyThreadPool(pool);
 }
@@ -196,9 +196,9 @@ TEST_CASE("SplitThreadPool - Waiting on all tasks") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(500).count());
+          std::chrono::milliseconds(100).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(650).count());
+    //      std::chrono::milliseconds(110).count());
 
     foeDestroyThreadPool(pool);
 }
@@ -226,7 +226,7 @@ TEST_CASE("SplitThreadPool - Destroying pool awaits completion of all tasks") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(500).count());
+          std::chrono::milliseconds(100).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(650).count());
+    //      std::chrono::milliseconds(110).count());
 }

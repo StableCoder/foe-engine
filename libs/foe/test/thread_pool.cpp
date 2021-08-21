@@ -23,7 +23,7 @@
 namespace {
 auto const numThreads = 2;
 
-void testTask() { std::this_thread::sleep_for(std::chrono::milliseconds(50)); }
+void testTask() { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }
 } // namespace
 
 TEST_CASE("ThreadPool - Starting the pool") {
@@ -71,9 +71,9 @@ TEST_CASE("ThreadPool - Waiting on tasks") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(500).count());
+          std::chrono::milliseconds(100).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(650).count());
+    //      std::chrono::milliseconds(110).count());
 }
 
 TEST_CASE("ThreadPool - Termiation") {
@@ -92,7 +92,7 @@ TEST_CASE("ThreadPool - Termiation") {
     timer.update();
 
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(500).count());
+          std::chrono::milliseconds(100).count());
     // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(650).count());
+    //      std::chrono::milliseconds(110).count());
 }
