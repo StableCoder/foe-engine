@@ -18,12 +18,26 @@
 #include <foe/chrono/easy_clock.hpp>
 #include <foe/split_thread_pool.hpp>
 
+#include <atomic>
 #include <thread>
+
+using namespace std::chrono_literals;
 
 namespace {
 auto const numThreads = 2;
 
 void testTask() { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }
+
+std::atomic_uint waitingThreads{0};
+std::atomic_bool pauseThreads = true;
+
+void waitTask() {
+    ++waitingThreads;
+    while (pauseThreads)
+        std::this_thread::sleep_for(1ms);
+    --waitingThreads;
+}
+
 } // namespace
 
 TEST_CASE("SplitThreadPool - Creating the pool") {
@@ -114,6 +128,70 @@ TEST_CASE("SplitThreadPool - Scheduling tasks when not started fails") {
     foeDestroyThreadPool(pool);
 }
 
+TEST_CASE("SplitThreadPool - Checking task queries") {
+    foeSplitThreadPool pool{FOE_NULL_HANDLE};
+    REQUIRE_FALSE(foeCreateThreadPool(numThreads, numThreads, &pool));
+    REQUIRE_FALSE(foeStartThreadPool(pool));
+
+    pauseThreads = true;
+
+    SECTION("Sync tasks (checking that async also take sync jobs)") {
+        CHECK_FALSE(foeScheduleSyncTask(pool, waitTask));
+        while (waitingThreads < 1)
+            ;
+        CHECK(foeNumQueuedSyncTasks(pool) == 0);
+        CHECK(foeNumQueuedAsyncTasks(pool) == 0);
+        CHECK((foeNumProcessingSyncTasks(pool) + foeNumProcessingAsyncTasks(pool)) == 1);
+
+        for (int i = 0; i < numThreads * 2; ++i)
+            CHECK_FALSE(foeScheduleSyncTask(pool, waitTask));
+        while (waitingThreads < numThreads * 2)
+            ;
+        CHECK(foeNumQueuedSyncTasks(pool) == 1);
+        CHECK(foeNumQueuedAsyncTasks(pool) == 0);
+        CHECK((foeNumProcessingSyncTasks(pool) + foeNumProcessingAsyncTasks(pool)) ==
+              numThreads * 2);
+    }
+
+    SECTION("Async tasks") {
+        CHECK_FALSE(foeScheduleAsyncTask(pool, waitTask));
+        while (waitingThreads < 1)
+            ;
+        CHECK(foeNumQueuedSyncTasks(pool) == 0);
+        CHECK(foeNumProcessingSyncTasks(pool) == 0);
+        CHECK(foeNumQueuedAsyncTasks(pool) == 0);
+        CHECK(foeNumProcessingAsyncTasks(pool) == 1);
+
+        for (int i = 0; i < numThreads; ++i)
+            CHECK_FALSE(foeScheduleAsyncTask(pool, waitTask));
+        while (waitingThreads < numThreads)
+            ;
+        CHECK(foeNumQueuedSyncTasks(pool) == 0);
+        CHECK(foeNumProcessingSyncTasks(pool) == 0);
+        CHECK(foeNumQueuedAsyncTasks(pool) == 1);
+        CHECK(foeNumProcessingAsyncTasks(pool) == numThreads);
+    }
+
+    SECTION("Both task types threads") {
+        for (int i = 0; i < numThreads + 1; ++i)
+            CHECK_FALSE(foeScheduleAsyncTask(pool, waitTask));
+        while (waitingThreads < numThreads)
+            ;
+        for (int i = 0; i < numThreads + 1; ++i)
+            CHECK_FALSE(foeScheduleSyncTask(pool, waitTask));
+        while (waitingThreads < numThreads * 2)
+            ;
+        CHECK(foeNumQueuedSyncTasks(pool) == 1);
+        CHECK(foeNumProcessingSyncTasks(pool) == numThreads);
+        CHECK(foeNumQueuedAsyncTasks(pool) == 1);
+        CHECK(foeNumProcessingAsyncTasks(pool) == numThreads);
+    }
+
+    pauseThreads = false;
+
+    foeDestroyThreadPool(pool);
+}
+
 TEST_CASE("SplitThreadPool - Waiting on sync tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE_FALSE(foeCreateThreadPool(numThreads, numThreads, &pool));
@@ -125,12 +203,6 @@ TEST_CASE("SplitThreadPool - Waiting on sync tasks") {
         // !! Double tasks since async threads accelerate sync work !!
         REQUIRE_FALSE(foeScheduleSyncTask(pool, testTask));
     }
-
-    CHECK(foeNumQueuedSyncTasks(pool) > 0);
-    CHECK(foeNumProcessingSyncTasks(pool) > 0);
-
-    CHECK(foeNumQueuedAsyncTasks(pool) == 0);
-    CHECK(foeNumProcessingAsyncTasks(pool) == 0);
 
     REQUIRE_FALSE(foeWaitSyncThreads(pool));
 
@@ -154,12 +226,6 @@ TEST_CASE("SplitThreadPool - Waiting on async tasks") {
     for (int i = 0; i < 10 * numThreads; ++i) {
         REQUIRE_FALSE(foeScheduleAsyncTask(pool, testTask));
     }
-
-    CHECK(foeNumQueuedSyncTasks(pool) == 0);
-    CHECK(foeNumProcessingSyncTasks(pool) == 0);
-
-    CHECK(foeNumQueuedAsyncTasks(pool) > 0);
-    CHECK(foeNumProcessingAsyncTasks(pool) > 0);
 
     REQUIRE_FALSE(foeWaitAsyncThreads(pool));
 
@@ -185,12 +251,6 @@ TEST_CASE("SplitThreadPool - Waiting on all tasks") {
         REQUIRE_FALSE(foeScheduleAsyncTask(pool, testTask));
     }
 
-    CHECK(foeNumQueuedSyncTasks(pool) > 0);
-    CHECK(foeNumProcessingSyncTasks(pool) > 0);
-
-    CHECK(foeNumQueuedAsyncTasks(pool) > 0);
-    CHECK(foeNumProcessingAsyncTasks(pool) > 0);
-
     REQUIRE_FALSE(foeWaitAllThreads(pool));
 
     timer.update();
@@ -214,12 +274,6 @@ TEST_CASE("SplitThreadPool - Destroying pool awaits completion of all tasks") {
         REQUIRE_FALSE(foeScheduleSyncTask(pool, testTask));
         REQUIRE_FALSE(foeScheduleAsyncTask(pool, testTask));
     }
-
-    CHECK(foeNumQueuedSyncTasks(pool) > 0);
-    CHECK(foeNumProcessingSyncTasks(pool) > 0);
-
-    CHECK(foeNumQueuedAsyncTasks(pool) > 0);
-    CHECK(foeNumProcessingAsyncTasks(pool) > 0);
 
     foeDestroyThreadPool(pool);
 
