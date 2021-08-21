@@ -60,6 +60,10 @@ TEST_CASE("SplitThreadPool - Starting/stopping the pool") {
         }
 
         REQUIRE_FALSE(foeStopThreadPool(pool));
+
+        SECTION("Restarting a stopped thread pool succeeds") {
+            REQUIRE_FALSE(foeStartThreadPool(pool));
+        }
     }
 
     SECTION("Stopping a non-started pool fails") {
