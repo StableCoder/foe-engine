@@ -959,7 +959,12 @@ int Application::mainloop() {
 
                 // If the old swapchain exists, we need to destroy it
                 if (swapchain) {
-                    swapchain.destroy(foeGfxVkGetDevice(gfxSession));
+                    foeGfxVkSwapchain swapchainCopy = swapchain;
+                    foeGfxAddDelayedDestructionCall(
+                        gfxDelayedDestructor, [=](foeGfxSession session) {
+                            const_cast<foeGfxVkSwapchain &>(swapchainCopy)
+                                .destroy(foeGfxVkGetDevice(session));
+                        });
                 }
 
                 swapchain = newSwapchain;
@@ -1838,8 +1843,15 @@ int Application::mainloop() {
                             }});
 
                     if (swapchainRebuilt) {
-                        for (auto &it : swapImageFramebuffers)
-                            vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
+                        {
+                            auto framebuffersCopy = swapImageFramebuffers;
+                            foeGfxAddDelayedDestructionCall(
+                                gfxDelayedDestructor, [=](foeGfxSession session) {
+                                    for (auto &it : framebuffersCopy)
+                                        vkDestroyFramebuffer(foeGfxVkGetDevice(session), it,
+                                                             nullptr);
+                                });
+                        }
                         swapImageFramebuffers.clear();
 
                         int width, height;
