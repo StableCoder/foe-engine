@@ -14,25 +14,25 @@
     limitations under the License.
 */
 
-#include <foe/graphics/swapchain.hpp>
+#include <foe/graphics/vk/swapchain.hpp>
 
 #include <memory>
 
-foeSwapchain::operator bool() const noexcept { return mSwapchain != VK_NULL_HANDLE; }
-bool foeSwapchain::operator!() const noexcept { return mSwapchain == VK_NULL_HANDLE; }
+foeGfxVkSwapchain::operator bool() const noexcept { return mSwapchain != VK_NULL_HANDLE; }
+bool foeGfxVkSwapchain::operator!() const noexcept { return mSwapchain == VK_NULL_HANDLE; }
 
-foeSwapchain::operator VkSwapchainKHR() const noexcept { return mSwapchain; }
+foeGfxVkSwapchain::operator VkSwapchainKHR() const noexcept { return mSwapchain; }
 
-VkResult foeSwapchain::create(VkPhysicalDevice physicalDevice,
-                              VkDevice device,
-                              VkSurfaceKHR surface,
-                              VkSurfaceFormatKHR surfaceFormat,
-                              VkPresentModeKHR presentMode,
-                              VkImageUsageFlags extraUsage,
-                              VkSwapchainKHR oldSwapchain,
-                              uint32_t chainSize,
-                              uint32_t width,
-                              uint32_t height) {
+VkResult foeGfxVkSwapchain::create(VkPhysicalDevice physicalDevice,
+                                   VkDevice device,
+                                   VkSurfaceKHR surface,
+                                   VkSurfaceFormatKHR surfaceFormat,
+                                   VkPresentModeKHR presentMode,
+                                   VkImageUsageFlags extraUsage,
+                                   VkSwapchainKHR oldSwapchain,
+                                   uint32_t chainSize,
+                                   uint32_t width,
+                                   uint32_t height) {
     if (mSwapchain != VK_NULL_HANDLE)
         return VK_ERROR_INITIALIZATION_FAILED;
 
@@ -103,7 +103,7 @@ VkResult foeSwapchain::create(VkPhysicalDevice physicalDevice,
     return res;
 }
 
-void foeSwapchain::destroy(VkDevice device) noexcept {
+void foeGfxVkSwapchain::destroy(VkDevice device) noexcept {
     for (auto &it : mViews)
         vkDestroyImageView(device, it, nullptr);
     mViews.clear();
@@ -113,7 +113,7 @@ void foeSwapchain::destroy(VkDevice device) noexcept {
     mSwapchain = VK_NULL_HANDLE;
 }
 
-VkResult foeSwapchain::acquireNextImage(VkDevice device, VkSemaphore imageReady) noexcept {
+VkResult foeGfxVkSwapchain::acquireNextImage(VkDevice device, VkSemaphore imageReady) noexcept {
     if (mAcquiredIndex != UINT32_MAX) {
         // If the current image hasn't been 'presented', don't try to acquire another yet
         return VK_EVENT_SET;
@@ -127,7 +127,7 @@ VkResult foeSwapchain::acquireNextImage(VkDevice device, VkSemaphore imageReady)
     return res;
 }
 
-void foeSwapchain::presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex) noexcept {
+void foeGfxVkSwapchain::presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex) noexcept {
     if (mAcquiredIndex != UINT32_MAX) {
         *pSwapchain = mSwapchain;
         *pIndex = mAcquiredIndex;
@@ -135,35 +135,37 @@ void foeSwapchain::presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex) noe
     }
 }
 
-bool foeSwapchain::needRebuild() const noexcept { return mNeedRebuild; }
+bool foeGfxVkSwapchain::needRebuild() const noexcept { return mNeedRebuild; }
 
-void foeSwapchain::requestRebuild() noexcept { mNeedRebuild = true; }
+void foeGfxVkSwapchain::requestRebuild() noexcept { mNeedRebuild = true; }
 
-VkSurfaceFormatKHR foeSwapchain::surfaceFormat() const noexcept { return mSurfaceFormat; }
+VkSurfaceFormatKHR foeGfxVkSwapchain::surfaceFormat() const noexcept { return mSurfaceFormat; }
 
-void foeSwapchain::surfaceFormat(VkSurfaceFormatKHR surfaceFormat) noexcept {
+void foeGfxVkSwapchain::surfaceFormat(VkSurfaceFormatKHR surfaceFormat) noexcept {
     mSurfaceFormat = surfaceFormat;
     mNeedRebuild = true;
 }
 
-VkPresentModeKHR foeSwapchain::presentMode() const noexcept { return mPresentMode; }
+VkPresentModeKHR foeGfxVkSwapchain::presentMode() const noexcept { return mPresentMode; }
 
-void foeSwapchain::presentMode(VkPresentModeKHR presentMode) noexcept {
+void foeGfxVkSwapchain::presentMode(VkPresentModeKHR presentMode) noexcept {
     mPresentMode = presentMode;
     mNeedRebuild = true;
 }
 
-VkExtent2D foeSwapchain::extent() const noexcept { return mExtent; }
+VkExtent2D foeGfxVkSwapchain::extent() const noexcept { return mExtent; }
 
-uint32_t foeSwapchain::acquiredIndex() const noexcept { return mAcquiredIndex; }
+uint32_t foeGfxVkSwapchain::acquiredIndex() const noexcept { return mAcquiredIndex; }
 
-uint32_t foeSwapchain::chainSize() const noexcept { return static_cast<uint32_t>(mViews.size()); }
+uint32_t foeGfxVkSwapchain::chainSize() const noexcept {
+    return static_cast<uint32_t>(mViews.size());
+}
 
-VkImage foeSwapchain::image(uint32_t index) const noexcept { return mImages[index]; }
+VkImage foeGfxVkSwapchain::image(uint32_t index) const noexcept { return mImages[index]; }
 
-VkImageView foeSwapchain::imageView(uint32_t index) const noexcept { return mViews[index]; }
+VkImageView foeGfxVkSwapchain::imageView(uint32_t index) const noexcept { return mViews[index]; }
 
-VkResult foeSwapchain::createSwapchainViews(VkDevice device) {
+VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device) {
     uint32_t imageCount;
     VkResult res = vkGetSwapchainImagesKHR(device, mSwapchain, &imageCount, nullptr);
     if (res != VK_SUCCESS)

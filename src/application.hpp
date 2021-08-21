@@ -21,10 +21,10 @@
 #include <foe/graphics/render_target.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
-#include <foe/graphics/swapchain.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
+#include <foe/graphics/vk/swapchain.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/split_thread_pool.hpp>
 #include <foe/wsi.hpp>
@@ -97,7 +97,7 @@ struct Application {
     VkSampleCountFlags maxSupportedSamples;
 
     VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
-    foeSwapchain swapchain;
+    foeGfxVkSwapchain swapchain;
 
     uint32_t frameIndex = 0;
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;

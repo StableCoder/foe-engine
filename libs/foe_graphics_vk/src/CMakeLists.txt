@@ -21,6 +21,7 @@ target_sources(
           runtime.cpp
           session.cpp
           shader_public.cpp
+          swapchain.cpp
           upload_buffer_public.cpp
           upload_context_public.cpp
           upload_request_public.cpp

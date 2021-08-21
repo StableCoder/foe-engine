@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_SWAPCHAIN_HPP
-#define FOE_GRAPHICS_SWAPCHAIN_HPP
+#ifndef FOE_GRAPHICS_VK_SWAPCHAIN_HPP
+#define FOE_GRAPHICS_VK_SWAPCHAIN_HPP
 
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
@@ -23,7 +23,7 @@
 #include <vector>
 
 /// Wrapper for the VkSwapchainKHR, performing all related functions to it
-class foeSwapchain {
+class foeGfxVkSwapchain {
   public:
     FOE_GFX_EXPORT operator bool() const noexcept;
     FOE_GFX_EXPORT bool operator!() const noexcept;
@@ -91,4 +91,4 @@ class foeSwapchain {
     std::vector<VkImageView> mViews{};
 };
 
-#endif // FOE_GRAPHICS_SWAPCHAIN_HPP
+#endif // FOE_GRAPHICS_VK_SWAPCHAIN_HPP

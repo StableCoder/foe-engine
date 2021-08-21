@@ -948,7 +948,7 @@ int Application::mainloop() {
                     }
                 }
 
-                foeSwapchain newSwapchain;
+                foeGfxVkSwapchain newSwapchain;
                 vkRes = newSwapchain.create(
                     foeGfxVkGetPhysicalDevice(gfxSession), foeGfxVkGetDevice(gfxSession),
                     windowSurface, swapchain.surfaceFormat(), swapchain.presentMode(),
