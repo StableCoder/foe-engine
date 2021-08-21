@@ -54,6 +54,12 @@ FOE_EXPORT auto foeStopThreadPool(foeSplitThreadPool pool) -> std::error_code;
 FOE_EXPORT uint32_t foeNumSyncThreads(foeSplitThreadPool pool);
 FOE_EXPORT uint32_t foeNumAsyncThreads(foeSplitThreadPool pool);
 
+FOE_EXPORT uint32_t foeNumQueuedSyncTasks(foeSplitThreadPool pool);
+FOE_EXPORT uint32_t foeNumQueuedAsyncTasks(foeSplitThreadPool pool);
+
+FOE_EXPORT uint32_t foeNumProcessingSyncTasks(foeSplitThreadPool pool);
+FOE_EXPORT uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool);
+
 FOE_EXPORT auto foeScheduleSyncTask(foeSplitThreadPool pool, std::function<void()> &&task)
     -> std::error_code;
 FOE_EXPORT auto foeScheduleAsyncTask(foeSplitThreadPool pool, std::function<void()> &&task)

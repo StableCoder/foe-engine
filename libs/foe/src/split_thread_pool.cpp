@@ -269,6 +269,30 @@ uint32_t foeNumAsyncThreads(foeSplitThreadPool pool) {
     return pPool->asyncTasks.threadCount;
 }
 
+uint32_t foeNumQueuedSyncTasks(foeSplitThreadPool pool) {
+    auto *pPool = split_thread_pool_from_handle(pool);
+
+    return pPool->syncTasks.queuedCount;
+}
+
+uint32_t foeNumQueuedAsyncTasks(foeSplitThreadPool pool) {
+    auto *pPool = split_thread_pool_from_handle(pool);
+
+    return pPool->asyncTasks.queuedCount;
+}
+
+uint32_t foeNumProcessingSyncTasks(foeSplitThreadPool pool) {
+    auto *pPool = split_thread_pool_from_handle(pool);
+
+    return pPool->syncTasks.runningCount;
+}
+
+uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool) {
+    auto *pPool = split_thread_pool_from_handle(pool);
+
+    return pPool->asyncTasks.runningCount;
+}
+
 auto foeScheduleSyncTask(foeSplitThreadPool pool, std::function<void()> &&task) -> std::error_code {
     auto *pPool = split_thread_pool_from_handle(pool);
 

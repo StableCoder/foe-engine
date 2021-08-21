@@ -41,6 +41,11 @@ TEST_CASE("SplitThreadPool - Creating the pool") {
         REQUIRE_FALSE(foeCreateThreadPool(numThreads, numThreads, &pool));
         CHECK(foeNumSyncThreads(pool) == numThreads);
         CHECK(foeNumAsyncThreads(pool) == numThreads);
+
+        CHECK(foeNumQueuedSyncTasks(pool) == 0);
+        CHECK(foeNumQueuedAsyncTasks(pool) == 0);
+        CHECK(foeNumProcessingSyncTasks(pool) == 0);
+        CHECK(foeNumProcessingAsyncTasks(pool) == 0);
     }
 
     if (pool != FOE_NULL_HANDLE) {
@@ -121,6 +126,12 @@ TEST_CASE("SplitThreadPool - Waiting on sync tasks") {
         REQUIRE_FALSE(foeScheduleSyncTask(pool, testTask));
     }
 
+    CHECK(foeNumQueuedSyncTasks(pool) > 0);
+    CHECK(foeNumProcessingSyncTasks(pool) > 0);
+
+    CHECK(foeNumQueuedAsyncTasks(pool) == 0);
+    CHECK(foeNumProcessingAsyncTasks(pool) == 0);
+
     REQUIRE_FALSE(foeWaitSyncThreads(pool));
 
     timer.update();
@@ -143,6 +154,12 @@ TEST_CASE("SplitThreadPool - Waiting on async tasks") {
     for (int i = 0; i < 10 * numThreads; ++i) {
         REQUIRE_FALSE(foeScheduleAsyncTask(pool, testTask));
     }
+
+    CHECK(foeNumQueuedSyncTasks(pool) == 0);
+    CHECK(foeNumProcessingSyncTasks(pool) == 0);
+
+    CHECK(foeNumQueuedAsyncTasks(pool) > 0);
+    CHECK(foeNumProcessingAsyncTasks(pool) > 0);
 
     REQUIRE_FALSE(foeWaitAsyncThreads(pool));
 
@@ -168,6 +185,12 @@ TEST_CASE("SplitThreadPool - Waiting on all tasks") {
         REQUIRE_FALSE(foeScheduleAsyncTask(pool, testTask));
     }
 
+    CHECK(foeNumQueuedSyncTasks(pool) > 0);
+    CHECK(foeNumProcessingSyncTasks(pool) > 0);
+
+    CHECK(foeNumQueuedAsyncTasks(pool) > 0);
+    CHECK(foeNumProcessingAsyncTasks(pool) > 0);
+
     REQUIRE_FALSE(foeWaitAllThreads(pool));
 
     timer.update();
@@ -191,6 +214,12 @@ TEST_CASE("SplitThreadPool - Destroying pool awaits completion of all tasks") {
         REQUIRE_FALSE(foeScheduleSyncTask(pool, testTask));
         REQUIRE_FALSE(foeScheduleAsyncTask(pool, testTask));
     }
+
+    CHECK(foeNumQueuedSyncTasks(pool) > 0);
+    CHECK(foeNumProcessingSyncTasks(pool) > 0);
+
+    CHECK(foeNumQueuedAsyncTasks(pool) > 0);
+    CHECK(foeNumProcessingAsyncTasks(pool) > 0);
 
     foeDestroyThreadPool(pool);
 
