@@ -26,7 +26,7 @@
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <foe/thread_pool.hpp>
+#include <foe/split_thread_pool.hpp>
 #include <foe/wsi.hpp>
 #include <foe/xr/runtime.hpp>
 
@@ -65,8 +65,7 @@ struct Application {
     // Variables
     Settings settings;
 
-    foeThreadPool synchronousThreadPool;
-    foeThreadPool asynchronousThreadPool;
+    foeSplitThreadPool threadPool{FOE_NULL_HANDLE};
 
     // Groups/Entities
     foeId cameraID = FOE_INVALID_ID;

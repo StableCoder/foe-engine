@@ -203,12 +203,17 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         return std::make_tuple(false, retVal);
     }
 
-    synchronousThreadPool.start(1);
-    asynchronousThreadPool.start(1);
+    errC = foeCreateThreadPool(1, 1, &threadPool);
+    if (errC)
+        ERRC_END_PROGRAM_TUPLE
+
+    errC = foeStartThreadPool(threadPool);
+    if (errC)
+        ERRC_END_PROGRAM_TUPLE
 
     auto asyncTaskFunc = [&](std::function<void()> task) {
         task();
-        // asynchronousThreadPool.scheduleTask(std::move(task));
+        // foeScheduleAsyncTask(threadPool, std::move(task));
     };
 
     foeSimulationState *pNewSimulationSet{nullptr};
@@ -733,8 +738,9 @@ void Application::deinitialize() {
         foeXrDestroyRuntime(xrRuntime);
 #endif
 
-    asynchronousThreadPool.terminate();
-    synchronousThreadPool.terminate();
+    if (threadPool)
+        foeDestroyThreadPool(threadPool);
+    threadPool = FOE_NULL_HANDLE;
 
     deregisterBasicFunctionality();
 
@@ -1974,7 +1980,7 @@ int Application::mainloop() {
         }
     SKIP_FRAME_RENDER:;
 
-        synchronousThreadPool.waitForAllTasks();
+        foeWaitSyncThreads(threadPool);
     }
     FOE_LOG(General, Info, "Exiting main loop")
 
