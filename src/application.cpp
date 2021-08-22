@@ -1247,147 +1247,144 @@ int Application::mainloop() {
                             if (vkRes != VK_SUCCESS)
                                 VK_END_PROGRAM
 
-                                { // Render Pass Setup
-                                    VkExtent2D swapchainExtent{
-                                        .width = it.viewConfig.recommendedImageRectWidth,
-                                        .height = it.viewConfig.recommendedImageRectHeight,
-                                    };
-                                    std::array<VkClearValue, 2> clearValues{
-                                        VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
-                                        VkClearValue{.depthStencil = {
-                                                         .depth = 1.f,
-                                                         .stencil = 0,
-                                                     }}};
+                            VkExtent2D swapchainExtent{
+                                .width = it.viewConfig.recommendedImageRectWidth,
+                                .height = it.viewConfig.recommendedImageRectHeight,
+                            };
+                            { // Setup common render viewport data
+                                VkViewport viewport{
+                                    .width =
+                                        static_cast<float>(it.viewConfig.recommendedImageRectWidth),
+                                    .height = static_cast<float>(
+                                        it.viewConfig.recommendedImageRectHeight),
+                                    .minDepth = 0.f,
+                                    .maxDepth = 1.f,
+                                };
+                                vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-                                    VkRenderPassBeginInfo renderPassBI{
-                                        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                                        .renderPass = xrOffscreenRenderPass,
-                                        .framebuffer =
-                                            foeGfxVkGetRenderTargetFramebuffer(renderTarget),
-                                        .renderArea =
-                                            {
-                                                .offset = {0, 0},
-                                                .extent = swapchainExtent,
-                                            },
-                                        .clearValueCount = clearValues.size(),
-                                        .pClearValues = clearValues.data(),
-                                    };
+                                VkRect2D scissor{
+                                    .offset = VkOffset2D{},
+                                    .extent = swapchainExtent,
+                                };
+                                vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-                                    vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
-                                                         VK_SUBPASS_CONTENTS_INLINE);
+                                // vkDepthBias ??
+                            }
 
-                                    if (true) { // Set Drawing Parameters
-                                        VkViewport viewport{
-                                            .width = static_cast<float>(
-                                                it.viewConfig.recommendedImageRectWidth),
-                                            .height = static_cast<float>(
-                                                it.viewConfig.recommendedImageRectHeight),
-                                            .minDepth = 0.f,
-                                            .maxDepth = 1.f,
-                                        };
-                                        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+                            { // Render Pass Setup
+                                std::array<VkClearValue, 2> clearValues{
+                                    VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
+                                    VkClearValue{.depthStencil = {
+                                                     .depth = 1.f,
+                                                     .stencil = 0,
+                                                 }}};
 
-                                        VkRect2D scissor{
-                                            .offset = VkOffset2D{},
+                                VkRenderPassBeginInfo renderPassBI{
+                                    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                                    .renderPass = xrOffscreenRenderPass,
+                                    .framebuffer = foeGfxVkGetRenderTargetFramebuffer(renderTarget),
+                                    .renderArea =
+                                        {
+                                            .offset = {0, 0},
                                             .extent = swapchainExtent,
-                                        };
-                                        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+                                        },
+                                    .clearValueCount = clearValues.size(),
+                                    .pClearValues = clearValues.data(),
+                                };
 
-                                        // If we had depthbias enabled
-                                        // vkCmdSetDepthBias
-                                        VkPipelineLayout layout;
-                                        uint32_t descriptorSetLayoutCount;
-                                        VkPipeline pipeline;
+                                vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
+                                                     VK_SUBPASS_CONTENTS_INLINE);
 
-                                        if constexpr (true) {
-                                            // Render Special Triangle
-                                            foeRenderState *pRenderState{nullptr};
+                                if (true) { // Set Drawing Parameters
+                                    // If we had depthbias enabled
+                                    // vkCmdSetDepthBias
+                                    VkPipelineLayout layout;
+                                    uint32_t descriptorSetLayoutCount;
+                                    VkPipeline pipeline;
 
-                                            auto pRenderStatePool =
-                                                getComponentPool<foeRenderStatePool>(
-                                                    pSimulationSet->componentPools.data(),
-                                                    pSimulationSet->componentPools.size());
+                                    if constexpr (true) {
+                                        // Render Special Triangle
+                                        foeRenderState *pRenderState{nullptr};
 
-                                            auto searchOffset =
-                                                pRenderStatePool->find(renderTriangleID);
-                                            if (searchOffset != pRenderStatePool->size()) {
-                                                pRenderState =
-                                                    pRenderStatePool->begin<1>() + searchOffset;
-                                            } else {
-                                                goto SKIP_XR_DRAW;
-                                            }
+                                        auto pRenderStatePool =
+                                            getComponentPool<foeRenderStatePool>(
+                                                pSimulationSet->componentPools.data(),
+                                                pSimulationSet->componentPools.size());
 
-                                            auto *theVertexDescriptor =
-                                                getResourcePool<foeVertexDescriptorPool>(
-                                                    pSimulationSet->resourcePools.data(),
-                                                    pSimulationSet->resourcePools.size())
-                                                    ->find(pRenderState->vertexDescriptor);
-                                            auto *theMaterial =
-                                                getResourcePool<foeMaterialPool>(
-                                                    pSimulationSet->resourcePools.data(),
-                                                    pSimulationSet->resourcePools.size())
-                                                    ->find(pRenderState->material);
-
-                                            if (theVertexDescriptor->getState() !=
-                                                    foeResourceState::Loaded ||
-                                                theMaterial->getState() != foeResourceState::Loaded)
-                                                goto SKIP_XR_DRAW;
-
-                                            // Render Triangle
-                                            foeGfxVkGetPipelinePool(gfxSession)
-                                                ->getPipeline(
-                                                    const_cast<foeGfxVertexDescriptor *>(
-                                                        &theVertexDescriptor->data
-                                                             .vertexDescriptor),
-                                                    theMaterial->data.pGfxFragDescriptor,
-                                                    xrOffscreenRenderPass, 0,
-                                                    foeGfxVkGetRenderTargetSamples(renderTarget),
-                                                    &layout, &descriptorSetLayoutCount, &pipeline);
-
-                                            vkCmdBindDescriptorSets(
-                                                commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                layout, 0, 1, &it.camera.descriptor, 0, nullptr);
-
-                                            auto *pPosition3dPool =
-                                                getComponentPool<foePosition3dPool>(
-                                                    pSimulationSet->componentPools.data(),
-                                                    pSimulationSet->componentPools.size());
-
-                                            auto posOffset =
-                                                pPosition3dPool->find(renderTriangleID);
-                                            auto *pPosition =
-                                                (pPosition3dPool->begin<1>() + posOffset)->get();
-                                            vkCmdBindDescriptorSets(
-                                                commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                layout, 1, 1, &pPosition->descriptorSet, 0,
-                                                nullptr);
-
-                                            if (auto set = theMaterial->data.materialDescriptorSet;
-                                                set != VK_NULL_HANDLE) {
-                                                vkCmdBindDescriptorSets(
-                                                    commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                    layout,
-                                                    foeDescriptorSetLayoutIndex::FragmentShader, 1,
-                                                    &set, 0, nullptr);
-                                            }
-
-                                            vkCmdBindPipeline(commandBuffer,
-                                                              VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                              pipeline);
-
-                                            vkCmdDraw(commandBuffer, 4, 1, 0, 0);
+                                        auto searchOffset =
+                                            pRenderStatePool->find(renderTriangleID);
+                                        if (searchOffset != pRenderStatePool->size()) {
+                                            pRenderState =
+                                                pRenderStatePool->begin<1>() + searchOffset;
+                                        } else {
+                                            goto SKIP_XR_DRAW;
                                         }
 
-                                        renderCall(renderMeshID, commandBuffer,
-                                                   it.camera.descriptor,
-                                                   foeGfxVkGetRenderTargetSamples(renderTarget),
-                                                   xrOffscreenRenderPass);
+                                        auto *theVertexDescriptor =
+                                            getResourcePool<foeVertexDescriptorPool>(
+                                                pSimulationSet->resourcePools.data(),
+                                                pSimulationSet->resourcePools.size())
+                                                ->find(pRenderState->vertexDescriptor);
+                                        auto *theMaterial =
+                                            getResourcePool<foeMaterialPool>(
+                                                pSimulationSet->resourcePools.data(),
+                                                pSimulationSet->resourcePools.size())
+                                                ->find(pRenderState->material);
 
-                                    SKIP_XR_DRAW:;
+                                        if (theVertexDescriptor->getState() !=
+                                                foeResourceState::Loaded ||
+                                            theMaterial->getState() != foeResourceState::Loaded)
+                                            goto SKIP_XR_DRAW;
+
+                                        // Render Triangle
+                                        foeGfxVkGetPipelinePool(gfxSession)
+                                            ->getPipeline(
+                                                const_cast<foeGfxVertexDescriptor *>(
+                                                    &theVertexDescriptor->data.vertexDescriptor),
+                                                theMaterial->data.pGfxFragDescriptor,
+                                                xrOffscreenRenderPass, 0,
+                                                foeGfxVkGetRenderTargetSamples(renderTarget),
+                                                &layout, &descriptorSetLayoutCount, &pipeline);
+
+                                        vkCmdBindDescriptorSets(
+                                            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                            0, 1, &it.camera.descriptor, 0, nullptr);
+
+                                        auto *pPosition3dPool = getComponentPool<foePosition3dPool>(
+                                            pSimulationSet->componentPools.data(),
+                                            pSimulationSet->componentPools.size());
+
+                                        auto posOffset = pPosition3dPool->find(renderTriangleID);
+                                        auto *pPosition =
+                                            (pPosition3dPool->begin<1>() + posOffset)->get();
+                                        vkCmdBindDescriptorSets(
+                                            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                            1, 1, &pPosition->descriptorSet, 0, nullptr);
+
+                                        if (auto set = theMaterial->data.materialDescriptorSet;
+                                            set != VK_NULL_HANDLE) {
+                                            vkCmdBindDescriptorSets(
+                                                commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                layout, foeDescriptorSetLayoutIndex::FragmentShader,
+                                                1, &set, 0, nullptr);
+                                        }
+
+                                        vkCmdBindPipeline(commandBuffer,
+                                                          VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                                          pipeline);
+
+                                        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
                                     }
 
-                                    vkCmdEndRenderPass(commandBuffer);
+                                    renderCall(renderMeshID, commandBuffer, it.camera.descriptor,
+                                               foeGfxVkGetRenderTargetSamples(renderTarget),
+                                               xrOffscreenRenderPass);
+
+                                SKIP_XR_DRAW:;
                                 }
+
+                                vkCmdEndRenderPass(commandBuffer);
+                            }
 
                             { // Blit or resolve to swapchain
                                 VkImageSubresourceRange subresourceRange{
@@ -1568,6 +1565,26 @@ int Application::mainloop() {
                     VK_END_PROGRAM
                 }
 
+                VkExtent2D swapchainExtent = swapchain.extent();
+
+                { // Setup common render viewport data
+                    VkViewport viewport{
+                        .width = static_cast<float>(swapchainExtent.width),
+                        .height = static_cast<float>(swapchainExtent.height),
+                        .minDepth = 0.f,
+                        .maxDepth = 1.f,
+                    };
+                    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+                    VkRect2D scissor{
+                        .offset = VkOffset2D{},
+                        .extent = swapchainExtent,
+                    };
+                    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+                    // vkDepthBias ??
+                }
+
                 { // Render to Image
                     VkRenderPass renderPass =
                         foeGfxVkGetRenderPassPool(gfxSession)
@@ -1595,7 +1612,6 @@ int Application::mainloop() {
                                      .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                  }});
 
-                    VkExtent2D swapchainExtent = swapchain.extent();
                     std::array<VkClearValue, 2> clearValues{
                         VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
                         VkClearValue{.depthStencil =
@@ -1626,23 +1642,6 @@ int Application::mainloop() {
                                                             pSimulationSet->componentPools.size());
 
                         auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
-
-                        VkViewport viewport{
-                            .width = static_cast<float>(swapchainExtent.width),
-                            .height = static_cast<float>(swapchainExtent.height),
-                            .minDepth = 0.f,
-                            .maxDepth = 1.f,
-                        };
-                        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-                        VkRect2D scissor{
-                            .offset = VkOffset2D{},
-                            .extent = swapchainExtent,
-                        };
-                        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-                        // If we had depthbias enabled
-                        // vkCmdSetDepthBias
 
                         // Set the Pipeline
                         VkPipelineLayout layout;
