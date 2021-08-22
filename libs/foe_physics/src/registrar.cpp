@@ -22,11 +22,11 @@
 #include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/position/component/3d_pool.hpp>
-#include <foe/resource/error_code.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 namespace {
@@ -50,7 +50,7 @@ void collisionShapeLoadFn(void *pContext,
         }
     }
 
-    pPostLoadFn(pResource, FOE_RESOURCE_ERROR_IMPORT_FAILED);
+    pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
 }
 
 void onCreate(foeSimulationState *pSimulationState) {

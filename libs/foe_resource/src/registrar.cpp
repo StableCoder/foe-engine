@@ -19,11 +19,11 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
-#include <foe/resource/error_code.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 namespace {

@@ -14,25 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_ERROR_CODE_HPP
-#define FOE_RESOURCE_ERROR_CODE_HPP
+#ifndef FOE_IMEX_ERROR_CODE_H
+#define FOE_IMEX_ERROR_CODE_H
 
-#include <foe/resource/export.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <system_error>
-
-enum foeResourceResult : int {
-    FOE_RESOURCE_SUCCESS = 0,
-    FOE_RESOURCE_ERROR_ALREADY_INITIALIZED,
-    FOE_RESOURCE_ERROR_IMPORT_FAILED,
-    FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER,
+enum foeImexResult {
+    FOE_IMEX_SUCCESS = 0,
+    FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED,
+    FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED,
 };
 
-namespace std {
-template <>
-struct is_error_code_enum<foeResourceResult> : true_type {};
-} // namespace std
+#ifdef __cplusplus
+}
+#endif
 
-FOE_RES_EXPORT std::error_code make_error_code(foeResourceResult);
-
-#endif // FOE_RESOURCE_ERROR_CODE_HPP
+#endif // FOE_IMEX_ERROR_CODE_H

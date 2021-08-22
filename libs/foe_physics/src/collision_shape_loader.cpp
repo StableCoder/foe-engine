@@ -17,9 +17,9 @@
 #include <foe/physics/resource/collision_shape_loader.hpp>
 
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/resource/error_code.hpp>
 
 #include "bt_glm_conversion.hpp"
+#include "error_code.hpp"
 #include "log.hpp"
 
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
@@ -100,7 +100,7 @@ void foeCollisionShapeLoader::load(void *pResource,
     foeCollisionShape::Data data;
 
     if (!processCreateInfo(pCollisionShapeCreateInfo, data)) {
-        pPostLoadFn(pResource, FOE_RESOURCE_ERROR_IMPORT_FAILED);
+        pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
         return;
     }
 

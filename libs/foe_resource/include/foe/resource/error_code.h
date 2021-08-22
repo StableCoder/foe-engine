@@ -14,18 +14,22 @@
     limitations under the License.
 */
 
-#ifndef ERROR_CODE_HPP
-#define ERROR_CODE_HPP
+#ifndef FOE_RESOURCE_ERROR_CODE_H
+#define FOE_RESOURCE_ERROR_CODE_H
 
-#include <foe/graphics/vk/error_code.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <system_error>
+enum foeResourceResult {
+    FOE_RESOURCE_SUCCESS = 0,
+    FOE_RESOURCE_ERROR_ALREADY_INITIALIZED,
+    FOE_RESOURCE_ERROR_IMPORT_FAILED,
+    FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER,
+};
 
-namespace std {
-template <>
-struct is_error_code_enum<foeGraphicsVkResult> : true_type {};
-} // namespace std
+#ifdef __cplusplus
+}
+#endif
 
-std::error_code make_error_code(foeGraphicsVkResult);
-
-#endif // ERROR_CODE_HPP
+#endif // FOE_RESOURCE_ERROR_CODE_H

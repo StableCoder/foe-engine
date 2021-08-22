@@ -14,18 +14,23 @@
     limitations under the License.
 */
 
-#ifndef ERROR_CODE_HPP
-#define ERROR_CODE_HPP
+#ifndef FOE_SIMULATION_ERROR_CODE_H
+#define FOE_SIMULATION_ERROR_CODE_H
 
-#include <foe/graphics/vk/error_code.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <system_error>
+enum foeSimulationResult {
+    FOE_SIMULATION_SUCCESS = 0,
+    FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED,
+    FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED,
+    FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED,
+    FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED,
+};
 
-namespace std {
-template <>
-struct is_error_code_enum<foeGraphicsVkResult> : true_type {};
-} // namespace std
+#ifdef __cplusplus
+}
+#endif
 
-std::error_code make_error_code(foeGraphicsVkResult);
-
-#endif // ERROR_CODE_HPP
+#endif // FOE_SIMULATION_ERROR_CODE_H

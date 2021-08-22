@@ -18,8 +18,8 @@
 
 #include <foe/model/assimp/importer.hpp>
 #include <foe/resource/armature.hpp>
-#include <foe/resource/error_code.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 std::error_code foeArmatureLoader::initialize(

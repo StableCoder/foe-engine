@@ -15,7 +15,7 @@
 */
 
 #include <catch.hpp>
-#include <foe/simulation/error_code.hpp>
+#include <foe/simulation/error_code.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 
@@ -28,39 +28,41 @@ void onCreate2(foeSimulationState *) {}
 
 TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
     SECTION("Registering and deregistering the same set succeeds") {
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                    .onCreate = onCreate,
-                    .onDestroy = onDestroy,
-                }) == FOE_SIMULATION_SUCCESS);
+        REQUIRE_FALSE(foeRegisterFunctionality(foeSimulationFunctionalty{
+            .onCreate = onCreate,
+            .onDestroy = onDestroy,
+        }));
 
-        REQUIRE(foeDeregisterFunctionality(foeSimulationFunctionalty{
-                    .onCreate = onCreate,
-                    .onDestroy = onDestroy,
-                }) == FOE_SIMULATION_SUCCESS);
+        REQUIRE_FALSE(foeDeregisterFunctionality(foeSimulationFunctionalty{
+            .onCreate = onCreate,
+            .onDestroy = onDestroy,
+        }));
     }
 
     SECTION("Attempting to re-register the same set fails") {
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                    .onCreate = onCreate,
-                    .onDestroy = onDestroy,
-                }) == FOE_SIMULATION_SUCCESS);
+        REQUIRE_FALSE(foeRegisterFunctionality(foeSimulationFunctionalty{
+            .onCreate = onCreate,
+            .onDestroy = onDestroy,
+        }));
 
         REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                    .onCreate = onCreate,
-                    .onDestroy = onDestroy,
-                }) == FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED);
+                                             .onCreate = onCreate,
+                                             .onDestroy = onDestroy,
+                                         })
+                    .value() == FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED);
 
-        REQUIRE(foeDeregisterFunctionality(foeSimulationFunctionalty{
-                    .onCreate = onCreate,
-                    .onDestroy = onDestroy,
-                }) == FOE_SIMULATION_SUCCESS);
+        REQUIRE_FALSE(foeDeregisterFunctionality(foeSimulationFunctionalty{
+            .onCreate = onCreate,
+            .onDestroy = onDestroy,
+        }));
     }
 
     SECTION("Deregistering what wasn't registered fails") {
         REQUIRE(foeDeregisterFunctionality(foeSimulationFunctionalty{
-                    .onCreate = onCreate,
-                    .onDestroy = onDestroy,
-                }) == FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED);
+                                               .onCreate = onCreate,
+                                               .onDestroy = onDestroy,
+                                           })
+                    .value() == FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED);
     }
 }
 
@@ -72,7 +74,7 @@ TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
     REQUIRE(pSimState->pResourceNameMap == nullptr);
     REQUIRE(pSimState->pEntityNameMap == nullptr);
 
-    REQUIRE(foeDestroySimulation(pSimState) == FOE_SIMULATION_SUCCESS);
+    REQUIRE_FALSE(foeDestroySimulation(pSimState));
 }
 
 TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe][simulation]") {
@@ -82,5 +84,5 @@ TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe
     REQUIRE(pSimState->pResourceNameMap != nullptr);
     REQUIRE(pSimState->pEntityNameMap != nullptr);
 
-    REQUIRE(foeDestroySimulation(pSimState) == FOE_SIMULATION_SUCCESS);
+    REQUIRE_FALSE(foeDestroySimulation(pSimState));
 }

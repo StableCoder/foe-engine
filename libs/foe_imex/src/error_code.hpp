@@ -17,13 +17,9 @@
 #ifndef ERROR_CODE_HPP
 #define ERROR_CODE_HPP
 
-#include <system_error>
+#include <foe/imex/error_code.h>
 
-enum foeImexResult {
-    FOE_IMEX_SUCCESS = 0,
-    FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED,
-    FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED,
-};
+#include <system_error>
 
 namespace std {
 template <>

@@ -14,26 +14,18 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_ERROR_CODE_HPP
-#define FOE_SIMULATION_ERROR_CODE_HPP
+#ifndef ERROR_CODE_HPP
+#define ERROR_CODE_HPP
 
-#include <foe/simulation/export.h>
+#include <foe/simulation/error_code.h>
 
 #include <system_error>
-
-enum foeSimulationResult : int {
-    FOE_SIMULATION_SUCCESS = 0,
-    FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED,
-    FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED,
-    FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED,
-    FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED,
-};
 
 namespace std {
 template <>
 struct is_error_code_enum<foeSimulationResult> : true_type {};
 } // namespace std
 
-FOE_SIM_EXPORT std::error_code make_error_code(foeSimulationResult);
+std::error_code make_error_code(foeSimulationResult);
 
-#endif // FOE_SIMULATION_ERROR_CODE_HPP
+#endif // ERROR_CODE_HPP

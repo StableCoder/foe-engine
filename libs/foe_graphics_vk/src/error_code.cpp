@@ -33,7 +33,7 @@ std::string foeGraphicsVkErrCategory::message(int ev) const {
     switch (static_cast<foeGraphicsVkResult>(ev)) {
         RESULT_CASE(FOE_GRAPHICS_VK_SUCCESS)
         // RenderTarget
-        RESULT_CASE(FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_COULD_NOT_GET_COMPATIBLE_RENDER_PASS)
+        RESULT_CASE(FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS)
 
     default:
         if (ev > 0)

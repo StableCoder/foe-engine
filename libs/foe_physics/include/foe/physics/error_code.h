@@ -14,18 +14,20 @@
     limitations under the License.
 */
 
-#ifndef ERROR_CODE_HPP
-#define ERROR_CODE_HPP
+#ifndef FOE_PHYSICS_ERROR_CODE_H
+#define FOE_PHYSICS_ERROR_CODE_H
 
-#include <foe/graphics/vk/error_code.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <system_error>
+enum foePhysicsResult {
+    FOE_PHYSICS_SUCCESS = 0,
+    FOE_PHYSICS_ERROR_IMPORT_FAILED,
+};
 
-namespace std {
-template <>
-struct is_error_code_enum<foeGraphicsVkResult> : true_type {};
-} // namespace std
+#ifdef __cplusplus
+}
+#endif
 
-std::error_code make_error_code(foeGraphicsVkResult);
-
-#endif // ERROR_CODE_HPP
+#endif // FOE_PHYSICS_ERROR_CODE_H

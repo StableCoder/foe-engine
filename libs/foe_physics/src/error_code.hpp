@@ -17,15 +17,15 @@
 #ifndef ERROR_CODE_HPP
 #define ERROR_CODE_HPP
 
-#include <foe/graphics/vk/error_code.h>
+#include <foe/physics/error_code.h>
 
 #include <system_error>
 
 namespace std {
 template <>
-struct is_error_code_enum<foeGraphicsVkResult> : true_type {};
+struct is_error_code_enum<foePhysicsResult> : true_type {};
 } // namespace std
 
-std::error_code make_error_code(foeGraphicsVkResult);
+std::error_code make_error_code(foePhysicsResult);
 
 #endif // ERROR_CODE_HPP

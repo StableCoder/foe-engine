@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/error_code.hpp>
+#include "error_code.hpp"
 
 namespace {
 

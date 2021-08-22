@@ -14,18 +14,21 @@
     limitations under the License.
 */
 
-#ifndef ERROR_CODE_HPP
-#define ERROR_CODE_HPP
+#ifndef FOE_GRAPHICS_VK_ERROR_CODE_H
+#define FOE_GRAPHICS_VK_ERROR_CODE_H
 
-#include <foe/graphics/vk/error_code.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <system_error>
+enum foeGraphicsVkResult {
+    FOE_GRAPHICS_VK_SUCCESS = 0,
+    // RenderTarget
+    FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS,
+};
 
-namespace std {
-template <>
-struct is_error_code_enum<foeGraphicsVkResult> : true_type {};
-} // namespace std
+#ifdef __cplusplus
+}
+#endif
 
-std::error_code make_error_code(foeGraphicsVkResult);
-
-#endif // ERROR_CODE_HPP
+#endif // FOE_GRAPHICS_VK_ERROR_CODE_H

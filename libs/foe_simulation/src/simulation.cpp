@@ -19,8 +19,8 @@
 
 #include <foe/chrono/easy_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
-#include <foe/simulation/error_code.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 #include <mutex>
