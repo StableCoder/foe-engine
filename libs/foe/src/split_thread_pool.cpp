@@ -74,9 +74,8 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
 
     while (true) {
         syncLock.lock();
-        if (pPool->syncTasks.tasks.empty())
-            pPool->syncTasks.available.wait(
-                syncLock, [&] { return !pPool->syncTasks.tasks.empty() || pPool->terminate; });
+        pPool->syncTasks.available.wait(
+            syncLock, [&] { return !pPool->syncTasks.tasks.empty() || pPool->terminate; });
 
         if (!pPool->syncTasks.tasks.empty()) {
             // Work available
@@ -109,11 +108,10 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
 
     while (true) {
         asyncLock.lock();
-        if (pPool->asyncTasks.tasks.empty())
-            pPool->asyncTasks.available.wait(asyncLock, [&] {
-                return !pPool->asyncTasks.tasks.empty() || pPool->syncTasks.queuedCount > 0 ||
-                       pPool->terminate;
-            });
+        pPool->asyncTasks.available.wait(asyncLock, [&] {
+            return !pPool->asyncTasks.tasks.empty() || pPool->syncTasks.queuedCount > 0 ||
+                   pPool->terminate;
+        });
 
         if (!pPool->asyncTasks.tasks.empty()) {
             // Work available
