@@ -23,20 +23,6 @@
 #include "log.hpp"
 #include "runtime.hpp"
 
-namespace {
-
-void foeXrOpenDestroyRuntime(foeXrOpenRuntime *pRuntime) {
-    if (pRuntime->debugMessenger != XR_NULL_HANDLE)
-        foeXrDestroyDebugUtilsMessenger(pRuntime->instance, pRuntime->debugMessenger);
-
-    if (pRuntime->instance != XR_NULL_HANDLE)
-        xrDestroyInstance(pRuntime->instance);
-
-    delete pRuntime;
-}
-
-} // namespace
-
 std::error_code foeXrOpenCreateRuntime(char const *appName,
                                        uint32_t appVersion,
                                        std::vector<std::string> layers,
@@ -68,7 +54,7 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
 
 CREATE_FAILED:
     if (xrRes != XR_SUCCESS) {
-        foeXrOpenDestroyRuntime(pNewRuntime);
+        foeXrDestroyRuntime(runtime_to_handle(pNewRuntime));
     } else {
         *pRuntime = runtime_to_handle(pNewRuntime);
     }
@@ -90,7 +76,17 @@ XrInstance foeXrOpenGetInstance(foeXrRuntime runtime) {
     return pRuntime->instance;
 }
 
-void foeXrDestroyRuntime(foeXrRuntime runtime) {
+auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code {
     auto *pRuntime = runtime_from_handle(runtime);
-    foeXrOpenDestroyRuntime(pRuntime);
+    std::error_code errC;
+
+    if (pRuntime->debugMessenger != XR_NULL_HANDLE)
+        foeXrDestroyDebugUtilsMessenger(pRuntime->instance, pRuntime->debugMessenger);
+
+    if (pRuntime->instance != XR_NULL_HANDLE)
+        errC = xrDestroyInstance(pRuntime->instance);
+
+    delete pRuntime;
+
+    return errC;
 }

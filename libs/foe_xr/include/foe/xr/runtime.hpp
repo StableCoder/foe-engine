@@ -20,8 +20,10 @@
 #include <foe/handle.h>
 #include <foe/xr/export.h>
 
+#include <system_error>
+
 FOE_DEFINE_HANDLE(foeXrRuntime)
 
-FOE_XR_EXPORT void foeXrDestroyRuntime(foeXrRuntime runtime);
+FOE_XR_EXPORT auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code;
 
 #endif // FOE_XR_RUNTIME_HPP

@@ -775,15 +775,17 @@ void Application::deinitialize() {
 
     if (pSimulationSet)
         foeDeinitializeSimulation(pSimulationSet.get());
+
+#ifdef FOE_XR_SUPPORT
+    std::error_code errC;
+    if (xrRuntime != FOE_NULL_HANDLE)
+        errC = foeXrDestroyRuntime(xrRuntime);
+#endif
+
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxDestroySession(gfxSession);
     if (gfxRuntime != FOE_NULL_HANDLE)
         foeGfxDestroyRuntime(gfxRuntime);
-
-#ifdef FOE_XR_SUPPORT
-    if (xrRuntime != FOE_NULL_HANDLE)
-        foeXrDestroyRuntime(xrRuntime);
-#endif
 
     if (threadPool)
         foeDestroyThreadPool(threadPool);
