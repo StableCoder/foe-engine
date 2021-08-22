@@ -16,6 +16,8 @@
 
 #include <foe/graphics/delayed_destructor.hpp>
 
+#include "log.hpp"
+
 #include <atomic>
 #include <functional>
 #include <mutex>
@@ -51,11 +53,17 @@ auto foeGfxCreateDelayedDestructor(foeGfxSession session,
 
     *pDelayedDestructor = delayed_destructor_to_handle(pNewDelayedDestructor);
 
+    FOE_LOG(foeGraphics, Verbose, "Created foeGfxDelayedDestructor {}",
+            static_cast<void *>(pNewDelayedDestructor));
+
     return std::error_code{};
 }
 
 void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
     auto *pDelayedDestructor = delayed_destructor_from_handle(delayedDestructor);
+
+    FOE_LOG(foeGraphics, Verbose, "Destroying foeGfxDelayedDestructor {}",
+            static_cast<void *>(delayedDestructor));
 
     // Go through all of the remaining call lists rapidly, then destroy
     pDelayedDestructor->sync.lock();
@@ -73,6 +81,9 @@ void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
     } while (callList != pDelayedDestructor->currentList);
 
     delete pDelayedDestructor;
+
+    FOE_LOG(foeGraphics, Verbose, "Destroyed foeGfxDelayedDestructor {}",
+            static_cast<void *>(delayedDestructor));
 }
 
 void foeGfxRunDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
@@ -115,6 +126,12 @@ void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
     if (numDelayed > pDelayedDestructor->fnLists.size()) {
         // Need to enlarge the number of function lists to accomodate a delayed call for further
         // into the future than currently supported
+        FOE_LOG(foeGraphics, Verbose, "Expanding foeGfxDelayedDestructor {} delay from {} to {}",
+                static_cast<void *>(delayedDestructor), pDelayedDestructor->fnLists.size(),
+                numDelayed);
+
+        pDelayedDestructor->currentList = pDelayedDestructor->fnLists.end() - 1;
+
         std::vector<std::vector<foeGfxDelayedDestructorFn>> newList;
         newList.reserve(numDelayed);
 
@@ -132,7 +149,6 @@ void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
 
         // Set the data
         pDelayedDestructor->fnLists = std::move(newList);
-        pDelayedDestructor->currentList = pDelayedDestructor->fnLists.end() - 1;
     }
 
     // Add the fn at the desired delay

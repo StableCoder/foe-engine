@@ -14,11 +14,6 @@
     limitations under the License.
 */
 
-#ifndef GFX_LOG_HPP
-#define GFX_LOG_HPP
+#include "log.hpp"
 
-#include <foe/log.hpp>
-
-FOE_DECLARE_LOG_CATEGORY(Graphics, All, All)
-
-#endif // GFX_LOG_HPP
+FOE_DEFINE_LOG_CATEGORY(foeGraphics)
