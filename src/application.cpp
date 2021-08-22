@@ -655,7 +655,7 @@ void Application::deinitialize() {
     // OpenXR Cleanup
     if (xrSession.session != XR_NULL_HANDLE) {
         xrSession.requestExitSession();
-        {
+        while (true) {
             XrEventDataBuffer event;
             auto errC = foeXrOpenPollEvent(xrRuntime, event);
             if (errC == XR_EVENT_UNAVAILABLE) {
@@ -679,6 +679,29 @@ void Application::deinitialize() {
     SESSION_END:
         xrSession.endSession();
 
+        while (true) {
+            XrEventDataBuffer event;
+            auto errC = foeXrOpenPollEvent(xrRuntime, event);
+            if (errC == XR_EVENT_UNAVAILABLE) {
+                // No events currently
+            } else if (errC) {
+                // Error
+            } else {
+                // Got an event, process it
+                switch (event.type) {
+                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+                    XrEventDataSessionStateChanged const *stateChanged =
+                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
+                    if (stateChanged->state == XR_SESSION_STATE_IDLE &&
+                        stateChanged->session == xrSession.session) {
+                        goto SESSION_IDLE;
+                    }
+                } break;
+                }
+            }
+        }
+    SESSION_IDLE:
+
         for (auto &renderTarget : xrOffscreenRenderTargets) {
             if (renderTarget != FOE_NULL_HANDLE)
                 foeGfxDestroyRenderTarget(renderTarget);
@@ -693,6 +716,29 @@ void Application::deinitialize() {
                 xrDestroySwapchain(view.swapchain);
             }
         }
+
+        while (true) {
+            XrEventDataBuffer event;
+            auto errC = foeXrOpenPollEvent(xrRuntime, event);
+            if (errC == XR_EVENT_UNAVAILABLE) {
+                // No events currently
+            } else if (errC) {
+                // Error
+            } else {
+                // Got an event, process it
+                switch (event.type) {
+                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+                    XrEventDataSessionStateChanged const *stateChanged =
+                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
+                    if (stateChanged->state == XR_SESSION_STATE_EXITING &&
+                        stateChanged->session == xrSession.session) {
+                        goto SESSION_EXITING;
+                    }
+                } break;
+                }
+            }
+        }
+    SESSION_EXITING:
 
         xrSession.destroySession();
     }
