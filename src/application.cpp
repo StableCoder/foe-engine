@@ -1023,8 +1023,7 @@ int Application::mainloop() {
                 ->uploadBoneOffsets(frameIndex);
 
             auto renderCall = [&](foeId entity, VkCommandBuffer commandBuffer,
-                                  VkDescriptorSet projViewDescriptor, VkSampleCountFlags samples,
-                                  VkRenderPass renderPass) -> bool {
+                                  VkSampleCountFlags samples, VkRenderPass renderPass) -> bool {
                 VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
                 foeRenderState *pRenderState{nullptr};
@@ -1088,14 +1087,6 @@ int Application::mainloop() {
                 foeGfxVkBindMesh(pMesh->data.gfxData, commandBuffer, boned);
 
                 auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
-                if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX) {
-                    // Bind projection/view *if* the descriptor supports it
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            0, 1, &projViewDescriptor, 0, nullptr);
-                } else {
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            0, 1, &dummyDescriptorSet, 0, nullptr);
-                }
                 if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
                     auto *pPosition3dPool =
                         getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
@@ -1376,7 +1367,7 @@ int Application::mainloop() {
                                         vkCmdDraw(commandBuffer, 4, 1, 0, 0);
                                     }
 
-                                    renderCall(renderMeshID, commandBuffer, it.camera.descriptor,
+                                    renderCall(renderMeshID, commandBuffer,
                                                foeGfxVkGetRenderTargetSamples(renderTarget),
                                                xrOffscreenRenderPass);
 
@@ -1712,8 +1703,7 @@ int Application::mainloop() {
                             vkCmdDraw(commandBuffer, 4, 1, 0, 0);
                         }
 
-                        renderCall(renderMeshID, commandBuffer, (*pCamera)->descriptor,
-                                   maxSupportedSamples, renderPass);
+                        renderCall(renderMeshID, commandBuffer, maxSupportedSamples, renderPass);
 
                     SKIP_DRAW:;
                     }
