@@ -16,6 +16,8 @@
 
 #include <foe/thread_pool.hpp>
 
+using namespace std::chrono_literals;
+
 foeThreadPool::~foeThreadPool() { terminate(); }
 
 bool foeThreadPool::start(size_t numThreads) {
@@ -81,7 +83,7 @@ void foeThreadPool::runThread() {
 
     while (true) {
         taskLock.lock();
-        mTaskAvailable.wait(taskLock, [&] { return !mTasks.empty() || mTerminate; });
+        mTaskAvailable.wait_for(taskLock, 1ms, [&] { return !mTasks.empty() || mTerminate; });
 
         if (!mTasks.empty()) {
             // Work available
@@ -102,6 +104,8 @@ void foeThreadPool::runThread() {
             --mTasksProcessing;
         } else if (mTerminate) {
             break;
+        } else {
+            taskLock.unlock();
         }
     }
 

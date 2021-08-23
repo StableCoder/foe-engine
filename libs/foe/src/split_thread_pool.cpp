@@ -23,6 +23,8 @@
 #include <queue>
 #include <thread>
 
+using namespace std::chrono_literals;
+
 namespace {
 
 struct TaskGroupData {
@@ -74,8 +76,8 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
 
     while (true) {
         syncLock.lock();
-        pPool->syncTasks.available.wait(
-            syncLock, [&] { return !pPool->syncTasks.tasks.empty() || pPool->terminate; });
+        pPool->syncTasks.available.wait_for(
+            syncLock, 1ms, [&] { return !pPool->syncTasks.tasks.empty() || pPool->terminate; });
 
         if (!pPool->syncTasks.tasks.empty()) {
             // Work available
@@ -96,6 +98,8 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
             --pPool->syncTasks.runningCount;
         } else if (pPool->terminate) {
             break;
+        } else {
+            syncLock.unlock();
         }
     }
 
@@ -108,7 +112,7 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
 
     while (true) {
         asyncLock.lock();
-        pPool->asyncTasks.available.wait(asyncLock, [&] {
+        pPool->asyncTasks.available.wait_for(asyncLock, 1ms, [&] {
             return !pPool->asyncTasks.tasks.empty() || pPool->syncTasks.queuedCount > 0 ||
                    pPool->terminate;
         });
