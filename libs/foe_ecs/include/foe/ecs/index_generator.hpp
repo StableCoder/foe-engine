@@ -20,6 +20,7 @@
 #include <foe/ecs/export.h>
 #include <foe/ecs/id.hpp>
 
+#include <atomic>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -105,7 +106,7 @@ class foeIdIndexGenerator {
     /// Synchronizes the recycle list
     std::mutex mSync;
     /// The next free IndexID, never yet used.
-    foeIdIndexValue mNextFreeID;
+    std::atomic<foeIdIndexValue> mNextFreeID;
     /// The list of recyclable IndexIDs.
     std::queue<foeIdIndex> mRecycled;
     /// The number of currently recyclable IDs.
