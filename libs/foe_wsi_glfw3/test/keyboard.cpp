@@ -15,7 +15,7 @@
 */
 
 #include <catch.hpp>
-#include <foe/wsi.hpp>
+#include <foe/wsi/keyboard.hpp>
 
 constexpr uint32_t cMaxKeyboardKeys = 4096;
 

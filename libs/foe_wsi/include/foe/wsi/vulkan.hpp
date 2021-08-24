@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,22 +17,27 @@
 #ifndef FOE_WSI_VULKAN_HPP
 #define FOE_WSI_VULKAN_HPP
 
-#include <foe/wsi_export.h>
+#include <foe/wsi/export.h>
+#include <foe/wsi/window.hpp>
 #include <vulkan/vulkan.h>
 
 #include <cstdint>
+#include <system_error>
 
 /** Returns the required extensions for the current WSI implementation
  * @param pExtensionCount [out] Used to return the number of extensions returned
  * @return List of extension names, or nullptr on failure
  */
-FOE_WSI_EXPORT const char **foeWindowGetVulkanExtensions(uint32_t *pExtensionCount);
+FOE_WSI_EXPORT auto foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
+                                                    char const ***pppExtensions) -> std::error_code;
 
 /** Retrieves a Vulkan Surface object handle for the current active window
  * @param instance Vulkan instance that the surface will be associated with
  * @param pSurface [out] Pointer used to return the created Surface, if VK_SUCCESS is returned
  * @return VK_SUCCESS on success, an appropriate error otherwise
  */
-FOE_WSI_EXPORT VkResult foeWindowGetVkSurface(VkInstance instance, VkSurfaceKHR *pSurface);
+FOE_WSI_EXPORT auto foeWsiWindowGetVkSurface(foeWsiWindow window,
+                                             VkInstance instance,
+                                             VkSurfaceKHR *pSurface) -> VkResult;
 
 #endif // FOE_WSI_VULKAN_HPP

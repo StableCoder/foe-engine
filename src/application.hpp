@@ -27,7 +27,7 @@
 #include <foe/graphics/vk/swapchain.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/split_thread_pool.hpp>
-#include <foe/wsi.hpp>
+#include <foe/wsi/window.hpp>
 #include <foe/xr/runtime.hpp>
 
 #include "frame_timer.hpp"
@@ -74,10 +74,12 @@ struct Application {
 
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet;
 
+    // I/O
+    foeWsiWindow window{FOE_NULL_HANDLE};
     FrameTimer frameTime;
 
+    // XR
     foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
-
 #ifdef FOE_XR_SUPPORT
     foeXrSession xrSession{};
     VkRenderPass xrRenderPass;
@@ -87,6 +89,7 @@ struct Application {
     foeXrVkCameraSystem xrVkCameraSystem;
 #endif
 
+    // Gfx
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
     foeGfxUploadContext resUploader{FOE_NULL_HANDLE};

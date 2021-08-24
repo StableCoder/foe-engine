@@ -126,7 +126,7 @@ target_link_libraries(
          foe_resource
          foe_resource_yaml
          foe_simulation
-         foe_wsi
+         foe_wsi_glfw3
          foe_xr)
 target_code_coverage(foe_engine_lib)
 

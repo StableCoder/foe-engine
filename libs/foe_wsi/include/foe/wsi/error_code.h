@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,15 +14,22 @@
     limitations under the License.
 */
 
-#ifndef KEYBOARD_HPP
-#define KEYBOARD_HPP
+#ifndef FOE_WSI_ERROR_CODE_H
+#define FOE_WSI_ERROR_CODE_H
 
-#include <foe/wsi.hpp>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void keyboardPreprocessing(foeKeyboard *pKeyboard);
+enum foeWsiResult {
+    FOE_WSI_SUCCESS = 0,
+    FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND,
+    FOE_WSI_ERROR_FAILED_TO_CREATE_WINDOW,
+    FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED,
+};
 
-void keyCallback(foeKeyboard *pKeyboard, int key, int, int action, int);
+#ifdef __cplusplus
+}
+#endif
 
-void charCallback(foeKeyboard *pKeyboard, unsigned int codepoint);
-
-#endif // KEYBOARD_HPP
+#endif // FOE_WSI_ERROR_CODE_H

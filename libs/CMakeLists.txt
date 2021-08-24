@@ -12,6 +12,7 @@ add_subdirectory(foe_position)
 add_subdirectory(foe_resource)
 add_subdirectory(foe_simulation)
 add_subdirectory(foe_wsi)
+add_subdirectory(foe_wsi_glfw3)
 add_subdirectory(foe_xr)
 add_subdirectory(foe_yaml)
 

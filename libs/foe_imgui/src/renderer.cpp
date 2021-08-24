@@ -21,7 +21,8 @@
 #include <foe/graphics/upload_request.hpp>
 #include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/wsi.hpp>
+#include <foe/wsi/keyboard.hpp>
+#include <foe/wsi/mouse.hpp>
 #include <imgui.h>
 #include <vk_error_code.hpp>
 

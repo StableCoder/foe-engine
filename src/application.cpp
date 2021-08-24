@@ -50,7 +50,10 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <foe/wsi_vulkan.hpp>
+#include <foe/wsi/glfw3/window.hpp>
+#include <foe/wsi/keyboard.hpp>
+#include <foe/wsi/mouse.hpp>
+#include <foe/wsi/vulkan.hpp>
 #include <vk_error_code.hpp>
 
 #include "armature_system.hpp"
@@ -240,8 +243,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     VkResult vkRes{VK_SUCCESS};
     {
-        if (!foeCreateWindow(settings.window.width, settings.window.height, "FoE Engine", true)) {
-            END_PROGRAM_TUPLE
+        errC = foeWsiCreateWindow(settings.window.width, settings.window.height, "FoE Engine", true,
+                                  &window);
+        if (errC) {
+            ERRC_END_PROGRAM_TUPLE
         }
 
 #ifdef FOE_XR_SUPPORT
@@ -259,7 +264,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
 
-        vkRes = foeWindowGetVkSurface(foeGfxVkGetInstance(gfxRuntime), &windowSurface);
+        vkRes = foeWsiWindowGetVkSurface(window, foeGfxVkGetInstance(gfxRuntime), &windowSurface);
         if (vkRes != VK_SUCCESS) {
             VK_END_PROGRAM_TUPLE
         }
@@ -287,7 +292,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
     imguiRenderer.resize(settings.window.width, settings.window.height);
     float xScale, yScale;
-    foeWindowGetContentScale(&xScale, &yScale);
+    foeWsiWindowGetContentScale(window, &xScale, &yScale);
     imguiRenderer.rescale(xScale, yScale);
 #endif
 
@@ -755,7 +760,8 @@ void Application::deinitialize() {
     if (windowSurface != VK_NULL_HANDLE)
         vkDestroySurfaceKHR(foeGfxVkGetInstance(gfxRuntime), windowSurface, nullptr);
 
-    foeDestroyWindow();
+    if (window != FOE_NULL_HANDLE)
+        foeWsiDestroyWindow(window);
 
     if (gfxOffscreenRenderTarget != FOE_NULL_HANDLE) {
         foeGfxDestroyRenderTarget(gfxOffscreenRenderTarget);
@@ -855,12 +861,12 @@ int Application::mainloop() {
 
     VkResult vkRes{VK_SUCCESS};
 
-    foeWindowShow();
+    foeWsiWindowShow(window);
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
     FOE_LOG(General, Info, "Entering main loop")
-    while (!foeWindowGetShouldClose()
+    while (!foeWsiWindowGetShouldClose(window)
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
@@ -871,10 +877,10 @@ int Application::mainloop() {
         double timeElapsedInSec = simulationClock.elapsed().count() * 0.000000001f;
 
         swapchainRebuilt = false;
-        foeWindowEventProcessing();
+        foeWsiGlfw3WindowEventProcessing();
 
-        auto *pMouse = foeGetMouse();
-        auto *pKeyboard = foeGetKeyboard();
+        auto *pMouse = foeWsiGetMouse(window);
+        auto *pKeyboard = foeWsiGetKeyboard(window);
 
         for (auto &it : pSimulationSet->componentPools) {
             it->maintenance();
@@ -899,13 +905,13 @@ int Application::mainloop() {
             processUserInput(timeElapsedInSec, pKeyboard, pMouse, pCameraPosition->get());
         }
 
-        if (foeWindowResized()) {
+        if (foeWsiWindowResized(window)) {
             // Swapchins will need rebuilding
             swapchain.requestRebuild();
 
 #ifdef EDITOR_MODE
             int width, height;
-            foeWindowGetSize(&width, &height);
+            foeWsiWindowGetSize(window, &width, &height);
             imguiRenderer.resize(width, height);
 #endif
         }
@@ -922,7 +928,7 @@ int Application::mainloop() {
             // Rebuild swapchains
             if (!swapchain || swapchain.needRebuild()) {
                 int width, height;
-                foeWindowGetSize(&width, &height);
+                foeWsiWindowGetSize(window, &width, &height);
 
                 // All Cameras are currently ties to the single window X/Y viewport size
                 auto pCameraPool = getComponentPool<foeCameraPool>(
@@ -1894,7 +1900,7 @@ int Application::mainloop() {
                         swapImageFramebuffers.clear();
 
                         int width, height;
-                        foeWindowGetSize(&width, &height);
+                        foeWsiWindowGetSize(window, &width, &height);
                         VkImageView view;
                         VkExtent2D swapchainExtent = swapchain.extent();
                         VkFramebufferCreateInfo framebufferCI{

@@ -14,19 +14,19 @@
     limitations under the License.
 */
 
-#include <foe/wsi.hpp>
+#ifndef MOUSE_HPP
+#define MOUSE_HPP
 
-int main() {
-    foeCreateWindow(1280, 720, "FoE Engine", false);
+#include <foe/wsi/mouse.hpp>
 
-    while (!foeWindowGetShouldClose()) {
-        foeWindowEventProcessing();
+void mousePreprocessing(foeMouse *pMouse);
 
-        auto *pMouse = foeGetMouse();
-        auto *pKeyboard = foeGetKeyboard();
-    }
+void cursorPositionCallback(foeMouse *pMouse, double xPos, double yPos);
 
-    foeDestroyWindow();
+void cursorEnterCallback(foeMouse *pMouse, int entered);
 
-    return 0;
-}
+void scrollCallback(foeMouse *pMouse, double xOffset, double yOffset);
+
+void buttonCallback(foeMouse *pMouse, int button, int action, int);
+
+#endif // MOUSE_HPP

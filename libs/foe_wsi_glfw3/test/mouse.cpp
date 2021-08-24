@@ -15,7 +15,7 @@
 */
 
 #include <catch.hpp>
-#include <foe/wsi.hpp>
+#include <foe/wsi/mouse.hpp>
 
 constexpr int cMaxMouseButtons = 1024;
 

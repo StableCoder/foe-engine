@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,19 +14,26 @@
     limitations under the License.
 */
 
-#ifndef MOUSE_HPP
-#define MOUSE_HPP
+#ifndef WINDOW_HPP
+#define WINDOW_HPP
 
-#include <foe/wsi.hpp>
+#include <GLFW/glfw3.h>
+#include <foe/wsi/window.hpp>
 
-void mousePreprocessing(foeMouse *pMouse);
+#include "keyboard.hpp"
+#include "mouse.hpp"
 
-void cursorPositionCallback(foeMouse *pMouse, double xPos, double yPos);
+#include <string>
 
-void cursorEnterCallback(foeMouse *pMouse, int entered);
+struct foeWsiWindowGLFW {
+    GLFWwindow *pWindow = nullptr;
+    std::string title;
+    bool resized;
 
-void scrollCallback(foeMouse *pMouse, double xOffset, double yOffset);
+    foeMouse mouse;
+    foeKeyboard keyboard;
+};
 
-void buttonCallback(foeMouse *pMouse, int button, int action, int);
+FOE_DEFINE_HANDLE_CASTS(window, foeWsiWindowGLFW, foeWsiWindow)
 
-#endif // MOUSE_HPP
+#endif // WINDOW_HPP

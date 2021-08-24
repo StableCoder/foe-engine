@@ -18,7 +18,7 @@
 
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/wsi_vulkan.hpp>
+#include <foe/wsi/vulkan.hpp>
 #include <vk_error_code.hpp>
 
 #include "log.hpp"
@@ -26,6 +26,7 @@
 #include <memory>
 
 #ifdef FOE_XR_SUPPORT
+#include <foe/xr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/vulkan.hpp>
 #endif
@@ -35,12 +36,17 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
                                  bool validation,
                                  bool debugLogging,
                                  foeGfxRuntime *pGfxRuntime) {
+    std::error_code errC;
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
     if (enableWindowing) {
         uint32_t extensionCount;
-        const char **extensionNames = foeWindowGetVulkanExtensions(&extensionCount);
+        const char **extensionNames;
+        errC = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
+        if (errC)
+            return errC;
+
         for (uint32_t i = 0; i < extensionCount; ++i) {
             extensions.emplace_back(extensionNames[i]);
         }
@@ -53,9 +59,10 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
 
         XrResult xrRes =
             foeXrGetVulkanInstanceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
-        if (xrRes == XR_SUCCESS) {
-            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
-        }
+        if (xrRes != XR_SUCCESS)
+            return xrRes;
+
+        extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
 
         // Add another that's missing??
         extensions.emplace_back("VK_KHR_external_fence_capabilities");
@@ -123,10 +130,10 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
                         explicitGpu < physicalDeviceCount)
             }
             if (supportsWindow[explicitGpu] == VK_FALSE) {
-                FOE_LOG(
-                    General, Warning,
-                    "Explicit Physical GPU specified, Windowing is not supported on this GPU: {}",
-                    explicitGpu < physicalDeviceCount)
+                FOE_LOG(General, Warning,
+                        "Explicit Physical GPU specified, Windowing is not supported on this "
+                        "GPU: {}",
+                        explicitGpu < physicalDeviceCount)
             }
 
             return physDevices[explicitGpu];
