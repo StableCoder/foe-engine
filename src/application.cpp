@@ -1028,9 +1028,11 @@ int Application::mainloop() {
             if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
                 // Waiting for an image to become ready
                 goto SKIP_FRAME_RENDER;
-            } else if (vkRes == VK_SUBOPTIMAL_KHR || vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
-                // Surface changed, best to rebuild swapchains
+            } else if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
+                // Surface changed, need to rebuild swapchains
                 goto SKIP_FRAME_RENDER;
+            } else if (vkRes == VK_SUBOPTIMAL_KHR) {
+                // Surface is still usable, but should rebuild next time
             } else if (vkRes != VK_SUCCESS) {
                 // Catastrophic error
                 VK_END_PROGRAM
