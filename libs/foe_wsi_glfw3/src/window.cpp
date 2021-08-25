@@ -78,8 +78,11 @@ void buttonCallback(GLFWwindow *pWindow, int button, int action, int mods) {
 
 } // namespace
 
-auto foeWsiCreateWindow(int width, int height, const char *pTitle, bool hide, foeWsiWindow *pWindow)
-    -> std::error_code {
+auto foeWsiCreateWindow(int width,
+                        int height,
+                        const char *pTitle,
+                        bool visible,
+                        foeWsiWindow *pWindow) -> std::error_code {
     if (!glfwInit()) {
         return FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND;
     }
@@ -87,7 +90,9 @@ auto foeWsiCreateWindow(int width, int height, const char *pTitle, bool hide, fo
 
     // Since this is exclusively a Vulkan platform, don't initialize OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    if (hide) {
+    if (visible) {
+        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+    } else {
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     }
 

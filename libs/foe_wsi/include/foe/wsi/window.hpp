@@ -30,14 +30,18 @@ FOE_DEFINE_HANDLE(foeWsiWindow)
 /** Creates a window for use
  * @param width Width of the new window
  * @param height Height of the new window
- * @param title The title for the new window
+ * @param pTitle The title for the new window
+ * @param visible Whether the window starts visible or not
  * @param pWindow [out] Window handle will be put here on success
  * @return FOE_WSI_SUCCESS on success, an appropriate error code otherwise
  * @return True if initialization successful, false otherwise, typically due to the window already
  * being active
  */
-FOE_WSI_EXPORT auto foeWsiCreateWindow(
-    int width, int height, const char *pTitle, bool hide, foeWsiWindow *pWindow) -> std::error_code;
+FOE_WSI_EXPORT auto foeWsiCreateWindow(int width,
+                                       int height,
+                                       const char *pTitle,
+                                       bool visible,
+                                       foeWsiWindow *pWindow) -> std::error_code;
 
 /// Destroys the current window
 FOE_WSI_EXPORT void foeWsiDestroyWindow(foeWsiWindow window);
