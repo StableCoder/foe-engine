@@ -49,6 +49,18 @@ TEST_CASE("WSI-GLFW3 - Creating a single window") {
         foeWsiDestroyWindow(test);
 }
 
+TEST_CASE("WSI-GLFW3 - Creating multiple windows") {
+    foeWsiWindow test1{FOE_NULL_HANDLE}, test2{FOE_NULL_HANDLE};
+
+    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test1));
+    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test2));
+
+    if (test1 != FOE_NULL_HANDLE)
+        foeWsiDestroyWindow(test1);
+    if (test2 != FOE_NULL_HANDLE)
+        foeWsiDestroyWindow(test2);
+}
+
 TEST_CASE("WSI-GLFW - Idle window processing loop") {
     foeWsiWindow test{FOE_NULL_HANDLE};
 
