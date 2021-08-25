@@ -52,6 +52,7 @@ FOE_WSI_EXPORT void foeWsiWindowGetSize(foeWsiWindow window, int *pWidth, int *p
 FOE_WSI_EXPORT bool foeWsiWindowResized(foeWsiWindow window);
 FOE_WSI_EXPORT void foeWsiWindowResize(foeWsiWindow window, int width, int height);
 
+FOE_WSI_EXPORT bool foeWsiWindowVisible(foeWsiWindow window);
 FOE_WSI_EXPORT void foeWsiWindowHide(foeWsiWindow window);
 FOE_WSI_EXPORT void foeWsiWindowShow(foeWsiWindow window);
 

@@ -188,6 +188,12 @@ void foeWsiWindowResize(foeWsiWindow window, int width, int height) {
     glfwSetWindowSize(pWindow->pWindow, width, height);
 }
 
+bool foeWsiWindowVisible(foeWsiWindow window) {
+    auto *pWindow = window_from_handle(window);
+
+    return glfwGetWindowAttrib(pWindow->pWindow, GLFW_VISIBLE) == 1;
+}
+
 void foeWsiWindowHide(foeWsiWindow window) {
     auto *pWindow = window_from_handle(window);
 
