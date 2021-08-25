@@ -9,12 +9,16 @@ option(BUILD_EXAMPLES "Build example programs" OFF)
 option(BUILD_EXTRAS "Builds other programs, such as benchmarks" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
+option(BUILD_VULKAN_RUNTIME_TESTS
+       "Build tests that require an available Vulkan runtime" OFF)
 option(EDITOR_MODE "Build with the editor UI capability" OFF)
 if(APPLE)
   option(BUILD_XR "Build with OpenXR support" OFF)
 else()
   option(BUILD_XR "Build with OpenXR support" ON)
 endif()
+option(BUILD_OPENXR_RUNTIME_TESTS
+       "Build tests that require an available OpenXR runtime" OFF)
 
 # C11 standard, no extensions
 set(CMAKE_C_STANDARD 11)
