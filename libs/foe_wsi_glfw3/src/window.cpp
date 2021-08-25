@@ -91,7 +91,9 @@ auto foeWsiCreateWindow(int width, int height, const char *pTitle, bool hide, fo
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     }
 
-    foeWsiWindowGLFW *pNewWindow = new foeWsiWindowGLFW{};
+    foeWsiWindowGLFW *pNewWindow = new foeWsiWindowGLFW{
+        .title = pTitle,
+    };
 
     pNewWindow->pWindow = glfwCreateWindow(width, height, pTitle, nullptr, nullptr);
     if (pNewWindow->pWindow == nullptr) {
@@ -154,7 +156,7 @@ char const *foeWsiWindowGetTitle(foeWsiWindow window) {
 void foeWsiWindowSetTitle(foeWsiWindow window, char const *pTitle) {
     auto *pWindow = window_from_handle(window);
 
-    pWindow->title = *pTitle;
+    pWindow->title = pTitle;
     glfwSetWindowTitle(pWindow->pWindow, pTitle);
 }
 
