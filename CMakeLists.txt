@@ -32,7 +32,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Code Coverage
 include(code-coverage)
-add_code_coverage_all_targets(EXCLUDE .*/test/.*)
+add_code_coverage_all_targets(EXCLUDE .*/test/.*
+                              ${CMAKE_CURRENT_SOURCE_DIR}/external/.*)
 
 # Formatting
 include(formatting)
