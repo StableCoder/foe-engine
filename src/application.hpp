@@ -101,7 +101,6 @@ struct Application {
     VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
     foeGfxVkSwapchain swapchain;
 
-    uint32_t frameIndex = 0;
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 
 #ifdef EDITOR_MODE

@@ -861,6 +861,9 @@ int Application::mainloop() {
 
     VkResult vkRes{VK_SUCCESS};
 
+    uint32_t lastFrameIndex = -1;
+    uint32_t frameIndex = -1;
+
     foeWsiWindowShow(window);
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
@@ -922,9 +925,32 @@ int Application::mainloop() {
             ->process(timeElapsedInSec);
 
         // Vulkan Render Section
-        uint32_t nextFrameIndex = (frameIndex + 1) % frameData.size();
-        if (VK_SUCCESS == vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
-                                          &frameData[nextFrameIndex].frameComplete, VK_TRUE, 0)) {
+        if (frameIndex == -1) {
+            uint32_t nextFrameIndex = (lastFrameIndex + 1) % frameData.size();
+            if (vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
+                                &frameData[nextFrameIndex].frameComplete, VK_TRUE,
+                                0) == VK_SUCCESS) {
+                frameIndex = nextFrameIndex;
+
+                // Resource Loader Gfx Maintenance
+                for (auto &it : pSimulationSet->resourceLoaders) {
+                    if (it.pGfxMaintenanceFn) {
+                        it.pGfxMaintenanceFn(it.pLoader);
+                    }
+                }
+
+                // Reset frame data
+                vkResetFences(foeGfxVkGetDevice(gfxSession), 1,
+                              &frameData[frameIndex].frameComplete);
+                vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool,
+                                   0);
+
+                // Advance and destroy items related to this frame
+                foeGfxRunDelayedDestructor(gfxDelayedDestructor);
+            }
+        }
+
+        if (frameIndex != -1) {
             // Rebuild swapchains
             if (!swapchain || swapchain.needRebuild()) {
                 int width, height;
@@ -1028,7 +1054,7 @@ int Application::mainloop() {
 
             // Acquire Target Presentation Images
             vkRes = swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession),
-                                               frameData[nextFrameIndex].presentImageAcquired);
+                                               frameData[frameIndex].presentImageAcquired);
             if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
                 // Waiting for an image to become ready
                 goto SKIP_FRAME_RENDER;
@@ -1042,26 +1068,11 @@ int Application::mainloop() {
                 VK_END_PROGRAM
             }
             frameTime.newFrame();
-            vkResetFences(foeGfxVkGetDevice(gfxSession), 1,
-                          &frameData[nextFrameIndex].frameComplete);
-            frameIndex = nextFrameIndex;
-
-            foeGfxRunDelayedDestructor(gfxDelayedDestructor);
 
             auto errC = foeGfxAcquireNextRenderTarget(gfxOffscreenRenderTarget,
                                                       FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
             if (errC)
                 ERRC_END_PROGRAM
-
-            // Resource Loader Gfx Maintenance
-            for (auto &it : pSimulationSet->resourceLoaders) {
-                if (it.pGfxMaintenanceFn) {
-                    it.pGfxMaintenanceFn(it.pLoader);
-                }
-            }
-
-            // Rendering
-            vkResetCommandPool(foeGfxVkGetDevice(gfxSession), frameData[frameIndex].commandPool, 0);
 
             // Generate position descriptors
             getSystem<foeCameraSystem>(pSimulationSet->systems.data(),
@@ -2033,6 +2044,10 @@ int Application::mainloop() {
                     VK_END_PROGRAM
                 }
             }
+
+            // Set frame index data
+            lastFrameIndex = frameIndex;
+            frameIndex = -1;
         }
     SKIP_FRAME_RENDER:;
 
