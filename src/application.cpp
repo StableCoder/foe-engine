@@ -979,11 +979,9 @@ int Application::mainloop() {
                         swapchain.presentMode(presentModes.get()[0]);
                     }
 
-                    colourFormat = swapchain.surfaceFormat().format;
-
                     std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
                         foeGfxVkRenderTargetSpec{
-                            .format = colourFormat,
+                            .format = swapchain.surfaceFormat().format,
                             .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
                                      VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                             .count = 3,
@@ -1637,7 +1635,7 @@ int Application::mainloop() {
                         foeGfxVkGetRenderPassPool(gfxSession)
                             ->renderPass(
                                 {VkAttachmentDescription{
-                                     .format = colourFormat,
+                                     .format = swapchain.surfaceFormat().format,
                                      .samples =
                                          static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,

@@ -95,7 +95,6 @@ struct Application {
     foeGfxUploadContext resUploader{FOE_NULL_HANDLE};
     foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
     foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
-    VkFormat colourFormat;
     VkFormat depthFormat{VK_FORMAT_D16_UNORM};
     VkSampleCountFlags maxSupportedSamples;
 
