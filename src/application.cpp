@@ -1473,320 +1473,325 @@ int Application::mainloop() {
             }
 #endif
 
-            errC = foeGfxAcquireNextRenderTarget(windowData[0].gfxOffscreenRenderTarget,
-                                                 FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
-            if (errC) {
-                ERRC_END_PROGRAM
+            VkCommandBuffer &commandBuffer = frameData[frameIndex].commandBuffer;
+
+            VkCommandBufferBeginInfo commandBufferBI{
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+            };
+
+            vkRes = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+            if (vkRes != VK_SUCCESS) {
+                VK_END_PROGRAM
             }
 
-            { // Render offscreen
-                VkCommandBuffer &commandBuffer = frameData[frameIndex].commandBuffer;
-
-                VkCommandBufferBeginInfo commandBufferBI{
-                    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-                    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-                };
-
-                vkRes = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
-                if (vkRes != VK_SUCCESS) {
-                    VK_END_PROGRAM
+            for (auto &it : windowRenderList) {
+                errC = foeGfxAcquireNextRenderTarget(it->gfxOffscreenRenderTarget,
+                                                     FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
+                if (errC) {
+                    ERRC_END_PROGRAM
                 }
 
-                VkExtent2D swapchainExtent = windowData[0].swapchain.extent();
+                { // Render offscreen
+                    VkExtent2D swapchainExtent = it->swapchain.extent();
 
-                { // Setup common render viewport data
-                    VkViewport viewport{
-                        .width = static_cast<float>(swapchainExtent.width),
-                        .height = static_cast<float>(swapchainExtent.height),
-                        .minDepth = 0.f,
-                        .maxDepth = 1.f,
-                    };
-                    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-                    VkRect2D scissor{
-                        .offset = VkOffset2D{},
-                        .extent = swapchainExtent,
-                    };
-                    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-                    // vkDepthBias ??
-                }
-
-                { // Render to Image
-                    VkRenderPass renderPass =
-                        foeGfxVkGetRenderPassPool(gfxSession)
-                            ->renderPass(
-                                {VkAttachmentDescription{
-                                     .format = windowData[0].swapchain.surfaceFormat().format,
-                                     .samples =
-                                         static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
-                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                     .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                     .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                     .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                                     .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                 },
-                                 VkAttachmentDescription{
-                                     .format = depthFormat,
-                                     .samples =
-                                         static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
-                                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                     .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                     .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                     .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                                     .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                 }});
-
-                    std::array<VkClearValue, 2> clearValues{
-                        VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
-                        VkClearValue{.depthStencil =
-                                         {
-                                             .depth = 1.f,
-                                             .stencil = 0,
-                                         }},
-                    };
-
-                    VkRenderPassBeginInfo renderPassBI{
-                        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                        .renderPass = renderPass,
-                        .framebuffer = foeGfxVkGetRenderTargetFramebuffer(
-                            windowData[0].gfxOffscreenRenderTarget),
-                        .renderArea =
-                            {
-                                .offset = {0, 0},
-                                .extent = windowData[0].swapchain.extent(),
-                            },
-                        .clearValueCount = clearValues.size(),
-                        .pClearValues = clearValues.data(),
-                    };
-
-                    vkCmdBeginRenderPass(commandBuffer, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
-
-                    auto pCameraPool =
-                        getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
-                                                        pSimulationSet->componentPools.size());
-
-                    auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
-
-                    renderCall(renderMeshID, commandBuffer, maxSupportedSamples, renderPass,
-                               (*pCamera)->descriptor);
-
-                    vkCmdEndRenderPass(commandBuffer);
-                }
-
-                { // Resolve to Swap Image
-                    VkImageSubresourceRange subresourceRange{
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                        .baseMipLevel = 0,
-                        .levelCount = 1,
-                        .layerCount = 1,
-                    };
-
-                    VkImageMemoryBarrier imgMemBarrier{
-                        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                        .srcAccessMask = 0,
-                        .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                        .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .image =
-                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
-                        .subresourceRange = subresourceRange,
-                    };
-
-                    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
-                                         nullptr, 1, &imgMemBarrier);
-
-                    if (foeGfxVkGetRenderTargetSamples(windowData[0].gfxOffscreenRenderTarget) !=
-                        VK_SAMPLE_COUNT_1_BIT) {
-                        VkImageResolve resolveRegion{
-                            .srcSubresource =
-                                VkImageSubresourceLayers{
-                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                    .mipLevel = 0,
-                                    .baseArrayLayer = 0,
-                                    .layerCount = 1,
-                                },
-                            .srcOffset = {},
-                            .dstSubresource =
-                                VkImageSubresourceLayers{
-                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                    .mipLevel = 0,
-                                    .baseArrayLayer = 0,
-                                    .layerCount = 1,
-                                },
-                            .dstOffset = {},
-                            .extent =
-                                {
-                                    .width = windowData[0].swapchain.extent().width,
-                                    .height = windowData[0].swapchain.extent().height,
-                                    .depth = 1,
-                                },
+                    { // Setup common render viewport data
+                        VkViewport viewport{
+                            .width = static_cast<float>(swapchainExtent.width),
+                            .height = static_cast<float>(swapchainExtent.height),
+                            .minDepth = 0.f,
+                            .maxDepth = 1.f,
                         };
+                        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-                        vkCmdResolveImage(
-                            commandBuffer,
-                            foeGfxVkGetRenderTargetImage(windowData[0].gfxOffscreenRenderTarget, 0),
-                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
-                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveRegion);
-                    } else {
-                        VkImageCopy imageCopy{
-                            .srcSubresource =
-                                VkImageSubresourceLayers{
-                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                    .mipLevel = 0,
-                                    .baseArrayLayer = 0,
-                                    .layerCount = 1,
-                                },
-                            .srcOffset = {},
-                            .dstSubresource =
-                                VkImageSubresourceLayers{
-                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                    .mipLevel = 0,
-                                    .baseArrayLayer = 0,
-                                    .layerCount = 1,
-                                },
-                            .dstOffset = {},
-                            .extent =
-                                {
-                                    .width = windowData[0].swapchain.extent().width,
-                                    .height = windowData[0].swapchain.extent().height,
-                                    .depth = 1,
-                                },
+                        VkRect2D scissor{
+                            .offset = VkOffset2D{},
+                            .extent = swapchainExtent,
                         };
+                        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-                        vkCmdCopyImage(
-                            commandBuffer,
-                            foeGfxVkGetRenderTargetImage(windowData[0].gfxOffscreenRenderTarget, 0),
-                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
-                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
+                        // vkDepthBias ??
                     }
 
-                    imgMemBarrier = VkImageMemoryBarrier{
-                        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                        .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                        .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-                        .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                        .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .image =
-                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
-                        .subresourceRange = subresourceRange,
-                    };
+                    { // Render to Image
+                        VkRenderPass renderPass =
+                            foeGfxVkGetRenderPassPool(gfxSession)
+                                ->renderPass(
+                                    {VkAttachmentDescription{
+                                         .format = it->swapchain.surfaceFormat().format,
+                                         .samples = static_cast<VkSampleCountFlagBits>(
+                                             maxSupportedSamples),
+                                         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                                         .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                     },
+                                     VkAttachmentDescription{
+                                         .format = depthFormat,
+                                         .samples = static_cast<VkSampleCountFlagBits>(
+                                             maxSupportedSamples),
+                                         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                                         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                                         .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                     }});
 
-                    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
-                                         nullptr, 1, &imgMemBarrier);
-
-                    // Render the UI to the resolved swap image
-                    // Render passes
-                    VkRenderPass swapImageRenderPass =
-                        foeGfxVkGetRenderPassPool(gfxSession)
-                            ->renderPass({VkAttachmentDescription{
-                                .format = windowData[0].swapchain.surfaceFormat().format,
-                                .samples = VK_SAMPLE_COUNT_1_BIT,
-                                .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-                                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                .initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                            }});
-
-                    if (windowData[0].swapchain != framebufferSwapchain) {
-                        {
-                            auto framebuffersCopy = swapImageFramebuffers;
-                            foeGfxAddDelayedDestructionCall(
-                                gfxDelayedDestructor, [=](foeGfxSession session) {
-                                    for (auto &it : framebuffersCopy)
-                                        vkDestroyFramebuffer(foeGfxVkGetDevice(session), it,
-                                                             nullptr);
-                                });
-                        }
-                        swapImageFramebuffers.clear();
-
-                        int width, height;
-                        foeWsiWindowGetSize(windowData[0].window, &width, &height);
-                        VkImageView view;
-                        VkExtent2D swapchainExtent = windowData[0].swapchain.extent();
-                        VkFramebufferCreateInfo framebufferCI{
-                            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-                            .renderPass = swapImageRenderPass,
-                            .attachmentCount = 1,
-                            .pAttachments = &view,
-                            .width = (uint32_t)swapchainExtent.width,
-                            .height = (uint32_t)swapchainExtent.height,
-                            .layers = 1,
+                        std::array<VkClearValue, 2> clearValues{
+                            VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
+                            VkClearValue{.depthStencil =
+                                             {
+                                                 .depth = 1.f,
+                                                 .stencil = 0,
+                                             }},
                         };
 
-                        for (uint32_t i = 0; i < windowData[0].swapchain.chainSize(); ++i) {
-                            view = windowData[0].swapchain.imageView(i);
+                        VkRenderPassBeginInfo renderPassBI{
+                            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                            .renderPass = renderPass,
+                            .framebuffer =
+                                foeGfxVkGetRenderTargetFramebuffer(it->gfxOffscreenRenderTarget),
+                            .renderArea =
+                                {
+                                    .offset = {0, 0},
+                                    .extent = it->swapchain.extent(),
+                                },
+                            .clearValueCount = clearValues.size(),
+                            .pClearValues = clearValues.data(),
+                        };
 
-                            VkFramebuffer framebuffer;
-                            vkRes = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession),
-                                                        &framebufferCI, nullptr, &framebuffer);
-                            if (vkRes != VK_SUCCESS)
-                                VK_END_PROGRAM
-                            swapImageFramebuffers.emplace_back(framebuffer);
-                        }
+                        vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
+                                             VK_SUBPASS_CONTENTS_INLINE);
 
-                        framebufferSwapchain = windowData[0].swapchain;
+                        auto pCameraPool =
+                            getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
+                                                            pSimulationSet->componentPools.size());
+
+                        auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
+
+                        renderCall(renderMeshID, commandBuffer, maxSupportedSamples, renderPass,
+                                   (*pCamera)->descriptor);
+
+                        vkCmdEndRenderPass(commandBuffer);
                     }
 
-                    VkExtent2D swapchainExtent = windowData[0].swapchain.extent();
-                    VkClearValue clear{
-                        .color = {0.f, 0.5f, 1.f, 0.f},
-                    };
-                    VkRenderPass renderPass = swapImageRenderPass;
+                    { // Resolve to Swap Image
+                        VkImageSubresourceRange subresourceRange{
+                            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                            .baseMipLevel = 0,
+                            .levelCount = 1,
+                            .layerCount = 1,
+                        };
 
-                    VkRenderPassBeginInfo renderPassBI{
-                        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                        .renderPass = renderPass,
-                        .framebuffer =
-                            swapImageFramebuffers[windowData[0].swapchain.acquiredIndex()],
-                        .renderArea =
+                        VkImageMemoryBarrier imgMemBarrier{
+                            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                            .srcAccessMask = 0,
+                            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                            .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                            .image = it->swapchain.image(it->swapchain.acquiredIndex()),
+                            .subresourceRange = subresourceRange,
+                        };
+
+                        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
+                                             nullptr, 1, &imgMemBarrier);
+
+                        if (foeGfxVkGetRenderTargetSamples(it->gfxOffscreenRenderTarget) !=
+                            VK_SAMPLE_COUNT_1_BIT) {
+                            VkImageResolve resolveRegion{
+                                .srcSubresource =
+                                    VkImageSubresourceLayers{
+                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                        .mipLevel = 0,
+                                        .baseArrayLayer = 0,
+                                        .layerCount = 1,
+                                    },
+                                .srcOffset = {},
+                                .dstSubresource =
+                                    VkImageSubresourceLayers{
+                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                        .mipLevel = 0,
+                                        .baseArrayLayer = 0,
+                                        .layerCount = 1,
+                                    },
+                                .dstOffset = {},
+                                .extent =
+                                    {
+                                        .width = it->swapchain.extent().width,
+                                        .height = it->swapchain.extent().height,
+                                        .depth = 1,
+                                    },
+                            };
+
+                            vkCmdResolveImage(
+                                commandBuffer,
+                                foeGfxVkGetRenderTargetImage(it->gfxOffscreenRenderTarget, 0),
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                it->swapchain.image(it->swapchain.acquiredIndex()),
+                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveRegion);
+                        } else {
+                            VkImageCopy imageCopy{
+                                .srcSubresource =
+                                    VkImageSubresourceLayers{
+                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                        .mipLevel = 0,
+                                        .baseArrayLayer = 0,
+                                        .layerCount = 1,
+                                    },
+                                .srcOffset = {},
+                                .dstSubresource =
+                                    VkImageSubresourceLayers{
+                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                                        .mipLevel = 0,
+                                        .baseArrayLayer = 0,
+                                        .layerCount = 1,
+                                    },
+                                .dstOffset = {},
+                                .extent =
+                                    {
+                                        .width = it->swapchain.extent().width,
+                                        .height = it->swapchain.extent().height,
+                                        .depth = 1,
+                                    },
+                            };
+
+                            vkCmdCopyImage(
+                                commandBuffer,
+                                foeGfxVkGetRenderTargetImage(it->gfxOffscreenRenderTarget, 0),
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                it->swapchain.image(it->swapchain.acquiredIndex()),
+                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
+                        }
+
+                        imgMemBarrier = VkImageMemoryBarrier{
+                            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                            .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+                            .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+                            .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                            .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+                            .image = it->swapchain.image(it->swapchain.acquiredIndex()),
+                            .subresourceRange = subresourceRange,
+                        };
+
+                        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
+                                             nullptr, 1, &imgMemBarrier);
+
+                        // Render the UI to the resolved swap image
+                        // Render passes
+                        VkRenderPass swapImageRenderPass =
+                            foeGfxVkGetRenderPassPool(gfxSession)
+                                ->renderPass({VkAttachmentDescription{
+                                    .format = it->swapchain.surfaceFormat().format,
+                                    .samples = VK_SAMPLE_COUNT_1_BIT,
+                                    .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                                    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                                    .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                                    .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                                    .initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                    .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                }});
+
+                        if (it->swapchain != framebufferSwapchain) {
                             {
-                                .offset = {0, 0},
-                                .extent = swapchainExtent,
-                            },
-                        .clearValueCount = 1,
-                        .pClearValues = &clear,
-                    };
+                                auto framebuffersCopy = swapImageFramebuffers;
+                                foeGfxAddDelayedDestructionCall(
+                                    gfxDelayedDestructor, [=](foeGfxSession session) {
+                                        for (auto &it : framebuffersCopy)
+                                            vkDestroyFramebuffer(foeGfxVkGetDevice(session), it,
+                                                                 nullptr);
+                                    });
+                            }
+                            swapImageFramebuffers.clear();
 
-                    vkCmdBeginRenderPass(commandBuffer, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
+                            int width, height;
+                            foeWsiWindowGetSize(it->window, &width, &height);
+                            VkImageView view;
+                            VkExtent2D swapchainExtent = it->swapchain.extent();
+                            VkFramebufferCreateInfo framebufferCI{
+                                .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                                .renderPass = swapImageRenderPass,
+                                .attachmentCount = 1,
+                                .pAttachments = &view,
+                                .width = (uint32_t)swapchainExtent.width,
+                                .height = (uint32_t)swapchainExtent.height,
+                                .layers = 1,
+                            };
+
+                            for (uint32_t i = 0; i < it->swapchain.chainSize(); ++i) {
+                                view = it->swapchain.imageView(i);
+
+                                VkFramebuffer framebuffer;
+                                vkRes = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession),
+                                                            &framebufferCI, nullptr, &framebuffer);
+                                if (vkRes != VK_SUCCESS)
+                                    VK_END_PROGRAM
+                                swapImageFramebuffers.emplace_back(framebuffer);
+                            }
+
+                            framebufferSwapchain = it->swapchain;
+                        }
+
+                        VkExtent2D swapchainExtent = it->swapchain.extent();
+                        VkClearValue clear{
+                            .color = {0.f, 0.5f, 1.f, 0.f},
+                        };
+                        VkRenderPass renderPass = swapImageRenderPass;
+
+                        VkRenderPassBeginInfo renderPassBI{
+                            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+                            .renderPass = renderPass,
+                            .framebuffer = swapImageFramebuffers[it->swapchain.acquiredIndex()],
+                            .renderArea =
+                                {
+                                    .offset = {0, 0},
+                                    .extent = swapchainExtent,
+                                },
+                            .clearValueCount = 1,
+                            .pClearValues = &clear,
+                        };
+
+                        vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
+                                             VK_SUBPASS_CONTENTS_INLINE);
 
 #ifdef EDITOR_MODE
-                    { // ImGui
-                        if (!imguiRenderer.initialized()) {
-                            if (imguiRenderer.initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT,
-                                                         renderPass, 0) != VK_SUCCESS) {
-                                VK_END_PROGRAM
+                        if (it == windowRenderList[0]) { // ImGui
+                            if (!imguiRenderer.initialized()) {
+                                if (imguiRenderer.initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT,
+                                                             renderPass, 0) != VK_SUCCESS) {
+                                    VK_END_PROGRAM
+                                }
                             }
+
+                            imguiRenderer.newFrame();
+                            imguiState.runUI();
+                            imguiRenderer.endFrame();
+
+                            errC =
+                                imguiRenderer.update(foeGfxVkGetAllocator(gfxSession), frameIndex);
+                            if (errC) {
+                                ERRC_END_PROGRAM
+                            }
+
+                            imguiRenderer.draw(commandBuffer, frameIndex);
                         }
-
-                        imguiRenderer.newFrame();
-                        imguiState.runUI();
-                        imguiRenderer.endFrame();
-
-                        errC = imguiRenderer.update(foeGfxVkGetAllocator(gfxSession), frameIndex);
-                        if (errC) {
-                            ERRC_END_PROGRAM
-                        }
-
-                        imguiRenderer.draw(commandBuffer, frameIndex);
-                    }
 #endif
 
-                    vkCmdEndRenderPass(commandBuffer);
+                        vkCmdEndRenderPass(commandBuffer);
+                    }
                 }
+            }
 
+            // Submit render buffer
+            {
                 vkRes = vkEndCommandBuffer(commandBuffer);
                 if (vkRes != VK_SUCCESS) {
                     FOE_LOG(General, Fatal, "Error with drawing: {}",
@@ -1794,15 +1799,19 @@ int Application::mainloop() {
                 }
 
                 // Submission
-                VkPipelineStageFlags waitMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                std::vector<VkPipelineStageFlags> waitMasks;
+                std::vector<VkSemaphore> imageReadSemaphores;
 
-                VkSemaphore imageAcquiredSemaphore = windowData[0].swapchain.imageReadySemaphore();
+                for (auto &it : windowRenderList) {
+                    waitMasks.emplace_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    imageReadSemaphores.emplace_back(it->swapchain.imageReadySemaphore());
+                }
 
                 VkSubmitInfo submitInfo{
                     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                    .waitSemaphoreCount = 1,
-                    .pWaitSemaphores = &imageAcquiredSemaphore,
-                    .pWaitDstStageMask = &waitMask,
+                    .waitSemaphoreCount = static_cast<uint32_t>(imageReadSemaphores.size()),
+                    .pWaitSemaphores = imageReadSemaphores.data(),
+                    .pWaitDstStageMask = waitMasks.data(),
                     .commandBufferCount = 1,
                     .pCommandBuffers = &commandBuffer,
                     .signalSemaphoreCount = 1,
@@ -1823,10 +1832,10 @@ int Application::mainloop() {
                 std::vector<uint32_t> swapchainIndices;
                 std::vector<VkResult> swapchainResults;
 
-                {
+                for (auto &it : windowRenderList) {
                     VkSwapchainKHR swapchain2;
                     uint32_t index;
-                    windowData[0].swapchain.presentData(&swapchain2, &index);
+                    it->swapchain.presentData(&swapchain2, &index);
 
                     swapchains.emplace_back(swapchain2);
                     swapchainIndices.emplace_back(index);
