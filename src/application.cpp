@@ -994,27 +994,33 @@ int Application::mainloop() {
             }
 
             // Acquire Target Presentation Images
-            vkRes = windowData[0].swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession));
-            if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
-                // Waiting for an image to become ready
-                goto SKIP_FRAME_RENDER;
-            } else if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
-                // Surface changed, need to rebuild swapchains
-                windowData[0].swapchain.needRebuild();
-                goto SKIP_FRAME_RENDER;
-            } else if (vkRes == VK_SUBOPTIMAL_KHR) {
-                // Surface is still usable, but should rebuild next time
-                windowData[0].swapchain.needRebuild();
-            } else if (vkRes != VK_SUCCESS) {
-                // Catastrophic error
-                VK_END_PROGRAM
-            }
-            frameTime.newFrame();
+            std::vector<WindowData *> windowRenderList;
+            windowRenderList.reserve(windowData.size());
 
-            auto errC = foeGfxAcquireNextRenderTarget(windowData[0].gfxOffscreenRenderTarget,
-                                                      FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
-            if (errC)
-                ERRC_END_PROGRAM
+            for (auto &it : windowData) {
+                vkRes = it.swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession));
+                if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
+                    // Waiting for an image to become ready
+                } else if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
+                    // Surface changed, need to rebuild swapchains
+                    it.swapchain.needRebuild();
+                } else if (vkRes == VK_SUBOPTIMAL_KHR) {
+                    // Surface is still usable, but should rebuild next time
+                    it.swapchain.needRebuild();
+                    windowRenderList.emplace_back(&it);
+                } else if (vkRes != VK_SUCCESS) {
+                    // Catastrophic error
+                    VK_END_PROGRAM
+                } else {
+                    // No issues, add it to be rendered
+                    windowRenderList.emplace_back(&it);
+                }
+            }
+            if (windowRenderList.empty()) {
+                goto SKIP_FRAME_RENDER;
+            }
+
+            frameTime.newFrame();
 
             // Generate position descriptors
             getSystem<foeCameraSystem>(pSimulationSet->systems.data(),
@@ -1466,6 +1472,12 @@ int Application::mainloop() {
                 }
             }
 #endif
+
+            errC = foeGfxAcquireNextRenderTarget(windowData[0].gfxOffscreenRenderTarget,
+                                                 FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
+            if (errC) {
+                ERRC_END_PROGRAM
+            }
 
             { // Render offscreen
                 VkCommandBuffer &commandBuffer = frameData[frameIndex].commandBuffer;
