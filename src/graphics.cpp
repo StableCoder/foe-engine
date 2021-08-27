@@ -21,6 +21,7 @@
 #include <foe/wsi/vulkan.hpp>
 #include <vk_error_code.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 #include <memory>
@@ -105,17 +106,26 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
 
     // Window Requirements
     std::vector<VkBool32> supportsWindow(physicalDeviceCount, VK_FALSE);
+
     for (uint32_t i = 0; i < physicalDeviceCount; ++i) {
         uint32_t queueFamilyCount;
         vkGetPhysicalDeviceQueueFamilyProperties(physDevices[i], &queueFamilyCount, nullptr);
 
-        for (uint32_t queueIndex = 0; queueIndex < queueFamilyCount; ++queueIndex) {
-            vkGetPhysicalDeviceSurfaceSupportKHR(physDevices[i], queueIndex, pSurfaces[0],
-                                                 &supportsWindow[i]);
+        uint32_t supportedSurfaces = 0;
+        for (uint32_t j = 0; j < surfaceCount; ++j) {
+            for (uint32_t queueIndex = 0; queueIndex < queueFamilyCount; ++queueIndex) {
+                VkBool32 usable;
+                vkGetPhysicalDeviceSurfaceSupportKHR(physDevices[i], queueIndex, pSurfaces[j],
+                                                     &usable);
 
-            if (supportsWindow[i] == VK_TRUE) {
-                break;
+                if (usable == VK_TRUE) {
+                    ++supportedSurfaces;
+                    break;
+                }
             }
+        }
+        if (supportedSurfaces == surfaceCount) {
+            supportsWindow[i] = VK_TRUE;
         }
     }
 
@@ -196,6 +206,8 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
     VkPhysicalDevice vkPhysicalDevice =
         determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces.size(),
                                   windowSurfaces.data(), explicitGpu, forceXr);
+    if (vkPhysicalDevice == VK_NULL_HANDLE)
+        return FOE_BRINGUP_ERROR_NO_PHYSICAL_DEVICE_MEETS_REQUIREMENTS;
 
     // Layers and Extensions
     std::vector<std::string> layers;

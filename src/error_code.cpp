@@ -38,6 +38,8 @@ std::string foeBringupErrorCategory::message(int ev) const {
         RESULT_CASE(FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER)
         RESULT_CASE(FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_EXPORTERS)
 
+        RESULT_CASE(FOE_BRINGUP_ERROR_NO_PHYSICAL_DEVICE_MEETS_REQUIREMENTS)
+
     default:
         if (ev > 0)
             return "(unrecognized positive foeBringupResult value)";
