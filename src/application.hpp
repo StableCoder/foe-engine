@@ -79,6 +79,7 @@ struct Application {
 #ifdef FOE_XR_SUPPORT
     foeXrSession xrSession{};
     VkRenderPass xrRenderPass;
+    XrFrameState xrFrameState;
     std::vector<foeXrVkSessionView> xrViews;
     VkRenderPass xrOffscreenRenderPass;
     std::vector<foeGfxRenderTarget> xrOffscreenRenderTargets;

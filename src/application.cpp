@@ -970,7 +970,12 @@ int Application::mainloop() {
             if (xrSession.session != XR_NULL_HANDLE) {
                 XrResult xrRes{XR_SUCCESS};
 
-                // Stuff
+                XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
+                xrFrameState = XrFrameState{.type = XR_TYPE_FRAME_STATE};
+                xrRes = xrWaitFrame(xrSession.session, &frameWaitInfo, &xrFrameState);
+                if (xrRes != XR_SUCCESS) {
+                    XR_END_PROGRAM
+                }
             }
 #endif
 
@@ -1143,13 +1148,6 @@ int Application::mainloop() {
             if (xrSession.session != XR_NULL_HANDLE) {
                 XrResult xrRes{XR_SUCCESS};
 
-                XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
-                XrFrameState frameState{.type = XR_TYPE_FRAME_STATE};
-                xrRes = xrWaitFrame(xrSession.session, &frameWaitInfo, &frameState);
-                if (xrRes != XR_SUCCESS) {
-                    XR_END_PROGRAM
-                }
-
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
                 xrRes = xrBeginFrame(xrSession.session, &frameBeginInfo);
                 if (xrRes != XR_SUCCESS) {
@@ -1162,10 +1160,10 @@ int Application::mainloop() {
                                         .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW}};
                 XrCompositionLayerProjection layerProj;
 
-                if (frameState.shouldRender) {
+                if (xrFrameState.shouldRender) {
                     XrViewLocateInfo viewLocateInfo{
                         .type = XR_TYPE_VIEW_LOCATE_INFO,
-                        .displayTime = frameState.predictedDisplayTime,
+                        .displayTime = xrFrameState.predictedDisplayTime,
                         .space = xrSession.space,
                     };
                     XrViewState viewState{.type = XR_TYPE_VIEW_STATE};
@@ -1461,7 +1459,7 @@ int Application::mainloop() {
 
                 XrFrameEndInfo endFrameInfo{
                     .type = XR_TYPE_FRAME_END_INFO,
-                    .displayTime = frameState.predictedDisplayTime,
+                    .displayTime = xrFrameState.predictedDisplayTime,
                     .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
                     .layerCount = static_cast<uint32_t>(layers.size()),
                     .layers = layers.data(),
