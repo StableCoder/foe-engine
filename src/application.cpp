@@ -1190,7 +1190,6 @@ int Application::mainloop() {
                     xrVkCameraSystem.processCameras(frameIndex, xrViews);
 
                     // Render Code
-                    std::vector<uint32_t> swapchainIndex;
                     for (size_t i = 0; i < xrViews.size(); ++i) {
                         auto &it = xrViews[i];
                         auto &renderTarget = xrOffscreenRenderTargets[i];
@@ -1208,7 +1207,6 @@ int Application::mainloop() {
                         if (xrRes != XR_SUCCESS) {
                             XR_END_PROGRAM
                         }
-                        swapchainIndex.emplace_back(newIndex);
 
                         XrSwapchainImageWaitInfo waitInfo{
                             .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
@@ -1507,7 +1505,6 @@ int Application::mainloop() {
                                 .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                                 .commandBufferCount = 1,
                                 .pCommandBuffers = &commandBuffer,
-
                             };
 
                             auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
