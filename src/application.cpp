@@ -995,8 +995,7 @@ int Application::mainloop() {
             }
 
             // Acquire Target Presentation Images
-            vkRes = windowData[0].swapchain.acquireNextImage(
-                foeGfxVkGetDevice(gfxSession), frameData[frameIndex].presentImageAcquired);
+            vkRes = windowData[0].swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession));
             if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
                 // Waiting for an image to become ready
                 goto SKIP_FRAME_RENDER;
@@ -1938,10 +1937,12 @@ int Application::mainloop() {
                 // Submission
                 VkPipelineStageFlags waitMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
+                VkSemaphore imageAcquiredSemaphore = windowData[0].swapchain.imageReadySemaphore();
+
                 VkSubmitInfo submitInfo{
                     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                     .waitSemaphoreCount = 1,
-                    .pWaitSemaphores = &frameData[frameIndex].presentImageAcquired,
+                    .pWaitSemaphores = &imageAcquiredSemaphore,
                     .pWaitDstStageMask = &waitMask,
                     .commandBufferCount = 1,
                     .pCommandBuffers = &commandBuffer,

@@ -58,7 +58,7 @@ class foeGfxVkSwapchain {
 
     FOE_GFX_EXPORT void destroy(VkDevice device) noexcept;
 
-    FOE_GFX_EXPORT VkResult acquireNextImage(VkDevice device, VkSemaphore imageReady) noexcept;
+    FOE_GFX_EXPORT VkResult acquireNextImage(VkDevice device) noexcept;
     FOE_GFX_EXPORT void presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex) noexcept;
 
     FOE_GFX_EXPORT bool needRebuild() const noexcept;
@@ -76,8 +76,11 @@ class foeGfxVkSwapchain {
     FOE_GFX_EXPORT VkImage image(uint32_t index) const noexcept;
     FOE_GFX_EXPORT VkImageView imageView(uint32_t index) const noexcept;
 
+    FOE_GFX_EXPORT VkSemaphore imageReadySemaphore() const noexcept;
+
   private:
     VkResult createSwapchainViews(VkDevice device);
+    VkResult createSemaphores(VkDevice device);
 
     bool mNeedRebuild{false};
     VkSurfaceFormatKHR mSurfaceFormat{};
@@ -89,6 +92,8 @@ class foeGfxVkSwapchain {
     uint32_t mAcquiredIndex{UINT32_MAX};
     std::vector<VkImage> mImages{};
     std::vector<VkImageView> mViews{};
+    std::vector<VkSemaphore> mSemaphores{};
+    std::vector<VkSemaphore>::iterator mCurrentSemaphore;
 };
 
 #endif // FOE_GRAPHICS_VK_SWAPCHAIN_HPP

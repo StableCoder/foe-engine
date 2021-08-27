@@ -106,7 +106,7 @@ auto performWindowMaintenance(WindowData *pWindow,
             });
         }
 
-        pWindow->swapchain = newSwapchain;
+        pWindow->swapchain = std::move(newSwapchain);
 
         foeGfxUpdateRenderTargetExtent(pWindow->gfxOffscreenRenderTarget, width, height);
     }

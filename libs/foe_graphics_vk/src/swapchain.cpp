@@ -96,33 +96,56 @@ VkResult foeGfxVkSwapchain::create(VkPhysicalDevice physicalDevice,
 
     // Get the new image views
     res = createSwapchainViews(device);
-    if (res != VK_SUCCESS) {
+    if (res != VK_SUCCESS)
+        goto CREATE_FAILED;
+
+    res = createSemaphores(device);
+    if (res != VK_SUCCESS)
+        goto CREATE_FAILED;
+
+CREATE_FAILED:
+    if (res != VK_SUCCESS)
         destroy(device);
-    }
 
     return res;
 }
 
 void foeGfxVkSwapchain::destroy(VkDevice device) noexcept {
-    for (auto &it : mViews)
-        vkDestroyImageView(device, it, nullptr);
+    for (auto &it : mSemaphores) {
+        if (it != VK_NULL_HANDLE)
+            vkDestroySemaphore(device, it, nullptr);
+    }
+    mSemaphores.clear();
+
+    for (auto &it : mViews) {
+        if (it != VK_NULL_HANDLE)
+            vkDestroyImageView(device, it, nullptr);
+    }
     mViews.clear();
+
     mImages.clear();
 
     vkDestroySwapchainKHR(device, mSwapchain, nullptr);
     mSwapchain = VK_NULL_HANDLE;
 }
 
-VkResult foeGfxVkSwapchain::acquireNextImage(VkDevice device, VkSemaphore imageReady) noexcept {
+VkResult foeGfxVkSwapchain::acquireNextImage(VkDevice device) noexcept {
     if (mAcquiredIndex != UINT32_MAX) {
         // If the current image hasn't been 'presented', don't try to acquire another yet
         return VK_EVENT_SET;
     }
 
+    auto newSemaphoreIt = mCurrentSemaphore + 1;
+    if (newSemaphoreIt >= mSemaphores.end()) {
+        newSemaphoreIt = mSemaphores.begin();
+    }
     uint32_t tempIndex;
-    auto res = vkAcquireNextImageKHR(device, mSwapchain, 0, imageReady, VK_NULL_HANDLE, &tempIndex);
-    if (res == VK_SUCCESS || res == VK_SUBOPTIMAL_KHR)
+    auto res =
+        vkAcquireNextImageKHR(device, mSwapchain, 0, *newSemaphoreIt, VK_NULL_HANDLE, &tempIndex);
+    if (res == VK_SUCCESS || res == VK_SUBOPTIMAL_KHR) {
         mAcquiredIndex = tempIndex;
+        mCurrentSemaphore = newSemaphoreIt;
+    }
 
     return res;
 }
@@ -165,6 +188,8 @@ VkImage foeGfxVkSwapchain::image(uint32_t index) const noexcept { return mImages
 
 VkImageView foeGfxVkSwapchain::imageView(uint32_t index) const noexcept { return mViews[index]; }
 
+VkSemaphore foeGfxVkSwapchain::imageReadySemaphore() const noexcept { return *mCurrentSemaphore; }
+
 VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device) {
     uint32_t imageCount;
     VkResult res = vkGetSwapchainImagesKHR(device, mSwapchain, &imageCount, nullptr);
@@ -206,4 +231,23 @@ VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device) {
     }
 
     return res;
+}
+
+VkResult foeGfxVkSwapchain::createSemaphores(VkDevice device) {
+    VkResult vkRes{VK_SUCCESS};
+    mSemaphores = std::vector<VkSemaphore>(mImages.size(), VK_NULL_HANDLE);
+    mCurrentSemaphore = mSemaphores.begin();
+
+    VkSemaphoreCreateInfo semaphoreCI{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+    };
+
+    for (auto &it : mSemaphores) {
+        vkRes = vkCreateSemaphore(device, &semaphoreCI, nullptr, &it);
+        if (vkRes != VK_SUCCESS)
+            goto SEMAPHORE_CREATE_FAILED;
+    }
+
+SEMAPHORE_CREATE_FAILED:
+    return vkRes;
 }

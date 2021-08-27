@@ -22,7 +22,6 @@
 #include <array>
 
 struct PerFrameData {
-    VkSemaphore presentImageAcquired;
     VkSemaphore renderComplete;
 
     VkFence frameComplete;
@@ -32,14 +31,12 @@ struct PerFrameData {
     std::array<VkCommandBuffer, 2> xrCommandBuffers;
 
     VkResult create(VkDevice device) noexcept {
+        VkResult res{VK_SUCCESS};
+
         // Semaphores
         VkSemaphoreCreateInfo semaphoreCI{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         };
-
-        auto res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &presentImageAcquired);
-        if (res != VK_SUCCESS)
-            return res;
 
         res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &renderComplete);
         if (res != VK_SUCCESS)
@@ -89,7 +86,6 @@ struct PerFrameData {
         vkDestroyFence(device, frameComplete, nullptr);
 
         vkDestroySemaphore(device, renderComplete, nullptr);
-        vkDestroySemaphore(device, presentImageAcquired, nullptr);
     }
 };
 
