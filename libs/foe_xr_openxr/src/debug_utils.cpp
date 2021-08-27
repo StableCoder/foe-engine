@@ -102,7 +102,7 @@ XrResult foeXrCreateDebugUtilsMessenger(XrInstance instance,
 XrResult foeXrDestroyDebugUtilsMessenger(XrInstance instance,
                                          XrDebugUtilsMessengerEXT debugMessenger) {
     PFN_xrDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessenger{nullptr};
-    XrResult res = xrGetInstanceProcAddr(instance, "xrCreateDebugUtilsMessengerEXT",
+    XrResult res = xrGetInstanceProcAddr(instance, "xrDestroyDebugUtilsMessengerEXT",
                                          (PFN_xrVoidFunction *)&DestroyDebugUtilsMessenger);
     if (res != XR_SUCCESS) {
         return res;
