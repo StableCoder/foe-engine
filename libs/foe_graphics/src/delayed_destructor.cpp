@@ -67,7 +67,6 @@ void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
 
     // Go through all of the remaining call lists rapidly, then destroy
     pDelayedDestructor->sync.lock();
-
     auto callList = pDelayedDestructor->currentList;
     do {
         ++callList;
@@ -79,6 +78,7 @@ void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
             call(pDelayedDestructor->session);
         }
     } while (callList != pDelayedDestructor->currentList);
+    pDelayedDestructor->sync.unlock();
 
     delete pDelayedDestructor;
 
