@@ -988,6 +988,8 @@ int Application::mainloop() {
                 auto pCameraPool = getComponentPool<foeCameraPool>(
                     pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
 
+                int width, height;
+                foeWsiWindowGetSize(windowData[0].window, &width, &height);
                 for (auto *pCameraData = pCameraPool->begin<1>();
                      pCameraData != pCameraPool->end<1>(); ++pCameraData) {
                     pCameraData->get()->viewX = width;
