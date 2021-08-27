@@ -233,7 +233,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     // Special Entities
     cameraID = pSimulationSet->pEntityNameMap->find("camera");
-    renderTriangleID = pSimulationSet->pEntityNameMap->find("renderTri");
     renderMeshID = pSimulationSet->pEntityNameMap->find("renderMesh");
 
 #ifdef EDITOR_MODE
@@ -1031,7 +1030,8 @@ int Application::mainloop() {
                 ->uploadBoneOffsets(frameIndex);
 
             auto renderCall = [&](foeId entity, VkCommandBuffer commandBuffer,
-                                  VkSampleCountFlags samples, VkRenderPass renderPass) -> bool {
+                                  VkSampleCountFlags samples, VkRenderPass renderPass,
+                                  VkDescriptorSet cameraDescriptor) -> bool {
                 VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
                 foeRenderState *pRenderState{nullptr};
@@ -1091,6 +1091,9 @@ int Application::mainloop() {
                     ->getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
                                   pMaterial->data.pGfxFragDescriptor, renderPass, 0, samples,
                                   &layout, &descriptorSetLayoutCount, &pipeline);
+
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0,
+                                        1, &cameraDescriptor, 0, nullptr);
 
                 foeGfxVkBindMesh(pMesh->data.gfxData, commandBuffer, boned);
 
@@ -1292,93 +1295,9 @@ int Application::mainloop() {
                                 vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
                                                      VK_SUBPASS_CONTENTS_INLINE);
 
-                                if (true) { // Set Drawing Parameters
-                                    // If we had depthbias enabled
-                                    // vkCmdSetDepthBias
-                                    VkPipelineLayout layout;
-                                    uint32_t descriptorSetLayoutCount;
-                                    VkPipeline pipeline;
-
-                                    if constexpr (true) {
-                                        // Render Special Triangle
-                                        foeRenderState *pRenderState{nullptr};
-
-                                        auto pRenderStatePool =
-                                            getComponentPool<foeRenderStatePool>(
-                                                pSimulationSet->componentPools.data(),
-                                                pSimulationSet->componentPools.size());
-
-                                        auto searchOffset =
-                                            pRenderStatePool->find(renderTriangleID);
-                                        if (searchOffset != pRenderStatePool->size()) {
-                                            pRenderState =
-                                                pRenderStatePool->begin<1>() + searchOffset;
-                                        } else {
-                                            goto SKIP_XR_DRAW;
-                                        }
-
-                                        auto *theVertexDescriptor =
-                                            getResourcePool<foeVertexDescriptorPool>(
-                                                pSimulationSet->resourcePools.data(),
-                                                pSimulationSet->resourcePools.size())
-                                                ->find(pRenderState->vertexDescriptor);
-                                        auto *theMaterial =
-                                            getResourcePool<foeMaterialPool>(
-                                                pSimulationSet->resourcePools.data(),
-                                                pSimulationSet->resourcePools.size())
-                                                ->find(pRenderState->material);
-
-                                        if (theVertexDescriptor->getState() !=
-                                                foeResourceState::Loaded ||
-                                            theMaterial->getState() != foeResourceState::Loaded)
-                                            goto SKIP_XR_DRAW;
-
-                                        // Render Triangle
-                                        foeGfxVkGetPipelinePool(gfxSession)
-                                            ->getPipeline(
-                                                const_cast<foeGfxVertexDescriptor *>(
-                                                    &theVertexDescriptor->data.vertexDescriptor),
-                                                theMaterial->data.pGfxFragDescriptor,
-                                                xrOffscreenRenderPass, 0,
-                                                foeGfxVkGetRenderTargetSamples(renderTarget),
-                                                &layout, &descriptorSetLayoutCount, &pipeline);
-
-                                        vkCmdBindDescriptorSets(
-                                            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            0, 1, &it.camera.descriptor, 0, nullptr);
-
-                                        auto *pPosition3dPool = getComponentPool<foePosition3dPool>(
-                                            pSimulationSet->componentPools.data(),
-                                            pSimulationSet->componentPools.size());
-
-                                        auto posOffset = pPosition3dPool->find(renderTriangleID);
-                                        auto *pPosition =
-                                            (pPosition3dPool->begin<1>() + posOffset)->get();
-                                        vkCmdBindDescriptorSets(
-                                            commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            1, 1, &pPosition->descriptorSet, 0, nullptr);
-
-                                        if (auto set = theMaterial->data.materialDescriptorSet;
-                                            set != VK_NULL_HANDLE) {
-                                            vkCmdBindDescriptorSets(
-                                                commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                layout, foeDescriptorSetLayoutIndex::FragmentShader,
-                                                1, &set, 0, nullptr);
-                                        }
-
-                                        vkCmdBindPipeline(commandBuffer,
-                                                          VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                          pipeline);
-
-                                        vkCmdDraw(commandBuffer, 4, 1, 0, 0);
-                                    }
-
-                                    renderCall(renderMeshID, commandBuffer,
-                                               foeGfxVkGetRenderTargetSamples(renderTarget),
-                                               xrOffscreenRenderPass);
-
-                                SKIP_XR_DRAW:;
-                                }
+                                renderCall(renderMeshID, commandBuffer,
+                                           foeGfxVkGetRenderTargetSamples(renderTarget),
+                                           xrOffscreenRenderPass, it.camera.descriptor);
 
                                 vkCmdEndRenderPass(commandBuffer);
                             }
@@ -1633,86 +1552,14 @@ int Application::mainloop() {
 
                     vkCmdBeginRenderPass(commandBuffer, &renderPassBI, VK_SUBPASS_CONTENTS_INLINE);
 
-                    { // Set Drawing Parameters
-                        auto pCameraPool =
-                            getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
-                                                            pSimulationSet->componentPools.size());
+                    auto pCameraPool =
+                        getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
+                                                        pSimulationSet->componentPools.size());
 
-                        auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
+                    auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
-                        // Set the Pipeline
-                        VkPipelineLayout layout;
-                        uint32_t descriptorSetLayoutCount;
-                        VkPipeline pipeline;
-
-                        if constexpr (true) {
-                            // Render Special Triangle
-                            foeRenderState *pRenderState{nullptr};
-
-                            auto pRenderStatePool = getComponentPool<foeRenderStatePool>(
-                                pSimulationSet->componentPools.data(),
-                                pSimulationSet->componentPools.size());
-
-                            auto searchOffset = pRenderStatePool->find(renderTriangleID);
-                            if (searchOffset != pRenderStatePool->size()) {
-                                pRenderState = pRenderStatePool->begin<1>() + searchOffset;
-                            } else {
-                                goto SKIP_DRAW;
-                            }
-
-                            auto *theVertexDescriptor = getResourcePool<foeVertexDescriptorPool>(
-                                                            pSimulationSet->resourcePools.data(),
-                                                            pSimulationSet->resourcePools.size())
-                                                            ->find(pRenderState->vertexDescriptor);
-                            auto *theMaterial = getResourcePool<foeMaterialPool>(
-                                                    pSimulationSet->resourcePools.data(),
-                                                    pSimulationSet->resourcePools.size())
-                                                    ->find(pRenderState->material);
-
-                            if (theVertexDescriptor->getState() != foeResourceState::Loaded ||
-                                theMaterial->getState() != foeResourceState::Loaded)
-                                goto SKIP_DRAW;
-
-                            // Render Triangle
-                            foeGfxVkGetPipelinePool(gfxSession)
-                                ->getPipeline(const_cast<foeGfxVertexDescriptor *>(
-                                                  &theVertexDescriptor->data.vertexDescriptor),
-                                              theMaterial->data.pGfxFragDescriptor, renderPass, 0,
-                                              maxSupportedSamples, &layout,
-                                              &descriptorSetLayoutCount, &pipeline);
-
-                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                    layout, 0, 1, &(*pCamera)->descriptor, 0,
-                                                    nullptr);
-
-                            auto *pPosition3dPool = getComponentPool<foePosition3dPool>(
-                                pSimulationSet->componentPools.data(),
-                                pSimulationSet->componentPools.size());
-
-                            auto posOffset = pPosition3dPool->find(renderTriangleID);
-                            auto *pPosition = (pPosition3dPool->begin<1>() + posOffset)->get();
-                            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                                    layout, 1, 1, &pPosition->descriptorSet, 0,
-                                                    nullptr);
-
-                            if (auto set = theMaterial->data.materialDescriptorSet;
-                                set != VK_NULL_HANDLE) {
-                                vkCmdBindDescriptorSets(commandBuffer,
-                                                        VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                                        foeDescriptorSetLayoutIndex::FragmentShader,
-                                                        1, &set, 0, nullptr);
-                            }
-
-                            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                              pipeline);
-
-                            vkCmdDraw(commandBuffer, 4, 1, 0, 0);
-                        }
-
-                        renderCall(renderMeshID, commandBuffer, maxSupportedSamples, renderPass);
-
-                    SKIP_DRAW:;
-                    }
+                    renderCall(renderMeshID, commandBuffer, maxSupportedSamples, renderPass,
+                               (*pCamera)->descriptor);
 
                     vkCmdEndRenderPass(commandBuffer);
                 }
