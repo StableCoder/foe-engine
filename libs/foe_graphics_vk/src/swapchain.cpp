@@ -121,7 +121,7 @@ VkResult foeGfxVkSwapchain::acquireNextImage(VkDevice device, VkSemaphore imageR
 
     uint32_t tempIndex;
     auto res = vkAcquireNextImageKHR(device, mSwapchain, 0, imageReady, VK_NULL_HANDLE, &tempIndex);
-    if (res == VK_SUCCESS)
+    if (res == VK_SUCCESS || res == VK_SUBOPTIMAL_KHR)
         mAcquiredIndex = tempIndex;
 
     return res;
