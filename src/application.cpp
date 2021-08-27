@@ -243,10 +243,11 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     VkResult vkRes{VK_SUCCESS};
     {
-        errC = foeWsiCreateWindow(settings.window.width, settings.window.height, "FoE Engine", true,
-                                  &window);
-        if (errC) {
-            ERRC_END_PROGRAM_TUPLE
+        for (auto &it : windowData) {
+            errC = foeWsiCreateWindow(settings.window.width, settings.window.height, "FoE Engine",
+                                      true, &it.window);
+            if (errC)
+                ERRC_END_PROGRAM_TUPLE
         }
 
 #ifdef FOE_XR_SUPPORT
@@ -264,13 +265,21 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
 
-        vkRes = foeWsiWindowGetVkSurface(window, foeGfxVkGetInstance(gfxRuntime), &windowSurface);
-        if (vkRes != VK_SUCCESS) {
-            VK_END_PROGRAM_TUPLE
+        for (auto &it : windowData) {
+            vkRes =
+                foeWsiWindowGetVkSurface(it.window, foeGfxVkGetInstance(gfxRuntime), &it.surface);
+            if (vkRes != VK_SUCCESS)
+                VK_END_PROGRAM_TUPLE
         }
 
-        errC = createGfxSession(gfxRuntime, xrRuntime, settings.window.enableWSI, {windowSurface},
-                                settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
+        std::vector<VkSurfaceKHR> surfaces;
+        for (auto const &it : windowData) {
+            surfaces.push_back(it.surface);
+        }
+
+        errC =
+            createGfxSession(gfxRuntime, xrRuntime, settings.window.enableWSI, std::move(surfaces),
+                             settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
         if (errC) {
             ERRC_END_PROGRAM_TUPLE
         }
@@ -292,7 +301,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
     imguiRenderer.resize(settings.window.width, settings.window.height);
     float xScale, yScale;
-    foeWsiWindowGetContentScale(window, &xScale, &yScale);
+    foeWsiWindowGetContentScale(windowData[0].window, &xScale, &yScale);
     imguiRenderer.rescale(xScale, yScale);
 #endif
 
@@ -756,16 +765,21 @@ void Application::deinitialize() {
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
-    swapchain.destroy(foeGfxVkGetDevice(gfxSession));
-    if (windowSurface != VK_NULL_HANDLE)
-        vkDestroySurfaceKHR(foeGfxVkGetInstance(gfxRuntime), windowSurface, nullptr);
+    // Destroy windows data
+    for (auto &it : windowData) {
+        if (it.gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
+            foeGfxDestroyRenderTarget(it.gfxOffscreenRenderTarget);
+        it.gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
 
-    if (window != FOE_NULL_HANDLE)
-        foeWsiDestroyWindow(window);
+        it.swapchain.destroy(foeGfxVkGetDevice(gfxSession));
 
-    if (gfxOffscreenRenderTarget != FOE_NULL_HANDLE) {
-        foeGfxDestroyRenderTarget(gfxOffscreenRenderTarget);
-        gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
+        if (it.surface != VK_NULL_HANDLE)
+            vkDestroySurfaceKHR(foeGfxVkGetInstance(gfxRuntime), it.surface, nullptr);
+        it.surface = VK_NULL_HANDLE;
+
+        if (it.window != FOE_NULL_HANDLE)
+            foeWsiDestroyWindow(it.window);
+        it.window = FOE_NULL_HANDLE;
     }
 
     if (gfxDelayedDestructor != FOE_NULL_HANDLE) {
@@ -860,16 +874,17 @@ int Application::mainloop() {
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
 
     VkResult vkRes{VK_SUCCESS};
+    std::error_code errC;
 
     uint32_t lastFrameIndex = -1;
     uint32_t frameIndex = -1;
 
-    foeWsiWindowShow(window);
+    foeWsiWindowShow(windowData[0].window);
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
     FOE_LOG(General, Info, "Entering main loop")
-    while (!foeWsiWindowGetShouldClose(window)
+    while (!foeWsiWindowGetShouldClose(windowData[0].window)
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
@@ -881,8 +896,8 @@ int Application::mainloop() {
 
         foeWsiGlfw3WindowEventProcessing();
 
-        auto *pMouse = foeWsiGetMouse(window);
-        auto *pKeyboard = foeWsiGetKeyboard(window);
+        auto *pMouse = foeWsiGetMouse(windowData[0].window);
+        auto *pKeyboard = foeWsiGetKeyboard(windowData[0].window);
 
         for (auto &it : pSimulationSet->componentPools) {
             it->maintenance();
@@ -907,16 +922,17 @@ int Application::mainloop() {
             processUserInput(timeElapsedInSec, pKeyboard, pMouse, pCameraPosition->get());
         }
 
-        if (foeWsiWindowResized(window)) {
-            // Swapchins will need rebuilding
-            swapchain.requestRebuild();
+        // Check if swapchains need rebuilding here
+        for (auto &it : windowData) {
+            if (foeWsiWindowResized(it.window))
+                it.swapchain.requestRebuild();
+        }
 
 #ifdef EDITOR_MODE
-            int width, height;
-            foeWsiWindowGetSize(window, &width, &height);
-            imguiRenderer.resize(width, height);
+        int width, height;
+        foeWsiWindowGetSize(windowData[0].window, &width, &height);
+        imguiRenderer.resize(width, height);
 #endif
-        }
 
         getSystem<foeArmatureSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
             ->process(timeElapsedInSec);
@@ -950,10 +966,19 @@ int Application::mainloop() {
         }
 
         if (frameIndex != -1) {
-            // Rebuild swapchains
-            if (!swapchain || swapchain.needRebuild()) {
-                int width, height;
-                foeWsiWindowGetSize(window, &width, &height);
+#ifdef FOE_XR_SUPPORT
+            // Lock rendering to OpenXR, which overrides regular rendering
+            if (xrSession.session != XR_NULL_HANDLE) {
+                XrResult xrRes{XR_SUCCESS};
+
+                // Stuff
+            }
+#endif
+
+            for (auto &it : windowData) {
+                // If no window here, skip
+                if (it.window == FOE_NULL_HANDLE)
+                    continue;
 
                 // All Cameras are currently ties to the single window X/Y viewport size
                 auto pCameraPool = getComponentPool<foeCameraPool>(
@@ -965,109 +990,30 @@ int Application::mainloop() {
                     pCameraData->get()->viewY = height;
                 }
 
-                // If no swapchain, then that means we need to get the surface format and
-                // presentation mode first
-                if (!swapchain) {
-                    { // Surface Formats
-                        uint32_t formatCount;
-                        vkRes = vkGetPhysicalDeviceSurfaceFormatsKHR(
-                            foeGfxVkGetPhysicalDevice(gfxSession), windowSurface, &formatCount,
-                            nullptr);
-                        if (vkRes != VK_SUCCESS)
-                            VK_END_PROGRAM
-
-                        std::unique_ptr<VkSurfaceFormatKHR[]> surfaceFormats(
-                            new VkSurfaceFormatKHR[formatCount]);
-
-                        vkRes = vkGetPhysicalDeviceSurfaceFormatsKHR(
-                            foeGfxVkGetPhysicalDevice(gfxSession), windowSurface, &formatCount,
-                            surfaceFormats.get());
-                        if (vkRes != VK_SUCCESS)
-                            VK_END_PROGRAM
-
-                        swapchain.surfaceFormat(surfaceFormats.get()[0]);
-                    }
-
-                    { // Present Modes
-                        uint32_t modeCount;
-                        vkGetPhysicalDeviceSurfacePresentModesKHR(
-                            foeGfxVkGetPhysicalDevice(gfxSession), windowSurface, &modeCount,
-                            nullptr);
-
-                        std::unique_ptr<VkPresentModeKHR[]> presentModes(
-                            new VkPresentModeKHR[modeCount]);
-
-                        vkGetPhysicalDeviceSurfacePresentModesKHR(
-                            foeGfxVkGetPhysicalDevice(gfxSession), windowSurface, &modeCount,
-                            presentModes.get());
-
-                        swapchain.presentMode(presentModes.get()[0]);
-                    }
-
-                    std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
-                        foeGfxVkRenderTargetSpec{
-                            .format = swapchain.surfaceFormat().format,
-                            .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
-                                     VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                            .count = 3,
-                        },
-                        foeGfxVkRenderTargetSpec{
-                            .format = depthFormat,
-                            .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                            .count = 3,
-                        },
-                    };
-
-                    auto errC = foeGfxVkCreateRenderTarget(
-                        gfxSession, gfxDelayedDestructor, offscreenSpecs.data(),
-                        offscreenSpecs.size(), maxSupportedSamples, &gfxOffscreenRenderTarget);
-                    if (errC) {
-                        ERRC_END_PROGRAM
-                    }
-                }
-
-                foeGfxVkSwapchain newSwapchain;
-                vkRes = newSwapchain.create(
-                    foeGfxVkGetPhysicalDevice(gfxSession), foeGfxVkGetDevice(gfxSession),
-                    windowSurface, swapchain.surfaceFormat(), swapchain.presentMode(),
-                    VK_IMAGE_USAGE_TRANSFER_DST_BIT, swapchain, 3, width, height);
-                if (vkRes != VK_SUCCESS)
-                    VK_END_PROGRAM
-
-                // If the old swapchain exists, we need to destroy it
-                if (swapchain) {
-                    foeGfxVkSwapchain swapchainCopy = swapchain;
-                    foeGfxAddDelayedDestructionCall(
-                        gfxDelayedDestructor, [=](foeGfxSession session) {
-                            const_cast<foeGfxVkSwapchain &>(swapchainCopy)
-                                .destroy(foeGfxVkGetDevice(session));
-                        });
-                }
-
-                swapchain = newSwapchain;
-
-                foeGfxUpdateRenderTargetExtent(gfxOffscreenRenderTarget, swapchain.extent().width,
-                                               swapchain.extent().height);
+                performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, maxSupportedSamples,
+                                         depthFormat);
             }
 
             // Acquire Target Presentation Images
-            vkRes = swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession),
-                                               frameData[frameIndex].presentImageAcquired);
+            vkRes = windowData[0].swapchain.acquireNextImage(
+                foeGfxVkGetDevice(gfxSession), frameData[frameIndex].presentImageAcquired);
             if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
                 // Waiting for an image to become ready
                 goto SKIP_FRAME_RENDER;
             } else if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
                 // Surface changed, need to rebuild swapchains
+                windowData[0].swapchain.needRebuild();
                 goto SKIP_FRAME_RENDER;
             } else if (vkRes == VK_SUBOPTIMAL_KHR) {
                 // Surface is still usable, but should rebuild next time
+                windowData[0].swapchain.needRebuild();
             } else if (vkRes != VK_SUCCESS) {
                 // Catastrophic error
                 VK_END_PROGRAM
             }
             frameTime.newFrame();
 
-            auto errC = foeGfxAcquireNextRenderTarget(gfxOffscreenRenderTarget,
+            auto errC = foeGfxAcquireNextRenderTarget(windowData[0].gfxOffscreenRenderTarget,
                                                       FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
             if (errC)
                 ERRC_END_PROGRAM
@@ -1619,7 +1565,7 @@ int Application::mainloop() {
                     VK_END_PROGRAM
                 }
 
-                VkExtent2D swapchainExtent = swapchain.extent();
+                VkExtent2D swapchainExtent = windowData[0].swapchain.extent();
 
                 { // Setup common render viewport data
                     VkViewport viewport{
@@ -1644,7 +1590,7 @@ int Application::mainloop() {
                         foeGfxVkGetRenderPassPool(gfxSession)
                             ->renderPass(
                                 {VkAttachmentDescription{
-                                     .format = swapchain.surfaceFormat().format,
+                                     .format = windowData[0].swapchain.surfaceFormat().format,
                                      .samples =
                                          static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
                                      .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -1678,11 +1624,12 @@ int Application::mainloop() {
                     VkRenderPassBeginInfo renderPassBI{
                         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                         .renderPass = renderPass,
-                        .framebuffer = foeGfxVkGetRenderTargetFramebuffer(gfxOffscreenRenderTarget),
+                        .framebuffer = foeGfxVkGetRenderTargetFramebuffer(
+                            windowData[0].gfxOffscreenRenderTarget),
                         .renderArea =
                             {
                                 .offset = {0, 0},
-                                .extent = swapchain.extent(),
+                                .extent = windowData[0].swapchain.extent(),
                             },
                         .clearValueCount = clearValues.size(),
                         .pClearValues = clearValues.data(),
@@ -1790,7 +1737,8 @@ int Application::mainloop() {
                         .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .image = swapchain.image(swapchain.acquiredIndex()),
+                        .image =
+                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
                         .subresourceRange = subresourceRange,
                     };
 
@@ -1798,7 +1746,7 @@ int Application::mainloop() {
                                          VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
                                          nullptr, 1, &imgMemBarrier);
 
-                    if (foeGfxVkGetRenderTargetSamples(gfxOffscreenRenderTarget) !=
+                    if (foeGfxVkGetRenderTargetSamples(windowData[0].gfxOffscreenRenderTarget) !=
                         VK_SAMPLE_COUNT_1_BIT) {
                         VkImageResolve resolveRegion{
                             .srcSubresource =
@@ -1819,17 +1767,18 @@ int Application::mainloop() {
                             .dstOffset = {},
                             .extent =
                                 {
-                                    .width = swapchain.extent().width,
-                                    .height = swapchain.extent().height,
+                                    .width = windowData[0].swapchain.extent().width,
+                                    .height = windowData[0].swapchain.extent().height,
                                     .depth = 1,
                                 },
                         };
 
-                        vkCmdResolveImage(commandBuffer,
-                                          foeGfxVkGetRenderTargetImage(gfxOffscreenRenderTarget, 0),
-                                          VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                          swapchain.image(swapchain.acquiredIndex()),
-                                          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveRegion);
+                        vkCmdResolveImage(
+                            commandBuffer,
+                            foeGfxVkGetRenderTargetImage(windowData[0].gfxOffscreenRenderTarget, 0),
+                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
+                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveRegion);
                     } else {
                         VkImageCopy imageCopy{
                             .srcSubresource =
@@ -1850,17 +1799,18 @@ int Application::mainloop() {
                             .dstOffset = {},
                             .extent =
                                 {
-                                    .width = swapchain.extent().width,
-                                    .height = swapchain.extent().height,
+                                    .width = windowData[0].swapchain.extent().width,
+                                    .height = windowData[0].swapchain.extent().height,
                                     .depth = 1,
                                 },
                         };
 
-                        vkCmdCopyImage(commandBuffer,
-                                       foeGfxVkGetRenderTargetImage(gfxOffscreenRenderTarget, 0),
-                                       VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                       swapchain.image(swapchain.acquiredIndex()),
-                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
+                        vkCmdCopyImage(
+                            commandBuffer,
+                            foeGfxVkGetRenderTargetImage(windowData[0].gfxOffscreenRenderTarget, 0),
+                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
+                            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
                     }
 
                     imgMemBarrier = VkImageMemoryBarrier{
@@ -1871,7 +1821,8 @@ int Application::mainloop() {
                         .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                        .image = swapchain.image(swapchain.acquiredIndex()),
+                        .image =
+                            windowData[0].swapchain.image(windowData[0].swapchain.acquiredIndex()),
                         .subresourceRange = subresourceRange,
                     };
 
@@ -1884,7 +1835,7 @@ int Application::mainloop() {
                     VkRenderPass swapImageRenderPass =
                         foeGfxVkGetRenderPassPool(gfxSession)
                             ->renderPass({VkAttachmentDescription{
-                                .format = swapchain.surfaceFormat().format,
+                                .format = windowData[0].swapchain.surfaceFormat().format,
                                 .samples = VK_SAMPLE_COUNT_1_BIT,
                                 .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -1894,7 +1845,7 @@ int Application::mainloop() {
                                 .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                             }});
 
-                    if (swapchain != framebufferSwapchain) {
+                    if (windowData[0].swapchain != framebufferSwapchain) {
                         {
                             auto framebuffersCopy = swapImageFramebuffers;
                             foeGfxAddDelayedDestructionCall(
@@ -1907,9 +1858,9 @@ int Application::mainloop() {
                         swapImageFramebuffers.clear();
 
                         int width, height;
-                        foeWsiWindowGetSize(window, &width, &height);
+                        foeWsiWindowGetSize(windowData[0].window, &width, &height);
                         VkImageView view;
-                        VkExtent2D swapchainExtent = swapchain.extent();
+                        VkExtent2D swapchainExtent = windowData[0].swapchain.extent();
                         VkFramebufferCreateInfo framebufferCI{
                             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                             .renderPass = swapImageRenderPass,
@@ -1920,8 +1871,8 @@ int Application::mainloop() {
                             .layers = 1,
                         };
 
-                        for (uint32_t i = 0; i < swapchain.chainSize(); ++i) {
-                            view = swapchain.imageView(i);
+                        for (uint32_t i = 0; i < windowData[0].swapchain.chainSize(); ++i) {
+                            view = windowData[0].swapchain.imageView(i);
 
                             VkFramebuffer framebuffer;
                             vkRes = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession),
@@ -1931,10 +1882,10 @@ int Application::mainloop() {
                             swapImageFramebuffers.emplace_back(framebuffer);
                         }
 
-                        framebufferSwapchain = swapchain;
+                        framebufferSwapchain = windowData[0].swapchain;
                     }
 
-                    VkExtent2D swapchainExtent = swapchain.extent();
+                    VkExtent2D swapchainExtent = windowData[0].swapchain.extent();
                     VkClearValue clear{
                         .color = {0.f, 0.5f, 1.f, 0.f},
                     };
@@ -1943,7 +1894,8 @@ int Application::mainloop() {
                     VkRenderPassBeginInfo renderPassBI{
                         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                         .renderPass = renderPass,
-                        .framebuffer = swapImageFramebuffers[swapchain.acquiredIndex()],
+                        .framebuffer =
+                            swapImageFramebuffers[windowData[0].swapchain.acquiredIndex()],
                         .renderArea =
                             {
                                 .offset = {0, 0},
@@ -2017,7 +1969,7 @@ int Application::mainloop() {
                 {
                     VkSwapchainKHR swapchain2;
                     uint32_t index;
-                    swapchain.presentData(&swapchain2, &index);
+                    windowData[0].swapchain.presentData(&swapchain2, &index);
 
                     swapchains.emplace_back(swapchain2);
                     swapchainIndices.emplace_back(index);

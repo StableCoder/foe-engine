@@ -18,21 +18,18 @@
 #define APPLICATION_HPP
 
 #include <foe/graphics/delayed_destructor.hpp>
-#include <foe/graphics/render_target.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
-#include <foe/graphics/vk/swapchain.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/split_thread_pool.hpp>
-#include <foe/wsi/window.hpp>
 #include <foe/xr/runtime.hpp>
 
-#include "frame_timer.hpp"
 #include "per_frame_data.hpp"
 #include "settings.hpp"
+#include "window.hpp"
 
 #include <array>
 #include <map>
@@ -75,7 +72,7 @@ struct Application {
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet;
 
     // I/O
-    foeWsiWindow window{FOE_NULL_HANDLE};
+    std::array<WindowData, 1> windowData;
     FrameTimer frameTime;
 
     // XR
@@ -94,12 +91,8 @@ struct Application {
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
     foeGfxUploadContext resUploader{FOE_NULL_HANDLE};
     foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
-    foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
     VkFormat depthFormat{VK_FORMAT_D16_UNORM};
     VkSampleCountFlags maxSupportedSamples;
-
-    VkSurfaceKHR windowSurface{VK_NULL_HANDLE};
-    foeGfxVkSwapchain swapchain;
 
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 

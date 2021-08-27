@@ -77,7 +77,8 @@ namespace {
 
 auto determineVkPhysicalDevice(VkInstance vkInstance,
                                foeXrRuntime xrRuntime,
-                               VkSurfaceKHR vkSurface,
+                               uint32_t surfaceCount,
+                               VkSurfaceKHR *pSurfaces,
                                uint32_t explicitGpu,
                                bool forceXr) -> VkPhysicalDevice {
     // Just retrieves the first available device
@@ -109,7 +110,7 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
         vkGetPhysicalDeviceQueueFamilyProperties(physDevices[i], &queueFamilyCount, nullptr);
 
         for (uint32_t queueIndex = 0; queueIndex < queueFamilyCount; ++queueIndex) {
-            vkGetPhysicalDeviceSurfaceSupportKHR(physDevices[i], queueIndex, vkSurface,
+            vkGetPhysicalDeviceSurfaceSupportKHR(physDevices[i], queueIndex, pSurfaces[0],
                                                  &supportsWindow[i]);
 
             if (supportsWindow[i] == VK_TRUE) {
@@ -172,8 +173,9 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
         }
     }
 
-    if (vkSurface == VK_NULL_HANDLE) {
-        FOE_LOG(General, Info, "Using VkPhysicalDevice that doesn't support XR or Windowing");
+    if (surfaceCount == 0) {
+        FOE_LOG(General, Info,
+                "Using VkPhysicalDevice that doesn't necessarily support XR or Windowing");
         return physDevices[0];
     }
 
@@ -191,8 +193,9 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
                                  bool forceXr,
                                  foeGfxSession *pGfxSession) {
     // Determine the physical device
-    VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(
-        foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces[0], explicitGpu, forceXr);
+    VkPhysicalDevice vkPhysicalDevice =
+        determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces.size(),
+                                  windowSurfaces.data(), explicitGpu, forceXr);
 
     // Layers and Extensions
     std::vector<std::string> layers;
