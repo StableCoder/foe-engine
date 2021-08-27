@@ -111,8 +111,8 @@ struct Application {
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
 #endif
 
+    VkSwapchainKHR framebufferSwapchain{VK_NULL_HANDLE};
     std::vector<VkFramebuffer> swapImageFramebuffers;
-    bool swapchainRebuilt = false;
 };
 
 #endif // APPLICATION_HPP

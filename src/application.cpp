@@ -879,7 +879,6 @@ int Application::mainloop() {
         simulationClock.update(programClock.currentTime<std::chrono::nanoseconds>());
         double timeElapsedInSec = simulationClock.elapsed().count() * 0.000000001f;
 
-        swapchainRebuilt = false;
         foeWsiGlfw3WindowEventProcessing();
 
         auto *pMouse = foeWsiGetMouse(window);
@@ -1046,7 +1045,6 @@ int Application::mainloop() {
                 }
 
                 swapchain = newSwapchain;
-                swapchainRebuilt = true;
 
                 foeGfxUpdateRenderTargetExtent(gfxOffscreenRenderTarget, swapchain.extent().width,
                                                swapchain.extent().height);
@@ -1896,7 +1894,7 @@ int Application::mainloop() {
                                 .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                             }});
 
-                    if (swapchainRebuilt) {
+                    if (swapchain != framebufferSwapchain) {
                         {
                             auto framebuffersCopy = swapImageFramebuffers;
                             foeGfxAddDelayedDestructionCall(
@@ -1932,6 +1930,8 @@ int Application::mainloop() {
                                 VK_END_PROGRAM
                             swapImageFramebuffers.emplace_back(framebuffer);
                         }
+
+                        framebufferSwapchain = swapchain;
                     }
 
                     VkExtent2D swapchainExtent = swapchain.extent();
