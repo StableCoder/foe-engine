@@ -184,6 +184,109 @@ auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
     return pSystem;
 }
 
+auto renderCall(foeId entity,
+                foeGfxSession gfxSession,
+                foeSimulationState *pSimulationSet,
+                VkCommandBuffer commandBuffer,
+                VkSampleCountFlags samples,
+                VkRenderPass renderPass,
+                VkDescriptorSet cameraDescriptor) -> bool {
+    VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
+
+    foeRenderState *pRenderState{nullptr};
+
+    auto pRenderStatePool = getComponentPool<foeRenderStatePool>(
+        pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+
+    auto searchOffset = pRenderStatePool->find(entity);
+    if (searchOffset != pRenderStatePool->size()) {
+        pRenderState = pRenderStatePool->begin<1>() + searchOffset;
+    } else {
+        return false;
+    }
+
+    foeVertexDescriptor *pVertexDescriptor{nullptr};
+    bool boned{false};
+    if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
+        pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
+        boned = true;
+        pVertexDescriptor =
+            getResourcePool<foeVertexDescriptorPool>(pSimulationSet->resourcePools.data(),
+                                                     pSimulationSet->resourcePools.size())
+                ->find(pRenderState->bonedVertexDescriptor);
+    }
+
+    if (pVertexDescriptor == nullptr) {
+        pVertexDescriptor =
+            getResourcePool<foeVertexDescriptorPool>(pSimulationSet->resourcePools.data(),
+                                                     pSimulationSet->resourcePools.size())
+                ->find(pRenderState->vertexDescriptor);
+    }
+
+    auto *pMaterial = getResourcePool<foeMaterialPool>(pSimulationSet->resourcePools.data(),
+                                                       pSimulationSet->resourcePools.size())
+                          ->find(pRenderState->material);
+    auto *pMesh = getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
+                                               pSimulationSet->resourcePools.size())
+                      ->find(pRenderState->mesh);
+
+    if (pVertexDescriptor == nullptr || pMaterial == nullptr || pMesh == nullptr) {
+        return false;
+    }
+    if (pVertexDescriptor->getState() != foeResourceState::Loaded ||
+        pMaterial->getState() != foeResourceState::Loaded ||
+        pMesh->getState() != foeResourceState::Loaded) {
+        return false;
+    }
+
+    // Retrieve the pipeline
+    auto *pGfxVertexDescriptor = &pVertexDescriptor->data.vertexDescriptor;
+    VkPipelineLayout layout;
+    uint32_t descriptorSetLayoutCount;
+    VkPipeline pipeline;
+
+    foeGfxVkGetPipelinePool(gfxSession)
+        ->getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
+                      pMaterial->data.pGfxFragDescriptor, renderPass, 0, samples, &layout,
+                      &descriptorSetLayoutCount, &pipeline);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1,
+                            &cameraDescriptor, 0, nullptr);
+
+    foeGfxVkBindMesh(pMesh->data.gfxData, commandBuffer, boned);
+
+    auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
+    if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
+        auto *pPosition3dPool = getComponentPool<foePosition3dPool>(
+            pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+
+        auto posOffset = pPosition3dPool->find(entity);
+        auto *pPosition = (pPosition3dPool->begin<1>() + posOffset)->get();
+        // Bind the object's position *if* the descriptor supports it
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
+                                &pPosition->descriptorSet, 0, nullptr);
+    } else {
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
+                                &dummyDescriptorSet, 0, nullptr);
+    }
+    if (boned) {
+        // If we have bone information, bind that too
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 2, 1,
+                                &pRenderState->boneDescriptorSet, 0, nullptr);
+    }
+    // Bind the fragment descriptor set *if* it exists?
+    if (auto set = pMaterial->data.materialDescriptorSet; set != VK_NULL_HANDLE) {
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+                                foeDescriptorSetLayoutIndex::FragmentShader, 1, &set, 0, nullptr);
+    }
+
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+    vkCmdDrawIndexed(commandBuffer, foeGfxGetMeshIndices(pMesh->data.gfxData), 1, 0, 0, 0);
+
+    return true;
+}
+
 } // namespace
 
 #include "state_import/import_state.hpp"
@@ -1042,109 +1145,6 @@ int Application::mainloop() {
                                        pSimulationSet->systems.size())
                 ->uploadBoneOffsets(frameIndex);
 
-            auto renderCall = [&](foeId entity, VkCommandBuffer commandBuffer,
-                                  VkSampleCountFlags samples, VkRenderPass renderPass,
-                                  VkDescriptorSet cameraDescriptor) -> bool {
-                VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
-
-                foeRenderState *pRenderState{nullptr};
-
-                auto pRenderStatePool = getComponentPool<foeRenderStatePool>(
-                    pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
-
-                auto searchOffset = pRenderStatePool->find(entity);
-                if (searchOffset != pRenderStatePool->size()) {
-                    pRenderState = pRenderStatePool->begin<1>() + searchOffset;
-                } else {
-                    return false;
-                }
-
-                foeVertexDescriptor *pVertexDescriptor{nullptr};
-                bool boned{false};
-                if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
-                    pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
-                    boned = true;
-                    pVertexDescriptor = getResourcePool<foeVertexDescriptorPool>(
-                                            pSimulationSet->resourcePools.data(),
-                                            pSimulationSet->resourcePools.size())
-                                            ->find(pRenderState->bonedVertexDescriptor);
-                }
-
-                if (pVertexDescriptor == nullptr) {
-                    pVertexDescriptor = getResourcePool<foeVertexDescriptorPool>(
-                                            pSimulationSet->resourcePools.data(),
-                                            pSimulationSet->resourcePools.size())
-                                            ->find(pRenderState->vertexDescriptor);
-                }
-
-                auto *pMaterial =
-                    getResourcePool<foeMaterialPool>(pSimulationSet->resourcePools.data(),
-                                                     pSimulationSet->resourcePools.size())
-                        ->find(pRenderState->material);
-                auto *pMesh = getResourcePool<foeMeshPool>(pSimulationSet->resourcePools.data(),
-                                                           pSimulationSet->resourcePools.size())
-                                  ->find(pRenderState->mesh);
-
-                if (pVertexDescriptor == nullptr || pMaterial == nullptr || pMesh == nullptr) {
-                    return false;
-                }
-                if (pVertexDescriptor->getState() != foeResourceState::Loaded ||
-                    pMaterial->getState() != foeResourceState::Loaded ||
-                    pMesh->getState() != foeResourceState::Loaded) {
-                    return false;
-                }
-
-                // Retrieve the pipeline
-                auto *pGfxVertexDescriptor = &pVertexDescriptor->data.vertexDescriptor;
-                VkPipelineLayout layout;
-                uint32_t descriptorSetLayoutCount;
-                VkPipeline pipeline;
-
-                foeGfxVkGetPipelinePool(gfxSession)
-                    ->getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
-                                  pMaterial->data.pGfxFragDescriptor, renderPass, 0, samples,
-                                  &layout, &descriptorSetLayoutCount, &pipeline);
-
-                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0,
-                                        1, &cameraDescriptor, 0, nullptr);
-
-                foeGfxVkBindMesh(pMesh->data.gfxData, commandBuffer, boned);
-
-                auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
-                if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
-                    auto *pPosition3dPool =
-                        getComponentPool<foePosition3dPool>(pSimulationSet->componentPools.data(),
-                                                            pSimulationSet->componentPools.size());
-
-                    auto posOffset = pPosition3dPool->find(entity);
-                    auto *pPosition = (pPosition3dPool->begin<1>() + posOffset)->get();
-                    // Bind the object's position *if* the descriptor supports it
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            1, 1, &pPosition->descriptorSet, 0, nullptr);
-                } else {
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            1, 1, &dummyDescriptorSet, 0, nullptr);
-                }
-                if (boned) {
-                    // If we have bone information, bind that too
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            2, 1, &pRenderState->boneDescriptorSet, 0, nullptr);
-                }
-                // Bind the fragment descriptor set *if* it exists?
-                if (auto set = pMaterial->data.materialDescriptorSet; set != VK_NULL_HANDLE) {
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
-                                            foeDescriptorSetLayoutIndex::FragmentShader, 1, &set, 0,
-                                            nullptr);
-                }
-
-                vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-                vkCmdDrawIndexed(commandBuffer, foeGfxGetMeshIndices(pMesh->data.gfxData), 1, 0, 0,
-                                 0);
-
-                return true;
-            };
-
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE) {
@@ -1301,7 +1301,8 @@ int Application::mainloop() {
                                 vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
                                                      VK_SUBPASS_CONTENTS_INLINE);
 
-                                renderCall(renderMeshID, commandBuffer,
+                                renderCall(renderMeshID, gfxSession, pSimulationSet.get(),
+                                           commandBuffer,
                                            foeGfxVkGetRenderTargetSamples(renderTarget),
                                            xrOffscreenRenderPass, it.camera.descriptor);
 
@@ -1572,8 +1573,8 @@ int Application::mainloop() {
 
                         auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
-                        renderCall(renderMeshID, commandBuffer, maxSupportedSamples, renderPass,
-                                   (*pCamera)->descriptor);
+                        renderCall(renderMeshID, gfxSession, pSimulationSet.get(), commandBuffer,
+                                   maxSupportedSamples, renderPass, (*pCamera)->descriptor);
 
                         vkCmdEndRenderPass(commandBuffer);
                     }
