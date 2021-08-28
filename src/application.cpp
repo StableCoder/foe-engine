@@ -389,7 +389,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         maxSupportedSamples = foeGfxVkGetMaxSupportedMSAA(gfxSession);
     }
 
-    errC = foeGfxCreateUploadContext(gfxSession, &resUploader);
+    errC = foeGfxCreateUploadContext(gfxSession, &gfxResUploadContext);
     if (errC) {
         ERRC_END_PROGRAM_TUPLE
     }
@@ -407,6 +407,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     imguiRenderer.rescale(xScale, yScale);
 #endif
 
+    // Create per-frame data
     for (auto &it : frameData) {
         vkRes = it.create(foeGfxVkGetDevice(gfxSession));
         if (vkRes != VK_SUCCESS) {
@@ -414,7 +415,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         }
     }
 
-    { // Initialize simulation functionality
+    { // Initialize simulation
         foeSimulationInitInfo simInitInfo{
             .gfxSession = gfxSession,
             .externalFileSearchFn = std::bind(&foeGroupData::findExternalFile,
@@ -424,7 +425,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         foeInitializeSimulation(pSimulationSet.get(), &simInitInfo);
     }
 
-    {
+    { // Load all available resources
         for (auto *ptr : getResourcePool<foeArmaturePool>(pSimulationSet->resourcePools.data(),
                                                           pSimulationSet->resourcePools.size())
                              ->getDataVector()) {
@@ -458,6 +459,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
 #ifdef FOE_XR_SUPPORT
+    // Initialize XR if an HMD is available
     if (xrRuntime != FOE_NULL_HANDLE) {
         XrResult xrRes{XR_SUCCESS};
 
@@ -680,9 +682,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
     }
-#endif
 
-#ifdef FOE_XR_SUPPORT
+    // If the user specified to force an XR session and couldn't find/create the session, fail out
     if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
         FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
         return std::make_tuple(false, 1);
@@ -695,6 +696,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #include <foe/imex/yaml/exporter.hpp>
 
 void Application::deinitialize() {
+    std::error_code errC;
+
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxWaitIdle(gfxSession);
 
@@ -767,8 +770,12 @@ void Application::deinitialize() {
         }
     }
 
+    // Deinit simulation
+    if (pSimulationSet)
+        foeDeinitializeSimulation(pSimulationSet.get());
+
 #ifdef FOE_XR_SUPPORT
-    // OpenXR Cleanup
+    // XR Cleanup
     if (xrSession.session != XR_NULL_HANDLE) {
         xrSession.requestExitSession();
         while (true) {
@@ -858,16 +865,22 @@ void Application::deinitialize() {
 
         xrSession.destroySession();
     }
+
+    if (xrRuntime != FOE_NULL_HANDLE)
+        errC = foeXrDestroyRuntime(xrRuntime);
 #endif
 
-    for (auto &it : frameData) {
+    // Cleanup per-frame data
+    for (auto &it : frameData)
         it.destroy(foeGfxVkGetDevice(gfxSession));
-    }
-
     for (auto &it : swapImageFramebuffers)
         vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
-    // Destroy windows data
+#ifdef EDITOR_MODE
+    imguiRenderer.deinitialize(gfxSession);
+#endif
+
+    // Destroy window data
     for (auto &it : windowData) {
         if (it.gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
             foeGfxDestroyRenderTarget(it.gfxOffscreenRenderTarget);
@@ -884,35 +897,29 @@ void Application::deinitialize() {
         it.window = FOE_NULL_HANDLE;
     }
 
-    if (gfxDelayedDestructor != FOE_NULL_HANDLE) {
+    // Cleanup graphics
+    if (gfxDelayedDestructor != FOE_NULL_HANDLE)
         foeGfxDestroyDelayedDestructor(gfxDelayedDestructor);
-        gfxDelayedDestructor = FOE_NULL_HANDLE;
-    }
+    gfxDelayedDestructor = FOE_NULL_HANDLE;
 
-    foeGfxDestroyUploadContext(resUploader);
-
-#ifdef EDITOR_MODE
-    imguiRenderer.deinitialize(gfxSession);
-#endif
-
-    if (pSimulationSet)
-        foeDeinitializeSimulation(pSimulationSet.get());
-
-#ifdef FOE_XR_SUPPORT
-    std::error_code errC;
-    if (xrRuntime != FOE_NULL_HANDLE)
-        errC = foeXrDestroyRuntime(xrRuntime);
-#endif
+    if (gfxResUploadContext != FOE_NULL_HANDLE)
+        foeGfxDestroyUploadContext(gfxResUploadContext);
+    gfxResUploadContext = FOE_NULL_HANDLE;
 
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxDestroySession(gfxSession);
+    gfxSession = FOE_NULL_HANDLE;
+
     if (gfxRuntime != FOE_NULL_HANDLE)
         foeGfxDestroyRuntime(gfxRuntime);
+    gfxRuntime = FOE_NULL_HANDLE;
 
+    // Cleanup threadpool
     if (threadPool)
         foeDestroyThreadPool(threadPool);
     threadPool = FOE_NULL_HANDLE;
 
+    // Deregister functionality
     deregisterBasicFunctionality();
 
     // Output configuration settings to a YAML configuration file
@@ -996,52 +1003,57 @@ int Application::mainloop() {
         simulationClock.update(programClock.currentTime<std::chrono::nanoseconds>());
         double timeElapsedInSec = simulationClock.elapsed().count() * 0.000000001f;
 
-        foeWsiGlfw3WindowEventProcessing();
-
-        auto *pMouse = foeWsiGetMouse(windowData[0].window);
-        auto *pKeyboard = foeWsiGetKeyboard(windowData[0].window);
-
+        // Component Pool Maintenance
         for (auto &it : pSimulationSet->componentPools) {
             it->maintenance();
         }
 
+        // Resource Loader Maintenance
         for (auto &it : pSimulationSet->resourceLoaders) {
             if (it.pMaintenanceFn) {
                 it.pMaintenanceFn(it.pLoader);
             }
         }
 
+        // Process systems
+        getSystem<foeArmatureSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+            ->process(timeElapsedInSec);
+        getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+            ->process(timeElapsedInSec);
+
+        // Process Window Events
+        foeWsiGlfw3WindowEventProcessing();
+
 #ifdef EDITOR_MODE
         // User input processing
-        imguiRenderer.keyboardInput(pKeyboard);
-        imguiRenderer.mouseInput(pMouse);
+        imguiRenderer.keyboardInput(foeWsiGetKeyboard(windowData[0].window));
+        imguiRenderer.mouseInput(foeWsiGetMouse(windowData[0].window));
         if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
 #endif
         {
             auto pPosition3dPool = getComponentPool<foePosition3dPool>(
                 pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
             auto *pCameraPosition = (pPosition3dPool->begin<1>() + pPosition3dPool->find(cameraID));
-            processUserInput(timeElapsedInSec, pKeyboard, pMouse, pCameraPosition->get());
+            processUserInput(timeElapsedInSec, foeWsiGetKeyboard(windowData[0].window),
+                             foeWsiGetMouse(windowData[0].window), pCameraPosition->get());
         }
 
-        // Check if swapchains need rebuilding here
+        // Check if windows were resized, and if so request associated swapchains to be rebuilt
         for (auto &it : windowData) {
-            if (foeWsiWindowResized(it.window))
+            if (foeWsiWindowResized(it.window)) {
                 it.swapchain.requestRebuild();
-        }
 
 #ifdef EDITOR_MODE
-        int width, height;
-        foeWsiWindowGetSize(windowData[0].window, &width, &height);
-        imguiRenderer.resize(width, height);
+                if (it.window == windowData[0].window) {
+                    int width, height;
+                    foeWsiWindowGetSize(windowData[0].window, &width, &height);
+                    imguiRenderer.resize(width, height);
+                }
 #endif
+            }
+        }
 
-        getSystem<foeArmatureSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
-            ->process(timeElapsedInSec);
-        getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
-            ->process(timeElapsedInSec);
-
-        // Vulkan Render Section
+        // Determine if the next frame is available to start rendering to, if we don't have one
         if (frameIndex == -1) {
             uint32_t nextFrameIndex = (lastFrameIndex + 1) % frameData.size();
             if (vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
@@ -1067,9 +1079,10 @@ int Application::mainloop() {
             }
         }
 
+        // If we have a frame we can render to, proceed to check for ready-to-render data
         if (frameIndex != -1) {
 #ifdef FOE_XR_SUPPORT
-            // Lock rendering to OpenXR, which overrides regular rendering
+            // Lock rendering to OpenXR framerate, which overrides regular rendering
             if (xrSession.session != XR_NULL_HANDLE) {
                 XrResult xrRes{XR_SUCCESS};
 
@@ -1082,12 +1095,17 @@ int Application::mainloop() {
             }
 #endif
 
+            // Swapchain updates if necessary
             for (auto &it : windowData) {
                 // If no window here, skip
                 if (it.window == FOE_NULL_HANDLE)
                     continue;
 
-                // All Cameras are currently ties to the single window X/Y viewport size
+                performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, maxSupportedSamples,
+                                         depthFormat);
+            }
+
+            { // All Cameras are currently ties to the primary window X/Y viewport size
                 auto pCameraPool = getComponentPool<foeCameraPool>(
                     pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
 
@@ -1098,9 +1116,6 @@ int Application::mainloop() {
                     pCameraData->get()->viewX = width;
                     pCameraData->get()->viewY = height;
                 }
-
-                performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, maxSupportedSamples,
-                                         depthFormat);
             }
 
             // Acquire Target Presentation Images
@@ -1132,7 +1147,7 @@ int Application::mainloop() {
 
             frameTime.newFrame();
 
-            // Generate position descriptors
+            // Run Systems that generate graphics data
             getSystem<foeCameraSystem>(pSimulationSet->systems.data(),
                                        pSimulationSet->systems.size())
                 ->processCameras(frameIndex);
@@ -1474,6 +1489,7 @@ int Application::mainloop() {
             }
 #endif
 
+            // Rendering to windows
             VkCommandBuffer &commandBuffer = frameData[frameIndex].commandBuffer;
 
             VkCommandBufferBeginInfo commandBufferBI{

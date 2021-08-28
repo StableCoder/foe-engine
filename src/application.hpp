@@ -89,7 +89,7 @@ struct Application {
     // Gfx
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
-    foeGfxUploadContext resUploader{FOE_NULL_HANDLE};
+    foeGfxUploadContext gfxResUploadContext{FOE_NULL_HANDLE};
     foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
     VkFormat depthFormat{VK_FORMAT_D16_UNORM};
     VkSampleCountFlags maxSupportedSamples;
