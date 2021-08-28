@@ -1878,6 +1878,14 @@ int Application::mainloop() {
                 } else if (vkRes != VK_SUCCESS) {
                     VK_END_PROGRAM
                 }
+                for (auto &it : swapchainResults) {
+                    if (vkRes == VK_ERROR_OUT_OF_DATE_KHR || vkRes == VK_SUBOPTIMAL_KHR) {
+                        // The associated window has been resized, will be fixed for the next frame
+                        vkRes = VK_SUCCESS;
+                    } else if (vkRes != VK_SUCCESS) {
+                        VK_END_PROGRAM
+                    }
+                }
             }
 
             // Set frame index data
