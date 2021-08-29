@@ -23,6 +23,7 @@ generate_export_header(
 target_include_directories(
   foe_graphics_resource PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports
                                ${freeimage_INCLUDE_DIRS})
+
 target_link_libraries(
   foe_graphics_resource
   PUBLIC foe
@@ -35,6 +36,7 @@ target_link_libraries(
          foe_simulation
          vk_struct_cleanup
          ${freeimage_LIBRARIES})
+
 target_code_coverage(foe_graphics_resource)
 
 add_subdirectory(src)

@@ -10,7 +10,9 @@ generate_export_header(foe_imex EXPORT_FILE_NAME
 
 target_include_directories(foe_imex PUBLIC include
                                            ${CMAKE_CURRENT_BINARY_DIR}/exports)
+
 target_link_libraries(foe_imex PUBLIC foe_ecs)
+
 target_code_coverage(foe_imex)
 
 add_subdirectory(src)

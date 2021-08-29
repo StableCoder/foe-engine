@@ -13,6 +13,7 @@ generate_export_header(foe_yaml EXPORT_FILE_NAME
 
 target_include_directories(foe_yaml PUBLIC include
                                            ${CMAKE_CURRENT_BINARY_DIR}/exports)
+
 target_link_libraries(foe_yaml PUBLIC yamlcpp::yamlcpp)
 
 if(UNIX)

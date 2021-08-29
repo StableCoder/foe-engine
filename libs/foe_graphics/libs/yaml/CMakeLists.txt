@@ -12,6 +12,7 @@ generate_export_header(
 target_include_directories(
   foe_graphics_yaml PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports
                            ../../src)
+
 target_link_libraries(foe_graphics_yaml PUBLIC foe_graphics foe_yaml)
 
 if(UNIX)

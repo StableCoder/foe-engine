@@ -11,6 +11,7 @@ generate_export_header(
 
 target_include_directories(foe_position_yaml
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+
 target_link_libraries(foe_position_yaml PUBLIC foe_imex_yaml foe_position)
 
 if(UNIX)

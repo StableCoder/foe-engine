@@ -110,7 +110,8 @@ add_subdirectory(libs)
 # Engine Entrypoint
 add_executable(foe_engine)
 target_link_libraries(foe_engine PRIVATE foe_engine_lib)
-target_code_coverage(foe_engine)
+target_code_coverage(foe_engine OBJECTS foe_engine_lib ARGS --config
+                     ../foe-settings.yml)
 
 # Engine Library
 set(CMAKE_C_VISIBILITY_PRESET default)
@@ -118,7 +119,12 @@ set(CMAKE_CXX_VISIBILITY_PRESET default)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+# Delcarations
 add_library(foe_engine_lib)
+add_library(foe_engine_imgui STATIC)
+add_library(foe_engine_lib_eh STATIC)
+
+# Engine Definition
 target_link_libraries(
   foe_engine_lib
   PUBLIC foe
@@ -141,26 +147,43 @@ target_link_libraries(
          foe_wsi_glfw3
          foe_xr)
 
-target_code_coverage(foe_engine_lib)
-
 if(BUILD_XR)
   target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
 endif()
 
 if(EDITOR_MODE)
-  # Link to executable
   target_link_libraries(foe_engine_lib PUBLIC foe_engine_imgui)
 endif()
 
-# Engine ImGUI Library
-add_library(foe_engine_imgui STATIC)
+target_code_coverage(
+  foe_engine_lib
+  OBJECTS
+  foe
+  foe_ecs
+  foe_ecs_yaml
+  foe_engine_lib_eh
+  foe_graphics_resource
+  foe_graphics_resource_yaml
+  foe_graphics_vk
+  foe_imex
+  foe_imex_yaml
+  foe_model
+  foe_physics
+  foe_physics_yaml
+  foe_position
+  foe_position_yaml
+  foe_resource
+  foe_resource_yaml
+  foe_simulation
+  foe_wsi_glfw3
+  foe_xr)
+
+# Engine ImGUI Definition
 target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
 target_link_libraries(foe_engine_imgui PUBLIC foe_imgui)
-target_code_coverage(foe_engine_imgui)
+target_code_coverage(foe_engine_imgui OBJECTS foe_imgui)
 
-# Exception-handling library code
-add_library(foe_engine_lib_eh STATIC)
-
+# Exception-handling Definition
 target_link_libraries(
   foe_engine_lib_eh
   PUBLIC CLI11

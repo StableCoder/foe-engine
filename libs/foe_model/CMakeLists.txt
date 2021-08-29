@@ -17,6 +17,7 @@ generate_export_header(foe_model EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/model/export.h)
 
 target_link_libraries(foe_model PUBLIC foe foe_model_interface glm)
+
 target_code_coverage(foe_model)
 
 if(UNIX)

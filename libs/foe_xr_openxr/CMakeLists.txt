@@ -15,8 +15,11 @@ generate_export_header(
 
 target_include_directories(foe_xr_openxr
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+
 target_compile_definitions(foe_xr_openxr PUBLIC FOE_XR_SUPPORT)
+
 target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader Vulkan::Vulkan)
+
 target_code_coverage(foe_xr_openxr)
 
 add_subdirectory(src)

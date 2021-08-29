@@ -11,6 +11,7 @@ generate_export_header(
 
 target_include_directories(foe_resource_yaml
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+
 target_link_libraries(
   foe_resource_yaml PUBLIC foe_ecs_yaml foe_graphics_vk_yaml foe_imex_yaml
                            foe_resource)

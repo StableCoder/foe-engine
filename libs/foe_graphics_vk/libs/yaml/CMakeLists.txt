@@ -13,6 +13,7 @@ generate_export_header(
 target_include_directories(
   foe_graphics_vk_yaml PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports
                               ../../src)
+
 target_link_libraries(
   foe_graphics_vk_yaml PUBLIC foe_graphics_yaml foe_graphics_vk foe_yaml
                               vk_struct_cleanup vk_value_serialization)
