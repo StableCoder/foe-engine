@@ -7,3 +7,6 @@
 [submodule "data/bringup-data-sets"]
 	path = data/bringup-data-sets
 	url = https://git.stabletec.com/foe/bringup-data-sets.git
+[submodule "external/imgui/imgui"]
+	path = external/imgui/imgui
+	url = https://github.com/ocornut/imgui.git
