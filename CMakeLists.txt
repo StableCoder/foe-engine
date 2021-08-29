@@ -96,6 +96,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # GLFW/Vulkan
 add_compile_definitions(GLFW_INCLUDE_VULKAN)
 
+# Other Compile Options
+if(UNIX)
+  add_compile_options(-fno-exceptions)
+elseif(MSVC)
+  add_compile_options(/EHsc)
+endif()
+
 # Libraries
 add_subdirectory(external)
 add_subdirectory(libs)
@@ -114,10 +121,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(foe_engine_lib)
 target_link_libraries(
   foe_engine_lib
-  PUBLIC CLI11
-         foe
+  PUBLIC foe
          foe_ecs
          foe_ecs_yaml
+         foe_engine_lib_eh
          foe_graphics_resource
          foe_graphics_resource_yaml
          foe_graphics_vk
@@ -133,6 +140,7 @@ target_link_libraries(
          foe_simulation
          foe_wsi_glfw3
          foe_xr)
+
 target_code_coverage(foe_engine_lib)
 
 if(BUILD_XR)
@@ -148,6 +156,29 @@ endif()
 add_library(foe_engine_imgui STATIC)
 target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
 target_link_libraries(foe_engine_imgui PUBLIC foe_imgui)
+target_code_coverage(foe_engine_imgui)
+
+# Exception-handling library code
+add_library(foe_engine_lib_eh STATIC)
+
+target_link_libraries(
+  foe_engine_lib_eh
+  PUBLIC CLI11
+         foe_ecs_yaml
+         foe_graphics_resource_yaml
+         foe_imex_yaml
+         foe_physics_yaml
+         foe_position_yaml
+         foe_resource_yaml
+         foe_simulation)
+
+if(UNIX)
+  target_compile_options(foe_engine_lib_eh PRIVATE -fPIC -fexceptions)
+else(MSVC)
+  target_compile_options(foe_engine_lib_eh PRIVATE /EHa)
+endif()
+
+target_code_coverage(foe_engine_lib_eh)
 
 # Sources
 add_subdirectory(src)

@@ -14,6 +14,13 @@ target_include_directories(foe_resource_yaml
 target_link_libraries(
   foe_resource_yaml PUBLIC foe_ecs_yaml foe_graphics_vk_yaml foe_imex_yaml
                            foe_resource)
+
+if(UNIX)
+  target_compile_options(foe_resource_yaml PRIVATE -fexceptions)
+else(MSVC)
+  target_compile_options(foe_resource_yaml PRIVATE /EHa)
+endif()
+
 target_code_coverage(foe_resource_yaml)
 
 add_subdirectory(src)

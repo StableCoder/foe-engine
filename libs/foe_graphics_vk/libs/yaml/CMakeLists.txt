@@ -16,6 +16,13 @@ target_include_directories(
 target_link_libraries(
   foe_graphics_vk_yaml PUBLIC foe_graphics_yaml foe_graphics_vk foe_yaml
                               vk_struct_cleanup vk_value_serialization)
+
+if(UNIX)
+  target_compile_options(foe_graphics_vk_yaml PRIVATE -fexceptions)
+else(MSVC)
+  target_compile_options(foe_graphics_vk_yaml PRIVATE /EHa)
+endif()
+
 target_code_coverage(foe_graphics_vk_yaml)
 
 add_subdirectory(src)

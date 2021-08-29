@@ -20,7 +20,6 @@
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
-#include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/resource/image_loader.hpp>
 #include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material.hpp>
@@ -59,6 +58,7 @@
 #include "armature_system.hpp"
 #include "camera_pool.hpp"
 #include "camera_system.hpp"
+#include "export_yaml.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
@@ -693,16 +693,13 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     return std::make_tuple(true, 0);
 }
 
-#include <foe/imex/yaml/exporter.hpp>
-
 void Application::deinitialize() {
     std::error_code errC;
 
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxWaitIdle(gfxSession);
 
-    foeYamlExporter yamlExporter;
-    yamlExporter.exportState("testExport", pSimulationSet.get());
+    exportYaml(pSimulationSet.get());
 
     // Systems Deinitialization
     getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())

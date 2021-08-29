@@ -7,6 +7,13 @@ add_executable(test_foe_yaml exception.cpp pod_bool_parsing.cpp
 add_test(NAME FoE-Yaml-Test COMMAND test_foe_yaml)
 
 target_link_libraries(test_foe_yaml PRIVATE catch foe_yaml)
+
+if(UNIX)
+  target_compile_options(test_foe_yaml PRIVATE -fexceptions)
+else(MSVC)
+  target_compile_options(test_foe_yaml PRIVATE /EHa)
+endif()
+
 target_code_coverage(
   test_foe_yaml
   AUTO

@@ -11,6 +11,13 @@ add_test(NAME FoE-Graphics-Yaml-Test COMMAND test_foe_graphics_vk_yaml)
 
 target_link_libraries(test_foe_graphics_vk_yaml PRIVATE catch
                                                         foe_graphics_vk_yaml)
+
+if(UNIX)
+  target_compile_options(test_foe_graphics_vk_yaml PRIVATE -fexceptions)
+else(MSVC)
+  target_compile_options(test_foe_graphics_vk_yaml PRIVATE /EHa)
+endif()
+
 target_code_coverage(
   test_foe_graphics_vk_yaml
   AUTO

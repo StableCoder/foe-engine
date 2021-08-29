@@ -13,6 +13,13 @@ target_include_directories(
   foe_graphics_yaml PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports
                            ../../src)
 target_link_libraries(foe_graphics_yaml PUBLIC foe_graphics foe_yaml)
+
+if(UNIX)
+  target_compile_options(foe_graphics_yaml PRIVATE -fexceptions)
+else(MSVC)
+  target_compile_options(foe_graphics_yaml PRIVATE /EHa)
+endif()
+
 target_code_coverage(foe_graphics_yaml)
 
 add_subdirectory(src)
