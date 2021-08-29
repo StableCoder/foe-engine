@@ -341,6 +341,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
     imguiState.addUI(&fileTermination);
     imguiState.addUI(&viewFrameTimeInfo);
+
+    // Per SimState UI
+    pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet.get()});
+    imguiState.addUI(pSimGroupDataUI.get());
 #endif
 
     VkResult vkRes{VK_SUCCESS};

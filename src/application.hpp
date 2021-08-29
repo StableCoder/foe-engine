@@ -47,6 +47,7 @@
 #ifdef EDITOR_MODE
 #include <foe/imgui/renderer.hpp>
 #include <foe/imgui/state.hpp>
+#include <foe/simulation/imgui/group_data.hpp>
 #include <imgui.h>
 
 #include "imgui/frame_time_info.hpp"
@@ -102,6 +103,9 @@ struct Application {
 
     foeImGuiTermination fileTermination;
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
+
+    // Per SimState UI
+    std::unique_ptr<foeSimulationImGuiGroupData> pSimGroupDataUI;
 #endif
 
     VkSwapchainKHR framebufferSwapchain{VK_NULL_HANDLE};
