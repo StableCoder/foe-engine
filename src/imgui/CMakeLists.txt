@@ -1,1 +1,2 @@
-target_sources(foe_engine_imgui PRIVATE frame_time_info.cpp termination.cpp)
+target_sources(foe_engine_imgui PRIVATE entity_list.cpp frame_time_info.cpp
+                                        termination.cpp)

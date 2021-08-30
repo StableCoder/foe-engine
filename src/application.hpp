@@ -50,6 +50,7 @@
 #include <foe/simulation/imgui/group_data.hpp>
 #include <imgui.h>
 
+#include "imgui/entity_list.hpp"
 #include "imgui/frame_time_info.hpp"
 #include "imgui/termination.hpp"
 #endif
@@ -106,6 +107,7 @@ struct Application {
 
     // Per SimState UI
     std::unique_ptr<foeSimulationImGuiGroupData> pSimGroupDataUI;
+    std::unique_ptr<foeImGuiEntityList> pEntityListUI;
 #endif
 
     VkSwapchainKHR framebufferSwapchain{VK_NULL_HANDLE};
