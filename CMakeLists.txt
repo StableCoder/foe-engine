@@ -183,6 +183,10 @@ target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
 target_link_libraries(foe_engine_imgui PUBLIC foe_imgui foe_simulation_imgui)
 target_code_coverage(foe_engine_imgui OBJECTS foe_imgui)
 
+if(UNIX)
+  target_compile_options(foe_engine_imgui PRIVATE -fPIC)
+endif()
+
 # Exception-handling Definition
 target_link_libraries(
   foe_engine_lib_eh
