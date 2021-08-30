@@ -348,6 +348,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     pEntityListUI.reset(new foeImGuiEntityList{pSimulationSet.get()});
     imguiState.addUI(pEntityListUI.get());
+
+    pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet.get()});
+    imguiState.addUI(pResourceListUI.get());
 #endif
 
     VkResult vkRes{VK_SUCCESS};
