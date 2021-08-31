@@ -77,8 +77,8 @@ TEST_CASE("GroupTranslator - Translating Values", "[foe][ecs]") {
         REQUIRE(foeIdTranslateGroupValue(&test, 0) == foeIdValueToGroup(3));
         REQUIRE(foeIdTranslateGroupValue(&test, 1) == foeIdValueToGroup(4));
     }
-    SECTION("Invalid source values return FOE_INVALID_ID") {
-        REQUIRE(foeIdTranslateGroupValue(&test, 14) == FOE_INVALID_ID);
-        REQUIRE(foeIdTranslateGroupValue(&test, 15) == FOE_INVALID_ID);
+    SECTION("Invalid source values return foeIdTemporaryGroup") {
+        REQUIRE(foeIdTranslateGroupValue(&test, 14) == foeIdTemporaryGroup);
+        REQUIRE(foeIdTranslateGroupValue(&test, 15) == foeIdTemporaryGroup);
     }
 }
