@@ -69,7 +69,6 @@ struct Application {
 
     // Groups/Entities
     foeId cameraID = FOE_INVALID_ID;
-    foeId renderMeshID = FOE_INVALID_ID;
 
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet;
 

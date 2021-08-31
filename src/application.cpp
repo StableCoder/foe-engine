@@ -185,6 +185,7 @@ auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
 }
 
 auto renderCall(foeId entity,
+                foeRenderState const *pRenderState,
                 foeGfxSession gfxSession,
                 foeSimulationState *pSimulationSet,
                 VkCommandBuffer commandBuffer,
@@ -192,18 +193,6 @@ auto renderCall(foeId entity,
                 VkRenderPass renderPass,
                 VkDescriptorSet cameraDescriptor) -> bool {
     VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
-
-    foeRenderState *pRenderState{nullptr};
-
-    auto pRenderStatePool = getComponentPool<foeRenderStatePool>(
-        pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
-
-    auto searchOffset = pRenderStatePool->find(entity);
-    if (searchOffset != pRenderStatePool->size()) {
-        pRenderState = pRenderStatePool->begin<1>() + searchOffset;
-    } else {
-        return false;
-    }
 
     foeVertexDescriptor *pVertexDescriptor{nullptr};
     bool boned{false};
@@ -261,6 +250,11 @@ auto renderCall(foeId entity,
             pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
 
         auto posOffset = pPosition3dPool->find(entity);
+
+        // If can't find a position, return failure
+        if (posOffset == pPosition3dPool->size())
+            return false;
+
         auto *pPosition = (pPosition3dPool->begin<1>() + posOffset)->get();
         // Bind the object's position *if* the descriptor supports it
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
@@ -336,7 +330,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     // Special Entities
     cameraID = pSimulationSet->pEntityNameMap->find("camera");
-    renderMeshID = pSimulationSet->pEntityNameMap->find("renderMesh");
 
 #ifdef EDITOR_MODE
     imguiState.addUI(&fileTermination);
@@ -1323,10 +1316,19 @@ int Application::mainloop() {
                                 vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
                                                      VK_SUBPASS_CONTENTS_INLINE);
 
-                                renderCall(renderMeshID, gfxSession, pSimulationSet.get(),
-                                           commandBuffer,
-                                           foeGfxVkGetRenderTargetSamples(renderTarget),
-                                           xrOffscreenRenderPass, it.camera.descriptor);
+                                auto *pRenderStatePool = getComponentPool<foeRenderStatePool>(
+                                    pSimulationSet->componentPools.data(),
+                                    pSimulationSet->componentPools.size());
+
+                                auto idIt = pRenderStatePool->cbegin();
+                                auto const endIdIt = pRenderStatePool->cend();
+                                auto dataIt = pRenderStatePool->cbegin<1>();
+                                for (; idIt != endIdIt; ++idIt, ++dataIt) {
+                                    renderCall(*idIt, dataIt, gfxSession, pSimulationSet.get(),
+                                               commandBuffer,
+                                               foeGfxVkGetRenderTargetSamples(renderTarget),
+                                               xrOffscreenRenderPass, it.camera.descriptor);
+                                }
 
                                 vkCmdEndRenderPass(commandBuffer);
                             }
@@ -1596,8 +1598,18 @@ int Application::mainloop() {
 
                         auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
-                        renderCall(renderMeshID, gfxSession, pSimulationSet.get(), commandBuffer,
-                                   maxSupportedSamples, renderPass, (*pCamera)->descriptor);
+                        auto *pRenderStatePool = getComponentPool<foeRenderStatePool>(
+                            pSimulationSet->componentPools.data(),
+                            pSimulationSet->componentPools.size());
+
+                        auto idIt = pRenderStatePool->cbegin();
+                        auto const endIdIt = pRenderStatePool->cend();
+                        auto dataIt = pRenderStatePool->cbegin<1>();
+                        for (; idIt != endIdIt; ++idIt, ++dataIt) {
+                            renderCall(*idIt, dataIt, gfxSession, pSimulationSet.get(),
+                                       commandBuffer, maxSupportedSamples, renderPass,
+                                       (*pCamera)->descriptor);
+                        }
 
                         vkCmdEndRenderPass(commandBuffer);
                     }
