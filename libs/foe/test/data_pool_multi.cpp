@@ -513,7 +513,7 @@ TEST_CASE("Pool<MULTI> - Staggered insertion") {
 }
 
 TEST_CASE("Pool<MULTI> - Attempting to insert multiple of the same uint32_t fails, only the "
-          "first one is inserted") {
+          "*last* one is inserted") {
     Pool test;
 
     int tempI = 1;
@@ -535,7 +535,7 @@ TEST_CASE("Pool<MULTI> - Attempting to insert multiple of the same uint32_t fail
     REQUIRE(test.inserted() == 1);
 
     REQUIRE(*test.begin() == uint32_t(16));
-    REQUIRE(*test.begin<1>() == 1);
+    REQUIRE(*test.begin<1>() == 3);
 }
 
 TEST_CASE("Pool<MULTI> - Attempting to add same entity in a different pass fails, original "

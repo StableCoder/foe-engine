@@ -509,7 +509,7 @@ TEST_CASE("Pool<int> - Staggered insertion") {
 }
 
 TEST_CASE(
-    "Pool<int> - Attempting to insert multiple of the same uint32_t fails, only the *first* one "
+    "Pool<int> - Attempting to insert multiple of the same uint32_t fails, only the *last* one "
     "is inserted") {
     Pool test;
 
@@ -526,7 +526,7 @@ TEST_CASE(
     REQUIRE(test.inserted() == 1);
 
     REQUIRE(*test.begin() == uint32_t(16));
-    REQUIRE(*test.begin<1>() == 1);
+    REQUIRE(*test.begin<1>() == 3);
 }
 
 TEST_CASE(

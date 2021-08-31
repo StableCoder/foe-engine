@@ -17,6 +17,7 @@
 #ifndef FOE_ECS_DATA_POOL_IMPL_HPP
 #define FOE_ECS_DATA_POOL_IMPL_HPP
 
+#include <foe/algorithm.hpp>
 #include <foe/data_pool.hpp>
 
 #include <algorithm>
@@ -375,10 +376,11 @@ void foeDataPool<IdType, Components...>::insertPass() {
 
     std::sort(toInsert.begin(), toInsert.end(),
               [](auto const &a, auto const &b) { return std::get<0>(a) < std::get<0>(b); });
-    toInsert.erase(
-        std::unique(toInsert.begin(), toInsert.end(),
-                    [](auto const &a, auto const &b) { return std::get<0>(a) == std::get<0>(b); }),
-        toInsert.end());
+    toInsert.erase(foe::unique_last(toInsert.begin(), toInsert.end(),
+                                    [](auto const &a, auto const &b) {
+                                        return std::get<0>(a) == std::get<0>(b);
+                                    }),
+                   toInsert.end());
 
     mInsertedOffsets.reserve(toInsert.size());
 
