@@ -14,7 +14,8 @@ add_executable(test_foe_split_thread_pool)
 # Main Definition
 target_sources(
   test_foe
-  PRIVATE command_string_runner.cpp
+  PRIVATE algorithm.cpp
+          command_string_runner.cpp
           data_pool_custom.cpp
           data_pool_int.cpp
           data_pool_multi.cpp
