@@ -207,9 +207,9 @@ bool foeYamlExporter::exportState(std::filesystem::path rootPath, foeSimulationS
         return false;
     if (!exportGroupEntityIndexData(rootPath, pSimState))
         return false;
-    if (!exportResources(rootPath, 0, pSimState))
+    if (!exportResources(rootPath, foeIdPersistentGroup, pSimState))
         return false;
-    if (!exportComponentData(rootPath, 0, pSimState))
+    if (!exportComponentData(rootPath, foeIdPersistentGroup, pSimState))
         return false;
 
     return true;
@@ -312,7 +312,7 @@ bool foeYamlExporter::exportGroupEntityIndexData(std::filesystem::path rootOutPa
                                                  foeSimulationState *pSimState) {
     mSync.lock_shared();
     bool retVal = exportIndexDataToFile(rootOutPath / entityIndexDataFilePath,
-                                        pSimState->groupData.persistentResourceIndices());
+                                        pSimState->groupData.persistentEntityIndices());
     mSync.unlock_shared();
     return retVal;
 }
