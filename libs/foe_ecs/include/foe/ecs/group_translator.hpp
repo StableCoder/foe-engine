@@ -49,6 +49,11 @@ FOE_ECS_EXPORT auto foeIdCreateTranslator(std::vector<foeIdGroupValueNameSet> co
                                           std::vector<foeIdGroupValueNameSet> const &destination,
                                           foeIdGroupTranslator *pTranslator) -> std::error_code;
 
+/** @brief Translates a given group value through the given translator
+ * @param pTranslator Set of group translations
+ * @param groupValue Value to translate, if possible
+ * @return The translated foeIdGroup, or 'foeIdTemporaryGroup' if no translation was found.
+ */
 FOE_ECS_EXPORT auto foeIdTranslateGroupValue(foeIdGroupTranslator const *pTranslator,
                                              foeIdGroupValue groupValue) -> foeIdGroup;
 

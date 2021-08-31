@@ -59,5 +59,6 @@ auto foeIdTranslateGroupValue(foeIdGroupTranslator const *pTranslator, foeIdGrou
         }
     }
 
-    return FOE_INVALID_ID;
+    // If no translation, assume it's part of the persistent group
+    return foeIdTemporaryGroup;
 }

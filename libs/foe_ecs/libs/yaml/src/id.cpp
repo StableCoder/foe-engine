@@ -58,6 +58,11 @@ bool yaml_read_id_optional(std::string const &nodeName,
         yaml_read_optional("group_id", subNode, groupValue);
         if (pTranslator != nullptr) {
             group = foeIdTranslateGroupValue(pTranslator, groupValue);
+            if (group == foeIdTemporaryGroup) {
+                throw foeYamlException("group_id - Was given groupValue of '" +
+                                       std::to_string(groupValue) +
+                                       "' for which no translation exists.");
+            }
         } else {
             group = foeIdValueToGroup(groupValue);
         }
