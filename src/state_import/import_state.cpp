@@ -193,9 +193,9 @@ auto importState(std::string_view topLevelDataSet,
             // Add to GroupData
             std::string name{it->name()};
             auto newGroupEntityIndices =
-                std::make_unique<foeIdIndexGenerator>(name, foeIdValueToGroup(groupValue));
+                std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(groupValue));
             auto newGroupResourceIndices =
-                std::make_unique<foeIdIndexGenerator>(name, foeIdValueToGroup(groupValue));
+                std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(groupValue));
 
             auto success = pSimulationSet->groupData.addDynamicGroup(
                 std::move(newGroupEntityIndices), std::move(newGroupResourceIndices),

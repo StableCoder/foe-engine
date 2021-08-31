@@ -27,16 +27,35 @@
 #include <string_view>
 #include <vector>
 
+/** @brief Used to generate/free/manage indices within a group
+ *
+ * For each group, a particular index should be unique, representing a single specific object in the
+ * simulation.
+ *
+ * At it's heart, to determine unique IDs it looks at two items, the first is the set of recycled
+ * indices which is held in a queue, access to which is guarded by a mutex. If there are no items
+ * that have been freed are available, it will move on to using the nextFreeID, which is a value
+ * that has never been entered into circulation before.
+ *
+ * A fresh generator starts under the assumption that no indices exist. To change this, the
+ * importState function can be called, or to otherwise get the current state exportState can be
+ * called.
+ *
+ * To determine the totality of all IDs that are currently 'active', it will be all IDs from
+ * foeIdIndexMinValue to the nextFreeID, minus any recycled IDs. This information can be retrieved
+ * using the exportState function.
+ *
+ * @note This class is thread-safe.
+ */
 class foeIdIndexGenerator {
   public:
     /** Constructor.
-     * @param name Name of the group, should be unique, or it won't be accepted by foe::ecs::Groups.
-     * @param baseID The BaseID of the indices we're generating for.
+     * @param groupId The GroupID of the indices we're generating for.
      */
-    FOE_ECS_EXPORT foeIdIndexGenerator(std::string_view name, foeIdGroup groupId);
+    FOE_ECS_EXPORT foeIdIndexGenerator(foeIdGroup groupId);
 
-    /** Generates an unused IndexID for use in an EntityID.
-     * @return An unused EntityID. If no indexes are available, returns eInvalidID instead.
+    /** Returns either a recycled ID or a brand-new ID for use.
+     * @return An unused ID. If no indexes are available, returns FOE_INVALID_ID instead.
      */
     FOE_ECS_EXPORT foeId generate();
 
@@ -50,23 +69,20 @@ class foeIdIndexGenerator {
 
     /** Frees an IndexID so that it may be recycled.
      * @param idList Set of IDs to be freed.
-     * @return True if freed, false otherwise.
+     * @return True if freed/recycled, false otherwise.
      *
-     * ExternalIDs must be from the same BaseID.
+     * IDs must be from the same GroupID, otherwise it will fail without recycling any of the IDs.
      */
     FOE_ECS_EXPORT bool free(uint32_t count, foeId *pEntities);
 
-    /// Returns the name of the group
-    FOE_ECS_EXPORT std::string_view name() const noexcept;
-
-    /** Returns the group id for the class.
+    /** Returns the objects associated GroupID
      * @return The class's group id.
      */
     FOE_ECS_EXPORT foeIdGroup groupID() const noexcept;
 
     /** Peeks at the next *fresh* index that will be generated.
      * @return The next fresh index that will be generated.
-     * @warning Do NOT use this for new IDs. Use the generate() function to do that. This is for
+     * @warning Do NOT use this for new IDs. Use the generate() function for that. This is for
      * informational/debugging purposes only.
      *
      * This does not look at the next index, as it may be a recycled index instead, but
@@ -98,8 +114,6 @@ class foeIdIndexGenerator {
                                     std::vector<foeIdIndex> &recycledIndices);
 
   private:
-    /// Name of the group
-    std::string const cName;
     /// The group of the entity IDs being managed
     foeIdGroup const cGroupID;
 

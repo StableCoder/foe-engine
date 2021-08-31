@@ -22,21 +22,14 @@
 #include <vector>
 
 TEST_CASE("IndexGenerator - default state", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0);
+    foeIdIndexGenerator test(0);
 
     REQUIRE(test.peekNextFreshIndex() == 1);
     REQUIRE(test.recyclable() == 0);
-    REQUIRE(test.name() == "");
-}
-
-TEST_CASE("IndexGenerator - name", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("test", 0);
-
-    REQUIRE(test.name() == "test");
 }
 
 TEST_CASE("IndexGenerator - plain reset", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0);
+    foeIdIndexGenerator test(0);
 
     REQUIRE(test.peekNextFreshIndex() == 1);
     REQUIRE(test.recyclable() == 0);
@@ -48,7 +41,7 @@ TEST_CASE("IndexGenerator - plain reset", "[foe][ecs][IndexGenerator]") {
 }
 
 TEST_CASE("IndexGenerator - reset with initial values", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0);
+    foeIdIndexGenerator test(0);
 
     REQUIRE(test.peekNextFreshIndex() == 1);
     REQUIRE(test.recyclable() == 0);
@@ -60,7 +53,7 @@ TEST_CASE("IndexGenerator - reset with initial values", "[foe][ecs][IndexGenerat
 }
 
 TEST_CASE("IndexGenerator - Generating then freeing a bunch of IDs", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0);
+    foeIdIndexGenerator test(0);
 
     std::vector<foeId> idList;
     idList.reserve(256);
@@ -75,7 +68,7 @@ TEST_CASE("IndexGenerator - Generating then freeing a bunch of IDs", "[foe][ecs]
 }
 
 TEST_CASE("IndexGenerator - Reset with custom values", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0);
+    foeIdIndexGenerator test(0);
 
     REQUIRE(test.peekNextFreshIndex() == 1);
     REQUIRE(test.recyclable() == 0);
@@ -111,7 +104,7 @@ TEST_CASE("IndexGenerator - Reset with custom values", "[foe][ecs][IndexGenerato
 }
 
 TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0);
+    foeIdIndexGenerator test(0);
 
     // Generate the first ID
     foeId test0 = test.generate();
@@ -168,7 +161,7 @@ TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
 }
 
 TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0xF0000000);
+    foeIdIndexGenerator test(0xF0000000);
 
     REQUIRE(test.groupID() == 0xF0000000);
 
@@ -228,7 +221,7 @@ TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
 
 TEST_CASE("IndexGenerator - Attempting to free incorrect/invalid IDs from list",
           "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0);
+    foeIdIndexGenerator test(0);
 
     SECTION("Invalid ID") {
         std::array<foeId, 1> ids = {FOE_INVALID_ID};
@@ -247,7 +240,7 @@ TEST_CASE("IndexGenerator - Attempting to free incorrect/invalid IDs from list",
 }
 
 TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator testGenerator{"", 0};
+    foeIdIndexGenerator testGenerator{0};
 
     for (int i = 0; i < 15; ++i) {
         testGenerator.generate();
@@ -278,7 +271,7 @@ TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]
 
         testGenerator.exportState(nextFreeId, recycledIds);
 
-        foeIdIndexGenerator testGenerator2{"", 0};
+        foeIdIndexGenerator testGenerator2{0};
         testGenerator2.importState(nextFreeId, recycledIds);
 
         CHECK(testGenerator2.generate() == 8);
@@ -318,7 +311,7 @@ void freeIds(std::vector<foeId> *idList, foeIdIndexGenerator *idGenerator) {
 } // namespace
 
 TEST_CASE("IndexGenerator - Multi-threaded synchronization tests", "[foe][ecs][IndexGenerator]") {
-    foeIdIndexGenerator test("", 0xF0000000);
+    foeIdIndexGenerator test(0xF0000000);
 
     std::vector<foeId> idList[cNumThreads];
     for (auto &i : idList) {

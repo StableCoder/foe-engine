@@ -66,12 +66,12 @@ class foeGroupData {
     static constexpr std::string_view cPersistentName = "Persistent";
     static constexpr std::string_view cTemporaryName = "Temporary";
 
-    foeIdIndexGenerator mPersistentEntityIndices{"", foeIdPersistentGroup};
-    foeIdIndexGenerator mPersistentResourceIndices{"", foeIdPersistentGroup};
+    foeIdIndexGenerator mPersistentEntityIndices{foeIdPersistentGroup};
+    foeIdIndexGenerator mPersistentResourceIndices{foeIdPersistentGroup};
     std::unique_ptr<foeImporterBase> mPersistentImporter;
 
-    foeIdIndexGenerator mTemporaryEntityIndices{"", foeIdTemporaryGroup};
-    foeIdIndexGenerator mTemporaryResourceIndices{"", foeIdTemporaryGroup};
+    foeIdIndexGenerator mTemporaryEntityIndices{foeIdTemporaryGroup};
+    foeIdIndexGenerator mTemporaryResourceIndices{foeIdTemporaryGroup};
 
     std::array<CombinedGroup, foeIdNumDynamicGroups> mDynamicGroups;
 };

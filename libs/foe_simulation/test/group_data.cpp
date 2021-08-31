@@ -151,8 +151,7 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
 
     SECTION("No EntityIndices given") {
         std::unique_ptr<foeIdIndexGenerator> testEntityIndices;
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("", foeIdValueToGroup(0x1));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -160,9 +159,9 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("No ResourceIndices given") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         std::unique_ptr<foeIdIndexGenerator> testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
+            std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("", foeIdValueToGroup(0x1));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -170,9 +169,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("No Importer given") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         std::unique_ptr<DummyImporter> testImporter;
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -180,9 +178,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Blank name in the importer") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("", foeIdValueToGroup(0x1));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -190,9 +187,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Inconsistent ID Groups") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x2));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -200,8 +196,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Same as 'Persistent' ID Group") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdPersistentGroup);
-        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>("", foeIdPersistentGroup);
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdPersistentGroup);
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdPersistentGroup);
         auto testImporter = std::make_unique<DummyImporter>("a", foeIdPersistentGroup);
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -209,10 +205,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Same as 'Persistent' reserved name") {
-        auto testEntityIndices =
-            std::make_unique<foeIdIndexGenerator>("Persistent", foeIdValueToGroup(0x1));
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("Persistent", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("Persistent", foeIdValueToGroup(0x1));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -220,8 +214,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Same as 'Temporary' ID Group") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdTemporaryGroup);
-        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdTemporaryGroup);
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdTemporaryGroup);
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdTemporaryGroup);
         auto testImporter = std::make_unique<DummyImporter>("a", foeIdTemporaryGroup);
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -229,10 +223,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Same as 'Temporary' reserved name") {
-        auto testEntityIndices =
-            std::make_unique<foeIdIndexGenerator>("Temporary", foeIdValueToGroup(0x1));
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("Temporary", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("Temporary", foeIdValueToGroup(0x1));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -240,17 +232,15 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Adding the same ID group more than once fails") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("Temporary", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
 
         REQUIRE(test.addDynamicGroup(std::move(testEntityIndices), std::move(testResourceIndices),
                                      std::move(testImporter)));
 
-        testEntityIndices = std::make_unique<foeIdIndexGenerator>("b", foeIdValueToGroup(0x1));
-        testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("Temporary", foeIdValueToGroup(0x1));
+        testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         testImporter = std::make_unique<DummyImporter>("b", foeIdValueToGroup(0x1));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -258,16 +248,15 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     }
 
     SECTION("Adding the same Importer group name more than once fails") {
-        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
-        auto testResourceIndices =
-            std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
+        auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+        auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
         auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
 
         REQUIRE(test.addDynamicGroup(std::move(testEntityIndices), std::move(testResourceIndices),
                                      std::move(testImporter)));
 
-        testEntityIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x2));
-        testResourceIndices = std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x2));
+        testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x2));
+        testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x2));
         testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x2));
 
         REQUIRE_FALSE(test.addDynamicGroup(
@@ -316,8 +305,8 @@ TEST_CASE("foeGroupData - setPersistentImporter success cases", "[foe]") {
 TEST_CASE("foeGroupData - IndexGenerator/Importer retrieval", "[foe]") {
     foeGroupData test;
 
-    auto testEntityIndices = std::make_unique<foeIdIndexGenerator>("0x1", foeIdValueToGroup(0x1));
-    auto testResourceIndices = std::make_unique<foeIdIndexGenerator>("0x1", foeIdValueToGroup(0x1));
+    auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+    auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
     auto testImporter = std::make_unique<DummyImporter>("0x1", foeIdValueToGroup(0x1));
     REQUIRE(test.addDynamicGroup(std::move(testEntityIndices), std::move(testResourceIndices),
                                  std::move(testImporter)));
@@ -333,10 +322,10 @@ TEST_CASE("foeGroupData - IndexGenerator/Importer retrieval", "[foe]") {
         REQUIRE(test.importer("0x1") != nullptr);
     }
 
-    testEntityIndices = std::make_unique<foeIdIndexGenerator>(
-        "MaxDynamic", foeIdValueToGroup(foeIdMaxDynamicGroupValue));
-    testResourceIndices = std::make_unique<foeIdIndexGenerator>(
-        "MaxDynamic", foeIdValueToGroup(foeIdMaxDynamicGroupValue));
+    testEntityIndices =
+        std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(foeIdMaxDynamicGroupValue));
+    testResourceIndices =
+        std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(foeIdMaxDynamicGroupValue));
     testImporter =
         std::make_unique<DummyImporter>("MaxDynamic", foeIdValueToGroup(foeIdMaxDynamicGroupValue));
     REQUIRE(test.addDynamicGroup(std::move(testEntityIndices), std::move(testResourceIndices),
@@ -398,10 +387,9 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
 
     SECTION("Dynamic importer added") {
         SECTION("Returning true") {
-            auto testEntityIndices =
-                std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
+            auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
             auto testResourceIndices =
-                std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
+                std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
             auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1),
                                                                 static_cast<int *>(NULL) + 1);
 
@@ -411,10 +399,9 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
             REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
-            auto testEntityIndices =
-                std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
+            auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
             auto testResourceIndices =
-                std::make_unique<foeIdIndexGenerator>("a", foeIdValueToGroup(0x1));
+                std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
             auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
 
             REQUIRE(test.addDynamicGroup(std::move(testEntityIndices),
@@ -428,10 +415,8 @@ TEST_CASE("foeGroupData - Finding external files", "[foe]") {
     foeGroupData test;
 
     // Add a dynamic group
-    auto testEntityIndices =
-        std::make_unique<foeIdIndexGenerator>("dynamic", foeIdValueToGroup(0x1));
-    auto testResourceIndices =
-        std::make_unique<foeIdIndexGenerator>("dynamic", foeIdValueToGroup(0x1));
+    auto testEntityIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
+    auto testResourceIndices = std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(0x1));
     auto testImporter = std::make_unique<DummyImporter>("dynamic", foeIdValueToGroup(0x1));
 
     REQUIRE(test.addDynamicGroup(std::move(testEntityIndices), std::move(testResourceIndices),
