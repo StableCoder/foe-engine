@@ -670,6 +670,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                         goto SESSION_READY;
                     }
                 } break;
+
+                default:
+                    break;
                 }
             }
         }
@@ -796,6 +799,9 @@ void Application::deinitialize() {
                         goto SESSION_END;
                     }
                 } break;
+
+                default:
+                    break;
                 }
             }
         }
@@ -820,6 +826,9 @@ void Application::deinitialize() {
                         goto SESSION_IDLE;
                     }
                 } break;
+
+                default:
+                    break;
                 }
             }
         }
@@ -858,6 +867,9 @@ void Application::deinitialize() {
                         goto SESSION_EXITING;
                     }
                 } break;
+
+                default:
+                    break;
                 }
             }
         }
