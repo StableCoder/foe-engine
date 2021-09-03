@@ -95,7 +95,7 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
 
     { // Staging Buffer
         VkDeviceSize dataByteSize = pixelCount(extent, numMipLevels);
-        dataByteSize *= bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
+        dataByteSize *= foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -168,7 +168,7 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
             };
 
             offset += mipExtent.width * mipExtent.height * mipExtent.depth *
-                      bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
+                      foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
         }
 
         vmaUnmapMemory(pUploadContext->allocator, stagingAlloc);

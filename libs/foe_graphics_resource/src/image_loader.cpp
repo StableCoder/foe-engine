@@ -212,7 +212,7 @@ void foeImageLoader::load(void *pResource,
             .depth = 1,
         };
         auto mipLevels = maxMipmapCount(extent);
-        auto bpp = bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
+        auto bpp = foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
         size_t totalDataSize = pixelCount(extent, mipLevels) * bpp;
 
         std::unique_ptr<uint8_t[]> pelData(new uint8_t[totalDataSize]);
@@ -346,7 +346,7 @@ void foeImageLoader::load(void *pResource,
                                 bpp * mipExtent.width * mipExtent.height * mipExtent.depth);
 
                     offset += mipExtent.width * mipExtent.height * mipExtent.depth *
-                              bytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
+                              foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
                 }
 
                 foeGfxUnmapUploadBuffer(mGfxUploadContext, gfxUploadBuffer);

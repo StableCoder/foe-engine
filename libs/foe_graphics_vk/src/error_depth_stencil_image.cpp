@@ -118,7 +118,7 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
     { // Staging Buffer
         VkDeviceSize dataByteSize = pixelCount(extent, numMipLevels);
         dataByteSize *=
-            bytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+            foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
@@ -167,8 +167,8 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
         uint8_t *pData;
         VkDeviceSize offset = 0;
         copyRegions.resize(numMipLevels * 2);
-        auto const depth_bpp = bytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT);
-        auto const stencil_bpp = bytesPerPixel(format, VK_IMAGE_ASPECT_STENCIL_BIT);
+        auto const depth_bpp = foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT);
+        auto const stencil_bpp = foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_STENCIL_BIT);
 
         res = vmaMapMemory(pUploadContext->allocator, stagingAlloc,
                            reinterpret_cast<void **>(&pData));

@@ -19,9 +19,8 @@
 
 #include <vulkan/vulkan.h>
 
-#include <cstdlib>
-
-constexpr bool isDepthFormat(VkFormat format) noexcept {
+/// Returns if the given format is a depth compatible format
+constexpr bool foeGfxVkIsDepthFormat(VkFormat format) noexcept {
     switch (format) {
     case VK_FORMAT_D16_UNORM:
     case VK_FORMAT_D32_SFLOAT:
@@ -34,7 +33,8 @@ constexpr bool isDepthFormat(VkFormat format) noexcept {
     }
 }
 
-constexpr bool isDepthStencilFormat(VkFormat format) noexcept {
+/// Returns if the given format is a depth-stencil compatible format
+constexpr bool foeGfxVkIsDepthStencilFormat(VkFormat format) noexcept {
     switch (format) {
     case VK_FORMAT_D16_UNORM_S8_UINT:
     case VK_FORMAT_D24_UNORM_S8_UINT:
@@ -45,7 +45,12 @@ constexpr bool isDepthStencilFormat(VkFormat format) noexcept {
     }
 }
 
-constexpr VkDeviceSize bytesPerPixel(VkFormat format, VkImageAspectFlags aspects) noexcept {
+/** @brief Returns the number of bytes required to store each pixel
+ * @param format Format type
+ * @param aspects Aspects of the image to get the storage requirement for
+ * @return Size in bytes per pixel required for storage.
+ */
+constexpr VkDeviceSize foeGfxVkBytesPerPixel(VkFormat format, VkImageAspectFlags aspects) noexcept {
     VkDeviceSize bpp = 0;
 
     if ((aspects & VK_IMAGE_ASPECT_COLOR_BIT) == VK_IMAGE_ASPECT_COLOR_BIT) {

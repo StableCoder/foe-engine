@@ -16,12 +16,12 @@
 
 #include <foe/graphics/vk/render_pass_pool.hpp>
 
+#include <foe/graphics/vk/format.hpp>
 #include <vk_error_code.hpp>
 
 #include <array>
 #include <mutex>
 
-#include "format.hpp"
 #include "log.hpp"
 #include "session.hpp"
 
@@ -255,7 +255,7 @@ auto foeGfxVkRenderPassPool::createRenderPass(
     for (uint32_t i = 0; i < attachments.size(); ++i) {
         auto &attachment = attachments[i];
 
-        if (isDepthFormat(attachment.format)) {
+        if (foeGfxVkIsDepthFormat(attachment.format)) {
             if (depthStencilReference.attachment != cInvalidAttachment) {
                 FOE_LOG(foeVkGraphics, Error,
                         "Two depth/stencil attachments requested on a Render Pass")
