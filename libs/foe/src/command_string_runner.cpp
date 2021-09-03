@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ foeCommandStringRunner::foeCommandStringRunner() = default;
 
 foeCommandStringRunner::~foeCommandStringRunner() = default;
 
-bool foeCommandStringRunner::registerCommand(
-    std::string_view commandName, std::function<void(std::string_view)> const &function) {
+bool foeCommandStringRunner::registerCommand(std::string_view commandName, CommandFn &&commandFn) {
     std::scoped_lock lock{mSync};
     std::string cmdStr = std::string{commandName};
 
@@ -33,7 +32,7 @@ bool foeCommandStringRunner::registerCommand(
         return false;
     }
 
-    mCommandMap.insert({cmdStr, function});
+    mCommandMap.insert({cmdStr, commandFn});
     return true;
 }
 
