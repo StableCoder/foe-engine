@@ -38,6 +38,7 @@
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <foe/graphics/vk/render_target.hpp>
 #include <foe/graphics/vk/runtime.hpp>
+#include <foe/graphics/vk/sample_count.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
@@ -389,7 +390,20 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
 
-        maxSupportedSamples = foeGfxVkGetMaxSupportedMSAA(gfxSession);
+        // Make sure the MSAA setting is valid
+        globalMSAA = foeGfxVkGetMaxSupportedMSAA(gfxSession);
+        int maxSupportedCount = foeGfxVkGetSampleCount(globalMSAA);
+
+        if (settings.graphics.msaa > maxSupportedCount) {
+            settings.graphics.msaa = maxSupportedCount;
+        } else if (settings.graphics.msaa < 1) {
+            settings.graphics.msaa = 1;
+        }
+        do {
+            globalMSAA = foeGfxVkGetSampleCountFlags(settings.graphics.msaa);
+            if (globalMSAA == 0)
+                --settings.graphics.msaa;
+        } while (globalMSAA == 0);
     }
 
     errC = foeGfxCreateUploadContext(gfxSession, &gfxResUploadContext);
@@ -519,7 +533,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         xrOffscreenRenderPass = renderPassPool->renderPass(
             {VkAttachmentDescription{
                  .format = static_cast<VkFormat>(swapchainFormats[0]),
-                 .samples = static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
+                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
                  .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                  .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                  .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -529,7 +543,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
              },
              VkAttachmentDescription{
                  .format = depthFormat,
-                 .samples = static_cast<VkSampleCountFlagBits>(maxSupportedSamples),
+                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
                  .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                  .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                  .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -554,9 +568,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             };
 
             foeGfxRenderTarget newRenderTarget{FOE_NULL_HANDLE};
-            errC = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor,
-                                              offscreenSpecs.data(), offscreenSpecs.size(),
-                                              maxSupportedSamples, &newRenderTarget);
+            errC =
+                foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor, offscreenSpecs.data(),
+                                           offscreenSpecs.size(), globalMSAA, &newRenderTarget);
             if (errC) {
                 ERRC_END_PROGRAM_TUPLE
             }
@@ -1113,7 +1127,7 @@ int Application::mainloop() {
                 if (it.window == FOE_NULL_HANDLE)
                     continue;
 
-                performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, maxSupportedSamples,
+                performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, globalMSAA,
                                          depthFormat);
             }
 
@@ -1557,8 +1571,7 @@ int Application::mainloop() {
                                 ->renderPass(
                                     {VkAttachmentDescription{
                                          .format = it->swapchain.surfaceFormat().format,
-                                         .samples = static_cast<VkSampleCountFlagBits>(
-                                             maxSupportedSamples),
+                                         .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
                                          .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -1568,8 +1581,7 @@ int Application::mainloop() {
                                      },
                                      VkAttachmentDescription{
                                          .format = depthFormat,
-                                         .samples = static_cast<VkSampleCountFlagBits>(
-                                             maxSupportedSamples),
+                                         .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
                                          .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -1619,7 +1631,7 @@ int Application::mainloop() {
                         auto dataIt = pRenderStatePool->cbegin<1>();
                         for (; idIt != endIdIt; ++idIt, ++dataIt) {
                             renderCall(*idIt, dataIt, gfxSession, pSimulationSet.get(),
-                                       commandBuffer, maxSupportedSamples, renderPass,
+                                       commandBuffer, globalMSAA, renderPass,
                                        (*pCamera)->descriptor);
                         }
 

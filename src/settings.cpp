@@ -43,6 +43,7 @@ void addCommandLineOptions(CLI::App *pParser, Settings *pOptions, foeSearchPaths
     pParser->add_option("--gpu", pOptions->graphics.gpu, "Physical GPU to use to render");
     pParser->add_option("--frame-buffering", pOptions->graphics.maxFrameBuffering,
                         "Maximum frames to buffer");
+    pParser->add_option("--msaa", pOptions->graphics.msaa, "MSAA to use (typically 1,2,4 or 8)");
     pParser->add_flag("--gfx-validation", pOptions->graphics.validation,
                       "Turns on graphics validation layers");
     pParser->add_flag("--gfx-debug-logging", pOptions->graphics.debugLogging,
@@ -104,6 +105,7 @@ bool parseEngineConfigFile(Settings *pOptions,
                 yaml_read_optional("gpu", graphicsNode, pOptions->graphics.gpu);
                 yaml_read_optional("max_frame_buffering", graphicsNode,
                                    pOptions->graphics.maxFrameBuffering);
+                yaml_read_optional("msaa", graphicsNode, pOptions->graphics.msaa);
                 yaml_read_optional("validation", graphicsNode, pOptions->graphics.validation);
                 yaml_read_optional("debug_logging", graphicsNode, pOptions->graphics.debugLogging);
             } catch (foeYamlException const &e) {
@@ -175,6 +177,8 @@ void emitSettingsYaml(Settings const *pOptions, YAML::Node *pNode) {
             writeNode |= yaml_write_optional("max_frame_buffering",
                                              defaultOptions.graphics.maxFrameBuffering,
                                              pOptions->graphics.maxFrameBuffering, graphicsNode);
+            writeNode |= yaml_write_optional("msaa", defaultOptions.graphics.msaa,
+                                             pOptions->graphics.msaa, graphicsNode);
 
             if (writeNode) {
                 (*pNode)["graphics"] = graphicsNode;

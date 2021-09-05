@@ -94,7 +94,7 @@ struct Application {
     foeGfxUploadContext gfxResUploadContext{FOE_NULL_HANDLE};
     foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
     VkFormat depthFormat{VK_FORMAT_D16_UNORM};
-    VkSampleCountFlags maxSupportedSamples;
+    VkSampleCountFlags globalMSAA;
 
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 
