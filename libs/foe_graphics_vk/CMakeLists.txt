@@ -21,3 +21,6 @@ add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs)
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
