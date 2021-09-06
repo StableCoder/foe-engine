@@ -206,6 +206,19 @@ Windows/Clang-cl Shared:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
+Windows/Clang Static:
+  variables:
+    CC: clang
+    CXX: clang
+  <<: *platform_windows_template
+
+Windows/Clang Shared:
+  variables:
+    CC: clang
+    CXX: clang
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_windows_template
+
 # Analysis Stage Templates
 
 .analysis_template: &analysis_template
