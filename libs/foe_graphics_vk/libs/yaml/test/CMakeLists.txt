@@ -15,7 +15,9 @@ target_sources(
 target_link_libraries(test_foe_graphics_vk_yaml PRIVATE catch
                                                         foe_graphics_vk_yaml)
 
-if(UNIX)
+if(UNIX
+   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
+   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
   target_compile_options(test_foe_graphics_vk_yaml PRIVATE -fexceptions)
 else(MSVC)
   target_compile_options(test_foe_graphics_vk_yaml PRIVATE /EHa)

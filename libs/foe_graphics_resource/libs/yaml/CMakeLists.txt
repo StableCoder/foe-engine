@@ -17,7 +17,9 @@ target_link_libraries(
   foe_graphics_resource_yaml PUBLIC foe_ecs_yaml foe_graphics_resource
                                     foe_graphics_vk_yaml foe_imex_yaml)
 
-if(UNIX)
+if(UNIX
+   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
+   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
   target_compile_options(foe_graphics_resource_yaml PRIVATE -fexceptions)
 else(MSVC)
   target_compile_options(foe_graphics_resource_yaml PRIVATE /EHa)

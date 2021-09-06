@@ -15,7 +15,9 @@ target_include_directories(foe_physics_yaml
 target_link_libraries(foe_physics_yaml PUBLIC foe_ecs_yaml foe_physics foe_yaml
                                               foe_imex_yaml)
 
-if(UNIX)
+if(UNIX
+   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
+   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
   target_compile_options(foe_physics_yaml PRIVATE -fexceptions)
 else(MSVC)
   target_compile_options(foe_physics_yaml PRIVATE /EHa)

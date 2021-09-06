@@ -15,7 +15,9 @@ target_include_directories(foe_imex_yaml
 target_link_libraries(foe_imex_yaml PUBLIC foe_imex foe_yaml foe_ecs_yaml
                                            foe_resource)
 
-if(UNIX)
+if(UNIX
+   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
+   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
   target_compile_options(foe_imex_yaml PRIVATE -fexceptions)
 else(MSVC)
   target_compile_options(foe_imex_yaml PRIVATE /EHa)

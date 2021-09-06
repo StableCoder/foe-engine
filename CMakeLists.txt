@@ -200,7 +200,13 @@ target_link_libraries(
          foe_simulation)
 
 if(UNIX)
-  target_compile_options(foe_engine_lib_eh PRIVATE -fPIC -fexceptions)
+  target_compile_options(foe_engine_lib_eh PRIVATE -fPIC)
+endif()
+
+if(UNIX
+   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
+   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
+  target_compile_options(foe_engine_lib_eh PRIVATE -fexceptions)
 else(MSVC)
   target_compile_options(foe_engine_lib_eh PRIVATE /EHa)
 endif()

@@ -15,7 +15,9 @@ target_include_directories(
 
 target_link_libraries(foe_graphics_yaml PUBLIC foe_graphics foe_yaml)
 
-if(UNIX)
+if(UNIX
+   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
+   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
   target_compile_options(foe_graphics_yaml PRIVATE -fexceptions)
 else(MSVC)
   target_compile_options(foe_graphics_yaml PRIVATE /EHa)
