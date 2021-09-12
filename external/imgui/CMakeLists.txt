@@ -6,7 +6,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Declarations
 add_library(imgui)
-add_library(imgui_demo)
+add_library(imgui_demo STATIC)
 
 # imgui Definition
 target_sources(imgui PRIVATE imgui/imgui.cpp imgui/imgui_draw.cpp
