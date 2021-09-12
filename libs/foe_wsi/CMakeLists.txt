@@ -19,6 +19,7 @@ target_include_directories(
 target_link_libraries(foe_wsi INTERFACE foe Vulkan::Vulkan)
 
 # Auxiliary Targets
+add_subdirectory(libs)
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()

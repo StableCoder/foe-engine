@@ -335,6 +335,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
     imguiState.addUI(&fileTermination);
     imguiState.addUI(&viewFrameTimeInfo);
+    imguiState.addUI(&windowInfo);
 
     // Per SimState UI
     pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet.get()});
@@ -354,6 +355,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                                       true, &it.window);
             if (errC)
                 ERRC_END_PROGRAM_TUPLE
+
+#ifdef EDITOR_MODE
+            windowInfo.addWindow(it.window);
+#endif
         }
 
 #ifdef FOE_XR_SUPPORT
@@ -908,6 +913,9 @@ void Application::deinitialize() {
 
     // Destroy window data
     for (auto &it : windowData) {
+#ifdef EDITOR_MODE
+        windowInfo.removeWindow(it.window);
+#endif
         if (it.gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
             foeGfxDestroyRenderTarget(it.gfxOffscreenRenderTarget);
         it.gfxOffscreenRenderTarget = FOE_NULL_HANDLE;

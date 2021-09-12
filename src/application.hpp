@@ -48,6 +48,7 @@
 #include <foe/imgui/renderer.hpp>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/group_data.hpp>
+#include <foe/wsi/imgui/window.hpp>
 #include <imgui.h>
 
 #include "imgui/entity_list.hpp"
@@ -104,6 +105,7 @@ struct Application {
 
     foeImGuiTermination fileTermination;
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
+    foeWsiImGuiWindow windowInfo;
 
     // Per SimState UI
     std::unique_ptr<foeSimulationImGuiGroupData> pSimGroupDataUI;
