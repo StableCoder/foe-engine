@@ -1833,9 +1833,10 @@ int Application::mainloop() {
 #ifdef EDITOR_MODE
                         if (it == windowRenderList[0]) { // ImGui
                             if (!imguiRenderer.initialized()) {
-                                if (imguiRenderer.initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT,
-                                                             renderPass, 0) != VK_SUCCESS) {
-                                    VK_END_PROGRAM
+                                errC = imguiRenderer.initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT,
+                                                                renderPass, 0);
+                                if (errC) {
+                                    ERRC_END_PROGRAM
                                 }
                             }
 
