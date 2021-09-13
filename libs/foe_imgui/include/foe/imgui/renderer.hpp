@@ -25,8 +25,8 @@
 #include <system_error>
 #include <vector>
 
-struct foeKeyboard;
-struct foeMouse;
+struct foeWsiKeyboard;
+struct foeWsiMouse;
 
 class foeImGuiRenderer {
   public:
@@ -50,10 +50,10 @@ class foeImGuiRenderer {
     FOE_IMGUI_EXPORT void rescale(float xScale, float yScale);
 
     FOE_IMGUI_EXPORT bool wantCaptureMouse() const noexcept;
-    FOE_IMGUI_EXPORT void mouseInput(foeMouse const *pMouse) noexcept;
+    FOE_IMGUI_EXPORT void mouseInput(foeWsiMouse const *pMouse) noexcept;
 
     FOE_IMGUI_EXPORT bool wantCaptureKeyboard() const noexcept;
-    FOE_IMGUI_EXPORT void keyboardInput(foeKeyboard const *pKeyboard) noexcept;
+    FOE_IMGUI_EXPORT void keyboardInput(foeWsiKeyboard const *pKeyboard) noexcept;
 
   private:
     VkResult initializeDescriptorPool(VkDevice device);

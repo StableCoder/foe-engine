@@ -22,8 +22,8 @@
 
 #include <system_error>
 
-struct foeKeyboard;
-struct foeMouse;
+struct foeWsiKeyboard;
+struct foeWsiMouse;
 
 FOE_DEFINE_HANDLE(foeWsiWindow)
 
@@ -71,7 +71,7 @@ FOE_WSI_EXPORT void foeWsiWindowGetContentScale(foeWsiWindow window,
                                                 float *pScaleX,
                                                 float *pScaleY);
 
-FOE_WSI_EXPORT const foeKeyboard *foeWsiGetKeyboard(foeWsiWindow window);
-FOE_WSI_EXPORT const foeMouse *foeWsiGetMouse(foeWsiWindow window);
+FOE_WSI_EXPORT const foeWsiKeyboard *foeWsiGetKeyboard(foeWsiWindow window);
+FOE_WSI_EXPORT const foeWsiMouse *foeWsiGetMouse(foeWsiWindow window);
 
 #endif // FOE_WSI_WINDOW_HPP

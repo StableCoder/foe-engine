@@ -18,7 +18,7 @@
 
 #include "keyboard.hpp"
 
-void keyboardPreprocessing(foeKeyboard *pKeyboard) {
+void keyboardPreprocessing(foeWsiKeyboard *pKeyboard) {
     pKeyboard->unicodeChar = 0;
     pKeyboard->repeatKey = 0;
 
@@ -26,7 +26,7 @@ void keyboardPreprocessing(foeKeyboard *pKeyboard) {
     pKeyboard->releasedKeys.clear();
 }
 
-void keyCallback(foeKeyboard *pKeyboard, int key, int, int action, int) {
+void keyCallback(foeWsiKeyboard *pKeyboard, int key, int, int action, int) {
     if (action == GLFW_PRESS) {
         pKeyboard->pressedKeys.insert(key);
         pKeyboard->downKeys.insert(key);
@@ -38,6 +38,6 @@ void keyCallback(foeKeyboard *pKeyboard, int key, int, int action, int) {
     }
 }
 
-void charCallback(foeKeyboard *pKeyboard, unsigned int codepoint) {
+void charCallback(foeWsiKeyboard *pKeyboard, unsigned int codepoint) {
     pKeyboard->unicodeChar = codepoint;
 }

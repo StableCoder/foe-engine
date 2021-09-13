@@ -963,8 +963,8 @@ void Application::deinitialize() {
 namespace {
 
 void processUserInput(double timeElapsedInSeconds,
-                      foeKeyboard const *pKeyboard,
-                      foeMouse const *pMouse,
+                      foeWsiKeyboard const *pKeyboard,
+                      foeWsiMouse const *pMouse,
                       foePosition3d *pCamera) {
     constexpr float movementMultiplier = 10.f;
     constexpr float rorationMultiplier = 40.f;

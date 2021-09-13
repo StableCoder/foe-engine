@@ -528,7 +528,7 @@ void foeImGuiRenderer::rescale(float xScale, float yScale) {
 
 bool foeImGuiRenderer::wantCaptureMouse() const noexcept { return ImGui::GetIO().WantCaptureMouse; }
 
-void foeImGuiRenderer::mouseInput(foeMouse const *pMouse) noexcept {
+void foeImGuiRenderer::mouseInput(foeWsiMouse const *pMouse) noexcept {
     ImGuiIO &io = ImGui::GetIO();
 
     // Buttons down
@@ -550,7 +550,7 @@ bool foeImGuiRenderer::wantCaptureKeyboard() const noexcept {
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void foeImGuiRenderer::keyboardInput(foeKeyboard const *pKeyboard) noexcept {
+void foeImGuiRenderer::keyboardInput(foeWsiKeyboard const *pKeyboard) noexcept {
     ImGuiIO &io = ImGui::GetIO();
 
     // Down keys

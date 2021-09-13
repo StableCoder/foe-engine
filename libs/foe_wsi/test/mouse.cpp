@@ -19,8 +19,8 @@
 
 constexpr int cMaxMouseButtons = 1024;
 
-TEST_CASE("foeMouse - Initial Clean State", "[foe][wsi]") {
-    foeMouse mouse = {};
+TEST_CASE("foeWsiMouse - Initial Clean State", "[foe][wsi]") {
+    foeWsiMouse mouse = {};
 
     REQUIRE(mouse.position.x == Approx(0));
     REQUIRE(mouse.position.y == Approx(0));
@@ -41,8 +41,8 @@ TEST_CASE("foeMouse - Initial Clean State", "[foe][wsi]") {
     }
 }
 
-TEST_CASE("foeMouse - Buttons in sets", "[foe][wsi]") {
-    foeMouse mouse = {};
+TEST_CASE("foeWsiMouse - Buttons in sets", "[foe][wsi]") {
+    foeWsiMouse mouse = {};
 
     mouse.pressedButtons.insert(10u);
 

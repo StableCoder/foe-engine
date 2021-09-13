@@ -19,10 +19,10 @@
 
 #include <foe/wsi/keyboard.hpp>
 
-void keyboardPreprocessing(foeKeyboard *pKeyboard);
+void keyboardPreprocessing(foeWsiKeyboard *pKeyboard);
 
-void keyCallback(foeKeyboard *pKeyboard, int key, int, int action, int);
+void keyCallback(foeWsiKeyboard *pKeyboard, int key, int, int action, int);
 
-void charCallback(foeKeyboard *pKeyboard, unsigned int codepoint);
+void charCallback(foeWsiKeyboard *pKeyboard, unsigned int codepoint);
 
 #endif // KEYBOARD_HPP

@@ -19,14 +19,14 @@
 
 #include <foe/wsi/mouse.hpp>
 
-void mousePreprocessing(foeMouse *pMouse);
+void mousePreprocessing(foeWsiMouse *pMouse);
 
-void cursorPositionCallback(foeMouse *pMouse, double xPos, double yPos);
+void cursorPositionCallback(foeWsiMouse *pMouse, double xPos, double yPos);
 
-void cursorEnterCallback(foeMouse *pMouse, int entered);
+void cursorEnterCallback(foeWsiMouse *pMouse, int entered);
 
-void scrollCallback(foeMouse *pMouse, double xOffset, double yOffset);
+void scrollCallback(foeWsiMouse *pMouse, double xOffset, double yOffset);
 
-void buttonCallback(foeMouse *pMouse, int button, int action, int);
+void buttonCallback(foeWsiMouse *pMouse, int button, int action, int);
 
 #endif // MOUSE_HPP

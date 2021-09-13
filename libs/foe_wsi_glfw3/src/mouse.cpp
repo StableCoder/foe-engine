@@ -18,7 +18,7 @@
 
 #include "mouse.hpp"
 
-void mousePreprocessing(foeMouse *pMouse) {
+void mousePreprocessing(foeWsiMouse *pMouse) {
     pMouse->oldInWindow = pMouse->inWindow;
     pMouse->oldPosition = pMouse->position;
 
@@ -28,17 +28,17 @@ void mousePreprocessing(foeMouse *pMouse) {
     pMouse->releasedButtons.clear();
 }
 
-void cursorPositionCallback(foeMouse *pMouse, double xPos, double yPos) {
+void cursorPositionCallback(foeWsiMouse *pMouse, double xPos, double yPos) {
     pMouse->position = {xPos, yPos};
 }
 
-void cursorEnterCallback(foeMouse *pMouse, int entered) { pMouse->inWindow = entered; }
+void cursorEnterCallback(foeWsiMouse *pMouse, int entered) { pMouse->inWindow = entered; }
 
-void scrollCallback(foeMouse *pMouse, double xOffset, double yOffset) {
+void scrollCallback(foeWsiMouse *pMouse, double xOffset, double yOffset) {
     pMouse->scroll = {xOffset, yOffset};
 }
 
-void buttonCallback(foeMouse *pMouse, int button, int action, int) {
+void buttonCallback(foeWsiMouse *pMouse, int button, int action, int) {
     if (action == GLFW_PRESS) {
         pMouse->pressedButtons.insert(button);
         pMouse->downButtons.insert(button);

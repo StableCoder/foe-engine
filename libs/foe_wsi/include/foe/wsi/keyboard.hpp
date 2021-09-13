@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <set>
 
-struct foeKeyboard {
+struct foeWsiKeyboard {
     /// Unicode character currently active
     uint32_t unicodeChar;
     // Only the last pressed key can be repeated

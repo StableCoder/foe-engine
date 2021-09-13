@@ -23,7 +23,7 @@
 
 namespace {
 
-void renderKeyboardUI(foeKeyboard const *pKeyboard) {
+void renderKeyboardUI(foeWsiKeyboard const *pKeyboard) {
     // Handle
     ImGui::Text("Handle: %p", pKeyboard);
 
@@ -49,7 +49,7 @@ void renderKeyboardUI(foeKeyboard const *pKeyboard) {
     ImGui::EndTable();
 }
 
-void renderMouseUI(foeMouse const *pMouse) {
+void renderMouseUI(foeWsiMouse const *pMouse) {
     // Handle
     ImGui::Text("Handle: %p", pMouse);
 

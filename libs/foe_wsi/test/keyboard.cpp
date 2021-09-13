@@ -19,8 +19,8 @@
 
 constexpr uint32_t cMaxKeyboardKeys = 4096;
 
-TEST_CASE("foeKeyboard - Initial Clean State", "[foe][wsi]") {
-    foeKeyboard keyboard = {};
+TEST_CASE("foeWsiKeyboard - Initial Clean State", "[foe][wsi]") {
+    foeWsiKeyboard keyboard = {};
 
     REQUIRE(keyboard.pressedKeys.empty());
     REQUIRE(keyboard.releasedKeys.empty());
@@ -33,8 +33,8 @@ TEST_CASE("foeKeyboard - Initial Clean State", "[foe][wsi]") {
     }
 }
 
-TEST_CASE("foeKeyboard - Keys in sets", "[foe][wsi]") {
-    foeKeyboard keyboard = {};
+TEST_CASE("foeWsiKeyboard - Keys in sets", "[foe][wsi]") {
+    foeWsiKeyboard keyboard = {};
 
     keyboard.pressedKeys.insert(10u);
 

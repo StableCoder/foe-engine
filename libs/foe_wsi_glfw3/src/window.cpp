@@ -213,13 +213,13 @@ void foeWsiWindowShow(foeWsiWindow window) {
     glfwShowWindow(pWindow->pWindow);
 }
 
-auto foeWsiGetKeyboard(foeWsiWindow window) -> foeKeyboard const * {
+auto foeWsiGetKeyboard(foeWsiWindow window) -> foeWsiKeyboard const * {
     auto *pWindow = window_from_handle(window);
 
     return &pWindow->keyboard;
 }
 
-auto foeWsiGetMouse(foeWsiWindow window) -> foeMouse const * {
+auto foeWsiGetMouse(foeWsiWindow window) -> foeWsiMouse const * {
     auto *pWindow = window_from_handle(window);
 
     return &pWindow->mouse;

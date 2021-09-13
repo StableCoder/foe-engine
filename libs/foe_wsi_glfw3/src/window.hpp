@@ -30,8 +30,8 @@ struct foeWsiWindowGLFW {
     std::string title;
     bool resized;
 
-    foeMouse mouse;
-    foeKeyboard keyboard;
+    foeWsiMouse mouse;
+    foeWsiKeyboard keyboard;
 };
 
 FOE_DEFINE_HANDLE_CASTS(window, foeWsiWindowGLFW, foeWsiWindow)

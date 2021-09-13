@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <set>
 
-struct foeMouse {
+struct foeWsiMouse {
     /// Holds the mouse cursor's X,Y coordinates
     struct Vec2 {
         double x;
