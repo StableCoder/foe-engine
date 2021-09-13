@@ -48,6 +48,7 @@
 #include <foe/imgui/renderer.hpp>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/group_data.hpp>
+#include <foe/simulation/imgui/registrar.hpp>
 #include <foe/wsi/imgui/window.hpp>
 #include <imgui.h>
 
@@ -102,6 +103,7 @@ struct Application {
 #ifdef EDITOR_MODE
     foeImGuiRenderer imguiRenderer;
     foeImGuiState imguiState;
+    foeSimulationImGuiRegistrar imguiRegistrar;
 
     foeImGuiTermination fileTermination;
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};

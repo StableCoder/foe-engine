@@ -17,5 +17,3 @@ target_link_libraries(foe_simulation_imgui PUBLIC foe_imgui foe_simulation)
 target_code_coverage(foe_simulation_imgui)
 
 add_subdirectory(src)
-
-# Auxiliary Targets
