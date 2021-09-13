@@ -52,6 +52,7 @@
 #include <foe/wsi/imgui/window.hpp>
 #include <imgui.h>
 
+#include "imgui/developer_console.hpp"
 #include "imgui/entity_list.hpp"
 #include "imgui/frame_time_info.hpp"
 #include "imgui/resource_list.hpp"
@@ -105,6 +106,7 @@ struct Application {
     foeImGuiState imguiState;
     foeSimulationImGuiRegistrar imguiRegistrar;
 
+    foeImGuiDeveloperConsole devConsole;
     foeImGuiTermination fileTermination;
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
     foeWsiImGuiWindow windowInfo;

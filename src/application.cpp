@@ -341,6 +341,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (errC)
         ERRC_END_PROGRAM_TUPLE
 
+    foeLogger::instance()->registerSink(&devConsole);
+
+    imguiState.addUI(&devConsole);
     imguiState.addUI(&fileTermination);
     imguiState.addUI(&viewFrameTimeInfo);
     imguiState.addUI(&windowInfo);

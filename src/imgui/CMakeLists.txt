@@ -3,6 +3,7 @@ target_sources(
   PRIVATE armature_state.cpp
           bringup_registration.cpp
           camera.cpp
+          developer_console.cpp
           entity_list.cpp
           frame_time_info.cpp
           register.cpp

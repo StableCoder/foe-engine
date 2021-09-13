@@ -14,26 +14,23 @@
     limitations under the License.
 */
 
-#include "logging.hpp"
+#ifndef IMGUI_DEVELOPER_CONSOLE_HPP
+#define IMGUI_DEVELOPER_CONSOLE_HPP
 
 #include <foe/developer_console.hpp>
-#include <foe/log.hpp>
+#include <foe/imgui/base.hpp>
 
-#include <iostream>
+#include <string>
 
-namespace {
+class foeImGuiDeveloperConsole : public foeDeveloperConsole, public foeImGuiBase {
+  public:
+  private:
+    void viewMainMenu() override;
+    void customUI() override;
 
-class StdOutSink : public foeLogSink {
-    void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
-        std::cout << pCategory->name() << " : " << std::to_string(level) << " : " << message
-                  << "\n";
-    }
-
-    void exception() { std::cout << std::flush; }
+    std::string mBuffer;
+    bool mOpen{false};
+    bool mFocus{false};
 };
 
-StdOutSink stdoutSink;
-
-} // namespace
-
-void initializeLogging() { foeLogger::instance()->registerSink(&stdoutSink); }
+#endif // IMGUI_DEVELOPER_CONSOLE_HPP

@@ -21,10 +21,7 @@
 FOE_DECLARE_LOG_CATEGORY(ConsoleCommand, Info, Info)
 FOE_DEFINE_LOG_CATEGORY(ConsoleCommand)
 
-foeDeveloperConsole *foeDeveloperConsole::instance() {
-    static foeDeveloperConsole gDeveloperConsole;
-    return &gDeveloperConsole;
-}
+foeDeveloperConsole::foeDeveloperConsole() = default;
 
 void foeDeveloperConsole::log(foeLogCategory *pCategory,
                               foeLogLevel level,
@@ -65,5 +62,3 @@ void foeDeveloperConsole::maxEntries(size_t numEntries) noexcept {
         mEntries.pop_front();
     }
 }
-
-foeDeveloperConsole::foeDeveloperConsole() = default;

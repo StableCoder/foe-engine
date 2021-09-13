@@ -24,9 +24,9 @@
 #include <deque>
 #include <mutex>
 
-class foeDeveloperConsole : public foeLogSink, public foeCommandStringRunner {
+class FOE_EXPORT foeDeveloperConsole : public foeLogSink, public foeCommandStringRunner {
   public:
-    FOE_EXPORT static foeDeveloperConsole *instance();
+    FOE_EXPORT foeDeveloperConsole();
 
     FOE_EXPORT void log(foeLogCategory *pCategory,
                         foeLogLevel level,
@@ -39,9 +39,7 @@ class foeDeveloperConsole : public foeLogSink, public foeCommandStringRunner {
     FOE_EXPORT size_t maxEntries() const noexcept;
     FOE_EXPORT void maxEntries(size_t numEntries) noexcept;
 
-  private:
-    foeDeveloperConsole();
-
+  protected:
     struct Entry {
         foeLogCategory *pCategory;
         foeLogLevel level;
