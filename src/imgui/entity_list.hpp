@@ -17,21 +17,39 @@
 #ifndef IMGUI_ENTITY_LIST_HPP
 #define IMGUI_ENTITY_LIST_HPP
 
+#include <foe/ecs/id.hpp>
 #include <foe/imgui/base.hpp>
 
+#include <vector>
+
 struct foeSimulationState;
+class foeSimulationImGuiRegistrar;
 
 class foeImGuiEntityList : public foeImGuiBase {
   public:
-    foeImGuiEntityList(foeSimulationState *pSimulationState);
+    foeImGuiEntityList(foeSimulationState *pSimulationState,
+                       foeSimulationImGuiRegistrar *pRegistrar);
 
   private:
+    struct EntityDisplayData {
+        foeEntityID entity;
+        bool open;
+        bool focus;
+    };
+
     virtual void viewMainMenu();
     virtual void customUI();
+
+    void displayOpenEntities();
+    bool displayEntity(EntityDisplayData *pData);
+
     foeSimulationState *mpSimulationState;
+    foeSimulationImGuiRegistrar *mpRegistrar;
 
     bool mOpen{false};
     bool mFocus{false};
+
+    std::vector<EntityDisplayData> mDisplayed;
 };
 
 #endif // IMGUI_ENTITY_LIST_HPP

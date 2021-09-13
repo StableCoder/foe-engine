@@ -17,11 +17,13 @@
 #include "entity_list.hpp"
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <imgui.h>
 
-foeImGuiEntityList::foeImGuiEntityList(foeSimulationState *pSimulationState) :
-    mpSimulationState{pSimulationState} {}
+foeImGuiEntityList::foeImGuiEntityList(foeSimulationState *pSimulationState,
+                                       foeSimulationImGuiRegistrar *pRegistrar) :
+    mpSimulationState{pSimulationState}, mpRegistrar{pRegistrar} {}
 
 void foeImGuiEntityList::viewMainMenu() {
     if (ImGui::Selectable("Entity List", mOpen)) {
@@ -31,8 +33,10 @@ void foeImGuiEntityList::viewMainMenu() {
 }
 
 void foeImGuiEntityList::customUI() {
-    if (!mOpen)
+    if (!mOpen) {
+        displayOpenEntities();
         return;
+    }
 
     if (mFocus) {
         ImGui::SetNextWindowFocus();
@@ -104,22 +108,94 @@ void foeImGuiEntityList::customUI() {
             }
 
             foeEntityID entity = foeIdCreate(currentGroupData->group, index);
+            EntityDisplayData *pDisplayData{nullptr};
+            bool selected{false};
+
+            // See if the entity already has a window displaying it's data
+            for (auto &it : mDisplayed) {
+                if (entity == it.entity) {
+                    pDisplayData = &it;
+                    break;
+                }
+            }
+
             ImGui::TableNextRow();
 
             // ID
             ImGui::TableNextColumn();
-            ImGui::TextUnformatted(foeIdToString(entity).c_str());
+            if (ImGui::Selectable(foeIdToString(entity).c_str(), pDisplayData != nullptr)) {
+                selected = true;
+            }
 
             // EditorName
             ImGui::TableNextColumn();
             std::string editorName = (mpSimulationState->pEntityNameMap)
                                          ? mpSimulationState->pEntityNameMap->find(entity)
                                          : "";
-            ImGui::TextUnformatted(editorName.c_str());
+            if (ImGui::Selectable(editorName.c_str(), pDisplayData != nullptr)) {
+                selected = true;
+            }
+
+            if (selected) {
+                if (pDisplayData != nullptr) {
+                    pDisplayData->focus = true;
+                } else {
+                    mDisplayed.emplace_back(EntityDisplayData{
+                        .entity = entity,
+                        .open = true,
+                        .focus = true,
+                    });
+                }
+            }
         }
     }
 
     ImGui::EndTable();
 
     ImGui::End();
+
+    displayOpenEntities();
+}
+
+void foeImGuiEntityList::displayOpenEntities() {
+    for (auto it = mDisplayed.begin(); it != mDisplayed.end();) {
+        if (!displayEntity(&(*it))) {
+            // The window has been closed
+            it = mDisplayed.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
+    if (!pData->open) {
+        return false;
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(0, 0), 0);
+
+    if (pData->focus) {
+        ImGui::SetNextWindowFocus();
+        pData->focus = false;
+    }
+
+    std::string windowTitle = "Entity " + foeIdToString(pData->entity);
+
+    if (!ImGui::Begin(windowTitle.data(), &pData->open, 0)) {
+        ImGui::End();
+        return false;
+    }
+
+    // EditorID
+    if (mpSimulationState->pEntityNameMap != nullptr) {
+        ImGui::Text("EditorID: %s", mpSimulationState->pEntityNameMap->find(pData->entity).data());
+    }
+
+    mpRegistrar->displayEntity(pData->entity, mpSimulationState->componentPools.data(),
+                               mpSimulationState->componentPools.size());
+
+    ImGui::End();
+
+    return true;
 }

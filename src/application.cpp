@@ -76,6 +76,10 @@
 #include "xr.hpp"
 #endif
 
+#ifdef EDITOR_MODE
+#include "imgui/register.hpp"
+#endif
+
 #define ERRC_END_PROGRAM_TUPLE                                                                     \
     {                                                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
@@ -333,6 +337,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     cameraID = pSimulationSet->pEntityNameMap->find("camera");
 
 #ifdef EDITOR_MODE
+    errC = registerImGui(&imguiRegistrar);
+    if (errC)
+        ERRC_END_PROGRAM_TUPLE
+
     imguiState.addUI(&fileTermination);
     imguiState.addUI(&viewFrameTimeInfo);
     imguiState.addUI(&windowInfo);
@@ -341,10 +349,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet.get()});
     imguiState.addUI(pSimGroupDataUI.get());
 
-    pEntityListUI.reset(new foeImGuiEntityList{pSimulationSet.get()});
+    pEntityListUI.reset(new foeImGuiEntityList{pSimulationSet.get(), &imguiRegistrar});
     imguiState.addUI(pEntityListUI.get());
 
-    pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet.get()});
+    pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet.get(), &imguiRegistrar});
     imguiState.addUI(pResourceListUI.get());
 #endif
 
@@ -952,6 +960,10 @@ void Application::deinitialize() {
     if (threadPool)
         foeDestroyThreadPool(threadPool);
     threadPool = FOE_NULL_HANDLE;
+
+#ifdef EDITOR_MODE
+    deregisterImGui(&imguiRegistrar);
+#endif
 
     // Deregister functionality
     deregisterBasicFunctionality();

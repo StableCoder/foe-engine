@@ -17,21 +17,39 @@
 #ifndef IMGUI_RESOURCE_LIST_HPP
 #define IMGUI_RESOURCE_LIST_HPP
 
+#include <foe/ecs/id.hpp>
 #include <foe/imgui/base.hpp>
 
+#include <vector>
+
 struct foeSimulationState;
+class foeSimulationImGuiRegistrar;
 
 class foeImGuiResourceList : public foeImGuiBase {
   public:
-    foeImGuiResourceList(foeSimulationState *pSimulationState);
+    foeImGuiResourceList(foeSimulationState *pSimulationState,
+                         foeSimulationImGuiRegistrar *pRegistrar);
 
   private:
+    struct ResourceDisplayData {
+        foeResourceID resource;
+        bool open;
+        bool focus;
+    };
+
     virtual void viewMainMenu();
     virtual void customUI();
+
+    void displayOpenResources();
+    bool displayResource(ResourceDisplayData *pData);
+
     foeSimulationState *mpSimulationState;
+    foeSimulationImGuiRegistrar *mpRegistrar;
 
     bool mOpen{false};
     bool mFocus{false};
+
+    std::vector<ResourceDisplayData> mDisplayed;
 };
 
 #endif // IMGUI_RESOURCE_LIST_HPP
