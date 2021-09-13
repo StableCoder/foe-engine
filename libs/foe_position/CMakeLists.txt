@@ -22,4 +22,5 @@ target_code_coverage(foe_position PUBLIC)
 add_subdirectory(src)
 
 # Auxiliary Targets
+add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
