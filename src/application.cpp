@@ -1034,8 +1034,8 @@ int Application::mainloop() {
     VkResult vkRes{VK_SUCCESS};
     std::error_code errC;
 
-    uint32_t lastFrameIndex = -1;
-    uint32_t frameIndex = -1;
+    uint32_t lastFrameIndex = UINT32_MAX;
+    uint32_t frameIndex = UINT32_MAX;
 
     foeWsiWindowShow(windowData[0].window);
     programClock.update();
@@ -1103,7 +1103,7 @@ int Application::mainloop() {
         }
 
         // Determine if the next frame is available to start rendering to, if we don't have one
-        if (frameIndex == -1) {
+        if (frameIndex == UINT32_MAX) {
             uint32_t nextFrameIndex = (lastFrameIndex + 1) % frameData.size();
             if (vkWaitForFences(foeGfxVkGetDevice(gfxSession), 1,
                                 &frameData[nextFrameIndex].frameComplete, VK_TRUE,
@@ -1129,7 +1129,7 @@ int Application::mainloop() {
         }
 
         // If we have a frame we can render to, proceed to check for ready-to-render data
-        if (frameIndex != -1) {
+        if (frameIndex != UINT32_MAX) {
 #ifdef FOE_XR_SUPPORT
             // Lock rendering to OpenXR framerate, which overrides regular rendering
             if (xrSession.session != XR_NULL_HANDLE) {
