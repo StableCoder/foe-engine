@@ -28,6 +28,8 @@ class foeImporterBase;
 
 class foeImporterGenerator {
   public:
+    virtual ~foeImporterGenerator() = default;
+
     virtual auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
         -> foeImporterBase * = 0;
 };

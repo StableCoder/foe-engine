@@ -31,6 +31,9 @@
  * - customUI
  */
 class FOE_IMGUI_EXPORT foeImGuiBase {
+  public:
+    virtual ~foeImGuiBase() = default;
+
   protected:
     /// Call UI elements that belong in the 'File' menu of the main menu
     virtual void fileMainMenu();

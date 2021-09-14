@@ -25,8 +25,8 @@
 
 class FOE_WSI_IMGUI_EXPORT foeWsiImGuiWindow : public foeImGuiBase {
   public:
-    FOE_WSI_IMGUI_EXPORT bool addWindow(foeWsiWindow window);
-    FOE_WSI_IMGUI_EXPORT bool removeWindow(foeWsiWindow window);
+    bool addWindow(foeWsiWindow window);
+    bool removeWindow(foeWsiWindow window);
 
   private:
     struct WindowData {

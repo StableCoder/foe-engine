@@ -25,6 +25,8 @@ struct foeSimulationState;
 
 class foeSimulationImGuiGroupData : public foeImGuiBase {
   public:
+    virtual ~foeSimulationImGuiGroupData() = default;
+
     FOE_SIM_IMGUI_EXPORT foeSimulationImGuiGroupData(foeSimulationState *pSimulationState);
 
   private:

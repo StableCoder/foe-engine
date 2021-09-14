@@ -26,18 +26,16 @@
 
 class FOE_EXPORT foeDeveloperConsole : public foeLogSink, public foeCommandStringRunner {
   public:
-    FOE_EXPORT foeDeveloperConsole();
+    foeDeveloperConsole();
 
-    FOE_EXPORT void log(foeLogCategory *pCategory,
-                        foeLogLevel level,
-                        std::string_view message) final;
+    void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) final;
 
-    FOE_EXPORT void exception() final;
+    void exception() final;
 
-    FOE_EXPORT bool runCommand(std::string_view commandCall) final;
+    bool runCommand(std::string_view commandCall) final;
 
-    FOE_EXPORT size_t maxEntries() const noexcept;
-    FOE_EXPORT void maxEntries(size_t numEntries) noexcept;
+    size_t maxEntries() const noexcept;
+    void maxEntries(size_t numEntries) noexcept;
 
   protected:
     struct Entry {
