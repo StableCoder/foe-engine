@@ -181,8 +181,9 @@ target_code_coverage(
 # Engine ImGUI Definition
 target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
 target_link_libraries(
-  foe_engine_imgui PUBLIC foe_imgui foe_position_imgui foe_physics_imgui
-                          foe_simulation_imgui foe_wsi_imgui)
+  foe_engine_imgui
+  PUBLIC foe_imgui foe_graphics_resource_imgui foe_position_imgui
+         foe_physics_imgui foe_simulation_imgui foe_wsi_imgui)
 target_code_coverage(foe_engine_imgui OBJECTS foe_imgui)
 
 if(UNIX)

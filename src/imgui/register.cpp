@@ -16,6 +16,7 @@
 
 #include "register.hpp"
 
+#include <foe/graphics/resource/imgui/registration.hpp>
 #include <foe/physics/imgui/registration.hpp>
 #include <foe/position/imgui/registration.hpp>
 
@@ -32,6 +33,10 @@ auto registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept -> std::err
     if (errC)
         goto REGISTRATION_FAILED;
 
+    errC = foeGraphicsResourceImGuiRegister(pRegistrar);
+    if (errC)
+        goto REGISTRATION_FAILED;
+
     errC = foeBringupImGuiRegister(pRegistrar);
     if (errC)
         goto REGISTRATION_FAILED;
@@ -45,6 +50,7 @@ REGISTRATION_FAILED:
 
 void deregisterImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept {
     foeBringupImGuiDeregister(pRegistrar);
+    foeGraphicsResourceImGuiDeregister(pRegistrar);
     foePhysicsImGuiDeregister(pRegistrar);
     foePositionImGuiDeregister(pRegistrar);
 }
