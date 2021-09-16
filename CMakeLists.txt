@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.15)
 project(FoE-Engine C CXX)
 
 # Modify CMake modules path
