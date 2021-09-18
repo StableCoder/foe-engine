@@ -5,6 +5,8 @@ project(foe_graphics_vk)
 add_library(foe_graphics_vk)
 
 # Definition
+add_subdirectory(src)
+
 generate_export_header(
   foe_graphics_vk EXPORT_MACRO_NAME FOE_GFX_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/graphics/export.h)
@@ -17,7 +19,11 @@ target_link_libraries(foe_graphics_vk
 
 target_code_coverage(foe_graphics_vk)
 
-add_subdirectory(src)
+if(MSVC)
+  target_compile_options(foe_graphics_vk PRIVATE /EHsc)
+else()
+  target_compile_options(foe_graphics_vk PRIVATE -fno-exceptions)
+endif()
 
 # Auxiliary Targets
 add_subdirectory(libs)

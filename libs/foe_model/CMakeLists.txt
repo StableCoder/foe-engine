@@ -13,6 +13,8 @@ target_include_directories(
   foe_model_interface INTERFACE include ${CMAKE_CURRENT_BINARY_DIR}/exports)
 
 # Library Definition
+add_subdirectory(src)
+
 generate_export_header(foe_model EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/model/export.h)
 
@@ -24,6 +26,10 @@ if(UNIX)
   target_compile_options(foe_model PRIVATE -fPIC)
 endif()
 
-add_subdirectory(src)
+if(MSVC)
+  target_compile_options(foe_model PRIVATE /EHsc)
+else()
+  target_compile_options(foe_model PRIVATE -fno-exceptions)
+endif()
 
 # Auxiliary Target

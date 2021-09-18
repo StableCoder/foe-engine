@@ -5,6 +5,8 @@ project(foe_graphics_resource_imgui)
 add_library(foe_graphics_resource_imgui)
 
 # Definition
+add_subdirectory(src)
+
 generate_export_header(
   foe_graphics_resource_imgui EXPORT_MACRO_NAME FOE_GFX_RES_IMGUI_EXPORT
   EXPORT_FILE_NAME
@@ -19,4 +21,8 @@ target_link_libraries(
 
 target_code_coverage(foe_graphics_resource_imgui)
 
-add_subdirectory(src)
+if(MSVC)
+  target_compile_options(foe_graphics_resource_imgui PRIVATE /EHsc)
+else()
+  target_compile_options(foe_graphics_resource_imgui PRIVATE -fno-exceptions)
+endif()

@@ -96,13 +96,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # GLFW/Vulkan
 add_compile_definitions(GLFW_INCLUDE_VULKAN)
 
-# Other Compile Options
-if(UNIX)
-  add_compile_options(-fno-exceptions)
-elseif(MSVC)
-  add_compile_options(/EHsc)
-endif()
-
 # Libraries
 add_subdirectory(external)
 add_subdirectory(libs)
@@ -123,6 +116,9 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 add_library(foe_engine_lib)
 add_library(foe_engine_imgui STATIC)
 add_library(foe_engine_lib_eh STATIC)
+
+# Sources
+add_subdirectory(src)
 
 # Engine Definition
 target_link_libraries(
@@ -146,6 +142,12 @@ target_link_libraries(
          foe_simulation
          foe_wsi_glfw3
          foe_xr)
+
+if(MSVC)
+  target_compile_options(foe_engine_lib PRIVATE /EHsc)
+else()
+  target_compile_options(foe_engine_lib PRIVATE -fno-exceptions)
+endif()
 
 if(BUILD_XR)
   target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
@@ -180,11 +182,19 @@ target_code_coverage(
 
 # Engine ImGUI Definition
 target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
+
 target_link_libraries(
   foe_engine_imgui
   PUBLIC foe_imgui foe_graphics_resource_imgui foe_position_imgui
          foe_physics_imgui foe_simulation_imgui foe_wsi_imgui)
-target_code_coverage(foe_engine_imgui OBJECTS foe_imgui)
+
+target_code_coverage(foe_engine_imgui)
+
+if(MSVC)
+  target_compile_options(foe_engine_imgui PRIVATE /EHsc)
+else()
+  target_compile_options(foe_engine_imgui PRIVATE -fno-exceptions)
+endif()
 
 if(UNIX)
   target_compile_options(foe_engine_imgui PRIVATE -fPIC)
@@ -202,22 +212,13 @@ target_link_libraries(
          foe_resource_yaml
          foe_simulation)
 
+target_code_coverage(foe_engine_lib_eh)
+
 if(UNIX)
   target_compile_options(foe_engine_lib_eh PRIVATE -fPIC)
 endif()
 
-if(UNIX
-   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
-   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
-  target_compile_options(foe_engine_lib_eh PRIVATE -fexceptions)
-else(MSVC)
-  target_compile_options(foe_engine_lib_eh PRIVATE /EHa)
-endif()
-
-target_code_coverage(foe_engine_lib_eh)
-
-# Sources
-add_subdirectory(src)
+# Auxiliary Items
 if(BUILD_SHADERS)
   file(
     GLOB_RECURSE
@@ -232,5 +233,3 @@ if(BUILD_SHADERS)
   target_glsl_shaders(foe_engine PRIVATE ${GLSL_FILES})
   clang_format(format_shaders ${GLSL_FILES})
 endif()
-
-# Auxiliary Items

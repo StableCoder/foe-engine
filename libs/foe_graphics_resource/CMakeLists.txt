@@ -16,6 +16,8 @@ mark_as_advanced(FORCE freeimage_INCLUDE_DIRS freeimage_LIBRARIES)
 add_library(foe_graphics_resource)
 
 # Definition
+add_subdirectory(src)
+
 generate_export_header(
   foe_graphics_resource EXPORT_MACRO_NAME FOE_GFX_RES_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/graphics/resource/export.h)
@@ -39,7 +41,11 @@ target_link_libraries(
 
 target_code_coverage(foe_graphics_resource)
 
-add_subdirectory(src)
+if(MSVC)
+  target_compile_options(foe_graphics_resource PRIVATE /EHsc)
+else()
+  target_compile_options(foe_graphics_resource PRIVATE -fno-exceptions)
+endif()
 
 # Auxiliary Targets
 add_subdirectory(libs)

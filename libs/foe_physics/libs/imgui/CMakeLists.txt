@@ -5,6 +5,8 @@ project(foe_physics_imgui)
 add_library(foe_physics_imgui)
 
 # Definition
+add_subdirectory(src)
+
 generate_export_header(
   foe_physics_imgui EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/physics/imgui/export.h)
@@ -17,4 +19,8 @@ target_link_libraries(foe_physics_imgui PUBLIC foe_imgui foe_physics
 
 target_code_coverage(foe_physics_imgui)
 
-add_subdirectory(src)
+if(MSVC)
+  target_compile_options(foe_physics_imgui PRIVATE /EHsc)
+else()
+  target_compile_options(foe_physics_imgui PRIVATE -fno-exceptions)
+endif()

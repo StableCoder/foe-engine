@@ -8,6 +8,8 @@ find_package(fmt REQUIRED)
 add_library(foe)
 
 # Definition
+add_subdirectory(src)
+
 generate_export_header(foe EXPORT_MACRO_NAME FOE_EXPORT EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/export.h)
 
@@ -16,14 +18,18 @@ target_include_directories(foe PUBLIC include
 
 target_link_libraries(foe PUBLIC fmt::fmt)
 
+target_code_coverage(foe)
+
 if(UNIX)
   target_compile_options(foe PRIVATE -fPIC)
   target_link_libraries(foe PUBLIC dl pthread)
 endif()
 
-target_code_coverage(foe)
-
-add_subdirectory(src)
+if(MSVC)
+  target_compile_options(foe PRIVATE /EHsc)
+else()
+  target_compile_options(foe PRIVATE -fno-exceptions)
+endif()
 
 # Auxiliary Targets
 if(BUILD_EXTRAS)

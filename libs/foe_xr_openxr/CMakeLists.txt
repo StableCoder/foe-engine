@@ -9,6 +9,8 @@ find_package(Vulkan REQUIRED)
 add_library(foe_xr_openxr)
 
 # Definition
+add_subdirectory(src)
+
 generate_export_header(
   foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/xr/export.h)
@@ -22,4 +24,8 @@ target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader Vulkan::Vulkan)
 
 target_code_coverage(foe_xr_openxr)
 
-add_subdirectory(src)
+if(MSVC)
+  target_compile_options(foe_xr_openxr PRIVATE /EHsc)
+else()
+  target_compile_options(foe_xr_openxr PRIVATE -fno-exceptions)
+endif()
