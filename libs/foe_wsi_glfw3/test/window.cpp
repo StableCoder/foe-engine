@@ -15,7 +15,6 @@
 */
 
 #include <catch.hpp>
-#include <foe/wsi/glfw3/window.hpp>
 #include <foe/wsi/window.hpp>
 
 #include <cstring>
@@ -67,7 +66,8 @@ TEST_CASE("WSI-GLFW - Idle window processing loop") {
     REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test));
 
     for (int i = 0; i < 25; ++i) {
-        foeWsiGlfw3WindowEventProcessing();
+        foeWsiWindowProcessing(test);
+        foeWsiGlobalProcessing();
         std::this_thread::sleep_for(10ms);
     }
 
@@ -84,7 +84,8 @@ TEST_CASE("WSI-GLFW - Resizing Window") {
 
     // Wait for the window to be resized by the windowing system
     for (int i = 0; i < 25; ++i) {
-        foeWsiGlfw3WindowEventProcessing();
+        foeWsiWindowProcessing(test);
+        foeWsiGlobalProcessing();
         if (foeWsiWindowResized(test)) {
             break;
         }

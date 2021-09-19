@@ -14,15 +14,15 @@
     limitations under the License.
 */
 
-#include <foe/wsi/glfw3/window.hpp>
 #include <foe/wsi/window.hpp>
 
 int main() {
     foeWsiWindow window;
-    foeWsiCreateWindow(1280, 720, "FoE Engine", false, &window);
+    foeWsiCreateWindow(1280, 720, "Simple Example", false, &window);
 
     while (!foeWsiWindowGetShouldClose(window)) {
-        foeWsiGlfw3WindowEventProcessing();
+        foeWsiWindowProcessing(window);
+        foeWsiGlobalProcessing();
 
         auto *pMouse = foeWsiGetMouse(window);
         auto *pKeyboard = foeWsiGetKeyboard(window);

@@ -50,7 +50,6 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <foe/wsi/glfw3/window.hpp>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
 #include <foe/wsi/vulkan.hpp>
@@ -1071,7 +1070,9 @@ int Application::mainloop() {
             ->process(timeElapsedInSec);
 
         // Process Window Events
-        foeWsiGlfw3WindowEventProcessing();
+        for (auto &it : windowData)
+            foeWsiWindowProcessing(it.window);
+        foeWsiGlobalProcessing();
 
 #ifdef EDITOR_MODE
         // User input processing

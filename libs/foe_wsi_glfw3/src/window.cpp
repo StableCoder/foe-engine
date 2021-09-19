@@ -14,10 +14,8 @@
     limitations under the License.
 */
 
-#include <foe/wsi/glfw3/window.hpp>
-#include <foe/wsi/keyboard.hpp>
-
 #include <GLFW/glfw3.h>
+#include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
 #include <foe/wsi/window.hpp>
 
@@ -78,9 +76,21 @@ void buttonCallback(GLFWwindow *pWindow, int button, int action, int mods) {
 
 } // namespace
 
+void foeWsiGlobalProcessing() {
+    std::scoped_lock lock{windowSync};
+
+    for (auto &pWindow : windowList) {
+        keyboardPreprocessing(&pWindow->keyboard);
+        mousePreprocessing(&pWindow->mouse);
+        windowPreprocessing(pWindow);
+    }
+
+    glfwPollEvents();
+}
+
 auto foeWsiCreateWindow(int width,
                         int height,
-                        const char *pTitle,
+                        char const *pTitle,
                         bool visible,
                         foeWsiWindow *pWindow) -> std::error_code {
     if (!glfwInit()) {
@@ -151,6 +161,8 @@ void foeWsiDestroyWindow(foeWsiWindow window) {
 
     delete pWindow;
 }
+
+void foeWsiWindowProcessing(foeWsiWindow window) {}
 
 char const *foeWsiWindowGetTitle(foeWsiWindow window) {
     auto *pWindow = window_from_handle(window);
@@ -229,16 +241,4 @@ void foeWsiWindowGetContentScale(foeWsiWindow window, float *pScaleX, float *pSc
     auto *pWindow = window_from_handle(window);
 
     glfwGetWindowContentScale(pWindow->pWindow, pScaleX, pScaleY);
-}
-
-void foeWsiGlfw3WindowEventProcessing() {
-    std::scoped_lock lock{windowSync};
-
-    for (auto &pWindow : windowList) {
-        keyboardPreprocessing(&pWindow->keyboard);
-        mousePreprocessing(&pWindow->mouse);
-        windowPreprocessing(pWindow);
-    }
-
-    glfwPollEvents();
 }

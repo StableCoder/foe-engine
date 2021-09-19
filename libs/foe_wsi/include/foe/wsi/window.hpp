@@ -27,6 +27,15 @@ struct foeWsiMouse;
 
 FOE_DEFINE_HANDLE(foeWsiWindow)
 
+/** @brief Performs any required global-WSI per-tick processing required
+ * @warning Must be called after foeWsiWindowProcessing
+ *
+ * Some backend WSI implementations have some operations that must be performed across all windows
+ * at once instead of individually, and as such, this call exists to perform those operations as
+ * necessary.
+ */
+FOE_WSI_EXPORT void foeWsiGlobalProcessing();
+
 /** Creates a window for use
  * @param width Width of the new window
  * @param height Height of the new window
@@ -45,6 +54,15 @@ FOE_WSI_EXPORT auto foeWsiCreateWindow(int width,
 
 /// Destroys the current window
 FOE_WSI_EXPORT void foeWsiDestroyWindow(foeWsiWindow window);
+
+/** @brief Performs any required per-window per-tick processing required
+ * @param window Window to process
+ * @warning Must be called before foeWsiGlobalProcessing
+ *
+ * Some backend implementations run processing on a per-window basis each tick, and this function
+ * would be used to run those as necessary.
+ */
+FOE_WSI_EXPORT void foeWsiWindowProcessing(foeWsiWindow window);
 
 FOE_WSI_EXPORT const char *foeWsiWindowGetTitle(foeWsiWindow window);
 FOE_WSI_EXPORT void foeWsiWindowSetTitle(foeWsiWindow window, const char *pTitle);
