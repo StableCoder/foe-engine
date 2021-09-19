@@ -387,10 +387,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         }
 
         for (auto &it : windowData) {
-            vkRes =
+            errC =
                 foeWsiWindowGetVkSurface(it.window, foeGfxVkGetInstance(gfxRuntime), &it.surface);
-            if (vkRes != VK_SUCCESS)
-                VK_END_PROGRAM_TUPLE
+            if (errC)
+                ERRC_END_PROGRAM_TUPLE
         }
 
         std::vector<VkSurfaceKHR> surfaces;

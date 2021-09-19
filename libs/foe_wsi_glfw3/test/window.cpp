@@ -25,7 +25,7 @@ using namespace std::chrono_literals;
 TEST_CASE("WSI-GLFW3 - Creating a single window") {
     foeWsiWindow test{FOE_NULL_HANDLE};
 
-    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test));
+    REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", false, &test)});
 
     CHECK_FALSE(foeWsiWindowGetShouldClose(test));
 
@@ -51,8 +51,8 @@ TEST_CASE("WSI-GLFW3 - Creating a single window") {
 TEST_CASE("WSI-GLFW3 - Creating multiple windows") {
     foeWsiWindow test1{FOE_NULL_HANDLE}, test2{FOE_NULL_HANDLE};
 
-    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test1));
-    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test2));
+    REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", false, &test1)});
+    REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", false, &test2)});
 
     if (test1 != FOE_NULL_HANDLE)
         foeWsiDestroyWindow(test1);
@@ -63,7 +63,7 @@ TEST_CASE("WSI-GLFW3 - Creating multiple windows") {
 TEST_CASE("WSI-GLFW - Idle window processing loop") {
     foeWsiWindow test{FOE_NULL_HANDLE};
 
-    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test));
+    REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", false, &test)});
 
     for (int i = 0; i < 25; ++i) {
         foeWsiWindowProcessing(test);
@@ -78,7 +78,7 @@ TEST_CASE("WSI-GLFW - Idle window processing loop") {
 TEST_CASE("WSI-GLFW - Resizing Window") {
     foeWsiWindow test{FOE_NULL_HANDLE};
 
-    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test));
+    REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", false, &test)});
 
     foeWsiWindowResize(test, 256, 256);
 
@@ -106,7 +106,7 @@ TEST_CASE("WSI-GLFW - Resizing Window") {
 TEST_CASE("WSI-GLFW - Window Title") {
     foeWsiWindow test{FOE_NULL_HANDLE};
 
-    REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test));
+    REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", false, &test)});
     CHECK(std::string_view{foeWsiWindowGetTitle(test)} == "test window");
 
     foeWsiWindowSetTitle(test, "new window title");
@@ -120,7 +120,7 @@ TEST_CASE("WSI-GLFW3 - Visibility") {
     foeWsiWindow test{FOE_NULL_HANDLE};
 
     SECTION("Created hidden") {
-        REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", false, &test));
+        REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", false, &test)});
 
         CHECK_FALSE(foeWsiWindowVisible(test));
 
@@ -130,7 +130,7 @@ TEST_CASE("WSI-GLFW3 - Visibility") {
         }
     }
     SECTION("Created visible") {
-        REQUIRE_FALSE(foeWsiCreateWindow(128, 128, "test window", true, &test));
+        REQUIRE_FALSE(std::error_code{foeWsiCreateWindow(128, 128, "test window", true, &test)});
 
         CHECK(foeWsiWindowVisible(test));
 

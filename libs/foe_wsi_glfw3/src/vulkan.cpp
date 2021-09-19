@@ -16,10 +16,14 @@
 
 #include <foe/wsi/vulkan.hpp>
 
+#include <vk_error_code.hpp>
+
 #include "error_code.hpp"
 #include "window.hpp"
 
-auto foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount, char const ***pppExtensions)
+namespace {
+
+auto foeWsiWindowGetVulkanExtensionsErrC(uint32_t *pExtensionCount, char const ***pppExtensions)
     -> std::error_code {
     if (!glfwInit()) {
         return FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND;
@@ -34,9 +38,17 @@ auto foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount, char const ***pp
     return FOE_WSI_SUCCESS;
 }
 
-auto foeWsiWindowGetVkSurface(foeWsiWindow window, VkInstance instance, VkSurfaceKHR *pSurface)
-    -> VkResult {
+} // namespace
+
+foeErrorCode foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
+                                             char const ***pppExtensions) {
+    return foeWsiWindowGetVulkanExtensionsErrC(pExtensionCount, pppExtensions);
+}
+
+foeErrorCode foeWsiWindowGetVkSurface(foeWsiWindow window,
+                                      VkInstance instance,
+                                      VkSurfaceKHR *pSurface) {
     auto *pWindow = window_from_handle(window);
 
-    return glfwCreateWindowSurface(instance, pWindow->pWindow, nullptr, pSurface);
+    return std::error_code{glfwCreateWindowSurface(instance, pWindow->pWindow, nullptr, pSurface)};
 }

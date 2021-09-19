@@ -17,7 +17,7 @@ generate_export_header(
 target_include_directories(
   foe_wsi_glfw3 PUBLIC ${glfw_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/public)
 
-target_link_libraries(foe_wsi_glfw3 PUBLIC foe_wsi glfw)
+target_link_libraries(foe_wsi_glfw3 PUBLIC foe_wsi glfw vk_error_code)
 
 target_code_coverage(foe_wsi_glfw3)
 

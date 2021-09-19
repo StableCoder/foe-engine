@@ -17,10 +17,9 @@
 #ifndef FOE_WSI_WINDOW_HPP
 #define FOE_WSI_WINDOW_HPP
 
+#include <foe/error_code.h>
 #include <foe/handle.h>
 #include <foe/wsi/export.h>
-
-#include <system_error>
 
 struct foeWsiKeyboard;
 struct foeWsiMouse;
@@ -43,14 +42,9 @@ FOE_WSI_EXPORT void foeWsiGlobalProcessing();
  * @param visible Whether the window starts visible or not
  * @param pWindow [out] Window handle will be put here on success
  * @return FOE_WSI_SUCCESS on success, an appropriate error code otherwise
- * @return True if initialization successful, false otherwise, typically due to the window already
- * being active
  */
-FOE_WSI_EXPORT auto foeWsiCreateWindow(int width,
-                                       int height,
-                                       const char *pTitle,
-                                       bool visible,
-                                       foeWsiWindow *pWindow) -> std::error_code;
+FOE_WSI_EXPORT foeErrorCode
+foeWsiCreateWindow(int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow);
 
 /// Destroys the current window
 FOE_WSI_EXPORT void foeWsiDestroyWindow(foeWsiWindow window);

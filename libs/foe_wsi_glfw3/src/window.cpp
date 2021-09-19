@@ -74,25 +74,11 @@ void buttonCallback(GLFWwindow *pWindow, int button, int action, int mods) {
     buttonCallback(&pWsiWindow->mouse, button, action, mods);
 }
 
-} // namespace
-
-void foeWsiGlobalProcessing() {
-    std::scoped_lock lock{windowSync};
-
-    for (auto &pWindow : windowList) {
-        keyboardPreprocessing(&pWindow->keyboard);
-        mousePreprocessing(&pWindow->mouse);
-        windowPreprocessing(pWindow);
-    }
-
-    glfwPollEvents();
-}
-
-auto foeWsiCreateWindow(int width,
-                        int height,
-                        char const *pTitle,
-                        bool visible,
-                        foeWsiWindow *pWindow) -> std::error_code {
+auto foeWsiCreateWindowErrC(int width,
+                            int height,
+                            char const *pTitle,
+                            bool visible,
+                            foeWsiWindow *pWindow) -> std::error_code {
     if (!glfwInit()) {
         return FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND;
     }
@@ -143,6 +129,25 @@ CREATE_FAILED:
     }
 
     return errC;
+}
+
+} // namespace
+
+void foeWsiGlobalProcessing() {
+    std::scoped_lock lock{windowSync};
+
+    for (auto &pWindow : windowList) {
+        keyboardPreprocessing(&pWindow->keyboard);
+        mousePreprocessing(&pWindow->mouse);
+        windowPreprocessing(pWindow);
+    }
+
+    glfwPollEvents();
+}
+
+foeErrorCode foeWsiCreateWindow(
+    int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow) {
+    return foeWsiCreateWindowErrC(width, height, pTitle, visible, pWindow);
 }
 
 void foeWsiDestroyWindow(foeWsiWindow window) {

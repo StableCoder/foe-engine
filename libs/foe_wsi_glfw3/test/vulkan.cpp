@@ -20,7 +20,7 @@
 TEST_CASE("WSI-GLFW - Vulkan Extensions") {
     uint32_t count{0};
     char const **ppExtensionNames{nullptr};
-    CHECK_FALSE(foeWsiWindowGetVulkanExtensions(&count, &ppExtensionNames));
+    CHECK_FALSE(std::error_code{foeWsiWindowGetVulkanExtensions(&count, &ppExtensionNames)});
 
     CHECK(count > 0);
     CHECK(ppExtensionNames != nullptr);
