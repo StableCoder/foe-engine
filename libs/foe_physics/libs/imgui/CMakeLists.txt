@@ -9,10 +9,10 @@ add_subdirectory(src)
 
 generate_export_header(
   foe_physics_imgui EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/physics/imgui/export.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/physics/imgui/export.h)
 
 target_include_directories(foe_physics_imgui
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_physics_imgui PUBLIC foe_imgui foe_physics
                                                foe_simulation_imgui)

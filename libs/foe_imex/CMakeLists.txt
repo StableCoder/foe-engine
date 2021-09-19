@@ -8,10 +8,10 @@ add_library(foe_imex)
 add_subdirectory(src)
 
 generate_export_header(foe_imex EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/imex/export.h)
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/imex/export.h)
 
 target_include_directories(foe_imex PUBLIC include
-                                           ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                                           ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_imex PUBLIC foe_ecs)
 

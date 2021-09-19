@@ -8,10 +8,10 @@ add_library(foe_ecs)
 add_subdirectory(src)
 
 generate_export_header(foe_ecs EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/ecs/export.h)
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/ecs/export.h)
 
 target_include_directories(foe_ecs PUBLIC include
-                                          ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                                          ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_ecs PUBLIC foe)
 

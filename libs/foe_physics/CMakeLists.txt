@@ -11,10 +11,10 @@ add_library(foe_physics)
 add_subdirectory(src)
 
 generate_export_header(foe_physics EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/physics/export.h)
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/physics/export.h)
 
 target_include_directories(
-  foe_physics PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports
+  foe_physics PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
                      ${BULLET_INCLUDE_DIRS})
 
 target_link_libraries(foe_physics PUBLIC foe foe_ecs foe_imex foe_position

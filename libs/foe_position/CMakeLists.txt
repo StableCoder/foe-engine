@@ -10,12 +10,11 @@ add_library(foe_position)
 # Definition
 add_subdirectory(src)
 
-generate_export_header(
-  foe_position EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/position/export.h)
+generate_export_header(foe_position EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/position/export.h)
 
 target_include_directories(foe_position
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_position PUBLIC foe foe_imex foe_simulation glm)
 

@@ -9,10 +9,10 @@ add_subdirectory(src)
 
 generate_export_header(
   foe_simulation_imgui EXPORT_MACRO_NAME FOE_SIM_IMGUI_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/simulation/imgui/export.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/simulation/imgui/export.h)
 
 target_include_directories(foe_simulation_imgui
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_simulation_imgui PUBLIC foe_imgui foe_simulation)
 

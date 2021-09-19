@@ -8,10 +8,10 @@ add_library(foe_imgui)
 add_subdirectory(src)
 
 generate_export_header(foe_imgui EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/imgui/export.h)
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/imgui/export.h)
 
 target_include_directories(foe_imgui PUBLIC include
-                                            ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                                            ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_imgui PUBLIC foe_graphics_vk foe_wsi imgui)
 

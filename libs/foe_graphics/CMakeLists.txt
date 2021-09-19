@@ -12,10 +12,10 @@ add_subdirectory(src)
 
 generate_export_header(
   foe_graphics EXPORT_MACRO_NAME FOE_GFX_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/graphics/export.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/graphics/export.h)
 
 target_include_directories(foe_graphics
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_graphics PUBLIC Vulkan::Vulkan foe)
 

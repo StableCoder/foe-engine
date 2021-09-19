@@ -7,12 +7,11 @@ add_library(foe_ecs_yaml)
 # Definition
 add_subdirectory(src)
 
-generate_export_header(
-  foe_ecs_yaml EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/ecs/yaml/export.h)
+generate_export_header(foe_ecs_yaml EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/ecs/yaml/export.h)
 
 target_include_directories(foe_ecs_yaml
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_ecs_yaml PUBLIC foe_ecs foe_yaml)
 

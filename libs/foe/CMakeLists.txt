@@ -11,10 +11,10 @@ add_library(foe)
 add_subdirectory(src)
 
 generate_export_header(foe EXPORT_MACRO_NAME FOE_EXPORT EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/export.h)
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/export.h)
 
 target_include_directories(foe PUBLIC include
-                                      ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                                      ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe PUBLIC fmt::fmt)
 

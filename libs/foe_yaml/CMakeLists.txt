@@ -11,10 +11,10 @@ add_library(foe_yaml)
 add_subdirectory(src)
 
 generate_export_header(foe_yaml EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/yaml/export.h)
+                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/yaml/export.h)
 
 target_include_directories(foe_yaml PUBLIC include
-                                           ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                                           ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_yaml PUBLIC yamlcpp::yamlcpp)
 

@@ -12,11 +12,11 @@ add_subdirectory(src)
 
 generate_export_header(
   foe_wsi_glfw3 EXPORT_MACRO_NAME FOE_WSI_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/wsi/export.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/wsi/export.h)
 
 target_include_directories(
   foe_wsi_glfw3 PUBLIC include ${glfw_INCLUDE_DIR}
-                       ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                       ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_wsi_glfw3 PUBLIC foe_wsi glfw)
 

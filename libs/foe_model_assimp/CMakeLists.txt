@@ -12,10 +12,10 @@ add_subdirectory(src)
 
 generate_export_header(
   foe_model_assimp EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/model/assimp/export.h)
+  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/model/assimp/export.h)
 
 target_include_directories(foe_model_assimp
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_model_assimp PUBLIC assimp::assimp foe_model)
 
