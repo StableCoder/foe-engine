@@ -19,6 +19,7 @@ target_sources(
           data_pool_custom.cpp
           data_pool_int.cpp
           data_pool_multi.cpp
+          error_code.cpp
           filesystem.cpp
           plugin.cpp
           search_paths.cpp)
