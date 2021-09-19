@@ -18,7 +18,7 @@
 #define WINDOW_HPP
 
 #include <GLFW/glfw3.h>
-#include <foe/wsi/window.hpp>
+#include <foe/wsi/window.h>
 
 #include "keyboard.hpp"
 #include "mouse.hpp"

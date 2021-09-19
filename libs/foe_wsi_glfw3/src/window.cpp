@@ -17,7 +17,7 @@
 #include <GLFW/glfw3.h>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
-#include <foe/wsi/window.hpp>
+#include <foe/wsi/window.h>
 
 #include "error_code.hpp"
 #include "window.hpp"
@@ -230,13 +230,13 @@ void foeWsiWindowShow(foeWsiWindow window) {
     glfwShowWindow(pWindow->pWindow);
 }
 
-auto foeWsiGetKeyboard(foeWsiWindow window) -> foeWsiKeyboard const * {
+foeWsiKeyboard const *foeWsiGetKeyboard(foeWsiWindow window) {
     auto *pWindow = window_from_handle(window);
 
     return &pWindow->keyboard;
 }
 
-auto foeWsiGetMouse(foeWsiWindow window) -> foeWsiMouse const * {
+foeWsiMouse const *foeWsiGetMouse(foeWsiWindow window) {
     auto *pWindow = window_from_handle(window);
 
     return &pWindow->mouse;

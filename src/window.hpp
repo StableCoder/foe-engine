@@ -21,7 +21,7 @@
 #include <foe/graphics/render_target.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/vk/swapchain.hpp>
-#include <foe/wsi/window.hpp>
+#include <foe/wsi/window.h>
 
 #include "frame_timer.hpp"
 

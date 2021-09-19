@@ -52,7 +52,7 @@
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
-#include <foe/wsi/vulkan.hpp>
+#include <foe/wsi/vulkan.h>
 #include <vk_error_code.hpp>
 
 #include "armature_system.hpp"

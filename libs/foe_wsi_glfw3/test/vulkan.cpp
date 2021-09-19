@@ -15,7 +15,7 @@
 */
 
 #include <catch.hpp>
-#include <foe/wsi/vulkan.hpp>
+#include <foe/wsi/vulkan.h>
 
 TEST_CASE("WSI-GLFW - Vulkan Extensions") {
     uint32_t count{0};

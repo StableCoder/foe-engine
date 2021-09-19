@@ -19,7 +19,7 @@
 
 #include <foe/imgui/base.hpp>
 #include <foe/wsi/imgui/export.h>
-#include <foe/wsi/window.hpp>
+#include <foe/wsi/window.h>
 
 #include <vector>
 

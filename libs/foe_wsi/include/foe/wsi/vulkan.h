@@ -14,16 +14,19 @@
     limitations under the License.
 */
 
-#ifndef FOE_WSI_VULKAN_HPP
-#define FOE_WSI_VULKAN_HPP
+#ifndef FOE_WSI_VULKAN_H
+#define FOE_WSI_VULKAN_H
 
 #include <foe/error_code.h>
 #include <foe/wsi/export.h>
-#include <foe/wsi/window.hpp>
+#include <foe/wsi/window.h>
 #include <vulkan/vulkan.h>
 
-#include <cstdint>
-#include <system_error>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** Returns the required extensions for the current WSI implementation
  * @param pExtensionCount [out] Used to return the number of extensions returned
@@ -42,4 +45,8 @@ FOE_WSI_EXPORT foeErrorCode foeWsiWindowGetVkSurface(foeWsiWindow window,
                                                      VkInstance instance,
                                                      VkSurfaceKHR *pSurface);
 
-#endif // FOE_WSI_VULKAN_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_WSI_VULKAN_H

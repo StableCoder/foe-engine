@@ -14,12 +14,16 @@
     limitations under the License.
 */
 
-#ifndef FOE_WSI_WINDOW_HPP
-#define FOE_WSI_WINDOW_HPP
+#ifndef FOE_WSI_WINDOW_H
+#define FOE_WSI_WINDOW_H
 
 #include <foe/error_code.h>
 #include <foe/handle.h>
 #include <foe/wsi/export.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct foeWsiKeyboard;
 struct foeWsiMouse;
@@ -46,7 +50,7 @@ FOE_WSI_EXPORT void foeWsiGlobalProcessing();
 FOE_WSI_EXPORT foeErrorCode
 foeWsiCreateWindow(int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow);
 
-/// Destroys the current window
+/// Destroys the given window
 FOE_WSI_EXPORT void foeWsiDestroyWindow(foeWsiWindow window);
 
 /** @brief Performs any required per-window per-tick processing required
@@ -83,7 +87,11 @@ FOE_WSI_EXPORT void foeWsiWindowGetContentScale(foeWsiWindow window,
                                                 float *pScaleX,
                                                 float *pScaleY);
 
-FOE_WSI_EXPORT const foeWsiKeyboard *foeWsiGetKeyboard(foeWsiWindow window);
-FOE_WSI_EXPORT const foeWsiMouse *foeWsiGetMouse(foeWsiWindow window);
+FOE_WSI_EXPORT foeWsiKeyboard const *foeWsiGetKeyboard(foeWsiWindow window);
+FOE_WSI_EXPORT foeWsiMouse const *foeWsiGetMouse(foeWsiWindow window);
 
-#endif // FOE_WSI_WINDOW_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_WSI_WINDOW_H

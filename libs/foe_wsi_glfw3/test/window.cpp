@@ -15,7 +15,7 @@
 */
 
 #include <catch.hpp>
-#include <foe/wsi/window.hpp>
+#include <foe/wsi/window.h>
 
 #include <cstring>
 #include <thread>

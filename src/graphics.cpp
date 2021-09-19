@@ -18,7 +18,7 @@
 
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/wsi/vulkan.hpp>
+#include <foe/wsi/vulkan.h>
 #include <vk_error_code.hpp>
 
 #include "error_code.hpp"

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/wsi/vulkan.hpp>
+#include <foe/wsi/vulkan.h>
 
 #include <vk_error_code.hpp>
 
