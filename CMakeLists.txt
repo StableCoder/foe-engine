@@ -12,11 +12,6 @@ option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_VULKAN_RUNTIME_TESTS
        "Build tests that require an available Vulkan runtime" OFF)
 option(EDITOR_MODE "Build with the editor UI capability" OFF)
-if(APPLE)
-  option(BUILD_XR "Build with OpenXR support" OFF)
-else()
-  option(BUILD_XR "Build with OpenXR support" ON)
-endif()
 option(BUILD_OPENXR_RUNTIME_TESTS
        "Build tests that require an available OpenXR runtime" OFF)
 
@@ -29,6 +24,22 @@ set(WSI_LIBRARY
     CACHE
       STRING
       "WSI library linked/loaded by default (passed via compile definitions)")
+
+# XR Loader/Implementation Settings
+if(APPLE)
+  option(XR_SUPPORT "Build with XR support" OFF)
+else()
+  option(XR_SUPPORT "Build with XR support" ON)
+endif()
+
+option(XR_LOADER
+       "Compile/link the XR loader library (implementations are shared objects)"
+       OFF)
+set(XR_LIBRARY
+    "openxr"
+    CACHE STRING
+          "XR library linked/loaded by default (passed via compile definitions)"
+)
 
 # C11 standard, no extensions
 set(CMAKE_C_STANDARD 11)
@@ -158,7 +169,7 @@ else()
   target_compile_options(foe_engine_lib PRIVATE -fno-exceptions)
 endif()
 
-if(BUILD_XR)
+if(XR_SUPPORT)
   target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
 endif()
 

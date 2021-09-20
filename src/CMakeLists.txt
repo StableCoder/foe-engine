@@ -14,7 +14,7 @@ target_sources(
           vk_animation.cpp
           window.cpp)
 
-if(BUILD_XR)
+if(XR_SUPPORT)
   target_sources(foe_engine_lib PRIVATE xr.cpp xr_vk_camera_system.cpp)
 endif()
 

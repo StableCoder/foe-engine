@@ -1,24 +1,26 @@
 cmake_minimum_required(VERSION 3.15)
 project(foe_xr_openxr)
 
+# To use this library as the default XR library, use set XR_LIBRARY to 'openxr'
+# in the CMake project settings
+
 # Dependencies
 find_package(OpenXR REQUIRED)
 find_package(Vulkan REQUIRED)
 
 # Declaration
-add_library(foe_xr_openxr)
+if(XR_LOADER)
+  # If not directly using this library, eg. through a loader, make sure it is
+  # built as a shared object
+  add_library(foe_xr_openxr SHARED)
+else()
+  add_library(foe_xr_openxr)
+endif()
 
 # Definition
 add_subdirectory(src)
 
-generate_export_header(
-  foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/exports/foe/xr/export.h)
-
-target_include_directories(foe_xr_openxr
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/exports)
-
-target_compile_definitions(foe_xr_openxr PUBLIC FOE_XR_SUPPORT)
+target_include_directories(foe_xr_openxr PUBLIC include)
 
 target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader Vulkan::Vulkan)
 
@@ -28,4 +30,22 @@ if(MSVC)
   target_compile_options(foe_xr_openxr PRIVATE /EHsc)
 else()
   target_compile_options(foe_xr_openxr PRIVATE -fno-exceptions)
+endif()
+
+if(NOT XR_LOADER AND XR_LIBRARY STREQUAL "openxr")
+  # Export the XR_EXPORT header from this library
+  generate_export_header(
+    foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
+    ${CMAKE_CURRENT_BINARY_DIR}/public/foe/xr/export.h)
+
+  target_include_directories(foe_xr_openxr
+                             PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public)
+else()
+  # Don't export the XR_EXPORT header from this library, use local use only
+  generate_export_header(
+    foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
+    ${CMAKE_CURRENT_BINARY_DIR}/private/foe/xr/export.h)
+
+  target_include_directories(foe_xr_openxr
+                             PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/private)
 endif()
