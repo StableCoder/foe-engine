@@ -363,7 +363,12 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #endif
 
 #ifdef WSI_LOADER
-    foeWsiLoadImplementation(DEFAULT_WSI_IMPLEMENTATION);
+    std::string wsiImplementation = DEFAULT_WSI_IMPLEMENTATION;
+    if (!settings.window.implementation.empty())
+        wsiImplementation = settings.window.implementation;
+
+    if (!foeWsiLoadImplementation(wsiImplementation.data()))
+        END_PROGRAM_TUPLE
 #endif
 
     VkResult vkRes{VK_SUCCESS};

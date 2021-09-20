@@ -18,6 +18,7 @@
 #define SETTINGS_HPP
 
 #include <cstdint>
+#include <string>
 #include <tuple>
 
 class foeSearchPaths;
@@ -25,6 +26,7 @@ class foeSearchPaths;
 struct Settings {
     struct Window {
         bool enableWSI = true;
+        std::string implementation;
         uint32_t width = 1280;
         uint32_t height = 720;
         bool vsync = false;

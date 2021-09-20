@@ -35,6 +35,8 @@ void addCommandLineOptions(CLI::App *pParser, Settings *pOptions, foeSearchPaths
     // Window
     pParser->add_flag("--window,!--no-window", pOptions->window.enableWSI,
                       "Whether or not to start with an initial window");
+    pParser->add_option("--wsi-implementation", pOptions->window.implementation,
+                        "Path to the WSI implementation library");
     pParser->add_option("--width", pOptions->window.width, "Width of the initial window");
     pParser->add_option("--height", pOptions->window.height, "Height of the initial window");
     pParser->add_flag("--vsync,!--no-vsync", pOptions->window.vsync, "V-Sync");
@@ -91,6 +93,7 @@ bool parseEngineConfigFile(Settings *pOptions,
         if (auto windowNode = config["window"]; windowNode) {
             try {
                 yaml_read_optional("have_window", windowNode, pOptions->window.enableWSI);
+                yaml_read_optional("implementation", windowNode, pOptions->window.implementation);
                 yaml_read_optional("width", windowNode, pOptions->window.width);
                 yaml_read_optional("height", windowNode, pOptions->window.height);
                 yaml_read_optional("vsync", windowNode, pOptions->window.vsync);

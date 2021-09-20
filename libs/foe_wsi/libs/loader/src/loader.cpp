@@ -85,8 +85,8 @@ foePlugin gWsiImplementation{FOE_NULL_HANDLE};
 
 bool foeWsiLoadedImplementation() { return gWsiImplementation != FOE_NULL_HANDLE; }
 
-void foeWsiLoadImplementation(char const *pPath) {
-    if (gWsiImplementation == FOE_NULL_HANDLE) {
+bool foeWsiLoadImplementation(char const *pPath) {
+    if (gWsiImplementation == FOE_NULL_HANDLE && pPath != nullptr) {
         foeCreatePlugin(pPath, &gWsiImplementation);
 
         if (gWsiImplementation != FOE_NULL_HANDLE) {
@@ -149,8 +149,12 @@ void foeWsiLoadImplementation(char const *pPath) {
 
             gDispatchTable.WindowGetVkSurface = reinterpret_cast<PFN_foeWsiWindowGetVkSurface>(
                 foeGetPluginSymbol(gWsiImplementation, "foeWsiWindowGetVkSurface"));
+
+            return true;
         }
     }
+
+    return false;
 }
 
 void foeWsiGlobalProcessing() { gDispatchTable.GlobalProcessing(); }

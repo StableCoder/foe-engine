@@ -27,7 +27,7 @@ extern "C" {
 
 FOE_WSI_EXPORT bool foeWsiLoadedImplementation();
 
-FOE_WSI_EXPORT void foeWsiLoadImplementation(char const *pPath);
+FOE_WSI_EXPORT bool foeWsiLoadImplementation(char const *pPath);
 
 #ifdef __cplusplus
 }
