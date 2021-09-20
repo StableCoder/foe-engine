@@ -8,6 +8,7 @@ graphics:
   # max_frame_buffering: 3
   validation: false
   debug_logging: false
+  msaa: 1
 xr:
   enable: false
   force: false
