@@ -160,17 +160,12 @@ target_link_libraries(
          foe_position_yaml
          foe_resource
          foe_resource_yaml
-         foe_simulation
-         foe_xr)
+         foe_simulation)
 
 if(MSVC)
   target_compile_options(foe_engine_lib PRIVATE /EHsc)
 else()
   target_compile_options(foe_engine_lib PRIVATE -fno-exceptions)
-endif()
-
-if(XR_SUPPORT)
-  target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
 endif()
 
 if(EDITOR_MODE)
@@ -196,13 +191,18 @@ target_code_coverage(
   foe_position_yaml
   foe_resource
   foe_resource_yaml
-  foe_simulation
-  foe_xr)
+  foe_simulation)
 
 if(WSI_LOADER)
   target_link_libraries(foe_engine_lib PUBLIC foe_wsi_loader)
 else()
   target_link_libraries(foe_engine_lib PUBLIC foe_wsi_${WSI_LIBRARY})
+endif()
+
+if(NOT XR_SUPPORT OR XR_LOADER)
+  target_link_libraries(foe_engine_lib PUBLIC foe_xr_loader)
+else()
+  target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
 endif()
 
 # Engine ImGUI Definition
