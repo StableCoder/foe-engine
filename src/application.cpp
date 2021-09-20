@@ -1947,10 +1947,10 @@ int Application::mainloop() {
                     VK_END_PROGRAM
                 }
                 for (auto &it : swapchainResults) {
-                    if (vkRes == VK_ERROR_OUT_OF_DATE_KHR || vkRes == VK_SUBOPTIMAL_KHR) {
+                    if (it == VK_ERROR_OUT_OF_DATE_KHR || it == VK_SUBOPTIMAL_KHR) {
                         // The associated window has been resized, will be fixed for the next frame
-                        vkRes = VK_SUCCESS;
-                    } else if (vkRes != VK_SUCCESS) {
+                        it = VK_SUCCESS;
+                    } else if (it != VK_SUCCESS) {
                         VK_END_PROGRAM
                     }
                 }
