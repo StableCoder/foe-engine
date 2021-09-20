@@ -79,6 +79,10 @@
 #include "imgui/register.hpp"
 #endif
 
+#ifdef WSI_LOADER
+#include <foe/wsi/loader.h>
+#endif
+
 #define ERRC_END_PROGRAM_TUPLE                                                                     \
     {                                                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
@@ -356,6 +360,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet.get(), &imguiRegistrar});
     imguiState.addUI(pResourceListUI.get());
+#endif
+
+#ifdef WSI_LOADER
+    foeWsiLoadImplementation(DEFAULT_WSI_IMPLEMENTATION);
 #endif
 
     VkResult vkRes{VK_SUCCESS};

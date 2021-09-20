@@ -20,6 +20,16 @@ endif()
 option(BUILD_OPENXR_RUNTIME_TESTS
        "Build tests that require an available OpenXR runtime" OFF)
 
+# WSI Loader/Implementation Settings
+option(
+  WSI_LOADER
+  "Compile/link the WSI loader library (implementations are shared objects)" ON)
+set(WSI_LIBRARY
+    "glfw3"
+    CACHE
+      STRING
+      "WSI library linked/loaded by default (passed via compile definitions)")
+
 # C11 standard, no extensions
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -140,7 +150,6 @@ target_link_libraries(
          foe_resource
          foe_resource_yaml
          foe_simulation
-         foe_wsi_glfw3
          foe_xr)
 
 if(MSVC)
@@ -177,8 +186,13 @@ target_code_coverage(
   foe_resource
   foe_resource_yaml
   foe_simulation
-  foe_wsi_glfw3
   foe_xr)
+
+if(WSI_LOADER)
+  target_link_libraries(foe_engine_lib PUBLIC foe_wsi_loader)
+else()
+  target_link_libraries(foe_engine_lib PUBLIC foe_wsi_${WSI_LIBRARY})
+endif()
 
 # Engine ImGUI Definition
 target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)

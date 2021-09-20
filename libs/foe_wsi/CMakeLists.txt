@@ -12,9 +12,7 @@ find_package(Vulkan REQUIRED)
 add_library(foe_wsi INTERFACE)
 
 # Definition
-target_include_directories(
-  foe_wsi INTERFACE include ${glfw_INCLUDE_DIR}
-                    ${CMAKE_CURRENT_BINARY_DIR}/exports)
+target_include_directories(foe_wsi INTERFACE include ${glfw_INCLUDE_DIR})
 
 target_link_libraries(foe_wsi INTERFACE foe Vulkan::Vulkan)
 
