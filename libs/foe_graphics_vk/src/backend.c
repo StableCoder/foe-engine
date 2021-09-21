@@ -16,4 +16,20 @@
 
 #include <foe/graphics/backend.h>
 
-FoeGfxBackend foeGfxGetBackend() { return FOE_GFX_BACKEND_VULKAN; }
+#define VULKAN_BACKEND_NAME "Vulkan"
+
+#define VULKAN_BACKEND_MAJOR 0
+#define VULKAN_BACKEND_MINOR 0
+#define VULKAN_BACKEND_PATCH 0
+
+char const *foeGfxBackendName() { return VULKAN_BACKEND_NAME; }
+
+struct foeGfxVersion foeGfxBackendVersion() {
+    struct foeGfxVersion version = {
+        .major = VULKAN_BACKEND_MAJOR,
+        .minor = VULKAN_BACKEND_MINOR,
+        .patch = VULKAN_BACKEND_PATCH,
+    };
+
+    return version;
+}

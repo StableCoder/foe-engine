@@ -17,17 +17,24 @@
 #ifndef FOE_GRAPHICS_BACKEND_H
 #define FOE_GRAPHICS_BACKEND_H
 
+#include <foe/graphics/export.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <foe/graphics/export.h>
+struct foeGfxVersion {
+    unsigned int major : 10;
+    unsigned int minor : 10;
+    unsigned int patch : 12;
+};
 
-typedef enum FoeGfxBackend {
-    FOE_GFX_BACKEND_VULKAN,
-} FoeGfxBackend;
+_Static_assert(sizeof(struct foeGfxVersion) == 4,
+               "foeGfxVersion should be 4 bytes in size (uint32_t)");
 
-FOE_GFX_EXPORT FoeGfxBackend foeGfxGetBackend();
+FOE_GFX_EXPORT char const *foeGfxBackendName();
+
+FOE_GFX_EXPORT struct foeGfxVersion foeGfxBackendVersion();
 
 #ifdef __cplusplus
 }

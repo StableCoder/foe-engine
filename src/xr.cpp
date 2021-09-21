@@ -22,11 +22,13 @@
 #include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/vulkan.hpp>
 
+#include <cstring>
+
 std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
-    if (foeGfxGetBackend() == FOE_GFX_BACKEND_VULKAN) {
+    if (strcmp(foeGfxBackendName(), "Vulkan") == 0) {
         extensions.emplace_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
     } else {
         std::abort();
