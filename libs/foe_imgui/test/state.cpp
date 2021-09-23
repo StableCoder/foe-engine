@@ -15,26 +15,83 @@
 */
 
 #include <catch.hpp>
-#include <foe/imgui/base.hpp>
 #include <foe/imgui/state.hpp>
 #include <imgui.h>
 
+#include <array>
+
+namespace {
+
+std::array<char const *, 4> menuArr{"File", "Edit", "Custom", "Help"};
+
+char const *testStr = "Test";
+int testContextVar;
+
+bool menuFn(void *pContext, char const *pMenuName) {
+    auto *pCount = static_cast<int *>(pContext);
+
+    std::string_view menu{pMenuName};
+    for (auto const &it : menuArr) {
+        if (menu == it) {
+            (*pCount)++;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void customFn(void *pContext) {}
+
+} // namespace
+
 TEST_CASE("ImGui State Add/Remove", "[foe][imgui]") {
-    foeImGuiBase testBase, testBase2;
     foeImGuiState testState;
 
-    SECTION("Adding nothing fails") { REQUIRE_FALSE(testState.addUI(nullptr)); }
-    SECTION("Adding real element succeeds") {
-        REQUIRE(testState.addUI(&testBase));
-        REQUIRE(testState.addUI(&testBase2));
-
-        SECTION("Re-adding same element fails") { REQUIRE_FALSE(testState.addUI(&testBase)); }
-
-        SECTION("Removing first item") { testState.removeUI(&testBase); }
-        SECTION("Removing second item") { testState.removeUI(&testBase2); }
-        SECTION("Removing non-existant") { testState.removeUI(nullptr); }
+    SECTION("Adding no context/functions fails") {
+        REQUIRE_FALSE(testState.addUI(nullptr, nullptr, nullptr, nullptr, 0));
+        REQUIRE_FALSE(testState.addUI(nullptr, nullptr, nullptr, &testStr, 1));
     }
-    SECTION("Removing non-existant item") { testState.removeUI(nullptr); }
+    SECTION("Adding real unique element combinations succeeds") {
+        REQUIRE(testState.addUI(&testContextVar, nullptr, nullptr, nullptr, 0));
+        REQUIRE(testState.addUI(nullptr, menuFn, nullptr, nullptr, 0));
+        REQUIRE(testState.addUI(nullptr, nullptr, customFn, nullptr, 0));
+        REQUIRE(testState.addUI(nullptr, menuFn, customFn, nullptr, 0));
+        REQUIRE(testState.addUI(&testContextVar, menuFn, customFn, nullptr, 0));
+
+        SECTION("Re-adding same element fails") {
+            REQUIRE_FALSE(testState.addUI(&testContextVar, nullptr, nullptr, nullptr, 0));
+            REQUIRE_FALSE(testState.addUI(nullptr, menuFn, nullptr, nullptr, 0));
+            REQUIRE_FALSE(testState.addUI(nullptr, nullptr, customFn, nullptr, 0));
+            REQUIRE_FALSE(testState.addUI(nullptr, menuFn, customFn, nullptr, 0));
+            REQUIRE_FALSE(testState.addUI(&testContextVar, menuFn, customFn, nullptr, 0));
+        }
+
+        SECTION("Re-adding same element with different menu strings fails") {
+            REQUIRE_FALSE(testState.addUI(&testContextVar, nullptr, nullptr, &testStr, 1));
+            REQUIRE_FALSE(testState.addUI(nullptr, menuFn, nullptr, &testStr, 1));
+            REQUIRE_FALSE(testState.addUI(nullptr, nullptr, customFn, &testStr, 1));
+            REQUIRE_FALSE(testState.addUI(nullptr, menuFn, customFn, &testStr, 1));
+            REQUIRE_FALSE(testState.addUI(&testContextVar, menuFn, customFn, &testStr, 1));
+        }
+
+        SECTION("Removing items") {
+            testState.addUI(&testContextVar, nullptr, nullptr, nullptr, 0);
+            testState.addUI(nullptr, menuFn, nullptr, nullptr, 0);
+            testState.addUI(nullptr, nullptr, customFn, nullptr, 0);
+            testState.addUI(nullptr, menuFn, customFn, nullptr, 0);
+            testState.addUI(&testContextVar, menuFn, customFn, nullptr, 0);
+        }
+
+        SECTION("Removing non-existant") {
+            testState.addUI(nullptr, nullptr, nullptr, nullptr, 0);
+            testState.addUI(nullptr, nullptr, nullptr, &testStr, 1);
+        }
+    }
+    SECTION("Removing non-existing items causes no harm") {
+        testState.addUI(nullptr, nullptr, nullptr, nullptr, 0);
+        testState.addUI(nullptr, nullptr, nullptr, &testStr, 1);
+    }
 
     SECTION("Test that running UI calls all the sub base types") {
         ImGui::CreateContext();
@@ -49,7 +106,9 @@ TEST_CASE("ImGui State Add/Remove", "[foe][imgui]") {
 
         ImGui::NewFrame();
 
-        REQUIRE(testState.addUI(&testBase));
+        int callCount = 0;
+
+        REQUIRE(testState.addUI(&callCount, menuFn, customFn, menuArr.data(), menuArr.size()));
         testState.runUI();
 
         ImGui::EndFrame();

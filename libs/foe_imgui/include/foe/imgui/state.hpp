@@ -21,29 +21,17 @@
 
 #include <mutex>
 #include <string>
+#include <tuple>
 #include <vector>
 
-class foeImGuiBase;
+// Boolean returns whether anything was rendered (if so, it will add a separator after)
+// String is to determine under which menu context is being rendered currently
+using PFN_foeImGuiRenderMainMenu = bool (*)(void *, char const *);
+using PFN_foeImGuiRenderCustomUI = void (*)(void *);
 
 /// Keeps and renders in order UI items
 class foeImGuiState {
-    // Boolean returns whether anything was rendered (if so, it will add a separator after)
-    // String is to determine under which menu context is being rendered currently
-    using PFN_RenderMainMenu = bool (*)(void *, char const *);
-    using PFN_RenderCustomUI = void (*)(void *);
-
   public:
-    /** @brief Adds the specific UI element
-     * @param pUI Item to attempt to add
-     * @return True if added. False if it's nullptr or already added.
-     */
-    FOE_IMGUI_EXPORT bool addUI(foeImGuiBase *pUI);
-
-    /** @brief Removes the specific UI element
-     * @param pUI Item to attempt to remove
-     */
-    FOE_IMGUI_EXPORT void removeUI(foeImGuiBase *pUI);
-
     /** @brief Adds the rendering of a specific GUI
      * @param pContext Pointer to the context that is passed in with the given functions
      * @param pMainMenuFn Function to call when rendering main-menu items
@@ -56,8 +44,8 @@ class foeImGuiState {
      * rendering UI items to, such as the 'File', 'Edit' or any custom named top-level menu.
      */
     FOE_IMGUI_EXPORT bool addUI(void *pContext,
-                                PFN_RenderMainMenu pMainMenuFn,
-                                PFN_RenderCustomUI pCustomFn,
+                                PFN_foeImGuiRenderMainMenu pMainMenuFn,
+                                PFN_foeImGuiRenderCustomUI pCustomFn,
                                 char const **ppMenuSets,
                                 size_t menuSetCount);
 
@@ -67,10 +55,11 @@ class foeImGuiState {
      * @param pCustomFn Function to call for rendering custom UI elements
      * @param ppMenuSets Strings that represent the menu dropdowns that the function renders to
      * @param menuSetCount Number of strings in ppMenuSets
+     * @warning There are no checks to ensure the Menu strings are the same as was registered with!
      */
     FOE_IMGUI_EXPORT void removeUI(void *pContext,
-                                   PFN_RenderMainMenu pMainMenuFn,
-                                   PFN_RenderCustomUI pCustomFn,
+                                   PFN_foeImGuiRenderMainMenu pMainMenuFn,
+                                   PFN_foeImGuiRenderCustomUI pCustomFn,
                                    char const **ppMenuSets,
                                    size_t menuSetCount);
 
@@ -80,14 +69,12 @@ class foeImGuiState {
   private:
     struct GuiData {
         void *pContext;
-        PFN_RenderMainMenu pMainMenuFn;
-        PFN_RenderCustomUI pCustomFn;
+        PFN_foeImGuiRenderMainMenu pMainMenuFn;
+        PFN_foeImGuiRenderCustomUI pCustomFn;
     };
 
     /// Synchronization primitive
     std::mutex mSync;
-    //// Set of UI elements to be called/rendered
-    std::vector<foeImGuiBase *> mUI;
     /// Set of UI contexts and functions to be called/rendered
     std::vector<GuiData> mGuiData;
 

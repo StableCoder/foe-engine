@@ -16,43 +16,13 @@
 
 #include <foe/imgui/state.hpp>
 
-#include <foe/imgui/base.hpp>
 #include <imgui.h>
 
 #include <string>
 
-bool foeImGuiState::addUI(foeImGuiBase *pUI) {
-    if (pUI == nullptr)
-        return false;
-
-    std::scoped_lock lock{mSync};
-
-    // Check to see if its already in
-    for (auto const *it : mUI) {
-        if (it == pUI) {
-            return false;
-        }
-    }
-
-    mUI.emplace_back(pUI);
-
-    return true;
-}
-
-void foeImGuiState::removeUI(foeImGuiBase *pUI) {
-    std::scoped_lock lock{mSync};
-
-    for (auto it = mUI.begin(); it != mUI.end(); ++it) {
-        if (*it == pUI) {
-            mUI.erase(it);
-            return;
-        }
-    }
-}
-
 bool foeImGuiState::addUI(void *pContext,
-                          PFN_RenderMainMenu pMainMenuFn,
-                          PFN_RenderCustomUI pCustomFn,
+                          PFN_foeImGuiRenderMainMenu pMainMenuFn,
+                          PFN_foeImGuiRenderCustomUI pCustomFn,
                           char const **ppMenuSets,
                           size_t menuSetCount) {
     if (pContext == nullptr && pMainMenuFn == nullptr && pCustomFn == nullptr)
@@ -103,8 +73,8 @@ bool foeImGuiState::addUI(void *pContext,
 }
 
 void foeImGuiState::removeUI(void *pContext,
-                             PFN_RenderMainMenu pMainMenuFn,
-                             PFN_RenderCustomUI pCustomFn,
+                             PFN_foeImGuiRenderMainMenu pMainMenuFn,
+                             PFN_foeImGuiRenderCustomUI pCustomFn,
                              char const **ppMenuSets,
                              size_t menuSetCount) {
     std::scoped_lock lock{mSync};
@@ -149,10 +119,6 @@ void foeImGuiState::runUI() {
 
     // File menu
     if (mFileMenuCount > 0 && ImGui::BeginMenu("File")) {
-        for (auto *it : mUI) {
-            it->fileMainMenu();
-        }
-
         for (auto const &it : mGuiData) {
             if (it.pMainMenuFn != nullptr) {
                 it.pMainMenuFn(it.pContext, "File");
@@ -175,10 +141,6 @@ void foeImGuiState::runUI() {
 
     // View menu
     if (mViewMenuCount > 0 && ImGui::BeginMenu("View")) {
-        for (auto *it : mUI) {
-            it->viewMainMenu();
-        }
-
         for (auto const &it : mGuiData) {
             if (it.pMainMenuFn != nullptr) {
                 it.pMainMenuFn(it.pContext, "View");
@@ -189,10 +151,6 @@ void foeImGuiState::runUI() {
     }
 
     // Custom menus
-    for (auto *it : mUI) {
-        it->customMainMenu();
-    }
-
     for (auto const &it : mMainMenuCounts) {
         if (std::get<1>(it) > 0) {
             char const *pStr = std::get<0>(it).data();
@@ -220,10 +178,6 @@ void foeImGuiState::runUI() {
     ImGui::EndMainMenuBar();
 
     // Custom UI
-    for (auto *it : mUI) {
-        it->customUI();
-    }
-
     for (auto const &it : mGuiData) {
         if (it.pCustomFn != nullptr) {
             it.pCustomFn(it.pContext);
