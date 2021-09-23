@@ -19,6 +19,8 @@
 #include <foe/imgui/base.hpp>
 #include <imgui.h>
 
+#include <string>
+
 bool foeImGuiState::addUI(foeImGuiBase *pUI) {
     if (pUI == nullptr)
         return false;
@@ -48,24 +50,139 @@ void foeImGuiState::removeUI(foeImGuiBase *pUI) {
     }
 }
 
+bool foeImGuiState::addUI(void *pContext,
+                          PFN_RenderMainMenu pMainMenuFn,
+                          PFN_RenderCustomUI pCustomFn,
+                          char const **ppMenuSets,
+                          size_t menuSetCount) {
+    if (pContext == nullptr && pMainMenuFn == nullptr && pCustomFn == nullptr)
+        return false;
+
+    std::scoped_lock lock{mSync};
+
+    for (auto const &it : mGuiData) {
+        if (pContext == it.pContext && pMainMenuFn == it.pMainMenuFn && pCustomFn == it.pCustomFn) {
+            return false;
+        }
+    }
+
+    mGuiData.emplace_back(GuiData{
+        .pContext = pContext,
+        .pMainMenuFn = pMainMenuFn,
+        .pCustomFn = pCustomFn,
+    });
+
+    for (size_t i = 0; i < menuSetCount; ++i) {
+        std::string menuStr{ppMenuSets[i]};
+
+        // If one of the built-in menus, don't need to count them
+        if (menuStr == "File") {
+            ++mFileMenuCount;
+        } else if (menuStr == "Edit") {
+            ++mEditMenuCount;
+        } else if (menuStr == "View") {
+            ++mViewMenuCount;
+        } else if (menuStr == "Help") {
+            ++mHelpMenuCount;
+        } else {
+            bool found;
+            for (auto &it : mMainMenuCounts) {
+                if (std::get<0>(it) == menuStr) {
+                    ++std::get<1>(it);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                mMainMenuCounts.emplace_back(std::make_tuple(menuStr, 1));
+            }
+        }
+    }
+
+    return true;
+}
+
+void foeImGuiState::removeUI(void *pContext,
+                             PFN_RenderMainMenu pMainMenuFn,
+                             PFN_RenderCustomUI pCustomFn,
+                             char const **ppMenuSets,
+                             size_t menuSetCount) {
+    std::scoped_lock lock{mSync};
+
+    for (auto it = mGuiData.begin(); it != mGuiData.end(); ++it) {
+        if (pContext == it->pContext && pMainMenuFn == it->pMainMenuFn &&
+            pCustomFn == it->pCustomFn) {
+            mGuiData.erase(it);
+
+            for (size_t i = 0; i < menuSetCount; ++i) {
+                std::string menuStr{ppMenuSets[i]};
+
+                // If one of the built-in menus, don't need to count them
+                if (menuStr == "File") {
+                    --mFileMenuCount;
+                } else if (menuStr == "Edit") {
+                    --mEditMenuCount;
+                } else if (menuStr == "View") {
+                    --mViewMenuCount;
+                } else if (menuStr == "Help") {
+                    --mHelpMenuCount;
+                } else {
+                    bool found;
+                    for (auto &it : mMainMenuCounts) {
+                        if (std::get<0>(it) == menuStr) {
+                            --std::get<1>(it);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            break;
+        }
+    }
+}
+
 void foeImGuiState::runUI() {
     std::scoped_lock lock{mSync};
 
     ImGui::BeginMainMenuBar();
 
     // File menu
-    if (ImGui::BeginMenu("File")) {
+    if (mFileMenuCount > 0 && ImGui::BeginMenu("File")) {
         for (auto *it : mUI) {
             it->fileMainMenu();
+        }
+
+        for (auto const &it : mGuiData) {
+            if (it.pMainMenuFn != nullptr) {
+                it.pMainMenuFn(it.pContext, "File");
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+
+    // Edit menu
+    if (mEditMenuCount > 0 && ImGui::BeginMenu("Edit")) {
+        for (auto const &it : mGuiData) {
+            if (it.pMainMenuFn != nullptr) {
+                it.pMainMenuFn(it.pContext, "Edit");
+            }
         }
 
         ImGui::EndMenu();
     }
 
     // View menu
-    if (ImGui::BeginMenu("View")) {
+    if (mViewMenuCount > 0 && ImGui::BeginMenu("View")) {
         for (auto *it : mUI) {
             it->viewMainMenu();
+        }
+
+        for (auto const &it : mGuiData) {
+            if (it.pMainMenuFn != nullptr) {
+                it.pMainMenuFn(it.pContext, "View");
+            }
         }
 
         ImGui::EndMenu();
@@ -76,10 +193,40 @@ void foeImGuiState::runUI() {
         it->customMainMenu();
     }
 
+    for (auto const &it : mMainMenuCounts) {
+        if (std::get<1>(it) > 0) {
+            char const *pStr = std::get<0>(it).data();
+            if (ImGui::BeginMenu(pStr)) {
+                for (auto const &it : mGuiData) {
+                    if (it.pMainMenuFn != nullptr) {
+                        it.pMainMenuFn(it.pContext, pStr);
+                    }
+                }
+            }
+        }
+    }
+
+    // Help menus
+    if (mHelpMenuCount > 0 && ImGui::BeginMenu("Help")) {
+        for (auto const &it : mGuiData) {
+            if (it.pMainMenuFn != nullptr) {
+                it.pMainMenuFn(it.pContext, "Help");
+            }
+        }
+
+        ImGui::EndMenu();
+    }
+
     ImGui::EndMainMenuBar();
 
     // Custom UI
     for (auto *it : mUI) {
         it->customUI();
+    }
+
+    for (auto const &it : mGuiData) {
+        if (it.pCustomFn != nullptr) {
+            it.pCustomFn(it.pContext);
+        }
     }
 }
