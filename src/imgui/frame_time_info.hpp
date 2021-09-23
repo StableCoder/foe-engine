@@ -17,17 +17,22 @@
 #ifndef IMGUI_FRAME_TIME_INFO_HPP
 #define IMGUI_FRAME_TIME_INFO_HPP
 
-#include <foe/imgui/base.hpp>
-
 class FrameTimer;
+struct foeImGuiState;
 
-class foeImGuiFrameTimeInfo : public foeImGuiBase {
+class foeImGuiFrameTimeInfo {
   public:
     foeImGuiFrameTimeInfo(FrameTimer *pFrameTimer);
 
+    bool registerUI(foeImGuiState *pState);
+    void deregisterUI(foeImGuiState *pState);
+
   private:
-    void viewMainMenu() final;
-    void customUI() final;
+    static bool renderMenuElements(void *pContext, char const *pMenu);
+    static void renderCustomUI(void *pContext);
+
+    bool viewMainMenu();
+    void customUI();
 
     FrameTimer const *const mFrameTimer;
 

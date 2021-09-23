@@ -18,17 +18,20 @@
 #define IMGUI_RESOURCE_LIST_HPP
 
 #include <foe/ecs/id.hpp>
-#include <foe/imgui/base.hpp>
 
 #include <vector>
 
+struct foeImGuiState;
 struct foeSimulationState;
 class foeSimulationImGuiRegistrar;
 
-class foeImGuiResourceList : public foeImGuiBase {
+class foeImGuiResourceList {
   public:
     foeImGuiResourceList(foeSimulationState *pSimulationState,
                          foeSimulationImGuiRegistrar *pRegistrar);
+
+    bool registerUI(foeImGuiState *pState);
+    void deregisterUI(foeImGuiState *pState);
 
   private:
     struct ResourceDisplayData {
@@ -37,8 +40,11 @@ class foeImGuiResourceList : public foeImGuiBase {
         bool focus;
     };
 
-    virtual void viewMainMenu();
-    virtual void customUI();
+    static bool renderMenuElements(void *pContext, char const *pMenu);
+    static void renderCustomUI(void *pContext);
+
+    bool viewMainMenu();
+    void customUI();
 
     void displayOpenResources();
     bool displayResource(ResourceDisplayData *pData);

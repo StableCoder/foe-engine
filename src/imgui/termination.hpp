@@ -17,14 +17,19 @@
 #ifndef IMGUI_TERMINATION_HPP
 #define IMGUI_TERMINATION_HPP
 
-#include <foe/imgui/base.hpp>
+struct foeImGuiState;
 
-class foeImGuiTermination : public foeImGuiBase {
+class foeImGuiTermination {
   public:
     bool terminationRequested() const noexcept;
 
+    bool registerUI(foeImGuiState *pState);
+    void deregisterUI(foeImGuiState *pState);
+
   private:
-    void fileMainMenu() final;
+    static bool renderMenuElements(void *pContext, char const *pMenu);
+
+    void fileMainMenu();
 
     bool mTerminate{false};
 };

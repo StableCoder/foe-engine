@@ -18,15 +18,22 @@
 #define IMGUI_DEVELOPER_CONSOLE_HPP
 
 #include <foe/developer_console.hpp>
-#include <foe/imgui/base.hpp>
 
 #include <string>
 
-class foeImGuiDeveloperConsole : public foeDeveloperConsole, public foeImGuiBase {
+struct foeImGuiState;
+
+class foeImGuiDeveloperConsole : public foeDeveloperConsole {
   public:
+    bool registerUI(foeImGuiState *pState);
+    void deregisterUI(foeImGuiState *pState);
+
   private:
-    void viewMainMenu() override;
-    void customUI() override;
+    static bool renderMenuElements(void *pContext, char const *pMenu);
+    static void renderCustomUI(void *pContext);
+
+    bool viewMainMenu();
+    void customUI();
 
     std::string mBuffer;
     bool mOpen{false};

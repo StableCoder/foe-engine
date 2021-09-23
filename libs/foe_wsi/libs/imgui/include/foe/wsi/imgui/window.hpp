@@ -17,16 +17,20 @@
 #ifndef FOE_WSI_IMGUI_WINDOW_HPP
 #define FOE_WSI_IMGUI_WINDOW_HPP
 
-#include <foe/imgui/base.hpp>
 #include <foe/wsi/imgui/export.h>
 #include <foe/wsi/window.h>
 
 #include <vector>
 
-class FOE_WSI_IMGUI_EXPORT foeWsiImGuiWindow : public foeImGuiBase {
+struct foeImGuiState;
+
+class foeWsiImGuiWindow {
   public:
-    bool addWindow(foeWsiWindow window);
-    bool removeWindow(foeWsiWindow window);
+    FOE_WSI_IMGUI_EXPORT bool addWindow(foeWsiWindow window);
+    FOE_WSI_IMGUI_EXPORT bool removeWindow(foeWsiWindow window);
+
+    FOE_WSI_IMGUI_EXPORT bool registerUI(foeImGuiState *pState);
+    FOE_WSI_IMGUI_EXPORT void deregisterUI(foeImGuiState *pState);
 
   private:
     struct WindowData {
@@ -35,7 +39,10 @@ class FOE_WSI_IMGUI_EXPORT foeWsiImGuiWindow : public foeImGuiBase {
         bool focus;
     };
 
-    void viewMainMenu();
+    static bool renderMenuElements(void *pContext, char const *pMenu);
+    static void renderCustomUI(void *pContext);
+
+    bool viewMainMenu();
     void customUI();
 
     std::vector<WindowData> mWindowList;

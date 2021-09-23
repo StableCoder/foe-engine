@@ -17,11 +17,19 @@
 #include <foe/wsi/imgui/window.hpp>
 
 #include <fmt/core.h>
+#include <foe/imgui/state.hpp>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
 #include <imgui.h>
 
+#include <array>
+#include <string_view>
+
 namespace {
+
+std::array<char const *, 1> renderMenus{
+    "View",
+};
 
 void renderKeyboardUI(foeWsiKeyboard const *pKeyboard) {
     // Handle
@@ -109,7 +117,34 @@ bool foeWsiImGuiWindow::removeWindow(foeWsiWindow window) {
     return false;
 }
 
-void foeWsiImGuiWindow::viewMainMenu() {
+bool foeWsiImGuiWindow::registerUI(foeImGuiState *pState) {
+    return pState->addUI(this, foeWsiImGuiWindow::renderMenuElements,
+                         foeWsiImGuiWindow::renderCustomUI, renderMenus.data(), renderMenus.size());
+}
+
+void foeWsiImGuiWindow::deregisterUI(foeImGuiState *pState) {
+    pState->removeUI(this, foeWsiImGuiWindow::renderMenuElements, foeWsiImGuiWindow::renderCustomUI,
+                     renderMenus.data(), renderMenus.size());
+}
+
+bool foeWsiImGuiWindow::renderMenuElements(void *pContext, char const *pMenu) {
+    auto *pData = static_cast<foeWsiImGuiWindow *>(pContext);
+    std::string_view menu{pMenu};
+
+    if (menu == "View") {
+        return pData->viewMainMenu();
+    }
+
+    return false;
+}
+
+void foeWsiImGuiWindow::renderCustomUI(void *pContext) {
+    auto *pData = static_cast<foeWsiImGuiWindow *>(pContext);
+
+    pData->customUI();
+}
+
+bool foeWsiImGuiWindow::viewMainMenu() {
     if (ImGui::BeginMenu("Windows", !mWindowList.empty())) {
         for (auto &it : mWindowList) {
             std::string menuLabel = fmt::format("{} : {}", static_cast<void *>(it.window),
@@ -122,6 +157,8 @@ void foeWsiImGuiWindow::viewMainMenu() {
 
         ImGui::EndMenu();
     }
+
+    return true;
 }
 
 void foeWsiImGuiWindow::customUI() {

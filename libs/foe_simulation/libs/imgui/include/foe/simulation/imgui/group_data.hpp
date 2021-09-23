@@ -18,20 +18,24 @@
 #define FOE_SIMULATION_IMGUI_GROUP_DATA_HPP
 
 #include <foe/ecs/id.hpp>
-#include <foe/imgui/base.hpp>
 #include <foe/simulation/imgui/export.h>
 
 struct foeSimulationState;
+struct foeImGuiState;
 
-class foeSimulationImGuiGroupData : public foeImGuiBase {
+class foeSimulationImGuiGroupData {
   public:
-    virtual ~foeSimulationImGuiGroupData() = default;
-
     FOE_SIM_IMGUI_EXPORT foeSimulationImGuiGroupData(foeSimulationState *pSimulationState);
 
+    FOE_SIM_IMGUI_EXPORT bool registerUI(foeImGuiState *pState);
+    FOE_SIM_IMGUI_EXPORT void deregisterUI(foeImGuiState *pState);
+
   private:
-    void viewMainMenu() final;
-    void customUI() final;
+    static bool renderMenuElements(void *pContext, char const *pMenu);
+    static void renderCustomUI(void *pContext);
+
+    bool viewMainMenu();
+    void customUI();
 
     foeSimulationState *mpSimulationState;
 

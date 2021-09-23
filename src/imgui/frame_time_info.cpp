@@ -16,16 +16,58 @@
 
 #include "frame_time_info.hpp"
 
+#include <foe/imgui/state.hpp>
 #include <imgui.h>
 
 #include "../frame_timer.hpp"
 
+#include <array>
+#include <string_view>
+
+namespace {
+
+std::array<char const *, 1> renderMenus{
+    "View",
+};
+
+}
+
 foeImGuiFrameTimeInfo::foeImGuiFrameTimeInfo(FrameTimer *pFrameTimer) : mFrameTimer{pFrameTimer} {}
 
-void foeImGuiFrameTimeInfo::viewMainMenu() {
+bool foeImGuiFrameTimeInfo::registerUI(foeImGuiState *pState) {
+    return pState->addUI(this, foeImGuiFrameTimeInfo::renderMenuElements,
+                         foeImGuiFrameTimeInfo::renderCustomUI, renderMenus.data(),
+                         renderMenus.size());
+}
+
+void foeImGuiFrameTimeInfo::deregisterUI(foeImGuiState *pState) {
+    pState->removeUI(this, foeImGuiFrameTimeInfo::renderMenuElements,
+                     foeImGuiFrameTimeInfo::renderCustomUI, renderMenus.data(), renderMenus.size());
+}
+
+bool foeImGuiFrameTimeInfo::renderMenuElements(void *pContext, char const *pMenu) {
+    auto *pData = static_cast<foeImGuiFrameTimeInfo *>(pContext);
+    std::string_view menu{pMenu};
+
+    if (menu == "View") {
+        return pData->viewMainMenu();
+    }
+
+    return false;
+}
+
+void foeImGuiFrameTimeInfo::renderCustomUI(void *pContext) {
+    auto *pData = static_cast<foeImGuiFrameTimeInfo *>(pContext);
+
+    pData->customUI();
+}
+
+bool foeImGuiFrameTimeInfo::viewMainMenu() {
     if (ImGui::MenuItem("Frame Time Info")) {
         mOpen = !mOpen;
     }
+
+    return true;
 }
 
 void foeImGuiFrameTimeInfo::customUI() {

@@ -16,13 +16,56 @@
 
 #include "developer_console.hpp"
 
+#include <foe/imgui/state.hpp>
 #include <imgui.h>
 
-void foeImGuiDeveloperConsole::viewMainMenu() {
+#include <array>
+#include <string_view>
+
+namespace {
+
+std::array<char const *, 1> renderMenus{
+    "View",
+};
+
+}
+
+bool foeImGuiDeveloperConsole::registerUI(foeImGuiState *pState) {
+    return pState->addUI(this, foeImGuiDeveloperConsole::renderMenuElements,
+                         foeImGuiDeveloperConsole::renderCustomUI, renderMenus.data(),
+                         renderMenus.size());
+}
+
+void foeImGuiDeveloperConsole::deregisterUI(foeImGuiState *pState) {
+    pState->removeUI(this, foeImGuiDeveloperConsole::renderMenuElements,
+                     foeImGuiDeveloperConsole::renderCustomUI, renderMenus.data(),
+                     renderMenus.size());
+}
+
+bool foeImGuiDeveloperConsole::renderMenuElements(void *pContext, char const *pMenu) {
+    auto *pData = static_cast<foeImGuiDeveloperConsole *>(pContext);
+    std::string_view menu{pMenu};
+
+    if (menu == "View") {
+        return pData->viewMainMenu();
+    }
+
+    return false;
+}
+
+void foeImGuiDeveloperConsole::renderCustomUI(void *pContext) {
+    auto *pData = static_cast<foeImGuiDeveloperConsole *>(pContext);
+
+    pData->customUI();
+}
+
+bool foeImGuiDeveloperConsole::viewMainMenu() {
     if (ImGui::MenuItem("Developer Console")) {
         mOpen = true;
         mFocus = true;
     }
+
+    return true;
 }
 
 void foeImGuiDeveloperConsole::customUI() {

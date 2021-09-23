@@ -17,19 +17,61 @@
 #include "entity_list.hpp"
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <imgui.h>
+
+#include <array>
+#include <string_view>
+
+namespace {
+
+std::array<char const *, 1> renderMenus{
+    "View",
+};
+
+}
 
 foeImGuiEntityList::foeImGuiEntityList(foeSimulationState *pSimulationState,
                                        foeSimulationImGuiRegistrar *pRegistrar) :
     mpSimulationState{pSimulationState}, mpRegistrar{pRegistrar} {}
 
-void foeImGuiEntityList::viewMainMenu() {
+bool foeImGuiEntityList::registerUI(foeImGuiState *pState) {
+    return pState->addUI(this, foeImGuiEntityList::renderMenuElements,
+                         foeImGuiEntityList::renderCustomUI, renderMenus.data(),
+                         renderMenus.size());
+}
+
+void foeImGuiEntityList::deregisterUI(foeImGuiState *pState) {
+    pState->removeUI(this, foeImGuiEntityList::renderMenuElements,
+                     foeImGuiEntityList::renderCustomUI, renderMenus.data(), renderMenus.size());
+}
+
+bool foeImGuiEntityList::renderMenuElements(void *pContext, char const *pMenu) {
+    auto *pData = static_cast<foeImGuiEntityList *>(pContext);
+    std::string_view menu{pMenu};
+
+    if (menu == "View") {
+        return pData->viewMainMenu();
+    }
+
+    return false;
+}
+
+void foeImGuiEntityList::renderCustomUI(void *pContext) {
+    auto *pData = static_cast<foeImGuiEntityList *>(pContext);
+
+    pData->customUI();
+}
+
+bool foeImGuiEntityList::viewMainMenu() {
     if (ImGui::Selectable("Entity List", mOpen)) {
         mOpen = true;
         mFocus = true;
     }
+
+    return true;
 }
 
 void foeImGuiEntityList::customUI() {

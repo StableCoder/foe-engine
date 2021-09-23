@@ -16,13 +16,20 @@
 
 #include <foe/simulation/imgui/group_data.hpp>
 
+#include <foe/imgui/state.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <imgui.h>
 
+#include <array>
 #include <iomanip>
 #include <sstream>
+#include <string_view>
 
 namespace {
+
+std::array<char const *, 1> renderMenus{
+    "View",
+};
 
 std::string groupValueToShortHexStr(foeIdGroupValue group) {
     constexpr int groupWidth = (foeIdNumGroupBits / 4) + ((foeIdNumGroupBits % 4) ? 1 : 0);
@@ -61,11 +68,42 @@ void renderIndexData(foeIdIndexGenerator *pIndexGenerator, char const *subGroupN
 foeSimulationImGuiGroupData::foeSimulationImGuiGroupData(foeSimulationState *pSimulationState) :
     mpSimulationState{pSimulationState} {}
 
-void foeSimulationImGuiGroupData::viewMainMenu() {
+bool foeSimulationImGuiGroupData::registerUI(foeImGuiState *pState) {
+    return pState->addUI(this, foeSimulationImGuiGroupData::renderMenuElements,
+                         foeSimulationImGuiGroupData::renderCustomUI, renderMenus.data(),
+                         renderMenus.size());
+}
+
+void foeSimulationImGuiGroupData::deregisterUI(foeImGuiState *pState) {
+    pState->removeUI(this, foeSimulationImGuiGroupData::renderMenuElements,
+                     foeSimulationImGuiGroupData::renderCustomUI, renderMenus.data(),
+                     renderMenus.size());
+}
+
+bool foeSimulationImGuiGroupData::renderMenuElements(void *pContext, char const *pMenu) {
+    auto *pData = static_cast<foeSimulationImGuiGroupData *>(pContext);
+    std::string_view menu{pMenu};
+
+    if (menu == "View") {
+        return pData->viewMainMenu();
+    }
+
+    return false;
+}
+
+void foeSimulationImGuiGroupData::renderCustomUI(void *pContext) {
+    auto *pData = static_cast<foeSimulationImGuiGroupData *>(pContext);
+
+    pData->customUI();
+}
+
+bool foeSimulationImGuiGroupData::viewMainMenu() {
     if (ImGui::Selectable("Entity Group List", mOpen)) {
         mOpen = true;
         mFocus = true;
     }
+
+    return true;
 }
 
 void foeSimulationImGuiGroupData::customUI() {

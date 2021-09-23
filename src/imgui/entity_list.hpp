@@ -18,17 +18,20 @@
 #define IMGUI_ENTITY_LIST_HPP
 
 #include <foe/ecs/id.hpp>
-#include <foe/imgui/base.hpp>
 
 #include <vector>
 
+struct foeImGuiState;
 struct foeSimulationState;
 class foeSimulationImGuiRegistrar;
 
-class foeImGuiEntityList : public foeImGuiBase {
+class foeImGuiEntityList {
   public:
     foeImGuiEntityList(foeSimulationState *pSimulationState,
                        foeSimulationImGuiRegistrar *pRegistrar);
+
+    bool registerUI(foeImGuiState *pState);
+    void deregisterUI(foeImGuiState *pState);
 
   private:
     struct EntityDisplayData {
@@ -37,8 +40,11 @@ class foeImGuiEntityList : public foeImGuiBase {
         bool focus;
     };
 
-    virtual void viewMainMenu();
-    virtual void customUI();
+    static bool renderMenuElements(void *pContext, char const *pMenu);
+    static void renderCustomUI(void *pContext);
+
+    bool viewMainMenu();
+    void customUI();
 
     void displayOpenEntities();
     bool displayEntity(EntityDisplayData *pData);

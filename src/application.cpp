@@ -346,20 +346,20 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     foeLogger::instance()->registerSink(&devConsole);
 
-    imguiState.addUI(&devConsole);
-    imguiState.addUI(&fileTermination);
-    imguiState.addUI(&viewFrameTimeInfo);
-    imguiState.addUI(&windowInfo);
+    devConsole.registerUI(&imguiState);
+    fileTermination.registerUI(&imguiState);
+    viewFrameTimeInfo.registerUI(&imguiState);
+    windowInfo.registerUI(&imguiState);
 
     // Per SimState UI
     pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet.get()});
-    imguiState.addUI(pSimGroupDataUI.get());
+    pSimGroupDataUI->registerUI(&imguiState);
 
     pEntityListUI.reset(new foeImGuiEntityList{pSimulationSet.get(), &imguiRegistrar});
-    imguiState.addUI(pEntityListUI.get());
+    pEntityListUI->registerUI(&imguiState);
 
     pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet.get(), &imguiRegistrar});
-    imguiState.addUI(pResourceListUI.get());
+    pResourceListUI->registerUI(&imguiState);
 #endif
 
 #ifdef WSI_LOADER
