@@ -17,8 +17,8 @@
 #ifndef FOE_ECS_EDITOR_NAME_MAP_HPP
 #define FOE_ECS_EDITOR_NAME_MAP_HPP
 
+#include <foe/ecs/export.h>
 #include <foe/ecs/id.hpp>
-#include <foe/export.h>
 
 #include <map>
 #include <shared_mutex>
@@ -48,13 +48,13 @@ struct foeEditorNameMap {
      * @param editorName String to find items with
      * @return The ID that uses that name. If no item does, returns FOE_NULL_HANDLE.
      */
-    FOE_EXPORT foeId find(std::string_view editorName);
+    FOE_ECS_EXPORT foeId find(std::string_view editorName);
 
     /** @brief Finds the editorName string from the given ID
      * @param id ID to match
      * @return editorName, or if no match, an empty string
      */
-    FOE_EXPORT std::string find(foeId id);
+    FOE_ECS_EXPORT std::string find(foeId id);
 
     /** @brief Attempts to add a new ID/editorName pairing
      * @param id Unique ID to add.
@@ -62,7 +62,7 @@ struct foeEditorNameMap {
      * @return True if it was added. Returns false if either the ID or name is not unique to the
      * map, or the name was empty.
      */
-    FOE_EXPORT bool add(foeId id, std::string editorName);
+    FOE_ECS_EXPORT bool add(foeId id, std::string editorName);
 
     /** @brief Updates an editorName for the given ID
      * @param id ID to update
@@ -70,13 +70,13 @@ struct foeEditorNameMap {
      * @return True if update was successful. If the ID does not exist in the map, or name is not
      * unique to the map, or the new name is empty, returns false.
      */
-    FOE_EXPORT bool update(foeId id, std::string editorName);
+    FOE_ECS_EXPORT bool update(foeId id, std::string editorName);
 
     /** @brief Removes an ID/editorName pair from the map.
      * @param id ID to find and remove for
      * @return True if successful. If the ID isn't in the map, returns false.
      */
-    FOE_EXPORT bool remove(foeId id);
+    FOE_ECS_EXPORT bool remove(foeId id);
 
   private:
     /// Synchronizes access to the maps. Exclusive when modifying the maps, shared when just reading
