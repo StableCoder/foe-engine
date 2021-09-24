@@ -93,6 +93,8 @@ enum : foeIdGroup {
     foeIdTemporaryGroup = foeIdTemporaryGroupValue << foeIdGroupBitShift,
 };
 
+FOE_ECS_EXPORT std::string foeIdGroupToString(foeIdGroup group);
+
 inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdGroupBits); }
 
 inline foeIdGroup foeIdValueToGroup(foeIdGroupValue groupValue) {
@@ -119,6 +121,8 @@ enum : foeIdIndex {
     /// Maximum IdIndex
     foeIdIndexMax = foeIdIndexMaxValue << foeIdIndexBitShift,
 };
+
+FOE_ECS_EXPORT std::string foeIdIndexToString(foeIdIndex index);
 
 inline foeIdIndex foeIdGetIndex(foeId id) { return (id & foeIdIndexBits); }
 

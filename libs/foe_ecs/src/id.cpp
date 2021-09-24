@@ -20,22 +20,33 @@
 #include <sstream>
 
 std::string foeIdToString(foeId id) {
-    constexpr int printWidth = foeIdNumBits / 4;
+    constexpr int fullWidth = foeIdNumBits / 4;
 
     std::stringstream ss;
-    ss << "0x" << std::hex << std::setw(printWidth) << std::uppercase << std::setfill('0') << id;
+    ss << "0x" << std::hex << std::setw(fullWidth) << std::uppercase << std::setfill('0') << id;
+
+    return ss.str();
+}
+
+std::string foeIdGroupToString(foeIdGroup id) {
+    constexpr int groupWidth = (foeIdNumGroupBits / 4) + ((foeIdNumGroupBits % 4) ? 1 : 0);
+
+    std::stringstream ss;
+    ss << "0x" << std::hex << std::setw(groupWidth) << std::uppercase << std::setfill('0') << id;
+
+    return ss.str();
+}
+
+std::string foeIdIndexToString(foeIdIndex id) {
+    constexpr int indexWidth = (foeIdNumIndexBits / 4) + ((foeIdNumIndexBits % 4) ? 1 : 0);
+
+    std::stringstream ss;
+    ss << "0x" << std::hex << std::setw(indexWidth) << std::uppercase << std::setfill('0') << id;
 
     return ss.str();
 }
 
 std::string foeIdToSplitString(foeId id) {
-    constexpr int groupWidth = (foeIdNumGroupBits / 4) + ((foeIdNumGroupBits % 4) ? 1 : 0);
-    constexpr int indexWidth = (foeIdNumIndexBits / 4) + ((foeIdNumIndexBits % 4) ? 1 : 0);
-
-    std::stringstream ss;
-    ss << std::hex << std::uppercase << std::setfill('0');
-    ss << "0x" << std::setw(groupWidth) << foeIdGroupToValue(id);
-    ss << "-0x" << std::setw(indexWidth) << foeIdIndexToValue(id);
-
-    return ss.str();
+    return foeIdGroupToString(foeIdGroupToValue(id)) + "-" +
+           foeIdIndexToString(foeIdIndexToValue(id));
 }
