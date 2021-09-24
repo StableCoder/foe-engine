@@ -93,10 +93,11 @@ void yaml_write_id(std::string const &nodeName, foeId data, YAML::Node &node) {
     }
 
     try {
-        yaml_write_optional("group_id", foeIdGroupToValue(foeIdPersistentGroup),
-                            foeIdGroupToValue(foeIdGetGroup(data)), *pWriteNode);
+        yaml_write_optional("group_id", foeIdGroupToString(foeIdGroupToValue(foeIdPersistentGroup)),
+                            foeIdGroupToString(foeIdGroupToValue(foeIdGetGroup(data))),
+                            *pWriteNode);
 
-        yaml_write_required("index_id", foeIdIndexToValue(data), *pWriteNode);
+        yaml_write_required("index_id", foeIdIndexToString(foeIdIndexToValue(data)), *pWriteNode);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
