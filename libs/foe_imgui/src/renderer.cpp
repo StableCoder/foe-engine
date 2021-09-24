@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -101,6 +101,8 @@ auto foeImGuiRenderer::initialize(foeGfxSession session,
     VmaAllocation stagingAlloc{VK_NULL_HANDLE};
 
     VkExtent3D fontExtent;
+
+    mGfxSession = session;
 
     errC = foeGfxCreateUploadContext(session, &uploadContext);
     if (errC) {
@@ -341,15 +343,17 @@ void foeImGuiRenderer::deinitialize(foeGfxSession session) {
         }
     }
     mDrawBuffers.clear();
+
+    mGfxSession = FOE_NULL_HANDLE;
 }
 
-bool foeImGuiRenderer::initialized() const noexcept { return mPipeline != VK_NULL_HANDLE; }
+bool foeImGuiRenderer::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
 
 void foeImGuiRenderer::newFrame() { ImGui::NewFrame(); }
 
 void foeImGuiRenderer::endFrame() { ImGui::Render(); }
 
-auto foeImGuiRenderer::update(VmaAllocator allocator, uint32_t frameIndex) -> std::error_code {
+auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
     std::error_code errC;
 
     if (mDrawBuffers.size() <= frameIndex) {
@@ -363,6 +367,7 @@ auto foeImGuiRenderer::update(VmaAllocator allocator, uint32_t frameIndex) -> st
         return VK_SUCCESS;
     }
 
+    VmaAllocator allocator = foeGfxVkGetAllocator(mGfxSession);
     VkDeviceSize vertexBufferSize = pDrawData->TotalVtxCount * sizeof(ImDrawVert);
     VkDeviceSize indexBufferSize = pDrawData->TotalIdxCount * sizeof(ImDrawIdx);
 

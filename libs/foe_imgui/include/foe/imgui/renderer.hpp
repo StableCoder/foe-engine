@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class foeImGuiRenderer {
     FOE_IMGUI_EXPORT void newFrame();
     FOE_IMGUI_EXPORT void endFrame();
 
-    FOE_IMGUI_EXPORT auto update(VmaAllocator allocator, uint32_t bufferedFrame) -> std::error_code;
+    FOE_IMGUI_EXPORT auto update(uint32_t bufferedFrame) -> std::error_code;
     FOE_IMGUI_EXPORT void draw(VkCommandBuffer commandBuffer, uint32_t frameIndex);
 
     FOE_IMGUI_EXPORT void resize(float width, float height);
@@ -75,6 +75,8 @@ class foeImGuiRenderer {
         BufferSet vertices;
         BufferSet indices;
     };
+
+    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
     VkImageView mFontView{VK_NULL_HANDLE};
     VkSampler mFontSampler{VK_NULL_HANDLE};

@@ -1873,8 +1873,7 @@ int Application::mainloop() {
                             imguiState.runUI();
                             imguiRenderer.endFrame();
 
-                            errC =
-                                imguiRenderer.update(foeGfxVkGetAllocator(gfxSession), frameIndex);
+                            errC = imguiRenderer.update(frameIndex);
                             if (errC) {
                                 ERRC_END_PROGRAM
                             }
