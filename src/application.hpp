@@ -56,6 +56,7 @@
 #include "imgui/entity_list.hpp"
 #include "imgui/frame_time_info.hpp"
 #include "imgui/resource_list.hpp"
+#include "imgui/save.hpp"
 #include "imgui/termination.hpp"
 #endif
 
@@ -110,6 +111,7 @@ struct Application {
     foeImGuiTermination fileTermination;
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
     foeWsiImGuiWindow windowInfo;
+    foeImGuiSave uiSave;
 
     // Per SimState UI
     std::unique_ptr<foeSimulationImGuiGroupData> pSimGroupDataUI;

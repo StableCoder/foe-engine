@@ -14,9 +14,25 @@
     limitations under the License.
 */
 
-#include <foe/imex/yaml/exporter.hpp>
+#ifndef IMGUI_SAVE_HPP
+#define IMGUI_SAVE_HPP
 
-void exportYaml(foeSimulationState *pSimulationState) {
-    foeYamlExporter yamlExporter;
-    yamlExporter.exportState("testExport", pSimulationState);
-}
+struct foeImGuiState;
+struct foeSimulationState;
+
+class foeImGuiSave {
+  public:
+    void setSimulationState(foeSimulationState *pSimulationState);
+    void clearSimulationState();
+
+    bool registerUI(foeImGuiState *pState);
+    void deregisterUI(foeImGuiState *pState);
+
+  private:
+    static bool renderMenuElements(void *pContext, char const *pMenuName);
+    static void renderCustomUI(void *pContext);
+
+    foeSimulationState *mpSimulationState{nullptr};
+};
+
+#endif // IMGUI_SAVE_HPP

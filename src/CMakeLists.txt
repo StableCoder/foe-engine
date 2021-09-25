@@ -21,7 +21,7 @@ endif()
 # Exception-handled code
 target_sources(
   foe_engine_lib_eh
-  PRIVATE export_registrar.cpp export_yaml.cpp import_registrar.cpp
+  PRIVATE export_registrar.cpp import_registrar.cpp
           register_basic_functionality.cpp registrar.cpp settings.cpp)
 
 add_subdirectory(imgui)

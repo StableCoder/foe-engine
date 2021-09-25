@@ -58,7 +58,6 @@
 #include "armature_system.hpp"
 #include "camera_pool.hpp"
 #include "camera_system.hpp"
-#include "export_yaml.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
@@ -346,10 +345,13 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     foeLogger::instance()->registerSink(&devConsole);
 
+    uiSave.registerUI(&imguiState);
     devConsole.registerUI(&imguiState);
     fileTermination.registerUI(&imguiState);
     viewFrameTimeInfo.registerUI(&imguiState);
     windowInfo.registerUI(&imguiState);
+
+    uiSave.setSimulationState(pSimulationSet.get());
 
     // Per SimState UI
     pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet.get()});
@@ -746,8 +748,6 @@ void Application::deinitialize() {
 
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxWaitIdle(gfxSession);
-
-    exportYaml(pSimulationSet.get());
 
     // Systems Deinitialization
     getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
