@@ -339,12 +339,15 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     cameraID = pSimulationSet->pEntityNameMap->find("camera");
 
 #ifdef EDITOR_MODE
+    auto *pImGuiContext = ImGui::CreateContext();
+
     errC = registerImGui(&imguiRegistrar);
     if (errC)
         ERRC_END_PROGRAM_TUPLE
 
     foeLogger::instance()->registerSink(&devConsole);
 
+    imguiRenderer.setImGuiContext(pImGuiContext);
     uiSave.registerUI(&imguiState);
     devConsole.registerUI(&imguiState);
     fileTermination.registerUI(&imguiState);

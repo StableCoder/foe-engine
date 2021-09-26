@@ -32,8 +32,8 @@
 #include <array>
 #include <cmath>
 
-foeImGuiRenderer::foeImGuiRenderer() {
-    ImGui::CreateContext();
+void foeImGuiRenderer::setImGuiContext(ImGuiContext *pContext) {
+    ImGui::SetCurrentContext(pContext);
 
     // Colour Scheme
     ImGuiStyle &style = ImGui::GetStyle();
@@ -83,8 +83,6 @@ foeImGuiRenderer::foeImGuiRenderer() {
     io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
     io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 }
-
-foeImGuiRenderer::~foeImGuiRenderer() { ImGui::DestroyContext(); }
 
 auto foeImGuiRenderer::initialize(foeGfxSession session,
                                   VkSampleCountFlags rasterSampleFlags,

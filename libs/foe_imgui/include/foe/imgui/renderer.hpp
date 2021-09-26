@@ -25,13 +25,13 @@
 #include <system_error>
 #include <vector>
 
+struct ImGuiContext;
 struct foeWsiKeyboard;
 struct foeWsiMouse;
 
 class foeImGuiRenderer {
   public:
-    FOE_IMGUI_EXPORT foeImGuiRenderer();
-    FOE_IMGUI_EXPORT ~foeImGuiRenderer();
+    FOE_IMGUI_EXPORT void setImGuiContext(ImGuiContext *pContext);
 
     FOE_IMGUI_EXPORT auto initialize(foeGfxSession session,
                                      VkSampleCountFlags rasterSampleFlags,
