@@ -82,6 +82,8 @@
 #include <foe/wsi/loader.h>
 #endif
 
+#include <thread>
+
 #define ERRC_END_PROGRAM_TUPLE                                                                     \
     {                                                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
@@ -1158,8 +1160,12 @@ int Application::mainloop() {
                 if (xrRes != XR_SUCCESS) {
                     XR_END_PROGRAM
                 }
-            }
+            } else
 #endif
+            {
+                // Artificially slow down for ImGui
+                std::this_thread::sleep_for(std::chrono::milliseconds(14));
+            }
 
             // Swapchain updates if necessary
             for (auto &it : windowData) {
