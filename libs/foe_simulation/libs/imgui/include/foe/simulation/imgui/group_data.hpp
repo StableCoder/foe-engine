@@ -21,7 +21,7 @@
 #include <foe/simulation/imgui/export.h>
 
 struct foeSimulationState;
-struct foeImGuiState;
+class foeImGuiState;
 
 class foeSimulationImGuiGroupData {
   public:

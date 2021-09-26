@@ -21,7 +21,7 @@
 
 #include <string>
 
-struct foeImGuiState;
+class foeImGuiState;
 
 class foeImGuiDeveloperConsole : public foeDeveloperConsole {
   public:

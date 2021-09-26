@@ -21,7 +21,7 @@
 
 #include <vector>
 
-struct foeImGuiState;
+class foeImGuiState;
 struct foeSimulationState;
 class foeSimulationImGuiRegistrar;
 

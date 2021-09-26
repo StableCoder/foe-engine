@@ -18,7 +18,7 @@
 #define IMGUI_FRAME_TIME_INFO_HPP
 
 class FrameTimer;
-struct foeImGuiState;
+class foeImGuiState;
 
 class foeImGuiFrameTimeInfo {
   public:

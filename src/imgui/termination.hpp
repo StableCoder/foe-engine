@@ -17,7 +17,7 @@
 #ifndef IMGUI_TERMINATION_HPP
 #define IMGUI_TERMINATION_HPP
 
-struct foeImGuiState;
+class foeImGuiState;
 
 class foeImGuiTermination {
   public:

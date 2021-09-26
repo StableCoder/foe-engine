@@ -22,7 +22,7 @@
 
 #include <vector>
 
-struct foeImGuiState;
+class foeImGuiState;
 
 class foeWsiImGuiWindow {
   public:
