@@ -5,7 +5,11 @@ project(imgui CXX)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Declarations
+if(WIN32)
+add_library(imgui STATIC)
+else()
 add_library(imgui)
+endif()
 add_library(imgui_demo STATIC)
 
 # imgui Definition
