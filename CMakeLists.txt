@@ -105,7 +105,7 @@ include(glsl-shaders)
 include(prepare-catch)
 include(sanitizers)
 
-if(WIN32 AND BUILD_SHARED_LIBS)
+if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 if(BUILD_TESTS)
