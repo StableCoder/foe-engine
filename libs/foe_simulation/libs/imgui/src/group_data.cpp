@@ -80,8 +80,11 @@ void foeSimulationImGuiGroupData::deregisterUI(foeImGuiState *pState) {
                      renderMenus.size());
 }
 
-bool foeSimulationImGuiGroupData::renderMenuElements(void *pContext, char const *pMenu) {
-    auto *pData = static_cast<foeSimulationImGuiGroupData *>(pContext);
+bool foeSimulationImGuiGroupData::renderMenuElements(ImGuiContext *pImGuiContext,
+                                                     void *pUserData,
+                                                     char const *pMenu) {
+    ImGui::SetCurrentContext(pImGuiContext);
+    auto *pData = static_cast<foeSimulationImGuiGroupData *>(pUserData);
     std::string_view menu{pMenu};
 
     if (menu == "View") {
@@ -91,8 +94,9 @@ bool foeSimulationImGuiGroupData::renderMenuElements(void *pContext, char const 
     return false;
 }
 
-void foeSimulationImGuiGroupData::renderCustomUI(void *pContext) {
-    auto *pData = static_cast<foeSimulationImGuiGroupData *>(pContext);
+void foeSimulationImGuiGroupData::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) {
+    ImGui::SetCurrentContext(pImGuiContext);
+    auto *pData = static_cast<foeSimulationImGuiGroupData *>(pUserData);
 
     pData->customUI();
 }

@@ -32,8 +32,6 @@ std::array<char const *, 1> menuNameArr{
 
 }
 
-void foeImGuiSave::setImGuiContext(ImGuiContext *pContext) { ImGui::SetCurrentContext(pContext); }
-
 void foeImGuiSave::setSimulationState(foeSimulationState *pSimulationState) {
     mpSimulationState = pSimulationState;
 }
@@ -50,8 +48,11 @@ void foeImGuiSave::deregisterUI(foeImGuiState *pState) {
                      menuNameArr.data(), menuNameArr.size());
 }
 
-bool foeImGuiSave::renderMenuElements(void *pContext, char const *pMenuName) {
-    auto *pData = reinterpret_cast<foeImGuiSave *>(pContext);
+bool foeImGuiSave::renderMenuElements(ImGuiContext *pImGuiContext,
+                                      void *pUserData,
+                                      char const *pMenuName) {
+    ImGui::SetCurrentContext(pImGuiContext);
+    auto *pData = reinterpret_cast<foeImGuiSave *>(pUserData);
     std::string_view menuName{pMenuName};
 
     if (menuName == "File") {
@@ -68,8 +69,9 @@ bool foeImGuiSave::renderMenuElements(void *pContext, char const *pMenuName) {
     return false;
 }
 
-void foeImGuiSave::renderCustomUI(void *pContext) {
-    auto *pData = reinterpret_cast<foeImGuiSave *>(pContext);
+void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) {
+    ImGui::SetCurrentContext(pImGuiContext);
+    auto *pData = reinterpret_cast<foeImGuiSave *>(pUserData);
 
     ImVec2 center = ImGui::GetMainViewport()->GetCenter();
     ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));

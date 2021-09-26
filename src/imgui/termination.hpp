@@ -18,6 +18,7 @@
 #define IMGUI_TERMINATION_HPP
 
 class foeImGuiState;
+struct ImGuiContext;
 
 class foeImGuiTermination {
   public:
@@ -27,7 +28,7 @@ class foeImGuiTermination {
     void deregisterUI(foeImGuiState *pState);
 
   private:
-    static bool renderMenuElements(void *pContext, char const *pMenu);
+    static bool renderMenuElements(ImGuiContext *pImGuiContext, void *pUserData, char const *pMenu);
 
     void fileMainMenu();
 

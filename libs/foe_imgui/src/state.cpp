@@ -18,26 +18,30 @@
 
 #include <imgui.h>
 
-#include <string>
+void foeImGuiState::setImGuiContext(ImGuiContext *pContext) {
+    ImGui::SetCurrentContext(pContext);
+    mpImGuiContext = pContext;
+}
 
-bool foeImGuiState::addUI(void *pContext,
+bool foeImGuiState::addUI(void *pUserData,
                           PFN_foeImGuiRenderMainMenu pMainMenuFn,
                           PFN_foeImGuiRenderCustomUI pCustomFn,
                           char const **ppMenuSets,
                           size_t menuSetCount) {
-    if (pContext == nullptr && pMainMenuFn == nullptr && pCustomFn == nullptr)
+    if (pUserData == nullptr && pMainMenuFn == nullptr && pCustomFn == nullptr)
         return false;
 
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mGuiData) {
-        if (pContext == it.pContext && pMainMenuFn == it.pMainMenuFn && pCustomFn == it.pCustomFn) {
+        if (pUserData == it.pUserData && pMainMenuFn == it.pMainMenuFn &&
+            pCustomFn == it.pCustomFn) {
             return false;
         }
     }
 
     mGuiData.emplace_back(GuiData{
-        .pContext = pContext,
+        .pUserData = pUserData,
         .pMainMenuFn = pMainMenuFn,
         .pCustomFn = pCustomFn,
     });
@@ -55,7 +59,7 @@ bool foeImGuiState::addUI(void *pContext,
         } else if (menuStr == "Help") {
             ++mHelpMenuCount;
         } else {
-            bool found;
+            bool found{false};
             for (auto &it : mMainMenuCounts) {
                 if (std::get<0>(it) == menuStr) {
                     ++std::get<1>(it);
@@ -72,7 +76,7 @@ bool foeImGuiState::addUI(void *pContext,
     return true;
 }
 
-void foeImGuiState::removeUI(void *pContext,
+void foeImGuiState::removeUI(void *pUserData,
                              PFN_foeImGuiRenderMainMenu pMainMenuFn,
                              PFN_foeImGuiRenderCustomUI pCustomFn,
                              char const **ppMenuSets,
@@ -80,7 +84,7 @@ void foeImGuiState::removeUI(void *pContext,
     std::scoped_lock lock{mSync};
 
     for (auto it = mGuiData.begin(); it != mGuiData.end(); ++it) {
-        if (pContext == it->pContext && pMainMenuFn == it->pMainMenuFn &&
+        if (pUserData == it->pUserData && pMainMenuFn == it->pMainMenuFn &&
             pCustomFn == it->pCustomFn) {
             mGuiData.erase(it);
 
@@ -97,7 +101,6 @@ void foeImGuiState::removeUI(void *pContext,
                 } else if (menuStr == "Help") {
                     --mHelpMenuCount;
                 } else {
-                    bool found;
                     for (auto &it : mMainMenuCounts) {
                         if (std::get<0>(it) == menuStr) {
                             --std::get<1>(it);
@@ -121,7 +124,7 @@ void foeImGuiState::runUI() {
     if (mFileMenuCount > 0 && ImGui::BeginMenu("File")) {
         for (auto const &it : mGuiData) {
             if (it.pMainMenuFn != nullptr) {
-                it.pMainMenuFn(it.pContext, "File");
+                it.pMainMenuFn(mpImGuiContext, it.pUserData, "File");
             }
         }
 
@@ -132,7 +135,7 @@ void foeImGuiState::runUI() {
     if (mEditMenuCount > 0 && ImGui::BeginMenu("Edit")) {
         for (auto const &it : mGuiData) {
             if (it.pMainMenuFn != nullptr) {
-                it.pMainMenuFn(it.pContext, "Edit");
+                it.pMainMenuFn(mpImGuiContext, it.pUserData, "Edit");
             }
         }
 
@@ -143,7 +146,7 @@ void foeImGuiState::runUI() {
     if (mViewMenuCount > 0 && ImGui::BeginMenu("View")) {
         for (auto const &it : mGuiData) {
             if (it.pMainMenuFn != nullptr) {
-                it.pMainMenuFn(it.pContext, "View");
+                it.pMainMenuFn(mpImGuiContext, it.pUserData, "View");
             }
         }
 
@@ -157,7 +160,7 @@ void foeImGuiState::runUI() {
             if (ImGui::BeginMenu(pStr)) {
                 for (auto const &it : mGuiData) {
                     if (it.pMainMenuFn != nullptr) {
-                        it.pMainMenuFn(it.pContext, pStr);
+                        it.pMainMenuFn(mpImGuiContext, it.pUserData, pStr);
                     }
                 }
             }
@@ -168,7 +171,7 @@ void foeImGuiState::runUI() {
     if (mHelpMenuCount > 0 && ImGui::BeginMenu("Help")) {
         for (auto const &it : mGuiData) {
             if (it.pMainMenuFn != nullptr) {
-                it.pMainMenuFn(it.pContext, "Help");
+                it.pMainMenuFn(mpImGuiContext, it.pUserData, "Help");
             }
         }
 
@@ -180,7 +183,7 @@ void foeImGuiState::runUI() {
     // Custom UI
     for (auto const &it : mGuiData) {
         if (it.pCustomFn != nullptr) {
-            it.pCustomFn(it.pContext);
+            it.pCustomFn(mpImGuiContext, it.pUserData);
         }
     }
 }

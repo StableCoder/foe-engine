@@ -19,6 +19,7 @@
 
 class FrameTimer;
 class foeImGuiState;
+struct ImGuiContext;
 
 class foeImGuiFrameTimeInfo {
   public:
@@ -28,8 +29,8 @@ class foeImGuiFrameTimeInfo {
     void deregisterUI(foeImGuiState *pState);
 
   private:
-    static bool renderMenuElements(void *pContext, char const *pMenu);
-    static void renderCustomUI(void *pContext);
+    static bool renderMenuElements(ImGuiContext *pImGuiContext, void *pUserData, char const *pMenu);
+    static void renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData);
 
     bool viewMainMenu();
     void customUI();

@@ -41,8 +41,11 @@ void foeImGuiTermination::deregisterUI(foeImGuiState *pState) {
                      renderMenus.size());
 }
 
-bool foeImGuiTermination::renderMenuElements(void *pContext, char const *pMenu) {
-    auto *pData = static_cast<foeImGuiTermination *>(pContext);
+bool foeImGuiTermination::renderMenuElements(ImGuiContext *pImGuiContext,
+                                             void *pUserData,
+                                             char const *pMenu) {
+    ImGui::SetCurrentContext(pImGuiContext);
+    auto *pData = static_cast<foeImGuiTermination *>(pUserData);
     std::string_view menu{pMenu};
 
     if (menu == "File") {

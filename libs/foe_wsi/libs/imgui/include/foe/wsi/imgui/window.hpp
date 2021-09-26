@@ -22,6 +22,7 @@
 
 #include <vector>
 
+struct ImGuiContext;
 class foeImGuiState;
 
 class foeWsiImGuiWindow {
@@ -39,8 +40,8 @@ class foeWsiImGuiWindow {
         bool focus;
     };
 
-    static bool renderMenuElements(void *pContext, char const *pMenu);
-    static void renderCustomUI(void *pContext);
+    static bool renderMenuElements(ImGuiContext *pImGuiContext, void *pUserData, char const *pMenu);
+    static void renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData);
 
     bool viewMainMenu();
     void customUI();

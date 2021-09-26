@@ -45,8 +45,11 @@ void foeImGuiFrameTimeInfo::deregisterUI(foeImGuiState *pState) {
                      foeImGuiFrameTimeInfo::renderCustomUI, renderMenus.data(), renderMenus.size());
 }
 
-bool foeImGuiFrameTimeInfo::renderMenuElements(void *pContext, char const *pMenu) {
-    auto *pData = static_cast<foeImGuiFrameTimeInfo *>(pContext);
+bool foeImGuiFrameTimeInfo::renderMenuElements(ImGuiContext *pImGuiContext,
+                                               void *pUserData,
+                                               char const *pMenu) {
+    ImGui::SetCurrentContext(pImGuiContext);
+    auto *pData = static_cast<foeImGuiFrameTimeInfo *>(pUserData);
     std::string_view menu{pMenu};
 
     if (menu == "View") {
@@ -56,8 +59,9 @@ bool foeImGuiFrameTimeInfo::renderMenuElements(void *pContext, char const *pMenu
     return false;
 }
 
-void foeImGuiFrameTimeInfo::renderCustomUI(void *pContext) {
-    auto *pData = static_cast<foeImGuiFrameTimeInfo *>(pContext);
+void foeImGuiFrameTimeInfo::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) {
+    ImGui::SetCurrentContext(pImGuiContext);
+    auto *pData = static_cast<foeImGuiFrameTimeInfo *>(pUserData);
 
     pData->customUI();
 }

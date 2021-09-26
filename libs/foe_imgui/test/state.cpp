@@ -27,7 +27,7 @@ std::array<char const *, 4> menuArr{"File", "Edit", "Custom", "Help"};
 char const *testStr = "Test";
 int testContextVar;
 
-bool menuFn(void *pContext, char const *pMenuName) {
+bool menuFn(ImGuiContext *pImGuiContext, void *pContext, char const *pMenuName) {
     auto *pCount = static_cast<int *>(pContext);
 
     std::string_view menu{pMenuName};
@@ -41,12 +41,17 @@ bool menuFn(void *pContext, char const *pMenuName) {
     return false;
 }
 
-void customFn(void *pContext) {}
+void customFn(ImGuiContext *pImGuiContext, void *pContext) {}
+
+auto *pContext = ImGui::CreateContext();
 
 } // namespace
 
 TEST_CASE("ImGui State Add/Remove", "[foe][imgui]") {
     foeImGuiState testState;
+
+    testState.setImGuiContext(pContext);
+    ImGui::SetCurrentContext(pContext);
 
     SECTION("Adding no context/functions fails") {
         REQUIRE_FALSE(testState.addUI(nullptr, nullptr, nullptr, nullptr, 0));
@@ -94,8 +99,6 @@ TEST_CASE("ImGui State Add/Remove", "[foe][imgui]") {
     }
 
     SECTION("Test that running UI calls all the sub base types") {
-        ImGui::CreateContext();
-
         ImGuiIO &io = ImGui::GetIO();
         io.FontGlobalScale = 1.0f;
         io.DisplayFramebufferScale = ImVec2(1.f, 1.f);

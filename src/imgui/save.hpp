@@ -25,8 +25,6 @@ struct foeSimulationState;
 
 class foeImGuiSave {
   public:
-    void setImGuiContext(ImGuiContext *pContext);
-
     void setSimulationState(foeSimulationState *pSimulationState);
     void clearSimulationState();
 
@@ -34,8 +32,10 @@ class foeImGuiSave {
     void deregisterUI(foeImGuiState *pState);
 
   private:
-    static bool renderMenuElements(void *pContext, char const *pMenuName);
-    static void renderCustomUI(void *pContext);
+    static bool renderMenuElements(ImGuiContext *pImGuiContext,
+                                   void *pUserData,
+                                   char const *pMenuName);
+    static void renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData);
 
     foeSimulationState *mpSimulationState{nullptr};
 
