@@ -350,6 +350,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     foeLogger::instance()->registerSink(&devConsole);
 
     imguiRenderer.setImGuiContext(pImGuiContext);
+    uiSave.setImGuiContext(pImGuiContext);
+
     uiSave.registerUI(&imguiState);
     devConsole.registerUI(&imguiState);
     fileTermination.registerUI(&imguiState);

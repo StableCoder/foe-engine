@@ -14,22 +14,14 @@
     limitations under the License.
 */
 
-#ifndef FOE_IMEX_ERROR_CODE_H
-#define FOE_IMEX_ERROR_CODE_H
+#ifndef FOE_IMEX_YAML_EXPORTER2_HPP
+#define FOE_IMEX_YAML_EXPORTER2_HPP
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <foe/imex/yaml/export.h>
 
-enum foeImexResult {
-    FOE_IMEX_SUCCESS = 0,
-    FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED,
-    FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED,
-    FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED,
-};
+#include <system_error>
 
-#ifdef __cplusplus
-}
-#endif
+FOE_IMEX_YAML_EXPORT auto foeImexYamlRegisterExporter() -> std::error_code;
+FOE_IMEX_YAML_EXPORT auto foeImexYamlDeregisterExporter() -> std::error_code;
 
-#endif // FOE_IMEX_ERROR_CODE_H
+#endif // FOE_IMEX_YAML_EXPORTER2_HPP

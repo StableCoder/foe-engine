@@ -19,6 +19,7 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
+#include <algorithm>
 #include <mutex>
 #include <vector>
 
@@ -28,9 +29,78 @@ std::mutex mSync;
 
 std::vector<foeExporterBase *> mRegisteredExporters;
 
+std::vector<foeExporter> mAvailableExporters;
+
 std::vector<foeExportFunctionality> mRegisteredFunctionality;
 
 } // namespace
+
+bool operator==(foeExporterVersion const &lhs, foeExporterVersion const &rhs) {
+    return (lhs.major == rhs.major) && (lhs.minor == rhs.minor) && (lhs.patch == rhs.patch);
+}
+
+bool operator!=(foeExporterVersion const &lhs, foeExporterVersion const &rhs) {
+    return !(lhs == rhs);
+}
+
+bool operator==(foeExporter const &lhs, foeExporter const &rhs) {
+    if (lhs.pName != rhs.pName) {
+        if (lhs.pName == nullptr || rhs.pName == nullptr)
+            return false;
+
+        if (std::string_view{lhs.pName} != std::string_view{rhs.pName})
+            return false;
+    }
+
+    return (lhs.version == rhs.version) && (lhs.pExportFn == rhs.pExportFn);
+}
+
+bool operator!=(foeExporter const &lhs, foeExporter const &rhs) { return !(lhs == rhs); }
+
+auto foeImexRegisterExporter(foeExporter exporter) -> std::error_code {
+    std::scoped_lock lock{mSync};
+
+    for (auto const &it : mAvailableExporters) {
+        if (it == exporter) {
+            return FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED;
+        }
+    }
+
+    mAvailableExporters.emplace_back(exporter);
+
+    return FOE_IMEX_SUCCESS;
+}
+
+auto foeImexDeregisterExporter(foeExporter exporter) -> std::error_code {
+    std::scoped_lock lock{mSync};
+
+    for (auto it = mAvailableExporters.begin(); it != mAvailableExporters.end(); ++it) {
+        if (*it == exporter) {
+            mAvailableExporters.erase(it);
+            return FOE_IMEX_SUCCESS;
+        }
+    }
+
+    return FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED;
+}
+
+void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters) {
+    std::scoped_lock lock{mSync};
+
+    // If no array to place items is provided, then just return the number of items available
+    if (pExporters == nullptr) {
+        *pExporterCount = mAvailableExporters.size();
+        return;
+    }
+
+    // If here, then copy a number of items into the provided memory
+    uint32_t minCount =
+        std::min(*pExporterCount, static_cast<uint32_t>(mAvailableExporters.size()));
+    std::copy(mAvailableExporters.begin(), mAvailableExporters.begin() + minCount, pExporters);
+
+    // Make sure to return the actual number copied
+    *pExporterCount = minCount;
+}
 
 auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
     -> std::error_code {

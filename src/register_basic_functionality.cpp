@@ -23,6 +23,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include <foe/graphics/resource/yaml/export_registrar.hpp>
+#include <foe/imex/yaml/exporter2.hpp>
 #include <foe/physics/yaml/export_registrar.hpp>
 #include <foe/position/yaml/export_registrar.hpp>
 #include <foe/resource/yaml/export_registrar.hpp>
@@ -48,6 +49,10 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
     foeBringupRegisterFunctionality();
 
     // Export
+    errC = foeImexYamlRegisterExporter();
+    if (errC)
+        return errC;
+
     errC = foePhysicsRegisterYamlExportFunctionality();
     if (errC)
         return errC;
@@ -101,6 +106,7 @@ void deregisterBasicFunctionality() noexcept {
     foeGraphicsResourceYamlDeregisterImportFunctionality();
     foePositionDeregisterYamlImportFunctionality();
     foePhysicsDeregisterYamlImportFunctionality();
+
     foeDeregisterYamlImportGenerator();
 
     // Export
@@ -109,6 +115,8 @@ void deregisterBasicFunctionality() noexcept {
     foeGraphicsResourceYamlDeregisterExportFunctionality();
     foePositionDeregisterYamlExportFunctionality();
     foePhysicsDeregisterYamlExportFunctionality();
+
+    foeImexYamlDeregisterExporter();
 
     // Core
     foeBringupDeregisterFunctionality();

@@ -17,11 +17,16 @@
 #ifndef IMGUI_SAVE_HPP
 #define IMGUI_SAVE_HPP
 
-struct foeImGuiState;
+#include <foe/imex/exporters.hpp>
+
+struct ImGuiContext;
+class foeImGuiState;
 struct foeSimulationState;
 
 class foeImGuiSave {
   public:
+    void setImGuiContext(ImGuiContext *pContext);
+
     void setSimulationState(foeSimulationState *pSimulationState);
     void clearSimulationState();
 
@@ -33,6 +38,12 @@ class foeImGuiSave {
     static void renderCustomUI(void *pContext);
 
     foeSimulationState *mpSimulationState{nullptr};
+
+    foeExporter mSelectedExporter{};
+
+    bool mChooseExporterDialog{false};
+    bool mSaveFileDialog{false};
+    bool mSaveConfirmDialog{false};
 };
 
 #endif // IMGUI_SAVE_HPP

@@ -21,7 +21,35 @@
 #include <foe/imex/export.h>
 #include <foe/imex/exporter_base.hpp>
 
+#include <filesystem>
 #include <system_error>
+
+struct foeSimulationState;
+
+struct foeExporterVersion {
+    unsigned int major : 10;
+    unsigned int minor : 10;
+    unsigned int patch : 12;
+};
+
+FOE_IMEX_EXPORT bool operator==(foeExporterVersion const &lhs, foeExporterVersion const &rhs);
+FOE_IMEX_EXPORT bool operator!=(foeExporterVersion const &lhs, foeExporterVersion const &rhs);
+
+static_assert(sizeof(foeExporterVersion) == sizeof(unsigned int));
+
+struct foeExporter {
+    char const *pName;
+    foeExporterVersion version;
+    std::error_code (*pExportFn)(std::filesystem::path, foeSimulationState *);
+};
+
+FOE_IMEX_EXPORT bool operator==(foeExporter const &lhs, foeExporter const &rhs);
+FOE_IMEX_EXPORT bool operator!=(foeExporter const &lhs, foeExporter const &rhs);
+
+FOE_IMEX_EXPORT auto foeImexRegisterExporter(foeExporter exporter) -> std::error_code;
+FOE_IMEX_EXPORT auto foeImexDeregisterExporter(foeExporter exporter) -> std::error_code;
+
+FOE_IMEX_EXPORT void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters);
 
 struct foeExportFunctionality {
     std::error_code (*onRegister)(foeExporterBase *);

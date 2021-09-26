@@ -34,6 +34,7 @@ std::string foeGraphicsResourceErrCategory::message(int ev) const {
         ENUM_CASE(FOE_IMEX_SUCCESS)
         ENUM_CASE(FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED)
         ENUM_CASE(FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED)
+        ENUM_CASE(FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED)
 
     default:
         if (ev > 0)
