@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include "export_registrar.hpp"
+#include "yaml_export_registration.hpp"
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
@@ -105,14 +105,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeBringupRegisterYamlExportFunctionality() -> std::error_code {
+auto foeBringupYamlRegisterExporters() -> std::error_code {
     return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foeBringupDeregisterYamlExportFunctionality() {
+void foeBringupYamlDeregisterExporters() {
     foeDeregisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

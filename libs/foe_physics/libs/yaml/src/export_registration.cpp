@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/physics/yaml/export_registrar.hpp>
+#include <foe/physics/yaml/export_registration.hpp>
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
@@ -112,14 +112,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foePhysicsRegisterYamlExportFunctionality() -> std::error_code {
+auto foePhysicsYamlRegisterExporters() -> std::error_code {
     return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foePhysicsDeregisterYamlExportFunctionality() {
+void foePhysicsYamlDeregisterExporters() {
     foeDeregisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

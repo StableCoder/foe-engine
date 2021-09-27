@@ -14,40 +14,32 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/export_registrar.hpp>
+#include <foe/position/yaml/export_registration.hpp>
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
-#include <foe/resource/armature.hpp>
-#include <foe/resource/armature_loader.hpp>
-#include <foe/resource/armature_pool.hpp>
+#include <foe/position/component/3d_pool.hpp>
 
-#include "armature.hpp"
+#include "3d.hpp"
 #include "error_code.hpp"
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
-                                            foeResourcePoolBase **pResourcePools,
-                                            uint32_t resourcePoolCount) {
+std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
+                                             foeComponentPoolBase **pComponentPools,
+                                             uint32_t componentPoolCount) {
     std::vector<foeKeyYamlPair> keyDataPairs;
-    auto const *pEndPools = pResourcePools + resourcePoolCount;
+    auto const *pEndPools = pComponentPools + componentPoolCount;
 
-    for (; pResourcePools != pEndPools; ++pResourcePools) {
-
-        // Armature
-        auto *pArmaturePool = dynamic_cast<foeArmaturePool *>(*pResourcePools);
-        if (pArmaturePool) {
-            auto const *pArmature = pArmaturePool->find(resource);
-            if (pArmature && pArmature->pCreateInfo) {
-                if (auto dynPtr =
-                        dynamic_cast<foeArmatureCreateInfo *>(pArmature->pCreateInfo.get());
-                    dynPtr) {
-                    keyDataPairs.emplace_back(foeKeyYamlPair{
-                        .key = yaml_armature_key(),
-                        .data = yaml_write_armature(*dynPtr),
-                    });
-                }
+    for (; pComponentPools != pEndPools; ++pComponentPools) {
+        auto *pPosition3dPool = dynamic_cast<foePosition3dPool *>(*pComponentPools);
+        if (pPosition3dPool) {
+            if (auto searchIt = pPosition3dPool->find(entity);
+                searchIt != pPosition3dPool->size()) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = yaml_position3d_key(),
+                    .data = yaml_write_position3d(*pPosition3dPool->begin<1>()[searchIt].get()),
+                });
             }
         }
     }
@@ -58,8 +50,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
 void onDeregister(foeExporterBase *pExporter) {
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
-        // Resource
-        pYamlExporter->deregisterResourceFn(exportResources);
+        // Components
+        pYamlExporter->deregisterComponentFn(exportComponents);
     }
 }
 
@@ -68,9 +60,9 @@ std::error_code onRegister(foeExporterBase *pExporter) {
 
     auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
     if (pYamlExporter) {
-        // Resource
-        if (!pYamlExporter->registerResourceFn(exportResources)) {
-            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS;
+        // Components
+        if (!pYamlExporter->registerComponentFn(exportComponents)) {
+            errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER;
             goto REGISTRATION_FAILED;
         }
     }
@@ -84,14 +76,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeResourceRegisterYamlExportFunctionality() -> std::error_code {
+auto foePositionYamlRegisterExporters() -> std::error_code {
     return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foeResourceDeregisterYamlExportFunctionality() {
+void foePositionYamlDeregisterExporters() {
     foeDeregisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

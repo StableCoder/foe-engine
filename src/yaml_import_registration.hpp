@@ -14,13 +14,13 @@
     limitations under the License.
 */
 
-#ifndef EXPORT_REGISTRAR_HPP
-#define EXPORT_REGISTRAR_HPP
+#ifndef YAML_IMPORT_REGISTRATION_HPP
+#define YAML_IMPORT_REGISTRATION_HPP
 
 #include <system_error>
 
-auto foeBringupRegisterYamlExportFunctionality() -> std::error_code;
+auto foeBringupYamlRegisterImporters() -> std::error_code;
 
-void foeBringupDeregisterYamlExportFunctionality();
+void foeBringupYamlDeregisterImporters();
 
-#endif // EXPORT_REGISTRAR_HPP
+#endif // YAML_IMPORT_REGISTRATION_HPP

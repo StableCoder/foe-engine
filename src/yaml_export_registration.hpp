@@ -14,15 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_POSITION_EXPORT_REGISTRAR_HPP
-#define FOE_POSITION_EXPORT_REGISTRAR_HPP
-
-#include <foe/position/yaml/export.h>
+#ifndef YAML_EXPORT_REGISTRATION_HPP
+#define YAML_EXPORT_REGISTRATION_HPP
 
 #include <system_error>
 
-FOE_POSITION_YAML_EXPORT auto foePositionRegisterYamlExportFunctionality() -> std::error_code;
+auto foeBringupYamlRegisterExporters() -> std::error_code;
 
-FOE_POSITION_YAML_EXPORT void foePositionDeregisterYamlExportFunctionality();
+void foeBringupYamlDeregisterExporters();
 
-#endif // FOE_POSITION_EXPORT_REGISTRAR_HPP
+#endif // YAML_EXPORT_REGISTRATION_HPP

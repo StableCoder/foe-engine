@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/resource/yaml/import_registrar.hpp>
+#include <foe/graphics/resource/yaml/import_registration.hpp>
 
 #include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
@@ -205,14 +205,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeGraphicsResourceYamlRegisterImportFunctionality() -> std::error_code {
+auto foeGraphicsResourceYamlRegisterImporters() -> std::error_code {
     return foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foeGraphicsResourceYamlDeregisterImportFunctionality() {
+void foeGraphicsResourceYamlDeregisterImporters() {
     foeDeregisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

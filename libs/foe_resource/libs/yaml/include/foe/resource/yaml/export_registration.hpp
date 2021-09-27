@@ -14,13 +14,15 @@
     limitations under the License.
 */
 
-#ifndef IMPORT_REGISTRAR_HPP
-#define IMPORT_REGISTRAR_HPP
+#ifndef FOE_RESOURCE_YAML_EXPORT_REGISTRATION_HPP
+#define FOE_RESOURCE_YAML_EXPORT_REGISTRATION_HPP
+
+#include <foe/resource/yaml/export.h>
 
 #include <system_error>
 
-auto foeBringupRegisterYamlImportFunctionality() -> std::error_code;
+FOE_RES_YAML_EXPORT auto foeResourceYamlRegisterExporters() -> std::error_code;
 
-void foeBringupDeregisterYamlImportFunctionality();
+FOE_RES_YAML_EXPORT void foeResourceYamlDeregisterExporters();
 
-#endif // IMPORT_REGISTRAR_HPP
+#endif // FOE_RESOURCE_YAML_EXPORT_REGISTRATION_HPP

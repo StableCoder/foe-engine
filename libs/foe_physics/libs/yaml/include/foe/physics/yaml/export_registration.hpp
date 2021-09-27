@@ -14,16 +14,15 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_RESOURCE_YAML_REGISTRAR_HPP
-#define FOE_GRAPHICS_RESOURCE_YAML_REGISTRAR_HPP
+#ifndef FOE_PHYSICS_YAML_EXPORT_REGISTRATION_HPP
+#define FOE_PHYSICS_YAML_EXPORT_REGISTRATION_HPP
 
-#include <foe/graphics/resource/yaml/export.h>
+#include <foe/physics/yaml/export.h>
 
 #include <system_error>
 
-FOE_GFX_RES_YAML_EXPORT auto foeGraphicsResourceYamlRegisterImportFunctionality()
-    -> std::error_code;
+FOE_PHYSICS_YAML_EXPORT auto foePhysicsYamlRegisterExporters() -> std::error_code;
 
-FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlDeregisterImportFunctionality();
+FOE_PHYSICS_YAML_EXPORT void foePhysicsYamlDeregisterExporters();
 
-#endif // FOE_GRAPHICS_RESOURCE_YAML_REGISTRAR_HPP
+#endif // FOE_PHYSICS_YAML_EXPORT_REGISTRATION_HPP

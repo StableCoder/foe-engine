@@ -22,21 +22,21 @@
 #include <foe/resource/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
 
-#include <foe/graphics/resource/yaml/export_registrar.hpp>
+#include <foe/graphics/resource/yaml/export_registration.hpp>
 #include <foe/imex/yaml/exporter2.hpp>
-#include <foe/physics/yaml/export_registrar.hpp>
-#include <foe/position/yaml/export_registrar.hpp>
-#include <foe/resource/yaml/export_registrar.hpp>
+#include <foe/physics/yaml/export_registration.hpp>
+#include <foe/position/yaml/export_registration.hpp>
+#include <foe/resource/yaml/export_registration.hpp>
 
-#include <foe/graphics/resource/yaml/import_registrar.hpp>
+#include <foe/graphics/resource/yaml/import_registration.hpp>
 #include <foe/imex/yaml/generator.hpp>
-#include <foe/physics/yaml/import_registrar.hpp>
-#include <foe/position/yaml/import_registrar.hpp>
-#include <foe/resource/yaml/import_registrar.hpp>
+#include <foe/physics/yaml/import_registration.hpp>
+#include <foe/position/yaml/import_registration.hpp>
+#include <foe/resource/yaml/import_registration.hpp>
 
-#include "export_registrar.hpp"
-#include "import_registrar.hpp"
 #include "registrar.hpp"
+#include "yaml_export_registration.hpp"
+#include "yaml_import_registration.hpp"
 
 auto registerBasicFunctionality() noexcept -> std::error_code {
     std::error_code errC;
@@ -53,46 +53,46 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
     if (errC)
         return errC;
 
-    errC = foePhysicsRegisterYamlExportFunctionality();
+    errC = foePhysicsYamlRegisterExporters();
     if (errC)
         return errC;
 
-    errC = foePositionRegisterYamlExportFunctionality();
+    errC = foePositionYamlRegisterExporters();
     if (errC)
         return errC;
 
-    errC = foeGraphicsResourceYamlRegisterExportFunctionality();
+    errC = foeGraphicsResourceYamlRegisterExporters();
     if (errC)
         return errC;
 
-    errC = foeResourceRegisterYamlExportFunctionality();
+    errC = foeResourceYamlRegisterExporters();
     if (errC)
         return errC;
 
-    errC = foeBringupRegisterYamlExportFunctionality();
+    errC = foeBringupYamlRegisterExporters();
     if (errC)
         return errC;
 
     // Import
     foeRegisterYamlImportGenerator();
 
-    errC = foePhysicsRegisterYamlImportFunctionality();
+    errC = foePhysicsYamlRegisterImporters();
     if (errC)
         return errC;
 
-    errC = foePositionRegisterYamlImportFunctionality();
+    errC = foePositionYamlRegisterImporters();
     if (errC)
         return errC;
 
-    errC = foeGraphicsResourceYamlRegisterImportFunctionality();
+    errC = foeGraphicsResourceYamlRegisterImporters();
     if (errC)
         return errC;
 
-    errC = foeResourceRegisterYamlImportFunctionality();
+    errC = foeResourceYamlRegisterImporters();
     if (errC)
         return errC;
 
-    errC = foeBringupRegisterYamlImportFunctionality();
+    errC = foeBringupYamlRegisterImporters();
     if (errC)
         return errC;
 
@@ -101,20 +101,20 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
 
 void deregisterBasicFunctionality() noexcept {
     // Import
-    foeBringupDeregisterYamlImportFunctionality();
-    foeResourceDeregisterYamlImportFunctionality();
-    foeGraphicsResourceYamlDeregisterImportFunctionality();
-    foePositionDeregisterYamlImportFunctionality();
-    foePhysicsDeregisterYamlImportFunctionality();
+    foeBringupYamlDeregisterImporters();
+    foeResourceYamlDeregisterImporters();
+    foeGraphicsResourceYamlDeregisterImporters();
+    foePositionYamlDeregisterImporters();
+    foePhysicsYamlDeregisterImporters();
 
     foeDeregisterYamlImportGenerator();
 
     // Export
-    foeBringupDeregisterYamlExportFunctionality();
-    foeResourceDeregisterYamlExportFunctionality();
-    foeGraphicsResourceYamlDeregisterExportFunctionality();
-    foePositionDeregisterYamlExportFunctionality();
-    foePhysicsDeregisterYamlExportFunctionality();
+    foeBringupYamlDeregisterExporters();
+    foeResourceYamlDeregisterExporters();
+    foeGraphicsResourceYamlDeregisterExporters();
+    foePositionYamlDeregisterExporters();
+    foePhysicsYamlDeregisterExporters();
 
     foeImexYamlDeregisterExporter();
 

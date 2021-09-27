@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/resource/yaml/export_registrar.hpp>
+#include <foe/graphics/resource/yaml/export_registration.hpp>
 
 #include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/image_loader.hpp>
@@ -216,14 +216,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeGraphicsResourceYamlRegisterExportFunctionality() -> std::error_code {
+auto foeGraphicsResourceYamlRegisterExporters() -> std::error_code {
     return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foeGraphicsResourceYamlDeregisterExportFunctionality() {
+void foeGraphicsResourceYamlDeregisterExporters() {
     foeDeregisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

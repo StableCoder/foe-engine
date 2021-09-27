@@ -1,9 +1,9 @@
 target_sources(
   foe_graphics_resource_yaml
   PRIVATE error_code.cpp
-          export_registrar.cpp
+          export_registration.cpp
           image.cpp
-          import_registrar.cpp
+          import_registration.cpp
           material.cpp
           mesh.cpp
           shader.cpp
