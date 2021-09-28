@@ -55,21 +55,19 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
     return keyDataPairs;
 }
 
-void onDeregister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+void onDeregister(foeExporter exporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Resource
-        pYamlExporter->deregisterResourceFn(exportResources);
+        foeImexYamlDeregisterResourceFn(exportResources);
     }
 }
 
-std::error_code onRegister(foeExporterBase *pExporter) {
+std::error_code onRegister(foeExporter exporter) {
     std::error_code errC;
 
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Resource
-        if (!pYamlExporter->registerResourceFn(exportResources)) {
+        if (foeImexYamlRegisterResourceFn(exportResources)) {
             errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS;
             goto REGISTRATION_FAILED;
         }
@@ -77,7 +75,7 @@ std::error_code onRegister(foeExporterBase *pExporter) {
 
 REGISTRATION_FAILED:
     if (errC)
-        onDeregister(pExporter);
+        onDeregister(exporter);
 
     return errC;
 }

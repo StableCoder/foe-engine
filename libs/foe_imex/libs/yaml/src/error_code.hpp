@@ -14,11 +14,18 @@
     limitations under the License.
 */
 
-#ifndef FOE_EXPORTER_BASE_HPP
-#define FOE_EXPORTER_BASE_HPP
+#ifndef ERROR_CODE_HPP
+#define ERROR_CODE_HPP
 
-struct foeExporterBase {
-    virtual ~foeExporterBase() = default;
-};
+#include <foe/imex/yaml/error_code.h>
 
-#endif // FOE_EXPORTER_BASE_HPP
+#include <system_error>
+
+namespace std {
+template <>
+struct is_error_code_enum<foeImexYamlResult> : true_type {};
+} // namespace std
+
+std::error_code make_error_code(foeImexYamlResult);
+
+#endif // ERROR_CODE_HPP

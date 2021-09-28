@@ -23,7 +23,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include <foe/graphics/resource/yaml/export_registration.hpp>
-#include <foe/imex/yaml/exporter2.hpp>
+#include <foe/imex/yaml/exporter_registration.hpp>
 #include <foe/physics/yaml/export_registration.hpp>
 #include <foe/position/yaml/export_registration.hpp>
 #include <foe/resource/yaml/export_registration.hpp>

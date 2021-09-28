@@ -25,13 +25,11 @@
 
 namespace {
 
-std::mutex mSync;
-
-std::vector<foeExporterBase *> mRegisteredExporters;
-
-std::vector<foeExporter> mAvailableExporters;
-
-std::vector<foeExportFunctionality> mRegisteredFunctionality;
+struct foeExporterRegistrar {
+    std::mutex sync;
+    std::vector<foeExporter> exporters;
+    std::vector<foeExportFunctionality> functionality;
+} gExporterRegistrar;
 
 } // namespace
 
@@ -58,45 +56,73 @@ bool operator==(foeExporter const &lhs, foeExporter const &rhs) {
 bool operator!=(foeExporter const &lhs, foeExporter const &rhs) { return !(lhs == rhs); }
 
 auto foeImexRegisterExporter(foeExporter exporter) -> std::error_code {
-    std::scoped_lock lock{mSync};
+    std::scoped_lock lock{gExporterRegistrar.sync};
 
-    for (auto const &it : mAvailableExporters) {
+    for (auto const &it : gExporterRegistrar.exporters) {
         if (it == exporter) {
             return FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED;
         }
     }
 
-    mAvailableExporters.emplace_back(exporter);
+    std::error_code errC;
+    for (auto const &it : gExporterRegistrar.functionality) {
+        if (it.onRegister)
+            errC = it.onRegister(exporter);
+        if (errC)
+            goto REGISTRATION_FAILED;
+    }
+
+    gExporterRegistrar.exporters.emplace_back(exporter);
+
+REGISTRATION_FAILED:
+    if (errC) {
+        for (auto const &it : gExporterRegistrar.functionality) {
+            if (it.onDeregister)
+                it.onDeregister(exporter);
+        }
+    }
+
+    return errC;
+}
+
+auto foeImexDeregisterExporter(foeExporter exporter) -> std::error_code {
+    std::scoped_lock lock{gExporterRegistrar.sync};
+
+    for (auto it = gExporterRegistrar.exporters.begin(); it != gExporterRegistrar.exporters.end();
+         ++it) {
+        if (*it == exporter) {
+            gExporterRegistrar.exporters.erase(it);
+            goto CONTINUE_DEREGISTER;
+        }
+    }
+
+    FOE_LOG(foeImex, Error,
+            "foeDeregisterExporter - Attempted to deregister exporter that was not registered");
+    return FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED;
+
+CONTINUE_DEREGISTER:
+    for (auto const &it : gExporterRegistrar.functionality) {
+        if (it.onDeregister)
+            it.onDeregister(exporter);
+    }
 
     return FOE_IMEX_SUCCESS;
 }
 
-auto foeImexDeregisterExporter(foeExporter exporter) -> std::error_code {
-    std::scoped_lock lock{mSync};
-
-    for (auto it = mAvailableExporters.begin(); it != mAvailableExporters.end(); ++it) {
-        if (*it == exporter) {
-            mAvailableExporters.erase(it);
-            return FOE_IMEX_SUCCESS;
-        }
-    }
-
-    return FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED;
-}
-
 void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters) {
-    std::scoped_lock lock{mSync};
+    std::scoped_lock lock{gExporterRegistrar.sync};
 
     // If no array to place items is provided, then just return the number of items available
     if (pExporters == nullptr) {
-        *pExporterCount = mAvailableExporters.size();
+        *pExporterCount = gExporterRegistrar.exporters.size();
         return;
     }
 
     // If here, then copy a number of items into the provided memory
     uint32_t minCount =
-        std::min(*pExporterCount, static_cast<uint32_t>(mAvailableExporters.size()));
-    std::copy(mAvailableExporters.begin(), mAvailableExporters.begin() + minCount, pExporters);
+        std::min(*pExporterCount, static_cast<uint32_t>(gExporterRegistrar.exporters.size()));
+    std::copy(gExporterRegistrar.exporters.begin(), gExporterRegistrar.exporters.begin() + minCount,
+              pExporters);
 
     // Make sure to return the actual number copied
     *pExporterCount = minCount;
@@ -105,9 +131,9 @@ void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters) {
 auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
     -> std::error_code {
     std::error_code errC;
-    std::scoped_lock lock{mSync};
+    std::scoped_lock lock{gExporterRegistrar.sync};
 
-    for (auto const &it : mRegisteredFunctionality) {
+    for (auto const &it : gExporterRegistrar.functionality) {
         if (it == functionality) {
             FOE_LOG(foeImex, Warning,
                     "foeRegisterExportFunctionality - Attempted to re-register functionality");
@@ -117,7 +143,7 @@ auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
 
     // Add the *new* functionality to any already-existing exporters
     if (functionality.onRegister) {
-        for (auto const &it : mRegisteredExporters) {
+        for (auto const &it : gExporterRegistrar.exporters) {
             errC = functionality.onRegister(it);
             if (errC)
                 goto REGISTRATION_FAILED;
@@ -125,11 +151,11 @@ auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
     }
 
     // Not already registered, add it
-    mRegisteredFunctionality.emplace_back(functionality);
+    gExporterRegistrar.functionality.emplace_back(functionality);
 
 REGISTRATION_FAILED:
     if (errC && functionality.onDeregister) {
-        for (auto const &it : mRegisteredExporters) {
+        for (auto const &it : gExporterRegistrar.exporters) {
             functionality.onDeregister(it);
         }
     }
@@ -138,11 +164,12 @@ REGISTRATION_FAILED:
 }
 
 void foeDeregisterExportFunctionality(foeExportFunctionality const &functionality) {
-    std::scoped_lock lock{mSync};
+    std::scoped_lock lock{gExporterRegistrar.sync};
 
-    auto registration = mRegisteredFunctionality.begin();
-    for (; registration != mRegisteredFunctionality.end(); ++registration) {
-        if (*registration == functionality) {
+    for (auto it = gExporterRegistrar.functionality.begin();
+         it != gExporterRegistrar.functionality.end(); ++it) {
+        if (*it == functionality) {
+            gExporterRegistrar.functionality.erase(it);
             goto CONTINUE_DEREGISTRATION;
         }
     }
@@ -153,66 +180,9 @@ void foeDeregisterExportFunctionality(foeExportFunctionality const &functionalit
     return;
 
 CONTINUE_DEREGISTRATION:
-    if (registration->onDeregister) {
-        for (auto const &it : mRegisteredExporters) {
-            registration->onDeregister(it);
+    if (functionality.onDeregister) {
+        for (auto const &it : gExporterRegistrar.exporters) {
+            functionality.onDeregister(it);
         }
     }
-}
-
-auto foeRegisterExporter(foeExporterBase *pExporter) -> std::error_code {
-    std::error_code errC;
-    std::scoped_lock lock{mSync};
-
-    // Check to make sure not already registered
-    for (auto const &it : mRegisteredExporters) {
-        if (it == pExporter) {
-            FOE_LOG(foeImex, Warning, "foeRegisterExporter - Attempted to re-register exporter");
-            return FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED;
-        }
-    }
-
-    for (auto const &it : mRegisteredFunctionality) {
-        if (it.onRegister)
-            errC = it.onRegister(pExporter);
-        if (errC)
-            goto REGISTRATION_FAILED;
-    }
-
-    mRegisteredExporters.emplace_back(pExporter);
-
-REGISTRATION_FAILED:
-    if (errC) {
-        for (auto const &it : mRegisteredFunctionality) {
-            if (it.onDeregister)
-                it.onDeregister(pExporter);
-        }
-    }
-
-    return errC;
-}
-
-void foeDeregisterExporter(foeExporterBase *pExporter) {
-    std::scoped_lock lock{mSync};
-
-    // Make sure it's actually registered, otherwise do nothing
-    // Check to make sure not already registered
-    auto registration = mRegisteredExporters.begin();
-    for (; registration != mRegisteredExporters.end(); ++registration) {
-        if (*registration == pExporter) {
-            goto CONTINUE_DEREGISTER;
-        }
-    }
-
-    FOE_LOG(foeImex, Error,
-            "foeDeregisterExporter - Attempted to deregister exporter that was never registered");
-    return;
-
-CONTINUE_DEREGISTER:
-    for (auto const &it : mRegisteredFunctionality) {
-        if (it.onDeregister)
-            it.onDeregister(pExporter);
-    }
-
-    mRegisteredExporters.erase(registration);
 }

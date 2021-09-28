@@ -167,41 +167,39 @@ std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
     return keyDataPairs;
 }
 
-void onDeregister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+void onDeregister(foeExporter exporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Resource
-        pYamlExporter->deregisterResourceFn(exportVertexDescriptor);
-        pYamlExporter->deregisterResourceFn(exportShader);
-        pYamlExporter->deregisterResourceFn(exportMesh);
-        pYamlExporter->deregisterResourceFn(exportMaterial);
-        pYamlExporter->deregisterResourceFn(exportImage);
+        foeImexYamlDeregisterResourceFn(exportVertexDescriptor);
+        foeImexYamlDeregisterResourceFn(exportShader);
+        foeImexYamlDeregisterResourceFn(exportMesh);
+        foeImexYamlDeregisterResourceFn(exportMaterial);
+        foeImexYamlDeregisterResourceFn(exportImage);
     }
 }
 
-std::error_code onRegister(foeExporterBase *pExporter) {
+std::error_code onRegister(foeExporter exporter) {
     std::error_code errC;
 
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Resource
-        if (!pYamlExporter->registerResourceFn(exportImage)) {
+        if (foeImexYamlRegisterResourceFn(exportImage)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_EXPORTER;
             goto REGISTRATION_FAILED;
         }
-        if (!pYamlExporter->registerResourceFn(exportMaterial)) {
+        if (foeImexYamlRegisterResourceFn(exportMaterial)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_EXPORTER;
             goto REGISTRATION_FAILED;
         }
-        if (!pYamlExporter->registerResourceFn(exportMesh)) {
+        if (foeImexYamlRegisterResourceFn(exportMesh)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_EXPORTER;
             goto REGISTRATION_FAILED;
         }
-        if (!pYamlExporter->registerResourceFn(exportShader)) {
+        if (foeImexYamlRegisterResourceFn(exportShader)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_EXPORTER;
             goto REGISTRATION_FAILED;
         }
-        if (!pYamlExporter->registerResourceFn(exportVertexDescriptor)) {
+        if (foeImexYamlRegisterResourceFn(exportVertexDescriptor)) {
             errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_EXPORTER;
             goto REGISTRATION_FAILED;
         }
@@ -209,7 +207,7 @@ std::error_code onRegister(foeExporterBase *pExporter) {
 
 REGISTRATION_FAILED:
     if (errC)
-        onDeregister(pExporter);
+        onDeregister(exporter);
 
     return errC;
 }

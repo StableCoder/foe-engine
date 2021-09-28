@@ -74,38 +74,35 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
     return keyDataPairs;
 }
 
-void onDeregister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+void onDeregister(foeExporter exporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Resources
-        pYamlExporter->deregisterResourceFn(exportResources);
+        foeImexYamlDeregisterResourceFn(exportResources);
 
         // Components
-        pYamlExporter->deregisterComponentFn(exportComponents);
+        foeImexYamlDeregisterComponentFn(exportComponents);
     }
 }
 
-std::error_code onRegister(foeExporterBase *pExporter) {
+std::error_code onRegister(foeExporter exporter) {
     std::error_code errC;
 
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Resources
-        if (!pYamlExporter->registerResourceFn(exportResources)) {
+        if (foeImexYamlRegisterResourceFn(exportResources)) {
             errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_EXPORTER;
             goto REGISTRATION_FAILED;
         }
 
         // Components
-        if (!pYamlExporter->registerComponentFn(exportComponents)) {
+        if (foeImexYamlRegisterComponentFn(exportComponents)) {
             errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER;
             goto REGISTRATION_FAILED;
         }
     }
-
 REGISTRATION_FAILED:
     if (errC)
-        onDeregister(pExporter);
+        onDeregister(exporter);
 
     return errC;
 }

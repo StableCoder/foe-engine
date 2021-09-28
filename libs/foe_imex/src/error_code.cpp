@@ -18,18 +18,18 @@
 
 namespace {
 
-struct foeGraphicsResourceErrCategory : std::error_category {
+struct ErrorCategory : std::error_category {
     const char *name() const noexcept override;
     std::string message(int ev) const override;
 };
 
-const char *foeGraphicsResourceErrCategory::name() const noexcept { return "foeImexResult"; }
+const char *ErrorCategory::name() const noexcept { return "foeImexResult"; }
 
 #define ENUM_CASE(X)                                                                               \
     case X:                                                                                        \
         return #X;
 
-std::string foeGraphicsResourceErrCategory::message(int ev) const {
+std::string ErrorCategory::message(int ev) const {
     switch (static_cast<foeImexResult>(ev)) {
         ENUM_CASE(FOE_IMEX_SUCCESS)
         ENUM_CASE(FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED)
@@ -44,10 +44,8 @@ std::string foeGraphicsResourceErrCategory::message(int ev) const {
     }
 }
 
-const foeGraphicsResourceErrCategory graphicsResourceErrCategory{};
+const ErrorCategory errorCategory{};
 
 } // namespace
 
-std::error_code make_error_code(foeImexResult e) {
-    return {static_cast<int>(e), graphicsResourceErrCategory};
-}
+std::error_code make_error_code(foeImexResult e) { return {static_cast<int>(e), errorCategory}; }

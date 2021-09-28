@@ -14,14 +14,15 @@
     limitations under the License.
 */
 
-#ifndef FOE_IMEX_YAML_EXPORTER2_HPP
-#define FOE_IMEX_YAML_EXPORTER2_HPP
+#ifndef COMMON_HPP
+#define COMMON_HPP
 
-#include <foe/imex/yaml/export.h>
+#include <string_view>
 
-#include <system_error>
+constexpr std::string_view dependenciesFilePath = "dependencies.yml";
+constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
+constexpr std::string_view resourceDirectoryPath = "resources";
+constexpr std::string_view entityIndexDataFilePath = "entity_index_data.yml";
+constexpr std::string_view entityDirectoryPath = "entities";
 
-FOE_IMEX_YAML_EXPORT auto foeImexYamlRegisterExporter() -> std::error_code;
-FOE_IMEX_YAML_EXPORT auto foeImexYamlDeregisterExporter() -> std::error_code;
-
-#endif // FOE_IMEX_YAML_EXPORTER2_HPP
+#endif // COMMON_HPP

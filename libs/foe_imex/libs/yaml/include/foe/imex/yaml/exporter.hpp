@@ -18,13 +18,12 @@
 #define FOE_IMEX_YAML_EXPORTER_HPP
 
 #include <foe/ecs/id.hpp>
-#include <foe/imex/exporter_base.hpp>
 #include <foe/imex/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
 #include <filesystem>
-#include <shared_mutex>
 #include <string>
+#include <system_error>
 #include <vector>
 
 struct foeSimulationState;
@@ -36,53 +35,19 @@ struct foeKeyYamlPair {
     YAML::Node data;
 };
 
-class FOE_IMEX_YAML_EXPORT foeYamlExporter : public foeExporterBase {
-  public:
-    foeYamlExporter();
-    ~foeYamlExporter();
+FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlExport(std::filesystem::path path,
+                                                       foeSimulationState *pSimState);
 
-    foeYamlExporter(foeYamlExporter const &) = delete;
-    foeYamlExporter(foeYamlExporter &&) = delete;
+FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlRegisterResourceFn(
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeResourcePoolBase **, uint32_t));
 
-    foeYamlExporter operator=(foeYamlExporter const &) = delete;
-    foeYamlExporter operator=(foeYamlExporter &&) = delete;
+FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlDeregisterResourceFn(
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeResourcePoolBase **, uint32_t));
 
-    bool exportState(std::filesystem::path path, foeSimulationState *pSimState);
+FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlRegisterComponentFn(
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeComponentPoolBase **, uint32_t));
 
-    bool registerResourceFn(std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID,
-                                                                       foeResourcePoolBase **,
-                                                                       uint32_t));
-    void deregisterResourceFn(std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID,
-                                                                         foeResourcePoolBase **,
-                                                                         uint32_t));
-
-    bool registerComponentFn(std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID,
-                                                                         foeComponentPoolBase **,
-                                                                         uint32_t));
-    void deregisterComponentFn(std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID,
-                                                                           foeComponentPoolBase **,
-                                                                           uint32_t));
-
-  private:
-    bool exportDependencies(std::filesystem::path rootOutPath, foeSimulationState *pSimState);
-    bool exportGroupResourceIndexData(std::filesystem::path rootOutPath,
-                                      foeSimulationState *pSimState);
-    bool exportGroupEntityIndexData(std::filesystem::path rootOutPath,
-                                    foeSimulationState *pSimState);
-
-    bool exportResources(std::filesystem::path rootOutPath,
-                         foeIdGroup group,
-                         foeSimulationState *pSimState);
-    bool exportComponentData(std::filesystem::path rootOutPath,
-                             foeIdGroup group,
-                             foeSimulationState *pSimState);
-
-    std::shared_mutex mSync;
-
-    std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeResourcePoolBase **, uint32_t)>
-        mResourceFns;
-    std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeComponentPoolBase **, uint32_t)>
-        mComponentFns;
-};
+FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlDeregisterComponentFn(
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeComponentPoolBase **, uint32_t));
 
 #endif // FOE_IMEX_YAML_EXPORTER_HPP

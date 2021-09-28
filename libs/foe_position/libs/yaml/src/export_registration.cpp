@@ -47,21 +47,19 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
     return keyDataPairs;
 }
 
-void onDeregister(foeExporterBase *pExporter) {
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+void onDeregister(foeExporter exporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Components
-        pYamlExporter->deregisterComponentFn(exportComponents);
+        foeImexYamlDeregisterComponentFn(exportComponents);
     }
 }
 
-std::error_code onRegister(foeExporterBase *pExporter) {
+std::error_code onRegister(foeExporter exporter) {
     std::error_code errC;
 
-    auto *pYamlExporter = dynamic_cast<foeYamlExporter *>(pExporter);
-    if (pYamlExporter) {
+    if (std::string_view{exporter.pName} == "Yaml") {
         // Components
-        if (!pYamlExporter->registerComponentFn(exportComponents)) {
+        if (foeImexYamlRegisterComponentFn(exportComponents)) {
             errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER;
             goto REGISTRATION_FAILED;
         }
@@ -69,7 +67,7 @@ std::error_code onRegister(foeExporterBase *pExporter) {
 
 REGISTRATION_FAILED:
     if (errC)
-        onDeregister(pExporter);
+        onDeregister(exporter);
 
     return errC;
 }

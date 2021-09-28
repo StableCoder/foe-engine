@@ -19,7 +19,6 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/imex/export.h>
-#include <foe/imex/exporter_base.hpp>
 
 #include <filesystem>
 #include <system_error>
@@ -52,8 +51,8 @@ FOE_IMEX_EXPORT auto foeImexDeregisterExporter(foeExporter exporter) -> std::err
 FOE_IMEX_EXPORT void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters);
 
 struct foeExportFunctionality {
-    std::error_code (*onRegister)(foeExporterBase *);
-    void (*onDeregister)(foeExporterBase *);
+    std::error_code (*onRegister)(foeExporter);
+    void (*onDeregister)(foeExporter);
 
     inline bool operator==(foeExportFunctionality const &rhs) const noexcept {
         return onRegister == rhs.onRegister && onDeregister == rhs.onDeregister;
@@ -66,8 +65,5 @@ struct foeExportFunctionality {
 FOE_IMEX_EXPORT auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
     -> std::error_code;
 FOE_IMEX_EXPORT void foeDeregisterExportFunctionality(foeExportFunctionality const &functionality);
-
-FOE_IMEX_EXPORT auto foeRegisterExporter(foeExporterBase *pExporter) -> std::error_code;
-FOE_IMEX_EXPORT void foeDeregisterExporter(foeExporterBase *pExporter);
 
 #endif // FOE_IMEX_EXPORTERS_HPP

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/imex/yaml/exporter2.hpp>
+#include <foe/imex/yaml/exporter_registration.hpp>
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
@@ -28,20 +28,13 @@ foeExporterVersion version{
     .patch = 0,
 };
 
-std::error_code exportData(std::filesystem::path path, foeSimulationState *pSimState) {
-    foeYamlExporter exporter;
-    exporter.exportState(path, pSimState);
-
-    return std::error_code{};
-}
-
 } // namespace
 
 auto foeImexYamlRegisterExporter() -> std::error_code {
     return foeImexRegisterExporter(foeExporter{
         .pName = name.data(),
         .version = version,
-        .pExportFn = exportData,
+        .pExportFn = foeImexYamlExport,
     });
 }
 
@@ -49,6 +42,6 @@ auto foeImexYamlDeregisterExporter() -> std::error_code {
     return foeImexDeregisterExporter(foeExporter{
         .pName = name.data(),
         .version = version,
-        .pExportFn = exportData,
+        .pExportFn = foeImexYamlExport,
     });
 }
