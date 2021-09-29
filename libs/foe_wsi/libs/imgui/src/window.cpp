@@ -168,12 +168,15 @@ bool foeWsiImGuiWindow::viewMainMenu() {
 void foeWsiImGuiWindow::customUI() {
     for (auto &it : mWindowList) {
         if (!it.open)
-            break;
+            continue;
 
         ImGui::SetNextWindowSize(ImVec2(0, 0), 0);
-        if (!ImGui::Begin("Window Data", &it.open)) {
+        std::string imguiElementName =
+            fmt::format("foeWsiWindow - ({}) {}", static_cast<void *>(it.window),
+                        foeWsiWindowGetTitle(it.window));
+        if (!ImGui::Begin(imguiElementName.data(), &it.open)) {
             ImGui::End();
-            break;
+            continue;
         }
 
         // Handle
