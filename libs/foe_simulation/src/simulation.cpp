@@ -51,11 +51,15 @@ void deinitSimulation(foeSimulationState *pSimulationState) {
             static_cast<void *>(pSimulationState));
 
     acquireExclusiveLock(pSimulationState, "deinitialization");
+    // Deinit functionality
     for (auto const &functionality : mRegistered) {
         if (functionality.onDeinitialization) {
             functionality.onDeinitialization(pSimulationState);
         }
     }
+
+    pSimulationState->initInfo = {};
+
     pSimulationState->simSync.unlock();
 
     FOE_LOG(SimulationState, Verbose, "Deinitialized SimulationState: {}",
