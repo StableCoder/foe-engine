@@ -325,17 +325,12 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         // foeScheduleAsyncTask(threadPool, std::move(task));
     };
 
-    foeSimulationState *pNewSimulationSet{nullptr};
-    errC = importState("persistent", &searchPaths, asyncTaskFunc, &pNewSimulationSet);
+    errC = importState("persistent", &searchPaths, asyncTaskFunc, &pSimulationSet);
     if (errC) {
         FOE_LOG(General, Fatal, "Error importing '{}' state with error: {} - {}", "persistent",
                 errC.value(), errC.message())
         return std::make_tuple(false, errC.value());
     }
-
-    std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> tempSimState{
-        pNewSimulationSet, [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
-    pSimulationSet = std::move(tempSimState);
 
     // Special Entities
     cameraID = pSimulationSet->pEntityNameMap->find("camera");
@@ -358,16 +353,16 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     viewFrameTimeInfo.registerUI(&imguiState);
     windowInfo.registerUI(&imguiState);
 
-    uiSave.setSimulationState(pSimulationSet.get());
+    uiSave.setSimulationState(pSimulationSet);
 
     // Per SimState UI
-    pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet.get()});
+    pSimGroupDataUI.reset(new foeSimulationImGuiGroupData{pSimulationSet});
     pSimGroupDataUI->registerUI(&imguiState);
 
-    pEntityListUI.reset(new foeImGuiEntityList{pSimulationSet.get(), &imguiRegistrar});
+    pEntityListUI.reset(new foeImGuiEntityList{pSimulationSet, &imguiRegistrar});
     pEntityListUI->registerUI(&imguiState);
 
-    pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet.get(), &imguiRegistrar});
+    pResourceListUI.reset(new foeImGuiResourceList{pSimulationSet, &imguiRegistrar});
     pResourceListUI->registerUI(&imguiState);
 #endif
 
@@ -476,7 +471,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                                               &pSimulationSet->groupData, std::placeholders::_1),
             .asyncJobFn = asyncTaskFunc,
         };
-        foeInitializeSimulation(pSimulationSet.get(), &simInitInfo);
+        foeInitializeSimulation(pSimulationSet, &simInitInfo);
     }
 
     { // Load all available resources
@@ -824,7 +819,7 @@ void Application::deinitialize() {
 
     // Deinit simulation
     if (pSimulationSet)
-        foeDeinitializeSimulation(pSimulationSet.get());
+        foeDeinitializeSimulation(pSimulationSet);
 
 #ifdef FOE_XR_SUPPORT
     // XR Cleanup
@@ -986,6 +981,10 @@ void Application::deinitialize() {
 #ifdef EDITOR_MODE
     deregisterImGui(&imguiRegistrar);
 #endif
+
+    if (pSimulationSet != nullptr)
+        foeDestroySimulation(pSimulationSet);
+    pSimulationSet = nullptr;
 
     // Deregister functionality
     deregisterBasicFunctionality();
@@ -1400,7 +1399,7 @@ int Application::mainloop() {
                                 auto const endIdIt = pRenderStatePool->cend();
                                 auto dataIt = pRenderStatePool->cbegin<1>();
                                 for (; idIt != endIdIt; ++idIt, ++dataIt) {
-                                    renderCall(*idIt, dataIt, gfxSession, pSimulationSet.get(),
+                                    renderCall(*idIt, dataIt, gfxSession, pSimulationSet,
                                                commandBuffer,
                                                foeGfxVkGetRenderTargetSamples(renderTarget),
                                                xrOffscreenRenderPass, it.camera.descriptor);
@@ -1680,9 +1679,8 @@ int Application::mainloop() {
                         auto const endIdIt = pRenderStatePool->cend();
                         auto dataIt = pRenderStatePool->cbegin<1>();
                         for (; idIt != endIdIt; ++idIt, ++dataIt) {
-                            renderCall(*idIt, dataIt, gfxSession, pSimulationSet.get(),
-                                       commandBuffer, globalMSAA, renderPass,
-                                       (*pCamera)->descriptor);
+                            renderCall(*idIt, dataIt, gfxSession, pSimulationSet, commandBuffer,
+                                       globalMSAA, renderPass, (*pCamera)->descriptor);
                         }
 
                         vkCmdEndRenderPass(commandBuffer);

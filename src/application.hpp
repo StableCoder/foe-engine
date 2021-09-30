@@ -23,7 +23,6 @@
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
-#include <foe/simulation/simulation.hpp>
 #include <foe/split_thread_pool.hpp>
 #include <foe/xr/runtime.hpp>
 
@@ -74,7 +73,7 @@ struct Application {
     // Groups/Entities
     foeId cameraID = FOE_INVALID_ID;
 
-    std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet;
+    foeSimulationState *pSimulationSet{nullptr};
 
     // I/O
     std::array<WindowData, 1> windowData;
