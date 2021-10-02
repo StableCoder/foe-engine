@@ -98,13 +98,6 @@
         return errC.value();                                                                       \
     }
 
-#define ERRC_END_ABORT                                                                             \
-    {                                                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
-                errC.message());                                                                   \
-        std::abort();                                                                              \
-    }
-
 #define END_PROGRAM_TUPLE                                                                          \
     {                                                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{}", __FILE__, __LINE__);                      \
@@ -483,10 +476,15 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
 #ifdef FOE_XR_SUPPORT
-    // If the user specified to force an XR session and couldn't find/create the session, fail out
-    if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
-        FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
-        return std::make_tuple(false, 1);
+    if (settings.xr.forceXr) {
+        startXR(true);
+
+        // If the user specified to force an XR session and couldn't find/create the session, fail
+        // out
+        if (xrSession.session == XR_NULL_HANDLE) {
+            FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
+            return std::make_tuple(false, 1);
+        }
     }
 #endif
 
@@ -699,15 +697,19 @@ void processUserInput(double timeElapsedInSeconds,
 
 } // namespace
 
-void Application::startXR(bool localPoll) {
-#ifdef FOE_XR_SUPPORT
+std::error_code Application::startXR(bool localPoll) {
     std::error_code errC;
 
-    // Initialize XR if an HMD is available
-    if (xrRuntime != FOE_NULL_HANDLE) {
+    if (xrRuntime == FOE_NULL_HANDLE) {
+        FOE_LOG(General, Error, "Tried to start an XR session, but no XR runtime has been started");
+    }
+#ifdef FOE_XR_SUPPORT
+    else {
         errC = createXrSession(xrRuntime, gfxSession, &xrSession);
         if (errC) {
-            ERRC_END_ABORT
+            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                    errC.message());
+            goto START_XR_FAILED;
         }
 
         // OpenXR Session Begin
@@ -716,8 +718,11 @@ void Application::startXR(bool localPoll) {
         while (xrSession.state != XR_SESSION_STATE_READY) {
             if (localPoll) {
                 errC = foeXrProcessEvents(xrRuntime);
-                if (errC)
-                    ERRC_END_ABORT
+                if (errC) {
+                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
+                            __LINE__, errC.message());
+                    goto START_XR_FAILED;
+                }
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
@@ -729,7 +734,9 @@ void Application::startXR(bool localPoll) {
             xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime), xrSession.systemId,
                                               xrSession.type, 0, &viewConfigViewCount, nullptr);
         if (errC) {
-            ERRC_END_ABORT
+            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                    errC.message());
+            goto START_XR_FAILED;
         }
 
         std::vector<XrViewConfigurationView> viewConfigs;
@@ -739,7 +746,9 @@ void Application::startXR(bool localPoll) {
             foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
             &viewConfigViewCount, viewConfigs.data());
         if (errC) {
-            ERRC_END_ABORT
+            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                    errC.message());
+            goto START_XR_FAILED;
         }
         xrViews.clear();
         for (auto const &it : viewConfigs) {
@@ -750,7 +759,9 @@ void Application::startXR(bool localPoll) {
         std::vector<int64_t> swapchainFormats;
         errC = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
         if (errC) {
-            ERRC_END_ABORT
+            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                    errC.message());
+            goto START_XR_FAILED;
         }
         for (auto &it : xrViews) {
             it.format = static_cast<VkFormat>(swapchainFormats[0]);
@@ -810,7 +821,9 @@ void Application::startXR(bool localPoll) {
                 foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor, offscreenSpecs.data(),
                                            offscreenSpecs.size(), globalMSAA, &newRenderTarget);
             if (errC) {
-                ERRC_END_ABORT
+                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                        errC.message());
+                goto START_XR_FAILED;
             }
 
             foeGfxUpdateRenderTargetExtent(newRenderTarget,
@@ -838,13 +851,17 @@ void Application::startXR(bool localPoll) {
 
             errC = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
             if (errC) {
-                ERRC_END_ABORT
+                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                        errC.message());
+                goto START_XR_FAILED;
             }
 
             // Images
             errC = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
             if (errC) {
-                ERRC_END_ABORT
+                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                        errC.message());
+                goto START_XR_FAILED;
             }
 
             // Image Views
@@ -871,7 +888,9 @@ void Application::startXR(bool localPoll) {
                 VkImageView vkView{VK_NULL_HANDLE};
                 errC = vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
                 if (errC) {
-                    ERRC_END_ABORT
+                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
+                            __LINE__, errC.message());
+                    goto START_XR_FAILED;
                 }
 
                 view.imageViews.emplace_back(vkView);
@@ -893,7 +912,9 @@ void Application::startXR(bool localPoll) {
                 errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
                                            &newFramebuffer);
                 if (errC) {
-                    ERRC_END_ABORT
+                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
+                            __LINE__, errC.message());
+                    goto START_XR_FAILED;
                 }
 
                 view.framebuffers.emplace_back(newFramebuffer);
@@ -902,32 +923,46 @@ void Application::startXR(bool localPoll) {
 
         errC = xrVkCameraSystem.initialize(gfxSession);
         if (errC) {
-            ERRC_END_ABORT
+            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                    errC.message());
+            goto START_XR_FAILED;
         }
 
         errC = xrSession.beginSession();
         if (errC) {
-            ERRC_END_ABORT
+            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                    errC.message());
+            goto START_XR_FAILED;
         }
 
         FOE_LOG(General, Info, "Started new XR session {}", static_cast<void *>(xrSession.session));
     }
+
+START_XR_FAILED:
+    if (errC) {
+        stopXR(localPoll);
+    }
 #endif // FOE_XR_SUPPORT
+
+    return errC;
 }
 
-void Application::stopXR(bool localPoll) {
-#ifdef FOE_XR_SUPPORT
+std::error_code Application::stopXR(bool localPoll) {
     std::error_code errC;
 
-    // XR Cleanup
+#ifdef FOE_XR_SUPPORT
     if (xrSession.session != XR_NULL_HANDLE) {
         xrSession.requestExitSession();
 
         while (xrSession.state != XR_SESSION_STATE_STOPPING) {
             if (localPoll) {
                 errC = foeXrProcessEvents(xrRuntime);
-                if (errC)
-                    ERRC_END_ABORT
+                {
+                    if (errC)
+                        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
+                                __LINE__, errC.message());
+                    return errC;
+                }
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
@@ -938,8 +973,11 @@ void Application::stopXR(bool localPoll) {
         while (xrSession.state != XR_SESSION_STATE_IDLE) {
             if (localPoll) {
                 errC = foeXrProcessEvents(xrRuntime);
-                if (errC)
-                    ERRC_END_ABORT
+                if (errC) {
+                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
+                            __LINE__, errC.message());
+                    return errC;
+                }
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
@@ -963,8 +1001,11 @@ void Application::stopXR(bool localPoll) {
         while (xrSession.state != XR_SESSION_STATE_EXITING) {
             if (localPoll) {
                 errC = foeXrProcessEvents(xrRuntime);
-                if (errC)
-                    ERRC_END_ABORT
+                if (errC) {
+                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
+                            __LINE__, errC.message());
+                    return errC;
+                }
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
@@ -972,7 +1013,10 @@ void Application::stopXR(bool localPoll) {
 
         xrSession.destroySession();
     }
+
 #endif // FOE_XR_SUPPORT
+
+    return errC;
 }
 
 int Application::mainloop() {
