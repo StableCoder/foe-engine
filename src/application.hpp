@@ -66,6 +66,9 @@ struct Application {
     auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
     void deinitialize();
 
+    void startXR(bool localPoll);
+    void stopXR(bool localPoll);
+
     int mainloop();
 
     // Variables

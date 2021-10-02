@@ -98,6 +98,13 @@
         return errC.value();                                                                       \
     }
 
+#define ERRC_END_ABORT                                                                             \
+    {                                                                                              \
+        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
+                errC.message());                                                                   \
+        std::abort();                                                                              \
+    }
+
 #define END_PROGRAM_TUPLE                                                                          \
     {                                                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{}", __FILE__, __LINE__);                      \
@@ -339,8 +346,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (!settings.window.implementation.empty())
         wsiImplementation = settings.window.implementation;
 
-    if (!foeWsiLoadImplementation(wsiImplementation.data()))
+    if (!foeWsiLoadImplementation(wsiImplementation.data())) {
         END_PROGRAM_TUPLE
+    }
 #endif
 
     {
@@ -475,210 +483,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
 #ifdef FOE_XR_SUPPORT
-    // Initialize XR if an HMD is available
-    if (xrRuntime != FOE_NULL_HANDLE) {
-        errC = createXrSession(xrRuntime, gfxSession, &xrSession);
-        if (errC) {
-            ERRC_END_PROGRAM_TUPLE
-        }
-
-        // Session Views
-        uint32_t viewConfigViewCount;
-        errC =
-            xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime), xrSession.systemId,
-                                              xrSession.type, 0, &viewConfigViewCount, nullptr);
-        if (errC) {
-            ERRC_END_PROGRAM_TUPLE
-        }
-
-        std::vector<XrViewConfigurationView> viewConfigs;
-        viewConfigs.resize(viewConfigViewCount);
-
-        errC = xrEnumerateViewConfigurationViews(
-            foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
-            &viewConfigViewCount, viewConfigs.data());
-        if (errC) {
-            ERRC_END_PROGRAM_TUPLE
-        }
-        xrViews.clear();
-        for (auto const &it : viewConfigs) {
-            xrViews.emplace_back(foeXrVkSessionView{.viewConfig = it});
-        }
-
-        // OpenXR Swapchains
-        std::vector<int64_t> swapchainFormats;
-        errC = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
-        if (errC) {
-            ERRC_END_PROGRAM_TUPLE
-        }
-        for (auto &it : xrViews) {
-            it.format = static_cast<VkFormat>(swapchainFormats[0]);
-        }
-
-        auto *renderPassPool = foeGfxVkGetRenderPassPool(gfxSession);
-        xrRenderPass = renderPassPool->renderPass({VkAttachmentDescription{
-            .format = static_cast<VkFormat>(swapchainFormats[0]),
-            .samples = VK_SAMPLE_COUNT_1_BIT,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        }});
-
-        xrOffscreenRenderPass = renderPassPool->renderPass(
-            {VkAttachmentDescription{
-                 .format = static_cast<VkFormat>(swapchainFormats[0]),
-                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
-                 .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                 .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                 .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-             },
-             VkAttachmentDescription{
-                 .format = depthFormat,
-                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
-                 .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                 .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                 .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-             }});
-
-        for (auto &view : xrViews) {
-            // Offscreen Render Targets
-            std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
-                foeGfxVkRenderTargetSpec{
-                    .format = view.format,
-                    .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                    .count = 3,
-                },
-                foeGfxVkRenderTargetSpec{
-                    .format = depthFormat,
-                    .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                    .count = 3,
-                },
-            };
-
-            foeGfxRenderTarget newRenderTarget{FOE_NULL_HANDLE};
-            errC =
-                foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor, offscreenSpecs.data(),
-                                           offscreenSpecs.size(), globalMSAA, &newRenderTarget);
-            if (errC) {
-                ERRC_END_PROGRAM_TUPLE
-            }
-
-            foeGfxUpdateRenderTargetExtent(newRenderTarget,
-                                           view.viewConfig.recommendedImageRectWidth,
-                                           view.viewConfig.recommendedImageRectHeight);
-
-            errC = foeGfxAcquireNextRenderTarget(newRenderTarget, FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
-
-            xrOffscreenRenderTargets.emplace_back(newRenderTarget);
-
-            // Swapchain
-            XrSwapchainCreateInfo swapchainCI{
-                .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
-                .createFlags = 0,
-                .usageFlags =
-                    XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT,
-                .format = view.format,
-                .sampleCount = 1,
-                .width = view.viewConfig.recommendedImageRectWidth,
-                .height = view.viewConfig.recommendedImageRectHeight,
-                .faceCount = 1,
-                .arraySize = 1,
-                .mipCount = 1,
-            };
-
-            errC = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
-            if (errC) {
-                ERRC_END_PROGRAM_TUPLE
-            }
-
-            // Images
-            errC = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
-            if (errC) {
-                ERRC_END_PROGRAM_TUPLE
-            }
-
-            // Image Views
-            VkImageViewCreateInfo viewCI{
-                .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-                .viewType = VK_IMAGE_VIEW_TYPE_2D,
-                .format = view.format,
-                .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
-                               VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A},
-                .subresourceRange =
-                    VkImageSubresourceRange{
-                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                        .baseMipLevel = 0,
-                        .levelCount = 1,
-                        .baseArrayLayer = 0,
-                        .layerCount = 1,
-                    },
-            };
-
-            // VkImageView
-            view.imageViews.clear();
-            for (auto it : view.images) {
-                viewCI.image = it.image;
-                VkImageView vkView{VK_NULL_HANDLE};
-                errC = vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
-                if (errC) {
-                    ERRC_END_PROGRAM_TUPLE
-                }
-
-                view.imageViews.emplace_back(vkView);
-            }
-
-            // VkFramebuffer
-            for (auto it : view.imageViews) {
-                VkFramebufferCreateInfo framebufferCI{
-                    .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-                    .renderPass = xrRenderPass,
-                    .attachmentCount = 1,
-                    .pAttachments = &it,
-                    .width = view.viewConfig.recommendedImageRectWidth,
-                    .height = view.viewConfig.recommendedImageRectHeight,
-                    .layers = 1,
-                };
-
-                VkFramebuffer newFramebuffer;
-                errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
-                                           &newFramebuffer);
-                if (errC) {
-                    ERRC_END_PROGRAM_TUPLE
-                }
-
-                view.framebuffers.emplace_back(newFramebuffer);
-            }
-        }
-
-        // OpenXR Session Begin
-
-        // Wait for the session to be ready
-        while (xrSession.state != XR_SESSION_STATE_READY) {
-            errC = foeXrProcessEvents(xrRuntime);
-            if (errC)
-                ERRC_END_PROGRAM_TUPLE
-        }
-
-        errC = xrVkCameraSystem.initialize(gfxSession);
-        if (errC) {
-            ERRC_END_PROGRAM_TUPLE
-        }
-
-        errC = xrSession.beginSession();
-        if (errC) {
-            ERRC_END_PROGRAM_TUPLE
-        }
-    }
-
     // If the user specified to force an XR session and couldn't find/create the session, fail out
     if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
         FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
@@ -766,47 +570,7 @@ void Application::deinitialize() {
         foeDeinitializeSimulation(pSimulationSet);
 
 #ifdef FOE_XR_SUPPORT
-    // XR Cleanup
-    if (xrSession.session != XR_NULL_HANDLE) {
-        xrSession.requestExitSession();
-
-        while (xrSession.state != XR_SESSION_STATE_STOPPING) {
-            errC = foeXrProcessEvents(xrRuntime);
-            if (errC)
-                std::abort();
-        }
-
-        xrSession.endSession();
-
-        while (xrSession.state != XR_SESSION_STATE_IDLE) {
-            errC = foeXrProcessEvents(xrRuntime);
-            if (errC)
-                std::abort();
-        }
-
-        for (auto &renderTarget : xrOffscreenRenderTargets) {
-            if (renderTarget != FOE_NULL_HANDLE)
-                foeGfxDestroyRenderTarget(renderTarget);
-        }
-        xrOffscreenRenderTargets.clear();
-
-        for (auto &view : xrViews) {
-            for (auto it : view.imageViews) {
-                vkDestroyImageView(foeGfxVkGetDevice(gfxSession), it, nullptr);
-            }
-            if (view.swapchain != XR_NULL_HANDLE) {
-                xrDestroySwapchain(view.swapchain);
-            }
-        }
-
-        while (xrSession.state != XR_SESSION_STATE_EXITING) {
-            errC = foeXrProcessEvents(xrRuntime);
-            if (errC)
-                std::abort();
-        }
-
-        xrSession.destroySession();
-    }
+    stopXR(true);
 
     if (xrRuntime != FOE_NULL_HANDLE)
         errC = foeXrDestroyRuntime(xrRuntime);
@@ -935,6 +699,282 @@ void processUserInput(double timeElapsedInSeconds,
 
 } // namespace
 
+void Application::startXR(bool localPoll) {
+#ifdef FOE_XR_SUPPORT
+    std::error_code errC;
+
+    // Initialize XR if an HMD is available
+    if (xrRuntime != FOE_NULL_HANDLE) {
+        errC = createXrSession(xrRuntime, gfxSession, &xrSession);
+        if (errC) {
+            ERRC_END_ABORT
+        }
+
+        // OpenXR Session Begin
+
+        // Wait for the session to be ready
+        while (xrSession.state != XR_SESSION_STATE_READY) {
+            if (localPoll) {
+                errC = foeXrProcessEvents(xrRuntime);
+                if (errC)
+                    ERRC_END_ABORT
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        }
+
+        // Session Views
+        uint32_t viewConfigViewCount;
+        errC =
+            xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime), xrSession.systemId,
+                                              xrSession.type, 0, &viewConfigViewCount, nullptr);
+        if (errC) {
+            ERRC_END_ABORT
+        }
+
+        std::vector<XrViewConfigurationView> viewConfigs;
+        viewConfigs.resize(viewConfigViewCount);
+
+        errC = xrEnumerateViewConfigurationViews(
+            foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
+            &viewConfigViewCount, viewConfigs.data());
+        if (errC) {
+            ERRC_END_ABORT
+        }
+        xrViews.clear();
+        for (auto const &it : viewConfigs) {
+            xrViews.emplace_back(foeXrVkSessionView{.viewConfig = it});
+        }
+
+        // OpenXR Swapchains
+        std::vector<int64_t> swapchainFormats;
+        errC = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
+        if (errC) {
+            ERRC_END_ABORT
+        }
+        for (auto &it : xrViews) {
+            it.format = static_cast<VkFormat>(swapchainFormats[0]);
+        }
+
+        auto *renderPassPool = foeGfxVkGetRenderPassPool(gfxSession);
+        xrRenderPass = renderPassPool->renderPass({VkAttachmentDescription{
+            .format = static_cast<VkFormat>(swapchainFormats[0]),
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        }});
+
+        xrOffscreenRenderPass = renderPassPool->renderPass(
+            {VkAttachmentDescription{
+                 .format = static_cast<VkFormat>(swapchainFormats[0]),
+                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
+                 .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                 .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                 .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+             },
+             VkAttachmentDescription{
+                 .format = depthFormat,
+                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
+                 .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                 .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                 .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+             }});
+
+        for (auto &view : xrViews) {
+            // Offscreen Render Targets
+            std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
+                foeGfxVkRenderTargetSpec{
+                    .format = view.format,
+                    .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+                    .count = 3,
+                },
+                foeGfxVkRenderTargetSpec{
+                    .format = depthFormat,
+                    .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                    .count = 3,
+                },
+            };
+
+            foeGfxRenderTarget newRenderTarget{FOE_NULL_HANDLE};
+            errC =
+                foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor, offscreenSpecs.data(),
+                                           offscreenSpecs.size(), globalMSAA, &newRenderTarget);
+            if (errC) {
+                ERRC_END_ABORT
+            }
+
+            foeGfxUpdateRenderTargetExtent(newRenderTarget,
+                                           view.viewConfig.recommendedImageRectWidth,
+                                           view.viewConfig.recommendedImageRectHeight);
+
+            errC = foeGfxAcquireNextRenderTarget(newRenderTarget, FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
+
+            xrOffscreenRenderTargets.emplace_back(newRenderTarget);
+
+            // Swapchain
+            XrSwapchainCreateInfo swapchainCI{
+                .type = XR_TYPE_SWAPCHAIN_CREATE_INFO,
+                .createFlags = 0,
+                .usageFlags =
+                    XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT,
+                .format = view.format,
+                .sampleCount = 1,
+                .width = view.viewConfig.recommendedImageRectWidth,
+                .height = view.viewConfig.recommendedImageRectHeight,
+                .faceCount = 1,
+                .arraySize = 1,
+                .mipCount = 1,
+            };
+
+            errC = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
+            if (errC) {
+                ERRC_END_ABORT
+            }
+
+            // Images
+            errC = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
+            if (errC) {
+                ERRC_END_ABORT
+            }
+
+            // Image Views
+            VkImageViewCreateInfo viewCI{
+                .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+                .viewType = VK_IMAGE_VIEW_TYPE_2D,
+                .format = view.format,
+                .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G,
+                               VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A},
+                .subresourceRange =
+                    VkImageSubresourceRange{
+                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                        .baseMipLevel = 0,
+                        .levelCount = 1,
+                        .baseArrayLayer = 0,
+                        .layerCount = 1,
+                    },
+            };
+
+            // VkImageView
+            view.imageViews.clear();
+            for (auto it : view.images) {
+                viewCI.image = it.image;
+                VkImageView vkView{VK_NULL_HANDLE};
+                errC = vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
+                if (errC) {
+                    ERRC_END_ABORT
+                }
+
+                view.imageViews.emplace_back(vkView);
+            }
+
+            // VkFramebuffer
+            for (auto it : view.imageViews) {
+                VkFramebufferCreateInfo framebufferCI{
+                    .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+                    .renderPass = xrRenderPass,
+                    .attachmentCount = 1,
+                    .pAttachments = &it,
+                    .width = view.viewConfig.recommendedImageRectWidth,
+                    .height = view.viewConfig.recommendedImageRectHeight,
+                    .layers = 1,
+                };
+
+                VkFramebuffer newFramebuffer;
+                errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
+                                           &newFramebuffer);
+                if (errC) {
+                    ERRC_END_ABORT
+                }
+
+                view.framebuffers.emplace_back(newFramebuffer);
+            }
+        }
+
+        errC = xrVkCameraSystem.initialize(gfxSession);
+        if (errC) {
+            ERRC_END_ABORT
+        }
+
+        errC = xrSession.beginSession();
+        if (errC) {
+            ERRC_END_ABORT
+        }
+
+        FOE_LOG(General, Info, "Started new XR session {}", static_cast<void *>(xrSession.session));
+    }
+#endif // FOE_XR_SUPPORT
+}
+
+void Application::stopXR(bool localPoll) {
+#ifdef FOE_XR_SUPPORT
+    std::error_code errC;
+
+    // XR Cleanup
+    if (xrSession.session != XR_NULL_HANDLE) {
+        xrSession.requestExitSession();
+
+        while (xrSession.state != XR_SESSION_STATE_STOPPING) {
+            if (localPoll) {
+                errC = foeXrProcessEvents(xrRuntime);
+                if (errC)
+                    ERRC_END_ABORT
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        }
+
+        xrSession.endSession();
+
+        while (xrSession.state != XR_SESSION_STATE_IDLE) {
+            if (localPoll) {
+                errC = foeXrProcessEvents(xrRuntime);
+                if (errC)
+                    ERRC_END_ABORT
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        }
+
+        for (auto &renderTarget : xrOffscreenRenderTargets) {
+            if (renderTarget != FOE_NULL_HANDLE)
+                foeGfxDestroyRenderTarget(renderTarget);
+        }
+        xrOffscreenRenderTargets.clear();
+
+        for (auto &view : xrViews) {
+            for (auto it : view.imageViews) {
+                vkDestroyImageView(foeGfxVkGetDevice(gfxSession), it, nullptr);
+            }
+            if (view.swapchain != XR_NULL_HANDLE) {
+                xrDestroySwapchain(view.swapchain);
+            }
+        }
+
+        while (xrSession.state != XR_SESSION_STATE_EXITING) {
+            if (localPoll) {
+                errC = foeXrProcessEvents(xrRuntime);
+                if (errC)
+                    ERRC_END_ABORT
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        }
+
+        xrSession.destroySession();
+    }
+#endif // FOE_XR_SUPPORT
+}
+
 int Application::mainloop() {
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
@@ -959,6 +999,21 @@ int Application::mainloop() {
         simulationClock.update(programClock.currentTime<std::chrono::nanoseconds>());
         double timeElapsedInSec = simulationClock.elapsed().count() * 0.000000001f;
 
+#ifdef FOE_XR_SUPPORT
+        static auto nextFireTime =
+            programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(12);
+        if (programClock.currentTime<std::chrono::seconds>() > nextFireTime) {
+            nextFireTime =
+                programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(12);
+
+            if (xrSession.session == XR_NULL_HANDLE) {
+                foeScheduleAsyncTask(threadPool, [&]() { startXR(false); });
+            } else {
+                foeScheduleAsyncTask(threadPool, [&]() { stopXR(false); });
+            }
+        }
+#endif
+
         // Component Pool Maintenance
         for (auto &it : pSimulationSet->componentPools) {
             it->maintenance();
@@ -981,6 +1036,12 @@ int Application::mainloop() {
         for (auto &it : windowData)
             foeWsiWindowProcessing(it.window);
         foeWsiGlobalProcessing();
+
+#ifdef FOE_XR_SUPPORT
+        // Process XR Events
+        if (xrRuntime != FOE_NULL_HANDLE)
+            foeXrProcessEvents(xrRuntime);
+#endif
 
 #ifdef EDITOR_MODE
         // User input processing
@@ -1041,7 +1102,10 @@ int Application::mainloop() {
         if (frameIndex != UINT32_MAX) {
 #ifdef FOE_XR_SUPPORT
             // Lock rendering to OpenXR framerate, which overrides regular rendering
+            bool xrAcquiredFrame = false;
             if (xrSession.session != XR_NULL_HANDLE && xrSession.active) {
+                xrAcquiredFrame = true;
+
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
                 xrFrameState = XrFrameState{.type = XR_TYPE_FRAME_STATE};
                 errC = xrWaitFrame(xrSession.session, &frameWaitInfo, &xrFrameState);
@@ -1122,7 +1186,7 @@ int Application::mainloop() {
 
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
-            if (xrSession.session != XR_NULL_HANDLE && xrSession.active) {
+            if (xrAcquiredFrame) {
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
                 errC = xrBeginFrame(xrSession.session, &frameBeginInfo);
                 if (errC) {
