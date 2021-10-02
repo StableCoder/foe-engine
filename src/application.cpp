@@ -989,7 +989,9 @@ void Application::deinitialize() {
     // Deregister functionality
     deregisterBasicFunctionality();
 
+#ifdef EDITOR_MODE
     foeLogger::instance()->deregisterSink(&devConsole);
+#endif
 
     // Output configuration settings to a YAML configuration file
     // saveSettings(settings);

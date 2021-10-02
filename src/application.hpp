@@ -17,6 +17,7 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
+#include <foe/ecs/id.hpp>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -58,6 +59,8 @@
 #include "imgui/save.hpp"
 #include "imgui/termination.hpp"
 #endif
+
+struct foeSimulationState;
 
 struct Application {
     auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
