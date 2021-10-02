@@ -18,13 +18,14 @@
 #define FOE_XR_SESSION_HPP
 
 #include <foe/xr/export.h>
+#include <foe/xr/runtime.hpp>
 #include <openxr/openxr.h>
 
 #include <system_error>
 #include <vector>
 
 struct FOE_XR_EXPORT foeXrSession {
-    std::error_code createSession(XrInstance instance,
+    std::error_code createSession(foeXrRuntime runtime,
                                   XrSystemId systemId,
                                   XrViewConfigurationType configType,
                                   void const *pGraphicsBinding);
@@ -35,11 +36,12 @@ struct FOE_XR_EXPORT foeXrSession {
     std::error_code endSession();
 
     // From the runtime
-    XrInstance instance;
+    foeXrRuntime runtime;
 
     // For the session
     XrSystemId systemId;
     XrSession session;
+    XrSessionState state;
     XrViewConfigurationType type;
     XrSpace space;
 };

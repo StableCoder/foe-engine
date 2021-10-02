@@ -26,4 +26,6 @@ FOE_DEFINE_HANDLE(foeXrRuntime)
 
 FOE_XR_EXPORT auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code;
 
+FOE_XR_EXPORT auto foeXrProcessEvents(foeXrRuntime runtime) -> std::error_code;
+
 #endif // FOE_XR_RUNTIME_HPP

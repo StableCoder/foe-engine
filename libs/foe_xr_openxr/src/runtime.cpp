@@ -18,6 +18,7 @@
 
 #include <foe/xr/core.hpp>
 #include <foe/xr/error_code.hpp>
+#include <foe/xr/session.hpp>
 
 #include "debug_utils.hpp"
 #include "log.hpp"
@@ -62,13 +63,44 @@ CREATE_FAILED:
     return xrRes;
 }
 
-std::error_code foeXrOpenPollEvent(foeXrRuntime runtime, XrEventDataBuffer &event) {
-    event = {
+std::error_code foeXrProcessEvents(foeXrRuntime runtime) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
+    XrEventDataBuffer event = {
         .type = XR_TYPE_EVENT_DATA_BUFFER,
     };
 
-    auto *pRuntime = runtime_from_handle(runtime);
-    return xrPollEvent(pRuntime->instance, &event);
+    std::error_code errC = xrPollEvent(pRuntime->instance, &event);
+
+    if (errC == XR_EVENT_UNAVAILABLE) {
+        // No event
+        return XR_SUCCESS;
+    } else if (errC) {
+        // Some other error occurred
+        return errC;
+    } else {
+        // Actual event retrieved
+        switch (event.type) {
+        case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+            XrEventDataSessionStateChanged const *stateChanged =
+                reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
+
+            for (auto it : pRuntime->sessions) {
+                if (it->session == stateChanged->session) {
+                    it->state = stateChanged->state;
+                    break;
+                }
+            }
+            break;
+        }
+
+        default:
+            FOE_LOG(foeXrOpen, Warning, "Unprocessed XR event!!!");
+            break;
+        }
+    }
+
+    return XR_SUCCESS;
 }
 
 XrInstance foeXrOpenGetInstance(foeXrRuntime runtime) {
@@ -89,4 +121,19 @@ auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code {
     delete pRuntime;
 
     return errC;
+}
+
+void foeXrOpenAddSessionToRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession) {
+    std::scoped_lock lock{pRuntime->sync};
+    pRuntime->sessions.emplace_back(pSession);
+}
+
+void foeXrOpenRemoveSessionFromRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession) {
+    std::scoped_lock lock{pRuntime->sync};
+    for (auto it = pRuntime->sessions.begin(); it != pRuntime->sessions.end(); ++it) {
+        if (*it == pSession) {
+            pRuntime->sessions.erase(it);
+            break;
+        }
+    }
 }

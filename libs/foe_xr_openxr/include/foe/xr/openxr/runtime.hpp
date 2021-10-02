@@ -32,8 +32,6 @@ FOE_XR_EXPORT std::error_code foeXrOpenCreateRuntime(char const *appName,
                                                      bool debugLogging,
                                                      foeXrRuntime *pRuntime);
 
-FOE_XR_EXPORT std::error_code foeXrOpenPollEvent(foeXrRuntime runtime, XrEventDataBuffer &event);
-
 #include <openxr/openxr.h>
 
 FOE_XR_EXPORT XrInstance foeXrOpenGetInstance(foeXrRuntime runtime);

@@ -20,11 +20,24 @@
 #include <foe/xr/runtime.hpp>
 #include <openxr/openxr.h>
 
+#include <mutex>
+#include <vector>
+
+struct foeXrSession;
+
 struct foeXrOpenRuntime {
+    std::mutex sync;
+
     XrInstance instance{XR_NULL_HANDLE};
     XrDebugUtilsMessengerEXT debugMessenger{XR_NULL_HANDLE};
+
+    std::vector<foeXrSession *> sessions;
 };
 
 FOE_DEFINE_HANDLE_CASTS(runtime, foeXrOpenRuntime, foeXrRuntime)
+
+void foeXrOpenAddSessionToRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession);
+
+void foeXrOpenRemoveSessionFromRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession);
 
 #endif // RUNTIME_HPP

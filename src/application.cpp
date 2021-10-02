@@ -697,30 +697,11 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
         // OpenXR Session Begin
 
-        { // Wait for the session state to be ready
-            XrEventDataBuffer event;
-            errC = foeXrOpenPollEvent(xrRuntime, event);
-            if (errC == XR_EVENT_UNAVAILABLE) {
-                // No events currently
-            } else if (errC) {
-                // Error
+        // Wait for the session to be ready
+        while (xrSession.state != XR_SESSION_STATE_READY) {
+            errC = foeXrProcessEvents(xrRuntime);
+            if (errC)
                 ERRC_END_PROGRAM_TUPLE
-            } else {
-                // Got an event, process it
-                switch (event.type) {
-                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
-                    XrEventDataSessionStateChanged const *stateChanged =
-                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
-                    if (stateChanged->state == XR_SESSION_STATE_READY &&
-                        stateChanged->session == xrSession.session) {
-                        goto SESSION_READY;
-                    }
-                } break;
-
-                default:
-                    break;
-                }
-            }
         }
 
         vkRes = xrVkCameraSystem.initialize(gfxSession);
@@ -728,7 +709,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             VK_END_PROGRAM_TUPLE
         }
 
-    SESSION_READY:
         errC = xrSession.beginSession();
         if (errC) {
             ERRC_END_PROGRAM_TUPLE
@@ -825,58 +805,20 @@ void Application::deinitialize() {
     // XR Cleanup
     if (xrSession.session != XR_NULL_HANDLE) {
         xrSession.requestExitSession();
-        while (true) {
-            XrEventDataBuffer event;
-            auto errC = foeXrOpenPollEvent(xrRuntime, event);
-            if (errC == XR_EVENT_UNAVAILABLE) {
-                // No events currently
-            } else if (errC) {
-                // Error
-            } else {
-                // Got an event, process it
-                switch (event.type) {
-                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
-                    XrEventDataSessionStateChanged const *stateChanged =
-                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
-                    if (stateChanged->state == XR_SESSION_STATE_STOPPING &&
-                        stateChanged->session == xrSession.session) {
-                        goto SESSION_END;
-                    }
-                } break;
 
-                default:
-                    break;
-                }
-            }
+        while (xrSession.state != XR_SESSION_STATE_STOPPING) {
+            errC = foeXrProcessEvents(xrRuntime);
+            if (errC)
+                std::abort();
         }
-    SESSION_END:
+
         xrSession.endSession();
 
-        while (true) {
-            XrEventDataBuffer event;
-            auto errC = foeXrOpenPollEvent(xrRuntime, event);
-            if (errC == XR_EVENT_UNAVAILABLE) {
-                // No events currently
-            } else if (errC) {
-                // Error
-            } else {
-                // Got an event, process it
-                switch (event.type) {
-                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
-                    XrEventDataSessionStateChanged const *stateChanged =
-                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
-                    if (stateChanged->state == XR_SESSION_STATE_IDLE &&
-                        stateChanged->session == xrSession.session) {
-                        goto SESSION_IDLE;
-                    }
-                } break;
-
-                default:
-                    break;
-                }
-            }
+        while (xrSession.state != XR_SESSION_STATE_IDLE) {
+            errC = foeXrProcessEvents(xrRuntime);
+            if (errC)
+                std::abort();
         }
-    SESSION_IDLE:
 
         for (auto &renderTarget : xrOffscreenRenderTargets) {
             if (renderTarget != FOE_NULL_HANDLE)
@@ -893,31 +835,11 @@ void Application::deinitialize() {
             }
         }
 
-        while (true) {
-            XrEventDataBuffer event;
-            auto errC = foeXrOpenPollEvent(xrRuntime, event);
-            if (errC == XR_EVENT_UNAVAILABLE) {
-                // No events currently
-            } else if (errC) {
-                // Error
-            } else {
-                // Got an event, process it
-                switch (event.type) {
-                case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
-                    XrEventDataSessionStateChanged const *stateChanged =
-                        reinterpret_cast<XrEventDataSessionStateChanged *>(&event);
-                    if (stateChanged->state == XR_SESSION_STATE_EXITING &&
-                        stateChanged->session == xrSession.session) {
-                        goto SESSION_EXITING;
-                    }
-                } break;
-
-                default:
-                    break;
-                }
-            }
+        while (xrSession.state != XR_SESSION_STATE_EXITING) {
+            errC = foeXrProcessEvents(xrRuntime);
+            if (errC)
+                std::abort();
         }
-    SESSION_EXITING:
 
         xrSession.destroySession();
     }

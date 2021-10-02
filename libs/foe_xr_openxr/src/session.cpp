@@ -19,20 +19,29 @@
 #include <foe/xr/core.hpp>
 #include <foe/xr/error_code.hpp>
 
-std::error_code foeXrSession::createSession(XrInstance instance,
+#include "runtime.hpp"
+
+std::error_code foeXrSession::createSession(foeXrRuntime runtime,
                                             XrSystemId systemId,
                                             XrViewConfigurationType configType,
                                             void const *pGraphicsBinding) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
     XrSessionCreateInfo sessionCI{
         .type = XR_TYPE_SESSION_CREATE_INFO,
         .next = pGraphicsBinding,
         .systemId = systemId,
     };
-    XrResult xrRes = xrCreateSession(instance, &sessionCI, &session);
+    XrResult xrRes = xrCreateSession(pRuntime->instance, &sessionCI, &session);
     if (xrRes != XR_SUCCESS) {
         return xrRes;
+    } else {
+        // Add the new session to the runtime
+        foeXrOpenAddSessionToRuntime(pRuntime, this);
     }
 
+    this->runtime = runtime;
+    state = XR_SESSION_STATE_IDLE;
     type = configType;
     this->systemId = systemId;
 
@@ -69,6 +78,9 @@ void foeXrSession::destroySession() {
 
     if (session != XR_NULL_HANDLE) {
         xrDestroySession(session);
+
+        // Remove the session from the runtime
+        foeXrOpenAddSessionToRuntime(runtime_from_handle(runtime), this);
     }
     session = XR_NULL_HANDLE;
 }

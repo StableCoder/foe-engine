@@ -97,6 +97,5 @@ std::error_code createXrSession(foeXrRuntime runtime,
         .queueFamilyIndex = 0,
         .queueIndex = 0,
     };
-    return pSession->createSession(foeXrOpenGetInstance(runtime), xrSystemId, xrViewConfigTypes[0],
-                                   &gfxBinding);
+    return pSession->createSession(runtime, xrSystemId, xrViewConfigTypes[0], &gfxBinding);
 }
