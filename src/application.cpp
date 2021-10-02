@@ -98,38 +98,6 @@
         return errC.value();                                                                       \
     }
 
-#define XR_END_PROGRAM_TUPLE                                                                       \
-    {                                                                                              \
-        std::error_code errC = xrRes;                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{} with OpenXR error {}", __FILE__, __LINE__,  \
-                errC.message());                                                                   \
-        return std::make_tuple(false, errC.value());                                               \
-    }
-
-#define XR_END_PROGRAM                                                                             \
-    {                                                                                              \
-        std::error_code errC = xrRes;                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{} with OpenXR error {}", __FILE__, __LINE__,  \
-                errC.message());                                                                   \
-        return errC.value();                                                                       \
-    }
-
-#define VK_END_PROGRAM_TUPLE                                                                       \
-    {                                                                                              \
-        std::error_code errC = vkRes;                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{} with Vulkan error {}", __FILE__, __LINE__,  \
-                errC.message());                                                                   \
-        return std::make_tuple(false, errC.value());                                               \
-    }
-
-#define VK_END_PROGRAM                                                                             \
-    {                                                                                              \
-        std::error_code errC = vkRes;                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{} with Vulkan error {}", __FILE__, __LINE__,  \
-                errC.message());                                                                   \
-        return errC.value();                                                                       \
-    }
-
 #define END_PROGRAM_TUPLE                                                                          \
     {                                                                                              \
         FOE_LOG(General, Fatal, "End called from {}:{}", __FILE__, __LINE__);                      \
@@ -375,7 +343,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         END_PROGRAM_TUPLE
 #endif
 
-    VkResult vkRes{VK_SUCCESS};
     {
         for (auto &it : windowData) {
             errC = foeWsiCreateWindow(settings.window.width, settings.window.height, "FoE Engine",
@@ -458,9 +425,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     // Create per-frame data
     for (auto &it : frameData) {
-        vkRes = it.create(foeGfxVkGetDevice(gfxSession));
-        if (vkRes != VK_SUCCESS) {
-            VK_END_PROGRAM_TUPLE
+        errC = it.create(foeGfxVkGetDevice(gfxSession));
+        if (errC) {
+            ERRC_END_PROGRAM_TUPLE
         }
     }
 
@@ -510,8 +477,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef FOE_XR_SUPPORT
     // Initialize XR if an HMD is available
     if (xrRuntime != FOE_NULL_HANDLE) {
-        XrResult xrRes{XR_SUCCESS};
-
         errC = createXrSession(xrRuntime, gfxSession, &xrSession);
         if (errC) {
             ERRC_END_PROGRAM_TUPLE
@@ -519,21 +484,21 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
         // Session Views
         uint32_t viewConfigViewCount;
-        xrRes =
+        errC =
             xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime), xrSession.systemId,
                                               xrSession.type, 0, &viewConfigViewCount, nullptr);
-        if (xrRes != XR_SUCCESS) {
-            XR_END_PROGRAM_TUPLE
+        if (errC) {
+            ERRC_END_PROGRAM_TUPLE
         }
 
         std::vector<XrViewConfigurationView> viewConfigs;
         viewConfigs.resize(viewConfigViewCount);
 
-        xrRes = xrEnumerateViewConfigurationViews(
+        errC = xrEnumerateViewConfigurationViews(
             foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
             &viewConfigViewCount, viewConfigs.data());
-        if (xrRes != XR_SUCCESS) {
-            XR_END_PROGRAM_TUPLE
+        if (errC) {
+            ERRC_END_PROGRAM_TUPLE
         }
         xrViews.clear();
         for (auto const &it : viewConfigs) {
@@ -542,9 +507,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
         // OpenXR Swapchains
         std::vector<int64_t> swapchainFormats;
-        xrRes = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
-        if (xrRes != XR_SUCCESS) {
-            XR_END_PROGRAM_TUPLE
+        errC = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
+        if (errC) {
+            ERRC_END_PROGRAM_TUPLE
         }
         for (auto &it : xrViews) {
             it.format = static_cast<VkFormat>(swapchainFormats[0]);
@@ -630,15 +595,15 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                 .mipCount = 1,
             };
 
-            xrRes = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
-            if (xrRes != XR_SUCCESS) {
-                XR_END_PROGRAM_TUPLE
+            errC = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
+            if (errC) {
+                ERRC_END_PROGRAM_TUPLE
             }
 
             // Images
-            xrRes = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
-            if (xrRes != XR_SUCCESS) {
-                XR_END_PROGRAM_TUPLE
+            errC = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
+            if (errC) {
+                ERRC_END_PROGRAM_TUPLE
             }
 
             // Image Views
@@ -663,10 +628,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             for (auto it : view.images) {
                 viewCI.image = it.image;
                 VkImageView vkView{VK_NULL_HANDLE};
-                VkResult vkRes =
-                    vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
-                if (vkRes != VK_SUCCESS) {
-                    VK_END_PROGRAM_TUPLE
+                errC = vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
+                if (errC) {
+                    ERRC_END_PROGRAM_TUPLE
                 }
 
                 view.imageViews.emplace_back(vkView);
@@ -685,10 +649,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                 };
 
                 VkFramebuffer newFramebuffer;
-                VkResult vkRes = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI,
-                                                     nullptr, &newFramebuffer);
-                if (vkRes != VK_SUCCESS) {
-                    VK_END_PROGRAM_TUPLE
+                errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
+                                           &newFramebuffer);
+                if (errC) {
+                    ERRC_END_PROGRAM_TUPLE
                 }
 
                 view.framebuffers.emplace_back(newFramebuffer);
@@ -704,9 +668,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                 ERRC_END_PROGRAM_TUPLE
         }
 
-        vkRes = xrVkCameraSystem.initialize(gfxSession);
-        if (vkRes) {
-            VK_END_PROGRAM_TUPLE
+        errC = xrVkCameraSystem.initialize(gfxSession);
+        if (errC) {
+            ERRC_END_PROGRAM_TUPLE
         }
 
         errC = xrSession.beginSession();
@@ -975,7 +939,6 @@ int Application::mainloop() {
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
 
-    VkResult vkRes{VK_SUCCESS};
     std::error_code errC;
 
     uint32_t lastFrameIndex = UINT32_MAX;
@@ -1079,13 +1042,11 @@ int Application::mainloop() {
 #ifdef FOE_XR_SUPPORT
             // Lock rendering to OpenXR framerate, which overrides regular rendering
             if (xrSession.session != XR_NULL_HANDLE && xrSession.active) {
-                XrResult xrRes{XR_SUCCESS};
-
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
                 xrFrameState = XrFrameState{.type = XR_TYPE_FRAME_STATE};
-                xrRes = xrWaitFrame(xrSession.session, &frameWaitInfo, &xrFrameState);
-                if (xrRes != XR_SUCCESS) {
-                    XR_END_PROGRAM
+                errC = xrWaitFrame(xrSession.session, &frameWaitInfo, &xrFrameState);
+                if (errC) {
+                    ERRC_END_PROGRAM
                 }
             } else
 #endif
@@ -1122,19 +1083,19 @@ int Application::mainloop() {
             windowRenderList.reserve(windowData.size());
 
             for (auto &it : windowData) {
-                vkRes = it.swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession));
-                if (vkRes == VK_TIMEOUT || vkRes == VK_NOT_READY) {
+                errC = it.swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession));
+                if (errC == VK_TIMEOUT || errC == VK_NOT_READY) {
                     // Waiting for an image to become ready
-                } else if (vkRes == VK_ERROR_OUT_OF_DATE_KHR) {
+                } else if (errC == VK_ERROR_OUT_OF_DATE_KHR) {
                     // Surface changed, need to rebuild swapchains
                     it.swapchain.needRebuild();
-                } else if (vkRes == VK_SUBOPTIMAL_KHR) {
+                } else if (errC == VK_SUBOPTIMAL_KHR) {
                     // Surface is still usable, but should rebuild next time
                     it.swapchain.needRebuild();
                     windowRenderList.emplace_back(&it);
-                } else if (vkRes != VK_SUCCESS) {
+                } else if (errC) {
                     // Catastrophic error
-                    VK_END_PROGRAM
+                    ERRC_END_PROGRAM
                 } else {
                     // No issues, add it to be rendered
                     windowRenderList.emplace_back(&it);
@@ -1162,12 +1123,10 @@ int Application::mainloop() {
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
             if (xrSession.session != XR_NULL_HANDLE && xrSession.active) {
-                XrResult xrRes{XR_SUCCESS};
-
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
-                xrRes = xrBeginFrame(xrSession.session, &frameBeginInfo);
-                if (xrRes != XR_SUCCESS) {
-                    XR_END_PROGRAM
+                errC = xrBeginFrame(xrSession.session, &frameBeginInfo);
+                if (errC) {
+                    ERRC_END_PROGRAM
                 }
 
                 std::vector<XrCompositionLayerBaseHeader *> layers;
@@ -1185,10 +1144,10 @@ int Application::mainloop() {
                     XrViewState viewState{.type = XR_TYPE_VIEW_STATE};
                     std::vector<XrView> views{xrViews.size(), XrView{.type = XR_TYPE_VIEW}};
                     uint32_t viewCountOutput;
-                    xrRes = xrLocateViews(xrSession.session, &viewLocateInfo, &viewState,
-                                          views.size(), &viewCountOutput, views.data());
-                    if (xrRes != XR_SUCCESS) {
-                        XR_END_PROGRAM
+                    errC = xrLocateViews(xrSession.session, &viewLocateInfo, &viewState,
+                                         views.size(), &viewCountOutput, views.data());
+                    if (errC) {
+                        ERRC_END_PROGRAM
                     }
 
                     for (size_t i = 0; i < views.size(); ++i) {
@@ -1225,18 +1184,18 @@ int Application::mainloop() {
                             .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
 
                         uint32_t newIndex;
-                        xrRes = xrAcquireSwapchainImage(it.swapchain, &acquireInfo, &newIndex);
-                        if (xrRes != XR_SUCCESS) {
-                            XR_END_PROGRAM
+                        errC = xrAcquireSwapchainImage(it.swapchain, &acquireInfo, &newIndex);
+                        if (errC) {
+                            ERRC_END_PROGRAM
                         }
 
                         XrSwapchainImageWaitInfo waitInfo{
                             .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
                             .timeout = 1,
                         };
-                        xrRes = xrWaitSwapchainImage(it.swapchain, &waitInfo);
-                        if (xrRes != XR_SUCCESS) {
-                            XR_END_PROGRAM
+                        errC = xrWaitSwapchainImage(it.swapchain, &waitInfo);
+                        if (errC) {
+                            ERRC_END_PROGRAM
                         }
 
                         projectionViews[i].subImage = XrSwapchainSubImage{
@@ -1263,9 +1222,9 @@ int Application::mainloop() {
                                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
                             };
 
-                            vkRes = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
-                            if (vkRes != VK_SUCCESS)
-                                VK_END_PROGRAM
+                            errC = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+                            if (errC)
+                                ERRC_END_PROGRAM
 
                             VkExtent2D swapchainExtent{
                                 .width = it.viewConfig.recommendedImageRectWidth,
@@ -1442,10 +1401,10 @@ int Application::mainloop() {
                                                      nullptr, 0, nullptr, 1, &imgMemBarrier);
                             }
 
-                            vkRes = vkEndCommandBuffer(commandBuffer);
-                            if (vkRes != VK_SUCCESS) {
+                            errC = vkEndCommandBuffer(commandBuffer);
+                            if (errC) {
                                 FOE_LOG(General, Fatal, "Error with drawing: {}",
-                                        std::error_code{vkRes}.message());
+                                        std::error_code{errC}.message());
                             }
 
                             // Submission
@@ -1456,18 +1415,18 @@ int Application::mainloop() {
                             };
 
                             auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-                            vkRes = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+                            errC = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
                             foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-                            if (vkRes != VK_SUCCESS)
-                                VK_END_PROGRAM
+                            if (errC)
+                                ERRC_END_PROGRAM
                         }
 
                         // Vulkan Rendering END
                         XrSwapchainImageReleaseInfo releaseInfo{
                             .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
                         xrReleaseSwapchainImage(it.swapchain, &releaseInfo);
-                        if (xrRes != XR_SUCCESS) {
-                            XR_END_PROGRAM
+                        if (errC) {
+                            ERRC_END_PROGRAM
                         }
                     }
 
@@ -1490,9 +1449,9 @@ int Application::mainloop() {
                     .layerCount = static_cast<uint32_t>(layers.size()),
                     .layers = layers.data(),
                 };
-                xrRes = xrEndFrame(xrSession.session, &endFrameInfo);
-                if (xrRes != XR_SUCCESS) {
-                    XR_END_PROGRAM
+                errC = xrEndFrame(xrSession.session, &endFrameInfo);
+                if (errC) {
+                    ERRC_END_PROGRAM
                 }
             }
 #endif
@@ -1505,9 +1464,9 @@ int Application::mainloop() {
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
             };
 
-            vkRes = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
-            if (vkRes != VK_SUCCESS) {
-                VK_END_PROGRAM
+            errC = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+            if (errC) {
+                ERRC_END_PROGRAM
             }
 
             for (auto &it : windowRenderList) {
@@ -1762,10 +1721,10 @@ int Application::mainloop() {
                                 view = it->swapchain.imageView(i);
 
                                 VkFramebuffer framebuffer;
-                                vkRes = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession),
-                                                            &framebufferCI, nullptr, &framebuffer);
-                                if (vkRes != VK_SUCCESS)
-                                    VK_END_PROGRAM
+                                errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession),
+                                                           &framebufferCI, nullptr, &framebuffer);
+                                if (errC)
+                                    ERRC_END_PROGRAM
                                 swapImageFramebuffers.emplace_back(framebuffer);
                             }
 
@@ -1824,10 +1783,10 @@ int Application::mainloop() {
 
             // Submit render buffer
             {
-                vkRes = vkEndCommandBuffer(commandBuffer);
-                if (vkRes != VK_SUCCESS) {
+                errC = vkEndCommandBuffer(commandBuffer);
+                if (errC) {
                     FOE_LOG(General, Fatal, "Error with drawing: {}",
-                            std::error_code{vkRes}.message());
+                            std::error_code{errC}.message());
                 }
 
                 // Submission
@@ -1851,10 +1810,10 @@ int Application::mainloop() {
                 };
 
                 auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-                vkRes = vkQueueSubmit(queue, 1, &submitInfo, frameData[frameIndex].frameComplete);
+                errC = vkQueueSubmit(queue, 1, &submitInfo, frameData[frameIndex].frameComplete);
                 foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-                if (vkRes != VK_SUCCESS) {
-                    VK_END_PROGRAM
+                if (errC) {
+                    ERRC_END_PROGRAM
                 }
             }
 
@@ -1885,20 +1844,21 @@ int Application::mainloop() {
                 };
 
                 auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-                vkRes = vkQueuePresentKHR(queue, &presentInfo);
+                errC = vkQueuePresentKHR(queue, &presentInfo);
                 foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-                if (vkRes == VK_ERROR_OUT_OF_DATE_KHR || vkRes == VK_SUBOPTIMAL_KHR) {
+                if (errC == VK_ERROR_OUT_OF_DATE_KHR || errC == VK_SUBOPTIMAL_KHR) {
                     // The associated window has been resized, will be fixed for the next frame
-                    vkRes = VK_SUCCESS;
-                } else if (vkRes != VK_SUCCESS) {
-                    VK_END_PROGRAM
+                    errC = VK_SUCCESS;
+                } else if (errC) {
+                    ERRC_END_PROGRAM
                 }
                 for (auto &it : swapchainResults) {
                     if (it == VK_ERROR_OUT_OF_DATE_KHR || it == VK_SUBOPTIMAL_KHR) {
-                        // The associated window has been resized, will be fixed for the next frame
+                        // The associated window has been resized, will be fixed next frame
                         it = VK_SUCCESS;
                     } else if (it != VK_SUCCESS) {
-                        VK_END_PROGRAM
+                        errC = it;
+                        ERRC_END_PROGRAM
                     }
                 }
             }
