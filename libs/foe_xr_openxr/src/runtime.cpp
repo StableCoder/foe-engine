@@ -87,6 +87,13 @@ std::error_code foeXrProcessEvents(foeXrRuntime runtime) {
 
             for (auto it : pRuntime->sessions) {
                 if (it->session == stateChanged->session) {
+                    if (stateChanged->state == XR_SESSION_STATE_STOPPING ||
+                        stateChanged->state == XR_SESSION_STATE_LOSS_PENDING) {
+                        // If the state has been lost or stopping, the session is no longer 'active'
+                        // and should not call the wait/begin/end frame functions
+                        it->active = false;
+                    }
+
                     it->state = stateChanged->state;
                     break;
                 }

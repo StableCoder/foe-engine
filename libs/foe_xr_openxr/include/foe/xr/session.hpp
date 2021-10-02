@@ -42,6 +42,8 @@ struct FOE_XR_EXPORT foeXrSession {
     XrSystemId systemId;
     XrSession session;
     XrSessionState state;
+    /// This bool determines if we should be doing the wait/begin/end frame calls
+    bool active{false};
     XrViewConfigurationType type;
     XrSpace space;
 };

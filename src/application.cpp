@@ -1078,7 +1078,7 @@ int Application::mainloop() {
         if (frameIndex != UINT32_MAX) {
 #ifdef FOE_XR_SUPPORT
             // Lock rendering to OpenXR framerate, which overrides regular rendering
-            if (xrSession.session != XR_NULL_HANDLE) {
+            if (xrSession.session != XR_NULL_HANDLE && xrSession.active) {
                 XrResult xrRes{XR_SUCCESS};
 
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
@@ -1161,7 +1161,7 @@ int Application::mainloop() {
 
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
-            if (xrSession.session != XR_NULL_HANDLE) {
+            if (xrSession.session != XR_NULL_HANDLE && xrSession.active) {
                 XrResult xrRes{XR_SUCCESS};
 
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};

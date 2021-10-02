@@ -42,6 +42,7 @@ std::error_code foeXrSession::createSession(foeXrRuntime runtime,
 
     this->runtime = runtime;
     state = XR_SESSION_STATE_IDLE;
+    active = false;
     type = configType;
     this->systemId = systemId;
 
@@ -90,7 +91,15 @@ std::error_code foeXrSession::beginSession() {
         .type = XR_TYPE_SESSION_BEGIN_INFO,
         .primaryViewConfigurationType = type,
     };
-    return xrBeginSession(session, &sessionBI);
+    auto errC = xrBeginSession(session, &sessionBI);
+
+    if (!errC) {
+        // We've got everything readied and are beginning the active state, so to sycnhronize it
+        // will start calling upon the wait/begin/end frame functions
+        active = true;
+    }
+
+    return errC;
 }
 
 std::error_code foeXrSession::requestExitSession() { return xrRequestExitSession(session); }
