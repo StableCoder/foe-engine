@@ -18,6 +18,13 @@ else()
 endif()
 
 # Definition
+generate_export_header(
+  foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/xr/export.h)
+
+target_include_directories(foe_xr_openxr
+                           PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public)
+
 add_subdirectory(src)
 
 target_include_directories(foe_xr_openxr PUBLIC include)
@@ -30,22 +37,4 @@ if(MSVC)
   target_compile_options(foe_xr_openxr PRIVATE /EHsc)
 else()
   target_compile_options(foe_xr_openxr PRIVATE -fno-exceptions)
-endif()
-
-if(NOT XR_LOADER AND XR_LIBRARY STREQUAL "openxr")
-  # Export the XR_EXPORT header from this library
-  generate_export_header(
-    foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
-    ${CMAKE_CURRENT_BINARY_DIR}/public/foe/xr/export.h)
-
-  target_include_directories(foe_xr_openxr
-                             PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public)
-else()
-  # Don't export the XR_EXPORT header from this library, use local use only
-  generate_export_header(
-    foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
-    ${CMAKE_CURRENT_BINARY_DIR}/private/foe/xr/export.h)
-
-  target_include_directories(foe_xr_openxr
-                             PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/private)
 endif()

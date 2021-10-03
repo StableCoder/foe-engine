@@ -17,6 +17,7 @@
 #ifndef FOE_XR_OPENXR_RUNTIME_HPP
 #define FOE_XR_OPENXR_RUNTIME_HPP
 
+#include <foe/xr/export.h>
 #include <foe/xr/runtime.hpp>
 #include <openxr/openxr.h>
 
@@ -31,6 +32,10 @@ FOE_XR_EXPORT std::error_code foeXrOpenCreateRuntime(char const *appName,
                                                      bool validation,
                                                      bool debugLogging,
                                                      foeXrRuntime *pRuntime);
+
+FOE_XR_EXPORT auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code;
+
+FOE_XR_EXPORT auto foeXrProcessEvents(foeXrRuntime runtime) -> std::error_code;
 
 #include <openxr/openxr.h>
 

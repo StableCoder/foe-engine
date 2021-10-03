@@ -25,22 +25,6 @@ set(WSI_LIBRARY
       STRING
       "WSI library linked/loaded by default (passed via compile definitions)")
 
-# XR Loader/Implementation Settings
-if(APPLE)
-  option(XR_SUPPORT "Build with XR support" OFF)
-else()
-  option(XR_SUPPORT "Build with XR support" ON)
-endif()
-
-option(XR_LOADER
-       "Compile/link the XR loader library (implementations are shared objects)"
-       OFF)
-set(XR_LIBRARY
-    "openxr"
-    CACHE STRING
-          "XR library linked/loaded by default (passed via compile definitions)"
-)
-
 # C11 standard, no extensions
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -199,10 +183,10 @@ else()
   target_link_libraries(foe_engine_lib PUBLIC foe_wsi_${WSI_LIBRARY})
 endif()
 
-if(NOT XR_SUPPORT OR XR_LOADER)
-  target_link_libraries(foe_engine_lib PUBLIC foe_xr_loader)
-else()
+if(XR_SUPPORT)
   target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
+else()
+  target_link_libraries(foe_engine_lib PUBLIC foe_xr)
 endif()
 
 # Engine ImGUI Definition

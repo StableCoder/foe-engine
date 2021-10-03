@@ -12,6 +12,3 @@ endif()
 target_include_directories(foe_xr INTERFACE include)
 
 target_link_libraries(foe_xr INTERFACE foe)
-
-# Auxiliary
-add_subdirectory(libs)

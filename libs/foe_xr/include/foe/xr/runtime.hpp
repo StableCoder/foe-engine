@@ -14,18 +14,20 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_RUNTIME_HPP
-#define FOE_XR_RUNTIME_HPP
+#ifndef FOE_XR_RUNTIME_H
+#define FOE_XR_RUNTIME_H
 
 #include <foe/handle.h>
-#include <foe/xr/export.h>
 
-#include <system_error>
-
+/** Handle definition for foeXrRuntime
+ *
+ * Not all platforms support XR, espeically the Apple ecosystem. However, we still need the XR
+ * runtime type to pass through to some other systems, notably Graphics.
+ *
+ * As such, this handle type can be used for passing around and compiling on non-XR supported
+ * systems, without having to have two separate ABIs for other libraries, but to limit dummy stubs
+ * or fancy export work, no functions are actually exported by this library.
+ */
 FOE_DEFINE_HANDLE(foeXrRuntime)
 
-FOE_XR_EXPORT auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code;
-
-FOE_XR_EXPORT auto foeXrProcessEvents(foeXrRuntime runtime) -> std::error_code;
-
-#endif // FOE_XR_RUNTIME_HPP
+#endif // FOE_XR_RUNTIME_H
