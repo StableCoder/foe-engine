@@ -57,6 +57,7 @@ std::vector<XrSystemId> getAllSystemIds(XrInstance instance) {
 
     // SystemId - XR_FORM_FACTOR_HANDHELD_DISPLAY
     xrSystemGetInfo.formFactor = XR_FORM_FACTOR_HANDHELD_DISPLAY;
+    xrRes = xrGetSystem(instance, &xrSystemGetInfo, &systemId);
     if (xrRes == XR_SUCCESS)
         systemIds.emplace_back(systemId);
 
