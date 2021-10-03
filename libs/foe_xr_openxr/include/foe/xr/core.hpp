@@ -29,12 +29,6 @@ foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties);
 FOE_XR_EXPORT XrResult foeXrEnumerateInstanceExtensionProperties(
     char const *pApiLayerName, std::vector<XrExtensionProperties> &properties);
 
-FOE_XR_EXPORT XrResult foeXrCreateInstance(char const *appName,
-                                           uint32_t appVersion,
-                                           std::vector<std::string> apiLayers,
-                                           std::vector<std::string> extensions,
-                                           XrInstance *pInstance);
-
 FOE_XR_EXPORT XrResult foeXrEnumerateReferenceSpaces(XrSession xrSession,
                                                      std::vector<XrReferenceSpaceType> &spaces);
 

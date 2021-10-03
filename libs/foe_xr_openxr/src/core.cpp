@@ -53,41 +53,6 @@ XrResult foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
         pApiLayerName, static_cast<uint32_t>(properties.size()), &propertyCount, properties.data());
 }
 
-XrResult foeXrCreateInstance(char const *appName,
-                             uint32_t appVersion,
-                             std::vector<std::string> apiLayers,
-                             std::vector<std::string> extensions,
-                             XrInstance *pInstance) {
-    XrApplicationInfo appInfo{
-        .applicationVersion = appVersion,
-        .engineVersion = FOE_ENGINE_VERSION,
-        .apiVersion = XR_MAKE_VERSION(1, 0, 12),
-    };
-    strncpy(appInfo.applicationName, appName, XR_MAX_APPLICATION_NAME_SIZE);
-    strncpy(appInfo.engineName, FOE_ENGINE_NAME, XR_MAX_ENGINE_NAME_SIZE);
-
-    std::vector<char const *> finalLayers;
-    std::vector<char const *> finalExtensions;
-
-    for (auto &it : apiLayers) {
-        finalLayers.emplace_back(it.data());
-    }
-    for (auto &it : extensions) {
-        finalExtensions.emplace_back(it.data());
-    }
-
-    XrInstanceCreateInfo instanceCI = {
-        .type = XR_TYPE_INSTANCE_CREATE_INFO,
-        .applicationInfo = appInfo,
-        .enabledApiLayerCount = static_cast<uint32_t>(apiLayers.size()),
-        .enabledApiLayerNames = finalLayers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
-        .enabledExtensionNames = finalExtensions.data(),
-    };
-
-    return xrCreateInstance(&instanceCI, pInstance);
-}
-
 XrResult foeXrEnumerateReferenceSpaces(XrSession xrSession,
                                        std::vector<XrReferenceSpaceType> &spaces) {
     uint32_t spaceCount;

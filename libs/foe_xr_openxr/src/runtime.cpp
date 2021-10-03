@@ -16,6 +16,7 @@
 
 #include <foe/xr/openxr/runtime.hpp>
 
+#include <foe/engine_detail.h>
 #include <foe/xr/core.hpp>
 #include <foe/xr/error_code.hpp>
 #include <foe/xr/session.hpp>
@@ -32,6 +33,7 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
                                        bool debugLogging,
                                        foeXrRuntime *pRuntime) {
     auto *pNewRuntime = new foeXrOpenRuntime;
+    XrResult xrRes{XR_SUCCESS};
 
     if (validation) {
         layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
@@ -40,11 +42,39 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
     if (debugLogging)
         extensions.emplace_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
-    XrResult xrRes =
-        foeXrCreateInstance(appName, appVersion, layers, extensions, &pNewRuntime->instance);
+    // Create XrInstance
+    XrApplicationInfo appInfo{
+        .applicationVersion = appVersion,
+        .engineVersion = FOE_ENGINE_VERSION,
+        .apiVersion = XR_MAKE_VERSION(1, 0, 12),
+    };
+    strncpy(appInfo.applicationName, appName, XR_MAX_APPLICATION_NAME_SIZE);
+    strncpy(appInfo.engineName, FOE_ENGINE_NAME, XR_MAX_ENGINE_NAME_SIZE);
+
+    std::vector<char const *> finalLayers;
+    std::vector<char const *> finalExtensions;
+
+    for (auto &it : layers) {
+        finalLayers.emplace_back(it.data());
+    }
+    for (auto &it : extensions) {
+        finalExtensions.emplace_back(it.data());
+    }
+
+    XrInstanceCreateInfo instanceCI = {
+        .type = XR_TYPE_INSTANCE_CREATE_INFO,
+        .applicationInfo = appInfo,
+        .enabledApiLayerCount = static_cast<uint32_t>(finalLayers.size()),
+        .enabledApiLayerNames = finalLayers.data(),
+        .enabledExtensionCount = static_cast<uint32_t>(finalExtensions.size()),
+        .enabledExtensionNames = finalExtensions.data(),
+    };
+
+    xrRes = xrCreateInstance(&instanceCI, &pNewRuntime->instance);
     if (xrRes != XR_SUCCESS)
         goto CREATE_FAILED;
 
+    // Attach Debug Logger
     if (debugLogging) {
         xrRes = foeXrCreateDebugUtilsMessenger(pNewRuntime->instance, &pNewRuntime->debugMessenger);
         if (xrRes != XR_SUCCESS)
