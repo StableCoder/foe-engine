@@ -111,6 +111,36 @@ Arch/Clang Shared:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_unix_template
 
+Debian/GCC Static:
+  image: stabletec/build-foe:debian
+  variables:
+    CC: gcc
+    CXX: g++
+  <<: *platform_unix_template
+
+Debian/GCC Shared:
+  image: stabletec/build-foe:debian
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_unix_template
+
+Debian/Clang Static:
+  image: stabletec/build-foe:debian
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *platform_unix_template
+
+Debian/Clang Shared:
+  image: stabletec/build-foe:debian
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+  <<: *platform_unix_template
+
 Fedora/GCC Static:
   image: stabletec/build-foe:fedora
   variables:
