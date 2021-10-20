@@ -36,7 +36,7 @@ variables:
 
 .platform_windows_template: &platform_windows_template
   stage: Platform Tests
-  image: stabletec/build-foe:windows
+  image: docker.io/stabletec/build-foe:windows
   tags:
     - docker-windows
     - amd64
@@ -50,7 +50,7 @@ variables:
 # Platforms
 
 (Debug) Arch/GCC Static:
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   variables:
     CC: gcc
     CXX: g++
@@ -58,7 +58,7 @@ variables:
   <<: *platform_unix_template
 
 (Debug) Arch/GCC Shared:
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   variables:
     CC: gcc
     CXX: g++
@@ -66,7 +66,7 @@ variables:
   <<: *platform_unix_template
 
 (Debug) Arch/Clang Static:
-  image: stabletec/build-foe:fedora
+  image: docker.io/stabletec/build-foe:fedora
   variables:
     CC: clang
     CXX: clang++
@@ -74,7 +74,7 @@ variables:
   <<: *platform_unix_template
 
 (Debug) Arch/Clang Shared:
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   variables:
     CC: clang
     CXX: clang++
@@ -82,14 +82,14 @@ variables:
   <<: *platform_unix_template
 
 Arch/GCC Static:
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   variables:
     CC: gcc
     CXX: g++
   <<: *platform_unix_template
 
 Arch/GCC Shared:
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   variables:
     CC: gcc
     CXX: g++
@@ -97,14 +97,14 @@ Arch/GCC Shared:
   <<: *platform_unix_template
 
 Arch/Clang Static:
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   variables:
     CC: clang
     CXX: clang++
   <<: *platform_unix_template
 
 Arch/Clang Shared:
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   variables:
     CC: clang
     CXX: clang++
@@ -112,14 +112,14 @@ Arch/Clang Shared:
   <<: *platform_unix_template
 
 Debian/GCC Static:
-  image: stabletec/build-foe:debian
+  image: docker.io/stabletec/build-foe:debian
   variables:
     CC: gcc
     CXX: g++
   <<: *platform_unix_template
 
 Debian/GCC Shared:
-  image: stabletec/build-foe:debian
+  image: docker.io/stabletec/build-foe:debian
   variables:
     CC: gcc
     CXX: g++
@@ -127,14 +127,14 @@ Debian/GCC Shared:
   <<: *platform_unix_template
 
 Debian/Clang Static:
-  image: stabletec/build-foe:debian
+  image: docker.io/stabletec/build-foe:debian
   variables:
     CC: clang
     CXX: clang++
   <<: *platform_unix_template
 
 Debian/Clang Shared:
-  image: stabletec/build-foe:debian
+  image: docker.io/stabletec/build-foe:debian
   variables:
     CC: clang
     CXX: clang++
@@ -142,14 +142,14 @@ Debian/Clang Shared:
   <<: *platform_unix_template
 
 Fedora/GCC Static:
-  image: stabletec/build-foe:fedora
+  image: docker.io/stabletec/build-foe:fedora
   variables:
     CC: gcc
     CXX: g++
   <<: *platform_unix_template
 
 Fedora/GCC Shared:
-  image: stabletec/build-foe:fedora
+  image: docker.io/stabletec/build-foe:fedora
   variables:
     CC: gcc
     CXX: g++
@@ -157,14 +157,14 @@ Fedora/GCC Shared:
   <<: *platform_unix_template
 
 Fedora/Clang Static:
-  image: stabletec/build-foe:fedora
+  image: docker.io/stabletec/build-foe:fedora
   variables:
     CC: clang
     CXX: clang++
   <<: *platform_unix_template
 
 Fedora/Clang Shared:
-  image: stabletec/build-foe:fedora
+  image: docker.io/stabletec/build-foe:fedora
   variables:
     CC: clang
     CXX: clang++
@@ -172,14 +172,14 @@ Fedora/Clang Shared:
   <<: *platform_unix_template
 
 Ubuntu/GCC Static:
-  image: stabletec/build-foe:ubuntu
+  image: docker.io/stabletec/build-foe:ubuntu
   variables:
     CC: gcc
     CXX: g++
   <<: *platform_unix_template
 
 Ubuntu/GCC Shared:
-  image: stabletec/build-foe:ubuntu
+  image: docker.io/stabletec/build-foe:ubuntu
   variables:
     CC: gcc
     CXX: g++
@@ -187,14 +187,14 @@ Ubuntu/GCC Shared:
   <<: *platform_unix_template
 
 Ubuntu/Clang Static:
-  image: stabletec/build-foe:ubuntu
+  image: docker.io/stabletec/build-foe:ubuntu
   variables:
     CC: clang
     CXX: clang++
   <<: *platform_unix_template
 
 Ubuntu/Clang Shared:
-  image: stabletec/build-foe:ubuntu
+  image: docker.io/stabletec/build-foe:ubuntu
   variables:
     CC: clang
     CXX: clang++
@@ -253,7 +253,7 @@ Windows/Clang Shared:
 
 .analysis_template: &analysis_template
   stage: Analysis
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   tags:
     - docker-linux
     - amd64
@@ -268,7 +268,7 @@ Windows/Clang Shared:
 
 Formatting:
   stage: Analysis
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   allow_failure: true
   tags:
     - docker-linux
@@ -281,7 +281,7 @@ Formatting:
 
 Static Analysis:
   stage: Analysis
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   tags:
     - docker-linux
     - amd64
@@ -296,7 +296,7 @@ Static Analysis:
 
 Code Coverage:
   stage: Analysis
-  image: stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:arch
   tags:
     - docker-linux
     - amd64
