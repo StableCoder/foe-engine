@@ -1,6 +1,7 @@
 # Global
 
 stages:
+ - Formatting
  - Arch
  - Debian
  - Fedora
@@ -13,11 +14,37 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CTEST_OUTPUT_ON_FAILURE: 1
 
+# Formatting Jobs
+Source Files:
+  stage: Formatting
+  image: docker.io/stabletec/build-foe:arch
+  allow_failure: true
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja
+    - ninja format
+    - git diff --exit-code
+
+CMake Files:
+  stage: Formatting
+  image: docker.io/stabletec/build-foe:arch
+  allow_failure: true
+  tags:
+    - docker-linux
+  script:
+    - mkdir build && cd build
+    - cmake .. -GNinja
+    - ninja cmake-format
+    - git diff --exit-code
+
 # Platform Stage Templates
 
 .arch_template: &arch_template
   stage: Arch
   image: docker.io/stabletec/build-foe:arch
+  needs: []
   tags: 
     - docker-linux
     - amd64
@@ -332,19 +359,6 @@ Windows/Clang Shared:
     - ninja test
 
 # Analysis
-
-Formatting:
-  stage: Analysis
-  image: docker.io/stabletec/build-foe:arch
-  allow_failure: true
-  tags:
-    - docker-linux
-  script:
-    - mkdir build && cd build
-    - cmake .. -GNinja
-    - ninja format
-    - ninja cmake-format
-    - git diff --exit-code
 
 Static Analysis:
   stage: Analysis
