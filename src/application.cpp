@@ -1784,6 +1784,8 @@ int Application::mainloop() {
                                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
                                              nullptr, 1, &imgMemBarrier);
 
+#ifdef EDITOR_MODE
+
                         // Render the UI to the resolved swap image
                         // Render passes
                         VkRenderPass swapImageRenderPass =
@@ -1861,7 +1863,6 @@ int Application::mainloop() {
                         vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
                                              VK_SUBPASS_CONTENTS_INLINE);
 
-#ifdef EDITOR_MODE
                         if (it == windowRenderList[0]) { // ImGui
                             if (!imguiRenderer.initialized()) {
                                 errC = imguiRenderer.initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT,
@@ -1882,9 +1883,9 @@ int Application::mainloop() {
 
                             imguiRenderer.draw(commandBuffer, frameIndex);
                         }
-#endif
 
                         vkCmdEndRenderPass(commandBuffer);
+#endif
                     }
                 }
             }
