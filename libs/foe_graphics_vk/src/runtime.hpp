@@ -21,8 +21,8 @@
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkRuntime {
-    VkInstance instance;
-    VkDebugReportCallbackEXT debugCallback;
+    VkInstance instance{VK_NULL_HANDLE};
+    VkDebugReportCallbackEXT debugCallback{VK_NULL_HANDLE};
 };
 
 FOE_DEFINE_HANDLE_CASTS(runtime, foeGfxVkRuntime, foeGfxRuntime)
