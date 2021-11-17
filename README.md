@@ -16,3 +16,5 @@
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp) - Library for easy read/write for Yaml data.
 - [FreeImage](http://freeimage.sourceforge.net/) - Library for loading/saving and working on images.
 - [fmt](https://github.com/fmtlib/fmt) - Library for excellent string formatting.
+- [Vulkan](https://www.vulkan.org/) - Graphics API
+- [OpenXR](https://www.khronos.org/OpenXR/) - VR/XR API
