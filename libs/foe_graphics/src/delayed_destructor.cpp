@@ -159,6 +159,9 @@ void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
                 fnList = pDelayedDestructor->fnLists.begin();
             }
         }
+        if (fnList == pDelayedDestructor->fnLists.end()) {
+            fnList = pDelayedDestructor->fnLists.begin();
+        }
     }
     fnList->emplace_back(fn);
 
