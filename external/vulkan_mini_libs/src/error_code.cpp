@@ -15,4 +15,5 @@
 */
 
 #define VK_ERROR_CODE_CONFIG_MAIN
+#define VK_RESULT_TO_STRING_CONFIG_MAIN
 #include <vk_error_code.hpp>
