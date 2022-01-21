@@ -18,6 +18,7 @@
 
 #include <vk_error_code.hpp>
 
+#include "delimited_strings.hpp"
 #include "log.hpp"
 #include "runtime.hpp"
 #include "session.hpp"
@@ -72,6 +73,10 @@ void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
     pSession->builtinDescriptorSets.deinitialize(pSession->device);
     pSession->descriptorSetLayoutPool.deinitialize();
     pSession->renderPassPool.deinitialize();
+
+    // State
+    delete pSession->pExtensions;
+    delete pSession->pLayers;
 
     if (pSession->allocator != VK_NULL_HANDLE)
         vmaDestroyAllocator(pSession->allocator);
@@ -145,6 +150,12 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
     if (errC)
         goto CREATE_FAILED;
 
+    // Add layer/extension/feature state to session struct for future queries
+    convertToDelimitedString(finalLayers.size(), finalLayers.data(), &pNewSession->layersLength,
+                             &pNewSession->pLayers);
+    convertToDelimitedString(finalExtensions.size(), finalExtensions.data(),
+                             &pNewSession->extensionsLength, &pNewSession->pExtensions);
+
     // Retrieve the queues
     for (uint32_t i = 0; i < pNewSession->numQueueFamilies; ++i) {
         createQueueFamily(pNewSession->device, queueFamilyProperties[i].queueFlags, i,
@@ -189,6 +200,24 @@ CREATE_FAILED:
     }
 
     return errC;
+}
+
+std::error_code foeGfxVkEnumerateSessionLayers(foeGfxSession session,
+                                               uint32_t *pLayerNamesLength,
+                                               char *pLayerNames) {
+    auto *pSession = session_from_handle(session);
+
+    return getDelimitedString(pSession->layersLength, pSession->pLayers, pLayerNamesLength,
+                              pLayerNames);
+}
+
+std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
+                                                   uint32_t *pExtensionNamesLength,
+                                                   char *pExtensionNames) {
+    auto *pSession = session_from_handle(session);
+
+    return getDelimitedString(pSession->extensionsLength, pSession->pExtensions,
+                              pExtensionNamesLength, pExtensionNames);
 }
 
 uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {

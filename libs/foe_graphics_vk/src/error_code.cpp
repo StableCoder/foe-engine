@@ -32,6 +32,7 @@ const char *foeGraphicsVkErrCategory::name() const noexcept { return "foeGraphic
 std::string foeGraphicsVkErrCategory::message(int ev) const {
     switch (static_cast<foeGraphicsVkResult>(ev)) {
         RESULT_CASE(FOE_GRAPHICS_VK_SUCCESS)
+        RESULT_CASE(FOE_GRAPHICS_VK_INCOMPLETE)
         // RenderTarget
         RESULT_CASE(FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS)
 

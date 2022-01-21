@@ -23,6 +23,7 @@ extern "C" {
 
 enum foeGraphicsVkResult {
     FOE_GRAPHICS_VK_SUCCESS = 0,
+    FOE_GRAPHICS_VK_INCOMPLETE,
     // RenderTarget
     FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS,
 };

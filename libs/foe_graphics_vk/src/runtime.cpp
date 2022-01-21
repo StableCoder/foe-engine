@@ -20,12 +20,17 @@
 #include <vk_error_code.hpp>
 
 #include "debug_callback.hpp"
+#include "delimited_strings.hpp"
 #include "log.hpp"
 #include "runtime.hpp"
 
 namespace {
 
 void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
+    // State
+    delete pRuntime->pExtensions;
+    delete pRuntime->pLayers;
+
     if (pRuntime->debugCallback != VK_NULL_HANDLE)
         foeVkDestroyDebugCallback(pRuntime->instance, pRuntime->debugCallback);
 
@@ -37,7 +42,7 @@ void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
 
 } // namespace
 
-std::error_code foeGfxVkCreateRuntime(char const *applicationName,
+std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
                                       uint32_t applicationVersion,
                                       std::vector<std::string> layers,
                                       std::vector<std::string> extensions,
@@ -45,10 +50,11 @@ std::error_code foeGfxVkCreateRuntime(char const *applicationName,
                                       bool debugLogging,
                                       foeGfxRuntime *pRuntime) {
     auto *pNewRuntime = new foeGfxVkRuntime;
+    *pNewRuntime = {};
 
     VkApplicationInfo appinfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pApplicationName = applicationName,
+        .pApplicationName = pApplicationName,
         .applicationVersion = applicationVersion,
         .pEngineName = FOE_ENGINE_NAME,
         .engineVersion = FOE_ENGINE_VERSION,
@@ -84,6 +90,12 @@ std::error_code foeGfxVkCreateRuntime(char const *applicationName,
     if (vkRes != VK_SUCCESS)
         goto CREATE_FAILED;
 
+    // Add layer/extension state to runtime struct for future queries
+    convertToDelimitedString(finalExtensions.size(), finalExtensions.data(),
+                             &pNewRuntime->layersLength, &pNewRuntime->pLayers);
+    convertToDelimitedString(finalExtensions.size(), finalExtensions.data(),
+                             &pNewRuntime->extensionsLength, &pNewRuntime->pExtensions);
+
     if (debugLogging) {
         vkRes = foeVkCreateDebugCallback(pNewRuntime->instance, &pNewRuntime->debugCallback);
         if (vkRes != VK_SUCCESS)
@@ -100,6 +112,24 @@ CREATE_FAILED:
     }
 
     return vkRes;
+}
+
+std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
+                                               uint32_t *pLayerNamesLength,
+                                               char *pLayerNames) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
+    return getDelimitedString(pRuntime->layersLength, pRuntime->pLayers, pLayerNamesLength,
+                              pLayerNames);
+}
+
+std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
+                                                   uint32_t *pExtensionNamesLength,
+                                                   char *pExtensionNames) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
+    return getDelimitedString(pRuntime->extensionsLength, pRuntime->pExtensions,
+                              pExtensionNamesLength, pExtensionNames);
 }
 
 VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime) {

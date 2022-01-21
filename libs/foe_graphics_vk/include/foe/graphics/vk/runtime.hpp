@@ -19,12 +19,25 @@
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.hpp>
+#include <vulkan/vulkan.h>
 
 #include <string>
 #include <system_error>
 #include <vector>
 
-FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *applicationName,
+/** @brief Creates a graphics runtime using the Vulkan API
+ * @param pApplicationName is NULL or is a pointer to a null-terminated UTF-8 string containing the
+ * name of the application.
+ * @param applicationVersion is an unsigned integer variable containing the developer-supplied
+ * version number of the application.
+ * @param layers is a list of Vulkan layers to enable for the runtime.
+ * @param extensions is a list of Vulkan extensions to enable for the runtime.
+ * @param validation indicates whether to enable the VK_LAYER_KHRONOS_validation layer
+ * @param debugLogging indicates whether to enable debug logging.
+ * @param pRuntime points to a foeGfxRuntime handle in which the resulting runtime is returned.
+ * @return FOE_GFX_VK_SUCCESS on success, or an appropriate error otherwise.
+ */
+FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
                                                      uint32_t applicationVersion,
                                                      std::vector<std::string> layers,
                                                      std::vector<std::string> extensions,
@@ -32,8 +45,45 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *applicationName
                                                      bool debugLogging,
                                                      foeGfxRuntime *pRuntime);
 
-#include <vulkan/vulkan.h>
+/** @brief Enumerate the enabled layers for the given runtime
+ * @param runtime is the handle to the runtime whose layers will be queried.
+ * @param pLayerNamesLength is a pointer to an integer related to the size of pLayaerNames, as
+ * described below.
+ * @param pLayerNames is either NULL or a pointer to an character array.
+ *
+ * If pLayerNames is NULL, then the size required to return all layer names is returned int
+ * pLayerNamesLength. Otherwise, pLayerNamesLength must point to a variable set by the user to the
+ * size of the pLayerNames array, and on return the variable is overwritten with the characters
+ * actually written to pLayerNames. If pLayerNamesLength is less than the total size required to
+ * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
+ * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
+ */
+FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
+                                                              uint32_t *pLayerNamesLength,
+                                                              char *pLayerNames);
 
+/** @brief Enumerate the enabled extensions for the given runtime
+ * @param runtime is the handle to the runtime whose extensions will be queried.
+ * @param pExtensionsNamesLength is a pointer to an integer related to the size of pLayaerNames, as
+ * described below.
+ * @param pExtensionsNames is either NULL or a pointer to an character array.
+ *
+ * If pExtensionsNames is NULL, then the size required to return all layer names is returned int
+ * pExtensionsNamesLength. Otherwise, pExtensionsNamesLength must point to a variable set by the
+ * user to the size of the pExtensionsNames array, and on return the variable is overwritten with
+ * the characters actually written to pExtensionsNames. If pExtensionsNamesLength is less than the
+ * total size required to return all names, at most pExtensionsNamesLength is written, and
+ * FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all
+ * names were returned.
+ */
+FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
+                                                                  uint32_t *pExtensionNamesLength,
+                                                                  char *pExtensionNames);
+
+/** @brief Returns the Vulkan instance handle
+ * @param runtime is the handle to the Vukan-based graphics runtime
+ * @return The VkInstance handle
+ */
 FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime);
 
 #endif // FOE_GRAPHICS_VK_RUNTIME_HPP

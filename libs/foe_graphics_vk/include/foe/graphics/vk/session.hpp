@@ -32,11 +32,59 @@ class foeGfxVkRenderPassPool;
 class foeGfxVkFragmentDescriptorPool;
 class foeGfxVkPipelinePool;
 
+/** @brief Creates a graphics session using the Vulkan API
+ * @param runtime is a handle to the graphics runtime to be created on
+ * @param vkPhysicalDevice must be a physical device handle retrieved using the given runtime
+ * @param layers is a list of Vulkan layers to enable for the session.
+ * @param extensions is a list of Vulkan extensions to enable for the session.
+ * @param pFeatures is either NULL or a pointer to a chain of Vulkan feature structs.
+ * @param pSession points to a foeGfxSession handle in which the resulting session is returned.
+ * @return FOE_GFX_VK_SUCCESS on success, or an appropriate error otherwise.
+ *
+ * The pFeatures struct chain must include the types that include an sType and pNext void pointer,
+ * such as VkPhysicalDeviceFeatures2 or VkPhysicalDeviceVulkan11Features, and as many of these
+ * structs can be chained as desired.
+ */
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                                      VkPhysicalDevice vkPhysicalDevice,
                                                      std::vector<std::string> layers,
                                                      std::vector<std::string> extensions,
                                                      foeGfxSession *pSession);
+
+/** @brief Enumerate the enabled layers for the given session
+ * @param session is the handle to the session whose layers will be queried.
+ * @param pLayerNamesLength is a pointer to an integer related to the size of pLayaerNames, as
+ * described below.
+ * @param pLayerNames is either NULL or a pointer to an character array.
+ *
+ * If pLayerNames is NULL, then the size required to return all layer names is returned int
+ * pLayerNamesLength. Otherwise, pLayerNamesLength must point to a variable set by the user to the
+ * size of the pLayerNames array, and on return the variable is overwritten with the characters
+ * actually written to pLayerNames. If pLayerNamesLength is less than the total size required to
+ * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
+ * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
+ */
+FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateSessionLayers(foeGfxSession session,
+                                                              uint32_t *pLayerNamesLength,
+                                                              char *pLayerNames);
+
+/** @brief Enumerate the enabled extensions for the given session
+ * @param session is the handle to the session whose extensions will be queried.
+ * @param pExtensionsNamesLength is a pointer to an integer related to the size of pLayaerNames, as
+ * described below.
+ * @param pExtensionsNames is either NULL or a pointer to an character array.
+ *
+ * If pExtensionsNames is NULL, then the size required to return all layer names is returned int
+ * pExtensionsNamesLength. Otherwise, pExtensionsNamesLength must point to a variable set by the
+ * user to the size of the pExtensionsNames array, and on return the variable is overwritten with
+ * the characters actually written to pExtensionsNames. If pExtensionsNamesLength is less than the
+ * total size required to return all names, at most pExtensionsNamesLength is written, and
+ * FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all
+ * names were returned.
+ */
+FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
+                                                                  uint32_t *pExtensionNamesLength,
+                                                                  char *pExtensionNames);
 
 FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxSession session);
 FOE_GFX_EXPORT VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session);

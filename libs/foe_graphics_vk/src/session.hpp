@@ -42,6 +42,15 @@ struct foeGfxVkSession {
     uint32_t numQueueFamilies{0};
     foeGfxVkQueueFamily pQueueFamilies[MaxQueueFamilies];
 
+    // Length in bytes of pLayers
+    uint32_t layersLength{0};
+    // Set of strings representing the instance's layers, delimited by NULL characters
+    char *pLayers{nullptr};
+    // Length in bytes of pExtensions
+    uint32_t extensionsLength{0};
+    // Set of strings representing the instance's extensions, delimited by NULL characters
+    char *pExtensions{nullptr};
+
     foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
 
