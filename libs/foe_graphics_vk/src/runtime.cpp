@@ -52,13 +52,17 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
     auto *pNewRuntime = new foeGfxVkRuntime;
     *pNewRuntime = {};
 
+    // Always use the latest available runtime
+    uint32_t vkApiVersion;
+    vkEnumerateInstanceVersion(&vkApiVersion);
+
     VkApplicationInfo appinfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = pApplicationName,
         .applicationVersion = applicationVersion,
         .pEngineName = FOE_ENGINE_NAME,
         .engineVersion = FOE_ENGINE_VERSION,
-        .apiVersion = VK_MAKE_VERSION(1, 0, 0),
+        .apiVersion = vkApiVersion,
     };
 
     std::vector<char const *> finalLayers;
