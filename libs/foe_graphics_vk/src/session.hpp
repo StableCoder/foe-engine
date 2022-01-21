@@ -51,6 +51,13 @@ struct foeGfxVkSession {
     // Set of strings representing the instance's extensions, delimited by NULL characters
     char *pExtensions{nullptr};
 
+    /// Set of enabled Vulkan 1.0 features
+    VkPhysicalDeviceFeatures2 features_1_0;
+    /// Set of enabled Vulkan 1.1 features
+    VkPhysicalDeviceVulkan11Features features_1_1;
+    /// Set of enabled Vulkan 1.2 features
+    VkPhysicalDeviceVulkan12Features features_1_2;
+
     foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
 

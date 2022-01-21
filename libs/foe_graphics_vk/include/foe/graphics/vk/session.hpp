@@ -49,6 +49,7 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                                      VkPhysicalDevice vkPhysicalDevice,
                                                      std::vector<std::string> layers,
                                                      std::vector<std::string> extensions,
+                                                     void const *pFeatures,
                                                      foeGfxSession *pSession);
 
 /** @brief Enumerate the enabled layers for the given session
@@ -85,6 +86,16 @@ FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateSessionLayers(foeGfxSession sess
 FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
                                                                   uint32_t *pExtensionNamesLength,
                                                                   char *pExtensionNames);
+
+/** @brief Fills out given feature structs with then enabled session's features
+ * @param session is the handle to the session whose features will be queried.
+ * @param pFeatures is either NULL or a pointer to a chain of Vulkan feature structs.
+ *
+ * The pFeatures struct chain must include the types that include an sType and pNext void pointer,
+ * such as VkPhysicalDeviceFeatures2 or VkPhysicalDeviceVulkan11Features, and as many of these
+ * structs can be chained as desired.
+ */
+FOE_GFX_EXPORT void foeGfxVkEnumerateSessionFeatures(foeGfxSession session, void *pFeatures);
 
 FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxSession session);
 FOE_GFX_EXPORT VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session);

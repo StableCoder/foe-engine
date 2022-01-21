@@ -87,12 +87,268 @@ void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
     delete pSession;
 }
 
+/** @brief Merges source feature flags to the destination
+ * @param pSrc is a pointer to the struct of the source set of features to set in the destination
+ * @param pDst is a pointer to the destintion where flags will be set
+ */
+void mergeFeatureSet_VkPhysicalDeviceFeatures(VkPhysicalDeviceFeatures const *pSrc,
+                                              VkPhysicalDeviceFeatures *pDst) {
+    // Generated from gen_merge_feature_set.sh
+    if (pSrc->robustBufferAccess != VK_FALSE)
+        pDst->robustBufferAccess = VK_TRUE;
+    if (pSrc->fullDrawIndexUint32 != VK_FALSE)
+        pDst->fullDrawIndexUint32 = VK_TRUE;
+    if (pSrc->imageCubeArray != VK_FALSE)
+        pDst->imageCubeArray = VK_TRUE;
+    if (pSrc->independentBlend != VK_FALSE)
+        pDst->independentBlend = VK_TRUE;
+    if (pSrc->geometryShader != VK_FALSE)
+        pDst->geometryShader = VK_TRUE;
+    if (pSrc->tessellationShader != VK_FALSE)
+        pDst->tessellationShader = VK_TRUE;
+    if (pSrc->sampleRateShading != VK_FALSE)
+        pDst->sampleRateShading = VK_TRUE;
+    if (pSrc->dualSrcBlend != VK_FALSE)
+        pDst->dualSrcBlend = VK_TRUE;
+    if (pSrc->logicOp != VK_FALSE)
+        pDst->logicOp = VK_TRUE;
+    if (pSrc->multiDrawIndirect != VK_FALSE)
+        pDst->multiDrawIndirect = VK_TRUE;
+    if (pSrc->drawIndirectFirstInstance != VK_FALSE)
+        pDst->drawIndirectFirstInstance = VK_TRUE;
+    if (pSrc->depthClamp != VK_FALSE)
+        pDst->depthClamp = VK_TRUE;
+    if (pSrc->depthBiasClamp != VK_FALSE)
+        pDst->depthBiasClamp = VK_TRUE;
+    if (pSrc->fillModeNonSolid != VK_FALSE)
+        pDst->fillModeNonSolid = VK_TRUE;
+    if (pSrc->depthBounds != VK_FALSE)
+        pDst->depthBounds = VK_TRUE;
+    if (pSrc->wideLines != VK_FALSE)
+        pDst->wideLines = VK_TRUE;
+    if (pSrc->largePoints != VK_FALSE)
+        pDst->largePoints = VK_TRUE;
+    if (pSrc->alphaToOne != VK_FALSE)
+        pDst->alphaToOne = VK_TRUE;
+    if (pSrc->multiViewport != VK_FALSE)
+        pDst->multiViewport = VK_TRUE;
+    if (pSrc->samplerAnisotropy != VK_FALSE)
+        pDst->samplerAnisotropy = VK_TRUE;
+    if (pSrc->textureCompressionETC2 != VK_FALSE)
+        pDst->textureCompressionETC2 = VK_TRUE;
+    if (pSrc->textureCompressionASTC_LDR != VK_FALSE)
+        pDst->textureCompressionASTC_LDR = VK_TRUE;
+    if (pSrc->textureCompressionBC != VK_FALSE)
+        pDst->textureCompressionBC = VK_TRUE;
+    if (pSrc->occlusionQueryPrecise != VK_FALSE)
+        pDst->occlusionQueryPrecise = VK_TRUE;
+    if (pSrc->pipelineStatisticsQuery != VK_FALSE)
+        pDst->pipelineStatisticsQuery = VK_TRUE;
+    if (pSrc->vertexPipelineStoresAndAtomics != VK_FALSE)
+        pDst->vertexPipelineStoresAndAtomics = VK_TRUE;
+    if (pSrc->fragmentStoresAndAtomics != VK_FALSE)
+        pDst->fragmentStoresAndAtomics = VK_TRUE;
+    if (pSrc->shaderTessellationAndGeometryPointSize != VK_FALSE)
+        pDst->shaderTessellationAndGeometryPointSize = VK_TRUE;
+    if (pSrc->shaderImageGatherExtended != VK_FALSE)
+        pDst->shaderImageGatherExtended = VK_TRUE;
+    if (pSrc->shaderStorageImageExtendedFormats != VK_FALSE)
+        pDst->shaderStorageImageExtendedFormats = VK_TRUE;
+    if (pSrc->shaderStorageImageMultisample != VK_FALSE)
+        pDst->shaderStorageImageMultisample = VK_TRUE;
+    if (pSrc->shaderStorageImageReadWithoutFormat != VK_FALSE)
+        pDst->shaderStorageImageReadWithoutFormat = VK_TRUE;
+    if (pSrc->shaderStorageImageWriteWithoutFormat != VK_FALSE)
+        pDst->shaderStorageImageWriteWithoutFormat = VK_TRUE;
+    if (pSrc->shaderUniformBufferArrayDynamicIndexing != VK_FALSE)
+        pDst->shaderUniformBufferArrayDynamicIndexing = VK_TRUE;
+    if (pSrc->shaderSampledImageArrayDynamicIndexing != VK_FALSE)
+        pDst->shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+    if (pSrc->shaderStorageBufferArrayDynamicIndexing != VK_FALSE)
+        pDst->shaderStorageBufferArrayDynamicIndexing = VK_TRUE;
+    if (pSrc->shaderStorageImageArrayDynamicIndexing != VK_FALSE)
+        pDst->shaderStorageImageArrayDynamicIndexing = VK_TRUE;
+    if (pSrc->shaderClipDistance != VK_FALSE)
+        pDst->shaderClipDistance = VK_TRUE;
+    if (pSrc->shaderCullDistance != VK_FALSE)
+        pDst->shaderCullDistance = VK_TRUE;
+    if (pSrc->shaderFloat64 != VK_FALSE)
+        pDst->shaderFloat64 = VK_TRUE;
+    if (pSrc->shaderInt64 != VK_FALSE)
+        pDst->shaderInt64 = VK_TRUE;
+    if (pSrc->shaderInt16 != VK_FALSE)
+        pDst->shaderInt16 = VK_TRUE;
+    if (pSrc->shaderResourceResidency != VK_FALSE)
+        pDst->shaderResourceResidency = VK_TRUE;
+    if (pSrc->shaderResourceMinLod != VK_FALSE)
+        pDst->shaderResourceMinLod = VK_TRUE;
+    if (pSrc->sparseBinding != VK_FALSE)
+        pDst->sparseBinding = VK_TRUE;
+    if (pSrc->sparseResidencyBuffer != VK_FALSE)
+        pDst->sparseResidencyBuffer = VK_TRUE;
+    if (pSrc->sparseResidencyImage2D != VK_FALSE)
+        pDst->sparseResidencyImage2D = VK_TRUE;
+    if (pSrc->sparseResidencyImage3D != VK_FALSE)
+        pDst->sparseResidencyImage3D = VK_TRUE;
+    if (pSrc->sparseResidency2Samples != VK_FALSE)
+        pDst->sparseResidency2Samples = VK_TRUE;
+    if (pSrc->sparseResidency4Samples != VK_FALSE)
+        pDst->sparseResidency4Samples = VK_TRUE;
+    if (pSrc->sparseResidency8Samples != VK_FALSE)
+        pDst->sparseResidency8Samples = VK_TRUE;
+    if (pSrc->sparseResidency16Samples != VK_FALSE)
+        pDst->sparseResidency16Samples = VK_TRUE;
+    if (pSrc->sparseResidencyAliased != VK_FALSE)
+        pDst->sparseResidencyAliased = VK_TRUE;
+    if (pSrc->variableMultisampleRate != VK_FALSE)
+        pDst->variableMultisampleRate = VK_TRUE;
+    if (pSrc->inheritedQueries != VK_FALSE)
+        pDst->inheritedQueries = VK_TRUE;
+}
+
+/** @brief Merges source feature flags to the destination
+ * @param pSrc is a pointer to the struct of the source set of features to set in the destination
+ * @param pDst is a pointer to the destintion where flags will be set
+ */
+void mergeFeatureSet_VkPhysicalDeviceVulkan11Features(VkPhysicalDeviceVulkan11Features const *pSrc,
+                                                      VkPhysicalDeviceVulkan11Features *pDst) {
+    // Generated from gen_merge_feature_set.sh
+    if (pSrc->storageBuffer16BitAccess != VK_FALSE)
+        pDst->storageBuffer16BitAccess = VK_TRUE;
+    if (pSrc->uniformAndStorageBuffer16BitAccess != VK_FALSE)
+        pDst->uniformAndStorageBuffer16BitAccess = VK_TRUE;
+    if (pSrc->storagePushConstant16 != VK_FALSE)
+        pDst->storagePushConstant16 = VK_TRUE;
+    if (pSrc->storageInputOutput16 != VK_FALSE)
+        pDst->storageInputOutput16 = VK_TRUE;
+    if (pSrc->multiview != VK_FALSE)
+        pDst->multiview = VK_TRUE;
+    if (pSrc->multiviewGeometryShader != VK_FALSE)
+        pDst->multiviewGeometryShader = VK_TRUE;
+    if (pSrc->multiviewTessellationShader != VK_FALSE)
+        pDst->multiviewTessellationShader = VK_TRUE;
+    if (pSrc->variablePointersStorageBuffer != VK_FALSE)
+        pDst->variablePointersStorageBuffer = VK_TRUE;
+    if (pSrc->variablePointers != VK_FALSE)
+        pDst->variablePointers = VK_TRUE;
+    if (pSrc->protectedMemory != VK_FALSE)
+        pDst->protectedMemory = VK_TRUE;
+    if (pSrc->samplerYcbcrConversion != VK_FALSE)
+        pDst->samplerYcbcrConversion = VK_TRUE;
+    if (pSrc->shaderDrawParameters != VK_FALSE)
+        pDst->shaderDrawParameters = VK_TRUE;
+}
+
+/** @brief Merges source feature flags to the destination
+ * @param pSrc is a pointer to the struct of the source set of features to set in the destination
+ * @param pDst is a pointer to the destintion where flags will be set
+ */
+void mergeFeatureSet_VkPhysicalDeviceVulkan12Features(VkPhysicalDeviceVulkan12Features const *pSrc,
+                                                      VkPhysicalDeviceVulkan12Features *pDst) {
+    // Generated from gen_merge_feature_set.sh
+    if (pSrc->samplerMirrorClampToEdge != VK_FALSE)
+        pDst->samplerMirrorClampToEdge = VK_TRUE;
+    if (pSrc->drawIndirectCount != VK_FALSE)
+        pDst->drawIndirectCount = VK_TRUE;
+    if (pSrc->storageBuffer8BitAccess != VK_FALSE)
+        pDst->storageBuffer8BitAccess = VK_TRUE;
+    if (pSrc->uniformAndStorageBuffer8BitAccess != VK_FALSE)
+        pDst->uniformAndStorageBuffer8BitAccess = VK_TRUE;
+    if (pSrc->storagePushConstant8 != VK_FALSE)
+        pDst->storagePushConstant8 = VK_TRUE;
+    if (pSrc->shaderBufferInt64Atomics != VK_FALSE)
+        pDst->shaderBufferInt64Atomics = VK_TRUE;
+    if (pSrc->shaderSharedInt64Atomics != VK_FALSE)
+        pDst->shaderSharedInt64Atomics = VK_TRUE;
+    if (pSrc->shaderFloat16 != VK_FALSE)
+        pDst->shaderFloat16 = VK_TRUE;
+    if (pSrc->shaderInt8 != VK_FALSE)
+        pDst->shaderInt8 = VK_TRUE;
+    if (pSrc->descriptorIndexing != VK_FALSE)
+        pDst->descriptorIndexing = VK_TRUE;
+    if (pSrc->shaderInputAttachmentArrayDynamicIndexing != VK_FALSE)
+        pDst->shaderInputAttachmentArrayDynamicIndexing = VK_TRUE;
+    if (pSrc->shaderUniformTexelBufferArrayDynamicIndexing != VK_FALSE)
+        pDst->shaderUniformTexelBufferArrayDynamicIndexing = VK_TRUE;
+    if (pSrc->shaderStorageTexelBufferArrayDynamicIndexing != VK_FALSE)
+        pDst->shaderStorageTexelBufferArrayDynamicIndexing = VK_TRUE;
+    if (pSrc->shaderUniformBufferArrayNonUniformIndexing != VK_FALSE)
+        pDst->shaderUniformBufferArrayNonUniformIndexing = VK_TRUE;
+    if (pSrc->shaderSampledImageArrayNonUniformIndexing != VK_FALSE)
+        pDst->shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+    if (pSrc->shaderStorageBufferArrayNonUniformIndexing != VK_FALSE)
+        pDst->shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+    if (pSrc->shaderStorageImageArrayNonUniformIndexing != VK_FALSE)
+        pDst->shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
+    if (pSrc->shaderInputAttachmentArrayNonUniformIndexing != VK_FALSE)
+        pDst->shaderInputAttachmentArrayNonUniformIndexing = VK_TRUE;
+    if (pSrc->shaderUniformTexelBufferArrayNonUniformIndexing != VK_FALSE)
+        pDst->shaderUniformTexelBufferArrayNonUniformIndexing = VK_TRUE;
+    if (pSrc->shaderStorageTexelBufferArrayNonUniformIndexing != VK_FALSE)
+        pDst->shaderStorageTexelBufferArrayNonUniformIndexing = VK_TRUE;
+    if (pSrc->descriptorBindingUniformBufferUpdateAfterBind != VK_FALSE)
+        pDst->descriptorBindingUniformBufferUpdateAfterBind = VK_TRUE;
+    if (pSrc->descriptorBindingSampledImageUpdateAfterBind != VK_FALSE)
+        pDst->descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+    if (pSrc->descriptorBindingStorageImageUpdateAfterBind != VK_FALSE)
+        pDst->descriptorBindingStorageImageUpdateAfterBind = VK_TRUE;
+    if (pSrc->descriptorBindingStorageBufferUpdateAfterBind != VK_FALSE)
+        pDst->descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
+    if (pSrc->descriptorBindingUniformTexelBufferUpdateAfterBind != VK_FALSE)
+        pDst->descriptorBindingUniformTexelBufferUpdateAfterBind = VK_TRUE;
+    if (pSrc->descriptorBindingStorageTexelBufferUpdateAfterBind != VK_FALSE)
+        pDst->descriptorBindingStorageTexelBufferUpdateAfterBind = VK_TRUE;
+    if (pSrc->descriptorBindingUpdateUnusedWhilePending != VK_FALSE)
+        pDst->descriptorBindingUpdateUnusedWhilePending = VK_TRUE;
+    if (pSrc->descriptorBindingPartiallyBound != VK_FALSE)
+        pDst->descriptorBindingPartiallyBound = VK_TRUE;
+    if (pSrc->descriptorBindingVariableDescriptorCount != VK_FALSE)
+        pDst->descriptorBindingVariableDescriptorCount = VK_TRUE;
+    if (pSrc->runtimeDescriptorArray != VK_FALSE)
+        pDst->runtimeDescriptorArray = VK_TRUE;
+    if (pSrc->samplerFilterMinmax != VK_FALSE)
+        pDst->samplerFilterMinmax = VK_TRUE;
+    if (pSrc->scalarBlockLayout != VK_FALSE)
+        pDst->scalarBlockLayout = VK_TRUE;
+    if (pSrc->imagelessFramebuffer != VK_FALSE)
+        pDst->imagelessFramebuffer = VK_TRUE;
+    if (pSrc->uniformBufferStandardLayout != VK_FALSE)
+        pDst->uniformBufferStandardLayout = VK_TRUE;
+    if (pSrc->shaderSubgroupExtendedTypes != VK_FALSE)
+        pDst->shaderSubgroupExtendedTypes = VK_TRUE;
+    if (pSrc->separateDepthStencilLayouts != VK_FALSE)
+        pDst->separateDepthStencilLayouts = VK_TRUE;
+    if (pSrc->hostQueryReset != VK_FALSE)
+        pDst->hostQueryReset = VK_TRUE;
+    if (pSrc->timelineSemaphore != VK_FALSE)
+        pDst->timelineSemaphore = VK_TRUE;
+    if (pSrc->bufferDeviceAddress != VK_FALSE)
+        pDst->bufferDeviceAddress = VK_TRUE;
+    if (pSrc->bufferDeviceAddressCaptureReplay != VK_FALSE)
+        pDst->bufferDeviceAddressCaptureReplay = VK_TRUE;
+    if (pSrc->bufferDeviceAddressMultiDevice != VK_FALSE)
+        pDst->bufferDeviceAddressMultiDevice = VK_TRUE;
+    if (pSrc->vulkanMemoryModel != VK_FALSE)
+        pDst->vulkanMemoryModel = VK_TRUE;
+    if (pSrc->vulkanMemoryModelDeviceScope != VK_FALSE)
+        pDst->vulkanMemoryModelDeviceScope = VK_TRUE;
+    if (pSrc->vulkanMemoryModelAvailabilityVisibilityChains != VK_FALSE)
+        pDst->vulkanMemoryModelAvailabilityVisibilityChains = VK_TRUE;
+    if (pSrc->shaderOutputViewportIndex != VK_FALSE)
+        pDst->shaderOutputViewportIndex = VK_TRUE;
+    if (pSrc->shaderOutputLayer != VK_FALSE)
+        pDst->shaderOutputLayer = VK_TRUE;
+    if (pSrc->subgroupBroadcastDynamicId != VK_FALSE)
+        pDst->subgroupBroadcastDynamicId = VK_TRUE;
+}
+
 } // namespace
 
 std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                       VkPhysicalDevice vkPhysicalDevice,
                                       std::vector<std::string> layers,
                                       std::vector<std::string> extensions,
+                                      void const *pFeatures,
                                       foeGfxSession *pSession) {
     auto *pNewSession = new foeGfxVkSession;
     auto sessionHandle = session_to_handle(pNewSession);
@@ -136,8 +392,44 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
     for (auto &it : extensions)
         finalExtensions.emplace_back(it.data());
 
+    // Go through feature sets and merge them together to one per struct
+    pNewSession->features_1_0 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+    };
+    pNewSession->features_1_1 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+        .pNext = &pNewSession->features_1_0,
+    };
+    pNewSession->features_1_2 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .pNext = &pNewSession->features_1_1,
+    };
+
+    while (pFeatures != nullptr) {
+        VkBaseInStructure const *pIn = static_cast<VkBaseInStructure const *>(pFeatures);
+
+        if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2) {
+            mergeFeatureSet_VkPhysicalDeviceFeatures(
+                static_cast<VkPhysicalDeviceFeatures const *>(pFeatures),
+                &pNewSession->features_1_0.features);
+        }
+        if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES) {
+            mergeFeatureSet_VkPhysicalDeviceVulkan11Features(
+                static_cast<VkPhysicalDeviceVulkan11Features const *>(pFeatures),
+                &pNewSession->features_1_1);
+        }
+        if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES) {
+            mergeFeatureSet_VkPhysicalDeviceVulkan12Features(
+                static_cast<VkPhysicalDeviceVulkan12Features const *>(pFeatures),
+                &pNewSession->features_1_2);
+        }
+
+        pFeatures = pIn->pNext;
+    }
+
     VkDeviceCreateInfo deviceCI{
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext = &pNewSession->features_1_2,
         .queueCreateInfoCount = pNewSession->numQueueFamilies,
         .pQueueCreateInfos = queueCI.get(),
         .enabledLayerCount = static_cast<uint32_t>(finalLayers.size()),
@@ -218,6 +510,28 @@ std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
 
     return getDelimitedString(pSession->extensionsLength, pSession->pExtensions,
                               pExtensionNamesLength, pExtensionNames);
+}
+
+void foeGfxVkEnumerateSessionFeatures(foeGfxSession session, void *pFeatures) {
+    auto *pSession = session_from_handle(session);
+
+    while (pFeatures != nullptr) {
+        VkBaseOutStructure *pOut = static_cast<VkBaseOutStructure *>(pFeatures);
+        VkBaseOutStructure *pNext = pOut->pNext;
+
+        if (pOut->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2) {
+            *static_cast<VkPhysicalDeviceFeatures2 *>(pFeatures) = pSession->features_1_0;
+        }
+        if (pOut->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES) {
+            *static_cast<VkPhysicalDeviceVulkan11Features *>(pFeatures) = pSession->features_1_1;
+        }
+        if (pOut->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES) {
+            *static_cast<VkPhysicalDeviceVulkan12Features *>(pFeatures) = pSession->features_1_2;
+        }
+
+        pOut->pNext = pNext;
+        pFeatures = pOut->pNext;
+    }
 }
 
 uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
