@@ -142,6 +142,8 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
     };
 
     errC = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
+    if (errC)
+        goto CREATE_FAILED;
 
     // Retrieve the queues
     for (uint32_t i = 0; i < pNewSession->numQueueFamilies; ++i) {
