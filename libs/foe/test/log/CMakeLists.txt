@@ -1,1 +1,1 @@
-target_sources(test_foe PRIVATE category.cpp level.cpp)
+target_sources(test_foe PRIVATE category.cpp level.cpp logger.cpp)
