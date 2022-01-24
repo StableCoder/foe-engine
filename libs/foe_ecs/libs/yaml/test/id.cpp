@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave - gcave@stablecoder.ca
+    Copyright (C) 2021-2022 George Cave - gcave@stablecoder.ca
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 
 #include <catch.hpp>
+#include <foe/ecs/group_translator.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/exception.hpp>
 
@@ -34,13 +35,42 @@ TEST_CASE("Reading foeId with only Index - Success Cases", "[foe][ecs][yaml][id]
 TEST_CASE("Reading foeId with only Index - Failure Cases", "[foe][ecs][yaml][id]") {
     YAML::Node root;
 
-    SECTION("Missing node") {
+    SECTION("Missing named sub-node") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(index_id: 15)"));
+        foeId test = FOE_INVALID_ID;
+
+        SECTION("Required") {
+            CHECK_THROWS_MATCHES(
+                yaml_read_id_required("subId", root, nullptr, test), foeYamlException,
+                Catch::Matchers::Equals("subId - Required node to parse foeId not found"));
+            CHECK(test == FOE_INVALID_ID);
+        }
+        SECTION("Optional") {
+            CHECK_FALSE(yaml_read_id_optional("subId", root, nullptr, test));
+            CHECK(test == FOE_INVALID_ID);
+        }
+    }
+
+    SECTION("Missing local IndexID") {
         REQUIRE_NOTHROW(root = YAML::Load(R"(index_id_BROKE: 15)"));
 
         foeId test = FOE_INVALID_ID;
         REQUIRE_THROWS_MATCHES(
             yaml_read_id_required("", root, nullptr, test), foeYamlException,
             Catch::Matchers::Equals("index_id - Could not find required node to parse foeId"));
+
+        test = FOE_INVALID_ID;
+        REQUIRE_FALSE(yaml_read_id_optional("", root, nullptr, test));
+    }
+    SECTION("Missing sub-node IndexID") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(subID:
+  index_id_BROKE: 15)"));
+
+        foeId test = FOE_INVALID_ID;
+        REQUIRE_THROWS_MATCHES(
+            yaml_read_id_required("subID", root, nullptr, test), foeYamlException,
+            Catch::Matchers::Equals(
+                "subID::index_id - Could not find required node to parse foeId"));
 
         test = FOE_INVALID_ID;
         REQUIRE_FALSE(yaml_read_id_optional("", root, nullptr, test));
@@ -73,6 +103,29 @@ group_id: 4)"));
     test = FOE_INVALID_ID;
     REQUIRE(yaml_read_id_optional("", root, nullptr, test));
     CHECK(test == foeIdCreate(foeIdValueToGroup(4), 15));
+}
+
+TEST_CASE("Reading foeId with Group and Index and GroupTranslator") {
+    YAML::Node root;
+    foeId test;
+
+    foeIdGroupTranslator translator;
+    foeIdCreateTranslator({{10, "10"}, {15, "15"}}, {{0, "15"}, {1, "10"}}, &translator);
+
+    SECTION("Success Case") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(index_id: 12
+group_id: 15)"));
+        CHECK_NOTHROW(yaml_read_id_optional("", root, &translator, test));
+        CHECK(test == foeIdCreate(foeIdValueToGroup(0), 12));
+    }
+    SECTION("Failure Case") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(index_id: 12
+group_id: 14)"));
+        CHECK_THROWS_MATCHES(
+            yaml_read_id_optional("", root, &translator, test), foeYamlException,
+            Catch::Matchers::Equals(
+                "group_id - Was given groupValue of '14' for which no translation exists."));
+    }
 }
 
 TEST_CASE("Reading foeId with Group & Index - Failure Cases", "[foe][ecs][yaml][id]") {

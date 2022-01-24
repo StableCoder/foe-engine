@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,11 +31,19 @@ void yaml_read_index_generator(std::string const &nodeName,
     std::vector<foeIdIndex> recycledIndices;
 
     // Next Free Index
-    yaml_read_required("next_free_index", readNode, nextIndex);
+    try {
+        yaml_read_required("next_free_index", readNode, nextIndex);
+    } catch (foeYamlException const &e) {
+        if (nodeName.empty()) {
+            throw foeYamlException{e.whatStr()};
+        } else {
+            throw foeYamlException{nodeName + "::" + e.whatStr()};
+        }
+    }
 
     // Recycled Indices
     try {
-        if (auto recycledNode = node["recycled_indices"]; recycledNode) {
+        if (auto recycledNode = readNode["recycled_indices"]; recycledNode) {
             recycledIndices.reserve(recycledNode.size());
 
             for (auto it = recycledNode.begin(); it != recycledNode.end(); ++it) {

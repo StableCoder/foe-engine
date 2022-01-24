@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave - gcave@stablecoder.ca
+    Copyright (C) 2020-2022 George Cave - gcave@stablecoder.ca
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,13 +19,21 @@
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/yaml/exception.hpp>
 
-TEST_CASE("yaml_read_index_generator - Success Case", "[foe][ecs][yaml][IndexGenerator]") {
+TEST_CASE("yaml_read_index_generator", "[foe][ecs][yaml][IndexGenerator]") {
     YAML::Node root;
-    REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15
-recycled_indices: [8, 4, 10])"));
-
     foeIdIndexGenerator testGenerator{0};
-    REQUIRE_NOTHROW(yaml_read_index_generator("", root, testGenerator));
+
+    SECTION("Local Node") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15
+recycled_indices: [8, 4, 10])"));
+        REQUIRE_NOTHROW(yaml_read_index_generator("", root, testGenerator));
+    }
+    SECTION("Sub Node") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(subNode:
+  next_free_index: 15
+  recycled_indices: [8, 4, 10])"));
+        REQUIRE_NOTHROW(yaml_read_index_generator("subNode", root, testGenerator));
+    }
 
     CHECK(testGenerator.generate() == 8);
     CHECK(testGenerator.generate() == 4);
@@ -44,11 +52,18 @@ TEST_CASE("yaml_write_index_generator", "[foe][ecs][yaml][IndexGenerator]") {
     indexGen.free(4);
     indexGen.free(10);
 
-    YAML::Node testNode;
-    REQUIRE_NOTHROW(yaml_write_index_generator("", indexGen, testNode));
-
     foeIdIndexGenerator testGenerator{0};
-    REQUIRE_NOTHROW(yaml_read_index_generator("", testNode, testGenerator));
+
+    SECTION("Local Node") {
+        YAML::Node testNode;
+        REQUIRE_NOTHROW(yaml_write_index_generator("", indexGen, testNode));
+        REQUIRE_NOTHROW(yaml_read_index_generator("", testNode, testGenerator));
+    }
+    SECTION("Sub Node") {
+        YAML::Node testNode;
+        REQUIRE_NOTHROW(yaml_write_index_generator("subNode", indexGen, testNode));
+        REQUIRE_NOTHROW(yaml_read_index_generator("subNode", testNode, testGenerator));
+    }
 
     CHECK(testGenerator.generate() == 8);
     CHECK(testGenerator.generate() == 4);
@@ -57,15 +72,36 @@ TEST_CASE("yaml_write_index_generator", "[foe][ecs][yaml][IndexGenerator]") {
     CHECK(testGenerator.generate() == 17);
 }
 
+TEST_CASE("yaml_read_index_generator - Missing as subNode") {
+    YAML::Node root;
+    foeIdIndexGenerator temp{0};
+
+    REQUIRE_NOTHROW(root = YAML::Load(R"(dummy:
+  recycled_indices: [8, 4, 10])"));
+    REQUIRE_THROWS_MATCHES(yaml_read_index_generator("subNode", root, temp), foeYamlException,
+                           Catch::Matchers::Equals("subNode - Required node to parse not found"));
+}
+
 TEST_CASE("yaml_read_index_generator - Missing 'next_free_index' node",
           "[foe][ecs][yaml][IndexGenerator]") {
     YAML::Node root;
-    REQUIRE_NOTHROW(root = YAML::Load(R"(recycled_indices: [8, 4, 10])"));
-
     foeIdIndexGenerator temp{0};
-    REQUIRE_THROWS_MATCHES(yaml_read_index_generator("", root, temp), foeYamlException,
-                           Catch::Matchers::Equals(
-                               "next_free_index - Required node not found to parse as 'uint32_t'"));
+
+    SECTION("Local Node") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(recycled_indices: [8, 4, 10])"));
+        REQUIRE_THROWS_MATCHES(
+            yaml_read_index_generator("", root, temp), foeYamlException,
+            Catch::Matchers::Equals(
+                "next_free_index - Required node not found to parse as 'uint32_t'"));
+    }
+    SECTION("Sub Node") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(subNode:
+  recycled_indices: [8, 4, 10])"));
+        REQUIRE_THROWS_MATCHES(
+            yaml_read_index_generator("subNode", root, temp), foeYamlException,
+            Catch::Matchers::Equals(
+                "subNode::next_free_index - Required node not found to parse as 'uint32_t'"));
+    }
 }
 
 TEST_CASE("yaml_read_index_generator - 'next_free_index' node not integer",
@@ -83,11 +119,21 @@ recycled_indices: [8, 4, 10])"));
 TEST_CASE("yaml_read_index_generator - Missing 'recycled_indices' node",
           "[foe][ecs][yaml][IndexGenerator]") {
     YAML::Node root;
-    REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15)"));
-
     foeIdIndexGenerator temp{0};
-    REQUIRE_THROWS_MATCHES(yaml_read_index_generator("", root, temp), foeYamlException,
-                           Catch::Matchers::Equals("recycled_indices - Required node not found"));
+
+    SECTION("Local Node") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(next_free_index: 15)"));
+        REQUIRE_THROWS_MATCHES(
+            yaml_read_index_generator("", root, temp), foeYamlException,
+            Catch::Matchers::Equals("recycled_indices - Required node not found"));
+    }
+    SECTION("Sub Node") {
+        REQUIRE_NOTHROW(root = YAML::Load(R"(subNode:
+  next_free_index: 15)"));
+        REQUIRE_THROWS_MATCHES(
+            yaml_read_index_generator("subNode", root, temp), foeYamlException,
+            Catch::Matchers::Equals("subNode::recycled_indices - Required node not found"));
+    }
 }
 
 TEST_CASE("yaml_read_index_generator - 'recycled_indices' with non-number",
