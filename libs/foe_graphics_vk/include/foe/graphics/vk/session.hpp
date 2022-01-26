@@ -37,6 +37,8 @@ class foeGfxVkPipelinePool;
  * @param vkPhysicalDevice must be a physical device handle retrieved using the given runtime
  * @param layers is a list of Vulkan layers to enable for the session.
  * @param extensions is a list of Vulkan extensions to enable for the session.
+ * @param pBasicFeatures is either NULL or a pointer to the set of Vulkan 1.0 features to enable.
+ * These can also be passed in VkPhysicalDeviceFeatures2 to pFeatures.
  * @param pFeatures is either NULL or a pointer to a chain of Vulkan feature structs.
  * @param pSession points to a foeGfxSession handle in which the resulting session is returned.
  * @return FOE_GFX_VK_SUCCESS on success, or an appropriate error otherwise.
@@ -49,6 +51,7 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                                      VkPhysicalDevice vkPhysicalDevice,
                                                      std::vector<std::string> layers,
                                                      std::vector<std::string> extensions,
+                                                     VkPhysicalDeviceFeatures const *pBasicFeatures,
                                                      void const *pFeatures,
                                                      foeGfxSession *pSession);
 
@@ -89,13 +92,16 @@ FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession 
 
 /** @brief Fills out given feature structs with then enabled session's features
  * @param session is the handle to the session whose features will be queried.
+ *@param pBasicFeatures is either NULL or a pointer to a struct to fill in with features.
  * @param pFeatures is either NULL or a pointer to a chain of Vulkan feature structs.
  *
  * The pFeatures struct chain must include the types that include an sType and pNext void pointer,
  * such as VkPhysicalDeviceFeatures2 or VkPhysicalDeviceVulkan11Features, and as many of these
  * structs can be chained as desired.
  */
-FOE_GFX_EXPORT void foeGfxVkEnumerateSessionFeatures(foeGfxSession session, void *pFeatures);
+FOE_GFX_EXPORT void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,
+                                                     VkPhysicalDeviceFeatures const *pBasicFeatures,
+                                                     void *pFeatures);
 
 FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxSession session);
 FOE_GFX_EXPORT VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session);

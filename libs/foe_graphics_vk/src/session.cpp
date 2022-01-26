@@ -206,6 +206,7 @@ void mergeFeatureSet_VkPhysicalDeviceFeatures(VkPhysicalDeviceFeatures const *pS
         pDst->inheritedQueries = VK_TRUE;
 }
 
+#ifdef VK_VERSION_1_1
 /** @brief Merges source feature flags to the destination
  * @param pSrc is a pointer to the struct of the source set of features to set in the destination
  * @param pDst is a pointer to the destintion where flags will be set
@@ -238,7 +239,9 @@ void mergeFeatureSet_VkPhysicalDeviceVulkan11Features(VkPhysicalDeviceVulkan11Fe
     if (pSrc->shaderDrawParameters != VK_FALSE)
         pDst->shaderDrawParameters = VK_TRUE;
 }
+#endif
 
+#ifdef VK_VERSION_1_2
 /** @brief Merges source feature flags to the destination
  * @param pSrc is a pointer to the struct of the source set of features to set in the destination
  * @param pDst is a pointer to the destintion where flags will be set
@@ -341,6 +344,48 @@ void mergeFeatureSet_VkPhysicalDeviceVulkan12Features(VkPhysicalDeviceVulkan12Fe
     if (pSrc->subgroupBroadcastDynamicId != VK_FALSE)
         pDst->subgroupBroadcastDynamicId = VK_TRUE;
 }
+#endif
+
+#ifdef VK_VERSION_1_3
+/** @brief Merges source feature flags to the destination
+ * @param pSrc is a pointer to the struct of the source set of features to set in the destination
+ * @param pDst is a pointer to the destintion where flags will be set
+ */
+void mergeFeatureSet_VkPhysicalDeviceVulkan13Features(VkPhysicalDeviceVulkan13Features const *pSrc,
+                                                      VkPhysicalDeviceVulkan13Features *pDst) {
+    // Generated from gen_merge_feature_set.sh
+    if (pSrc->robustImageAccess != VK_FALSE)
+        pDst->robustImageAccess = VK_TRUE;
+    if (pSrc->inlineUniformBlock != VK_FALSE)
+        pDst->inlineUniformBlock = VK_TRUE;
+    if (pSrc->descriptorBindingInlineUniformBlockUpdateAfterBind != VK_FALSE)
+        pDst->descriptorBindingInlineUniformBlockUpdateAfterBind = VK_TRUE;
+    if (pSrc->pipelineCreationCacheControl != VK_FALSE)
+        pDst->pipelineCreationCacheControl = VK_TRUE;
+    if (pSrc->privateData != VK_FALSE)
+        pDst->privateData = VK_TRUE;
+    if (pSrc->shaderDemoteToHelperInvocation != VK_FALSE)
+        pDst->shaderDemoteToHelperInvocation = VK_TRUE;
+    if (pSrc->shaderTerminateInvocation != VK_FALSE)
+        pDst->shaderTerminateInvocation = VK_TRUE;
+    if (pSrc->subgroupSizeControl != VK_FALSE)
+        pDst->subgroupSizeControl = VK_TRUE;
+    if (pSrc->computeFullSubgroups != VK_FALSE)
+        pDst->computeFullSubgroups = VK_TRUE;
+    if (pSrc->synchronization2 != VK_FALSE)
+        pDst->synchronization2 = VK_TRUE;
+    if (pSrc->textureCompressionASTC_HDR != VK_FALSE)
+        pDst->textureCompressionASTC_HDR = VK_TRUE;
+    if (pSrc->shaderZeroInitializeWorkgroupMemory != VK_FALSE)
+        pDst->shaderZeroInitializeWorkgroupMemory = VK_TRUE;
+    if (pSrc->dynamicRendering != VK_FALSE)
+        pDst->dynamicRendering = VK_TRUE;
+    if (pSrc->shaderIntegerDotProduct != VK_FALSE)
+        pDst->shaderIntegerDotProduct = VK_TRUE;
+    if (pSrc->maintenance4 != VK_FALSE)
+        pDst->maintenance4 = VK_TRUE;
+}
+#endif
 
 } // namespace
 
@@ -348,6 +393,7 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                       VkPhysicalDevice vkPhysicalDevice,
                                       std::vector<std::string> layers,
                                       std::vector<std::string> extensions,
+                                      VkPhysicalDeviceFeatures const *pBasicFeatures,
                                       void const *pFeatures,
                                       foeGfxSession *pSession) {
     auto *pNewSession = new foeGfxVkSession;
@@ -393,49 +439,92 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
         finalExtensions.emplace_back(it.data());
 
     // Go through feature sets and merge them together to one per struct
-    pNewSession->features_1_0 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+    if (pBasicFeatures == nullptr)
+        pNewSession->features_1_0 = {};
+    else
+        pNewSession->features_1_0 = *pBasicFeatures;
+
+#ifdef VK_VERSION_1_3
+    pNewSession->features_1_3 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
     };
-    pNewSession->features_1_1 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-        .pNext = &pNewSession->features_1_0,
-    };
+#endif
+#ifdef VK_VERSION_1_2
     pNewSession->features_1_2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-        .pNext = &pNewSession->features_1_1,
+#ifdef VK_VERSION_1_3
+        .pNext = &pNewSession->features_1_3,
+#endif
     };
+#endif
+#ifdef VK_VERSION_1_1
+    pNewSession->features_1_1 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
+#ifdef VK_VERSION_1_2
+        .pNext = &pNewSession->features_1_2,
+#endif
+    };
+#endif
 
     while (pFeatures != nullptr) {
         VkBaseInStructure const *pIn = static_cast<VkBaseInStructure const *>(pFeatures);
 
+#ifdef VK_KHR_get_physical_device_properties2
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2) {
             mergeFeatureSet_VkPhysicalDeviceFeatures(
                 static_cast<VkPhysicalDeviceFeatures const *>(pFeatures),
-                &pNewSession->features_1_0.features);
+                &pNewSession->features_1_0);
         }
+#endif
+#ifdef VK_VERSION_1_1
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES) {
             mergeFeatureSet_VkPhysicalDeviceVulkan11Features(
                 static_cast<VkPhysicalDeviceVulkan11Features const *>(pFeatures),
                 &pNewSession->features_1_1);
         }
+#endif
+#ifdef VK_VERSION_1_2
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES) {
             mergeFeatureSet_VkPhysicalDeviceVulkan12Features(
                 static_cast<VkPhysicalDeviceVulkan12Features const *>(pFeatures),
                 &pNewSession->features_1_2);
         }
+#endif
+#ifdef VK_VERSION_1_3
+        if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES) {
+            mergeFeatureSet_VkPhysicalDeviceVulkan13Features(
+                static_cast<VkPhysicalDeviceVulkan13Features const *>(pFeatures),
+                &pNewSession->features_1_3);
+        }
+#endif
 
         pFeatures = pIn->pNext;
     }
 
+#ifdef VK_KHR_get_physical_device_properties2
+    VkPhysicalDeviceFeatures2 features_1_0{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+#ifdef VK_VERSION_1_1
+        .pNext = &pNewSession->features_1_1,
+#endif
+        .features = pNewSession->features_1_0,
+    };
+#endif
+
     VkDeviceCreateInfo deviceCI{
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext = &pNewSession->features_1_2,
+#ifdef VK_KHR_get_physical_device_properties2
+        .pNext = &features_1_0,
+#endif
         .queueCreateInfoCount = pNewSession->numQueueFamilies,
         .pQueueCreateInfos = queueCI.get(),
         .enabledLayerCount = static_cast<uint32_t>(finalLayers.size()),
         .ppEnabledLayerNames = finalLayers.data(),
         .enabledExtensionCount = static_cast<uint32_t>(finalExtensions.size()),
         .ppEnabledExtensionNames = finalExtensions.data(),
+#ifndef VK_VERSION_1_1
+        .pEnabledFeatures = pBasicFeatures,
+#endif
     };
 
     errC = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
@@ -512,22 +601,39 @@ std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
                               pExtensionNamesLength, pExtensionNames);
 }
 
-void foeGfxVkEnumerateSessionFeatures(foeGfxSession session, void *pFeatures) {
+void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,
+                                      VkPhysicalDeviceFeatures *pBasicFeatures,
+                                      void *pFeatures) {
     auto *pSession = session_from_handle(session);
+
+    if (pBasicFeatures != nullptr) {
+        *pBasicFeatures = pSession->features_1_0;
+    }
 
     while (pFeatures != nullptr) {
         VkBaseOutStructure *pOut = static_cast<VkBaseOutStructure *>(pFeatures);
         VkBaseOutStructure *pNext = pOut->pNext;
 
+#ifdef VK_KHR_get_physical_device_properties2
         if (pOut->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2) {
-            *static_cast<VkPhysicalDeviceFeatures2 *>(pFeatures) = pSession->features_1_0;
+            static_cast<VkPhysicalDeviceFeatures2 *>(pFeatures)->features = pSession->features_1_0;
         }
+#endif
+#ifdef VK_VERSION_1_1
         if (pOut->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES) {
             *static_cast<VkPhysicalDeviceVulkan11Features *>(pFeatures) = pSession->features_1_1;
         }
+#endif
+#ifdef VK_VERSION_1_2
         if (pOut->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES) {
             *static_cast<VkPhysicalDeviceVulkan12Features *>(pFeatures) = pSession->features_1_2;
         }
+#endif
+#ifdef VK_VERSION_1_3
+        if (pOut->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES) {
+            *static_cast<VkPhysicalDeviceVulkan13Features *>(pFeatures) = pSession->features_1_3;
+        }
+#endif
 
         pOut->pNext = pNext;
         pFeatures = pOut->pNext;

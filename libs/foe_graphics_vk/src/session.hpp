@@ -52,11 +52,19 @@ struct foeGfxVkSession {
     char *pExtensions{nullptr};
 
     /// Set of enabled Vulkan 1.0 features
-    VkPhysicalDeviceFeatures2 features_1_0;
+    VkPhysicalDeviceFeatures features_1_0;
+#ifdef VK_VERSION_1_1
     /// Set of enabled Vulkan 1.1 features
     VkPhysicalDeviceVulkan11Features features_1_1;
+#endif
+#ifdef VK_VERSION_1_2
     /// Set of enabled Vulkan 1.2 features
     VkPhysicalDeviceVulkan12Features features_1_2;
+#endif
+#ifdef VK_VERSION_1_3
+    // Set of enabled Vulkan 1.3 features
+    VkPhysicalDeviceVulkan13Features features_1_3;
+#endif
 
     foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;

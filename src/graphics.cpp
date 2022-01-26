@@ -230,6 +230,6 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
     }
 #endif
 
-    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layers, extensions, nullptr,
+    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layers, extensions, nullptr, nullptr,
                                  pGfxSession);
 }
