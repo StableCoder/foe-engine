@@ -71,9 +71,9 @@ FOE_GFX_VK_YAML_EXPORT void yaml_write_required_vk(std::string const &typeName,
  * @tparam VkType Vulkan type to parse/serialize
  * @param typeName String name of the Vulkan type
  * @param nodeName Name of the Yaml sub-node to operate on
- * @param data Raw data being encoded
  * @param defaultData The default value of the data. If data matches this, then it is not written
  * out.
+ * @param data Raw data being encoded
  * @param node [out] Yaml node that should have the sub-node to operate on
  * @return True on a successful write. False if nothing is written out.
  * @exception Throws foeYamlException if there's an exception during encoding
@@ -81,8 +81,8 @@ FOE_GFX_VK_YAML_EXPORT void yaml_write_required_vk(std::string const &typeName,
 template <typename VkType>
 FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional_vk(std::string const &typeName,
                                                    std::string const &nodeName,
-                                                   VkType const &data,
                                                    VkType const &defaultData,
+                                                   VkType const &data,
                                                    YAML::Node &node);
 
 #endif // FOE_GRAPHICS_VK_YAML_VK_TYPE_PARSING_HPP

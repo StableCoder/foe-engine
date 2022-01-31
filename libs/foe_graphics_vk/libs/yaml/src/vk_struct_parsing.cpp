@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -125,7 +125,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPushConstantRange>(
     try {
         // VkShaderStageFlags - stageFlags
         addedNode |= yaml_write_optional_vk<VkShaderStageFlags>(
-            "VkShaderStageFlags", "stageFlags", data.stageFlags, defaultData.stageFlags, writeNode);
+            "VkShaderStageFlags", "stageFlags", defaultData.stageFlags, data.stageFlags, writeNode);
 
         // uint32_t - offset
         addedNode |=
@@ -272,7 +272,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutBinding>(
 
         // VkShaderStageFlags - stageFlags
         addedNode |= yaml_write_optional_vk<VkShaderStageFlags>(
-            "VkShaderStageFlags", "stageFlags", data.stageFlags, defaultData.stageFlags, writeNode);
+            "VkShaderStageFlags", "stageFlags", defaultData.stageFlags, data.stageFlags, writeNode);
 
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
@@ -426,7 +426,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutCreateInfo>
     try {
         // VkDescriptorSetLayoutCreateFlags - flags
         addedNode |= yaml_write_optional_vk<VkDescriptorSetLayoutCreateFlags>(
-            "VkDescriptorSetLayoutCreateFlags", "flags", data.flags, defaultData.flags, writeNode);
+            "VkDescriptorSetLayoutCreateFlags", "flags", defaultData.flags, data.flags, writeNode);
 
         // VkDescriptorSetLayoutBinding - pBindings / bindingCount
         if (data.bindingCount > 0) {
@@ -834,7 +834,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCrea
     try {
         // VkPipelineRasterizationStateCreateFlags - flags
         addedNode |= yaml_write_optional_vk<VkPipelineRasterizationStateCreateFlags>(
-            "VkPipelineRasterizationStateCreateFlags", "flags", data.flags, defaultData.flags,
+            "VkPipelineRasterizationStateCreateFlags", "flags", defaultData.flags, data.flags,
             writeNode);
 
         // VkBool32 - depthClampEnable
@@ -852,7 +852,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCrea
 
         // VkCullModeFlags - cullMode
         addedNode |= yaml_write_optional_vk<VkCullModeFlags>(
-            "VkCullModeFlags", "cullMode", data.cullMode, defaultData.cullMode, writeNode);
+            "VkCullModeFlags", "cullMode", defaultData.cullMode, data.cullMode, writeNode);
 
         // VkFrontFace - frontFace
         addedNode |= yaml_write_optional<VkFrontFace>("frontFace", defaultData.frontFace,
@@ -1082,7 +1082,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineDepthStencilStateCreat
     try {
         // VkPipelineDepthStencilStateCreateFlags - flags
         addedNode |= yaml_write_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
-            "VkPipelineDepthStencilStateCreateFlags", "flags", data.flags, defaultData.flags,
+            "VkPipelineDepthStencilStateCreateFlags", "flags", defaultData.flags, data.flags,
             writeNode);
 
         // VkBool32 - depthTestEnable
@@ -1333,8 +1333,8 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentSt
 
         // VkColorComponentFlags - colorWriteMask
         addedNode |= yaml_write_optional_vk<VkColorComponentFlags>(
-            "VkColorComponentFlags", "colorWriteMask", data.colorWriteMask,
-            defaultData.colorWriteMask, writeNode);
+            "VkColorComponentFlags", "colorWriteMask", defaultData.colorWriteMask,
+            data.colorWriteMask, writeNode);
 
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());
@@ -1514,7 +1514,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateI
     try {
         // VkPipelineColorBlendStateCreateFlags - flags
         addedNode |= yaml_write_optional_vk<VkPipelineColorBlendStateCreateFlags>(
-            "VkPipelineColorBlendStateCreateFlags", "flags", data.flags, defaultData.flags,
+            "VkPipelineColorBlendStateCreateFlags", "flags", defaultData.flags, data.flags,
             writeNode);
 
         // VkBool32 - logicOpEnable
@@ -1912,7 +1912,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineVertexInputStateCreate
     try {
         // VkPipelineVertexInputStateCreateFlags - flags
         addedNode |= yaml_write_optional_vk<VkPipelineVertexInputStateCreateFlags>(
-            "VkPipelineVertexInputStateCreateFlags", "flags", data.flags, defaultData.flags,
+            "VkPipelineVertexInputStateCreateFlags", "flags", defaultData.flags, data.flags,
             writeNode);
 
     } catch (foeYamlException const &e) {
@@ -2052,7 +2052,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineInputAssemblyStateCrea
     try {
         // VkPipelineInputAssemblyStateCreateFlags - flags
         addedNode |= yaml_write_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
-            "VkPipelineInputAssemblyStateCreateFlags", "flags", data.flags, defaultData.flags,
+            "VkPipelineInputAssemblyStateCreateFlags", "flags", defaultData.flags, data.flags,
             writeNode);
 
         // VkPrimitiveTopology - topology
@@ -2191,7 +2191,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineTessellationStateCreat
     try {
         // VkPipelineTessellationStateCreateFlags - flags
         addedNode |= yaml_write_optional_vk<VkPipelineTessellationStateCreateFlags>(
-            "VkPipelineTessellationStateCreateFlags", "flags", data.flags, defaultData.flags,
+            "VkPipelineTessellationStateCreateFlags", "flags", defaultData.flags, data.flags,
             writeNode);
 
         // uint32_t - patchControlPoints

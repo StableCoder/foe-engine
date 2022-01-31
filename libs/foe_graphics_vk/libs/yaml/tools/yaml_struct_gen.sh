@@ -267,7 +267,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<$STRUCT>(std::string const& node
 
             WRITE_OPTIONAL="$WRITE_OPTIONAL
         // $TYPE - $VAR
-        addedNode |= yaml_write_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", data.$VAR, defaultData.$VAR, writeNode);
+        addedNode |= yaml_write_optional_vk<$TYPE>(\"$TYPE\", \"$VAR\", defaultData.$VAR, data.$VAR, writeNode);
 "
 
         else
