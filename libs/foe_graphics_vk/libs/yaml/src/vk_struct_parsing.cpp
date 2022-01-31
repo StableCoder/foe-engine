@@ -24,132 +24,6 @@
 #include <string>
 
 template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPushConstantRange>(std::string const &nodeName,
-                                                                    YAML::Node const &node,
-                                                                    VkPushConstantRange &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        throw foeYamlException(nodeName +
-                               " - Required node not found to parse as 'VkPushConstantRange'");
-    }
-
-    VkPushConstantRange newData{};
-    bool read = false;
-    try {
-        // VkShaderStageFlags - stageFlags
-        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
-                                                          subNode, newData.stageFlags);
-
-        // uint32_t - offset
-        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
-
-        // uint32_t - size
-        read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPushConstantRange(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    data = newData;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string const &nodeName,
-                                                                    YAML::Node const &node,
-                                                                    VkPushConstantRange &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    VkPushConstantRange newData{};
-    bool read = false;
-    try {
-        // VkShaderStageFlags - stageFlags
-        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
-                                                          subNode, newData.stageFlags);
-
-        // uint32_t - offset
-        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
-
-        // uint32_t - size
-        read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPushConstantRange(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (read)
-        data = newData;
-    return read;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPushConstantRange>(
-    std::string const &nodeName, VkPushConstantRange const &data, YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        // VkShaderStageFlags - stageFlags
-        yaml_write_required_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
-                                                   data.stageFlags, writeNode);
-
-        // uint32_t - offset
-        yaml_write_required<uint32_t>("offset", data.offset, writeNode);
-
-        // uint32_t - size
-        yaml_write_required<uint32_t>("size", data.size, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPushConstantRange>(
-    std::string const &nodeName,
-    VkPushConstantRange const &defaultData,
-    VkPushConstantRange const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-    bool addedNode = false;
-
-    try {
-        // VkShaderStageFlags - stageFlags
-        addedNode |= yaml_write_optional_vk<VkShaderStageFlags>(
-            "VkShaderStageFlags", "stageFlags", defaultData.stageFlags, data.stageFlags, writeNode);
-
-        // uint32_t - offset
-        addedNode |=
-            yaml_write_optional<uint32_t>("offset", defaultData.offset, data.offset, writeNode);
-
-        // uint32_t - size
-        addedNode |= yaml_write_optional<uint32_t>("size", defaultData.size, data.size, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (addedNode) {
-        if (nodeName.empty()) {
-            node = writeNode;
-        } else {
-            node[nodeName] = writeNode;
-        }
-    }
-
-    return addedNode;
-}
-
-template <>
 FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutBinding>(
     std::string const &nodeName, YAML::Node const &node, VkDescriptorSetLayoutBinding &data) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
@@ -301,11 +175,8 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkDescriptorSetLayoutCreateInfo>(
     VkDescriptorSetLayoutCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkDescriptorSetLayoutCreateFlags - flags
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
@@ -348,11 +219,8 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkDescriptorSetLayoutCreateInfo>(
     VkDescriptorSetLayoutCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkDescriptorSetLayoutCreateFlags - flags
         read |= yaml_read_optional_vk<VkDescriptorSetLayoutCreateFlags>(
@@ -433,1108 +301,11 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkDescriptorSetLayoutCreateInfo>
             YAML::Node bindingsNode;
             for (uint32_t i = 0; i < data.bindingCount; ++i) {
                 YAML::Node newNode;
-                yaml_write_required<VkDescriptorSetLayoutBinding>("", data.pBindings[i], newNode);
+                yaml_write_optional<VkDescriptorSetLayoutBinding>(
+                    "", VkDescriptorSetLayoutBinding{}, data.pBindings[i], newNode);
                 bindingsNode.push_back(newNode);
             }
             writeNode["bindings"] = bindingsNode;
-            addedNode = true;
-        }
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (addedNode) {
-        if (nodeName.empty()) {
-            node = writeNode;
-        } else {
-            node[nodeName] = writeNode;
-        }
-    }
-
-    return addedNode;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkStencilOpState>(std::string const &nodeName,
-                                                                 YAML::Node const &node,
-                                                                 VkStencilOpState &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        throw foeYamlException(nodeName +
-                               " - Required node not found to parse as 'VkStencilOpState'");
-    }
-
-    VkStencilOpState newData{};
-    bool read = false;
-    try {
-        // VkStencilOp - failOp
-        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, newData.failOp);
-
-        // VkStencilOp - passOp
-        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, newData.passOp);
-
-        // VkStencilOp - depthFailOp
-        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, newData.depthFailOp);
-
-        // VkCompareOp - compareOp
-        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, newData.compareOp);
-
-        // uint32_t - compareMask
-        read |= yaml_read_optional<uint32_t>("compareMask", subNode, newData.compareMask);
-
-        // uint32_t - writeMask
-        read |= yaml_read_optional<uint32_t>("writeMask", subNode, newData.writeMask);
-
-        // uint32_t - reference
-        read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkStencilOpState(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    data = newData;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string const &nodeName,
-                                                                 YAML::Node const &node,
-                                                                 VkStencilOpState &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    VkStencilOpState newData{};
-    bool read = false;
-    try {
-        // VkStencilOp - failOp
-        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, newData.failOp);
-
-        // VkStencilOp - passOp
-        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, newData.passOp);
-
-        // VkStencilOp - depthFailOp
-        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, newData.depthFailOp);
-
-        // VkCompareOp - compareOp
-        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, newData.compareOp);
-
-        // uint32_t - compareMask
-        read |= yaml_read_optional<uint32_t>("compareMask", subNode, newData.compareMask);
-
-        // uint32_t - writeMask
-        read |= yaml_read_optional<uint32_t>("writeMask", subNode, newData.writeMask);
-
-        // uint32_t - reference
-        read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkStencilOpState(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (read)
-        data = newData;
-    return read;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkStencilOpState>(std::string const &nodeName,
-                                                                  VkStencilOpState const &data,
-                                                                  YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        // VkStencilOp - failOp
-        yaml_write_required<VkStencilOp>("failOp", data.failOp, writeNode);
-
-        // VkStencilOp - passOp
-        yaml_write_required<VkStencilOp>("passOp", data.passOp, writeNode);
-
-        // VkStencilOp - depthFailOp
-        yaml_write_required<VkStencilOp>("depthFailOp", data.depthFailOp, writeNode);
-
-        // VkCompareOp - compareOp
-        yaml_write_required<VkCompareOp>("compareOp", data.compareOp, writeNode);
-
-        // uint32_t - compareMask
-        yaml_write_required<uint32_t>("compareMask", data.compareMask, writeNode);
-
-        // uint32_t - writeMask
-        yaml_write_required<uint32_t>("writeMask", data.writeMask, writeNode);
-
-        // uint32_t - reference
-        yaml_write_required<uint32_t>("reference", data.reference, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkStencilOpState>(
-    std::string const &nodeName,
-    VkStencilOpState const &defaultData,
-    VkStencilOpState const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-    bool addedNode = false;
-
-    try {
-        // VkStencilOp - failOp
-        addedNode |=
-            yaml_write_optional<VkStencilOp>("failOp", defaultData.failOp, data.failOp, writeNode);
-
-        // VkStencilOp - passOp
-        addedNode |=
-            yaml_write_optional<VkStencilOp>("passOp", defaultData.passOp, data.passOp, writeNode);
-
-        // VkStencilOp - depthFailOp
-        addedNode |= yaml_write_optional<VkStencilOp>("depthFailOp", defaultData.depthFailOp,
-                                                      data.depthFailOp, writeNode);
-
-        // VkCompareOp - compareOp
-        addedNode |= yaml_write_optional<VkCompareOp>("compareOp", defaultData.compareOp,
-                                                      data.compareOp, writeNode);
-
-        // uint32_t - compareMask
-        addedNode |= yaml_write_optional<uint32_t>("compareMask", defaultData.compareMask,
-                                                   data.compareMask, writeNode);
-
-        // uint32_t - writeMask
-        addedNode |= yaml_write_optional<uint32_t>("writeMask", defaultData.writeMask,
-                                                   data.writeMask, writeNode);
-
-        // uint32_t - reference
-        addedNode |= yaml_write_optional<uint32_t>("reference", defaultData.reference,
-                                                   data.reference, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (addedNode) {
-        if (nodeName.empty()) {
-            node = writeNode;
-        } else {
-            node[nodeName] = writeNode;
-        }
-    }
-
-    return addedNode;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreateInfo>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineRasterizationStateCreateInfo &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        throw foeYamlException(
-            nodeName +
-            " - Required node not found to parse as 'VkPipelineRasterizationStateCreateInfo'");
-    }
-
-    VkPipelineRasterizationStateCreateInfo newData{};
-    bool read = false;
-    try {
-        // VkStructureType - sType
-        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
-
-        // VkPipelineRasterizationStateCreateFlags - flags
-        read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
-            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, newData.flags);
-
-        // VkBool32 - depthClampEnable
-        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, newData.depthClampEnable);
-
-        // VkBool32 - rasterizerDiscardEnable
-        read |= yaml_read_optional<VkBool32>("rasterizerDiscardEnable", subNode,
-                                             newData.rasterizerDiscardEnable);
-
-        // VkPolygonMode - polygonMode
-        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, newData.polygonMode);
-
-        // VkCullModeFlags - cullMode
-        read |= yaml_read_optional_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", subNode,
-                                                       newData.cullMode);
-
-        // VkFrontFace - frontFace
-        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, newData.frontFace);
-
-        // VkBool32 - depthBiasEnable
-        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, newData.depthBiasEnable);
-
-        // float - depthBiasConstantFactor
-        read |= yaml_read_optional<float>("depthBiasConstantFactor", subNode,
-                                          newData.depthBiasConstantFactor);
-
-        // float - depthBiasClamp
-        read |= yaml_read_optional<float>("depthBiasClamp", subNode, newData.depthBiasClamp);
-
-        // float - depthBiasSlopeFactor
-        read |= yaml_read_optional<float>("depthBiasSlopeFactor", subNode,
-                                          newData.depthBiasSlopeFactor);
-
-        // float - lineWidth
-        read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineRasterizationStateCreateInfo(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    data = newData;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateInfo>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineRasterizationStateCreateInfo &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    VkPipelineRasterizationStateCreateInfo newData{};
-    bool read = false;
-    try {
-        // VkStructureType - sType
-        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
-
-        // VkPipelineRasterizationStateCreateFlags - flags
-        read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
-            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, newData.flags);
-
-        // VkBool32 - depthClampEnable
-        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, newData.depthClampEnable);
-
-        // VkBool32 - rasterizerDiscardEnable
-        read |= yaml_read_optional<VkBool32>("rasterizerDiscardEnable", subNode,
-                                             newData.rasterizerDiscardEnable);
-
-        // VkPolygonMode - polygonMode
-        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, newData.polygonMode);
-
-        // VkCullModeFlags - cullMode
-        read |= yaml_read_optional_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", subNode,
-                                                       newData.cullMode);
-
-        // VkFrontFace - frontFace
-        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, newData.frontFace);
-
-        // VkBool32 - depthBiasEnable
-        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, newData.depthBiasEnable);
-
-        // float - depthBiasConstantFactor
-        read |= yaml_read_optional<float>("depthBiasConstantFactor", subNode,
-                                          newData.depthBiasConstantFactor);
-
-        // float - depthBiasClamp
-        read |= yaml_read_optional<float>("depthBiasClamp", subNode, newData.depthBiasClamp);
-
-        // float - depthBiasSlopeFactor
-        read |= yaml_read_optional<float>("depthBiasSlopeFactor", subNode,
-                                          newData.depthBiasSlopeFactor);
-
-        // float - lineWidth
-        read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineRasterizationStateCreateInfo(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (read)
-        data = newData;
-    return read;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineRasterizationStateCreateInfo>(
-    std::string const &nodeName,
-    VkPipelineRasterizationStateCreateInfo const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        // VkPipelineRasterizationStateCreateFlags - flags
-        yaml_write_required_vk<VkPipelineRasterizationStateCreateFlags>(
-            "VkPipelineRasterizationStateCreateFlags", "flags", data.flags, writeNode);
-
-        // VkBool32 - depthClampEnable
-        yaml_write_required<VkBool32>("depthClampEnable", data.depthClampEnable, writeNode);
-
-        // VkBool32 - rasterizerDiscardEnable
-        yaml_write_required<VkBool32>("rasterizerDiscardEnable", data.rasterizerDiscardEnable,
-                                      writeNode);
-
-        // VkPolygonMode - polygonMode
-        yaml_write_required<VkPolygonMode>("polygonMode", data.polygonMode, writeNode);
-
-        // VkCullModeFlags - cullMode
-        yaml_write_required_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", data.cullMode,
-                                                writeNode);
-
-        // VkFrontFace - frontFace
-        yaml_write_required<VkFrontFace>("frontFace", data.frontFace, writeNode);
-
-        // VkBool32 - depthBiasEnable
-        yaml_write_required<VkBool32>("depthBiasEnable", data.depthBiasEnable, writeNode);
-
-        // float - depthBiasConstantFactor
-        yaml_write_required<float>("depthBiasConstantFactor", data.depthBiasConstantFactor,
-                                   writeNode);
-
-        // float - depthBiasClamp
-        yaml_write_required<float>("depthBiasClamp", data.depthBiasClamp, writeNode);
-
-        // float - depthBiasSlopeFactor
-        yaml_write_required<float>("depthBiasSlopeFactor", data.depthBiasSlopeFactor, writeNode);
-
-        // float - lineWidth
-        yaml_write_required<float>("lineWidth", data.lineWidth, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCreateInfo>(
-    std::string const &nodeName,
-    VkPipelineRasterizationStateCreateInfo const &defaultData,
-    VkPipelineRasterizationStateCreateInfo const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-    bool addedNode = false;
-
-    try {
-        // VkPipelineRasterizationStateCreateFlags - flags
-        addedNode |= yaml_write_optional_vk<VkPipelineRasterizationStateCreateFlags>(
-            "VkPipelineRasterizationStateCreateFlags", "flags", defaultData.flags, data.flags,
-            writeNode);
-
-        // VkBool32 - depthClampEnable
-        addedNode |= yaml_write_optional<VkBool32>("depthClampEnable", defaultData.depthClampEnable,
-                                                   data.depthClampEnable, writeNode);
-
-        // VkBool32 - rasterizerDiscardEnable
-        addedNode |= yaml_write_optional<VkBool32>("rasterizerDiscardEnable",
-                                                   defaultData.rasterizerDiscardEnable,
-                                                   data.rasterizerDiscardEnable, writeNode);
-
-        // VkPolygonMode - polygonMode
-        addedNode |= yaml_write_optional<VkPolygonMode>("polygonMode", defaultData.polygonMode,
-                                                        data.polygonMode, writeNode);
-
-        // VkCullModeFlags - cullMode
-        addedNode |= yaml_write_optional_vk<VkCullModeFlags>(
-            "VkCullModeFlags", "cullMode", defaultData.cullMode, data.cullMode, writeNode);
-
-        // VkFrontFace - frontFace
-        addedNode |= yaml_write_optional<VkFrontFace>("frontFace", defaultData.frontFace,
-                                                      data.frontFace, writeNode);
-
-        // VkBool32 - depthBiasEnable
-        addedNode |= yaml_write_optional<VkBool32>("depthBiasEnable", defaultData.depthBiasEnable,
-                                                   data.depthBiasEnable, writeNode);
-
-        // float - depthBiasConstantFactor
-        addedNode |= yaml_write_optional<float>("depthBiasConstantFactor",
-                                                defaultData.depthBiasConstantFactor,
-                                                data.depthBiasConstantFactor, writeNode);
-
-        // float - depthBiasClamp
-        addedNode |= yaml_write_optional<float>("depthBiasClamp", defaultData.depthBiasClamp,
-                                                data.depthBiasClamp, writeNode);
-
-        // float - depthBiasSlopeFactor
-        addedNode |=
-            yaml_write_optional<float>("depthBiasSlopeFactor", defaultData.depthBiasSlopeFactor,
-                                       data.depthBiasSlopeFactor, writeNode);
-
-        // float - lineWidth
-        addedNode |= yaml_write_optional<float>("lineWidth", defaultData.lineWidth, data.lineWidth,
-                                                writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (addedNode) {
-        if (nodeName.empty()) {
-            node = writeNode;
-        } else {
-            node[nodeName] = writeNode;
-        }
-    }
-
-    return addedNode;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreateInfo>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineDepthStencilStateCreateInfo &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        throw foeYamlException(
-            nodeName +
-            " - Required node not found to parse as 'VkPipelineDepthStencilStateCreateInfo'");
-    }
-
-    VkPipelineDepthStencilStateCreateInfo newData{};
-    bool read = false;
-    try {
-        // VkStructureType - sType
-        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
-
-        // VkPipelineDepthStencilStateCreateFlags - flags
-        read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
-            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, newData.flags);
-
-        // VkBool32 - depthTestEnable
-        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, newData.depthTestEnable);
-
-        // VkBool32 - depthWriteEnable
-        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, newData.depthWriteEnable);
-
-        // VkCompareOp - depthCompareOp
-        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, newData.depthCompareOp);
-
-        // VkBool32 - depthBoundsTestEnable
-        read |= yaml_read_optional<VkBool32>("depthBoundsTestEnable", subNode,
-                                             newData.depthBoundsTestEnable);
-
-        // VkBool32 - stencilTestEnable
-        read |=
-            yaml_read_optional<VkBool32>("stencilTestEnable", subNode, newData.stencilTestEnable);
-
-        // VkStencilOpState - front
-        read |= yaml_read_optional<VkStencilOpState>("front", subNode, newData.front);
-
-        // VkStencilOpState - back
-        read |= yaml_read_optional<VkStencilOpState>("back", subNode, newData.back);
-
-        // float - minDepthBounds
-        read |= yaml_read_optional<float>("minDepthBounds", subNode, newData.minDepthBounds);
-
-        // float - maxDepthBounds
-        read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineDepthStencilStateCreateInfo(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    data = newData;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInfo>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineDepthStencilStateCreateInfo &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    VkPipelineDepthStencilStateCreateInfo newData{};
-    bool read = false;
-    try {
-        // VkStructureType - sType
-        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
-
-        // VkPipelineDepthStencilStateCreateFlags - flags
-        read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
-            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, newData.flags);
-
-        // VkBool32 - depthTestEnable
-        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, newData.depthTestEnable);
-
-        // VkBool32 - depthWriteEnable
-        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, newData.depthWriteEnable);
-
-        // VkCompareOp - depthCompareOp
-        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, newData.depthCompareOp);
-
-        // VkBool32 - depthBoundsTestEnable
-        read |= yaml_read_optional<VkBool32>("depthBoundsTestEnable", subNode,
-                                             newData.depthBoundsTestEnable);
-
-        // VkBool32 - stencilTestEnable
-        read |=
-            yaml_read_optional<VkBool32>("stencilTestEnable", subNode, newData.stencilTestEnable);
-
-        // VkStencilOpState - front
-        read |= yaml_read_optional<VkStencilOpState>("front", subNode, newData.front);
-
-        // VkStencilOpState - back
-        read |= yaml_read_optional<VkStencilOpState>("back", subNode, newData.back);
-
-        // float - minDepthBounds
-        read |= yaml_read_optional<float>("minDepthBounds", subNode, newData.minDepthBounds);
-
-        // float - maxDepthBounds
-        read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineDepthStencilStateCreateInfo(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (read)
-        data = newData;
-    return read;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineDepthStencilStateCreateInfo>(
-    std::string const &nodeName,
-    VkPipelineDepthStencilStateCreateInfo const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        // VkPipelineDepthStencilStateCreateFlags - flags
-        yaml_write_required_vk<VkPipelineDepthStencilStateCreateFlags>(
-            "VkPipelineDepthStencilStateCreateFlags", "flags", data.flags, writeNode);
-
-        // VkBool32 - depthTestEnable
-        yaml_write_required<VkBool32>("depthTestEnable", data.depthTestEnable, writeNode);
-
-        // VkBool32 - depthWriteEnable
-        yaml_write_required<VkBool32>("depthWriteEnable", data.depthWriteEnable, writeNode);
-
-        // VkCompareOp - depthCompareOp
-        yaml_write_required<VkCompareOp>("depthCompareOp", data.depthCompareOp, writeNode);
-
-        // VkBool32 - depthBoundsTestEnable
-        yaml_write_required<VkBool32>("depthBoundsTestEnable", data.depthBoundsTestEnable,
-                                      writeNode);
-
-        // VkBool32 - stencilTestEnable
-        yaml_write_required<VkBool32>("stencilTestEnable", data.stencilTestEnable, writeNode);
-
-        // VkStencilOpState - front
-        yaml_write_required<VkStencilOpState>("front", data.front, writeNode);
-
-        // VkStencilOpState - back
-        yaml_write_required<VkStencilOpState>("back", data.back, writeNode);
-
-        // float - minDepthBounds
-        yaml_write_required<float>("minDepthBounds", data.minDepthBounds, writeNode);
-
-        // float - maxDepthBounds
-        yaml_write_required<float>("maxDepthBounds", data.maxDepthBounds, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineDepthStencilStateCreateInfo>(
-    std::string const &nodeName,
-    VkPipelineDepthStencilStateCreateInfo const &defaultData,
-    VkPipelineDepthStencilStateCreateInfo const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-    bool addedNode = false;
-
-    try {
-        // VkPipelineDepthStencilStateCreateFlags - flags
-        addedNode |= yaml_write_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
-            "VkPipelineDepthStencilStateCreateFlags", "flags", defaultData.flags, data.flags,
-            writeNode);
-
-        // VkBool32 - depthTestEnable
-        addedNode |= yaml_write_optional<VkBool32>("depthTestEnable", defaultData.depthTestEnable,
-                                                   data.depthTestEnable, writeNode);
-
-        // VkBool32 - depthWriteEnable
-        addedNode |= yaml_write_optional<VkBool32>("depthWriteEnable", defaultData.depthWriteEnable,
-                                                   data.depthWriteEnable, writeNode);
-
-        // VkCompareOp - depthCompareOp
-        addedNode |= yaml_write_optional<VkCompareOp>("depthCompareOp", defaultData.depthCompareOp,
-                                                      data.depthCompareOp, writeNode);
-
-        // VkBool32 - depthBoundsTestEnable
-        addedNode |= yaml_write_optional<VkBool32>("depthBoundsTestEnable",
-                                                   defaultData.depthBoundsTestEnable,
-                                                   data.depthBoundsTestEnable, writeNode);
-
-        // VkBool32 - stencilTestEnable
-        addedNode |= yaml_write_optional<VkBool32>(
-            "stencilTestEnable", defaultData.stencilTestEnable, data.stencilTestEnable, writeNode);
-
-        // VkStencilOpState - front
-        addedNode |= yaml_write_optional<VkStencilOpState>("front", defaultData.front, data.front,
-                                                           writeNode);
-
-        // VkStencilOpState - back
-        addedNode |=
-            yaml_write_optional<VkStencilOpState>("back", defaultData.back, data.back, writeNode);
-
-        // float - minDepthBounds
-        addedNode |= yaml_write_optional<float>("minDepthBounds", defaultData.minDepthBounds,
-                                                data.minDepthBounds, writeNode);
-
-        // float - maxDepthBounds
-        addedNode |= yaml_write_optional<float>("maxDepthBounds", defaultData.maxDepthBounds,
-                                                data.maxDepthBounds, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (addedNode) {
-        if (nodeName.empty()) {
-            node = writeNode;
-        } else {
-            node[nodeName] = writeNode;
-        }
-    }
-
-    return addedNode;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendAttachmentState>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineColorBlendAttachmentState &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        throw foeYamlException(
-            nodeName +
-            " - Required node not found to parse as 'VkPipelineColorBlendAttachmentState'");
-    }
-
-    VkPipelineColorBlendAttachmentState newData{};
-    bool read = false;
-    try {
-        // VkBool32 - blendEnable
-        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, newData.blendEnable);
-
-        // VkBlendFactor - srcColorBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("srcColorBlendFactor", subNode,
-                                                  newData.srcColorBlendFactor);
-
-        // VkBlendFactor - dstColorBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("dstColorBlendFactor", subNode,
-                                                  newData.dstColorBlendFactor);
-
-        // VkBlendOp - colorBlendOp
-        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, newData.colorBlendOp);
-
-        // VkBlendFactor - srcAlphaBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("srcAlphaBlendFactor", subNode,
-                                                  newData.srcAlphaBlendFactor);
-
-        // VkBlendFactor - dstAlphaBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("dstAlphaBlendFactor", subNode,
-                                                  newData.dstAlphaBlendFactor);
-
-        // VkBlendOp - alphaBlendOp
-        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, newData.alphaBlendOp);
-
-        // VkColorComponentFlags - colorWriteMask
-        read |= yaml_read_optional_vk<VkColorComponentFlags>(
-            "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineColorBlendAttachmentState(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    data = newData;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentState>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineColorBlendAttachmentState &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    VkPipelineColorBlendAttachmentState newData{};
-    bool read = false;
-    try {
-        // VkBool32 - blendEnable
-        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, newData.blendEnable);
-
-        // VkBlendFactor - srcColorBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("srcColorBlendFactor", subNode,
-                                                  newData.srcColorBlendFactor);
-
-        // VkBlendFactor - dstColorBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("dstColorBlendFactor", subNode,
-                                                  newData.dstColorBlendFactor);
-
-        // VkBlendOp - colorBlendOp
-        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, newData.colorBlendOp);
-
-        // VkBlendFactor - srcAlphaBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("srcAlphaBlendFactor", subNode,
-                                                  newData.srcAlphaBlendFactor);
-
-        // VkBlendFactor - dstAlphaBlendFactor
-        read |= yaml_read_optional<VkBlendFactor>("dstAlphaBlendFactor", subNode,
-                                                  newData.dstAlphaBlendFactor);
-
-        // VkBlendOp - alphaBlendOp
-        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, newData.alphaBlendOp);
-
-        // VkColorComponentFlags - colorWriteMask
-        read |= yaml_read_optional_vk<VkColorComponentFlags>(
-            "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineColorBlendAttachmentState(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (read)
-        data = newData;
-    return read;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendAttachmentState>(
-    std::string const &nodeName,
-    VkPipelineColorBlendAttachmentState const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        // VkBool32 - blendEnable
-        yaml_write_required<VkBool32>("blendEnable", data.blendEnable, writeNode);
-
-        // VkBlendFactor - srcColorBlendFactor
-        yaml_write_required<VkBlendFactor>("srcColorBlendFactor", data.srcColorBlendFactor,
-                                           writeNode);
-
-        // VkBlendFactor - dstColorBlendFactor
-        yaml_write_required<VkBlendFactor>("dstColorBlendFactor", data.dstColorBlendFactor,
-                                           writeNode);
-
-        // VkBlendOp - colorBlendOp
-        yaml_write_required<VkBlendOp>("colorBlendOp", data.colorBlendOp, writeNode);
-
-        // VkBlendFactor - srcAlphaBlendFactor
-        yaml_write_required<VkBlendFactor>("srcAlphaBlendFactor", data.srcAlphaBlendFactor,
-                                           writeNode);
-
-        // VkBlendFactor - dstAlphaBlendFactor
-        yaml_write_required<VkBlendFactor>("dstAlphaBlendFactor", data.dstAlphaBlendFactor,
-                                           writeNode);
-
-        // VkBlendOp - alphaBlendOp
-        yaml_write_required<VkBlendOp>("alphaBlendOp", data.alphaBlendOp, writeNode);
-
-        // VkColorComponentFlags - colorWriteMask
-        yaml_write_required_vk<VkColorComponentFlags>("VkColorComponentFlags", "colorWriteMask",
-                                                      data.colorWriteMask, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentState>(
-    std::string const &nodeName,
-    VkPipelineColorBlendAttachmentState const &defaultData,
-    VkPipelineColorBlendAttachmentState const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-    bool addedNode = false;
-
-    try {
-        // VkBool32 - blendEnable
-        addedNode |= yaml_write_optional<VkBool32>("blendEnable", defaultData.blendEnable,
-                                                   data.blendEnable, writeNode);
-
-        // VkBlendFactor - srcColorBlendFactor
-        addedNode |= yaml_write_optional<VkBlendFactor>("srcColorBlendFactor",
-                                                        defaultData.srcColorBlendFactor,
-                                                        data.srcColorBlendFactor, writeNode);
-
-        // VkBlendFactor - dstColorBlendFactor
-        addedNode |= yaml_write_optional<VkBlendFactor>("dstColorBlendFactor",
-                                                        defaultData.dstColorBlendFactor,
-                                                        data.dstColorBlendFactor, writeNode);
-
-        // VkBlendOp - colorBlendOp
-        addedNode |= yaml_write_optional<VkBlendOp>("colorBlendOp", defaultData.colorBlendOp,
-                                                    data.colorBlendOp, writeNode);
-
-        // VkBlendFactor - srcAlphaBlendFactor
-        addedNode |= yaml_write_optional<VkBlendFactor>("srcAlphaBlendFactor",
-                                                        defaultData.srcAlphaBlendFactor,
-                                                        data.srcAlphaBlendFactor, writeNode);
-
-        // VkBlendFactor - dstAlphaBlendFactor
-        addedNode |= yaml_write_optional<VkBlendFactor>("dstAlphaBlendFactor",
-                                                        defaultData.dstAlphaBlendFactor,
-                                                        data.dstAlphaBlendFactor, writeNode);
-
-        // VkBlendOp - alphaBlendOp
-        addedNode |= yaml_write_optional<VkBlendOp>("alphaBlendOp", defaultData.alphaBlendOp,
-                                                    data.alphaBlendOp, writeNode);
-
-        // VkColorComponentFlags - colorWriteMask
-        addedNode |= yaml_write_optional_vk<VkColorComponentFlags>(
-            "VkColorComponentFlags", "colorWriteMask", defaultData.colorWriteMask,
-            data.colorWriteMask, writeNode);
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (addedNode) {
-        if (nodeName.empty()) {
-            node = writeNode;
-        } else {
-            node[nodeName] = writeNode;
-        }
-    }
-
-    return addedNode;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateInfo>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineColorBlendStateCreateInfo &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        throw foeYamlException(
-            nodeName +
-            " - Required node not found to parse as 'VkPipelineColorBlendStateCreateInfo'");
-    }
-
-    VkPipelineColorBlendStateCreateInfo newData{};
-    bool read = false;
-    try {
-        // VkStructureType - sType
-        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
-
-        // VkPipelineColorBlendStateCreateFlags - flags
-        read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
-            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, newData.flags);
-
-        // VkBool32 - logicOpEnable
-        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, newData.logicOpEnable);
-
-        // VkLogicOp - logicOp
-        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
-
-        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
-        std::unique_ptr<VkPipelineColorBlendAttachmentState[]> pAttachments;
-        if (auto attachmentsNode = subNode["attachments"]; attachmentsNode) {
-            newData.pAttachments = static_cast<VkPipelineColorBlendAttachmentState *>(
-                calloc(attachmentsNode.size(), sizeof(VkPipelineColorBlendAttachmentState)));
-            size_t count = 0;
-            for (auto it = attachmentsNode.begin(); it != attachmentsNode.end(); ++it) {
-                yaml_read_required("", *it,
-                                   *const_cast<VkPipelineColorBlendAttachmentState *>(
-                                       &newData.pAttachments[count]));
-                ++count;
-            }
-            newData.attachmentCount = static_cast<uint32_t>(attachmentsNode.size());
-            read = true;
-        } else {
-            throw foeYamlException{"attachments - Required node not found"};
-        }
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineColorBlendStateCreateInfo(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    data = newData;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineColorBlendStateCreateInfo &data) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    VkPipelineColorBlendStateCreateInfo newData{};
-    bool read = false;
-    try {
-        // VkStructureType - sType
-        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
-
-        // VkPipelineColorBlendStateCreateFlags - flags
-        read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
-            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, newData.flags);
-
-        // VkBool32 - logicOpEnable
-        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, newData.logicOpEnable);
-
-        // VkLogicOp - logicOp
-        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
-
-        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
-        std::unique_ptr<VkPipelineColorBlendAttachmentState[]> pAttachments;
-        if (auto attachmentsNode = subNode["attachments"]; attachmentsNode) {
-            newData.pAttachments = static_cast<VkPipelineColorBlendAttachmentState *>(
-                calloc(attachmentsNode.size(), sizeof(VkPipelineColorBlendAttachmentState)));
-            size_t count = 0;
-            for (auto it = attachmentsNode.begin(); it != attachmentsNode.end(); ++it) {
-                yaml_read_required("", *it,
-                                   *const_cast<VkPipelineColorBlendAttachmentState *>(
-                                       &newData.pAttachments[count]));
-                ++count;
-            }
-            newData.attachmentCount = static_cast<uint32_t>(attachmentsNode.size());
-            read = true;
-        }
-
-    } catch (foeYamlException const &e) {
-        cleanup_VkPipelineColorBlendStateCreateInfo(&newData);
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (read)
-        data = newData;
-    return read;
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendStateCreateInfo>(
-    std::string const &nodeName,
-    VkPipelineColorBlendStateCreateInfo const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        // VkPipelineColorBlendStateCreateFlags - flags
-        yaml_write_required_vk<VkPipelineColorBlendStateCreateFlags>(
-            "VkPipelineColorBlendStateCreateFlags", "flags", data.flags, writeNode);
-
-        // VkBool32 - logicOpEnable
-        yaml_write_required<VkBool32>("logicOpEnable", data.logicOpEnable, writeNode);
-
-        // VkLogicOp - logicOp
-        yaml_write_required<VkLogicOp>("logicOp", data.logicOp, writeNode);
-
-        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
-        YAML::Node attachmentsNode;
-        for (uint32_t i = 0; i < data.attachmentCount; ++i) {
-            YAML::Node newNode;
-            yaml_write_required<VkPipelineColorBlendAttachmentState>("", data.pAttachments[i],
-                                                                     newNode);
-            attachmentsNode.push_back(newNode);
-        }
-        writeNode["attachments"] = attachmentsNode;
-
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-template <>
-FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateInfo>(
-    std::string const &nodeName,
-    VkPipelineColorBlendStateCreateInfo const &defaultData,
-    VkPipelineColorBlendStateCreateInfo const &data,
-    YAML::Node &node) {
-    YAML::Node writeNode;
-    bool addedNode = false;
-
-    try {
-        // VkPipelineColorBlendStateCreateFlags - flags
-        addedNode |= yaml_write_optional_vk<VkPipelineColorBlendStateCreateFlags>(
-            "VkPipelineColorBlendStateCreateFlags", "flags", defaultData.flags, data.flags,
-            writeNode);
-
-        // VkBool32 - logicOpEnable
-        addedNode |= yaml_write_optional<VkBool32>("logicOpEnable", defaultData.logicOpEnable,
-                                                   data.logicOpEnable, writeNode);
-
-        // VkLogicOp - logicOp
-        addedNode |=
-            yaml_write_optional<VkLogicOp>("logicOp", defaultData.logicOp, data.logicOp, writeNode);
-
-        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
-        if (data.attachmentCount > 0) {
-            YAML::Node attachmentsNode;
-            for (uint32_t i = 0; i < data.attachmentCount; ++i) {
-                YAML::Node newNode;
-                yaml_write_required<VkPipelineColorBlendAttachmentState>("", data.pAttachments[i],
-                                                                         newNode);
-                attachmentsNode.push_back(newNode);
-            }
-            writeNode["attachments"] = attachmentsNode;
             addedNode = true;
         }
 
@@ -1826,11 +597,8 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineVertexInputStateCreateI
     VkPipelineVertexInputStateCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkPipelineVertexInputStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
@@ -1857,11 +625,8 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineVertexInputStateCreateI
     VkPipelineVertexInputStateCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkPipelineVertexInputStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineVertexInputStateCreateFlags>(
@@ -1945,11 +710,8 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineInputAssemblyStateCreat
     VkPipelineInputAssemblyStateCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkPipelineInputAssemblyStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
@@ -1983,11 +745,8 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineInputAssemblyStateCreat
     VkPipelineInputAssemblyStateCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkPipelineInputAssemblyStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineInputAssemblyStateCreateFlags>(
@@ -2094,11 +853,8 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineTessellationStateCreate
     VkPipelineTessellationStateCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkPipelineTessellationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
@@ -2129,11 +885,8 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineTessellationStateCreate
     VkPipelineTessellationStateCreateInfo newData{};
     bool read = false;
     try {
-        // VkStructureType - sType
+        // sType
         newData.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-
-        // void* - pNext
-        newData.pNext = nullptr;
 
         // VkPipelineTessellationStateCreateFlags - flags
         read |= yaml_read_optional_vk<VkPipelineTessellationStateCreateFlags>(
@@ -2198,6 +951,1212 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineTessellationStateCreat
         addedNode |=
             yaml_write_optional<uint32_t>("patchControlPoints", defaultData.patchControlPoints,
                                           data.patchControlPoints, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineRasterizationStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineRasterizationStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineRasterizationStateCreateInfo'");
+    }
+
+    VkPipelineRasterizationStateCreateInfo newData{};
+    bool read = false;
+    try {
+        // sType
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+
+        // VkPipelineRasterizationStateCreateFlags - flags
+        read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
+            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, newData.flags);
+
+        // VkBool32 - depthClampEnable
+        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, newData.depthClampEnable);
+
+        // VkBool32 - rasterizerDiscardEnable
+        read |= yaml_read_optional<VkBool32>("rasterizerDiscardEnable", subNode,
+                                             newData.rasterizerDiscardEnable);
+
+        // VkPolygonMode - polygonMode
+        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, newData.polygonMode);
+
+        // VkCullModeFlags - cullMode
+        read |= yaml_read_optional_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", subNode,
+                                                       newData.cullMode);
+
+        // VkFrontFace - frontFace
+        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, newData.frontFace);
+
+        // VkBool32 - depthBiasEnable
+        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, newData.depthBiasEnable);
+
+        // float - depthBiasConstantFactor
+        read |= yaml_read_optional<float>("depthBiasConstantFactor", subNode,
+                                          newData.depthBiasConstantFactor);
+
+        // float - depthBiasClamp
+        read |= yaml_read_optional<float>("depthBiasClamp", subNode, newData.depthBiasClamp);
+
+        // float - depthBiasSlopeFactor
+        read |= yaml_read_optional<float>("depthBiasSlopeFactor", subNode,
+                                          newData.depthBiasSlopeFactor);
+
+        // float - lineWidth
+        read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineRasterizationStateCreateInfo(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    data = newData;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineRasterizationStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineRasterizationStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    VkPipelineRasterizationStateCreateInfo newData{};
+    bool read = false;
+    try {
+        // sType
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+
+        // VkPipelineRasterizationStateCreateFlags - flags
+        read |= yaml_read_optional_vk<VkPipelineRasterizationStateCreateFlags>(
+            "VkPipelineRasterizationStateCreateFlags", "flags", subNode, newData.flags);
+
+        // VkBool32 - depthClampEnable
+        read |= yaml_read_optional<VkBool32>("depthClampEnable", subNode, newData.depthClampEnable);
+
+        // VkBool32 - rasterizerDiscardEnable
+        read |= yaml_read_optional<VkBool32>("rasterizerDiscardEnable", subNode,
+                                             newData.rasterizerDiscardEnable);
+
+        // VkPolygonMode - polygonMode
+        read |= yaml_read_optional<VkPolygonMode>("polygonMode", subNode, newData.polygonMode);
+
+        // VkCullModeFlags - cullMode
+        read |= yaml_read_optional_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", subNode,
+                                                       newData.cullMode);
+
+        // VkFrontFace - frontFace
+        read |= yaml_read_optional<VkFrontFace>("frontFace", subNode, newData.frontFace);
+
+        // VkBool32 - depthBiasEnable
+        read |= yaml_read_optional<VkBool32>("depthBiasEnable", subNode, newData.depthBiasEnable);
+
+        // float - depthBiasConstantFactor
+        read |= yaml_read_optional<float>("depthBiasConstantFactor", subNode,
+                                          newData.depthBiasConstantFactor);
+
+        // float - depthBiasClamp
+        read |= yaml_read_optional<float>("depthBiasClamp", subNode, newData.depthBiasClamp);
+
+        // float - depthBiasSlopeFactor
+        read |= yaml_read_optional<float>("depthBiasSlopeFactor", subNode,
+                                          newData.depthBiasSlopeFactor);
+
+        // float - lineWidth
+        read |= yaml_read_optional<float>("lineWidth", subNode, newData.lineWidth);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineRasterizationStateCreateInfo(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (read)
+        data = newData;
+    return read;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineRasterizationStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineRasterizationStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // VkPipelineRasterizationStateCreateFlags - flags
+        yaml_write_required_vk<VkPipelineRasterizationStateCreateFlags>(
+            "VkPipelineRasterizationStateCreateFlags", "flags", data.flags, writeNode);
+
+        // VkBool32 - depthClampEnable
+        yaml_write_required<VkBool32>("depthClampEnable", data.depthClampEnable, writeNode);
+
+        // VkBool32 - rasterizerDiscardEnable
+        yaml_write_required<VkBool32>("rasterizerDiscardEnable", data.rasterizerDiscardEnable,
+                                      writeNode);
+
+        // VkPolygonMode - polygonMode
+        yaml_write_required<VkPolygonMode>("polygonMode", data.polygonMode, writeNode);
+
+        // VkCullModeFlags - cullMode
+        yaml_write_required_vk<VkCullModeFlags>("VkCullModeFlags", "cullMode", data.cullMode,
+                                                writeNode);
+
+        // VkFrontFace - frontFace
+        yaml_write_required<VkFrontFace>("frontFace", data.frontFace, writeNode);
+
+        // VkBool32 - depthBiasEnable
+        yaml_write_required<VkBool32>("depthBiasEnable", data.depthBiasEnable, writeNode);
+
+        // float - depthBiasConstantFactor
+        yaml_write_required<float>("depthBiasConstantFactor", data.depthBiasConstantFactor,
+                                   writeNode);
+
+        // float - depthBiasClamp
+        yaml_write_required<float>("depthBiasClamp", data.depthBiasClamp, writeNode);
+
+        // float - depthBiasSlopeFactor
+        yaml_write_required<float>("depthBiasSlopeFactor", data.depthBiasSlopeFactor, writeNode);
+
+        // float - lineWidth
+        yaml_write_required<float>("lineWidth", data.lineWidth, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineRasterizationStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineRasterizationStateCreateInfo const &defaultData,
+    VkPipelineRasterizationStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        // VkPipelineRasterizationStateCreateFlags - flags
+        addedNode |= yaml_write_optional_vk<VkPipelineRasterizationStateCreateFlags>(
+            "VkPipelineRasterizationStateCreateFlags", "flags", defaultData.flags, data.flags,
+            writeNode);
+
+        // VkBool32 - depthClampEnable
+        addedNode |= yaml_write_optional<VkBool32>("depthClampEnable", defaultData.depthClampEnable,
+                                                   data.depthClampEnable, writeNode);
+
+        // VkBool32 - rasterizerDiscardEnable
+        addedNode |= yaml_write_optional<VkBool32>("rasterizerDiscardEnable",
+                                                   defaultData.rasterizerDiscardEnable,
+                                                   data.rasterizerDiscardEnable, writeNode);
+
+        // VkPolygonMode - polygonMode
+        addedNode |= yaml_write_optional<VkPolygonMode>("polygonMode", defaultData.polygonMode,
+                                                        data.polygonMode, writeNode);
+
+        // VkCullModeFlags - cullMode
+        addedNode |= yaml_write_optional_vk<VkCullModeFlags>(
+            "VkCullModeFlags", "cullMode", defaultData.cullMode, data.cullMode, writeNode);
+
+        // VkFrontFace - frontFace
+        addedNode |= yaml_write_optional<VkFrontFace>("frontFace", defaultData.frontFace,
+                                                      data.frontFace, writeNode);
+
+        // VkBool32 - depthBiasEnable
+        addedNode |= yaml_write_optional<VkBool32>("depthBiasEnable", defaultData.depthBiasEnable,
+                                                   data.depthBiasEnable, writeNode);
+
+        // float - depthBiasConstantFactor
+        addedNode |= yaml_write_optional<float>("depthBiasConstantFactor",
+                                                defaultData.depthBiasConstantFactor,
+                                                data.depthBiasConstantFactor, writeNode);
+
+        // float - depthBiasClamp
+        addedNode |= yaml_write_optional<float>("depthBiasClamp", defaultData.depthBiasClamp,
+                                                data.depthBiasClamp, writeNode);
+
+        // float - depthBiasSlopeFactor
+        addedNode |=
+            yaml_write_optional<float>("depthBiasSlopeFactor", defaultData.depthBiasSlopeFactor,
+                                       data.depthBiasSlopeFactor, writeNode);
+
+        // float - lineWidth
+        addedNode |= yaml_write_optional<float>("lineWidth", defaultData.lineWidth, data.lineWidth,
+                                                writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendAttachmentState>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineColorBlendAttachmentState &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineColorBlendAttachmentState'");
+    }
+
+    VkPipelineColorBlendAttachmentState newData{};
+    bool read = false;
+    try {
+        // VkBool32 - blendEnable
+        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, newData.blendEnable);
+
+        // VkBlendFactor - srcColorBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("srcColorBlendFactor", subNode,
+                                                  newData.srcColorBlendFactor);
+
+        // VkBlendFactor - dstColorBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("dstColorBlendFactor", subNode,
+                                                  newData.dstColorBlendFactor);
+
+        // VkBlendOp - colorBlendOp
+        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, newData.colorBlendOp);
+
+        // VkBlendFactor - srcAlphaBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("srcAlphaBlendFactor", subNode,
+                                                  newData.srcAlphaBlendFactor);
+
+        // VkBlendFactor - dstAlphaBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("dstAlphaBlendFactor", subNode,
+                                                  newData.dstAlphaBlendFactor);
+
+        // VkBlendOp - alphaBlendOp
+        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, newData.alphaBlendOp);
+
+        // VkColorComponentFlags - colorWriteMask
+        read |= yaml_read_optional_vk<VkColorComponentFlags>(
+            "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineColorBlendAttachmentState(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    data = newData;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendAttachmentState>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineColorBlendAttachmentState &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    VkPipelineColorBlendAttachmentState newData{};
+    bool read = false;
+    try {
+        // VkBool32 - blendEnable
+        read |= yaml_read_optional<VkBool32>("blendEnable", subNode, newData.blendEnable);
+
+        // VkBlendFactor - srcColorBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("srcColorBlendFactor", subNode,
+                                                  newData.srcColorBlendFactor);
+
+        // VkBlendFactor - dstColorBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("dstColorBlendFactor", subNode,
+                                                  newData.dstColorBlendFactor);
+
+        // VkBlendOp - colorBlendOp
+        read |= yaml_read_optional<VkBlendOp>("colorBlendOp", subNode, newData.colorBlendOp);
+
+        // VkBlendFactor - srcAlphaBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("srcAlphaBlendFactor", subNode,
+                                                  newData.srcAlphaBlendFactor);
+
+        // VkBlendFactor - dstAlphaBlendFactor
+        read |= yaml_read_optional<VkBlendFactor>("dstAlphaBlendFactor", subNode,
+                                                  newData.dstAlphaBlendFactor);
+
+        // VkBlendOp - alphaBlendOp
+        read |= yaml_read_optional<VkBlendOp>("alphaBlendOp", subNode, newData.alphaBlendOp);
+
+        // VkColorComponentFlags - colorWriteMask
+        read |= yaml_read_optional_vk<VkColorComponentFlags>(
+            "VkColorComponentFlags", "colorWriteMask", subNode, newData.colorWriteMask);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineColorBlendAttachmentState(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (read)
+        data = newData;
+    return read;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendAttachmentState>(
+    std::string const &nodeName,
+    VkPipelineColorBlendAttachmentState const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // VkBool32 - blendEnable
+        yaml_write_required<VkBool32>("blendEnable", data.blendEnable, writeNode);
+
+        // VkBlendFactor - srcColorBlendFactor
+        yaml_write_required<VkBlendFactor>("srcColorBlendFactor", data.srcColorBlendFactor,
+                                           writeNode);
+
+        // VkBlendFactor - dstColorBlendFactor
+        yaml_write_required<VkBlendFactor>("dstColorBlendFactor", data.dstColorBlendFactor,
+                                           writeNode);
+
+        // VkBlendOp - colorBlendOp
+        yaml_write_required<VkBlendOp>("colorBlendOp", data.colorBlendOp, writeNode);
+
+        // VkBlendFactor - srcAlphaBlendFactor
+        yaml_write_required<VkBlendFactor>("srcAlphaBlendFactor", data.srcAlphaBlendFactor,
+                                           writeNode);
+
+        // VkBlendFactor - dstAlphaBlendFactor
+        yaml_write_required<VkBlendFactor>("dstAlphaBlendFactor", data.dstAlphaBlendFactor,
+                                           writeNode);
+
+        // VkBlendOp - alphaBlendOp
+        yaml_write_required<VkBlendOp>("alphaBlendOp", data.alphaBlendOp, writeNode);
+
+        // VkColorComponentFlags - colorWriteMask
+        yaml_write_required_vk<VkColorComponentFlags>("VkColorComponentFlags", "colorWriteMask",
+                                                      data.colorWriteMask, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendAttachmentState>(
+    std::string const &nodeName,
+    VkPipelineColorBlendAttachmentState const &defaultData,
+    VkPipelineColorBlendAttachmentState const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        // VkBool32 - blendEnable
+        addedNode |= yaml_write_optional<VkBool32>("blendEnable", defaultData.blendEnable,
+                                                   data.blendEnable, writeNode);
+
+        // VkBlendFactor - srcColorBlendFactor
+        addedNode |= yaml_write_optional<VkBlendFactor>("srcColorBlendFactor",
+                                                        defaultData.srcColorBlendFactor,
+                                                        data.srcColorBlendFactor, writeNode);
+
+        // VkBlendFactor - dstColorBlendFactor
+        addedNode |= yaml_write_optional<VkBlendFactor>("dstColorBlendFactor",
+                                                        defaultData.dstColorBlendFactor,
+                                                        data.dstColorBlendFactor, writeNode);
+
+        // VkBlendOp - colorBlendOp
+        addedNode |= yaml_write_optional<VkBlendOp>("colorBlendOp", defaultData.colorBlendOp,
+                                                    data.colorBlendOp, writeNode);
+
+        // VkBlendFactor - srcAlphaBlendFactor
+        addedNode |= yaml_write_optional<VkBlendFactor>("srcAlphaBlendFactor",
+                                                        defaultData.srcAlphaBlendFactor,
+                                                        data.srcAlphaBlendFactor, writeNode);
+
+        // VkBlendFactor - dstAlphaBlendFactor
+        addedNode |= yaml_write_optional<VkBlendFactor>("dstAlphaBlendFactor",
+                                                        defaultData.dstAlphaBlendFactor,
+                                                        data.dstAlphaBlendFactor, writeNode);
+
+        // VkBlendOp - alphaBlendOp
+        addedNode |= yaml_write_optional<VkBlendOp>("alphaBlendOp", defaultData.alphaBlendOp,
+                                                    data.alphaBlendOp, writeNode);
+
+        // VkColorComponentFlags - colorWriteMask
+        addedNode |= yaml_write_optional_vk<VkColorComponentFlags>(
+            "VkColorComponentFlags", "colorWriteMask", defaultData.colorWriteMask,
+            data.colorWriteMask, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineColorBlendStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineColorBlendStateCreateInfo'");
+    }
+
+    VkPipelineColorBlendStateCreateInfo newData{};
+    bool read = false;
+    try {
+        // sType
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+
+        // VkPipelineColorBlendStateCreateFlags - flags
+        read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, newData.flags);
+
+        // VkBool32 - logicOpEnable
+        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, newData.logicOpEnable);
+
+        // VkLogicOp - logicOp
+        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
+
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        std::unique_ptr<VkPipelineColorBlendAttachmentState[]> pAttachments;
+        if (auto attachmentsNode = subNode["attachments"]; attachmentsNode) {
+            newData.pAttachments = static_cast<VkPipelineColorBlendAttachmentState *>(
+                calloc(attachmentsNode.size(), sizeof(VkPipelineColorBlendAttachmentState)));
+            size_t count = 0;
+            for (auto it = attachmentsNode.begin(); it != attachmentsNode.end(); ++it) {
+                yaml_read_required("", *it,
+                                   *const_cast<VkPipelineColorBlendAttachmentState *>(
+                                       &newData.pAttachments[count]));
+                ++count;
+            }
+            newData.attachmentCount = static_cast<uint32_t>(attachmentsNode.size());
+            read = true;
+        } else {
+            throw foeYamlException{"attachments - Required node not found"};
+        }
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineColorBlendStateCreateInfo(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    data = newData;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineColorBlendStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    VkPipelineColorBlendStateCreateInfo newData{};
+    bool read = false;
+    try {
+        // sType
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+
+        // VkPipelineColorBlendStateCreateFlags - flags
+        read |= yaml_read_optional_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", subNode, newData.flags);
+
+        // VkBool32 - logicOpEnable
+        read |= yaml_read_optional<VkBool32>("logicOpEnable", subNode, newData.logicOpEnable);
+
+        // VkLogicOp - logicOp
+        read |= yaml_read_optional<VkLogicOp>("logicOp", subNode, newData.logicOp);
+
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        std::unique_ptr<VkPipelineColorBlendAttachmentState[]> pAttachments;
+        if (auto attachmentsNode = subNode["attachments"]; attachmentsNode) {
+            newData.pAttachments = static_cast<VkPipelineColorBlendAttachmentState *>(
+                calloc(attachmentsNode.size(), sizeof(VkPipelineColorBlendAttachmentState)));
+            size_t count = 0;
+            for (auto it = attachmentsNode.begin(); it != attachmentsNode.end(); ++it) {
+                yaml_read_required("", *it,
+                                   *const_cast<VkPipelineColorBlendAttachmentState *>(
+                                       &newData.pAttachments[count]));
+                ++count;
+            }
+            newData.attachmentCount = static_cast<uint32_t>(attachmentsNode.size());
+            read = true;
+        }
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineColorBlendStateCreateInfo(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (read)
+        data = newData;
+    return read;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineColorBlendStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // VkPipelineColorBlendStateCreateFlags - flags
+        yaml_write_required_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", data.flags, writeNode);
+
+        // VkBool32 - logicOpEnable
+        yaml_write_required<VkBool32>("logicOpEnable", data.logicOpEnable, writeNode);
+
+        // VkLogicOp - logicOp
+        yaml_write_required<VkLogicOp>("logicOp", data.logicOp, writeNode);
+
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        YAML::Node attachmentsNode;
+        for (uint32_t i = 0; i < data.attachmentCount; ++i) {
+            YAML::Node newNode;
+            yaml_write_required<VkPipelineColorBlendAttachmentState>("", data.pAttachments[i],
+                                                                     newNode);
+            attachmentsNode.push_back(newNode);
+        }
+        writeNode["attachments"] = attachmentsNode;
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineColorBlendStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineColorBlendStateCreateInfo const &defaultData,
+    VkPipelineColorBlendStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        // VkPipelineColorBlendStateCreateFlags - flags
+        addedNode |= yaml_write_optional_vk<VkPipelineColorBlendStateCreateFlags>(
+            "VkPipelineColorBlendStateCreateFlags", "flags", defaultData.flags, data.flags,
+            writeNode);
+
+        // VkBool32 - logicOpEnable
+        addedNode |= yaml_write_optional<VkBool32>("logicOpEnable", defaultData.logicOpEnable,
+                                                   data.logicOpEnable, writeNode);
+
+        // VkLogicOp - logicOp
+        addedNode |=
+            yaml_write_optional<VkLogicOp>("logicOp", defaultData.logicOp, data.logicOp, writeNode);
+
+        // VkPipelineColorBlendAttachmentState - pAttachments / attachmentCount
+        if (data.attachmentCount > 0) {
+            YAML::Node attachmentsNode;
+            for (uint32_t i = 0; i < data.attachmentCount; ++i) {
+                YAML::Node newNode;
+                yaml_write_optional<VkPipelineColorBlendAttachmentState>(
+                    "", VkPipelineColorBlendAttachmentState{}, data.pAttachments[i], newNode);
+                attachmentsNode.push_back(newNode);
+            }
+            writeNode["attachments"] = attachmentsNode;
+            addedNode = true;
+        }
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkStencilOpState>(std::string const &nodeName,
+                                                                 YAML::Node const &node,
+                                                                 VkStencilOpState &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(nodeName +
+                               " - Required node not found to parse as 'VkStencilOpState'");
+    }
+
+    VkStencilOpState newData{};
+    bool read = false;
+    try {
+        // VkStencilOp - failOp
+        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, newData.failOp);
+
+        // VkStencilOp - passOp
+        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, newData.passOp);
+
+        // VkStencilOp - depthFailOp
+        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, newData.depthFailOp);
+
+        // VkCompareOp - compareOp
+        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, newData.compareOp);
+
+        // uint32_t - compareMask
+        read |= yaml_read_optional<uint32_t>("compareMask", subNode, newData.compareMask);
+
+        // uint32_t - writeMask
+        read |= yaml_read_optional<uint32_t>("writeMask", subNode, newData.writeMask);
+
+        // uint32_t - reference
+        read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkStencilOpState(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    data = newData;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkStencilOpState>(std::string const &nodeName,
+                                                                 YAML::Node const &node,
+                                                                 VkStencilOpState &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    VkStencilOpState newData{};
+    bool read = false;
+    try {
+        // VkStencilOp - failOp
+        read |= yaml_read_optional<VkStencilOp>("failOp", subNode, newData.failOp);
+
+        // VkStencilOp - passOp
+        read |= yaml_read_optional<VkStencilOp>("passOp", subNode, newData.passOp);
+
+        // VkStencilOp - depthFailOp
+        read |= yaml_read_optional<VkStencilOp>("depthFailOp", subNode, newData.depthFailOp);
+
+        // VkCompareOp - compareOp
+        read |= yaml_read_optional<VkCompareOp>("compareOp", subNode, newData.compareOp);
+
+        // uint32_t - compareMask
+        read |= yaml_read_optional<uint32_t>("compareMask", subNode, newData.compareMask);
+
+        // uint32_t - writeMask
+        read |= yaml_read_optional<uint32_t>("writeMask", subNode, newData.writeMask);
+
+        // uint32_t - reference
+        read |= yaml_read_optional<uint32_t>("reference", subNode, newData.reference);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkStencilOpState(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (read)
+        data = newData;
+    return read;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkStencilOpState>(std::string const &nodeName,
+                                                                  VkStencilOpState const &data,
+                                                                  YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // VkStencilOp - failOp
+        yaml_write_required<VkStencilOp>("failOp", data.failOp, writeNode);
+
+        // VkStencilOp - passOp
+        yaml_write_required<VkStencilOp>("passOp", data.passOp, writeNode);
+
+        // VkStencilOp - depthFailOp
+        yaml_write_required<VkStencilOp>("depthFailOp", data.depthFailOp, writeNode);
+
+        // VkCompareOp - compareOp
+        yaml_write_required<VkCompareOp>("compareOp", data.compareOp, writeNode);
+
+        // uint32_t - compareMask
+        yaml_write_required<uint32_t>("compareMask", data.compareMask, writeNode);
+
+        // uint32_t - writeMask
+        yaml_write_required<uint32_t>("writeMask", data.writeMask, writeNode);
+
+        // uint32_t - reference
+        yaml_write_required<uint32_t>("reference", data.reference, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkStencilOpState>(
+    std::string const &nodeName,
+    VkStencilOpState const &defaultData,
+    VkStencilOpState const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        // VkStencilOp - failOp
+        addedNode |=
+            yaml_write_optional<VkStencilOp>("failOp", defaultData.failOp, data.failOp, writeNode);
+
+        // VkStencilOp - passOp
+        addedNode |=
+            yaml_write_optional<VkStencilOp>("passOp", defaultData.passOp, data.passOp, writeNode);
+
+        // VkStencilOp - depthFailOp
+        addedNode |= yaml_write_optional<VkStencilOp>("depthFailOp", defaultData.depthFailOp,
+                                                      data.depthFailOp, writeNode);
+
+        // VkCompareOp - compareOp
+        addedNode |= yaml_write_optional<VkCompareOp>("compareOp", defaultData.compareOp,
+                                                      data.compareOp, writeNode);
+
+        // uint32_t - compareMask
+        addedNode |= yaml_write_optional<uint32_t>("compareMask", defaultData.compareMask,
+                                                   data.compareMask, writeNode);
+
+        // uint32_t - writeMask
+        addedNode |= yaml_write_optional<uint32_t>("writeMask", defaultData.writeMask,
+                                                   data.writeMask, writeNode);
+
+        // uint32_t - reference
+        addedNode |= yaml_write_optional<uint32_t>("reference", defaultData.reference,
+                                                   data.reference, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPipelineDepthStencilStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineDepthStencilStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(
+            nodeName +
+            " - Required node not found to parse as 'VkPipelineDepthStencilStateCreateInfo'");
+    }
+
+    VkPipelineDepthStencilStateCreateInfo newData{};
+    bool read = false;
+    try {
+        // sType
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
+        // VkPipelineDepthStencilStateCreateFlags - flags
+        read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
+            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, newData.flags);
+
+        // VkBool32 - depthTestEnable
+        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, newData.depthTestEnable);
+
+        // VkBool32 - depthWriteEnable
+        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, newData.depthWriteEnable);
+
+        // VkCompareOp - depthCompareOp
+        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, newData.depthCompareOp);
+
+        // VkBool32 - depthBoundsTestEnable
+        read |= yaml_read_optional<VkBool32>("depthBoundsTestEnable", subNode,
+                                             newData.depthBoundsTestEnable);
+
+        // VkBool32 - stencilTestEnable
+        read |=
+            yaml_read_optional<VkBool32>("stencilTestEnable", subNode, newData.stencilTestEnable);
+
+        // VkStencilOpState - front
+        read |= yaml_read_optional<VkStencilOpState>("front", subNode, newData.front);
+
+        // VkStencilOpState - back
+        read |= yaml_read_optional<VkStencilOpState>("back", subNode, newData.back);
+
+        // float - minDepthBounds
+        read |= yaml_read_optional<float>("minDepthBounds", subNode, newData.minDepthBounds);
+
+        // float - maxDepthBounds
+        read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineDepthStencilStateCreateInfo(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    data = newData;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPipelineDepthStencilStateCreateInfo>(
+    std::string const &nodeName,
+    YAML::Node const &node,
+    VkPipelineDepthStencilStateCreateInfo &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    VkPipelineDepthStencilStateCreateInfo newData{};
+    bool read = false;
+    try {
+        // sType
+        newData.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+
+        // VkPipelineDepthStencilStateCreateFlags - flags
+        read |= yaml_read_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
+            "VkPipelineDepthStencilStateCreateFlags", "flags", subNode, newData.flags);
+
+        // VkBool32 - depthTestEnable
+        read |= yaml_read_optional<VkBool32>("depthTestEnable", subNode, newData.depthTestEnable);
+
+        // VkBool32 - depthWriteEnable
+        read |= yaml_read_optional<VkBool32>("depthWriteEnable", subNode, newData.depthWriteEnable);
+
+        // VkCompareOp - depthCompareOp
+        read |= yaml_read_optional<VkCompareOp>("depthCompareOp", subNode, newData.depthCompareOp);
+
+        // VkBool32 - depthBoundsTestEnable
+        read |= yaml_read_optional<VkBool32>("depthBoundsTestEnable", subNode,
+                                             newData.depthBoundsTestEnable);
+
+        // VkBool32 - stencilTestEnable
+        read |=
+            yaml_read_optional<VkBool32>("stencilTestEnable", subNode, newData.stencilTestEnable);
+
+        // VkStencilOpState - front
+        read |= yaml_read_optional<VkStencilOpState>("front", subNode, newData.front);
+
+        // VkStencilOpState - back
+        read |= yaml_read_optional<VkStencilOpState>("back", subNode, newData.back);
+
+        // float - minDepthBounds
+        read |= yaml_read_optional<float>("minDepthBounds", subNode, newData.minDepthBounds);
+
+        // float - maxDepthBounds
+        read |= yaml_read_optional<float>("maxDepthBounds", subNode, newData.maxDepthBounds);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPipelineDepthStencilStateCreateInfo(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (read)
+        data = newData;
+    return read;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPipelineDepthStencilStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineDepthStencilStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // VkPipelineDepthStencilStateCreateFlags - flags
+        yaml_write_required_vk<VkPipelineDepthStencilStateCreateFlags>(
+            "VkPipelineDepthStencilStateCreateFlags", "flags", data.flags, writeNode);
+
+        // VkBool32 - depthTestEnable
+        yaml_write_required<VkBool32>("depthTestEnable", data.depthTestEnable, writeNode);
+
+        // VkBool32 - depthWriteEnable
+        yaml_write_required<VkBool32>("depthWriteEnable", data.depthWriteEnable, writeNode);
+
+        // VkCompareOp - depthCompareOp
+        yaml_write_required<VkCompareOp>("depthCompareOp", data.depthCompareOp, writeNode);
+
+        // VkBool32 - depthBoundsTestEnable
+        yaml_write_required<VkBool32>("depthBoundsTestEnable", data.depthBoundsTestEnable,
+                                      writeNode);
+
+        // VkBool32 - stencilTestEnable
+        yaml_write_required<VkBool32>("stencilTestEnable", data.stencilTestEnable, writeNode);
+
+        // VkStencilOpState - front
+        yaml_write_required<VkStencilOpState>("front", data.front, writeNode);
+
+        // VkStencilOpState - back
+        yaml_write_required<VkStencilOpState>("back", data.back, writeNode);
+
+        // float - minDepthBounds
+        yaml_write_required<float>("minDepthBounds", data.minDepthBounds, writeNode);
+
+        // float - maxDepthBounds
+        yaml_write_required<float>("maxDepthBounds", data.maxDepthBounds, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPipelineDepthStencilStateCreateInfo>(
+    std::string const &nodeName,
+    VkPipelineDepthStencilStateCreateInfo const &defaultData,
+    VkPipelineDepthStencilStateCreateInfo const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        // VkPipelineDepthStencilStateCreateFlags - flags
+        addedNode |= yaml_write_optional_vk<VkPipelineDepthStencilStateCreateFlags>(
+            "VkPipelineDepthStencilStateCreateFlags", "flags", defaultData.flags, data.flags,
+            writeNode);
+
+        // VkBool32 - depthTestEnable
+        addedNode |= yaml_write_optional<VkBool32>("depthTestEnable", defaultData.depthTestEnable,
+                                                   data.depthTestEnable, writeNode);
+
+        // VkBool32 - depthWriteEnable
+        addedNode |= yaml_write_optional<VkBool32>("depthWriteEnable", defaultData.depthWriteEnable,
+                                                   data.depthWriteEnable, writeNode);
+
+        // VkCompareOp - depthCompareOp
+        addedNode |= yaml_write_optional<VkCompareOp>("depthCompareOp", defaultData.depthCompareOp,
+                                                      data.depthCompareOp, writeNode);
+
+        // VkBool32 - depthBoundsTestEnable
+        addedNode |= yaml_write_optional<VkBool32>("depthBoundsTestEnable",
+                                                   defaultData.depthBoundsTestEnable,
+                                                   data.depthBoundsTestEnable, writeNode);
+
+        // VkBool32 - stencilTestEnable
+        addedNode |= yaml_write_optional<VkBool32>(
+            "stencilTestEnable", defaultData.stencilTestEnable, data.stencilTestEnable, writeNode);
+
+        // VkStencilOpState - front
+        addedNode |= yaml_write_optional<VkStencilOpState>("front", defaultData.front, data.front,
+                                                           writeNode);
+
+        // VkStencilOpState - back
+        addedNode |=
+            yaml_write_optional<VkStencilOpState>("back", defaultData.back, data.back, writeNode);
+
+        // float - minDepthBounds
+        addedNode |= yaml_write_optional<float>("minDepthBounds", defaultData.minDepthBounds,
+                                                data.minDepthBounds, writeNode);
+
+        // float - maxDepthBounds
+        addedNode |= yaml_write_optional<float>("maxDepthBounds", defaultData.maxDepthBounds,
+                                                data.maxDepthBounds, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (addedNode) {
+        if (nodeName.empty()) {
+            node = writeNode;
+        } else {
+            node[nodeName] = writeNode;
+        }
+    }
+
+    return addedNode;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_read_required<VkPushConstantRange>(std::string const &nodeName,
+                                                                    YAML::Node const &node,
+                                                                    VkPushConstantRange &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        throw foeYamlException(nodeName +
+                               " - Required node not found to parse as 'VkPushConstantRange'");
+    }
+
+    VkPushConstantRange newData{};
+    bool read = false;
+    try {
+        // VkShaderStageFlags - stageFlags
+        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                          subNode, newData.stageFlags);
+
+        // uint32_t - offset
+        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
+
+        // uint32_t - size
+        read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPushConstantRange(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    data = newData;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional<VkPushConstantRange>(std::string const &nodeName,
+                                                                    YAML::Node const &node,
+                                                                    VkPushConstantRange &data) {
+    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
+    if (!subNode) {
+        return false;
+    }
+
+    VkPushConstantRange newData{};
+    bool read = false;
+    try {
+        // VkShaderStageFlags - stageFlags
+        read |= yaml_read_optional_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                          subNode, newData.stageFlags);
+
+        // uint32_t - offset
+        read |= yaml_read_optional<uint32_t>("offset", subNode, newData.offset);
+
+        // uint32_t - size
+        read |= yaml_read_optional<uint32_t>("size", subNode, newData.size);
+
+    } catch (foeYamlException const &e) {
+        cleanup_VkPushConstantRange(&newData);
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (read)
+        data = newData;
+    return read;
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT void yaml_write_required<VkPushConstantRange>(
+    std::string const &nodeName, VkPushConstantRange const &data, YAML::Node &node) {
+    YAML::Node writeNode;
+
+    try {
+        // VkShaderStageFlags - stageFlags
+        yaml_write_required_vk<VkShaderStageFlags>("VkShaderStageFlags", "stageFlags",
+                                                   data.stageFlags, writeNode);
+
+        // uint32_t - offset
+        yaml_write_required<uint32_t>("offset", data.offset, writeNode);
+
+        // uint32_t - size
+        yaml_write_required<uint32_t>("size", data.size, writeNode);
+
+    } catch (foeYamlException const &e) {
+        throw foeYamlException(nodeName + "::" + e.what());
+    }
+
+    if (nodeName.empty()) {
+        node = writeNode;
+    } else {
+        node[nodeName] = writeNode;
+    }
+}
+
+template <>
+FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional<VkPushConstantRange>(
+    std::string const &nodeName,
+    VkPushConstantRange const &defaultData,
+    VkPushConstantRange const &data,
+    YAML::Node &node) {
+    YAML::Node writeNode;
+    bool addedNode = false;
+
+    try {
+        // VkShaderStageFlags - stageFlags
+        addedNode |= yaml_write_optional_vk<VkShaderStageFlags>(
+            "VkShaderStageFlags", "stageFlags", defaultData.stageFlags, data.stageFlags, writeNode);
+
+        // uint32_t - offset
+        addedNode |=
+            yaml_write_optional<uint32_t>("offset", defaultData.offset, data.offset, writeNode);
+
+        // uint32_t - size
+        addedNode |= yaml_write_optional<uint32_t>("size", defaultData.size, data.size, writeNode);
 
     } catch (foeYamlException const &e) {
         throw foeYamlException(nodeName + "::" + e.what());

@@ -8,12 +8,19 @@ add_executable(test_foe_graphics_vk_yaml)
 # Definition
 target_sources(
   test_foe_graphics_vk_yaml
-  PRIVATE vk_struct_VkPipelineDepthStencilStateCreateInfo.cpp
-          vk_struct_VkStencilOpState.cpp vk_type_parsing_optional.cpp
+  PRIVATE vk_struct_parsing.cpp
+          vk_struct_VkPipelineDepthStencilStateCreateInfo.cpp
+          vk_struct_VkStencilOpState.cpp
+          vk_type_parsing_optional.cpp
           vk_type_parsing_required.cpp)
 
-target_link_libraries(test_foe_graphics_vk_yaml PRIVATE catch
-                                                        foe_graphics_vk_yaml)
+target_compile_definitions(
+  test_foe_graphics_vk_yaml
+  PRIVATE
+    FUZZED_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../data/fuzzed_test_data")
+
+target_link_libraries(test_foe_graphics_vk_yaml
+                      PRIVATE catch foe_graphics_vk_yaml vk_struct_compare)
 
 if(UNIX
    OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
@@ -28,6 +35,11 @@ target_code_coverage(
   AUTO
   ALL
   OBJECTS
-  foe_wsi
+  foe_graphics_vk_yaml
   EXCLUDE
   .*/test/.*)
+
+# Auxiliary Targets
+if(AFL)
+  add_subdirectory(fuzz)
+endif()

@@ -20,6 +20,12 @@ add_library(vk_struct_cleanup STATIC src/struct_cleanup.c)
 target_include_directories(vk_struct_cleanup PUBLIC vulkan-mini-libs-2/include)
 target_link_libraries(vk_struct_cleanup PUBLIC Vulkan::Vulkan)
 
+# Struct Cleanup
+add_library(vk_struct_compare STATIC src/struct_compare.c)
+
+target_include_directories(vk_struct_compare PUBLIC vulkan-mini-libs-2/include)
+target_link_libraries(vk_struct_compare PUBLIC Vulkan::Vulkan)
+
 # Value Serialization
 add_library(vk_value_serialization STATIC src/value_serialization.cpp)
 

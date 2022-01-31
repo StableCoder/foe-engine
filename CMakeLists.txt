@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.15)
-project(FoE-Engine C CXX)
-
 # Modify CMake modules path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+cmake_minimum_required(VERSION 3.15)
+include(afl-fuzzing)
+project(FoE-Engine C CXX)
 
 # Global Options
 option(BUILD_EXAMPLES "Build example programs" OFF)

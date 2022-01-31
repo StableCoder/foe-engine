@@ -1,1 +1,6 @@
 tools/*.cpp
+fuzz_build/
+fuzz_corpus/
+fuzz_output/
+Vulkan-Docs/
+.gen_cache.xml
