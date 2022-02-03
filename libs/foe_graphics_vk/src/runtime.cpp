@@ -28,8 +28,8 @@ namespace {
 
 void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
     // State
-    delete pRuntime->pExtensions;
-    delete pRuntime->pLayers;
+    delete[] pRuntime->pExtensions;
+    delete[] pRuntime->pLayers;
 
     if (pRuntime->debugCallback != VK_NULL_HANDLE)
         foeVkDestroyDebugCallback(pRuntime->instance, pRuntime->debugCallback);

@@ -75,8 +75,8 @@ void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
     pSession->renderPassPool.deinitialize();
 
     // State
-    delete pSession->pExtensions;
-    delete pSession->pLayers;
+    delete[] pSession->pExtensions;
+    delete[] pSession->pLayers;
 
     if (pSession->allocator != VK_NULL_HANDLE)
         vmaDestroyAllocator(pSession->allocator);
