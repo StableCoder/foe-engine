@@ -476,12 +476,12 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
 #ifdef FOE_XR_SUPPORT
-    if (settings.xr.forceXr) {
+    if (settings.xr.enableXr || settings.xr.forceXr) {
         startXR(true);
 
         // If the user specified to force an XR session and couldn't find/create the session, fail
         // out
-        if (xrSession.session == XR_NULL_HANDLE) {
+        if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
             FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
             return std::make_tuple(false, 1);
         }
