@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_IMGUI_RENDERER_HPP
-#define FOE_IMGUI_RENDERER_HPP
+#ifndef FOE_IMGUI_VK_RENDERER_HPP
+#define FOE_IMGUI_VK_RENDERER_HPP
 
 #include <foe/graphics/session.hpp>
-#include <foe/imgui/export.h>
+#include <foe/imgui/vk/export.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -31,29 +31,29 @@ struct foeWsiMouse;
 
 class foeImGuiRenderer {
   public:
-    FOE_IMGUI_EXPORT void setImGuiContext(ImGuiContext *pContext);
+    FOE_IMGUI_VK_EXPORT void setImGuiContext(ImGuiContext *pContext);
 
-    FOE_IMGUI_EXPORT auto initialize(foeGfxSession session,
-                                     VkSampleCountFlags rasterSampleFlags,
-                                     VkRenderPass renderPass,
-                                     uint32_t subpass) -> std::error_code;
-    FOE_IMGUI_EXPORT void deinitialize(foeGfxSession session);
-    FOE_IMGUI_EXPORT bool initialized() const noexcept;
+    FOE_IMGUI_VK_EXPORT auto initialize(foeGfxSession session,
+                                        VkSampleCountFlags rasterSampleFlags,
+                                        VkRenderPass renderPass,
+                                        uint32_t subpass) -> std::error_code;
+    FOE_IMGUI_VK_EXPORT void deinitialize(foeGfxSession session);
+    FOE_IMGUI_VK_EXPORT bool initialized() const noexcept;
 
-    FOE_IMGUI_EXPORT void newFrame();
-    FOE_IMGUI_EXPORT void endFrame();
+    FOE_IMGUI_VK_EXPORT void newFrame();
+    FOE_IMGUI_VK_EXPORT void endFrame();
 
-    FOE_IMGUI_EXPORT auto update(uint32_t bufferedFrame) -> std::error_code;
-    FOE_IMGUI_EXPORT void draw(VkCommandBuffer commandBuffer, uint32_t frameIndex);
+    FOE_IMGUI_VK_EXPORT auto update(uint32_t bufferedFrame) -> std::error_code;
+    FOE_IMGUI_VK_EXPORT void draw(VkCommandBuffer commandBuffer, uint32_t frameIndex);
 
-    FOE_IMGUI_EXPORT void resize(float width, float height);
-    FOE_IMGUI_EXPORT void rescale(float xScale, float yScale);
+    FOE_IMGUI_VK_EXPORT void resize(float width, float height);
+    FOE_IMGUI_VK_EXPORT void rescale(float xScale, float yScale);
 
-    FOE_IMGUI_EXPORT bool wantCaptureMouse() const noexcept;
-    FOE_IMGUI_EXPORT void mouseInput(foeWsiMouse const *pMouse) noexcept;
+    FOE_IMGUI_VK_EXPORT bool wantCaptureMouse() const noexcept;
+    FOE_IMGUI_VK_EXPORT void mouseInput(foeWsiMouse const *pMouse) noexcept;
 
-    FOE_IMGUI_EXPORT bool wantCaptureKeyboard() const noexcept;
-    FOE_IMGUI_EXPORT void keyboardInput(foeWsiKeyboard const *pKeyboard) noexcept;
+    FOE_IMGUI_VK_EXPORT bool wantCaptureKeyboard() const noexcept;
+    FOE_IMGUI_VK_EXPORT void keyboardInput(foeWsiKeyboard const *pKeyboard) noexcept;
 
   private:
     VkResult initializeDescriptorPool(VkDevice device);
@@ -93,4 +93,4 @@ class foeImGuiRenderer {
     std::vector<DrawBuffers> mDrawBuffers;
 };
 
-#endif // FOE_IMGUI_RENDERER_HPP
+#endif // FOE_IMGUI_VK_RENDERER_HPP

@@ -13,8 +13,7 @@ generate_export_header(foe_imgui EXPORT_FILE_NAME
 target_include_directories(foe_imgui PUBLIC include
                                             ${CMAKE_CURRENT_BINARY_DIR}/public)
 
-target_link_libraries(foe_imgui PUBLIC foe_graphics_vk foe_wsi imgui
-                                       imgui_file_dialog)
+target_link_libraries(foe_imgui PUBLIC foe_wsi imgui imgui_file_dialog)
 
 target_code_coverage(foe_imgui)
 
@@ -25,6 +24,8 @@ else()
 endif()
 
 # Auxiliary Target
+add_subdirectory(libs/vulkan)
+
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()

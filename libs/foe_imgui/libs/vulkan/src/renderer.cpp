@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/imgui/renderer.hpp>
+#include <foe/imgui/vk/renderer.hpp>
 
 #include <GLFW/glfw3.h>
 #include <foe/graphics/upload_context.hpp>

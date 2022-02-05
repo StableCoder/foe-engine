@@ -201,6 +201,7 @@ target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
 target_link_libraries(
   foe_engine_imgui
   PUBLIC foe_imgui
+         foe_imgui_vk
          foe_graphics_resource_imgui
          foe_imex_yaml
          foe_position_imgui
