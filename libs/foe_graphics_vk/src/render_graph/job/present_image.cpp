@@ -109,6 +109,7 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
 void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                             std::string_view name,
+                                            VkFence fence,
                                             RenderGraphResource swapchainResource) {
     auto pJob = new RenderGraphJob;
     pJob->name = name;
@@ -121,21 +122,53 @@ void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
             std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         std::error_code errC;
 
+        // If we have a fence, then we need to signal it
+        VkPipelineStageFlags waitMask{VK_PIPELINE_STAGE_ALL_COMMANDS_BIT};
+        VkSemaphore signalSemaphore{VK_NULL_HANDLE};
+
+        { // Create temporary semaphore
+            VkSemaphoreCreateInfo semaphoreCI{
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+            };
+            errC = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
+                                     &signalSemaphore);
+            if (errC)
+                return errC;
+
+            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
+                vkDestroySemaphore(foeGfxVkGetDevice(session), signalSemaphore, nullptr);
+            });
+        }
+
+        VkSubmitInfo submitInfo{
+            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
+            .pWaitSemaphores = waitSemaphores.data(),
+            .pWaitDstStageMask = &waitMask,
+            .signalSemaphoreCount = 1U,
+            .pSignalSemaphores = &signalSemaphore,
+        };
+
+        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+        errC = vkQueueSubmit(queue, 1, &submitInfo, fence);
+        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
+
+        // Now get on with presenting the image
         RenderGraphVkSwapchain *pSwapchainResource =
             reinterpret_cast<RenderGraphVkSwapchain *>(swapchainResource.pResourceData->pNext);
 
         VkResult presentRes{VK_SUCCESS};
         VkPresentInfoKHR presentInfo{
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-            .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
-            .pWaitSemaphores = waitSemaphores.data(),
+            .waitSemaphoreCount = 1U,
+            .pWaitSemaphores = &signalSemaphore,
             .swapchainCount = 1U,
             .pSwapchains = &pSwapchainResource->swapchain,
             .pImageIndices = &pSwapchainResource->index,
             .pResults = &presentRes,
         };
 
-        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+        queue = foeGfxGetQueue(getFirstQueue(gfxSession));
         errC = vkQueuePresentKHR(queue, &presentInfo);
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
