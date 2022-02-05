@@ -16,6 +16,7 @@ target_sources(
           model.cpp
           pipeline_pool.cpp
           queue_family.cpp
+          render_graph.cpp
           render_pass_pool.cpp
           render_target.cpp
           runtime.cpp
@@ -26,3 +27,6 @@ target_sources(
           upload_context_public.cpp
           upload_request_public.cpp
           upload_request.cpp)
+
+add_subdirectory(render_graph/job)
+add_subdirectory(render_graph/resource)
