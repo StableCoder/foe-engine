@@ -299,6 +299,20 @@ auto foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t inde
     return pRenderTarget->images[offset + pRenderTarget->indices[index]].image;
 }
 
+auto foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget, uint32_t index)
+    -> VkImageView {
+    auto *pRenderTarget = render_target_from_handle(renderTarget);
+
+    uint32_t offset = 0;
+    for (uint32_t i = 0; i < index; ++i) {
+        auto const &spec = pRenderTarget->imageSpecifications[i];
+
+        offset += spec.count;
+    }
+
+    return pRenderTarget->images[offset + pRenderTarget->indices[index]].view;
+}
+
 auto foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget) -> VkFramebuffer {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
 

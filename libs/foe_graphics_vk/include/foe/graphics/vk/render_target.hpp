@@ -47,6 +47,9 @@ FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarg
 FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t index)
     -> VkImage;
 
+FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget,
+                                                     uint32_t index) -> VkImageView;
+
 FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget)
     -> VkFramebuffer;
 
