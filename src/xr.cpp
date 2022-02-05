@@ -18,9 +18,9 @@
 
 #include <foe/graphics/backend.h>
 #include <foe/graphics/vk/session.hpp>
+#include <foe/openxr/vk/vulkan.hpp>
 #include <foe/xr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
-#include <foe/xr/vulkan.hpp>
 
 #include <cstring>
 

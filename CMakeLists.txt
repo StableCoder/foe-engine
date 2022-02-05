@@ -190,7 +190,7 @@ else()
 endif()
 
 if(XR_SUPPORT)
-  target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr)
+  target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr foe_openxr_vk)
 else()
   target_link_libraries(foe_engine_lib PUBLIC foe_xr)
 endif()

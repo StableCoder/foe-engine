@@ -36,8 +36,8 @@
 #include <tuple>
 
 #ifdef FOE_XR_SUPPORT
+#include <foe/openxr/vk/vulkan.hpp>
 #include <foe/xr/session.hpp>
-#include <foe/xr/vulkan.hpp>
 
 #include "xr_camera.hpp"
 #include "xr_vk_camera_system.hpp"

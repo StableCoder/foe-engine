@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_VULKAN_HPP
-#define FOE_XR_VULKAN_HPP
+#ifndef FOE_OPENXR_VK_VULKAN_HPP
+#define FOE_OPENXR_VK_VULKAN_HPP
 
-#include <foe/xr/export.h>
+#include <foe/openxr/vk/export.h>
 #include <vulkan/vulkan.h>
 
 #define XR_USE_GRAPHICS_API_VULKAN
@@ -26,23 +26,23 @@
 #include <string>
 #include <vector>
 
-FOE_XR_EXPORT XrResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
-                                                        std::vector<std::string> &extensions);
+FOE_OPENXR_VK_EXPORT XrResult
+foeXrGetVulkanInstanceExtensions(XrInstance instance, std::vector<std::string> &extensions);
 
-FOE_XR_EXPORT XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                                      std::vector<std::string> &extensions);
+FOE_OPENXR_VK_EXPORT XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
+                                                             std::vector<std::string> &extensions);
 
-FOE_XR_EXPORT XrResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                                    XrSystemId systemId,
-                                                    VkInstance vkInstance,
-                                                    VkPhysicalDevice *vkPhysicalDevice);
+FOE_OPENXR_VK_EXPORT XrResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                                           XrSystemId systemId,
+                                                           VkInstance vkInstance,
+                                                           VkPhysicalDevice *vkPhysicalDevice);
 
-FOE_XR_EXPORT XrResult
+FOE_OPENXR_VK_EXPORT XrResult
 foeXrGetVulkanGraphicsRequirements(XrInstance instance,
                                    XrSystemId systemId,
                                    XrGraphicsRequirementsVulkanKHR *graphicsRequirements);
 
-FOE_XR_EXPORT XrResult foeXrEnumerateSwapchainVkImages(
+FOE_OPENXR_VK_EXPORT XrResult foeXrEnumerateSwapchainVkImages(
     XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images);
 
-#endif // FOE_XR_VULKAN_HPP
+#endif // FOE_OPENXR_VK_VULKAN_HPP

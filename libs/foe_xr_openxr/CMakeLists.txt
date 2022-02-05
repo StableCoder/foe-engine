@@ -6,7 +6,6 @@ project(foe_xr_openxr)
 
 # Dependencies
 find_package(OpenXR REQUIRED)
-find_package(Vulkan REQUIRED)
 
 # Declaration
 if(XR_LOADER)
@@ -29,7 +28,7 @@ add_subdirectory(src)
 
 target_include_directories(foe_xr_openxr PUBLIC include)
 
-target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader Vulkan::Vulkan)
+target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader)
 
 target_code_coverage(foe_xr_openxr)
 
@@ -38,3 +37,6 @@ if(MSVC)
 else()
   target_compile_options(foe_xr_openxr PRIVATE -fno-exceptions)
 endif()
+
+# Auxiliary Targets
+add_subdirectory(libs/vulkan)

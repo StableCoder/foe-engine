@@ -6,5 +6,4 @@ target_sources(
           error_code.cpp
           log.cpp
           runtime.cpp
-          session.cpp
-          vulkan.cpp)
+          session.cpp)

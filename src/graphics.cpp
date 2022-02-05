@@ -27,9 +27,9 @@
 #include <memory>
 
 #ifdef FOE_XR_SUPPORT
+#include <foe/openxr/vk/vulkan.hpp>
 #include <foe/xr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
-#include <foe/xr/vulkan.hpp>
 #endif
 
 std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
@@ -230,6 +230,18 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
     }
 #endif
 
-    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layers, extensions, nullptr, nullptr,
-                                 pGfxSession);
+#ifdef FOE_XR_SUPPORT
+    // Enable Synchronization2 (for Timeline Semaphores)
+    extensions.emplace_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+#endif
+
+    VkPhysicalDeviceVulkan12Features features12{
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+#ifdef FOE_XR_SUPPORT
+        .timelineSemaphore = VK_TRUE,
+#endif
+    };
+
+    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layers, extensions, nullptr,
+                                 &features12, pGfxSession);
 }

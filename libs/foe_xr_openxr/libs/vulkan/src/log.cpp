@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,24 +14,6 @@
     limitations under the License.
 */
 
-#ifndef XR_VK_SESSION_VIEW_HPP
-#define XR_VK_SESSION_VIEW_HPP
+#include "log.hpp"
 
-#include <foe/openxr/vk/vulkan.hpp>
-#include <vulkan/vulkan.h>
-
-#include "xr_camera.hpp"
-
-#include <vector>
-
-struct foeXrVkSessionView {
-    XrViewConfigurationView viewConfig;
-    XrSwapchain swapchain;
-    VkFormat format;
-    std::vector<XrSwapchainImageVulkanKHR> images;
-    std::vector<VkImageView> imageViews;
-    std::vector<VkFramebuffer> framebuffers;
-    foeXrCamera camera;
-};
-
-#endif // XR_VK_SESSION_VIEW_HPP
+FOE_DEFINE_LOG_CATEGORY(foeOpenXrVk)
