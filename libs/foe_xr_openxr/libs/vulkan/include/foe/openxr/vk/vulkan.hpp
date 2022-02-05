@@ -24,25 +24,28 @@
 #include <openxr/openxr_platform.h>
 
 #include <string>
+#include <system_error>
 #include <vector>
 
-FOE_OPENXR_VK_EXPORT XrResult
-foeXrGetVulkanInstanceExtensions(XrInstance instance, std::vector<std::string> &extensions);
+FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanInstanceExtensions(XrInstance instance,
+                                                           std::vector<std::string> &extensions)
+    -> std::error_code;
 
-FOE_OPENXR_VK_EXPORT XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                                             std::vector<std::string> &extensions);
+FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanDeviceExtensions(XrInstance instance,
+                                                         std::vector<std::string> &extensions)
+    -> std::error_code;
 
-FOE_OPENXR_VK_EXPORT XrResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                                           XrSystemId systemId,
-                                                           VkInstance vkInstance,
-                                                           VkPhysicalDevice *vkPhysicalDevice);
+FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                                       XrSystemId systemId,
+                                                       VkInstance vkInstance,
+                                                       VkPhysicalDevice *vkPhysicalDevice)
+    -> std::error_code;
 
-FOE_OPENXR_VK_EXPORT XrResult
-foeXrGetVulkanGraphicsRequirements(XrInstance instance,
-                                   XrSystemId systemId,
-                                   XrGraphicsRequirementsVulkanKHR *graphicsRequirements);
+FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanGraphicsRequirements(
+    XrInstance instance, XrSystemId systemId, XrGraphicsRequirementsVulkanKHR *graphicsRequirements)
+    -> std::error_code;
 
-FOE_OPENXR_VK_EXPORT XrResult foeXrEnumerateSwapchainVkImages(
-    XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images);
+FOE_OPENXR_VK_EXPORT auto foeXrEnumerateSwapchainVkImages(
+    XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images) -> std::error_code;
 
 #endif // FOE_OPENXR_VK_VULKAN_HPP

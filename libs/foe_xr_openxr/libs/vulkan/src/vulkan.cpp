@@ -16,6 +16,8 @@
 
 #include <foe/openxr/vk/vulkan.hpp>
 
+#include <foe/xr/error_code.hpp>
+
 #include <memory>
 
 namespace {
@@ -66,8 +68,8 @@ std::vector<XrSystemId> getAllSystemIds(XrInstance instance) {
 
 } // namespace
 
-XrResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
-                                          std::vector<std::string> &extensions) {
+auto foeXrGetVulkanInstanceExtensions(XrInstance instance, std::vector<std::string> &extensions)
+    -> std::error_code {
     PFN_xrGetVulkanInstanceExtensionsKHR GetVulkanInstanceExtensions{nullptr};
     XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR",
                                          (PFN_xrVoidFunction *)&GetVulkanInstanceExtensions);
@@ -98,7 +100,8 @@ XrResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
     return res;
 }
 
-XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance, std::vector<std::string> &extensions) {
+auto foeXrGetVulkanDeviceExtensions(XrInstance instance, std::vector<std::string> &extensions)
+    -> std::error_code {
     PFN_xrGetVulkanDeviceExtensionsKHR GetVulkanDeviceExtensions{nullptr};
     XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR",
                                          (PFN_xrVoidFunction *)&GetVulkanDeviceExtensions);
@@ -129,10 +132,10 @@ XrResult foeXrGetVulkanDeviceExtensions(XrInstance instance, std::vector<std::st
     return res;
 }
 
-XrResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                      XrSystemId systemId,
-                                      VkInstance vkInstance,
-                                      VkPhysicalDevice *vkPhysicalDevice) {
+auto foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                  XrSystemId systemId,
+                                  VkInstance vkInstance,
+                                  VkPhysicalDevice *vkPhysicalDevice) -> std::error_code {
     PFN_xrGetVulkanGraphicsDeviceKHR GetVulkanGraphicsDevice{nullptr};
     XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR",
                                          (PFN_xrVoidFunction *)&GetVulkanGraphicsDevice);
@@ -143,9 +146,10 @@ XrResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
     return GetVulkanGraphicsDevice(instance, systemId, vkInstance, vkPhysicalDevice);
 }
 
-XrResult foeXrGetVulkanGraphicsRequirements(XrInstance instance,
-                                            XrSystemId systemId,
-                                            XrGraphicsRequirementsVulkanKHR *graphicsRequirements) {
+auto foeXrGetVulkanGraphicsRequirements(XrInstance instance,
+                                        XrSystemId systemId,
+                                        XrGraphicsRequirementsVulkanKHR *graphicsRequirements)
+    -> std::error_code {
     PFN_xrGetVulkanGraphicsRequirementsKHR GetVulkanGraphicsRequirements{nullptr};
     XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR",
                                          (PFN_xrVoidFunction *)&GetVulkanGraphicsRequirements);
@@ -158,8 +162,9 @@ XrResult foeXrGetVulkanGraphicsRequirements(XrInstance instance,
     return GetVulkanGraphicsRequirements(instance, systemId, graphicsRequirements);
 }
 
-XrResult foeXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
-                                         std::vector<XrSwapchainImageVulkanKHR> &images) {
+auto foeXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
+                                     std::vector<XrSwapchainImageVulkanKHR> &images)
+    -> std::error_code {
     uint32_t imageCount;
     XrResult res = xrEnumerateSwapchainImages(xrSwapchain, 0, &imageCount, nullptr);
     if (res != XR_SUCCESS) {

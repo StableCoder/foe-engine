@@ -32,9 +32,9 @@ std::error_code foeXrSession::createSession(foeXrRuntime runtime,
         .next = pGraphicsBinding,
         .systemId = systemId,
     };
-    XrResult xrRes = xrCreateSession(pRuntime->instance, &sessionCI, &session);
-    if (xrRes != XR_SUCCESS) {
-        return xrRes;
+    std::error_code errC = xrCreateSession(pRuntime->instance, &sessionCI, &session);
+    if (errC) {
+        return errC;
     } else {
         // Add the new session to the runtime
         foeXrOpenAddSessionToRuntime(pRuntime, this);
@@ -48,9 +48,9 @@ std::error_code foeXrSession::createSession(foeXrRuntime runtime,
 
     // Reference Space
     std::vector<XrReferenceSpaceType> refSpaces;
-    xrRes = foeXrEnumerateReferenceSpaces(session, refSpaces);
-    if (xrRes != XR_SUCCESS) {
-        return xrRes;
+    errC = foeXrEnumerateReferenceSpaces(session, refSpaces);
+    if (errC) {
+        return errC;
     }
 
     XrPosef identity{
@@ -63,12 +63,12 @@ std::error_code foeXrSession::createSession(foeXrRuntime runtime,
         .referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL,
         .poseInReferenceSpace = identity,
     };
-    xrRes = xrCreateReferenceSpace(session, &refSpaceCI, &space);
-    if (xrRes != XR_SUCCESS) {
-        return xrRes;
+    errC = xrCreateReferenceSpace(session, &refSpaceCI, &space);
+    if (errC) {
+        return errC;
     }
 
-    return xrRes;
+    return errC;
 }
 
 void foeXrSession::destroySession() {

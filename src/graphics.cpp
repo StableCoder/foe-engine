@@ -45,8 +45,9 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
         uint32_t extensionCount;
         const char **extensionNames;
         errC = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
-        if (errC)
+        if (errC) {
             return errC;
+        }
 
         for (uint32_t i = 0; i < extensionCount; ++i) {
             extensions.emplace_back(extensionNames[i]);
@@ -58,10 +59,10 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
     if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        XrResult xrRes =
-            foeXrGetVulkanInstanceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
-        if (xrRes != XR_SUCCESS)
-            return xrRes;
+        errC = foeXrGetVulkanInstanceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
+        if (errC) {
+            return errC;
+        }
 
         extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
 
@@ -222,9 +223,9 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
     if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        XrResult xrRes =
+        std::error_code errC =
             foeXrGetVulkanDeviceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
-        if (xrRes == XR_SUCCESS) {
+        if (!errC) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }
     }

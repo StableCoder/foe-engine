@@ -17,10 +17,12 @@
 #include <foe/xr/core.hpp>
 
 #include <foe/engine_detail.h>
+#include <foe/xr/error_code.hpp>
 
 #include <cstring>
 
-XrResult foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties) {
+auto foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties)
+    -> std::error_code {
     uint32_t propertyCount;
     XrResult res = xrEnumerateApiLayerProperties(0, &propertyCount, nullptr);
     if (res != XR_SUCCESS)
@@ -35,8 +37,9 @@ XrResult foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &pro
                                          properties.data());
 }
 
-XrResult foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
-                                                   std::vector<XrExtensionProperties> &properties) {
+auto foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
+                                               std::vector<XrExtensionProperties> &properties)
+    -> std::error_code {
     uint32_t propertyCount;
     XrResult res =
         xrEnumerateInstanceExtensionProperties(pApiLayerName, 0, &propertyCount, nullptr);
@@ -53,8 +56,8 @@ XrResult foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
         pApiLayerName, static_cast<uint32_t>(properties.size()), &propertyCount, properties.data());
 }
 
-XrResult foeXrEnumerateReferenceSpaces(XrSession xrSession,
-                                       std::vector<XrReferenceSpaceType> &spaces) {
+auto foeXrEnumerateReferenceSpaces(XrSession xrSession, std::vector<XrReferenceSpaceType> &spaces)
+    -> std::error_code {
     uint32_t spaceCount;
     XrResult res = xrEnumerateReferenceSpaces(xrSession, 0, &spaceCount, nullptr);
     if (res != XR_SUCCESS) {
@@ -66,7 +69,8 @@ XrResult foeXrEnumerateReferenceSpaces(XrSession xrSession,
                                       spaces.data());
 }
 
-XrResult foeXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats) {
+auto foeXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats)
+    -> std::error_code {
     uint32_t formatCount;
     XrResult res = xrEnumerateSwapchainFormats(xrSession, 0, &formatCount, nullptr);
     if (res != XR_SUCCESS) {

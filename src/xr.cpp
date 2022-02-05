@@ -41,7 +41,7 @@ std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
 std::error_code createXrSession(foeXrRuntime runtime,
                                 foeGfxSession gfxSession,
                                 foeXrSession *pSession) {
-    XrResult xrRes{XR_SUCCESS};
+    std::error_code errC;
     XrSystemId xrSystemId{};
 
     // OpenXR SystemId
@@ -51,42 +51,45 @@ std::error_code createXrSession(foeXrRuntime runtime,
             .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
         };
 
-        xrRes = xrGetSystem(foeXrOpenGetInstance(runtime), &systemGetInfo, &xrSystemId);
-        if (xrRes != XR_SUCCESS) {
-            return xrRes;
+        errC = xrGetSystem(foeXrOpenGetInstance(runtime), &systemGetInfo, &xrSystemId);
+        if (errC) {
+            return errC;
         }
     }
 
     // Types
     uint32_t viewConfigCount;
-    xrRes = xrEnumerateViewConfigurations(foeXrOpenGetInstance(runtime), xrSystemId, 0,
-                                          &viewConfigCount, nullptr);
-    if (xrRes != XR_SUCCESS) {
-        return xrRes;
+    errC = xrEnumerateViewConfigurations(foeXrOpenGetInstance(runtime), xrSystemId, 0,
+                                         &viewConfigCount, nullptr);
+    if (errC) {
+        return errC;
     }
 
     std::vector<XrViewConfigurationType> xrViewConfigTypes;
     xrViewConfigTypes.resize(viewConfigCount);
 
-    xrRes = xrEnumerateViewConfigurations(foeXrOpenGetInstance(runtime), xrSystemId,
-                                          xrViewConfigTypes.size(), &viewConfigCount,
-                                          xrViewConfigTypes.data());
-    if (xrRes != XR_SUCCESS) {
-        return xrRes;
+    errC = xrEnumerateViewConfigurations(foeXrOpenGetInstance(runtime), xrSystemId,
+                                         xrViewConfigTypes.size(), &viewConfigCount,
+                                         xrViewConfigTypes.data());
+    if (errC) {
+        return errC;
     }
 
     // Is View Mutable??
     XrViewConfigurationProperties xrViewConfigProps{.type = XR_TYPE_VIEW_CONFIGURATION_PROPERTIES};
-    xrRes = xrGetViewConfigurationProperties(foeXrOpenGetInstance(runtime), xrSystemId,
-                                             xrViewConfigTypes[0], &xrViewConfigProps);
-    if (xrRes != XR_SUCCESS) {
-        return xrRes;
+    errC = xrGetViewConfigurationProperties(foeXrOpenGetInstance(runtime), xrSystemId,
+                                            xrViewConfigTypes[0], &xrViewConfigProps);
+    if (errC) {
+        return errC;
     }
 
     // Check graphics requirements
     XrGraphicsRequirementsVulkanKHR gfxRequirements;
-    xrRes = foeXrGetVulkanGraphicsRequirements(foeXrOpenGetInstance(runtime), xrSystemId,
-                                               &gfxRequirements);
+    errC = foeXrGetVulkanGraphicsRequirements(foeXrOpenGetInstance(runtime), xrSystemId,
+                                              &gfxRequirements);
+    if (errC) {
+        return errC;
+    }
 
     // XrSession
     XrGraphicsBindingVulkanKHR gfxBinding{
@@ -97,5 +100,6 @@ std::error_code createXrSession(foeXrRuntime runtime,
         .queueFamilyIndex = 0,
         .queueIndex = 0,
     };
+
     return pSession->createSession(runtime, xrSystemId, xrViewConfigTypes[0], &gfxBinding);
 }
