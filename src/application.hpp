@@ -45,8 +45,8 @@
 #endif
 
 #ifdef EDITOR_MODE
-#include <foe/imgui/renderer.hpp>
 #include <foe/imgui/state.hpp>
+#include <foe/imgui/vk/renderer.hpp>
 #include <foe/simulation/imgui/group_data.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/wsi/imgui/window.hpp>

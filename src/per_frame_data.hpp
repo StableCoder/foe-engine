@@ -22,7 +22,8 @@
 #include <array>
 
 struct PerFrameData {
-    VkSemaphore renderComplete;
+    VkSemaphore preGraph;
+    VkSemaphore postGraph;
 
     VkFence frameComplete;
 
@@ -38,7 +39,10 @@ struct PerFrameData {
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         };
 
-        res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &renderComplete);
+        res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &preGraph);
+        if (res != VK_SUCCESS)
+            return res;
+        res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &postGraph);
         if (res != VK_SUCCESS)
             return res;
 
@@ -85,7 +89,8 @@ struct PerFrameData {
 
         vkDestroyFence(device, frameComplete, nullptr);
 
-        vkDestroySemaphore(device, renderComplete, nullptr);
+        vkDestroySemaphore(device, postGraph, nullptr);
+        vkDestroySemaphore(device, preGraph, nullptr);
     }
 };
 

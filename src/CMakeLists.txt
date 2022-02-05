@@ -12,7 +12,9 @@ target_sources(
           logging.cpp
           position_descriptor_pool.cpp
           vk_animation.cpp
-          window.cpp)
+          window.cpp
+          #
+          render_graph/render_scene.cpp)
 
 if(XR_SUPPORT)
   target_sources(foe_engine_lib PRIVATE xr.cpp xr_vk_camera_system.cpp)

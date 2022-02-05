@@ -35,6 +35,12 @@
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
+#include <foe/graphics/vk/render_graph.hpp>
+#include <foe/graphics/vk/render_graph/job/blit_image.hpp>
+#include <foe/graphics/vk/render_graph/job/export_image.hpp>
+#include <foe/graphics/vk/render_graph/job/import_image.hpp>
+#include <foe/graphics/vk/render_graph/job/present_image.hpp>
+#include <foe/graphics/vk/render_graph/job/resolve_image.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <foe/graphics/vk/render_target.hpp>
 #include <foe/graphics/vk/runtime.hpp>
@@ -66,7 +72,10 @@
 #include "render_state_pool.hpp"
 #include "vk_animation.hpp"
 
+#include "render_graph/render_scene.hpp"
+
 #ifdef FOE_XR_SUPPORT
+#include <foe/openxr/vk/render_graph_jobs_swapchain.hpp>
 #include <foe/xr/core.hpp>
 #include <foe/xr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
@@ -75,6 +84,8 @@
 #endif
 
 #ifdef EDITOR_MODE
+#include <foe/imgui/vk/render_graph_job_imgui.hpp>
+
 #include "imgui/register.hpp"
 #endif
 
@@ -1044,11 +1055,12 @@ int Application::mainloop() {
         double timeElapsedInSec = simulationClock.elapsed().count() * 0.000000001f;
 
 #ifdef FOE_XR_SUPPORT
+        /*
         static auto nextFireTime =
-            programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(12);
+            programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(10);
         if (programClock.currentTime<std::chrono::seconds>() > nextFireTime) {
             nextFireTime =
-                programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(12);
+                programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(10);
 
             if (xrSession.session == XR_NULL_HANDLE) {
                 foeScheduleAsyncTask(threadPool, [&]() { startXR(false); });
@@ -1056,6 +1068,7 @@ int Application::mainloop() {
                 foeScheduleAsyncTask(threadPool, [&]() { stopXR(false); });
             }
         }
+        */
 #endif
 
         // Component Pool Maintenance
@@ -1297,15 +1310,6 @@ int Application::mainloop() {
                             ERRC_END_PROGRAM
                         }
 
-                        XrSwapchainImageWaitInfo waitInfo{
-                            .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
-                            .timeout = 1,
-                        };
-                        errC = xrWaitSwapchainImage(it.swapchain, &waitInfo);
-                        if (errC) {
-                            ERRC_END_PROGRAM
-                        }
-
                         projectionViews[i].subImage = XrSwapchainSubImage{
                             .swapchain = it.swapchain,
                             .imageRect =
@@ -1320,222 +1324,80 @@ int Application::mainloop() {
                                 },
                         };
 
-                        // Vulkan Rendering BEGIN
-                        {
-                            VkCommandBuffer &commandBuffer =
-                                frameData[frameIndex].xrCommandBuffers[i];
+                        foeGfxVkRenderGraph renderGraph;
+                        foeGfxVkCreateRenderGraph(&renderGraph);
 
-                            VkCommandBufferBeginInfo commandBufferBI{
-                                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-                                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-                            };
-
-                            errC = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
-                            if (errC)
-                                ERRC_END_PROGRAM
-
-                            VkExtent2D swapchainExtent{
+                        auto renderTargetColourImageResource = foeGfxVkImportImageRenderJob(
+                            renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
+                            foeGfxVkGetRenderTargetImage(renderTarget, 0),
+                            foeGfxVkGetRenderTargetImageView(renderTarget, 0), it.format,
+                            VkExtent2D{
                                 .width = it.viewConfig.recommendedImageRectWidth,
                                 .height = it.viewConfig.recommendedImageRectHeight,
-                            };
-                            { // Setup common render viewport data
-                                VkViewport viewport{
-                                    .width =
-                                        static_cast<float>(it.viewConfig.recommendedImageRectWidth),
-                                    .height = static_cast<float>(
-                                        it.viewConfig.recommendedImageRectHeight),
-                                    .minDepth = 0.f,
-                                    .maxDepth = 1.f,
-                                };
-                                vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+                            },
+                            VK_IMAGE_LAYOUT_UNDEFINED, true, {});
 
-                                VkRect2D scissor{
-                                    .offset = VkOffset2D{},
-                                    .extent = swapchainExtent,
-                                };
-                                vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+                        auto renderTargetDepthImageResource = foeGfxVkImportImageRenderJob(
+                            renderGraph, "importRenderTargetDepthImage", VK_NULL_HANDLE,
+                            "renderTargetDepthImage", foeGfxVkGetRenderTargetImage(renderTarget, 1),
+                            foeGfxVkGetRenderTargetImageView(renderTarget, 1), depthFormat,
+                            VkExtent2D{
+                                .width = it.viewConfig.recommendedImageRectWidth,
+                                .height = it.viewConfig.recommendedImageRectHeight,
+                            },
+                            VK_IMAGE_LAYOUT_UNDEFINED, true, {});
 
-                                // vkDepthBias ??
-                            }
+                        auto xrSwapchainImageResource = importXrSwapchain(
+                            renderGraph, "importXrViewSwapchainImage", VK_NULL_HANDLE,
+                            "importXrViewSwapchainImage", it.swapchain, it.images[newIndex].image,
+                            it.imageViews[newIndex], it.format,
+                            VkExtent2D{
+                                .width = it.viewConfig.recommendedImageRectWidth,
+                                .height = it.viewConfig.recommendedImageRectHeight,
+                            });
 
-                            { // Render Pass Setup
-                                std::array<VkClearValue, 2> clearValues{
-                                    VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
-                                    VkClearValue{.depthStencil = {
-                                                     .depth = 1.f,
-                                                     .stencil = 0,
-                                                 }}};
+                        RenderSceneOutputResources output;
+                        errC = renderSceneJob(
+                            renderGraph, "render3dScene", VK_NULL_HANDLE,
+                            renderTargetColourImageResource, VK_IMAGE_LAYOUT_UNDEFINED,
+                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource,
+                            VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                            globalMSAA, pSimulationSet, it.camera.descriptor, output);
+                        renderTargetColourImageResource = output.colourRenderTarget;
+                        renderTargetDepthImageResource = output.depthRenderTarget;
 
-                                VkRenderPassBeginInfo renderPassBI{
-                                    .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                                    .renderPass = xrOffscreenRenderPass,
-                                    .framebuffer = foeGfxVkGetRenderTargetFramebuffer(renderTarget),
-                                    .renderArea =
-                                        {
-                                            .offset = {0, 0},
-                                            .extent = swapchainExtent,
-                                        },
-                                    .clearValueCount = clearValues.size(),
-                                    .pClearValues = clearValues.data(),
-                                };
-
-                                vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
-                                                     VK_SUBPASS_CONTENTS_INLINE);
-
-                                auto *pRenderStatePool = getComponentPool<foeRenderStatePool>(
-                                    pSimulationSet->componentPools.data(),
-                                    pSimulationSet->componentPools.size());
-
-                                auto idIt = pRenderStatePool->cbegin();
-                                auto const endIdIt = pRenderStatePool->cend();
-                                auto dataIt = pRenderStatePool->cbegin<1>();
-                                for (; idIt != endIdIt; ++idIt, ++dataIt) {
-                                    renderCall(*idIt, dataIt, gfxSession, pSimulationSet,
-                                               commandBuffer,
-                                               foeGfxVkGetRenderTargetSamples(renderTarget),
-                                               xrOffscreenRenderPass, it.camera.descriptor);
-                                }
-
-                                vkCmdEndRenderPass(commandBuffer);
-                            }
-
-                            { // Blit or resolve to swapchain
-                                VkImageSubresourceRange subresourceRange{
-                                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                    .baseMipLevel = 0,
-                                    .levelCount = 1,
-                                    .layerCount = 1,
-                                };
-
-                                VkImageMemoryBarrier imgMemBarrier{
-                                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                                    .srcAccessMask = 0,
-                                    .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                                    .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                                    .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                                    .image = it.images[newIndex].image,
-                                    .subresourceRange = subresourceRange,
-                                };
-
-                                vkCmdPipelineBarrier(commandBuffer,
-                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0,
-                                                     nullptr, 0, nullptr, 1, &imgMemBarrier);
-
-                                if (foeGfxVkGetRenderTargetSamples(renderTarget) !=
-                                    VK_SAMPLE_COUNT_1_BIT) {
-                                    VkImageResolve resolveRegion{
-                                        .srcSubresource =
-                                            VkImageSubresourceLayers{
-                                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                                .mipLevel = 0,
-                                                .baseArrayLayer = 0,
-                                                .layerCount = 1,
-                                            },
-                                        .srcOffset = {},
-                                        .dstSubresource =
-                                            VkImageSubresourceLayers{
-                                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                                .mipLevel = 0,
-                                                .baseArrayLayer = 0,
-                                                .layerCount = 1,
-                                            },
-                                        .dstOffset = {},
-                                        .extent =
-                                            {
-                                                .width = it.viewConfig.recommendedImageRectWidth,
-                                                .height = it.viewConfig.recommendedImageRectHeight,
-                                                .depth = 1,
-                                            },
-                                    };
-
-                                    vkCmdResolveImage(commandBuffer,
-                                                      foeGfxVkGetRenderTargetImage(renderTarget, 0),
-                                                      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                                      it.images[newIndex].image,
-                                                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                                                      &resolveRegion);
-                                } else {
-                                    VkImageCopy imageCopy{
-                                        .srcSubresource =
-                                            VkImageSubresourceLayers{
-                                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                                .mipLevel = 0,
-                                                .baseArrayLayer = 0,
-                                                .layerCount = 1,
-                                            },
-                                        .srcOffset = {},
-                                        .dstSubresource =
-                                            VkImageSubresourceLayers{
-                                                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                                .mipLevel = 0,
-                                                .baseArrayLayer = 0,
-                                                .layerCount = 1,
-                                            },
-                                        .dstOffset = {},
-                                        .extent =
-                                            {
-                                                .width = it.viewConfig.recommendedImageRectWidth,
-                                                .height = it.viewConfig.recommendedImageRectHeight,
-                                                .depth = 1,
-                                            },
-                                    };
-
-                                    vkCmdCopyImage(commandBuffer,
-                                                   foeGfxVkGetRenderTargetImage(renderTarget, 0),
-                                                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                                   it.images[newIndex].image,
-                                                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1,
-                                                   &imageCopy);
-                                }
-
-                                imgMemBarrier = VkImageMemoryBarrier{
-                                    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                                    .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                                    .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-                                    .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                    .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                                    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                                    .image = it.images[newIndex].image,
-                                    .subresourceRange = subresourceRange,
-                                };
-
-                                vkCmdPipelineBarrier(commandBuffer,
-                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0,
-                                                     nullptr, 0, nullptr, 1, &imgMemBarrier);
-                            }
-
-                            errC = vkEndCommandBuffer(commandBuffer);
-                            if (errC) {
-                                FOE_LOG(General, Fatal, "Error with drawing: {}",
-                                        std::error_code{errC}.message());
-                            }
-
-                            // Submission
-                            VkSubmitInfo submitInfo{
-                                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                                .commandBufferCount = 1,
-                                .pCommandBuffers = &commandBuffer,
-                            };
-
-                            auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-                            errC = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-                            foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-                            if (errC)
-                                ERRC_END_PROGRAM
+                        if (foeGfxVkGetRenderTargetSamples(renderTarget) != VK_SAMPLE_COUNT_1_BIT) {
+                            // Resolve
+                            auto resources = foeGfxVkResolveImageRenderJob(
+                                renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                                renderTargetColourImageResource,
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
+                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                            renderTargetColourImageResource = resources.srcImage;
+                            xrSwapchainImageResource = resources.dstImage;
+                        } else {
+                            // Copy
+                            auto resources = foeGfxVkBlitImageRenderJob(
+                                renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                                renderTargetColourImageResource,
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
+                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                            renderTargetColourImageResource = resources.srcImage;
+                            xrSwapchainImageResource = resources.dstImage;
                         }
 
-                        // Vulkan Rendering END
-                        XrSwapchainImageReleaseInfo releaseInfo{
-                            .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
-                        xrReleaseSwapchainImage(it.swapchain, &releaseInfo);
-                        if (errC) {
-                            ERRC_END_PROGRAM
-                        }
+                        foeGfxVkExportImageRenderJob(renderGraph, "exportPresentationImage",
+                                                     VK_NULL_HANDLE, xrSwapchainImageResource,
+                                                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, {});
+
+                        foeGfxVkExecuteRenderGraph(renderGraph, gfxSession, gfxDelayedDestructor);
+                        foeGfxVkExecuteRenderGraphCpuJobs(renderGraph);
+
+                        foeGfxVkDestroyRenderGraph(renderGraph);
                     }
 
                     // Assemble composition layers
@@ -1564,413 +1426,93 @@ int Application::mainloop() {
             }
 #endif
 
-            // Rendering to windows
-            VkCommandBuffer &commandBuffer = frameData[frameIndex].commandBuffer;
+            auto &window = windowRenderList[0];
 
-            VkCommandBufferBeginInfo commandBufferBI{
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-            };
-
-            errC = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+            errC = foeGfxAcquireNextRenderTarget(window->gfxOffscreenRenderTarget,
+                                                 FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
             if (errC) {
                 ERRC_END_PROGRAM
             }
 
-            for (auto &it : windowRenderList) {
-                errC = foeGfxAcquireNextRenderTarget(it->gfxOffscreenRenderTarget,
-                                                     FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
-                if (errC) {
-                    ERRC_END_PROGRAM
-                }
+            foeGfxVkRenderGraph renderGraph;
+            foeGfxVkCreateRenderGraph(&renderGraph);
 
-                { // Render offscreen
-                    VkExtent2D swapchainExtent = it->swapchain.extent();
+            auto renderTargetColourImageResource = foeGfxVkImportImageRenderJob(
+                renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
+                foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
+                foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
+                window->swapchain.surfaceFormat().format, window->swapchain.extent(),
+                VK_IMAGE_LAYOUT_UNDEFINED, true, {});
 
-                    { // Setup common render viewport data
-                        VkViewport viewport{
-                            .width = static_cast<float>(swapchainExtent.width),
-                            .height = static_cast<float>(swapchainExtent.height),
-                            .minDepth = 0.f,
-                            .maxDepth = 1.f,
-                        };
-                        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+            auto renderTargetDepthImageResource = foeGfxVkImportImageRenderJob(
+                renderGraph, "importRenderTargetDepthImage", VK_NULL_HANDLE,
+                "renderTargetDepthImage",
+                foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 1),
+                foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 1), depthFormat,
+                window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED, true, {});
 
-                        VkRect2D scissor{
-                            .offset = VkOffset2D{},
-                            .extent = swapchainExtent,
-                        };
-                        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+            auto pCameraPool = getComponentPool<foeCameraPool>(
+                pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+            auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
-                        // vkDepthBias ??
-                    }
+            RenderSceneOutputResources output;
+            errC =
+                renderSceneJob(renderGraph, "render3dScene", VK_NULL_HANDLE,
+                               renderTargetColourImageResource, VK_IMAGE_LAYOUT_UNDEFINED,
+                               VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource,
+                               VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                               globalMSAA, pSimulationSet, (*pCamera)->descriptor, output);
+            renderTargetColourImageResource = output.colourRenderTarget;
+            renderTargetDepthImageResource = output.depthRenderTarget;
 
-                    { // Render to Image
-                        VkRenderPass renderPass =
-                            foeGfxVkGetRenderPassPool(gfxSession)
-                                ->renderPass(
-                                    {VkAttachmentDescription{
-                                         .format = it->swapchain.surfaceFormat().format,
-                                         .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
-                                         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                                         .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                     },
-                                     VkAttachmentDescription{
-                                         .format = depthFormat,
-                                         .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
-                                         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                                         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                         .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                                         .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                     }});
+            auto presentImageResource = foeGfxVkImportSwapchainImageRenderJob(
+                renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
+                window->swapchain, window->swapchain.acquiredIndex(),
+                window->swapchain.image(window->swapchain.acquiredIndex()),
+                window->swapchain.imageView(window->swapchain.acquiredIndex()),
+                window->swapchain.surfaceFormat().format, window->swapchain.extent(),
+                window->swapchain.imageReadySemaphore());
 
-                        std::array<VkClearValue, 2> clearValues{
-                            VkClearValue{.color = {1.f, 0.5f, 1.f, 0.f}},
-                            VkClearValue{.depthStencil =
-                                             {
-                                                 .depth = 1.f,
-                                                 .stencil = 0,
-                                             }},
-                        };
-
-                        VkRenderPassBeginInfo renderPassBI{
-                            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                            .renderPass = renderPass,
-                            .framebuffer =
-                                foeGfxVkGetRenderTargetFramebuffer(it->gfxOffscreenRenderTarget),
-                            .renderArea =
-                                {
-                                    .offset = {0, 0},
-                                    .extent = it->swapchain.extent(),
-                                },
-                            .clearValueCount = clearValues.size(),
-                            .pClearValues = clearValues.data(),
-                        };
-
-                        vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
-                                             VK_SUBPASS_CONTENTS_INLINE);
-
-                        auto pCameraPool =
-                            getComponentPool<foeCameraPool>(pSimulationSet->componentPools.data(),
-                                                            pSimulationSet->componentPools.size());
-
-                        auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
-
-                        auto *pRenderStatePool = getComponentPool<foeRenderStatePool>(
-                            pSimulationSet->componentPools.data(),
-                            pSimulationSet->componentPools.size());
-
-                        auto idIt = pRenderStatePool->cbegin();
-                        auto const endIdIt = pRenderStatePool->cend();
-                        auto dataIt = pRenderStatePool->cbegin<1>();
-                        for (; idIt != endIdIt; ++idIt, ++dataIt) {
-                            renderCall(*idIt, dataIt, gfxSession, pSimulationSet, commandBuffer,
-                                       globalMSAA, renderPass, (*pCamera)->descriptor);
-                        }
-
-                        vkCmdEndRenderPass(commandBuffer);
-                    }
-
-                    { // Resolve to Swap Image
-                        VkImageSubresourceRange subresourceRange{
-                            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                            .baseMipLevel = 0,
-                            .levelCount = 1,
-                            .layerCount = 1,
-                        };
-
-                        VkImageMemoryBarrier imgMemBarrier{
-                            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                            .srcAccessMask = 0,
-                            .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                            .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                            .image = it->swapchain.image(it->swapchain.acquiredIndex()),
-                            .subresourceRange = subresourceRange,
-                        };
-
-                        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
-                                             nullptr, 1, &imgMemBarrier);
-
-                        if (foeGfxVkGetRenderTargetSamples(it->gfxOffscreenRenderTarget) !=
-                            VK_SAMPLE_COUNT_1_BIT) {
-                            VkImageResolve resolveRegion{
-                                .srcSubresource =
-                                    VkImageSubresourceLayers{
-                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                        .mipLevel = 0,
-                                        .baseArrayLayer = 0,
-                                        .layerCount = 1,
-                                    },
-                                .srcOffset = {},
-                                .dstSubresource =
-                                    VkImageSubresourceLayers{
-                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                        .mipLevel = 0,
-                                        .baseArrayLayer = 0,
-                                        .layerCount = 1,
-                                    },
-                                .dstOffset = {},
-                                .extent =
-                                    {
-                                        .width = it->swapchain.extent().width,
-                                        .height = it->swapchain.extent().height,
-                                        .depth = 1,
-                                    },
-                            };
-
-                            vkCmdResolveImage(
-                                commandBuffer,
-                                foeGfxVkGetRenderTargetImage(it->gfxOffscreenRenderTarget, 0),
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                it->swapchain.image(it->swapchain.acquiredIndex()),
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveRegion);
-                        } else {
-                            VkImageCopy imageCopy{
-                                .srcSubresource =
-                                    VkImageSubresourceLayers{
-                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                        .mipLevel = 0,
-                                        .baseArrayLayer = 0,
-                                        .layerCount = 1,
-                                    },
-                                .srcOffset = {},
-                                .dstSubresource =
-                                    VkImageSubresourceLayers{
-                                        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                                        .mipLevel = 0,
-                                        .baseArrayLayer = 0,
-                                        .layerCount = 1,
-                                    },
-                                .dstOffset = {},
-                                .extent =
-                                    {
-                                        .width = it->swapchain.extent().width,
-                                        .height = it->swapchain.extent().height,
-                                        .depth = 1,
-                                    },
-                            };
-
-                            vkCmdCopyImage(
-                                commandBuffer,
-                                foeGfxVkGetRenderTargetImage(it->gfxOffscreenRenderTarget, 0),
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                it->swapchain.image(it->swapchain.acquiredIndex()),
-                                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
-                        }
-
-                        imgMemBarrier = VkImageMemoryBarrier{
-                            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                            .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                            .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
-                            .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                            .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                            .image = it->swapchain.image(it->swapchain.acquiredIndex()),
-                            .subresourceRange = subresourceRange,
-                        };
-
-                        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0,
-                                             nullptr, 1, &imgMemBarrier);
+            if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
+                VK_SAMPLE_COUNT_1_BIT) {
+                // Resolve
+                auto resources = foeGfxVkResolveImageRenderJob(
+                    renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                    renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource,
+                    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+                renderTargetColourImageResource = resources.srcImage;
+                presentImageResource = resources.dstImage;
+            } else {
+                // Copy
+                auto resources = foeGfxVkBlitImageRenderJob(
+                    renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                    renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource,
+                    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+                renderTargetColourImageResource = resources.srcImage;
+                presentImageResource = resources.dstImage;
+            }
 
 #ifdef EDITOR_MODE
-
-                        // Render the UI to the resolved swap image
-                        // Render passes
-                        VkRenderPass swapImageRenderPass =
-                            foeGfxVkGetRenderPassPool(gfxSession)
-                                ->renderPass({VkAttachmentDescription{
-                                    .format = it->swapchain.surfaceFormat().format,
-                                    .samples = VK_SAMPLE_COUNT_1_BIT,
-                                    .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-                                    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                    .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                    .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                    .initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                    .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                }});
-
-                        if (it->swapchain != framebufferSwapchain) {
-                            {
-                                auto framebuffersCopy = swapImageFramebuffers;
-                                foeGfxAddDelayedDestructionCall(
-                                    gfxDelayedDestructor, [=](foeGfxSession session) {
-                                        for (auto &it : framebuffersCopy)
-                                            vkDestroyFramebuffer(foeGfxVkGetDevice(session), it,
-                                                                 nullptr);
-                                    });
-                            }
-                            swapImageFramebuffers.clear();
-
-                            int width, height;
-                            foeWsiWindowGetSize(it->window, &width, &height);
-                            VkImageView view;
-                            VkExtent2D swapchainExtent = it->swapchain.extent();
-                            VkFramebufferCreateInfo framebufferCI{
-                                .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-                                .renderPass = swapImageRenderPass,
-                                .attachmentCount = 1,
-                                .pAttachments = &view,
-                                .width = (uint32_t)swapchainExtent.width,
-                                .height = (uint32_t)swapchainExtent.height,
-                                .layers = 1,
-                            };
-
-                            for (uint32_t i = 0; i < it->swapchain.chainSize(); ++i) {
-                                view = it->swapchain.imageView(i);
-
-                                VkFramebuffer framebuffer;
-                                errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession),
-                                                           &framebufferCI, nullptr, &framebuffer);
-                                if (errC)
-                                    ERRC_END_PROGRAM
-                                swapImageFramebuffers.emplace_back(framebuffer);
-                            }
-
-                            framebufferSwapchain = it->swapchain;
-                        }
-
-                        VkExtent2D swapchainExtent = it->swapchain.extent();
-                        VkClearValue clear{
-                            .color = {0.f, 0.5f, 1.f, 0.f},
-                        };
-                        VkRenderPass renderPass = swapImageRenderPass;
-
-                        VkRenderPassBeginInfo renderPassBI{
-                            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-                            .renderPass = renderPass,
-                            .framebuffer = swapImageFramebuffers[it->swapchain.acquiredIndex()],
-                            .renderArea =
-                                {
-                                    .offset = {0, 0},
-                                    .extent = swapchainExtent,
-                                },
-                            .clearValueCount = 1,
-                            .pClearValues = &clear,
-                        };
-
-                        vkCmdBeginRenderPass(commandBuffer, &renderPassBI,
-                                             VK_SUBPASS_CONTENTS_INLINE);
-
-                        if (it == windowRenderList[0]) { // ImGui
-                            if (!imguiRenderer.initialized()) {
-                                errC = imguiRenderer.initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT,
-                                                                renderPass, 0);
-                                if (errC) {
-                                    ERRC_END_PROGRAM
-                                }
-                            }
-
-                            imguiRenderer.newFrame();
-                            imguiState.runUI();
-                            imguiRenderer.endFrame();
-
-                            errC = imguiRenderer.update(frameIndex);
-                            if (errC) {
-                                ERRC_END_PROGRAM
-                            }
-
-                            imguiRenderer.draw(commandBuffer, frameIndex);
-                        }
-
-                        vkCmdEndRenderPass(commandBuffer);
+            presentImageResource = foeImGuiVkRenderUiJob(
+                renderGraph, "RenderImGuiPass", VK_NULL_HANDLE, presentImageResource,
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
+                &imguiState, frameIndex);
 #endif
-                    }
-                }
-            }
+            // This is called so that the swapchain advances it's internal acquired index, as if it
+            // was presented
+            VkSwapchainKHR swapchain2;
+            uint32_t index;
+            window->swapchain.presentData(&swapchain2, &index);
 
-            // Submit render buffer
-            {
-                errC = vkEndCommandBuffer(commandBuffer);
-                if (errC) {
-                    FOE_LOG(General, Fatal, "Error with drawing: {}",
-                            std::error_code{errC}.message());
-                }
+            foeGfxVkPresentSwapchainImageRenderJob(renderGraph, "presentFinalImage",
+                                                   frameData[frameIndex].frameComplete,
+                                                   presentImageResource);
 
-                // Submission
-                std::vector<VkPipelineStageFlags> waitMasks;
-                std::vector<VkSemaphore> imageReadSemaphores;
+            foeGfxVkExecuteRenderGraph(renderGraph, gfxSession, gfxDelayedDestructor);
 
-                for (auto &it : windowRenderList) {
-                    waitMasks.emplace_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                    imageReadSemaphores.emplace_back(it->swapchain.imageReadySemaphore());
-                }
-
-                VkSubmitInfo submitInfo{
-                    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                    .waitSemaphoreCount = static_cast<uint32_t>(imageReadSemaphores.size()),
-                    .pWaitSemaphores = imageReadSemaphores.data(),
-                    .pWaitDstStageMask = waitMasks.data(),
-                    .commandBufferCount = 1,
-                    .pCommandBuffers = &commandBuffer,
-                    .signalSemaphoreCount = 1,
-                    .pSignalSemaphores = &frameData[frameIndex].renderComplete,
-                };
-
-                auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-                errC = vkQueueSubmit(queue, 1, &submitInfo, frameData[frameIndex].frameComplete);
-                foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-                if (errC) {
-                    ERRC_END_PROGRAM
-                }
-            }
-
-            // Presentation
-            {
-                std::vector<VkSwapchainKHR> swapchains;
-                std::vector<uint32_t> swapchainIndices;
-                std::vector<VkResult> swapchainResults;
-
-                for (auto &it : windowRenderList) {
-                    VkSwapchainKHR swapchain2;
-                    uint32_t index;
-                    it->swapchain.presentData(&swapchain2, &index);
-
-                    swapchains.emplace_back(swapchain2);
-                    swapchainIndices.emplace_back(index);
-                    swapchainResults.emplace_back(VK_SUCCESS);
-                }
-
-                VkPresentInfoKHR presentInfo{
-                    .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-                    .waitSemaphoreCount = 1,
-                    .pWaitSemaphores = &frameData[frameIndex].renderComplete,
-                    .swapchainCount = static_cast<uint32_t>(swapchains.size()),
-                    .pSwapchains = swapchains.data(),
-                    .pImageIndices = swapchainIndices.data(),
-                    .pResults = swapchainResults.data(),
-                };
-
-                auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-                errC = vkQueuePresentKHR(queue, &presentInfo);
-                foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-                if (errC == VK_ERROR_OUT_OF_DATE_KHR || errC == VK_SUBOPTIMAL_KHR) {
-                    // The associated window has been resized, will be fixed for the next frame
-                    errC = VK_SUCCESS;
-                } else if (errC) {
-                    ERRC_END_PROGRAM
-                }
-                for (auto &it : swapchainResults) {
-                    if (it == VK_ERROR_OUT_OF_DATE_KHR || it == VK_SUBOPTIMAL_KHR) {
-                        // The associated window has been resized, will be fixed next frame
-                        it = VK_SUCCESS;
-                    } else if (it != VK_SUCCESS) {
-                        errC = it;
-                        ERRC_END_PROGRAM
-                    }
-                }
-            }
+            foeGfxVkDestroyRenderGraph(renderGraph);
 
             // Set frame index data
             lastFrameIndex = frameIndex;
