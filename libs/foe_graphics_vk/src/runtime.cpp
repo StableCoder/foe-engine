@@ -29,8 +29,8 @@ namespace {
 
 void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
     // State
-    delete[] pRuntime->pExtensions;
-    delete[] pRuntime->pLayers;
+    delete[] pRuntime->pExtensionNames;
+    delete[] pRuntime->pLayerNames;
 
     if (pRuntime->debugCallback != VK_NULL_HANDLE)
         foeVkDestroyDebugCallback(pRuntime->instance, pRuntime->debugCallback);
@@ -101,19 +101,19 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
         goto CREATE_FAILED;
 
     // Add layer/extension state to runtime struct for future queries
-    foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layersLength, nullptr);
-    if (pNewRuntime->layersLength != 0) {
-        pNewRuntime->pLayers = new char[pNewRuntime->layersLength];
-        foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layersLength,
-                                 pNewRuntime->pLayers);
+    foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layerNamesLength, nullptr);
+    if (pNewRuntime->layerNamesLength != 0) {
+        pNewRuntime->pLayerNames = new char[pNewRuntime->layerNamesLength];
+        foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layerNamesLength,
+                                 pNewRuntime->pLayerNames);
     }
 
-    foeCreateDelimitedString(extensions.size(), extensions.data(), &pNewRuntime->extensionsLength,
-                             nullptr);
-    if (pNewRuntime->extensionsLength != 0) {
-        pNewRuntime->pExtensions = new char[pNewRuntime->extensionsLength];
+    foeCreateDelimitedString(extensions.size(), extensions.data(),
+                             &pNewRuntime->extensionNamesLength, nullptr);
+    if (pNewRuntime->extensionNamesLength != 0) {
+        pNewRuntime->pExtensionNames = new char[pNewRuntime->extensionNamesLength];
         foeCreateDelimitedString(extensions.size(), extensions.data(),
-                                 &pNewRuntime->extensionsLength, pNewRuntime->pExtensions);
+                                 &pNewRuntime->extensionNamesLength, pNewRuntime->pExtensionNames);
     }
 
     if (debugLogging) {
@@ -139,8 +139,8 @@ std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
                                                char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
-    return foeCopyDelimitedString(pRuntime->layersLength, pRuntime->pLayers, pLayerNamesLength,
-                                  pLayerNames)
+    return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames,
+                                  pLayerNamesLength, pLayerNames)
                ? FOE_GRAPHICS_VK_SUCCESS
                : FOE_GRAPHICS_VK_INCOMPLETE;
 }
@@ -150,7 +150,7 @@ std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
                                                    char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
-    return foeCopyDelimitedString(pRuntime->extensionsLength, pRuntime->pExtensions,
+    return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames,
                                   pExtensionNamesLength, pExtensionNames)
                ? FOE_GRAPHICS_VK_SUCCESS
                : FOE_GRAPHICS_VK_INCOMPLETE;

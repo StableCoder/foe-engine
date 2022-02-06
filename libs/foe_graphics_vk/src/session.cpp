@@ -76,8 +76,8 @@ void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
     pSession->renderPassPool.deinitialize();
 
     // State
-    delete[] pSession->pExtensions;
-    delete[] pSession->pLayers;
+    delete[] pSession->pExtensionNames;
+    delete[] pSession->pLayerNames;
 
     if (pSession->allocator != VK_NULL_HANDLE)
         vmaDestroyAllocator(pSession->allocator);
@@ -536,19 +536,19 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
         goto CREATE_FAILED;
 
     // Add layer/extension/feature state to session struct for future queries
-    foeCreateDelimitedString(layers.size(), layers.data(), &pNewSession->layersLength, nullptr);
-    if (pNewSession->layersLength != 0) {
-        pNewSession->pLayers = new char[pNewSession->layersLength];
-        foeCreateDelimitedString(layers.size(), layers.data(), &pNewSession->layersLength,
-                                 pNewSession->pLayers);
+    foeCreateDelimitedString(layers.size(), layers.data(), &pNewSession->layerNamesLength, nullptr);
+    if (pNewSession->layerNamesLength != 0) {
+        pNewSession->pLayerNames = new char[pNewSession->layerNamesLength];
+        foeCreateDelimitedString(layers.size(), layers.data(), &pNewSession->layerNamesLength,
+                                 pNewSession->pLayerNames);
     }
 
-    foeCreateDelimitedString(extensions.size(), extensions.data(), &pNewSession->extensionsLength,
-                             nullptr);
-    if (pNewSession->extensionsLength != 0) {
-        pNewSession->pExtensions = new char[pNewSession->extensionsLength];
+    foeCreateDelimitedString(extensions.size(), extensions.data(),
+                             &pNewSession->extensionNamesLength, nullptr);
+    if (pNewSession->extensionNamesLength != 0) {
+        pNewSession->pExtensionNames = new char[pNewSession->extensionNamesLength];
         foeCreateDelimitedString(extensions.size(), extensions.data(),
-                                 &pNewSession->extensionsLength, pNewSession->pExtensions);
+                                 &pNewSession->extensionNamesLength, pNewSession->pExtensionNames);
     }
 
     // Retrieve the queues
@@ -602,8 +602,8 @@ std::error_code foeGfxVkEnumerateSessionLayers(foeGfxSession session,
                                                char *pLayerNames) {
     auto *pSession = session_from_handle(session);
 
-    return foeCopyDelimitedString(pSession->layersLength, pSession->pLayers, pLayerNamesLength,
-                                  pLayerNames)
+    return foeCopyDelimitedString(pSession->layerNamesLength, pSession->pLayerNames,
+                                  pLayerNamesLength, pLayerNames)
                ? FOE_GRAPHICS_VK_SUCCESS
                : FOE_GRAPHICS_VK_INCOMPLETE;
 }
@@ -613,7 +613,7 @@ std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
                                                    char *pExtensionNames) {
     auto *pSession = session_from_handle(session);
 
-    return foeCopyDelimitedString(pSession->extensionsLength, pSession->pExtensions,
+    return foeCopyDelimitedString(pSession->extensionNamesLength, pSession->pExtensionNames,
                                   pExtensionNamesLength, pExtensionNames)
                ? FOE_GRAPHICS_VK_SUCCESS
                : FOE_GRAPHICS_VK_INCOMPLETE;

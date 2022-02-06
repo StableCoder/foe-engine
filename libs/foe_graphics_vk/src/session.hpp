@@ -42,14 +42,14 @@ struct foeGfxVkSession {
     uint32_t numQueueFamilies{0};
     foeGfxVkQueueFamily pQueueFamilies[MaxQueueFamilies];
 
-    // Length in bytes of pLayers
-    uint32_t layersLength{0};
-    // Set of strings representing the instance's layers, delimited by NULL characters
-    char *pLayers{nullptr};
-    // Length in bytes of pExtensions
-    uint32_t extensionsLength{0};
-    // Set of strings representing the instance's extensions, delimited by NULL characters
-    char *pExtensions{nullptr};
+    /// Length in bytes of pLayerNames
+    uint32_t layerNamesLength{0};
+    /// Set of strings representing the instance's layers, delimited by NULL characters
+    char *pLayerNames{nullptr};
+    /// Length in bytes of pExtensionNames
+    uint32_t extensionNamesLength{0};
+    /// Set of strings representing the instance's extensions, delimited by NULL characters
+    char *pExtensionNames{nullptr};
 
     /// Set of enabled Vulkan 1.0 features
     VkPhysicalDeviceFeatures features_1_0;

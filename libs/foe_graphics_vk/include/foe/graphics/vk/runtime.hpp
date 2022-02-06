@@ -53,9 +53,11 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *pApplicationNam
 
 /** @brief Enumerate the enabled layers for the given runtime
  * @param runtime is the handle to the runtime whose layers will be queried.
- * @param pLayerNamesLength is a pointer to an integer related to the size of pLayaerNames, as
+ * @param pLayerNamesLength is a pointer to an integer related to the size of pLayarNames, as
  * described below.
  * @param pLayerNames is either NULL or a pointer to an character array.
+ * @return FOE_GRAPHICS_VK_SUCCESS on success, FOE_GRAPHICS_VK_INCOMPLETE if not all names could be
+ * returned
  *
  * If pLayerNames is NULL, then the size required to return all layer names is returned int
  * pLayerNamesLength. Otherwise, pLayerNamesLength must point to a variable set by the user to the
@@ -70,17 +72,19 @@ FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runt
 
 /** @brief Enumerate the enabled extensions for the given runtime
  * @param runtime is the handle to the runtime whose extensions will be queried.
- * @param pExtensionsNamesLength is a pointer to an integer related to the size of pLayaerNames, as
- * described below.
- * @param pExtensionsNames is either NULL or a pointer to an character array.
+ * @param pExtensionNamesLength is a pointer to an integer related to the size of pExtensionNames,
+ * as described below.
+ * @param pExtensionNames is either NULL or a pointer to an character array.
+ * @return FOE_GRAPHICS_VK_SUCCESS on success, FOE_GRAPHICS_VK_INCOMPLETE if not all names could be
+ * returned
  *
- * If pExtensionsNames is NULL, then the size required to return all layer names is returned int
- * pExtensionsNamesLength. Otherwise, pExtensionsNamesLength must point to a variable set by the
- * user to the size of the pExtensionsNames array, and on return the variable is overwritten with
- * the characters actually written to pExtensionsNames. If pExtensionsNamesLength is less than the
- * total size required to return all names, at most pExtensionsNamesLength is written, and
- * FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all
- * names were returned.
+ * If pExtensionNames is NULL, then the size required to return all layer names is returned int
+ * pExtensionNamesLength. Otherwise, pExtensionNamesLength must point to a variable set by
+ * the user to the size of the pExtensionNames array, and on return the variable is overwritten
+ * with the characters actually written to pExtensionNames. If pExtensionNamesLength is
+ * less than the total size required to return all names, at most pExtensionNamesLength is
+ * written, and FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate
+ * that not all names were returned.
  */
 FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
                                                                   uint32_t *pExtensionNamesLength,

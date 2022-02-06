@@ -24,14 +24,14 @@ struct foeGfxVkRuntime {
     VkInstance instance{VK_NULL_HANDLE};
     VkDebugReportCallbackEXT debugCallback{VK_NULL_HANDLE};
 
-    // Length in bytes of pLayers
-    uint32_t layersLength;
-    // Set of strings representing the instance's layers, delimited by NULL characters
-    char *pLayers;
-    // Length in bytes of pExtensions
-    uint32_t extensionsLength;
-    // Set of strings representing the instance's extensions, delimited by NULL characters
-    char *pExtensions;
+    /// Length in bytes of pLayerNames
+    uint32_t layerNamesLength;
+    /// Set of strings representing the instance's layers, delimited by NULL characters
+    char *pLayerNames;
+    /// Length in bytes of pExtensionNames
+    uint32_t extensionNamesLength;
+    /// Set of strings representing the instance's extensions, delimited by NULL characters
+    char *pExtensionNames;
 };
 
 FOE_DEFINE_HANDLE_CASTS(runtime, foeGfxVkRuntime, foeGfxRuntime)
