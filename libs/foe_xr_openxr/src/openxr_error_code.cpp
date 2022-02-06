@@ -23,9 +23,17 @@ namespace {
 #define XR_ENUM_CASE_STR(name, val)                                                                \
     case name:                                                                                     \
         return #name;
+
 #define XR_ENUM_STR(enumType)                                                                      \
-    constexpr const char *XrEnumStr(enumType e) {                                                  \
-        switch (e) { XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR) default : return "Unknown"; }       \
+    constexpr const char *XrEnumStr(enumType ev) {                                                 \
+        switch (ev) {                                                                              \
+            XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR);                                             \
+        default:                                                                                   \
+            if (ev > 0)                                                                            \
+                return "(unrecognized positive XrResult value)";                                   \
+            else                                                                                   \
+                return "(unrecognized negative XrResult value)";                                   \
+        }                                                                                          \
     }
 
 XR_ENUM_STR(XrResult);
