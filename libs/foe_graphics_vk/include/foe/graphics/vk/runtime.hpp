@@ -30,8 +30,12 @@
  * name of the application.
  * @param applicationVersion is an unsigned integer variable containing the developer-supplied
  * version number of the application.
- * @param layers is a list of Vulkan layers to enable for the runtime.
- * @param extensions is a list of Vulkan extensions to enable for the runtime.
+ * @param layerCount is the number of Vulkan layers to enable
+ * @param ppLayerNames is a pointer to an array of layerCount null-terminated UTF-8 strings
+ * containing the names of layers to enable in the created runtime.
+ * @param extensionCount is the number of Vulkan extensions to enable
+ * @param ppExtensionNames is a pointer to an array of layerCount null-terminated UTF-8 strings
+ * containing the names of extesnions to enable in the created runtime.
  * @param validation indicates whether to enable the VK_LAYER_KHRONOS_validation layer
  * @param debugLogging indicates whether to enable debug logging.
  * @param pRuntime points to a foeGfxRuntime handle in which the resulting runtime is returned.
@@ -39,8 +43,10 @@
  */
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
                                                      uint32_t applicationVersion,
-                                                     std::vector<std::string> layers,
-                                                     std::vector<std::string> extensions,
+                                                     uint32_t layerCount,
+                                                     char const *const *ppLayerNames,
+                                                     uint32_t extensionCount,
+                                                     char const *const *ppExtensionNames,
                                                      bool validation,
                                                      bool debugLogging,
                                                      foeGfxRuntime *pRuntime);

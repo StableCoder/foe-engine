@@ -71,8 +71,17 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
     }
 #endif
 
-    return foeGfxVkCreateRuntime("FoE Engine", 0, layers, extensions, validation, debugLogging,
-                                 pGfxRuntime);
+    std::vector<char const *> layersList;
+    std::vector<char const *> extensionsList;
+
+    for (auto &it : layers)
+        layersList.emplace_back(it.data());
+    for (auto &it : extensions)
+        extensionsList.emplace_back(it.data());
+
+    return foeGfxVkCreateRuntime("FoE Engine", 0, layersList.size(), layersList.data(),
+                                 extensionsList.size(), extensionsList.data(), validation,
+                                 debugLogging, pGfxRuntime);
 }
 
 namespace {
@@ -243,6 +252,15 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
 #endif
     };
 
-    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layers, extensions, nullptr,
-                                 &features12, pGfxSession);
+    std::vector<char const *> layersList;
+    std::vector<char const *> extensionsList;
+
+    for (auto &it : layers)
+        layersList.emplace_back(it.data());
+    for (auto &it : extensions)
+        extensionsList.emplace_back(it.data());
+
+    return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layersList.size(), layersList.data(),
+                                 extensionsList.size(), extensionsList.data(), nullptr, &features12,
+                                 pGfxSession);
 }

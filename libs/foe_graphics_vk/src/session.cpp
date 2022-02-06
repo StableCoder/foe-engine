@@ -391,8 +391,10 @@ void mergeFeatureSet_VkPhysicalDeviceVulkan13Features(VkPhysicalDeviceVulkan13Fe
 
 std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                       VkPhysicalDevice vkPhysicalDevice,
-                                      std::vector<std::string> layers,
-                                      std::vector<std::string> extensions,
+                                      uint32_t layerCount,
+                                      char const *const *ppLayerNames,
+                                      uint32_t extensionCount,
+                                      char const *const *ppExtensionNames,
                                       VkPhysicalDeviceFeatures const *pBasicFeatures,
                                       void const *pFeatures,
                                       foeGfxSession *pSession) {
@@ -430,13 +432,14 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
         queueCI[i].pQueuePriorities = queuePriorities.get();
     }
 
-    std::vector<char const *> finalLayers;
-    std::vector<char const *> finalExtensions;
+    // Layers / Extensions
+    std::vector<char const *> layers;
+    std::vector<char const *> extensions;
 
-    for (auto &it : layers)
-        finalLayers.emplace_back(it.data());
-    for (auto &it : extensions)
-        finalExtensions.emplace_back(it.data());
+    for (uint32_t i = 0; i < layerCount; ++i)
+        layers.emplace_back(ppLayerNames[i]);
+    for (uint32_t i = 0; i < extensionCount; ++i)
+        extensions.emplace_back(ppExtensionNames[i]);
 
     // Go through feature sets and merge them together to one per struct
     if (pBasicFeatures == nullptr)
@@ -518,10 +521,10 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
 #endif
         .queueCreateInfoCount = pNewSession->numQueueFamilies,
         .pQueueCreateInfos = queueCI.get(),
-        .enabledLayerCount = static_cast<uint32_t>(finalLayers.size()),
-        .ppEnabledLayerNames = finalLayers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(finalExtensions.size()),
-        .ppEnabledExtensionNames = finalExtensions.data(),
+        .enabledLayerCount = static_cast<uint32_t>(layers.size()),
+        .ppEnabledLayerNames = layers.data(),
+        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+        .ppEnabledExtensionNames = extensions.data(),
 #ifndef VK_VERSION_1_1
         .pEnabledFeatures = pBasicFeatures,
 #endif
@@ -532,10 +535,10 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
         goto CREATE_FAILED;
 
     // Add layer/extension/feature state to session struct for future queries
-    convertToDelimitedString(finalLayers.size(), finalLayers.data(), &pNewSession->layersLength,
+    convertToDelimitedString(layers.size(), layers.data(), &pNewSession->layersLength,
                              &pNewSession->pLayers);
-    convertToDelimitedString(finalExtensions.size(), finalExtensions.data(),
-                             &pNewSession->extensionsLength, &pNewSession->pExtensions);
+    convertToDelimitedString(extensions.size(), extensions.data(), &pNewSession->extensionsLength,
+                             &pNewSession->pExtensions);
 
     // Retrieve the queues
     for (uint32_t i = 0; i < pNewSession->numQueueFamilies; ++i) {

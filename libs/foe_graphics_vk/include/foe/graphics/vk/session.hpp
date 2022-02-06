@@ -35,8 +35,12 @@ class foeGfxVkPipelinePool;
 /** @brief Creates a graphics session using the Vulkan API
  * @param runtime is a handle to the graphics runtime to be created on
  * @param vkPhysicalDevice must be a physical device handle retrieved using the given runtime
- * @param layers is a list of Vulkan layers to enable for the session.
- * @param extensions is a list of Vulkan extensions to enable for the session.
+ * @param layerCount is the number of Vulkan layers to enable
+ * @param ppLayerNames is a pointer to an array of layerCount null-terminated UTF-8 strings
+ * containing the names of layers to enable in the created runtime.
+ * @param extensionCount is the number of Vulkan extensions to enable
+ * @param ppExtensionNames is a pointer to an array of layerCount null-terminated UTF-8 strings
+ * containing the names of extesnions to enable in the created runtime.
  * @param pBasicFeatures is either NULL or a pointer to the set of Vulkan 1.0 features to enable.
  * These can also be passed in VkPhysicalDeviceFeatures2 to pFeatures.
  * @param pFeatures is either NULL or a pointer to a chain of Vulkan feature structs.
@@ -49,8 +53,10 @@ class foeGfxVkPipelinePool;
  */
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                                                      VkPhysicalDevice vkPhysicalDevice,
-                                                     std::vector<std::string> layers,
-                                                     std::vector<std::string> extensions,
+                                                     uint32_t layerCount,
+                                                     char const *const *ppLayerNames,
+                                                     uint32_t extensionCount,
+                                                     char const *const *ppExtensionNames,
                                                      VkPhysicalDeviceFeatures const *pBasicFeatures,
                                                      void const *pFeatures,
                                                      foeGfxSession *pSession);

@@ -44,8 +44,10 @@ void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
 
 std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
                                       uint32_t applicationVersion,
-                                      std::vector<std::string> layers,
-                                      std::vector<std::string> extensions,
+                                      uint32_t layerCount,
+                                      char const *const *ppLayerNames,
+                                      uint32_t extensionCount,
+                                      char const *const *ppExtensionNames,
                                       bool validation,
                                       bool debugLogging,
                                       foeGfxRuntime *pRuntime) {
@@ -65,29 +67,32 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
         .apiVersion = vkApiVersion,
     };
 
-    std::vector<char const *> finalLayers;
-    std::vector<char const *> finalExtensions;
+    // Layers / Extensions
+    std::vector<char const *> layers;
+    std::vector<char const *> extensions;
+
+    for (uint32_t i = 0; i < layerCount; ++i)
+        layers.emplace_back(ppLayerNames[i]);
+    for (uint32_t i = 0; i < extensionCount; ++i)
+        extensions.emplace_back(ppExtensionNames[i]);
 
     if (validation) {
         layers.emplace_back("VK_LAYER_KHRONOS_validation");
         FOE_LOG(foeVkGraphics, Verbose, "Adding validation layers to new VkInstance");
     }
-    if (debugLogging)
+    if (debugLogging) {
         extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+        FOE_LOG(foeVkGraphics, Verbose, "Adding debug report extension to new VkInstance");
+    }
 
-    for (auto &it : layers)
-        finalLayers.emplace_back(it.data());
-
-    for (auto &it : extensions)
-        finalExtensions.emplace_back(it.data());
-
+    // Create Instance
     VkInstanceCreateInfo instanceCI{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &appinfo,
-        .enabledLayerCount = static_cast<uint32_t>(finalLayers.size()),
-        .ppEnabledLayerNames = finalLayers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(finalExtensions.size()),
-        .ppEnabledExtensionNames = finalExtensions.data(),
+        .enabledLayerCount = static_cast<uint32_t>(layers.size()),
+        .ppEnabledLayerNames = layers.data(),
+        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+        .ppEnabledExtensionNames = extensions.data(),
     };
 
     VkResult vkRes = vkCreateInstance(&instanceCI, nullptr, &pNewRuntime->instance);
@@ -95,10 +100,10 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
         goto CREATE_FAILED;
 
     // Add layer/extension state to runtime struct for future queries
-    convertToDelimitedString(finalExtensions.size(), finalExtensions.data(),
-                             &pNewRuntime->layersLength, &pNewRuntime->pLayers);
-    convertToDelimitedString(finalExtensions.size(), finalExtensions.data(),
-                             &pNewRuntime->extensionsLength, &pNewRuntime->pExtensions);
+    convertToDelimitedString(layers.size(), layers.data(), &pNewRuntime->layersLength,
+                             &pNewRuntime->pLayers);
+    convertToDelimitedString(extensions.size(), extensions.data(), &pNewRuntime->extensionsLength,
+                             &pNewRuntime->pExtensions);
 
     if (debugLogging) {
         vkRes = foeVkCreateDebugCallback(pNewRuntime->instance, &pNewRuntime->debugCallback);
