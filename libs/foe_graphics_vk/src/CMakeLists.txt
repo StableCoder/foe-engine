@@ -3,7 +3,6 @@ target_sources(
   PRIVATE backend.c
           builtin_descriptor_sets.cpp
           debug_callback.cpp
-          delimited_strings.cpp
           descriptor_set_layout_pool.cpp
           error_code.cpp
           error_colour_image.cpp

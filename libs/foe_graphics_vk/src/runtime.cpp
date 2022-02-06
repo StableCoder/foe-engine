@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 
 #include <foe/graphics/vk/runtime.hpp>
 
+#include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
 #include <vk_error_code.hpp>
 
 #include "debug_callback.hpp"
-#include "delimited_strings.hpp"
+#include "error_code.hpp"
 #include "log.hpp"
 #include "runtime.hpp"
 
@@ -100,10 +101,20 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
         goto CREATE_FAILED;
 
     // Add layer/extension state to runtime struct for future queries
-    convertToDelimitedString(layers.size(), layers.data(), &pNewRuntime->layersLength,
-                             &pNewRuntime->pLayers);
-    convertToDelimitedString(extensions.size(), extensions.data(), &pNewRuntime->extensionsLength,
-                             &pNewRuntime->pExtensions);
+    foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layersLength, nullptr);
+    if (pNewRuntime->layersLength != 0) {
+        pNewRuntime->pLayers = new char[pNewRuntime->layersLength];
+        foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layersLength,
+                                 pNewRuntime->pLayers);
+    }
+
+    foeCreateDelimitedString(extensions.size(), extensions.data(), &pNewRuntime->extensionsLength,
+                             nullptr);
+    if (pNewRuntime->extensionsLength != 0) {
+        pNewRuntime->pExtensions = new char[pNewRuntime->extensionsLength];
+        foeCreateDelimitedString(extensions.size(), extensions.data(),
+                                 &pNewRuntime->extensionsLength, pNewRuntime->pExtensions);
+    }
 
     if (debugLogging) {
         vkRes = foeVkCreateDebugCallback(pNewRuntime->instance, &pNewRuntime->debugCallback);
@@ -128,8 +139,10 @@ std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
                                                char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
-    return getDelimitedString(pRuntime->layersLength, pRuntime->pLayers, pLayerNamesLength,
-                              pLayerNames);
+    return foeCopyDelimitedString(pRuntime->layersLength, pRuntime->pLayers, pLayerNamesLength,
+                                  pLayerNames)
+               ? FOE_GRAPHICS_VK_SUCCESS
+               : FOE_GRAPHICS_VK_INCOMPLETE;
 }
 
 std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
@@ -137,8 +150,10 @@ std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
                                                    char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
-    return getDelimitedString(pRuntime->extensionsLength, pRuntime->pExtensions,
-                              pExtensionNamesLength, pExtensionNames);
+    return foeCopyDelimitedString(pRuntime->extensionsLength, pRuntime->pExtensions,
+                                  pExtensionNamesLength, pExtensionNames)
+               ? FOE_GRAPHICS_VK_SUCCESS
+               : FOE_GRAPHICS_VK_INCOMPLETE;
 }
 
 VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime) {
