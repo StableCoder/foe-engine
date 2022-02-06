@@ -41,12 +41,13 @@ target_code_coverage(
   .*/test/.*)
 
 # Thread Pool Definition
-target_sources(test_foe_thread_pool PRIVATE thread_pool_error_code.cpp
-                                            thread_pool.cpp)
 target_sources(
   test_foe_thread_pool
-  PRIVATE # This one is for code that needs to be recompiled as the symbols may
-          # not be exported or stripped
+  PRIVATE thread_pool_error_code.cpp
+          thread_pool.cpp
+          # The following set are sources that needs to be recompiled as the
+          # symbols may not be exported or have been stripped from  thelinked
+          # libraries
           ../src/thread_pool_error_code.cpp)
 
 target_link_libraries(test_foe_thread_pool PRIVATE catch foe)

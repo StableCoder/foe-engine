@@ -6,12 +6,14 @@ add_executable(test_foe_simulation)
 add_test(NAME FoE-Simulation-Test COMMAND test_foe_simulation)
 
 # Definition
-target_sources(test_foe_simulation PRIVATE error_code.cpp group_data.cpp
-                                           simulation.cpp)
 target_sources(
   test_foe_simulation
-  PRIVATE # This one is for code that needs to be recompiled as the symbols may
-          # not be exported or stripped
+  PRIVATE error_code.cpp
+          group_data.cpp
+          simulation.cpp
+          # The following set are sources that needs to be recompiled as the
+          # symbols may not be exported or have been stripped from  thelinked
+          # libraries
           ../src/error_code.cpp)
 
 target_compile_definitions(
