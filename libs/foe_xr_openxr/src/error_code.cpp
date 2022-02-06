@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,33 +14,38 @@
     limitations under the License.
 */
 
-#include <foe/xr/error_code.hpp>
-
-#include <openxr/openxr_reflection.h>
+#include "error_code.hpp"
 
 namespace {
 
-#define XR_ENUM_CASE_STR(name, val)                                                                \
-    case name:                                                                                     \
-        return #name;
-#define XR_ENUM_STR(enumType)                                                                      \
-    constexpr const char *XrEnumStr(enumType e) {                                                  \
-        switch (e) { XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR) default : return "Unknown"; }       \
-    }
-
-XR_ENUM_STR(XrResult);
-
-struct XrErrCategory : std::error_category {
+struct foeXrOpenErrCategory : std::error_category {
     const char *name() const noexcept override;
     std::string message(int ev) const override;
 };
 
-const char *XrErrCategory::name() const noexcept { return "XrResult"; }
+const char *foeXrOpenErrCategory::name() const noexcept { return "foeXrOpenResult"; }
 
-std::string XrErrCategory::message(int ev) const { return XrEnumStr(static_cast<XrResult>(ev)); }
+#define RESULT_CASE(X)                                                                             \
+    case X:                                                                                        \
+        return #X;
 
-const XrErrCategory XrErrCategory{};
+std::string foeXrOpenErrCategory::message(int ev) const {
+    switch (static_cast<foeXrOpenResult>(ev)) {
+        RESULT_CASE(FOE_OPENXR_SUCCESS)
+        RESULT_CASE(FOE_OPENXR_INCOMPLETE)
+
+    default:
+        if (ev > 0)
+            return "(unrecognized positive foeXrOpenResult value)";
+        else
+            return "(unrecognized negative foeXrOpenResult value)";
+    }
+}
+
+const foeXrOpenErrCategory openXrErrCategory{};
 
 } // namespace
 
-std::error_code make_error_code(XrResult e) { return {static_cast<int>(e), XrErrCategory}; }
+std::error_code make_error_code(foeXrOpenResult e) {
+    return {static_cast<int>(e), openXrErrCategory};
+}

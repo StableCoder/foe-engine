@@ -17,16 +17,14 @@ else()
 endif()
 
 # Definition
+add_subdirectory(src)
+
 generate_export_header(
   foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/public/foe/xr/export.h)
 
 target_include_directories(foe_xr_openxr
-                           PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public)
-
-add_subdirectory(src)
-
-target_include_directories(foe_xr_openxr PUBLIC include)
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader)
 
@@ -40,3 +38,6 @@ endif()
 
 # Auxiliary Targets
 add_subdirectory(libs/vulkan)
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
