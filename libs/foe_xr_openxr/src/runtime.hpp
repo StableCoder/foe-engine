@@ -32,6 +32,18 @@ struct foeXrOpenRuntime {
     XrDebugUtilsMessengerEXT debugMessenger{XR_NULL_HANDLE};
 
     std::vector<foeXrSession *> sessions;
+
+    /// The XrInstance API version created with
+    XrVersion apiVersion;
+
+    /// Length in bytes of pLayerNames
+    uint32_t layerNamesLength;
+    /// Set of strings representing the instance's layers, delimited by NULL characters
+    char *pLayerNames;
+    /// Length in bytes of pExtensionNames
+    uint32_t extensionNamesLength;
+    /// Set of strings representing the instance's extensions, delimited by NULL characters
+    char *pExtensionNames;
 };
 
 FOE_DEFINE_HANDLE_CASTS(runtime, foeXrOpenRuntime, foeXrRuntime)

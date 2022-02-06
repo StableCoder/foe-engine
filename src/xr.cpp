@@ -25,8 +25,8 @@
 #include <cstring>
 
 std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
-    std::vector<std::string> layers;
-    std::vector<std::string> extensions;
+    std::vector<char const *> layers;
+    std::vector<char const *> extensions;
 
     if (strcmp(foeGfxBackendName(), "Vulkan") == 0) {
         extensions.emplace_back(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
@@ -34,8 +34,8 @@ std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
         std::abort();
     }
 
-    return foeXrOpenCreateRuntime("FoE Engine", 0, layers, extensions, false, debugLogging,
-                                  pRuntime);
+    return foeXrOpenCreateRuntime("FoE Engine", 0, layers.size(), layers.data(), extensions.size(),
+                                  extensions.data(), false, debugLogging, pRuntime);
 }
 
 std::error_code createXrSession(foeXrRuntime runtime,

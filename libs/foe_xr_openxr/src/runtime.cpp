@@ -16,63 +16,87 @@
 
 #include <foe/xr/openxr/runtime.hpp>
 
+#include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
 #include <foe/xr/core.hpp>
 #include <foe/xr/error_code.hpp>
 #include <foe/xr/session.hpp>
 
 #include "debug_utils.hpp"
+#include "error_code.hpp"
 #include "log.hpp"
 #include "runtime.hpp"
 
 std::error_code foeXrOpenCreateRuntime(char const *appName,
                                        uint32_t appVersion,
-                                       std::vector<std::string> layers,
-                                       std::vector<std::string> extensions,
+                                       uint32_t layerCount,
+                                       char const *const *ppLayerNames,
+                                       uint32_t extensionCount,
+                                       char const *const *ppExtensionNames,
                                        bool validation,
                                        bool debugLogging,
                                        foeXrRuntime *pRuntime) {
     auto *pNewRuntime = new foeXrOpenRuntime;
     XrResult xrRes{XR_SUCCESS};
 
-    if (validation) {
-        layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
-        FOE_LOG(foeXrOpen, Verbose, "Adding validation layers to XrInstance");
-    }
-    if (debugLogging)
-        extensions.emplace_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    // Application Info
+    pNewRuntime->apiVersion = XR_MAKE_VERSION(1, 0, 12);
 
-    // Create XrInstance
     XrApplicationInfo appInfo{
         .applicationVersion = appVersion,
         .engineVersion = FOE_ENGINE_VERSION,
-        .apiVersion = XR_MAKE_VERSION(1, 0, 12),
+        .apiVersion = pNewRuntime->apiVersion,
     };
     strncpy(appInfo.applicationName, appName, XR_MAX_APPLICATION_NAME_SIZE);
     strncpy(appInfo.engineName, FOE_ENGINE_NAME, XR_MAX_ENGINE_NAME_SIZE);
 
-    std::vector<char const *> finalLayers;
-    std::vector<char const *> finalExtensions;
+    // Layers / Extensions
+    std::vector<char const *> layers;
+    std::vector<char const *> extensions;
 
-    for (auto &it : layers) {
-        finalLayers.emplace_back(it.data());
+    for (uint32_t i = 0; i < layerCount; ++i)
+        layers.emplace_back(ppLayerNames[i]);
+    for (uint32_t i = 0; i < extensionCount; ++i)
+        extensions.emplace_back(ppExtensionNames[i]);
+
+    if (validation) {
+        layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
+        FOE_LOG(foeXrOpen, Verbose, "Adding validation layers to new XrInstance");
     }
-    for (auto &it : extensions) {
-        finalExtensions.emplace_back(it.data());
+    if (debugLogging) {
+        extensions.emplace_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        FOE_LOG(foeXrOpen, Verbose, "Adding debug report extension to new XrInstance");
     }
 
+    // Create Instance
     XrInstanceCreateInfo instanceCI = {
         .type = XR_TYPE_INSTANCE_CREATE_INFO,
         .applicationInfo = appInfo,
-        .enabledApiLayerCount = static_cast<uint32_t>(finalLayers.size()),
-        .enabledApiLayerNames = finalLayers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(finalExtensions.size()),
-        .enabledExtensionNames = finalExtensions.data(),
+        .enabledApiLayerCount = static_cast<uint32_t>(layers.size()),
+        .enabledApiLayerNames = layers.data(),
+        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+        .enabledExtensionNames = extensions.data(),
     };
 
     xrRes = xrCreateInstance(&instanceCI, &pNewRuntime->instance);
     if (xrRes != XR_SUCCESS)
         goto CREATE_FAILED;
+
+    // Add layer/extension state to runtime struct for future queries
+    foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layerNamesLength, nullptr);
+    if (pNewRuntime->layerNamesLength != 0) {
+        pNewRuntime->pLayerNames = new char[pNewRuntime->layerNamesLength];
+        foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layerNamesLength,
+                                 pNewRuntime->pLayerNames);
+    }
+
+    foeCreateDelimitedString(extensions.size(), extensions.data(),
+                             &pNewRuntime->extensionNamesLength, nullptr);
+    if (pNewRuntime->extensionNamesLength != 0) {
+        pNewRuntime->pExtensionNames = new char[pNewRuntime->extensionNamesLength];
+        foeCreateDelimitedString(extensions.size(), extensions.data(),
+                                 &pNewRuntime->extensionNamesLength, pNewRuntime->pExtensionNames);
+    }
 
     // Attach Debug Logger
     if (debugLogging) {
@@ -80,7 +104,7 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
         if (xrRes != XR_SUCCESS)
             goto CREATE_FAILED;
 
-        FOE_LOG(foeXrOpen, Verbose, "Added debug logging to XrInstance");
+        FOE_LOG(foeXrOpen, Verbose, "Added debug logging to new XrInstance");
     }
 
 CREATE_FAILED:
@@ -91,6 +115,36 @@ CREATE_FAILED:
     }
 
     return xrRes;
+}
+
+std::error_code foeXrOpenEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiVersion) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
+    *pApiVersion = pRuntime->apiVersion;
+
+    return FOE_OPENXR_SUCCESS;
+}
+
+std::error_code foeXrOpenEnumerateRuntimeLayers(foeXrRuntime runtime,
+                                                uint32_t *pLayerNamesLength,
+                                                char *pLayerNames) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
+    return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames,
+                                  pLayerNamesLength, pLayerNames)
+               ? FOE_OPENXR_SUCCESS
+               : FOE_OPENXR_INCOMPLETE;
+}
+
+std::error_code foeXrOpenEnumerateRuntimeExtensions(foeXrRuntime runtime,
+                                                    uint32_t *pExtensionNamesLength,
+                                                    char *pExtensionNames) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
+    return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames,
+                                  pExtensionNamesLength, pExtensionNames)
+               ? FOE_OPENXR_SUCCESS
+               : FOE_OPENXR_INCOMPLETE;
 }
 
 std::error_code foeXrProcessEvents(foeXrRuntime runtime) {
