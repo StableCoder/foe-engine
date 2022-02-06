@@ -182,6 +182,7 @@ Debian/GCC Static:
   variables:
     CC: gcc
     CXX: g++
+    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
 Debian/GCC Shared:
@@ -190,7 +191,7 @@ Debian/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
 Debian/Clang Static:
@@ -199,6 +200,7 @@ Debian/Clang Static:
   variables:
     CC: clang
     CXX: clang++
+    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
 Debian/Clang Shared:
@@ -207,7 +209,7 @@ Debian/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
 # Fedora
@@ -254,6 +256,7 @@ Ubuntu/GCC Static:
   variables:
     CC: gcc
     CXX: g++
+    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
 Ubuntu/GCC Shared:
@@ -262,7 +265,7 @@ Ubuntu/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
 Ubuntu/Clang Static:
@@ -271,6 +274,7 @@ Ubuntu/Clang Static:
   variables:
     CC: clang
     CXX: clang++
+    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
 Ubuntu/Clang Shared:
@@ -279,7 +283,7 @@ Ubuntu/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
 # macOS
