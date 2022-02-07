@@ -26,11 +26,11 @@ class foeImGuiState;
 FOE_IMGUI_VK_EXPORT auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                                                std::string_view name,
                                                VkFence fence,
-                                               RenderGraphResource renderTarget,
+                                               foeGfxVkRenderGraphResource renderTarget,
                                                VkImageLayout initialLayout,
                                                VkImageLayout finalLayout,
                                                foeImGuiRenderer *pImguiRenderer,
                                                foeImGuiState *pImguiState,
-                                               uint32_t frameIndex) -> RenderGraphResource;
+                                               uint32_t frameIndex) -> foeGfxVkRenderGraphResource;
 
 #endif // FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP

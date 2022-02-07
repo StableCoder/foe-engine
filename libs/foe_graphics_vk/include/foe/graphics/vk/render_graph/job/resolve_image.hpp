@@ -24,17 +24,17 @@
 #include <string_view>
 
 struct ResolveJobUsedResources {
-    RenderGraphResource srcImage;
-    RenderGraphResource dstImage;
+    foeGfxVkRenderGraphResource srcImage;
+    foeGfxVkRenderGraphResource dstImage;
 };
 
 FOE_GFX_EXPORT auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                   std::string_view name,
                                                   VkFence fence,
-                                                  RenderGraphResource srcImage,
+                                                  foeGfxVkRenderGraphResource srcImage,
                                                   VkImageLayout srcInitialLayout,
                                                   VkImageLayout srcFinalLayout,
-                                                  RenderGraphResource dstImage,
+                                                  foeGfxVkRenderGraphResource dstImage,
                                                   VkImageLayout dstInitialLayout,
                                                   VkImageLayout dstFinalLayout)
     -> ResolveJobUsedResources;

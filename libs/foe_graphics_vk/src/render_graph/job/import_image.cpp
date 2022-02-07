@@ -30,7 +30,8 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   VkExtent2D extent,
                                   VkImageLayout layout,
                                   bool isMutable,
-                                  std::vector<VkSemaphore> waitSemaphores) -> RenderGraphResource {
+                                  std::vector<VkSemaphore> waitSemaphores)
+    -> foeGfxVkRenderGraphResource {
     auto pJob = new RenderGraphJob;
     pJob->name = name;
     pJob->required = false;
@@ -58,8 +59,8 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return errC;
     };
 
-    auto pImportedImage = new RenderGraphResourceImage;
-    *pImportedImage = RenderGraphResourceImage{
+    auto pImportedImage = new foeGfxVkGraphImageResource;
+    *pImportedImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = nullptr,
         .name = std::string{imageName},
@@ -70,16 +71,16 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .isMutable = isMutable,
     };
 
-    RenderGraphResource importedImage{
+    foeGfxVkRenderGraphResource importedImage{
         .pProvider = pJob,
-        .pResourceData = reinterpret_cast<RenderGraphResourceBase *>(pImportedImage),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImportedImage),
     };
 
     DeleteResourceDataCall deleteCall{
-        .deleteFn = [](RenderGraphResourceBase *pResource) -> void {
-            delete reinterpret_cast<RenderGraphResourceImage *>(pResource);
+        .deleteFn = [](foeGfxVkGraphResourceBase *pResource) -> void {
+            delete reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
         },
-        .pResource = reinterpret_cast<RenderGraphResourceBase *>(pImportedImage),
+        .pResource = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImportedImage),
     };
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCall, nullptr);

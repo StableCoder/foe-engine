@@ -24,20 +24,15 @@
 
 #include <string_view>
 
-struct RenderGraphXrSwapchain {
-    RenderGraphResourceStructureType sType;
-    void *pNext;
-    XrSwapchain swapchain;
-};
-
-FOE_OPENXR_VK_EXPORT auto importXrSwapchain(foeGfxVkRenderGraph renderGraph,
-                                            std::string_view jobName,
-                                            VkFence fence,
-                                            std::string_view resourceName,
-                                            XrSwapchain swapchain,
-                                            VkImage image,
-                                            VkImageView view,
-                                            VkFormat format,
-                                            VkExtent2D extent) -> RenderGraphResource;
+FOE_OPENXR_VK_EXPORT auto foeXrOpenVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                                   std::string_view jobName,
+                                                                   VkFence fence,
+                                                                   std::string_view resourceName,
+                                                                   XrSwapchain swapchain,
+                                                                   VkImage image,
+                                                                   VkImageView view,
+                                                                   VkFormat format,
+                                                                   VkExtent2D extent)
+    -> foeGfxVkRenderGraphResource;
 
 #endif // FOE_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP

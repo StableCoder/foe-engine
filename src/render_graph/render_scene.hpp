@@ -25,17 +25,17 @@
 struct foeSimulationState;
 
 struct RenderSceneOutputResources {
-    RenderGraphResource colourRenderTarget;
-    RenderGraphResource depthRenderTarget;
+    foeGfxVkRenderGraphResource colourRenderTarget;
+    foeGfxVkRenderGraphResource depthRenderTarget;
 };
 
 std::error_code renderSceneJob(foeGfxVkRenderGraph renderGraph,
                                std::string_view name,
                                VkFence fence,
-                               RenderGraphResource colourRenderTarget,
+                               foeGfxVkRenderGraphResource colourRenderTarget,
                                VkImageLayout initialColourLayout,
                                VkImageLayout finalColourLayout,
-                               RenderGraphResource depthRenderTarget,
+                               foeGfxVkRenderGraphResource depthRenderTarget,
                                VkImageLayout initialDepthLayout,
                                VkImageLayout finalDepthLayout,
                                VkSampleCountFlags renderTargetSamples,

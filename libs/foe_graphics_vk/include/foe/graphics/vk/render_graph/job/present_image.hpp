@@ -34,12 +34,13 @@ FOE_GFX_EXPORT auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph re
                                                           VkFormat format,
                                                           VkExtent2D extent,
                                                           VkSemaphore waitSemaphore)
-    -> RenderGraphResource;
+    -> foeGfxVkRenderGraphResource;
 
 /// Assumes the image is in VK_IMAGE_LAYOUT_PRESENT_SRC_KHR layout
-FOE_GFX_EXPORT void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                           std::string_view name,
-                                                           VkFence fence,
-                                                           RenderGraphResource swapchainResource);
+FOE_GFX_EXPORT void foeGfxVkPresentSwapchainImageRenderJob(
+    foeGfxVkRenderGraph renderGraph,
+    std::string_view name,
+    VkFence fence,
+    foeGfxVkRenderGraphResource swapchainResource);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_PRESENT_IMAGE_HPP

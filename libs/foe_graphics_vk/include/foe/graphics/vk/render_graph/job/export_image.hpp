@@ -26,7 +26,7 @@
 FOE_GFX_EXPORT void foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                  std::string_view name,
                                                  VkFence fence,
-                                                 RenderGraphResource resource,
+                                                 foeGfxVkRenderGraphResource resource,
                                                  VkImageLayout layout,
                                                  std::vector<VkSemaphore> signalSemaphores);
 

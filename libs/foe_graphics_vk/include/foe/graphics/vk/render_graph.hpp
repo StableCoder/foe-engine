@@ -29,14 +29,14 @@
 
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 
-enum RenderGraphResourceStructureType {
+enum foeGfxVkGraphResourceStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
 };
 
-struct RenderGraphResourceBase {
-    RenderGraphResourceStructureType sType;
+struct foeGfxVkGraphResourceBase {
+    foeGfxVkGraphResourceStructureType sType;
     void *pNext;
 };
 
@@ -55,14 +55,14 @@ struct RenderGraphJob {
         executeFn;
 };
 
-struct RenderGraphResource {
+struct foeGfxVkRenderGraphResource {
     RenderGraphJob *pProvider;
-    RenderGraphResourceBase *pResourceData;
+    foeGfxVkGraphResourceBase *pResourceData;
 };
 
 struct DeleteResourceDataCall {
-    std::function<void(RenderGraphResourceBase *)> deleteFn;
-    RenderGraphResourceBase *pResource;
+    std::function<void(foeGfxVkGraphResourceBase *)> deleteFn;
+    foeGfxVkGraphResourceBase *pResource;
 };
 
 FOE_GFX_EXPORT auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_code;
@@ -72,11 +72,11 @@ FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
 FOE_GFX_EXPORT auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
                                               RenderGraphJob *pJob,
                                               uint32_t resourcesCount,
-                                              RenderGraphResource const *pResourcesIn,
+                                              foeGfxVkRenderGraphResource const *pResourcesIn,
                                               bool const *pResourcesInReadOnly,
                                               uint32_t deleteResourceCallsCount,
                                               DeleteResourceDataCall *pDeleteResourceCalls,
-                                              RenderGraphResource *pResourcesOut)
+                                              foeGfxVkRenderGraphResource *pResourcesOut)
     -> std::error_code;
 
 FOE_GFX_EXPORT auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,

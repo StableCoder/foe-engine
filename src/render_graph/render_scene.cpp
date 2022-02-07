@@ -161,10 +161,10 @@ auto renderCall(foeId entity,
 std::error_code renderSceneJob(foeGfxVkRenderGraph renderGraph,
                                std::string_view name,
                                VkFence fence,
-                               RenderGraphResource colourRenderTarget,
+                               foeGfxVkRenderGraphResource colourRenderTarget,
                                VkImageLayout initialColourLayout,
                                VkImageLayout finalColourLayout,
-                               RenderGraphResource depthRenderTarget,
+                               foeGfxVkRenderGraphResource depthRenderTarget,
                                VkImageLayout initialDepthLayout,
                                VkImageLayout finalDepthLayout,
                                VkSampleCountFlags renderTargetSamples,
@@ -182,9 +182,9 @@ std::error_code renderSceneJob(foeGfxVkRenderGraph renderGraph,
             std::error_code errC;
 
             auto *pColourRenderTarget =
-                reinterpret_cast<RenderGraphResourceImage *>(colourRenderTarget.pResourceData);
+                reinterpret_cast<foeGfxVkGraphImageResource *>(colourRenderTarget.pResourceData);
             auto *pDepthRenderTarget =
-                reinterpret_cast<RenderGraphResourceImage *>(depthRenderTarget.pResourceData);
+                reinterpret_cast<foeGfxVkGraphImageResource *>(depthRenderTarget.pResourceData);
 
             VkRenderPass renderPass =
                 foeGfxVkGetRenderPassPool(gfxSession)
@@ -367,9 +367,10 @@ std::error_code renderSceneJob(foeGfxVkRenderGraph renderGraph,
         },
     };
 
-    std::array<RenderGraphResource const, 2> resourcesIn{colourRenderTarget, depthRenderTarget};
+    std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{colourRenderTarget,
+                                                                 depthRenderTarget};
     std::array<bool const, 2> resourcesInReadOnly{false, false};
-    std::array<RenderGraphResource, 2> resourcesOut{};
+    std::array<foeGfxVkRenderGraphResource, 2> resourcesOut{};
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(), resourcesInReadOnly.data(),
                               0, nullptr, resourcesOut.data());

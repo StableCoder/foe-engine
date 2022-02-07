@@ -22,7 +22,7 @@
 void foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   std::string_view name,
                                   VkFence fence,
-                                  RenderGraphResource resource,
+                                  foeGfxVkRenderGraphResource resource,
                                   VkImageLayout layout,
                                   std::vector<VkSemaphore> signalSemaphores) {
     auto pJob = new RenderGraphJob;
@@ -55,7 +55,7 @@ void foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     bool const readOnly = true;
-    RenderGraphResource usedResource;
+    foeGfxVkRenderGraphResource usedResource;
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &resource, &readOnly, 0, nullptr,
                               &usedResource);

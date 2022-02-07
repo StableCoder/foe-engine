@@ -23,15 +23,21 @@
 
 #include "log.hpp"
 
-RenderGraphResource importXrSwapchain(foeGfxVkRenderGraph renderGraph,
-                                      std::string_view jobName,
-                                      VkFence fence,
-                                      std::string_view resourceName,
-                                      XrSwapchain swapchain,
-                                      VkImage image,
-                                      VkImageView view,
-                                      VkFormat format,
-                                      VkExtent2D extent) {
+struct foeXrOpenRenderGraphSwapchainResource {
+    foeGfxVkGraphResourceStructureType sType;
+    void *pNext;
+    XrSwapchain swapchain;
+};
+
+auto foeXrOpenVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                              std::string_view jobName,
+                                              VkFence fence,
+                                              std::string_view resourceName,
+                                              XrSwapchain swapchain,
+                                              VkImage image,
+                                              VkImageView view,
+                                              VkFormat format,
+                                              VkExtent2D extent) -> foeGfxVkRenderGraphResource {
     // Add the job that waits on the timeline semaphore and signals any dependent jobs to start
     auto pJob = new RenderGraphJob;
     pJob->name = jobName;
@@ -131,15 +137,15 @@ RenderGraphResource importXrSwapchain(foeGfxVkRenderGraph renderGraph,
     };
 
     /// @todo Replace with combined C-style single allocation
-    auto *pSwapchain = new RenderGraphXrSwapchain;
-    *pSwapchain = RenderGraphXrSwapchain{
+    auto *pSwapchain = new foeXrOpenRenderGraphSwapchainResource;
+    *pSwapchain = foeXrOpenRenderGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
         .pNext = nullptr,
         .swapchain = swapchain,
     };
 
-    auto *pImage = new RenderGraphResourceImage;
-    *pImage = RenderGraphResourceImage{
+    auto *pImage = new foeGfxVkGraphImageResource;
+    *pImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = pSwapchain,
         .image = image,
@@ -150,21 +156,22 @@ RenderGraphResource importXrSwapchain(foeGfxVkRenderGraph renderGraph,
     };
 
     DeleteResourceDataCall deleteResCall{
-        .deleteFn = [](RenderGraphResourceBase *pResource) -> void {
-            auto *pImage = reinterpret_cast<RenderGraphResourceImage *>(pResource);
-            auto *pSwapchain = reinterpret_cast<RenderGraphXrSwapchain *>(pImage->pNext);
+        .deleteFn = [](foeGfxVkGraphResourceBase *pResource) -> void {
+            auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
+            auto *pSwapchain =
+                reinterpret_cast<foeXrOpenRenderGraphSwapchainResource *>(pImage->pNext);
 
             delete pSwapchain;
             delete pImage;
         },
-        .pResource = reinterpret_cast<RenderGraphResourceBase *>(pImage),
+        .pResource = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
     };
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall, nullptr);
 
-    RenderGraphResource resource{
+    foeGfxVkRenderGraphResource resource{
         .pProvider = pJob,
-        .pResourceData = reinterpret_cast<RenderGraphResourceBase *>(pImage),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
     };
 
     return resource;

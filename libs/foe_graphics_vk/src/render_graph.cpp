@@ -28,7 +28,7 @@ struct RenderGraphRelationship {
     RenderGraphJob *pConsumer;
 
     /// Resource Data
-    RenderGraphResourceBase *pResource;
+    foeGfxVkGraphResourceBase *pResource;
     /// Whether the consuming job is only going to read the resource
     bool readOnly;
     /// Semaphore used to determine when the resource is available for the consumer
@@ -75,11 +75,11 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
 auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
                                RenderGraphJob *pJob,
                                uint32_t resourcesCount,
-                               RenderGraphResource const *pResourcesIn,
+                               foeGfxVkRenderGraphResource const *pResourcesIn,
                                bool const *pResourcesInReadOnly,
                                uint32_t deleteResourceCallsCount,
                                DeleteResourceDataCall *pDeleteResourceCalls,
-                               RenderGraphResource *pResourcesOut) -> std::error_code {
+                               foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Add job to graph to be run
@@ -99,7 +99,7 @@ auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
 
         pRenderGraph->relationships.emplace_back(relationship);
 
-        pResourcesOut[i] = RenderGraphResource{
+        pResourcesOut[i] = foeGfxVkRenderGraphResource{
             .pProvider = pJob,
             .pResourceData = inRes.pResourceData,
         };

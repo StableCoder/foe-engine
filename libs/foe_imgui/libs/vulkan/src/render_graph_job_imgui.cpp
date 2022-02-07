@@ -23,15 +23,15 @@
 #include <foe/imgui/vk/renderer.hpp>
 #include <vk_error_code.hpp>
 
-RenderGraphResource foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                                          std::string_view name,
-                                          VkFence fence,
-                                          RenderGraphResource renderTarget,
-                                          VkImageLayout initialLayout,
-                                          VkImageLayout finalLayout,
-                                          foeImGuiRenderer *pImguiRenderer,
-                                          foeImGuiState *pImguiState,
-                                          uint32_t frameIndex) {
+foeGfxVkRenderGraphResource foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
+                                                  std::string_view name,
+                                                  VkFence fence,
+                                                  foeGfxVkRenderGraphResource renderTarget,
+                                                  VkImageLayout initialLayout,
+                                                  VkImageLayout finalLayout,
+                                                  foeImGuiRenderer *pImguiRenderer,
+                                                  foeImGuiState *pImguiState,
+                                                  uint32_t frameIndex) {
     auto *pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -42,8 +42,8 @@ RenderGraphResource foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                          std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
             std::error_code errC;
 
-            RenderGraphResourceImage *pRenderTargetImage =
-                reinterpret_cast<RenderGraphResourceImage *>(renderTarget.pResourceData);
+            foeGfxVkGraphImageResource *pRenderTargetImage =
+                reinterpret_cast<foeGfxVkGraphImageResource *>(renderTarget.pResourceData);
 
             VkRenderPass renderPass = foeGfxVkGetRenderPassPool(gfxSession)
                                           ->renderPass({VkAttachmentDescription{
@@ -204,7 +204,7 @@ RenderGraphResource foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     };
 
     bool const resourcesInReadOnly = false;
-    RenderGraphResource renderTargetOutput;
+    foeGfxVkRenderGraphResource renderTargetOutput;
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &renderTarget, &resourcesInReadOnly, 0, nullptr,
                               &renderTargetOutput);

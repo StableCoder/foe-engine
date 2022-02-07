@@ -1347,7 +1347,7 @@ int Application::mainloop() {
                             },
                             VK_IMAGE_LAYOUT_UNDEFINED, true, {});
 
-                        auto xrSwapchainImageResource = importXrSwapchain(
+                        auto xrSwapchainImageResource = foeXrOpenVkImportSwapchainImageRenderJob(
                             renderGraph, "importXrViewSwapchainImage", VK_NULL_HANDLE,
                             "importXrViewSwapchainImage", it.swapchain, it.images[newIndex].image,
                             it.imageViews[newIndex], it.format,

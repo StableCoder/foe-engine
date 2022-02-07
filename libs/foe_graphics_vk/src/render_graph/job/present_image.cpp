@@ -20,8 +20,8 @@
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
-struct RenderGraphVkSwapchain {
-    RenderGraphResourceStructureType sType;
+struct foeGfxVkGraphSwapchainResource {
+    foeGfxVkGraphResourceStructureType sType;
     void *pNext;
     VkSwapchainKHR swapchain;
     uint32_t index;
@@ -37,7 +37,8 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                            VkImageView view,
                                            VkFormat format,
                                            VkExtent2D extent,
-                                           VkSemaphore waitSemaphore) -> RenderGraphResource {
+                                           VkSemaphore waitSemaphore)
+    -> foeGfxVkRenderGraphResource {
     auto pJob = new RenderGraphJob;
     pJob->name = name;
     pJob->required = false;
@@ -67,16 +68,16 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     /// @todo Replace with C-style altogether value
-    auto *pSwapchainImage = new RenderGraphVkSwapchain;
-    *pSwapchainImage = RenderGraphVkSwapchain{
+    auto *pSwapchainImage = new foeGfxVkGraphSwapchainResource;
+    *pSwapchainImage = foeGfxVkGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
         .pNext = nullptr,
         .swapchain = swapchain,
         .index = index,
     };
 
-    auto *pImage = new RenderGraphResourceImage;
-    *pImage = RenderGraphResourceImage{
+    auto *pImage = new foeGfxVkGraphImageResource;
+    *pImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = pSwapchainImage,
         .image = image,
@@ -86,20 +87,20 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .isMutable = true,
     };
 
-    RenderGraphResource swapchainImage{
+    foeGfxVkRenderGraphResource swapchainImage{
         .pProvider = pJob,
-        .pResourceData = reinterpret_cast<RenderGraphResourceBase *>(pImage),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
     };
 
     DeleteResourceDataCall deleteResCall{
-        .deleteFn = [](RenderGraphResourceBase *pResource) -> void {
-            auto *pImage = reinterpret_cast<RenderGraphResourceImage *>(pResource);
-            auto *pSwapchain = reinterpret_cast<RenderGraphVkSwapchain *>(pImage->pNext);
+        .deleteFn = [](foeGfxVkGraphResourceBase *pResource) -> void {
+            auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
+            auto *pSwapchain = reinterpret_cast<foeGfxVkGraphSwapchainResource *>(pImage->pNext);
 
             delete pSwapchain;
             delete pImage;
         },
-        .pResource = reinterpret_cast<RenderGraphResourceBase *>(pImage),
+        .pResource = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
     };
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall, nullptr);
@@ -110,7 +111,7 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                             std::string_view name,
                                             VkFence fence,
-                                            RenderGraphResource swapchainResource) {
+                                            foeGfxVkRenderGraphResource swapchainResource) {
     auto pJob = new RenderGraphJob;
     pJob->name = name;
     // The image is being presented as output, and thus needs to happen
@@ -154,8 +155,9 @@ void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
         // Now get on with presenting the image
-        RenderGraphVkSwapchain *pSwapchainResource =
-            reinterpret_cast<RenderGraphVkSwapchain *>(swapchainResource.pResourceData->pNext);
+        foeGfxVkGraphSwapchainResource *pSwapchainResource =
+            reinterpret_cast<foeGfxVkGraphSwapchainResource *>(
+                swapchainResource.pResourceData->pNext);
 
         VkResult presentRes{VK_SUCCESS};
         VkPresentInfoKHR presentInfo{
@@ -189,7 +191,7 @@ void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return errC;
     };
 
-    RenderGraphResource resourceOut;
+    foeGfxVkRenderGraphResource resourceOut;
     bool const resourceReadOnly = false;
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &swapchainResource, &resourceReadOnly, 0,

@@ -19,8 +19,8 @@
 
 #include <foe/graphics/vk/render_graph.hpp>
 
-struct RenderGraphResourceImage {
-    RenderGraphResourceStructureType sType;
+struct foeGfxVkGraphImageResource {
+    foeGfxVkGraphResourceStructureType sType;
     void *pNext;
     std::string name;
     VkImage image;
