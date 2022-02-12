@@ -28,7 +28,7 @@ struct RenderGraphRelationship {
     RenderGraphJob *pConsumer;
 
     /// Resource Data
-    foeGfxVkGraphResourceBase *pResource;
+    foeGfxVkGraphStructure *pResource;
     /// Whether the consuming job is only going to read the resource
     bool readOnly;
     /// Semaphore used to determine when the resource is available for the consumer

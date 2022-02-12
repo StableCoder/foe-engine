@@ -156,7 +156,7 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     DeleteResourceDataCall deleteResCall{
-        .deleteFn = [](foeGfxVkGraphResourceBase *pResource) -> void {
+        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
             auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
             auto *pSwapchain =
                 reinterpret_cast<foeOpenXrRenderGraphSwapchainResource *>(pImage->pNext);
@@ -164,14 +164,14 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
             delete pSwapchain;
             delete pImage;
         },
-        .pResource = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
+        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
     };
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall, nullptr);
 
     foeGfxVkRenderGraphResource resource{
         .pProvider = pJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
     };
 
     return resource;

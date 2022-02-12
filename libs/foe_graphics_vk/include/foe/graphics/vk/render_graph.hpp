@@ -35,7 +35,7 @@ enum foeGfxVkGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
 };
 
-struct foeGfxVkGraphResourceBase {
+struct foeGfxVkGraphStructure {
     foeGfxVkGraphStructureType sType;
     void *pNext;
 };
@@ -57,12 +57,12 @@ struct RenderGraphJob {
 
 struct foeGfxVkRenderGraphResource {
     RenderGraphJob *pProvider;
-    foeGfxVkGraphResourceBase *pResourceData;
+    foeGfxVkGraphStructure *pResourceData;
 };
 
 struct DeleteResourceDataCall {
-    std::function<void(foeGfxVkGraphResourceBase *)> deleteFn;
-    foeGfxVkGraphResourceBase *pResource;
+    std::function<void(foeGfxVkGraphStructure *)> deleteFn;
+    foeGfxVkGraphStructure *pResource;
 };
 
 FOE_GFX_EXPORT auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_code;

@@ -73,14 +73,14 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     foeGfxVkRenderGraphResource importedImage{
         .pProvider = pJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImportedImage),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
     };
 
     DeleteResourceDataCall deleteCall{
-        .deleteFn = [](foeGfxVkGraphResourceBase *pResource) -> void {
+        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
             delete reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
         },
-        .pResource = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImportedImage),
+        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
     };
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCall, nullptr);

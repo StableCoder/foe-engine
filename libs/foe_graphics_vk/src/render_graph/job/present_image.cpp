@@ -89,18 +89,18 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     foeGfxVkRenderGraphResource swapchainImage{
         .pProvider = pJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
     };
 
     DeleteResourceDataCall deleteResCall{
-        .deleteFn = [](foeGfxVkGraphResourceBase *pResource) -> void {
+        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
             auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
             auto *pSwapchain = reinterpret_cast<foeGfxVkGraphSwapchainResource *>(pImage->pNext);
 
             delete pSwapchain;
             delete pImage;
         },
-        .pResource = reinterpret_cast<foeGfxVkGraphResourceBase *>(pImage),
+        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
     };
 
     foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall, nullptr);
@@ -155,8 +155,8 @@ void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
         // Now get on with presenting the image
-        foeGfxVkGraphSwapchainResource *pSwapchainResource =
-            reinterpret_cast<foeGfxVkGraphSwapchainResource *>(
+        foeGfxVkGraphSwapchainResource const *pSwapchainResource =
+            reinterpret_cast<foeGfxVkGraphSwapchainResource const *>(
                 swapchainResource.pResourceData->pNext);
 
         VkResult presentRes{VK_SUCCESS};
