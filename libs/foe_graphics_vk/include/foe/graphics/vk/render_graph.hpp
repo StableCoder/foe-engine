@@ -29,14 +29,14 @@
 
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 
-enum foeGfxVkGraphResourceStructureType {
+enum foeGfxVkGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
 };
 
 struct foeGfxVkGraphResourceBase {
-    foeGfxVkGraphResourceStructureType sType;
+    foeGfxVkGraphStructureType sType;
     void *pNext;
 };
 

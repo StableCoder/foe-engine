@@ -21,7 +21,7 @@
 #include <vk_error_code.hpp>
 
 struct foeGfxVkGraphSwapchainResource {
-    foeGfxVkGraphResourceStructureType sType;
+    foeGfxVkGraphStructureType sType;
     void *pNext;
     VkSwapchainKHR swapchain;
     uint32_t index;

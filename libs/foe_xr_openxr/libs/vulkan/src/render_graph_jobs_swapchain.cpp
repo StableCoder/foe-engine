@@ -24,7 +24,7 @@
 #include "log.hpp"
 
 struct foeOpenXrRenderGraphSwapchainResource {
-    foeGfxVkGraphResourceStructureType sType;
+    foeGfxVkGraphStructureType sType;
     void *pNext;
     XrSwapchain swapchain;
 };

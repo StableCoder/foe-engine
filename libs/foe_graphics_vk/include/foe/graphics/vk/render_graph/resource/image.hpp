@@ -20,7 +20,7 @@
 #include <foe/graphics/vk/render_graph.hpp>
 
 struct foeGfxVkGraphImageResource {
-    foeGfxVkGraphResourceStructureType sType;
+    foeGfxVkGraphStructureType sType;
     void *pNext;
     std::string name;
     VkImage image;
