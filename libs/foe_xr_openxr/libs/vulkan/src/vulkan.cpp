@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/openxr/vk/vulkan.hpp>
+#include <foe/xr/openxr/vk/vulkan.hpp>
 
 #include <foe/xr/error_code.hpp>
 

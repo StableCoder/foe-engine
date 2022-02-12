@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
-#define FOE_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
+#ifndef FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
+#define FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
 
 #include <foe/graphics/vk/render_graph.hpp>
-#include <foe/openxr/vk/export.h>
+#include <foe/xr/openxr/vk/export.h>
 #include <openxr/openxr.h>
 #include <vulkan/vulkan.h>
 
@@ -35,4 +35,4 @@ FOE_OPENXR_VK_EXPORT auto foeXrOpenVkImportSwapchainImageRenderJob(foeGfxVkRende
                                                                    VkExtent2D extent)
     -> foeGfxVkRenderGraphResource;
 
-#endif // FOE_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
+#endif // FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP

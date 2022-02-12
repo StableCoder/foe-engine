@@ -14,10 +14,10 @@
     limitations under the License.
 */
 
-#ifndef FOE_OPENXR_VK_VULKAN_HPP
-#define FOE_OPENXR_VK_VULKAN_HPP
+#ifndef FOE_XR_OPENXR_VK_VULKAN_HPP
+#define FOE_XR_OPENXR_VK_VULKAN_HPP
 
-#include <foe/openxr/vk/export.h>
+#include <foe/xr/openxr/vk/export.h>
 #include <vulkan/vulkan.h>
 
 #define XR_USE_GRAPHICS_API_VULKAN
@@ -48,4 +48,4 @@ FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanGraphicsRequirements(
 FOE_OPENXR_VK_EXPORT auto foeXrEnumerateSwapchainVkImages(
     XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images) -> std::error_code;
 
-#endif // FOE_OPENXR_VK_VULKAN_HPP
+#endif // FOE_XR_OPENXR_VK_VULKAN_HPP

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/openxr/vk/render_graph_jobs_swapchain.hpp>
+#include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.hpp>
