@@ -21,10 +21,10 @@
 
 #include "runtime.hpp"
 
-std::error_code foeXrSession::createSession(foeXrRuntime runtime,
-                                            XrSystemId systemId,
-                                            XrViewConfigurationType configType,
-                                            void const *pGraphicsBinding) {
+std::error_code foeOpenXrSession::createSession(foeXrRuntime runtime,
+                                                XrSystemId systemId,
+                                                XrViewConfigurationType configType,
+                                                void const *pGraphicsBinding) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     XrSessionCreateInfo sessionCI{
@@ -37,7 +37,7 @@ std::error_code foeXrSession::createSession(foeXrRuntime runtime,
         return errC;
     } else {
         // Add the new session to the runtime
-        foeXrOpenAddSessionToRuntime(pRuntime, this);
+        foeOpenXrAddSessionToRuntime(pRuntime, this);
     }
 
     this->runtime = runtime;
@@ -48,7 +48,7 @@ std::error_code foeXrSession::createSession(foeXrRuntime runtime,
 
     // Reference Space
     std::vector<XrReferenceSpaceType> refSpaces;
-    errC = foeXrEnumerateReferenceSpaces(session, refSpaces);
+    errC = foeOpenXrEnumerateReferenceSpaces(session, refSpaces);
     if (errC) {
         return errC;
     }
@@ -71,7 +71,7 @@ std::error_code foeXrSession::createSession(foeXrRuntime runtime,
     return errC;
 }
 
-void foeXrSession::destroySession() {
+void foeOpenXrSession::destroySession() {
     if (space != XR_NULL_HANDLE) {
         xrDestroySpace(space);
     }
@@ -81,12 +81,12 @@ void foeXrSession::destroySession() {
         xrDestroySession(session);
 
         // Remove the session from the runtime
-        foeXrOpenAddSessionToRuntime(runtime_from_handle(runtime), this);
+        foeOpenXrAddSessionToRuntime(runtime_from_handle(runtime), this);
     }
     session = XR_NULL_HANDLE;
 }
 
-std::error_code foeXrSession::beginSession() {
+std::error_code foeOpenXrSession::beginSession() {
     XrSessionBeginInfo sessionBI{
         .type = XR_TYPE_SESSION_BEGIN_INFO,
         .primaryViewConfigurationType = type,
@@ -102,6 +102,6 @@ std::error_code foeXrSession::beginSession() {
     return errC;
 }
 
-std::error_code foeXrSession::requestExitSession() { return xrRequestExitSession(session); }
+std::error_code foeOpenXrSession::requestExitSession() { return xrRequestExitSession(session); }
 
-std::error_code foeXrSession::endSession() { return xrEndSession(session); }
+std::error_code foeOpenXrSession::endSession() { return xrEndSession(session); }

@@ -23,9 +23,9 @@
 
 namespace std {
 template <>
-struct is_error_code_enum<foeXrOpenResult> : true_type {};
+struct is_error_code_enum<foeOpenXrResult> : true_type {};
 } // namespace std
 
-std::error_code make_error_code(foeXrOpenResult);
+std::error_code make_error_code(foeOpenXrResult);
 
 #endif // ERROR_CODE_HPP

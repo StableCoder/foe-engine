@@ -88,7 +88,7 @@ struct Application {
     // XR
     foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
 #ifdef FOE_XR_SUPPORT
-    foeXrSession xrSession{};
+    foeOpenXrSession xrSession{};
     VkRenderPass xrRenderPass;
     XrFrameState xrFrameState;
     std::vector<foeXrVkSessionView> xrViews;

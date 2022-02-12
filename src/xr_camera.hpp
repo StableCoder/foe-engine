@@ -27,7 +27,7 @@ struct foeXrCamera : public foeCameraBase {
     float nearZ, farZ;
 
     glm::mat4 projectionMatrix() const noexcept override {
-        return foeXrProjectionMatrix(fov, nearZ, farZ);
+        return foeOpenXrProjectionMatrix(fov, nearZ, farZ);
     }
 
     // View Data
@@ -35,8 +35,8 @@ struct foeXrCamera : public foeCameraBase {
     XrPosef pose;
 
     glm::mat4 viewMatrix() const noexcept {
-        glm::mat4 rot = glm::mat4_cast(foeXrPoseOrientation(pose));
-        glm::vec3 pos = pPosition3D->position + foeXrPosePosition(pose);
+        glm::mat4 rot = glm::mat4_cast(foeOpenXrPoseOrientation(pose));
+        glm::vec3 pos = pPosition3D->position + foeOpenXrPosePosition(pose);
 
         glm::mat4 view = glm::translate(glm::mat4(1.f), pos) * rot;
         view = glm::inverse(view);

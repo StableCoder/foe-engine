@@ -34,24 +34,24 @@ std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
         std::abort();
     }
 
-    return foeXrOpenCreateRuntime("FoE Engine", 0, layers.size(), layers.data(), extensions.size(),
+    return foeOpenXrCreateRuntime("FoE Engine", 0, layers.size(), layers.data(), extensions.size(),
                                   extensions.data(), false, debugLogging, pRuntime);
 }
 
 std::error_code createXrSession(foeXrRuntime runtime,
                                 foeGfxSession gfxSession,
-                                foeXrSession *pSession) {
+                                foeOpenXrSession *pSession) {
     std::error_code errC;
     XrSystemId xrSystemId{};
 
     // OpenXR SystemId
-    if (foeXrOpenGetInstance(runtime) != XR_NULL_HANDLE) {
+    if (foeOpenXrGetInstance(runtime) != XR_NULL_HANDLE) {
         XrSystemGetInfo systemGetInfo{
             .type = XR_TYPE_SYSTEM_GET_INFO,
             .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY,
         };
 
-        errC = xrGetSystem(foeXrOpenGetInstance(runtime), &systemGetInfo, &xrSystemId);
+        errC = xrGetSystem(foeOpenXrGetInstance(runtime), &systemGetInfo, &xrSystemId);
         if (errC) {
             return errC;
         }
@@ -59,7 +59,7 @@ std::error_code createXrSession(foeXrRuntime runtime,
 
     // Types
     uint32_t viewConfigCount;
-    errC = xrEnumerateViewConfigurations(foeXrOpenGetInstance(runtime), xrSystemId, 0,
+    errC = xrEnumerateViewConfigurations(foeOpenXrGetInstance(runtime), xrSystemId, 0,
                                          &viewConfigCount, nullptr);
     if (errC) {
         return errC;
@@ -68,7 +68,7 @@ std::error_code createXrSession(foeXrRuntime runtime,
     std::vector<XrViewConfigurationType> xrViewConfigTypes;
     xrViewConfigTypes.resize(viewConfigCount);
 
-    errC = xrEnumerateViewConfigurations(foeXrOpenGetInstance(runtime), xrSystemId,
+    errC = xrEnumerateViewConfigurations(foeOpenXrGetInstance(runtime), xrSystemId,
                                          xrViewConfigTypes.size(), &viewConfigCount,
                                          xrViewConfigTypes.data());
     if (errC) {
@@ -77,7 +77,7 @@ std::error_code createXrSession(foeXrRuntime runtime,
 
     // Is View Mutable??
     XrViewConfigurationProperties xrViewConfigProps{.type = XR_TYPE_VIEW_CONFIGURATION_PROPERTIES};
-    errC = xrGetViewConfigurationProperties(foeXrOpenGetInstance(runtime), xrSystemId,
+    errC = xrGetViewConfigurationProperties(foeOpenXrGetInstance(runtime), xrSystemId,
                                             xrViewConfigTypes[0], &xrViewConfigProps);
     if (errC) {
         return errC;
@@ -85,7 +85,7 @@ std::error_code createXrSession(foeXrRuntime runtime,
 
     // Check graphics requirements
     XrGraphicsRequirementsVulkanKHR gfxRequirements;
-    errC = foeXrGetVulkanGraphicsRequirements(foeXrOpenGetInstance(runtime), xrSystemId,
+    errC = foeXrGetVulkanGraphicsRequirements(foeOpenXrGetInstance(runtime), xrSystemId,
                                               &gfxRequirements);
     if (errC) {
         return errC;

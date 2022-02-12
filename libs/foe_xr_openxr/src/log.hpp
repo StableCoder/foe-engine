@@ -19,6 +19,6 @@
 
 #include <foe/log.hpp>
 
-FOE_DECLARE_LOG_CATEGORY(foeXrOpen, All, All)
+FOE_DECLARE_LOG_CATEGORY(foeOpenXr, All, All)
 
 #endif // LOG_HPP

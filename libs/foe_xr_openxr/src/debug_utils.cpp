@@ -53,16 +53,16 @@ XrBool32 openxrMessengerCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeve
                                  const XrDebugUtilsMessengerCallbackDataEXT *callbackData,
                                  void * /*userData*/) {
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-        FOE_LOG(foeXrOpen, Error, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, Error, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
-        FOE_LOG(foeXrOpen, Warning, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, Warning, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) {
-        FOE_LOG(foeXrOpen, Info, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, Info, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
-        FOE_LOG(foeXrOpen, Verbose, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, Verbose, "[{}] : {}", to_string(messageTypes), callbackData->message)
     }
 
     return XR_FALSE;
@@ -70,8 +70,8 @@ XrBool32 openxrMessengerCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeve
 
 } // namespace
 
-XrResult foeXrCreateDebugUtilsMessenger(XrInstance instance,
-                                        XrDebugUtilsMessengerEXT *pDebugMessenger) {
+XrResult foeOpenXrCreateDebugUtilsMessenger(XrInstance instance,
+                                            XrDebugUtilsMessengerEXT *pDebugMessenger) {
     if (instance == XR_NULL_HANDLE) {
         return XR_ERROR_HANDLE_INVALID;
     }
@@ -99,8 +99,8 @@ XrResult foeXrCreateDebugUtilsMessenger(XrInstance instance,
     return CreateDebugUtilsMessenger(instance, &createInfo, pDebugMessenger);
 }
 
-XrResult foeXrDestroyDebugUtilsMessenger(XrInstance instance,
-                                         XrDebugUtilsMessengerEXT debugMessenger) {
+XrResult foeOpenXrDestroyDebugUtilsMessenger(XrInstance instance,
+                                             XrDebugUtilsMessengerEXT debugMessenger) {
     PFN_xrDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessenger{nullptr};
     XrResult res = xrGetInstanceProcAddr(instance, "xrDestroyDebugUtilsMessengerEXT",
                                          (PFN_xrVoidFunction *)&DestroyDebugUtilsMessenger);

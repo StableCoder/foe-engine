@@ -24,7 +24,7 @@
 
 #include <string_view>
 
-FOE_OPENXR_VK_EXPORT auto foeXrOpenVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+FOE_OPENXR_VK_EXPORT auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                                    std::string_view jobName,
                                                                    VkFence fence,
                                                                    std::string_view resourceName,

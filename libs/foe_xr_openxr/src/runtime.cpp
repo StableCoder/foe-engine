@@ -27,7 +27,7 @@
 #include "log.hpp"
 #include "runtime.hpp"
 
-std::error_code foeXrOpenCreateRuntime(char const *appName,
+std::error_code foeOpenXrCreateRuntime(char const *appName,
                                        uint32_t appVersion,
                                        uint32_t layerCount,
                                        char const *const *ppLayerNames,
@@ -36,7 +36,7 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
                                        bool validation,
                                        bool debugLogging,
                                        foeXrRuntime *pRuntime) {
-    auto *pNewRuntime = new foeXrOpenRuntime;
+    auto *pNewRuntime = new foeOpenXrRuntime;
     XrResult xrRes{XR_SUCCESS};
 
     // Application Info
@@ -61,11 +61,11 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
 
     if (validation) {
         layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
-        FOE_LOG(foeXrOpen, Verbose, "Adding validation layers to new XrInstance");
+        FOE_LOG(foeOpenXr, Verbose, "Adding validation layers to new XrInstance");
     }
     if (debugLogging) {
         extensions.emplace_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        FOE_LOG(foeXrOpen, Verbose, "Adding debug report extension to new XrInstance");
+        FOE_LOG(foeOpenXr, Verbose, "Adding debug report extension to new XrInstance");
     }
 
     // Create Instance
@@ -100,11 +100,12 @@ std::error_code foeXrOpenCreateRuntime(char const *appName,
 
     // Attach Debug Logger
     if (debugLogging) {
-        xrRes = foeXrCreateDebugUtilsMessenger(pNewRuntime->instance, &pNewRuntime->debugMessenger);
+        xrRes =
+            foeOpenXrCreateDebugUtilsMessenger(pNewRuntime->instance, &pNewRuntime->debugMessenger);
         if (xrRes != XR_SUCCESS)
             goto CREATE_FAILED;
 
-        FOE_LOG(foeXrOpen, Verbose, "Added debug logging to new XrInstance");
+        FOE_LOG(foeOpenXr, Verbose, "Added debug logging to new XrInstance");
     }
 
 CREATE_FAILED:
@@ -117,7 +118,7 @@ CREATE_FAILED:
     return xrRes;
 }
 
-std::error_code foeXrOpenEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiVersion) {
+std::error_code foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiVersion) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     *pApiVersion = pRuntime->apiVersion;
@@ -125,7 +126,7 @@ std::error_code foeXrOpenEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t 
     return FOE_OPENXR_SUCCESS;
 }
 
-std::error_code foeXrOpenEnumerateRuntimeLayers(foeXrRuntime runtime,
+std::error_code foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
                                                 uint32_t *pLayerNamesLength,
                                                 char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
@@ -136,7 +137,7 @@ std::error_code foeXrOpenEnumerateRuntimeLayers(foeXrRuntime runtime,
                : FOE_OPENXR_INCOMPLETE;
 }
 
-std::error_code foeXrOpenEnumerateRuntimeExtensions(foeXrRuntime runtime,
+std::error_code foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
                                                     uint32_t *pExtensionNamesLength,
                                                     char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
@@ -186,7 +187,7 @@ std::error_code foeXrProcessEvents(foeXrRuntime runtime) {
         }
 
         default:
-            FOE_LOG(foeXrOpen, Warning, "Unprocessed XR event!!!");
+            FOE_LOG(foeOpenXr, Warning, "Unprocessed XR event!!!");
             break;
         }
     }
@@ -194,7 +195,7 @@ std::error_code foeXrProcessEvents(foeXrRuntime runtime) {
     return XR_SUCCESS;
 }
 
-XrInstance foeXrOpenGetInstance(foeXrRuntime runtime) {
+XrInstance foeOpenXrGetInstance(foeXrRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
     return pRuntime->instance;
 }
@@ -204,7 +205,7 @@ auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code {
     std::error_code errC;
 
     if (pRuntime->debugMessenger != XR_NULL_HANDLE)
-        foeXrDestroyDebugUtilsMessenger(pRuntime->instance, pRuntime->debugMessenger);
+        foeOpenXrDestroyDebugUtilsMessenger(pRuntime->instance, pRuntime->debugMessenger);
 
     if (pRuntime->instance != XR_NULL_HANDLE)
         errC = xrDestroyInstance(pRuntime->instance);
@@ -214,12 +215,12 @@ auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code {
     return errC;
 }
 
-void foeXrOpenAddSessionToRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession) {
+void foeOpenXrAddSessionToRuntime(foeOpenXrRuntime *pRuntime, foeOpenXrSession *pSession) {
     std::scoped_lock lock{pRuntime->sync};
     pRuntime->sessions.emplace_back(pSession);
 }
 
-void foeXrOpenRemoveSessionFromRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession) {
+void foeOpenXrRemoveSessionFromRuntime(foeOpenXrRuntime *pRuntime, foeOpenXrSession *pSession) {
     std::scoped_lock lock{pRuntime->sync};
     for (auto it = pRuntime->sessions.begin(); it != pRuntime->sessions.end(); ++it) {
         if (*it == pSession) {

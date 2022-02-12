@@ -24,7 +24,7 @@
 #include <system_error>
 #include <vector>
 
-struct FOE_XR_EXPORT foeXrSession {
+struct FOE_XR_EXPORT foeOpenXrSession {
     std::error_code createSession(foeXrRuntime runtime,
                                   XrSystemId systemId,
                                   XrViewConfigurationType configType,

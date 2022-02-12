@@ -23,13 +23,13 @@
 
 #include "log.hpp"
 
-struct foeXrOpenRenderGraphSwapchainResource {
+struct foeOpenXrRenderGraphSwapchainResource {
     foeGfxVkGraphResourceStructureType sType;
     void *pNext;
     XrSwapchain swapchain;
 };
 
-auto foeXrOpenVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                               std::string_view jobName,
                                               VkFence fence,
                                               std::string_view resourceName,
@@ -137,8 +137,8 @@ auto foeXrOpenVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     /// @todo Replace with combined C-style single allocation
-    auto *pSwapchain = new foeXrOpenRenderGraphSwapchainResource;
-    *pSwapchain = foeXrOpenRenderGraphSwapchainResource{
+    auto *pSwapchain = new foeOpenXrRenderGraphSwapchainResource;
+    *pSwapchain = foeOpenXrRenderGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
         .pNext = nullptr,
         .swapchain = swapchain,
@@ -159,7 +159,7 @@ auto foeXrOpenVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .deleteFn = [](foeGfxVkGraphResourceBase *pResource) -> void {
             auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
             auto *pSwapchain =
-                reinterpret_cast<foeXrOpenRenderGraphSwapchainResource *>(pImage->pNext);
+                reinterpret_cast<foeOpenXrRenderGraphSwapchainResource *>(pImage->pNext);
 
             delete pSwapchain;
             delete pImage;

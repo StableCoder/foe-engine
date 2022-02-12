@@ -32,16 +32,16 @@ TEST_CASE("Ensure error codes return correct values and strings") {
     std::error_code errC;
 
     SECTION("Generic non-existant negative value") {
-        errC = static_cast<foeXrOpenResult>(INT_MIN);
+        errC = static_cast<foeOpenXrResult>(INT_MIN);
 
         CHECK(errC.value() == INT_MIN);
-        CHECK(errC.message() == "(unrecognized negative foeXrOpenResult value)");
+        CHECK(errC.message() == "(unrecognized negative foeOpenXrResult value)");
     }
     SECTION("Generic non-existant positive value") {
-        errC = static_cast<foeXrOpenResult>(INT_MAX);
+        errC = static_cast<foeOpenXrResult>(INT_MAX);
 
         CHECK(errC.value() == INT_MAX);
-        CHECK(errC.message() == "(unrecognized positive foeXrOpenResult value)");
+        CHECK(errC.message() == "(unrecognized positive foeOpenXrResult value)");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_OPENXR_SUCCESS)

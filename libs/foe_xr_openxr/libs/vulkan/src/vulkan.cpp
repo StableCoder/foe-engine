@@ -162,8 +162,8 @@ auto foeXrGetVulkanGraphicsRequirements(XrInstance instance,
     return GetVulkanGraphicsRequirements(instance, systemId, graphicsRequirements);
 }
 
-auto foeXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
-                                     std::vector<XrSwapchainImageVulkanKHR> &images)
+auto foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
+                                         std::vector<XrSwapchainImageVulkanKHR> &images)
     -> std::error_code {
     uint32_t imageCount;
     XrResult res = xrEnumerateSwapchainImages(xrSwapchain, 0, &imageCount, nullptr);

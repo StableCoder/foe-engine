@@ -45,7 +45,7 @@ FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanGraphicsRequirements(
     XrInstance instance, XrSystemId systemId, XrGraphicsRequirementsVulkanKHR *graphicsRequirements)
     -> std::error_code;
 
-FOE_OPENXR_VK_EXPORT auto foeXrEnumerateSwapchainVkImages(
+FOE_OPENXR_VK_EXPORT auto foeOpenXrEnumerateSwapchainVkImages(
     XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images) -> std::error_code;
 
 #endif // FOE_XR_OPENXR_VK_VULKAN_HPP

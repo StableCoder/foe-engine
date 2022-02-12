@@ -18,7 +18,7 @@
 
 #include <glm/ext.hpp>
 
-glm::mat4 foeXrProjectionMatrix(XrFovf const &fieldOfView, float nearZ, float farZ) {
+glm::mat4 foeOpenXrProjectionMatrix(XrFovf const &fieldOfView, float nearZ, float farZ) {
     float left = tan(fieldOfView.angleLeft);
     float right = tan(fieldOfView.angleRight);
     float up = tan(fieldOfView.angleUp);
@@ -51,11 +51,11 @@ glm::mat4 foeXrProjectionMatrix(XrFovf const &fieldOfView, float nearZ, float fa
     };
 }
 
-glm::quat foeXrPoseOrientation(XrPosef const &pose) {
+glm::quat foeOpenXrPoseOrientation(XrPosef const &pose) {
     return glm::quat{pose.orientation.w * -1.f, pose.orientation.x, pose.orientation.y * -1.f,
                      pose.orientation.z};
 }
 
-glm::vec3 foeXrPosePosition(XrPosef const &pose) {
+glm::vec3 foeOpenXrPosePosition(XrPosef const &pose) {
     return glm::vec3{pose.position.x, -pose.position.y, pose.position.z};
 }

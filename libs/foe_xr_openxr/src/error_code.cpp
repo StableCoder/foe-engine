@@ -18,34 +18,34 @@
 
 namespace {
 
-struct foeXrOpenErrCategory : std::error_category {
+struct foeOpenXrErrCategory : std::error_category {
     const char *name() const noexcept override;
     std::string message(int ev) const override;
 };
 
-const char *foeXrOpenErrCategory::name() const noexcept { return "foeXrOpenResult"; }
+const char *foeOpenXrErrCategory::name() const noexcept { return "foeOpenXrResult"; }
 
 #define RESULT_CASE(X)                                                                             \
     case X:                                                                                        \
         return #X;
 
-std::string foeXrOpenErrCategory::message(int ev) const {
-    switch (static_cast<foeXrOpenResult>(ev)) {
+std::string foeOpenXrErrCategory::message(int ev) const {
+    switch (static_cast<foeOpenXrResult>(ev)) {
         RESULT_CASE(FOE_OPENXR_SUCCESS)
         RESULT_CASE(FOE_OPENXR_INCOMPLETE)
 
     default:
         if (ev > 0)
-            return "(unrecognized positive foeXrOpenResult value)";
+            return "(unrecognized positive foeOpenXrResult value)";
         else
-            return "(unrecognized negative foeXrOpenResult value)";
+            return "(unrecognized negative foeOpenXrResult value)";
     }
 }
 
-const foeXrOpenErrCategory openXrErrCategory{};
+const foeOpenXrErrCategory openXrErrCategory{};
 
 } // namespace
 
-std::error_code make_error_code(foeXrOpenResult e) {
+std::error_code make_error_code(foeOpenXrResult e) {
     return {static_cast<int>(e), openXrErrCategory};
 }

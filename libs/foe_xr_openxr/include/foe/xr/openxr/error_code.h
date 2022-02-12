@@ -21,7 +21,7 @@
 extern "C" {
 #endif
 
-enum foeXrOpenResult {
+enum foeOpenXrResult {
     FOE_OPENXR_SUCCESS = 0,
     FOE_OPENXR_INCOMPLETE,
 };

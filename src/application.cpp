@@ -742,7 +742,7 @@ std::error_code Application::startXR(bool localPoll) {
         // Session Views
         uint32_t viewConfigViewCount;
         errC =
-            xrEnumerateViewConfigurationViews(foeXrOpenGetInstance(xrRuntime), xrSession.systemId,
+            xrEnumerateViewConfigurationViews(foeOpenXrGetInstance(xrRuntime), xrSession.systemId,
                                               xrSession.type, 0, &viewConfigViewCount, nullptr);
         if (errC) {
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
@@ -754,7 +754,7 @@ std::error_code Application::startXR(bool localPoll) {
         viewConfigs.resize(viewConfigViewCount);
 
         errC = xrEnumerateViewConfigurationViews(
-            foeXrOpenGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
+            foeOpenXrGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
             &viewConfigViewCount, viewConfigs.data());
         if (errC) {
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
@@ -768,7 +768,7 @@ std::error_code Application::startXR(bool localPoll) {
 
         // OpenXR Swapchains
         std::vector<int64_t> swapchainFormats;
-        errC = foeXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
+        errC = foeOpenXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
         if (errC) {
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
                     errC.message());
@@ -868,7 +868,7 @@ std::error_code Application::startXR(bool localPoll) {
             }
 
             // Images
-            errC = foeXrEnumerateSwapchainVkImages(view.swapchain, view.images);
+            errC = foeOpenXrEnumerateSwapchainVkImages(view.swapchain, view.images);
             if (errC) {
                 FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
                         errC.message());
@@ -1347,7 +1347,7 @@ int Application::mainloop() {
                             },
                             VK_IMAGE_LAYOUT_UNDEFINED, true, {});
 
-                        auto xrSwapchainImageResource = foeXrOpenVkImportSwapchainImageRenderJob(
+                        auto xrSwapchainImageResource = foeOpenXrVkImportSwapchainImageRenderJob(
                             renderGraph, "importXrViewSwapchainImage", VK_NULL_HANDLE,
                             "importXrViewSwapchainImage", it.swapchain, it.images[newIndex].image,
                             it.imageViews[newIndex], it.format,

@@ -59,7 +59,7 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
     if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        errC = foeXrGetVulkanInstanceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
+        errC = foeXrGetVulkanInstanceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
         if (errC) {
             return errC;
         }
@@ -109,7 +109,7 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
     VkPhysicalDevice xrPhysicalDevice{VK_NULL_HANDLE};
 #ifdef FOE_XR_SUPPORT
     if (xrRuntime != FOE_NULL_HANDLE) {
-        foeXrGetVulkanGraphicsDevice(foeXrOpenGetInstance(xrRuntime), 0, vkInstance,
+        foeXrGetVulkanGraphicsDevice(foeOpenXrGetInstance(xrRuntime), 0, vkInstance,
                                      &xrPhysicalDevice);
     }
 #endif
@@ -233,7 +233,7 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
         std::vector<std::string> xrExtensions;
 
         std::error_code errC =
-            foeXrGetVulkanDeviceExtensions(foeXrOpenGetInstance(xrRuntime), xrExtensions);
+            foeXrGetVulkanDeviceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
         if (!errC) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }

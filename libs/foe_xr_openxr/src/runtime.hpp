@@ -23,15 +23,15 @@
 #include <mutex>
 #include <vector>
 
-struct foeXrSession;
+struct foeOpenXrSession;
 
-struct foeXrOpenRuntime {
+struct foeOpenXrRuntime {
     std::mutex sync;
 
     XrInstance instance{XR_NULL_HANDLE};
     XrDebugUtilsMessengerEXT debugMessenger{XR_NULL_HANDLE};
 
-    std::vector<foeXrSession *> sessions;
+    std::vector<foeOpenXrSession *> sessions;
 
     /// The XrInstance API version created with
     XrVersion apiVersion;
@@ -46,10 +46,10 @@ struct foeXrOpenRuntime {
     char *pExtensionNames;
 };
 
-FOE_DEFINE_HANDLE_CASTS(runtime, foeXrOpenRuntime, foeXrRuntime)
+FOE_DEFINE_HANDLE_CASTS(runtime, foeOpenXrRuntime, foeXrRuntime)
 
-void foeXrOpenAddSessionToRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession);
+void foeOpenXrAddSessionToRuntime(foeOpenXrRuntime *pRuntime, foeOpenXrSession *pSession);
 
-void foeXrOpenRemoveSessionFromRuntime(foeXrOpenRuntime *pRuntime, foeXrSession *pSession);
+void foeOpenXrRemoveSessionFromRuntime(foeOpenXrRuntime *pRuntime, foeOpenXrSession *pSession);
 
 #endif // RUNTIME_HPP

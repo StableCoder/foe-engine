@@ -24,17 +24,18 @@
 #include <system_error>
 #include <vector>
 
-FOE_XR_EXPORT auto foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties)
-    -> std::error_code;
+FOE_XR_EXPORT auto foeOpenXrEnumerateApiLayerProperties(
+    std::vector<XrApiLayerProperties> &properties) -> std::error_code;
 
-FOE_XR_EXPORT auto foeXrEnumerateInstanceExtensionProperties(
+FOE_XR_EXPORT auto foeOpenXrEnumerateInstanceExtensionProperties(
     char const *pApiLayerName, std::vector<XrExtensionProperties> &properties) -> std::error_code;
 
-FOE_XR_EXPORT auto foeXrEnumerateReferenceSpaces(XrSession xrSession,
-                                                 std::vector<XrReferenceSpaceType> &spaces)
+FOE_XR_EXPORT auto foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
+                                                     std::vector<XrReferenceSpaceType> &spaces)
     -> std::error_code;
 
-FOE_XR_EXPORT auto foeXrEnumerateSwapchainFormats(XrSession xrSession,
-                                                  std::vector<int64_t> &formats) -> std::error_code;
+FOE_XR_EXPORT auto foeOpenXrEnumerateSwapchainFormats(XrSession xrSession,
+                                                      std::vector<int64_t> &formats)
+    -> std::error_code;
 
 #endif // FOE_XR_OPENXR_CORE_HPP

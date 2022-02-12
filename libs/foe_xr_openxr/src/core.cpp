@@ -21,7 +21,7 @@
 
 #include <cstring>
 
-auto foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties)
+auto foeOpenXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties)
     -> std::error_code {
     uint32_t propertyCount;
     XrResult res = xrEnumerateApiLayerProperties(0, &propertyCount, nullptr);
@@ -37,8 +37,8 @@ auto foeXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &propert
                                          properties.data());
 }
 
-auto foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
-                                               std::vector<XrExtensionProperties> &properties)
+auto foeOpenXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
+                                                   std::vector<XrExtensionProperties> &properties)
     -> std::error_code {
     uint32_t propertyCount;
     XrResult res =
@@ -56,7 +56,8 @@ auto foeXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
         pApiLayerName, static_cast<uint32_t>(properties.size()), &propertyCount, properties.data());
 }
 
-auto foeXrEnumerateReferenceSpaces(XrSession xrSession, std::vector<XrReferenceSpaceType> &spaces)
+auto foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
+                                       std::vector<XrReferenceSpaceType> &spaces)
     -> std::error_code {
     uint32_t spaceCount;
     XrResult res = xrEnumerateReferenceSpaces(xrSession, 0, &spaceCount, nullptr);
@@ -69,7 +70,7 @@ auto foeXrEnumerateReferenceSpaces(XrSession xrSession, std::vector<XrReferenceS
                                       spaces.data());
 }
 
-auto foeXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats)
+auto foeOpenXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats)
     -> std::error_code {
     uint32_t formatCount;
     XrResult res = xrEnumerateSwapchainFormats(xrSession, 0, &formatCount, nullptr);

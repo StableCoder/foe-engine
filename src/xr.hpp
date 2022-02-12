@@ -27,6 +27,6 @@ std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
 
 std::error_code createXrSession(foeXrRuntime runtime,
                                 foeGfxSession gfxSession,
-                                foeXrSession *pSession);
+                                foeOpenXrSession *pSession);
 
 #endif // XR_HPP
