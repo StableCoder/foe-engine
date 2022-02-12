@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_CORE_HPP
-#define FOE_XR_CORE_HPP
+#ifndef FOE_XR_OPENXR_CORE_HPP
+#define FOE_XR_OPENXR_CORE_HPP
 
 #include <foe/xr/export.h>
 #include <openxr/openxr.h>
@@ -37,4 +37,4 @@ FOE_XR_EXPORT auto foeXrEnumerateReferenceSpaces(XrSession xrSession,
 FOE_XR_EXPORT auto foeXrEnumerateSwapchainFormats(XrSession xrSession,
                                                   std::vector<int64_t> &formats) -> std::error_code;
 
-#endif // FOE_XR_CORE_HPP
+#endif // FOE_XR_OPENXR_CORE_HPP

@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_ERROR_CODE_HPP
-#define FOE_XR_ERROR_CODE_HPP
+#ifndef FOE_XR_OPENXR_ERROR_CODE_HPP
+#define FOE_XR_OPENXR_ERROR_CODE_HPP
 
 #include <foe/xr/export.h>
 #include <openxr/openxr.h>
@@ -29,4 +29,4 @@ struct is_error_code_enum<XrResult> : true_type {};
 
 FOE_XR_EXPORT std::error_code make_error_code(XrResult);
 
-#endif // FOE_XR_ERROR_CODE_HPP
+#endif // FOE_XR_OPENXR_ERROR_CODE_HPP

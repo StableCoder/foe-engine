@@ -75,8 +75,8 @@
 #include "render_graph/render_scene.hpp"
 
 #ifdef FOE_XR_SUPPORT
-#include <foe/xr/core.hpp>
-#include <foe/xr/error_code.hpp>
+#include <foe/xr/openxr/core.hpp>
+#include <foe/xr/openxr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
 

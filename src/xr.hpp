@@ -18,8 +18,8 @@
 #define XR_HPP
 
 #include <foe/graphics/session.hpp>
+#include <foe/xr/openxr/session.hpp>
 #include <foe/xr/runtime.hpp>
-#include <foe/xr/session.hpp>
 
 #include <system_error>
 

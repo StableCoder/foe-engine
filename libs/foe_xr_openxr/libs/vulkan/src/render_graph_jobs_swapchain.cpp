@@ -18,7 +18,7 @@
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/xr/error_code.hpp>
+#include <foe/xr/openxr/error_code.hpp>
 #include <vk_error_code.hpp>
 
 #include "log.hpp"

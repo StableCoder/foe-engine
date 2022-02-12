@@ -27,7 +27,7 @@
 #include <memory>
 
 #ifdef FOE_XR_SUPPORT
-#include <foe/xr/error_code.hpp>
+#include <foe/xr/openxr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/openxr/vk/vulkan.hpp>
 #endif

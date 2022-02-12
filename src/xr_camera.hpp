@@ -17,7 +17,7 @@
 #ifndef XR_CAMERA_HPP
 #define XR_CAMERA_HPP
 
-#include <foe/xr/camera_math.hpp>
+#include <foe/xr/openxr/camera_math.hpp>
 
 #include "camera.hpp"
 

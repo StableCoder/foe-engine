@@ -14,10 +14,10 @@
     limitations under the License.
 */
 
-#include <foe/xr/core.hpp>
+#include <foe/xr/openxr/core.hpp>
 
 #include <foe/engine_detail.h>
-#include <foe/xr/error_code.hpp>
+#include <foe/xr/openxr/error_code.hpp>
 
 #include <cstring>
 

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/xr/error_code.hpp>
+#include <foe/xr/openxr/error_code.hpp>
 
 #include <openxr/openxr_reflection.h>
 

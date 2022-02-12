@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_CAMERA_HPP
-#define FOE_XR_CAMERA_HPP
+#ifndef FOE_XR_OPENXR_CAMERA_HPP
+#define FOE_XR_OPENXR_CAMERA_HPP
 
 #include <foe/xr/export.h>
 #include <glm/glm.hpp>
@@ -27,4 +27,4 @@ FOE_XR_EXPORT glm::quat foeXrPoseOrientation(XrPosef const &pose);
 
 FOE_XR_EXPORT glm::vec3 foeXrPosePosition(XrPosef const &pose);
 
-#endif // FOE_XR_CAMERA_HPP
+#endif // FOE_XR_OPENXR_CAMERA_HPP

@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_OPENXR_ERROR_CODE_H
-#define FOE_OPENXR_ERROR_CODE_H
+#ifndef FOE_XR_OPENXR_ERROR_CODE_H
+#define FOE_XR_OPENXR_ERROR_CODE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,4 +30,4 @@ enum foeXrOpenResult {
 }
 #endif
 
-#endif // FOE_OPENXR_ERROR_CODE_H
+#endif // FOE_XR_OPENXR_ERROR_CODE_H

@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_XR_SESSION_HPP
-#define FOE_XR_SESSION_HPP
+#ifndef FOE_XR_OPENXR_SESSION_HPP
+#define FOE_XR_OPENXR_SESSION_HPP
 
 #include <foe/xr/export.h>
 #include <foe/xr/runtime.hpp>
@@ -48,4 +48,4 @@ struct FOE_XR_EXPORT foeXrSession {
     XrSpace space;
 };
 
-#endif // FOE_XR_SESSION_HPP
+#endif // FOE_XR_OPENXR_SESSION_HPP

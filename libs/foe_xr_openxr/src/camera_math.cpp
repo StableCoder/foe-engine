@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/xr/camera_math.hpp>
+#include <foe/xr/openxr/camera_math.hpp>
 
 #include <glm/ext.hpp>
 
