@@ -17,3 +17,8 @@ target_include_directories(foe_xr_openxr_vk
 target_link_libraries(foe_xr_openxr_vk PUBLIC foe_xr_openxr foe_graphics_vk)
 
 target_code_coverage(foe_xr_openxr_vk)
+
+# Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
