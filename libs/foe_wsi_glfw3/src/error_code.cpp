@@ -33,6 +33,7 @@ std::string foeWsiErrCategory::message(int ev) const {
     switch (static_cast<foeWsiResult>(ev)) {
         RESULT_CASE(FOE_WSI_SUCCESS)
         RESULT_CASE(FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND)
+        RESULT_CASE(FOE_WSI_ERROR_FAILED_TO_CREATE_WINDOW)
         RESULT_CASE(FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED)
 
     default:
