@@ -2,7 +2,7 @@
 prepare_catch(COMPILED_CATCH)
 
 # Declaration
-add_test(NAME FoE-ImGui-Vk-Test COMMAND test_foe_imgui_vk)
+add_test(NAME FoE-ImGui-VK-Test COMMAND test_foe_imgui_vk)
 add_executable(test_foe_imgui_vk)
 
 # Definition

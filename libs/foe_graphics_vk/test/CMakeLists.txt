@@ -2,7 +2,7 @@
 prepare_catch(COMPILED_CATCH)
 
 # Declaration
-add_test(NAME FoE-Graphics-Vk-Test COMMAND test_foe_graphics_vk)
+add_test(NAME FoE-Graphics-VK-Test COMMAND test_foe_graphics_vk)
 add_executable(test_foe_graphics_vk)
 
 # Definition
