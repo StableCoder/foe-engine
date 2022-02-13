@@ -16,15 +16,16 @@
 
 #include <catch.hpp>
 #include <foe/xr/openxr/error_code.hpp>
+#include <openxr/openxr_reflection.h>
 
 #include <climits>
 
-#define ERROR_CODE_CATCH_CHECK(X)                                                                  \
-    SECTION(#X) {                                                                                  \
-        errC = X;                                                                                  \
+#define ERROR_CODE_CATCH_CHECK(name, val)                                                          \
+    SECTION(#name) {                                                                               \
+        errC = name;                                                                               \
                                                                                                    \
-        CHECK(errC.value() == X);                                                                  \
-        CHECK(errC.message() == #X);                                                               \
+        CHECK(errC.value() == name);                                                               \
+        CHECK(errC.message() == #name);                                                            \
     }
 
 TEST_CASE("XrResult - Ensure error codes return correct values and strings") {
@@ -49,7 +50,5 @@ TEST_CASE("XrResult - Ensure error codes return correct values and strings") {
         CHECK(errC.message() == "XR_RESULT_MAX_ENUM");
     }
 
-    ERROR_CODE_CATCH_CHECK(XR_SUCCESS)
-    ERROR_CODE_CATCH_CHECK(XR_TIMEOUT_EXPIRED)
-    ERROR_CODE_CATCH_CHECK(XR_ERROR_RUNTIME_FAILURE)
+    XR_LIST_ENUM_XrResult(ERROR_CODE_CATCH_CHECK)
 }

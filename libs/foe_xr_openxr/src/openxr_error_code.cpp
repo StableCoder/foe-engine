@@ -24,20 +24,6 @@ namespace {
     case name:                                                                                     \
         return #name;
 
-#define XR_ENUM_STR(enumType)                                                                      \
-    constexpr const char *XrEnumStr(enumType ev) {                                                 \
-        switch (ev) {                                                                              \
-            XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR);                                             \
-        default:                                                                                   \
-            if (ev > 0)                                                                            \
-                return "(unrecognized positive XrResult value)";                                   \
-            else                                                                                   \
-                return "(unrecognized negative XrResult value)";                                   \
-        }                                                                                          \
-    }
-
-XR_ENUM_STR(XrResult);
-
 struct OpenXrErrCategory : std::error_category {
     const char *name() const noexcept override;
     std::string message(int ev) const override;
@@ -46,7 +32,14 @@ struct OpenXrErrCategory : std::error_category {
 const char *OpenXrErrCategory::name() const noexcept { return "XrResult"; }
 
 std::string OpenXrErrCategory::message(int ev) const {
-    return XrEnumStr(static_cast<XrResult>(ev));
+    switch (ev) {
+        XR_LIST_ENUM_XrResult(XR_ENUM_CASE_STR);
+    default:
+        if (ev > 0)
+            return "(unrecognized positive XrResult value)";
+        else
+            return "(unrecognized negative XrResult value)";
+    }
 }
 
 OpenXrErrCategory const cOpenXrErrCategory{};
