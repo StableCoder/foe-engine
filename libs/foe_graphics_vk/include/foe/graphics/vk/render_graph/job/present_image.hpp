@@ -22,6 +22,7 @@
 #include <vulkan/vulkan.h>
 
 #include <string_view>
+#include <system_error>
 
 FOE_GFX_EXPORT auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                           std::string_view name,
@@ -33,14 +34,15 @@ FOE_GFX_EXPORT auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph re
                                                           VkImageView view,
                                                           VkFormat format,
                                                           VkExtent2D extent,
-                                                          VkSemaphore waitSemaphore)
-    -> foeGfxVkRenderGraphResource;
+                                                          VkSemaphore waitSemaphore,
+                                                          foeGfxVkRenderGraphResource *pResourceOut)
+    -> std::error_code;
 
 /// Assumes the image is in VK_IMAGE_LAYOUT_PRESENT_SRC_KHR layout
-FOE_GFX_EXPORT void foeGfxVkPresentSwapchainImageRenderJob(
+FOE_GFX_EXPORT auto foeGfxVkPresentSwapchainImageRenderJob(
     foeGfxVkRenderGraph renderGraph,
     std::string_view name,
     VkFence fence,
-    foeGfxVkRenderGraphResource swapchainResource);
+    foeGfxVkRenderGraphResource swapchainResource) -> std::error_code;
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_PRESENT_IMAGE_HPP

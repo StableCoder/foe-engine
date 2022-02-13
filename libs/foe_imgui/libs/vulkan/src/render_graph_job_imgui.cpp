@@ -23,15 +23,18 @@
 #include <foe/imgui/vk/renderer.hpp>
 #include <vk_error_code.hpp>
 
-foeGfxVkRenderGraphResource foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                                                  std::string_view name,
-                                                  VkFence fence,
-                                                  foeGfxVkRenderGraphResource renderTarget,
-                                                  VkImageLayout initialLayout,
-                                                  VkImageLayout finalLayout,
-                                                  foeImGuiRenderer *pImguiRenderer,
-                                                  foeImGuiState *pImguiState,
-                                                  uint32_t frameIndex) {
+auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
+                           std::string_view name,
+                           VkFence fence,
+                           foeGfxVkRenderGraphResource renderTarget,
+                           VkImageLayout initialLayout,
+                           VkImageLayout finalLayout,
+                           foeImGuiRenderer *pImguiRenderer,
+                           foeImGuiState *pImguiState,
+                           uint32_t frameIndex,
+                           foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
+    std::error_code errC;
+
     auto *pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -204,10 +207,11 @@ foeGfxVkRenderGraphResource foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGrap
     };
 
     bool const resourcesInReadOnly = false;
-    foeGfxVkRenderGraphResource renderTargetOutput;
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &renderTarget, &resourcesInReadOnly, 0, nullptr,
-                              &renderTargetOutput);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &renderTarget, &resourcesInReadOnly, 0,
+                                     nullptr, pResourcesOut);
+    if (errC)
+        return errC;
 
-    return renderTargetOutput;
+    return errC;
 }

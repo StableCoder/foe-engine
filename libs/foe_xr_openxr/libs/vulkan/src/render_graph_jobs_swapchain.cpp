@@ -21,6 +21,7 @@
 #include <foe/xr/openxr/error_code.hpp>
 #include <vk_error_code.hpp>
 
+#include "error_code.hpp"
 #include "log.hpp"
 
 struct foeOpenXrRenderGraphSwapchainResource {
@@ -37,7 +38,11 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                               VkImage image,
                                               VkImageView view,
                                               VkFormat format,
-                                              VkExtent2D extent) -> foeGfxVkRenderGraphResource {
+                                              VkExtent2D extent,
+                                              foeGfxVkRenderGraphResource *pResourcesOut)
+    -> std::error_code {
+    std::error_code errC;
+
     // Add the job that waits on the timeline semaphore and signals any dependent jobs to start
     auto pJob = new RenderGraphJob;
     pJob->name = jobName;
@@ -167,12 +172,15 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
     };
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall, nullptr);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall,
+                                     nullptr);
+    if (errC)
+        return errC;
 
-    foeGfxVkRenderGraphResource resource{
+    *pResourcesOut = foeGfxVkRenderGraphResource{
         .pProvider = pJob,
         .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
     };
 
-    return resource;
+    return FOE_OPENXR_VK_SUCCESS;
 }

@@ -20,6 +20,8 @@
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
+#include "../../error_code.hpp"
+
 struct foeGfxVkGraphSwapchainResource {
     foeGfxVkGraphStructureType sType;
     void *pNext;
@@ -37,8 +39,11 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                            VkImageView view,
                                            VkFormat format,
                                            VkExtent2D extent,
-                                           VkSemaphore waitSemaphore)
-    -> foeGfxVkRenderGraphResource {
+                                           VkSemaphore waitSemaphore,
+                                           foeGfxVkRenderGraphResource *pResourcesOut)
+    -> std::error_code {
+    std::error_code errC;
+
     auto pJob = new RenderGraphJob;
     pJob->name = name;
     pJob->required = false;
@@ -87,11 +92,6 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .isMutable = true,
     };
 
-    foeGfxVkRenderGraphResource swapchainImage{
-        .pProvider = pJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
-    };
-
     DeleteResourceDataCall deleteResCall{
         .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
             auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
@@ -103,15 +103,24 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
     };
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall, nullptr);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteResCall,
+                                     nullptr);
+    if (errC)
+        return errC;
 
-    return swapchainImage;
+    *pResourcesOut = foeGfxVkRenderGraphResource{
+        .pProvider = pJob,
+        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+    };
+
+    return FOE_GRAPHICS_VK_SUCCESS;
 }
 
-void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                             std::string_view name,
                                             VkFence fence,
-                                            foeGfxVkRenderGraphResource swapchainResource) {
+                                            foeGfxVkRenderGraphResource swapchainResource)
+    -> std::error_code {
     auto pJob = new RenderGraphJob;
     pJob->name = name;
     // The image is being presented as output, and thus needs to happen
@@ -194,6 +203,6 @@ void foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     foeGfxVkRenderGraphResource resourceOut;
     bool const resourceReadOnly = false;
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &swapchainResource, &resourceReadOnly, 0,
-                              nullptr, &resourceOut);
+    return foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &swapchainResource, &resourceReadOnly, 0,
+                                     nullptr, &resourceOut);
 }

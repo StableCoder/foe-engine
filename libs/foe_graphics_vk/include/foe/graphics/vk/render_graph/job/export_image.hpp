@@ -22,12 +22,14 @@
 #include <vulkan/vulkan.h>
 
 #include <string_view>
+#include <system_error>
 
-FOE_GFX_EXPORT void foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+FOE_GFX_EXPORT auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                  std::string_view name,
                                                  VkFence fence,
                                                  foeGfxVkRenderGraphResource resource,
                                                  VkImageLayout layout,
-                                                 std::vector<VkSemaphore> signalSemaphores);
+                                                 std::vector<VkSemaphore> signalSemaphores)
+    -> std::error_code;
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_EXPORT_IMAGE_HPP

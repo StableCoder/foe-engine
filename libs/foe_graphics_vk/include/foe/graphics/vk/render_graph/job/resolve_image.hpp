@@ -36,7 +36,8 @@ FOE_GFX_EXPORT auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGrap
                                                   VkImageLayout srcFinalLayout,
                                                   foeGfxVkRenderGraphResource dstImage,
                                                   VkImageLayout dstInitialLayout,
-                                                  VkImageLayout dstFinalLayout)
-    -> ResolveJobUsedResources;
+                                                  VkImageLayout dstFinalLayout,
+                                                  ResolveJobUsedResources *pResourcesOut)
+    -> std::error_code;
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_RESOLVE_IMAGE_HPP

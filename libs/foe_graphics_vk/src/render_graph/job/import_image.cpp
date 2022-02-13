@@ -20,6 +20,8 @@
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
+#include "../../error_code.hpp"
+
 auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   std::string_view name,
                                   VkFence fence,
@@ -30,8 +32,10 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   VkExtent2D extent,
                                   VkImageLayout layout,
                                   bool isMutable,
-                                  std::vector<VkSemaphore> waitSemaphores)
-    -> foeGfxVkRenderGraphResource {
+                                  std::vector<VkSemaphore> waitSemaphores,
+                                  foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
+    std::error_code errC;
+
     auto pJob = new RenderGraphJob;
     pJob->name = name;
     pJob->required = false;
@@ -83,7 +87,15 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
     };
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCall, nullptr);
+    errC =
+        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCall, nullptr);
+    if (errC)
+        return errC;
 
-    return importedImage;
+    *pResourcesOut = foeGfxVkRenderGraphResource{
+        .pProvider = pJob,
+        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
+    };
+
+    return FOE_GRAPHICS_VK_SUCCESS;
 }

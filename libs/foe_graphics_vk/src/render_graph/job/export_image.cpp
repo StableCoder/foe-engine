@@ -19,12 +19,12 @@
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
-void foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   std::string_view name,
                                   VkFence fence,
                                   foeGfxVkRenderGraphResource resource,
                                   VkImageLayout layout,
-                                  std::vector<VkSemaphore> signalSemaphores) {
+                                  std::vector<VkSemaphore> signalSemaphores) -> std::error_code {
     auto pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -57,6 +57,6 @@ void foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     bool const readOnly = true;
     foeGfxVkRenderGraphResource usedResource;
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &resource, &readOnly, 0, nullptr,
-                              &usedResource);
+    return foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &resource, &readOnly, 0, nullptr,
+                                     &usedResource);
 }

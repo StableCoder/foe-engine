@@ -36,7 +36,8 @@ FOE_GFX_EXPORT auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                VkImageLayout srcFinalLayout,
                                                foeGfxVkRenderGraphResource dstImage,
                                                VkImageLayout dstInitialLayout,
-                                               VkImageLayout dstFinalLayout)
-    -> BlitJobUsedResources;
+                                               VkImageLayout dstFinalLayout,
+                                               BlitJobUsedResources *pResourcesOut)
+    -> std::error_code;
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_BLIT_IMAGE_HPP

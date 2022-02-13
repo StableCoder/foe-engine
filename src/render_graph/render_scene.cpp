@@ -32,6 +32,7 @@
 #include <vk_error_code.hpp>
 
 #include "../camera_pool.hpp"
+#include "../error_code.hpp"
 #include "../render_state_pool.hpp"
 
 namespace {
@@ -158,19 +159,21 @@ auto renderCall(foeId entity,
 }
 } // namespace
 
-std::error_code renderSceneJob(foeGfxVkRenderGraph renderGraph,
-                               std::string_view name,
-                               VkFence fence,
-                               foeGfxVkRenderGraphResource colourRenderTarget,
-                               VkImageLayout initialColourLayout,
-                               VkImageLayout finalColourLayout,
-                               foeGfxVkRenderGraphResource depthRenderTarget,
-                               VkImageLayout initialDepthLayout,
-                               VkImageLayout finalDepthLayout,
-                               VkSampleCountFlags renderTargetSamples,
-                               foeSimulationState *pSimulationState,
-                               VkDescriptorSet cameraDescriptor,
-                               RenderSceneOutputResources &outputResources) {
+auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
+                    std::string_view name,
+                    VkFence fence,
+                    foeGfxVkRenderGraphResource colourRenderTarget,
+                    VkImageLayout initialColourLayout,
+                    VkImageLayout finalColourLayout,
+                    foeGfxVkRenderGraphResource depthRenderTarget,
+                    VkImageLayout initialDepthLayout,
+                    VkImageLayout finalDepthLayout,
+                    VkSampleCountFlags renderTargetSamples,
+                    foeSimulationState *pSimulationState,
+                    VkDescriptorSet cameraDescriptor,
+                    RenderSceneOutputResources &outputResources) -> std::error_code {
+    std::error_code errC;
+
     auto *pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -372,13 +375,15 @@ std::error_code renderSceneJob(foeGfxVkRenderGraph renderGraph,
     std::array<bool const, 2> resourcesInReadOnly{false, false};
     std::array<foeGfxVkRenderGraphResource, 2> resourcesOut{};
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(), resourcesInReadOnly.data(),
-                              0, nullptr, resourcesOut.data());
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
+                                     resourcesInReadOnly.data(), 0, nullptr, resourcesOut.data());
+    if (errC)
+        return errC;
 
     outputResources = RenderSceneOutputResources{
         .colourRenderTarget = resourcesOut[0],
         .depthRenderTarget = resourcesOut[1],
     };
 
-    return std::error_code{};
+    return FOE_BRINGUP_SUCCESS;
 }

@@ -33,7 +33,8 @@ FOE_GFX_EXPORT auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph
                                                  VkExtent2D extent,
                                                  VkImageLayout layout,
                                                  bool isMutable,
-                                                 std::vector<VkSemaphore> waitSemaphores)
-    -> foeGfxVkRenderGraphResource;
+                                                 std::vector<VkSemaphore> waitSemaphores,
+                                                 foeGfxVkRenderGraphResource *pResourceOut)
+    -> std::error_code;
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_IMPORT_IMAGE_HPP

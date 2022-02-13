@@ -20,6 +20,8 @@
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
+#include "../../error_code.hpp"
+
 auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                    std::string_view name,
                                    VkFence fence,
@@ -28,7 +30,10 @@ auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                    VkImageLayout srcFinalLayout,
                                    foeGfxVkRenderGraphResource dstImage,
                                    VkImageLayout dstInitialLayout,
-                                   VkImageLayout dstFinalLayout) -> ResolveJobUsedResources {
+                                   VkImageLayout dstFinalLayout,
+                                   ResolveJobUsedResources *pResourcesOut) -> std::error_code {
+    std::error_code errC;
+
     auto *pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -232,13 +237,15 @@ auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
     std::array<bool const, 2> resourcesInReadOnly{true, false};
     std::array<foeGfxVkRenderGraphResource, 2> resourcesOut{};
 
-    foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(), resourcesInReadOnly.data(),
-                              0, nullptr, resourcesOut.data());
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
+                                     resourcesInReadOnly.data(), 0, nullptr, resourcesOut.data());
+    if (errC)
+        return errC;
 
-    ResolveJobUsedResources consumedResources{
+    *pResourcesOut = ResolveJobUsedResources{
         .srcImage = resourcesOut[0],
         .dstImage = resourcesOut[1],
     };
 
-    return consumedResources;
+    return FOE_GRAPHICS_VK_SUCCESS;
 }

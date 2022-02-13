@@ -29,18 +29,18 @@ struct RenderSceneOutputResources {
     foeGfxVkRenderGraphResource depthRenderTarget;
 };
 
-std::error_code renderSceneJob(foeGfxVkRenderGraph renderGraph,
-                               std::string_view name,
-                               VkFence fence,
-                               foeGfxVkRenderGraphResource colourRenderTarget,
-                               VkImageLayout initialColourLayout,
-                               VkImageLayout finalColourLayout,
-                               foeGfxVkRenderGraphResource depthRenderTarget,
-                               VkImageLayout initialDepthLayout,
-                               VkImageLayout finalDepthLayout,
-                               VkSampleCountFlags renderTargetSamples,
-                               foeSimulationState *pSimulationState,
-                               VkDescriptorSet cameraDescriptor,
-                               RenderSceneOutputResources &outputResources);
+auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
+                    std::string_view name,
+                    VkFence fence,
+                    foeGfxVkRenderGraphResource colourRenderTarget,
+                    VkImageLayout initialColourLayout,
+                    VkImageLayout finalColourLayout,
+                    foeGfxVkRenderGraphResource depthRenderTarget,
+                    VkImageLayout initialDepthLayout,
+                    VkImageLayout finalDepthLayout,
+                    VkSampleCountFlags renderTargetSamples,
+                    foeSimulationState *pSimulationState,
+                    VkDescriptorSet cameraDescriptor,
+                    RenderSceneOutputResources &outputResources) -> std::error_code;
 
 #endif // RENDER_SCENE_HPP

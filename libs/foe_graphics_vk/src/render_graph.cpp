@@ -21,6 +21,8 @@
 
 #include <queue>
 
+#include "error_code.hpp"
+
 struct RenderGraphRelationship {
     /// Job that provides this resource, determining when it becomes available
     RenderGraphJob *pProvider;
@@ -110,7 +112,7 @@ auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
         pRenderGraph->resourceCleanupCalls.emplace_back(pDeleteResourceCalls[i]);
     }
 
-    return std::error_code{};
+    return FOE_GRAPHICS_VK_SUCCESS;
 }
 
 auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
@@ -200,7 +202,7 @@ auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
         }
     });
 
-    return errC;
+    return FOE_GRAPHICS_VK_SUCCESS;
 }
 
 void foeGfxVkExecuteRenderGraphCpuJobs(foeGfxVkRenderGraph renderGraph) {

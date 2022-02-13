@@ -20,6 +20,8 @@
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/imgui/vk/export.h>
 
+#include <system_error>
+
 class foeImGuiRenderer;
 class foeImGuiState;
 
@@ -31,6 +33,8 @@ FOE_IMGUI_VK_EXPORT auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                                                VkImageLayout finalLayout,
                                                foeImGuiRenderer *pImguiRenderer,
                                                foeImGuiState *pImguiState,
-                                               uint32_t frameIndex) -> foeGfxVkRenderGraphResource;
+                                               uint32_t frameIndex,
+                                               foeGfxVkRenderGraphResource *pResourcesOut)
+    -> std::error_code;
 
 #endif // FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP

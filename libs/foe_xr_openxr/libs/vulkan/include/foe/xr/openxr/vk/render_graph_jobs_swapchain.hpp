@@ -23,16 +23,18 @@
 #include <vulkan/vulkan.h>
 
 #include <string_view>
+#include <system_error>
 
-FOE_OPENXR_VK_EXPORT auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                                   std::string_view jobName,
-                                                                   VkFence fence,
-                                                                   std::string_view resourceName,
-                                                                   XrSwapchain swapchain,
-                                                                   VkImage image,
-                                                                   VkImageView view,
-                                                                   VkFormat format,
-                                                                   VkExtent2D extent)
-    -> foeGfxVkRenderGraphResource;
+FOE_OPENXR_VK_EXPORT auto foeOpenXrVkImportSwapchainImageRenderJob(
+    foeGfxVkRenderGraph renderGraph,
+    std::string_view jobName,
+    VkFence fence,
+    std::string_view resourceName,
+    XrSwapchain swapchain,
+    VkImage image,
+    VkImageView view,
+    VkFormat format,
+    VkExtent2D extent,
+    foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code;
 
 #endif // FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
