@@ -16,15 +16,35 @@
 
 #include <foe/graphics/vk/render_graph/job/export_image.hpp>
 
+#include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
+
+#include "../../error_code.hpp"
 
 auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   std::string_view name,
                                   VkFence fence,
                                   foeGfxVkRenderGraphResource resource,
-                                  VkImageLayout layout,
+                                  VkImageLayout requiredLayout,
                                   std::vector<VkSemaphore> signalSemaphores) -> std::error_code {
+    // Check that this is an image resource
+    auto *pImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+        resource.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+
+    if (pImageData == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_EXPORT_IMAGE_RESOURCE_NOT_IMAGE;
+
+    // Check that this is in the correct/desired state
+    auto *pImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+        resource.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
+
+    if (pImageState == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_EXPORT_IMAGE_RESOURCE_NO_STATE;
+    if (pImageState->layout != requiredLayout)
+        std::abort();
+
+    // Proceed with job creation
     auto pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -54,6 +74,7 @@ auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         },
     };
 
+    // Add job to graph
     bool const readOnly = true;
     foeGfxVkRenderGraphResource usedResource;
 

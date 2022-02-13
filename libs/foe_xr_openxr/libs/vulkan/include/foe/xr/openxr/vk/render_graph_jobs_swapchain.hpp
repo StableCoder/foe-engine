@@ -35,6 +35,7 @@ FOE_OPENXR_VK_EXPORT auto foeOpenXrVkImportSwapchainImageRenderJob(
     VkImageView view,
     VkFormat format,
     VkExtent2D extent,
+    VkImageLayout layout,
     foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code;
 
 #endif // FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP

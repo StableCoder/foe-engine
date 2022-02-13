@@ -163,10 +163,8 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                     std::string_view name,
                     VkFence fence,
                     foeGfxVkRenderGraphResource colourRenderTarget,
-                    VkImageLayout initialColourLayout,
                     VkImageLayout finalColourLayout,
                     foeGfxVkRenderGraphResource depthRenderTarget,
-                    VkImageLayout initialDepthLayout,
                     VkImageLayout finalDepthLayout,
                     VkSampleCountFlags renderTargetSamples,
                     foeSimulationState *pSimulationState,
@@ -174,6 +172,37 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                     RenderSceneOutputResources &outputResources) -> std::error_code {
     std::error_code errC;
 
+    // Make sure the resources passed in are images, and are mutable
+    auto *pColourImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+        colourRenderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+    auto *pDepthImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+        depthRenderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+
+    if (pColourImageData == nullptr) {
+        return FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NOT_IMAGE;
+    }
+    if (!pColourImageData->isMutable) {
+        return FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NOT_MUTABLE;
+    }
+    if (pDepthImageData == nullptr) {
+        return FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NOT_IMAGE;
+    }
+    if (!pDepthImageData->isMutable) {
+        return FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NOT_MUTABLE;
+    }
+
+    // Check that the images have previous state
+    auto *pColourImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+        colourRenderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
+    auto *pDepthImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+        depthRenderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
+
+    if (pColourImageState == nullptr)
+        return FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NO_STATE;
+    if (pDepthImageState == nullptr)
+        return FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NO_STATE;
+
+    // Proceed with the job
     auto *pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -199,7 +228,7 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                              .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                              .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                              .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                             .initialLayout = initialColourLayout,
+                             .initialLayout = pColourImageState->layout,
                              .finalLayout = finalColourLayout,
                          },
                          VkAttachmentDescription{
@@ -209,7 +238,7 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                              .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                              .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                              .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                             .initialLayout = initialDepthLayout,
+                             .initialLayout = pDepthImageState->layout,
                              .finalLayout = finalDepthLayout,
                          }});
 
@@ -370,20 +399,53 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
         },
     };
 
+    // Resource Management
+    auto *pNewColourState = new foeGfxVkGraphImageState;
+    *pNewColourState = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = finalColourLayout,
+    };
+    auto *pNewDepthState = new foeGfxVkGraphImageState;
+    *pNewDepthState = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = finalDepthLayout,
+    };
+
+    DeleteResourceDataCall deleteCalls[2] = {
+        {
+            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
+            },
+            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pNewColourState),
+        },
+        {
+            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
+            },
+            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pNewDepthState),
+        },
+    };
+
+    // Add job to graph
     std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{colourRenderTarget,
                                                                  depthRenderTarget};
     std::array<bool const, 2> resourcesInReadOnly{false, false};
     std::array<foeGfxVkRenderGraphResource, 2> resourcesOut{};
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
-                                     resourcesInReadOnly.data(), 0, nullptr, resourcesOut.data());
+    errC =
+        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
+                                  resourcesInReadOnly.data(), 2, deleteCalls, resourcesOut.data());
     if (errC)
         return errC;
 
+    // Outgoing state
     outputResources = RenderSceneOutputResources{
         .colourRenderTarget = resourcesOut[0],
         .depthRenderTarget = resourcesOut[1],
     };
+
+    outputResources.colourRenderTarget.pResourceState = (foeGfxVkGraphStructure *)pNewColourState;
+    outputResources.depthRenderTarget.pResourceState = (foeGfxVkGraphStructure *)pNewDepthState;
 
     return FOE_BRINGUP_SUCCESS;
 }

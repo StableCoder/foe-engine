@@ -28,7 +28,7 @@ FOE_GFX_EXPORT auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph
                                                  std::string_view name,
                                                  VkFence fence,
                                                  foeGfxVkRenderGraphResource resource,
-                                                 VkImageLayout layout,
+                                                 VkImageLayout requiredLayout,
                                                  std::vector<VkSemaphore> signalSemaphores)
     -> std::error_code;
 

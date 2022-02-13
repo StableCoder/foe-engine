@@ -1368,18 +1368,18 @@ int Application::mainloop() {
                                 .width = it.viewConfig.recommendedImageRectWidth,
                                 .height = it.viewConfig.recommendedImageRectHeight,
                             },
-                            &xrSwapchainImageResource);
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &xrSwapchainImageResource);
                         if (errC) {
                             ERRC_END_PROGRAM
                         }
 
                         RenderSceneOutputResources output;
-                        errC = renderSceneJob(
-                            renderGraph, "render3dScene", VK_NULL_HANDLE,
-                            renderTargetColourImageResource, VK_IMAGE_LAYOUT_UNDEFINED,
-                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource,
-                            VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                            globalMSAA, pSimulationSet, it.camera.descriptor, output);
+                        errC = renderSceneJob(renderGraph, "render3dScene", VK_NULL_HANDLE,
+                                              renderTargetColourImageResource,
+                                              VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                              renderTargetDepthImageResource,
+                                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA,
+                                              pSimulationSet, it.camera.descriptor, output);
                         if (errC) {
                             ERRC_END_PROGRAM
                         }
@@ -1393,9 +1393,7 @@ int Application::mainloop() {
                             errC = foeGfxVkResolveImageRenderJob(
                                 renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                                 renderTargetColourImageResource,
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
-                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &resources);
                             if (errC) {
                                 ERRC_END_PROGRAM
@@ -1409,9 +1407,7 @@ int Application::mainloop() {
                             errC = foeGfxVkBlitImageRenderJob(
                                 renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                                 renderTargetColourImageResource,
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
-                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &resources);
                             if (errC) {
                                 ERRC_END_PROGRAM
@@ -1508,12 +1504,11 @@ int Application::mainloop() {
             auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
             RenderSceneOutputResources output;
-            errC =
-                renderSceneJob(renderGraph, "render3dScene", VK_NULL_HANDLE,
-                               renderTargetColourImageResource, VK_IMAGE_LAYOUT_UNDEFINED,
-                               VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource,
-                               VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                               globalMSAA, pSimulationSet, (*pCamera)->descriptor, output);
+            errC = renderSceneJob(
+                renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
+                (*pCamera)->descriptor, output);
             if (errC) {
                 ERRC_END_PROGRAM
             }
@@ -1529,7 +1524,8 @@ int Application::mainloop() {
                 window->swapchain.image(window->swapchain.acquiredIndex()),
                 window->swapchain.imageView(window->swapchain.acquiredIndex()),
                 window->swapchain.surfaceFormat().format, window->swapchain.extent(),
-                window->swapchain.imageReadySemaphore(), &presentImageResource);
+                VK_IMAGE_LAYOUT_UNDEFINED, window->swapchain.imageReadySemaphore(),
+                &presentImageResource);
             if (errC) {
                 ERRC_END_PROGRAM
             }
@@ -1541,8 +1537,7 @@ int Application::mainloop() {
                 errC = foeGfxVkResolveImageRenderJob(
                     renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                     renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource,
-                    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
+                    presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
                 if (errC) {
                     ERRC_END_PROGRAM
                 }
@@ -1555,8 +1550,7 @@ int Application::mainloop() {
                 errC = foeGfxVkBlitImageRenderJob(
                     renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                     renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource,
-                    VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
+                    presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
                 if (errC) {
                     ERRC_END_PROGRAM
                 }
@@ -1568,8 +1562,8 @@ int Application::mainloop() {
 #ifdef EDITOR_MODE
             errC = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
                                          presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
-                                         &imguiState, frameIndex, &presentImageResource);
+                                         &imguiRenderer, &imguiState, frameIndex,
+                                         &presentImageResource);
             if (errC) {
                 ERRC_END_PROGRAM
             }

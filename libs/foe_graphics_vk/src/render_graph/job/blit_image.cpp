@@ -26,14 +26,37 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                 std::string_view name,
                                 VkFence fence,
                                 foeGfxVkRenderGraphResource srcImage,
-                                VkImageLayout srcInitialLayout,
                                 VkImageLayout srcFinalLayout,
                                 foeGfxVkRenderGraphResource dstImage,
-                                VkImageLayout dstInitialLayout,
                                 VkImageLayout dstFinalLayout,
                                 BlitJobUsedResources *pResourcesOut) -> std::error_code {
     std::error_code errC;
 
+    // Check that resources are correct types
+    auto *pSrcImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+        srcImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+    auto *pDstImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+        dstImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+
+    if (pSrcImageData == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_SOURCE_NOT_IMAGE;
+    if (pDstImageData == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NOT_IMAGE;
+    if (!pDstImageData->isMutable)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NOT_MUTABLE;
+
+    // Get the last states of the images
+    auto *pSrcImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+        srcImage.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
+    auto *pDstImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+        dstImage.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
+
+    if (pSrcImageState == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_SOURCE_NO_STATE;
+    if (pDstImageState == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NO_STATE;
+
+    // Proceed with job
     auto *pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
         .name = std::string{name},
@@ -101,13 +124,13 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
             uint32_t numBarriers = 0;
             VkImageMemoryBarrier imgMemBarrier[2] = {};
 
-            if (srcInitialLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+            if (pSrcImageState->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
                 imgMemBarrier[numBarriers] = VkImageMemoryBarrier{
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                    .srcAccessMask = foeGfxVkDetermineAccessFlags(srcInitialLayout),
+                    .srcAccessMask = foeGfxVkDetermineAccessFlags(pSrcImageState->layout),
                     .dstAccessMask =
                         foeGfxVkDetermineAccessFlags(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL),
-                    .oldLayout = srcInitialLayout,
+                    .oldLayout = pSrcImageState->layout,
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -116,13 +139,13 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 };
                 ++numBarriers;
             }
-            if (dstInitialLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            if (pDstImageState->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
                 imgMemBarrier[numBarriers] = VkImageMemoryBarrier{
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                    .srcAccessMask = foeGfxVkDetermineAccessFlags(dstInitialLayout),
+                    .srcAccessMask = foeGfxVkDetermineAccessFlags(pDstImageState->layout),
                     .dstAccessMask =
                         foeGfxVkDetermineAccessFlags(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL),
-                    .oldLayout = dstInitialLayout,
+                    .oldLayout = pDstImageState->layout,
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -231,19 +254,48 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
         },
     };
 
+    // Resource Management
+    auto *pFinalImageStates = new foeGfxVkGraphImageState[2];
+    pFinalImageStates[0] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = srcFinalLayout,
+    };
+    pFinalImageStates[1] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = dstFinalLayout,
+    };
+
+    DeleteResourceDataCall deleteCalls{
+        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            delete[] reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
+        },
+        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates),
+    };
+
+    // Add job to graph
     std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{srcImage, dstImage};
     std::array<bool const, 2> resourcesInReadOnly{true, false};
     std::array<foeGfxVkRenderGraphResource, 2> resourcesOut{};
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
-                                     resourcesInReadOnly.data(), 0, nullptr, resourcesOut.data());
-    if (errC)
-        return errC;
+    errC =
+        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
+                                  resourcesInReadOnly.data(), 1, &deleteCalls, resourcesOut.data());
+    if (errC) {
+        deleteCalls.deleteFn(deleteCalls.pResource);
 
+        return errC;
+    }
+
+    // Outgoing resources
     *pResourcesOut = BlitJobUsedResources{
         .srcImage = resourcesOut[0],
         .dstImage = resourcesOut[1],
     };
+
+    pResourcesOut->srcImage.pResourceState =
+        reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates);
+    pResourcesOut->dstImage.pResourceState =
+        reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates + 1);
 
     return FOE_GRAPHICS_VK_SUCCESS;
 }

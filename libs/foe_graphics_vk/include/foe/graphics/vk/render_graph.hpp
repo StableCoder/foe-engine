@@ -31,6 +31,7 @@ FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 
 enum foeGfxVkGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
+    RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
 };
@@ -39,6 +40,9 @@ struct foeGfxVkGraphStructure {
     foeGfxVkGraphStructureType sType;
     void *pNext;
 };
+
+FOE_GFX_EXPORT foeGfxVkGraphStructure *foeGfxVkGraphFindStructure(
+    foeGfxVkGraphStructure const *pData, foeGfxVkGraphStructureType sType);
 
 struct RenderGraphJob {
     /// Name of the job for debugging, mapping and logging purposes
@@ -58,6 +62,7 @@ struct RenderGraphJob {
 struct foeGfxVkRenderGraphResource {
     RenderGraphJob *pProvider;
     foeGfxVkGraphStructure *pResourceData;
+    foeGfxVkGraphStructure *pResourceState;
 };
 
 struct DeleteResourceDataCall {

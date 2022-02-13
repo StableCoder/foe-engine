@@ -34,6 +34,7 @@ FOE_GFX_EXPORT auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph re
                                                           VkImageView view,
                                                           VkFormat format,
                                                           VkExtent2D extent,
+                                                          VkImageLayout initialLayout,
                                                           VkSemaphore waitSemaphore,
                                                           foeGfxVkRenderGraphResource *pResourceOut)
     -> std::error_code;

@@ -32,10 +32,8 @@ FOE_GFX_EXPORT auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGrap
                                                   std::string_view name,
                                                   VkFence fence,
                                                   foeGfxVkRenderGraphResource srcImage,
-                                                  VkImageLayout srcInitialLayout,
                                                   VkImageLayout srcFinalLayout,
                                                   foeGfxVkRenderGraphResource dstImage,
-                                                  VkImageLayout dstInitialLayout,
                                                   VkImageLayout dstFinalLayout,
                                                   ResolveJobUsedResources *pResourcesOut)
     -> std::error_code;

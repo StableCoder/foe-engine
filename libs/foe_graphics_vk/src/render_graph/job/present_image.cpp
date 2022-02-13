@@ -39,6 +39,7 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                            VkImageView view,
                                            VkFormat format,
                                            VkExtent2D extent,
+                                           VkImageLayout initialLayout,
                                            VkSemaphore waitSemaphore,
                                            foeGfxVkRenderGraphResource *pResourcesOut)
     -> std::error_code {
@@ -72,7 +73,7 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return errC;
     };
 
-    /// @todo Replace with C-style altogether value
+    // Resource management
     auto *pSwapchainImage = new foeGfxVkGraphSwapchainResource;
     *pSwapchainImage = foeGfxVkGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
@@ -92,29 +93,48 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .isMutable = true,
     };
 
-    DeleteResourceDataCall deleteCalls{
-        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
-            auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
-            auto *pSwapchain = reinterpret_cast<foeGfxVkGraphSwapchainResource *>(pImage->pNext);
-
-            delete pSwapchain;
-            delete pImage;
-        },
-        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+    auto *pImageState = new foeGfxVkGraphImageState;
+    *pImageState = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = initialLayout,
     };
 
+    DeleteResourceDataCall deleteCalls[2] = {
+        {
+            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+                auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
+                auto *pSwapchain =
+                    reinterpret_cast<foeGfxVkGraphSwapchainResource *>(pImage->pNext);
+
+                delete pSwapchain;
+                delete pImage;
+            },
+            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+        },
+        {
+            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
+            },
+            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
+        },
+    };
+
+    // Add job to graph
     errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCalls, nullptr);
+        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls, nullptr);
     if (errC) {
-        // If we couldn't add it to the render graph, delete all heap data now
-        deleteCalls.deleteFn(deleteCalls.pResource);
+        for (auto const &it : deleteCalls) {
+            it.deleteFn(it.pResource);
+        }
 
         return errC;
     }
 
+    // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .pProvider = pJob,
         .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
     };
 
     return FOE_GRAPHICS_VK_SUCCESS;
@@ -125,6 +145,22 @@ auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                             VkFence fence,
                                             foeGfxVkRenderGraphResource swapchainResource)
     -> std::error_code {
+    // Check that the given resource is the correct type
+    auto *pSwapchainData = (foeGfxVkGraphSwapchainResource *)foeGfxVkGraphFindStructure(
+        swapchainResource.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN);
+
+    if (pSwapchainData == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_PRESENT_SWAPCHAIN_RESOURCE_NOT_SWAPCHAIN;
+
+    // Check that the image state is correct
+    auto *pImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+        swapchainResource.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
+
+    if (pImageState == nullptr)
+        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_PRESENT_SWAPCHAIN_RESOURCE_NO_STATE;
+    if (pImageState->layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+        std::abort();
+
     auto pJob = new RenderGraphJob;
     pJob->name = name;
     // The image is being presented as output, and thus needs to happen
@@ -204,6 +240,7 @@ auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return errC;
     };
 
+    // Add job to graph
     foeGfxVkRenderGraphResource resourceOut;
     bool const resourceReadOnly = false;
 

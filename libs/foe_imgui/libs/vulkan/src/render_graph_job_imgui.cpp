@@ -23,17 +23,34 @@
 #include <foe/imgui/vk/renderer.hpp>
 #include <vk_error_code.hpp>
 
+#include "error_code.hpp"
+
 auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                            std::string_view name,
                            VkFence fence,
                            foeGfxVkRenderGraphResource renderTarget,
-                           VkImageLayout initialLayout,
                            VkImageLayout finalLayout,
                            foeImGuiRenderer *pImguiRenderer,
                            foeImGuiState *pImguiState,
                            uint32_t frameIndex,
                            foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
     std::error_code errC;
+
+    // Check that render target is a mutable image
+    auto *pColourTargetImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+        renderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+
+    if (pColourTargetImageData == nullptr)
+        return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE;
+    if (!pColourTargetImageData->isMutable)
+        return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE;
+
+    // Get the render target's previous layout
+    auto *pColourTargetState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+        renderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
+
+    if (pColourTargetState == nullptr)
+        return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_MISSING_STATE;
 
     auto *pJob = new RenderGraphJob;
     *pJob = RenderGraphJob{
@@ -56,7 +73,7 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                                               .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                               .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                                               .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                              .initialLayout = initialLayout,
+                                              .initialLayout = pColourTargetState->layout,
                                               .finalLayout = finalLayout,
                                           }});
 
@@ -206,12 +223,33 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         },
     };
 
+    // Resource Management
+    auto *pFinalImageState = new foeGfxVkGraphImageState;
+    *pFinalImageState = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = finalLayout,
+    };
+
+    DeleteResourceDataCall deleteCalls{
+        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
+        },
+        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageState),
+    };
+
+    // Add job to graph
     bool const resourcesInReadOnly = false;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &renderTarget, &resourcesInReadOnly, 0,
-                                     nullptr, pResourcesOut);
-    if (errC)
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &renderTarget, &resourcesInReadOnly, 1,
+                                     &deleteCalls, pResourcesOut);
+    if (errC) {
+        deleteCalls.deleteFn(deleteCalls.pResource);
+
         return errC;
+    }
+
+    // Outgoing resources
+    pResourcesOut->pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageState);
 
     return errC;
 }

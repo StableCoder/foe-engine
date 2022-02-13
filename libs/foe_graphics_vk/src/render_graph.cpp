@@ -50,6 +50,19 @@ struct RenderGraph {
 
 FOE_DEFINE_HANDLE_CASTS(render_graph, RenderGraph, foeGfxVkRenderGraph)
 
+foeGfxVkGraphStructure *foeGfxVkGraphFindStructure(foeGfxVkGraphStructure const *pData,
+                                                   foeGfxVkGraphStructureType sType) {
+    while (pData != nullptr) {
+        if (pData->sType == sType) {
+            return (foeGfxVkGraphStructure *)pData;
+        }
+
+        pData = (foeGfxVkGraphStructure const *)pData->pNext;
+    }
+
+    return nullptr;
+}
+
 auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_code {
     RenderGraph *pNewRenderGraph = new RenderGraph;
     *pNewRenderGraph = {};

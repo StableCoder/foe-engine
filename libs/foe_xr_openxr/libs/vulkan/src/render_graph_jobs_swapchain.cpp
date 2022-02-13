@@ -39,6 +39,7 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                               VkImageView view,
                                               VkFormat format,
                                               VkExtent2D extent,
+                                              VkImageLayout layout,
                                               foeGfxVkRenderGraphResource *pResourcesOut)
     -> std::error_code {
     std::error_code errC;
@@ -141,7 +142,7 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return errC;
     };
 
-    /// @todo Replace with combined C-style single allocation
+    // Resource management
     auto *pSwapchain = new foeOpenXrRenderGraphSwapchainResource;
     *pSwapchain = foeOpenXrRenderGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
@@ -160,30 +161,49 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .isMutable = true,
     };
 
-    DeleteResourceDataCall deleteCalls{
-        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
-            auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
-            auto *pSwapchain =
-                reinterpret_cast<foeOpenXrRenderGraphSwapchainResource *>(pImage->pNext);
-
-            delete pSwapchain;
-            delete pImage;
-        },
-        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+    auto *pImageState = new foeGfxVkGraphImageState;
+    *pImageState = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = layout,
     };
 
+    DeleteResourceDataCall deleteCalls[2]{
+        {
+            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+                auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
+                auto *pSwapchain =
+                    reinterpret_cast<foeOpenXrRenderGraphSwapchainResource *>(pImage->pNext);
+
+                delete pSwapchain;
+                delete pImage;
+            },
+            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+        },
+        {
+            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
+            },
+            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
+        },
+    };
+
+    // Add job to graph
     errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCalls, nullptr);
+        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls, nullptr);
     if (errC) {
         // If we couldn't add it to the render graph, delete all heap data now
-        deleteCalls.deleteFn(deleteCalls.pResource);
+        for (auto const &it : deleteCalls) {
+            it.deleteFn(it.pResource);
+        }
 
         return errC;
     }
 
+    // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .pProvider = pJob,
         .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
     };
 
     return FOE_OPENXR_VK_SUCCESS;

@@ -30,6 +30,12 @@ struct foeGfxVkGraphImageResource {
     bool isMutable;
 };
 
+struct foeGfxVkGraphImageState {
+    foeGfxVkGraphStructureType sType;
+    void *pNext;
+    VkImageLayout layout;
+};
+
 FOE_GFX_EXPORT VkAccessFlags foeGfxVkDetermineAccessFlags(VkImageLayout imageLayout);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_RESOURCES_IMAGE_HPP

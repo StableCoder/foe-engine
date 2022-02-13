@@ -32,10 +32,8 @@ FOE_GFX_EXPORT auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                std::string_view name,
                                                VkFence fence,
                                                foeGfxVkRenderGraphResource srcImage,
-                                               VkImageLayout srcInitialLayout,
                                                VkImageLayout srcFinalLayout,
                                                foeGfxVkRenderGraphResource dstImage,
-                                               VkImageLayout dstInitialLayout,
                                                VkImageLayout dstFinalLayout,
                                                BlitJobUsedResources *pResourcesOut)
     -> std::error_code;

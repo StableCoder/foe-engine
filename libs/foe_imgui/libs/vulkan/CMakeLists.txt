@@ -16,3 +16,8 @@ target_include_directories(foe_imgui_vk
 target_link_libraries(foe_imgui_vk PUBLIC foe_graphics_vk foe_imgui)
 
 target_code_coverage(foe_imgui_vk)
+
+# Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
