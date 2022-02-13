@@ -80,7 +80,7 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
     };
 
-    DeleteResourceDataCall deleteCall{
+    DeleteResourceDataCall deleteCalls = {
         .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
             delete reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
         },
@@ -88,9 +88,13 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCall, nullptr);
-    if (errC)
+        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 1, &deleteCalls, nullptr);
+    if (errC) {
+        // If we couldn't add it to the render graph, delete all heap data now
+        deleteCalls.deleteFn(deleteCalls.pResource);
+
         return errC;
+    }
 
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .pProvider = pJob,
