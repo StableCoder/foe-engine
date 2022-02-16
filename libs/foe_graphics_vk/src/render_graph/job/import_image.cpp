@@ -110,8 +110,8 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .provider = renderGraphJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
-        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure const *>(pImportedImage),
+        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure const *>(pImageState),
     };
 
     return FOE_GRAPHICS_VK_SUCCESS;

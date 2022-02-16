@@ -37,8 +37,9 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     std::error_code errC;
 
     // Check that render target is a mutable image
-    auto *pColourTargetImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
-        renderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+    auto const *pColourTargetImageData =
+        (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
+            renderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pColourTargetImageData == nullptr)
         return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE;
@@ -46,7 +47,7 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE;
 
     // Get the render target's previous layout
-    auto *pColourTargetState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+    auto const *pColourTargetState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         renderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pColourTargetState == nullptr)
@@ -59,12 +60,9 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         std::error_code errC;
 
-        foeGfxVkGraphImageResource *pRenderTargetImage =
-            reinterpret_cast<foeGfxVkGraphImageResource *>(renderTarget.pResourceData);
-
         VkRenderPass renderPass = foeGfxVkGetRenderPassPool(gfxSession)
                                       ->renderPass({VkAttachmentDescription{
-                                          .format = pRenderTargetImage->format,
+                                          .format = pColourTargetImageData->format,
                                           .samples = VK_SAMPLE_COUNT_1_BIT,
                                           .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
                                           .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -81,9 +79,9 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .renderPass = renderPass,
                 .attachmentCount = 1,
-                .pAttachments = &pRenderTargetImage->view,
-                .width = pRenderTargetImage->extent.width,
-                .height = pRenderTargetImage->extent.height,
+                .pAttachments = &pColourTargetImageData->view,
+                .width = pColourTargetImageData->extent.width,
+                .height = pColourTargetImageData->extent.height,
                 .layers = 1,
             };
             errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
@@ -140,8 +138,8 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
 
         { // Setup common render viewport data
             VkViewport viewport{
-                .width = static_cast<float>(pRenderTargetImage->extent.width),
-                .height = static_cast<float>(pRenderTargetImage->extent.height),
+                .width = static_cast<float>(pColourTargetImageData->extent.width),
+                .height = static_cast<float>(pColourTargetImageData->extent.height),
                 .minDepth = 0.f,
                 .maxDepth = 1.f,
             };
@@ -149,7 +147,7 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
 
             VkRect2D scissor{
                 .offset = VkOffset2D{},
-                .extent = pRenderTargetImage->extent,
+                .extent = pColourTargetImageData->extent,
             };
             vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
@@ -167,7 +165,7 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                 .renderArea =
                     {
                         .offset = {0, 0},
-                        .extent = pRenderTargetImage->extent,
+                        .extent = pColourTargetImageData->extent,
                     },
                 .clearValueCount = 1,
                 .pClearValues = &clear,
@@ -249,7 +247,7 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     *pResourcesOut = {
         .provider = renderGraphJob,
         .pResourceData = renderTarget.pResourceData,
-        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageState),
+        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure const *>(pFinalImageState),
     };
 
     return errC;

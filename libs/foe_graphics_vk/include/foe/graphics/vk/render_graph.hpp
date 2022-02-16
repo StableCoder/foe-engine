@@ -42,13 +42,13 @@ struct foeGfxVkGraphStructure {
     void *pNext;
 };
 
-FOE_GFX_EXPORT foeGfxVkGraphStructure *foeGfxVkGraphFindStructure(
+FOE_GFX_EXPORT foeGfxVkGraphStructure const *foeGfxVkGraphFindStructure(
     foeGfxVkGraphStructure const *pData, foeGfxVkGraphStructureType sType);
 
 struct foeGfxVkRenderGraphResource {
     foeGfxVkRenderGraphJob provider;
-    foeGfxVkGraphStructure *pResourceData;
-    foeGfxVkGraphStructure *pResourceState;
+    foeGfxVkGraphStructure const *pResourceData;
+    foeGfxVkGraphStructure const *pResourceState;
 };
 
 struct DeleteResourceDataCall {

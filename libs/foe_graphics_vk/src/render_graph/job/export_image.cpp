@@ -29,14 +29,14 @@ auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   VkImageLayout requiredLayout,
                                   std::vector<VkSemaphore> signalSemaphores) -> std::error_code {
     // Check that this is an image resource
-    auto *pImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+    auto const *pImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         resource.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pImageData == nullptr)
         return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_EXPORT_IMAGE_RESOURCE_NOT_IMAGE;
 
     // Check that this is in the correct/desired state
-    auto *pImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+    auto const *pImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         resource.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pImageState == nullptr)

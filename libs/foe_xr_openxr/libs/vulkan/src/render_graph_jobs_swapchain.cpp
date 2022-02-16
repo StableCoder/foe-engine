@@ -201,8 +201,8 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .provider = renderGraphJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
-        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
+        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure const *>(pImage),
+        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure const *>(pImageState),
     };
 
     return FOE_OPENXR_VK_SUCCESS;

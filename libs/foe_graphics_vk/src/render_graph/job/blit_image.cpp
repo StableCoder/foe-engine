@@ -33,9 +33,9 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
     std::error_code errC;
 
     // Check that resources are correct types
-    auto *pSrcImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+    auto const *pSrcImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         srcImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
-    auto *pDstImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+    auto const *pDstImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         dstImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pSrcImageData == nullptr)
@@ -46,9 +46,9 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NOT_MUTABLE;
 
     // Get the last states of the images
-    auto *pSrcImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+    auto const *pSrcImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         srcImage.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
-    auto *pDstImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+    auto const *pDstImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         dstImage.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pSrcImageState == nullptr)
@@ -62,11 +62,6 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         std::error_code errC;
-
-        foeGfxVkGraphImageResource *pSrcImage =
-            reinterpret_cast<foeGfxVkGraphImageResource *>(srcImage.pResourceData);
-        foeGfxVkGraphImageResource *pDstImage =
-            reinterpret_cast<foeGfxVkGraphImageResource *>(dstImage.pResourceData);
 
         VkCommandPool commandPool;
         VkCommandBuffer commandBuffer;
@@ -129,7 +124,7 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pSrcImage->image,
+                .image = pSrcImageData->image,
                 .subresourceRange = subresourceRange,
             };
             ++numBarriers;
@@ -143,7 +138,7 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pDstImage->image,
+                .image = pDstImageData->image,
                 .subresourceRange = subresourceRange,
             };
             ++numBarriers;
@@ -173,14 +168,14 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
             .dstOffset = {},
             .extent =
                 {
-                    .width = pSrcImage->extent.width,
-                    .height = pSrcImage->extent.height,
+                    .width = pSrcImageData->extent.width,
+                    .height = pSrcImageData->extent.height,
                     .depth = 1,
                 },
         };
 
-        vkCmdCopyImage(commandBuffer, pSrcImage->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                       pDstImage->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
+        vkCmdCopyImage(commandBuffer, pSrcImageData->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                       pDstImageData->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
 
         // Transition images layout/masks of outgoing
         numBarriers = 0;
@@ -194,7 +189,7 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .newLayout = srcFinalLayout,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pSrcImage->image,
+                .image = pSrcImageData->image,
                 .subresourceRange = subresourceRange,
             };
             ++numBarriers;
@@ -208,7 +203,7 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .newLayout = dstFinalLayout,
                 .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                 .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pDstImage->image,
+                .image = pDstImageData->image,
                 .subresourceRange = subresourceRange,
             };
             ++numBarriers;
@@ -283,13 +278,15 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
             {
                 .provider = renderGraphJob,
                 .pResourceData = srcImage.pResourceData,
-                .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates),
+                .pResourceState =
+                    reinterpret_cast<foeGfxVkGraphStructure const *>(pFinalImageStates),
             },
         .dstImage =
             {
                 .provider = renderGraphJob,
                 .pResourceData = dstImage.pResourceData,
-                .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates + 1),
+                .pResourceState =
+                    reinterpret_cast<foeGfxVkGraphStructure const *>(pFinalImageStates + 1),
             },
     };
 

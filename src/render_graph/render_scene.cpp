@@ -173,9 +173,9 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
     std::error_code errC;
 
     // Make sure the resources passed in are images, and are mutable
-    auto *pColourImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+    auto const *pColourImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         colourRenderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
-    auto *pDepthImageData = (foeGfxVkGraphImageResource *)foeGfxVkGraphFindStructure(
+    auto const *pDepthImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         depthRenderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pColourImageData == nullptr) {
@@ -192,9 +192,9 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
     }
 
     // Check that the images have previous state
-    auto *pColourImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+    auto const *pColourImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         colourRenderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
-    auto *pDepthImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+    auto const *pDepthImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         depthRenderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pColourImageState == nullptr)
@@ -209,16 +209,11 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         std::error_code errC;
 
-        auto *pColourRenderTarget =
-            reinterpret_cast<foeGfxVkGraphImageResource *>(colourRenderTarget.pResourceData);
-        auto *pDepthRenderTarget =
-            reinterpret_cast<foeGfxVkGraphImageResource *>(depthRenderTarget.pResourceData);
-
         VkRenderPass renderPass =
             foeGfxVkGetRenderPassPool(gfxSession)
                 ->renderPass(
                     {VkAttachmentDescription{
-                         .format = pColourRenderTarget->format,
+                         .format = pColourImageData->format,
                          .samples = static_cast<VkSampleCountFlagBits>(renderTargetSamples),
                          .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -228,7 +223,7 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                          .finalLayout = finalColourLayout,
                      },
                      VkAttachmentDescription{
-                         .format = pDepthRenderTarget->format,
+                         .format = pDepthImageData->format,
                          .samples = static_cast<VkSampleCountFlagBits>(renderTargetSamples),
                          .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
@@ -241,15 +236,15 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
         VkFramebuffer framebuffer;
 
         { // Create Framebuffer
-            std::array<VkImageView, 2> renderTargetViews = {pColourRenderTarget->view,
-                                                            pDepthRenderTarget->view};
+            std::array<VkImageView, 2> renderTargetViews = {pColourImageData->view,
+                                                            pDepthImageData->view};
             VkFramebufferCreateInfo framebufferCI{
                 .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                 .renderPass = renderPass,
                 .attachmentCount = renderTargetViews.size(),
                 .pAttachments = renderTargetViews.data(),
-                .width = pColourRenderTarget->extent.width,
-                .height = pColourRenderTarget->extent.height,
+                .width = pColourImageData->extent.width,
+                .height = pColourImageData->extent.height,
                 .layers = 1,
             };
             errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
@@ -306,8 +301,8 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
         { // Setup common render viewport data
             VkViewport viewport{
-                .width = static_cast<float>(pColourRenderTarget->extent.width),
-                .height = static_cast<float>(pColourRenderTarget->extent.height),
+                .width = static_cast<float>(pColourImageData->extent.width),
+                .height = static_cast<float>(pColourImageData->extent.height),
                 .minDepth = 0.f,
                 .maxDepth = 1.f,
             };
@@ -315,7 +310,7 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
             VkRect2D scissor{
                 .offset = VkOffset2D{},
-                .extent = pColourRenderTarget->extent,
+                .extent = pColourImageData->extent,
             };
             vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
@@ -339,7 +334,7 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                 .renderArea =
                     {
                         .offset = {0, 0},
-                        .extent = pColourRenderTarget->extent,
+                        .extent = pColourImageData->extent,
                     },
                 .clearValueCount = clearValues.size(),
                 .pClearValues = clearValues.data(),
@@ -438,13 +433,13 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
             {
                 .provider = renderGraphJob,
                 .pResourceData = colourRenderTarget.pResourceData,
-                .pResourceState = (foeGfxVkGraphStructure *)pNewColourState,
+                .pResourceState = (foeGfxVkGraphStructure const *)pNewColourState,
             },
         .depthRenderTarget =
             {
                 .provider = renderGraphJob,
                 .pResourceData = depthRenderTarget.pResourceData,
-                .pResourceState = (foeGfxVkGraphStructure *)pNewDepthState,
+                .pResourceState = (foeGfxVkGraphStructure const *)pNewDepthState,
             },
     };
 

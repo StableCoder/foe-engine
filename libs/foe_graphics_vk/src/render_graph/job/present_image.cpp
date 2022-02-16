@@ -145,14 +145,14 @@ auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                             foeGfxVkRenderGraphResource swapchainResource)
     -> std::error_code {
     // Check that the given resource is the correct type
-    auto *pSwapchainData = (foeGfxVkGraphSwapchainResource *)foeGfxVkGraphFindStructure(
+    auto const *pSwapchainData = (foeGfxVkGraphSwapchainResource const *)foeGfxVkGraphFindStructure(
         swapchainResource.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN);
 
     if (pSwapchainData == nullptr)
         return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_PRESENT_SWAPCHAIN_RESOURCE_NOT_SWAPCHAIN;
 
     // Check that the image state is correct
-    auto *pImageState = (foeGfxVkGraphImageState *)foeGfxVkGraphFindStructure(
+    auto const *pImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         swapchainResource.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pImageState == nullptr)
