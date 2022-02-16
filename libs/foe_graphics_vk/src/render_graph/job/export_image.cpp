@@ -76,8 +76,6 @@ auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     // Add job to graph
     bool const readOnly = true;
-    foeGfxVkRenderGraphResource usedResource;
 
-    return foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &resource, &readOnly, 0, nullptr,
-                                     &usedResource);
+    return foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &resource, &readOnly, 0, nullptr);
 }

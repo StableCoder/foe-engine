@@ -120,8 +120,7 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Add job to graph
-    errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls, nullptr);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls);
     if (errC) {
         for (auto const &it : deleteCalls) {
             it.deleteFn(it.pResource);
@@ -241,9 +240,8 @@ auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Add job to graph
-    foeGfxVkRenderGraphResource resourceOut;
     bool const resourceReadOnly = false;
 
     return foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &swapchainResource, &resourceReadOnly, 0,
-                                     nullptr, &resourceOut);
+                                     nullptr);
 }

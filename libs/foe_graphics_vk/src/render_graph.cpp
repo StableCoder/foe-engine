@@ -93,8 +93,7 @@ auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
                                foeGfxVkRenderGraphResource const *pResourcesIn,
                                bool const *pResourcesInReadOnly,
                                uint32_t deleteResourceCallsCount,
-                               DeleteResourceDataCall *pDeleteResourceCalls,
-                               foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
+                               DeleteResourceDataCall *pDeleteResourceCalls) -> std::error_code {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Add job to graph to be run
@@ -113,11 +112,6 @@ auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
         };
 
         pRenderGraph->relationships.emplace_back(relationship);
-
-        pResourcesOut[i] = foeGfxVkRenderGraphResource{
-            .pProvider = pJob,
-            .pResourceData = inRes.pResourceData,
-        };
     }
 
     // Add any calls for deleting resources at cleanup

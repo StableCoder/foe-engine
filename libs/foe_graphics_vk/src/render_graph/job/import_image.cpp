@@ -98,8 +98,7 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Add job to graph
-    errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls, nullptr);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls);
     if (errC) {
         for (auto const &it : deleteCalls) {
             it.deleteFn(it.pResource);

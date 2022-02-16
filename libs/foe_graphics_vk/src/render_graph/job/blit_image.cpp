@@ -275,11 +275,9 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{srcImage, dstImage};
     std::array<bool const, 2> resourcesInReadOnly{true, false};
-    std::array<foeGfxVkRenderGraphResource, 2> resourcesOut{};
 
-    errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
-                                  resourcesInReadOnly.data(), 1, &deleteCalls, resourcesOut.data());
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
+                                     resourcesInReadOnly.data(), 1, &deleteCalls);
     if (errC) {
         deleteCalls.deleteFn(deleteCalls.pResource);
 
@@ -288,14 +286,19 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     // Outgoing resources
     *pResourcesOut = BlitJobUsedResources{
-        .srcImage = resourcesOut[0],
-        .dstImage = resourcesOut[1],
+        .srcImage =
+            {
+                .pProvider = pJob,
+                .pResourceData = srcImage.pResourceData,
+                .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates),
+            },
+        .dstImage =
+            {
+                .pProvider = pJob,
+                .pResourceData = dstImage.pResourceData,
+                .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates + 1),
+            },
     };
-
-    pResourcesOut->srcImage.pResourceState =
-        reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates);
-    pResourcesOut->dstImage.pResourceState =
-        reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates + 1);
 
     return FOE_GRAPHICS_VK_SUCCESS;
 }

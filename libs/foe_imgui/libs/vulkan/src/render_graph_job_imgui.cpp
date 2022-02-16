@@ -241,7 +241,7 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     bool const resourcesInReadOnly = false;
 
     errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &renderTarget, &resourcesInReadOnly, 1,
-                                     &deleteCalls, pResourcesOut);
+                                     &deleteCalls);
     if (errC) {
         deleteCalls.deleteFn(deleteCalls.pResource);
 
@@ -249,7 +249,11 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     }
 
     // Outgoing resources
-    pResourcesOut->pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageState);
+    *pResourcesOut = {
+        .pProvider = pJob,
+        .pResourceData = renderTarget.pResourceData,
+        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageState),
+    };
 
     return errC;
 }

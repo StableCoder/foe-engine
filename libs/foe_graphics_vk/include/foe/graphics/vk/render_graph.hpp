@@ -80,8 +80,7 @@ FOE_GFX_EXPORT auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
                                               foeGfxVkRenderGraphResource const *pResourcesIn,
                                               bool const *pResourcesInReadOnly,
                                               uint32_t deleteResourceCallsCount,
-                                              DeleteResourceDataCall *pDeleteResourceCalls,
-                                              foeGfxVkRenderGraphResource *pResourcesOut)
+                                              DeleteResourceDataCall *pDeleteResourceCalls)
     -> std::error_code;
 
 FOE_GFX_EXPORT auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,

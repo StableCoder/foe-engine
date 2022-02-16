@@ -430,22 +430,27 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
     std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{colourRenderTarget,
                                                                  depthRenderTarget};
     std::array<bool const, 2> resourcesInReadOnly{false, false};
-    std::array<foeGfxVkRenderGraphResource, 2> resourcesOut{};
 
-    errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
-                                  resourcesInReadOnly.data(), 2, deleteCalls, resourcesOut.data());
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 2, resourcesIn.data(),
+                                     resourcesInReadOnly.data(), 2, deleteCalls);
     if (errC)
         return errC;
 
     // Outgoing state
     outputResources = RenderSceneOutputResources{
-        .colourRenderTarget = resourcesOut[0],
-        .depthRenderTarget = resourcesOut[1],
+        .colourRenderTarget =
+            {
+                .pProvider = pJob,
+                .pResourceData = colourRenderTarget.pResourceData,
+                .pResourceState = (foeGfxVkGraphStructure *)pNewColourState,
+            },
+        .depthRenderTarget =
+            {
+                .pProvider = pJob,
+                .pResourceData = depthRenderTarget.pResourceData,
+                .pResourceState = (foeGfxVkGraphStructure *)pNewDepthState,
+            },
     };
-
-    outputResources.colourRenderTarget.pResourceState = (foeGfxVkGraphStructure *)pNewColourState;
-    outputResources.depthRenderTarget.pResourceState = (foeGfxVkGraphStructure *)pNewDepthState;
 
     return FOE_BRINGUP_SUCCESS;
 }
