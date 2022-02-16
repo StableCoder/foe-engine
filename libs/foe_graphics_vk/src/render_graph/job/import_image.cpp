@@ -36,13 +36,10 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                   foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
     std::error_code errC;
 
-    auto pJob = new RenderGraphJob;
-    pJob->name = name;
-    pJob->required = false;
-    pJob->executeFn =
-        [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
-            std::vector<VkSemaphore> const &, std::vector<VkSemaphore> const &signalSemaphores,
-            std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+                     std::vector<VkSemaphore> const &,
+                     std::vector<VkSemaphore> const &signalSemaphores,
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         auto realWaitSemaphores = waitSemaphores;
         std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -98,7 +95,10 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Add job to graph
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls);
+    foeGfxVkRenderGraphJob renderGraphJob;
+
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, 2, deleteCalls, name, false,
+                                     std::move(jobFn), &renderGraphJob);
     if (errC) {
         for (auto const &it : deleteCalls) {
             it.deleteFn(it.pResource);
@@ -109,7 +109,7 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
-        .pProvider = pJob,
+        .provider = renderGraphJob,
         .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
         .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
     };

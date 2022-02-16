@@ -19,9 +19,29 @@
 #include <foe/graphics/vk/session.hpp>
 #include <vk_error_code.hpp>
 
+#include <memory>
 #include <queue>
 
 #include "error_code.hpp"
+
+namespace {
+
+struct RenderGraphJob {
+    /// Name of the job for debugging, mapping and logging purposes
+    std::string name;
+    /// This job needs to be run as part of the render graph's execution, typically as the job is
+    /// outputting something, but other reasons exist.
+    bool required{false};
+    bool processed{false};
+    std::function<std::error_code(foeGfxSession,
+                                  foeGfxDelayedDestructor,
+                                  std::vector<VkSemaphore> const &,
+                                  std::vector<VkSemaphore> const &,
+                                  std::function<void(std::function<void()>)>)>
+        jobFn;
+};
+
+FOE_DEFINE_HANDLE_CASTS(render_graph_job, RenderGraphJob, foeGfxVkRenderGraphJob)
 
 struct RenderGraphRelationship {
     /// Job that provides this resource, determining when it becomes available
@@ -41,7 +61,7 @@ struct RenderGraph {
     /// Set of calls used to destroy resources after they have been used
     std::vector<DeleteResourceDataCall> resourceCleanupCalls;
     /// These are the possible rendering jobs
-    std::vector<RenderGraphJob *> jobs;
+    std::vector<std::unique_ptr<RenderGraphJob>> jobs;
     /// These are the CPU jobs that GPU jobs will be waiting on for signals
     std::vector<std::function<void()>> cpuJobs;
     /// Set of relationships of resources between jobs
@@ -49,6 +69,8 @@ struct RenderGraph {
 };
 
 FOE_DEFINE_HANDLE_CASTS(render_graph, RenderGraph, foeGfxVkRenderGraph)
+
+} // namespace
 
 foeGfxVkGraphStructure *foeGfxVkGraphFindStructure(foeGfxVkGraphStructure const *pData,
                                                    foeGfxVkGraphStructureType sType) {
@@ -69,7 +91,7 @@ auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_
 
     *pRenderGraph = render_graph_to_handle(pNewRenderGraph);
 
-    return std::error_code{};
+    return FOE_GRAPHICS_VK_SUCCESS;
 }
 
 void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
@@ -79,33 +101,47 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
     for (auto const &callData : pRenderGraph->resourceCleanupCalls) {
         callData.deleteFn(callData.pResource);
     }
-    for (auto *ptr : pRenderGraph->jobs) {
-        delete ptr;
-    }
 
     // Delete graph itself
     delete pRenderGraph;
 }
 
-auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
-                               RenderGraphJob *pJob,
-                               uint32_t resourcesCount,
-                               foeGfxVkRenderGraphResource const *pResourcesIn,
-                               bool const *pResourcesInReadOnly,
-                               uint32_t deleteResourceCallsCount,
-                               DeleteResourceDataCall *pDeleteResourceCalls) -> std::error_code {
+auto foeGfxVkRenderGraphAddJob(
+    foeGfxVkRenderGraph renderGraph,
+    uint32_t resourcesCount,
+    foeGfxVkRenderGraphResource const *pResourcesIn,
+    bool const *pResourcesInReadOnly,
+    uint32_t deleteResourceCallsCount,
+    DeleteResourceDataCall *pDeleteResourceCalls,
+    std::string_view name,
+    bool required,
+    std::function<std::error_code(foeGfxSession,
+                                  foeGfxDelayedDestructor,
+                                  std::vector<VkSemaphore> const &,
+                                  std::vector<VkSemaphore> const &,
+                                  std::function<void(std::function<void()>)>)> &&jobFn,
+    foeGfxVkRenderGraphJob *pJob) -> std::error_code {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Add job to graph to be run
-    pRenderGraph->jobs.emplace_back(pJob);
+    std::unique_ptr<RenderGraphJob> pNewJob{new RenderGraphJob};
+
+    *pNewJob = RenderGraphJob{
+        .name = std::string{name},
+        .required = required,
+        .processed = false,
+        .jobFn = std::move(jobFn),
+    };
+
+    pRenderGraph->jobs.emplace_back(pNewJob.get());
 
     // Setup relationship in the render graph for each used input resource
     for (uint32_t i = 0; i < resourcesCount; ++i) {
         auto &inRes = pResourcesIn[i];
 
         RenderGraphRelationship relationship{
-            .pProvider = inRes.pProvider,
-            .pConsumer = pJob,
+            .pProvider = render_graph_job_from_handle(inRes.provider),
+            .pConsumer = pNewJob.get(),
             .pResource = inRes.pResourceData,
             .readOnly = pResourcesInReadOnly[i],
             .semaphore = VK_NULL_HANDLE,
@@ -118,6 +154,8 @@ auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
     for (uint32_t i = 0; i < deleteResourceCallsCount; ++i) {
         pRenderGraph->resourceCleanupCalls.emplace_back(pDeleteResourceCalls[i]);
     }
+
+    *pJob = render_graph_job_to_handle(pNewJob.release());
 
     return FOE_GRAPHICS_VK_SUCCESS;
 }
@@ -137,9 +175,9 @@ auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
     allSemaphores.reserve(pRenderGraph->relationships.size());
 
     // Find all jobs that are required to run and add them to be processed
-    for (auto *pJob : pRenderGraph->jobs) {
+    for (auto const &pJob : pRenderGraph->jobs) {
         if (pJob->required) {
-            toProcess.push(pJob);
+            toProcess.push(pJob.get());
         }
     }
 
@@ -181,7 +219,7 @@ auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
     }
 
     // EXECUTE
-    for (auto *pJob : pRenderGraph->jobs) {
+    for (auto const &pJob : pRenderGraph->jobs) {
         // Skip 'culled' jobs
         if (!pJob->processed)
             continue;
@@ -190,16 +228,16 @@ auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
         std::vector<VkSemaphore> waitSemaphores;
         std::vector<VkSemaphore> signalSemaphores;
         for (auto const &relationship : pRenderGraph->relationships) {
-            if (relationship.pConsumer == pJob && relationship.semaphore != VK_NULL_HANDLE)
+            if (relationship.pConsumer == pJob.get() && relationship.semaphore != VK_NULL_HANDLE)
                 waitSemaphores.emplace_back(relationship.semaphore);
 
             // Only signal if the semaphore exists (some consumers may have been culled)
-            if (relationship.pProvider == pJob && relationship.semaphore != VK_NULL_HANDLE)
+            if (relationship.pProvider == pJob.get() && relationship.semaphore != VK_NULL_HANDLE)
                 signalSemaphores.emplace_back(relationship.semaphore);
         }
 
-        pJob->executeFn(gfxSession, gfxDelayedDestructor, waitSemaphores, signalSemaphores,
-                        [&](std::function<void()> fn) { pRenderGraph->cpuJobs.emplace_back(fn); });
+        pJob->jobFn(gfxSession, gfxDelayedDestructor, waitSemaphores, signalSemaphores,
+                    [&](std::function<void()> fn) { pRenderGraph->cpuJobs.emplace_back(fn); });
     }
 
     // Cleanup graph semaphores after execution

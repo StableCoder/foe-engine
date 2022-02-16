@@ -28,6 +28,7 @@
 #include <system_error>
 
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
+FOE_DEFINE_HANDLE(foeGfxVkRenderGraphJob)
 
 enum foeGfxVkGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
@@ -44,23 +45,8 @@ struct foeGfxVkGraphStructure {
 FOE_GFX_EXPORT foeGfxVkGraphStructure *foeGfxVkGraphFindStructure(
     foeGfxVkGraphStructure const *pData, foeGfxVkGraphStructureType sType);
 
-struct RenderGraphJob {
-    /// Name of the job for debugging, mapping and logging purposes
-    std::string name;
-    /// This job needs to be run as part of the render graph's execution, typically as the job is
-    /// outputting something, but other reasons exist.
-    bool required{false};
-    bool processed{false};
-    std::function<std::error_code(foeGfxSession,
-                                  foeGfxDelayedDestructor,
-                                  std::vector<VkSemaphore> const &,
-                                  std::vector<VkSemaphore> const &,
-                                  std::function<void(std::function<void()>)>)>
-        executeFn;
-};
-
 struct foeGfxVkRenderGraphResource {
-    RenderGraphJob *pProvider;
+    foeGfxVkRenderGraphJob provider;
     foeGfxVkGraphStructure *pResourceData;
     foeGfxVkGraphStructure *pResourceState;
 };
@@ -74,14 +60,21 @@ FOE_GFX_EXPORT auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph)
 
 FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
 
-FOE_GFX_EXPORT auto foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
-                                              RenderGraphJob *pJob,
-                                              uint32_t resourcesCount,
-                                              foeGfxVkRenderGraphResource const *pResourcesIn,
-                                              bool const *pResourcesInReadOnly,
-                                              uint32_t deleteResourceCallsCount,
-                                              DeleteResourceDataCall *pDeleteResourceCalls)
-    -> std::error_code;
+FOE_GFX_EXPORT auto foeGfxVkRenderGraphAddJob(
+    foeGfxVkRenderGraph renderGraph,
+    uint32_t resourcesCount,
+    foeGfxVkRenderGraphResource const *pResourcesIn,
+    bool const *pResourcesInReadOnly,
+    uint32_t deleteResourceCallsCount,
+    DeleteResourceDataCall *pDeleteResourceCalls,
+    std::string_view name,
+    bool required,
+    std::function<std::error_code(foeGfxSession,
+                                  foeGfxDelayedDestructor,
+                                  std::vector<VkSemaphore> const &,
+                                  std::vector<VkSemaphore> const &,
+                                  std::function<void(std::function<void()>)>)> &&jobFn,
+    foeGfxVkRenderGraphJob *pJob) -> std::error_code;
 
 FOE_GFX_EXPORT auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                                                foeGfxSession gfxSession,

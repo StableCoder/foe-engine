@@ -27,7 +27,7 @@
 
 FOE_OPENXR_VK_EXPORT auto foeOpenXrVkImportSwapchainImageRenderJob(
     foeGfxVkRenderGraph renderGraph,
-    std::string_view jobName,
+    std::string_view name,
     VkFence fence,
     std::string_view resourceName,
     XrSwapchain swapchain,

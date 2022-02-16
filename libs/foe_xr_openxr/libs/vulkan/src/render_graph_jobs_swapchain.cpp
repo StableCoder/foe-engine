@@ -31,7 +31,7 @@ struct foeOpenXrRenderGraphSwapchainResource {
 };
 
 auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                              std::string_view jobName,
+                                              std::string_view name,
                                               VkFence fence,
                                               std::string_view resourceName,
                                               XrSwapchain swapchain,
@@ -45,13 +45,10 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     std::error_code errC;
 
     // Add the job that waits on the timeline semaphore and signals any dependent jobs to start
-    auto pJob = new RenderGraphJob;
-    pJob->name = jobName;
-    pJob->required = true;
-    pJob->executeFn =
-        [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
-            std::vector<VkSemaphore> const &, std::vector<VkSemaphore> const &signalSemaphores,
-            std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+                     std::vector<VkSemaphore> const &,
+                     std::vector<VkSemaphore> const &signalSemaphores,
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         std::error_code errC;
 
         // Create the timeline semaphore
@@ -188,7 +185,10 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Add job to graph
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls);
+    foeGfxVkRenderGraphJob renderGraphJob;
+
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, 2, deleteCalls, name, true,
+                                     std::move(jobFn), &renderGraphJob);
     if (errC) {
         // If we couldn't add it to the render graph, delete all heap data now
         for (auto const &it : deleteCalls) {
@@ -200,7 +200,7 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
-        .pProvider = pJob,
+        .provider = renderGraphJob,
         .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
         .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
     };

@@ -45,13 +45,10 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     -> std::error_code {
     std::error_code errC;
 
-    auto pJob = new RenderGraphJob;
-    pJob->name = name;
-    pJob->required = false;
-    pJob->executeFn =
-        [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
-            std::vector<VkSemaphore> const &, std::vector<VkSemaphore> const &signalSemaphores,
-            std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+                     std::vector<VkSemaphore> const &,
+                     std::vector<VkSemaphore> const &signalSemaphores,
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         std::error_code errC;
 
         VkPipelineStageFlags waitMask{VK_PIPELINE_STAGE_ALL_COMMANDS_BIT};
@@ -120,7 +117,10 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Add job to graph
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, pJob, 0, nullptr, nullptr, 2, deleteCalls);
+    foeGfxVkRenderGraphJob renderGraphJob;
+
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, 2, deleteCalls, name, false,
+                                     jobFn, &renderGraphJob);
     if (errC) {
         for (auto const &it : deleteCalls) {
             it.deleteFn(it.pResource);
@@ -131,7 +131,7 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
-        .pProvider = pJob,
+        .provider = renderGraphJob,
         .pResourceData = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
         .pResourceState = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
     };
@@ -160,15 +160,10 @@ auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     if (pImageState->layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
         std::abort();
 
-    auto pJob = new RenderGraphJob;
-    pJob->name = name;
-    // The image is being presented as output, and thus needs to happen
-    pJob->required = true;
-    pJob->executeFn =
-        [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
-            std::vector<VkSemaphore> const &waitSemaphores,
-            std::vector<VkSemaphore> const &signalSemaphores,
-            std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+                     std::vector<VkSemaphore> const &waitSemaphores,
+                     std::vector<VkSemaphore> const &signalSemaphores,
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
         std::error_code errC;
 
         // If we have a fence, then we need to signal it
@@ -241,7 +236,8 @@ auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     // Add job to graph
     bool const resourceReadOnly = false;
+    foeGfxVkRenderGraphJob renderGraphJob;
 
-    return foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &swapchainResource, &resourceReadOnly, 0,
-                                     nullptr);
+    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &swapchainResource, &resourceReadOnly, 0,
+                                     nullptr, name, true, std::move(jobFn), &renderGraphJob);
 }

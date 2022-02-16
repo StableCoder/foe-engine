@@ -45,37 +45,33 @@ auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         std::abort();
 
     // Proceed with job creation
-    auto pJob = new RenderGraphJob;
-    *pJob = RenderGraphJob{
-        .name = std::string{name},
-        // This image is being exported/output, and thus needs to happen
-        .required = true,
-        .executeFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
-                         std::vector<VkSemaphore> const &waitSemaphores,
-                         std::vector<VkSemaphore> const &,
-                         std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
-            std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
-                                                        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+                     std::vector<VkSemaphore> const &waitSemaphores,
+                     std::vector<VkSemaphore> const &,
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
+        std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
+                                                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 
-            VkSubmitInfo submitInfo{
-                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
-                .pWaitSemaphores = waitSemaphores.data(),
-                .pWaitDstStageMask = waitMasks.data(),
-                .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
-                .pSignalSemaphores = signalSemaphores.data(),
-            };
+        VkSubmitInfo submitInfo{
+            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
+            .pWaitSemaphores = waitSemaphores.data(),
+            .pWaitDstStageMask = waitMasks.data(),
+            .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
+            .pSignalSemaphores = signalSemaphores.data(),
+        };
 
-            auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-            std::error_code errC = vkQueueSubmit(queue, 1, &submitInfo, fence);
-            foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
+        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+        std::error_code errC = vkQueueSubmit(queue, 1, &submitInfo, fence);
+        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
-            return errC;
-        },
+        return errC;
     };
 
     // Add job to graph
     bool const readOnly = true;
+    foeGfxVkRenderGraphJob renderGraphJob;
 
-    return foeGfxVkRenderGraphAddJob(renderGraph, pJob, 1, &resource, &readOnly, 0, nullptr);
+    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &resource, &readOnly, 0, nullptr, name, true,
+                                     std::move(jobFn), &renderGraphJob);
 }
