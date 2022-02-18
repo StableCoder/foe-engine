@@ -96,35 +96,19 @@ auto foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .layout = initialLayout,
     };
 
-    DeleteResourceDataCall deleteCalls[2] = {
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
-                auto *pSwapchain =
-                    reinterpret_cast<foeGfxVkGraphSwapchainResource *>(pImage->pNext);
-
-                delete pSwapchain;
-                delete pImage;
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImage),
-        },
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImageState),
-        },
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pSwapchainImage;
+        delete pImage;
+        delete pImageState;
     };
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, 2, deleteCalls, name, false,
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name, false,
                                      jobFn, &renderGraphJob);
     if (errC) {
-        for (auto const &it : deleteCalls) {
-            it.deleteFn(it.pResource);
-        }
+        freeDataFn();
 
         return errC;
     }
@@ -238,6 +222,6 @@ auto foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     bool const resourceReadOnly = false;
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &swapchainResource, &resourceReadOnly, 0,
-                                     nullptr, name, true, std::move(jobFn), &renderGraphJob);
+    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &swapchainResource, &resourceReadOnly, nullptr,
+                                     name, true, std::move(jobFn), &renderGraphJob);
 }

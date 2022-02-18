@@ -59,7 +59,7 @@ struct RenderGraphRelationship {
 
 struct RenderGraph {
     /// Set of calls used to destroy resources after they have been used
-    std::vector<DeleteResourceDataCall> resourceCleanupCalls;
+    std::vector<std::function<void()>> resourceCleanupCalls;
     /// These are the possible rendering jobs
     std::vector<std::unique_ptr<RenderGraphJob>> jobs;
     /// These are the CPU jobs that GPU jobs will be waiting on for signals
@@ -98,8 +98,8 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Delete RenderGraph content
-    for (auto const &callData : pRenderGraph->resourceCleanupCalls) {
-        callData.deleteFn(callData.pResource);
+    for (auto const &freeFn : pRenderGraph->resourceCleanupCalls) {
+        freeFn();
     }
 
     // Delete graph itself
@@ -111,8 +111,7 @@ auto foeGfxVkRenderGraphAddJob(
     uint32_t resourcesCount,
     foeGfxVkRenderGraphResource const *pResourcesIn,
     bool const *pResourcesInReadOnly,
-    uint32_t deleteResourceCallsCount,
-    DeleteResourceDataCall *pDeleteResourceCalls,
+    foeGfxVkRenderGraphFn freeDataFn,
     std::string_view name,
     bool required,
     std::function<std::error_code(foeGfxSession,
@@ -151,9 +150,8 @@ auto foeGfxVkRenderGraphAddJob(
     }
 
     // Add any calls for deleting resources at cleanup
-    for (uint32_t i = 0; i < deleteResourceCallsCount; ++i) {
-        pRenderGraph->resourceCleanupCalls.emplace_back(pDeleteResourceCalls[i]);
-    }
+    if (freeDataFn)
+        pRenderGraph->resourceCleanupCalls.emplace_back(std::move(freeDataFn));
 
     *pJob = render_graph_job_to_handle(pNewJob.release());
 

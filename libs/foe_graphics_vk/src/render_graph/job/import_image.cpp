@@ -79,30 +79,18 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .layout = layout,
     };
 
-    DeleteResourceDataCall deleteCalls[2] = {
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                delete reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImportedImage),
-        },
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImageState),
-        },
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pImportedImage;
+        delete pImageState;
     };
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, 2, deleteCalls, name, false,
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name, false,
                                      std::move(jobFn), &renderGraphJob);
     if (errC) {
-        for (auto const &it : deleteCalls) {
-            it.deleteFn(it.pResource);
-        }
+        freeDataFn();
 
         return errC;
     }

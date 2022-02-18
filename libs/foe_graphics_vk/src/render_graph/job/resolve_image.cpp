@@ -253,23 +253,17 @@ auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .layout = dstFinalLayout,
     };
 
-    DeleteResourceDataCall deleteCall{
-        .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-            delete[] reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
-        },
-        .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pFinalImageStates),
-    };
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete[] pFinalImageStates; };
 
     // Add job to graph
     std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{srcImage, dstImage};
     std::array<bool const, 2> resourcesInReadOnly{true, false};
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(), 1,
-                                  &deleteCall, name, false, std::move(jobFn), &renderGraphJob);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
+                                     freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
     if (errC) {
-        deleteCall.deleteFn(deleteCall.pResource);
+        freeDataFn();
         return errC;
     }
 

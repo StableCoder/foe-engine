@@ -164,36 +164,20 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .layout = layout,
     };
 
-    DeleteResourceDataCall deleteCalls[2]{
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
-                auto *pSwapchain =
-                    reinterpret_cast<foeOpenXrRenderGraphSwapchainResource *>(pImage->pNext);
-
-                delete pSwapchain;
-                delete pImage;
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImage),
-        },
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImageState),
-        },
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pSwapchain;
+        delete pImage;
+        delete pImageState;
     };
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, 2, deleteCalls, name, true,
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name, true,
                                      std::move(jobFn), &renderGraphJob);
     if (errC) {
         // If we couldn't add it to the render graph, delete all heap data now
-        for (auto const &it : deleteCalls) {
-            it.deleteFn(it.pResource);
-        }
+        freeDataFn();
 
         return errC;
     }

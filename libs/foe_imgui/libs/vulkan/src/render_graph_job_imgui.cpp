@@ -224,21 +224,16 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         .layout = finalLayout,
     };
 
-    DeleteResourceDataCall deleteCalls{
-        .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-            delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
-        },
-        .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pFinalImageState),
-    };
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pFinalImageState; };
 
     // Add job to graph
     bool const resourcesInReadOnly = false;
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 1, &renderTarget, &resourcesInReadOnly, 1,
-                                     &deleteCalls, name, false, std::move(jobFn), &renderGraphJob);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 1, &renderTarget, &resourcesInReadOnly,
+                                     freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
     if (errC) {
-        deleteCalls.deleteFn(deleteCalls.pResource);
+        freeDataFn();
 
         return errC;
     }

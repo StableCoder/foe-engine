@@ -30,6 +30,8 @@
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraphJob)
 
+typedef std::function<void()> foeGfxVkRenderGraphFn;
+
 enum foeGfxVkRenderGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
@@ -51,11 +53,6 @@ struct foeGfxVkRenderGraphResource {
     foeGfxVkRenderGraphStructure const *pResourceState;
 };
 
-struct DeleteResourceDataCall {
-    std::function<void(foeGfxVkRenderGraphStructure *)> deleteFn;
-    foeGfxVkRenderGraphStructure *pResource;
-};
-
 FOE_GFX_EXPORT auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_code;
 
 FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
@@ -65,8 +62,7 @@ FOE_GFX_EXPORT auto foeGfxVkRenderGraphAddJob(
     uint32_t resourcesCount,
     foeGfxVkRenderGraphResource const *pResourcesIn,
     bool const *pResourcesInReadOnly,
-    uint32_t deleteResourceCallsCount,
-    DeleteResourceDataCall *pDeleteResourceCalls,
+    foeGfxVkRenderGraphFn freeDataFn,
     std::string_view name,
     bool required,
     std::function<std::error_code(foeGfxSession,

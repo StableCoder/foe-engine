@@ -400,19 +400,9 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
         .layout = finalDepthLayout,
     };
 
-    DeleteResourceDataCall deleteCalls[2] = {
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pNewColourState),
-        },
-        {
-            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
-                delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
-            },
-            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pNewDepthState),
-        },
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pNewColourState;
+        delete pNewDepthState;
     };
 
     // Add job to graph
@@ -421,9 +411,8 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
     std::array<bool const, 2> resourcesInReadOnly{false, false};
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC =
-        foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(), 2,
-                                  deleteCalls, name, false, std::move(jobFn), &renderGraphJob);
+    errC = foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
+                                     freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
     if (errC)
         return errC;
 
