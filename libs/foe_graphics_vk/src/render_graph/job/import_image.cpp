@@ -81,16 +81,16 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     DeleteResourceDataCall deleteCalls[2] = {
         {
-            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
                 delete reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
             },
-            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImportedImage),
+            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImportedImage),
         },
         {
-            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
                 delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
             },
-            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
+            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImageState),
         },
     };
 
@@ -110,8 +110,8 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .provider = renderGraphJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure const *>(pImportedImage),
-        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure const *>(pImageState),
+        .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImportedImage),
+        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImageState),
     };
 
     return FOE_GRAPHICS_VK_SUCCESS;

@@ -30,30 +30,30 @@
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraphJob)
 
-enum foeGfxVkGraphStructureType {
+enum foeGfxVkRenderGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
 };
 
-struct foeGfxVkGraphStructure {
-    foeGfxVkGraphStructureType sType;
+struct foeGfxVkRenderGraphStructure {
+    foeGfxVkRenderGraphStructureType sType;
     void *pNext;
 };
 
-FOE_GFX_EXPORT foeGfxVkGraphStructure const *foeGfxVkGraphFindStructure(
-    foeGfxVkGraphStructure const *pData, foeGfxVkGraphStructureType sType);
+FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
+    foeGfxVkRenderGraphStructure const *pData, foeGfxVkRenderGraphStructureType sType);
 
 struct foeGfxVkRenderGraphResource {
     foeGfxVkRenderGraphJob provider;
-    foeGfxVkGraphStructure const *pResourceData;
-    foeGfxVkGraphStructure const *pResourceState;
+    foeGfxVkRenderGraphStructure const *pResourceData;
+    foeGfxVkRenderGraphStructure const *pResourceState;
 };
 
 struct DeleteResourceDataCall {
-    std::function<void(foeGfxVkGraphStructure *)> deleteFn;
-    foeGfxVkGraphStructure *pResource;
+    std::function<void(foeGfxVkRenderGraphStructure *)> deleteFn;
+    foeGfxVkRenderGraphStructure *pResource;
 };
 
 FOE_GFX_EXPORT auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_code;

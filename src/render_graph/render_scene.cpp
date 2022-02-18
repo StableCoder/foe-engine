@@ -402,16 +402,16 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
     DeleteResourceDataCall deleteCalls[2] = {
         {
-            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
                 delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
             },
-            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pNewColourState),
+            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pNewColourState),
         },
         {
-            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
                 delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
             },
-            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pNewDepthState),
+            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pNewDepthState),
         },
     };
 
@@ -433,13 +433,13 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
             {
                 .provider = renderGraphJob,
                 .pResourceData = colourRenderTarget.pResourceData,
-                .pResourceState = (foeGfxVkGraphStructure const *)pNewColourState,
+                .pResourceState = (foeGfxVkRenderGraphStructure const *)pNewColourState,
             },
         .depthRenderTarget =
             {
                 .provider = renderGraphJob,
                 .pResourceData = depthRenderTarget.pResourceData,
-                .pResourceState = (foeGfxVkGraphStructure const *)pNewDepthState,
+                .pResourceState = (foeGfxVkRenderGraphStructure const *)pNewDepthState,
             },
     };
 

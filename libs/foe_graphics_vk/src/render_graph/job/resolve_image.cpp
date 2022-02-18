@@ -254,10 +254,10 @@ auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     DeleteResourceDataCall deleteCall{
-        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+        .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
             delete[] reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
         },
-        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageStates),
+        .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pFinalImageStates),
     };
 
     // Add job to graph
@@ -280,14 +280,14 @@ auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .provider = renderGraphJob,
                 .pResourceData = srcImage.pResourceData,
                 .pResourceState =
-                    reinterpret_cast<foeGfxVkGraphStructure const *>(pFinalImageStates),
+                    reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates),
             },
         .dstImage =
             {
                 .provider = renderGraphJob,
                 .pResourceData = dstImage.pResourceData,
                 .pResourceState =
-                    reinterpret_cast<foeGfxVkGraphStructure const *>(pFinalImageStates + 1),
+                    reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates + 1),
             },
     };
 

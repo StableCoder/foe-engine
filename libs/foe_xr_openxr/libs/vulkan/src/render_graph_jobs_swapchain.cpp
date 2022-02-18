@@ -25,7 +25,7 @@
 #include "log.hpp"
 
 struct foeOpenXrRenderGraphSwapchainResource {
-    foeGfxVkGraphStructureType sType;
+    foeGfxVkRenderGraphStructureType sType;
     void *pNext;
     XrSwapchain swapchain;
 };
@@ -166,7 +166,7 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 
     DeleteResourceDataCall deleteCalls[2]{
         {
-            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
                 auto *pImage = reinterpret_cast<foeGfxVkGraphImageResource *>(pResource);
                 auto *pSwapchain =
                     reinterpret_cast<foeOpenXrRenderGraphSwapchainResource *>(pImage->pNext);
@@ -174,13 +174,13 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 delete pSwapchain;
                 delete pImage;
             },
-            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImage),
+            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImage),
         },
         {
-            .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+            .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
                 delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
             },
-            .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pImageState),
+            .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImageState),
         },
     };
 
@@ -201,8 +201,8 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .provider = renderGraphJob,
-        .pResourceData = reinterpret_cast<foeGfxVkGraphStructure const *>(pImage),
-        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure const *>(pImageState),
+        .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImage),
+        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImageState),
     };
 
     return FOE_OPENXR_VK_SUCCESS;

@@ -50,7 +50,7 @@ struct RenderGraphRelationship {
     RenderGraphJob *pConsumer;
 
     /// Resource Data
-    foeGfxVkGraphStructure const *pResource;
+    foeGfxVkRenderGraphStructure const *pResource;
     /// Whether the consuming job is only going to read the resource
     bool readOnly;
     /// Semaphore used to determine when the resource is available for the consumer
@@ -72,14 +72,14 @@ FOE_DEFINE_HANDLE_CASTS(render_graph, RenderGraph, foeGfxVkRenderGraph)
 
 } // namespace
 
-foeGfxVkGraphStructure const *foeGfxVkGraphFindStructure(foeGfxVkGraphStructure const *pData,
-                                                         foeGfxVkGraphStructureType sType) {
+foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
+    foeGfxVkRenderGraphStructure const *pData, foeGfxVkRenderGraphStructureType sType) {
     while (pData != nullptr) {
         if (pData->sType == sType) {
-            return (foeGfxVkGraphStructure *)pData;
+            return (foeGfxVkRenderGraphStructure *)pData;
         }
 
-        pData = (foeGfxVkGraphStructure const *)pData->pNext;
+        pData = (foeGfxVkRenderGraphStructure const *)pData->pNext;
     }
 
     return nullptr;

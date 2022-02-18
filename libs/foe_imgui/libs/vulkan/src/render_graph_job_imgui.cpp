@@ -225,10 +225,10 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     };
 
     DeleteResourceDataCall deleteCalls{
-        .deleteFn = [](foeGfxVkGraphStructure *pResource) -> void {
+        .deleteFn = [](foeGfxVkRenderGraphStructure *pResource) -> void {
             delete reinterpret_cast<foeGfxVkGraphImageState *>(pResource);
         },
-        .pResource = reinterpret_cast<foeGfxVkGraphStructure *>(pFinalImageState),
+        .pResource = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pFinalImageState),
     };
 
     // Add job to graph
@@ -247,7 +247,7 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     *pResourcesOut = {
         .provider = renderGraphJob,
         .pResourceData = renderTarget.pResourceData,
-        .pResourceState = reinterpret_cast<foeGfxVkGraphStructure const *>(pFinalImageState),
+        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageState),
     };
 
     return errC;
