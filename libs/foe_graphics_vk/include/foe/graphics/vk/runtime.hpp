@@ -30,6 +30,8 @@
  * name of the application.
  * @param applicationVersion is an unsigned integer variable containing the developer-supplied
  * version number of the application.
+ * @param applicationApiVersion is supposed to be the highest version of Vulkan that the application
+ * is designed to use, and thus the version the runtime will be created with
  * @param layerCount is the number of Vulkan layers to enable
  * @param ppLayerNames is a pointer to an array of layerCount null-terminated UTF-8 strings
  * containing the names of layers to enable in the created runtime.
@@ -43,6 +45,7 @@
  */
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
                                                      uint32_t applicationVersion,
+                                                     uint32_t applicationApiVersion,
                                                      uint32_t layerCount,
                                                      char const *const *ppLayerNames,
                                                      uint32_t extensionCount,
@@ -89,6 +92,12 @@ FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runt
 FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
                                                                   uint32_t *pExtensionNamesLength,
                                                                   char *pExtensionNames);
+
+/** @brief Returns the API version a Vulkan graphics runtime was created with
+ * @param runtime Runtime to query
+ * @return A uint32_t representing the API version
+ */
+FOE_GFX_EXPORT uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime);
 
 /** @brief Returns the Vulkan instance handle
  * @param runtime is the handle to the Vukan-based graphics runtime

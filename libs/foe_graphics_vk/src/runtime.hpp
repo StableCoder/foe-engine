@@ -24,6 +24,8 @@ struct foeGfxVkRuntime {
     VkInstance instance{VK_NULL_HANDLE};
     VkDebugReportCallbackEXT debugCallback{VK_NULL_HANDLE};
 
+    /// Vulkan API version the runtime was created with
+    uint32_t apiVersion;
     /// Length in bytes of pLayerNames
     uint32_t layerNamesLength;
     /// Set of strings representing the instance's layers, delimited by NULL characters

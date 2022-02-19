@@ -71,6 +71,10 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
     }
 #endif
 
+    // Always use the latest available runtime
+    uint32_t vkApiVersion;
+    vkEnumerateInstanceVersion(&vkApiVersion);
+
     std::vector<char const *> layersList;
     std::vector<char const *> extensionsList;
 
@@ -79,9 +83,9 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
     for (auto &it : extensions)
         extensionsList.emplace_back(it.data());
 
-    return foeGfxVkCreateRuntime("FoE Engine", 0, layersList.size(), layersList.data(),
-                                 extensionsList.size(), extensionsList.data(), validation,
-                                 debugLogging, pGfxRuntime);
+    return foeGfxVkCreateRuntime("FoE Engine", 0, vkApiVersion, layersList.size(),
+                                 layersList.data(), extensionsList.size(), extensionsList.data(),
+                                 validation, debugLogging, pGfxRuntime);
 }
 
 namespace {

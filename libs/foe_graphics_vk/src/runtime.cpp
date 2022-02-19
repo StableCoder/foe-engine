@@ -45,6 +45,7 @@ void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
 
 std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
                                       uint32_t applicationVersion,
+                                      uint32_t applicationApiVersion,
                                       uint32_t layerCount,
                                       char const *const *ppLayerNames,
                                       uint32_t extensionCount,
@@ -55,17 +56,13 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
     auto *pNewRuntime = new foeGfxVkRuntime;
     *pNewRuntime = {};
 
-    // Always use the latest available runtime
-    uint32_t vkApiVersion;
-    vkEnumerateInstanceVersion(&vkApiVersion);
-
     VkApplicationInfo appinfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = pApplicationName,
         .applicationVersion = applicationVersion,
         .pEngineName = FOE_ENGINE_NAME,
         .engineVersion = FOE_ENGINE_VERSION,
-        .apiVersion = vkApiVersion,
+        .apiVersion = applicationApiVersion,
     };
 
     // Layers / Extensions
@@ -99,6 +96,9 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
     VkResult vkRes = vkCreateInstance(&instanceCI, nullptr, &pNewRuntime->instance);
     if (vkRes != VK_SUCCESS)
         goto CREATE_FAILED;
+
+    // Se tthe runtime API version
+    pNewRuntime->apiVersion = applicationApiVersion;
 
     // Add layer/extension state to runtime struct for future queries
     foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layerNamesLength, nullptr);
@@ -154,6 +154,12 @@ std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
                                   pExtensionNamesLength, pExtensionNames)
                ? FOE_GRAPHICS_VK_SUCCESS
                : FOE_GRAPHICS_VK_INCOMPLETE;
+}
+
+uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime) {
+    auto *pRuntime = runtime_from_handle(runtime);
+
+    return pRuntime->apiVersion;
 }
 
 VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime) {
