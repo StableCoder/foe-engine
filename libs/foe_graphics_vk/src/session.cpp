@@ -17,6 +17,7 @@
 #include <foe/graphics/vk/session.hpp>
 
 #include <foe/delimited_string.h>
+#include <foe/graphics/vk/runtime.hpp>
 #include <vk_error_code.hpp>
 
 #include "error_code.hpp"
@@ -448,92 +449,125 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
     else
         pNewSession->features_1_0 = *pBasicFeatures;
 
-#ifdef VK_VERSION_1_3
-    pNewSession->features_1_3 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+    uint32_t vkApiVersion = foeGfxVkEnumerateApiVersion(runtime);
+
+#ifdef VK_VERSION_1_1
+    pNewSession->features_1_1 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
     };
 #endif
 #ifdef VK_VERSION_1_2
     pNewSession->features_1_2 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+    };
+
+    if (vkApiVersion >= VK_MAKE_VERSION(1, 2, 0)) {
+        pNewSession->features_1_1.pNext = &pNewSession->features_1_2;
+    }
+#endif
 #ifdef VK_VERSION_1_3
-        .pNext = &pNewSession->features_1_3,
-#endif
+    pNewSession->features_1_3 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
     };
-#endif
-#ifdef VK_VERSION_1_1
-    pNewSession->features_1_1 = {
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
-#ifdef VK_VERSION_1_2
-        .pNext = &pNewSession->features_1_2,
-#endif
-    };
+
+    if (vkApiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
+        pNewSession->features_1_2.pNext = &pNewSession->features_1_3;
+    }
 #endif
 
     while (pFeatures != nullptr) {
         VkBaseInStructure const *pIn = static_cast<VkBaseInStructure const *>(pFeatures);
+        bool processed = false;
 
 #ifdef VK_KHR_get_physical_device_properties2
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2) {
             mergeFeatureSet_VkPhysicalDeviceFeatures(
                 static_cast<VkPhysicalDeviceFeatures const *>(pFeatures),
                 &pNewSession->features_1_0);
+            processed = true;
         }
 #endif
 #ifdef VK_VERSION_1_1
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES) {
-            mergeFeatureSet_VkPhysicalDeviceVulkan11Features(
-                static_cast<VkPhysicalDeviceVulkan11Features const *>(pFeatures),
-                &pNewSession->features_1_1);
+            if (vkApiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
+                mergeFeatureSet_VkPhysicalDeviceVulkan11Features(
+                    static_cast<VkPhysicalDeviceVulkan11Features const *>(pFeatures),
+                    &pNewSession->features_1_1);
+                processed = true;
+            } else {
+                errC = FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT;
+                break;
+            }
         }
 #endif
 #ifdef VK_VERSION_1_2
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES) {
-            mergeFeatureSet_VkPhysicalDeviceVulkan12Features(
-                static_cast<VkPhysicalDeviceVulkan12Features const *>(pFeatures),
-                &pNewSession->features_1_2);
+            if (vkApiVersion >= VK_MAKE_VERSION(1, 2, 0)) {
+                mergeFeatureSet_VkPhysicalDeviceVulkan12Features(
+                    static_cast<VkPhysicalDeviceVulkan12Features const *>(pFeatures),
+                    &pNewSession->features_1_2);
+                processed = true;
+            } else {
+                errC = FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT;
+                break;
+            }
         }
 #endif
 #ifdef VK_VERSION_1_3
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES) {
-            mergeFeatureSet_VkPhysicalDeviceVulkan13Features(
-                static_cast<VkPhysicalDeviceVulkan13Features const *>(pFeatures),
-                &pNewSession->features_1_3);
+            if (vkApiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
+                mergeFeatureSet_VkPhysicalDeviceVulkan13Features(
+                    static_cast<VkPhysicalDeviceVulkan13Features const *>(pFeatures),
+                    &pNewSession->features_1_3);
+                processed = true;
+            } else {
+                errC = FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT;
+                break;
+            }
         }
 #endif
 
+        if (!processed) {
+            errC = FOE_GRAPHICS_VK_ERROR_SESSION_UNKNOWN_FEATURE_STRUCT;
+            break;
+        }
+
         pFeatures = pIn->pNext;
     }
-
-#ifdef VK_KHR_get_physical_device_properties2
-    VkPhysicalDeviceFeatures2 features_1_0{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
-#ifdef VK_VERSION_1_1
-        .pNext = &pNewSession->features_1_1,
-#endif
-        .features = pNewSession->features_1_0,
-    };
-#endif
-
-    VkDeviceCreateInfo deviceCI{
-        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-#ifdef VK_KHR_get_physical_device_properties2
-        .pNext = &features_1_0,
-#endif
-        .queueCreateInfoCount = pNewSession->numQueueFamilies,
-        .pQueueCreateInfos = queueCI.get(),
-        .enabledLayerCount = static_cast<uint32_t>(layers.size()),
-        .ppEnabledLayerNames = layers.data(),
-        .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
-        .ppEnabledExtensionNames = extensions.data(),
-#ifndef VK_VERSION_1_1
-        .pEnabledFeatures = pBasicFeatures,
-#endif
-    };
-
-    errC = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
     if (errC)
         goto CREATE_FAILED;
+
+    {
+#ifdef VK_KHR_get_physical_device_properties2
+        VkPhysicalDeviceFeatures2 features_1_0{
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+#ifdef VK_VERSION_1_1
+            .pNext = &pNewSession->features_1_1,
+#endif
+            .features = pNewSession->features_1_0,
+        };
+#endif
+
+        VkDeviceCreateInfo deviceCI{
+            .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+#ifdef VK_KHR_get_physical_device_properties2
+            .pNext = &features_1_0,
+#endif
+            .queueCreateInfoCount = pNewSession->numQueueFamilies,
+            .pQueueCreateInfos = queueCI.get(),
+            .enabledLayerCount = static_cast<uint32_t>(layers.size()),
+            .ppEnabledLayerNames = layers.data(),
+            .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+            .ppEnabledExtensionNames = extensions.data(),
+#ifndef VK_VERSION_1_1
+            .pEnabledFeatures = pBasicFeatures,
+#endif
+        };
+
+        errC = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
+        if (errC)
+            goto CREATE_FAILED;
+    }
 
     // Add layer/extension/feature state to session struct for future queries
     foeCreateDelimitedString(layers.size(), layers.data(), &pNewSession->layerNamesLength, nullptr);

@@ -43,7 +43,11 @@ class foeGfxVkPipelinePool;
  * containing the names of extesnions to enable in the created runtime.
  * @param pBasicFeatures is either NULL or a pointer to the set of Vulkan 1.0 features to enable.
  * These can also be passed in VkPhysicalDeviceFeatures2 to pFeatures.
- * @param pFeatures is either NULL or a pointer to a chain of Vulkan feature structs.
+ * @param pFeatures is either NULL or a pointer to a chain of Vulkan feature structs. If a Vulkan
+ * feature set is beyond the Vulkan API version the runtime was created with, then
+ * FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT is returned. If a struct in this
+ * set doesn't have an implementation compiled for it or is otherwise unknown,
+ * FOE_GRAPHICS_VK_ERROR_SESSION_UNKNOWN_FEATURE_STRUCT is returned.
  * @param pSession points to a foeGfxSession handle in which the resulting session is returned.
  * @return FOE_GFX_VK_SUCCESS on success, or an appropriate error otherwise.
  *

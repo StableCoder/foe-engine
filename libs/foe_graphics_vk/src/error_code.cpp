@@ -33,6 +33,9 @@ std::string foeGraphicsVkErrCategory::message(int ev) const {
     switch (static_cast<foeGraphicsVkResult>(ev)) {
         RESULT_CASE(FOE_GRAPHICS_VK_SUCCESS)
         RESULT_CASE(FOE_GRAPHICS_VK_INCOMPLETE)
+        // Session
+        RESULT_CASE(FOE_GRAPHICS_VK_ERROR_SESSION_UNKNOWN_FEATURE_STRUCT)
+        RESULT_CASE(FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT)
         // RenderTarget
         RESULT_CASE(FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS)
         // RenderGraph - BlitJob
