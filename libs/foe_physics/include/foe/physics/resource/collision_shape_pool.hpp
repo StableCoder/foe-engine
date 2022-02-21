@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,10 +37,12 @@ class FOE_PHYSICS_EXPORT foeCollisionShapePool : public foeResourcePoolBase {
     foeCollisionShape *findOrAdd(foeResourceID resource);
     foeCollisionShape *find(foeResourceID id);
 
+    void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
+
     void unloadAll();
 
   private:
-    FOE_PHYSICS_NO_EXPORT foeResourceFns const mResourceFns;
+    FOE_PHYSICS_NO_EXPORT foeResourceFns mResourceFns;
     FOE_PHYSICS_NO_EXPORT std::shared_mutex mSync;
     FOE_PHYSICS_NO_EXPORT std::vector<foeCollisionShape *> mCollisionShapes;
 };

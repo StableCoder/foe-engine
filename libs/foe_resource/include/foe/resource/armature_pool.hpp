@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,12 +35,14 @@ class FOE_RES_EXPORT foeArmaturePool : public foeResourcePoolBase {
     foeArmature *findOrAdd(foeResourceID resource);
     foeArmature *find(foeId id);
 
+    void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
+
     void unloadAll();
 
     auto getDataVector() { return mResources; }
 
   private:
-    foeResourceFns const mResourceFns;
+    foeResourceFns mResourceFns;
     std::shared_mutex mSync;
     std::vector<foeArmature *> mResources;
 };
