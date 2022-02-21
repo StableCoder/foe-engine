@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ enum foeSimulationResult {
     FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED,
     FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED,
     FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED,
+    FOE_SIMULATION_ERROR_ALREADY_INITIALIZED,
+    FOE_SIMULATION_ERROR_NOT_INITIALIZED,
 };
 
 #ifdef __cplusplus

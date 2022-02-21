@@ -149,9 +149,12 @@ FOE_SIM_EXPORT auto foeInitializeSimulation(foeSimulationState *pSimulationState
 /**
  * @brief Initializes a SimulationState given InitInfo
  * @param pSimulationState SimulatioState to deinitialize
+ * @return FOE_SIMULATION_SUCCESS if deinitialization proceeded, otherwise
+ * FOE_SIMULATION_ERROR_NOT_INITIALIZED if the simulation has not previously been initialized.
  *
  * Iterates through any registered functionality and calls its 'onDeinitialization' function.
  */
-FOE_SIM_EXPORT void foeDeinitializeSimulation(foeSimulationState *pSimulationState);
+FOE_SIM_EXPORT auto foeDeinitializeSimulation(foeSimulationState *pSimulationState)
+    -> std::error_code;
 
 #endif // FOE_SIMULATION_CORE_HPP

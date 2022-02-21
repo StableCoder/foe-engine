@@ -46,11 +46,11 @@ void acquireExclusiveLock(foeSimulationState *pSimulationState, char const *pRea
             waitingTime.elapsed<std::chrono::milliseconds>().count())
 }
 
+// Assumes that the mutex has already been acquired
 void deinitSimulation(foeSimulationState *pSimulationState) {
     FOE_LOG(SimulationState, Verbose, "Deinitializing SimulationState: {}",
             static_cast<void *>(pSimulationState));
 
-    acquireExclusiveLock(pSimulationState, "deinitialization");
     // Deinit functionality
     for (auto const &functionality : mRegistered) {
         if (functionality.onDeinitialization) {
@@ -291,9 +291,13 @@ auto foeInitializeSimulation(foeSimulationState *pSimulationState,
     return errC;
 }
 
-void foeDeinitializeSimulation(foeSimulationState *pSimulationState) {
+auto foeDeinitializeSimulation(foeSimulationState *pSimulationState) -> std::error_code {
     std::scoped_lock lock{mSync};
 
-    if (foeSimulationIsInitialized(pSimulationState))
-        deinitSimulation(pSimulationState);
+    if (!foeSimulationIsInitialized(pSimulationState))
+        return FOE_SIMULATION_ERROR_NOT_INITIALIZED;
+
+    acquireExclusiveLock(pSimulationState, "deinitialization");
+    deinitSimulation(pSimulationState);
+    return FOE_SIMULATION_SUCCESS;
 }

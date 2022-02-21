@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,18 +25,19 @@ struct foeSimulationErrCategory : std::error_category {
 
 const char *foeSimulationErrCategory::name() const noexcept { return "foeSimulationResult"; }
 
+#define RESULT_CASE(X)                                                                             \
+    case X:                                                                                        \
+        return #X;
+
 std::string foeSimulationErrCategory::message(int ev) const {
     switch (static_cast<foeSimulationResult>(ev)) {
-    case FOE_SIMULATION_SUCCESS:
-        return "FOE_SIMULATION_SUCCESS";
-    case FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED:
-        return "FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED";
-    case FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED:
-        return "FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED";
-    case FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED:
-        return "FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED";
-    case FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED:
-        return "FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED";
+        RESULT_CASE(FOE_SIMULATION_SUCCESS)
+        RESULT_CASE(FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED)
+        RESULT_CASE(FOE_SIMULATION_ERROR_FUNCTIONALITY_NOT_REGISTERED)
+        RESULT_CASE(FOE_SIMULATION_ERROR_SIMULATION_NOT_REGISTERED)
+        RESULT_CASE(FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED)
+        RESULT_CASE(FOE_SIMULATION_ERROR_ALREADY_INITIALIZED)
+        RESULT_CASE(FOE_SIMULATION_ERROR_NOT_INITIALIZED)
 
     default:
         if (ev > 0)
