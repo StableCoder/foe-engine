@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ void foeVertexDescriptor::loadCreateInfo() {
         return;
     }
 
-    pResourceFns->asyncTaskFn([this]() {
+    auto createFn = [this]() {
         auto *pNewCreateInfo = pResourceFns->pImportFn(pResourceFns->pImportContext, resource);
         if (pNewCreateInfo != nullptr) {
             pCreateInfo.reset(pNewCreateInfo);
@@ -58,7 +58,17 @@ void foeVertexDescriptor::loadCreateInfo() {
 
         isLoading = false;
         decrementRefCount();
-    });
+    };
+
+    if (pResourceFns->asyncTaskFn) {
+        FOE_LOG(foeGraphicsResource, Verbose, "Creating foeVertexDescriptor {} asynchronously",
+                foeIdToString(resource))
+        pResourceFns->asyncTaskFn(createFn);
+    } else {
+        FOE_LOG(foeGraphicsResource, Verbose, "Creating foeVertexDescriptor {} synchronously",
+                foeIdToString(resource))
+        createFn();
+    }
 }
 
 namespace {
@@ -97,7 +107,7 @@ void foeVertexDescriptor::loadResource(bool refreshCreateInfo) {
         return;
     }
 
-    pResourceFns->asyncTaskFn([this, refreshCreateInfo]() {
+    auto loadFn = [this, refreshCreateInfo]() {
         auto pLocalCreateInfo = pCreateInfo;
 
         if (refreshCreateInfo || pLocalCreateInfo == nullptr) {
@@ -109,7 +119,17 @@ void foeVertexDescriptor::loadResource(bool refreshCreateInfo) {
         }
 
         pResourceFns->pLoadFn(pResourceFns->pLoadContext, this, postLoadFn);
-    });
+    };
+
+    if (pResourceFns->asyncTaskFn) {
+        FOE_LOG(foeGraphicsResource, Verbose, "Loading foeVertexDescriptor {} asynchronously",
+                foeIdToString(resource))
+        pResourceFns->asyncTaskFn(loadFn);
+    } else {
+        FOE_LOG(foeGraphicsResource, Verbose, "Loading foeVertexDescriptor {} synchronously",
+                foeIdToString(resource))
+        loadFn();
+    }
 }
 
 void foeVertexDescriptor::unloadResource() {
