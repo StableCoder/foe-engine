@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -448,7 +448,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             .gfxSession = gfxSession,
             .externalFileSearchFn = std::bind(&foeGroupData::findExternalFile,
                                               &pSimulationSet->groupData, std::placeholders::_1),
-            .asyncJobFn = asyncTaskFunc,
         };
         foeInitializeSimulation(pSimulationSet, &simInitInfo);
     }
