@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -54,11 +54,15 @@ struct foeMeshCreateInfo : public foeResourceCreateInfoBase {
 
 class FOE_GFX_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
   public:
-    std::error_code initialize(
-        foeGfxSession session,
-        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
+    auto initialize(
+        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
+        -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
+
+    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    void deinitializeGraphics();
+    bool initializedGraphics() const noexcept;
 
     void gfxMaintenance();
 

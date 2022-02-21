@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,17 +24,21 @@
 #include <vulkan/vulkan.h>
 
 #include <array>
+#include <system_error>
 
 class foePosition3dPool;
 class foeCameraPool;
 
 class foeCameraSystem : public foeSystemBase {
   public:
-    VkResult initialize(foePosition3dPool *pPosition3dPool,
-                        foeCameraPool *pCameraPool,
-                        foeGfxSession gfxSession);
+    auto initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
+        -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
+
+    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    void deinitializeGraphics();
+    bool initializedGraphics() const noexcept;
 
     VkResult processCameras(uint32_t frameIndex);
 
@@ -46,8 +50,8 @@ class foeCameraSystem : public foeSystemBase {
     };
 
     // Components
-    foePosition3dPool *mpPosition3dPool;
-    foeCameraPool *mpCameraPool;
+    foePosition3dPool *mpPosition3dPool{nullptr};
+    foeCameraPool *mpCameraPool{nullptr};
 
     // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};

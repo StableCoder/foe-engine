@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,41 +28,47 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
-std::error_code foeMeshLoader::initialize(
-    foeGfxSession session,
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
-    if (session == FOE_NULL_HANDLE) {
+auto foeMeshLoader::initialize(
+    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
+    -> std::error_code {
+    if (!externalFileSearchFn)
         return FOE_GRAPHICS_RESOURCE_ERROR_MESH_LOADER_INITIALIZATION_FAILED;
-    }
 
-    // Imported items
-    mGfxSession = session;
     mExternalFileSearchFn = externalFileSearchFn;
 
-    // Generated Items
-    std::error_code errC{FOE_GRAPHICS_RESOURCE_SUCCESS};
+    return FOE_GRAPHICS_RESOURCE_SUCCESS;
+}
 
-    errC = foeGfxCreateUploadContext(session, &mGfxUploadContext);
-    if (errC)
-        goto INITIALIZATION_FAILED;
+void foeMeshLoader::deinitialize() { mExternalFileSearchFn = {}; }
 
-INITIALIZATION_FAILED:
+bool foeMeshLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
+
+auto foeMeshLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+    if (!initialized())
+        return FOE_GRAPHICS_RESOURCE_ERROR_MESH_LOADER_NOT_INITIALIZED;
+
+    // External
+    mGfxSession = gfxSession;
+
+    // Internal
+    std::error_code errC = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
     if (errC)
-        deinitialize();
+        deinitializeGraphics();
 
     return errC;
 }
 
-void foeMeshLoader::deinitialize() {
+void foeMeshLoader::deinitializeGraphics() {
+    // Internal
     if (mGfxUploadContext != FOE_NULL_HANDLE)
         foeGfxDestroyUploadContext(mGfxUploadContext);
     mGfxUploadContext = FOE_NULL_HANDLE;
 
-    mExternalFileSearchFn = {};
+    // External
     mGfxSession = FOE_NULL_HANDLE;
 }
 
-bool foeMeshLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
+bool foeMeshLoader::initializedGraphics() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
 
 void foeMeshLoader::gfxMaintenance() {
     // Delayed Destruction

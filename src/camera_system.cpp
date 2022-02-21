@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@
 
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
+#include <vk_error_code.hpp>
 #include <vulkan/vulkan_core.h>
 
 #include "camera.hpp"
 #include "camera_pool.hpp"
+#include "error_code.hpp"
 
 namespace {
 
@@ -32,30 +34,49 @@ glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
 
 } // namespace
 
-VkResult foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
-                                     foeCameraPool *pCameraPool,
-                                     foeGfxSession session) {
+auto foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
+    -> std::error_code {
+    if (pPosition3dPool == nullptr || pCameraPool == nullptr)
+        return FOE_BRINGUP_INITIALIZATION_FAILED;
+
+    // External
     mpPosition3dPool = pPosition3dPool;
     mpCameraPool = pCameraPool;
 
+    return VK_SUCCESS;
+}
+
+void foeCameraSystem::deinitialize() {
+    mpCameraPool = nullptr;
+    mpPosition3dPool = nullptr;
+}
+
+bool foeCameraSystem::initialized() const noexcept { return mpPosition3dPool != nullptr; }
+
+auto foeCameraSystem::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+    if (!initialized())
+        return FOE_BRINGUP_NOT_INITIALIZED;
+
+    // External
+    mDevice = foeGfxVkGetDevice(gfxSession);
+    mAllocator = foeGfxVkGetAllocator(gfxSession);
+
+    // Internal
     VkResult res{VK_SUCCESS};
 
-    mDevice = foeGfxVkGetDevice(session);
-    mAllocator = foeGfxVkGetAllocator(session);
-
     VkPhysicalDeviceProperties devProperties;
-    vkGetPhysicalDeviceProperties(foeGfxVkGetPhysicalDevice(session), &devProperties);
+    vkGetPhysicalDeviceProperties(foeGfxVkGetPhysicalDevice(gfxSession), &devProperties);
 
     mMinUniformBufferOffsetAlignment =
         std::max(static_cast<VkDeviceSize>(sizeof(glm::mat4)),
                  devProperties.limits.minUniformBufferOffsetAlignment);
 
     mProjecionViewLayout = foeGfxVkGetBuiltinLayout(
-        session, foeBuiltinDescriptorSetLayoutFlagBits::
-                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX);
+        gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
+                        FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX);
     mProjectionViewBinding = foeGfxVkGetBuiltinSetLayoutIndex(
-        session, foeBuiltinDescriptorSetLayoutFlagBits::
-                     FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX);
+        gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
+                        FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX);
 
     VkDescriptorPoolSize size{
         .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -84,7 +105,8 @@ INITIALIZATION_FAILED:
     return res;
 }
 
-void foeCameraSystem::deinitialize() {
+void foeCameraSystem::deinitializeGraphics() {
+    // Internal
     for (auto &it : mDescriptorPools) {
         if (it != VK_NULL_HANDLE) {
             vkDestroyDescriptorPool(mDevice, it, nullptr);
@@ -100,11 +122,13 @@ void foeCameraSystem::deinitialize() {
     }
 
     mProjecionViewLayout = VK_NULL_HANDLE;
+
+    // External
     mAllocator = VK_NULL_HANDLE;
     mDevice = VK_NULL_HANDLE;
 }
 
-bool foeCameraSystem::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
+bool foeCameraSystem::initializedGraphics() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};

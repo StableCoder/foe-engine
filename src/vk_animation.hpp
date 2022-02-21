@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include <vulkan/vulkan.h>
 
 #include <array>
+#include <system_error>
 
 class foeArmaturePool;
 class foeMeshPool;
@@ -32,13 +33,16 @@ class foeRenderStatePool;
 
 class VkAnimationPool : public foeSystemBase {
   public:
-    VkResult initialize(foeArmaturePool *pArmaturePool,
-                        foeMeshPool *pMeshPool,
-                        foeArmatureStatePool *pArmatureStatePool,
-                        foeRenderStatePool *pRenderStatePool,
-                        foeGfxSession gfxSession);
+    auto initialize(foeArmaturePool *pArmaturePool,
+                    foeMeshPool *pMeshPool,
+                    foeArmatureStatePool *pArmatureStatePool,
+                    foeRenderStatePool *pRenderStatePool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
+
+    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    void deinitializeGraphics();
+    bool initializedGraphics() const noexcept;
 
     VkResult uploadBoneOffsets(uint32_t frameIndex);
 
@@ -50,12 +54,12 @@ class VkAnimationPool : public foeSystemBase {
     };
 
     // Resources
-    foeArmaturePool *mpArmaturePool;
-    foeMeshPool *mpMeshPool;
+    foeArmaturePool *mpArmaturePool{nullptr};
+    foeMeshPool *mpMeshPool{nullptr};
 
     // Components
-    foeArmatureStatePool *mpArmatureStatePool;
-    foeRenderStatePool *mpRenderStatePool;
+    foeArmatureStatePool *mpArmatureStatePool{nullptr};
+    foeRenderStatePool *mpRenderStatePool{nullptr};
 
     // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};

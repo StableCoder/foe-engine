@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -64,24 +64,35 @@ foeMaterialCreateInfo::~foeMaterialCreateInfo() {
         cleanup_VkPipelineRasterizationStateCreateInfo(&rasterizationSCI);
 }
 
-std::error_code foeMaterialLoader::initialize(foeShaderPool *pShaderPool,
-                                              foeImagePool *pImagePool,
-                                              foeGfxSession session) {
-    if (pShaderPool == nullptr || pImagePool == nullptr) {
+auto foeMaterialLoader::initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool)
+    -> std::error_code {
+    if (pShaderPool == nullptr || pImagePool == nullptr)
         return FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED;
-    }
-    if (session == FOE_NULL_HANDLE) {
-        return FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED;
-    }
 
-    std::error_code errC{FOE_GRAPHICS_RESOURCE_SUCCESS};
-
+    // External
     mShaderPool = pShaderPool;
     mImagePool = pImagePool;
-    mGfxSession = session;
 
-    mGfxFragmentDescriptorPool = foeGfxVkGetFragmentDescriptorPool(session);
+    return FOE_GRAPHICS_RESOURCE_SUCCESS;
+}
 
+void foeMaterialLoader::deinitialize() {
+    // External
+    mImagePool = nullptr;
+    mShaderPool = nullptr;
+}
+
+bool foeMaterialLoader::initialized() const noexcept { return mShaderPool != nullptr; }
+
+auto foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+    if (!initialized())
+        return FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_NOT_INITIALIZED;
+
+    // External
+    mGfxSession = gfxSession;
+    mGfxFragmentDescriptorPool = foeGfxVkGetFragmentDescriptorPool(gfxSession);
+
+    // Internal
     VkDescriptorPoolSize size{
         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
         .descriptorCount = 1024,
@@ -95,35 +106,29 @@ std::error_code foeMaterialLoader::initialize(foeShaderPool *pShaderPool,
         .pPoolSizes = &size,
     };
 
-    VkDevice device = foeGfxVkGetDevice(session);
+    VkDevice device = foeGfxVkGetDevice(gfxSession);
     VkResult vkRes = vkCreateDescriptorPool(device, &poolCI, nullptr, &mDescriptorPool);
     if (vkRes != VK_SUCCESS) {
-        errC = vkRes;
-        goto INITIALIZATION_FAILED;
-    }
-
-INITIALIZATION_FAILED:
-    if (errC) {
         deinitialize();
     }
 
-    return errC;
+    return vkRes;
 }
 
-void foeMaterialLoader::deinitialize() {
+void foeMaterialLoader::deinitializeGraphics() {
+    // Internal
     if (mDescriptorPool != VK_NULL_HANDLE)
         vkDestroyDescriptorPool(foeGfxVkGetDevice(mGfxSession), mDescriptorPool, nullptr);
-
     mDescriptorPool = VK_NULL_HANDLE;
 
+    // External
     mGfxFragmentDescriptorPool = nullptr;
-
     mGfxSession = FOE_NULL_HANDLE;
-    mImagePool = nullptr;
-    mShaderPool = nullptr;
 }
 
-bool foeMaterialLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
+bool foeMaterialLoader::initializedGraphics() const noexcept {
+    return mGfxSession != FOE_NULL_HANDLE;
+}
 
 void foeMaterialLoader::gfxMaintenance() {
     // Process Delayed Data Destruction

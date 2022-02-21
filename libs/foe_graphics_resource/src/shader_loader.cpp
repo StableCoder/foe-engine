@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -48,29 +48,33 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 } // namespace
 
 std::error_code foeShaderLoader::initialize(
-    foeGfxSession session,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
-    if (session == FOE_NULL_HANDLE || !externalFileSearchFn) {
+    if (!externalFileSearchFn)
         return FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_INITIALIZATION_FAILED;
-    }
 
-    std::error_code errC{FOE_GRAPHICS_RESOURCE_SUCCESS};
-
-    mGfxSession = session;
     mExternalFileSearchFn = externalFileSearchFn;
 
-    if (errC)
-        deinitialize();
-
-    return errC;
+    return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
-void foeShaderLoader::deinitialize() {
-    mExternalFileSearchFn = {};
-    mGfxSession = FOE_NULL_HANDLE;
+void foeShaderLoader::deinitialize() { mExternalFileSearchFn = {}; }
+
+bool foeShaderLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
+
+auto foeShaderLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+    if (!initialized())
+        return FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_NOT_INITIALIZED;
+
+    mGfxSession = gfxSession;
+
+    return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
-bool foeShaderLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
+void foeShaderLoader::deinitializeGraphics() { mGfxSession = FOE_NULL_HANDLE; }
+
+bool foeShaderLoader::initializedGraphics() const noexcept {
+    return mGfxSession != FOE_NULL_HANDLE;
+}
 
 void foeShaderLoader::gfxMaintenance() {
     // Destruction

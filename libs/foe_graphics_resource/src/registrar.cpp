@@ -345,8 +345,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 if (pImageLoader->initialized())
                     continue;
 
-                errC = pImageLoader->initialize(pInitInfo->gfxSession,
-                                                pInitInfo->externalFileSearchFn);
+                errC = pImageLoader->initialize(pInitInfo->externalFileSearchFn);
                 if (errC)
                     goto INITIALIZATION_FAILED;
                 initialized.image = true;
@@ -366,7 +365,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                                                         pSimStateData->pResourcePools +
                                                             pSimStateData->resourcePoolCount);
 
-                errC = pMaterialLoader->initialize(pShaderPool, pImagePool, pInitInfo->gfxSession);
+                errC = pMaterialLoader->initialize(pShaderPool, pImagePool);
                 if (errC)
                     goto INITIALIZATION_FAILED;
                 initialized.material = true;
@@ -378,8 +377,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 if (pShaderLoader->initialized())
                     continue;
 
-                errC = pShaderLoader->initialize(pInitInfo->gfxSession,
-                                                 pInitInfo->externalFileSearchFn);
+                errC = pShaderLoader->initialize(pInitInfo->externalFileSearchFn);
                 if (errC)
                     goto INITIALIZATION_FAILED;
                 initialized.shader = true;
@@ -408,8 +406,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 if (pMeshLoader->initialized())
                     continue;
 
-                errC =
-                    pMeshLoader->initialize(pInitInfo->gfxSession, pInitInfo->externalFileSearchFn);
+                errC = pMeshLoader->initialize(pInitInfo->externalFileSearchFn);
                 if (errC)
                     goto INITIALIZATION_FAILED;
                 initialized.mesh = true;
@@ -435,6 +432,95 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
     }
 }
 
+void deinitializeGraphics(Initialized const &initialized,
+                          foeSimulationStateLists const *pSimStateData) {
+    // Loaders
+    auto *pIt = pSimStateData->pResourceLoaders;
+    auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+
+    for (; pIt != pEndIt; ++pIt) {
+        if (initialized.image)
+            searchAndDeinitGraphics<foeImageLoader>(pIt->pLoader);
+        if (initialized.material)
+            searchAndDeinitGraphics<foeMaterialLoader>(pIt->pLoader);
+        if (initialized.shader)
+            searchAndDeinitGraphics<foeShaderLoader>(pIt->pLoader);
+        if (initialized.mesh)
+            searchAndDeinitGraphics<foeMeshLoader>(pIt->pLoader);
+    }
+}
+
+std::error_code onGfxInitialization(foeSimulationStateLists const *pSimStateData,
+                                    foeGfxSession gfxSession) {
+    std::error_code errC;
+    Initialized initialized{};
+
+    { // Loaders
+        auto *pIt = pSimStateData->pResourceLoaders;
+        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+
+        for (; pIt != pEndIt; ++pIt) {
+            if (auto *pImageLoader = dynamic_cast<foeImageLoader *>(pIt->pLoader); pImageLoader) {
+                if (pImageLoader->initializedGraphics())
+                    continue;
+
+                errC = pImageLoader->initializeGraphics(gfxSession);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
+                initialized.image = true;
+            }
+
+            if (auto *pMaterialLoader = dynamic_cast<foeMaterialLoader *>(pIt->pLoader);
+                pMaterialLoader) {
+                if (pMaterialLoader->initializedGraphics())
+                    continue;
+
+                errC = pMaterialLoader->initializeGraphics(gfxSession);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
+                initialized.material = true;
+            }
+
+            if (auto *pShaderLoader = dynamic_cast<foeShaderLoader *>(pIt->pLoader);
+                pShaderLoader) {
+                if (pShaderLoader->initializedGraphics())
+                    continue;
+
+                errC = pShaderLoader->initializeGraphics(gfxSession);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
+                initialized.shader = true;
+            }
+
+            if (auto *pMeshLoader = dynamic_cast<foeMeshLoader *>(pIt->pLoader); pMeshLoader) {
+                if (pMeshLoader->initializedGraphics())
+                    continue;
+
+                errC = pMeshLoader->initializeGraphics(gfxSession);
+                if (errC)
+                    goto INITIALIZATION_FAILED;
+                initialized.mesh = true;
+            }
+        }
+    }
+
+INITIALIZATION_FAILED:
+    if (errC)
+        deinitializeGraphics(initialized, pSimStateData);
+
+    return errC;
+}
+
+void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
+    // Loaders
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        searchAndDeinitGraphics<foeMeshLoader>(it.pLoader);
+        searchAndDeinitGraphics<foeShaderLoader>(it.pLoader);
+        searchAndDeinitGraphics<foeMaterialLoader>(it.pLoader);
+        searchAndDeinitGraphics<foeImageLoader>(it.pLoader);
+    }
+}
+
 } // namespace
 
 auto foeGraphicsResourceRegisterFunctionality() -> std::error_code {
@@ -446,6 +532,8 @@ auto foeGraphicsResourceRegisterFunctionality() -> std::error_code {
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
         .onDeinitialization = onDeinitialization,
+        .onGfxInitialization = onGfxInitialization,
+        .onGfxDeinitialization = onGfxDeinitialization,
     });
 
     if (errC) {
@@ -470,6 +558,8 @@ void foeGraphicsResourceDeregisterFunctionality() {
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
         .onDeinitialization = onDeinitialization,
+        .onGfxInitialization = onGfxInitialization,
+        .onGfxDeinitialization = onGfxDeinitialization,
     });
 
     FOE_LOG(foeGraphicsResource, Verbose,

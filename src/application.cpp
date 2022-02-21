@@ -445,11 +445,12 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     { // Initialize simulation
         foeSimulationInitInfo simInitInfo{
-            .gfxSession = gfxSession,
             .externalFileSearchFn = std::bind(&foeGroupData::findExternalFile,
                                               &pSimulationSet->groupData, std::placeholders::_1),
         };
         foeInitializeSimulation(pSimulationSet, &simInitInfo);
+
+        foeInitializeSimulationGraphics(pSimulationSet, gfxSession);
     }
 
     { // Load all available resources
@@ -574,8 +575,10 @@ void Application::deinitialize() {
     }
 
     // Deinit simulation
-    if (pSimulationSet)
+    if (pSimulationSet) {
+        foeDeinitializeSimulationGraphics(pSimulationSet);
         foeDeinitializeSimulation(pSimulationSet);
+    }
 
 #ifdef FOE_XR_SUPPORT
     stopXR(true);

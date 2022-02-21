@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@
 
 enum foeBringupResult {
     FOE_BRINGUP_SUCCESS = 0,
+
+    FOE_BRINGUP_INITIALIZATION_FAILED,
+    FOE_BRINGUP_NOT_INITIALIZED,
+
     FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER,
     FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER,
     FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER,

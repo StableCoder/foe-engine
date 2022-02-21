@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ const char *foeBringupErrorCategory::name() const noexcept { return "foeBringupR
 std::string foeBringupErrorCategory::message(int ev) const {
     switch (static_cast<foeBringupResult>(ev)) {
         RESULT_CASE(FOE_BRINGUP_SUCCESS)
+
+        RESULT_CASE(FOE_BRINGUP_INITIALIZATION_FAILED)
+        RESULT_CASE(FOE_BRINGUP_NOT_INITIALIZED)
 
         RESULT_CASE(FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER)
         RESULT_CASE(FOE_BRINGUP_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER)

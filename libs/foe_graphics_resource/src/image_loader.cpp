@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,34 +26,43 @@
 #include "log.hpp"
 
 std::error_code foeImageLoader::initialize(
-    foeGfxSession session,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
-    std::error_code errC{};
+    if (!externalFileSearchFn)
+        return FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED;
 
-    mGfxSession = session;
     mExternalFileSearchFn = externalFileSearchFn;
 
-    errC = foeGfxCreateUploadContext(session, &mGfxUploadContext);
-    if (errC)
-        goto INITIALIZATION_FAILED;
+    return FOE_GRAPHICS_RESOURCE_SUCCESS;
+}
 
-INITIALIZATION_FAILED:
-    if (errC)
-        deinitialize();
+void foeImageLoader::deinitialize() { mExternalFileSearchFn = {}; }
+
+bool foeImageLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
+
+auto foeImageLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+    if (!initialized()) {
+        return FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_NOT_INITIALIZED;
+    }
+
+    mGfxSession = gfxSession;
+
+    std::error_code errC = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
+    if (errC) {
+        deinitializeGraphics();
+    }
 
     return errC;
 }
 
-void foeImageLoader::deinitialize() {
+void foeImageLoader::deinitializeGraphics() {
     if (mGfxUploadContext != FOE_NULL_HANDLE)
         foeGfxDestroyUploadContext(mGfxUploadContext);
     mGfxUploadContext = FOE_NULL_HANDLE;
 
-    mExternalFileSearchFn = {};
     mGfxSession = FOE_NULL_HANDLE;
 }
 
-bool foeImageLoader::initialized() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
+bool foeImageLoader::initializedGraphics() const noexcept { return mGfxSession != FOE_NULL_HANDLE; }
 
 void foeImageLoader::gfxMaintenance() {
     // Previous Data Destruction

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -54,6 +54,14 @@ void searchAndDeinit(InType &ptr) noexcept {
     auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
     if (dynPtr && (--dynPtr->initCount == 0)) {
         dynPtr->deinitialize();
+    }
+}
+
+template <typename DestroyType, typename InType>
+void searchAndDeinitGraphics(InType &ptr) noexcept {
+    auto *dynPtr = dynamic_cast<DestroyType *>(ptr);
+    if (dynPtr && (--dynPtr->initCount == 0)) {
+        dynPtr->deinitializeGraphics();
     }
 }
 

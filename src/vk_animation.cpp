@@ -1,3 +1,19 @@
+/*
+    Copyright (C) 2021-2022 George Cave.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
 #include "vk_animation.hpp"
 
 #include <foe/graphics/resource/mesh.hpp>
@@ -6,26 +22,52 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_pool.hpp>
 #include <glm/glm.hpp>
+#include <vk_error_code.hpp>
 #include <vulkan/vulkan_core.h>
 
 #include "armature_state_pool.hpp"
+#include "error_code.hpp"
 #include "render_state_pool.hpp"
 
-VkResult VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
-                                     foeMeshPool *pMeshPool,
-                                     foeArmatureStatePool *pArmatureStatePool,
-                                     foeRenderStatePool *pRenderStatePool,
-                                     foeGfxSession gfxSession) {
+auto VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
+                                 foeMeshPool *pMeshPool,
+                                 foeArmatureStatePool *pArmatureStatePool,
+                                 foeRenderStatePool *pRenderStatePool) -> std::error_code {
+    if (pArmaturePool == nullptr || pMeshPool == nullptr || pArmatureStatePool == nullptr ||
+        pRenderStatePool == nullptr)
+        return FOE_BRINGUP_INITIALIZATION_FAILED;
+
+    // External
     mpArmaturePool = pArmaturePool;
     mpMeshPool = pMeshPool;
 
     mpArmatureStatePool = pArmatureStatePool;
     mpRenderStatePool = pRenderStatePool;
 
-    VkResult res;
+    return VK_SUCCESS;
+}
 
+void VkAnimationPool::deinitialize() {
+    // External
+    mpRenderStatePool = nullptr;
+    mpArmatureStatePool = nullptr;
+
+    mpMeshPool = nullptr;
+    mpArmaturePool = nullptr;
+}
+
+bool VkAnimationPool::initialized() const noexcept { return mpArmaturePool != nullptr; }
+
+auto VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+    if (!initialized())
+        return FOE_BRINGUP_NOT_INITIALIZED;
+
+    // External
     mDevice = foeGfxVkGetDevice(gfxSession);
     mAllocator = foeGfxVkGetAllocator(gfxSession);
+
+    // Internal
+    VkResult res;
 
     mBoneSetLayout = foeGfxVkGetBuiltinLayout(
         gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
@@ -76,7 +118,8 @@ INITIALIZATION_FAILED:
     return res;
 }
 
-void VkAnimationPool::deinitialize() {
+void VkAnimationPool::deinitializeGraphics() {
+    // Internal
     for (auto &it : mBoneDescriptorPools) {
         if (it != VK_NULL_HANDLE) {
             vkDestroyDescriptorPool(mDevice, it, nullptr);
@@ -105,11 +148,12 @@ void VkAnimationPool::deinitialize() {
         it = {};
     }
 
+    // External
     mAllocator = VK_NULL_HANDLE;
     mDevice = VK_NULL_HANDLE;
 }
 
-bool VkAnimationPool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
+bool VkAnimationPool::initializedGraphics() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,29 +18,48 @@
 
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
+#include <vk_error_code.hpp>
 #include <vulkan/vulkan_core.h>
 
-VkResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool,
-                                            foeGfxSession session) {
+#include "error_code.hpp"
+
+auto PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) -> std::error_code {
+    if (pPosition3dPool == nullptr) {
+        return FOE_BRINGUP_INITIALIZATION_FAILED;
+    }
+
     mpPosition3dPool = pPosition3dPool;
 
+    return VK_SUCCESS;
+}
+
+void PositionDescriptorPool::deinitialize() { mpPosition3dPool = nullptr; }
+
+bool PositionDescriptorPool::initialized() const noexcept { return mpPosition3dPool != nullptr; }
+
+auto PositionDescriptorPool::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+    if (!initialized())
+        return FOE_BRINGUP_NOT_INITIALIZED;
+
+    // External
+    mDevice = foeGfxVkGetDevice(gfxSession);
+    mAllocator = foeGfxVkGetAllocator(gfxSession);
+
+    // Internal
     VkResult res{VK_SUCCESS};
 
-    mDevice = foeGfxVkGetDevice(session);
-    mAllocator = foeGfxVkGetAllocator(session);
-
     VkPhysicalDeviceProperties devProperties;
-    vkGetPhysicalDeviceProperties(foeGfxVkGetPhysicalDevice(session), &devProperties);
+    vkGetPhysicalDeviceProperties(foeGfxVkGetPhysicalDevice(gfxSession), &devProperties);
 
     mMinUniformBufferOffsetAlignment =
         std::max(static_cast<VkDeviceSize>(sizeof(glm::mat4)),
                  devProperties.limits.minUniformBufferOffsetAlignment);
 
     mModelMatrixLayout = foeGfxVkGetBuiltinLayout(
-        session,
+        gfxSession,
         foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX);
     mModelMatrixBinding = foeGfxVkGetBuiltinSetLayoutIndex(
-        session,
+        gfxSession,
         foeBuiltinDescriptorSetLayoutFlagBits::FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX);
 
     VkDescriptorPoolSize size{
@@ -70,7 +89,8 @@ INITIALIZATION_FAILED:
     return res;
 }
 
-void PositionDescriptorPool::deinitialize() {
+void PositionDescriptorPool::deinitializeGraphics() {
+    // Internal
     for (auto &it : mDescriptorPools) {
         if (it != VK_NULL_HANDLE) {
             vkDestroyDescriptorPool(mDevice, it, nullptr);
@@ -85,12 +105,15 @@ void PositionDescriptorPool::deinitialize() {
         it = {};
     }
 
+    // External
     mModelMatrixLayout = VK_NULL_HANDLE;
     mAllocator = VK_NULL_HANDLE;
     mDevice = VK_NULL_HANDLE;
 }
 
-bool PositionDescriptorPool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
+bool PositionDescriptorPool::initializedGraphics() const noexcept {
+    return mDevice != VK_NULL_HANDLE;
+}
 
 VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex) {
     VkResult res{VK_SUCCESS};

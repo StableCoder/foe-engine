@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -33,9 +33,13 @@ class foePosition3dPool;
 
 struct PositionDescriptorPool : public foeSystemBase {
   public:
-    VkResult initialize(foePosition3dPool *pPosition3dPool, foeGfxSession gfxSession);
+    auto initialize(foePosition3dPool *pPosition3dPool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
+
+    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    void deinitializeGraphics();
+    bool initializedGraphics() const noexcept;
 
     VkResult generatePositionDescriptors(uint32_t frameIndex);
 
@@ -47,7 +51,7 @@ struct PositionDescriptorPool : public foeSystemBase {
     };
 
     // Components
-    foePosition3dPool *mpPosition3dPool;
+    foePosition3dPool *mpPosition3dPool{nullptr};
 
     // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};

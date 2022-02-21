@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -48,11 +48,13 @@ struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo : public foeResourceCreateInfoBa
 
 class FOE_GFX_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
   public:
-    std::error_code initialize(foeShaderPool *pShaderPool,
-                               foeImagePool *pImagePool,
-                               foeGfxSession session);
+    auto initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
+
+    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    void deinitializeGraphics();
+    bool initializedGraphics() const noexcept;
 
     void gfxMaintenance();
 
@@ -75,7 +77,7 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
 
     foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
 
-    VkDescriptorPool mDescriptorPool;
+    VkDescriptorPool mDescriptorPool{VK_NULL_HANDLE};
 
     struct LoadData {
         foeMaterial *pMaterial;

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                                                       pSimStateData->pComponentPools +
                                                           pSimStateData->componentPoolCount);
 
-            errC = pCameraSystem->initialize(pPosition3dPool, pCameraPool, pInitInfo->gfxSession);
+            errC = pCameraSystem->initialize(pPosition3dPool, pCameraPool);
             if (errC)
                 goto INITIALIZATION_FAILED;
             initialized.camera = true;
@@ -183,7 +183,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 pSimStateData->pComponentPools,
                 pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
-            errC = pPositionDescriptorPool->initialize(pPosition3dPool, pInitInfo->gfxSession);
+            errC = pPositionDescriptorPool->initialize(pPosition3dPool);
             if (errC)
                 goto INITIALIZATION_FAILED;
             initialized.positionDescriptor = true;
@@ -211,7 +211,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
 
             errC = pVkAnimationPool->initialize(pArmaturePool, pMeshPool, pArmatureStatePool,
-                                                pRenderStatePool, pInitInfo->gfxSession);
+                                                pRenderStatePool);
             if (errC)
                 goto INITIALIZATION_FAILED;
             initialized.animation = true;
@@ -235,6 +235,80 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
     }
 }
 
+void deinitializeGraphics(Initialized const &initialized,
+                          foeSimulationStateLists const *pSimStateData) {
+    // Systems
+    auto *pIt = pSimStateData->pSystems;
+    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+
+    for (; pIt != pEndIt; ++pIt) {
+        if (initialized.camera)
+            searchAndDeinitGraphics<foeCameraSystem>(*pIt);
+        if (initialized.positionDescriptor)
+            searchAndDeinitGraphics<PositionDescriptorPool>(*pIt);
+        if (initialized.animation)
+            searchAndDeinitGraphics<VkAnimationPool>(*pIt);
+    }
+}
+
+std::error_code onGfxInitialization(foeSimulationStateLists const *pSimStateData,
+                                    foeGfxSession gfxSession) {
+    std::error_code errC;
+    Initialized initialized{};
+
+    // Systems
+    auto *pIt = pSimStateData->pSystems;
+    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+
+    for (; pIt != pEndIt; ++pIt) {
+        if (auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt); pCameraSystem) {
+            if (pCameraSystem->initializedGraphics())
+                continue;
+
+            errC = pCameraSystem->initializeGraphics(gfxSession);
+            if (errC)
+                goto INITIALIZATION_FAILED;
+            initialized.camera = true;
+        }
+
+        if (auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
+            pPositionDescriptorPool) {
+            if (pPositionDescriptorPool->initializedGraphics())
+                continue;
+
+            errC = pPositionDescriptorPool->initializeGraphics(gfxSession);
+            if (errC)
+                goto INITIALIZATION_FAILED;
+            initialized.positionDescriptor = true;
+        }
+
+        if (auto *pVkAnimationPool = dynamic_cast<VkAnimationPool *>(*pIt); pVkAnimationPool) {
+            if (pVkAnimationPool->initializedGraphics())
+                continue;
+
+            errC = pVkAnimationPool->initializeGraphics(gfxSession);
+            if (errC)
+                goto INITIALIZATION_FAILED;
+            initialized.animation = true;
+        }
+    }
+
+INITIALIZATION_FAILED:
+    if (errC)
+        deinitializeGraphics(initialized, pSimStateData);
+
+    return errC;
+}
+
+void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
+    // Systems
+    for (auto *pSystem : pSimulationState->systems) {
+        searchAndDeinitGraphics<VkAnimationPool>(pSystem);
+        searchAndDeinitGraphics<PositionDescriptorPool>(pSystem);
+        searchAndDeinitGraphics<foeCameraSystem>(pSystem);
+    }
+}
+
 } // namespace
 
 void foeBringupRegisterFunctionality() {
@@ -246,6 +320,8 @@ void foeBringupRegisterFunctionality() {
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
         .onDeinitialization = onDeinitialization,
+        .onGfxInitialization = onGfxInitialization,
+        .onGfxDeinitialization = onGfxDeinitialization,
     });
 
     FOE_LOG(foeBringup, Verbose,
@@ -261,6 +337,8 @@ void foeBringupDeregisterFunctionality() {
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
         .onDeinitialization = onDeinitialization,
+        .onGfxInitialization = onGfxInitialization,
+        .onGfxDeinitialization = onGfxDeinitialization,
     });
 
     FOE_LOG(foeBringup, Verbose,

@@ -35,6 +35,9 @@
  * functionality specific to that library can be added/removed to all SimulationState sets, and be
  * used for dealing with the creation/initialization and deinitialization/destruction of these sets
  * safely.
+ *
+ * Certain items are considered *optional* to a simulation and can be de/initialized separately,
+ * such as graphics.
  */
 
 struct foeResourceCreateInfoBase;
@@ -44,7 +47,6 @@ struct foeComponentPoolBase;
 struct foeSystemBase;
 
 struct foeSimulationInitInfo {
-    foeGfxSession gfxSession;
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn;
 };
 
@@ -92,6 +94,9 @@ struct foeSimulationState {
     // Information used to initialize functionality (used when functionality added during runtime)
     foeSimulationInitInfo initInfo{};
 
+    // Optional Simulation
+    foeGfxSession gfxSession;
+
     // Resource Data
     foeEditorNameMap *pResourceNameMap;
     std::vector<foeSimulationLoaderData> resourceLoaders;
@@ -105,7 +110,11 @@ struct foeSimulationState {
     std::vector<foeSystemBase *> systems;
 };
 
+/// Return if a simulation has been successfully initialized
 bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState);
+
+/// Returns if a simulation has had graphics successfully initialized
+bool foeSimulationIsGraphicsInitialzied(foeSimulationState const *pSimulationState);
 
 /**
  * @brief Creates a new SimulationState with any registered functionality available
@@ -132,7 +141,7 @@ FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulationState *pSimulationState) -
 
 /**
  * @brief Initializes a SimulationState given InitInfo
- * @param pSimulationState SimulatioState to initialize
+ * @param pSimulationState SimulationState to initialize
  * @param pInitInfo Required information used to initialize a SimulationState
  * @param FOE_SIMULATION_SUCCESS if successfully destroyed. A descriptive error code otherwise.
  *
@@ -147,14 +156,38 @@ FOE_SIM_EXPORT auto foeInitializeSimulation(foeSimulationState *pSimulationState
     -> std::error_code;
 
 /**
- * @brief Initializes a SimulationState given InitInfo
- * @param pSimulationState SimulatioState to deinitialize
+ * @brief Deinitializes a SimulationState given InitInfo
+ * @param pSimulationState SimulationState to deinitialize
  * @return FOE_SIMULATION_SUCCESS if deinitialization proceeded, otherwise
  * FOE_SIMULATION_ERROR_NOT_INITIALIZED if the simulation has not previously been initialized.
  *
  * Iterates through any registered functionality and calls its 'onDeinitialization' function.
  */
 FOE_SIM_EXPORT auto foeDeinitializeSimulation(foeSimulationState *pSimulationState)
+    -> std::error_code;
+
+/**
+ * @brief Initializes graphics for a SimulationState
+ * @param pSimulationState is a pointer to the simulation that graphics is being initialized for
+ * @param gfxSession is a handle to the graphics session the simulation will be using
+ * @return An appropriate error code is returned. FOE_SIMULATION_SUCCESS if the simulation
+ * initialized using the graphics session successfully.
+ * FOE_SIMULATION_ERROR_GRAPHICS_ALREADY_INITIALIZED if the simulation already was initialized
+ * successfully with graphics previously. Otherwise another detailed error_code from a failed
+ * attempt to initialize some functionality will be returned.
+ *
+ */
+FOE_SIM_EXPORT auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState,
+                                                    foeGfxSession gfxSession) -> std::error_code;
+
+/**
+ * @brief Deinitializes graphics from the given simulation
+ * @param pSimulationState is a pointer to the simulation to deinitialize graphics from
+ * @return An appropriate error code is returned. FOE_SIMULATION_SUCCESS if deinitialization
+ * happened without issue. FOE_SIMULATION_ERROR_GRAPHICS_NOT_INITIALIZED if the simulation's
+ * graphics was not previously successfully initialized.
+ */
+FOE_SIM_EXPORT auto foeDeinitializeSimulationGraphics(foeSimulationState *pSimulationState)
     -> std::error_code;
 
 #endif // FOE_SIMULATION_CORE_HPP

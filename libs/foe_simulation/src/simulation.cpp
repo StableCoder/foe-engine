@@ -66,6 +66,26 @@ void deinitSimulation(foeSimulationState *pSimulationState) {
             static_cast<void *>(pSimulationState));
 }
 
+// Assumes that the mutex has already been acquired
+void deinitializeSimulationGraphics(foeSimulationState *pSimulationState) {
+    FOE_LOG(SimulationState, Verbose, "Deinitializing SimulationState Graphics: {}",
+            static_cast<void *>(pSimulationState));
+
+    // Iterate through all and deinitialize
+    for (auto const &functionality : mRegistered) {
+        if (functionality.onGfxDeinitialization) {
+            functionality.onGfxDeinitialization(pSimulationState);
+        }
+    }
+
+    pSimulationState->gfxSession = FOE_NULL_HANDLE;
+
+    pSimulationState->simSync.unlock();
+
+    FOE_LOG(SimulationState, Verbose, "Deinitialized SimulationState Graphics: {}",
+            static_cast<void *>(pSimulationState));
+}
+
 foeSimulationStateLists createSimStateLists(foeSimulationState *pSimulationState) {
     return foeSimulationStateLists{
         .pResourcePools = pSimulationState->resourcePools.data(),
@@ -83,7 +103,10 @@ foeSimulationStateLists createSimStateLists(foeSimulationState *pSimulationState
 
 bool foeSimulationFunctionalty::operator==(foeSimulationFunctionalty const &rhs) const noexcept {
     return onCreate == rhs.onCreate && onDestroy == rhs.onDestroy &&
-           onInitialization == rhs.onInitialization && onDeinitialization == rhs.onDeinitialization;
+           onInitialization == rhs.onInitialization &&
+           onDeinitialization == rhs.onDeinitialization &&
+           onGfxInitialization == rhs.onGfxInitialization &&
+           onGfxDeinitialization == rhs.onGfxDeinitialization;
 }
 
 bool foeSimulationFunctionalty::operator!=(foeSimulationFunctionalty const &rhs) const noexcept {
@@ -167,13 +190,19 @@ auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
 }
 
 bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState) {
-    return pSimulationState->initInfo.gfxSession != FOE_NULL_HANDLE;
+    return !!pSimulationState->initInfo.externalFileSearchFn;
+}
+
+bool foeSimulationIsGraphicsInitialzied(foeSimulationState const *pSimulationState) {
+    return pSimulationState->gfxSession != FOE_NULL_HANDLE;
 }
 
 auto foeCreateSimulation(bool addNameMaps) -> foeSimulationState * {
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulationState> newSimState{new foeSimulationState};
+
+    newSimState->gfxSession = FOE_NULL_HANDLE;
 
     // Editor Name Maps, if requested
     if (addNameMaps) {
@@ -254,11 +283,10 @@ auto foeInitializeSimulation(foeSimulationState *pSimulationState,
     std::error_code errC;
     std::scoped_lock lock{mSync};
 
-    if (pSimulationState->initInfo.gfxSession != FOE_NULL_HANDLE) {
-        FOE_LOG(SimulationState, Error,
-                "Attempting to re-initialize already initialized SimulationState: {}",
+    if (foeSimulationIsInitialized(pSimulationState)) {
+        FOE_LOG(SimulationState, Error, "Attempting to re-initialize SimulationState: {}",
                 static_cast<void *>(pSimulationState))
-        return FOE_SIMULATION_ERROR_GFX_SESSION_NOT_PROVIDED;
+        return FOE_SIMULATION_ERROR_ALREADY_INITIALIZED;
     }
 
     FOE_LOG(SimulationState, Verbose, "Initializing SimulationState: {}",
@@ -278,9 +306,9 @@ auto foeInitializeSimulation(foeSimulationState *pSimulationState,
     }
 
     if (errC) {
-        deinitSimulation(pSimulationState);
         FOE_LOG(SimulationState, Error, "Failed to initialize SimulationState: {} due to error: {}",
                 static_cast<void *>(pSimulationState), errC.message());
+        deinitSimulation(pSimulationState);
     } else {
         FOE_LOG(SimulationState, Verbose, "Initialized SimulationState: {}",
                 static_cast<void *>(pSimulationState));
@@ -299,5 +327,59 @@ auto foeDeinitializeSimulation(foeSimulationState *pSimulationState) -> std::err
 
     acquireExclusiveLock(pSimulationState, "deinitialization");
     deinitSimulation(pSimulationState);
+    return FOE_SIMULATION_SUCCESS;
+}
+
+auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState, foeGfxSession gfxSession)
+    -> std::error_code {
+    std::error_code errC;
+    std::scoped_lock lock{mSync};
+
+    if (foeSimulationIsGraphicsInitialzied(pSimulationState)) {
+        FOE_LOG(SimulationState, Error, "Attempting to re-initialize SimulationState graphics: {}",
+                static_cast<void *>(pSimulationState))
+        return FOE_SIMULATION_ERROR_GRAPHICS_ALREADY_INITIALIZED;
+    }
+
+    FOE_LOG(SimulationState, Verbose, "Initializing SimulationState graphics: {}",
+            static_cast<void *>(pSimulationState));
+
+    auto stateLists = createSimStateLists(pSimulationState);
+
+    acquireExclusiveLock(pSimulationState, "initializing graphics");
+
+    for (auto const &functionality : mRegistered) {
+        if (functionality.onGfxInitialization) {
+            errC = functionality.onGfxInitialization(&stateLists, gfxSession);
+            if (errC)
+                break;
+        }
+    }
+
+    if (errC) {
+        FOE_LOG(SimulationState, Error,
+                "Failed to initialize SimulationState graphics: {} due to error: {}",
+                static_cast<void *>(pSimulationState), errC.message());
+        deinitializeSimulationGraphics(pSimulationState);
+    } else {
+        // With success, set the simulation's graphics session handle
+        pSimulationState->gfxSession = gfxSession;
+        FOE_LOG(SimulationState, Verbose, "Initialized SimulationState graphics: {}",
+                static_cast<void *>(pSimulationState));
+    }
+
+    pSimulationState->simSync.unlock();
+
+    return FOE_SIMULATION_SUCCESS;
+}
+
+auto foeDeinitializeSimulationGraphics(foeSimulationState *pSimulationState) -> std::error_code {
+    std::scoped_lock lock{mSync};
+
+    if (!foeSimulationIsGraphicsInitialzied(pSimulationState))
+        return FOE_SIMULATION_ERROR_GRAPHICS_NOT_INITIALIZED;
+
+    acquireExclusiveLock(pSimulationState, "deinitializing graphics");
+    deinitializeSimulationGraphics(pSimulationState);
     return FOE_SIMULATION_SUCCESS;
 }

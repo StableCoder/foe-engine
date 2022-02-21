@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef FOE_SIMULATION_REGISTRATION_HPP
 #define FOE_SIMULATION_REGISTRATION_HPP
 
+#include <foe/graphics/session.hpp>
 #include <foe/simulation/export.h>
 
 #include <system_error>
@@ -37,6 +38,11 @@ struct foeSimulationFunctionalty {
                                         foeSimulationStateLists const *);
     /// Called before onDestroy to safely destory any running state for an active SimulationState
     void (*onDeinitialization)(foeSimulationState const *);
+
+    /// To be called when a graphics session is being added to a simulation
+    std::error_code (*onGfxInitialization)(foeSimulationStateLists const *, foeGfxSession);
+    /// To be called when a graphics session is being removed from a simulation
+    void (*onGfxDeinitialization)(foeSimulationState const *);
 
     bool operator==(foeSimulationFunctionalty const &) const noexcept;
     bool operator!=(foeSimulationFunctionalty const &) const noexcept;
