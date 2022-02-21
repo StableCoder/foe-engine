@@ -43,10 +43,6 @@ struct foeResourceLoaderBase;
 struct foeComponentPoolBase;
 struct foeSystemBase;
 
-struct foeSimulationCreateInfo {
-    std::function<void(std::function<void()>)> asyncTaskFn;
-};
-
 struct foeSimulationInitInfo {
     foeGfxSession gfxSession;
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn;
@@ -93,7 +89,6 @@ struct foeSimulationState {
 
     foeGroupData groupData;
 
-    foeSimulationCreateInfo createInfo;
     // Information used to initialize functionality (used when functionality added during runtime)
     foeSimulationInitInfo initInfo{};
 
@@ -120,8 +115,7 @@ bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState);
  *
  * The 'onCreate' of any previously registered functionality is called on the created simulation.
  */
-FOE_SIM_EXPORT auto foeCreateSimulation(foeSimulationCreateInfo const &createInfo, bool addNameMaps)
-    -> foeSimulationState *;
+FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps) -> foeSimulationState *;
 
 /**
  * @brief Attempts to destroy a given SimulationState

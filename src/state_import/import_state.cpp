@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -86,12 +86,7 @@ auto importState(std::string_view topLevelDataSet,
                  std::function<void(std::function<void()>)> asyncTaskFn,
                  foeSimulationState **ppSimulationSet) -> std::error_code {
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet{
-        foeCreateSimulation(
-            foeSimulationCreateInfo{
-                .asyncTaskFn = asyncTaskFn,
-            },
-            true),
-        [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
+        foeCreateSimulation(true), [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
 
     // Find the to-level data set, initially as if the full path were given
     std::unique_ptr<foeImporterBase> persistentImporter{

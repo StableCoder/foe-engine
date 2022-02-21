@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
 
 TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
           "[foe][simulation]") {
-    auto *pSimState = foeCreateSimulation({}, false);
+    auto *pSimState = foeCreateSimulation(false);
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap == nullptr);
@@ -78,7 +78,7 @@ TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
 }
 
 TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe][simulation]") {
-    auto *pSimState = foeCreateSimulation({}, true);
+    auto *pSimState = foeCreateSimulation(true);
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap != nullptr);

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -170,24 +170,10 @@ bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState) {
     return pSimulationState->initInfo.gfxSession != FOE_NULL_HANDLE;
 }
 
-auto foeCreateSimulation(foeSimulationCreateInfo const &createInfo, bool addNameMaps)
-    -> foeSimulationState * {
+auto foeCreateSimulation(bool addNameMaps) -> foeSimulationState * {
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulationState> newSimState{new foeSimulationState};
-
-    newSimState->createInfo = createInfo;
-
-    { // Wrap asyncTaskFn to lock/unlock a shared mutex
-        auto *pSimulationState = newSimState.get();
-        auto temp = createInfo.asyncTaskFn;
-        newSimState->createInfo.asyncTaskFn = [pSimulationState,
-                                               temp](std::function<void()> asyncTaskFn) {
-            pSimulationState->simSync.lock_shared();
-            temp(asyncTaskFn);
-            pSimulationState->simSync.unlock_shared();
-        };
-    }
 
     // Editor Name Maps, if requested
     if (addNameMaps) {
