@@ -25,3 +25,6 @@ endif()
 
 # Auxiliary Targets
 add_subdirectory(libs/yaml)
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
