@@ -86,19 +86,6 @@ void deinitializeSimulationGraphics(foeSimulationState *pSimulationState) {
             static_cast<void *>(pSimulationState));
 }
 
-foeSimulationStateLists createSimStateLists(foeSimulationState *pSimulationState) {
-    return foeSimulationStateLists{
-        .pResourcePools = pSimulationState->resourcePools.data(),
-        .resourcePoolCount = static_cast<uint32_t>(pSimulationState->resourcePools.size()),
-        .pResourceLoaders = pSimulationState->resourceLoaders.data(),
-        .resourceLoaderCount = static_cast<uint32_t>(pSimulationState->resourceLoaders.size()),
-        .pComponentPools = pSimulationState->componentPools.data(),
-        .componentPoolCount = static_cast<uint32_t>(pSimulationState->componentPools.size()),
-        .pSystems = pSimulationState->systems.data(),
-        .systemCount = static_cast<uint32_t>(pSimulationState->systems.size()),
-    };
-}
-
 } // namespace
 
 bool foeSimulationFunctionalty::operator==(foeSimulationFunctionalty const &rhs) const noexcept {
@@ -148,8 +135,7 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
         if (functionality.onCreate)
             functionality.onCreate(*ppSimState);
         if (foeSimulationIsInitialized(*ppSimState) && functionality.onInitialization) {
-            auto simStateLists = createSimStateLists(*ppSimState);
-            errC = functionality.onInitialization(&(*ppSimState)->initInfo, &simStateLists);
+            errC = functionality.onInitialization(*ppSimState, &(*ppSimState)->initInfo);
         }
         (*ppSimState)->simSync.unlock();
         if (errC)
@@ -306,12 +292,10 @@ auto foeInitializeSimulation(foeSimulationState *pSimulationState,
 
     pSimulationState->initInfo = *pInitInfo;
 
-    auto stateLists = createSimStateLists(pSimulationState);
-
     acquireExclusiveLock(pSimulationState, "initialization");
     for (auto const &functionality : mRegistered) {
         if (functionality.onInitialization) {
-            errC = functionality.onInitialization(pInitInfo, &stateLists);
+            errC = functionality.onInitialization(pSimulationState, pInitInfo);
             if (errC)
                 break;
         }
@@ -356,13 +340,11 @@ auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState, foeGf
     FOE_LOG(SimulationState, Verbose, "Initializing SimulationState graphics: {}",
             static_cast<void *>(pSimulationState));
 
-    auto stateLists = createSimStateLists(pSimulationState);
-
     acquireExclusiveLock(pSimulationState, "initializing graphics");
 
     for (auto const &functionality : mRegistered) {
         if (functionality.onGfxInitialization) {
-            errC = functionality.onGfxInitialization(&stateLists, gfxSession);
+            errC = functionality.onGfxInitialization(pSimulationState, gfxSession);
             if (errC)
                 break;
         }

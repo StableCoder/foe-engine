@@ -59,20 +59,6 @@ struct foeSimulationLoaderData {
     void (*pGfxMaintenanceFn)(foeResourceLoaderBase *);
 };
 
-struct foeSimulationStateLists {
-    foeResourcePoolBase **pResourcePools;
-    uint32_t resourcePoolCount;
-
-    foeSimulationLoaderData *pResourceLoaders;
-    uint32_t resourceLoaderCount;
-
-    foeComponentPoolBase **pComponentPools;
-    uint32_t componentPoolCount;
-
-    foeSystemBase **pSystems;
-    uint32_t systemCount;
-};
-
 struct foeSimulationState {
     /**
      * @brief Used to synchronize core access to the SimulationState

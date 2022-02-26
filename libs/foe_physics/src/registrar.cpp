@@ -156,10 +156,10 @@ struct Initialized {
     bool physics;
 };
 
-void deinitialize(Initialized const &initialized, foeSimulationStateLists const *pSimStateData) {
+void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
     { // Systems
-        auto *pIt = pSimStateData->pSystems;
-        auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+        auto *pIt = pSimulationState->systems.data();
+        auto const *pEndIt = pIt + pSimulationState->systems.size();
 
         for (; pIt != pEndIt; ++pIt) {
             if (initialized.physics)
@@ -168,8 +168,8 @@ void deinitialize(Initialized const &initialized, foeSimulationStateLists const 
     }
 
     { // Loaders
-        auto *pIt = pSimStateData->pResourceLoaders;
-        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+        auto *pIt = pSimulationState->resourceLoaders.data();
+        auto const *pEndIt = pIt + pSimulationState->resourceLoaders.size();
 
         for (; pIt != pEndIt; ++pIt) {
             if (initialized.collisionShape)
@@ -178,14 +178,14 @@ void deinitialize(Initialized const &initialized, foeSimulationStateLists const 
     }
 }
 
-std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
-                                 foeSimulationStateLists const *pSimStateData) {
+std::error_code onInitialization(foeSimulationState const *pSimulationState,
+                                 foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
     Initialized initialized{};
 
     { // Loaders
-        auto *pIt = pSimStateData->pResourceLoaders;
-        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+        auto *pIt = pSimulationState->resourceLoaders.data();
+        auto const *pEndIt = pIt + pSimulationState->resourceLoaders.size();
 
         for (; pIt != pEndIt; ++pIt) {
             if (auto *pCollisionShapeLoader = dynamic_cast<foeCollisionShapeLoader *>(pIt->pLoader);
@@ -203,8 +203,8 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
     }
 
     { // Systems
-        auto *pIt = pSimStateData->pSystems;
-        auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+        auto *pIt = pSimulationState->systems.data();
+        auto const *pEndIt = pIt + pSimulationState->systems.size();
 
         for (; pIt != pEndIt; ++pIt) {
             if (auto *pPhysicsSystem = dynamic_cast<foePhysicsSystem *>(*pIt); pPhysicsSystem) {
@@ -213,13 +213,14 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                     continue;
 
                 auto *pCollisionShapeLoader = searchLoaders<foeCollisionShapeLoader>(
-                    pSimStateData->pResourceLoaders,
-                    pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount);
+                    pSimulationState->resourceLoaders.data(),
+                    pSimulationState->resourceLoaders.data() +
+                        pSimulationState->resourceLoaders.size());
 
                 foeCollisionShapePool *pCollisionShapePool{nullptr};
 
-                auto *it = pSimStateData->pResourcePools;
-                auto *endIt = it + pSimStateData->resourcePoolCount;
+                auto *it = pSimulationState->resourcePools.data();
+                auto *endIt = it + pSimulationState->resourcePools.size();
                 for (; it != endIt; ++it) {
                     if (*it == nullptr)
                         continue;
@@ -228,13 +229,15 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                         pCollisionShapePool = (foeCollisionShapePool *)(*it);
                 }
 
-                auto *pRigidBodyPool = search<foeRigidBodyPool>(
-                    pSimStateData->pComponentPools,
-                    pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
+                auto *pRigidBodyPool =
+                    search<foeRigidBodyPool>(pSimulationState->componentPools.data(),
+                                             pSimulationState->componentPools.data() +
+                                                 pSimulationState->componentPools.size());
 
-                auto *pPosition3dPool = search<foePosition3dPool>(
-                    pSimStateData->pComponentPools,
-                    pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
+                auto *pPosition3dPool =
+                    search<foePosition3dPool>(pSimulationState->componentPools.data(),
+                                              pSimulationState->componentPools.data() +
+                                                  pSimulationState->componentPools.size());
 
                 pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool,
                                            pRigidBodyPool, pPosition3dPool);
@@ -245,7 +248,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitialize(initialized, pSimStateData);
+        deinitialize(pSimulationState, initialized);
 
     return errC;
 }

@@ -113,10 +113,10 @@ struct Initialized {
     bool animation;
 };
 
-void deinitialize(Initialized const &initialized, foeSimulationStateLists const *pSimStateData) {
+void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
     // Systems
-    auto *pIt = pSimStateData->pSystems;
-    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+    auto *pIt = pSimulationState->systems.data();
+    auto const *pEndIt = pIt + pSimulationState->systems.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (initialized.armature)
@@ -130,14 +130,14 @@ void deinitialize(Initialized const &initialized, foeSimulationStateLists const 
     }
 }
 
-std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
-                                 foeSimulationStateLists const *pSimStateData) {
+std::error_code onInitialization(foeSimulationState const *pSimulationState,
+                                 foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
     Initialized initialized{};
 
     // Systems
-    auto *pIt = pSimStateData->pSystems;
-    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+    auto *pIt = pSimulationState->systems.data();
+    auto const *pEndIt = pIt + pSimulationState->systems.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (auto *pArmatureSystem = dynamic_cast<foeArmatureSystem *>(*pIt); pArmatureSystem) {
@@ -147,8 +147,8 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
 
             foeArmaturePool *pArmaturePool{nullptr};
 
-            auto *it = pSimStateData->pResourcePools;
-            auto *endIt = it + pSimStateData->resourcePoolCount;
+            auto *it = pSimulationState->resourcePools.data();
+            auto *endIt = it + pSimulationState->resourcePools.size();
             for (; it != endIt; ++it) {
                 if (*it == nullptr)
                     continue;
@@ -158,8 +158,8 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
             }
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
-                pSimStateData->pComponentPools,
-                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
+                pSimulationState->componentPools.data(),
+                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
             pArmatureSystem->initialize(pArmaturePool, pArmatureStatePool);
             initialized.armature = true;
@@ -171,12 +171,12 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 continue;
 
             auto *pPosition3dPool = search<foePosition3dPool>(
-                pSimStateData->pComponentPools,
-                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
+                pSimulationState->componentPools.data(),
+                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
-            auto *pCameraPool = search<foeCameraPool>(pSimStateData->pComponentPools,
-                                                      pSimStateData->pComponentPools +
-                                                          pSimStateData->componentPoolCount);
+            auto *pCameraPool = search<foeCameraPool>(pSimulationState->componentPools.data(),
+                                                      pSimulationState->componentPools.data() +
+                                                          pSimulationState->componentPools.size());
 
             errC = pCameraSystem->initialize(pPosition3dPool, pCameraPool);
             if (errC)
@@ -191,8 +191,8 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 continue;
 
             auto *pPosition3dPool = search<foePosition3dPool>(
-                pSimStateData->pComponentPools,
-                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
+                pSimulationState->componentPools.data(),
+                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
             errC = pPositionDescriptorPool->initialize(pPosition3dPool);
             if (errC)
@@ -208,8 +208,8 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
             foeArmaturePool *pArmaturePool{nullptr};
             foeMeshPool *pMeshPool{nullptr};
 
-            auto *it = pSimStateData->pResourcePools;
-            auto *endIt = it + pSimStateData->resourcePoolCount;
+            auto *it = pSimulationState->resourcePools.data();
+            auto *endIt = it + pSimulationState->resourcePools.size();
             for (; it != endIt; ++it) {
                 if (*it == nullptr)
                     continue;
@@ -221,12 +221,12 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
             }
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
-                pSimStateData->pComponentPools,
-                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
+                pSimulationState->componentPools.data(),
+                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
             auto *pRenderStatePool = search<foeRenderStatePool>(
-                pSimStateData->pComponentPools,
-                pSimStateData->pComponentPools + pSimStateData->componentPoolCount);
+                pSimulationState->componentPools.data(),
+                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
             errC = pVkAnimationPool->initialize(pArmaturePool, pMeshPool, pArmatureStatePool,
                                                 pRenderStatePool);
@@ -238,7 +238,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitialize(initialized, pSimStateData);
+        deinitialize(pSimulationState, initialized);
 
     return errC;
 }
@@ -253,11 +253,11 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
     }
 }
 
-void deinitializeGraphics(Initialized const &initialized,
-                          foeSimulationStateLists const *pSimStateData) {
+void deinitializeGraphics(foeSimulationState const *pSimulationState,
+                          Initialized const &initialized) {
     // Systems
-    auto *pIt = pSimStateData->pSystems;
-    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+    auto *pIt = pSimulationState->systems.data();
+    auto const *pEndIt = pIt + pSimulationState->systems.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (initialized.camera)
@@ -269,14 +269,14 @@ void deinitializeGraphics(Initialized const &initialized,
     }
 }
 
-std::error_code onGfxInitialization(foeSimulationStateLists const *pSimStateData,
+std::error_code onGfxInitialization(foeSimulationState const *pSimulationState,
                                     foeGfxSession gfxSession) {
     std::error_code errC;
     Initialized initialized{};
 
     // Systems
-    auto *pIt = pSimStateData->pSystems;
-    auto const *pEndIt = pSimStateData->pSystems + pSimStateData->systemCount;
+    auto *pIt = pSimulationState->systems.data();
+    auto const *pEndIt = pIt + pSimulationState->systems.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt); pCameraSystem) {
@@ -313,7 +313,7 @@ std::error_code onGfxInitialization(foeSimulationStateLists const *pSimStateData
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitializeGraphics(initialized, pSimStateData);
+        deinitializeGraphics(pSimulationState, initialized);
 
     return errC;
 }

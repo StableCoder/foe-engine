@@ -24,7 +24,6 @@
 
 struct foeSimulationState;
 struct foeSimulationInitInfo;
-struct foeSimulationStateLists;
 
 struct foeSimulationFunctionalty {
     /// The UUID of the functionality, must be valid/derived from the
@@ -37,13 +36,12 @@ struct foeSimulationFunctionalty {
 
     /// To be called after onCreate when a Simulation is being initialized to start actually running
     /// a Simulation
-    std::error_code (*onInitialization)(foeSimulationInitInfo const *,
-                                        foeSimulationStateLists const *);
+    std::error_code (*onInitialization)(foeSimulationState const *, foeSimulationInitInfo const *);
     /// Called before onDestroy to safely destory any running state for an active SimulationState
     void (*onDeinitialization)(foeSimulationState const *);
 
     /// To be called when a graphics session is being added to a simulation
-    std::error_code (*onGfxInitialization)(foeSimulationStateLists const *, foeGfxSession);
+    std::error_code (*onGfxInitialization)(foeSimulationState const *, foeGfxSession);
     /// To be called when a graphics session is being removed from a simulation
     void (*onGfxDeinitialization)(foeSimulationState const *);
 

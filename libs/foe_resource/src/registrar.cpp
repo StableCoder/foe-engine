@@ -114,13 +114,13 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 }
 
-std::error_code onInitialize(foeSimulationInitInfo const *pInitInfo,
-                             foeSimulationStateLists const *pSimStateData) {
+std::error_code onInitialize(foeSimulationState const *pSimulation,
+                             foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
 
     // Resource Loaders
-    auto *pIt = pSimStateData->pResourceLoaders;
-    auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+    auto *pIt = pSimulation->resourceLoaders.data();
+    auto const *pEndIt = pSimulation->resourceLoaders.data() + pSimulation->resourceLoaders.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader);
@@ -137,8 +137,9 @@ std::error_code onInitialize(foeSimulationInitInfo const *pInitInfo,
 
 INITIALIZATION_FAILED:
     if (errC) {
-        auto *pIt = pSimStateData->pResourceLoaders;
-        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+        auto *pIt = pSimulation->resourceLoaders.data();
+        auto const *pEndIt =
+            pSimulation->resourceLoaders.data() + pSimulation->resourceLoaders.size();
 
         for (; pIt != pEndIt; ++pIt) {
             searchAndDeinit<foeArmatureLoader>(pIt->pLoader);

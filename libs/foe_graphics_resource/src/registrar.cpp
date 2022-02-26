@@ -348,10 +348,10 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 }
 
-void deinitialize(Initialized const &initialized, foeSimulationStateLists const *pSimStateData) {
+void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
     // Loaders
-    auto *pIt = pSimStateData->pResourceLoaders;
-    auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+    auto *pIt = pSimulationState->resourceLoaders.data();
+    auto const *pEndIt = pIt + pSimulationState->resourceLoaders.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (initialized.image)
@@ -367,14 +367,14 @@ void deinitialize(Initialized const &initialized, foeSimulationStateLists const 
     }
 }
 
-std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
-                                 foeSimulationStateLists const *pSimStateData) {
+std::error_code onInitialization(foeSimulationState const *pSimulationState,
+                                 foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
     Initialized initialized{};
 
     { // Loaders
-        auto *pIt = pSimStateData->pResourceLoaders;
-        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+        auto *pIt = pSimulationState->resourceLoaders.data();
+        auto const *pEndIt = pIt + pSimulationState->resourceLoaders.size();
 
         for (; pIt != pEndIt; ++pIt) {
             if (auto *pImageLoader = dynamic_cast<foeImageLoader *>(pIt->pLoader); pImageLoader) {
@@ -397,8 +397,8 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 foeShaderPool *pShaderPool{nullptr};
                 foeImagePool *pImagePool{nullptr};
 
-                auto *it = pSimStateData->pResourcePools;
-                auto *endIt = it + pSimStateData->resourcePoolCount;
+                auto *it = pSimulationState->resourcePools.data();
+                auto const *endIt = it + pSimulationState->resourcePools.size();
                 for (; it != endIt; ++it) {
                     if (*it == nullptr)
                         continue;
@@ -437,8 +437,8 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
 
                 foeShaderPool *pShaderPool{nullptr};
 
-                auto *it = pSimStateData->pResourcePools;
-                auto *endIt = it + pSimStateData->resourcePoolCount;
+                auto *it = pSimulationState->resourcePools.data();
+                auto const *endIt = it + pSimulationState->resourcePools.size();
                 for (; it != endIt; ++it) {
                     if (*it == nullptr)
                         continue;
@@ -468,7 +468,7 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitialize(initialized, pSimStateData);
+        deinitialize(pSimulationState, initialized);
 
     return errC;
 }
@@ -484,11 +484,11 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
     }
 }
 
-void deinitializeGraphics(Initialized const &initialized,
-                          foeSimulationStateLists const *pSimStateData) {
+void deinitializeGraphics(foeSimulationState const *pSimulationState,
+                          Initialized const &initialized) {
     // Loaders
-    auto *pIt = pSimStateData->pResourceLoaders;
-    auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+    auto *pIt = pSimulationState->resourceLoaders.data();
+    auto const *pEndIt = pIt + pSimulationState->resourceLoaders.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (initialized.image)
@@ -502,14 +502,14 @@ void deinitializeGraphics(Initialized const &initialized,
     }
 }
 
-std::error_code onGfxInitialization(foeSimulationStateLists const *pSimStateData,
+std::error_code onGfxInitialization(foeSimulationState const *pSimulationState,
                                     foeGfxSession gfxSession) {
     std::error_code errC;
     Initialized initialized{};
 
     { // Loaders
-        auto *pIt = pSimStateData->pResourceLoaders;
-        auto const *pEndIt = pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount;
+        auto *pIt = pSimulationState->resourceLoaders.data();
+        auto const *pEndIt = pIt + pSimulationState->resourceLoaders.size();
 
         for (; pIt != pEndIt; ++pIt) {
             if (auto *pImageLoader = dynamic_cast<foeImageLoader *>(pIt->pLoader); pImageLoader) {
@@ -558,7 +558,7 @@ std::error_code onGfxInitialization(foeSimulationStateLists const *pSimStateData
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitializeGraphics(initialized, pSimStateData);
+        deinitializeGraphics(pSimulationState, initialized);
 
     return errC;
 }
