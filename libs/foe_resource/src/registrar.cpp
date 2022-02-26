@@ -19,6 +19,7 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
+#include <foe/resource/type_defs.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -139,11 +140,14 @@ void onDeinitialize(foeSimulationState const *pSimulationState) {
 
 } // namespace
 
+int foeResourceFunctionalityID() { return FOE_RESOURCE_FUNCTIONALITY_ID; }
+
 void foeResourceRegisterFunctionality() {
     FOE_LOG(foeResource, Verbose,
             "foeResourceRegisterFunctionality - Starting to register functionality")
 
     foeRegisterFunctionality(foeSimulationFunctionalty{
+        .id = foeResourceFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialize,
@@ -159,6 +163,7 @@ void foeResourceDeregisterFunctionality() {
             "foeResourceDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
+        .id = foeResourceFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialize,

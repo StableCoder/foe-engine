@@ -17,6 +17,7 @@
 #include <foe/position/registrar.hpp>
 
 #include <foe/position/component/3d_pool.hpp>
+#include <foe/position/type_defs.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 
@@ -40,11 +41,14 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
 } // namespace
 
+int foePositionFunctionalityID() { return FOE_POSITION_FUNCTIONALITY_ID; }
+
 void foePositionRegisterFunctionality() {
     FOE_LOG(foePosition, Verbose,
             "foePositionRegisterFunctionality - Starting to register functionality")
 
     foeRegisterFunctionality(foeSimulationFunctionalty{
+        .id = foePositionFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
     });
@@ -58,6 +62,7 @@ void foePositionDeregisterFunctionality() {
             "foePositionDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
+        .id = foePositionFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
     });

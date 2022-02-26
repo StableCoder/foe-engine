@@ -31,6 +31,7 @@
 #include "log.hpp"
 #include "position_descriptor_pool.hpp"
 #include "render_state_pool.hpp"
+#include "type_defs.h"
 #include "vk_animation.hpp"
 
 namespace {
@@ -316,6 +317,7 @@ void foeBringupRegisterFunctionality() {
             "foeBringupRegisterFunctionality - Starting to register functionality")
 
     foeRegisterFunctionality(foeSimulationFunctionalty{
+        .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
@@ -333,6 +335,7 @@ void foeBringupDeregisterFunctionality() {
             "foeBringupDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
+        .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,

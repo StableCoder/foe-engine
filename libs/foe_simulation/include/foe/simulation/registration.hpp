@@ -27,6 +27,9 @@ struct foeSimulationInitInfo;
 struct foeSimulationStateLists;
 
 struct foeSimulationFunctionalty {
+    /// The UUID of the functionality, must be valid/derived from the
+    /// FOE_SIMULATION_FUNCTIONALITY_ID macro
+    int id;
     /// Called on any created SimulationState, to create related data pools, uninitialized systems.
     void (*onCreate)(foeSimulationState *);
     /// Called when destroying any SimulationState to destroy related data pools and systems.

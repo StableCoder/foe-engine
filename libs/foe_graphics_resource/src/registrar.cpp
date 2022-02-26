@@ -24,6 +24,7 @@
 #include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/simulation/group_data.hpp>
@@ -523,11 +524,14 @@ void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
 
 } // namespace
 
+int foeGraphicsResourceFunctionalityID() { return FOE_GRAPHICS_RESOURCE_FUNCTIONALITY_ID; }
+
 auto foeGraphicsResourceRegisterFunctionality() -> std::error_code {
     FOE_LOG(foeGraphicsResource, Verbose,
             "foeGraphicsResourceRegisterFunctionality - Starting to register functionality")
 
     auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
+        .id = foeGraphicsResourceFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
@@ -554,6 +558,7 @@ void foeGraphicsResourceDeregisterFunctionality() {
             "foeGraphicsResourceDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
+        .id = foeGraphicsResourceFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,

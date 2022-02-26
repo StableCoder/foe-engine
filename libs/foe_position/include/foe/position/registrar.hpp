@@ -19,6 +19,8 @@
 
 #include <foe/position/export.h>
 
+FOE_POSITION_EXPORT int foePositionFunctionalityID();
+
 FOE_POSITION_EXPORT void foePositionRegisterFunctionality();
 
 FOE_POSITION_EXPORT void foePositionDeregisterFunctionality();

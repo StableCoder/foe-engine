@@ -19,6 +19,8 @@
 
 #include <foe/physics/export.h>
 
+FOE_PHYSICS_EXPORT int foePhysicsFunctionalityID();
+
 FOE_PHYSICS_EXPORT void foePhysicsRegisterFunctionality();
 
 FOE_PHYSICS_EXPORT void foePhysicsDeregisterFunctionality();

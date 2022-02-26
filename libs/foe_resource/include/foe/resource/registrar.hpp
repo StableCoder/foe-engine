@@ -19,6 +19,8 @@
 
 #include <foe/resource/export.h>
 
+FOE_RES_EXPORT int foeResourceFunctionalityID();
+
 FOE_RES_EXPORT void foeResourceRegisterFunctionality();
 
 FOE_RES_EXPORT void foeResourceDeregisterFunctionality();

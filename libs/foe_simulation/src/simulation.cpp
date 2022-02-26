@@ -117,11 +117,23 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
     std::error_code errC{FOE_SIMULATION_SUCCESS};
     std::scoped_lock lock{mSync};
 
+    if (functionality.id < 1000000000 || functionality.id % 1000 != 0) {
+        FOE_LOG(SimulationState, Warning,
+                "registerFunctionality - Attempted to register functionality with invalid ID");
+        return FOE_SIMULATION_ERROR_FUNCTIONALITY_ID_INVALID;
+    }
+
     for (auto const &it : mRegistered) {
         if (it == functionality) {
             FOE_LOG(SimulationState, Warning,
                     "registerFunctionality - Attempted to re-register functionality");
             return FOE_SIMULATION_ERROR_FUNCTIONALITY_ALREADY_REGISTERED;
+        }
+        if (it.id == functionality.id) {
+            FOE_LOG(SimulationState, Warning,
+                    "registerFunctionality - Attempted to register functionality with an ID "
+                    "already in use");
+            return FOE_SIMULATION_ERROR_FUNCTIONALITY_ID_ALREADY_IN_USE;
         }
     }
 

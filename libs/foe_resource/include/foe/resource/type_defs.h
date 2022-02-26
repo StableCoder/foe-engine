@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,17 +14,11 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
-#define FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
+#ifndef FOE_RESOURCE_TYPE_DEFS_H
+#define FOE_RESOURCE_TYPE_DEFS_H
 
-#include <foe/graphics/resource/export.h>
+#include <foe/simulation/type_defs.h>
 
-#include <system_error>
+#define FOE_RESOURCE_FUNCTIONALITY_ID FOE_SIMULATION_FUNCTIONALITY_ID(4)
 
-FOE_GFX_RES_EXPORT int foeGraphicsResourceFunctionalityID();
-
-FOE_GFX_RES_EXPORT auto foeGraphicsResourceRegisterFunctionality() -> std::error_code;
-
-FOE_GFX_RES_EXPORT void foeGraphicsResourceDeregisterFunctionality();
-
-#endif // FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
+#endif // FOE_RESOURCE_TYPE_DEFS_H

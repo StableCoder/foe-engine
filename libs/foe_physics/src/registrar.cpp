@@ -21,6 +21,7 @@
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/system.hpp>
+#include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/registration_fn_templates.hpp>
@@ -241,11 +242,14 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
 
 } // namespace
 
+int foePhysicsFunctionalityID() { return FOE_PHYSICS_FUNCTIONALITY_ID; }
+
 void foePhysicsRegisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsRegisterFunctionality - Starting to register functionality")
 
     foeRegisterFunctionality(foeSimulationFunctionalty{
+        .id = foePhysicsFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
@@ -261,6 +265,7 @@ void foePhysicsDeregisterFunctionality() {
             "foePhysicsDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
+        .id = foePhysicsFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
         .onInitialization = onInitialization,
