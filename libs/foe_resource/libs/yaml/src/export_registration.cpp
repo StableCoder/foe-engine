@@ -21,6 +21,7 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
+#include <foe/resource/type_defs.h>
 
 #include "armature.hpp"
 #include "error_code.hpp"
@@ -36,8 +37,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
     for (; pResourcePools != pEndPools; ++pResourcePools) {
 
         // Armature
-        auto *pArmaturePool = dynamic_cast<foeArmaturePool *>(*pResourcePools);
-        if (pArmaturePool) {
+        if ((*pResourcePools)->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
+            auto *pArmaturePool = (foeArmaturePool *)*pResourcePools;
             auto const *pArmature = pArmaturePool->find(resource);
             if (pArmature && pArmature->pCreateInfo) {
                 if (auto dynPtr =

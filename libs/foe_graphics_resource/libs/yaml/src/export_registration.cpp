@@ -28,6 +28,7 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
@@ -50,8 +51,8 @@ std::vector<foeKeyYamlPair> exportImage(foeResourceID resource,
     auto const *pEndPools = pResourcePools + resourcePoolCount;
 
     for (; pResourcePools != pEndPools; ++pResourcePools) {
-        auto *pImagePool = dynamic_cast<foeImagePool *>(*pResourcePools);
-        if (pImagePool) {
+        if ((*pResourcePools)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
+            auto *pImagePool = (foeImagePool *)*pResourcePools;
             auto const *pImage = pImagePool->find(resource);
             if (pImage && pImage->pCreateInfo) {
                 if (auto pImageCI = dynamic_cast<foeImageCreateInfo *>(pImage->pCreateInfo.get());
@@ -74,8 +75,9 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
     auto const *pEndPools = pResourcePools + resourcePoolCount;
 
     for (; pResourcePools != pEndPools; ++pResourcePools) {
-        auto *pMaterialPool = dynamic_cast<foeMaterialPool *>(*pResourcePools);
-        if (pMaterialPool) {
+
+        if ((*pResourcePools)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
+            auto *pMaterialPool = (foeMaterialPool *)*pResourcePools;
             auto const *pMaterial = pMaterialPool->find(resource);
             if (pMaterial && pMaterial->pCreateInfo) {
                 if (auto pMaterialCI =
@@ -100,15 +102,15 @@ std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource,
     auto const *pEndPools = pResourcePools + resourcePoolCount;
 
     for (; pResourcePools != pEndPools; ++pResourcePools) {
-        auto *pMesh2Pool = dynamic_cast<foeMeshPool *>(*pResourcePools);
-        if (pMesh2Pool) {
-            auto const *pMesh2 = pMesh2Pool->find(resource);
-            if (pMesh2 && pMesh2->pCreateInfo) {
-                if (auto pMesh2CI = dynamic_cast<foeMeshCreateInfo *>(pMesh2->pCreateInfo.get());
-                    pMesh2CI)
+        if ((*pResourcePools)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
+            auto *pMeshPool = (foeMeshPool *)*pResourcePools;
+            auto const *pMesh = pMeshPool->find(resource);
+            if (pMesh && pMesh->pCreateInfo) {
+                if (auto pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pMesh->pCreateInfo.get());
+                    pMeshCI)
                     keyDataPairs.emplace_back(foeKeyYamlPair{
                         .key = yaml_mesh_key(),
-                        .data = yaml_write_mesh(*pMesh2CI),
+                        .data = yaml_write_mesh(*pMeshCI),
                     });
             }
         }
@@ -124,8 +126,8 @@ std::vector<foeKeyYamlPair> exportShader(foeResourceID resource,
     auto const *pEndPools = pResourcePools + resourcePoolCount;
 
     for (; pResourcePools != pEndPools; ++pResourcePools) {
-        auto *pShaderPool = dynamic_cast<foeShaderPool *>(*pResourcePools);
-        if (pShaderPool) {
+        if ((*pResourcePools)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
+            auto *pShaderPool = (foeShaderPool *)*pResourcePools;
             auto const *pShader = pShaderPool->find(resource);
             if (pShader && pShader->pCreateInfo) {
                 if (auto pShaderCI =
@@ -149,8 +151,10 @@ std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
     auto const *pEndPools = pResourcePools + resourcePoolCount;
 
     for (; pResourcePools != pEndPools; ++pResourcePools) {
-        auto *pVertexDescriptor2Pool = dynamic_cast<foeVertexDescriptorPool *>(*pResourcePools);
-        if (pVertexDescriptor2Pool) {
+
+        if ((*pResourcePools)->sType ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
+            auto *pVertexDescriptor2Pool = (foeVertexDescriptorPool *)*pResourcePools;
             auto const *pVertexDescriptor2 = pVertexDescriptor2Pool->find(resource);
             if (pVertexDescriptor2 && pVertexDescriptor2->pCreateInfo) {
                 if (auto pVertexDescriptor2CI = dynamic_cast<foeVertexDescriptorCreateInfo *>(

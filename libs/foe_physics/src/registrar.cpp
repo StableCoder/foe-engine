@@ -56,12 +56,17 @@ void collisionShapeLoadFn(void *pContext,
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Resources
-    if (auto *pPool = search<foeCollisionShapePool>(pSimulationState->resourcePools.begin(),
-                                                    pSimulationState->resourcePools.end());
-        pPool) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeCollisionShapePool{foeResourceFns{
+    bool poolFound = false;
+
+    for (auto &pPool : pSimulationState->resourcePools) {
+        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
+            ++pPool->refCount;
+            poolFound = true;
+        }
+    }
+
+    if (!poolFound) {
+        auto *pPool = new foeCollisionShapePool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
@@ -131,7 +136,16 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy<foeCollisionShapePool>(pPool);
+        if (pPool == nullptr)
+            continue;
+
+        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
+            auto *pTemp = (foeCollisionShapePool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        }
     }
 }
 
@@ -202,9 +216,17 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                     pSimStateData->pResourceLoaders,
                     pSimStateData->pResourceLoaders + pSimStateData->resourceLoaderCount);
 
-                auto *pCollisionShapePool = search<foeCollisionShapePool>(
-                    pSimStateData->pResourcePools,
-                    pSimStateData->pResourcePools + pSimStateData->resourcePoolCount);
+                foeCollisionShapePool *pCollisionShapePool{nullptr};
+
+                auto *it = pSimStateData->pResourcePools;
+                auto *endIt = it + pSimStateData->resourcePoolCount;
+                for (; it != endIt; ++it) {
+                    if (*it == nullptr)
+                        continue;
+
+                    if ((*it)->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL)
+                        pCollisionShapePool = (foeCollisionShapePool *)(*it);
+                }
 
                 auto *pRigidBodyPool = search<foeRigidBodyPool>(
                     pSimStateData->pComponentPools,

@@ -51,12 +51,20 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Resource Pools
-    if (auto *pPool = search<foeArmaturePool>(pSimulationState->resourcePools.begin(),
-                                              pSimulationState->resourcePools.end());
-        pPool) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeArmaturePool{foeResourceFns{
+    bool poolFound = false;
+
+    for (auto &pPool : pSimulationState->resourcePools) {
+        if (pPool == nullptr)
+            continue;
+
+        if (pPool->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
+            ++pPool->refCount;
+            poolFound = true;
+        }
+    }
+
+    if (!poolFound) {
+        auto *pPool = new foeArmaturePool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
@@ -93,7 +101,16 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Resource Pools
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy<foeArmaturePool>(pPool);
+        if (pPool == nullptr)
+            continue;
+
+        if (pPool->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
+            auto *pTemp = (foeArmaturePool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        }
     }
 }
 

@@ -19,6 +19,7 @@
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/resource/armature_loader.hpp>
 #include <foe/resource/armature_pool.hpp>
+#include <foe/resource/type_defs.h>
 
 #include "armature.hpp"
 #include "error_code.hpp"
@@ -30,10 +31,10 @@ std::error_code armatureCreateProcessing(foeResourceID resource,
                                          std::vector<foeResourcePoolBase *> &resourcePools) {
     foeArmaturePool *pArmaturePool{nullptr};
     for (auto &it : resourcePools) {
-        pArmaturePool = dynamic_cast<foeArmaturePool *>(it);
-
-        if (pArmaturePool != nullptr)
+        if (it->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
+            pArmaturePool = (foeArmaturePool *)it;
             break;
+        }
     }
 
     if (pArmaturePool == nullptr)

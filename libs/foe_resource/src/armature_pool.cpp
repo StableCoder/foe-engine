@@ -17,8 +17,10 @@
 #include <foe/resource/armature_pool.hpp>
 
 #include <foe/resource/armature.hpp>
+#include <foe/resource/type_defs.h>
 
-foeArmaturePool::foeArmaturePool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
+foeArmaturePool::foeArmaturePool(foeResourceFns const &resourceFns) :
+    foeResourcePoolBase{FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL}, mResourceFns{resourceFns} {}
 
 foeArmaturePool::~foeArmaturePool() {
     for (auto *pResource : mResources) {

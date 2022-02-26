@@ -18,6 +18,7 @@
 
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
+#include <foe/physics/type_defs.h>
 #include <foe/simulation/imgui/registrar.hpp>
 
 #include "collision_shape.hpp"
@@ -46,8 +47,9 @@ void imgui_foePhysicsResources(foeResourceID resource,
                                size_t poolCount) {
     for (size_t i = 0; i < poolCount; ++i) {
         // foeCollisionShape
-        auto *pPool = dynamic_cast<foeCollisionShapePool *>(ppPools[i]);
-        if (pPool != nullptr) {
+
+        if (ppPools[i]->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
+            auto *pPool = (foeCollisionShapePool *)ppPools[i];
             auto pResource = pPool->find(resource);
             if (pResource != nullptr) {
                 imgui_render_foeCollisionShape(pResource);

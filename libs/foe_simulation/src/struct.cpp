@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,17 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_CORE_POOL_HPP
-#define FOE_SIMULATION_CORE_POOL_HPP
-
 #include <foe/simulation/type_defs.h>
 
-#include <cstddef>
+#include <foe/simulation/core/pool.hpp>
+#include <foe/simulation/simulation.hpp>
 
-struct foeResourcePoolBase {
-    foeSimulationStructureType sType;
-    void *pNext;
-    size_t refCount;
-};
+extern "C" void *foeSimulationGetResourcePool(foeSimulationState const *pSimulationState,
+                                              foeSimulationStructureType sType) {
+    auto *pIt = pSimulationState->resourcePools.data();
+    auto *pEndIt = pIt + pSimulationState->resourcePools.size();
 
-#endif // FOE_SIMULATION_CORE_POOL_HPP
+    for (; pIt != pEndIt; ++pIt) {
+        if (*pIt != nullptr && (*pIt)->sType == sType) {
+            return (void *)*pIt;
+        }
+    }
+
+    return nullptr;
+}

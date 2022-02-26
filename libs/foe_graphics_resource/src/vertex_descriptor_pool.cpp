@@ -16,9 +16,11 @@
 
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 
 foeVertexDescriptorPool::foeVertexDescriptorPool(foeResourceFns const &resourceFns) :
+    foeResourcePoolBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL},
     mResourceFns{resourceFns} {}
 
 foeVertexDescriptorPool::~foeVertexDescriptorPool() {

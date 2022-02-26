@@ -20,6 +20,7 @@
 #include <foe/graphics/resource/material_pool.hpp>
 #include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/imex/yaml/generator.hpp>
@@ -39,10 +40,10 @@ std::error_code imageCreateProcessing(foeResourceID resource,
                                       std::vector<foeResourcePoolBase *> &resourcePools) {
     foeImagePool *pImagePool{nullptr};
     for (auto &it : resourcePools) {
-        pImagePool = dynamic_cast<foeImagePool *>(it);
-
-        if (pImagePool != nullptr)
+        if (it->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
+            pImagePool = (foeImagePool *)it;
             break;
+        }
     }
 
     if (pImagePool == nullptr)
@@ -61,10 +62,10 @@ std::error_code materialCreateProcessing(foeResourceID resource,
                                          std::vector<foeResourcePoolBase *> &resourcePools) {
     foeMaterialPool *pMaterialPool{nullptr};
     for (auto &it : resourcePools) {
-        pMaterialPool = dynamic_cast<foeMaterialPool *>(it);
-
-        if (pMaterialPool != nullptr)
+        if (it->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
+            pMaterialPool = (foeMaterialPool *)it;
             break;
+        }
     }
 
     if (pMaterialPool == nullptr)
@@ -81,20 +82,20 @@ std::error_code materialCreateProcessing(foeResourceID resource,
 std::error_code meshCreateProcessing(foeResourceID resource,
                                      foeResourceCreateInfoBase *pCreateInfo,
                                      std::vector<foeResourcePoolBase *> &resourcePools) {
-    foeMeshPool *pMesh2Pool{nullptr};
+    foeMeshPool *pMeshPool{nullptr};
     for (auto &it : resourcePools) {
-        pMesh2Pool = dynamic_cast<foeMeshPool *>(it);
-
-        if (pMesh2Pool != nullptr)
+        if (it->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
+            pMeshPool = (foeMeshPool *)it;
             break;
+        }
     }
 
-    if (pMesh2Pool == nullptr)
+    if (pMeshPool == nullptr)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND;
 
-    auto *pMesh2 = pMesh2Pool->add(resource);
+    auto *pMesh = pMeshPool->add(resource);
 
-    if (!pMesh2)
+    if (!pMesh)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS;
 
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
@@ -105,10 +106,10 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
                                        std::vector<foeResourcePoolBase *> &resourcePools) {
     foeShaderPool *pShaderPool{nullptr};
     for (auto &it : resourcePools) {
-        pShaderPool = dynamic_cast<foeShaderPool *>(it);
-
-        if (pShaderPool != nullptr)
+        if (it->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
+            pShaderPool = (foeShaderPool *)it;
             break;
+        }
     }
 
     if (pShaderPool == nullptr)
@@ -128,10 +129,10 @@ std::error_code vertexDescriptorCreateProcessing(
     std::vector<foeResourcePoolBase *> &resourcePools) {
     foeVertexDescriptorPool *pVertexDescriptorPool{nullptr};
     for (auto &it : resourcePools) {
-        pVertexDescriptorPool = dynamic_cast<foeVertexDescriptorPool *>(it);
-
-        if (pVertexDescriptorPool != nullptr)
+        if (it->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
+            pVertexDescriptorPool = (foeVertexDescriptorPool *)it;
             break;
+        }
     }
 
     if (pVertexDescriptorPool == nullptr)

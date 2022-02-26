@@ -18,8 +18,10 @@
 
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
+#include <foe/physics/type_defs.h>
 
 foeCollisionShapePool::foeCollisionShapePool(foeResourceFns const &resourceFns) :
+    foeResourcePoolBase{FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL},
     mResourceFns{resourceFns} {}
 
 foeCollisionShapePool::~foeCollisionShapePool() {

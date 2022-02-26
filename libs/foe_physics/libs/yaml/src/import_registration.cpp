@@ -21,6 +21,7 @@
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
+#include <foe/physics/type_defs.h>
 #include <foe/yaml/exception.hpp>
 
 #include "collision_shape.hpp"
@@ -34,10 +35,10 @@ std::error_code collisionShapeCreateProcessing(foeResourceID resource,
                                                std::vector<foeResourcePoolBase *> &resourcePools) {
     foeCollisionShapePool *pCollisionShapePool{nullptr};
     for (auto &it : resourcePools) {
-        pCollisionShapePool = dynamic_cast<foeCollisionShapePool *>(it);
-
-        if (pCollisionShapePool != nullptr)
+        if (it->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
+            pCollisionShapePool = (foeCollisionShapePool *)it;
             break;
+        }
     }
 
     if (pCollisionShapePool == nullptr)

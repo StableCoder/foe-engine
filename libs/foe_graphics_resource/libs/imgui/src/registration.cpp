@@ -20,6 +20,7 @@
 #include <foe/graphics/resource/material_pool.hpp>
 #include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
 
@@ -36,8 +37,9 @@ void imgui_foeGraphicsResources(foeResourceID resource,
                                 size_t poolCount) {
     for (size_t i = 0; i < poolCount; ++i) {
         { // foeImage
-            auto *pPool = dynamic_cast<foeImagePool *>(ppPools[i]);
-            if (pPool != nullptr) {
+
+            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
+                auto *pPool = (foeImagePool *)ppPools[i];
                 auto pResource = pPool->find(resource);
                 if (pResource != nullptr) {
                     imgui_foeImage(pResource);
@@ -46,8 +48,8 @@ void imgui_foeGraphicsResources(foeResourceID resource,
         }
 
         { // foeMaterial
-            auto *pPool = dynamic_cast<foeMaterialPool *>(ppPools[i]);
-            if (pPool != nullptr) {
+            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
+                auto *pPool = (foeMaterialPool *)ppPools[i];
                 auto pResource = pPool->find(resource);
                 if (pResource != nullptr) {
                     imgui_foeMaterial(pResource);
@@ -56,8 +58,8 @@ void imgui_foeGraphicsResources(foeResourceID resource,
         }
 
         { // foeMesh
-            auto *pPool = dynamic_cast<foeMeshPool *>(ppPools[i]);
-            if (pPool != nullptr) {
+            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
+                auto *pPool = (foeMeshPool *)ppPools[i];
                 auto pResource = pPool->find(resource);
                 if (pResource != nullptr) {
                     imgui_foeMesh(pResource);
@@ -66,8 +68,8 @@ void imgui_foeGraphicsResources(foeResourceID resource,
         }
 
         { // foeShader
-            auto *pPool = dynamic_cast<foeShaderPool *>(ppPools[i]);
-            if (pPool != nullptr) {
+            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
+                auto *pPool = (foeShaderPool *)ppPools[i];
                 auto pResource = pPool->find(resource);
                 if (pResource != nullptr) {
                     imgui_foeShader(pResource);
@@ -76,8 +78,9 @@ void imgui_foeGraphicsResources(foeResourceID resource,
         }
 
         { // foeVertexDescriptor
-            auto *pPool = dynamic_cast<foeVertexDescriptorPool *>(ppPools[i]);
-            if (pPool != nullptr) {
+
+            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
+                auto *pPool = (foeVertexDescriptorPool *)ppPools[i];
                 auto pResource = pPool->find(resource);
                 if (pResource != nullptr) {
                     imgui_foeVertexDescriptor(pResource);

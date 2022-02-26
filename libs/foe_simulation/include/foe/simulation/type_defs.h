@@ -17,9 +17,13 @@
 #ifndef FOE_SIMULATION_TYPE_DEFS_H
 #define FOE_SIMULATION_TYPE_DEFS_H
 
+#include <foe/simulation/export.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct foeSimulationState;
 
 /**
  * This macro is used to help diferentiate different binaries/plugin's functionality set.
@@ -43,6 +47,16 @@ extern "C" {
  * @warning 1 - 9.999 is reserved for FoE-developed functionality and should not be used by others.
  **/
 #define FOE_SIMULATION_FUNCTIONALITY_ID(X) 1000000000 + (X * 1000)
+
+typedef int foeSimulationStructureType;
+
+struct foeSimulationBaseStruct {
+    foeSimulationStructureType sType;
+    void *pNext;
+};
+
+FOE_SIM_EXPORT void *foeSimulationGetResourcePool(foeSimulationState const *pSimulationState,
+                                                  foeSimulationStructureType sType);
 
 #ifdef __cplusplus
 }

@@ -21,6 +21,7 @@
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
+#include <foe/physics/type_defs.h>
 
 #include "collision_shape.hpp"
 #include "error_code.hpp"
@@ -35,8 +36,8 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
     auto const *pEndPools = pResourcePools + resourcePoolCount;
 
     for (; pResourcePools != pEndPools; ++pResourcePools) {
-        auto *pCollisionShapePool = dynamic_cast<foeCollisionShapePool *>(*pResourcePools);
-        if (pCollisionShapePool) {
+        if ((*pResourcePools)->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
+            auto *pCollisionShapePool = (foeCollisionShapePool *)*pResourcePools;
             auto const *pCollisionShape = pCollisionShapePool->find(resource);
             if (pCollisionShape && pCollisionShape->pCreateInfo) {
                 if (auto dynPtr = dynamic_cast<foeCollisionShapeCreateInfo *>(

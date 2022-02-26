@@ -37,6 +37,14 @@
 
 namespace {
 
+struct Initialized {
+    bool image;
+    bool material;
+    bool shader;
+    bool vertexDescriptor;
+    bool mesh;
+};
+
 foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
     auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
     return pGroupData->getResourceDefinition(resource);
@@ -121,12 +129,39 @@ void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Resources
-    if (auto *pPool = search<foeImagePool>(pSimulationState->resourcePools.begin(),
-                                           pSimulationState->resourcePools.end());
-        pPool) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeImagePool{foeResourceFns{
+    Initialized found{};
+
+    // Find any matching pool types that have been created already, and if so, increment the
+    // reference count
+    for (auto &pPool : pSimulationState->resourcePools) {
+        if (pPool == nullptr)
+            continue;
+
+        if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
+            ++pPool->refCount;
+            found.image = true;
+        }
+        if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
+            ++pPool->refCount;
+            found.material = true;
+        }
+        if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
+            ++pPool->refCount;
+            found.shader = true;
+        }
+        if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
+            ++pPool->refCount;
+            found.vertexDescriptor = true;
+        }
+        if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
+            ++pPool->refCount;
+            found.mesh = true;
+        }
+    }
+
+    // For any resource pools not yet created, do so now
+    if (!found.image) {
+        auto *pPool = new foeImagePool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
@@ -135,13 +170,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
     }
-
-    if (auto *pPool = search<foeMaterialPool>(pSimulationState->resourcePools.begin(),
-                                              pSimulationState->resourcePools.end());
-        pPool) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeMaterialPool{foeResourceFns{
+    if (!found.material) {
+        auto *pPool = new foeMaterialPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
@@ -150,13 +180,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
     }
-
-    if (auto *pPool = search<foeShaderPool>(pSimulationState->resourcePools.begin(),
-                                            pSimulationState->resourcePools.end());
-        pPool) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeShaderPool{foeResourceFns{
+    if (!found.shader) {
+        auto *pPool = new foeShaderPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
@@ -165,13 +190,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
     }
-
-    if (auto *pPool = search<foeVertexDescriptorPool>(pSimulationState->resourcePools.begin(),
-                                                      pSimulationState->resourcePools.end());
-        pPool) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeVertexDescriptorPool{foeResourceFns{
+    if (!found.vertexDescriptor) {
+        auto *pPool = new foeVertexDescriptorPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
@@ -180,13 +200,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
     }
-
-    if (auto *pPool = search<foeMeshPool>(pSimulationState->resourcePools.begin(),
-                                          pSimulationState->resourcePools.end());
-        pPool) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeMeshPool{foeResourceFns{
+    if (!found.mesh) {
+        auto *pPool = new foeMeshPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
@@ -296,21 +311,42 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
-        searchAndDestroy<foeMeshPool>(pPool);
-        searchAndDestroy<foeVertexDescriptorPool>(pPool);
-        searchAndDestroy<foeShaderPool>(pPool);
-        searchAndDestroy<foeMaterialPool>(pPool);
-        searchAndDestroy<foeImagePool>(pPool);
+        if (pPool == nullptr)
+            continue;
+
+        if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
+            auto *pTemp = (foeMeshPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
+            auto *pTemp = (foeVertexDescriptorPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
+            auto *pTemp = (foeShaderPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
+            auto *pTemp = (foeMaterialPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
+            auto *pTemp = (foeImagePool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        }
     }
 }
-
-struct Initialized {
-    bool image;
-    bool material;
-    bool shader;
-    bool vertexDescriptor;
-    bool mesh;
-};
 
 void deinitialize(Initialized const &initialized, foeSimulationStateLists const *pSimStateData) {
     // Loaders
@@ -358,13 +394,20 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                 if (pMaterialLoader->initialized())
                     continue;
 
-                auto *pShaderPool = search<foeShaderPool>(pSimStateData->pResourcePools,
-                                                          pSimStateData->pResourcePools +
-                                                              pSimStateData->resourcePoolCount);
+                foeShaderPool *pShaderPool{nullptr};
+                foeImagePool *pImagePool{nullptr};
 
-                auto *pImagePool = search<foeImagePool>(pSimStateData->pResourcePools,
-                                                        pSimStateData->pResourcePools +
-                                                            pSimStateData->resourcePoolCount);
+                auto *it = pSimStateData->pResourcePools;
+                auto *endIt = it + pSimStateData->resourcePoolCount;
+                for (; it != endIt; ++it) {
+                    if (*it == nullptr)
+                        continue;
+
+                    if ((*it)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL)
+                        pShaderPool = (foeShaderPool *)(*it);
+                    if ((*it)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL)
+                        pImagePool = (foeImagePool *)(*it);
+                }
 
                 errC = pMaterialLoader->initialize(pShaderPool, pImagePool);
                 if (errC)
@@ -392,9 +435,17 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
                     continue;
                 }
 
-                auto *pShaderPool = search<foeShaderPool>(pSimStateData->pResourcePools,
-                                                          pSimStateData->pResourcePools +
-                                                              pSimStateData->resourcePoolCount);
+                foeShaderPool *pShaderPool{nullptr};
+
+                auto *it = pSimStateData->pResourcePools;
+                auto *endIt = it + pSimStateData->resourcePoolCount;
+                for (; it != endIt; ++it) {
+                    if (*it == nullptr)
+                        continue;
+
+                    if ((*it)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL)
+                        pShaderPool = (foeShaderPool *)(*it);
+                }
 
                 errC = pVertexDescriptorLoader->initialize(pShaderPool);
                 if (errC)

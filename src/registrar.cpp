@@ -17,8 +17,10 @@
 #include "registrar.hpp"
 
 #include <foe/graphics/resource/mesh_pool.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/resource/armature_pool.hpp>
+#include <foe/resource/type_defs.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -143,9 +145,17 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
             if (pArmatureSystem->initialized())
                 continue;
 
-            auto *pArmaturePool = search<foeArmaturePool>(pSimStateData->pResourcePools,
-                                                          pSimStateData->pResourcePools +
-                                                              pSimStateData->resourcePoolCount);
+            foeArmaturePool *pArmaturePool{nullptr};
+
+            auto *it = pSimStateData->pResourcePools;
+            auto *endIt = it + pSimStateData->resourcePoolCount;
+            for (; it != endIt; ++it) {
+                if (*it == nullptr)
+                    continue;
+
+                if ((*it)->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL)
+                    pArmaturePool = (foeArmaturePool *)(*it);
+            }
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
                 pSimStateData->pComponentPools,
@@ -195,13 +205,20 @@ std::error_code onInitialization(foeSimulationInitInfo const *pInitInfo,
             if (pVkAnimationPool->initialized())
                 continue;
 
-            auto *pArmaturePool = search<foeArmaturePool>(pSimStateData->pResourcePools,
-                                                          pSimStateData->pResourcePools +
-                                                              pSimStateData->resourcePoolCount);
+            foeArmaturePool *pArmaturePool{nullptr};
+            foeMeshPool *pMeshPool{nullptr};
 
-            auto *pMeshPool = search<foeMeshPool>(pSimStateData->pResourcePools,
-                                                  pSimStateData->pResourcePools +
-                                                      pSimStateData->resourcePoolCount);
+            auto *it = pSimStateData->pResourcePools;
+            auto *endIt = it + pSimStateData->resourcePoolCount;
+            for (; it != endIt; ++it) {
+                if (*it == nullptr)
+                    continue;
+
+                if ((*it)->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL)
+                    pArmaturePool = (foeArmaturePool *)(*it);
+                if ((*it)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL)
+                    pMeshPool = (foeMeshPool *)(*it);
+            }
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
                 pSimStateData->pComponentPools,

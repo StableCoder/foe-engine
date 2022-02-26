@@ -17,8 +17,11 @@
 #include <foe/graphics/resource/material_pool.hpp>
 
 #include <foe/graphics/resource/material.hpp>
+#include <foe/graphics/resource/type_defs.h>
 
-foeMaterialPool::foeMaterialPool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
+foeMaterialPool::foeMaterialPool(foeResourceFns const &resourceFns) :
+    foeResourcePoolBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL},
+    mResourceFns{resourceFns} {}
 
 foeMaterialPool::~foeMaterialPool() {
     for (auto *pResource : mResources) {
