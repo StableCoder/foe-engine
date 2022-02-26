@@ -214,22 +214,6 @@ void foeImGuiResourceList::displayOpenResources() {
     }
 }
 
-namespace {
-
-template <typename ResourcePool>
-auto getResourcePool(foeResourcePoolBase **pResourcePools, size_t poolCount) -> ResourcePool * {
-    ResourcePool *pPool{nullptr};
-    for (size_t i = 0; i < poolCount; ++i) {
-        pPool = dynamic_cast<ResourcePool *>(pResourcePools[i]);
-        if (pPool != nullptr)
-            break;
-    }
-
-    return pPool;
-}
-
-} // namespace
-
 bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     if (!pData->open) {
         return false;
@@ -255,8 +239,7 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
                     mpSimulationState->pResourceNameMap->find(pData->resource).data());
     }
 
-    mpRegistrar->displayResource(pData->resource, mpSimulationState->resourcePools.data(),
-                                 mpSimulationState->resourcePools.size());
+    mpRegistrar->displayResource(pData->resource, mpSimulationState);
 
     ImGui::End();
 

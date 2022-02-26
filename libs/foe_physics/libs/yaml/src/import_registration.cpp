@@ -32,14 +32,9 @@ namespace {
 
 std::error_code collisionShapeCreateProcessing(foeResourceID resource,
                                                foeResourceCreateInfoBase *pCreateInfo,
-                                               std::vector<foeResourcePoolBase *> &resourcePools) {
-    foeCollisionShapePool *pCollisionShapePool{nullptr};
-    for (auto &it : resourcePools) {
-        if (it->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
-            pCollisionShapePool = (foeCollisionShapePool *)it;
-            break;
-        }
-    }
+                                               foeSimulationState const *pSimulationState) {
+    auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (pCollisionShapePool == nullptr)
         return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND;

@@ -38,7 +38,7 @@ namespace {
 
 std::shared_mutex gSync;
 
-std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeResourcePoolBase **, uint32_t)>
+std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulationState const *)>
     gResourceFns;
 std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeComponentPoolBase **, uint32_t)>
     gComponentFns;
@@ -86,13 +86,13 @@ std::string id_to_filename(foeId id, std::string const &editorName) {
     return filename;
 }
 
-void exportResource(foeResourceID resource,
-                    std::filesystem::path directory,
-                    foeEditorNameMap *pNameMap,
-                    std::vector<std::vector<foeKeyYamlPair> (*)(
-                        foeResourceID, foeResourcePoolBase **, uint32_t)> const &resourceFns,
-                    foeResourcePoolBase **ppResourcePools,
-                    uint32_t resourcePoolCount) {
+void exportResource(
+    foeResourceID resource,
+    std::filesystem::path directory,
+    foeEditorNameMap *pNameMap,
+    std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulationState const *)> const
+        &resourceFns,
+    foeSimulationState const *pSimulationState) {
     std::string editorName;
     if (pNameMap != nullptr) {
         editorName = pNameMap->find(resource);
@@ -107,7 +107,7 @@ void exportResource(foeResourceID resource,
     }
 
     for (auto const &fn : resourceFns) {
-        auto keyDataPairs = fn(resource, ppResourcePools, resourcePoolCount);
+        auto keyDataPairs = fn(resource, pSimulationState);
 
         for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
@@ -271,9 +271,7 @@ std::error_code exportResources(std::filesystem::path rootOutPath,
 
             resource = foeIdCreate(group, idx);
 
-            exportResource(resource, dirPath, pSimState->pResourceNameMap, gResourceFns,
-                           pSimState->resourcePools.data(),
-                           static_cast<uint32_t>(pSimState->resourcePools.size()));
+            exportResource(resource, dirPath, pSimState->pResourceNameMap, gResourceFns, pSimState);
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resource),
@@ -424,7 +422,7 @@ EXPORT_FAILED:
 }
 
 std::error_code foeImexYamlRegisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeResourcePoolBase **, uint32_t)) {
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *)) {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gResourceFns) {
@@ -438,7 +436,7 @@ std::error_code foeImexYamlRegisterResourceFn(
 }
 
 std::error_code foeImexYamlDeregisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeResourcePoolBase **, uint32_t)) {
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *)) {
     std::scoped_lock lock{gSync};
 
     auto searchIt = std::find(gResourceFns.begin(), gResourceFns.end(), pResourceFn);

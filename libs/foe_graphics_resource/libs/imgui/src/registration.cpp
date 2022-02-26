@@ -23,6 +23,7 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
+#include <foe/simulation/simulation.hpp>
 
 #include "image.hpp"
 #include "material.hpp"
@@ -33,59 +34,59 @@
 namespace {
 
 void imgui_foeGraphicsResources(foeResourceID resource,
-                                foeResourcePoolBase **ppPools,
-                                size_t poolCount) {
-    for (size_t i = 0; i < poolCount; ++i) {
-        { // foeImage
+                                foeSimulationState const *pSimulationState) {
+    // foeImage
+    auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
-            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
-                auto *pPool = (foeImagePool *)ppPools[i];
-                auto pResource = pPool->find(resource);
-                if (pResource != nullptr) {
-                    imgui_foeImage(pResource);
-                }
-            }
+    if (pImagePool != nullptr) {
+        auto pResource = pImagePool->find(resource);
+        if (pResource != nullptr) {
+            imgui_foeImage(pResource);
         }
+    }
 
-        { // foeMaterial
-            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
-                auto *pPool = (foeMaterialPool *)ppPools[i];
-                auto pResource = pPool->find(resource);
-                if (pResource != nullptr) {
-                    imgui_foeMaterial(pResource);
-                }
-            }
+    // foeMaterial
+    auto pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
+
+    if (pMaterialPool != nullptr) {
+        auto pResource = pMaterialPool->find(resource);
+        if (pResource != nullptr) {
+            imgui_foeMaterial(pResource);
         }
+    }
 
-        { // foeMesh
-            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
-                auto *pPool = (foeMeshPool *)ppPools[i];
-                auto pResource = pPool->find(resource);
-                if (pResource != nullptr) {
-                    imgui_foeMesh(pResource);
-                }
-            }
+    // foeMesh
+    auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
+
+    if (pMeshPool != nullptr) {
+        auto pResource = pMeshPool->find(resource);
+        if (pResource != nullptr) {
+            imgui_foeMesh(pResource);
         }
+    }
 
-        { // foeShader
-            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
-                auto *pPool = (foeShaderPool *)ppPools[i];
-                auto pResource = pPool->find(resource);
-                if (pResource != nullptr) {
-                    imgui_foeShader(pResource);
-                }
-            }
+    // foeShader
+    auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
+
+    if (pShaderPool != nullptr) {
+        auto pResource = pShaderPool->find(resource);
+        if (pResource != nullptr) {
+            imgui_foeShader(pResource);
         }
+    }
 
-        { // foeVertexDescriptor
+    // foeVertexDescriptor
+    auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
-            if (ppPools[i]->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
-                auto *pPool = (foeVertexDescriptorPool *)ppPools[i];
-                auto pResource = pPool->find(resource);
-                if (pResource != nullptr) {
-                    imgui_foeVertexDescriptor(pResource);
-                }
-            }
+    if (pVertexDescriptorPool != nullptr) {
+        auto pResource = pVertexDescriptorPool->find(resource);
+        if (pResource != nullptr) {
+            imgui_foeVertexDescriptor(pResource);
         }
     }
 }

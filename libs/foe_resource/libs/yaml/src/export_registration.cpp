@@ -29,26 +29,22 @@
 namespace {
 
 std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
-                                            foeResourcePoolBase **pResourcePools,
-                                            uint32_t resourcePoolCount) {
+                                            foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
-    auto const *pEndPools = pResourcePools + resourcePoolCount;
 
-    for (; pResourcePools != pEndPools; ++pResourcePools) {
+    // Armature
+    auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
 
-        // Armature
-        if ((*pResourcePools)->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
-            auto *pArmaturePool = (foeArmaturePool *)*pResourcePools;
-            auto const *pArmature = pArmaturePool->find(resource);
-            if (pArmature && pArmature->pCreateInfo) {
-                if (auto dynPtr =
-                        dynamic_cast<foeArmatureCreateInfo *>(pArmature->pCreateInfo.get());
-                    dynPtr) {
-                    keyDataPairs.emplace_back(foeKeyYamlPair{
-                        .key = yaml_armature_key(),
-                        .data = yaml_write_armature(*dynPtr),
-                    });
-                }
+    if (pArmaturePool != nullptr) {
+        auto const *pArmature = pArmaturePool->find(resource);
+        if (pArmature && pArmature->pCreateInfo) {
+            if (auto dynPtr = dynamic_cast<foeArmatureCreateInfo *>(pArmature->pCreateInfo.get());
+                dynPtr) {
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = yaml_armature_key(),
+                    .data = yaml_write_armature(*dynPtr),
+                });
             }
         }
     }

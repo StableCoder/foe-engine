@@ -27,7 +27,6 @@
 #include <vector>
 
 struct foeSimulationState;
-struct foeResourcePoolBase;
 struct foeComponentPoolBase;
 
 struct foeKeyYamlPair {
@@ -39,10 +38,10 @@ FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlExport(std::filesystem::path pat
                                                        foeSimulationState *pSimState);
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlRegisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeResourcePoolBase **, uint32_t));
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *));
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlDeregisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeResourcePoolBase **, uint32_t));
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *));
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlRegisterComponentFn(
     std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeComponentPoolBase **, uint32_t));

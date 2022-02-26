@@ -30,24 +30,22 @@
 namespace {
 
 std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
-                                            foeResourcePoolBase **pResourcePools,
-                                            uint32_t resourcePoolCount) {
+                                            foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
-    auto const *pEndPools = pResourcePools + resourcePoolCount;
 
-    for (; pResourcePools != pEndPools; ++pResourcePools) {
-        if ((*pResourcePools)->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
-            auto *pCollisionShapePool = (foeCollisionShapePool *)*pResourcePools;
-            auto const *pCollisionShape = pCollisionShapePool->find(resource);
-            if (pCollisionShape && pCollisionShape->pCreateInfo) {
-                if (auto dynPtr = dynamic_cast<foeCollisionShapeCreateInfo *>(
-                        pCollisionShape->pCreateInfo.get());
-                    dynPtr)
-                    keyDataPairs.emplace_back(foeKeyYamlPair{
-                        .key = yaml_collision_shape_key(),
-                        .data = yaml_write_collision_shape(*dynPtr),
-                    });
-            }
+    auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+
+    if (pCollisionShapePool != nullptr) {
+        auto const *pCollisionShape = pCollisionShapePool->find(resource);
+        if (pCollisionShape && pCollisionShape->pCreateInfo) {
+            if (auto dynPtr =
+                    dynamic_cast<foeCollisionShapeCreateInfo *>(pCollisionShape->pCreateInfo.get());
+                dynPtr)
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = yaml_collision_shape_key(),
+                    .data = yaml_write_collision_shape(*dynPtr),
+                });
         }
     }
 

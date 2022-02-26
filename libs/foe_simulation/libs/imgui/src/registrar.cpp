@@ -80,12 +80,11 @@ void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity,
 }
 
 void foeSimulationImGuiRegistrar::displayResource(foeEntityID entity,
-                                                  foeResourcePoolBase **ppPools,
-                                                  size_t poolCount) {
+                                                  foeSimulationState const *pSimulationState) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (it.resourceFn)
-            it.resourceFn(entity, ppPools, poolCount);
+            it.resourceFn(entity, pSimulationState);
     }
 }

@@ -246,13 +246,13 @@ auto importState(std::string_view topLevelDataSet,
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
             pGroupImporter->importResourceDefinitions(pSimulationSet->pResourceNameMap,
-                                                      pSimulationSet->resourcePools);
+                                                      pSimulationSet.get());
         }
     }
 
     // Load dependency resource definitions
     retVal = pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
-        pSimulationSet->pResourceNameMap, pSimulationSet->resourcePools);
+        pSimulationSet->pResourceNameMap, pSimulationSet.get());
     if (!retVal)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE;
 

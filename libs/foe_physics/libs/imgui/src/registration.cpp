@@ -42,18 +42,15 @@ void imgui_foePhysicsComponents(foeEntityID entity,
     }
 }
 
-void imgui_foePhysicsResources(foeResourceID resource,
-                               foeResourcePoolBase **ppPools,
-                               size_t poolCount) {
-    for (size_t i = 0; i < poolCount; ++i) {
-        // foeCollisionShape
+void imgui_foePhysicsResources(foeResourceID resource, foeSimulationState const *pSimulationState) {
+    // foeCollisionShape
+    auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
-        if (ppPools[i]->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
-            auto *pPool = (foeCollisionShapePool *)ppPools[i];
-            auto pResource = pPool->find(resource);
-            if (pResource != nullptr) {
-                imgui_render_foeCollisionShape(pResource);
-            }
+    if (pCollisionShapePool != nullptr) {
+        auto pResource = pCollisionShapePool->find(resource);
+        if (pResource != nullptr) {
+            imgui_render_foeCollisionShape(pResource);
         }
     }
 }

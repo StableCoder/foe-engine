@@ -43,7 +43,7 @@ class DummyImporter : public foeImporterBase {
     }
 
     bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                   std::vector<foeResourcePoolBase *> &resourcePools) {
+                                   foeSimulationState const *pSimulationState) {
         return false;
     }
     foeResourceCreateInfoBase *getResource(foeId id) final {

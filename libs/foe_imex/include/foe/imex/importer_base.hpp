@@ -27,8 +27,9 @@ struct foeIdGroupTranslator;
 struct foeIdGroupValueNameSet;
 class foeIdIndexGenerator;
 struct foeEditorNameMap;
+
+struct foeSimulationState;
 struct foeComponentPoolBase;
-struct foeResourcePoolBase;
 struct foeResourceCreateInfoBase;
 
 class foeImporterBase {
@@ -46,7 +47,7 @@ class foeImporterBase {
                                  std::vector<foeComponentPoolBase *> &componentPools) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                           std::vector<foeResourcePoolBase *> &resourcePools) = 0;
+                                           foeSimulationState const *pSimulationState) = 0;
     virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
 
     virtual std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) = 0;
