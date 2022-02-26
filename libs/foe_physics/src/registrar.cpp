@@ -244,11 +244,11 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
 
 int foePhysicsFunctionalityID() { return FOE_PHYSICS_FUNCTIONALITY_ID; }
 
-void foePhysicsRegisterFunctionality() {
+auto foePhysicsRegisterFunctionality() -> std::error_code {
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsRegisterFunctionality - Starting to register functionality")
 
-    foeRegisterFunctionality(foeSimulationFunctionalty{
+    auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foePhysicsFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
@@ -256,8 +256,16 @@ void foePhysicsRegisterFunctionality() {
         .onDeinitialization = onDeinitialization,
     });
 
-    FOE_LOG(foePhysics, Verbose,
-            "foePhysicsRegisterFunctionality - Completed registering functionality")
+    if (errC) {
+        FOE_LOG(foePhysics, Error,
+                "foePhysicsRegisterFunctionality - Failed registering functionality: {} - {}",
+                errC.value(), errC.message())
+    } else {
+        FOE_LOG(foePhysics, Verbose,
+                "foePhysicsRegisterFunctionality - Completed registering functionality")
+    }
+
+    return errC;
 }
 
 void foePhysicsDeregisterFunctionality() {

@@ -142,11 +142,11 @@ void onDeinitialize(foeSimulationState const *pSimulationState) {
 
 int foeResourceFunctionalityID() { return FOE_RESOURCE_FUNCTIONALITY_ID; }
 
-void foeResourceRegisterFunctionality() {
+auto foeResourceRegisterFunctionality() -> std::error_code {
     FOE_LOG(foeResource, Verbose,
             "foeResourceRegisterFunctionality - Starting to register functionality")
 
-    foeRegisterFunctionality(foeSimulationFunctionalty{
+    auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foeResourceFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
@@ -154,8 +154,16 @@ void foeResourceRegisterFunctionality() {
         .onDeinitialization = onDeinitialize,
     });
 
-    FOE_LOG(foeResource, Verbose,
-            "foeResourceRegisterFunctionality - Completed registering functionality")
+    if (errC) {
+        FOE_LOG(foeResource, Error,
+                "foeResourceRegisterFunctionality - Failed registering functionality: {} - {}",
+                errC.value(), errC.message())
+    } else {
+        FOE_LOG(foeResource, Verbose,
+                "foeResourceRegisterFunctionality - Completed registering functionality")
+    }
+
+    return errC;
 }
 
 void foeResourceDeregisterFunctionality() {

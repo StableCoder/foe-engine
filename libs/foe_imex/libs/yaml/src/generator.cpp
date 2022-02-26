@@ -145,6 +145,10 @@ namespace {
 foeYamlImporterGenerator gGenerator;
 }
 
-bool foeRegisterYamlImportGenerator() { return foeRegisterImportGenerator(&gGenerator); }
+auto foeRegisterYamlImportGenerator() -> std::error_code {
+    return foeRegisterImportGenerator(&gGenerator);
+}
 
-void foeDeregisterYamlImportGenerator() { foeDeregisterImportGenerator(&gGenerator); }
+auto foeDeregisterYamlImportGenerator() -> std::error_code {
+    return foeDeregisterImportGenerator(&gGenerator);
+}

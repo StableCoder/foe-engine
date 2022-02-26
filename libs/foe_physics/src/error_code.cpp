@@ -25,12 +25,14 @@ struct foePhysicsErrCategory : std::error_category {
 
 const char *foePhysicsErrCategory::name() const noexcept { return "foePhysicsResult"; }
 
+#define RESULT_CASE(X)                                                                             \
+    case X:                                                                                        \
+        return #X;
+
 std::string foePhysicsErrCategory::message(int ev) const {
     switch (static_cast<foePhysicsResult>(ev)) {
-    case FOE_PHYSICS_SUCCESS:
-        return "FOE_RESOURCE_SUCCESS";
-    case FOE_PHYSICS_ERROR_IMPORT_FAILED:
-        return "FOE_PHYSICS_ERROR_IMPORT_FAILED";
+        RESULT_CASE(FOE_PHYSICS_SUCCESS)
+        RESULT_CASE(FOE_PHYSICS_ERROR_IMPORT_FAILED)
 
     default:
         if (ev > 0)

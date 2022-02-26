@@ -34,8 +34,10 @@ class foeImporterGenerator {
         -> foeImporterBase * = 0;
 };
 
-FOE_IMEX_EXPORT bool foeRegisterImportGenerator(foeImporterGenerator *pGenerator);
-FOE_IMEX_EXPORT bool foeDeregisterImportGenerator(foeImporterGenerator *pGenerator);
+FOE_IMEX_EXPORT auto foeRegisterImportGenerator(foeImporterGenerator *pGenerator)
+    -> std::error_code;
+FOE_IMEX_EXPORT auto foeDeregisterImportGenerator(foeImporterGenerator *pGenerator)
+    -> std::error_code;
 
 struct foeImportFunctionality {
     std::error_code (*onRegister)(foeImporterGenerator *);

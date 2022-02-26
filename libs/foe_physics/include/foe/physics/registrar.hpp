@@ -19,9 +19,11 @@
 
 #include <foe/physics/export.h>
 
+#include <system_error>
+
 FOE_PHYSICS_EXPORT int foePhysicsFunctionalityID();
 
-FOE_PHYSICS_EXPORT void foePhysicsRegisterFunctionality();
+FOE_PHYSICS_EXPORT auto foePhysicsRegisterFunctionality() -> std::error_code;
 
 FOE_PHYSICS_EXPORT void foePhysicsDeregisterFunctionality();
 

@@ -19,9 +19,11 @@
 
 #include <foe/resource/export.h>
 
+#include <system_error>
+
 FOE_RES_EXPORT int foeResourceFunctionalityID();
 
-FOE_RES_EXPORT void foeResourceRegisterFunctionality();
+FOE_RES_EXPORT auto foeResourceRegisterFunctionality() -> std::error_code;
 
 FOE_RES_EXPORT void foeResourceDeregisterFunctionality();
 

@@ -35,8 +35,8 @@ struct foeSimulationLoaderData;
 struct foeResourcePoolBase;
 struct foeComponentPoolBase;
 
-FOE_IMEX_YAML_EXPORT bool foeRegisterYamlImportGenerator();
-FOE_IMEX_YAML_EXPORT void foeDeregisterYamlImportGenerator();
+FOE_IMEX_YAML_EXPORT auto foeRegisterYamlImportGenerator() -> std::error_code;
+FOE_IMEX_YAML_EXPORT auto foeDeregisterYamlImportGenerator() -> std::error_code;
 
 class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerator {
   public:

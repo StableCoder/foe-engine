@@ -31,21 +31,21 @@ std::vector<foeImportFunctionality> gFunctionality;
 
 } // namespace
 
-bool foeRegisterImportGenerator(foeImporterGenerator *pGenerator) {
+auto foeRegisterImportGenerator(foeImporterGenerator *pGenerator) -> std::error_code {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : generators) {
         if (it == pGenerator)
-            return false;
+            return FOE_IMEX_ERROR_IMPORTER_ALREADY_REGISTERED;
     }
 
     // Add the generator
     generators.emplace_back(pGenerator);
 
-    return true;
+    return FOE_IMEX_SUCCESS;
 }
 
-bool foeDeregisterImportGenerator(foeImporterGenerator *pGenerator) {
+auto foeDeregisterImportGenerator(foeImporterGenerator *pGenerator) -> std::error_code {
     std::scoped_lock lock{gSync};
 
     for (auto it = generators.begin(); it != generators.end(); ++it) {
@@ -55,10 +55,10 @@ bool foeDeregisterImportGenerator(foeImporterGenerator *pGenerator) {
         // Found, remove it
         generators.erase(it);
 
-        return true;
+        return FOE_IMEX_SUCCESS;
     }
 
-    return false;
+    return FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED;
 }
 
 auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> foeImporterBase * {

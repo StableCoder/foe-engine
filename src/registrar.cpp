@@ -312,11 +312,11 @@ void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
 
 } // namespace
 
-void foeBringupRegisterFunctionality() {
+auto foeBringupRegisterFunctionality() -> std::error_code {
     FOE_LOG(foeBringup, Verbose,
             "foeBringupRegisterFunctionality - Starting to register functionality")
 
-    foeRegisterFunctionality(foeSimulationFunctionalty{
+    auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
         .onCreate = onCreate,
         .onDestroy = onDestroy,
@@ -326,8 +326,16 @@ void foeBringupRegisterFunctionality() {
         .onGfxDeinitialization = onGfxDeinitialization,
     });
 
-    FOE_LOG(foeBringup, Verbose,
-            "foeBringupRegisterFunctionality - Completed registering functionality")
+    if (errC) {
+        FOE_LOG(foeBringup, Error,
+                "foeBringupRegisterFunctionality - Failed registering functionality: {} - {}",
+                errC.value(), errC.message())
+    } else {
+        FOE_LOG(foeBringup, Verbose,
+                "foeBringupRegisterFunctionality - Completed registering functionality")
+    }
+
+    return errC;
 }
 
 void foeBringupDeregisterFunctionality() {

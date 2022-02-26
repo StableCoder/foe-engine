@@ -17,7 +17,9 @@
 #ifndef BRINGUP_REGISTRAR_HPP
 #define BRINGUP_REGISTRAR_HPP
 
-void foeBringupRegisterFunctionality();
+#include <system_error>
+
+auto foeBringupRegisterFunctionality() -> std::error_code;
 
 void foeBringupDeregisterFunctionality();
 

@@ -43,18 +43,26 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
 int foePositionFunctionalityID() { return FOE_POSITION_FUNCTIONALITY_ID; }
 
-void foePositionRegisterFunctionality() {
+auto foePositionRegisterFunctionality() -> std::error_code {
     FOE_LOG(foePosition, Verbose,
             "foePositionRegisterFunctionality - Starting to register functionality")
 
-    foeRegisterFunctionality(foeSimulationFunctionalty{
+    auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foePositionFunctionalityID(),
         .onCreate = onCreate,
         .onDestroy = onDestroy,
     });
 
-    FOE_LOG(foePosition, Verbose,
-            "foePositionRegisterFunctionality - Completed registering functionality")
+    if (errC) {
+        FOE_LOG(foePosition, Error,
+                "foePositionRegisterFunctionality - Failed registering functionality: {} - {}",
+                errC.value(), errC.message())
+    } else {
+        FOE_LOG(foePosition, Verbose,
+                "foePositionRegisterFunctionality - Completed registering functionality")
+    }
+
+    return errC;
 }
 
 void foePositionDeregisterFunctionality() {

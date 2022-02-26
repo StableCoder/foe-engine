@@ -42,11 +42,25 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
     std::error_code errC;
 
     // Core
-    foePhysicsRegisterFunctionality();
-    foePositionRegisterFunctionality();
-    foeResourceRegisterFunctionality();
-    foeGraphicsResourceRegisterFunctionality();
-    foeBringupRegisterFunctionality();
+    errC = foePhysicsRegisterFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foePositionRegisterFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foeResourceRegisterFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foeGraphicsResourceRegisterFunctionality();
+    if (errC)
+        return errC;
+
+    errC = foeBringupRegisterFunctionality();
+    if (errC)
+        return errC;
 
     // Export
     errC = foeImexYamlRegisterExporter();
@@ -74,7 +88,9 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
         return errC;
 
     // Import
-    foeRegisterYamlImportGenerator();
+    errC = foeRegisterYamlImportGenerator();
+    if (errC)
+        return errC;
 
     errC = foePhysicsYamlRegisterImporters();
     if (errC)

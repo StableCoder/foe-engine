@@ -19,9 +19,11 @@
 
 #include <foe/position/export.h>
 
+#include <system_error>
+
 FOE_POSITION_EXPORT int foePositionFunctionalityID();
 
-FOE_POSITION_EXPORT void foePositionRegisterFunctionality();
+FOE_POSITION_EXPORT auto foePositionRegisterFunctionality() -> std::error_code;
 
 FOE_POSITION_EXPORT void foePositionDeregisterFunctionality();
 
