@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -40,8 +40,7 @@ std::shared_mutex gSync;
 
 std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulationState const *)>
     gResourceFns;
-std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeComponentPoolBase **, uint32_t)>
-    gComponentFns;
+std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulationState const *)> gComponentFns;
 
 void emitYaml(std::filesystem::path emitPath, YAML::Node const &rootNode) {
     YAML::Emitter emitter;
@@ -117,13 +116,13 @@ void exportResource(
     emitYaml(directory / std::string{id_to_filename(resource, editorName) + ".yml"}, rootNode);
 }
 
-void exportComponents(foeEntityID entity,
-                      std::filesystem::path directory,
-                      foeEditorNameMap *pNameMap,
-                      std::vector<std::vector<foeKeyYamlPair> (*)(
-                          foeEntityID, foeComponentPoolBase **, uint32_t)> const &componentFns,
-                      foeComponentPoolBase **ppComponentPools,
-                      uint32_t componentPoolCount) {
+void exportComponents(
+    foeEntityID entity,
+    std::filesystem::path directory,
+    foeEditorNameMap *pNameMap,
+    std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulationState const *)> const
+        &componentFns,
+    foeSimulationState const *pSimulationState) {
     std::string editorName;
     if (pNameMap != nullptr) {
         editorName = pNameMap->find(entity);
@@ -138,7 +137,7 @@ void exportComponents(foeEntityID entity,
     }
 
     for (auto const &fn : componentFns) {
-        auto keyDataPairs = fn(entity, ppComponentPools, componentPoolCount);
+        auto keyDataPairs = fn(entity, pSimulationState);
 
         for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
@@ -340,9 +339,7 @@ std::error_code exportComponentData(std::filesystem::path rootOutPath,
 
             entity = foeIdCreate(group, idx);
 
-            exportComponents(entity, dirPath, pSimState->pEntityNameMap, gComponentFns,
-                             pSimState->componentPools.data(),
-                             static_cast<uint32_t>(pSimState->componentPools.size()));
+            exportComponents(entity, dirPath, pSimState->pEntityNameMap, gComponentFns, pSimState);
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export entity: {} - {}", foeIdToString(entity),
@@ -449,7 +446,7 @@ std::error_code foeImexYamlDeregisterResourceFn(
 }
 
 std::error_code foeImexYamlRegisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeComponentPoolBase **, uint32_t)) {
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *)) {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gComponentFns) {
@@ -463,7 +460,7 @@ std::error_code foeImexYamlRegisterComponentFn(
 }
 
 std::error_code foeImexYamlDeregisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeComponentPoolBase **, uint32_t)) {
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *)) {
     std::scoped_lock lock{gSync};
 
     auto searchIt = std::find(gComponentFns.begin(), gComponentFns.end(), pComponentFn);

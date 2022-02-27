@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/position/component/3d_pool.hpp>
+#include <foe/simulation/simulation.hpp>
 
 #include "3d.hpp"
 #include "error_code.hpp"
@@ -26,13 +27,14 @@
 namespace {
 
 std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
-                                             foeComponentPoolBase **pComponentPools,
-                                             uint32_t componentPoolCount) {
+                                             foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
-    auto const *pEndPools = pComponentPools + componentPoolCount;
 
-    for (; pComponentPools != pEndPools; ++pComponentPools) {
-        auto *pPosition3dPool = dynamic_cast<foePosition3dPool *>(*pComponentPools);
+    auto const *pIt = pSimulationState->componentPools.data();
+    auto const *pEndIt = pIt + pSimulationState->componentPools.size();
+
+    for (; pIt != pEndIt; ++pIt) {
+        auto *pPosition3dPool = dynamic_cast<foePosition3dPool *>(*pIt);
         if (pPosition3dPool) {
             if (auto searchIt = pPosition3dPool->find(entity);
                 searchIt != pPosition3dPool->size()) {

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/type_defs.h>
+#include <foe/simulation/simulation.hpp>
 
 #include "collision_shape.hpp"
 #include "error_code.hpp"
@@ -53,13 +54,14 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
 }
 
 std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
-                                             foeComponentPoolBase **pComponentPools,
-                                             uint32_t componentPoolCount) {
+                                             foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
-    auto const *pEndPools = pComponentPools + componentPoolCount;
 
-    for (; pComponentPools != pEndPools; ++pComponentPools) {
-        auto *pRigidBodyPool = dynamic_cast<foeRigidBodyPool *>(*pComponentPools);
+    auto const *pIt = pSimulationState->componentPools.data();
+    auto const *pEndIt = pIt + pSimulationState->componentPools.size();
+
+    for (; pIt != pEndIt; ++pIt) {
+        auto *pRigidBodyPool = dynamic_cast<foeRigidBodyPool *>(*pIt);
         if (pRigidBodyPool) {
             if (auto offset = pRigidBodyPool->find(entity); offset != pRigidBodyPool->size()) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{

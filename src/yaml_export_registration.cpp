@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
+#include <foe/simulation/simulation.hpp>
 
 #include "armature_state_imex.hpp"
 #include "armature_state_pool.hpp"
@@ -30,15 +31,15 @@
 namespace {
 
 std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
-                                             foeComponentPoolBase **pComponentPools,
-                                             uint32_t componentPoolCount) {
+                                             foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
-    auto const *pEndPools = pComponentPools + componentPoolCount;
 
-    for (; pComponentPools != pEndPools; ++pComponentPools) {
+    auto const *pIt = pSimulationState->componentPools.data();
+    auto const *pEndIt = pIt + pSimulationState->componentPools.size();
 
+    for (; pIt != pEndIt; ++pIt) {
         // ArmatureState
-        auto *pArmatureStatePool = dynamic_cast<foeArmatureStatePool *>(*pComponentPools);
+        auto *pArmatureStatePool = dynamic_cast<foeArmatureStatePool *>(*pIt);
         if (pArmatureStatePool) {
             if (auto searchIt = pArmatureStatePool->find(entity);
                 searchIt != pArmatureStatePool->size()) {
@@ -50,7 +51,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
         }
 
         // Camera
-        auto *pCameraPool = dynamic_cast<foeCameraPool *>(*pComponentPools);
+        auto *pCameraPool = dynamic_cast<foeCameraPool *>(*pIt);
         if (pCameraPool) {
             if (auto searchIt = pCameraPool->find(entity); searchIt != pCameraPool->size()) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
@@ -61,7 +62,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
         }
 
         // RenderState
-        auto *pRenderStatePool = dynamic_cast<foeRenderStatePool *>(*pComponentPools);
+        auto *pRenderStatePool = dynamic_cast<foeRenderStatePool *>(*pIt);
         if (pRenderStatePool) {
             if (auto searchIt = pRenderStatePool->find(entity);
                 searchIt != pRenderStatePool->size()) {

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@
 #include <vector>
 
 struct foeSimulationState;
-struct foeComponentPoolBase;
 
 struct foeKeyYamlPair {
     std::string key;
@@ -44,9 +43,9 @@ FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlDeregisterResourceFn(
     std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *));
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlRegisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeComponentPoolBase **, uint32_t));
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *));
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlDeregisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeComponentPoolBase **, uint32_t));
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *));
 
 #endif // FOE_IMEX_YAML_EXPORTER_HPP
