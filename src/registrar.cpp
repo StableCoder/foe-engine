@@ -88,13 +88,24 @@ void onCreate(foeSimulationState *pSimulationState) {
     pSimulationState->systems.emplace_back(pSystemBase);
 }
 
+#define DESTROY_FUNCTIONALITY(X, Y)                                                                \
+    if (ptr->sType == Y && --ptr->refCount == 0) {                                                 \
+        delete (X *)ptr;                                                                           \
+        ptr = nullptr;                                                                             \
+        continue;                                                                                  \
+    }
+
 void onDestroy(foeSimulationState *pSimulationState) {
     // Systems
-    for (auto &pSystem : pSimulationState->systems) {
-        searchAndDestroy<VkAnimationPool>(pSystem);
-        searchAndDestroy<PositionDescriptorPool>(pSystem);
-        searchAndDestroy<foeCameraSystem>(pSystem);
-        searchAndDestroy<foeArmatureSystem>(pSystem);
+    for (auto &ptr : pSimulationState->systems) {
+        if (ptr == nullptr)
+            continue;
+
+        DESTROY_FUNCTIONALITY(VkAnimationPool, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        DESTROY_FUNCTIONALITY(PositionDescriptorPool,
+                              FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
+        DESTROY_FUNCTIONALITY(foeCameraSystem, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        DESTROY_FUNCTIONALITY(foeArmatureSystem, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
     }
 
     // Components
@@ -115,18 +126,28 @@ struct Initialized {
 
 void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
     // Systems
-    auto *pIt = pSimulationState->systems.data();
-    auto const *pEndIt = pIt + pSimulationState->systems.size();
+    if (auto *pSystem = (foeArmatureSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
+        initialized.armature && --pSystem->initCount == 0) {
+        pSystem->deinitialize();
+    }
 
-    for (; pIt != pEndIt; ++pIt) {
-        if (initialized.armature)
-            searchAndDeinit<foeArmatureSystem>(*pIt);
-        if (initialized.camera)
-            searchAndDeinit<foeCameraSystem>(*pIt);
-        if (initialized.positionDescriptor)
-            searchAndDeinit<PositionDescriptorPool>(*pIt);
-        if (initialized.animation)
-            searchAndDeinit<VkAnimationPool>(*pIt);
+    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        initialized.camera && --pSystem->initCount == 0) {
+        pSystem->deinitialize();
+    }
+
+    if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
+        initialized.positionDescriptor && --pSystem->initCount == 0) {
+        pSystem->deinitialize();
+    }
+
+    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        initialized.animation && --pSystem->initCount == 0) {
+        pSystem->deinitialize();
     }
 }
 
@@ -136,40 +157,29 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
     Initialized initialized{};
 
     // Systems
-    auto *pIt = pSimulationState->systems.data();
-    auto const *pEndIt = pIt + pSimulationState->systems.size();
-
-    for (; pIt != pEndIt; ++pIt) {
-        if (auto *pArmatureSystem = dynamic_cast<foeArmatureSystem *>(*pIt); pArmatureSystem) {
-            ++pArmatureSystem->initCount;
-            if (pArmatureSystem->initialized())
-                continue;
-
-            foeArmaturePool *pArmaturePool{nullptr};
-
-            auto *it = pSimulationState->resourcePools.data();
-            auto *endIt = it + pSimulationState->resourcePools.size();
-            for (; it != endIt; ++it) {
-                if (*it == nullptr)
-                    continue;
-
-                if ((*it)->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL)
-                    pArmaturePool = (foeArmaturePool *)(*it);
-            }
+    if (auto *pArmatureSystem = (foeArmatureSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
+        pArmatureSystem) {
+        ++pArmatureSystem->initCount;
+        initialized.armature = true;
+        if (!pArmatureSystem->initialized()) {
+            auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+                pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
                 pSimulationState->componentPools.data(),
                 pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
             pArmatureSystem->initialize(pArmaturePool, pArmatureStatePool);
-            initialized.armature = true;
         }
+    }
 
-        if (auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt); pCameraSystem) {
-            ++pCameraSystem->initCount;
-            if (pCameraSystem->initialized())
-                continue;
-
+    if (auto *pCameraSystem = (foeCameraSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        pCameraSystem != nullptr) {
+        ++pCameraSystem->initCount;
+        initialized.camera = true;
+        if (!pCameraSystem->initialized()) {
             auto *pPosition3dPool = search<foePosition3dPool>(
                 pSimulationState->componentPools.data(),
                 pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
@@ -181,15 +191,15 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
             errC = pCameraSystem->initialize(pPosition3dPool, pCameraPool);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.camera = true;
         }
+    }
 
-        if (auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
-            pPositionDescriptorPool) {
-            ++pPositionDescriptorPool->initCount;
-            if (pPositionDescriptorPool->initialized())
-                continue;
-
+    if (auto *pPositionDescriptorPool = (PositionDescriptorPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
+        pPositionDescriptorPool != nullptr) {
+        ++pPositionDescriptorPool->initCount;
+        initialized.positionDescriptor = true;
+        if (!pPositionDescriptorPool->initialized()) {
             auto *pPosition3dPool = search<foePosition3dPool>(
                 pSimulationState->componentPools.data(),
                 pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
@@ -197,28 +207,19 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
             errC = pPositionDescriptorPool->initialize(pPosition3dPool);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.positionDescriptor = true;
         }
+    }
 
-        if (auto *pVkAnimationPool = dynamic_cast<VkAnimationPool *>(*pIt); pVkAnimationPool) {
-            ++pVkAnimationPool->initCount;
-            if (pVkAnimationPool->initialized())
-                continue;
-
-            foeArmaturePool *pArmaturePool{nullptr};
-            foeMeshPool *pMeshPool{nullptr};
-
-            auto *it = pSimulationState->resourcePools.data();
-            auto *endIt = it + pSimulationState->resourcePools.size();
-            for (; it != endIt; ++it) {
-                if (*it == nullptr)
-                    continue;
-
-                if ((*it)->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL)
-                    pArmaturePool = (foeArmaturePool *)(*it);
-                if ((*it)->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL)
-                    pMeshPool = (foeMeshPool *)(*it);
-            }
+    if (auto *pVkAnimationPool = (VkAnimationPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        pVkAnimationPool != nullptr) {
+        ++pVkAnimationPool->initCount;
+        initialized.animation = true;
+        if (!pVkAnimationPool->initialized()) {
+            auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+                pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
+            auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
+                pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
             auto *pArmatureStatePool = search<foeArmatureStatePool>(
                 pSimulationState->componentPools.data(),
@@ -232,7 +233,6 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
                                                 pRenderStatePool);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.animation = true;
         }
     }
 
@@ -245,27 +245,50 @@ INITIALIZATION_FAILED:
 
 void onDeinitialization(foeSimulationState const *pSimulationState) {
     // Systems
-    for (auto *pSystem : pSimulationState->systems) {
-        searchAndDeinit<VkAnimationPool>(pSystem);
-        searchAndDeinit<PositionDescriptorPool>(pSystem);
-        searchAndDeinit<foeCameraSystem>(pSystem);
-        searchAndDeinit<foeArmatureSystem>(pSystem);
+    if (auto *pSystem = (foeArmatureSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
+        --pSystem->initCount == 0) {
+        pSystem->deinitialize();
+    }
+
+    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        --pSystem->initCount == 0) {
+        pSystem->deinitialize();
+    }
+
+    if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
+        --pSystem->initCount == 0) {
+        pSystem->deinitialize();
+    }
+
+    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        --pSystem->initCount == 0) {
+        pSystem->deinitialize();
     }
 }
 
 void deinitializeGraphics(foeSimulationState const *pSimulationState,
                           Initialized const &initialized) {
     // Systems
-    auto *pIt = pSimulationState->systems.data();
-    auto const *pEndIt = pIt + pSimulationState->systems.size();
+    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        initialized.camera && --pSystem->initCount == 0) {
+        pSystem->deinitializeGraphics();
+    }
 
-    for (; pIt != pEndIt; ++pIt) {
-        if (initialized.camera)
-            searchAndDeinitGraphics<foeCameraSystem>(*pIt);
-        if (initialized.positionDescriptor)
-            searchAndDeinitGraphics<PositionDescriptorPool>(*pIt);
-        if (initialized.animation)
-            searchAndDeinitGraphics<VkAnimationPool>(*pIt);
+    if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
+        initialized.positionDescriptor && --pSystem->initCount == 0) {
+        pSystem->deinitializeGraphics();
+    }
+
+    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        initialized.animation && --pSystem->initCount == 0) {
+        pSystem->deinitializeGraphics();
     }
 }
 
@@ -275,40 +298,31 @@ std::error_code onGfxInitialization(foeSimulationState const *pSimulationState,
     Initialized initialized{};
 
     // Systems
-    auto *pIt = pSimulationState->systems.data();
-    auto const *pEndIt = pIt + pSimulationState->systems.size();
+    if (auto *pCameraSystem = (foeCameraSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        pCameraSystem && !pCameraSystem->initializedGraphics()) {
+        errC = pCameraSystem->initializeGraphics(gfxSession);
+        if (errC)
+            goto INITIALIZATION_FAILED;
+        initialized.camera = true;
+    }
 
-    for (; pIt != pEndIt; ++pIt) {
-        if (auto *pCameraSystem = dynamic_cast<foeCameraSystem *>(*pIt); pCameraSystem) {
-            if (pCameraSystem->initializedGraphics())
-                continue;
+    if (auto *pPositionDescriptorPool = (PositionDescriptorPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
+        pPositionDescriptorPool && !pPositionDescriptorPool->initializedGraphics()) {
+        errC = pPositionDescriptorPool->initializeGraphics(gfxSession);
+        if (errC)
+            goto INITIALIZATION_FAILED;
+        initialized.positionDescriptor = true;
+    }
 
-            errC = pCameraSystem->initializeGraphics(gfxSession);
-            if (errC)
-                goto INITIALIZATION_FAILED;
-            initialized.camera = true;
-        }
-
-        if (auto *pPositionDescriptorPool = dynamic_cast<PositionDescriptorPool *>(*pIt);
-            pPositionDescriptorPool) {
-            if (pPositionDescriptorPool->initializedGraphics())
-                continue;
-
-            errC = pPositionDescriptorPool->initializeGraphics(gfxSession);
-            if (errC)
-                goto INITIALIZATION_FAILED;
-            initialized.positionDescriptor = true;
-        }
-
-        if (auto *pVkAnimationPool = dynamic_cast<VkAnimationPool *>(*pIt); pVkAnimationPool) {
-            if (pVkAnimationPool->initializedGraphics())
-                continue;
-
-            errC = pVkAnimationPool->initializeGraphics(gfxSession);
-            if (errC)
-                goto INITIALIZATION_FAILED;
-            initialized.animation = true;
-        }
+    if (auto *pVkAnimationPool = (VkAnimationPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        pVkAnimationPool && !pVkAnimationPool->initializedGraphics()) {
+        errC = pVkAnimationPool->initializeGraphics(gfxSession);
+        if (errC)
+            goto INITIALIZATION_FAILED;
+        initialized.animation = true;
     }
 
 INITIALIZATION_FAILED:
@@ -320,10 +334,22 @@ INITIALIZATION_FAILED:
 
 void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
     // Systems
-    for (auto *pSystem : pSimulationState->systems) {
-        searchAndDeinitGraphics<VkAnimationPool>(pSystem);
-        searchAndDeinitGraphics<PositionDescriptorPool>(pSystem);
-        searchAndDeinitGraphics<foeCameraSystem>(pSystem);
+    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        --pSystem->initCount == 0) {
+        pSystem->deinitializeGraphics();
+    }
+
+    if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
+        --pSystem->initCount == 0) {
+        pSystem->deinitializeGraphics();
+    }
+
+    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        --pSystem->initCount == 0) {
+        pSystem->deinitializeGraphics();
     }
 }
 

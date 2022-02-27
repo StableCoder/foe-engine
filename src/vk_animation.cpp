@@ -28,6 +28,9 @@
 #include "armature_state_pool.hpp"
 #include "error_code.hpp"
 #include "render_state_pool.hpp"
+#include "type_defs.h"
+
+VkAnimationPool::VkAnimationPool() : foeSystemBase{FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL} {}
 
 auto VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
                                  foeMeshPool *pMeshPool,

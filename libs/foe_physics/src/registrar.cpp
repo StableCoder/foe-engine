@@ -107,8 +107,8 @@ void onCreate(foeSimulationState *pSimulationState) {
     }
 
     // Systems
-    if (auto *pSystem = search<foePhysicsSystem>(pSimulationState->systems.begin(),
-                                                 pSimulationState->systems.end());
+    if (auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
         pSystem) {
         ++pSystem->refCount;
     } else {
@@ -121,7 +121,14 @@ void onCreate(foeSimulationState *pSimulationState) {
 void onDestroy(foeSimulationState *pSimulationState) {
     // Systems
     for (auto &pSystem : pSimulationState->systems) {
-        searchAndDestroy<foePhysicsSystem>(pSystem);
+        if (pSystem == nullptr)
+            continue;
+
+        if (pSystem->sType == FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM &&
+            --pSystem->refCount == 0) {
+            delete (foePhysicsSystem *)pSystem;
+            pSystem = nullptr;
+        }
     }
 
     // Components
@@ -164,13 +171,12 @@ struct Initialized {
 };
 
 void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
-    { // Systems
-        auto *pIt = pSimulationState->systems.data();
-        auto const *pEndIt = pIt + pSimulationState->systems.size();
-
-        for (; pIt != pEndIt; ++pIt) {
-            if (initialized.physics)
-                searchAndDeinit<foePhysicsSystem>(*pIt);
+    // Systems
+    if (initialized.physics) {
+        auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
+        if (pSystem != nullptr && --pSystem->initCount == 0) {
+            pSystem->deinitialize();
         }
     }
 
@@ -202,37 +208,29 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
         }
     }
 
-    { // Systems
-        auto *pIt = pSimulationState->systems.data();
-        auto const *pEndIt = pIt + pSimulationState->systems.size();
+    // Systems
+    if (auto *pPhysicsSystem = (foePhysicsSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
+        pPhysicsSystem) {
+        ++pPhysicsSystem->initCount;
+        initialized.physics = true;
+        if (!pPhysicsSystem->initialized()) {
+            auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
 
-        for (; pIt != pEndIt; ++pIt) {
-            if (auto *pPhysicsSystem = dynamic_cast<foePhysicsSystem *>(*pIt); pPhysicsSystem) {
-                ++pPhysicsSystem->initCount;
-                if (pPhysicsSystem->initialized())
-                    continue;
+            auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
-                auto *pCollisionShapeLoader =
-                    (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
-                        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
+            auto *pRigidBodyPool = search<foeRigidBodyPool>(
+                pSimulationState->componentPools.data(),
+                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
-                auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
-                    pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+            auto *pPosition3dPool = search<foePosition3dPool>(
+                pSimulationState->componentPools.data(),
+                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
 
-                auto *pRigidBodyPool =
-                    search<foeRigidBodyPool>(pSimulationState->componentPools.data(),
-                                             pSimulationState->componentPools.data() +
-                                                 pSimulationState->componentPools.size());
-
-                auto *pPosition3dPool =
-                    search<foePosition3dPool>(pSimulationState->componentPools.data(),
-                                              pSimulationState->componentPools.data() +
-                                                  pSimulationState->componentPools.size());
-
-                pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool,
-                                           pRigidBodyPool, pPosition3dPool);
-                initialized.physics = true;
-            }
+            pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool, pRigidBodyPool,
+                                       pPosition3dPool);
         }
     }
 
@@ -245,8 +243,10 @@ INITIALIZATION_FAILED:
 
 void onDeinitialization(foeSimulationState const *pSimulationState) {
     // Systems
-    for (auto *pSystem : pSimulationState->systems) {
-        searchAndDeinit<foePhysicsSystem>(pSystem);
+    if (auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
+        pSystem != nullptr && --pSystem->initCount == 0) {
+        pSystem->deinitialize();
     }
 
     // Loaders

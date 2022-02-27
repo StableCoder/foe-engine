@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,12 +20,14 @@
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
+#include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "bt_glm_conversion.hpp"
 
 foePhysicsSystem::foePhysicsSystem() :
+    foeSystemBase{FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM},
     mpBroadphase{new btDbvtBroadphase{}},
     mpCollisionConfig{new btDefaultCollisionConfiguration{}},
     mpCollisionDispatcher{new btCollisionDispatcher{mpCollisionConfig.get()}},

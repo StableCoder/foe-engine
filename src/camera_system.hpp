@@ -31,6 +31,8 @@ class foeCameraPool;
 
 class foeCameraSystem : public foeSystemBase {
   public:
+    foeCameraSystem();
+
     auto initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
         -> std::error_code;
     void deinitialize();

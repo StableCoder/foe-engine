@@ -33,6 +33,8 @@ class foePosition3dPool;
 
 struct PositionDescriptorPool : public foeSystemBase {
   public:
+    PositionDescriptorPool();
+
     auto initialize(foePosition3dPool *pPosition3dPool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;

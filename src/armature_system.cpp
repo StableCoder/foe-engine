@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 #include "armature_state.hpp"
 #include "armature_state_pool.hpp"
+#include "type_defs.h"
 
 namespace {
 
@@ -75,6 +76,9 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 }
 
 } // namespace
+
+foeArmatureSystem::foeArmatureSystem() :
+    foeSystemBase{FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM} {}
 
 void foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
                                    foeArmatureStatePool *pArmatureStatePool) {

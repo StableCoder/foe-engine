@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,13 +17,19 @@
 #ifndef FOE_SIMULATION_CORE_SYSTEM_HPP
 #define FOE_SIMULATION_CORE_SYSTEM_HPP
 
+#include <foe/simulation/type_defs.h>
+
 #include <cstddef>
 
 struct foeSystemBase {
+    foeSystemBase(foeSimulationStructureType sType) :
+        sType{sType}, pNext{nullptr}, refCount{0}, initCount{0} {}
     virtual ~foeSystemBase() = default;
 
-    size_t refCount{0};
-    size_t initCount{0};
+    foeSimulationStructureType sType;
+    void *pNext;
+    size_t refCount;
+    size_t initCount;
 };
 
 #endif // FOE_SIMULATION_CORE_SYSTEM_HPP

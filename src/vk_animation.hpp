@@ -33,6 +33,8 @@ class foeRenderStatePool;
 
 class VkAnimationPool : public foeSystemBase {
   public:
+    VkAnimationPool();
+
     auto initialize(foeArmaturePool *pArmaturePool,
                     foeMeshPool *pMeshPool,
                     foeArmatureStatePool *pArmatureStatePool,

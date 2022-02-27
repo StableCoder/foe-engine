@@ -24,6 +24,7 @@
 #include "camera.hpp"
 #include "camera_pool.hpp"
 #include "error_code.hpp"
+#include "type_defs.h"
 
 namespace {
 
@@ -33,6 +34,8 @@ glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
 }
 
 } // namespace
+
+foeCameraSystem::foeCameraSystem() : foeSystemBase{FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM} {}
 
 auto foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
     -> std::error_code {
