@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
     limitations under the License.
 */
 
-#ifndef FOE_IMEX_COMPONENT_POOL_BASE_HPP
-#define FOE_IMEX_COMPONENT_POOL_BASE_HPP
+#ifndef FOE_SIMULATION_CORE_COMPONENT_POOL_BASE_HPP
+#define FOE_SIMULATION_CORE_COMPONENT_POOL_BASE_HPP
 
 #include <cstddef>
 
@@ -27,4 +27,4 @@ struct foeComponentPoolBase {
     size_t refCount{0};
 };
 
-#endif // FOE_IMEX_COMPONENT_POOL_BASE_HPP
+#endif // FOE_SIMULATION_CORE_COMPONENT_POOL_BASE_HPP

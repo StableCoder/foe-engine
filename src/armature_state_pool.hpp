@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #define ARMATURE_STATE_POOL_HPP
 
 #include <foe/data_pool.hpp>
-#include <foe/imex/component_pool_base.hpp>
+#include <foe/simulation/core/component_pool_base.hpp>
 
 #include "armature_state.hpp"
 
