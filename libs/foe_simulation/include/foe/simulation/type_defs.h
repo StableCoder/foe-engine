@@ -58,6 +58,9 @@ struct foeSimulationBaseStruct {
 FOE_SIM_EXPORT void *foeSimulationGetResourcePool(foeSimulationState const *pSimulationState,
                                                   foeSimulationStructureType sType);
 
+FOE_SIM_EXPORT void *foeSimulationGetResourceLoader(foeSimulationState const *pSimulationState,
+                                                    foeSimulationStructureType sType);
+
 #ifdef __cplusplus
 }
 #endif

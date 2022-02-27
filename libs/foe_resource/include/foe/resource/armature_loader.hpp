@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
 
 class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
   public:
+    foeArmatureLoader();
+
     std::error_code initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();

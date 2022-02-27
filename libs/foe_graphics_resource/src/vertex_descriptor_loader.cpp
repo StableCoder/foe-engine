@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
+#include <foe/graphics/resource/type_defs.h>
 
 #include "error_code.hpp"
 #include "log.hpp"
@@ -44,6 +45,9 @@ foeResourceState getWorstSubResourceState(SubResource *pSubResource,
 }
 
 } // namespace
+
+foeVertexDescriptorLoader::foeVertexDescriptorLoader() :
+    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER} {}
 
 std::error_code foeVertexDescriptorLoader::initialize(foeShaderPool *pShaderPool) {
     if (pShaderPool == nullptr) {

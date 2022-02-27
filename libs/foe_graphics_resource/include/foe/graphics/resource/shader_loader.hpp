@@ -35,6 +35,8 @@ struct FOE_GFX_RES_EXPORT foeShaderCreateInfo : public foeResourceCreateInfoBase
 
 class FOE_GFX_RES_EXPORT foeShaderLoader : public foeResourceLoaderBase {
   public:
+    foeShaderLoader();
+
     auto initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
         -> std::error_code;

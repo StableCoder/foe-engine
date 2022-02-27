@@ -75,8 +75,8 @@ void onCreate(foeSimulationState *pSimulationState) {
     }
 
     // Resource Loaders
-    if (auto *pLoader = searchLoaders<foeArmatureLoader>(pSimulationState->resourceLoaders.begin(),
-                                                         pSimulationState->resourceLoaders.end());
+    if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+            pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
         pLoader) {
         ++pLoader->refCount;
     } else {
@@ -96,7 +96,15 @@ void onCreate(foeSimulationState *pSimulationState) {
 void onDestroy(foeSimulationState *pSimulationState) {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
-        searchAndDestroy<foeArmatureLoader>(it.pLoader);
+        if (it.pLoader == nullptr)
+            continue;
+
+        if (it.pLoader->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER &&
+            --it.pLoader->refCount == 0) {
+            delete (foeArmatureLoader *)it.pLoader;
+            it.pLoader = nullptr;
+            continue;
+        }
     }
 
     // Resource Pools
@@ -114,21 +122,25 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 }
 
+void deinitialize(foeSimulationState const *pSimulationState) {
+    // Loaders
+    if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+            pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
+        pLoader != nullptr && --pLoader->initCount == 0) {
+        pLoader->deinitialize();
+    }
+}
+
 std::error_code onInitialize(foeSimulationState const *pSimulation,
                              foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
 
     // Resource Loaders
-    auto *pIt = pSimulation->resourceLoaders.data();
-    auto const *pEndIt = pSimulation->resourceLoaders.data() + pSimulation->resourceLoaders.size();
-
-    for (; pIt != pEndIt; ++pIt) {
-        if (auto *pArmatureLoader = dynamic_cast<foeArmatureLoader *>(pIt->pLoader);
-            pArmatureLoader) {
-            ++pArmatureLoader->initCount;
-            if (pArmatureLoader->initialized())
-                continue;
-
+    if (auto *pArmatureLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+            pSimulation, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
+        pArmatureLoader) {
+        ++pArmatureLoader->initCount;
+        if (!pArmatureLoader->initialized()) {
             errC = pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
             if (errC)
                 goto INITIALIZATION_FAILED;
@@ -137,24 +149,13 @@ std::error_code onInitialize(foeSimulationState const *pSimulation,
 
 INITIALIZATION_FAILED:
     if (errC) {
-        auto *pIt = pSimulation->resourceLoaders.data();
-        auto const *pEndIt =
-            pSimulation->resourceLoaders.data() + pSimulation->resourceLoaders.size();
-
-        for (; pIt != pEndIt; ++pIt) {
-            searchAndDeinit<foeArmatureLoader>(pIt->pLoader);
-        }
+        deinitialize(pSimulation);
     }
 
     return errC;
 }
 
-void onDeinitialize(foeSimulationState const *pSimulationState) {
-    // Loaders
-    for (auto const &it : pSimulationState->resourceLoaders) {
-        searchAndDeinit<foeArmatureLoader>(it.pLoader);
-    }
-}
+void onDeinitialize(foeSimulationState const *pSimulationState) { deinitialize(pSimulationState); }
 
 } // namespace
 

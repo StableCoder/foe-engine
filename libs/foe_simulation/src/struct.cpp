@@ -16,6 +16,7 @@
 
 #include <foe/simulation/type_defs.h>
 
+#include <foe/simulation/core/loader.hpp>
 #include <foe/simulation/core/pool.hpp>
 #include <foe/simulation/simulation.hpp>
 
@@ -27,6 +28,20 @@ extern "C" void *foeSimulationGetResourcePool(foeSimulationState const *pSimulat
     for (; pIt != pEndIt; ++pIt) {
         if (*pIt != nullptr && (*pIt)->sType == sType) {
             return (void *)*pIt;
+        }
+    }
+
+    return nullptr;
+}
+
+extern "C" void *foeSimulationGetResourceLoader(foeSimulationState const *pSimulationState,
+                                                foeSimulationStructureType sType) {
+    auto *pIt = pSimulationState->resourceLoaders.data();
+    auto *pEndIt = pIt + pSimulationState->resourceLoaders.size();
+
+    for (; pIt != pEndIt; ++pIt) {
+        if ((*pIt).pLoader != nullptr && (*pIt).pLoader->sType == sType) {
+            return (void *)(*pIt).pLoader;
         }
     }
 

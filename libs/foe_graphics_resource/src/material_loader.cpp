@@ -20,6 +20,7 @@
 #include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
@@ -63,6 +64,9 @@ foeMaterialCreateInfo::~foeMaterialCreateInfo() {
     if (hasRasterizationSCI)
         cleanup_VkPipelineRasterizationStateCreateInfo(&rasterizationSCI);
 }
+
+foeMaterialLoader::foeMaterialLoader() :
+    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER} {}
 
 auto foeMaterialLoader::initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool)
     -> std::error_code {

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -42,6 +42,8 @@ class foeShaderPool;
 
 class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
   public:
+    foeVertexDescriptorLoader();
+
     std::error_code initialize(foeShaderPool *pShaderPool);
     void deinitialize();
     bool initialized() const noexcept;

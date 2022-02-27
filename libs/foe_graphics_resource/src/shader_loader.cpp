@@ -16,6 +16,7 @@
 
 #include <foe/graphics/resource/shader_loader.hpp>
 
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/shader.hpp>
 
 #include "error_code.hpp"
@@ -46,6 +47,9 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 }
 
 } // namespace
+
+foeShaderLoader::foeShaderLoader() :
+    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER} {}
 
 std::error_code foeShaderLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {

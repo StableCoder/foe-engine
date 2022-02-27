@@ -17,6 +17,7 @@
 #include <foe/graphics/resource/image_loader.hpp>
 
 #include <FreeImage.h>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/format.hpp>
 #include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
@@ -24,6 +25,9 @@
 
 #include "error_code.hpp"
 #include "log.hpp"
+
+foeImageLoader::foeImageLoader() :
+    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER} {}
 
 std::error_code foeImageLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,9 +18,13 @@
 
 #include <foe/model/assimp/importer.hpp>
 #include <foe/resource/armature.hpp>
+#include <foe/resource/type_defs.h>
 
 #include "error_code.hpp"
 #include "log.hpp"
+
+foeArmatureLoader::foeArmatureLoader() :
+    foeResourceLoaderBase{FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER} {}
 
 std::error_code foeArmatureLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {

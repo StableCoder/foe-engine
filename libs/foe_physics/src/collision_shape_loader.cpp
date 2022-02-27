@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,10 +17,14 @@
 #include <foe/physics/resource/collision_shape_loader.hpp>
 
 #include <foe/physics/resource/collision_shape.hpp>
+#include <foe/physics/type_defs.h>
 
 #include "bt_glm_conversion.hpp"
 #include "error_code.hpp"
 #include "log.hpp"
+
+foeCollisionShapeLoader::foeCollisionShapeLoader() :
+    foeResourceLoaderBase{FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER} {}
 
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 

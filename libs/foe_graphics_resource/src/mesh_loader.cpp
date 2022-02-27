@@ -16,6 +16,7 @@
 
 #include <foe/graphics/resource/mesh_loader.hpp>
 
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/model.hpp>
 #include <foe/graphics/vk/session.hpp>
@@ -27,6 +28,9 @@
 
 #include "error_code.hpp"
 #include "log.hpp"
+
+foeMeshLoader::foeMeshLoader() :
+    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER} {}
 
 auto foeMeshLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)

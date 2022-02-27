@@ -37,6 +37,8 @@ struct foeImageCreateInfo : public foeResourceCreateInfoBase {
 
 class FOE_GFX_RES_EXPORT foeImageLoader : public foeResourceLoaderBase {
   public:
+    foeImageLoader();
+
     auto initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
         -> std::error_code;
