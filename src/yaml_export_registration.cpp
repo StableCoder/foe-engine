@@ -34,43 +34,40 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
                                              foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto const *pIt = pSimulationState->componentPools.data();
-    auto const *pEndIt = pIt + pSimulationState->componentPools.size();
-
-    for (; pIt != pEndIt; ++pIt) {
-        // ArmatureState
-        auto *pArmatureStatePool = dynamic_cast<foeArmatureStatePool *>(*pIt);
-        if (pArmatureStatePool) {
-            if (auto searchIt = pArmatureStatePool->find(entity);
-                searchIt != pArmatureStatePool->size()) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_armature_state_key(),
-                    .data = yaml_write_ArmatureState(pArmatureStatePool->begin<1>()[searchIt]),
-                });
-            }
+    // ArmatureState
+    auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+    if (pArmatureStatePool) {
+        if (auto searchIt = pArmatureStatePool->find(entity);
+            searchIt != pArmatureStatePool->size()) {
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_armature_state_key(),
+                .data = yaml_write_ArmatureState(pArmatureStatePool->begin<1>()[searchIt]),
+            });
         }
+    }
 
-        // Camera
-        auto *pCameraPool = dynamic_cast<foeCameraPool *>(*pIt);
-        if (pCameraPool) {
-            if (auto searchIt = pCameraPool->find(entity); searchIt != pCameraPool->size()) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_camera_key(),
-                    .data = yaml_write_Camera(*pCameraPool->begin<1>()[searchIt].get()),
-                });
-            }
+    // Camera
+    auto *pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
+        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+    if (pCameraPool) {
+        if (auto searchIt = pCameraPool->find(entity); searchIt != pCameraPool->size()) {
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_camera_key(),
+                .data = yaml_write_Camera(*pCameraPool->begin<1>()[searchIt].get()),
+            });
         }
+    }
 
-        // RenderState
-        auto *pRenderStatePool = dynamic_cast<foeRenderStatePool *>(*pIt);
-        if (pRenderStatePool) {
-            if (auto searchIt = pRenderStatePool->find(entity);
-                searchIt != pRenderStatePool->size()) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_render_state_key(),
-                    .data = yaml_write_RenderState(pRenderStatePool->begin<1>()[searchIt]),
-                });
-            }
+    // RenderState
+    auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+    if (pRenderStatePool) {
+        if (auto searchIt = pRenderStatePool->find(entity); searchIt != pRenderStatePool->size()) {
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_render_state_key(),
+                .data = yaml_write_RenderState(pRenderStatePool->begin<1>()[searchIt]),
+            });
         }
     }
 

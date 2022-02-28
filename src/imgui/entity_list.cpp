@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -238,8 +238,7 @@ bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
         ImGui::Text("EditorID: %s", mpSimulationState->pEntityNameMap->find(pData->entity).data());
     }
 
-    mpRegistrar->displayEntity(pData->entity, mpSimulationState->componentPools.data(),
-                               mpSimulationState->componentPools.size());
+    mpRegistrar->displayEntity(pData->entity, mpSimulationState);
 
     ImGui::End();
 

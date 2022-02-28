@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ struct foeResourceLoaderBase;
  */
 class foeSimulationImGuiRegistrar {
   public:
-    using ComponentFn = void (*)(foeEntityID, foeComponentPoolBase **, size_t);
+    using ComponentFn = void (*)(foeEntityID, foeSimulationState const *);
     using ResourceFn = void (*)(foeResourceID, foeSimulationState const *);
     using LoaderFn = void (*)(foeResourceID, foeResourceLoaderBase **, size_t);
 
@@ -72,8 +72,7 @@ class foeSimulationImGuiRegistrar {
      * @param poolCount Number of pools passed in for ppPools
      */
     FOE_SIM_IMGUI_EXPORT void displayEntity(foeEntityID entity,
-                                            foeComponentPoolBase **ppPools,
-                                            size_t poolCount);
+                                            foeSimulationState const *pSimulation);
 
     /** @brief Attempts to render resources associated with the ID
      * @param resource ID to find associated components to

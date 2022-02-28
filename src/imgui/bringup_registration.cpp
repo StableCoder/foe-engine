@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,44 +27,41 @@
 
 namespace {
 
-void imgui_foeBringupComponents(foeEntityID entity,
-                                foeComponentPoolBase **ppPools,
-                                size_t poolCount) {
-    for (size_t i = 0; i < poolCount; ++i) {
-        { // foeArmatureState
-            auto *pPool = dynamic_cast<foeArmatureStatePool *>(ppPools[i]);
-            if (pPool) {
-                auto offset = pPool->find(entity);
-                if (offset != pPool->size()) {
-                    auto *pComponent = pPool->begin<1>() + offset;
-                    imgui_foeArmatureState(pComponent);
-                }
-            }
+void imgui_foeBringupComponents(foeEntityID entity, foeSimulationState const *pSimulationState) {
+    // foeArmatureState
+
+    if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        pPool) {
+        auto offset = pPool->find(entity);
+        if (offset != pPool->size()) {
+            auto *pComponent = pPool->begin<1>() + offset;
+            imgui_foeArmatureState(pComponent);
         }
+    }
 
-        { // Camera
-            auto *pPool = dynamic_cast<foeCameraPool *>(ppPools[i]);
-            if (pPool) {
-                auto offset = pPool->find(entity);
-                if (offset != pPool->size()) {
-                    auto *pComponent = pPool->begin<1>() + offset;
-                    auto *pCamera = dynamic_cast<Camera *>(pComponent->get());
+    // Camera
+    if (auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+        pPool) {
+        auto offset = pPool->find(entity);
+        if (offset != pPool->size()) {
+            auto *pComponent = pPool->begin<1>() + offset;
+            auto *pCamera = dynamic_cast<Camera *>(pComponent->get());
 
-                    if (pCamera)
-                        imgui_Camera(pCamera);
-                }
-            }
+            if (pCamera)
+                imgui_Camera(pCamera);
         }
+    }
 
-        { // foeRenderState
-            auto *pPool = dynamic_cast<foeRenderStatePool *>(ppPools[i]);
-            if (pPool) {
-                auto offset = pPool->find(entity);
-                if (offset != pPool->size()) {
-                    auto *pComponent = pPool->begin<1>() + offset;
-                    imgui_foeRenderState(pComponent);
-                }
-            }
+    // foeRenderState
+    if (auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+        pPool) {
+        auto offset = pPool->find(entity);
+        if (offset != pPool->size()) {
+            auto *pComponent = pPool->begin<1>() + offset;
+            imgui_foeRenderState(pComponent);
         }
     }
 }

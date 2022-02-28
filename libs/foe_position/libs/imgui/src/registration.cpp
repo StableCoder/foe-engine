@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,19 +23,16 @@
 
 namespace {
 
-void imgui_foePositionComponents(foeEntityID entity,
-                                 foeComponentPoolBase **ppPools,
-                                 size_t poolCount) {
-    for (size_t i = 0; i < poolCount; ++i) {
-        // foePosition3d
-        auto *pPool = dynamic_cast<foePosition3dPool *>(ppPools[i]);
-        if (pPool) {
-            auto offset = pPool->find(entity);
-            if (offset != pPool->size()) {
-                auto *pComponent = pPool->begin<1>() + offset;
+void imgui_foePositionComponents(foeEntityID entity, foeSimulationState const *pSimulationState) {
+    // foePosition3d
+    auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+        pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+    if (pPool != nullptr) {
+        auto offset = pPool->find(entity);
+        if (offset != pPool->size()) {
+            auto *pComponent = pPool->begin<1>() + offset;
 
-                imgui_foePosition3d(pComponent->get());
-            }
+            imgui_foePosition3d(pComponent->get());
         }
     }
 }

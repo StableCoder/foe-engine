@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,18 +26,16 @@
 
 namespace {
 
-void imgui_foePhysicsComponents(foeEntityID entity,
-                                foeComponentPoolBase **ppPools,
-                                size_t poolCount) {
-    for (size_t i = 0; i < poolCount; ++i) {
-        // foeRigidBody
-        auto *pPool = dynamic_cast<foeRigidBodyPool *>(ppPools[i]);
-        if (pPool) {
-            auto offset = pPool->find(entity);
-            if (offset != pPool->size()) {
-                auto *pComponent = pPool->begin<1>() + offset;
-                imgui_render_foeRigidBody(pComponent);
-            }
+void imgui_foePhysicsComponents(foeEntityID entity, foeSimulationState const *pSimulationState) {
+    // foeRigidBody
+    auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+
+    if (pRigidBodyPool != nullptr) {
+        auto offset = pRigidBodyPool->find(entity);
+        if (offset != pRigidBodyPool->size()) {
+            auto *pComponent = pRigidBodyPool->begin<1>() + offset;
+            imgui_render_foeRigidBody(pComponent);
         }
     }
 }

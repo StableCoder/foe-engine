@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,18 +37,6 @@
 #include "../render_state_pool.hpp"
 
 namespace {
-
-template <typename ComponentPool>
-auto getComponentPool(foeComponentPoolBase **pComponentPools, size_t poolCount) -> ComponentPool * {
-    ComponentPool *pPool{nullptr};
-    for (size_t i = 0; i < poolCount; ++i) {
-        pPool = dynamic_cast<ComponentPool *>(pComponentPools[i]);
-        if (pPool != nullptr)
-            break;
-    }
-
-    return pPool;
-}
 
 auto renderCall(foeId entity,
                 foeRenderState const *pRenderState,
@@ -110,8 +98,8 @@ auto renderCall(foeId entity,
 
     auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
     if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
-        auto *pPosition3dPool = getComponentPool<foePosition3dPool>(
-            pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+            pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
         auto posOffset = pPosition3dPool->find(entity);
 
@@ -144,6 +132,7 @@ auto renderCall(foeId entity,
 
     return true;
 }
+
 } // namespace
 
 auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
@@ -331,8 +320,8 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
         }
 
         { // RENDER STUFF
-            auto *pRenderStatePool = getComponentPool<foeRenderStatePool>(
-                pSimulationState->componentPools.data(), pSimulationState->componentPools.size());
+            auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
             auto idIt = pRenderStatePool->cbegin();
             auto const endIdIt = pRenderStatePool->cend();

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -69,13 +69,12 @@ auto foeSimulationImGuiRegistrar::deregisterElements(ComponentFn componentFn,
 }
 
 void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity,
-                                                foeComponentPoolBase **ppPools,
-                                                size_t poolCount) {
+                                                foeSimulationState const *pSimulationState) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (it.componentFn)
-            it.componentFn(entity, ppPools, poolCount);
+            it.componentFn(entity, pSimulationState);
     }
 }
 
