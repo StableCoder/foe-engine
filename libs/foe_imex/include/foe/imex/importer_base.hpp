@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ class foeIdIndexGenerator;
 struct foeEditorNameMap;
 
 struct foeSimulationState;
-struct foeComponentPoolBase;
 struct foeResourceCreateInfoBase;
 
 class foeImporterBase {
@@ -44,7 +43,7 @@ class foeImporterBase {
     virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(foeEditorNameMap *pEntityNameMap,
-                                 std::vector<foeComponentPoolBase *> &componentPools) = 0;
+                                 foeSimulationState const *pSimulationState) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
                                            foeSimulationState const *pSimulationState) = 0;

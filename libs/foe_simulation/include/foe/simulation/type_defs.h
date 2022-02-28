@@ -64,6 +64,9 @@ FOE_SIM_EXPORT void *foeSimulationGetResourceLoader(foeSimulationState const *pS
 FOE_SIM_EXPORT void *foeSimulationGetSystem(foeSimulationState const *pSimulationState,
                                             foeSimulationStructureType sType);
 
+FOE_SIM_EXPORT void *foeSimulationGetComponentPool(foeSimulationState const *pSimulationState,
+                                                   foeSimulationStructureType sType);
+
 #ifdef __cplusplus
 }
 #endif

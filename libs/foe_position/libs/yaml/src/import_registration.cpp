@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -30,15 +30,10 @@ namespace {
 bool importPosition3D(YAML::Node const &node,
                       foeIdGroupTranslator const *,
                       foeEntityID entity,
-                      std::vector<foeComponentPoolBase *> &componentPools) {
+                      foeSimulationState const *pSimulationState) {
     if (auto dataNode = node[yaml_position3d_key()]; dataNode) {
-        foePosition3dPool *pPool;
-
-        for (auto it : componentPools) {
-            pPool = dynamic_cast<foePosition3dPool *>(it);
-            if (pPool != nullptr)
-                break;
-        }
+        auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
         if (pPool == nullptr)
             return false;

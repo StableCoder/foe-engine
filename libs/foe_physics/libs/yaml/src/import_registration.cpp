@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -50,15 +50,10 @@ std::error_code collisionShapeCreateProcessing(foeResourceID resource,
 bool importRigidBody(YAML::Node const &node,
                      foeIdGroupTranslator const *pGroupTranslator,
                      foeEntityID entity,
-                     std::vector<foeComponentPoolBase *> &componentPools) {
+                     foeSimulationState const *pSimulationState) {
     if (auto dataNode = node[yaml_rigid_body_key()]; dataNode) {
-        foeRigidBodyPool *pPool;
-
-        for (auto it : componentPools) {
-            pPool = dynamic_cast<foeRigidBodyPool *>(it);
-            if (pPool != nullptr)
-                break;
-        }
+        auto *pPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
 
         if (pPool == nullptr)
             return false;

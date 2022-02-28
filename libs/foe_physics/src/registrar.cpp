@@ -24,7 +24,6 @@
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/simulation/registration.hpp>
-#include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
 #include "error_code.hpp"
@@ -96,8 +95,8 @@ void onCreate(foeSimulationState *pSimulationState) {
     }
 
     // Components
-    if (auto *pPool = search<foeRigidBodyPool>(pSimulationState->componentPools.begin(),
-                                               pSimulationState->componentPools.end());
+    if (auto *pPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
         pPool) {
         ++pPool->refCount;
     } else {
@@ -133,7 +132,13 @@ void onDestroy(foeSimulationState *pSimulationState) {
 
     // Components
     for (auto &pPool : pSimulationState->componentPools) {
-        searchAndDestroy<foeRigidBodyPool>(pPool);
+        if (pPool == nullptr)
+            continue;
+
+        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL && --pPool->refCount == 0) {
+            delete (foeRigidBodyPool *)pPool;
+            pPool = nullptr;
+        }
     }
 
     // Loaders
@@ -221,13 +226,11 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
             auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
                 pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
-            auto *pRigidBodyPool = search<foeRigidBodyPool>(
-                pSimulationState->componentPools.data(),
-                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
+            auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
 
-            auto *pPosition3dPool = search<foePosition3dPool>(
-                pSimulationState->componentPools.data(),
-                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
+            auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
             pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool, pRigidBodyPool,
                                        pPosition3dPool);

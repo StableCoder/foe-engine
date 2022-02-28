@@ -20,11 +20,14 @@
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
 #include <foe/physics/component/rigid_body.hpp>
+#include <foe/physics/type_defs.h>
 #include <foe/simulation/core/component_pool_base.hpp>
 
 class foeRigidBodyPool : public foeComponentPoolBase,
                          public foeDataPool<foeEntityID, foeRigidBody> {
   public:
+    foeRigidBodyPool() : foeComponentPoolBase{FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL} {}
+
     void maintenance() override { foeDataPool<foeEntityID, foeRigidBody>::maintenance(); }
 };
 

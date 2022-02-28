@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -166,7 +166,7 @@ bool foeYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) {
 }
 
 bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
-                                      std::vector<foeComponentPoolBase *> &componentPools) {
+                                      foeSimulationState const *pSimulationState) {
     if (!std::filesystem::exists(mRootDir / stateDirectoryPath))
         return true;
 
@@ -204,7 +204,7 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 
             for (auto const &it : mGenerator->mComponentFns) {
                 if (auto subNode = entityNode[it.first]; subNode) {
-                    it.second(entityNode, &mGroupTranslator, entity, componentPools);
+                    it.second(entityNode, &mGroupTranslator, entity, pSimulationState);
                 }
             }
 

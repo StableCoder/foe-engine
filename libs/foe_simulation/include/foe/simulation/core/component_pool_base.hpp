@@ -17,13 +17,18 @@
 #ifndef FOE_SIMULATION_CORE_COMPONENT_POOL_BASE_HPP
 #define FOE_SIMULATION_CORE_COMPONENT_POOL_BASE_HPP
 
+#include <foe/simulation/type_defs.h>
+
 #include <cstddef>
 
 struct foeComponentPoolBase {
+    foeComponentPoolBase(foeSimulationStructureType sType) : sType{sType} {}
     virtual ~foeComponentPoolBase() {}
 
     virtual void maintenance() = 0;
 
+    foeSimulationStructureType sType;
+    void *pNext;
     size_t refCount{0};
 };
 

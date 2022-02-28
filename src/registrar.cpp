@@ -22,7 +22,6 @@
 #include <foe/resource/armature_pool.hpp>
 #include <foe/resource/type_defs.h>
 #include <foe/simulation/registration.hpp>
-#include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <vk_error_code.hpp>
 
@@ -40,9 +39,9 @@ namespace {
 
 void onCreate(foeSimulationState *pSimulationState) {
     // Components
-    if (auto *pPool = search<foeArmatureStatePool>(pSimulationState->componentPools.begin(),
-                                                   pSimulationState->componentPools.end());
-        pPool) {
+    if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        pPool != nullptr) {
         ++pPool->refCount;
     } else {
         pPool = new foeArmatureStatePool;
@@ -50,9 +49,9 @@ void onCreate(foeSimulationState *pSimulationState) {
         pSimulationState->componentPools.emplace_back(pPool);
     }
 
-    if (auto *pPool = search<foeCameraPool>(pSimulationState->componentPools.begin(),
-                                            pSimulationState->componentPools.end());
-        pPool) {
+    if (auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+        pPool != nullptr) {
         ++pPool->refCount;
     } else {
         pPool = new foeCameraPool;
@@ -60,9 +59,9 @@ void onCreate(foeSimulationState *pSimulationState) {
         pSimulationState->componentPools.emplace_back(pPool);
     }
 
-    if (auto *pPool = search<foeRenderStatePool>(pSimulationState->componentPools.begin(),
-                                                 pSimulationState->componentPools.end());
-        pPool) {
+    if (auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+        pPool != nullptr) {
         ++pPool->refCount;
     } else {
         pPool = new foeRenderStatePool;
@@ -109,10 +108,13 @@ void onDestroy(foeSimulationState *pSimulationState) {
     }
 
     // Components
-    for (auto &pPool : pSimulationState->componentPools) {
-        searchAndDestroy<foeRenderStatePool>(pPool);
-        searchAndDestroy<foeCameraPool>(pPool);
-        searchAndDestroy<foeArmatureStatePool>(pPool);
+    for (auto &ptr : pSimulationState->componentPools) {
+        if (ptr == nullptr)
+            continue;
+
+        DESTROY_FUNCTIONALITY(foeRenderStatePool, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL)
+        DESTROY_FUNCTIONALITY(foeCameraPool, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL)
+        DESTROY_FUNCTIONALITY(foeArmatureStatePool, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL)
     }
 }
 
@@ -166,9 +168,8 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
             auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
                 pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
 
-            auto *pArmatureStatePool = search<foeArmatureStatePool>(
-                pSimulationState->componentPools.data(),
-                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
+            auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
             pArmatureSystem->initialize(pArmaturePool, pArmatureStatePool);
         }
@@ -180,13 +181,11 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
         ++pCameraSystem->initCount;
         initialized.camera = true;
         if (!pCameraSystem->initialized()) {
-            auto *pPosition3dPool = search<foePosition3dPool>(
-                pSimulationState->componentPools.data(),
-                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
+            auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
-            auto *pCameraPool = search<foeCameraPool>(pSimulationState->componentPools.data(),
-                                                      pSimulationState->componentPools.data() +
-                                                          pSimulationState->componentPools.size());
+            auto *pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
 
             errC = pCameraSystem->initialize(pPosition3dPool, pCameraPool);
             if (errC)
@@ -200,9 +199,8 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
         ++pPositionDescriptorPool->initCount;
         initialized.positionDescriptor = true;
         if (!pPositionDescriptorPool->initialized()) {
-            auto *pPosition3dPool = search<foePosition3dPool>(
-                pSimulationState->componentPools.data(),
-                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
+            auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
             errC = pPositionDescriptorPool->initialize(pPosition3dPool);
             if (errC)
@@ -221,13 +219,11 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
             auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
                 pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
-            auto *pArmatureStatePool = search<foeArmatureStatePool>(
-                pSimulationState->componentPools.data(),
-                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
+            auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
-            auto *pRenderStatePool = search<foeRenderStatePool>(
-                pSimulationState->componentPools.data(),
-                pSimulationState->componentPools.data() + pSimulationState->componentPools.size());
+            auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
             errC = pVkAnimationPool->initialize(pArmaturePool, pMeshPool, pArmatureStatePool,
                                                 pRenderStatePool);

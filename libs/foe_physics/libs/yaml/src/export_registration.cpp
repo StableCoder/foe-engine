@@ -57,18 +57,14 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
                                              foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto const *pIt = pSimulationState->componentPools.data();
-    auto const *pEndIt = pIt + pSimulationState->componentPools.size();
-
-    for (; pIt != pEndIt; ++pIt) {
-        auto *pRigidBodyPool = dynamic_cast<foeRigidBodyPool *>(*pIt);
-        if (pRigidBodyPool) {
-            if (auto offset = pRigidBodyPool->find(entity); offset != pRigidBodyPool->size()) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_rigid_body_key(),
-                    .data = yaml_write_rigid_body(*(pRigidBodyPool->begin<1>() + offset)),
-                });
-            }
+    auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+    if (pRigidBodyPool) {
+        if (auto offset = pRigidBodyPool->find(entity); offset != pRigidBodyPool->size()) {
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_rigid_body_key(),
+                .data = yaml_write_rigid_body(*(pRigidBodyPool->begin<1>() + offset)),
+            });
         }
     }
 

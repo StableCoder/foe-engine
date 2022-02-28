@@ -20,6 +20,7 @@
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
 #include <foe/position/component/3d.hpp>
+#include <foe/position/type_defs.h>
 #include <foe/simulation/core/component_pool_base.hpp>
 
 #include <memory>
@@ -27,6 +28,8 @@
 class foePosition3dPool : public foeComponentPoolBase,
                           public foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>> {
   public:
+    foePosition3dPool() : foeComponentPoolBase{FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL} {}
+
     void maintenance() override {
         foeDataPool<foeEntityID, std::unique_ptr<foePosition3d>>::maintenance();
     }

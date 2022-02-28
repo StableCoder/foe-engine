@@ -260,14 +260,13 @@ auto importState(std::string_view topLevelDataSet,
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            pGroupImporter->importStateData(pSimulationSet->pEntityNameMap,
-                                            pSimulationSet->componentPools);
+            pGroupImporter->importStateData(pSimulationSet->pEntityNameMap, pSimulationSet.get());
         }
     }
 
     // Importing Persistent State Data
     pSimulationSet->groupData.persistentImporter()->importStateData(pSimulationSet->pEntityNameMap,
-                                                                    pSimulationSet->componentPools);
+                                                                    pSimulationSet.get());
 
     // Successfully returning
     *ppSimulationSet = pSimulationSet.release();

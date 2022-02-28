@@ -29,7 +29,6 @@
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/registration.hpp>
-#include <foe/simulation/registration_fn_templates.hpp>
 #include <foe/simulation/simulation.hpp>
 
 #include "error_code.hpp"

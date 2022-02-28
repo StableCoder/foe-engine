@@ -30,19 +30,14 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
                                              foeSimulationState const *pSimulationState) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto const *pIt = pSimulationState->componentPools.data();
-    auto const *pEndIt = pIt + pSimulationState->componentPools.size();
-
-    for (; pIt != pEndIt; ++pIt) {
-        auto *pPosition3dPool = dynamic_cast<foePosition3dPool *>(*pIt);
-        if (pPosition3dPool) {
-            if (auto searchIt = pPosition3dPool->find(entity);
-                searchIt != pPosition3dPool->size()) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_position3d_key(),
-                    .data = yaml_write_position3d(*pPosition3dPool->begin<1>()[searchIt].get()),
-                });
-            }
+    auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+        pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+    if (pPosition3dPool != nullptr) {
+        if (auto searchIt = pPosition3dPool->find(entity); searchIt != pPosition3dPool->size()) {
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_position3d_key(),
+                .data = yaml_write_position3d(*pPosition3dPool->begin<1>()[searchIt].get()),
+            });
         }
     }
 

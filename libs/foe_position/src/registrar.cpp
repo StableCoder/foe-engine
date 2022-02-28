@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,14 +26,26 @@
 namespace {
 
 void onCreate(foeSimulationState *pSimulationState) {
-    pSimulationState->componentPools.emplace_back(new foePosition3dPool);
+    // Components Pools
+    if (auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+        pPool != nullptr) {
+        ++pPool->refCount;
+    } else {
+        pPool = new foePosition3dPool;
+        ++pPool->refCount;
+        pSimulationState->componentPools.emplace_back(pPool);
+    }
 }
 
 void onDestroy(foeSimulationState *pSimulationState) {
+    // Component Pools
     for (auto &pPool : pSimulationState->componentPools) {
-        auto *pPosition3dPool = dynamic_cast<foePosition3dPool *>(pPool);
-        if (pPosition3dPool) {
-            delete pPosition3dPool;
+        if (pPool == nullptr)
+            continue;
+
+        if (pPool->sType == FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL) {
+            delete pPool;
             pPool = nullptr;
         }
     }

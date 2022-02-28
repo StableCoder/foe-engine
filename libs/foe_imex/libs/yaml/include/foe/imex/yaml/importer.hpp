@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -45,9 +45,8 @@ class foeYamlImporter : public foeImporterBase {
         std::vector<foeIdGroupValueNameSet> &dependencies) override;
     FOE_IMEX_YAML_EXPORT bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) override;
-    FOE_IMEX_YAML_EXPORT bool importStateData(
-        foeEditorNameMap *pEntityNameMap,
-        std::vector<foeComponentPoolBase *> &componentPools) override;
+    FOE_IMEX_YAML_EXPORT bool importStateData(foeEditorNameMap *pEntityNameMap,
+                                              foeSimulationState const *pSimulationState) override;
 
     FOE_IMEX_YAML_EXPORT bool importResourceDefinitions(
         foeEditorNameMap *pNameMap, foeSimulationState const *pSimulationState) override;

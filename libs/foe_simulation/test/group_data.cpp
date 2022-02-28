@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class DummyImporter : public foeImporterBase {
     bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool importStateData(foeEditorNameMap *pEntityNameMap,
-                         std::vector<foeComponentPoolBase *> &) final {
+                         foeSimulationState const *pSimulationState) final {
         return false;
     }
 

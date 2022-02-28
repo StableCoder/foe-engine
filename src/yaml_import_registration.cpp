@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,15 +32,10 @@ namespace {
 bool importArmatureState(YAML::Node const &node,
                          foeIdGroupTranslator const *pGroupTranslator,
                          foeEntityID entity,
-                         std::vector<foeComponentPoolBase *> &componentPools) {
+                         foeSimulationState const *pSimulationState) {
     if (auto dataNode = node[yaml_armature_state_key()]; dataNode) {
-        foeArmatureStatePool *pPool;
-
-        for (auto it : componentPools) {
-            pPool = dynamic_cast<foeArmatureStatePool *>(it);
-            if (pPool != nullptr)
-                break;
-        }
+        auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
         if (pPool == nullptr)
             return false;
@@ -62,15 +57,10 @@ bool importArmatureState(YAML::Node const &node,
 bool importRenderState(YAML::Node const &node,
                        foeIdGroupTranslator const *pGroupTranslator,
                        foeEntityID entity,
-                       std::vector<foeComponentPoolBase *> &componentPools) {
+                       foeSimulationState const *pSimulationState) {
     if (auto dataNode = node[yaml_render_state_key()]; dataNode) {
-        foeRenderStatePool *pPool;
-
-        for (auto it : componentPools) {
-            pPool = dynamic_cast<foeRenderStatePool *>(it);
-            if (pPool != nullptr)
-                break;
-        }
+        auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
         if (pPool == nullptr)
             return false;
@@ -92,15 +82,10 @@ bool importRenderState(YAML::Node const &node,
 bool importCamera(YAML::Node const &node,
                   foeIdGroupTranslator const *,
                   foeEntityID entity,
-                  std::vector<foeComponentPoolBase *> &componentPools) {
+                  foeSimulationState const *pSimulationState) {
     if (auto dataNode = node[yaml_camera_key()]; dataNode) {
-        foeCameraPool *pPool;
-
-        for (auto it : componentPools) {
-            pPool = dynamic_cast<foeCameraPool *>(it);
-            if (pPool != nullptr)
-                break;
-        }
+        auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
 
         if (pPool == nullptr)
             return false;
