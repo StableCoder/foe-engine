@@ -284,7 +284,7 @@ auto foeInitializeSimulation(foeSimulationState *pSimulationState,
     if (foeSimulationIsInitialized(pSimulationState)) {
         FOE_LOG(SimulationState, Error, "Attempting to re-initialize SimulationState: {}",
                 static_cast<void *>(pSimulationState))
-        return FOE_SIMULATION_ERROR_ALREADY_INITIALIZED;
+        return FOE_SIMULATION_ERROR_SIMULATION_ALREADY_INITIALIZED;
     }
 
     FOE_LOG(SimulationState, Verbose, "Initializing SimulationState: {}",
@@ -319,7 +319,7 @@ auto foeDeinitializeSimulation(foeSimulationState *pSimulationState) -> std::err
     std::scoped_lock lock{mSync};
 
     if (!foeSimulationIsInitialized(pSimulationState))
-        return FOE_SIMULATION_ERROR_NOT_INITIALIZED;
+        return FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED;
 
     acquireExclusiveLock(pSimulationState, "deinitialization");
     deinitSimulation(pSimulationState);
@@ -334,7 +334,7 @@ auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState, foeGf
     if (foeSimulationIsGraphicsInitialzied(pSimulationState)) {
         FOE_LOG(SimulationState, Error, "Attempting to re-initialize SimulationState graphics: {}",
                 static_cast<void *>(pSimulationState))
-        return FOE_SIMULATION_ERROR_GRAPHICS_ALREADY_INITIALIZED;
+        return FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED;
     }
 
     FOE_LOG(SimulationState, Verbose, "Initializing SimulationState graphics: {}",
@@ -371,7 +371,7 @@ auto foeDeinitializeSimulationGraphics(foeSimulationState *pSimulationState) -> 
     std::scoped_lock lock{mSync};
 
     if (!foeSimulationIsGraphicsInitialzied(pSimulationState))
-        return FOE_SIMULATION_ERROR_GRAPHICS_NOT_INITIALIZED;
+        return FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED;
 
     acquireExclusiveLock(pSimulationState, "deinitializing graphics");
     deinitializeSimulationGraphics(pSimulationState);

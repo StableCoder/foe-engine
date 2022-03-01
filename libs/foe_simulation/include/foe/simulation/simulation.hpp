@@ -152,7 +152,8 @@ FOE_SIM_EXPORT auto foeInitializeSimulation(foeSimulationState *pSimulationState
  * @brief Deinitializes a SimulationState given InitInfo
  * @param pSimulationState SimulationState to deinitialize
  * @return FOE_SIMULATION_SUCCESS if deinitialization proceeded, otherwise
- * FOE_SIMULATION_ERROR_NOT_INITIALIZED if the simulation has not previously been initialized.
+ * FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED if the simulation has not previously been
+ * initialized.
  *
  * Iterates through any registered functionality and calls its 'onDeinitialization' function.
  */
@@ -165,9 +166,9 @@ FOE_SIM_EXPORT auto foeDeinitializeSimulation(foeSimulationState *pSimulationSta
  * @param gfxSession is a handle to the graphics session the simulation will be using
  * @return An appropriate error code is returned. FOE_SIMULATION_SUCCESS if the simulation
  * initialized using the graphics session successfully.
- * FOE_SIMULATION_ERROR_GRAPHICS_ALREADY_INITIALIZED if the simulation already was initialized
- * successfully with graphics previously. Otherwise another detailed error_code from a failed
- * attempt to initialize some functionality will be returned.
+ * FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED if the simulation already was
+ * initialized successfully with graphics previously. Otherwise another detailed error_code from a
+ * failed attempt to initialize some functionality will be returned.
  *
  */
 FOE_SIM_EXPORT auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState,
@@ -177,8 +178,8 @@ FOE_SIM_EXPORT auto foeInitializeSimulationGraphics(foeSimulationState *pSimulat
  * @brief Deinitializes graphics from the given simulation
  * @param pSimulationState is a pointer to the simulation to deinitialize graphics from
  * @return An appropriate error code is returned. FOE_SIMULATION_SUCCESS if deinitialization
- * happened without issue. FOE_SIMULATION_ERROR_GRAPHICS_NOT_INITIALIZED if the simulation's
- * graphics was not previously successfully initialized.
+ * happened without issue. FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED if the
+ * simulation's graphics was not previously successfully initialized.
  */
 FOE_SIM_EXPORT auto foeDeinitializeSimulationGraphics(foeSimulationState *pSimulationState)
     -> std::error_code;
