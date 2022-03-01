@@ -45,8 +45,8 @@ void collisionShapeLoadFn(void *pContext,
     auto pLocalCreateInfo = pCollisionShape->pCreateInfo;
 
     for (auto const &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
-            return it.pLoader->load(pCollisionShape, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            return it.pLoadFn(it.pLoader, pCollisionShape, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
@@ -85,6 +85,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pLoader->refCount;
         pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
             .pLoader = pLoader,
+            .pCanProcessCreateInfoFn = foeCollisionShapeLoader::canProcessCreateInfo,
+            .pLoadFn = foeCollisionShapeLoader::load,
             .pMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
                     auto *pCollisionShapeLoader =

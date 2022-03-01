@@ -129,6 +129,13 @@ bool foeShaderLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInf
     return dynamic_cast<foeShaderCreateInfo *>(pCreateInfo) != nullptr;
 }
 
+void foeShaderLoader::load(void *pLoader,
+                           void *pResource,
+                           std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                           void (*pPostLoadFn)(void *, std::error_code)) {
+    reinterpret_cast<foeShaderLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+}
+
 void foeShaderLoader::load(void *pResource,
                            std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                            void (*pPostLoadFn)(void *, std::error_code)) {

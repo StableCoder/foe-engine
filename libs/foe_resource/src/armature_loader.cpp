@@ -128,6 +128,13 @@ bool processCreateInfo(
 
 } // namespace
 
+void foeArmatureLoader::load(void *pLoader,
+                             void *pResource,
+                             std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                             void (*pPostLoadFn)(void *, std::error_code)) {
+    reinterpret_cast<foeArmatureLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+}
+
 void foeArmatureLoader::load(void *pResource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                              void (*pPostLoadFn)(void *, std::error_code)) {

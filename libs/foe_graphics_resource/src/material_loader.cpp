@@ -240,6 +240,13 @@ bool foeMaterialLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateI
     return dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo) != nullptr;
 }
 
+void foeMaterialLoader::load(void *pLoader,
+                             void *pResource,
+                             std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                             void (*pPostLoadFn)(void *, std::error_code)) {
+    reinterpret_cast<foeMaterialLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+}
+
 void foeMaterialLoader::load(void *pResource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                              void (*pPostLoadFn)(void *, std::error_code)) {

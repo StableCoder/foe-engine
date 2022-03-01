@@ -30,11 +30,6 @@ struct foeResourceLoaderBase {
         sType{sType}, pNext{nullptr}, refCount{0}, initCount{0}, gfxInitCount{0} {}
     virtual ~foeResourceLoaderBase() {}
 
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase * /*pCreateInfo*/) { return false; }
-    virtual void load(void * /*pResource*/,
-                      std::shared_ptr<foeResourceCreateInfoBase> const & /*pCreateInfo*/,
-                      void (*/*pPostLoadFn*/)(void *, std::error_code)) {}
-
     foeSimulationStructureType sType;
     void *pNext;
     size_t refCount;

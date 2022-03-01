@@ -49,16 +49,21 @@ class FOE_GFX_RES_EXPORT foeShaderLoader : public foeResourceLoaderBase {
 
     void gfxMaintenance();
 
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) final;
-    virtual void load(void *pResource,
-                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                      void (*pPostLoadFn)(void *, std::error_code)) final;
+    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static void load(void *pLoader,
+                     void *pResource,
+                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     void (*pPostLoadFn)(void *, std::error_code));
 
   private:
     static void unloadResource(void *pContext,
                                void *pResource,
                                uint32_t resourceIteration,
                                bool immediateUnload);
+
+    void load(void *pResource,
+              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              void (*pPostLoadFn)(void *, std::error_code));
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;

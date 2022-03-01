@@ -94,6 +94,13 @@ bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foeCollisionShape
 
 } // namespace
 
+void foeCollisionShapeLoader::load(void *pLoader,
+                                   void *pResource,
+                                   std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                                   void (*pPostLoadFn)(void *, std::error_code)) {
+    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+}
+
 void foeCollisionShapeLoader::load(void *pResource,
                                    std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                                    void (*pPostLoadFn)(void *, std::error_code)) {

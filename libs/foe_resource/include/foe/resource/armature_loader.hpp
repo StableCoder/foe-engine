@@ -50,16 +50,21 @@ class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
 
     void maintenance();
 
-    bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) final;
-    void load(void *pResource,
-              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-              void (*pPostLoadFn)(void *, std::error_code)) final;
+    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static void load(void *pLoader,
+                     void *pResource,
+                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     void (*pPostLoadFn)(void *, std::error_code));
 
   private:
     static void unloadResource(void *pContext,
                                void *pResource,
                                uint32_t resourceIteration,
                                bool immediateUnload);
+
+    void load(void *pResource,
+              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              void (*pPostLoadFn)(void *, std::error_code));
 
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
 

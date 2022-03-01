@@ -56,8 +56,8 @@ void imageLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, st
     auto pLocalCreateInfo = pImage->pCreateInfo;
 
     for (auto const &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
-            return it.pLoader->load(pImage, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            return it.pLoadFn(it.pLoader, pImage, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
@@ -71,8 +71,8 @@ void materialLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
     auto pLocalCreateInfo = pMaterial->pCreateInfo;
 
     for (auto const &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
-            return it.pLoader->load(pMaterial, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            return it.pLoadFn(it.pLoader, pMaterial, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
@@ -86,8 +86,8 @@ void shaderLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, s
     auto pLocalCreateInfo = pShader->pCreateInfo;
 
     for (auto const &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
-            return it.pLoader->load(pShader, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            return it.pLoadFn(it.pLoader, pShader, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
@@ -103,8 +103,8 @@ void vertexDescriptorLoadFn(void *pContext,
     auto pLocalCreateInfo = pVertexDescriptor->pCreateInfo;
 
     for (auto const &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
-            return it.pLoader->load(pVertexDescriptor, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            return it.pLoadFn(it.pLoader, pVertexDescriptor, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
@@ -118,8 +118,8 @@ void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std
     auto pLocalCreateInfo = pMesh->pCreateInfo;
 
     for (auto const &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
-            return it.pLoader->load(pMesh, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            return it.pLoadFn(it.pLoader, pMesh, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
@@ -220,6 +220,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pLoader->refCount;
         pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
             .pLoader = pLoader,
+            .pCanProcessCreateInfoFn = foeImageLoader::canProcessCreateInfo,
+            .pLoadFn = foeImageLoader::load,
             .pGfxMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
                     auto *pImageLoader = reinterpret_cast<foeImageLoader *>(pLoader);
@@ -237,6 +239,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pLoader->refCount;
         pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
             .pLoader = pLoader,
+            .pCanProcessCreateInfoFn = foeMaterialLoader::canProcessCreateInfo,
+            .pLoadFn = foeMaterialLoader::load,
             .pGfxMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
                     auto *pMaterialLoader = reinterpret_cast<foeMaterialLoader *>(pLoader);
@@ -254,6 +258,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pLoader->refCount;
         pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
             .pLoader = pLoader,
+            .pCanProcessCreateInfoFn = foeShaderLoader::canProcessCreateInfo,
+            .pLoadFn = foeShaderLoader::load,
             .pGfxMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
                     auto *pShaderLoader = reinterpret_cast<foeShaderLoader *>(pLoader);
@@ -271,6 +277,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pLoader->refCount;
         pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
             .pLoader = pLoader,
+            .pCanProcessCreateInfoFn = foeVertexDescriptorLoader::canProcessCreateInfo,
+            .pLoadFn = foeVertexDescriptorLoader::load,
             .pGfxMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
                     auto *pVertexDescriptorLoader =
@@ -289,6 +297,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pLoader->refCount;
         pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
             .pLoader = pLoader,
+            .pCanProcessCreateInfoFn = foeMeshLoader::canProcessCreateInfo,
+            .pLoadFn = foeMeshLoader::load,
             .pGfxMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
                     auto *pMeshLoader = reinterpret_cast<foeMeshLoader *>(pLoader);

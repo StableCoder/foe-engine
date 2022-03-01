@@ -40,8 +40,8 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
     auto pLocalCreateInfo = pArmature->pCreateInfo;
 
     for (auto const &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader->canProcessCreateInfo(pLocalCreateInfo.get())) {
-            return it.pLoader->load(pArmature, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            return it.pLoadFn(it.pLoader, pArmature, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
@@ -83,6 +83,8 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pLoader->refCount;
         pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
             .pLoader = pLoader,
+            .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
+            .pLoadFn = foeArmatureLoader::load,
             .pMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
                     auto *pArmatureLoader = reinterpret_cast<foeArmatureLoader *>(pLoader);

@@ -161,6 +161,13 @@ bool foeMeshLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo)
     return dynamic_cast<foeMeshCreateInfo *>(pCreateInfo) != nullptr;
 }
 
+void foeMeshLoader::load(void *pLoader,
+                         void *pResource,
+                         std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                         void (*pPostLoadFn)(void *, std::error_code)) {
+    reinterpret_cast<foeMeshLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+}
+
 void foeMeshLoader::load(void *pResource,
                          const std::shared_ptr<foeResourceCreateInfoBase> &pCreateInfo,
                          void (*pPostLoadFn)(void *, std::error_code)) {

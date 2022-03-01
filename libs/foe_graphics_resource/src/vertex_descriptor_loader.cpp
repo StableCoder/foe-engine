@@ -180,6 +180,14 @@ bool foeVertexDescriptorLoader::canProcessCreateInfo(foeResourceCreateInfoBase *
     return dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo) != nullptr;
 }
 
+void foeVertexDescriptorLoader::load(void *pLoader,
+                                     void *pResource,
+                                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                                     void (*pPostLoadFn)(void *, std::error_code)) {
+    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->load(pResource, pCreateInfo,
+                                                                 pPostLoadFn);
+}
+
 void foeVertexDescriptorLoader::load(void *pResource,
                                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                                      void (*pPostLoadFn)(void *, std::error_code)) {

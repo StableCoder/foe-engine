@@ -60,10 +60,11 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
 
     void gfxMaintenance();
 
-    virtual bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) final;
-    virtual void load(void *pResource,
-                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                      void (*pPostLoadFn)(void *, std::error_code)) final;
+    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static void load(void *pLoader,
+                     void *pResource,
+                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     void (*pPostLoadFn)(void *, std::error_code));
 
   private:
     std::error_code createDescriptorSet(foeMaterial::Data *pMaterialData);
@@ -72,6 +73,10 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
                                void *pResource,
                                uint32_t resourceIteration,
                                bool immediateUnload);
+
+    void load(void *pResource,
+              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              void (*pPostLoadFn)(void *, std::error_code));
 
     foeShaderPool *mShaderPool{nullptr};
     foeImagePool *mImagePool{nullptr};
