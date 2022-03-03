@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 #include <foe/simulation/core/system.hpp>
 
 #include <memory>
+#include <system_error>
 #include <vector>
 
 class foeCollisionShapeLoader;
@@ -39,10 +40,10 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem : public foeSystemBase {
     foePhysicsSystem();
     ~foePhysicsSystem();
 
-    void initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
+    auto initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
                     foeCollisionShapePool *pCollisionShapePool,
                     foeRigidBodyPool *pRigidBodyPool,
-                    foePosition3dPool *pPosition3dPool);
+                    foePosition3dPool *pPosition3dPool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
 

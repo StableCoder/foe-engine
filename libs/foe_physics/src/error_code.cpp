@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -33,6 +33,11 @@ std::string foePhysicsErrCategory::message(int ev) const {
     switch (static_cast<foePhysicsResult>(ev)) {
         RESULT_CASE(FOE_PHYSICS_SUCCESS)
         RESULT_CASE(FOE_PHYSICS_ERROR_IMPORT_FAILED)
+        // Physics System
+        RESULT_CASE(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER)
+        RESULT_CASE(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES)
+        RESULT_CASE(FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS)
+        RESULT_CASE(FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS)
 
     default:
         if (ev > 0)

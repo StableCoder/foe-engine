@@ -25,6 +25,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "bt_glm_conversion.hpp"
+#include "error_code.hpp"
 
 foePhysicsSystem::foePhysicsSystem() :
     foeSystemBase{FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM},
@@ -39,10 +40,19 @@ foePhysicsSystem::foePhysicsSystem() :
 
 foePhysicsSystem::~foePhysicsSystem() {}
 
-void foePhysicsSystem::initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
+auto foePhysicsSystem::initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
                                   foeCollisionShapePool *pCollisionShapePool,
                                   foeRigidBodyPool *pRigidBodyPool,
-                                  foePosition3dPool *pPosition3dPool) {
+                                  foePosition3dPool *pPosition3dPool) -> std::error_code {
+    if (pCollisionShapeLoader == nullptr)
+        return FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER;
+    if (pCollisionShapePool == nullptr)
+        return FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES;
+    if (pRigidBodyPool == nullptr)
+        return FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS;
+    if (pPosition3dPool == nullptr)
+        return FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS;
+
     mpCollisionShapeLoader = pCollisionShapeLoader;
     mpCollisionShapePool = pCollisionShapePool;
 
@@ -62,6 +72,8 @@ void foePhysicsSystem::initialize(foeCollisionShapeLoader *pCollisionShapeLoader
             addObject(*pId, pData, nullptr, nullptr);
         }
     }
+
+    return FOE_PHYSICS_SUCCESS;
 }
 
 void foePhysicsSystem::deinitialize() {
