@@ -48,7 +48,7 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
     pPostLoadFn(pResource, FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
-void onCreate(foeSimulationState *pSimulationState) {
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     // Resource Pools
     bool poolFound = false;
 
@@ -92,9 +92,11 @@ void onCreate(foeSimulationState *pSimulationState) {
                 },
         });
     }
+
+    return FOE_RESOURCE_SUCCESS;
 }
 
-void onDestroy(foeSimulationState *pSimulationState) {
+auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
         if (it.pLoader == nullptr)
@@ -121,6 +123,8 @@ void onDestroy(foeSimulationState *pSimulationState) {
             }
         }
     }
+
+    return FOE_RESOURCE_SUCCESS;
 }
 
 void deinitialize(foeSimulationState const *pSimulationState) {
@@ -156,7 +160,10 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void onDeinitialize(foeSimulationState const *pSimulationState) { deinitialize(pSimulationState); }
+auto onDeinitialize(foeSimulationState const *pSimulationState) -> std::error_code {
+    deinitialize(pSimulationState);
+    return FOE_RESOURCE_SUCCESS;
+}
 
 } // namespace
 

@@ -21,8 +21,8 @@
 #include <foe/simulation/type_defs.h>
 
 namespace {
-void onCreate(foeSimulationState *) {}
-void onDestroy(foeSimulationState *) {}
+std::error_code onCreate(foeSimulationState *) { return {}; }
+std::error_code onDestroy(foeSimulationState *) { return {}; }
 } // namespace
 
 constexpr int cTestFunctionalityID = FOE_SIMULATION_FUNCTIONALITY_ID(0);
@@ -133,7 +133,9 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
 
 TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
           "[foe][simulation]") {
-    auto *pSimState = foeCreateSimulation(false);
+    foeSimulationState *pSimState{nullptr};
+
+    REQUIRE(!foeCreateSimulation(false, &pSimState));
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap == nullptr);
@@ -143,7 +145,9 @@ TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
 }
 
 TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe][simulation]") {
-    auto *pSimState = foeCreateSimulation(true);
+    foeSimulationState *pSimState{nullptr};
+
+    REQUIRE(!foeCreateSimulation(true, &pSimState));
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap != nullptr);

@@ -111,13 +111,15 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulationState const *pSimulationSta
 
 /**
  * @brief Creates a new SimulationState with any registered functionality available
- * @param createInfo Data used during the creation of the simulation and the related functionality
  * @param addNameMaps If true, the optional NameMaps are also made available
- * @return A pointer to a valid SimulationState on success. nullptr otherwise.
+ * @param ppSimulationState is a pointer to the handle to fill with the newly created simulation
+ * when successful
+ * @return FOE_SIMULATION_SUCCESS on a successful creation, an appropriate error code otherwise.
  *
  * The 'onCreate' of any previously registered functionality is called on the created simulation.
  */
-FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps) -> foeSimulationState *;
+FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps, foeSimulationState **ppSimulationState)
+    -> std::error_code;
 
 /**
  * @brief Attempts to destroy a given SimulationState

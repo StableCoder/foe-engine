@@ -85,8 +85,13 @@ auto importState(std::string_view topLevelDataSet,
                  foeSearchPaths *pSearchPaths,
                  std::function<void(std::function<void()>)> asyncTaskFn,
                  foeSimulationState **ppSimulationSet) -> std::error_code {
+    foeSimulationState *pTempSimSet;
+    std::error_code errC = foeCreateSimulation(true, &pTempSimSet);
+    if (errC)
+        return errC;
+
     std::unique_ptr<foeSimulationState, std::function<void(foeSimulationState *)>> pSimulationSet{
-        foeCreateSimulation(true), [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
+        pTempSimSet, [](foeSimulationState *ptr) { foeDestroySimulation(ptr); }};
 
     // Find the to-level data set, initially as if the full path were given
     std::unique_ptr<foeImporterBase> persistentImporter{

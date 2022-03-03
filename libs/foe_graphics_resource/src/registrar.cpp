@@ -126,7 +126,7 @@ void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std
     pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
-void onCreate(foeSimulationState *pSimulationState) {
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     // Resources
     Initialized found{};
 
@@ -306,6 +306,8 @@ void onCreate(foeSimulationState *pSimulationState) {
                 },
         });
     }
+
+    return {};
 }
 
 #define DESTROY_LOADER(X, Y)                                                                       \
@@ -315,7 +317,7 @@ void onCreate(foeSimulationState *pSimulationState) {
         continue;                                                                                  \
     }
 
-void onDestroy(foeSimulationState *pSimulationState) {
+auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
         if (it.pLoader == nullptr)
@@ -366,6 +368,8 @@ void onDestroy(foeSimulationState *pSimulationState) {
             }
         }
     }
+
+    return {};
 }
 
 #define DEINITIALIZE_LOADER(X, Y)                                                                  \
@@ -475,7 +479,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void onDeinitialization(foeSimulationState const *pSimulationState) {
+auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
     // Loaders
     DEINITIALIZE_LOADER(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
     DEINITIALIZE_LOADER(foeMaterialLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
@@ -483,6 +487,8 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
     DEINITIALIZE_LOADER(foeVertexDescriptorLoader,
                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
     DEINITIALIZE_LOADER(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
+
+    return {};
 }
 
 #define DEINITIALIZE_LOADER_GRAPHICS(X, Y)                                                         \
@@ -491,8 +497,8 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
         pLoader->deinitializeGraphics();                                                           \
     }
 
-void deinitializeGraphics(foeSimulationState const *pSimulationState,
-                          Initialized const &initialized) {
+auto deinitializeGraphics(foeSimulationState const *pSimulationState,
+                          Initialized const &initialized) -> std::error_code {
     // Loaders
     if (initialized.image)
         DEINITIALIZE_LOADER_GRAPHICS(foeImageLoader,
@@ -506,6 +512,8 @@ void deinitializeGraphics(foeSimulationState const *pSimulationState,
     if (initialized.mesh)
         DEINITIALIZE_LOADER_GRAPHICS(foeMeshLoader,
                                      FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER)
+
+    return {};
 }
 
 #define INITIALIZE_LOADER_GRAPHICS(X, Y, Z)                                                        \
@@ -545,7 +553,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
+auto onGfxDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
     // Loaders
     DEINITIALIZE_LOADER_GRAPHICS(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER)
     DEINITIALIZE_LOADER_GRAPHICS(foeMaterialLoader,
@@ -553,6 +561,8 @@ void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
     DEINITIALIZE_LOADER_GRAPHICS(foeShaderLoader,
                                  FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER)
     DEINITIALIZE_LOADER_GRAPHICS(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER)
+
+    return {};
 }
 
 } // namespace

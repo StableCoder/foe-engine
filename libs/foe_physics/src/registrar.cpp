@@ -53,7 +53,7 @@ void collisionShapeLoadFn(void *pContext,
     pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
 }
 
-void onCreate(foeSimulationState *pSimulationState) {
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     // Resources
     bool poolFound = false;
 
@@ -117,9 +117,11 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pSystem->refCount;
         pSimulationState->systems.emplace_back(pSystem);
     }
+
+    return {};
 }
 
-void onDestroy(foeSimulationState *pSimulationState) {
+auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
     // Systems
     for (auto &pSystem : pSimulationState->systems) {
         if (pSystem == nullptr)
@@ -168,6 +170,8 @@ void onDestroy(foeSimulationState *pSimulationState) {
             }
         }
     }
+
+    return {};
 }
 
 struct Initialized {
@@ -197,8 +201,8 @@ void deinitialize(foeSimulationState const *pSimulationState, Initialized const 
     }
 }
 
-std::error_code onInitialization(foeSimulationState const *pSimulationState,
-                                 foeSimulationInitInfo const *pInitInfo) {
+auto onInitialization(foeSimulationState const *pSimulationState,
+                      foeSimulationInitInfo const *pInitInfo) -> std::error_code {
     std::error_code errC;
     Initialized initialized{};
 
@@ -246,7 +250,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void onDeinitialization(foeSimulationState const *pSimulationState) {
+auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
     // Systems
     if (auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
@@ -260,6 +264,8 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
         pLoader != nullptr && --pLoader->initCount == 0) {
         pLoader->deinitialize();
     }
+
+    return {};
 }
 
 } // namespace

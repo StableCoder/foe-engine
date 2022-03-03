@@ -25,7 +25,7 @@
 
 namespace {
 
-void onCreate(foeSimulationState *pSimulationState) {
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     // Components Pools
     if (auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
             pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
@@ -36,9 +36,11 @@ void onCreate(foeSimulationState *pSimulationState) {
         ++pPool->refCount;
         pSimulationState->componentPools.emplace_back(pPool);
     }
+
+    return {};
 }
 
-void onDestroy(foeSimulationState *pSimulationState) {
+auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
     // Component Pools
     for (auto &pPool : pSimulationState->componentPools) {
         if (pPool == nullptr)
@@ -49,6 +51,8 @@ void onDestroy(foeSimulationState *pSimulationState) {
             pPool = nullptr;
         }
     }
+
+    return {};
 }
 
 } // namespace

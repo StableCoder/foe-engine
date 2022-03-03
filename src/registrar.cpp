@@ -37,7 +37,7 @@
 
 namespace {
 
-void onCreate(foeSimulationState *pSimulationState) {
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     // Components
     if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
@@ -85,6 +85,8 @@ void onCreate(foeSimulationState *pSimulationState) {
     pSystemBase = new VkAnimationPool;
     ++pSystemBase->refCount;
     pSimulationState->systems.emplace_back(pSystemBase);
+
+    return {};
 }
 
 #define DESTROY_FUNCTIONALITY(X, Y)                                                                \
@@ -94,7 +96,7 @@ void onCreate(foeSimulationState *pSimulationState) {
         continue;                                                                                  \
     }
 
-void onDestroy(foeSimulationState *pSimulationState) {
+auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
     // Systems
     for (auto &ptr : pSimulationState->systems) {
         if (ptr == nullptr)
@@ -116,6 +118,8 @@ void onDestroy(foeSimulationState *pSimulationState) {
         DESTROY_FUNCTIONALITY(foeCameraPool, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL)
         DESTROY_FUNCTIONALITY(foeArmatureStatePool, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL)
     }
+
+    return {};
 }
 
 struct Initialized {
@@ -153,8 +157,8 @@ void deinitialize(foeSimulationState const *pSimulationState, Initialized const 
     }
 }
 
-std::error_code onInitialization(foeSimulationState const *pSimulationState,
-                                 foeSimulationInitInfo const *pInitInfo) {
+auto onInitialization(foeSimulationState const *pSimulationState,
+                      foeSimulationInitInfo const *pInitInfo) -> std::error_code {
     std::error_code errC;
     Initialized initialized{};
 
@@ -239,7 +243,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void onDeinitialization(foeSimulationState const *pSimulationState) {
+auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
     // Systems
     if (auto *pSystem = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
@@ -264,6 +268,8 @@ void onDeinitialization(foeSimulationState const *pSimulationState) {
         --pSystem->initCount == 0) {
         pSystem->deinitialize();
     }
+
+    return {};
 }
 
 void deinitializeGraphics(foeSimulationState const *pSimulationState,
@@ -288,8 +294,8 @@ void deinitializeGraphics(foeSimulationState const *pSimulationState,
     }
 }
 
-std::error_code onGfxInitialization(foeSimulationState const *pSimulationState,
-                                    foeGfxSession gfxSession) {
+auto onGfxInitialization(foeSimulationState const *pSimulationState, foeGfxSession gfxSession)
+    -> std::error_code {
     std::error_code errC;
     Initialized initialized{};
 
@@ -328,7 +334,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
+auto onGfxDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
     // Systems
     if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
@@ -347,6 +353,8 @@ void onGfxDeinitialization(foeSimulationState const *pSimulationState) {
         --pSystem->initCount == 0) {
         pSystem->deinitializeGraphics();
     }
+
+    return {};
 }
 
 } // namespace
