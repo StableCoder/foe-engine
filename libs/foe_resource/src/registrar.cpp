@@ -28,6 +28,13 @@
 
 namespace {
 
+struct TypeSelection {
+    // Resources
+    bool armatureResources;
+    // Loaders
+    bool armatureLoader;
+};
+
 foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
     auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
     return pGroupData->getResourceDefinition(resource);
@@ -48,21 +55,55 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
     pPostLoadFn(pResource, FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
-auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
-    // Resource Pools
-    bool poolFound = false;
+auto destroySelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
+    -> std::error_code {
+    // Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.pLoader == nullptr)
+            continue;
 
+        if ((pSelection == nullptr || pSelection->armatureLoader) &&
+            it.pLoader->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER &&
+            --it.pLoader->refCount == 0) {
+            delete (foeArmatureLoader *)it.pLoader;
+            it.pLoader = nullptr;
+            continue;
+        }
+    }
+
+    // Resources
+    for (auto &pPool : pSimulationState->resourcePools) {
+        if (pPool == nullptr)
+            continue;
+
+        if ((pSelection == nullptr || pSelection->armatureResources) &&
+            pPool->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
+            auto *pTemp = (foeArmaturePool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        }
+    }
+
+    return {};
+}
+
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
+    TypeSelection selected = {};
+
+    // Resources
     for (auto &pPool : pSimulationState->resourcePools) {
         if (pPool == nullptr)
             continue;
 
         if (pPool->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
             ++pPool->refCount;
-            poolFound = true;
+            selected.armatureResources = true;
         }
     }
 
-    if (!poolFound) {
+    if (!selected.armatureResources) {
         auto *pPool = new foeArmaturePool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
@@ -71,13 +112,15 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
         }};
         ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
+        selected.armatureResources = true;
     }
 
-    // Resource Loaders
+    // Loaders
     if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
         pLoader) {
         ++pLoader->refCount;
+        selected.armatureLoader = true;
     } else {
         pLoader = new foeArmatureLoader;
         ++pLoader->refCount;
@@ -91,56 +134,36 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
                     pArmatureLoader->maintenance();
                 },
         });
+        selected.armatureLoader = true;
     }
 
     return FOE_RESOURCE_SUCCESS;
 }
 
 auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
-    // Resource Loaders
-    for (auto &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader == nullptr)
-            continue;
+    return destroySelected(pSimulationState, nullptr);
+}
 
-        if (it.pLoader->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER &&
-            --it.pLoader->refCount == 0) {
-            delete (foeArmatureLoader *)it.pLoader;
-            it.pLoader = nullptr;
-            continue;
-        }
-    }
-
-    // Resource Pools
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool == nullptr)
-            continue;
-
-        if (pPool->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
-            auto *pTemp = (foeArmaturePool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
-            }
+auto deinitializeSelected(foeSimulationState const *pSimulationState,
+                          TypeSelection const *pSelection) -> std::error_code {
+    // Loaders
+    if (pSelection == nullptr || pSelection->armatureLoader) {
+        if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+                pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
+            pLoader != nullptr && --pLoader->initCount == 0) {
+            pLoader->deinitialize();
         }
     }
 
     return FOE_RESOURCE_SUCCESS;
 }
 
-void deinitialize(foeSimulationState const *pSimulationState) {
-    // Loaders
-    if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
-            pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
-        pLoader != nullptr && --pLoader->initCount == 0) {
-        pLoader->deinitialize();
-    }
-}
-
 std::error_code onInitialize(foeSimulationState const *pSimulation,
                              foeSimulationInitInfo const *pInitInfo) {
+    TypeSelection selection = {};
     std::error_code errC;
 
-    // Resource Loaders
+    // Loaders
     if (auto *pArmatureLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
         pArmatureLoader) {
@@ -149,20 +172,20 @@ std::error_code onInitialize(foeSimulationState const *pSimulation,
             errC = pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
             if (errC)
                 goto INITIALIZATION_FAILED;
+            selection.armatureLoader = true;
         }
     }
 
 INITIALIZATION_FAILED:
     if (errC) {
-        deinitialize(pSimulation);
+        deinitializeSelected(pSimulation, &selection);
     }
 
     return errC;
 }
 
 auto onDeinitialize(foeSimulationState const *pSimulationState) -> std::error_code {
-    deinitialize(pSimulationState);
-    return FOE_RESOURCE_SUCCESS;
+    return deinitializeSelected(pSimulationState, nullptr);
 }
 
 } // namespace

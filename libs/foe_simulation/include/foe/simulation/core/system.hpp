@@ -23,13 +23,14 @@
 
 struct foeSystemBase {
     foeSystemBase(foeSimulationStructureType sType) :
-        sType{sType}, pNext{nullptr}, refCount{0}, initCount{0} {}
+        sType{sType}, pNext{nullptr}, refCount{0}, initCount{0}, gfxInitCount{0} {}
     virtual ~foeSystemBase() = default;
 
     foeSimulationStructureType sType;
     void *pNext;
     size_t refCount;
     size_t initCount;
+    size_t gfxInitCount;
 };
 
 #endif // FOE_SIMULATION_CORE_SYSTEM_HPP

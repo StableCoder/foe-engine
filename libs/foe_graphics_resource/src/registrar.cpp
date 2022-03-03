@@ -36,12 +36,19 @@
 
 namespace {
 
-struct Initialized {
-    bool image;
-    bool material;
-    bool shader;
-    bool vertexDescriptor;
-    bool mesh;
+struct TypeSelection {
+    // Resources
+    bool imageResources;
+    bool materialResources;
+    bool shaderResources;
+    bool vertexDescriptorResources;
+    bool meshResources;
+    // Loaders
+    bool imageLoader;
+    bool materialLoader;
+    bool shaderLoader;
+    bool vertexDescriptorLoader;
+    bool meshLoader;
 };
 
 foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
@@ -126,10 +133,83 @@ void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std
     pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
-auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
-    // Resources
-    Initialized found{};
+#define DESTROY_LOADER(X, Y, Z)                                                                    \
+    if ((pSelection == nullptr || pSelection->Z) && it.pLoader->sType == Y &&                      \
+        --it.pLoader->refCount == 0) {                                                             \
+        delete (X *)it.pLoader;                                                                    \
+        it.pLoader = nullptr;                                                                      \
+        continue;                                                                                  \
+    }
 
+auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
+    -> std::error_code {
+    // Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.pLoader == nullptr)
+            continue;
+
+        DESTROY_LOADER(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, meshLoader)
+        DESTROY_LOADER(foeVertexDescriptorLoader,
+                       FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
+                       vertexDescriptorLoader)
+        DESTROY_LOADER(foeShaderLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER,
+                       shaderLoader)
+        DESTROY_LOADER(foeMaterialLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER,
+                       materialLoader)
+        DESTROY_LOADER(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER,
+                       imageLoader)
+    }
+
+    // Resources
+    for (auto &pPool : pSimulationState->resourcePools) {
+        if (pPool == nullptr)
+            continue;
+
+        if ((pSelection == nullptr || pSelection->meshResources) &&
+            pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
+            auto *pTemp = (foeMeshPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if ((pSelection == nullptr || pSelection->vertexDescriptorResources) &&
+                   pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
+            auto *pTemp = (foeVertexDescriptorPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if ((pSelection == nullptr || pSelection->shaderResources) &&
+                   pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
+            auto *pTemp = (foeShaderPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if ((pSelection == nullptr || pSelection->materialResources) &&
+                   pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
+            auto *pTemp = (foeMaterialPool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        } else if ((pSelection == nullptr || pSelection->imageResources) &&
+                   pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
+            auto *pTemp = (foeImagePool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        }
+    }
+
+    return {};
+}
+
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
+    TypeSelection selection = {};
+
+    // Resources
     // Find any matching pool types that have been created already, and if so, increment the
     // reference count
     for (auto &pPool : pSimulationState->resourcePools) {
@@ -138,76 +218,81 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
 
         if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
             ++pPool->refCount;
-            found.image = true;
+            selection.imageResources = true;
         }
         if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
             ++pPool->refCount;
-            found.material = true;
+            selection.materialResources = true;
         }
         if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
             ++pPool->refCount;
-            found.shader = true;
+            selection.shaderResources = true;
         }
         if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
             ++pPool->refCount;
-            found.vertexDescriptor = true;
+            selection.vertexDescriptorResources = true;
         }
         if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
             ++pPool->refCount;
-            found.mesh = true;
+            selection.meshResources = true;
         }
     }
 
     // For any resource pools not yet created, do so now
-    if (!found.image) {
+    if (!selection.imageResources) {
         auto *pPool = new foeImagePool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
             .pLoadFn = imageLoadFn,
         }};
-        ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
+        ++pPool->refCount;
+        selection.imageResources = true;
     }
-    if (!found.material) {
+    if (!selection.materialResources) {
         auto *pPool = new foeMaterialPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
             .pLoadFn = materialLoadFn,
         }};
-        ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
+        ++pPool->refCount;
+        selection.materialResources = true;
     }
-    if (!found.shader) {
+    if (!selection.shaderResources) {
         auto *pPool = new foeShaderPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
             .pLoadFn = shaderLoadFn,
         }};
-        ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
+        ++pPool->refCount;
+        selection.shaderResources = true;
     }
-    if (!found.vertexDescriptor) {
+    if (!selection.vertexDescriptorResources) {
         auto *pPool = new foeVertexDescriptorPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
             .pLoadFn = vertexDescriptorLoadFn,
         }};
-        ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
+        ++pPool->refCount = true;
+        selection.vertexDescriptorResources = true;
     }
-    if (!found.mesh) {
+    if (!selection.meshResources) {
         auto *pPool = new foeMeshPool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
             .pLoadContext = pSimulationState,
             .pLoadFn = meshLoadFn,
         }};
-        ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
+        ++pPool->refCount;
+        selection.meshResources = true;
     }
 
     // Loaders
@@ -229,6 +314,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
                 },
         });
     }
+    selection.imageLoader = true;
 
     if (auto *pLoader = (foeMaterialLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
@@ -248,6 +334,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
                 },
         });
     }
+    selection.materialLoader = true;
 
     if (auto *pLoader = (foeShaderLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
@@ -267,6 +354,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
                 },
         });
     }
+    selection.shaderLoader = true;
 
     if (auto *pLoader = (foeVertexDescriptorLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
@@ -287,6 +375,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
                 },
         });
     }
+    selection.vertexDescriptorLoader = true;
 
     if (auto *pLoader = (foeMeshLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
@@ -306,70 +395,13 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
                 },
         });
     }
+    selection.meshLoader = true;
 
     return {};
 }
 
-#define DESTROY_LOADER(X, Y)                                                                       \
-    if (it.pLoader->sType == Y && --it.pLoader->refCount == 0) {                                   \
-        delete (X *)it.pLoader;                                                                    \
-        it.pLoader = nullptr;                                                                      \
-        continue;                                                                                  \
-    }
-
 auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
-    // Loaders
-    for (auto &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader == nullptr)
-            continue;
-
-        DESTROY_LOADER(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER)
-        DESTROY_LOADER(foeVertexDescriptorLoader,
-                       FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER)
-        DESTROY_LOADER(foeShaderLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER)
-        DESTROY_LOADER(foeMaterialLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER)
-        DESTROY_LOADER(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER)
-    }
-
-    // Resources
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool == nullptr)
-            continue;
-
-        if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL) {
-            auto *pTemp = (foeMeshPool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
-            }
-        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL) {
-            auto *pTemp = (foeVertexDescriptorPool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
-            }
-        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL) {
-            auto *pTemp = (foeShaderPool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
-            }
-        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL) {
-            auto *pTemp = (foeMaterialPool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
-            }
-        } else if (pPool->sType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL) {
-            auto *pTemp = (foeImagePool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
-            }
-        }
-    }
-
-    return {};
+    return destroySelection(pSimulationState, nullptr);
 }
 
 #define DEINITIALIZE_LOADER(X, Y)                                                                  \
@@ -378,48 +410,50 @@ auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
         pLoader->deinitialize();                                                                   \
     }
 
-void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
+auto deinitializeSelection(foeSimulationState const *pSimulationState,
+                           TypeSelection const *pSelection) -> std::error_code {
     // Loaders
-    if (initialized.image)
+    if (pSelection == nullptr || pSelection->imageLoader)
         DEINITIALIZE_LOADER(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
 
-    if (initialized.material)
+    if (pSelection == nullptr || pSelection->materialLoader)
         DEINITIALIZE_LOADER(foeMaterialLoader,
                             FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
 
-    if (initialized.shader)
+    if (pSelection == nullptr || pSelection->shaderLoader)
         DEINITIALIZE_LOADER(foeShaderLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
 
-    if (initialized.vertexDescriptor)
+    if (pSelection == nullptr || pSelection->vertexDescriptorLoader)
         DEINITIALIZE_LOADER(foeVertexDescriptorLoader,
                             FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
 
-    if (initialized.mesh)
+    if (pSelection == nullptr || pSelection->meshLoader)
         DEINITIALIZE_LOADER(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
+
+    return {};
 }
 
 std::error_code onInitialization(foeSimulationState const *pSimulationState,
                                  foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
-    Initialized initialized{};
+    TypeSelection selection = {};
 
     // Loaders
     if (auto *pImageLoader = (foeImageLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
         pImageLoader) {
-        ++pImageLoader->initCount;
         if (!pImageLoader->initialized()) {
             errC = pImageLoader->initialize(pInitInfo->externalFileSearchFn);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.image = true;
         }
+        ++pImageLoader->initCount;
+        selection.imageLoader = true;
     }
 
     if (auto *pMaterialLoader = (foeMaterialLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
         pMaterialLoader) {
-        ++pMaterialLoader->initCount;
         if (!pMaterialLoader->initialized()) {
             auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
                 pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
@@ -429,26 +463,26 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
             errC = pMaterialLoader->initialize(pShaderPool, pImagePool);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.material = true;
         }
+        ++pMaterialLoader->initCount;
+        selection.materialLoader = true;
     }
 
     if (auto *pShaderLoader = (foeShaderLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
         pShaderLoader) {
-        ++pShaderLoader->initCount;
         if (!pShaderLoader->initialized()) {
             errC = pShaderLoader->initialize(pInitInfo->externalFileSearchFn);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.shader = true;
         }
+        ++pShaderLoader->initCount;
+        selection.shaderLoader = true;
     }
 
     if (auto *pVertexDescriptorLoader = (foeVertexDescriptorLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
         pVertexDescriptorLoader) {
-        ++pVertexDescriptorLoader->initCount;
         if (!pVertexDescriptorLoader->initialized()) {
             auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
                 pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
@@ -456,39 +490,32 @@ std::error_code onInitialization(foeSimulationState const *pSimulationState,
             errC = pVertexDescriptorLoader->initialize(pShaderPool);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.vertexDescriptor = true;
         }
+        ++pVertexDescriptorLoader->initCount;
+        selection.vertexDescriptorLoader = true;
     }
 
     if (auto *pMeshLoader = (foeMeshLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
         pMeshLoader) {
-        ++pMeshLoader->initCount;
         if (!pMeshLoader->initialized()) {
             errC = pMeshLoader->initialize(pInitInfo->externalFileSearchFn);
             if (errC)
                 goto INITIALIZATION_FAILED;
-            initialized.mesh = true;
         }
+        ++pMeshLoader->initCount;
+        selection.meshLoader = true;
     }
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitialize(pSimulationState, initialized);
+        deinitializeSelection(pSimulationState, &selection);
 
     return errC;
 }
 
 auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
-    // Loaders
-    DEINITIALIZE_LOADER(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
-    DEINITIALIZE_LOADER(foeMaterialLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
-    DEINITIALIZE_LOADER(foeShaderLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
-    DEINITIALIZE_LOADER(foeVertexDescriptorLoader,
-                        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
-    DEINITIALIZE_LOADER(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
-
-    return {};
+    return deinitializeSelection(pSimulationState, nullptr);
 }
 
 #define DEINITIALIZE_LOADER_GRAPHICS(X, Y)                                                         \
@@ -497,19 +524,19 @@ auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::erro
         pLoader->deinitializeGraphics();                                                           \
     }
 
-auto deinitializeGraphics(foeSimulationState const *pSimulationState,
-                          Initialized const &initialized) -> std::error_code {
+auto deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
+                                   TypeSelection const *pSelection) -> std::error_code {
     // Loaders
-    if (initialized.image)
+    if (pSelection == nullptr || pSelection->imageLoader)
         DEINITIALIZE_LOADER_GRAPHICS(foeImageLoader,
                                      FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER)
-    if (initialized.material)
+    if (pSelection == nullptr || pSelection->materialLoader)
         DEINITIALIZE_LOADER_GRAPHICS(foeMaterialLoader,
                                      FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER)
-    if (initialized.shader)
+    if (pSelection == nullptr || pSelection->shaderLoader)
         DEINITIALIZE_LOADER_GRAPHICS(foeShaderLoader,
                                      FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER)
-    if (initialized.mesh)
+    if (pSelection == nullptr || pSelection->meshLoader)
         DEINITIALIZE_LOADER_GRAPHICS(foeMeshLoader,
                                      FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER)
 
@@ -519,50 +546,42 @@ auto deinitializeGraphics(foeSimulationState const *pSimulationState,
 #define INITIALIZE_LOADER_GRAPHICS(X, Y, Z)                                                        \
     if (auto *pLoader = (X *)foeSimulationGetResourceLoader(pSimulationState, Y);                  \
         pLoader != nullptr) {                                                                      \
-        ++pLoader->gfxInitCount;                                                                   \
-        initialized.Z = true;                                                                      \
         if (!pLoader->initializedGraphics()) {                                                     \
             errC = pLoader->initializeGraphics(gfxSession);                                        \
             if (errC)                                                                              \
                 goto INITIALIZATION_FAILED;                                                        \
+            ++pLoader->gfxInitCount;                                                               \
+            selection.Z = true;                                                                    \
         }                                                                                          \
     }
 
 std::error_code onGfxInitialization(foeSimulationState const *pSimulationState,
                                     foeGfxSession gfxSession) {
     std::error_code errC;
-    Initialized initialized{};
+    TypeSelection selection = {};
 
     // Loaders
     INITIALIZE_LOADER_GRAPHICS(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER,
-                               image);
+                               imageLoader);
 
-    INITIALIZE_LOADER_GRAPHICS(foeMaterialLoader,
-                               FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, material);
+    INITIALIZE_LOADER_GRAPHICS(
+        foeMaterialLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER, materialLoader);
 
     INITIALIZE_LOADER_GRAPHICS(foeShaderLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER,
-                               shader);
+                               shaderLoader);
 
     INITIALIZE_LOADER_GRAPHICS(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER,
-                               mesh);
+                               meshLoader);
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitializeGraphics(pSimulationState, initialized);
+        deinitializeGraphicsSelection(pSimulationState, &selection);
 
     return errC;
 }
 
 auto onGfxDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
-    // Loaders
-    DEINITIALIZE_LOADER_GRAPHICS(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER)
-    DEINITIALIZE_LOADER_GRAPHICS(foeMaterialLoader,
-                                 FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER)
-    DEINITIALIZE_LOADER_GRAPHICS(foeShaderLoader,
-                                 FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER)
-    DEINITIALIZE_LOADER_GRAPHICS(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER)
-
-    return {};
+    return deinitializeGraphicsSelection(pSimulationState, nullptr);
 }
 
 } // namespace

@@ -31,6 +31,17 @@
 
 namespace {
 
+struct TypeSelection {
+    // Resources
+    bool collisionShapeResource;
+    // Loaders
+    bool collisionShapeLoader;
+    // Components
+    bool rigidBodyComponent;
+    // Systems
+    bool physicsSystem;
+};
+
 foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
     auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
     return pGroupData->getResourceDefinition(resource);
@@ -53,18 +64,76 @@ void collisionShapeLoadFn(void *pContext,
     pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
 }
 
-auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
-    // Resources
-    bool poolFound = false;
+auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
+    -> std::error_code {
+    // Systems
+    for (auto &pSystem : pSimulationState->systems) {
+        if (pSystem == nullptr)
+            continue;
 
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
-            ++pPool->refCount;
-            poolFound = true;
+        if ((pSelection == nullptr || pSelection->physicsSystem) &&
+            pSystem->sType == FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM &&
+            --pSystem->refCount == 0) {
+            delete (foePhysicsSystem *)pSystem;
+            pSystem = nullptr;
         }
     }
 
-    if (!poolFound) {
+    // Components
+    for (auto &pPool : pSimulationState->componentPools) {
+        if (pPool == nullptr)
+            continue;
+
+        if ((pSelection == nullptr || pSelection->rigidBodyComponent) &&
+            pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL && --pPool->refCount == 0) {
+            delete (foeRigidBodyPool *)pPool;
+            pPool = nullptr;
+        }
+    }
+
+    // Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.pLoader == nullptr)
+            continue;
+
+        if ((pSelection == nullptr || pSelection->collisionShapeLoader) &&
+            it.pLoader->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER &&
+            --it.pLoader->refCount == 0) {
+            delete (foeCollisionShapeLoader *)it.pLoader;
+            it.pLoader = nullptr;
+        }
+    }
+
+    // Resources
+    for (auto &pPool : pSimulationState->resourcePools) {
+        if (pPool == nullptr)
+            continue;
+
+        if ((pSelection == nullptr || pSelection->collisionShapeResource) &&
+            pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
+            auto *pTemp = (foeCollisionShapePool *)pPool;
+            if (--pTemp->refCount == 0) {
+                delete pTemp;
+                pPool = nullptr;
+            }
+        }
+    }
+
+    return {};
+}
+
+auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
+    TypeSelection selection = {};
+
+    // Resources
+    for (auto &pPool : pSimulationState->resourcePools) {
+        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
+            ++pPool->refCount;
+            selection.collisionShapeResource = true;
+        }
+    }
+
+    if (!selection.collisionShapeResource) {
         auto *pPool = new foeCollisionShapePool{foeResourceFns{
             .pImportContext = &pSimulationState->groupData,
             .pImportFn = importFn,
@@ -73,6 +142,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
         }};
         ++pPool->refCount;
         pSimulationState->resourcePools.emplace_back(pPool);
+        selection.collisionShapeResource = true;
     }
 
     // Loaders
@@ -80,6 +150,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
         pLoader) {
         ++pLoader->refCount;
+        selection.collisionShapeLoader = true;
     } else {
         pLoader = new foeCollisionShapeLoader;
         ++pLoader->refCount;
@@ -94,6 +165,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
                     pCollisionShapeLoader->maintenance();
                 },
         });
+        selection.collisionShapeLoader = true;
     }
 
     // Components
@@ -101,10 +173,12 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
         pPool) {
         ++pPool->refCount;
+        selection.rigidBodyComponent = true;
     } else {
         pPool = new foeRigidBodyPool;
         ++pPool->refCount;
         pSimulationState->componentPools.emplace_back(pPool);
+        selection.rigidBodyComponent = true;
     }
 
     // Systems
@@ -112,78 +186,27 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
         pSystem) {
         ++pSystem->refCount;
+        selection.physicsSystem = true;
     } else {
         pSystem = new foePhysicsSystem;
         ++pSystem->refCount;
         pSimulationState->systems.emplace_back(pSystem);
+        selection.physicsSystem = true;
     }
 
     return {};
 }
 
 auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
-    // Systems
-    for (auto &pSystem : pSimulationState->systems) {
-        if (pSystem == nullptr)
-            continue;
-
-        if (pSystem->sType == FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM &&
-            --pSystem->refCount == 0) {
-            delete (foePhysicsSystem *)pSystem;
-            pSystem = nullptr;
-        }
-    }
-
-    // Components
-    for (auto &pPool : pSimulationState->componentPools) {
-        if (pPool == nullptr)
-            continue;
-
-        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL && --pPool->refCount == 0) {
-            delete (foeRigidBodyPool *)pPool;
-            pPool = nullptr;
-        }
-    }
-
-    // Loaders
-    for (auto &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader == nullptr)
-            continue;
-
-        if (it.pLoader->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER &&
-            --it.pLoader->refCount == 0) {
-            delete (foeCollisionShapeLoader *)it.pLoader;
-            it.pLoader = nullptr;
-        }
-    }
-
-    // Resources
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool == nullptr)
-            continue;
-
-        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
-            auto *pTemp = (foeCollisionShapePool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
-            }
-        }
-    }
+    destroySelection(pSimulationState, nullptr);
 
     return {};
 }
 
-struct Initialized {
-    // Loaders
-    bool collisionShape;
+void deinitializeSelection(foeSimulationState const *pSimulationState,
+                           TypeSelection const *pSelection) {
     // Systems
-    bool physics;
-};
-
-void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
-    // Systems
-    if (initialized.physics) {
+    if (pSelection == nullptr || pSelection->physicsSystem) {
         auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
         if (pSystem != nullptr && --pSystem->initCount == 0) {
@@ -192,7 +215,7 @@ void deinitialize(foeSimulationState const *pSimulationState, Initialized const 
     }
 
     // Loaders
-    if (initialized.collisionShape) {
+    if (pSelection == nullptr || pSelection->collisionShapeLoader) {
         if (auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
                 pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
             pLoader != nullptr && --pLoader->initCount == 0) {
@@ -204,27 +227,25 @@ void deinitialize(foeSimulationState const *pSimulationState, Initialized const 
 auto onInitialization(foeSimulationState const *pSimulationState,
                       foeSimulationInitInfo const *pInitInfo) -> std::error_code {
     std::error_code errC;
-    Initialized initialized{};
+    TypeSelection selection{};
 
     // Loaders
     if (auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
         pCollisionShapeLoader) {
-        ++pCollisionShapeLoader->initCount;
-        initialized.collisionShape = true;
         if (!pCollisionShapeLoader->initialized()) {
             errC = pCollisionShapeLoader->initialize();
             if (errC)
                 goto INITIALIZATION_FAILED;
         }
+        ++pCollisionShapeLoader->initCount;
+        selection.collisionShapeLoader = true;
     }
 
     // Systems
     if (auto *pPhysicsSystem = (foePhysicsSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
         pPhysicsSystem) {
-        ++pPhysicsSystem->initCount;
-        initialized.physics = true;
         if (!pPhysicsSystem->initialized()) {
             auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
                 pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
@@ -238,32 +259,25 @@ auto onInitialization(foeSimulationState const *pSimulationState,
             auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
                 pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
-            pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool, pRigidBodyPool,
-                                       pPosition3dPool);
+            errC = pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool,
+                                              pRigidBodyPool, pPosition3dPool);
+            if (errC)
+                goto INITIALIZATION_FAILED;
         }
+        ++pPhysicsSystem->initCount;
+        selection.physicsSystem = true;
     }
 
 INITIALIZATION_FAILED:
-    if (errC)
-        deinitialize(pSimulationState, initialized);
+    if (errC) {
+        deinitializeSelection(pSimulationState, &selection);
+    }
 
     return errC;
 }
 
 auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
-    // Systems
-    if (auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
-        pSystem != nullptr && --pSystem->initCount == 0) {
-        pSystem->deinitialize();
-    }
-
-    // Loaders
-    if (auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-        pLoader != nullptr && --pLoader->initCount == 0) {
-        pLoader->deinitialize();
-    }
+    deinitializeSelection(pSimulationState, nullptr);
 
     return {};
 }

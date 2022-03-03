@@ -37,6 +37,58 @@
 
 namespace {
 
+struct TypeSelection {
+    // Components
+    bool armatureComponents;
+    bool cameraComponents;
+    bool renderStateComponents;
+    // Systems
+    bool armatureSystem;
+    bool cameraSystem;
+    bool positionSystem;
+    bool animationSystem;
+};
+
+#define DESTROY_FUNCTIONALITY(X, Y, Z)                                                             \
+    if ((pSelection == nullptr || pSelection->Z) && ptr->sType == Y && --ptr->refCount == 0) {     \
+        delete (X *)ptr;                                                                           \
+        ptr = nullptr;                                                                             \
+        continue;                                                                                  \
+    }
+
+auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
+    -> std::error_code {
+    // Systems
+    for (auto &ptr : pSimulationState->systems) {
+        if (ptr == nullptr)
+            continue;
+
+        DESTROY_FUNCTIONALITY(VkAnimationPool, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL,
+                              animationSystem);
+        DESTROY_FUNCTIONALITY(PositionDescriptorPool,
+                              FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, positionSystem);
+        DESTROY_FUNCTIONALITY(foeCameraSystem, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
+                              cameraSystem);
+        DESTROY_FUNCTIONALITY(foeArmatureSystem, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
+                              armatureSystem);
+    }
+
+    // Components
+    for (auto &ptr : pSimulationState->componentPools) {
+        if (ptr == nullptr)
+            continue;
+
+        DESTROY_FUNCTIONALITY(foeRenderStatePool, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
+                              renderStateComponents)
+        DESTROY_FUNCTIONALITY(foeCameraPool, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
+                              cameraComponents)
+        DESTROY_FUNCTIONALITY(foeArmatureStatePool, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
+                              armatureComponents)
+    }
+
+    return {};
+}
+
 auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     // Components
     if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
@@ -89,85 +141,49 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-#define DESTROY_FUNCTIONALITY(X, Y)                                                                \
-    if (ptr->sType == Y && --ptr->refCount == 0) {                                                 \
-        delete (X *)ptr;                                                                           \
-        ptr = nullptr;                                                                             \
-        continue;                                                                                  \
-    }
-
 auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
-    // Systems
-    for (auto &ptr : pSimulationState->systems) {
-        if (ptr == nullptr)
-            continue;
-
-        DESTROY_FUNCTIONALITY(VkAnimationPool, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
-        DESTROY_FUNCTIONALITY(PositionDescriptorPool,
-                              FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        DESTROY_FUNCTIONALITY(foeCameraSystem, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
-        DESTROY_FUNCTIONALITY(foeArmatureSystem, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-    }
-
-    // Components
-    for (auto &ptr : pSimulationState->componentPools) {
-        if (ptr == nullptr)
-            continue;
-
-        DESTROY_FUNCTIONALITY(foeRenderStatePool, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL)
-        DESTROY_FUNCTIONALITY(foeCameraPool, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL)
-        DESTROY_FUNCTIONALITY(foeArmatureStatePool, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL)
-    }
-
-    return {};
+    return destroySelection(pSimulationState, nullptr);
 }
 
-struct Initialized {
-    // Systems
-    bool armature;
-    bool camera;
-    bool positionDescriptor;
-    bool animation;
-};
-
-void deinitialize(foeSimulationState const *pSimulationState, Initialized const &initialized) {
+auto deinitializeSelection(foeSimulationState const *pSimulationState,
+                           TypeSelection const *pSelection) -> std::error_code {
     // Systems
     if (auto *pSystem = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-        initialized.armature && --pSystem->initCount == 0) {
+        (pSelection == nullptr || pSelection->armatureSystem) && --pSystem->initCount == 0) {
         pSystem->deinitialize();
     }
 
     if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
-        initialized.camera && --pSystem->initCount == 0) {
+        (pSelection == nullptr || pSelection->cameraSystem) && --pSystem->initCount == 0) {
         pSystem->deinitialize();
     }
 
     if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        initialized.positionDescriptor && --pSystem->initCount == 0) {
+        (pSelection == nullptr || pSelection->positionSystem) && --pSystem->initCount == 0) {
         pSystem->deinitialize();
     }
 
     if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
-        initialized.animation && --pSystem->initCount == 0) {
+        (pSelection == nullptr || pSelection->animationSystem) && --pSystem->initCount == 0) {
         pSystem->deinitialize();
     }
+
+    return {};
 }
 
 auto onInitialization(foeSimulationState const *pSimulationState,
                       foeSimulationInitInfo const *pInitInfo) -> std::error_code {
     std::error_code errC;
-    Initialized initialized{};
+    TypeSelection selection = {};
 
     // Systems
     if (auto *pArmatureSystem = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
         pArmatureSystem) {
-        ++pArmatureSystem->initCount;
-        initialized.armature = true;
         if (!pArmatureSystem->initialized()) {
             auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
                 pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
@@ -177,13 +193,13 @@ auto onInitialization(foeSimulationState const *pSimulationState,
 
             pArmatureSystem->initialize(pArmaturePool, pArmatureStatePool);
         }
+        ++pArmatureSystem->initCount;
+        selection.armatureSystem = true;
     }
 
     if (auto *pCameraSystem = (foeCameraSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
         pCameraSystem != nullptr) {
-        ++pCameraSystem->initCount;
-        initialized.camera = true;
         if (!pCameraSystem->initialized()) {
             auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
                 pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
@@ -195,13 +211,13 @@ auto onInitialization(foeSimulationState const *pSimulationState,
             if (errC)
                 goto INITIALIZATION_FAILED;
         }
+        ++pCameraSystem->initCount;
+        selection.cameraSystem = true;
     }
 
     if (auto *pPositionDescriptorPool = (PositionDescriptorPool *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
         pPositionDescriptorPool != nullptr) {
-        ++pPositionDescriptorPool->initCount;
-        initialized.positionDescriptor = true;
         if (!pPositionDescriptorPool->initialized()) {
             auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
                 pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
@@ -210,13 +226,13 @@ auto onInitialization(foeSimulationState const *pSimulationState,
             if (errC)
                 goto INITIALIZATION_FAILED;
         }
+        ++pPositionDescriptorPool->initCount;
+        selection.positionSystem = true;
     }
 
     if (auto *pVkAnimationPool = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
         pVkAnimationPool != nullptr) {
-        ++pVkAnimationPool->initCount;
-        initialized.animation = true;
         if (!pVkAnimationPool->initialized()) {
             auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
                 pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
@@ -234,70 +250,49 @@ auto onInitialization(foeSimulationState const *pSimulationState,
             if (errC)
                 goto INITIALIZATION_FAILED;
         }
+        ++pVkAnimationPool->initCount;
+        selection.animationSystem = true;
     }
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitialize(pSimulationState, initialized);
+        deinitializeSelection(pSimulationState, &selection);
 
     return errC;
 }
 
 auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
-    // Systems
-    if (auto *pSystem = (foeArmatureSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-        --pSystem->initCount == 0) {
-        pSystem->deinitialize();
-    }
+    return deinitializeSelection(pSimulationState, nullptr);
+}
 
-    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
-        --pSystem->initCount == 0) {
-        pSystem->deinitialize();
+auto deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
+                                   TypeSelection const *pSelection) -> std::error_code {
+    // Systems
+    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
+        (pSelection == nullptr || pSelection->animationSystem) && --pSystem->gfxInitCount == 0) {
+        pSystem->deinitializeGraphics();
     }
 
     if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        --pSystem->initCount == 0) {
-        pSystem->deinitialize();
+        (pSelection == nullptr || pSelection->positionSystem) && --pSystem->gfxInitCount == 0) {
+        pSystem->deinitializeGraphics();
     }
 
-    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
-        --pSystem->initCount == 0) {
-        pSystem->deinitialize();
+    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
+        (pSelection == nullptr || pSelection->cameraSystem) && --pSystem->gfxInitCount == 0) {
+        pSystem->deinitializeGraphics();
     }
 
     return {};
 }
 
-void deinitializeGraphics(foeSimulationState const *pSimulationState,
-                          Initialized const &initialized) {
-    // Systems
-    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
-        initialized.camera && --pSystem->initCount == 0) {
-        pSystem->deinitializeGraphics();
-    }
-
-    if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        initialized.positionDescriptor && --pSystem->initCount == 0) {
-        pSystem->deinitializeGraphics();
-    }
-
-    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
-        initialized.animation && --pSystem->initCount == 0) {
-        pSystem->deinitializeGraphics();
-    }
-}
-
 auto onGfxInitialization(foeSimulationState const *pSimulationState, foeGfxSession gfxSession)
     -> std::error_code {
     std::error_code errC;
-    Initialized initialized{};
+    TypeSelection selection = {};
 
     // Systems
     if (auto *pCameraSystem = (foeCameraSystem *)foeSimulationGetSystem(
@@ -306,7 +301,8 @@ auto onGfxInitialization(foeSimulationState const *pSimulationState, foeGfxSessi
         errC = pCameraSystem->initializeGraphics(gfxSession);
         if (errC)
             goto INITIALIZATION_FAILED;
-        initialized.camera = true;
+        ++pCameraSystem->gfxInitCount;
+        selection.cameraSystem = true;
     }
 
     if (auto *pPositionDescriptorPool = (PositionDescriptorPool *)foeSimulationGetSystem(
@@ -315,7 +311,8 @@ auto onGfxInitialization(foeSimulationState const *pSimulationState, foeGfxSessi
         errC = pPositionDescriptorPool->initializeGraphics(gfxSession);
         if (errC)
             goto INITIALIZATION_FAILED;
-        initialized.positionDescriptor = true;
+        ++pPositionDescriptorPool->gfxInitCount;
+        selection.positionSystem = true;
     }
 
     if (auto *pVkAnimationPool = (VkAnimationPool *)foeSimulationGetSystem(
@@ -324,37 +321,19 @@ auto onGfxInitialization(foeSimulationState const *pSimulationState, foeGfxSessi
         errC = pVkAnimationPool->initializeGraphics(gfxSession);
         if (errC)
             goto INITIALIZATION_FAILED;
-        initialized.animation = true;
+        ++pVkAnimationPool->gfxInitCount;
+        selection.animationSystem = true;
     }
 
 INITIALIZATION_FAILED:
     if (errC)
-        deinitializeGraphics(pSimulationState, initialized);
+        deinitializeGraphicsSelection(pSimulationState, &selection);
 
     return errC;
 }
 
 auto onGfxDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
-    // Systems
-    if (auto *pSystem = (foeCameraSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
-        --pSystem->initCount == 0) {
-        pSystem->deinitializeGraphics();
-    }
-
-    if (auto *pSystem = (PositionDescriptorPool *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        --pSystem->initCount == 0) {
-        pSystem->deinitializeGraphics();
-    }
-
-    if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
-        --pSystem->initCount == 0) {
-        pSystem->deinitializeGraphics();
-    }
-
-    return {};
+    return deinitializeGraphicsSelection(pSimulationState, nullptr);
 }
 
 } // namespace
