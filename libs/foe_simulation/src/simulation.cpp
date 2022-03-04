@@ -54,8 +54,8 @@ void deinitSimulation(foeSimulationState *pSimulationState) {
     // Deinit functionality
     auto const endIt = mRegistered.rend();
     for (auto it = mRegistered.rbegin(); it != endIt; ++it) {
-        if (it->onDeinitialization) {
-            it->onDeinitialization(pSimulationState);
+        if (it->pDeinitializeFn) {
+            it->pDeinitializeFn(pSimulationState);
         }
     }
 
@@ -75,8 +75,8 @@ void deinitializeSimulationGraphics(foeSimulationState *pSimulationState) {
     // Iterate through all and deinitialize
     auto const endIt = mRegistered.rend();
     for (auto it = mRegistered.rbegin(); it != endIt; ++it) {
-        if (it->onGfxDeinitialization) {
-            it->onGfxDeinitialization(pSimulationState);
+        if (it->pDeinitializeGraphicsFn) {
+            it->pDeinitializeGraphicsFn(pSimulationState);
         }
     }
 
@@ -128,8 +128,8 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
 
         acquireExclusiveLock(*ppSimState, "functionality registration");
 
-        if (functionality.onCreate) {
-            errC = functionality.onCreate(*ppSimState);
+        if (functionality.pCreateFn) {
+            errC = functionality.pCreateFn(*ppSimState);
             if (errC) {
                 FOE_LOG(SimulationState, Error,
                         "foeRegisterFunctionality - Failed creating functionality on "
@@ -140,8 +140,8 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
             }
             passedStates.created = true;
         }
-        if (foeSimulationIsInitialized(*ppSimState) && functionality.onInitialization) {
-            errC = functionality.onInitialization(*ppSimState, &(*ppSimState)->initInfo);
+        if (foeSimulationIsInitialized(*ppSimState) && functionality.pInitializeFn) {
+            errC = functionality.pInitializeFn(*ppSimState, &(*ppSimState)->initInfo);
             if (errC) {
                 FOE_LOG(SimulationState, Error,
                         "foeRegisterFunctionality - Failed initializing functionality on "
@@ -151,8 +151,9 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
             }
             passedStates.initialized = true;
         }
-        if (foeSimulationIsGraphicsInitialzied(*ppSimState) && functionality.onGfxInitialization) {
-            errC = functionality.onGfxInitialization(*ppSimState, (*ppSimState)->gfxSession);
+        if (foeSimulationIsGraphicsInitialzied(*ppSimState) &&
+            functionality.pInitializeGraphicsFn) {
+            errC = functionality.pInitializeGraphicsFn(*ppSimState, (*ppSimState)->gfxSession);
             if (errC) {
                 FOE_LOG(SimulationState, Error,
                         "foeRegisterFunctionality - Failed initializing graphics functionality on "
@@ -172,16 +173,16 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
     // deinitialize/destroy this functionality in all the ones it was already added to successfully
     if (errC && ppSimState != mStates.data()) {
         // Deal with the potential half-initialized simState that was being worked on
-        if (passedStates.gfxInitialized && functionality.onGfxDeinitialization &&
+        if (passedStates.gfxInitialized && functionality.pDeinitializeGraphicsFn &&
             foeSimulationIsGraphicsInitialzied(*ppSimState)) {
-            functionality.onGfxDeinitialization(*ppSimState);
+            functionality.pDeinitializeGraphicsFn(*ppSimState);
         }
-        if (passedStates.initialized && functionality.onDeinitialization &&
+        if (passedStates.initialized && functionality.pDeinitializeFn &&
             foeSimulationIsInitialized(*ppSimState)) {
-            functionality.onDeinitialization(*ppSimState);
+            functionality.pDeinitializeFn(*ppSimState);
         }
-        if (passedStates.created && functionality.onDestroy) {
-            functionality.onDeinitialization(*ppSimState);
+        if (passedStates.created && functionality.pDestroyFn) {
+            functionality.pDeinitializeFn(*ppSimState);
         }
 
         (*ppSimState)->simSync.unlock();
@@ -192,17 +193,17 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
         for (; ppSimState != ppEndSimState; --ppSimState) {
             acquireExclusiveLock(*ppSimState, "functionality deregistration");
 
-            if (functionality.onGfxDeinitialization &&
+            if (functionality.pDeinitializeGraphicsFn &&
                 foeSimulationIsGraphicsInitialzied(*ppSimState)) {
-                functionality.onGfxDeinitialization(*ppSimState);
+                functionality.pDeinitializeGraphicsFn(*ppSimState);
             }
 
-            if (functionality.onDeinitialization && foeSimulationIsInitialized(*ppSimState)) {
-                functionality.onDeinitialization(*ppSimState);
+            if (functionality.pDeinitializeFn && foeSimulationIsInitialized(*ppSimState)) {
+                functionality.pDeinitializeFn(*ppSimState);
             }
 
-            if (functionality.onDestroy) {
-                functionality.onDestroy(*ppSimState);
+            if (functionality.pDestroyFn) {
+                functionality.pDestroyFn(*ppSimState);
             }
             (*ppSimState)->simSync.unlock();
         }
@@ -222,17 +223,17 @@ auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) 
             // any active SimulationStates
             for (auto *pSimState : mStates) {
                 acquireExclusiveLock(pSimState, "functionality deregistration");
-                if (functionality.onGfxDeinitialization &&
+                if (functionality.pDeinitializeGraphicsFn &&
                     foeSimulationIsGraphicsInitialzied(pSimState)) {
-                    functionality.onGfxDeinitialization(pSimState);
+                    functionality.pDeinitializeGraphicsFn(pSimState);
                 }
 
-                if (functionality.onDeinitialization && foeSimulationIsInitialized(pSimState)) {
-                    functionality.onDeinitialization(pSimState);
+                if (functionality.pDeinitializeFn && foeSimulationIsInitialized(pSimState)) {
+                    functionality.pDeinitializeFn(pSimState);
                 }
 
-                if (functionality.onDestroy) {
-                    functionality.onDestroy(pSimState);
+                if (functionality.pDestroyFn) {
+                    functionality.pDestroyFn(pSimState);
                 }
                 pSimState->simSync.unlock();
             }
@@ -280,8 +281,8 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulationState **ppSimulationStat
     auto it = mRegistered.begin();
     auto const endIt = mRegistered.end();
     for (; it != endIt; ++it) {
-        if (it->onCreate) {
-            errC = it->onCreate(newSimState.get());
+        if (it->pCreateFn) {
+            errC = it->pCreateFn(newSimState.get());
             if (errC) {
                 FOE_LOG(SimulationState, Error,
                         "Error creating SimulationState: {} due to error: {}",
@@ -295,7 +296,7 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulationState **ppSimulationStat
     if (errC && it != mRegistered.begin()) {
         --it;
         for (; it >= mRegistered.begin(); --it) {
-            it->onDestroy(newSimState.get());
+            it->pDestroyFn(newSimState.get());
         }
     }
 
@@ -334,8 +335,8 @@ auto foeDestroySimulation(foeSimulationState *pSimulationState) -> std::error_co
 
     auto const endIt = mRegistered.rend();
     for (auto it = mRegistered.rbegin(); it != endIt; ++it) {
-        if (it->onDestroy) {
-            it->onDestroy(pSimulationState);
+        if (it->pDestroyFn) {
+            it->pDestroyFn(pSimulationState);
         }
     }
     pSimulationState->simSync.unlock();
@@ -376,8 +377,8 @@ auto foeInitializeSimulation(foeSimulationState *pSimulationState,
     auto const endIt = mRegistered.end();
 
     for (; it != endIt; ++it) {
-        if (it->onInitialization) {
-            errC = it->onInitialization(pSimulationState, pInitInfo);
+        if (it->pInitializeFn) {
+            errC = it->pInitializeFn(pSimulationState, pInitInfo);
             if (errC) {
                 FOE_LOG(SimulationState, Error,
                         "Failed to initialize SimulationState: {} due to error: {}",
@@ -391,8 +392,8 @@ auto foeInitializeSimulation(foeSimulationState *pSimulationState,
     if (errC && it != mRegistered.begin()) {
         --it;
         for (; it >= mRegistered.begin(); --it) {
-            if (it->onDeinitialization) {
-                it->onDeinitialization(pSimulationState);
+            if (it->pDeinitializeFn) {
+                it->pDeinitializeFn(pSimulationState);
             }
         }
     }
@@ -441,8 +442,8 @@ auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState, foeGf
     auto const endIt = mRegistered.end();
 
     for (; it != endIt; ++it) {
-        if (it->onGfxInitialization) {
-            errC = it->onGfxInitialization(pSimulationState, gfxSession);
+        if (it->pInitializeGraphicsFn) {
+            errC = it->pInitializeGraphicsFn(pSimulationState, gfxSession);
             if (errC) {
                 FOE_LOG(SimulationState, Error,
                         "Failed to initialize SimulationState graphics: {} due to error: {}",
@@ -456,8 +457,8 @@ auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState, foeGf
     if (errC && it != mRegistered.begin()) {
         --it;
         for (; it >= mRegistered.begin(); --it) {
-            if (it->onGfxDeinitialization) {
-                it->onGfxDeinitialization(pSimulationState);
+            if (it->pDeinitializeGraphicsFn) {
+                it->pDeinitializeGraphicsFn(pSimulationState);
             }
         }
     }

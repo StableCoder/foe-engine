@@ -88,7 +88,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     return true;
 }
 
-auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
+auto create(foeSimulationState *pSimulationState) -> std::error_code {
     // Components
     if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
@@ -140,7 +140,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-bool onDestroy(foeSimulationState *pSimulationState) {
+bool destroy(foeSimulationState *pSimulationState) {
     return destroySelection(pSimulationState, nullptr);
 }
 
@@ -174,7 +174,7 @@ bool deinitializeSelection(foeSimulationState const *pSimulationState,
     return true;
 }
 
-auto onInitialization(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
+auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
     -> std::error_code {
     std::error_code errC;
     TypeSelection selection = {};
@@ -260,7 +260,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-bool onDeinitialization(foeSimulationState *pSimulationState) {
+bool deinitialize(foeSimulationState *pSimulationState) {
     return deinitializeSelection(pSimulationState, nullptr);
 }
 
@@ -288,7 +288,7 @@ bool deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
     return true;
 }
 
-auto onGfxInitialization(foeSimulationState *pSimulationState, foeGfxSession gfxSession)
+auto initializeGraphics(foeSimulationState *pSimulationState, foeGfxSession gfxSession)
     -> std::error_code {
     std::error_code errC;
     TypeSelection selection = {};
@@ -331,7 +331,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-bool onGfxDeinitialization(foeSimulationState *pSimulationState) {
+bool deinitializeGraphics(foeSimulationState *pSimulationState) {
     return deinitializeGraphicsSelection(pSimulationState, nullptr);
 }
 
@@ -343,12 +343,12 @@ auto foeBringupRegisterFunctionality() -> std::error_code {
 
     auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
-        .onInitialization = onInitialization,
-        .onDeinitialization = onDeinitialization,
-        .onGfxInitialization = onGfxInitialization,
-        .onGfxDeinitialization = onGfxDeinitialization,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
+        .pInitializeFn = initialize,
+        .pDeinitializeFn = deinitialize,
+        .pInitializeGraphicsFn = initializeGraphics,
+        .pDeinitializeGraphicsFn = deinitializeGraphics,
     });
 
     if (errC) {
@@ -369,12 +369,12 @@ void foeBringupDeregisterFunctionality() {
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
-        .onInitialization = onInitialization,
-        .onDeinitialization = onDeinitialization,
-        .onGfxInitialization = onGfxInitialization,
-        .onGfxDeinitialization = onGfxDeinitialization,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
+        .pInitializeFn = initialize,
+        .pDeinitializeFn = deinitialize,
+        .pInitializeGraphicsFn = initializeGraphics,
+        .pDeinitializeGraphicsFn = deinitializeGraphics,
     });
 
     FOE_LOG(foeBringup, Verbose,

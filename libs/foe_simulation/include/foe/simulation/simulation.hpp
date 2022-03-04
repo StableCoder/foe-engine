@@ -116,7 +116,7 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulationState const *pSimulationSta
  * when successful
  * @return FOE_SIMULATION_SUCCESS on a successful creation, an appropriate error code otherwise.
  *
- * The 'onCreate' of any previously registered functionality is called on the created simulation.
+ * The 'pCreateFn' of any previously registered functionality is called on the created simulation.
  */
 FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps, foeSimulationState **ppSimulationState)
     -> std::error_code;
@@ -130,7 +130,7 @@ FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps, foeSimulationState **p
  * not, returns false without interacting with it.
  *
  * If the simulation is valid and was previously initialized, the 'onDeinitialize' is called.
- * 'onDestroy' is called last and the object is then freed.
+ * 'pDestroyFn' is called last and the object is then freed.
  */
 FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulationState *pSimulationState) -> std::error_code;
 
@@ -142,7 +142,7 @@ FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulationState *pSimulationState) -
  *
  * Returns immediately if the SimulationState had already been initialized.
  *
- * Otherwise iterates through any registered functionality and calls its 'onInitialization'
+ * Otherwise iterates through any registered functionality and calls its 'pInitializeFn'
  * function. If any of these fails, then it backtracks deinitializing anything that did succeed and
  * returns a state fully deinitialized.
  */
@@ -157,7 +157,7 @@ FOE_SIM_EXPORT auto foeInitializeSimulation(foeSimulationState *pSimulationState
  * FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED if the simulation has not previously been
  * initialized.
  *
- * Iterates through any registered functionality and calls its 'onDeinitialization' function.
+ * Iterates through any registered functionality and calls its 'pDeinitializeFn' function.
  */
 FOE_SIM_EXPORT auto foeDeinitializeSimulation(foeSimulationState *pSimulationState)
     -> std::error_code;

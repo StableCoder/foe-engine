@@ -25,7 +25,7 @@
 
 namespace {
 
-auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
+auto create(foeSimulationState *pSimulationState) -> std::error_code {
     // Components Pools
     if (auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
             pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
@@ -40,7 +40,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-bool onDestroy(foeSimulationState *pSimulationState) {
+bool destroy(foeSimulationState *pSimulationState) {
     // Component Pools
     for (auto &pPool : pSimulationState->componentPools) {
         if (pPool == nullptr)
@@ -65,8 +65,8 @@ auto foePositionRegisterFunctionality() -> std::error_code {
 
     auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foePositionFunctionalityID(),
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
     });
 
     if (errC) {
@@ -87,8 +87,8 @@ void foePositionDeregisterFunctionality() {
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .id = foePositionFunctionalityID(),
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
     });
 
     FOE_LOG(foePosition, Verbose,

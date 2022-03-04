@@ -121,7 +121,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     return true;
 }
 
-auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
+auto create(foeSimulationState *pSimulationState) -> std::error_code {
     TypeSelection selection = {};
 
     // Resources
@@ -196,7 +196,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-bool onDestroy(foeSimulationState *pSimulationState) {
+bool destroy(foeSimulationState *pSimulationState) {
     return destroySelection(pSimulationState, nullptr);
 }
 
@@ -223,7 +223,7 @@ bool deinitializeSelection(foeSimulationState const *pSimulationState,
     return true;
 }
 
-auto onInitialization(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
+auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
     -> std::error_code {
     std::error_code errC;
     TypeSelection selection{};
@@ -275,7 +275,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-bool onDeinitialization(foeSimulationState *pSimulationState) {
+bool deinitialize(foeSimulationState *pSimulationState) {
     return deinitializeSelection(pSimulationState, nullptr);
 }
 
@@ -289,10 +289,10 @@ auto foePhysicsRegisterFunctionality() -> std::error_code {
 
     auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foePhysicsFunctionalityID(),
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
-        .onInitialization = onInitialization,
-        .onDeinitialization = onDeinitialization,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
+        .pInitializeFn = initialize,
+        .pDeinitializeFn = deinitialize,
     });
 
     if (errC) {
@@ -313,10 +313,10 @@ void foePhysicsDeregisterFunctionality() {
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .id = foePhysicsFunctionalityID(),
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
-        .onInitialization = onInitialization,
-        .onDeinitialization = onDeinitialization,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
+        .pInitializeFn = initialize,
+        .pDeinitializeFn = deinitialize,
     });
 
     FOE_LOG(foePhysics, Verbose,

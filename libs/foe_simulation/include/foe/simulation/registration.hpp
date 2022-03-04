@@ -25,28 +25,43 @@
 struct foeSimulationState;
 struct foeSimulationInitInfo;
 
+typedef std::error_code (*PFN_foeSimulationCreate)(foeSimulationState *);
+
+/// @return True if the function ran without issue. False otherwise.
+typedef bool (*PFN_foeSimulationDestroy)(foeSimulationState *);
+
+typedef std::error_code (*PFN_foeSimulationInitialize)(foeSimulationState *,
+                                                       foeSimulationInitInfo const *);
+
+/// @return True if the function ran without issue. False otherwise.
+typedef bool (*PFN_foeSimulationDeinitialize)(foeSimulationState *);
+
+typedef std::error_code (*PFN_foeSimulationInitializeGraphics)(foeSimulationState *, foeGfxSession);
+
+/// @return True if the function ran without issue. False otherwise.
+typedef bool (*PFN_foeSimulationDeinitializeGraphics)(foeSimulationState *);
+
 struct foeSimulationFunctionalty {
     /// The UUID of the functionality, must be valid/derived from the
     /// FOE_SIMULATION_FUNCTIONALITY_ID macro
     int id;
     /// Called on any created SimulationState, to create related data pools, uninitialized systems.
-    std::error_code (*onCreate)(foeSimulationState *);
-    /// Called when destroying any SimulationState to destroy related data pools and systems. Bool
-    /// returns whether it completed cleanly.
-    bool (*onDestroy)(foeSimulationState *);
+    PFN_foeSimulationCreate pCreateFn;
+    /// Called when destroying any SimulationState to destroy related data pools and systems.
+    PFN_foeSimulationDestroy pDestroyFn;
 
-    /// To be called after onCreate when a Simulation is being initialized to start actually running
-    /// a Simulation
-    std::error_code (*onInitialization)(foeSimulationState *, foeSimulationInitInfo const *);
-    /// Called before onDestroy to safely destory any running state for an active SimulationState.
+    /// To be called after pCreateFn when a Simulation is being initialized to start actually
+    /// running a Simulation
+    PFN_foeSimulationInitialize pInitializeFn;
+    /// Called before pDestroyFn to safely destory any running state for an active SimulationState.
     /// Bool returns whether it completed cleanly.
-    bool (*onDeinitialization)(foeSimulationState *);
+    PFN_foeSimulationDeinitialize pDeinitializeFn;
 
     /// To be called when a graphics session is being added to a simulation
-    std::error_code (*onGfxInitialization)(foeSimulationState *, foeGfxSession);
+    PFN_foeSimulationInitializeGraphics pInitializeGraphicsFn;
     /// To be called when a graphics session is being removed from a simulation. Bool returns
     /// whether it completed cleanly.
-    bool (*onGfxDeinitialization)(foeSimulationState *);
+    PFN_foeSimulationDeinitializeGraphics pDeinitializeGraphicsFn;
 };
 
 /**
@@ -58,8 +73,9 @@ struct foeSimulationFunctionalty {
  * false. The same function may be used as part of a different set which would be counted as
  * 'different'.
  *
- * If there are any created simulations, then the provided 'onCreate' function is called on them. If
- * any simulations have been initialized prior, then the 'onInitialize' function is called on them.
+ * If there are any created simulations, then the provided 'pCreateFn' function is called on them.
+ * If any simulations have been initialized prior, then the 'onInitialize' function is called on
+ * them.
  *
  * If a failure occurs, then the functionality is fully removed from anywhere it may have succeeded
  * and is then not considered registered.
@@ -73,7 +89,7 @@ FOE_SIM_EXPORT auto foeRegisterFunctionality(foeSimulationFunctionalty const &fu
  * @return FOE_SIMULATION_SUCCESS on successful deregistration. A descriptive error code otherwise.
  *
  * If the functionality is found and to be deregistered, it will first iterate through all created
- * simulations and call 'onDeinitialization' and 'onDestroy' to remove the functionality before
+ * simulations and call 'pDeinitializeFn' and 'pDestroyFn' to remove the functionality before
  * finally returning.
  */
 FOE_SIM_EXPORT auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality)

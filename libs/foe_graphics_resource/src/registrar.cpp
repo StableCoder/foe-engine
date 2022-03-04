@@ -205,7 +205,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     return true;
 }
 
-auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
+auto create(foeSimulationState *pSimulationState) -> std::error_code {
     TypeSelection selection = {};
 
     // Resources
@@ -399,7 +399,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-bool onDestroy(foeSimulationState *pSimulationState) {
+bool destroy(foeSimulationState *pSimulationState) {
     return destroySelection(pSimulationState, nullptr);
 }
 
@@ -432,8 +432,8 @@ bool deinitializeSelection(foeSimulationState const *pSimulationState,
     return true;
 }
 
-std::error_code onInitialization(foeSimulationState *pSimulationState,
-                                 foeSimulationInitInfo const *pInitInfo) {
+std::error_code initialize(foeSimulationState *pSimulationState,
+                           foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
     TypeSelection selection = {};
 
@@ -513,7 +513,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-bool onDeinitialization(foeSimulationState *pSimulationState) {
+bool deinitialize(foeSimulationState *pSimulationState) {
     return deinitializeSelection(pSimulationState, nullptr);
 }
 
@@ -554,8 +554,7 @@ bool deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
         }                                                                                          \
     }
 
-std::error_code onGfxInitialization(foeSimulationState *pSimulationState,
-                                    foeGfxSession gfxSession) {
+std::error_code initializeGraphics(foeSimulationState *pSimulationState, foeGfxSession gfxSession) {
     std::error_code errC;
     TypeSelection selection = {};
 
@@ -579,7 +578,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-bool onGfxDeinitialization(foeSimulationState *pSimulationState) {
+bool deinitializeGraphics(foeSimulationState *pSimulationState) {
     return deinitializeGraphicsSelection(pSimulationState, nullptr);
 }
 
@@ -593,12 +592,12 @@ auto foeGraphicsResourceRegisterFunctionality() -> std::error_code {
 
     auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foeGraphicsResourceFunctionalityID(),
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
-        .onInitialization = onInitialization,
-        .onDeinitialization = onDeinitialization,
-        .onGfxInitialization = onGfxInitialization,
-        .onGfxDeinitialization = onGfxDeinitialization,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
+        .pInitializeFn = initialize,
+        .pDeinitializeFn = deinitialize,
+        .pInitializeGraphicsFn = initializeGraphics,
+        .pDeinitializeGraphicsFn = deinitializeGraphics,
     });
 
     if (errC) {
@@ -620,12 +619,12 @@ void foeGraphicsResourceDeregisterFunctionality() {
 
     foeDeregisterFunctionality(foeSimulationFunctionalty{
         .id = foeGraphicsResourceFunctionalityID(),
-        .onCreate = onCreate,
-        .onDestroy = onDestroy,
-        .onInitialization = onInitialization,
-        .onDeinitialization = onDeinitialization,
-        .onGfxInitialization = onGfxInitialization,
-        .onGfxDeinitialization = onGfxDeinitialization,
+        .pCreateFn = create,
+        .pDestroyFn = destroy,
+        .pInitializeFn = initialize,
+        .pDeinitializeFn = deinitialize,
+        .pInitializeGraphicsFn = initializeGraphics,
+        .pDeinitializeGraphicsFn = deinitializeGraphics,
     });
 
     FOE_LOG(foeGraphicsResource, Verbose,
