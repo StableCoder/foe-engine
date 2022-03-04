@@ -36,14 +36,14 @@ struct foeSimulationFunctionalty {
 
     /// To be called after onCreate when a Simulation is being initialized to start actually running
     /// a Simulation
-    std::error_code (*onInitialization)(foeSimulationState const *, foeSimulationInitInfo const *);
+    std::error_code (*onInitialization)(foeSimulationState *, foeSimulationInitInfo const *);
     /// Called before onDestroy to safely destory any running state for an active SimulationState
-    std::error_code (*onDeinitialization)(foeSimulationState const *);
+    std::error_code (*onDeinitialization)(foeSimulationState *);
 
     /// To be called when a graphics session is being added to a simulation
-    std::error_code (*onGfxInitialization)(foeSimulationState const *, foeGfxSession);
+    std::error_code (*onGfxInitialization)(foeSimulationState *, foeGfxSession);
     /// To be called when a graphics session is being removed from a simulation
-    std::error_code (*onGfxDeinitialization)(foeSimulationState const *);
+    std::error_code (*onGfxDeinitialization)(foeSimulationState *);
 
     bool operator==(foeSimulationFunctionalty const &) const noexcept;
     bool operator!=(foeSimulationFunctionalty const &) const noexcept;

@@ -224,8 +224,8 @@ void deinitializeSelection(foeSimulationState const *pSimulationState,
     }
 }
 
-auto onInitialization(foeSimulationState const *pSimulationState,
-                      foeSimulationInitInfo const *pInitInfo) -> std::error_code {
+auto onInitialization(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
+    -> std::error_code {
     std::error_code errC;
     TypeSelection selection{};
 
@@ -276,7 +276,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
+auto onDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
     deinitializeSelection(pSimulationState, nullptr);
 
     return {};

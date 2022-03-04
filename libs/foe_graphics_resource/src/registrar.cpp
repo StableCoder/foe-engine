@@ -433,7 +433,7 @@ auto deinitializeSelection(foeSimulationState const *pSimulationState,
     return {};
 }
 
-std::error_code onInitialization(foeSimulationState const *pSimulationState,
+std::error_code onInitialization(foeSimulationState *pSimulationState,
                                  foeSimulationInitInfo const *pInitInfo) {
     std::error_code errC;
     TypeSelection selection = {};
@@ -514,7 +514,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
+auto onDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
     return deinitializeSelection(pSimulationState, nullptr);
 }
 
@@ -555,7 +555,7 @@ auto deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
         }                                                                                          \
     }
 
-std::error_code onGfxInitialization(foeSimulationState const *pSimulationState,
+std::error_code onGfxInitialization(foeSimulationState *pSimulationState,
                                     foeGfxSession gfxSession) {
     std::error_code errC;
     TypeSelection selection = {};
@@ -580,7 +580,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onGfxDeinitialization(foeSimulationState const *pSimulationState) -> std::error_code {
+auto onGfxDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
     return deinitializeGraphicsSelection(pSimulationState, nullptr);
 }
 
