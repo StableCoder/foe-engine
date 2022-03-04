@@ -40,7 +40,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
+bool onDestroy(foeSimulationState *pSimulationState) {
     // Component Pools
     for (auto &pPool : pSimulationState->componentPools) {
         if (pPool == nullptr)
@@ -52,7 +52,7 @@ auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
         }
     }
 
-    return {};
+    return true;
 }
 
 } // namespace

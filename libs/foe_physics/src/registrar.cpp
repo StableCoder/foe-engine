@@ -64,8 +64,7 @@ void collisionShapeLoadFn(void *pContext,
     pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
 }
 
-auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
-    -> std::error_code {
+bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     // Systems
     for (auto &pSystem : pSimulationState->systems) {
         if (pSystem == nullptr)
@@ -119,7 +118,7 @@ auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
         }
     }
 
-    return {};
+    return true;
 }
 
 auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
@@ -197,13 +196,11 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
-    destroySelection(pSimulationState, nullptr);
-
-    return {};
+bool onDestroy(foeSimulationState *pSimulationState) {
+    return destroySelection(pSimulationState, nullptr);
 }
 
-void deinitializeSelection(foeSimulationState const *pSimulationState,
+bool deinitializeSelection(foeSimulationState const *pSimulationState,
                            TypeSelection const *pSelection) {
     // Systems
     if (pSelection == nullptr || pSelection->physicsSystem) {
@@ -222,6 +219,8 @@ void deinitializeSelection(foeSimulationState const *pSimulationState,
             pLoader->deinitialize();
         }
     }
+
+    return true;
 }
 
 auto onInitialization(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
@@ -276,10 +275,8 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
-    deinitializeSelection(pSimulationState, nullptr);
-
-    return {};
+bool onDeinitialization(foeSimulationState *pSimulationState) {
+    return deinitializeSelection(pSimulationState, nullptr);
 }
 
 } // namespace

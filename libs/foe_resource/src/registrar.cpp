@@ -55,8 +55,7 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
     pPostLoadFn(pResource, FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
-auto destroySelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
-    -> std::error_code {
+bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
         if (it.pLoader == nullptr)
@@ -86,7 +85,7 @@ auto destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
         }
     }
 
-    return {};
+    return true;
 }
 
 auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
@@ -140,12 +139,12 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return FOE_RESOURCE_SUCCESS;
 }
 
-auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
+bool onDestroy(foeSimulationState *pSimulationState) {
     return destroySelected(pSimulationState, nullptr);
 }
 
-auto deinitializeSelected(foeSimulationState const *pSimulationState,
-                          TypeSelection const *pSelection) -> std::error_code {
+bool deinitializeSelected(foeSimulationState const *pSimulationState,
+                          TypeSelection const *pSelection) {
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
         if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
@@ -155,7 +154,7 @@ auto deinitializeSelected(foeSimulationState const *pSimulationState,
         }
     }
 
-    return FOE_RESOURCE_SUCCESS;
+    return true;
 }
 
 std::error_code onInitialize(foeSimulationState *pSimulation,
@@ -184,7 +183,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onDeinitialize(foeSimulationState *pSimulationState) -> std::error_code {
+bool onDeinitialize(foeSimulationState *pSimulationState) {
     return deinitializeSelected(pSimulationState, nullptr);
 }
 

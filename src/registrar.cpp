@@ -56,8 +56,7 @@ struct TypeSelection {
         continue;                                                                                  \
     }
 
-auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
-    -> std::error_code {
+bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     // Systems
     for (auto &ptr : pSimulationState->systems) {
         if (ptr == nullptr)
@@ -86,7 +85,7 @@ auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
                               armatureComponents)
     }
 
-    return {};
+    return true;
 }
 
 auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
@@ -141,12 +140,12 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
+bool onDestroy(foeSimulationState *pSimulationState) {
     return destroySelection(pSimulationState, nullptr);
 }
 
-auto deinitializeSelection(foeSimulationState const *pSimulationState,
-                           TypeSelection const *pSelection) -> std::error_code {
+bool deinitializeSelection(foeSimulationState const *pSimulationState,
+                           TypeSelection const *pSelection) {
     // Systems
     if (auto *pSystem = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
@@ -172,7 +171,7 @@ auto deinitializeSelection(foeSimulationState const *pSimulationState,
         pSystem->deinitialize();
     }
 
-    return {};
+    return true;
 }
 
 auto onInitialization(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
@@ -261,12 +260,12 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
+bool onDeinitialization(foeSimulationState *pSimulationState) {
     return deinitializeSelection(pSimulationState, nullptr);
 }
 
-auto deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
-                                   TypeSelection const *pSelection) -> std::error_code {
+bool deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
+                                   TypeSelection const *pSelection) {
     // Systems
     if (auto *pSystem = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
@@ -286,7 +285,7 @@ auto deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
         pSystem->deinitializeGraphics();
     }
 
-    return {};
+    return true;
 }
 
 auto onGfxInitialization(foeSimulationState *pSimulationState, foeGfxSession gfxSession)
@@ -332,7 +331,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onGfxDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
+bool onGfxDeinitialization(foeSimulationState *pSimulationState) {
     return deinitializeGraphicsSelection(pSimulationState, nullptr);
 }
 

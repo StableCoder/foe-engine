@@ -141,8 +141,7 @@ void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std
         continue;                                                                                  \
     }
 
-auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection)
-    -> std::error_code {
+bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     // Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
         if (it.pLoader == nullptr)
@@ -203,7 +202,7 @@ auto destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
         }
     }
 
-    return {};
+    return true;
 }
 
 auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
@@ -400,7 +399,7 @@ auto onCreate(foeSimulationState *pSimulationState) -> std::error_code {
     return {};
 }
 
-auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
+bool onDestroy(foeSimulationState *pSimulationState) {
     return destroySelection(pSimulationState, nullptr);
 }
 
@@ -410,8 +409,8 @@ auto onDestroy(foeSimulationState *pSimulationState) -> std::error_code {
         pLoader->deinitialize();                                                                   \
     }
 
-auto deinitializeSelection(foeSimulationState const *pSimulationState,
-                           TypeSelection const *pSelection) -> std::error_code {
+bool deinitializeSelection(foeSimulationState const *pSimulationState,
+                           TypeSelection const *pSelection) {
     // Loaders
     if (pSelection == nullptr || pSelection->imageLoader)
         DEINITIALIZE_LOADER(foeImageLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
@@ -430,7 +429,7 @@ auto deinitializeSelection(foeSimulationState const *pSimulationState,
     if (pSelection == nullptr || pSelection->meshLoader)
         DEINITIALIZE_LOADER(foeMeshLoader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
 
-    return {};
+    return true;
 }
 
 std::error_code onInitialization(foeSimulationState *pSimulationState,
@@ -514,7 +513,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
+bool onDeinitialization(foeSimulationState *pSimulationState) {
     return deinitializeSelection(pSimulationState, nullptr);
 }
 
@@ -524,8 +523,8 @@ auto onDeinitialization(foeSimulationState *pSimulationState) -> std::error_code
         pLoader->deinitializeGraphics();                                                           \
     }
 
-auto deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
-                                   TypeSelection const *pSelection) -> std::error_code {
+bool deinitializeGraphicsSelection(foeSimulationState const *pSimulationState,
+                                   TypeSelection const *pSelection) {
     // Loaders
     if (pSelection == nullptr || pSelection->imageLoader)
         DEINITIALIZE_LOADER_GRAPHICS(foeImageLoader,
@@ -580,7 +579,7 @@ INITIALIZATION_FAILED:
     return errC;
 }
 
-auto onGfxDeinitialization(foeSimulationState *pSimulationState) -> std::error_code {
+bool onGfxDeinitialization(foeSimulationState *pSimulationState) {
     return deinitializeGraphicsSelection(pSimulationState, nullptr);
 }
 
