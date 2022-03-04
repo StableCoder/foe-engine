@@ -311,13 +311,7 @@ void foePhysicsDeregisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsDeregisterFunctionality - Starting to deregister functionality")
 
-    foeDeregisterFunctionality(foeSimulationFunctionalty{
-        .id = foePhysicsFunctionalityID(),
-        .pCreateFn = create,
-        .pDestroyFn = destroy,
-        .pInitializeFn = initialize,
-        .pDeinitializeFn = deinitialize,
-    });
+    foeDeregisterFunctionality(foePhysicsFunctionalityID());
 
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsDeregisterFunctionality - Completed deregistering functionality")

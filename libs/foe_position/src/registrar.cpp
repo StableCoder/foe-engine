@@ -85,11 +85,7 @@ void foePositionDeregisterFunctionality() {
     FOE_LOG(foePosition, Verbose,
             "foePositionDeregisterFunctionality - Starting to deregister functionality")
 
-    foeDeregisterFunctionality(foeSimulationFunctionalty{
-        .id = foePositionFunctionalityID(),
-        .pCreateFn = create,
-        .pDestroyFn = destroy,
-    });
+    foeDeregisterFunctionality(foePositionFunctionalityID());
 
     FOE_LOG(foePosition, Verbose,
             "foePositionDeregisterFunctionality - Completed deregistering functionality")

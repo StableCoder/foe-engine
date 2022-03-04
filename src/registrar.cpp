@@ -367,15 +367,7 @@ void foeBringupDeregisterFunctionality() {
     FOE_LOG(foeBringup, Verbose,
             "foeBringupDeregisterFunctionality - Starting to deregister functionality")
 
-    foeDeregisterFunctionality(foeSimulationFunctionalty{
-        .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
-        .pCreateFn = create,
-        .pDestroyFn = destroy,
-        .pInitializeFn = initialize,
-        .pDeinitializeFn = deinitialize,
-        .pInitializeGraphicsFn = initializeGraphics,
-        .pDeinitializeGraphicsFn = deinitializeGraphics,
-    });
+    foeDeregisterFunctionality(FOE_BRINGUP_APP_FUNCTIONALITY_ID);
 
     FOE_LOG(foeBringup, Verbose,
             "foeBringupDeregisterFunctionality - Completed deregistering functionality")

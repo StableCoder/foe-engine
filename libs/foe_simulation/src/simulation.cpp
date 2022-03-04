@@ -214,26 +214,25 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
     return FOE_SIMULATION_SUCCESS;
 }
 
-auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality) -> std::error_code {
+auto foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) -> std::error_code {
     std::scoped_lock lock{mSync};
 
     for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it) {
-        if (it->id == functionality.id) {
+        if (it->id == functionalityUUID) {
             // Since we're deregistering functionality, we need to deinit/destroy this stuff from
             // any active SimulationStates
             for (auto *pSimState : mStates) {
                 acquireExclusiveLock(pSimState, "functionality deregistration");
-                if (functionality.pDeinitializeGraphicsFn &&
-                    foeSimulationIsGraphicsInitialzied(pSimState)) {
-                    functionality.pDeinitializeGraphicsFn(pSimState);
+                if (it->pDeinitializeGraphicsFn && foeSimulationIsGraphicsInitialzied(pSimState)) {
+                    it->pDeinitializeGraphicsFn(pSimState);
                 }
 
-                if (functionality.pDeinitializeFn && foeSimulationIsInitialized(pSimState)) {
-                    functionality.pDeinitializeFn(pSimState);
+                if (it->pDeinitializeFn && foeSimulationIsInitialized(pSimState)) {
+                    it->pDeinitializeFn(pSimState);
                 }
 
-                if (functionality.pDestroyFn) {
-                    functionality.pDestroyFn(pSimState);
+                if (it->pDestroyFn) {
+                    it->pDestroyFn(pSimState);
                 }
                 pSimState->simSync.unlock();
             }

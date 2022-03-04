@@ -617,15 +617,7 @@ void foeGraphicsResourceDeregisterFunctionality() {
     FOE_LOG(foeGraphicsResource, Verbose,
             "foeGraphicsResourceDeregisterFunctionality - Starting to deregister functionality")
 
-    foeDeregisterFunctionality(foeSimulationFunctionalty{
-        .id = foeGraphicsResourceFunctionalityID(),
-        .pCreateFn = create,
-        .pDestroyFn = destroy,
-        .pInitializeFn = initialize,
-        .pDeinitializeFn = deinitialize,
-        .pInitializeGraphicsFn = initializeGraphics,
-        .pDeinitializeGraphicsFn = deinitializeGraphics,
-    });
+    foeDeregisterFunctionality(foeGraphicsResourceFunctionalityID());
 
     FOE_LOG(foeGraphicsResource, Verbose,
             "foeGraphicsResourceDeregisterFunctionality - Completed deregistering functionality")

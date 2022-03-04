@@ -219,13 +219,7 @@ void foeResourceDeregisterFunctionality() {
     FOE_LOG(foeResource, Verbose,
             "foeResourceDeregisterFunctionality - Starting to deregister functionality")
 
-    foeDeregisterFunctionality(foeSimulationFunctionalty{
-        .id = foeResourceFunctionalityID(),
-        .pCreateFn = create,
-        .pDestroyFn = destroy,
-        .pInitializeFn = initialize,
-        .pDeinitializeFn = deinitialize,
-    });
+    foeDeregisterFunctionality(foeResourceFunctionalityID());
 
     FOE_LOG(foeResource, Verbose,
             "foeResourceDeregisterFunctionality - Completed deregistering functionality")

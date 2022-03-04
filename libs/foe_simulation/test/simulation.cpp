@@ -25,7 +25,7 @@ std::error_code pCreateFn(foeSimulationState *) { return {}; }
 bool pDestroyFn(foeSimulationState *) { return true; }
 } // namespace
 
-constexpr int cTestFunctionalityID = FOE_SIMULATION_FUNCTIONALITY_ID(0);
+constexpr foeSimulationUUID cTestFunctionalityID = FOE_SIMULATION_FUNCTIONALITY_ID(0);
 
 TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
     SECTION("Registering and deregistering the same set succeeds") {
@@ -35,11 +35,7 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
             .pDestroyFn = pDestroyFn,
         }));
 
-        REQUIRE_FALSE(foeDeregisterFunctionality(foeSimulationFunctionalty{
-            .id = cTestFunctionalityID,
-            .pCreateFn = pCreateFn,
-            .pDestroyFn = pDestroyFn,
-        }));
+        REQUIRE_FALSE(foeDeregisterFunctionality(cTestFunctionalityID));
     }
 
     SECTION("Registering functionality with a invalid IDs fails") {
@@ -80,12 +76,8 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
     }
 
     SECTION("Deregistering what wasn't registered fails") {
-        REQUIRE(foeDeregisterFunctionality(foeSimulationFunctionalty{
-                                               .id = cTestFunctionalityID,
-                                               .pCreateFn = pCreateFn,
-                                               .pDestroyFn = pDestroyFn,
-                                           })
-                    .value() == FOE_SIMULATION_ERROR_NOT_REGISTERED);
+        REQUIRE(foeDeregisterFunctionality(cTestFunctionalityID).value() ==
+                FOE_SIMULATION_ERROR_NOT_REGISTERED);
     }
 }
 

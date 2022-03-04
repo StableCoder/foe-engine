@@ -25,6 +25,8 @@
 struct foeSimulationState;
 struct foeSimulationInitInfo;
 
+typedef int foeSimulationUUID;
+
 typedef std::error_code (*PFN_foeSimulationCreate)(foeSimulationState *);
 
 /// @return True if the function ran without issue. False otherwise.
@@ -44,7 +46,7 @@ typedef bool (*PFN_foeSimulationDeinitializeGraphics)(foeSimulationState *);
 struct foeSimulationFunctionalty {
     /// The UUID of the functionality, must be valid/derived from the
     /// FOE_SIMULATION_FUNCTIONALITY_ID macro
-    int id;
+    foeSimulationUUID id;
     /// Called on any created SimulationState, to create related data pools, uninitialized systems.
     PFN_foeSimulationCreate pCreateFn;
     /// Called when destroying any SimulationState to destroy related data pools and systems.
@@ -85,14 +87,14 @@ FOE_SIM_EXPORT auto foeRegisterFunctionality(foeSimulationFunctionalty const &fu
 
 /**
  * @brief Attempts to deregister a set of simulation functionality globally
- * @param functionality Set of functionality to be deregistered
+ * @param functionalityUUID UUID of the functionality to deregister.
  * @return FOE_SIMULATION_SUCCESS on successful deregistration. A descriptive error code otherwise.
  *
  * If the functionality is found and to be deregistered, it will first iterate through all created
  * simulations and call 'pDeinitializeFn' and 'pDestroyFn' to remove the functionality before
  * finally returning.
  */
-FOE_SIM_EXPORT auto foeDeregisterFunctionality(foeSimulationFunctionalty const &functionality)
+FOE_SIM_EXPORT auto foeDeregisterFunctionality(foeSimulationUUID functionalityUUID)
     -> std::error_code;
 
 #endif // FOE_SIMULATION_REGISTRATION_HPP
