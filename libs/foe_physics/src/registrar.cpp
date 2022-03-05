@@ -171,7 +171,7 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
             .pCanProcessCreateInfoFn = foeCollisionShapeLoader::canProcessCreateInfo,
             .pLoadFn = foeCollisionShapeLoader::load,
             .pMaintenanceFn =
-                [](foeResourceLoaderBase *pLoader) {
+                [](void *pLoader) {
                     reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();
                 },
         };

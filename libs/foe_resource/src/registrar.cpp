@@ -139,7 +139,7 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
             .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
             .pLoadFn = foeArmatureLoader::load,
             .pMaintenanceFn =
-                [](foeResourceLoaderBase *pLoader) {
+                [](void *pLoader) {
                     reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
                 },
         };

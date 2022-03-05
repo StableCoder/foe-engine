@@ -339,7 +339,7 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
             .pCanProcessCreateInfoFn = foeImageLoader::canProcessCreateInfo,
             .pLoadFn = foeImageLoader::load,
             .pGfxMaintenanceFn =
-                [](foeResourceLoaderBase *pLoader) {
+                [](void *pLoader) {
                     reinterpret_cast<foeImageLoader *>(pLoader)->gfxMaintenance();
                 },
         };
@@ -365,7 +365,7 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
             .pCanProcessCreateInfoFn = foeMaterialLoader::canProcessCreateInfo,
             .pLoadFn = foeMaterialLoader::load,
             .pGfxMaintenanceFn =
-                [](foeResourceLoaderBase *pLoader) {
+                [](void *pLoader) {
                     reinterpret_cast<foeMaterialLoader *>(pLoader)->gfxMaintenance();
                 },
         };
@@ -391,7 +391,7 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
             .pCanProcessCreateInfoFn = foeShaderLoader::canProcessCreateInfo,
             .pLoadFn = foeShaderLoader::load,
             .pGfxMaintenanceFn =
-                [](foeResourceLoaderBase *pLoader) {
+                [](void *pLoader) {
                     reinterpret_cast<foeShaderLoader *>(pLoader)->gfxMaintenance();
                 },
         };
@@ -418,7 +418,7 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
             .pCanProcessCreateInfoFn = foeVertexDescriptorLoader::canProcessCreateInfo,
             .pLoadFn = foeVertexDescriptorLoader::load,
             .pGfxMaintenanceFn =
-                [](foeResourceLoaderBase *pLoader) {
+                [](void *pLoader) {
                     reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->gfxMaintenance();
                 },
         };
@@ -446,9 +446,7 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
             .pCanProcessCreateInfoFn = foeMeshLoader::canProcessCreateInfo,
             .pLoadFn = foeMeshLoader::load,
             .pGfxMaintenanceFn =
-                [](foeResourceLoaderBase *pLoader) {
-                    reinterpret_cast<foeMeshLoader *>(pLoader)->gfxMaintenance();
-                },
+                [](void *pLoader) { reinterpret_cast<foeMeshLoader *>(pLoader)->gfxMaintenance(); },
         };
         errC = foeSimulationInsertResourceLoader(pSimulationState, &loaderCI);
         if (errC) {

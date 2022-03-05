@@ -17,7 +17,6 @@
 #include <foe/simulation/type_defs.h>
 
 #include <foe/simulation/core/component_pool_base.hpp>
-#include <foe/simulation/core/loader.hpp>
 #include <foe/simulation/core/pool.hpp>
 #include <foe/simulation/core/system.hpp>
 #include <foe/simulation/simulation.hpp>

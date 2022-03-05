@@ -23,7 +23,6 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/simulation/core/loader.hpp>
 #include <vulkan/vulkan.h>
 
 #include <array>
@@ -46,7 +45,7 @@ struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo : public foeResourceCreateInfoBa
     std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
 };
 
-class FOE_GFX_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
+class FOE_GFX_RES_EXPORT foeMaterialLoader {
   public:
     auto initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool) -> std::error_code;
     void deinitialize();

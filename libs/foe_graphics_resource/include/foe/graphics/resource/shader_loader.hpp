@@ -21,7 +21,6 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vk/shader.hpp>
-#include <foe/simulation/core/loader.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -33,7 +32,7 @@ struct FOE_GFX_RES_EXPORT foeShaderCreateInfo : public foeResourceCreateInfoBase
     foeGfxVkShaderCreateInfo gfxCreateInfo;
 };
 
-class FOE_GFX_RES_EXPORT foeShaderLoader : public foeResourceLoaderBase {
+class FOE_GFX_RES_EXPORT foeShaderLoader {
   public:
     auto initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)

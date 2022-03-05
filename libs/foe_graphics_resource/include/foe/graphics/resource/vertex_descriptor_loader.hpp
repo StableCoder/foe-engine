@@ -21,7 +21,6 @@
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/simulation/core/create_info.hpp>
-#include <foe/simulation/core/loader.hpp>
 #include <vulkan/vulkan.h>
 
 #include <vector>
@@ -40,7 +39,7 @@ struct FOE_GFX_RES_EXPORT foeVertexDescriptorCreateInfo : public foeResourceCrea
 
 class foeShaderPool;
 
-class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
+class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
   public:
     std::error_code initialize(foeShaderPool *pShaderPool);
     void deinitialize();

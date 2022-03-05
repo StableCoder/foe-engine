@@ -24,7 +24,6 @@
 #include <foe/graphics/upload_buffer.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
-#include <foe/simulation/core/loader.hpp>
 
 #include <array>
 #include <filesystem>
@@ -35,7 +34,7 @@ struct foeImageCreateInfo : public foeResourceCreateInfoBase {
     std::string fileName;
 };
 
-class FOE_GFX_RES_EXPORT foeImageLoader : public foeResourceLoaderBase {
+class FOE_GFX_RES_EXPORT foeImageLoader {
   public:
     auto initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)

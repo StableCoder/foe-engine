@@ -21,7 +21,6 @@
 #include <foe/physics/export.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/simulation/core/create_info.hpp>
-#include <foe/simulation/core/loader.hpp>
 #include <glm/glm.hpp>
 
 #include <mutex>
@@ -32,7 +31,7 @@ struct foeCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
     glm::vec3 boxSize;
 };
 
-class FOE_PHYSICS_EXPORT foeCollisionShapeLoader : public foeResourceLoaderBase {
+class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
   public:
     ~foeCollisionShapeLoader();
 

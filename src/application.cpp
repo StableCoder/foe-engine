@@ -126,19 +126,6 @@
 
 namespace {
 
-template <typename ResourceLoader>
-auto getResourceLoader(foeSimulationLoaderData *pResourceLoaders, size_t poolCount)
-    -> ResourceLoader * {
-    ResourceLoader *pLoader{nullptr};
-    for (size_t i = 0; i < poolCount; ++i) {
-        pLoader = dynamic_cast<ResourceLoader *>(pResourceLoaders[i].pLoader);
-        if (pLoader != nullptr)
-            break;
-    }
-
-    return pLoader;
-}
-
 template <typename ComponentPool>
 auto getComponentPool(foeComponentPoolBase **pComponentPools, size_t poolCount) -> ComponentPool * {
     ComponentPool *pPool{nullptr};
@@ -509,8 +496,8 @@ void Application::deinitialize() {
             pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL));
         pCollisionShapePool->unloadAll();
 
-        auto *pCollisionShapeLoader = getResourceLoader<foeCollisionShapeLoader>(
-            pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+        auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
+            pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
         pCollisionShapeLoader->maintenance();
 
         auto *pArmaturePool = ((foeArmaturePool *)foeSimulationGetResourcePool(
@@ -521,8 +508,8 @@ void Application::deinitialize() {
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL));
         pMeshPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pMeshLoader = getResourceLoader<foeMeshLoader>(
-                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            auto *pMeshLoader = (foeMeshLoader *)foeSimulationGetResourceLoader(
+                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
             pMeshLoader->gfxMaintenance();
         }
 
@@ -530,8 +517,8 @@ void Application::deinitialize() {
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL));
         pMaterialPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pMaterialLoader = getResourceLoader<foeMaterialLoader>(
-                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            auto *pMaterialLoader = (foeMaterialLoader *)foeSimulationGetResourceLoader(
+                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
             pMaterialLoader->gfxMaintenance();
         }
 
@@ -539,8 +526,8 @@ void Application::deinitialize() {
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL));
         pImagePool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pImageLoader = getResourceLoader<foeImageLoader>(
-                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            auto *pImageLoader = (foeImageLoader *)foeSimulationGetResourceLoader(
+                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
             pImageLoader->gfxMaintenance();
         }
 
@@ -548,8 +535,9 @@ void Application::deinitialize() {
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL));
         pVertexDescriptorPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pVertexDescriptorLoader = getResourceLoader<foeVertexDescriptorLoader>(
-                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            auto *pVertexDescriptorLoader =
+                (foeVertexDescriptorLoader *)foeSimulationGetResourceLoader(
+                    pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
             pVertexDescriptorLoader->gfxMaintenance();
         }
 
@@ -557,8 +545,8 @@ void Application::deinitialize() {
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL));
         pShaderPool->unloadAll();
         for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pShaderLoader = getResourceLoader<foeShaderLoader>(
-                pSimulationSet->resourceLoaders.data(), pSimulationSet->resourceLoaders.size());
+            auto *pShaderLoader = (foeShaderLoader *)foeSimulationGetResourceLoader(
+                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
             pShaderLoader->gfxMaintenance();
         }
     }

@@ -25,7 +25,6 @@
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
 #include <foe/simulation/core/create_info.hpp>
-#include <foe/simulation/core/loader.hpp>
 
 #include <array>
 #include <filesystem>
@@ -52,7 +51,7 @@ struct foeMeshCreateInfo : public foeResourceCreateInfoBase {
     std::unique_ptr<foeMeshSource> source;
 };
 
-class FOE_GFX_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
+class FOE_GFX_RES_EXPORT foeMeshLoader {
   public:
     auto initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)

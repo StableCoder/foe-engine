@@ -57,7 +57,7 @@ struct foeSimulationLoaderData {
     size_t initCount;
     size_t gfxInitCount;
     /// The loader itself
-    foeResourceLoaderBase *pLoader;
+    void *pLoader;
     /// Function that returns whether the loader can process a given ResourceCreateInfo type
     bool (*pCanProcessCreateInfoFn)(foeResourceCreateInfoBase *);
     /// Function to be called to load a resource with a compatible ResourceCreateInfo
@@ -66,9 +66,9 @@ struct foeSimulationLoaderData {
                     std::shared_ptr<foeResourceCreateInfoBase> const &,
                     void (*)(void *, std::error_code));
     /// Maintenance to be performed as part of the regular simulation loop
-    void (*pMaintenanceFn)(foeResourceLoaderBase *);
+    void (*pMaintenanceFn)(void *);
     /// Maintenance to be performed as part of the graphics loop
-    void (*pGfxMaintenanceFn)(foeResourceLoaderBase *);
+    void (*pGfxMaintenanceFn)(void *);
 };
 
 struct foeSimulationState {

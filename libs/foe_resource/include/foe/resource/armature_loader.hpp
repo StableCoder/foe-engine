@@ -20,7 +20,6 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/export.h>
 #include <foe/simulation/core/create_info.hpp>
-#include <foe/simulation/core/loader.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -39,7 +38,7 @@ struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
     std::vector<AnimationImportInfo> animations;
 };
 
-class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
+class FOE_RES_EXPORT foeArmatureLoader {
   public:
     std::error_code initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
