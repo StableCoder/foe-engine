@@ -71,6 +71,13 @@ struct foeSimulationLoaderData {
     void (*pGfxMaintenanceFn)(void *);
 };
 
+struct foeSimulationComponentPoolData {
+    foeSimulationStructureType sType;
+    size_t refCount;
+    void *pComponentPool;
+    void (*pMaintenanceFn)(void *);
+};
+
 struct foeSimulationState {
     /**
      * @brief Used to synchronize core access to the SimulationState
@@ -102,7 +109,7 @@ struct foeSimulationState {
 
     // Entity / Component Data
     foeEditorNameMap *pEntityNameMap;
-    std::vector<foeComponentPoolBase *> componentPools;
+    std::vector<foeSimulationComponentPoolData> componentPools;
 
     // Systems
     std::vector<foeSystemBase *> systems;
@@ -234,5 +241,13 @@ FOE_SIM_EXPORT auto foeSimulationInsertResourceLoader(foeSimulationState *pSimul
 FOE_SIM_EXPORT auto foeSimulationReleaseResourceLoader(foeSimulationState *pSimulationState,
                                                        foeSimulationStructureType sType,
                                                        void **ppLoader) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationInsertComponentPool(
+    foeSimulationState *pSimulationState, foeSimulationComponentPoolData const *pCreateInfo)
+    -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationReleaseComponentPool(foeSimulationState *pSimulationState,
+                                                      foeSimulationStructureType sType,
+                                                      void **ppComponentPool) -> std::error_code;
 
 #endif // FOE_SIMULATION_CORE_HPP

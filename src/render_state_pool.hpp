@@ -18,17 +18,13 @@
 #define RENDER_STATE_POOL_HPP
 
 #include <foe/data_pool.hpp>
-#include <foe/simulation/core/component_pool_base.hpp>
 
 #include "render_state.hpp"
 #include "type_defs.h"
 
-class foeRenderStatePool : public foeComponentPoolBase,
-                           public foeDataPool<foeEntityID, foeRenderState> {
+class foeRenderStatePool : public foeDataPool<foeEntityID, foeRenderState> {
   public:
-    foeRenderStatePool() : foeComponentPoolBase{FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL} {}
-
-    void maintenance() override { foeDataPool<foeEntityID, foeRenderState>::maintenance(); }
+    void maintenance() { foeDataPool<foeEntityID, foeRenderState>::maintenance(); }
 };
 
 #endif // RENDER_STATE_POOL_HPP

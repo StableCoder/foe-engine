@@ -126,18 +126,6 @@
 
 namespace {
 
-template <typename ComponentPool>
-auto getComponentPool(foeComponentPoolBase **pComponentPools, size_t poolCount) -> ComponentPool * {
-    ComponentPool *pPool{nullptr};
-    for (size_t i = 0; i < poolCount; ++i) {
-        pPool = dynamic_cast<ComponentPool *>(pComponentPools[i]);
-        if (pPool != nullptr)
-            break;
-    }
-
-    return pPool;
-}
-
 template <typename System>
 auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
     System *pSystem{nullptr};
@@ -210,8 +198,8 @@ auto renderCall(foeId entity,
 
     auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
     if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
-        auto *pPosition3dPool = getComponentPool<foePosition3dPool>(
-            pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+            pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
         auto posOffset = pPosition3dPool->find(entity);
 
@@ -1052,7 +1040,9 @@ int Application::mainloop() {
 
         // Component Pool Maintenance
         for (auto &it : pSimulationSet->componentPools) {
-            it->maintenance();
+            if (it.pMaintenanceFn) {
+                it.pMaintenanceFn(it.pComponentPool);
+            }
         }
 
         // Resource Loader Maintenance
@@ -1086,8 +1076,9 @@ int Application::mainloop() {
         if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
 #endif
         {
-            auto pPosition3dPool = getComponentPool<foePosition3dPool>(
-                pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+            auto pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+                pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+
             auto *pCameraPosition = (pPosition3dPool->begin<1>() + pPosition3dPool->find(cameraID));
             processUserInput(timeElapsedInSec, foeWsiGetKeyboard(windowData[0].window),
                              foeWsiGetMouse(windowData[0].window), pCameraPosition->get());
@@ -1166,8 +1157,8 @@ int Application::mainloop() {
             }
 
             { // All Cameras are currently ties to the primary window X/Y viewport size
-                auto pCameraPool = getComponentPool<foeCameraPool>(
-                    pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+                auto pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
+                    pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
 
                 int width, height;
                 foeWsiWindowGetSize(windowData[0].window, &width, &height);
@@ -1260,9 +1251,9 @@ int Application::mainloop() {
                         xrViews[i].camera.fov = views[i].fov;
                         xrViews[i].camera.pose = views[i].pose;
 
-                        auto pPosition3dPool = getComponentPool<foePosition3dPool>(
-                            pSimulationSet->componentPools.data(),
-                            pSimulationSet->componentPools.size());
+                        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+                            pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+
                         auto *pCameraPosition =
                             (pPosition3dPool->begin<1>() + pPosition3dPool->find(cameraID));
                         xrViews[i].camera.pPosition3D = pCameraPosition->get();
@@ -1478,8 +1469,9 @@ int Application::mainloop() {
                 ERRC_END_PROGRAM
             }
 
-            auto pCameraPool = getComponentPool<foeCameraPool>(
-                pSimulationSet->componentPools.data(), pSimulationSet->componentPools.size());
+            auto *pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
+                pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+
             auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
             RenderSceneOutputResources output;

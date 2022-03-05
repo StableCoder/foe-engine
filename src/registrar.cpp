@@ -57,6 +57,10 @@ struct TypeSelection {
     }
 
 bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+    std::error_code errC;
+    size_t count;
+    bool issues = false;
+
     // Systems
     for (auto &ptr : pSimulationState->systems) {
         if (ptr == nullptr)
@@ -73,71 +77,164 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     }
 
     // Components
-    for (auto &ptr : pSimulationState->componentPools) {
-        if (ptr == nullptr)
-            continue;
-
-        DESTROY_FUNCTIONALITY(foeRenderStatePool, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
-                              renderStateComponents)
-        DESTROY_FUNCTIONALITY(foeCameraPool, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
-                              cameraComponents)
-        DESTROY_FUNCTIONALITY(foeArmatureStatePool, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
-                              armatureComponents)
+    if (pSelection == nullptr || pSelection->renderStateComponents) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, &count);
+        if (errC) {
+            FOE_LOG(foeBringup, Warning,
+                    "Attempted to decrement/destroy foeRenderStatePool that doesn't exist - {}",
+                    errC.message());
+            issues = true;
+        } else if (count == 0) {
+            foeRenderStatePool *pData;
+            errC = foeSimulationReleaseComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, (void **)&pData);
+            if (errC) {
+                FOE_LOG(foeBringup, Warning, "Could not release foeRenderStatePool to destroy - {}",
+                        errC.message());
+                issues = true;
+            } else {
+                delete pData;
+            }
+        }
     }
 
-    return true;
+    if (pSelection == nullptr || pSelection->cameraComponents) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL, &count);
+        if (errC) {
+            FOE_LOG(foeBringup, Warning,
+                    "Attempted to decrement/destroy foeCameraPool that doesn't exist - {}",
+                    errC.message());
+            issues = true;
+        } else if (count == 0) {
+            foeCameraPool *pData;
+            errC = foeSimulationReleaseComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL, (void **)&pData);
+            if (errC) {
+                FOE_LOG(foeBringup, Warning, "Could not release foeCameraPool to destroy - {}",
+                        errC.message());
+                issues = true;
+            } else {
+                delete pData;
+            }
+        }
+    }
+
+    if (pSelection == nullptr || pSelection->armatureComponents) {
+        errC = foeSimulationDecrementRefCount(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, &count);
+        if (errC) {
+            FOE_LOG(foeBringup, Warning,
+                    "Attempted to decrement/destroy foeArmatureStatePool that doesn't exist - {}",
+                    errC.message());
+            issues = true;
+        } else if (count == 0) {
+            foeArmatureStatePool *pData;
+            errC = foeSimulationReleaseComponentPool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, (void **)&pData);
+            if (errC) {
+                FOE_LOG(foeBringup, Warning,
+                        "Could not release foeArmatureStatePool to destroy - {}", errC.message());
+                issues = true;
+            } else {
+                delete pData;
+            }
+        }
+    }
+
+    return !issues;
 }
 
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
+    std::error_code errC;
+    TypeSelection created = {};
+
     // Components
-    if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
-        pPool != nullptr) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeArmatureStatePool;
-        ++pPool->refCount;
-        pSimulationState->componentPools.emplace_back(pPool);
+    if (foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, nullptr)) {
+        foeSimulationComponentPoolData createInfo{
+            .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
+            .pComponentPool = new foeArmatureStatePool,
+            .pMaintenanceFn = [](void *pData) { ((foeArmatureStatePool *)pData)->maintenance(); },
+        };
+        errC = foeSimulationInsertComponentPool(pSimulationState, &createInfo);
+        if (errC) {
+            delete (foeArmatureStatePool *)createInfo.pComponentPool;
+            FOE_LOG(foeBringup, Error,
+                    "create - Failed to create foeArmatureStatePool on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, nullptr);
+    }
+    created.armatureComponents = true;
+
+    if (foeSimulationIncrementRefCount(pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
+                                       nullptr)) {
+        foeSimulationComponentPoolData createInfo{
+            .sType = FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
+            .pComponentPool = new foeCameraPool,
+            .pMaintenanceFn = [](void *pData) { ((foeCameraPool *)pData)->maintenance(); },
+        };
+        errC = foeSimulationInsertComponentPool(pSimulationState, &createInfo);
+        if (errC) {
+            delete (foeCameraPool *)createInfo.pComponentPool;
+            FOE_LOG(foeBringup, Error,
+                    "create - Failed to create foeCameraPool on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
+                                       nullptr);
+    }
+    created.cameraComponents = true;
+
+    if (foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, nullptr)) {
+        foeSimulationComponentPoolData createInfo{
+            .sType = FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
+            .pComponentPool = new foeRenderStatePool,
+            .pMaintenanceFn = [](void *pData) { ((foeRenderStatePool *)pData)->maintenance(); },
+        };
+        errC = foeSimulationInsertComponentPool(pSimulationState, &createInfo);
+        if (errC) {
+            delete (foeRenderStatePool *)createInfo.pComponentPool;
+            FOE_LOG(foeBringup, Error,
+                    "create - Failed to create foeRenderStatePool on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, nullptr);
+    }
+    created.renderStateComponents = true;
+
+    { // Systems
+        foeSystemBase *pSystemBase = new foeArmatureSystem;
+        ++pSystemBase->refCount;
+        pSimulationState->systems.emplace_back(pSystemBase);
+
+        pSystemBase = new foeCameraSystem;
+        ++pSystemBase->refCount;
+        pSimulationState->systems.emplace_back(pSystemBase);
+
+        pSystemBase = new PositionDescriptorPool;
+        ++pSystemBase->refCount;
+        pSimulationState->systems.emplace_back(pSystemBase);
+
+        pSystemBase = new VkAnimationPool;
+        ++pSystemBase->refCount;
+        pSimulationState->systems.emplace_back(pSystemBase);
     }
 
-    if (auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
-        pPool != nullptr) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeCameraPool;
-        ++pPool->refCount;
-        pSimulationState->componentPools.emplace_back(pPool);
+CREATE_FAILED:
+    if (errC) {
+        destroySelection(pSimulationState, &created);
     }
 
-    if (auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
-        pPool != nullptr) {
-        ++pPool->refCount;
-    } else {
-        pPool = new foeRenderStatePool;
-        ++pPool->refCount;
-        pSimulationState->componentPools.emplace_back(pPool);
-    }
-
-    // Systems
-    foeSystemBase *pSystemBase = new foeArmatureSystem;
-    ++pSystemBase->refCount;
-    pSimulationState->systems.emplace_back(pSystemBase);
-
-    pSystemBase = new foeCameraSystem;
-    ++pSystemBase->refCount;
-    pSimulationState->systems.emplace_back(pSystemBase);
-
-    pSystemBase = new PositionDescriptorPool;
-    ++pSystemBase->refCount;
-    pSimulationState->systems.emplace_back(pSystemBase);
-
-    pSystemBase = new VkAnimationPool;
-    ++pSystemBase->refCount;
-    pSimulationState->systems.emplace_back(pSystemBase);
-
-    return {};
+    return errC;
 }
 
 bool destroy(foeSimulationState *pSimulationState) {

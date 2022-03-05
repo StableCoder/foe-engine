@@ -19,21 +19,15 @@
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.hpp>
-#include <foe/simulation/core/component_pool_base.hpp>
 
 #include "camera.hpp"
 #include "type_defs.h"
 
 #include <memory>
 
-class foeCameraPool : public foeComponentPoolBase,
-                      public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {
+class foeCameraPool : public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {
   public:
-    foeCameraPool() : foeComponentPoolBase{FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL} {}
-
-    void maintenance() override {
-        foeDataPool<foeEntityID, std::unique_ptr<Camera>>::maintenance();
-    }
+    void maintenance() { foeDataPool<foeEntityID, std::unique_ptr<Camera>>::maintenance(); }
 };
 
 #endif // CAMERA_POOL_HPP

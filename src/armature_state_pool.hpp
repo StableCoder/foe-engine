@@ -18,17 +18,13 @@
 #define ARMATURE_STATE_POOL_HPP
 
 #include <foe/data_pool.hpp>
-#include <foe/simulation/core/component_pool_base.hpp>
 
 #include "armature_state.hpp"
 #include "type_defs.h"
 
-class foeArmatureStatePool : public foeComponentPoolBase,
-                             public foeDataPool<foeEntityID, foeArmatureState> {
+class foeArmatureStatePool : public foeDataPool<foeEntityID, foeArmatureState> {
   public:
-    foeArmatureStatePool() : foeComponentPoolBase{FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL} {}
-
-    void maintenance() override { foeDataPool<foeEntityID, foeArmatureState>::maintenance(); }
+    void maintenance() { foeDataPool<foeEntityID, foeArmatureState>::maintenance(); }
 };
 
 #endif // ARMATURE_STATE_POOL_HPP

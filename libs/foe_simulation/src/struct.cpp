@@ -16,7 +16,6 @@
 
 #include <foe/simulation/type_defs.h>
 
-#include <foe/simulation/core/component_pool_base.hpp>
 #include <foe/simulation/core/pool.hpp>
 #include <foe/simulation/core/system.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -69,8 +68,8 @@ extern "C" void *foeSimulationGetComponentPool(foeSimulationState const *pSimula
     auto *pEndIt = pIt + pSimulationState->componentPools.size();
 
     for (; pIt != pEndIt; ++pIt) {
-        if (*pIt != nullptr && (*pIt)->sType == sType) {
-            return (void *)*pIt;
+        if (pIt->sType == sType) {
+            return (void *)pIt->pComponentPool;
         }
     }
 

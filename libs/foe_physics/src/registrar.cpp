@@ -67,6 +67,7 @@ void collisionShapeLoadFn(void *pContext,
 bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     std::error_code errC;
     size_t count;
+    bool issues = false;
 
     // Systems
     for (auto &pSystem : pSimulationState->systems) {
@@ -82,14 +83,25 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     }
 
     // Components
-    for (auto &pPool : pSimulationState->componentPools) {
-        if (pPool == nullptr)
-            continue;
-
-        if ((pSelection == nullptr || pSelection->rigidBodyComponent) &&
-            pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL && --pPool->refCount == 0) {
-            delete (foeRigidBodyPool *)pPool;
-            pPool = nullptr;
+    if (pSelection == nullptr || pSelection->rigidBodyComponent) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL, &count);
+        if (errC) {
+            FOE_LOG(foePhysics, Warning,
+                    "Attempted to decrement/destroy foeRigidBodyPool that doesn't exist - {}",
+                    errC.message());
+            issues = true;
+        } else if (count == 0) {
+            foeRigidBodyPool *pData;
+            errC = foeSimulationReleaseComponentPool(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL, (void **)&pData);
+            if (errC) {
+                FOE_LOG(foePhysics, Warning, "Could not release foeRigidBodyPool to destroy - {}",
+                        errC.message());
+                issues = true;
+            } else {
+                delete pData;
+            }
         }
     }
 
@@ -103,6 +115,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
                 foePhysics, Warning,
                 "Attempted to decrement/destroy foeCollisionShapeLoader that doesn't exist - {}",
                 errC.message());
+            issues = true;
         } else if (count == 0) {
             foeCollisionShapeLoader *pLoader;
             errC = foeSimulationReleaseResourceLoader(
@@ -112,6 +125,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
                 FOE_LOG(foePhysics, Warning,
                         "Could not release foeCollisionShapeLoader to destroy - {}",
                         errC.message());
+                issues = true;
             } else {
                 delete pLoader;
             }
@@ -133,7 +147,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
         }
     }
 
-    return true;
+    return !issues;
 }
 
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
@@ -195,17 +209,25 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     selection.collisionShapeLoader = true;
 
     // Components
-    if (auto *pPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
-        pPool) {
-        ++pPool->refCount;
-        selection.rigidBodyComponent = true;
-    } else {
-        pPool = new foeRigidBodyPool;
-        ++pPool->refCount;
-        pSimulationState->componentPools.emplace_back(pPool);
-        selection.rigidBodyComponent = true;
+    if (foeSimulationIncrementRefCount(pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
+                                       nullptr)) {
+        foeSimulationComponentPoolData createInfo{
+            .sType = FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
+            .pComponentPool = new foeRigidBodyPool,
+            .pMaintenanceFn = [](void *pData) { ((foeRigidBodyPool *)pData)->maintenance(); },
+        };
+        errC = foeSimulationInsertComponentPool(pSimulationState, &createInfo);
+        if (errC) {
+            delete (foeRigidBodyPool *)createInfo.pComponentPool;
+            FOE_LOG(foePhysics, Error,
+                    "onCreate - Failed to create foeRigidBodyPool on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
+                                       nullptr);
     }
+    selection.rigidBodyComponent = true;
 
     // Systems
     if (auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(

@@ -497,6 +497,15 @@ auto foeSimulationGetRefCount(foeSimulationState const *pSimulationState,
         }
     }
 
+    // Component Pools
+    for (auto const &it : pSimulationState->componentPools) {
+        if (it.sType == sType) {
+            *pRefCount = it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
@@ -515,6 +524,18 @@ auto foeSimulationIncrementRefCount(foeSimulationState *pSimulationState,
         }
     }
 
+    // Component Pools
+    for (auto &it : pSimulationState->componentPools) {
+        if (it.sType == sType) {
+            if (pRefCount != nullptr)
+                *pRefCount = ++it.refCount;
+            else
+                ++it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
@@ -523,6 +544,18 @@ auto foeSimulationDecrementRefCount(foeSimulationState *pSimulationState,
                                     size_t *pRefCount) -> std::error_code {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pRefCount != nullptr)
+                *pRefCount = --it.refCount;
+            else
+                --it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    // Component Pools
+    for (auto &it : pSimulationState->componentPools) {
         if (it.sType == sType) {
             if (pRefCount != nullptr)
                 *pRefCount = --it.refCount;
@@ -662,6 +695,38 @@ auto foeSimulationReleaseResourceLoader(foeSimulationState *pSimulationState,
         if (it->sType == sType) {
             *ppLoader = it->pLoader;
             pSimulationState->resourceLoaders.erase(it);
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationInsertComponentPool(foeSimulationState *pSimulationState,
+                                      foeSimulationComponentPoolData const *pCreateInfo)
+    -> std::error_code {
+    // Make sure the type doesn't exist yet
+    if (foeSimulationGetResourcePool(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetResourceLoader(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetSystem(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetComponentPool(pSimulationState, pCreateInfo->sType) != nullptr) {
+        return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
+    }
+
+    pSimulationState->componentPools.emplace_back(*pCreateInfo);
+
+    return FOE_SIMULATION_SUCCESS;
+}
+
+auto foeSimulationReleaseComponentPool(foeSimulationState *pSimulationState,
+                                       foeSimulationStructureType sType,
+                                       void **ppComponentPool) -> std::error_code {
+    auto const endIt = pSimulationState->componentPools.end();
+    for (auto it = pSimulationState->componentPools.begin(); it != endIt; ++it) {
+        if (it->sType == sType) {
+            *ppComponentPool = it->pComponentPool;
+            pSimulationState->componentPools.erase(it);
 
             return FOE_SIMULATION_SUCCESS;
         }
