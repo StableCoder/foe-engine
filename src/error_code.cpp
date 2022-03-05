@@ -51,6 +51,10 @@ std::string foeBringupErrorCategory::message(int ev) const {
         RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NOT_MUTABLE)
         RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NO_STATE)
 
+        // Armature System
+        RESULT_CASE(FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED)
+        RESULT_CASE(FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED)
+
     default:
         if (ev > 0)
             return "(unrecognized positive foeBringupResult value)";

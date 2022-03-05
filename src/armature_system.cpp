@@ -21,6 +21,7 @@
 
 #include "armature_state.hpp"
 #include "armature_state_pool.hpp"
+#include "error_code.hpp"
 #include "type_defs.h"
 
 namespace {
@@ -80,10 +81,19 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 foeArmatureSystem::foeArmatureSystem() :
     foeSystemBase{FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM} {}
 
-void foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
-                                   foeArmatureStatePool *pArmatureStatePool) {
+auto foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
+                                   foeArmatureStatePool *pArmatureStatePool) -> std::error_code {
+    if (pArmaturePool == nullptr) {
+        return FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED;
+    }
+    if (pArmatureStatePool == nullptr) {
+        return FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED;
+    }
+
     mpArmaturePool = pArmaturePool;
     mpArmatureStatePool = pArmatureStatePool;
+
+    return FOE_BRINGUP_SUCCESS;
 }
 
 void foeArmatureSystem::deinitialize() {

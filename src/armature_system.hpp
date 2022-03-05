@@ -19,6 +19,8 @@
 
 #include <foe/simulation/core/system.hpp>
 
+#include <system_error>
+
 class foeArmatureStatePool;
 class foeArmaturePool;
 
@@ -26,7 +28,8 @@ class foeArmatureSystem : public foeSystemBase {
   public:
     foeArmatureSystem();
 
-    void initialize(foeArmaturePool *pArmaturePool, foeArmatureStatePool *pArmatureStatePool);
+    auto initialize(foeArmaturePool *pArmaturePool, foeArmatureStatePool *pArmatureStatePool)
+        -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
 
