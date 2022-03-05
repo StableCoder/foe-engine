@@ -506,6 +506,15 @@ auto foeSimulationGetRefCount(foeSimulationState const *pSimulationState,
         }
     }
 
+    // Systems
+    for (auto &it : pSimulationState->systems) {
+        if (it.sType == sType) {
+            *pRefCount = it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
@@ -526,6 +535,18 @@ auto foeSimulationIncrementRefCount(foeSimulationState *pSimulationState,
 
     // Component Pools
     for (auto &it : pSimulationState->componentPools) {
+        if (it.sType == sType) {
+            if (pRefCount != nullptr)
+                *pRefCount = ++it.refCount;
+            else
+                ++it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    // Systems
+    for (auto &it : pSimulationState->systems) {
         if (it.sType == sType) {
             if (pRefCount != nullptr)
                 *pRefCount = ++it.refCount;
@@ -566,6 +587,18 @@ auto foeSimulationDecrementRefCount(foeSimulationState *pSimulationState,
         }
     }
 
+    // Systems
+    for (auto &it : pSimulationState->systems) {
+        if (it.sType == sType) {
+            if (pRefCount != nullptr)
+                *pRefCount = --it.refCount;
+            else
+                --it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
@@ -581,6 +614,15 @@ auto foeSimulationGetInitCount(foeSimulationState const *pSimulationState,
         }
     }
 
+    // Systems
+    for (auto &it : pSimulationState->systems) {
+        if (it.sType == sType) {
+            *pInitCount = it.initCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
@@ -589,6 +631,18 @@ auto foeSimulationIncrementInitCount(foeSimulationState *pSimulationState,
                                      size_t *pInitCount) -> std::error_code {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = ++it.initCount;
+            else
+                ++it.initCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    // Systems
+    for (auto &it : pSimulationState->systems) {
         if (it.sType == sType) {
             if (pInitCount != nullptr)
                 *pInitCount = ++it.initCount;
@@ -617,6 +671,18 @@ auto foeSimulationDecrementInitCount(foeSimulationState *pSimulationState,
         }
     }
 
+    // Systems
+    for (auto &it : pSimulationState->systems) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = --it.initCount;
+            else
+                --it.initCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
@@ -625,6 +691,15 @@ auto foeSimulationGetGfxInitCount(foeSimulationState const *pSimulationState,
                                   size_t *pGfxInitCount) -> std::error_code {
     // Resource Loaders
     for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            *pGfxInitCount = it.gfxInitCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    // Systems
+    for (auto &it : pSimulationState->systems) {
         if (it.sType == sType) {
             *pGfxInitCount = it.gfxInitCount;
 
@@ -650,6 +725,18 @@ auto foeSimulationIncrementGfxInitCount(foeSimulationState *pSimulationState,
         }
     }
 
+    // Systems
+    for (auto &it : pSimulationState->systems) {
+        if (it.sType == sType) {
+            if (pGfxInitCount != nullptr)
+                *pGfxInitCount = ++it.gfxInitCount;
+            else
+                ++it.gfxInitCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
@@ -658,6 +745,18 @@ auto foeSimulationDecrementGfxInitCount(foeSimulationState *pSimulationState,
                                         size_t *pGfxInitCount) -> std::error_code {
     // Resource Loaders
     for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pGfxInitCount != nullptr)
+                *pGfxInitCount = --it.gfxInitCount;
+            else
+                --it.gfxInitCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    // Systems
+    for (auto &it : pSimulationState->systems) {
         if (it.sType == sType) {
             if (pGfxInitCount != nullptr)
                 *pGfxInitCount = --it.gfxInitCount;
@@ -727,6 +826,37 @@ auto foeSimulationReleaseComponentPool(foeSimulationState *pSimulationState,
         if (it->sType == sType) {
             *ppComponentPool = it->pComponentPool;
             pSimulationState->componentPools.erase(it);
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationInsertSystem(foeSimulationState *pSimulationState,
+                               foeSimulationSystemData const *pCreateInfo)
+    -> std::error_code { // Make sure the type doesn't exist yet
+    if (foeSimulationGetResourcePool(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetResourceLoader(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetSystem(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetComponentPool(pSimulationState, pCreateInfo->sType) != nullptr) {
+        return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
+    }
+
+    pSimulationState->systems.emplace_back(*pCreateInfo);
+
+    return FOE_SIMULATION_SUCCESS;
+}
+
+FOE_SIM_EXPORT auto foeSimulationReleaseSystem(foeSimulationState *pSimulationState,
+                                               foeSimulationStructureType sType,
+                                               void **ppSystem) -> std::error_code {
+    auto const endIt = pSimulationState->systems.end();
+    for (auto it = pSimulationState->systems.begin(); it != endIt; ++it) {
+        if (it->sType == sType) {
+            *ppSystem = it->pSystem;
+            pSimulationState->systems.erase(it);
 
             return FOE_SIMULATION_SUCCESS;
         }

@@ -21,7 +21,6 @@
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/simulation/core/system.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -31,10 +30,8 @@
 
 class foePosition3dPool;
 
-struct PositionDescriptorPool : public foeSystemBase {
+struct PositionDescriptorPool {
   public:
-    PositionDescriptorPool();
-
     auto initialize(foePosition3dPool *pPosition3dPool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;

@@ -78,6 +78,14 @@ struct foeSimulationComponentPoolData {
     void (*pMaintenanceFn)(void *);
 };
 
+struct foeSimulationSystemData {
+    foeSimulationStructureType sType;
+    size_t refCount;
+    size_t initCount;
+    size_t gfxInitCount;
+    void *pSystem;
+};
+
 struct foeSimulationState {
     /**
      * @brief Used to synchronize core access to the SimulationState
@@ -112,7 +120,7 @@ struct foeSimulationState {
     std::vector<foeSimulationComponentPoolData> componentPools;
 
     // Systems
-    std::vector<foeSystemBase *> systems;
+    std::vector<foeSimulationSystemData> systems;
 };
 
 /// Return if a simulation has been successfully initialized
@@ -249,5 +257,13 @@ FOE_SIM_EXPORT auto foeSimulationInsertComponentPool(
 FOE_SIM_EXPORT auto foeSimulationReleaseComponentPool(foeSimulationState *pSimulationState,
                                                       foeSimulationStructureType sType,
                                                       void **ppComponentPool) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationInsertSystem(foeSimulationState *pSimulationState,
+                                              foeSimulationSystemData const *pCreateInfo)
+    -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationReleaseSystem(foeSimulationState *pSimulationState,
+                                               foeSimulationStructureType sType,
+                                               void **ppSystem) -> std::error_code;
 
 #endif // FOE_SIMULATION_CORE_HPP

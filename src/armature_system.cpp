@@ -78,9 +78,6 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 
 } // namespace
 
-foeArmatureSystem::foeArmatureSystem() :
-    foeSystemBase{FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM} {}
-
 auto foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
                                    foeArmatureStatePool *pArmatureStatePool) -> std::error_code {
     if (pArmaturePool == nullptr) {

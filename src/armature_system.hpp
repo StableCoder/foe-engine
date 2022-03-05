@@ -17,17 +17,13 @@
 #ifndef ARMATURE_SYSTEM_HPP
 #define ARMATURE_SYSTEM_HPP
 
-#include <foe/simulation/core/system.hpp>
-
 #include <system_error>
 
 class foeArmatureStatePool;
 class foeArmaturePool;
 
-class foeArmatureSystem : public foeSystemBase {
+class foeArmatureSystem {
   public:
-    foeArmatureSystem();
-
     auto initialize(foeArmaturePool *pArmaturePool, foeArmatureStatePool *pArmatureStatePool)
         -> std::error_code;
     void deinitialize();

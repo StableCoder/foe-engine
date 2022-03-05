@@ -35,8 +35,6 @@ glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
 
 } // namespace
 
-foeCameraSystem::foeCameraSystem() : foeSystemBase{FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM} {}
-
 auto foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
     -> std::error_code {
     if (pPosition3dPool == nullptr || pCameraPool == nullptr)

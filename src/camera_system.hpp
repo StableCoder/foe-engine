@@ -19,7 +19,6 @@
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/simulation/core/system.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -29,10 +28,8 @@
 class foePosition3dPool;
 class foeCameraPool;
 
-class foeCameraSystem : public foeSystemBase {
+class foeCameraSystem {
   public:
-    foeCameraSystem();
-
     auto initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
         -> std::error_code;
     void deinitialize();

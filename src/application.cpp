@@ -126,18 +126,6 @@
 
 namespace {
 
-template <typename System>
-auto getSystem(foeSystemBase **pSystems, size_t systemCount) -> System * {
-    System *pSystem{nullptr};
-    for (size_t i = 0; i < systemCount; ++i) {
-        pSystem = dynamic_cast<System *>(pSystems[i]);
-        if (pSystem != nullptr)
-            break;
-    }
-
-    return pSystem;
-}
-
 auto renderCall(foeId entity,
                 foeRenderState const *pRenderState,
                 foeGfxSession gfxSession,
@@ -471,13 +459,6 @@ void Application::deinitialize() {
 
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxWaitIdle(gfxSession);
-
-    // Systems Deinitialization
-    getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
-        ->deinitialize();
-
-    getSystem<foeArmatureSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
-        ->deinitialize();
 
     { // Resource Unloading
         auto *pCollisionShapePool = ((foeCollisionShapePool *)foeSimulationGetResourcePool(
@@ -1053,9 +1034,11 @@ int Application::mainloop() {
         }
 
         // Process systems
-        getSystem<foeArmatureSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+        ((foeArmatureSystem *)foeSimulationGetSystem(pSimulationSet,
+                                                     FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM))
             ->process(timeElapsedInSec);
-        getSystem<foePhysicsSystem>(pSimulationSet->systems.data(), pSimulationSet->systems.size())
+        ((foePhysicsSystem *)foeSimulationGetSystem(pSimulationSet,
+                                                    FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM))
             ->process(timeElapsedInSec);
 
         // Process Window Events
@@ -1199,16 +1182,16 @@ int Application::mainloop() {
             frameTime.newFrame();
 
             // Run Systems that generate graphics data
-            getSystem<foeCameraSystem>(pSimulationSet->systems.data(),
-                                       pSimulationSet->systems.size())
+            ((foeCameraSystem *)foeSimulationGetSystem(pSimulationSet,
+                                                       FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM))
                 ->processCameras(frameIndex);
 
-            getSystem<PositionDescriptorPool>(pSimulationSet->systems.data(),
-                                              pSimulationSet->systems.size())
+            ((PositionDescriptorPool *)foeSimulationGetSystem(
+                 pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL))
                 ->generatePositionDescriptors(frameIndex);
 
-            getSystem<VkAnimationPool>(pSimulationSet->systems.data(),
-                                       pSimulationSet->systems.size())
+            ((VkAnimationPool *)foeSimulationGetSystem(
+                 pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL))
                 ->uploadBoneOffsets(frameIndex);
 
 #ifdef FOE_XR_SUPPORT

@@ -70,15 +70,25 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     bool issues = false;
 
     // Systems
-    for (auto &pSystem : pSimulationState->systems) {
-        if (pSystem == nullptr)
-            continue;
-
-        if ((pSelection == nullptr || pSelection->physicsSystem) &&
-            pSystem->sType == FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM &&
-            --pSystem->refCount == 0) {
-            delete (foePhysicsSystem *)pSystem;
-            pSystem = nullptr;
+    if (pSelection == nullptr || pSelection->physicsSystem) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, &count);
+        if (errC) {
+            FOE_LOG(foePhysics, Warning,
+                    "Attempted to decrement/destroy foePhysicsSystem that doesn't exist - {}",
+                    errC.message());
+            issues = true;
+        } else if (count == 0) {
+            foePhysicsSystem *pData;
+            errC = foeSimulationReleaseSystem(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, (void **)&pData);
+            if (errC) {
+                FOE_LOG(foePhysics, Warning, "Could not release foePhysicsSystem to destroy - {}",
+                        errC.message());
+                issues = true;
+            } else {
+                delete pData;
+            }
         }
     }
 
@@ -230,17 +240,24 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     selection.rigidBodyComponent = true;
 
     // Systems
-    if (auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
-        pSystem) {
-        ++pSystem->refCount;
-        selection.physicsSystem = true;
-    } else {
-        pSystem = new foePhysicsSystem;
-        ++pSystem->refCount;
-        pSimulationState->systems.emplace_back(pSystem);
-        selection.physicsSystem = true;
+    if (foeSimulationIncrementRefCount(pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
+                                       nullptr)) {
+        foeSimulationSystemData createInfo{
+            .sType = FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
+            .pSystem = new foePhysicsSystem,
+        };
+        errC = foeSimulationInsertSystem(pSimulationState, &createInfo);
+        if (errC) {
+            delete (foePhysicsSystem *)createInfo.pSystem;
+            FOE_LOG(foePhysics, Error,
+                    "onCreate - Failed to create foePhysicsSystem on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
+                                       nullptr);
     }
+    selection.physicsSystem = true;
 
 CREATE_FAILED:
     if (errC)
@@ -259,10 +276,17 @@ bool deinitializeSelection(foeSimulationState *pSimulationState, TypeSelection c
 
     // Systems
     if (pSelection == nullptr || pSelection->physicsSystem) {
-        auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
-        if (pSystem != nullptr && --pSystem->initCount == 0) {
-            pSystem->deinitialize();
+        errC = foeSimulationDecrementInitCount(pSimulationState,
+                                               FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, &count);
+        if (errC) {
+            FOE_LOG(foePhysics, Warning,
+                    "Failed to decrement foePhysicsSystem initialization count on Simulation {} "
+                    "with error {}",
+                    (void *)pSimulationState, errC.message());
+        } else if (count == 0) {
+            auto *pLoader = (foePhysicsSystem *)foeSimulationGetSystem(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
+            pLoader->deinitialize();
         }
     }
 
@@ -271,10 +295,11 @@ bool deinitializeSelection(foeSimulationState *pSimulationState, TypeSelection c
         errC = foeSimulationDecrementInitCount(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, &count);
         if (errC) {
-            FOE_LOG(foePhysics, Warning,
-                    "Failed to decrement foeArmatureLoader initialization count on Simulation {} "
-                    "with error {}",
-                    (void *)pSimulationState, errC.message());
+            FOE_LOG(
+                foePhysics, Warning,
+                "Failed to decrement foeCollisionShapeLoader initialization count on Simulation {} "
+                "with error {}",
+                (void *)pSimulationState, errC.message());
         } else if (count == 0) {
             auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
                 pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
@@ -313,32 +338,44 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
             goto INITIALIZATION_FAILED;
         }
     }
+    selection.collisionShapeLoader = true;
 
     // Systems
-    if (auto *pPhysicsSystem = (foePhysicsSystem *)foeSimulationGetSystem(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
-        pPhysicsSystem) {
-        if (!pPhysicsSystem->initialized()) {
-            auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
-                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-
-            auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
-                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
-
-            auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
-                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
-
-            auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
-                pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-
-            errC = pPhysicsSystem->initialize(pCollisionShapeLoader, pCollisionShapePool,
-                                              pRigidBodyPool, pPosition3dPool);
-            if (errC)
-                goto INITIALIZATION_FAILED;
-        }
-        ++pPhysicsSystem->initCount;
+    errC = foeSimulationIncrementInitCount(pSimulationState,
+                                           FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, &count);
+    if (errC) {
+        FOE_LOG(foePhysics, Error,
+                "Failed to increment foePhysicsSystem initialization count on Simulation {} with "
+                "error {}",
+                (void *)pSimulationState, errC.message());
+        goto INITIALIZATION_FAILED;
+    } else if (count == 1) {
         selection.physicsSystem = true;
+
+        auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
+
+        auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+
+        auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+
+        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+            pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+
+        auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
+        errC = pSystem->initialize(pCollisionShapeLoader, pCollisionShapePool, pRigidBodyPool,
+                                   pPosition3dPool);
+        if (errC) {
+            FOE_LOG(foePhysics, Error,
+                    "Failed to initialize foePhysicsSystem on Simulation {} with error {}",
+                    (void *)pSimulationState, errC.message());
+            goto INITIALIZATION_FAILED;
+        }
     }
+    selection.physicsSystem = true;
 
 INITIALIZATION_FAILED:
     if (errC) {

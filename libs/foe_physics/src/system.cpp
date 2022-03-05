@@ -28,7 +28,6 @@
 #include "error_code.hpp"
 
 foePhysicsSystem::foePhysicsSystem() :
-    foeSystemBase{FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM},
     mpBroadphase{new btDbvtBroadphase{}},
     mpCollisionConfig{new btDefaultCollisionConfiguration{}},
     mpCollisionDispatcher{new btCollisionDispatcher{mpCollisionConfig.get()}},

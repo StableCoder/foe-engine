@@ -24,9 +24,6 @@
 #include "error_code.hpp"
 #include "type_defs.h"
 
-PositionDescriptorPool::PositionDescriptorPool() :
-    foeSystemBase{FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL} {}
-
 auto PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) -> std::error_code {
     if (pPosition3dPool == nullptr) {
         return FOE_BRINGUP_INITIALIZATION_FAILED;

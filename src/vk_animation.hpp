@@ -19,7 +19,6 @@
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
-#include <foe/simulation/core/system.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
@@ -31,10 +30,8 @@ class foeMeshPool;
 class foeArmatureStatePool;
 class foeRenderStatePool;
 
-class VkAnimationPool : public foeSystemBase {
+class VkAnimationPool {
   public:
-    VkAnimationPool();
-
     auto initialize(foeArmaturePool *pArmaturePool,
                     foeMeshPool *pMeshPool,
                     foeArmatureStatePool *pArmatureStatePool,

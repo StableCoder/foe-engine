@@ -17,7 +17,6 @@
 #include <foe/simulation/type_defs.h>
 
 #include <foe/simulation/core/pool.hpp>
-#include <foe/simulation/core/system.hpp>
 #include <foe/simulation/simulation.hpp>
 
 extern "C" void *foeSimulationGetResourcePool(foeSimulationState const *pSimulationState,
@@ -41,7 +40,7 @@ extern "C" void *foeSimulationGetResourceLoader(foeSimulationState const *pSimul
 
     for (; pIt != pEndIt; ++pIt) {
         if (pIt->sType == sType) {
-            return (void *)pIt->pLoader;
+            return pIt->pLoader;
         }
     }
 
@@ -54,8 +53,8 @@ extern "C" void *foeSimulationGetSystem(foeSimulationState const *pSimulationSta
     auto *pEndIt = pIt + pSimulationState->systems.size();
 
     for (; pIt != pEndIt; ++pIt) {
-        if (*pIt != nullptr && (*pIt)->sType == sType) {
-            return (void *)*pIt;
+        if (pIt->sType == sType) {
+            return pIt->pSystem;
         }
     }
 
@@ -69,7 +68,7 @@ extern "C" void *foeSimulationGetComponentPool(foeSimulationState const *pSimula
 
     for (; pIt != pEndIt; ++pIt) {
         if (pIt->sType == sType) {
-            return (void *)pIt->pComponentPool;
+            return pIt->pComponentPool;
         }
     }
 
