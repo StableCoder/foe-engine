@@ -19,9 +19,7 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
 
-foeShaderPool::foeShaderPool(foeResourceFns const &resourceFns) :
-    foeResourcePoolBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL},
-    mResourceFns{resourceFns} {}
+foeShaderPool::foeShaderPool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 
 foeShaderPool::~foeShaderPool() {
     for (auto *pResource : mResources) {

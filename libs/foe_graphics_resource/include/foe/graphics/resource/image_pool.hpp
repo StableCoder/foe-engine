@@ -18,7 +18,6 @@
 #define FOE_GRAPHICS_RESOURCE_IMAGE_POOL_HPP
 
 #include <foe/graphics/resource/export.h>
-#include <foe/simulation/core/pool.hpp>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
@@ -26,7 +25,7 @@
 
 struct foeImage;
 
-class FOE_GFX_RES_EXPORT foeImagePool : public foeResourcePoolBase {
+class FOE_GFX_RES_EXPORT foeImagePool {
   public:
     foeImagePool(foeResourceFns const &resourceFns);
     ~foeImagePool();

@@ -143,16 +143,25 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     }
 
     // Resources
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool == nullptr)
-            continue;
-
-        if ((pSelection == nullptr || pSelection->collisionShapeResource) &&
-            pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
-            auto *pTemp = (foeCollisionShapePool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
+    if (pSelection == nullptr || pSelection->collisionShapeResource) {
+        errC = foeSimulationDecrementRefCount(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL, &count);
+        if (errC) {
+            // Trying to destroy something that doesn't exist? Not optimal
+            FOE_LOG(foePhysics, Warning,
+                    "Attempted to decrement/destroy foeCollisionShapePool that doesn't exist - {}",
+                    errC.message());
+            issues = true;
+        } else if (count == 0) {
+            foeCollisionShapePool *pItem;
+            errC = foeSimulationReleaseResourcePool(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL, (void **)&pItem);
+            if (errC) {
+                FOE_LOG(foePhysics, Warning,
+                        "Could not release foeCollisionShapePool to destroy - {}", errC.message());
+                issues = true;
+            } else {
+                delete pItem;
             }
         }
     }
@@ -166,24 +175,30 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     TypeSelection selection = {};
 
     // Resources
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL) {
-            ++pPool->refCount;
-            selection.collisionShapeResource = true;
+    if (foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL, nullptr)) {
+        // Couldn't incement it, doesn't exist yet
+        foeSimulationResourcePoolData createInfo{
+            .sType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL,
+            .pResourcePool = new foeCollisionShapePool{foeResourceFns{
+                .pImportContext = &pSimulationState->groupData,
+                .pImportFn = importFn,
+                .pLoadContext = pSimulationState,
+                .pLoadFn = collisionShapeLoadFn,
+            }},
+        };
+        errC = foeSimulationInsertResourcePool(pSimulationState, &createInfo);
+        if (errC) {
+            delete (foeCollisionShapePool *)createInfo.pResourcePool;
+            FOE_LOG(foePhysics, Error,
+                    "onCreate - Failed to create foeCollisionShapePool on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
         }
+        foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL, nullptr);
     }
-
-    if (!selection.collisionShapeResource) {
-        auto *pPool = new foeCollisionShapePool{foeResourceFns{
-            .pImportContext = &pSimulationState->groupData,
-            .pImportFn = importFn,
-            .pLoadContext = pSimulationState,
-            .pLoadFn = collisionShapeLoadFn,
-        }};
-        ++pPool->refCount;
-        pSimulationState->resourcePools.emplace_back(pPool);
-        selection.collisionShapeResource = true;
-    }
+    selection.collisionShapeResource = true;
 
     // Loaders
     if (foeSimulationIncrementRefCount(

@@ -67,7 +67,7 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
         if (errC) {
             // Trying to destroy something that doesn't exist? Not optimal
             FOE_LOG(foeResource, Warning,
-                    "Attempted to decrement/destroy ArmatureLoader that doesn't exist - {}",
+                    "Attempted to decrement/destroy foeArmatureLoader that doesn't exist - {}",
                     errC.message());
             cleanRun = false;
         } else if (count == 0) {
@@ -75,7 +75,7 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
             errC = foeSimulationReleaseResourceLoader(
                 pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER, (void **)&pLoader);
             if (errC) {
-                FOE_LOG(foeResource, Warning, "Could not release ArmatureLoader to destroy - {}",
+                FOE_LOG(foeResource, Warning, "Could not release foeArmatureLoader to destroy - {}",
                         errC.message());
                 cleanRun = false;
             } else {
@@ -85,16 +85,25 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
     }
 
     // Resources
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool == nullptr)
-            continue;
-
-        if ((pSelection == nullptr || pSelection->armatureResources) &&
-            pPool->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
-            auto *pTemp = (foeArmaturePool *)pPool;
-            if (--pTemp->refCount == 0) {
-                delete pTemp;
-                pPool = nullptr;
+    if (pSelection == nullptr || pSelection->armatureResources) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL, &count);
+        if (errC) {
+            // Trying to destroy something that doesn't exist? Not optimal
+            FOE_LOG(foeResource, Warning,
+                    "Attempted to decrement/destroy foeArmaturePool that doesn't exist - {}",
+                    errC.message());
+            cleanRun = false;
+        } else if (count == 0) {
+            foeArmaturePool *pItem;
+            errC = foeSimulationReleaseResourcePool(
+                pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL, (void **)&pItem);
+            if (errC) {
+                FOE_LOG(foeResource, Warning, "Could not release foeArmaturePool to destroy - {}",
+                        errC.message());
+                cleanRun = false;
+            } else {
+                delete pItem;
             }
         }
     }
@@ -107,27 +116,29 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     TypeSelection selected = {};
 
     // Resources
-    for (auto &pPool : pSimulationState->resourcePools) {
-        if (pPool == nullptr)
-            continue;
-
-        if (pPool->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL) {
-            ++pPool->refCount;
-            selected.armatureResources = true;
+    if (foeSimulationIncrementRefCount(pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL,
+                                       nullptr)) {
+        foeSimulationResourcePoolData loaderCI{
+            .sType = FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL,
+            .pResourcePool = new foeArmaturePool{foeResourceFns{
+                .pImportContext = &pSimulationState->groupData,
+                .pImportFn = importFn,
+                .pLoadContext = pSimulationState,
+                .pLoadFn = armatureLoadFn,
+            }},
+        };
+        errC = foeSimulationInsertResourcePool(pSimulationState, &loaderCI);
+        if (errC) {
+            delete (foeArmatureLoader *)loaderCI.pResourcePool;
+            FOE_LOG(foeResource, Error,
+                    "onCreate - Failed to create foeArmaturePool on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
         }
+        foeSimulationIncrementRefCount(pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL,
+                                       nullptr);
     }
-
-    if (!selected.armatureResources) {
-        auto *pPool = new foeArmaturePool{foeResourceFns{
-            .pImportContext = &pSimulationState->groupData,
-            .pImportFn = importFn,
-            .pLoadContext = pSimulationState,
-            .pLoadFn = armatureLoadFn,
-        }};
-        ++pPool->refCount;
-        pSimulationState->resourcePools.emplace_back(pPool);
-        selected.armatureResources = true;
-    }
+    selected.armatureResources = true;
 
     // Loaders
     if (foeSimulationIncrementRefCount(pSimulationState,

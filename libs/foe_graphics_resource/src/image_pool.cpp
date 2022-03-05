@@ -19,9 +19,7 @@
 #include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/type_defs.h>
 
-foeImagePool::foeImagePool(foeResourceFns const &resourceFns) :
-    foeResourcePoolBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL},
-    mResourceFns{resourceFns} {}
+foeImagePool::foeImagePool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 
 foeImagePool::~foeImagePool() {
     for (auto *pResource : mResources) {

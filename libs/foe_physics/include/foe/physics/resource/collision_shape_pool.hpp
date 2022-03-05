@@ -19,7 +19,6 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
-#include <foe/simulation/core/pool.hpp>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <functional>
@@ -28,7 +27,7 @@
 
 struct foeCollisionShape;
 
-class FOE_PHYSICS_EXPORT foeCollisionShapePool : public foeResourcePoolBase {
+class FOE_PHYSICS_EXPORT foeCollisionShapePool {
   public:
     foeCollisionShapePool(foeResourceFns const &resourceFns);
     ~foeCollisionShapePool();

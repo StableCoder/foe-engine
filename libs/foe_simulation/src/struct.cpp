@@ -16,7 +16,6 @@
 
 #include <foe/simulation/type_defs.h>
 
-#include <foe/simulation/core/pool.hpp>
 #include <foe/simulation/simulation.hpp>
 
 extern "C" void *foeSimulationGetResourcePool(foeSimulationState const *pSimulationState,
@@ -25,8 +24,8 @@ extern "C" void *foeSimulationGetResourcePool(foeSimulationState const *pSimulat
     auto *pEndIt = pIt + pSimulationState->resourcePools.size();
 
     for (; pIt != pEndIt; ++pIt) {
-        if (*pIt != nullptr && (*pIt)->sType == sType) {
-            return (void *)*pIt;
+        if (pIt->sType == sType) {
+            return (void *)pIt->pResourcePool;
         }
     }
 

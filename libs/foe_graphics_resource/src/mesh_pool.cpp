@@ -19,9 +19,7 @@
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/resource/type_defs.h>
 
-foeMeshPool::foeMeshPool(foeResourceFns const &resourceFns) :
-    foeResourcePoolBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL},
-    mResourceFns{resourceFns} {}
+foeMeshPool::foeMeshPool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 
 foeMeshPool::~foeMeshPool() {
     for (auto *pResource : mResources) {

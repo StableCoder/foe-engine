@@ -71,6 +71,12 @@ struct foeSimulationLoaderData {
     void (*pGfxMaintenanceFn)(void *);
 };
 
+struct foeSimulationResourcePoolData {
+    foeSimulationStructureType sType;
+    size_t refCount;
+    void *pResourcePool;
+};
+
 struct foeSimulationComponentPoolData {
     foeSimulationStructureType sType;
     size_t refCount;
@@ -113,7 +119,7 @@ struct foeSimulationState {
     // Resource Data
     foeEditorNameMap *pResourceNameMap;
     std::vector<foeSimulationLoaderData> resourceLoaders;
-    std::vector<foeResourcePoolBase *> resourcePools;
+    std::vector<foeSimulationResourcePoolData> resourcePools;
 
     // Entity / Component Data
     foeEditorNameMap *pEntityNameMap;
@@ -249,6 +255,14 @@ FOE_SIM_EXPORT auto foeSimulationInsertResourceLoader(foeSimulationState *pSimul
 FOE_SIM_EXPORT auto foeSimulationReleaseResourceLoader(foeSimulationState *pSimulationState,
                                                        foeSimulationStructureType sType,
                                                        void **ppLoader) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationInsertResourcePool(
+    foeSimulationState *pSimulationState, foeSimulationResourcePoolData const *pCreateInfo)
+    -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationReleaseResourcePool(foeSimulationState *pSimulationState,
+                                                     foeSimulationStructureType sType,
+                                                     void **ppPool) -> std::error_code;
 
 FOE_SIM_EXPORT auto foeSimulationInsertComponentPool(
     foeSimulationState *pSimulationState, foeSimulationComponentPoolData const *pCreateInfo)
