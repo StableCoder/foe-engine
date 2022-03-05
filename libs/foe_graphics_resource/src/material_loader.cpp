@@ -65,9 +65,6 @@ foeMaterialCreateInfo::~foeMaterialCreateInfo() {
         cleanup_VkPipelineRasterizationStateCreateInfo(&rasterizationSCI);
 }
 
-foeMaterialLoader::foeMaterialLoader() :
-    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER} {}
-
 auto foeMaterialLoader::initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool)
     -> std::error_code {
     if (pShaderPool == nullptr || pImagePool == nullptr)

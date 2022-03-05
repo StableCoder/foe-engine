@@ -26,15 +26,7 @@
 struct foeResourceCreateInfoBase;
 
 struct foeResourceLoaderBase {
-    foeResourceLoaderBase(foeSimulationStructureType sType) :
-        sType{sType}, pNext{nullptr}, refCount{0}, initCount{0}, gfxInitCount{0} {}
     virtual ~foeResourceLoaderBase() {}
-
-    foeSimulationStructureType sType;
-    void *pNext;
-    size_t refCount;
-    size_t initCount;
-    size_t gfxInitCount;
 };
 
 #endif // FOE_SIMULATION_CORE_LOADER_HPP

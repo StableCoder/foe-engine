@@ -23,9 +23,6 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
-foeArmatureLoader::foeArmatureLoader() :
-    foeResourceLoaderBase{FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER} {}
-
 std::error_code foeArmatureLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     std::error_code errC;

@@ -34,7 +34,6 @@ struct foeCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
 
 class FOE_PHYSICS_EXPORT foeCollisionShapeLoader : public foeResourceLoaderBase {
   public:
-    foeCollisionShapeLoader();
     ~foeCollisionShapeLoader();
 
     std::error_code initialize();

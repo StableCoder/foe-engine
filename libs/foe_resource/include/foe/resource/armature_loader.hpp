@@ -41,8 +41,6 @@ struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
 
 class FOE_RES_EXPORT foeArmatureLoader : public foeResourceLoaderBase {
   public:
-    foeArmatureLoader();
-
     std::error_code initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();

@@ -26,9 +26,6 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
-foeImageLoader::foeImageLoader() :
-    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER} {}
-
 std::error_code foeImageLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (!externalFileSearchFn)

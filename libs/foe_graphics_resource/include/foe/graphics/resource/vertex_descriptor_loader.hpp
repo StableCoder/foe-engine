@@ -42,8 +42,6 @@ class foeShaderPool;
 
 class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader : public foeResourceLoaderBase {
   public:
-    foeVertexDescriptorLoader();
-
     std::error_code initialize(foeShaderPool *pShaderPool);
     void deinitialize();
     bool initialized() const noexcept;

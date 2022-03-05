@@ -65,6 +65,9 @@ void collisionShapeLoadFn(void *pContext,
 }
 
 bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+    std::error_code errC;
+    size_t count;
+
     // Systems
     for (auto &pSystem : pSimulationState->systems) {
         if (pSystem == nullptr)
@@ -91,15 +94,27 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
     }
 
     // Loaders
-    for (auto &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader == nullptr)
-            continue;
-
-        if ((pSelection == nullptr || pSelection->collisionShapeLoader) &&
-            it.pLoader->sType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER &&
-            --it.pLoader->refCount == 0) {
-            delete (foeCollisionShapeLoader *)it.pLoader;
-            it.pLoader = nullptr;
+    if (pSelection == nullptr || pSelection->collisionShapeLoader) {
+        errC = foeSimulationDecrementRefCount(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, &count);
+        if (errC) {
+            // Trying to destroy something that doesn't exist? Not optimal
+            FOE_LOG(
+                foePhysics, Warning,
+                "Attempted to decrement/destroy foeCollisionShapeLoader that doesn't exist - {}",
+                errC.message());
+        } else if (count == 0) {
+            foeCollisionShapeLoader *pLoader;
+            errC = foeSimulationReleaseResourceLoader(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER,
+                (void **)&pLoader);
+            if (errC) {
+                FOE_LOG(foePhysics, Warning,
+                        "Could not release foeCollisionShapeLoader to destroy - {}",
+                        errC.message());
+            } else {
+                delete pLoader;
+            }
         }
     }
 
@@ -122,6 +137,8 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
 }
 
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
+    std::error_code errC;
+    size_t count;
     TypeSelection selection = {};
 
     // Resources
@@ -145,27 +162,37 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     }
 
     // Loaders
-    if (auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-        pLoader) {
-        ++pLoader->refCount;
-        selection.collisionShapeLoader = true;
-    } else {
-        pLoader = new foeCollisionShapeLoader;
-        ++pLoader->refCount;
-        pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
-            .pLoader = pLoader,
+    if (foeSimulationIncrementRefCount(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, nullptr)) {
+        // Couldn't incement it, doesn't exist yet
+        foeSimulationLoaderData loaderCI{
+            .sType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER,
+            .pLoader = new foeCollisionShapeLoader,
             .pCanProcessCreateInfoFn = foeCollisionShapeLoader::canProcessCreateInfo,
             .pLoadFn = foeCollisionShapeLoader::load,
             .pMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
-                    auto *pCollisionShapeLoader =
-                        reinterpret_cast<foeCollisionShapeLoader *>(pLoader);
-                    pCollisionShapeLoader->maintenance();
+                    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();
                 },
-        });
-        selection.collisionShapeLoader = true;
+        };
+        errC = foeSimulationInsertResourceLoader(pSimulationState, &loaderCI);
+        if (errC) {
+            delete (foeCollisionShapeLoader *)loaderCI.pLoader;
+            FOE_LOG(
+                foePhysics, Error,
+                "onCreate - Failed to create foeCollisionShapeLoader on Simulation {} due to {}",
+                (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        if (foeSimulationIncrementRefCount(
+                pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, nullptr)) {
+            FOE_LOG(foePhysics, Error,
+                    "onCreate - Failed to increment newly created foeCollisionShapeLoader on "
+                    "Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+        }
     }
+    selection.collisionShapeLoader = true;
 
     // Components
     if (auto *pPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
@@ -193,15 +220,21 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
         selection.physicsSystem = true;
     }
 
-    return {};
+CREATE_FAILED:
+    if (errC)
+        destroySelection(pSimulationState, &selection);
+
+    return errC;
 }
 
 bool destroy(foeSimulationState *pSimulationState) {
     return destroySelection(pSimulationState, nullptr);
 }
 
-bool deinitializeSelection(foeSimulationState const *pSimulationState,
-                           TypeSelection const *pSelection) {
+bool deinitializeSelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+    std::error_code errC;
+    size_t count;
+
     // Systems
     if (pSelection == nullptr || pSelection->physicsSystem) {
         auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
@@ -213,9 +246,16 @@ bool deinitializeSelection(foeSimulationState const *pSimulationState,
 
     // Loaders
     if (pSelection == nullptr || pSelection->collisionShapeLoader) {
-        if (auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
+        errC = foeSimulationDecrementInitCount(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, &count);
+        if (errC) {
+            FOE_LOG(foePhysics, Warning,
+                    "Failed to decrement foeArmatureLoader initialization count on Simulation {} "
+                    "with error {}",
+                    (void *)pSimulationState, errC.message());
+        } else if (count == 0) {
+            auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
                 pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-            pLoader != nullptr && --pLoader->initCount == 0) {
             pLoader->deinitialize();
         }
     }
@@ -226,19 +266,30 @@ bool deinitializeSelection(foeSimulationState const *pSimulationState,
 auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
     -> std::error_code {
     std::error_code errC;
+    size_t count;
     TypeSelection selection{};
 
     // Loaders
-    if (auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-        pCollisionShapeLoader) {
-        if (!pCollisionShapeLoader->initialized()) {
-            errC = pCollisionShapeLoader->initialize();
-            if (errC)
-                goto INITIALIZATION_FAILED;
-        }
-        ++pCollisionShapeLoader->initCount;
+    errC =
+        foeSimulationIncrementInitCount((foeSimulationState *)pSimulationState,
+                                        FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, &count);
+    if (errC) {
+        FOE_LOG(foePhysics, Error,
+                "Failed to increment foeArmatureLoader initialization count on Simulation {} with "
+                "error {}",
+                (void *)pSimulationState, errC.message());
+        goto INITIALIZATION_FAILED;
+    } else if (count == 1) {
         selection.collisionShapeLoader = true;
+        auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
+            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
+        errC = pLoader->initialize();
+        if (errC) {
+            FOE_LOG(foePhysics, Error,
+                    "Failed to initialize foeArmatureLoader on Simulation {} with error {}",
+                    (void *)pSimulationState, errC.message());
+            goto INITIALIZATION_FAILED;
+        }
     }
 
     // Systems

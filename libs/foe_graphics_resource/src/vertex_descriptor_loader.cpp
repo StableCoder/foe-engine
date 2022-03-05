@@ -46,9 +46,6 @@ foeResourceState getWorstSubResourceState(SubResource *pSubResource,
 
 } // namespace
 
-foeVertexDescriptorLoader::foeVertexDescriptorLoader() :
-    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER} {}
-
 std::error_code foeVertexDescriptorLoader::initialize(foeShaderPool *pShaderPool) {
     if (pShaderPool == nullptr) {
         return FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_LOADER_INITIALIZATION_FAILED;

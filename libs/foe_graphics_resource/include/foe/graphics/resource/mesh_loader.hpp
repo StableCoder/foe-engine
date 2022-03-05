@@ -54,8 +54,6 @@ struct foeMeshCreateInfo : public foeResourceCreateInfoBase {
 
 class FOE_GFX_RES_EXPORT foeMeshLoader : public foeResourceLoaderBase {
   public:
-    foeMeshLoader();
-
     auto initialize(
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
         -> std::error_code;

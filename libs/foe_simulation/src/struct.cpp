@@ -42,8 +42,8 @@ extern "C" void *foeSimulationGetResourceLoader(foeSimulationState const *pSimul
     auto *pEndIt = pIt + pSimulationState->resourceLoaders.size();
 
     for (; pIt != pEndIt; ++pIt) {
-        if ((*pIt).pLoader != nullptr && (*pIt).pLoader->sType == sType) {
-            return (void *)(*pIt).pLoader;
+        if (pIt->sType == sType) {
+            return (void *)pIt->pLoader;
         }
     }
 

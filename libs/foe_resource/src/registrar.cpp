@@ -56,17 +56,31 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
 }
 
 bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
-    // Loaders
-    for (auto &it : pSimulationState->resourceLoaders) {
-        if (it.pLoader == nullptr)
-            continue;
+    std::error_code errC;
+    size_t count;
+    bool cleanRun = true;
 
-        if ((pSelection == nullptr || pSelection->armatureLoader) &&
-            it.pLoader->sType == FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER &&
-            --it.pLoader->refCount == 0) {
-            delete (foeArmatureLoader *)it.pLoader;
-            it.pLoader = nullptr;
-            continue;
+    // Loaders
+    if (pSelection == nullptr || pSelection->armatureLoader) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+        if (errC) {
+            // Trying to destroy something that doesn't exist? Not optimal
+            FOE_LOG(foeResource, Warning,
+                    "Attempted to decrement/destroy ArmatureLoader that doesn't exist - {}",
+                    errC.message());
+            cleanRun = false;
+        } else if (count == 0) {
+            foeArmatureLoader *pLoader;
+            errC = foeSimulationReleaseResourceLoader(
+                pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER, (void **)&pLoader);
+            if (errC) {
+                FOE_LOG(foeResource, Warning, "Could not release ArmatureLoader to destroy - {}",
+                        errC.message());
+                cleanRun = false;
+            } else {
+                delete pLoader;
+            }
         }
     }
 
@@ -85,10 +99,11 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
         }
     }
 
-    return true;
+    return cleanRun;
 }
 
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
+    std::error_code errC;
     TypeSelection selected = {};
 
     // Resources
@@ -115,63 +130,92 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     }
 
     // Loaders
-    if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
-            pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
-        pLoader) {
-        ++pLoader->refCount;
-        selected.armatureLoader = true;
-    } else {
-        pLoader = new foeArmatureLoader;
-        ++pLoader->refCount;
-        pSimulationState->resourceLoaders.emplace_back(foeSimulationLoaderData{
-            .pLoader = pLoader,
+    if (foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER, nullptr)) {
+        // Couldn't incement it, doesn't exist yet
+        foeSimulationLoaderData loaderCI{
+            .sType = FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER,
+            .pLoader = new foeArmatureLoader,
             .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
             .pLoadFn = foeArmatureLoader::load,
             .pMaintenanceFn =
                 [](foeResourceLoaderBase *pLoader) {
-                    auto *pArmatureLoader = reinterpret_cast<foeArmatureLoader *>(pLoader);
-                    pArmatureLoader->maintenance();
+                    reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
                 },
-        });
-        selected.armatureLoader = true;
+        };
+        errC = foeSimulationInsertResourceLoader(pSimulationState, &loaderCI);
+        if (errC) {
+            delete (foeArmatureLoader *)loaderCI.pLoader;
+            FOE_LOG(foeResource, Error,
+                    "onCreate - Failed to create foeArmatureLoader on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState,
+                                       FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER, nullptr);
     }
+    selected.armatureLoader = true;
 
-    return FOE_RESOURCE_SUCCESS;
+CREATE_FAILED:
+    if (errC)
+        destroySelected(pSimulationState, &selected);
+
+    return errC;
 }
 
 bool destroy(foeSimulationState *pSimulationState) {
     return destroySelected(pSimulationState, nullptr);
 }
 
-bool deinitializeSelected(foeSimulationState const *pSimulationState,
-                          TypeSelection const *pSelection) {
+bool deinitializeSelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+    size_t count;
+    bool cleanRun = true;
+
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
-        if (auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+        auto errC = foeSimulationDecrementInitCount(
+            pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+        if (errC) {
+            FOE_LOG(foeResource, Warning,
+                    "Failed to decrement foeArmatureLoader initialization count on Simulation {} "
+                    "with error {}",
+                    (void *)pSimulationState, errC.message());
+            cleanRun = false;
+        } else if (count == 0) {
+            auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
                 pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
-            pLoader != nullptr && --pLoader->initCount == 0) {
             pLoader->deinitialize();
         }
     }
 
-    return true;
+    return cleanRun;
 }
 
 std::error_code initialize(foeSimulationState *pSimulation,
                            foeSimulationInitInfo const *pInitInfo) {
     TypeSelection selection = {};
     std::error_code errC;
+    size_t count;
 
     // Loaders
-    if (auto *pArmatureLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+    errC = foeSimulationIncrementInitCount(pSimulation, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER,
+                                           &count);
+    if (errC) {
+        FOE_LOG(foeResource, Error,
+                "Failed to increment foeArmatureLoader initialization count on Simulation {} with "
+                "error {}",
+                (void *)pSimulation, errC.message());
+        goto INITIALIZATION_FAILED;
+    } else if (count == 1) {
+        selection.armatureLoader = true;
+        auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
-        pArmatureLoader) {
-        ++pArmatureLoader->initCount;
-        if (!pArmatureLoader->initialized()) {
-            errC = pArmatureLoader->initialize(pInitInfo->externalFileSearchFn);
-            if (errC)
-                goto INITIALIZATION_FAILED;
-            selection.armatureLoader = true;
+        errC = pLoader->initialize(pInitInfo->externalFileSearchFn);
+        if (errC) {
+            FOE_LOG(foeResource, Error,
+                    "Failed to initialize foeArmatureLoader on Simulation {} with error {}",
+                    (void *)pSimulation, errC.message());
+            goto INITIALIZATION_FAILED;
         }
     }
 

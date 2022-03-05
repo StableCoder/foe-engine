@@ -23,9 +23,6 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
-foeCollisionShapeLoader::foeCollisionShapeLoader() :
-    foeResourceLoaderBase{FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER} {}
-
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 
 std::error_code foeCollisionShapeLoader::initialize() {

@@ -48,8 +48,6 @@ struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo : public foeResourceCreateInfoBa
 
 class FOE_GFX_RES_EXPORT foeMaterialLoader : public foeResourceLoaderBase {
   public:
-    foeMaterialLoader();
-
     auto initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;

@@ -484,3 +484,188 @@ auto foeDeinitializeSimulationGraphics(foeSimulationState *pSimulationState) -> 
     deinitializeSimulationGraphics(pSimulationState);
     return FOE_SIMULATION_SUCCESS;
 }
+
+auto foeSimulationGetRefCount(foeSimulationState const *pSimulationState,
+                              foeSimulationStructureType sType,
+                              size_t *pRefCount) -> std::error_code {
+    // Resource Loaders
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            *pRefCount = it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationIncrementRefCount(foeSimulationState *pSimulationState,
+                                    foeSimulationStructureType sType,
+                                    size_t *pRefCount) -> std::error_code {
+    // Resource Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pRefCount != nullptr)
+                *pRefCount = ++it.refCount;
+            else
+                ++it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationDecrementRefCount(foeSimulationState *pSimulationState,
+                                    foeSimulationStructureType sType,
+                                    size_t *pRefCount) -> std::error_code {
+    // Resource Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pRefCount != nullptr)
+                *pRefCount = --it.refCount;
+            else
+                --it.refCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationGetInitCount(foeSimulationState const *pSimulationState,
+                               foeSimulationStructureType sType,
+                               size_t *pInitCount) -> std::error_code {
+    // Resource Loaders
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            *pInitCount = it.initCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationIncrementInitCount(foeSimulationState *pSimulationState,
+                                     foeSimulationStructureType sType,
+                                     size_t *pInitCount) -> std::error_code {
+    // Resource Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = ++it.initCount;
+            else
+                ++it.initCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationDecrementInitCount(foeSimulationState *pSimulationState,
+                                     foeSimulationStructureType sType,
+                                     size_t *pInitCount) -> std::error_code {
+    // Resource Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = --it.initCount;
+            else
+                --it.initCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationGetGfxInitCount(foeSimulationState const *pSimulationState,
+                                  foeSimulationStructureType sType,
+                                  size_t *pGfxInitCount) -> std::error_code {
+    // Resource Loaders
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            *pGfxInitCount = it.gfxInitCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationIncrementGfxInitCount(foeSimulationState *pSimulationState,
+                                        foeSimulationStructureType sType,
+                                        size_t *pGfxInitCount) -> std::error_code {
+    // Resource Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pGfxInitCount != nullptr)
+                *pGfxInitCount = ++it.gfxInitCount;
+            else
+                ++it.gfxInitCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationDecrementGfxInitCount(foeSimulationState *pSimulationState,
+                                        foeSimulationStructureType sType,
+                                        size_t *pGfxInitCount) -> std::error_code {
+    // Resource Loaders
+    for (auto &it : pSimulationState->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pGfxInitCount != nullptr)
+                *pGfxInitCount = --it.gfxInitCount;
+            else
+                --it.gfxInitCount;
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}
+
+auto foeSimulationInsertResourceLoader(foeSimulationState *pSimulationState,
+                                       foeSimulationLoaderData const *pCreateInfo)
+    -> std::error_code {
+    // Make sure the type doesn't exist yet
+    if (foeSimulationGetResourcePool(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetResourceLoader(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetSystem(pSimulationState, pCreateInfo->sType) != nullptr ||
+        foeSimulationGetComponentPool(pSimulationState, pCreateInfo->sType) != nullptr) {
+        return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
+    }
+
+    pSimulationState->resourceLoaders.emplace_back(*pCreateInfo);
+
+    return FOE_SIMULATION_SUCCESS;
+}
+
+auto foeSimulationReleaseResourceLoader(foeSimulationState *pSimulationState,
+                                        foeSimulationStructureType sType,
+                                        void **ppLoader) -> std::error_code {
+    auto const endIt = pSimulationState->resourceLoaders.end();
+    for (auto it = pSimulationState->resourceLoaders.begin(); it != endIt; ++it) {
+        if (it->sType == sType) {
+            *ppLoader = it->pLoader;
+            pSimulationState->resourceLoaders.erase(it);
+
+            return FOE_SIMULATION_SUCCESS;
+        }
+    }
+
+    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+}

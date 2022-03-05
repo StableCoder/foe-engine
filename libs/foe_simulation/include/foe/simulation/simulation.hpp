@@ -21,6 +21,7 @@
 #include <foe/graphics/session.hpp>
 #include <foe/simulation/export.h>
 #include <foe/simulation/group_data.hpp>
+#include <foe/simulation/type_defs.h>
 
 #include <filesystem>
 #include <functional>
@@ -51,6 +52,10 @@ struct foeSimulationInitInfo {
 };
 
 struct foeSimulationLoaderData {
+    foeSimulationStructureType sType;
+    size_t refCount;
+    size_t initCount;
+    size_t gfxInitCount;
     /// The loader itself
     foeResourceLoaderBase *pLoader;
     /// Function that returns whether the loader can process a given ResourceCreateInfo type
@@ -185,5 +190,49 @@ FOE_SIM_EXPORT auto foeInitializeSimulationGraphics(foeSimulationState *pSimulat
  */
 FOE_SIM_EXPORT auto foeDeinitializeSimulationGraphics(foeSimulationState *pSimulationState)
     -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationGetRefCount(foeSimulationState const *pSimulationState,
+                                             foeSimulationStructureType sType,
+                                             size_t *pRefCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationIncrementRefCount(foeSimulationState *pSimulationState,
+                                                   foeSimulationStructureType sType,
+                                                   size_t *pRefCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationDecrementRefCount(foeSimulationState *pSimulationState,
+                                                   foeSimulationStructureType sType,
+                                                   size_t *pRefCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationGetInitCount(foeSimulationState const *pSimulationState,
+                                              foeSimulationStructureType sType,
+                                              size_t *pInitCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationIncrementInitCount(foeSimulationState *pSimulationState,
+                                                    foeSimulationStructureType sType,
+                                                    size_t *pInitCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationDecrementInitCount(foeSimulationState *pSimulationState,
+                                                    foeSimulationStructureType sType,
+                                                    size_t *pInitCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationGetGfxInitCount(foeSimulationState const *pSimulationState,
+                                                 foeSimulationStructureType sType,
+                                                 size_t *pGfxInitCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationIncrementGfxInitCount(foeSimulationState *pSimulationState,
+                                                       foeSimulationStructureType sType,
+                                                       size_t *pGfxInitCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationDecrementGfxInitCount(foeSimulationState *pSimulationState,
+                                                       foeSimulationStructureType sType,
+                                                       size_t *pGfxInitCount) -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationInsertResourceLoader(foeSimulationState *pSimulationState,
+                                                      foeSimulationLoaderData const *pCreateInfo)
+    -> std::error_code;
+
+FOE_SIM_EXPORT auto foeSimulationReleaseResourceLoader(foeSimulationState *pSimulationState,
+                                                       foeSimulationStructureType sType,
+                                                       void **ppLoader) -> std::error_code;
 
 #endif // FOE_SIMULATION_CORE_HPP

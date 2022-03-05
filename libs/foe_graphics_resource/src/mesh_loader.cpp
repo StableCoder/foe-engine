@@ -29,9 +29,6 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
-foeMeshLoader::foeMeshLoader() :
-    foeResourceLoaderBase{FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER} {}
-
 auto foeMeshLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
     -> std::error_code {
