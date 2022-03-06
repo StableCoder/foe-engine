@@ -20,6 +20,7 @@
 #include <foe/graphics/session.hpp>
 #include <foe/simulation/export.h>
 
+#include <cstddef>
 #include <system_error>
 
 struct foeSimulationState;
@@ -29,19 +30,19 @@ typedef int foeSimulationUUID;
 
 typedef std::error_code (*PFN_foeSimulationCreate)(foeSimulationState *);
 
-/// @return True if the function ran without issue. False otherwise.
-typedef bool (*PFN_foeSimulationDestroy)(foeSimulationState *);
+/// @return Number of warnings/errors the occurred during the call.
+typedef size_t (*PFN_foeSimulationDestroy)(foeSimulationState *);
 
 typedef std::error_code (*PFN_foeSimulationInitialize)(foeSimulationState *,
                                                        foeSimulationInitInfo const *);
 
-/// @return True if the function ran without issue. False otherwise.
-typedef bool (*PFN_foeSimulationDeinitialize)(foeSimulationState *);
+/// @return Number of warnings/errors the occurred during the call.
+typedef size_t (*PFN_foeSimulationDeinitialize)(foeSimulationState *);
 
 typedef std::error_code (*PFN_foeSimulationInitializeGraphics)(foeSimulationState *, foeGfxSession);
 
-/// @return True if the function ran without issue. False otherwise.
-typedef bool (*PFN_foeSimulationDeinitializeGraphics)(foeSimulationState *);
+/// @return Number of warnings/errors the occurred during the call.
+typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulationState *);
 
 struct foeSimulationFunctionalty {
     /// The UUID of the functionality, must be valid/derived from the

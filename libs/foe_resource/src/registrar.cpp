@@ -55,10 +55,10 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
     pPostLoadFn(pResource, FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
-bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+size_t destroySelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     std::error_code errC;
     size_t count;
-    bool cleanRun = true;
+    size_t errors = 0;
 
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
@@ -69,7 +69,7 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
             FOE_LOG(foeResource, Warning,
                     "Attempted to decrement/destroy foeArmatureLoader that doesn't exist - {}",
                     errC.message());
-            cleanRun = false;
+            ++errors;
         } else if (count == 0) {
             foeArmatureLoader *pLoader;
             errC = foeSimulationReleaseResourceLoader(
@@ -77,7 +77,7 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
             if (errC) {
                 FOE_LOG(foeResource, Warning, "Could not release foeArmatureLoader to destroy - {}",
                         errC.message());
-                cleanRun = false;
+                ++errors;
             } else {
                 delete pLoader;
             }
@@ -93,7 +93,7 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
             FOE_LOG(foeResource, Warning,
                     "Attempted to decrement/destroy foeArmaturePool that doesn't exist - {}",
                     errC.message());
-            cleanRun = false;
+            ++errors;
         } else if (count == 0) {
             foeArmaturePool *pItem;
             errC = foeSimulationReleaseResourcePool(
@@ -101,14 +101,14 @@ bool destroySelected(foeSimulationState *pSimulationState, TypeSelection const *
             if (errC) {
                 FOE_LOG(foeResource, Warning, "Could not release foeArmaturePool to destroy - {}",
                         errC.message());
-                cleanRun = false;
+                ++errors;
             } else {
                 delete pItem;
             }
         }
     }
 
-    return cleanRun;
+    return errors;
 }
 
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
@@ -168,19 +168,23 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     selected.armatureLoader = true;
 
 CREATE_FAILED:
-    if (errC)
-        destroySelected(pSimulationState, &selected);
+    if (errC) {
+        size_t errors = destroySelected(pSimulationState, &selected);
+        if (errors > 0)
+            FOE_LOG(foeResource, Warning,
+                    "Encountered {} issues while destroying after failed creation.", errors);
+    }
 
     return errC;
 }
 
-bool destroy(foeSimulationState *pSimulationState) {
+size_t destroy(foeSimulationState *pSimulationState) {
     return destroySelected(pSimulationState, nullptr);
 }
 
-bool deinitializeSelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+size_t deinitializeSelected(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     size_t count;
-    bool cleanRun = true;
+    size_t errors = 0;
 
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
@@ -191,7 +195,7 @@ bool deinitializeSelected(foeSimulationState *pSimulationState, TypeSelection co
                     "Failed to decrement foeArmatureLoader initialization count on Simulation {} "
                     "with error {}",
                     (void *)pSimulationState, errC.message());
-            cleanRun = false;
+            ++errors;
         } else if (count == 0) {
             auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
                 pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
@@ -199,7 +203,7 @@ bool deinitializeSelected(foeSimulationState *pSimulationState, TypeSelection co
         }
     }
 
-    return cleanRun;
+    return errors;
 }
 
 std::error_code initialize(foeSimulationState *pSimulation,
@@ -232,13 +236,16 @@ std::error_code initialize(foeSimulationState *pSimulation,
 
 INITIALIZATION_FAILED:
     if (errC) {
-        deinitializeSelected(pSimulation, &selection);
+        size_t errors = deinitializeSelected(pSimulation, &selection);
+        if (errors > 0)
+            FOE_LOG(foeResource, Warning,
+                    "Encountered {} issues deinitializing after failed initialization", errors);
     }
 
     return errC;
 }
 
-bool deinitialize(foeSimulationState *pSimulationState) {
+size_t deinitialize(foeSimulationState *pSimulationState) {
     return deinitializeSelected(pSimulationState, nullptr);
 }
 

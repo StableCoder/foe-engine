@@ -25,8 +25,6 @@
 
 namespace {
 
-bool destroy(foeSimulationState *);
-
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
     std::error_code errC;
 
@@ -55,20 +53,19 @@ CREATE_FAILED:
     return errC;
 }
 
-bool destroy(foeSimulationState *pSimulationState) {
-    std::error_code errC;
+size_t destroy(foeSimulationState *pSimulationState) {
     size_t count;
-    bool cleanRun = true;
+    size_t errors = 0;
 
     // Component Pools
-    errC = foeSimulationDecrementRefCount(pSimulationState,
-                                          FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, &count);
+    std::error_code errC = foeSimulationDecrementRefCount(
+        pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, &count);
     if (errC) {
         // Trying to destroy something that doesn't exist? Not optimal
         FOE_LOG(foePosition, Warning,
                 "Attempted to decrement/destroy foePosition3dPool that doesn't exist - {}",
                 errC.message());
-        cleanRun = false;
+        ++errors;
     } else if (count == 0) {
         foePosition3dPool *pData;
         errC = foeSimulationReleaseComponentPool(
@@ -76,13 +73,13 @@ bool destroy(foeSimulationState *pSimulationState) {
         if (errC) {
             FOE_LOG(foePosition, Warning, "Could not release foePosition3dPool to destroy - {}",
                     errC.message());
-            cleanRun = false;
+            ++errors;
         } else {
             delete pData;
         }
     }
 
-    return cleanRun;
+    return errors;
 }
 
 } // namespace

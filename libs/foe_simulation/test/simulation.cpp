@@ -22,7 +22,7 @@
 
 namespace {
 std::error_code pCreateFn(foeSimulationState *) { return {}; }
-bool pDestroyFn(foeSimulationState *) { return true; }
+size_t pDestroyFn(foeSimulationState *) { return 0; }
 } // namespace
 
 constexpr foeSimulationUUID cTestFunctionalityID = FOE_SIMULATION_FUNCTIONALITY_ID(0);

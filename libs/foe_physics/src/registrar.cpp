@@ -64,10 +64,10 @@ void collisionShapeLoadFn(void *pContext,
     pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
 }
 
-bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+size_t destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     std::error_code errC;
     size_t count;
-    bool issues = false;
+    size_t errors = 0;
 
     // Systems
     if (pSelection == nullptr || pSelection->physicsSystem) {
@@ -77,7 +77,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
             FOE_LOG(foePhysics, Warning,
                     "Attempted to decrement/destroy foePhysicsSystem that doesn't exist - {}",
                     errC.message());
-            issues = true;
+            ++errors;
         } else if (count == 0) {
             foePhysicsSystem *pData;
             errC = foeSimulationReleaseSystem(
@@ -85,7 +85,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
             if (errC) {
                 FOE_LOG(foePhysics, Warning, "Could not release foePhysicsSystem to destroy - {}",
                         errC.message());
-                issues = true;
+                ++errors;
             } else {
                 delete pData;
             }
@@ -100,7 +100,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
             FOE_LOG(foePhysics, Warning,
                     "Attempted to decrement/destroy foeRigidBodyPool that doesn't exist - {}",
                     errC.message());
-            issues = true;
+            ++errors;
         } else if (count == 0) {
             foeRigidBodyPool *pData;
             errC = foeSimulationReleaseComponentPool(
@@ -108,7 +108,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
             if (errC) {
                 FOE_LOG(foePhysics, Warning, "Could not release foeRigidBodyPool to destroy - {}",
                         errC.message());
-                issues = true;
+                ++errors;
             } else {
                 delete pData;
             }
@@ -125,7 +125,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
                 foePhysics, Warning,
                 "Attempted to decrement/destroy foeCollisionShapeLoader that doesn't exist - {}",
                 errC.message());
-            issues = true;
+            ++errors;
         } else if (count == 0) {
             foeCollisionShapeLoader *pLoader;
             errC = foeSimulationReleaseResourceLoader(
@@ -135,7 +135,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
                 FOE_LOG(foePhysics, Warning,
                         "Could not release foeCollisionShapeLoader to destroy - {}",
                         errC.message());
-                issues = true;
+                ++errors;
             } else {
                 delete pLoader;
             }
@@ -151,7 +151,7 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
             FOE_LOG(foePhysics, Warning,
                     "Attempted to decrement/destroy foeCollisionShapePool that doesn't exist - {}",
                     errC.message());
-            issues = true;
+            ++errors;
         } else if (count == 0) {
             foeCollisionShapePool *pItem;
             errC = foeSimulationReleaseResourcePool(
@@ -159,14 +159,14 @@ bool destroySelection(foeSimulationState *pSimulationState, TypeSelection const 
             if (errC) {
                 FOE_LOG(foePhysics, Warning,
                         "Could not release foeCollisionShapePool to destroy - {}", errC.message());
-                issues = true;
+                ++errors;
             } else {
                 delete pItem;
             }
         }
     }
 
-    return !issues;
+    return errors;
 }
 
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
@@ -275,19 +275,25 @@ auto create(foeSimulationState *pSimulationState) -> std::error_code {
     selection.physicsSystem = true;
 
 CREATE_FAILED:
-    if (errC)
-        destroySelection(pSimulationState, &selection);
+    if (errC) {
+        size_t errors = destroySelection(pSimulationState, &selection);
+        if (errors > 0)
+            FOE_LOG(foePhysics, Warning, "Encountered {} issues destroying after failed creation.",
+                    errors);
+    }
 
     return errC;
 }
 
-bool destroy(foeSimulationState *pSimulationState) {
+size_t destroy(foeSimulationState *pSimulationState) {
     return destroySelection(pSimulationState, nullptr);
 }
 
-bool deinitializeSelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
+size_t deinitializeSelection(foeSimulationState *pSimulationState,
+                             TypeSelection const *pSelection) {
     std::error_code errC;
     size_t count;
+    size_t errors = 0;
 
     // Systems
     if (pSelection == nullptr || pSelection->physicsSystem) {
@@ -298,6 +304,7 @@ bool deinitializeSelection(foeSimulationState *pSimulationState, TypeSelection c
                     "Failed to decrement foePhysicsSystem initialization count on Simulation {} "
                     "with error {}",
                     (void *)pSimulationState, errC.message());
+            ++errors;
         } else if (count == 0) {
             auto *pLoader = (foePhysicsSystem *)foeSimulationGetSystem(
                 pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
@@ -315,6 +322,7 @@ bool deinitializeSelection(foeSimulationState *pSimulationState, TypeSelection c
                 "Failed to decrement foeCollisionShapeLoader initialization count on Simulation {} "
                 "with error {}",
                 (void *)pSimulationState, errC.message());
+            ++errors;
         } else if (count == 0) {
             auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
                 pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
@@ -322,7 +330,7 @@ bool deinitializeSelection(foeSimulationState *pSimulationState, TypeSelection c
         }
     }
 
-    return true;
+    return errors;
 }
 
 auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo const *pInitInfo)
@@ -394,13 +402,16 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
 
 INITIALIZATION_FAILED:
     if (errC) {
-        deinitializeSelection(pSimulationState, &selection);
+        size_t errors = deinitializeSelection(pSimulationState, &selection);
+        if (errors > 0)
+            FOE_LOG(foePhysics, Warning,
+                    "Encountered {} issues deinitializing after failed initialization", errors);
     }
 
     return errC;
 }
 
-bool deinitialize(foeSimulationState *pSimulationState) {
+size_t deinitialize(foeSimulationState *pSimulationState) {
     return deinitializeSelection(pSimulationState, nullptr);
 }
 
