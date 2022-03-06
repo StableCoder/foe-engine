@@ -221,8 +221,9 @@ std::error_code initialize(foeSimulationState *pSimulation,
                 "error {}",
                 (void *)pSimulation, errC.message());
         goto INITIALIZATION_FAILED;
-    } else if (count == 1) {
-        selection.armatureLoader = true;
+    }
+    selection.armatureLoader = true;
+    if (count == 1) {
         auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_LOADER);
         errC = pLoader->initialize(pInitInfo->externalFileSearchFn);

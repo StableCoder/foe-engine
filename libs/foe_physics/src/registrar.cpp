@@ -349,8 +349,9 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
                 "error {}",
                 (void *)pSimulationState, errC.message());
         goto INITIALIZATION_FAILED;
-    } else if (count == 1) {
-        selection.collisionShapeLoader = true;
+    }
+    selection.collisionShapeLoader = true;
+    if (count == 1) {
         auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
         errC = pLoader->initialize();
@@ -361,7 +362,6 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
             goto INITIALIZATION_FAILED;
         }
     }
-    selection.collisionShapeLoader = true;
 
     // Systems
     errC = foeSimulationIncrementInitCount(pSimulationState,
@@ -372,18 +372,15 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
                 "error {}",
                 (void *)pSimulationState, errC.message());
         goto INITIALIZATION_FAILED;
-    } else if (count == 1) {
-        selection.physicsSystem = true;
-
+    }
+    selection.physicsSystem = true;
+    if (count == 1) {
         auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-
         auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
-
         auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
             pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
-
         auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
             pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
@@ -398,7 +395,6 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
             goto INITIALIZATION_FAILED;
         }
     }
-    selection.physicsSystem = true;
 
 INITIALIZATION_FAILED:
     if (errC) {
