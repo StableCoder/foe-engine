@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,16 +25,16 @@ struct foeResourceErrCategory : std::error_category {
 
 const char *foeResourceErrCategory::name() const noexcept { return "foeResourceResult"; }
 
+#define RESULT_CASE(X)                                                                             \
+    case X:                                                                                        \
+        return #X;
+
 std::string foeResourceErrCategory::message(int ev) const {
     switch (static_cast<foeResourceResult>(ev)) {
-    case FOE_RESOURCE_SUCCESS:
-        return "FOE_RESOURCE_SUCCESS";
-    case FOE_RESOURCE_ERROR_ALREADY_INITIALIZED:
-        return "FOE_RESOURCE_ERROR_ALREADY_INITIALIZED";
-    case FOE_RESOURCE_ERROR_IMPORT_FAILED:
-        return "FOE_RESOURCE_ERROR_IMPORT_FAILED";
-    case FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER:
-        return "FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER";
+        RESULT_CASE(FOE_RESOURCE_SUCCESS)
+        RESULT_CASE(FOE_RESOURCE_ERROR_ALREADY_INITIALIZED)
+        RESULT_CASE(FOE_RESOURCE_ERROR_IMPORT_FAILED)
+        RESULT_CASE(FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER)
 
     default:
         if (ev > 0)
