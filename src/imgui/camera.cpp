@@ -18,7 +18,7 @@
 
 #include <imgui.h>
 
-#include "../camera.hpp"
+#include "../simulation/camera.hpp"
 
 void imgui_Camera(Camera *pCamera) {
     ImGui::Separator();

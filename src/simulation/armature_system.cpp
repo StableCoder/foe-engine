@@ -19,9 +19,9 @@
 #include <foe/resource/armature.hpp>
 #include <foe/resource/armature_pool.hpp>
 
+#include "../error_code.hpp"
 #include "armature_state.hpp"
 #include "armature_state_pool.hpp"
-#include "error_code.hpp"
 #include "type_defs.h"
 
 namespace {

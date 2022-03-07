@@ -3,15 +3,11 @@ target_sources(foe_engine PRIVATE main.cpp)
 target_sources(
   foe_engine_lib
   PRIVATE application.cpp
-          armature_system.cpp
-          camera_system.cpp
           error_code.cpp
           frame_timer.cpp
           graphics.cpp
           log.cpp
           logging.cpp
-          position_descriptor_pool.cpp
-          vk_animation.cpp
           window.cpp
           #
           render_graph/render_scene.cpp)
@@ -23,8 +19,9 @@ endif()
 # Exception-handled code
 target_sources(
   foe_engine_lib_eh
-  PRIVATE register_basic_functionality.cpp registrar.cpp settings.cpp
+  PRIVATE register_basic_functionality.cpp settings.cpp
           yaml_export_registration.cpp yaml_import_registration.cpp)
 
 add_subdirectory(imgui)
+add_subdirectory(simulation)
 add_subdirectory(state_import)

@@ -34,7 +34,7 @@
 #include <foe/position/yaml/import_registration.hpp>
 #include <foe/resource/yaml/import_registration.hpp>
 
-#include "registrar.hpp"
+#include "simulation/registrar.hpp"
 #include "yaml_export_registration.hpp"
 #include "yaml_import_registration.hpp"
 

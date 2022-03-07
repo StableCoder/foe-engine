@@ -18,7 +18,7 @@
 
 #include <imgui.h>
 
-#include "../armature_state.hpp"
+#include "../simulation/armature_state.hpp"
 
 void imgui_foeArmatureState(foeArmatureState *pArmatureState) {
     ImGui::Separator();

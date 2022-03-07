@@ -21,7 +21,7 @@
 #include <vk_error_code.hpp>
 #include <vulkan/vulkan_core.h>
 
-#include "error_code.hpp"
+#include "../error_code.hpp"
 #include "type_defs.h"
 
 auto PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) -> std::error_code {

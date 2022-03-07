@@ -64,16 +64,16 @@
 #include <foe/wsi/vulkan.h>
 #include <vk_error_code.hpp>
 
-#include "armature_system.hpp"
-#include "camera_pool.hpp"
-#include "camera_system.hpp"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
-#include "position_descriptor_pool.hpp"
 #include "register_basic_functionality.hpp"
-#include "render_state_pool.hpp"
-#include "vk_animation.hpp"
+#include "simulation/armature_system.hpp"
+#include "simulation/camera_pool.hpp"
+#include "simulation/camera_system.hpp"
+#include "simulation/position_descriptor_pool.hpp"
+#include "simulation/render_state_pool.hpp"
+#include "simulation/vk_animation.hpp"
 
 #include "render_graph/render_scene.hpp"
 

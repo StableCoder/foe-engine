@@ -18,9 +18,9 @@
 
 #include <foe/simulation/imgui/registrar.hpp>
 
-#include "../armature_state_pool.hpp"
-#include "../camera_pool.hpp"
-#include "../render_state_pool.hpp"
+#include "../simulation/armature_state_pool.hpp"
+#include "../simulation/camera_pool.hpp"
+#include "../simulation/render_state_pool.hpp"
 #include "armature_state.hpp"
 #include "camera.hpp"
 #include "render_state.hpp"

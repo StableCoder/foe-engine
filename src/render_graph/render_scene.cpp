@@ -32,9 +32,9 @@
 #include <foe/simulation/simulation.hpp>
 #include <vk_error_code.hpp>
 
-#include "../camera_pool.hpp"
 #include "../error_code.hpp"
-#include "../render_state_pool.hpp"
+#include "../simulation/camera_pool.hpp"
+#include "../simulation/render_state_pool.hpp"
 
 namespace {
 

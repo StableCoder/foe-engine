@@ -18,7 +18,7 @@
 
 #include <imgui.h>
 
-#include "../render_state.hpp"
+#include "../simulation/render_state.hpp"
 
 void imgui_foeRenderState(foeRenderState *pComponent) {
     ImGui::Separator();

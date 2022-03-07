@@ -19,7 +19,7 @@
 
 #include <foe/xr/openxr/camera_math.hpp>
 
-#include "camera.hpp"
+#include "simulation/camera.hpp"
 
 struct foeXrCamera : public foeCameraBase {
     // Projection Data

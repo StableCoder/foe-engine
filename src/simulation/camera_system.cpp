@@ -21,9 +21,9 @@
 #include <vk_error_code.hpp>
 #include <vulkan/vulkan_core.h>
 
+#include "../error_code.hpp"
 #include "camera.hpp"
 #include "camera_pool.hpp"
-#include "error_code.hpp"
 #include "type_defs.h"
 
 namespace {

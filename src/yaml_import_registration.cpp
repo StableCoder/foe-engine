@@ -19,13 +19,13 @@
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/yaml/exception.hpp>
 
-#include "armature_state_imex.hpp"
-#include "armature_state_pool.hpp"
-#include "camera_imex.hpp"
-#include "camera_pool.hpp"
 #include "error_code.hpp"
-#include "render_state_imex.hpp"
-#include "render_state_pool.hpp"
+#include "simulation/armature_state_imex.hpp"
+#include "simulation/armature_state_pool.hpp"
+#include "simulation/camera_imex.hpp"
+#include "simulation/camera_pool.hpp"
+#include "simulation/render_state_imex.hpp"
+#include "simulation/render_state_pool.hpp"
 
 namespace {
 
