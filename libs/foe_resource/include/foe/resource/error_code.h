@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,11 +14,21 @@
     limitations under the License.
 */
 
-#ifndef LOG_HPP
-#define LOG_HPP
+#ifndef FOE_RESOURCE_ERROR_CODE_H
+#define FOE_RESOURCE_ERROR_CODE_H
 
-#include <foe/log.hpp>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-FOE_DECLARE_LOG_CATEGORY(foeResourceCore, All, All)
+enum foeResourceResult {
+    FOE_RESOURCE_SUCCESS = 0,
 
-#endif // LOG_HPP
+    FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY,
+};
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_RESOURCE_ERROR_CODE_H

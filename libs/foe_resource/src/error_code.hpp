@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,11 +14,18 @@
     limitations under the License.
 */
 
-#ifndef LOG_HPP
-#define LOG_HPP
+#ifndef ERROR_CODE_HPP
+#define ERROR_CODE_HPP
 
-#include <foe/log.hpp>
+#include <foe/resource/error_code.h>
 
-FOE_DECLARE_LOG_CATEGORY(foeResourceCore, All, All)
+#include <system_error>
 
-#endif // LOG_HPP
+namespace std {
+template <>
+struct is_error_code_enum<foeResourceResult> : true_type {};
+} // namespace std
+
+std::error_code make_error_code(foeResourceResult);
+
+#endif // ERROR_CODE_HPP

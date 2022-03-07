@@ -23,3 +23,8 @@ if(MSVC)
 else()
   target_compile_options(foe_resource PRIVATE -fno-exceptions)
 endif()
+
+# Other
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
