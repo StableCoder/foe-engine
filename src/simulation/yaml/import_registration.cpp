@@ -14,13 +14,14 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/import_registration.hpp>
+#include "import_registration.hpp"
 
 #include <foe/imex/yaml/generator.hpp>
-#include <foe/resource/armature_loader.hpp>
-#include <foe/resource/armature_pool.hpp>
-#include <foe/resource/type_defs.h>
 
+#include "../armature.hpp"
+#include "../armature_loader.hpp"
+#include "../armature_pool.hpp"
+#include "../type_defs.h"
 #include "armature.hpp"
 #include "error_code.hpp"
 
@@ -30,7 +31,7 @@ std::error_code armatureCreateProcessing(foeResourceID resource,
                                          foeResourceCreateInfoBase *pCreateInfo,
                                          foeSimulationState const *pSimulationState) {
     auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
+        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
     if (pArmaturePool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;
@@ -72,14 +73,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeResourceYamlRegisterImporters() -> std::error_code {
+auto foeArmatureYamlRegisterImporters() -> std::error_code {
     return foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foeResourceYamlDeregisterImporters() {
+void foeArmatureYamlDeregisterImporters() {
     foeDeregisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

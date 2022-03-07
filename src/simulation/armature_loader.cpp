@@ -14,14 +14,14 @@
     limitations under the License.
 */
 
-#include <foe/resource/armature_loader.hpp>
+#include "armature_loader.hpp"
 
 #include <foe/model/assimp/importer.hpp>
-#include <foe/resource/armature.hpp>
-#include <foe/resource/type_defs.h>
 
-#include "error_code.hpp"
-#include "log.hpp"
+#include "../error_code.hpp"
+#include "../log.hpp"
+#include "armature.hpp"
+#include "type_defs.h"
 
 std::error_code foeArmatureLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
@@ -134,7 +134,7 @@ void foeArmatureLoader::load(void *pResource,
     auto *pArmatureCreateInfo = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
 
     if (pArmatureCreateInfo == nullptr) {
-        pPostLoadFn(pResource, FOE_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        pPostLoadFn(pResource, FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO);
         return;
     }
 
@@ -145,7 +145,7 @@ void foeArmatureLoader::load(void *pResource,
     };
 
     if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
-        pPostLoadFn(pResource, FOE_RESOURCE_ERROR_IMPORT_FAILED);
+        pPostLoadFn(pResource, FOE_BRINGUP_ERROR_IMPORT_FAILED);
         return;
     }
 

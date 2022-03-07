@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2021 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,23 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_ERROR_CODE_H
-#define FOE_RESOURCE_ERROR_CODE_H
+#ifndef FOE_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
+#define FOE_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <system_error>
 
-enum foeResourceResult {
-    FOE_RESOURCE_SUCCESS = 0,
-    FOE_RESOURCE_ERROR_ALREADY_INITIALIZED,
-    FOE_RESOURCE_ERROR_IMPORT_FAILED,
-    FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER,
-    FOE_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO,
-};
+auto foeArmatureYamlRegisterImporters() -> std::error_code;
 
-#ifdef __cplusplus
-}
-#endif
+void foeArmatureYamlDeregisterImporters();
 
-#endif // FOE_RESOURCE_ERROR_CODE_H
+#endif // FOE_RESOURCE_YAML_IMPORT_REGISTRATION_HPP

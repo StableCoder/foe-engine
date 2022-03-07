@@ -19,10 +19,9 @@
 
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
-#include <foe/resource/export.h>
 #include <foe/simulation/core/resource.hpp>
 
-struct FOE_RES_EXPORT foeArmature : public foeResourceBase {
+struct foeArmature : public foeResourceBase {
     foeArmature(foeResourceID resource, foeResourceFns const *pResourceFns);
     ~foeArmature();
 

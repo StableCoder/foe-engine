@@ -54,9 +54,6 @@
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
-#include <foe/resource/armature.hpp>
-#include <foe/resource/armature_pool.hpp>
-#include <foe/resource/type_defs.h>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi/keyboard.hpp>
@@ -68,6 +65,8 @@
 #include "log.hpp"
 #include "logging.hpp"
 #include "register_basic_functionality.hpp"
+#include "simulation/armature.hpp"
+#include "simulation/armature_pool.hpp"
 #include "simulation/armature_system.hpp"
 #include "simulation/camera_pool.hpp"
 #include "simulation/camera_system.hpp"
@@ -407,7 +406,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     { // Load all available resources
         for (auto *ptr : ((foeArmaturePool *)foeSimulationGetResourcePool(
-                              pSimulationSet, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL))
+                              pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL))
                              ->getDataVector()) {
             ptr->loadResource(false);
         }
@@ -470,7 +469,7 @@ void Application::deinitialize() {
         pCollisionShapeLoader->maintenance();
 
         auto *pArmaturePool = ((foeArmaturePool *)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL));
+            pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL));
         pArmaturePool->unloadAll();
 
         auto *pMeshPool = ((foeMeshPool *)foeSimulationGetResourcePool(

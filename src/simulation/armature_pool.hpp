@@ -17,7 +17,6 @@
 #ifndef FOE_RESOURCE_ARMATURE_POOL_HPP
 #define FOE_RESOURCE_ARMATURE_POOL_HPP
 
-#include <foe/resource/export.h>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
@@ -25,7 +24,7 @@
 
 struct foeArmature;
 
-class FOE_RES_EXPORT foeArmaturePool {
+class foeArmaturePool {
   public:
     foeArmaturePool(foeResourceFns const &resourceFns);
     ~foeArmaturePool();

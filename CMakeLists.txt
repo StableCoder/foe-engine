@@ -149,7 +149,6 @@ target_link_libraries(
          foe_position
          foe_position_yaml
          foe_resource
-         foe_resource_yaml
          foe_simulation)
 
 if(MSVC)
@@ -180,7 +179,6 @@ target_code_coverage(
   foe_position
   foe_position_yaml
   foe_resource
-  foe_resource_yaml
   foe_simulation)
 
 if(WSI_LOADER)
@@ -224,7 +222,6 @@ target_link_libraries(
          foe_imex_yaml
          foe_physics_yaml
          foe_position_yaml
-         foe_resource_yaml
          foe_simulation)
 
 target_code_coverage(foe_engine_lib_eh)

@@ -14,22 +14,22 @@
     limitations under the License.
 */
 
-#include <foe/resource/armature.hpp>
+#include "armature.hpp"
 
 #include <foe/simulation/core/resource_fns.hpp>
 
-#include "log.hpp"
+#include "../log.hpp"
 
 foeArmature::foeArmature(foeResourceID resource, foeResourceFns const *pResourceFns) :
     foeResourceBase{resource, pResourceFns} {}
 
 foeArmature::~foeArmature() {
     if (useCount > 0) {
-        FOE_LOG(foeResource, Warning, "foeArmature {} being destroyed despite having active uses",
+        FOE_LOG(foeBringup, Warning, "foeArmature {} being destroyed despite having active uses",
                 foeIdToString(resource));
     }
     if (refCount > 0) {
-        FOE_LOG(foeResource, Warning,
+        FOE_LOG(foeBringup, Warning,
                 "foeArmature {} being destroyed despite having active references",
                 foeIdToString(resource));
     }
@@ -42,7 +42,7 @@ void foeArmature::loadCreateInfo() {
     bool expected{false};
     if (!isLoading.compare_exchange_strong(expected, true)) {
         // Another thread is already loading this resource
-        FOE_LOG(foeResource, Warning, "Attempted to load foeArmature {} in parrallel",
+        FOE_LOG(foeBringup, Warning, "Attempted to load foeArmature {} in parrallel",
                 foeIdToString(resource))
         decrementRefCount();
         return;
@@ -59,11 +59,11 @@ void foeArmature::loadCreateInfo() {
     };
 
     if (pResourceFns->asyncTaskFn) {
-        FOE_LOG(foeResource, Verbose, "Creating foeArmature {} asynchronously",
+        FOE_LOG(foeBringup, Verbose, "Creating foeArmature {} asynchronously",
                 foeIdToString(resource))
         pResourceFns->asyncTaskFn(createFn);
     } else {
-        FOE_LOG(foeResource, Verbose, "Creating foeArmature {} synchronously",
+        FOE_LOG(foeBringup, Verbose, "Creating foeArmature {} synchronously",
                 foeIdToString(resource))
         createFn();
     }
@@ -79,7 +79,7 @@ void postLoadFn(void *pResource, std::error_code errC) {
         pImage->state = foeResourceState::Loaded;
     } else {
         // Loading didn't go well
-        FOE_LOG(foeResource, Error, "Failed to load foeArmature {} with error {}:{}",
+        FOE_LOG(foeBringup, Error, "Failed to load foeArmature {} with error {}:{}",
                 foeIdToString(pImage->getID()), errC.value(), errC.message())
         auto expected = foeResourceState::Unloaded;
         pImage->state.compare_exchange_strong(expected, foeResourceState::Failed);
@@ -98,7 +98,7 @@ void foeArmature::loadResource(bool refreshCreateInfo) {
     bool expected{false};
     if (!isLoading.compare_exchange_strong(expected, true)) {
         // Another thread is already loading this resource
-        FOE_LOG(foeResource, Warning, "Attempted to load foeArmature {} in parrallel",
+        FOE_LOG(foeBringup, Warning, "Attempted to load foeArmature {} in parrallel",
                 foeIdToString(resource))
         decrementRefCount();
         return;
@@ -119,11 +119,11 @@ void foeArmature::loadResource(bool refreshCreateInfo) {
     };
 
     if (pResourceFns->asyncTaskFn) {
-        FOE_LOG(foeResource, Verbose, "Loading foeArmature {} asynchronously",
+        FOE_LOG(foeBringup, Verbose, "Loading foeArmature {} asynchronously",
                 foeIdToString(resource))
         pResourceFns->asyncTaskFn(loadFn);
     } else {
-        FOE_LOG(foeResource, Verbose, "Loading foeArmature {} synchronously",
+        FOE_LOG(foeBringup, Verbose, "Loading foeArmature {} synchronously",
                 foeIdToString(resource))
         loadFn();
     }

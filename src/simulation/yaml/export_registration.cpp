@@ -14,15 +14,15 @@
     limitations under the License.
 */
 
-#include <foe/resource/yaml/export_registration.hpp>
+#include "export_registration.hpp"
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
-#include <foe/resource/armature.hpp>
-#include <foe/resource/armature_loader.hpp>
-#include <foe/resource/armature_pool.hpp>
-#include <foe/resource/type_defs.h>
 
+#include "../armature.hpp"
+#include "../armature_loader.hpp"
+#include "../armature_pool.hpp"
+#include "../type_defs.h"
 #include "armature.hpp"
 #include "error_code.hpp"
 
@@ -34,7 +34,7 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
 
     // Armature
     auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
+        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
     if (pArmaturePool != nullptr) {
         auto const *pArmature = pArmaturePool->find(resource);
@@ -79,14 +79,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeResourceYamlRegisterExporters() -> std::error_code {
+auto foeArmatureYamlRegisterExporters() -> std::error_code {
     return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foeResourceYamlDeregisterExporters() {
+void foeArmatureYamlDeregisterExporters() {
     foeDeregisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

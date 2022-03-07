@@ -19,13 +19,15 @@
 #include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
-#include <foe/resource/armature_pool.hpp>
-#include <foe/resource/type_defs.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <vk_error_code.hpp>
 
+#include "../error_code.hpp"
 #include "../log.hpp"
+#include "armature.hpp"
+#include "armature_loader.hpp"
+#include "armature_pool.hpp"
 #include "armature_state_pool.hpp"
 #include "armature_system.hpp"
 #include "camera_pool.hpp"
@@ -38,6 +40,10 @@
 namespace {
 
 struct TypeSelection {
+    // Resources
+    bool armatureResources;
+    // Loaders
+    bool armatureLoader;
     // Components
     bool armatureComponents;
     bool cameraComponents;
@@ -48,6 +54,27 @@ struct TypeSelection {
     bool positionSystem;
     bool animationSystem;
 };
+
+foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
+    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
+    return pGroupData->getResourceDefinition(resource);
+}
+
+void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
+    auto *pSimulationState = reinterpret_cast<foeSimulationState *>(pContext);
+    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
+
+    auto pLocalCreateInfo = pArmature->pCreateInfo;
+
+    for (auto const &it : pSimulationState->resourceLoaders) {
+        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
+            it.pLoadFn(it.pLoader, pArmature, pLocalCreateInfo, pPostLoadFn);
+            return;
+        }
+    }
+
+    pPostLoadFn(pResource, FOE_BRINGUP_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+}
 
 size_t destroySelection(foeSimulationState *pSimulationState, TypeSelection const *pSelection) {
     std::error_code errC;
@@ -211,12 +238,112 @@ size_t destroySelection(foeSimulationState *pSimulationState, TypeSelection cons
         }
     }
 
+    // Loaders
+    if (pSelection == nullptr || pSelection->armatureLoader) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+        if (errC) {
+            // Trying to destroy something that doesn't exist? Not optimal
+            FOE_LOG(foeBringup, Warning,
+                    "Attempted to decrement/destroy foeArmatureLoader that doesn't exist - {}",
+                    errC.message());
+            ++errors;
+        } else if (count == 0) {
+            foeArmatureLoader *pLoader;
+            errC = foeSimulationReleaseResourceLoader(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, (void **)&pLoader);
+            if (errC) {
+                FOE_LOG(foeBringup, Warning, "Could not release foeArmatureLoader to destroy - {}",
+                        errC.message());
+                ++errors;
+            } else {
+                delete pLoader;
+            }
+        }
+    }
+
+    // Resources
+    if (pSelection == nullptr || pSelection->armatureResources) {
+        errC = foeSimulationDecrementRefCount(pSimulationState,
+                                              FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL, &count);
+        if (errC) {
+            // Trying to destroy something that doesn't exist? Not optimal
+            FOE_LOG(foeBringup, Warning,
+                    "Attempted to decrement/destroy foeArmaturePool that doesn't exist - {}",
+                    errC.message());
+            ++errors;
+        } else if (count == 0) {
+            foeArmaturePool *pItem;
+            errC = foeSimulationReleaseResourcePool(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL, (void **)&pItem);
+            if (errC) {
+                FOE_LOG(foeBringup, Warning, "Could not release foeArmaturePool to destroy - {}",
+                        errC.message());
+                ++errors;
+            } else {
+                delete pItem;
+            }
+        }
+    }
+
     return errors;
 }
 
 auto create(foeSimulationState *pSimulationState) -> std::error_code {
     std::error_code errC;
     TypeSelection created = {};
+
+    // Resources
+    if (foeSimulationIncrementRefCount(pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL,
+                                       nullptr)) {
+        foeSimulationResourcePoolData loaderCI{
+            .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL,
+            .pResourcePool = new foeArmaturePool{foeResourceFns{
+                .pImportContext = &pSimulationState->groupData,
+                .pImportFn = importFn,
+                .pLoadContext = pSimulationState,
+                .pLoadFn = armatureLoadFn,
+            }},
+        };
+        errC = foeSimulationInsertResourcePool(pSimulationState, &loaderCI);
+        if (errC) {
+            delete (foeArmatureLoader *)loaderCI.pResourcePool;
+            FOE_LOG(foeBringup, Error,
+                    "onCreate - Failed to create foeArmaturePool on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL,
+                                       nullptr);
+    }
+    created.armatureResources = true;
+
+    // Loaders
+    if (foeSimulationIncrementRefCount(pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
+                                       nullptr)) {
+        // Couldn't incement it, doesn't exist yet
+        foeSimulationLoaderData loaderCI{
+            .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
+            .pLoader = new foeArmatureLoader,
+            .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
+            .pLoadFn = foeArmatureLoader::load,
+            .pMaintenanceFn =
+                [](void *pLoader) {
+                    reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
+                },
+        };
+        errC = foeSimulationInsertResourceLoader(pSimulationState, &loaderCI);
+        if (errC) {
+            delete (foeArmatureLoader *)loaderCI.pLoader;
+            FOE_LOG(foeBringup, Error,
+                    "onCreate - Failed to create foeArmatureLoader on Simulation {} due to {}",
+                    (void *)pSimulationState, errC.message());
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
+                                       nullptr);
+    }
+    created.armatureLoader = true;
 
     // Components
     if (foeSimulationIncrementRefCount(pSimulationState,
@@ -443,6 +570,23 @@ size_t deinitializeSelection(foeSimulationState *pSimulationState,
         }
     }
 
+    // Loaders
+    if (pSelection == nullptr || pSelection->armatureLoader) {
+        auto errC = foeSimulationDecrementInitCount(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+        if (errC) {
+            FOE_LOG(foeBringup, Warning,
+                    "Failed to decrement foeArmatureLoader initialization count on Simulation {} "
+                    "with error {}",
+                    (void *)pSimulationState, errC.message());
+            ++errors;
+        } else if (count == 0) {
+            auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER);
+            pLoader->deinitialize();
+        }
+    }
+
     return errors;
 }
 
@@ -451,6 +595,29 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
     std::error_code errC;
     size_t count;
     TypeSelection selection = {};
+
+    // Loaders
+    errC = foeSimulationIncrementInitCount(pSimulationState,
+                                           FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+    if (errC) {
+        FOE_LOG(foeBringup, Error,
+                "Failed to increment foeArmatureLoader initialization count on Simulation {} with "
+                "error {}",
+                (void *)pSimulationState, errC.message());
+        goto INITIALIZATION_FAILED;
+    }
+    selection.armatureLoader = true;
+    if (count == 1) {
+        auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER);
+        errC = pLoader->initialize(pInitInfo->externalFileSearchFn);
+        if (errC) {
+            FOE_LOG(foeBringup, Error,
+                    "Failed to initialize foeArmatureLoader on Simulation {} with error {}",
+                    (void *)pSimulationState, errC.message());
+            goto INITIALIZATION_FAILED;
+        }
+    }
 
     // Systems
     errC = foeSimulationIncrementInitCount((foeSimulationState *)pSimulationState,
@@ -465,7 +632,7 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
     selection.armatureSystem = true;
     if (count == 1) {
         auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
-            pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
         auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
             pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
@@ -546,7 +713,7 @@ auto initialize(foeSimulationState *pSimulationState, foeSimulationInitInfo cons
     selection.animationSystem = true;
     if (count == 1) {
         auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
-            pSimulationState, FOE_RESOURCE_STRUCTURE_TYPE_ARMATURE_POOL);
+            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
         auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
             pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
         auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(

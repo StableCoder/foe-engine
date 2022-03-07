@@ -14,10 +14,10 @@
     limitations under the License.
 */
 
-#include <foe/resource/armature_pool.hpp>
+#include "armature_pool.hpp"
 
-#include <foe/resource/armature.hpp>
-#include <foe/resource/type_defs.h>
+#include "armature.hpp"
+#include "type_defs.h"
 
 foeArmaturePool::foeArmaturePool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 

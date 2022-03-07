@@ -14,8 +14,7 @@ generate_export_header(
 target_include_directories(foe_resource
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
-target_link_libraries(foe_resource PUBLIC foe foe_ecs foe_model_assimp
-                                          foe_simulation)
+target_link_libraries(foe_resource PUBLIC foe)
 
 target_code_coverage(foe_resource)
 
@@ -24,6 +23,3 @@ if(MSVC)
 else()
   target_compile_options(foe_resource PRIVATE -fno-exceptions)
 endif()
-
-# Auxiliary Targets
-add_subdirectory(libs)
