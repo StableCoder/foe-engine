@@ -80,28 +80,23 @@ namespace {
 
 bool processCreateInfo(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
-    foeResourceCreateInfoBase *pCreateInfo,
+    foeArmatureCreateInfo *pCreateInfo,
     foeArmature::Data &data) {
-    auto *createInfo = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo);
-    if (createInfo == nullptr) {
-        return false;
-    }
-
     { // Armature
-        std::filesystem::path filePath = externalFileSearchFn(createInfo->fileName);
+        std::filesystem::path filePath = externalFileSearchFn(pCreateInfo->fileName);
         auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
         assert(modelLoader->loaded());
 
         auto tempArmature = modelLoader->importArmature();
         for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {
-            if (it->name == createInfo->rootArmatureNode) {
+            if (it->name == pCreateInfo->rootArmatureNode) {
                 data.armature.assign(it, tempArmature.end());
             }
         }
     }
 
     { // Animations
-        for (auto const &it : createInfo->animations) {
+        for (auto const &it : pCreateInfo->animations) {
             std::filesystem::path filePath = externalFileSearchFn(it.file);
             auto modelLoader =
                 std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
@@ -136,7 +131,12 @@ void foeArmatureLoader::load(void *pResource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                              void (*pPostLoadFn)(void *, std::error_code)) {
     auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
-    auto *pArmatureCreateInfo = reinterpret_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
+    auto *pArmatureCreateInfo = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
+
+    if (pArmatureCreateInfo == nullptr) {
+        pPostLoadFn(pResource, FOE_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        return;
+    }
 
     foeArmature::Data data{
         .pUnloadContext = this,

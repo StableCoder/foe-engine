@@ -138,7 +138,12 @@ void foeShaderLoader::load(void *pResource,
                            void (*pPostLoadFn)(void *, std::error_code)) {
     std::error_code errC;
     auto *pShader = reinterpret_cast<foeShader *>(pResource);
-    auto *pShaderCI = reinterpret_cast<foeShaderCreateInfo *>(pCreateInfo.get());
+    auto *pShaderCI = dynamic_cast<foeShaderCreateInfo *>(pCreateInfo.get());
+
+    if (pShaderCI == nullptr) {
+        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        return;
+    }
 
     foeShader::Data shaderData{
         .pUnloadContext = this,

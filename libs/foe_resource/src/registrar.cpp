@@ -48,7 +48,8 @@ void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *,
 
     for (auto const &it : pSimulationState->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, pArmature, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn(it.pLoader, pArmature, pLocalCreateInfo, pPostLoadFn);
+            return;
         }
     }
 

@@ -169,7 +169,12 @@ void foeMeshLoader::load(void *pResource,
                          const std::shared_ptr<foeResourceCreateInfoBase> &pCreateInfo,
                          void (*pPostLoadFn)(void *, std::error_code)) {
     auto *pMesh = reinterpret_cast<foeMesh *>(pResource);
-    auto *pMeshCI = reinterpret_cast<foeMeshCreateInfo *>(pCreateInfo.get());
+    auto *pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pCreateInfo.get());
+
+    if (pMeshCI == nullptr) {
+        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        return;
+    }
 
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};

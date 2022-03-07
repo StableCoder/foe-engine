@@ -32,7 +32,9 @@ const char *foePhysicsErrCategory::name() const noexcept { return "foePhysicsRes
 std::string foePhysicsErrCategory::message(int ev) const {
     switch (static_cast<foePhysicsResult>(ev)) {
         RESULT_CASE(FOE_PHYSICS_SUCCESS)
+        // Loaders
         RESULT_CASE(FOE_PHYSICS_ERROR_IMPORT_FAILED)
+        RESULT_CASE(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO)
         // Physics System
         RESULT_CASE(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER)
         RESULT_CASE(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES)

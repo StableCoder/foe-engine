@@ -64,7 +64,8 @@ void imageLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, st
 
     for (auto const &it : pSimulationState->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, pImage, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn(it.pLoader, pImage, pLocalCreateInfo, pPostLoadFn);
+            return;
         }
     }
 

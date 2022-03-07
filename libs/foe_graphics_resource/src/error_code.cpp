@@ -34,8 +34,9 @@ const char *foeGraphicsResourceErrCategory::name() const noexcept {
 std::string foeGraphicsResourceErrCategory::message(int ev) const {
     switch (static_cast<foeGraphicsResourceResult>(ev)) {
         RESULT_CASE(FOE_GRAPHICS_RESOURCE_SUCCESS)
-        // General
+        // Loaders
         RESULT_CASE(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER)
+        RESULT_CASE(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO)
         // Image Loader
         RESULT_CASE(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED)
         RESULT_CASE(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_NOT_INITIALIZED)

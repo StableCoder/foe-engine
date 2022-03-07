@@ -248,7 +248,12 @@ void foeMaterialLoader::load(void *pResource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                              void (*pPostLoadFn)(void *, std::error_code)) {
     auto *pMaterial = reinterpret_cast<foeMaterial *>(pResource);
-    auto *pMaterialCI = reinterpret_cast<foeMaterialCreateInfo *>(pCreateInfo.get());
+    auto *pMaterialCI = dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo.get());
+
+    if (pMaterialCI == nullptr) {
+        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        return;
+    }
 
     foeMaterial::Data materialData{
         .pUnloadContext = this,

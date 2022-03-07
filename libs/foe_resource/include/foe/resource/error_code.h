@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ enum foeResourceResult {
     FOE_RESOURCE_ERROR_ALREADY_INITIALIZED,
     FOE_RESOURCE_ERROR_IMPORT_FAILED,
     FOE_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER,
+    FOE_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO,
 };
 
 #ifdef __cplusplus

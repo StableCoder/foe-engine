@@ -76,21 +76,6 @@ bool foeCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pC
     return dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo) != nullptr;
 }
 
-namespace {
-
-bool processCreateInfo(foeResourceCreateInfoBase *pCreateInfo, foeCollisionShape::Data &data) {
-    auto *createInfo = dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo);
-    if (createInfo == nullptr) {
-        return false;
-    }
-
-    data.collisionShape = std::make_unique<btBoxShape>(glmToBtVec3(createInfo->boxSize));
-
-    return true;
-}
-
-} // namespace
-
 void foeCollisionShapeLoader::load(void *pLoader,
                                    void *pResource,
                                    std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
@@ -103,14 +88,17 @@ void foeCollisionShapeLoader::load(void *pResource,
                                    void (*pPostLoadFn)(void *, std::error_code)) {
     auto *pCollisionShape = reinterpret_cast<foeCollisionShape *>(pResource);
     auto *pCollisionShapeCreateInfo =
-        reinterpret_cast<foeCollisionShapeCreateInfo *>(pCreateInfo.get());
+        dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo.get());
+
+    if (pCollisionShapeCreateInfo == nullptr) {
+        pPostLoadFn(pResource, FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO);
+        return;
+    }
 
     foeCollisionShape::Data data;
 
-    if (!processCreateInfo(pCollisionShapeCreateInfo, data)) {
-        pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
-        return;
-    }
+    data.collisionShape =
+        std::make_unique<btBoxShape>(glmToBtVec3(pCollisionShapeCreateInfo->boxSize));
 
     std::scoped_lock writeLock{pCollisionShape->modifySync};
 

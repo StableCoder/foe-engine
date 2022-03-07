@@ -189,7 +189,12 @@ void foeVertexDescriptorLoader::load(void *pResource,
                                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                                      void (*pPostLoadFn)(void *, std::error_code)) {
     auto *pVertexDescriptor = reinterpret_cast<foeVertexDescriptor *>(pResource);
-    auto *pCI = reinterpret_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo.get());
+    auto *pCI = dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo.get());
+
+    if (pCI == nullptr) {
+        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        return;
+    }
 
     foeVertexDescriptor::Data data{
         .pCreateInfo = pCreateInfo,

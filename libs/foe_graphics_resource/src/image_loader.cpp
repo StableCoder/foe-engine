@@ -180,7 +180,12 @@ void foeImageLoader::load(void *pResource,
                           std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
                           void (*pPostLoadFn)(void *, std::error_code)) {
     auto *pImage = reinterpret_cast<foeImage *>(pResource);
-    auto *pImageCI = reinterpret_cast<foeImageCreateInfo *>(pCreateInfo.get());
+    auto *pImageCI = dynamic_cast<foeImageCreateInfo *>(pCreateInfo.get());
+
+    if (pImageCI == nullptr) {
+        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        return;
+    }
 
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};

@@ -57,7 +57,8 @@ void collisionShapeLoadFn(void *pContext,
 
     for (auto const &it : pSimulationState->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, pCollisionShape, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn(it.pLoader, pCollisionShape, pLocalCreateInfo, pPostLoadFn);
+            return;
         }
     }
 
