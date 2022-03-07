@@ -60,7 +60,7 @@
 #include "imgui/termination.hpp"
 #endif
 
-struct foeSimulationState;
+struct foeSimulation;
 
 struct Application {
     auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
@@ -79,7 +79,7 @@ struct Application {
     // Groups/Entities
     foeId cameraID = FOE_INVALID_ID;
 
-    foeSimulationState *pSimulationSet{nullptr};
+    foeSimulation *pSimulationSet{nullptr};
 
     // I/O
     std::array<WindowData, 1> windowData;

@@ -22,7 +22,7 @@
 
 #include <system_error>
 
-struct foeSimulationState;
+struct foeSimulation;
 
 struct RenderSceneOutputResources {
     foeGfxVkRenderGraphResource colourRenderTarget;
@@ -37,7 +37,7 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                     foeGfxVkRenderGraphResource depthRenderTarget,
                     VkImageLayout finalDepthLayout,
                     VkSampleCountFlags renderTargetSamples,
-                    foeSimulationState *pSimulationState,
+                    foeSimulation *pSimulation,
                     VkDescriptorSet cameraDescriptor,
                     RenderSceneOutputResources &outputResources) -> std::error_code;
 

@@ -29,12 +29,12 @@
 namespace {
 
 std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
-                                            foeSimulationState const *pSimulationState) {
+                                            foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     // Armature
     auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
     if (pArmaturePool != nullptr) {
         auto const *pArmature = pArmaturePool->find(resource);

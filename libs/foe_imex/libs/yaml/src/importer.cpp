@@ -166,7 +166,7 @@ bool foeYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) {
 }
 
 bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
-                                      foeSimulationState const *pSimulationState) {
+                                      foeSimulation const *pSimulation) {
     if (!std::filesystem::exists(mRootDir / stateDirectoryPath))
         return true;
 
@@ -204,7 +204,7 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 
             for (auto const &it : mGenerator->mComponentFns) {
                 if (auto subNode = entityNode[it.first]; subNode) {
-                    it.second(entityNode, &mGroupTranslator, entity, pSimulationState);
+                    it.second(entityNode, &mGroupTranslator, entity, pSimulation);
                 }
             }
 
@@ -220,7 +220,7 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 
 // @todo Add group translations for imported resource definitions
 bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                                foeSimulationState const *pSimulationState) {
+                                                foeSimulation const *pSimulation) {
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
         return true;
 
@@ -264,7 +264,7 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
                     it.second.pImport(node, &mGroupTranslator, &pCreateInfo);
 
                     if (it.second.pCreate != nullptr) {
-                        auto errC = it.second.pCreate(resource, pCreateInfo, pSimulationState);
+                        auto errC = it.second.pCreate(resource, pCreateInfo, pSimulation);
                         if (errC)
                             return false;
                     }

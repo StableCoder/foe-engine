@@ -41,7 +41,7 @@ namespace {
 auto renderCall(foeId entity,
                 foeRenderState const *pRenderState,
                 foeGfxSession gfxSession,
-                foeSimulationState *pSimulationSet,
+                foeSimulation *pSimulationSet,
                 VkCommandBuffer commandBuffer,
                 VkSampleCountFlags samples,
                 VkRenderPass renderPass,
@@ -143,7 +143,7 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
                     foeGfxVkRenderGraphResource depthRenderTarget,
                     VkImageLayout finalDepthLayout,
                     VkSampleCountFlags renderTargetSamples,
-                    foeSimulationState *pSimulationState,
+                    foeSimulation *pSimulation,
                     VkDescriptorSet cameraDescriptor,
                     RenderSceneOutputResources &outputResources) -> std::error_code {
     std::error_code errC;
@@ -321,13 +321,13 @@ auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
         { // RENDER STUFF
             auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
-                pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
             auto idIt = pRenderStatePool->cbegin();
             auto const endIdIt = pRenderStatePool->cend();
             auto dataIt = pRenderStatePool->cbegin<1>();
             for (; idIt != endIdIt; ++idIt, ++dataIt) {
-                renderCall(*idIt, dataIt, gfxSession, pSimulationState, commandBuffer,
+                renderCall(*idIt, dataIt, gfxSession, pSimulation, commandBuffer,
                            renderTargetSamples, renderPass, cameraDescriptor);
             }
         }

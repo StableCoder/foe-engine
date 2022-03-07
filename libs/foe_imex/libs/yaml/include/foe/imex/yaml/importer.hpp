@@ -46,10 +46,10 @@ class foeYamlImporter : public foeImporterBase {
     FOE_IMEX_YAML_EXPORT bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool importStateData(foeEditorNameMap *pEntityNameMap,
-                                              foeSimulationState const *pSimulationState) override;
+                                              foeSimulation const *pSimulation) override;
 
-    FOE_IMEX_YAML_EXPORT bool importResourceDefinitions(
-        foeEditorNameMap *pNameMap, foeSimulationState const *pSimulationState) override;
+    FOE_IMEX_YAML_EXPORT bool importResourceDefinitions(foeEditorNameMap *pNameMap,
+                                                        foeSimulation const *pSimulation) override;
     FOE_IMEX_YAML_EXPORT foeResourceCreateInfoBase *getResource(foeId id) override;
 
     FOE_IMEX_YAML_EXPORT std::filesystem::path findExternalFile(

@@ -69,21 +69,21 @@ auto foeSimulationImGuiRegistrar::deregisterElements(ComponentFn componentFn,
 }
 
 void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity,
-                                                foeSimulationState const *pSimulationState) {
+                                                foeSimulation const *pSimulation) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (it.componentFn)
-            it.componentFn(entity, pSimulationState);
+            it.componentFn(entity, pSimulation);
     }
 }
 
 void foeSimulationImGuiRegistrar::displayResource(foeEntityID entity,
-                                                  foeSimulationState const *pSimulationState) {
+                                                  foeSimulation const *pSimulation) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (it.resourceFn)
-            it.resourceFn(entity, pSimulationState);
+            it.resourceFn(entity, pSimulation);
     }
 }

@@ -33,9 +33,9 @@ std::array<char const *, 1> renderMenus{
 
 }
 
-foeImGuiEntityList::foeImGuiEntityList(foeSimulationState *pSimulationState,
+foeImGuiEntityList::foeImGuiEntityList(foeSimulation *pSimulation,
                                        foeSimulationImGuiRegistrar *pRegistrar) :
-    mpSimulationState{pSimulationState}, mpRegistrar{pRegistrar} {}
+    mpSimulationState{pSimulation}, mpRegistrar{pRegistrar} {}
 
 bool foeImGuiEntityList::registerUI(foeImGuiState *pState) {
     return pState->addUI(this, foeImGuiEntityList::renderMenuElements,

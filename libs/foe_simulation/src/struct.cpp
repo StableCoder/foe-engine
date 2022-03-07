@@ -18,10 +18,10 @@
 
 #include <foe/simulation/simulation.hpp>
 
-extern "C" void *foeSimulationGetResourcePool(foeSimulationState const *pSimulationState,
+extern "C" void *foeSimulationGetResourcePool(foeSimulation const *pSimulation,
                                               foeSimulationStructureType sType) {
-    auto *pIt = pSimulationState->resourcePools.data();
-    auto *pEndIt = pIt + pSimulationState->resourcePools.size();
+    auto *pIt = pSimulation->resourcePools.data();
+    auto *pEndIt = pIt + pSimulation->resourcePools.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (pIt->sType == sType) {
@@ -32,10 +32,10 @@ extern "C" void *foeSimulationGetResourcePool(foeSimulationState const *pSimulat
     return nullptr;
 }
 
-extern "C" void *foeSimulationGetResourceLoader(foeSimulationState const *pSimulationState,
+extern "C" void *foeSimulationGetResourceLoader(foeSimulation const *pSimulation,
                                                 foeSimulationStructureType sType) {
-    auto *pIt = pSimulationState->resourceLoaders.data();
-    auto *pEndIt = pIt + pSimulationState->resourceLoaders.size();
+    auto *pIt = pSimulation->resourceLoaders.data();
+    auto *pEndIt = pIt + pSimulation->resourceLoaders.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (pIt->sType == sType) {
@@ -46,10 +46,10 @@ extern "C" void *foeSimulationGetResourceLoader(foeSimulationState const *pSimul
     return nullptr;
 }
 
-extern "C" void *foeSimulationGetSystem(foeSimulationState const *pSimulationState,
+extern "C" void *foeSimulationGetSystem(foeSimulation const *pSimulation,
                                         foeSimulationStructureType sType) {
-    auto *pIt = pSimulationState->systems.data();
-    auto *pEndIt = pIt + pSimulationState->systems.size();
+    auto *pIt = pSimulation->systems.data();
+    auto *pEndIt = pIt + pSimulation->systems.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (pIt->sType == sType) {
@@ -60,10 +60,10 @@ extern "C" void *foeSimulationGetSystem(foeSimulationState const *pSimulationSta
     return nullptr;
 }
 
-extern "C" void *foeSimulationGetComponentPool(foeSimulationState const *pSimulationState,
+extern "C" void *foeSimulationGetComponentPool(foeSimulation const *pSimulation,
                                                foeSimulationStructureType sType) {
-    auto *pIt = pSimulationState->componentPools.data();
-    auto *pEndIt = pIt + pSimulationState->componentPools.size();
+    auto *pIt = pSimulation->componentPools.data();
+    auto *pEndIt = pIt + pSimulation->componentPools.size();
 
     for (; pIt != pEndIt; ++pIt) {
         if (pIt->sType == sType) {

@@ -32,8 +32,8 @@ std::array<char const *, 1> menuNameArr{
 
 }
 
-void foeImGuiSave::setSimulationState(foeSimulationState *pSimulationState) {
-    mpSimulationState = pSimulationState;
+void foeImGuiSave::setSimulationState(foeSimulation *pSimulation) {
+    mpSimulationState = pSimulation;
 }
 
 void foeImGuiSave::clearSimulationState() { mpSimulationState = nullptr; }

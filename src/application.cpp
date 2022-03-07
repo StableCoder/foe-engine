@@ -128,7 +128,7 @@ namespace {
 auto renderCall(foeId entity,
                 foeRenderState const *pRenderState,
                 foeGfxSession gfxSession,
-                foeSimulationState *pSimulationSet,
+                foeSimulation *pSimulationSet,
                 VkCommandBuffer commandBuffer,
                 VkSampleCountFlags samples,
                 VkRenderPass renderPass,

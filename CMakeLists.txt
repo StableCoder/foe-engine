@@ -148,7 +148,6 @@ target_link_libraries(
          foe_physics_yaml
          foe_position
          foe_position_yaml
-         foe_resource
          foe_simulation)
 
 if(MSVC)
@@ -178,7 +177,6 @@ target_code_coverage(
   foe_physics_yaml
   foe_position
   foe_position_yaml
-  foe_resource
   foe_simulation)
 
 if(WSI_LOADER)

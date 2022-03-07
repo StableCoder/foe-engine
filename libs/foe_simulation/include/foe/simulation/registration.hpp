@@ -23,26 +23,26 @@
 #include <cstddef>
 #include <system_error>
 
-struct foeSimulationState;
+struct foeSimulation;
 struct foeSimulationInitInfo;
 
 typedef int foeSimulationUUID;
 
-typedef std::error_code (*PFN_foeSimulationCreate)(foeSimulationState *);
+typedef std::error_code (*PFN_foeSimulationCreate)(foeSimulation *);
 
 /// @return Number of warnings/errors the occurred during the call.
-typedef size_t (*PFN_foeSimulationDestroy)(foeSimulationState *);
+typedef size_t (*PFN_foeSimulationDestroy)(foeSimulation *);
 
-typedef std::error_code (*PFN_foeSimulationInitialize)(foeSimulationState *,
+typedef std::error_code (*PFN_foeSimulationInitialize)(foeSimulation *,
                                                        foeSimulationInitInfo const *);
 
 /// @return Number of warnings/errors the occurred during the call.
-typedef size_t (*PFN_foeSimulationDeinitialize)(foeSimulationState *);
+typedef size_t (*PFN_foeSimulationDeinitialize)(foeSimulation *);
 
-typedef std::error_code (*PFN_foeSimulationInitializeGraphics)(foeSimulationState *, foeGfxSession);
+typedef std::error_code (*PFN_foeSimulationInitializeGraphics)(foeSimulation *, foeGfxSession);
 
 /// @return Number of warnings/errors the occurred during the call.
-typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulationState *);
+typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulation *);
 
 struct foeSimulationFunctionalty {
     /// The UUID of the functionality, must be valid/derived from the

@@ -22,12 +22,12 @@
 #include <system_error>
 
 class foeSearchPaths;
-struct foeSimulationState;
+struct foeSimulation;
 
 /// Imports data set and its dependencies
 auto importState(std::string_view topLevelDataSet,
                  foeSearchPaths *pSearchPaths,
                  std::function<void(std::function<void()>)> asyncTaskFn,
-                 foeSimulationState **ppSimulationSet) -> std::error_code;
+                 foeSimulation **ppSimulationSet) -> std::error_code;
 
 #endif // IMPORT_STATE_HPP

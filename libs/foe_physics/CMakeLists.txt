@@ -18,7 +18,7 @@ target_include_directories(
                      ${BULLET_INCLUDE_DIRS})
 
 target_link_libraries(foe_physics PUBLIC foe foe_ecs foe_imex foe_position
-                                         foe_resource ${BULLET_LIBRARIES})
+                                         ${BULLET_LIBRARIES})
 
 target_code_coverage(foe_physics)
 

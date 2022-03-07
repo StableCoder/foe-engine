@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-struct foeSimulationState;
+struct foeSimulation;
 
 /**
  * This macro is used to help diferentiate different binaries/plugin's functionality set.
@@ -55,16 +55,16 @@ struct foeSimulationBaseStruct {
     void *pNext;
 };
 
-FOE_SIM_EXPORT void *foeSimulationGetResourcePool(foeSimulationState const *pSimulationState,
+FOE_SIM_EXPORT void *foeSimulationGetResourcePool(foeSimulation const *pSimulation,
                                                   foeSimulationStructureType sType);
 
-FOE_SIM_EXPORT void *foeSimulationGetResourceLoader(foeSimulationState const *pSimulationState,
+FOE_SIM_EXPORT void *foeSimulationGetResourceLoader(foeSimulation const *pSimulation,
                                                     foeSimulationStructureType sType);
 
-FOE_SIM_EXPORT void *foeSimulationGetSystem(foeSimulationState const *pSimulationState,
+FOE_SIM_EXPORT void *foeSimulationGetSystem(foeSimulation const *pSimulation,
                                             foeSimulationStructureType sType);
 
-FOE_SIM_EXPORT void *foeSimulationGetComponentPool(foeSimulationState const *pSimulationState,
+FOE_SIM_EXPORT void *foeSimulationGetComponentPool(foeSimulation const *pSimulation,
                                                    foeSimulationStructureType sType);
 
 #ifdef __cplusplus

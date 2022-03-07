@@ -31,11 +31,11 @@
 namespace {
 
 std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
-                                            foeSimulationState const *pSimulationState) {
+                                            foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (pCollisionShapePool != nullptr) {
         auto const *pCollisionShape = pCollisionShapePool->find(resource);
@@ -53,12 +53,11 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
-                                             foeSimulationState const *pSimulationState) {
+std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
-        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
     if (pRigidBodyPool) {
         if (auto offset = pRigidBodyPool->find(entity); offset != pRigidBodyPool->size()) {
             keyDataPairs.emplace_back(foeKeyYamlPair{

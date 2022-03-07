@@ -20,13 +20,13 @@
 #include <foe/ecs/id.hpp>
 #include <foe/simulation/imgui/export.h>
 
-struct foeSimulationState;
+struct foeSimulation;
 class foeImGuiState;
 struct ImGuiContext;
 
 class foeSimulationImGuiGroupData {
   public:
-    FOE_SIM_IMGUI_EXPORT foeSimulationImGuiGroupData(foeSimulationState *pSimulationState);
+    FOE_SIM_IMGUI_EXPORT foeSimulationImGuiGroupData(foeSimulation *pSimulation);
 
     FOE_SIM_IMGUI_EXPORT bool registerUI(foeImGuiState *pState);
     FOE_SIM_IMGUI_EXPORT void deregisterUI(foeImGuiState *pState);
@@ -38,7 +38,7 @@ class foeSimulationImGuiGroupData {
     bool viewMainMenu();
     void customUI();
 
-    foeSimulationState *mpSimulationState;
+    foeSimulation *mpSimulationState;
 
     bool mOpen{false};
     bool mFocus{false};

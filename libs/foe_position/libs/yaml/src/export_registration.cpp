@@ -26,12 +26,11 @@
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
-                                             foeSimulationState const *pSimulationState) {
+std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
-        pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+        pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
     if (pPosition3dPool != nullptr) {
         if (auto searchIt = pPosition3dPool->find(entity); searchIt != pPosition3dPool->size()) {
             keyDataPairs.emplace_back(foeKeyYamlPair{

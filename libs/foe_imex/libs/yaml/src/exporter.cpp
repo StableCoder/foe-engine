@@ -38,9 +38,8 @@ namespace {
 
 std::shared_mutex gSync;
 
-std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulationState const *)>
-    gResourceFns;
-std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulationState const *)> gComponentFns;
+std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulation const *)> gResourceFns;
+std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulation const *)> gComponentFns;
 
 void emitYaml(std::filesystem::path emitPath, YAML::Node const &rootNode) {
     YAML::Emitter emitter;
@@ -89,9 +88,9 @@ void exportResource(
     foeResourceID resource,
     std::filesystem::path directory,
     foeEditorNameMap *pNameMap,
-    std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulationState const *)> const
+    std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulation const *)> const
         &resourceFns,
-    foeSimulationState const *pSimulationState) {
+    foeSimulation const *pSimulation) {
     std::string editorName;
     if (pNameMap != nullptr) {
         editorName = pNameMap->find(resource);
@@ -106,7 +105,7 @@ void exportResource(
     }
 
     for (auto const &fn : resourceFns) {
-        auto keyDataPairs = fn(resource, pSimulationState);
+        auto keyDataPairs = fn(resource, pSimulation);
 
         for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
@@ -120,9 +119,9 @@ void exportComponents(
     foeEntityID entity,
     std::filesystem::path directory,
     foeEditorNameMap *pNameMap,
-    std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulationState const *)> const
+    std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulation const *)> const
         &componentFns,
-    foeSimulationState const *pSimulationState) {
+    foeSimulation const *pSimulation) {
     std::string editorName;
     if (pNameMap != nullptr) {
         editorName = pNameMap->find(entity);
@@ -137,7 +136,7 @@ void exportComponents(
     }
 
     for (auto const &fn : componentFns) {
-        auto keyDataPairs = fn(entity, pSimulationState);
+        auto keyDataPairs = fn(entity, pSimulation);
 
         for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
@@ -147,8 +146,7 @@ void exportComponents(
     emitYaml(directory / std::string{id_to_filename(entity, editorName) + ".yml"}, rootNode);
 }
 
-std::error_code exportDependencies(std::filesystem::path rootOutPath,
-                                   foeSimulationState *pSimState) {
+std::error_code exportDependencies(std::filesystem::path rootOutPath, foeSimulation *pSimState) {
     try {
         YAML::Node rootNode;
 
@@ -195,7 +193,7 @@ bool exportIndexDataToFile(std::filesystem::path path, foeIdIndexGenerator *pDat
 }
 
 std::error_code exportGroupResourceIndexData(std::filesystem::path rootOutPath,
-                                             foeSimulationState *pSimState) {
+                                             foeSimulation *pSimState) {
     if (exportIndexDataToFile(rootOutPath / resourceIndexDataFilePath,
                               pSimState->groupData.persistentResourceIndices()))
         return FOE_IMEX_YAML_SUCCESS;
@@ -204,7 +202,7 @@ std::error_code exportGroupResourceIndexData(std::filesystem::path rootOutPath,
 }
 
 std::error_code exportGroupEntityIndexData(std::filesystem::path rootOutPath,
-                                           foeSimulationState *pSimState) {
+                                           foeSimulation *pSimState) {
     if (exportIndexDataToFile(rootOutPath / entityIndexDataFilePath,
                               pSimState->groupData.persistentEntityIndices()))
         return FOE_IMEX_YAML_SUCCESS;
@@ -214,7 +212,7 @@ std::error_code exportGroupEntityIndexData(std::filesystem::path rootOutPath,
 
 std::error_code exportResources(std::filesystem::path rootOutPath,
                                 foeIdGroup group,
-                                foeSimulationState *pSimState) {
+                                foeSimulation *pSimState) {
     // Make sure the export directory exists
     auto const dirPath = rootOutPath / resourceDirectoryPath;
     // Check if it exists already
@@ -283,7 +281,7 @@ std::error_code exportResources(std::filesystem::path rootOutPath,
 
 std::error_code exportComponentData(std::filesystem::path rootOutPath,
                                     foeIdGroup group,
-                                    foeSimulationState *pSimState) {
+                                    foeSimulation *pSimState) {
     // Make sure the export directory exists
     auto const dirPath = rootOutPath / entityDirectoryPath;
     // Check if it exists already
@@ -352,7 +350,7 @@ std::error_code exportComponentData(std::filesystem::path rootOutPath,
 
 } // namespace
 
-std::error_code foeImexYamlExport(std::filesystem::path rootPath, foeSimulationState *pSimState) {
+std::error_code foeImexYamlExport(std::filesystem::path rootPath, foeSimulation *pSimState) {
     // Make sure the export directory exists
 
     // Check if it exists already
@@ -419,7 +417,7 @@ EXPORT_FAILED:
 }
 
 std::error_code foeImexYamlRegisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *)) {
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gResourceFns) {
@@ -433,7 +431,7 @@ std::error_code foeImexYamlRegisterResourceFn(
 }
 
 std::error_code foeImexYamlDeregisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *)) {
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 
     auto searchIt = std::find(gResourceFns.begin(), gResourceFns.end(), pResourceFn);
@@ -446,7 +444,7 @@ std::error_code foeImexYamlDeregisterResourceFn(
 }
 
 std::error_code foeImexYamlRegisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *)) {
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gComponentFns) {
@@ -460,7 +458,7 @@ std::error_code foeImexYamlRegisterComponentFn(
 }
 
 std::error_code foeImexYamlDeregisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *)) {
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 
     auto searchIt = std::find(gComponentFns.begin(), gComponentFns.end(), pComponentFn);

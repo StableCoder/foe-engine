@@ -30,10 +30,10 @@ namespace {
 bool importPosition3D(YAML::Node const &node,
                       foeIdGroupTranslator const *,
                       foeEntityID entity,
-                      foeSimulationState const *pSimulationState) {
+                      foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_position3d_key()]; dataNode) {
         auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+            pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
         if (pPool == nullptr)
             return false;

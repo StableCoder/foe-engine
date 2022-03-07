@@ -44,12 +44,11 @@
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportImage(foeResourceID resource,
-                                        foeSimulationState const *pSimulationState) {
+std::vector<foeKeyYamlPair> exportImage(foeResourceID resource, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (pImagePool != nullptr) {
         auto const *pImage = pImagePool->find(resource);
@@ -67,11 +66,11 @@ std::vector<foeKeyYamlPair> exportImage(foeResourceID resource,
 }
 
 std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
-                                           foeSimulationState const *pSimulationState) {
+                                           foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (pMaterialPool != nullptr) {
         auto const *pMaterial = pMaterialPool->find(resource);
@@ -89,12 +88,11 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource,
-                                       foeSimulationState const *pSimulationState) {
+std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (pMeshPool != nullptr) {
         auto const *pMesh = pMeshPool->find(resource);
@@ -110,12 +108,11 @@ std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource,
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportShader(foeResourceID resource,
-                                         foeSimulationState const *pSimulationState) {
+std::vector<foeKeyYamlPair> exportShader(foeResourceID resource, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (pShaderPool != nullptr) {
         auto const *pShader = pShaderPool->find(resource);
@@ -133,11 +130,11 @@ std::vector<foeKeyYamlPair> exportShader(foeResourceID resource,
 }
 
 std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
-                                                   foeSimulationState const *pSimulationState) {
+                                                   foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (pVertexDescriptorPool != nullptr) {
         auto const *pVertexDescriptor = pVertexDescriptorPool->find(resource);

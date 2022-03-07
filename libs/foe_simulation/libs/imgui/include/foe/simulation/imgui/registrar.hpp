@@ -24,7 +24,7 @@
 #include <system_error>
 #include <vector>
 
-struct foeSimulationState;
+struct foeSimulation;
 struct foeComponentPoolBase;
 struct foeResourceLoaderBase;
 
@@ -42,8 +42,8 @@ struct foeResourceLoaderBase;
  */
 class foeSimulationImGuiRegistrar {
   public:
-    using ComponentFn = void (*)(foeEntityID, foeSimulationState const *);
-    using ResourceFn = void (*)(foeResourceID, foeSimulationState const *);
+    using ComponentFn = void (*)(foeEntityID, foeSimulation const *);
+    using ResourceFn = void (*)(foeResourceID, foeSimulation const *);
     using LoaderFn = void (*)(foeResourceID, foeResourceLoaderBase **, size_t);
 
     /** @brief Registers a set of ImGui element rendering functions
@@ -71,8 +71,7 @@ class foeSimulationImGuiRegistrar {
      * @param ppPools List of pools to search for associated components
      * @param poolCount Number of pools passed in for ppPools
      */
-    FOE_SIM_IMGUI_EXPORT void displayEntity(foeEntityID entity,
-                                            foeSimulationState const *pSimulation);
+    FOE_SIM_IMGUI_EXPORT void displayEntity(foeEntityID entity, foeSimulation const *pSimulation);
 
     /** @brief Attempts to render resources associated with the ID
      * @param resource ID to find associated components to
@@ -80,7 +79,7 @@ class foeSimulationImGuiRegistrar {
      * @param poolCount Number of pools passed in for ppPools
      */
     FOE_SIM_IMGUI_EXPORT void displayResource(foeResourceID resource,
-                                              foeSimulationState const *pSimulation);
+                                              foeSimulation const *pSimulation);
 
   private:
     struct DisplayFns {

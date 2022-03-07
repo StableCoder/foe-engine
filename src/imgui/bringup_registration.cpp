@@ -27,11 +27,11 @@
 
 namespace {
 
-void imgui_foeBringupComponents(foeEntityID entity, foeSimulationState const *pSimulationState) {
+void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     // foeArmatureState
 
     if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
         pPool) {
         auto offset = pPool->find(entity);
         if (offset != pPool->size()) {
@@ -42,7 +42,7 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulationState const *pS
 
     // Camera
     if (auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
         pPool) {
         auto offset = pPool->find(entity);
         if (offset != pPool->size()) {
@@ -56,7 +56,7 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulationState const *pS
 
     // foeRenderState
     if (auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
         pPool) {
         auto offset = pPool->find(entity);
         if (offset != pPool->size()) {

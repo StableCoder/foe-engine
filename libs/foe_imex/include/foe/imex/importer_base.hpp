@@ -28,7 +28,7 @@ struct foeIdGroupValueNameSet;
 class foeIdIndexGenerator;
 struct foeEditorNameMap;
 
-struct foeSimulationState;
+struct foeSimulation;
 struct foeResourceCreateInfoBase;
 
 class foeImporterBase {
@@ -43,10 +43,10 @@ class foeImporterBase {
     virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(foeEditorNameMap *pEntityNameMap,
-                                 foeSimulationState const *pSimulationState) = 0;
+                                 foeSimulation const *pSimulation) = 0;
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                           foeSimulationState const *pSimulationState) = 0;
+                                           foeSimulation const *pSimulation) = 0;
     virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
 
     virtual std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) = 0;

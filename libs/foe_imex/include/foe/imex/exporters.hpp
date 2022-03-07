@@ -23,7 +23,7 @@
 #include <filesystem>
 #include <system_error>
 
-struct foeSimulationState;
+struct foeSimulation;
 
 struct foeExporterVersion {
     unsigned int major : 10;
@@ -39,7 +39,7 @@ static_assert(sizeof(foeExporterVersion) == sizeof(unsigned int));
 struct foeExporter {
     char const *pName;
     foeExporterVersion version;
-    std::error_code (*pExportFn)(std::filesystem::path, foeSimulationState *);
+    std::error_code (*pExportFn)(std::filesystem::path, foeSimulation *);
 };
 
 FOE_IMEX_EXPORT bool operator==(foeExporter const &lhs, foeExporter const &rhs);

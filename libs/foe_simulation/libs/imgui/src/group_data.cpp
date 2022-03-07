@@ -65,8 +65,8 @@ void renderIndexData(foeIdIndexGenerator *pIndexGenerator, char const *subGroupN
 
 } // namespace
 
-foeSimulationImGuiGroupData::foeSimulationImGuiGroupData(foeSimulationState *pSimulationState) :
-    mpSimulationState{pSimulationState} {}
+foeSimulationImGuiGroupData::foeSimulationImGuiGroupData(foeSimulation *pSimulation) :
+    mpSimulationState{pSimulation} {}
 
 bool foeSimulationImGuiGroupData::registerUI(foeImGuiState *pState) {
     return pState->addUI(this, foeSimulationImGuiGroupData::renderMenuElements,

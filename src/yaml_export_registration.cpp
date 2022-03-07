@@ -30,13 +30,12 @@
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
-                                             foeSimulationState const *pSimulationState) {
+std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     // ArmatureState
     auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
-        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
     if (pArmatureStatePool) {
         if (auto searchIt = pArmatureStatePool->find(entity);
             searchIt != pArmatureStatePool->size()) {
@@ -49,7 +48,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
 
     // Camera
     auto *pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
-        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
     if (pCameraPool) {
         if (auto searchIt = pCameraPool->find(entity); searchIt != pCameraPool->size()) {
             keyDataPairs.emplace_back(foeKeyYamlPair{
@@ -61,7 +60,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity,
 
     // RenderState
     auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
-        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
     if (pRenderStatePool) {
         if (auto searchIt = pRenderStatePool->find(entity); searchIt != pRenderStatePool->size()) {
             keyDataPairs.emplace_back(foeKeyYamlPair{

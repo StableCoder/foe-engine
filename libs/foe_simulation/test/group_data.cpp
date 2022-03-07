@@ -37,13 +37,11 @@ class DummyImporter : public foeImporterBase {
     bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) final { return false; }
     bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
-    bool importStateData(foeEditorNameMap *pEntityNameMap,
-                         foeSimulationState const *pSimulationState) final {
+    bool importStateData(foeEditorNameMap *pEntityNameMap, foeSimulation const *pSimulation) final {
         return false;
     }
 
-    bool importResourceDefinitions(foeEditorNameMap *pNameMap,
-                                   foeSimulationState const *pSimulationState) {
+    bool importResourceDefinitions(foeEditorNameMap *pNameMap, foeSimulation const *pSimulation) {
         return false;
     }
     foeResourceCreateInfoBase *getResource(foeId id) final {

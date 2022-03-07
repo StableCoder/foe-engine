@@ -23,10 +23,10 @@
 
 namespace {
 
-void imgui_foePositionComponents(foeEntityID entity, foeSimulationState const *pSimulationState) {
+void imgui_foePositionComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     // foePosition3d
     auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
-        pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+        pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
     if (pPool != nullptr) {
         auto offset = pPool->find(entity);
         if (offset != pPool->size()) {

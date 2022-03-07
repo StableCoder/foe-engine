@@ -92,7 +92,7 @@ struct foeSimulationSystemData {
     void *pSystem;
 };
 
-struct foeSimulationState {
+struct foeSimulation {
     /**
      * @brief Used to synchronize core access to the SimulationState
      *
@@ -130,10 +130,10 @@ struct foeSimulationState {
 };
 
 /// Return if a simulation has been successfully initialized
-bool foeSimulationIsInitialized(foeSimulationState const *pSimulationState);
+bool foeSimulationIsInitialized(foeSimulation const *pSimulation);
 
 /// Returns if a simulation has had graphics successfully initialized
-bool foeSimulationIsGraphicsInitialzied(foeSimulationState const *pSimulationState);
+bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation);
 
 /**
  * @brief Creates a new SimulationState with any registered functionality available
@@ -144,12 +144,12 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulationState const *pSimulationSta
  *
  * The 'pCreateFn' of any previously registered functionality is called on the created simulation.
  */
-FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps, foeSimulationState **ppSimulationState)
+FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState)
     -> std::error_code;
 
 /**
  * @brief Attempts to destroy a given SimulationState
- * @param pSimulationState Object to attempt to destroy
+ * @param pSimulation Object to attempt to destroy
  * @return FOE_SIMULATION_SUCCESS if successfully destroyed. A descriptive error code otherwise.
  *
  * The given SimulationState is first checked to see if it was created by the given registry and if
@@ -158,11 +158,11 @@ FOE_SIM_EXPORT auto foeCreateSimulation(bool addNameMaps, foeSimulationState **p
  * If the simulation is valid and was previously initialized, the 'onDeinitialize' is called.
  * 'pDestroyFn' is called last and the object is then freed.
  */
-FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulationState *pSimulationState) -> std::error_code;
+FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulation *pSimulation) -> std::error_code;
 
 /**
  * @brief Initializes a SimulationState given InitInfo
- * @param pSimulationState SimulationState to initialize
+ * @param pSimulation SimulationState to initialize
  * @param pInitInfo Required information used to initialize a SimulationState
  * @param FOE_SIMULATION_SUCCESS if successfully destroyed. A descriptive error code otherwise.
  *
@@ -172,25 +172,24 @@ FOE_SIM_EXPORT auto foeDestroySimulation(foeSimulationState *pSimulationState) -
  * function. If any of these fails, then it backtracks deinitializing anything that did succeed and
  * returns a state fully deinitialized.
  */
-FOE_SIM_EXPORT auto foeInitializeSimulation(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeInitializeSimulation(foeSimulation *pSimulation,
                                             foeSimulationInitInfo const *pInitInfo)
     -> std::error_code;
 
 /**
  * @brief Deinitializes a SimulationState given InitInfo
- * @param pSimulationState SimulationState to deinitialize
+ * @param pSimulation SimulationState to deinitialize
  * @return FOE_SIMULATION_SUCCESS if deinitialization proceeded, otherwise
  * FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED if the simulation has not previously been
  * initialized.
  *
  * Iterates through any registered functionality and calls its 'pDeinitializeFn' function.
  */
-FOE_SIM_EXPORT auto foeDeinitializeSimulation(foeSimulationState *pSimulationState)
-    -> std::error_code;
+FOE_SIM_EXPORT auto foeDeinitializeSimulation(foeSimulation *pSimulation) -> std::error_code;
 
 /**
  * @brief Initializes graphics for a SimulationState
- * @param pSimulationState is a pointer to the simulation that graphics is being initialized for
+ * @param pSimulation is a pointer to the simulation that graphics is being initialized for
  * @param gfxSession is a handle to the graphics session the simulation will be using
  * @return An appropriate error code is returned. FOE_SIMULATION_SUCCESS if the simulation
  * initialized using the graphics session successfully.
@@ -199,84 +198,84 @@ FOE_SIM_EXPORT auto foeDeinitializeSimulation(foeSimulationState *pSimulationSta
  * failed attempt to initialize some functionality will be returned.
  *
  */
-FOE_SIM_EXPORT auto foeInitializeSimulationGraphics(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeInitializeSimulationGraphics(foeSimulation *pSimulation,
                                                     foeGfxSession gfxSession) -> std::error_code;
 
 /**
  * @brief Deinitializes graphics from the given simulation
- * @param pSimulationState is a pointer to the simulation to deinitialize graphics from
+ * @param pSimulation is a pointer to the simulation to deinitialize graphics from
  * @return An appropriate error code is returned. FOE_SIMULATION_SUCCESS if deinitialization
  * happened without issue. FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED if the
  * simulation's graphics was not previously successfully initialized.
  */
-FOE_SIM_EXPORT auto foeDeinitializeSimulationGraphics(foeSimulationState *pSimulationState)
+FOE_SIM_EXPORT auto foeDeinitializeSimulationGraphics(foeSimulation *pSimulation)
     -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationGetRefCount(foeSimulationState const *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationGetRefCount(foeSimulation const *pSimulation,
                                              foeSimulationStructureType sType,
                                              size_t *pRefCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationIncrementRefCount(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationIncrementRefCount(foeSimulation *pSimulation,
                                                    foeSimulationStructureType sType,
                                                    size_t *pRefCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationDecrementRefCount(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationDecrementRefCount(foeSimulation *pSimulation,
                                                    foeSimulationStructureType sType,
                                                    size_t *pRefCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationGetInitCount(foeSimulationState const *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationGetInitCount(foeSimulation const *pSimulation,
                                               foeSimulationStructureType sType,
                                               size_t *pInitCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationIncrementInitCount(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationIncrementInitCount(foeSimulation *pSimulation,
                                                     foeSimulationStructureType sType,
                                                     size_t *pInitCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationDecrementInitCount(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationDecrementInitCount(foeSimulation *pSimulation,
                                                     foeSimulationStructureType sType,
                                                     size_t *pInitCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationGetGfxInitCount(foeSimulationState const *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
                                                  foeSimulationStructureType sType,
                                                  size_t *pGfxInitCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationIncrementGfxInitCount(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
                                                        foeSimulationStructureType sType,
                                                        size_t *pGfxInitCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationDecrementGfxInitCount(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
                                                        foeSimulationStructureType sType,
                                                        size_t *pGfxInitCount) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationInsertResourceLoader(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
                                                       foeSimulationLoaderData const *pCreateInfo)
     -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationReleaseResourceLoader(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
                                                        foeSimulationStructureType sType,
                                                        void **ppLoader) -> std::error_code;
 
 FOE_SIM_EXPORT auto foeSimulationInsertResourcePool(
-    foeSimulationState *pSimulationState, foeSimulationResourcePoolData const *pCreateInfo)
+    foeSimulation *pSimulation, foeSimulationResourcePoolData const *pCreateInfo)
     -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationReleaseResourcePool(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationReleaseResourcePool(foeSimulation *pSimulation,
                                                      foeSimulationStructureType sType,
                                                      void **ppPool) -> std::error_code;
 
 FOE_SIM_EXPORT auto foeSimulationInsertComponentPool(
-    foeSimulationState *pSimulationState, foeSimulationComponentPoolData const *pCreateInfo)
+    foeSimulation *pSimulation, foeSimulationComponentPoolData const *pCreateInfo)
     -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationReleaseComponentPool(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
                                                       foeSimulationStructureType sType,
                                                       void **ppComponentPool) -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationInsertSystem(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationInsertSystem(foeSimulation *pSimulation,
                                               foeSimulationSystemData const *pCreateInfo)
     -> std::error_code;
 
-FOE_SIM_EXPORT auto foeSimulationReleaseSystem(foeSimulationState *pSimulationState,
+FOE_SIM_EXPORT auto foeSimulationReleaseSystem(foeSimulation *pSimulation,
                                                foeSimulationStructureType sType,
                                                void **ppSystem) -> std::error_code;
 

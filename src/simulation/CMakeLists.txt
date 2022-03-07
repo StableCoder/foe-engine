@@ -1,5 +1,5 @@
 target_sources(
-  foe_engine_lib
+  foe_engine_lib_eh
   PRIVATE armature_loader.cpp
           armature_pool.cpp
           armature_system.cpp

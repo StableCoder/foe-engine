@@ -34,7 +34,6 @@ target_link_libraries(
          foe_graphics_vk
          foe_model
          foe_model_assimp
-         foe_resource
          foe_simulation
          vk_struct_cleanup
          ${freeimage_LIBRARIES})

@@ -33,11 +33,10 @@
 
 namespace {
 
-void imgui_foeGraphicsResources(foeResourceID resource,
-                                foeSimulationState const *pSimulationState) {
+void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSimulation) {
     // foeImage
     auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (pImagePool != nullptr) {
         auto pResource = pImagePool->find(resource);
@@ -48,7 +47,7 @@ void imgui_foeGraphicsResources(foeResourceID resource,
 
     // foeMaterial
     auto pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (pMaterialPool != nullptr) {
         auto pResource = pMaterialPool->find(resource);
@@ -59,7 +58,7 @@ void imgui_foeGraphicsResources(foeResourceID resource,
 
     // foeMesh
     auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (pMeshPool != nullptr) {
         auto pResource = pMeshPool->find(resource);
@@ -70,7 +69,7 @@ void imgui_foeGraphicsResources(foeResourceID resource,
 
     // foeShader
     auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (pShaderPool != nullptr) {
         auto pResource = pShaderPool->find(resource);
@@ -81,7 +80,7 @@ void imgui_foeGraphicsResources(foeResourceID resource,
 
     // foeVertexDescriptor
     auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (pVertexDescriptorPool != nullptr) {
         auto pResource = pVertexDescriptorPool->find(resource);

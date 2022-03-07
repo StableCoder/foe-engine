@@ -26,10 +26,10 @@
 
 namespace {
 
-void imgui_foePhysicsComponents(foeEntityID entity, foeSimulationState const *pSimulationState) {
+void imgui_foePhysicsComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     // foeRigidBody
     auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
-        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
 
     if (pRigidBodyPool != nullptr) {
         auto offset = pRigidBodyPool->find(entity);
@@ -40,10 +40,10 @@ void imgui_foePhysicsComponents(foeEntityID entity, foeSimulationState const *pS
     }
 }
 
-void imgui_foePhysicsResources(foeResourceID resource, foeSimulationState const *pSimulationState) {
+void imgui_foePhysicsResources(foeResourceID resource, foeSimulation const *pSimulation) {
     // foeCollisionShape
     auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (pCollisionShapePool != nullptr) {
         auto pResource = pCollisionShapePool->find(resource);

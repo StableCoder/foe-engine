@@ -32,10 +32,10 @@ namespace {
 bool importArmatureState(YAML::Node const &node,
                          foeIdGroupTranslator const *pGroupTranslator,
                          foeEntityID entity,
-                         foeSimulationState const *pSimulationState) {
+                         foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_armature_state_key()]; dataNode) {
         auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
         if (pPool == nullptr)
             return false;
@@ -57,10 +57,10 @@ bool importArmatureState(YAML::Node const &node,
 bool importRenderState(YAML::Node const &node,
                        foeIdGroupTranslator const *pGroupTranslator,
                        foeEntityID entity,
-                       foeSimulationState const *pSimulationState) {
+                       foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_render_state_key()]; dataNode) {
         auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
         if (pPool == nullptr)
             return false;
@@ -82,10 +82,10 @@ bool importRenderState(YAML::Node const &node,
 bool importCamera(YAML::Node const &node,
                   foeIdGroupTranslator const *,
                   foeEntityID entity,
-                  foeSimulationState const *pSimulationState) {
+                  foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_camera_key()]; dataNode) {
         auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
 
         if (pPool == nullptr)
             return false;

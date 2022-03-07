@@ -29,9 +29,9 @@ namespace {
 
 std::error_code armatureCreateProcessing(foeResourceID resource,
                                          foeResourceCreateInfoBase *pCreateInfo,
-                                         foeSimulationState const *pSimulationState) {
+                                         foeSimulation const *pSimulation) {
     auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
     if (pArmaturePool == nullptr)
         return FOE_RESOURCE_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;

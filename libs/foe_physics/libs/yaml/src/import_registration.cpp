@@ -32,9 +32,9 @@ namespace {
 
 std::error_code collisionShapeCreateProcessing(foeResourceID resource,
                                                foeResourceCreateInfoBase *pCreateInfo,
-                                               foeSimulationState const *pSimulationState) {
+                                               foeSimulation const *pSimulation) {
     auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (pCollisionShapePool == nullptr)
         return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND;
@@ -50,10 +50,10 @@ std::error_code collisionShapeCreateProcessing(foeResourceID resource,
 bool importRigidBody(YAML::Node const &node,
                      foeIdGroupTranslator const *pGroupTranslator,
                      foeEntityID entity,
-                     foeSimulationState const *pSimulationState) {
+                     foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_rigid_body_key()]; dataNode) {
         auto *pPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
-            pSimulationState, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+            pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
 
         if (pPool == nullptr)
             return false;

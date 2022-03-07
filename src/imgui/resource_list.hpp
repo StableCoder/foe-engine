@@ -22,14 +22,13 @@
 #include <vector>
 
 class foeImGuiState;
-struct foeSimulationState;
+struct foeSimulation;
 class foeSimulationImGuiRegistrar;
 struct ImGuiContext;
 
 class foeImGuiResourceList {
   public:
-    foeImGuiResourceList(foeSimulationState *pSimulationState,
-                         foeSimulationImGuiRegistrar *pRegistrar);
+    foeImGuiResourceList(foeSimulation *pSimulation, foeSimulationImGuiRegistrar *pRegistrar);
 
     bool registerUI(foeImGuiState *pState);
     void deregisterUI(foeImGuiState *pState);
@@ -50,7 +49,7 @@ class foeImGuiResourceList {
     void displayOpenResources();
     bool displayResource(ResourceDisplayData *pData);
 
-    foeSimulationState *mpSimulationState;
+    foeSimulation *mpSimulationState;
     foeSimulationImGuiRegistrar *mpRegistrar;
 
     bool mOpen{false};

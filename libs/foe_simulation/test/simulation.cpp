@@ -21,8 +21,8 @@
 #include <foe/simulation/type_defs.h>
 
 namespace {
-std::error_code pCreateFn(foeSimulationState *) { return {}; }
-size_t pDestroyFn(foeSimulationState *) { return 0; }
+std::error_code pCreateFn(foeSimulation *) { return {}; }
+size_t pDestroyFn(foeSimulation *) { return 0; }
 } // namespace
 
 constexpr foeSimulationUUID cTestFunctionalityID = FOE_SIMULATION_FUNCTIONALITY_ID(0);
@@ -83,7 +83,7 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
 
 TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
           "[foe][simulation]") {
-    foeSimulationState *pSimState{nullptr};
+    foeSimulation *pSimState{nullptr};
 
     REQUIRE(!foeCreateSimulation(false, &pSimState));
 
@@ -95,7 +95,7 @@ TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
 }
 
 TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe][simulation]") {
-    foeSimulationState *pSimState{nullptr};
+    foeSimulation *pSimState{nullptr};
 
     REQUIRE(!foeCreateSimulation(true, &pSimState));
 

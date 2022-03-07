@@ -37,9 +37,9 @@ namespace {
 
 std::error_code imageCreateProcessing(foeResourceID resource,
                                       foeResourceCreateInfoBase *pCreateInfo,
-                                      foeSimulationState const *pSimulationState) {
+                                      foeSimulation const *pSimulation) {
     auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (pImagePool == nullptr)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_POOL_NOT_FOUND;
@@ -54,9 +54,9 @@ std::error_code imageCreateProcessing(foeResourceID resource,
 
 std::error_code materialCreateProcessing(foeResourceID resource,
                                          foeResourceCreateInfoBase *pCreateInfo,
-                                         foeSimulationState const *pSimulationState) {
+                                         foeSimulation const *pSimulation) {
     auto *pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (pMaterialPool == nullptr)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_POOL_NOT_FOUND;
@@ -71,9 +71,9 @@ std::error_code materialCreateProcessing(foeResourceID resource,
 
 std::error_code meshCreateProcessing(foeResourceID resource,
                                      foeResourceCreateInfoBase *pCreateInfo,
-                                     foeSimulationState const *pSimulationState) {
+                                     foeSimulation const *pSimulation) {
     auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (pMeshPool == nullptr)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND;
@@ -88,9 +88,9 @@ std::error_code meshCreateProcessing(foeResourceID resource,
 
 std::error_code shaderCreateProcessing(foeResourceID resource,
                                        foeResourceCreateInfoBase *pCreateInfo,
-                                       foeSimulationState const *pSimulationState) {
+                                       foeSimulation const *pSimulation) {
     auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (pShaderPool == nullptr)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_POOL_NOT_FOUND;
@@ -105,9 +105,9 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
 
 std::error_code vertexDescriptorCreateProcessing(foeResourceID resource,
                                                  foeResourceCreateInfoBase *pCreateInfo,
-                                                 foeSimulationState const *pSimulationState) {
+                                                 foeSimulation const *pSimulation) {
     auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
-        pSimulationState, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
+        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (pVertexDescriptorPool == nullptr)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_POOL_NOT_FOUND;

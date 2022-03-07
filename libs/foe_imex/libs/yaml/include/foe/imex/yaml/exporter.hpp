@@ -26,7 +26,7 @@
 #include <system_error>
 #include <vector>
 
-struct foeSimulationState;
+struct foeSimulation;
 
 struct foeKeyYamlPair {
     std::string key;
@@ -34,18 +34,18 @@ struct foeKeyYamlPair {
 };
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlExport(std::filesystem::path path,
-                                                       foeSimulationState *pSimState);
+                                                       foeSimulation *pSimState);
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlRegisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *));
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *));
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlDeregisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulationState const *));
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *));
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlRegisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *));
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *));
 
 FOE_IMEX_YAML_EXPORT std::error_code foeImexYamlDeregisterComponentFn(
-    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulationState const *));
+    std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *));
 
 #endif // FOE_IMEX_YAML_EXPORTER_HPP

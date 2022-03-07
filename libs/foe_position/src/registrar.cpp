@@ -25,27 +25,27 @@
 
 namespace {
 
-auto create(foeSimulationState *pSimulationState) -> std::error_code {
+auto create(foeSimulation *pSimulation) -> std::error_code {
     std::error_code errC;
 
     // Components Pools
-    if (foeSimulationIncrementRefCount(pSimulationState,
-                                       FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, nullptr)) {
+    if (foeSimulationIncrementRefCount(pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
+                                       nullptr)) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
             .pComponentPool = new foePosition3dPool,
             .pMaintenanceFn = [](void *pData) { ((foePosition3dPool *)pData)->maintenance(); },
         };
-        errC = foeSimulationInsertComponentPool(pSimulationState, &createInfo);
+        errC = foeSimulationInsertComponentPool(pSimulation, &createInfo);
         if (errC) {
             delete (foePosition3dPool *)createInfo.pComponentPool;
             FOE_LOG(foePosition, Error,
                     "create - Failed to create foePosition3dPool on Simulation {} due to {}",
-                    (void *)pSimulationState, errC.message());
+                    (void *)pSimulation, errC.message());
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulationState,
-                                       FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, nullptr);
+        foeSimulationIncrementRefCount(pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
+                                       nullptr);
     }
 
 CREATE_FAILED:
@@ -53,13 +53,13 @@ CREATE_FAILED:
     return errC;
 }
 
-size_t destroy(foeSimulationState *pSimulationState) {
+size_t destroy(foeSimulation *pSimulation) {
     size_t count;
     size_t errors = 0;
 
     // Component Pools
     std::error_code errC = foeSimulationDecrementRefCount(
-        pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, &count);
+        pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, &count);
     if (errC) {
         // Trying to destroy something that doesn't exist? Not optimal
         FOE_LOG(foePosition, Warning,
@@ -69,7 +69,7 @@ size_t destroy(foeSimulationState *pSimulationState) {
     } else if (count == 0) {
         foePosition3dPool *pData;
         errC = foeSimulationReleaseComponentPool(
-            pSimulationState, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, (void **)&pData);
+            pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, (void **)&pData);
         if (errC) {
             FOE_LOG(foePosition, Warning, "Could not release foePosition3dPool to destroy - {}",
                     errC.message());
