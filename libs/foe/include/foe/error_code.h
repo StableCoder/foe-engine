@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -34,20 +34,24 @@
  */
 struct foeErrorCode {
     int value;
-    void const *category;
-
-#ifdef __cplusplus
-    inline foeErrorCode(int value, void const *pCategory) : value(value), category(pCategory) {}
-
-    inline foeErrorCode(std::error_code errC) :
-        value(errC.value()), category(reinterpret_cast<void const *>(&errC.category())) {}
-
-    foeErrorCode(foeErrorCode const &) = default;
-    foeErrorCode(foeErrorCode &&) = default;
-#endif
+    void const *pCategory;
 };
 
+inline foeErrorCode foeToErrorCode(int value, void const *pCategory) {
+    return foeErrorCode{
+        .value = value,
+        .pCategory = pCategory,
+    };
+}
+
 #ifdef __cplusplus
+inline foeErrorCode foeToErrorCode(std::error_code errC) {
+    return foeErrorCode{
+        .value = errC.value(),
+        .pCategory = reinterpret_cast<void const *>(&errC.category()),
+    };
+}
+
 namespace std {
 template <>
 struct is_error_code_enum<foeErrorCode> : true_type {};
@@ -55,7 +59,7 @@ struct is_error_code_enum<foeErrorCode> : true_type {};
 
 /// In C++, can implicitly convert the foeErrorCode to std::error_code without issue
 inline std::error_code make_error_code(foeErrorCode e) {
-    return {e.value, *static_cast<std::error_category const *>(e.category)};
+    return {e.value, *static_cast<std::error_category const *>(e.pCategory)};
 }
 #endif
 

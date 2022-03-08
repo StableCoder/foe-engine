@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ auto foeWsiWindowGetVulkanExtensionsErrC(uint32_t *pExtensionCount, char const *
 
 foeErrorCode foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
                                              char const ***pppExtensions) {
-    return foeWsiWindowGetVulkanExtensionsErrC(pExtensionCount, pppExtensions);
+    return foeToErrorCode(foeWsiWindowGetVulkanExtensionsErrC(pExtensionCount, pppExtensions));
 }
 
 foeErrorCode foeWsiWindowGetVkSurface(foeWsiWindow window,
@@ -50,5 +50,5 @@ foeErrorCode foeWsiWindowGetVkSurface(foeWsiWindow window,
                                       VkSurfaceKHR *pSurface) {
     auto *pWindow = window_from_handle(window);
 
-    return std::error_code{glfwCreateWindowSurface(instance, pWindow->pWindow, nullptr, pSurface)};
+    return foeToErrorCode(glfwCreateWindowSurface(instance, pWindow->pWindow, nullptr, pSurface));
 }

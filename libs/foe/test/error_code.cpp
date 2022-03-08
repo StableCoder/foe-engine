@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ TEST_CASE("foeErrorCode converted to std::error_code operates as expected") {
 TEST_CASE("Converting a std::error_code to foeErrorCode and back operates as expected") {
     SECTION("TEST_SUCCESS") {
         std::error_code startErrC = TEST_SUCCESS;
-        foeErrorCode test{startErrC};
+        foeErrorCode test = foeToErrorCode(startErrC);
         std::error_code errC = test;
 
         CHECK(!errC);
@@ -108,7 +108,7 @@ TEST_CASE("Converting a std::error_code to foeErrorCode and back operates as exp
     }
     SECTION("TEST_ERROR") {
         std::error_code startErrC = TEST_ERROR;
-        foeErrorCode test{startErrC};
+        foeErrorCode test = foeToErrorCode(startErrC);
         std::error_code errC = test;
 
         CHECK(errC);

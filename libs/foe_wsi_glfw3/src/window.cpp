@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -147,7 +147,7 @@ void foeWsiGlobalProcessing() {
 
 foeErrorCode foeWsiCreateWindow(
     int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow) {
-    return foeWsiCreateWindowErrC(width, height, pTitle, visible, pWindow);
+    return foeToErrorCode(foeWsiCreateWindowErrC(width, height, pTitle, visible, pWindow));
 }
 
 void foeWsiDestroyWindow(foeWsiWindow window) {

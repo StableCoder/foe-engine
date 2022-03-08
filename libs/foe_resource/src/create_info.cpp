@@ -44,7 +44,7 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
     foeResourceCreateInfo *pCreateInfo) {
     auto *pNewCI = (foeResourceCreateInfoImpl *)malloc(sizeof(foeResourceCreateInfoImpl) + size);
     if (pNewCI == nullptr) {
-        return std::error_code{FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY};
+        return foeToErrorCode(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
     }
 
     new (pNewCI) foeResourceCreateInfoImpl(type, pDestroyFn);
@@ -54,7 +54,7 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
     FOE_LOG(foeResourceCore, Verbose, "foeResourceCreateInfo[{},{}] - Created ", (void *)pNewCI,
             type)
 
-    return std::error_code{FOE_RESOURCE_SUCCESS};
+    return foeToErrorCode(FOE_RESOURCE_SUCCESS);
 }
 
 extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {

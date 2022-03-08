@@ -66,7 +66,7 @@ extern "C" foeErrorCode foeCreateResource(foeResourceID id,
                                           foeResource *pResource) {
     auto *pNewResource = (foeResourceImpl *)malloc(sizeof(foeResourceImpl) + size);
     if (pNewResource == nullptr) {
-        return std::error_code{FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY};
+        return foeToErrorCode(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
     }
 
     new (pNewResource) foeResourceImpl(id, type, pResourceFns, pDestroyFn);
@@ -76,7 +76,7 @@ extern "C" foeErrorCode foeCreateResource(foeResourceID id,
     FOE_LOG(foeResourceCore, Verbose, "foeResource[{},{}] - Created @ {}", id, type,
             (void *)pNewResource)
 
-    return std::error_code{FOE_RESOURCE_SUCCESS};
+    return foeToErrorCode(FOE_RESOURCE_SUCCESS);
 }
 
 extern "C" void foeDestroyResource(foeResource resource) {
