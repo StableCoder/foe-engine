@@ -14,7 +14,7 @@ generate_export_header(
 target_include_directories(foe_resource
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
-target_link_libraries(foe_resource PUBLIC foe)
+target_link_libraries(foe_resource PUBLIC foe foe_ecs foe_simulation)
 
 target_code_coverage(foe_resource)
 
