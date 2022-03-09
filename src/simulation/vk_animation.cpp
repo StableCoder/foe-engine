@@ -233,23 +233,24 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
         }
 
         foeMesh *pMesh = mpMeshPool->find(pRenderState->mesh);
-        foeArmature *pArmature = mpArmaturePool->find(pArmatureState->armatureID);
+        foeResource armature = mpArmaturePool->find(pArmatureState->armatureID);
 
-        if (pMesh == nullptr || pArmature == nullptr ||
+        if (pMesh == nullptr || armature == FOE_NULL_HANDLE ||
             pMesh->getState() != foeResourceState::Loaded ||
-            pArmature->getState() != foeResourceState::Loaded ||
+            foeResourceGetState(armature) != foeResourceLoadState::Loaded ||
             pArmatureState->armatureState.empty()) {
             continue;
         }
+        foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
 
         glm::mat4 lastBone = glm::mat4{1.f};
         for (auto const &bone : pMesh->data.gfxBones) {
             // Find the matching armature node, if it exists
-            foeArmatureNode *pArmatureNode{nullptr};
+            foeArmatureNode const *pArmatureNode{nullptr};
             size_t armatureNodeIndex;
-            for (size_t i = 0; i < pArmature->data.armature.size(); ++i) {
-                if (pArmature->data.armature[i].name == bone.name) {
-                    pArmatureNode = &pArmature->data.armature[i];
+            for (size_t i = 0; i < pArmature->armature.size(); ++i) {
+                if (pArmature->armature[i].name == bone.name) {
+                    pArmatureNode = &pArmature->armature[i];
                     armatureNodeIndex = i;
                     break;
                 }

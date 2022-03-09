@@ -47,8 +47,8 @@ void foeArmatureLoader::maintenance() {
     mUnloadRequestsSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.pArmature, it.iteration, true);
-        it.pArmature->decrementRefCount();
+        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        foeResourceDecrementRefCount(it.resource);
     }
 
     // Process Loads
@@ -57,18 +57,13 @@ void foeArmatureLoader::maintenance() {
     mLoadSync.unlock();
 
     for (auto &it : toLoad) {
-        it.pArmature->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeArmature *)pSrc;
+            new (pDst) foeArmature(std::move(*pSrcData));
+        };
 
-        if (it.pArmature->data.pUnloadFn != nullptr) {
-            it.pArmature->data.pUnloadFn(it.pArmature->data.pUnloadContext, it.pArmature,
-                                         it.pArmature->iteration, true);
-        }
-
-        ++it.pArmature->iteration;
-        it.pArmature->data = std::move(it.data);
-        it.pPostLoadFn(it.pArmature, {});
-
-        it.pArmature->modifySync.unlock();
+        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                       foeArmatureLoader::unloadResource);
     }
 }
 
@@ -81,7 +76,7 @@ namespace {
 bool processCreateInfo(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
     foeArmatureCreateInfo *pCreateInfo,
-    foeArmature::Data &data) {
+    foeArmature &data) {
     { // Armature
         std::filesystem::path filePath = externalFileSearchFn(pCreateInfo->fileName);
         auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
@@ -121,39 +116,35 @@ bool processCreateInfo(
 } // namespace
 
 void foeArmatureLoader::load(void *pLoader,
-                             void *pResource,
+                             foeResource resource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                             void (*pPostLoadFn)(void *, std::error_code)) {
-    reinterpret_cast<foeArmatureLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+                             PFN_foeResourcePostLoad *pPostLoadFn) {
+    reinterpret_cast<foeArmatureLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
 }
 
-void foeArmatureLoader::load(void *pResource,
+void foeArmatureLoader::load(foeResource resource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                             void (*pPostLoadFn)(void *, std::error_code)) {
-    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
+                             PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pArmatureCreateInfo = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
 
     if (pArmatureCreateInfo == nullptr) {
-        pPostLoadFn(pResource, FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO);
+        pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
-    foeArmature::Data data{
-        .pUnloadContext = this,
-        .pUnloadFn = &foeArmatureLoader::unloadResource,
-        .pCreateInfo = pCreateInfo,
-    };
+    foeArmature data{};
 
     if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
-        pPostLoadFn(pResource, FOE_BRINGUP_ERROR_IMPORT_FAILED);
+        pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr, nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     }
-
-    std::scoped_lock lock{pArmature->modifySync};
 
     mLoadSync.lock();
     mToLoad.emplace_back(LoadData{
-        .pArmature = pArmature,
+        .resource = resource,
+        .pCreateInfo = pCreateInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });
@@ -161,29 +152,27 @@ void foeArmatureLoader::load(void *pResource,
 }
 
 void foeArmatureLoader::unloadResource(void *pContext,
-                                       void *pResource,
+                                       foeResource resource,
                                        uint32_t resourceIteration,
+                                       PFN_foeResourceUnloadCall *pUnloadCallFn,
                                        bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeArmatureLoader *>(pContext);
-    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
 
     if (immediateUnload) {
-        pArmature->modifySync.lock();
+        auto destroyFn = [](void *pSrc, void *pDst) {
+            foeArmature *pArmature = (foeArmature *)pSrc;
+            pArmature->~foeArmature();
+        };
 
-        if (pArmature->iteration == resourceIteration) {
-            pArmature->data = {};
-            ++pArmature->iteration;
-            pArmature->state = foeResourceState::Unloaded;
-        }
-
-        pArmature->modifySync.unlock();
+        pUnloadCallFn(resource, resourceIteration, nullptr, destroyFn);
     } else {
-        pArmature->incrementRefCount();
+        foeResourceIncrementRefCount(resource);
         pLoader->mUnloadRequestsSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
-            .pArmature = pArmature,
+            .resource = resource,
             .iteration = resourceIteration,
+            .pUnloadCallFn = pUnloadCallFn,
         });
 
         pLoader->mUnloadRequestsSync.unlock();

@@ -111,24 +111,26 @@ void foeArmatureSystem::process(float timePassed) {
         if (pArmatureState->armatureID == FOE_INVALID_ID)
             continue;
 
-        foeArmature *pArmature = mpArmaturePool->find(pArmatureState->armatureID);
+        foeResource armature = mpArmaturePool->find(pArmatureState->armatureID);
         // If the armature we're trying to use isn't here, skip this entry
-        if (pArmature == nullptr || pArmature->getState() != foeResourceState::Loaded)
+        if (armature == FOE_NULL_HANDLE ||
+            foeResourceGetState(armature) != foeResourceLoadState::Loaded)
             continue;
+        foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
 
         // If the animation index isn't on the given armature, then just set the default armature
         // values
-        pArmatureState->armatureState.resize(pArmature->data.armature.size());
-        if (pArmature->data.animations.size() <= pArmatureState->animationID) {
+        pArmatureState->armatureState.resize(pArmature->armature.size());
+        if (pArmature->animations.size() <= pArmatureState->animationID) {
             // The original armature matrices
-            originalArmatureNode(&pArmature->data.armature[0], glm::mat4{1.f},
+            originalArmatureNode(&pArmature->armature[0], glm::mat4{1.f},
                                  &pArmatureState->armatureState[0]);
 
             // Not applying animations, so continue to next entity
             continue;
         }
 
-        foeAnimation &animation = pArmature->data.animations[pArmatureState->animationID];
+        foeAnimation const &animation = pArmature->animations[pArmatureState->animationID];
 
         auto const animationDuration = animation.duration / animation.ticksPerSecond;
         auto animationTime = pArmatureState->time;
@@ -138,7 +140,7 @@ void foeArmatureSystem::process(float timePassed) {
 
         animationTime *= animation.ticksPerSecond;
 
-        animateArmatureNode(&pArmature->data.armature[0], animation.nodeChannels, animationTime,
+        animateArmatureNode(&pArmature->armature[0], animation.nodeChannels, animationTime,
                             glm::mat4{1.f}, &pArmatureState->armatureState[0]);
     }
 }

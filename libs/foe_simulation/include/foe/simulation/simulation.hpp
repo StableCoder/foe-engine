@@ -19,6 +19,7 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/graphics/session.hpp>
+#include <foe/resource/resource.h>
 #include <foe/simulation/export.h>
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/type_defs.h>
@@ -65,6 +66,10 @@ struct foeSimulationLoaderData {
                     void *,
                     std::shared_ptr<foeResourceCreateInfoBase> const &,
                     void (*)(void *, std::error_code));
+    void (*pLoadFn2)(void *,
+                     foeResource,
+                     std::shared_ptr<foeResourceCreateInfoBase> const &,
+                     PFN_foeResourcePostLoad *);
     /// Maintenance to be performed as part of the regular simulation loop
     void (*pMaintenanceFn)(void *);
     /// Maintenance to be performed as part of the graphics loop

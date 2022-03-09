@@ -405,10 +405,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
     { // Load all available resources
-        for (auto *ptr : ((foeArmaturePool *)foeSimulationGetResourcePool(
-                              pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL))
-                             ->getDataVector()) {
-            ptr->loadResource(false);
+        for (auto it : ((foeArmaturePool *)foeSimulationGetResourcePool(
+                            pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL))
+                           ->getDataVector()) {
+            foeResourceLoad(it, false);
         }
 
         for (auto *ptr : ((foeMaterialPool *)foeSimulationGetResourcePool(
@@ -467,10 +467,6 @@ void Application::deinitialize() {
         auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
         pCollisionShapeLoader->maintenance();
-
-        auto *pArmaturePool = ((foeArmaturePool *)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL));
-        pArmaturePool->unloadAll();
 
         auto *pMeshPool = ((foeMeshPool *)foeSimulationGetResourcePool(
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL));

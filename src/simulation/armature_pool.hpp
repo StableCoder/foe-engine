@@ -17,21 +17,20 @@
 #ifndef FOE_RESOURCE_ARMATURE_POOL_HPP
 #define FOE_RESOURCE_ARMATURE_POOL_HPP
 
+#include <foe/resource/resource.h>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
-
-struct foeArmature;
 
 class foeArmaturePool {
   public:
     foeArmaturePool(foeResourceFns const &resourceFns);
     ~foeArmaturePool();
 
-    foeArmature *add(foeResourceID resource);
-    foeArmature *findOrAdd(foeResourceID resource);
-    foeArmature *find(foeId id);
+    foeResource add(foeResourceID resource);
+    foeResource findOrAdd(foeResourceID resource);
+    foeResource find(foeResourceID resource);
 
     void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
 
@@ -42,7 +41,7 @@ class foeArmaturePool {
   private:
     foeResourceFns mResourceFns;
     std::shared_mutex mSync;
-    std::vector<foeArmature *> mResources;
+    std::vector<foeResource> mResources;
 };
 
 #endif // FOE_RESOURCE_ARMATURE_POOL_HPP

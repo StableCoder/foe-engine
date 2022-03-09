@@ -60,20 +60,20 @@ foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
     return pGroupData->getResourceDefinition(resource);
 }
 
-void armatureLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
+void armatureLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-    auto *pArmature = reinterpret_cast<foeArmature *>(pResource);
 
-    auto pLocalCreateInfo = pArmature->pCreateInfo;
+    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            it.pLoadFn(it.pLoader, pArmature, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
             return;
         }
     }
 
-    pPostLoadFn(pResource, FOE_BRINGUP_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+    pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
@@ -301,7 +301,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = armatureLoadFn,
+                .pLoadFn2 = armatureLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &loaderCI);
@@ -325,7 +325,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
             .pLoader = new foeArmatureLoader,
             .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
-            .pLoadFn = foeArmatureLoader::load,
+            .pLoadFn2 = foeArmatureLoader::load,
             .pMaintenanceFn =
                 [](void *pLoader) {
                     reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();

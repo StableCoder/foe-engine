@@ -18,6 +18,7 @@
 #define FOE_SIMULATION_CORE_RESOURCE_FNS_HPP
 
 #include <foe/ecs/id.hpp>
+#include <foe/resource/resource.h>
 
 #include <functional>
 #include <system_error>
@@ -33,6 +34,7 @@ struct foeResourceFns {
     foeResourceCreateInfoBase *(*pImportFn)(void *, foeResourceID);
     void *pLoadContext;
     void (*pLoadFn)(void *, void *, void (*)(void *, std::error_code));
+    void (*pLoadFn2)(void *, foeResource, PFN_foeResourcePostLoad *);
     std::function<void(std::function<void()>)> asyncTaskFn;
 };
 

@@ -32,7 +32,15 @@ FOE_DEFINE_HANDLE(foeResource)
 
 typedef int foeResourceType;
 
-enum foeResourceState {
+/// @returns True if the data was moved/destroyed, otherwise false. If false, usually because of
+/// mismatching resource iteration.
+typedef bool(PFN_foeResourceUnloadCall)(foeResource,             // Resource
+                                        uint32_t,                // Iteration
+                                        void *,                  // Destination
+                                        void (*)(void *, void *) // Data handling call
+);
+
+enum foeResourceLoadState {
     Unloaded = 0,
     Loaded,
     Failed,
@@ -41,7 +49,6 @@ enum foeResourceState {
 FOE_RES_EXPORT foeErrorCode foeCreateResource(foeResourceID id,
                                               foeResourceType type,
                                               foeResourceFns *pResourceFns,
-                                              void (*pDestroyFn)(foeResourceType, void *),
                                               size_t size,
                                               foeResource *pResource);
 
@@ -59,12 +66,33 @@ FOE_RES_EXPORT int foeResourceIncrementUseCount(foeResource resource);
 FOE_RES_EXPORT int foeResourceDecrementUseCount(foeResource resource);
 
 FOE_RES_EXPORT bool foeResourceGetIsLoading(foeResource resource);
-FOE_RES_EXPORT foeResourceState foeResourceGetState(foeResource resource);
+FOE_RES_EXPORT foeResourceLoadState foeResourceGetState(foeResource resource);
 
-FOE_RES_EXPORT void *foeResourceGetData(foeResource resource);
+FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
+
+FOE_RES_EXPORT void foeResourceImportCreateInfo(foeResource resource);
+FOE_RES_EXPORT void foeResourceLoad(foeResource resource, bool refreshCreateInfo);
+FOE_RES_EXPORT void foeResourceUnload(foeResource resource, bool immediate);
 
 #ifdef __cplusplus
 }
 #endif
+
+#include <foe/simulation/core/create_info.hpp>
+
+#include <memory>
+
+typedef void(PFN_foeResourcePostLoad)(
+    foeResource,                                                               // Resource
+    foeErrorCode,                                                              // ErrorCode
+    void *,                                                                    // Source
+    void (*)(void *, void *),                                                  // Move Fn
+    std::shared_ptr<foeResourceCreateInfoBase>,                                // CreateInfo
+    void *,                                                                    // Unload Context
+    void (*)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool) // Unload Fn
+);
+
+FOE_RES_EXPORT std::shared_ptr<foeResourceCreateInfoBase> foeResourceGetCreateInfo(
+    foeResource resource);
 
 #endif // FOE_RESOURCE_RESOURCE_H

@@ -18,10 +18,12 @@
 #define FOE_RESOURCE_ARMATURE_LOADER_HPP
 
 #include "armature.hpp"
+#include <foe/resource/resource.h>
 #include <foe/simulation/core/create_info.hpp>
 
 #include <filesystem>
 #include <functional>
+#include <mutex>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -48,34 +50,37 @@ class foeArmatureLoader {
 
     static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
     static void load(void *pLoader,
-                     void *pResource,
+                     foeResource resource,
                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                     void (*pPostLoadFn)(void *, std::error_code));
+                     PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
     static void unloadResource(void *pContext,
-                               void *pResource,
+                               foeResource resource,
                                uint32_t resourceIteration,
+                               PFN_foeResourceUnloadCall *pUnloadCallFn,
                                bool immediateUnload);
 
-    void load(void *pResource,
+    void load(foeResource resource,
               std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-              void (*pPostLoadFn)(void *, std::error_code));
+              PFN_foeResourcePostLoad *pPostLoadFn);
 
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
 
     struct LoadData {
-        foeArmature *pArmature;
-        void (*pPostLoadFn)(void *, std::error_code);
-        foeArmature::Data data;
+        foeResource resource;
+        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        PFN_foeResourcePostLoad *pPostLoadFn;
+        foeArmature data;
     };
 
     std::mutex mLoadSync;
     std::vector<LoadData> mToLoad;
 
     struct UnloadData {
-        foeArmature *pArmature;
+        foeResource resource;
         uint32_t iteration;
+        PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
     std::mutex mUnloadRequestsSync;

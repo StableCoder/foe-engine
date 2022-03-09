@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,14 +37,18 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
     if (pArmaturePool != nullptr) {
-        auto const *pArmature = pArmaturePool->find(resource);
-        if (pArmature && pArmature->pCreateInfo) {
-            if (auto dynPtr = dynamic_cast<foeArmatureCreateInfo *>(pArmature->pCreateInfo.get());
-                dynPtr) {
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_armature_key(),
-                    .data = yaml_write_armature(*dynPtr),
-                });
+        foeResource armature = pArmaturePool->find(resource);
+
+        if (armature != FOE_NULL_HANDLE) {
+            auto pCreateInfo = foeResourceGetCreateInfo(armature);
+            if (pCreateInfo != nullptr) {
+                if (auto dynPtr = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
+                    dynPtr) {
+                    keyDataPairs.emplace_back(foeKeyYamlPair{
+                        .key = yaml_armature_key(),
+                        .data = yaml_write_armature(*dynPtr),
+                    });
+                }
             }
         }
     }
