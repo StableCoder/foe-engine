@@ -25,6 +25,7 @@ else()
 endif()
 
 # Other
+add_subdirectory(libs/imgui)
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
