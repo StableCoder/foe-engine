@@ -103,20 +103,22 @@ void shaderLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, s
 }
 
 void vertexDescriptorLoadFn(void *pContext,
-                            void *pResource,
-                            void (*pPostLoadFn)(void *, std::error_code)) {
+                            foeResource resource,
+                            PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-    auto *pVertexDescriptor = reinterpret_cast<foeVertexDescriptor *>(pResource);
 
-    auto pLocalCreateInfo = pVertexDescriptor->pCreateInfo;
+    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, pVertexDescriptor, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
+            return;
         }
     }
 
-    pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+    pPostLoadFn(resource,
+                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
@@ -350,7 +352,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = vertexDescriptorLoadFn,
+                .pLoadFn2 = vertexDescriptorLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -478,7 +480,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
             .pLoader = new foeVertexDescriptorLoader,
             .pCanProcessCreateInfoFn = foeVertexDescriptorLoader::canProcessCreateInfo,
-            .pLoadFn = foeVertexDescriptorLoader::load,
+            .pLoadFn2 = foeVertexDescriptorLoader::load,
             .pGfxMaintenanceFn =
                 [](void *pLoader) {
                     reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->gfxMaintenance();

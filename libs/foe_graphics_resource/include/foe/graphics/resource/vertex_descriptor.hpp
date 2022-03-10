@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,34 +17,17 @@
 #ifndef FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_HPP
 #define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_HPP
 
-#include <foe/graphics/resource/export.h>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
-#include <foe/simulation/core/resource.hpp>
 
 struct foeShader;
-struct foeGfxVertexDescriptor;
 
-struct FOE_GFX_RES_EXPORT foeVertexDescriptor : public foeResourceBase {
-    foeVertexDescriptor(foeResourceID resource, foeResourceFns const *pResourceFns);
-    ~foeVertexDescriptor();
+struct foeVertexDescriptor {
+    foeShader *pVertex;
+    foeShader *pTessellationControl;
+    foeShader *pTessellationEvaluation;
+    foeShader *pGeometry;
 
-    void loadCreateInfo();
-    void loadResource(bool refreshCreateInfo);
-    void unloadResource();
-
-    struct Data {
-        void *pUnloadContext;
-        void (*pUnloadFn)(void *, void *, uint32_t, bool);
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
-
-        foeShader *pVertex;
-        foeShader *pTessellationControl;
-        foeShader *pTessellationEvaluation;
-        foeShader *pGeometry;
-
-        foeGfxVertexDescriptor vertexDescriptor;
-    };
-    Data data{};
+    foeGfxVertexDescriptor vertexDescriptor;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_HPP

@@ -18,21 +18,20 @@
 #define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP
 
 #include <foe/graphics/resource/export.h>
+#include <foe/resource/resource.h>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
-
-struct foeVertexDescriptor;
 
 class FOE_GFX_RES_EXPORT foeVertexDescriptorPool {
   public:
     foeVertexDescriptorPool(foeResourceFns const &resourceFns);
     ~foeVertexDescriptorPool();
 
-    foeVertexDescriptor *add(foeResourceID resource);
-    foeVertexDescriptor *findOrAdd(foeResourceID resource);
-    foeVertexDescriptor *find(foeId id);
+    foeResource add(foeResourceID resource);
+    foeResource findOrAdd(foeResourceID resource);
+    foeResource find(foeResourceID resource);
 
     void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
 
@@ -43,7 +42,7 @@ class FOE_GFX_RES_EXPORT foeVertexDescriptorPool {
   private:
     FOE_GRAPHICS_RESOURCE_NO_EXPORT foeResourceFns mResourceFns;
     FOE_GRAPHICS_RESOURCE_NO_EXPORT std::shared_mutex mSync;
-    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeVertexDescriptor *> mResources;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeResource> mResources;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_POOL_HPP

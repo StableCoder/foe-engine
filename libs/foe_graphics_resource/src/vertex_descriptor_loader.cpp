@@ -77,8 +77,8 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.pResource, it.iteration, true);
-        it.pResource->decrementRefCount();
+        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        foeResourceDecrementRefCount(it.resource);
     }
 
     // Load Requests
@@ -109,29 +109,25 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 it.data.vertexDescriptor.mGeometry = it.data.pGeometry->data.shader;
             }
 
-            auto *pCI =
-                reinterpret_cast<foeVertexDescriptorCreateInfo *>(it.data.pCreateInfo.get());
+            auto *pCreateInfo =
+                reinterpret_cast<foeVertexDescriptorCreateInfo *>(it.pCreateInfo.get());
 
-            it.data.vertexDescriptor.mVertexInputSCI = pCI->vertexInputSCI;
-            it.data.vertexDescriptor.mVertexInputBindings = pCI->inputBindings;
-            it.data.vertexDescriptor.mVertexInputAttributes = pCI->inputAttributes;
+            it.data.vertexDescriptor.mVertexInputSCI = pCreateInfo->vertexInputSCI;
+            it.data.vertexDescriptor.mVertexInputBindings = pCreateInfo->inputBindings;
+            it.data.vertexDescriptor.mVertexInputAttributes = pCreateInfo->inputAttributes;
 
-            it.data.vertexDescriptor.mInputAssemblySCI = pCI->inputAssemblySCI;
-            it.data.vertexDescriptor.mTessellationSCI = pCI->tessellationSCI;
+            it.data.vertexDescriptor.mInputAssemblySCI = pCreateInfo->inputAssemblySCI;
+            it.data.vertexDescriptor.mTessellationSCI = pCreateInfo->tessellationSCI;
 
             // Everything looks good, lock the resource and update it
-            it.pResource->modifySync.lock();
+            auto moveFn = [](void *pSrc, void *pDst) {
+                auto *pSrcData = (foeVertexDescriptor *)pSrc;
+                new (pDst) foeVertexDescriptor(std::move(*pSrcData));
+            };
 
-            if (it.pResource->data.pUnloadFn != nullptr) {
-                it.pResource->data.pUnloadFn(it.pResource->data.pUnloadContext, it.pResource,
-                                             it.pResource->iteration, true);
-            }
+            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                           foeVertexDescriptorLoader::unloadResource);
 
-            ++it.pResource->iteration;
-            it.pResource->data = std::move(it.data);
-            it.pPostLoadFn(it.pResource, {});
-
-            it.pResource->modifySync.unlock();
         } else if (subResLoadState == foeResourceState::Failed) {
             // At least one of the items failed to load
             if (it.data.pVertex != nullptr) {
@@ -152,8 +148,10 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
             }
 
             it.pPostLoadFn(
-                it.pResource,
-                FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_FAILED_TO_LOAD);
+                it.resource,
+                foeToErrorCode(
+                    FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_FAILED_TO_LOAD),
+                nullptr, nullptr, nullptr, nullptr, nullptr);
         } else {
             // Sub-items are still at least loading
             stillLoading.emplace_back(std::move(it));
@@ -178,27 +176,25 @@ bool foeVertexDescriptorLoader::canProcessCreateInfo(foeResourceCreateInfoBase *
 }
 
 void foeVertexDescriptorLoader::load(void *pLoader,
-                                     void *pResource,
+                                     foeResource resource,
                                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                                     void (*pPostLoadFn)(void *, std::error_code)) {
-    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->load(pResource, pCreateInfo,
+                                     PFN_foeResourcePostLoad *pPostLoadFn) {
+    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->load(resource, pCreateInfo,
                                                                  pPostLoadFn);
 }
 
-void foeVertexDescriptorLoader::load(void *pResource,
+void foeVertexDescriptorLoader::load(foeResource resource,
                                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                                     void (*pPostLoadFn)(void *, std::error_code)) {
-    auto *pVertexDescriptor = reinterpret_cast<foeVertexDescriptor *>(pResource);
+                                     PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pCI = dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo.get());
 
     if (pCI == nullptr) {
-        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                    nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
-    foeVertexDescriptor::Data data{
-        .pCreateInfo = pCreateInfo,
-    };
+    foeVertexDescriptor data{};
 
     // Find all of the subresources
     if (pCI->vertexShader != FOE_INVALID_ID) {
@@ -233,7 +229,8 @@ void foeVertexDescriptorLoader::load(void *pResource,
     // Send to the loading queue
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
-        .pResource = pVertexDescriptor,
+        .resource = resource,
+        .pCreateInfo = pCreateInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });
@@ -241,49 +238,54 @@ void foeVertexDescriptorLoader::load(void *pResource,
 }
 
 void foeVertexDescriptorLoader::unloadResource(void *pContext,
-                                               void *pResource,
+                                               foeResource resource,
                                                uint32_t resourceIteration,
+                                               PFN_foeResourceUnloadCall *pUnloadCallFn,
                                                bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeVertexDescriptorLoader *>(pContext);
-    auto *pVertexDescriptor = reinterpret_cast<foeVertexDescriptor *>(pResource);
 
     if (immediateUnload) {
-        pVertexDescriptor->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeVertexDescriptor *)pSrc;
+            auto *pDstData = (foeVertexDescriptor *)pDst;
 
-        if (pVertexDescriptor->iteration == resourceIteration) {
-            auto data = std::move(pVertexDescriptor->data);
+            *pDstData = std::move(*pSrcData);
+            pSrcData->~foeVertexDescriptor();
+        };
 
-            pVertexDescriptor->data = {};
-            pVertexDescriptor->state = foeResourceState::Unloaded;
-            ++pVertexDescriptor->iteration;
+        foeVertexDescriptor data;
 
-            // Decrement the ref/use count of any sub-resources
-            if (data.pVertex != nullptr) {
-                data.pVertex->decrementUseCount();
-                data.pVertex->decrementRefCount();
-            }
-            if (data.pTessellationControl != nullptr) {
-                data.pTessellationControl->decrementUseCount();
-                data.pTessellationControl->decrementRefCount();
-            }
-            if (data.pTessellationEvaluation != nullptr) {
-                data.pTessellationEvaluation->decrementUseCount();
-                data.pTessellationEvaluation->decrementRefCount();
-            }
-            if (data.pGeometry != nullptr) {
-                data.pGeometry->decrementUseCount();
-                data.pGeometry->decrementRefCount();
-            }
+        if (!pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
+            // If it failed, it's probably due to the resource iteration being different than
+            // desired, so it didn't happen.
+            return;
         }
 
-        pVertexDescriptor->modifySync.unlock();
+        // Decrement the ref/use count of any sub-resources
+        if (data.pVertex != nullptr) {
+            data.pVertex->decrementUseCount();
+            data.pVertex->decrementRefCount();
+        }
+        if (data.pTessellationControl != nullptr) {
+            data.pTessellationControl->decrementUseCount();
+            data.pTessellationControl->decrementRefCount();
+        }
+        if (data.pTessellationEvaluation != nullptr) {
+            data.pTessellationEvaluation->decrementUseCount();
+            data.pTessellationEvaluation->decrementRefCount();
+        }
+        if (data.pGeometry != nullptr) {
+            data.pGeometry->decrementUseCount();
+            data.pGeometry->decrementRefCount();
+        }
     } else {
-        pVertexDescriptor->incrementRefCount();
+        foeResourceIncrementRefCount(resource);
         pLoader->mUnloadSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
-            .pResource = pVertexDescriptor,
+            .resource = resource,
             .iteration = resourceIteration,
+            .pUnloadCallFn = pUnloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();

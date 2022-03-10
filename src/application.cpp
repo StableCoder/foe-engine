@@ -143,32 +143,36 @@ auto renderCall(foeId entity,
     foeMeshPool *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
         pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
-    foeVertexDescriptor *pVertexDescriptor{nullptr};
+    foeResource vertexDescriptor{FOE_NULL_HANDLE};
     bool boned{false};
     if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
         pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
         boned = true;
-        pVertexDescriptor = pVertexDescriptorPool->find(pRenderState->bonedVertexDescriptor);
+        vertexDescriptor = pVertexDescriptorPool->find(pRenderState->bonedVertexDescriptor);
     }
 
-    if (pVertexDescriptor == nullptr) {
-        pVertexDescriptor = pVertexDescriptorPool->find(pRenderState->vertexDescriptor);
+    if (vertexDescriptor == FOE_NULL_HANDLE) {
+        vertexDescriptor = pVertexDescriptorPool->find(pRenderState->vertexDescriptor);
     }
 
     auto *pMaterial = pMaterialPool->find(pRenderState->material);
     auto *pMesh = pMeshPool->find(pRenderState->mesh);
 
-    if (pVertexDescriptor == nullptr || pMaterial == nullptr || pMesh == nullptr) {
+    if (vertexDescriptor == FOE_NULL_HANDLE || pMaterial == nullptr || pMesh == nullptr) {
         return false;
     }
-    if (pVertexDescriptor->getState() != foeResourceState::Loaded ||
+    if (foeResourceGetState(vertexDescriptor) != foeResourceLoadState::Loaded ||
         pMaterial->getState() != foeResourceState::Loaded ||
         pMesh->getState() != foeResourceState::Loaded) {
         return false;
     }
 
+    // Get Resource Data
+    auto const *pVertexDescriptor =
+        (foeVertexDescriptor const *)foeResourceGetData(vertexDescriptor);
+
     // Retrieve the pipeline
-    auto *pGfxVertexDescriptor = &pVertexDescriptor->data.vertexDescriptor;
+    auto *pGfxVertexDescriptor = &pVertexDescriptor->vertexDescriptor;
     VkPipelineLayout layout;
     uint32_t descriptorSetLayoutCount;
     VkPipeline pipeline;
@@ -429,11 +433,11 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ptr->loadResource(false);
         }
 
-        for (auto *ptr :
+        for (auto it :
              ((foeVertexDescriptorPool *)foeSimulationGetResourcePool(
                   pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL))
                  ->getDataVector()) {
-            ptr->loadResource(false);
+            foeResourceLoad(it, false);
         }
     }
 

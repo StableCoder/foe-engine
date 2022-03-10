@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -83,9 +83,9 @@ void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSi
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (pVertexDescriptorPool != nullptr) {
-        auto pResource = pVertexDescriptorPool->find(resource);
-        if (pResource != nullptr) {
-            imgui_foeVertexDescriptor(pResource);
+        auto res = pVertexDescriptorPool->find(resource);
+        if (res != FOE_NULL_HANDLE) {
+            imgui_foeVertexDescriptor(res);
         }
     }
 }

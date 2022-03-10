@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -137,14 +137,16 @@ std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (pVertexDescriptorPool != nullptr) {
-        auto const *pVertexDescriptor = pVertexDescriptorPool->find(resource);
-        if (pVertexDescriptor && pVertexDescriptor->pCreateInfo) {
-            if (auto pVertexDescriptor2CI = dynamic_cast<foeVertexDescriptorCreateInfo *>(
-                    pVertexDescriptor->pCreateInfo.get());
-                pVertexDescriptor2CI)
+        foeResource vertexDescriptor = pVertexDescriptorPool->find(resource);
+
+        if (vertexDescriptor != FOE_NULL_HANDLE) {
+            auto pCreateInfo = foeResourceGetCreateInfo(vertexDescriptor);
+            if (auto pVertexDescriptorCI =
+                    dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo.get());
+                pVertexDescriptorCI)
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_vertex_descriptor_key(),
-                    .data = yaml_write_vertex_descriptor(*pVertexDescriptor2CI),
+                    .data = yaml_write_vertex_descriptor(*pVertexDescriptorCI),
                 });
         }
     }

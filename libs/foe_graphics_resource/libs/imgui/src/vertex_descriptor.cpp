@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 #include "vertex_descriptor.hpp"
 
 #include <foe/graphics/resource/vertex_descriptor.hpp>
-#include <foe/simulation/imgui/resource_base.hpp>
+#include <foe/resource/imgui/resource.h>
 #include <imgui.h>
 
-void imgui_foeVertexDescriptor(foeVertexDescriptor *pVertexDescriptor) {
+void imgui_foeVertexDescriptor(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeVertexDescriptor");
 
-    imgui_renderResourceBase(pVertexDescriptor);
+    imgui_renderResource(resource);
 }

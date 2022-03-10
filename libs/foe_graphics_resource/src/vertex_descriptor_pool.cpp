@@ -19,67 +19,80 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 
+#include <mutex>
+
 foeVertexDescriptorPool::foeVertexDescriptorPool(foeResourceFns const &resourceFns) :
     mResourceFns{resourceFns} {}
 
 foeVertexDescriptorPool::~foeVertexDescriptorPool() {
-    for (auto *pResource : mResources) {
-        pResource->decrementRefCount();
-
-        delete pResource;
+    for (auto const resource : mResources) {
+        foeResourceDecrementRefCount(resource);
+        foeDestroyResource(resource);
     }
 }
 
-foeVertexDescriptor *foeVertexDescriptorPool::add(foeResourceID resource) {
+foeResource foeVertexDescriptorPool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
     // If it finds it, return nullptr
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return nullptr;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return FOE_NULL_HANDLE;
         }
     }
 
     // Not found, add it
-    foeVertexDescriptor *pResource = new foeVertexDescriptor{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC =
+        foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
+                          &mResourceFns, sizeof(foeVertexDescriptor), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeVertexDescriptor *foeVertexDescriptorPool::findOrAdd(foeResourceID resource) {
+foeResource foeVertexDescriptorPool::findOrAdd(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return pResource;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return it;
         }
     }
 
     // Not found, create it now
-    foeVertexDescriptor *pResource = new foeVertexDescriptor{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC =
+        foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
+                          &mResourceFns, sizeof(foeVertexDescriptor), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeVertexDescriptor *foeVertexDescriptorPool::find(foeId id) {
-    foeVertexDescriptor *pResource{nullptr};
+foeResource foeVertexDescriptorPool::find(foeResourceID resource) {
+    foeResource outResource;
 
     mSync.lock_shared();
-    for (auto *pOld : mResources) {
-        if (pOld->getID() == id) {
-            pResource = pOld;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            outResource = it;
             break;
         }
     }
     mSync.unlock_shared();
 
-    return pResource;
+    return outResource;
 }
 
 void foeVertexDescriptorPool::setAsyncTaskFn(
@@ -90,7 +103,7 @@ void foeVertexDescriptorPool::setAsyncTaskFn(
 void foeVertexDescriptorPool::unloadAll() {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        pResource->unloadResource();
+    for (auto const it : mResources) {
+        foeResourceUnload(it, false);
     }
 }

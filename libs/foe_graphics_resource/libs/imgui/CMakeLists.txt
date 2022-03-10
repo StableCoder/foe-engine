@@ -17,7 +17,7 @@ target_include_directories(foe_graphics_resource_imgui
 
 target_link_libraries(
   foe_graphics_resource_imgui PUBLIC foe_graphics_resource foe_imgui
-                                     foe_simulation_imgui)
+                                     foe_resource_imgui foe_simulation_imgui)
 
 target_code_coverage(foe_graphics_resource_imgui)
 

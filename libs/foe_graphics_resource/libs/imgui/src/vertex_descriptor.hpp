@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #ifndef VERTEX_DESCRIPTOR_HPP
 #define VERTEX_DESCRIPTOR_HPP
 
-struct foeVertexDescriptor;
+#include <foe/resource/resource.h>
 
-void imgui_foeVertexDescriptor(foeVertexDescriptor *pVertexDescriptor);
+void imgui_foeVertexDescriptor(foeResource resource);
 
 #endif // VERTEX_DESCRIPTOR_HPP
