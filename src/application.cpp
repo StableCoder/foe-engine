@@ -156,14 +156,15 @@ auto renderCall(foeId entity,
     }
 
     foeResource material = pMaterialPool->find(pRenderState->material);
-    auto *pMesh = pMeshPool->find(pRenderState->mesh);
+    foeResource mesh = pMeshPool->find(pRenderState->mesh);
 
-    if (vertexDescriptor == FOE_NULL_HANDLE || material == FOE_NULL_HANDLE || pMesh == nullptr) {
+    if (vertexDescriptor == FOE_NULL_HANDLE || material == FOE_NULL_HANDLE ||
+        mesh == FOE_NULL_HANDLE) {
         return false;
     }
     if (foeResourceGetState(vertexDescriptor) != foeResourceLoadState::Loaded ||
         foeResourceGetState(material) != foeResourceLoadState::Loaded ||
-        pMesh->getState() != foeResourceState::Loaded) {
+        foeResourceGetState(mesh) != foeResourceLoadState::Loaded) {
         return false;
     }
 
@@ -171,6 +172,7 @@ auto renderCall(foeId entity,
     auto const *pVertexDescriptor =
         (foeVertexDescriptor const *)foeResourceGetData(vertexDescriptor);
     auto const *pMaterial = (foeMaterial const *)foeResourceGetData(material);
+    auto const *pMesh = (foeMesh const *)foeResourceGetData(mesh);
 
     // Retrieve the pipeline
     auto *pGfxVertexDescriptor = &pVertexDescriptor->vertexDescriptor;
@@ -186,7 +188,7 @@ auto renderCall(foeId entity,
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1,
                             &cameraDescriptor, 0, nullptr);
 
-    foeGfxVkBindMesh(pMesh->data.gfxData, commandBuffer, boned);
+    foeGfxVkBindMesh(pMesh->gfxData, commandBuffer, boned);
 
     auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
     if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
@@ -220,7 +222,7 @@ auto renderCall(foeId entity,
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-    vkCmdDrawIndexed(commandBuffer, foeGfxGetMeshIndices(pMesh->data.gfxData), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, foeGfxGetMeshIndices(pMesh->gfxData), 1, 0, 0, 0);
 
     return true;
 }
@@ -422,10 +424,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             foeResourceLoad(it, false);
         }
 
-        for (auto *ptr : ((foeMeshPool *)foeSimulationGetResourcePool(
-                              pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL))
-                             ->getDataVector()) {
-            ptr->loadResource(false);
+        for (auto it : ((foeMeshPool *)foeSimulationGetResourcePool(
+                            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL))
+                           ->getDataVector()) {
+            foeResourceLoad(it, false);
         }
 
         for (auto *ptr : ((foeShaderPool *)foeSimulationGetResourcePool(

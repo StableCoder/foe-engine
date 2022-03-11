@@ -9,7 +9,6 @@ target_sources(
           material_pool.cpp
           mesh_loader.cpp
           mesh_pool.cpp
-          mesh.cpp
           registrar.cpp
           shader_loader.cpp
           shader_pool.cpp

@@ -99,9 +99,11 @@ std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource, foeSimulation con
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (pMeshPool != nullptr) {
-        auto const *pMesh = pMeshPool->find(resource);
-        if (pMesh && pMesh->pCreateInfo) {
-            if (auto pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pMesh->pCreateInfo.get()); pMeshCI)
+        foeResource mesh = pMeshPool->find(resource);
+        if (mesh != FOE_NULL_HANDLE) {
+            auto pCreateInfo = foeResourceGetCreateInfo(mesh);
+
+            if (auto pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pCreateInfo.get()); pMeshCI)
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_mesh_key(),
                     .data = yaml_write_mesh(*pMeshCI),

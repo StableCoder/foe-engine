@@ -122,19 +122,20 @@ void vertexDescriptorLoadFn(void *pContext,
                 nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
-void meshLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
+void meshLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-    auto *pMesh = reinterpret_cast<foeMesh *>(pResource);
 
-    auto pLocalCreateInfo = pMesh->pCreateInfo;
+    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, pMesh, pLocalCreateInfo, pPostLoadFn);
+            return it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
-    pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+    pPostLoadFn(resource,
+                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 template <typename T>
@@ -379,7 +380,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = meshLoadFn,
+                .pLoadFn2 = meshLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -508,7 +509,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER,
             .pLoader = new foeMeshLoader,
             .pCanProcessCreateInfoFn = foeMeshLoader::canProcessCreateInfo,
-            .pLoadFn = foeMeshLoader::load,
+            .pLoadFn2 = foeMeshLoader::load,
             .pGfxMaintenanceFn =
                 [](void *pLoader) { reinterpret_cast<foeMeshLoader *>(pLoader)->gfxMaintenance(); },
         };

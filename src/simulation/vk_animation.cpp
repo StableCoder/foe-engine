@@ -232,19 +232,22 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             continue;
         }
 
-        foeMesh *pMesh = mpMeshPool->find(pRenderState->mesh);
+        foeResource mesh = mpMeshPool->find(pRenderState->mesh);
         foeResource armature = mpArmaturePool->find(pArmatureState->armatureID);
 
-        if (pMesh == nullptr || armature == FOE_NULL_HANDLE ||
-            pMesh->getState() != foeResourceState::Loaded ||
+        if (mesh == FOE_NULL_HANDLE || armature == FOE_NULL_HANDLE ||
+            foeResourceGetState(mesh) != foeResourceLoadState::Loaded ||
             foeResourceGetState(armature) != foeResourceLoadState::Loaded ||
             pArmatureState->armatureState.empty()) {
             continue;
         }
+
+        // Get Resource Pointers
+        foeMesh const *pMesh = (foeMesh const *)foeResourceGetData(mesh);
         foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
 
         glm::mat4 lastBone = glm::mat4{1.f};
-        for (auto const &bone : pMesh->data.gfxBones) {
+        for (auto const &bone : pMesh->gfxBones) {
             // Find the matching armature node, if it exists
             foeArmatureNode const *pArmatureNode{nullptr};
             size_t armatureNodeIndex;
@@ -283,7 +286,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             VkDescriptorBufferInfo bufferInfo{
                 .buffer = boneUniform.buffer,
                 .offset = offset,
-                .range = sizeof(glm::mat4) * pMesh->data.gfxBones.size(),
+                .range = sizeof(glm::mat4) * pMesh->gfxBones.size(),
             };
 
             VkWriteDescriptorSet writeSet{
@@ -299,7 +302,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
         }
 
         // Move the offset into the buffer by however many bones we put in
-        offset += sizeof(glm::mat4) * pMesh->data.gfxBones.size();
+        offset += sizeof(glm::mat4) * pMesh->gfxBones.size();
     }
 
     vmaUnmapMemory(mAllocator, boneUniform.alloc);

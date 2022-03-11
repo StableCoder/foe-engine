@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,32 +18,16 @@
 #define FOE_GRAPHICS_RESOURCE_MESH_HPP
 
 #include <foe/graphics/mesh.hpp>
-#include <foe/graphics/resource/export.h>
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
-#include <foe/simulation/core/resource.hpp>
 
 #include <vector>
 
-struct FOE_GFX_RES_EXPORT foeMesh : public foeResourceBase {
-    foeMesh(foeResourceID resource, foeResourceFns const *pResourceFns);
-    ~foeMesh();
-
-    void loadCreateInfo();
-    void loadResource(bool refreshCreateInfo);
-    void unloadResource();
-
-    struct Data {
-        void *pUnloadContext{nullptr};
-        void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
-
-        foeGfxMesh gfxData{};
-        std::vector<foeMeshBone> gfxBones{};
-        std::vector<foeVertexComponent> gfxVertexComponent{};
-        uint32_t perVertexBoneWeights{0};
-    };
-    Data data{};
+struct foeMesh {
+    foeGfxMesh gfxData{};
+    std::vector<foeMeshBone> gfxBones{};
+    std::vector<foeVertexComponent> gfxVertexComponent{};
+    uint32_t perVertexBoneWeights{0};
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_MESH_HPP

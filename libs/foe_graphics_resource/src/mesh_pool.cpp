@@ -19,66 +19,77 @@
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/resource/type_defs.h>
 
+#include <mutex>
+
 foeMeshPool::foeMeshPool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 
 foeMeshPool::~foeMeshPool() {
-    for (auto *pResource : mResources) {
-        pResource->decrementRefCount();
-
-        delete pResource;
+    for (auto const resource : mResources) {
+        foeResourceDecrementRefCount(resource);
+        foeDestroyResource(resource);
     }
 }
 
-foeMesh *foeMeshPool::add(foeResourceID resource) {
+foeResource foeMeshPool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
     // If it finds it, return nullptr
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return nullptr;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return FOE_NULL_HANDLE;
         }
     }
 
     // Not found, add it
-    foeMesh *pResource = new foeMesh{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC = foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH,
+                                             &mResourceFns, sizeof(foeMesh), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeMesh *foeMeshPool::findOrAdd(foeResourceID resource) {
+foeResource foeMeshPool::findOrAdd(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return pResource;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return it;
         }
     }
 
     // Not found, create it now
-    foeMesh *pResource = new foeMesh{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC = foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH,
+                                             &mResourceFns, sizeof(foeMesh), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeMesh *foeMeshPool::find(foeId id) {
-    foeMesh *pResource{nullptr};
+foeResource foeMeshPool::find(foeResourceID resource) {
+    foeResource outResource;
 
     mSync.lock_shared();
-    for (auto *pOld : mResources) {
-        if (pOld->getID() == id) {
-            pResource = pOld;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            outResource = it;
             break;
         }
     }
     mSync.unlock_shared();
 
-    return pResource;
+    return outResource;
 }
 
 void foeMeshPool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn) {
@@ -88,7 +99,7 @@ void foeMeshPool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyn
 void foeMeshPool::unloadAll() {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        pResource->unloadResource();
+    for (auto const it : mResources) {
+        foeResourceUnload(it, false);
     }
 }
