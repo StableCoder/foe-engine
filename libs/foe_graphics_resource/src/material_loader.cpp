@@ -148,7 +148,7 @@ void foeMaterialLoader::gfxMaintenance() {
         // Check to see if what we need has been loaded yet
         auto subResLoadState = getWorstSubResourceState(it.data.fragmentShader, it.data.image);
 
-        if (subResLoadState == foeResourceState::Loaded) {
+        if (subResLoadState == foeResourceLoadState::Loaded) {
             { // Using the sub-resources that are loaded, and definition data, create the resource
                 foeGfxShader fragShader =
                     (it.data.fragmentShader != FOE_NULL_HANDLE)
@@ -176,7 +176,7 @@ void foeMaterialLoader::gfxMaintenance() {
 
             it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
                            foeMaterialLoader::unloadResource);
-        } else if (subResLoadState == foeResourceState::Failed) {
+        } else if (subResLoadState == foeResourceLoadState::Failed) {
         DESCRIPTOR_CREATE_FAILED:
             // One of them failed to load, we're not proceeding with this resource
             it.pPostLoadFn(

@@ -19,7 +19,6 @@
 
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
-#include <foe/simulation/core/resource.hpp>
 
 struct foeArmature {
     std::vector<foeArmatureNode> armature;

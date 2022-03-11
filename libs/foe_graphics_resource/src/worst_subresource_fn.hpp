@@ -18,24 +18,14 @@
 #define WORST_SUBRESOURCE_FN_HPP
 
 #include <foe/resource/resource.h>
-#include <foe/simulation/core/resource.hpp>
 
 template <typename SubResource, typename... SubResources>
-foeResourceState getWorstSubResourceState(SubResource subResource,
-                                          SubResources... nextSubResources) {
-    if constexpr (std::is_same<SubResource, foeResource>::value) {
-        if (subResource != FOE_NULL_HANDLE) {
-            auto state = foeResourceGetState(subResource);
-            if (state != foeResourceLoadState::Loaded) {
-                return foeResourceState::Unloaded;
-            }
-        }
-    } else {
-        if (subResource != nullptr) {
-            auto state = subResource->getState();
-            if (state != foeResourceState::Loaded) {
-                return state;
-            }
+foeResourceLoadState getWorstSubResourceState(SubResource subResource,
+                                              SubResources... nextSubResources) {
+    if (subResource != FOE_NULL_HANDLE) {
+        auto state = foeResourceGetState(subResource);
+        if (state != foeResourceLoadState::Loaded) {
+            return state;
         }
     }
 
@@ -44,7 +34,7 @@ foeResourceState getWorstSubResourceState(SubResource subResource,
         return getWorstSubResourceState(nextSubResources...);
     } else {
         // End of the line, return that they're all at least in the good 'loaded' state
-        return foeResourceState::Loaded;
+        return foeResourceLoadState::Loaded;
     }
 }
 

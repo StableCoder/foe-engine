@@ -71,7 +71,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
             getWorstSubResourceState(it.data.vertexShader, it.data.tessellationControlShader,
                                      it.data.tessellationEvaluationShader, it.data.geometryShader);
 
-        if (subResLoadState == foeResourceState::Loaded) {
+        if (subResLoadState == foeResourceLoadState::Loaded) {
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
                 it.data.vertexDescriptor.mVertex =
                     ((foeShader const *)foeResourceGetData(it.data.vertexShader))->shader;
@@ -110,7 +110,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
             it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
                            foeVertexDescriptorLoader::unloadResource);
 
-        } else if (subResLoadState == foeResourceState::Failed) {
+        } else if (subResLoadState == foeResourceLoadState::Failed) {
             // At least one of the items failed to load
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
                 foeResourceDecrementUseCount(it.data.vertexShader);

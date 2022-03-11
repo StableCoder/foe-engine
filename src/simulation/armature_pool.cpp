@@ -19,6 +19,8 @@
 #include "armature.hpp"
 #include "type_defs.h"
 
+#include <mutex>
+
 foeArmaturePool::foeArmaturePool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 
 foeArmaturePool::~foeArmaturePool() {
