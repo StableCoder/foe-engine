@@ -19,66 +19,79 @@
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/type_defs.h>
 
+#include <mutex>
+
 foeMaterialPool::foeMaterialPool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 
 foeMaterialPool::~foeMaterialPool() {
-    for (auto *pResource : mResources) {
-        pResource->decrementRefCount();
-
-        delete pResource;
+    for (auto const resource : mResources) {
+        foeResourceDecrementRefCount(resource);
+        foeDestroyResource(resource);
     }
 }
 
-foeMaterial *foeMaterialPool::add(foeResourceID resource) {
+foeResource foeMaterialPool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
     // If it finds it, return nullptr
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return nullptr;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return FOE_NULL_HANDLE;
         }
     }
 
     // Not found, add it
-    foeMaterial *pResource = new foeMaterial{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC =
+        foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, &mResourceFns,
+                          sizeof(foeMaterial), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeMaterial *foeMaterialPool::findOrAdd(foeResourceID resource) {
+foeResource foeMaterialPool::findOrAdd(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return pResource;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return it;
         }
     }
 
     // Not found, create it now
-    foeMaterial *pResource = new foeMaterial{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC =
+        foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, &mResourceFns,
+                          sizeof(foeMaterial), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeMaterial *foeMaterialPool::find(foeId id) {
-    foeMaterial *pResource{nullptr};
+foeResource foeMaterialPool::find(foeResourceID resource) {
+    foeResource outResource;
 
     mSync.lock_shared();
-    for (auto *pOld : mResources) {
-        if (pOld->getID() == id) {
-            pResource = pOld;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            outResource = it;
             break;
         }
     }
     mSync.unlock_shared();
 
-    return pResource;
+    return outResource;
 }
 
 void foeMaterialPool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn) {
@@ -88,7 +101,7 @@ void foeMaterialPool::setAsyncTaskFn(std::function<void(std::function<void()>)> 
 void foeMaterialPool::unloadAll() {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        pResource->unloadResource();
+    for (auto const it : mResources) {
+        foeResourceUnload(it, false);
     }
 }

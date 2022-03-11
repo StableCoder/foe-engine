@@ -72,19 +72,20 @@ void imageLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, st
     pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
 }
 
-void materialLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
+void materialLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-    auto *pMaterial = reinterpret_cast<foeMaterial *>(pResource);
 
-    auto pLocalCreateInfo = pMaterial->pCreateInfo;
+    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, pMaterial, pLocalCreateInfo, pPostLoadFn);
+            return it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
-    pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+    pPostLoadFn(resource,
+                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void shaderLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
@@ -302,7 +303,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = materialLoadFn,
+                .pLoadFn2 = materialLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -428,7 +429,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER,
             .pLoader = new foeMaterialLoader,
             .pCanProcessCreateInfoFn = foeMaterialLoader::canProcessCreateInfo,
-            .pLoadFn = foeMaterialLoader::load,
+            .pLoadFn2 = foeMaterialLoader::load,
             .pGfxMaintenanceFn =
                 [](void *pLoader) {
                     reinterpret_cast<foeMaterialLoader *>(pLoader)->gfxMaintenance();

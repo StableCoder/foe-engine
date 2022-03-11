@@ -59,21 +59,22 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
 
     static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
     static void load(void *pLoader,
-                     void *pResource,
+                     foeResource resource,
                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                     void (*pPostLoadFn)(void *, std::error_code));
+                     PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
-    std::error_code createDescriptorSet(foeMaterial::Data *pMaterialData);
+    std::error_code createDescriptorSet(foeMaterial *pMaterialData);
 
     static void unloadResource(void *pContext,
-                               void *pResource,
+                               foeResource resource,
                                uint32_t resourceIteration,
+                               PFN_foeResourceUnloadCall *pUnloadCallFn,
                                bool immediateUnload);
 
-    void load(void *pResource,
+    void load(foeResource resource,
               std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-              void (*pPostLoadFn)(void *, std::error_code));
+              PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeShaderPool *mShaderPool{nullptr};
     foeImagePool *mImagePool{nullptr};
@@ -84,25 +85,26 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
     VkDescriptorPool mDescriptorPool{VK_NULL_HANDLE};
 
     struct LoadData {
-        foeMaterial *pMaterial;
-        void (*pPostLoadFn)(void *, std::error_code);
-        foeMaterial::Data data;
+        foeResource resource;
+        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        PFN_foeResourcePostLoad *pPostLoadFn;
+        foeMaterial data;
     };
 
     std::mutex mLoadSync;
     std::vector<LoadData> mLoadRequests;
 
     struct UnloadData {
-        foeMaterial *pMaterial;
+        foeResource resource;
         uint32_t iteration;
+        PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
     std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
 
     size_t mDataDestroyIndex{0};
-    std::array<std::vector<foeMaterial::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mDataDestroyLists{};
+    std::array<std::vector<foeMaterial>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };
 
 #endif // FOE_GRPAHICS_RESOURCE_MATERIAL_LOADER_HPP

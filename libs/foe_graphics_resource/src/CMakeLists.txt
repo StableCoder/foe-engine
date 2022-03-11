@@ -7,7 +7,6 @@ target_sources(
           log.cpp
           material_loader.cpp
           material_pool.cpp
-          material.cpp
           mesh_loader.cpp
           mesh_pool.cpp
           mesh.cpp

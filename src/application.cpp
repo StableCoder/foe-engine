@@ -155,14 +155,14 @@ auto renderCall(foeId entity,
         vertexDescriptor = pVertexDescriptorPool->find(pRenderState->vertexDescriptor);
     }
 
-    auto *pMaterial = pMaterialPool->find(pRenderState->material);
+    foeResource material = pMaterialPool->find(pRenderState->material);
     auto *pMesh = pMeshPool->find(pRenderState->mesh);
 
-    if (vertexDescriptor == FOE_NULL_HANDLE || pMaterial == nullptr || pMesh == nullptr) {
+    if (vertexDescriptor == FOE_NULL_HANDLE || material == FOE_NULL_HANDLE || pMesh == nullptr) {
         return false;
     }
     if (foeResourceGetState(vertexDescriptor) != foeResourceLoadState::Loaded ||
-        pMaterial->getState() != foeResourceState::Loaded ||
+        foeResourceGetState(material) != foeResourceLoadState::Loaded ||
         pMesh->getState() != foeResourceState::Loaded) {
         return false;
     }
@@ -170,6 +170,7 @@ auto renderCall(foeId entity,
     // Get Resource Data
     auto const *pVertexDescriptor =
         (foeVertexDescriptor const *)foeResourceGetData(vertexDescriptor);
+    auto const *pMaterial = (foeMaterial const *)foeResourceGetData(material);
 
     // Retrieve the pipeline
     auto *pGfxVertexDescriptor = &pVertexDescriptor->vertexDescriptor;
@@ -179,7 +180,7 @@ auto renderCall(foeId entity,
 
     foeGfxVkGetPipelinePool(gfxSession)
         ->getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
-                      pMaterial->data.pGfxFragDescriptor, renderPass, 0, samples, &layout,
+                      pMaterial->pGfxFragDescriptor, renderPass, 0, samples, &layout,
                       &descriptorSetLayoutCount, &pipeline);
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1,
@@ -212,7 +213,7 @@ auto renderCall(foeId entity,
                                 &pRenderState->boneDescriptorSet, 0, nullptr);
     }
     // Bind the fragment descriptor set *if* it exists?
-    if (auto set = pMaterial->data.materialDescriptorSet; set != VK_NULL_HANDLE) {
+    if (auto set = pMaterial->materialDescriptorSet; set != VK_NULL_HANDLE) {
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
                                 foeDescriptorSetLayoutIndex::FragmentShader, 1, &set, 0, nullptr);
     }
@@ -415,10 +416,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             foeResourceLoad(it, false);
         }
 
-        for (auto *ptr : ((foeMaterialPool *)foeSimulationGetResourcePool(
-                              pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL))
-                             ->getDataVector()) {
-            ptr->loadResource(false);
+        for (auto it : ((foeMaterialPool *)foeSimulationGetResourcePool(
+                            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL))
+                           ->getDataVector()) {
+            foeResourceLoad(it, false);
         }
 
         for (auto *ptr : ((foeMeshPool *)foeSimulationGetResourcePool(

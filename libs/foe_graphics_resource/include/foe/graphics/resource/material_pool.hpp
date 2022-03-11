@@ -18,21 +18,20 @@
 #define FOE_GRAPHICS_RESOURCE_MATERIAL_POOL_HPP
 
 #include <foe/graphics/resource/export.h>
+#include <foe/resource/resource.h>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
-
-struct foeMaterial;
 
 class FOE_GFX_RES_EXPORT foeMaterialPool {
   public:
     foeMaterialPool(foeResourceFns const &resourceFns);
     ~foeMaterialPool();
 
-    foeMaterial *add(foeResourceID resource);
-    foeMaterial *findOrAdd(foeResourceID resource);
-    foeMaterial *find(foeId id);
+    foeResource add(foeResourceID resource);
+    foeResource findOrAdd(foeResourceID resource);
+    foeResource find(foeId id);
 
     void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
 
@@ -43,7 +42,7 @@ class FOE_GFX_RES_EXPORT foeMaterialPool {
   private:
     FOE_GRAPHICS_RESOURCE_NO_EXPORT foeResourceFns mResourceFns;
     FOE_GRAPHICS_RESOURCE_NO_EXPORT std::shared_mutex mSync;
-    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeMaterial *> mResources;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeResource> mResources;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_MATERIAL_POOL_HPP

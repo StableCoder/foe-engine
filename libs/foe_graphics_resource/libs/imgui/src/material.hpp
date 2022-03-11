@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
-struct foeMaterial;
+#include <foe/resource/resource.h>
 
-void imgui_foeMaterial(foeMaterial *pMaterial);
+void imgui_foeMaterial(foeResource resource);
 
 #endif // MATERIAL_HPP

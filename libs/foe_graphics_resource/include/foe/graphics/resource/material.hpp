@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,35 +18,21 @@
 #define FOE_GRAPHICS_RESOURCE_MATERIAL_HPP
 
 #include <foe/graphics/resource/export.h>
-#include <foe/simulation/core/resource.hpp>
-#include <vk_mem_alloc.h>
+#include <foe/resource/resource.h>
 #include <vulkan/vulkan.h>
 
 struct foeShader;
 struct foeImage;
 struct foeGfxVkFragmentDescriptor;
 
-struct FOE_GFX_RES_EXPORT foeMaterial : public foeResourceBase {
-    foeMaterial(foeResourceID resource, foeResourceFns const *pResourceFns);
-    ~foeMaterial();
+struct foeMaterial {
+    // For the FragmentDescriptor
+    foeShader *pFragmentShader{nullptr};
+    // For the Material
+    foeImage *pImage{nullptr};
 
-    void loadCreateInfo();
-    void loadResource(bool refreshCreateInfo);
-    void unloadResource();
-
-    struct Data {
-        void *pUnloadContext{nullptr};
-        void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
-
-        // For the FragmentDescriptor
-        foeShader *pFragmentShader{nullptr};
-        // For the Material
-        foeImage *pImage{nullptr};
-
-        foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
-        VkDescriptorSet materialDescriptorSet;
-    } data;
+    foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
+    VkDescriptorSet materialDescriptorSet;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_MATERIAL_HPP

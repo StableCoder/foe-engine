@@ -73,15 +73,19 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (pMaterialPool != nullptr) {
-        auto const *pMaterial = pMaterialPool->find(resource);
-        if (pMaterial && pMaterial->pCreateInfo) {
-            if (auto pMaterialCI =
-                    dynamic_cast<foeMaterialCreateInfo *>(pMaterial->pCreateInfo.get());
-                pMaterialCI)
+        foeResource material = pMaterialPool->find(resource);
+
+        if (material != FOE_NULL_HANDLE) {
+            auto pCreateInfo = foeResourceGetCreateInfo(material);
+            if (auto pMaterialCI = dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo.get());
+                pMaterialCI) {
+                auto *pMaterial = (foeMaterial *)foeResourceGetData(material);
+
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_material_key(),
-                    .data = yaml_write_material(*pMaterialCI, pMaterial->data.pGfxFragDescriptor),
+                    .data = yaml_write_material(*pMaterialCI, pMaterial->pGfxFragDescriptor),
                 });
+            }
         }
     }
 

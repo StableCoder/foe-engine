@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 #include "material.hpp"
 
 #include <foe/graphics/resource/material.hpp>
-#include <foe/simulation/imgui/resource_base.hpp>
+#include <foe/resource/imgui/resource.h>
 #include <imgui.h>
 
-void imgui_foeMaterial(foeMaterial *pMaterial) {
+void imgui_foeMaterial(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeMaterial");
 
-    imgui_renderResourceBase(pMaterial);
+    imgui_renderResource(resource);
 }

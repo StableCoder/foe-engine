@@ -155,8 +155,8 @@ void foeMaterialLoader::gfxMaintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.pMaterial, it.iteration, true);
-        it.pMaterial->decrementRefCount();
+        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        foeResourceDecrementRefCount(it.resource);
     }
 
     // Process Load Requests
@@ -176,8 +176,7 @@ void foeMaterialLoader::gfxMaintenance() {
                                               ? it.data.pFragmentShader->data.shader
                                               : FOE_NULL_HANDLE;
 
-                auto *pMaterialCI =
-                    reinterpret_cast<foeMaterialCreateInfo *>(it.data.pCreateInfo.get());
+                auto *pMaterialCI = reinterpret_cast<foeMaterialCreateInfo *>(it.pCreateInfo.get());
 
                 it.data.pGfxFragDescriptor = mGfxFragmentDescriptorPool->get(
                     (pMaterialCI->hasRasterizationSCI) ? &pMaterialCI->rasterizationSCI : nullptr,
@@ -191,23 +190,20 @@ void foeMaterialLoader::gfxMaintenance() {
                 goto DESCRIPTOR_CREATE_FAILED;
 
             // Everything's ready, load the resource
-            it.pMaterial->modifySync.lock();
+            auto moveFn = [](void *pSrc, void *pDst) {
+                auto *pSrcData = (foeMaterial *)pSrc;
+                new (pDst) foeMaterial(std::move(*pSrcData));
+            };
 
-            if (it.pMaterial->data.pUnloadFn != nullptr) {
-                it.pMaterial->data.pUnloadFn(it.pMaterial->data.pUnloadContext, it.pMaterial,
-                                             it.pMaterial->iteration, true);
-            }
-
-            ++it.pMaterial->iteration;
-            it.pMaterial->data = std::move(it.data);
-            it.pPostLoadFn(it.pMaterial, {});
-
-            it.pMaterial->modifySync.unlock();
+            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                           foeMaterialLoader::unloadResource);
         } else if (subResLoadState == foeResourceState::Failed) {
         DESCRIPTOR_CREATE_FAILED:
             // One of them failed to load, we're not proceeding with this resource
-            it.pPostLoadFn(it.pMaterial,
-                           FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD);
+            it.pPostLoadFn(
+                it.resource,
+                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 
             // Unload the data we did get
             if (it.data.pFragmentShader != nullptr)
@@ -238,58 +234,55 @@ bool foeMaterialLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateI
 }
 
 void foeMaterialLoader::load(void *pLoader,
-                             void *pResource,
+                             foeResource resource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                             void (*pPostLoadFn)(void *, std::error_code)) {
-    reinterpret_cast<foeMaterialLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+                             PFN_foeResourcePostLoad *pPostLoadFn) {
+    reinterpret_cast<foeMaterialLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
 }
 
-void foeMaterialLoader::load(void *pResource,
+void foeMaterialLoader::load(foeResource resource,
                              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                             void (*pPostLoadFn)(void *, std::error_code)) {
-    auto *pMaterial = reinterpret_cast<foeMaterial *>(pResource);
+                             PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pMaterialCI = dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo.get());
 
     if (pMaterialCI == nullptr) {
-        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                    nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
-    foeMaterial::Data materialData{
-        .pUnloadContext = this,
-        .pUnloadFn = unloadResource,
-        .pCreateInfo = pCreateInfo,
-    };
+    foeMaterial data{};
 
     // Fragment Shader
     if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {
-        materialData.pFragmentShader = mShaderPool->findOrAdd(pMaterialCI->fragmentShader);
+        data.pFragmentShader = mShaderPool->findOrAdd(pMaterialCI->fragmentShader);
 
-        materialData.pFragmentShader->incrementRefCount();
-        materialData.pFragmentShader->incrementUseCount();
-        materialData.pFragmentShader->loadResource(false);
+        data.pFragmentShader->incrementRefCount();
+        data.pFragmentShader->incrementUseCount();
+        data.pFragmentShader->loadResource(false);
     }
 
     // Image
     if (pMaterialCI->image != FOE_INVALID_ID) {
-        materialData.pImage = mImagePool->findOrAdd(pMaterialCI->image);
+        data.pImage = mImagePool->findOrAdd(pMaterialCI->image);
 
-        materialData.pImage->incrementRefCount();
-        materialData.pImage->incrementUseCount();
-        materialData.pImage->loadResource(false);
+        data.pImage->incrementRefCount();
+        data.pImage->incrementUseCount();
+        data.pImage->loadResource(false);
     }
 
     // Send to the loading queue to await results
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
-        .pMaterial = pMaterial,
+        .resource = resource,
+        .pCreateInfo = pCreateInfo,
         .pPostLoadFn = pPostLoadFn,
-        .data = std::move(materialData),
+        .data = std::move(data),
     });
     mLoadSync.unlock();
 }
 
-std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial::Data *pMaterialData) {
+std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialData) {
     // If there's no elements to create a descriptor set with, just return
     if (pMaterialData->pImage == nullptr) {
         return {};
@@ -336,22 +329,24 @@ std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial::Data *pMater
 }
 
 void foeMaterialLoader::unloadResource(void *pContext,
-                                       void *pResource,
+                                       foeResource resource,
                                        uint32_t resourceIteration,
+                                       PFN_foeResourceUnloadCall *pUnloadCallFn,
                                        bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeMaterialLoader *>(pContext);
-    auto *pMaterial = reinterpret_cast<foeMaterial *>(pResource);
 
     if (immediateUnload) {
-        pMaterial->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeMaterial *)pSrc;
+            auto *pDstData = (foeMaterial *)pDst;
 
-        if (pMaterial->iteration == resourceIteration) {
-            auto data = std::move(pMaterial->data);
+            *pDstData = std::move(*pSrcData);
+            pSrcData->~foeMaterial();
+        };
 
-            pMaterial->data = {};
-            pMaterial->state = foeResourceState::Unloaded;
-            ++pMaterial->iteration;
+        foeMaterial data;
 
+        if (pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
             // Decrement the references of any sub-resources
             if (data.pFragmentShader != nullptr) {
                 data.pFragmentShader->decrementUseCount();
@@ -365,15 +360,14 @@ void foeMaterialLoader::unloadResource(void *pContext,
             // Queue for delayed destruction
             pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
         }
-
-        pMaterial->modifySync.unlock();
     } else {
-        pMaterial->incrementRefCount();
+        foeResourceIncrementRefCount(resource);
         pLoader->mUnloadSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
-            .pMaterial = pMaterial,
+            .resource = resource,
             .iteration = resourceIteration,
+            .pUnloadCallFn = pUnloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();
