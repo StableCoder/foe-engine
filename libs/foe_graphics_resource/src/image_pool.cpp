@@ -19,66 +19,77 @@
 #include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/type_defs.h>
 
+#include <mutex>
+
 foeImagePool::foeImagePool(foeResourceFns const &resourceFns) : mResourceFns{resourceFns} {}
 
 foeImagePool::~foeImagePool() {
-    for (auto *pResource : mResources) {
-        pResource->decrementRefCount();
-
-        delete pResource;
+    for (auto const resource : mResources) {
+        foeResourceDecrementRefCount(resource);
+        foeDestroyResource(resource);
     }
 }
 
-foeImage *foeImagePool::add(foeResourceID resource) {
+foeResource foeImagePool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
     // If it finds it, return nullptr
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return nullptr;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return FOE_NULL_HANDLE;
         }
     }
 
     // Not found, add it
-    foeImage *pResource = new foeImage{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC = foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE,
+                                             &mResourceFns, sizeof(foeImage), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeImage *foeImagePool::findOrAdd(foeResourceID resource) {
+foeResource foeImagePool::findOrAdd(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        if (pResource->getID() == resource) {
-            return pResource;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return it;
         }
     }
 
     // Not found, create it now
-    foeImage *pResource = new foeImage{resource, &mResourceFns};
-    pResource->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC = foeCreateResource(resource, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE,
+                                             &mResourceFns, sizeof(foeImage), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mResources.emplace_back(pResource);
+    foeResourceIncrementRefCount(newResource);
 
-    return pResource;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeImage *foeImagePool::find(foeId id) {
-    foeImage *pResource{nullptr};
+foeResource foeImagePool::find(foeResourceID resource) {
+    foeResource outResource;
 
     mSync.lock_shared();
-    for (auto *pOld : mResources) {
-        if (pOld->getID() == id) {
-            pResource = pOld;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            outResource = it;
             break;
         }
     }
     mSync.unlock_shared();
 
-    return pResource;
+    return outResource;
 }
 
 void foeImagePool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn) {
@@ -88,7 +99,7 @@ void foeImagePool::setAsyncTaskFn(std::function<void(std::function<void()>)> asy
 void foeImagePool::unloadAll() {
     std::scoped_lock lock{mSync};
 
-    for (auto *pResource : mResources) {
-        pResource->unloadResource();
+    for (auto const it : mResources) {
+        foeResourceUnload(it, false);
     }
 }

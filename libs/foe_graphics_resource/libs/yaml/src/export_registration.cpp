@@ -51,14 +51,16 @@ std::vector<foeKeyYamlPair> exportImage(foeResourceID resource, foeSimulation co
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (pImagePool != nullptr) {
-        auto const *pImage = pImagePool->find(resource);
-        if (pImage && pImage->pCreateInfo) {
-            if (auto pImageCI = dynamic_cast<foeImageCreateInfo *>(pImage->pCreateInfo.get());
-                pImageCI)
+        foeResource image = pImagePool->find(resource);
+
+        if (image != FOE_NULL_HANDLE) {
+            auto pCreateInfo = foeResourceGetCreateInfo(image);
+            if (auto pImageCI = dynamic_cast<foeImageCreateInfo *>(pCreateInfo.get()); pImageCI) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_image_key(),
                     .data = yaml_write_image(*pImageCI),
                 });
+            }
         }
     }
 

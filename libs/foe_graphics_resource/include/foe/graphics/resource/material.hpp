@@ -29,7 +29,7 @@ struct foeMaterial {
     // For the FragmentDescriptor
     foeShader *pFragmentShader{nullptr};
     // For the Material
-    foeImage *pImage{nullptr};
+    foeResource image;
 
     foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
     VkDescriptorSet materialDescriptorSet;

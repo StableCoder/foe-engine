@@ -18,21 +18,20 @@
 #define FOE_GRAPHICS_RESOURCE_IMAGE_POOL_HPP
 
 #include <foe/graphics/resource/export.h>
+#include <foe/resource/resource.h>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <shared_mutex>
 #include <vector>
-
-struct foeImage;
 
 class FOE_GFX_RES_EXPORT foeImagePool {
   public:
     foeImagePool(foeResourceFns const &resourceFns);
     ~foeImagePool();
 
-    foeImage *add(foeResourceID resource);
-    foeImage *findOrAdd(foeResourceID resource);
-    foeImage *find(foeId id);
+    foeResource add(foeResourceID resource);
+    foeResource findOrAdd(foeResourceID resource);
+    foeResource find(foeId id);
 
     void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
 
@@ -43,7 +42,7 @@ class FOE_GFX_RES_EXPORT foeImagePool {
   private:
     FOE_GRAPHICS_RESOURCE_NO_EXPORT foeResourceFns mResourceFns;
     FOE_GRAPHICS_RESOURCE_NO_EXPORT std::shared_mutex mSync;
-    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeImage *> mResources;
+    FOE_GRAPHICS_RESOURCE_NO_EXPORT std::vector<foeResource> mResources;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_IMAGE_POOL_HPP

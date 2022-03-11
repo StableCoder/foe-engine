@@ -146,7 +146,7 @@ void foeMaterialLoader::gfxMaintenance() {
 
     for (auto &it : toLoad) {
         // Check to see if what we need has been loaded yet
-        auto subResLoadState = getWorstSubResourceState(it.data.pFragmentShader, it.data.pImage);
+        auto subResLoadState = getWorstSubResourceState(it.data.pFragmentShader, it.data.image);
 
         if (subResLoadState == foeResourceState::Loaded) {
             { // Using the sub-resources that are loaded, and definition data, create the resource
@@ -186,8 +186,10 @@ void foeMaterialLoader::gfxMaintenance() {
             // Unload the data we did get
             if (it.data.pFragmentShader != nullptr)
                 it.data.pFragmentShader->decrementRefCount();
-            if (it.data.pImage != nullptr)
-                it.data.pImage->decrementRefCount();
+            if (it.data.image != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.image);
+                foeResourceDecrementRefCount(it.data.image);
+            }
         } else {
             // All items are at least 'loading', so just re-queue
             stillLoading.emplace_back(std::move(it));
@@ -242,11 +244,11 @@ void foeMaterialLoader::load(foeResource resource,
 
     // Image
     if (pMaterialCI->image != FOE_INVALID_ID) {
-        data.pImage = mImagePool->findOrAdd(pMaterialCI->image);
+        data.image = mImagePool->findOrAdd(pMaterialCI->image);
 
-        data.pImage->incrementRefCount();
-        data.pImage->incrementUseCount();
-        data.pImage->loadResource(false);
+        foeResourceIncrementRefCount(data.image);
+        foeResourceIncrementUseCount(data.image);
+        foeResourceLoad(data.image, false);
     }
 
     // Send to the loading queue to await results
@@ -262,7 +264,7 @@ void foeMaterialLoader::load(foeResource resource,
 
 std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialData) {
     // If there's no elements to create a descriptor set with, just return
-    if (pMaterialData->pImage == nullptr) {
+    if (pMaterialData->image == FOE_NULL_HANDLE) {
         return {};
     }
 
@@ -284,9 +286,11 @@ std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialDat
         return vkRes;
     }
 
+    auto const *pImage = (foeImage const *)foeResourceGetData(pMaterialData->image);
+
     VkDescriptorImageInfo imageInfo{
-        .sampler = pMaterialData->pImage->data.sampler,
-        .imageView = pMaterialData->pImage->data.view,
+        .sampler = pImage->sampler,
+        .imageView = pImage->view,
         .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
     };
 
@@ -330,9 +334,9 @@ void foeMaterialLoader::unloadResource(void *pContext,
                 data.pFragmentShader->decrementUseCount();
                 data.pFragmentShader->decrementRefCount();
             }
-            if (data.pImage != nullptr) {
-                data.pImage->decrementUseCount();
-                data.pImage->decrementRefCount();
+            if (data.image != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(data.image);
+                foeResourceDecrementRefCount(data.image);
             }
 
             // Queue for delayed destruction

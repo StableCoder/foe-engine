@@ -24,10 +24,12 @@
 #include <foe/graphics/upload_buffer.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
+#include <foe/resource/resource.h>
 
 #include <array>
 #include <filesystem>
 #include <functional>
+#include <mutex>
 #include <vector>
 
 struct foeImageCreateInfo : public foeResourceCreateInfoBase {
@@ -50,19 +52,20 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
 
     static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
     static void load(void *pLoader,
-                     void *pResource,
+                     foeResource resource,
                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                     void (*pPostLoadFn)(void *, std::error_code));
+                     PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
     static void unloadResource(void *pContext,
-                               void *pResource,
+                               foeResource resource,
                                uint32_t resourceIteration,
+                               PFN_foeResourceUnloadCall *pUnloadCallFn,
                                bool immediateUnload);
 
-    void load(void *pResource,
+    void load(foeResource resource,
               std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-              void (*pPostLoadFn)(void *, std::error_code));
+              PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
@@ -70,9 +73,10 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
     foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
 
     struct LoadData {
-        foeImage *pImage;
-        void (*pPostLoadFn)(void *, std::error_code);
-        foeImage::Data data;
+        foeResource resource;
+        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        PFN_foeResourcePostLoad *pPostLoadFn;
+        foeImage data;
 
         foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
         foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
@@ -82,16 +86,17 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
     std::vector<LoadData> mToLoad;
 
     struct UnloadData {
-        foeImage *pImage;
+        foeResource resource;
         uint32_t iteration;
+        PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
     std::mutex mUnloadRequestsSync;
     std::vector<UnloadData> mUnloadRequests;
 
+    std::mutex mDestroySync;
     size_t mDataDestroyIndex{0};
-    std::array<std::vector<foeImage::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mDataDestroyLists{};
+    std::array<std::vector<foeImage>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_IMAGE_LOADER_HPP

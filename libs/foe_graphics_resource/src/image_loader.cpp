@@ -67,12 +67,14 @@ bool foeImageLoader::initializedGraphics() const noexcept { return mGfxSession !
 
 void foeImageLoader::gfxMaintenance() {
     // Previous Data Destruction
+    mDestroySync.lock();
     ++mDataDestroyIndex;
     if (mDataDestroyIndex >= mDataDestroyLists.size()) {
         mDataDestroyIndex = 0;
     }
-
     auto toDestroy = std::move(mDataDestroyLists[mDataDestroyIndex]);
+    mDestroySync.unlock();
+
     for (auto &it : toDestroy) {
         VkDevice device = foeGfxVkGetDevice(mGfxSession);
         VmaAllocator allocator = foeGfxVkGetAllocator(mGfxSession);
@@ -94,7 +96,8 @@ void foeImageLoader::gfxMaintenance() {
 
     for (auto &it : toUnload) {
         // Unload the resource, adding it'd data for later destruction
-        unloadResource(this, it.pImage, it.iteration, true);
+        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        foeResourceDecrementRefCount(it.resource);
     }
 
     // Process Loads
@@ -112,20 +115,15 @@ void foeImageLoader::gfxMaintenance() {
         if (requestStatus == FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE) {
             // It completed the upload, move the data
 
-            if (it.pImage) {
+            if (it.resource != FOE_NULL_HANDLE) {
                 // If we have an image to update, do so
-                it.pImage->modifySync.lock();
+                auto moveFn = [](void *pSrc, void *pDst) {
+                    auto *pSrcData = (foeImage *)pSrc;
+                    new (pDst) foeImage(std::move(*pSrcData));
+                };
 
-                if (it.pImage->data.pUnloadFn != nullptr) {
-                    it.pImage->data.pUnloadFn(it.pImage->data.pUnloadContext, it.pImage,
-                                              it.pImage->iteration, true);
-                }
-
-                ++it.pImage->iteration;
-                it.pImage->data = std::move(it.data);
-                it.pPostLoadFn(it.pImage, {});
-
-                it.pImage->modifySync.unlock();
+                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                               foeImageLoader::unloadResource);
             } else {
                 // Destroy the data immediately
                 VkDevice device = foeGfxVkGetDevice(mGfxSession);
@@ -144,9 +142,9 @@ void foeImageLoader::gfxMaintenance() {
             foeGfxDestroyUploadRequest(mGfxUploadContext, it.uploadRequest);
         } else if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
             // There's an error, this is lost.
-            if (it.pImage != nullptr) {
-                it.pImage->state = foeResourceState::Failed;
-            }
+            it.pPostLoadFn(it.resource,
+                           foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_UPLOAD_FAILURE),
+                           nullptr, nullptr, nullptr, nullptr, nullptr);
         } else {
             stillLoading.emplace_back(std::move(it));
         }
@@ -170,20 +168,20 @@ bool foeImageLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo
 }
 
 void foeImageLoader::load(void *pLoader,
-                          void *pResource,
+                          foeResource resource,
                           std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                          void (*pPostLoadFn)(void *, std::error_code)) {
-    reinterpret_cast<foeImageLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+                          PFN_foeResourcePostLoad *pPostLoadFn) {
+    reinterpret_cast<foeImageLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
 }
 
-void foeImageLoader::load(void *pResource,
+void foeImageLoader::load(foeResource resource,
                           std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                          void (*pPostLoadFn)(void *, std::error_code)) {
-    auto *pImage = reinterpret_cast<foeImage *>(pResource);
+                          PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pImageCI = dynamic_cast<foeImageCreateInfo *>(pCreateInfo.get());
 
     if (pImageCI == nullptr) {
-        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                    nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
@@ -191,11 +189,7 @@ void foeImageLoader::load(void *pResource,
     VkResult vkRes{VK_SUCCESS};
     foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
-    foeImage::Data imgData{
-        .pUnloadContext = this,
-        .pUnloadFn = unloadResource,
-        .pCreateInfo = pCreateInfo,
-    };
+    foeImage imgData{};
 
     { // Import the data
       // Find the file path first
@@ -406,18 +400,16 @@ LOADING_FAILED:
     if (errC) {
         // Failed at some point, clear all relevant data
         FOE_LOG(foeGraphicsResource, Error, "Failed to load foeImage {} with error {}:{}",
-                foeIdToString(pImage->getID()), errC.value(), errC.message())
+                foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
 
         // Run the post-load function with the error
-        pPostLoadFn(pImage, errC);
+        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
 
         if (gfxUploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pimage an nullptr, so the upload completes then the
             // data is safely destroyed
             mLoadSync.lock();
             mToLoad.emplace_back(LoadData{
-                .pImage = nullptr,
-                .pPostLoadFn = nullptr,
                 .data = std::move(imgData),
                 .uploadRequest = gfxUploadRequest,
                 .uploadBuffer = gfxUploadBuffer,
@@ -439,7 +431,8 @@ LOADING_FAILED:
         // Successfully processed and is being uploaded now
         mLoadSync.lock();
         mToLoad.emplace_back(LoadData{
-            .pImage = pImage,
+            .resource = resource,
+            .pCreateInfo = pCreateInfo,
             .pPostLoadFn = pPostLoadFn,
             .data = std::move(imgData),
             .uploadRequest = gfxUploadRequest,
@@ -450,30 +443,36 @@ LOADING_FAILED:
 }
 
 void foeImageLoader::unloadResource(void *pContext,
-                                    void *pResource,
+                                    foeResource resource,
                                     uint32_t resourceIteration,
+                                    PFN_foeResourceUnloadCall *pUnloadCallFn,
                                     bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeImageLoader *>(pContext);
-    auto *pImage = reinterpret_cast<foeImage *>(pResource);
 
     if (immediateUnload) {
-        pImage->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeImage *)pSrc;
+            auto *pDstData = (foeImage *)pDst;
 
-        if (pImage->iteration == resourceIteration) {
-            pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(
-                std::move(pImage->data));
-            pImage->data = {};
-            pImage->state = foeResourceState::Unloaded;
-            ++pImage->iteration;
+            *pDstData = std::move(*pSrcData);
+            pSrcData->~foeImage();
+        };
+
+        foeImage data{};
+
+        if (pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
+            pLoader->mDestroySync.lock();
+            pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
+            pLoader->mDestroySync.unlock();
         }
 
-        pImage->modifySync.unlock();
     } else {
         pLoader->mUnloadRequestsSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
-            .pImage = pImage,
+            .resource = resource,
             .iteration = resourceIteration,
+            .pUnloadCallFn = pUnloadCallFn,
         });
 
         pLoader->mUnloadRequestsSync.unlock();

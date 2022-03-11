@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,29 +17,14 @@
 #ifndef FOE_GRAPHICS_RESOURCE_IMAGE_HPP
 #define FOE_GRAPHICS_RESOURCE_IMAGE_HPP
 
-#include <foe/graphics/resource/export.h>
-#include <foe/simulation/core/resource.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-struct FOE_GFX_RES_EXPORT foeImage : public foeResourceBase {
-    foeImage(foeResourceID resource, foeResourceFns const *pResourceFns);
-    ~foeImage();
-
-    void loadCreateInfo();
-    void loadResource(bool refreshCreateInfo);
-    void unloadResource();
-
-    struct Data {
-        void *pUnloadContext{nullptr};
-        void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
-
-        VmaAllocation alloc{};
-        VkImage image{};
-        VkImageView view{};
-        VkSampler sampler{};
-    } data;
+struct foeImage {
+    VmaAllocation alloc;
+    VkImage image;
+    VkImageView view;
+    VkSampler sampler;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_IMAGE_HPP

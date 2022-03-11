@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 
-struct foeImage;
+#include <foe/resource/resource.h>
 
-void imgui_foeImage(foeImage *pImage);
+void imgui_foeImage(foeResource resource);
 
 #endif // IMAGE_HPP
