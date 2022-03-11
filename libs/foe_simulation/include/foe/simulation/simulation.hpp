@@ -62,10 +62,6 @@ struct foeSimulationLoaderData {
     /// Function that returns whether the loader can process a given ResourceCreateInfo type
     bool (*pCanProcessCreateInfoFn)(foeResourceCreateInfoBase *);
     /// Function to be called to load a resource with a compatible ResourceCreateInfo
-    void (*pLoadFn)(void *,
-                    void *,
-                    std::shared_ptr<foeResourceCreateInfoBase> const &,
-                    void (*)(void *, std::error_code));
     void (*pLoadFn2)(void *,
                      foeResource,
                      std::shared_ptr<foeResourceCreateInfoBase> const &,

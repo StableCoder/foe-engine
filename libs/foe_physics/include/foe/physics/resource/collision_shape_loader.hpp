@@ -20,6 +20,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
 #include <foe/physics/resource/collision_shape.hpp>
+#include <foe/resource/resource.h>
 #include <foe/simulation/core/create_info.hpp>
 #include <glm/glm.hpp>
 
@@ -43,32 +44,35 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
 
     static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
     static void load(void *pLoader,
-                     void *pResource,
+                     foeResource resource,
                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                     void (*pPostLoadFn)(void *, std::error_code));
+                     PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
     static void unloadResource(void *pContext,
-                               void *pResource,
+                               foeResource resource,
                                uint32_t resourceIteration,
+                               PFN_foeResourceUnloadCall *pUnloadCallFn,
                                bool immediateUnload);
 
-    void load(void *pResource,
+    void load(foeResource resource,
               std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-              void (*pPostLoadFn)(void *, std::error_code));
+              PFN_foeResourcePostLoad *pPostLoadFn);
 
     struct LoadData {
-        foeCollisionShape *pCollisionShape;
-        void (*pPostLoadFn)(void *, std::error_code);
-        foeCollisionShape::Data data;
+        foeResource resource;
+        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        PFN_foeResourcePostLoad *pPostLoadFn;
+        foeCollisionShape data;
     };
 
     std::mutex mLoadSync;
     std::vector<LoadData> mToLoad;
 
     struct UnloadData {
-        foeCollisionShape *pCollisionShape;
+        foeResource resource;
         uint32_t iteration;
+        PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
     std::mutex mUnloadRequestsSync;

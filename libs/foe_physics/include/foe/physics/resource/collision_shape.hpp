@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,24 +18,11 @@
 #define FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_HPP
 
 #include <btBulletDynamicsCommon.h>
-#include <foe/physics/export.h>
-#include <foe/simulation/core/resource.hpp>
 
-struct FOE_PHYSICS_EXPORT foeCollisionShape : public foeResourceBase {
-    foeCollisionShape(foeResourceID resource, foeResourceFns const *pResourceFns);
-    ~foeCollisionShape();
+#include <memory>
 
-    void loadCreateInfo();
-    void loadResource(bool refreshCreateInfo);
-    void unloadResource();
-
-    struct Data {
-        void *pUnloadContext{nullptr};
-        void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
-
-        std::unique_ptr<btCollisionShape> collisionShape;
-    } data;
+struct foeCollisionShape {
+    std::unique_ptr<btCollisionShape> collisionShape;
 };
 
 #endif // FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_HPP

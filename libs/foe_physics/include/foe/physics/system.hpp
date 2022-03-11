@@ -20,6 +20,7 @@
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
+#include <foe/resource/resource.h>
 
 #include <memory>
 #include <system_error>
@@ -52,7 +53,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     void addObject(foeEntityID entity,
                    foeRigidBody *pRigidBody,
                    foePosition3d *pPosition3d,
-                   foeCollisionShape *pCollisionShape);
+                   foeResource collisionShape);
     void removeObject(foeEntityID entity, foeRigidBody *pRigidBody);
 
     // Resources

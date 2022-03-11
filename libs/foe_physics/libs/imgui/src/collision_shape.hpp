@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #ifndef COLLISION_SHAPE_HPP
 #define COLLISION_SHAPE_HPP
 
-struct foeCollisionShape;
+#include <foe/resource/resource.h>
 
-void imgui_render_foeCollisionShape(foeCollisionShape *pResource);
+void imgui_render_foeCollisionShape(foeResource resource);
 
 #endif // COLLISION_SHAPE_HPP

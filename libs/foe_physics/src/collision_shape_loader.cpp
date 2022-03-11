@@ -46,8 +46,8 @@ void foeCollisionShapeLoader::maintenance() {
     mUnloadRequestsSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.pCollisionShape, it.iteration, true);
-        it.pCollisionShape->decrementRefCount();
+        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        foeResourceDecrementRefCount(it.resource);
     }
 
     // Process Loads
@@ -56,19 +56,13 @@ void foeCollisionShapeLoader::maintenance() {
     mLoadSync.unlock();
 
     for (auto &it : toLoad) {
-        it.pCollisionShape->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeCollisionShape *)pSrc;
+            new (pDst) foeCollisionShape(std::move(*pSrcData));
+        };
 
-        if (it.pCollisionShape->data.pUnloadFn != nullptr) {
-            it.pCollisionShape->data.pUnloadFn(it.pCollisionShape->data.pUnloadContext,
-                                               it.pCollisionShape, it.pCollisionShape->iteration,
-                                               true);
-        }
-
-        ++it.pCollisionShape->iteration;
-        it.pCollisionShape->data = std::move(it.data);
-        it.pPostLoadFn(it.pCollisionShape, {});
-
-        it.pCollisionShape->modifySync.unlock();
+        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                       foeCollisionShapeLoader::unloadResource);
     }
 }
 
@@ -77,38 +71,33 @@ bool foeCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pC
 }
 
 void foeCollisionShapeLoader::load(void *pLoader,
-                                   void *pResource,
+                                   foeResource resource,
                                    std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                                   void (*pPostLoadFn)(void *, std::error_code)) {
-    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+                                   PFN_foeResourcePostLoad *pPostLoadFn) {
+    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
 }
 
-void foeCollisionShapeLoader::load(void *pResource,
+void foeCollisionShapeLoader::load(foeResource resource,
                                    std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                                   void (*pPostLoadFn)(void *, std::error_code)) {
-    auto *pCollisionShape = reinterpret_cast<foeCollisionShape *>(pResource);
+                                   PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pCollisionShapeCreateInfo =
         dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo.get());
 
     if (pCollisionShapeCreateInfo == nullptr) {
-        pPostLoadFn(pResource, FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO);
+        pPostLoadFn(resource, foeToErrorCode(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
-    foeCollisionShape::Data data;
+    foeCollisionShape data{};
 
     data.collisionShape =
         std::make_unique<btBoxShape>(glmToBtVec3(pCollisionShapeCreateInfo->boxSize));
 
-    std::scoped_lock writeLock{pCollisionShape->modifySync};
-
-    data.pUnloadContext = this;
-    data.pUnloadFn = &foeCollisionShapeLoader::unloadResource;
-    data.pCreateInfo = pCreateInfo;
-
     mLoadSync.lock();
     mToLoad.emplace_back(LoadData{
-        .pCollisionShape = pCollisionShape,
+        .resource = resource,
+        .pCreateInfo = pCreateInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });
@@ -116,29 +105,32 @@ void foeCollisionShapeLoader::load(void *pResource,
 }
 
 void foeCollisionShapeLoader::unloadResource(void *pContext,
-                                             void *pResource,
+                                             foeResource resource,
                                              uint32_t resourceIteration,
+                                             PFN_foeResourceUnloadCall *pUnloadCallFn,
                                              bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeCollisionShapeLoader *>(pContext);
-    auto *pCollisionShape = reinterpret_cast<foeCollisionShape *>(pResource);
 
     if (immediateUnload) {
-        pCollisionShape->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeCollisionShape *)pSrc;
+            auto *pDstData = (foeCollisionShape *)pDst;
 
-        if (pCollisionShape->iteration == resourceIteration) {
-            pCollisionShape->data = {};
-            ++pCollisionShape->iteration;
-            pCollisionShape->state = foeResourceState::Unloaded;
-        }
+            *pDstData = std::move(*pSrcData);
+            pSrcData->~foeCollisionShape();
+        };
 
-        pCollisionShape->modifySync.unlock();
+        foeCollisionShape data{};
+
+        pUnloadCallFn(resource, resourceIteration, &data, moveFn);
     } else {
-        pCollisionShape->incrementRefCount();
+        foeResourceIncrementRefCount(resource);
         pLoader->mUnloadRequestsSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
-            .pCollisionShape = pCollisionShape,
+            .resource = resource,
             .iteration = resourceIteration,
+            .pUnloadCallFn = pUnloadCallFn,
         });
 
         pLoader->mUnloadRequestsSync.unlock();

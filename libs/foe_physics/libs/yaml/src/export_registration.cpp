@@ -38,15 +38,18 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (pCollisionShapePool != nullptr) {
-        auto const *pCollisionShape = pCollisionShapePool->find(resource);
-        if (pCollisionShape && pCollisionShape->pCreateInfo) {
-            if (auto dynPtr =
-                    dynamic_cast<foeCollisionShapeCreateInfo *>(pCollisionShape->pCreateInfo.get());
-                dynPtr)
+        foeResource collisionShape = pCollisionShapePool->find(resource);
+
+        if (collisionShape != FOE_NULL_HANDLE) {
+            auto pCreateInfo = foeResourceGetCreateInfo(collisionShape);
+
+            if (auto dynPtr = dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo.get());
+                dynPtr) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_collision_shape_key(),
                     .data = yaml_write_collision_shape(*dynPtr),
                 });
+            }
         }
     }
 

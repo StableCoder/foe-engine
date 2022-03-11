@@ -19,6 +19,7 @@
 
 #include <foe/ecs/id.hpp>
 #include <foe/physics/export.h>
+#include <foe/resource/resource.h>
 #include <foe/simulation/core/resource_fns.hpp>
 
 #include <functional>
@@ -32,9 +33,9 @@ class FOE_PHYSICS_EXPORT foeCollisionShapePool {
     foeCollisionShapePool(foeResourceFns const &resourceFns);
     ~foeCollisionShapePool();
 
-    foeCollisionShape *add(foeResourceID resource);
-    foeCollisionShape *findOrAdd(foeResourceID resource);
-    foeCollisionShape *find(foeResourceID id);
+    foeResource add(foeResourceID resource);
+    foeResource findOrAdd(foeResourceID resource);
+    foeResource find(foeResourceID id);
 
     void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
 
@@ -43,7 +44,7 @@ class FOE_PHYSICS_EXPORT foeCollisionShapePool {
   private:
     FOE_PHYSICS_NO_EXPORT foeResourceFns mResourceFns;
     FOE_PHYSICS_NO_EXPORT std::shared_mutex mSync;
-    FOE_PHYSICS_NO_EXPORT std::vector<foeCollisionShape *> mCollisionShapes;
+    FOE_PHYSICS_NO_EXPORT std::vector<foeResource> mResources;
 };
 
 #endif // FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_POOL_HPP

@@ -48,21 +48,21 @@ foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
 }
 
 void collisionShapeLoadFn(void *pContext,
-                          void *pResource,
-                          void (*pPostLoadFn)(void *, std::error_code)) {
+                          foeResource resource,
+                          PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-    auto *pCollisionShape = reinterpret_cast<foeCollisionShape *>(pResource);
 
-    auto pLocalCreateInfo = pCollisionShape->pCreateInfo;
+    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            it.pLoadFn(it.pLoader, pCollisionShape, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
             return;
         }
     }
 
-    pPostLoadFn(pResource, FOE_PHYSICS_ERROR_IMPORT_FAILED);
+    pPostLoadFn(resource, foeToErrorCode(FOE_PHYSICS_ERROR_IMPORT_FAILED), nullptr, nullptr,
+                nullptr, nullptr, nullptr);
 }
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
@@ -184,7 +184,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = collisionShapeLoadFn,
+                .pLoadFn2 = collisionShapeLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -208,7 +208,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER,
             .pLoader = new foeCollisionShapeLoader,
             .pCanProcessCreateInfoFn = foeCollisionShapeLoader::canProcessCreateInfo,
-            .pLoadFn = foeCollisionShapeLoader::load,
+            .pLoadFn2 = foeCollisionShapeLoader::load,
             .pMaintenanceFn =
                 [](void *pLoader) {
                     reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();

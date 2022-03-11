@@ -24,63 +24,74 @@ foeCollisionShapePool::foeCollisionShapePool(foeResourceFns const &resourceFns) 
     mResourceFns{resourceFns} {}
 
 foeCollisionShapePool::~foeCollisionShapePool() {
-    for (auto *pCollisionShape : mCollisionShapes) {
-        pCollisionShape->decrementRefCount();
-
-        delete pCollisionShape;
+    for (auto const resource : mResources) {
+        foeResourceDecrementRefCount(resource);
+        foeDestroyResource(resource);
     }
 }
 
-foeCollisionShape *foeCollisionShapePool::add(foeResourceID resource) {
+foeResource foeCollisionShapePool::add(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
     // If it finds it, return nullptr
-    for (auto *pPhysCollisionShape : mCollisionShapes) {
-        if (pPhysCollisionShape->getID() == resource) {
-            return nullptr;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return FOE_NULL_HANDLE;
         }
     }
 
     // Not found, add it
-    foeCollisionShape *pPhysCollisionShape = new foeCollisionShape{resource, &mResourceFns};
-    pPhysCollisionShape->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC =
+        foeCreateResource(resource, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE, &mResourceFns,
+                          sizeof(foeCollisionShape), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mCollisionShapes.emplace_back(pPhysCollisionShape);
+    foeResourceIncrementRefCount(newResource);
 
-    return pPhysCollisionShape;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeCollisionShape *foeCollisionShapePool::findOrAdd(foeResourceID resource) {
+foeResource foeCollisionShapePool::findOrAdd(foeResourceID resource) {
     std::scoped_lock lock{mSync};
 
-    for (auto *pPhysCollisionShape : mCollisionShapes) {
-        if (pPhysCollisionShape->getID() == resource) {
-            return pPhysCollisionShape;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            return it;
         }
     }
 
     // Not found, create it now
-    foeCollisionShape *pPhysCollisionShape = new foeCollisionShape{resource, &mResourceFns};
-    pPhysCollisionShape->incrementRefCount();
+    foeResource newResource;
+    std::error_code errC =
+        foeCreateResource(resource, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE, &mResourceFns,
+                          sizeof(foeCollisionShape), &newResource);
+    if (errC)
+        return FOE_NULL_HANDLE;
 
-    mCollisionShapes.emplace_back(pPhysCollisionShape);
+    foeResourceIncrementRefCount(newResource);
 
-    return pPhysCollisionShape;
+    mResources.emplace_back(newResource);
+
+    return newResource;
 }
 
-foeCollisionShape *foeCollisionShapePool::find(foeId id) {
-    foeCollisionShape *pCollisionShape{nullptr};
+foeResource foeCollisionShapePool::find(foeResourceID resource) {
+    foeResource outResource;
 
     mSync.lock_shared();
-    for (auto *pOld : mCollisionShapes) {
-        if (pOld->getID() == id) {
-            pCollisionShape = pOld;
+    for (auto const it : mResources) {
+        if (foeResourceGetID(it) == resource) {
+            outResource = it;
             break;
         }
     }
     mSync.unlock_shared();
 
-    return pCollisionShape;
+    return outResource;
 }
 
 void foeCollisionShapePool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn) {
@@ -90,7 +101,7 @@ void foeCollisionShapePool::setAsyncTaskFn(std::function<void(std::function<void
 void foeCollisionShapePool::unloadAll() {
     std::scoped_lock lock{mSync};
 
-    for (auto *pCollisionShape : mCollisionShapes) {
-        pCollisionShape->unloadResource();
+    for (auto const it : mResources) {
+        foeResourceUnload(it, false);
     }
 }

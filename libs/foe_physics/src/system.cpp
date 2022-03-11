@@ -192,7 +192,7 @@ void foePhysicsSystem::process(float timePassed) {
 void foePhysicsSystem::addObject(foeEntityID entity,
                                  foeRigidBody *pRigidBody,
                                  foePosition3d *pPosition,
-                                 foeCollisionShape *pCollisionShape) {
+                                 foeResource collisionShape) {
     // RigidBody
     if (pRigidBody == nullptr) {
         size_t dataOffset = mpRigidBodyPool->find(entity);
@@ -218,24 +218,27 @@ void foePhysicsSystem::addObject(foeEntityID entity,
     }
 
     // CollisionShape
-    while (pCollisionShape == nullptr) {
-        pCollisionShape = mpCollisionShapePool->findOrAdd(pRigidBody->collisionShape);
+    while (collisionShape == FOE_NULL_HANDLE) {
+        collisionShape = mpCollisionShapePool->findOrAdd(pRigidBody->collisionShape);
     }
 
-    if (auto collisionShapeState = pCollisionShape->getState();
-        collisionShapeState != foeResourceState::Loaded) {
-        if (collisionShapeState == foeResourceState::Failed) {
+    if (auto collisionShapeState = foeResourceGetState(collisionShape);
+        collisionShapeState != foeResourceLoadState::Loaded) {
+        if (collisionShapeState == foeResourceLoadState::Failed) {
             return;
         }
 
-        pCollisionShape->loadResource(false);
+        foeResourceLoad(collisionShape, false);
         mAwaitingLoadingResources.emplace_back(entity);
         return;
     }
 
+    // Get Resource Data Pointers
+    auto const *pCollisionShape = (foeCollisionShape const *)foeResourceGetData(collisionShape);
+
     // We have everything we need now
-    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI{
-        pRigidBody->mass, nullptr, pCollisionShape->data.collisionShape.get()};
+    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI{pRigidBody->mass, nullptr,
+                                                         pCollisionShape->collisionShape.get()};
     rigidBodyCI.m_startWorldTransform =
         glmToBtTransform(glm::vec3{0, 4, 0}, glm::quat{glm::vec3{0, 0, 0}});
 
