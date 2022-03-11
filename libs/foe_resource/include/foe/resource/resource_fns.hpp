@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_SIMULATION_CORE_RESOURCE_FNS_HPP
-#define FOE_SIMULATION_CORE_RESOURCE_FNS_HPP
+#ifndef FOE_RESOURCE_RESOURCE_FNS_HPP
+#define FOE_RESOURCE_RESOURCE_FNS_HPP
 
 #include <foe/ecs/id.hpp>
 #include <foe/resource/resource.h>
 
 #include <functional>
-#include <system_error>
 
 struct foeResourceCreateInfoBase;
 
@@ -33,9 +32,8 @@ struct foeResourceFns {
     void *pImportContext;
     foeResourceCreateInfoBase *(*pImportFn)(void *, foeResourceID);
     void *pLoadContext;
-    void (*pLoadFn)(void *, void *, void (*)(void *, std::error_code));
-    void (*pLoadFn2)(void *, foeResource, PFN_foeResourcePostLoad *);
+    void (*pLoadFn)(void *, foeResource, PFN_foeResourcePostLoad *);
     std::function<void(std::function<void()>)> asyncTaskFn;
 };
 
-#endif // FOE_SIMULATION_CORE_RESOURCE_FNS_HPP
+#endif // FOE_RESOURCE_RESOURCE_FNS_HPP

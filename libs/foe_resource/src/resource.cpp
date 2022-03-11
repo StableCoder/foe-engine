@@ -16,8 +16,8 @@
 
 #include <foe/resource/resource.h>
 
+#include <foe/resource/resource_fns.hpp>
 #include <foe/simulation/core/create_info.hpp>
-#include <foe/simulation/core/resource_fns.hpp>
 
 #include <atomic>
 #include <memory>
@@ -270,8 +270,8 @@ extern "C" void foeResourceLoad(foeResource resource, bool refreshCreateInfo) {
             pResource->pCreateInfo = pLocalCreateInfo;
         }
 
-        pResource->pResourceFns->pLoadFn2(pResource->pResourceFns->pLoadContext,
-                                          resource_to_handle(pResource), postLoadFn);
+        pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
+                                         resource_to_handle(pResource), postLoadFn);
     };
 
     if (pResource->pResourceFns->asyncTaskFn) {

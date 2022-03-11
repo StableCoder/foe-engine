@@ -56,7 +56,7 @@ void collisionShapeLoadFn(void *pContext,
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
             return;
         }
     }
@@ -184,7 +184,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn2 = collisionShapeLoadFn,
+                .pLoadFn = collisionShapeLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -208,7 +208,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER,
             .pLoader = new foeCollisionShapeLoader,
             .pCanProcessCreateInfoFn = foeCollisionShapeLoader::canProcessCreateInfo,
-            .pLoadFn2 = foeCollisionShapeLoader::load,
+            .pLoadFn = foeCollisionShapeLoader::load,
             .pMaintenanceFn =
                 [](void *pLoader) {
                     reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();

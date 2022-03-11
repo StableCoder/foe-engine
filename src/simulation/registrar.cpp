@@ -67,7 +67,7 @@ void armatureLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoa
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
+            it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
             return;
         }
     }
@@ -301,7 +301,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn2 = armatureLoadFn,
+                .pLoadFn = armatureLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &loaderCI);
@@ -325,7 +325,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
             .pLoader = new foeArmatureLoader,
             .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
-            .pLoadFn2 = foeArmatureLoader::load,
+            .pLoadFn = foeArmatureLoader::load,
             .pMaintenanceFn =
                 [](void *pLoader) {
                     reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
