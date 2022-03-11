@@ -22,29 +22,7 @@
 
 #include "error_code.hpp"
 #include "log.hpp"
-
-namespace {
-
-template <typename SubResource, typename... SubResources>
-foeResourceState getWorstSubResourceState(SubResource *pSubResource,
-                                          SubResources *...pSubResources) {
-    if (pSubResource != nullptr) {
-        auto state = pSubResource->getState();
-        if (state != foeResourceState::Loaded) {
-            return state;
-        }
-    }
-
-    if constexpr (sizeof...(SubResources) != 0) {
-        // Not the last provided one, keep going
-        return getWorstSubResourceState(pSubResources...);
-    } else {
-        // End of the line, return that they're all at least in the good 'loaded' state
-        return foeResourceState::Loaded;
-    }
-}
-
-} // namespace
+#include "worst_subresource_fn.hpp"
 
 std::error_code foeVertexDescriptorLoader::initialize(foeShaderPool *pShaderPool) {
     if (pShaderPool == nullptr) {
