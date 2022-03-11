@@ -21,6 +21,7 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vk/shader.hpp>
+#include <foe/resource/resource.h>
 
 #include <filesystem>
 #include <functional>
@@ -48,43 +49,46 @@ class FOE_GFX_RES_EXPORT foeShaderLoader {
 
     static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
     static void load(void *pLoader,
-                     void *pResource,
+                     foeResource resource,
                      std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                     void (*pPostLoadFn)(void *, std::error_code));
+                     PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
     static void unloadResource(void *pContext,
-                               void *pResource,
+                               foeResource resource,
                                uint32_t resourceIteration,
+                               PFN_foeResourceUnloadCall *pUnloadCallFn,
                                bool immediateUnload);
 
-    void load(void *pResource,
+    void load(foeResource resource,
               std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-              void (*pPostLoadFn)(void *, std::error_code));
+              PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
 
     struct LoadData {
-        foeShader *pShader;
-        void (*pPostLoadFn)(void *, std::error_code);
-        foeShader::Data data;
+        foeResource resource;
+        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        PFN_foeResourcePostLoad *pPostLoadFn;
+        foeShader data;
     };
 
     std::mutex mLoadSync;
     std::vector<LoadData> mLoadRequests;
 
     struct UnloadData {
-        foeShader *pShader;
+        foeResource resource;
         uint32_t iteration;
+        PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
     std::mutex mUnloadRequestsSync;
     std::vector<UnloadData> mUnloadRequests;
 
+    std::mutex mDestroySync;
     size_t mDataDestroyIndex{0};
-    std::array<std::vector<foeShader::Data>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1>
-        mDataDestroyLists{};
+    std::array<std::vector<foeShader>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_SHADER_LOADER_HPP

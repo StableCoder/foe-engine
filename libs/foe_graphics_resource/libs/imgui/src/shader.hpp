@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
-struct foeShader;
+#include <foe/resource/resource.h>
 
-void imgui_foeShader(foeShader *pShader);
+void imgui_foeShader(foeResource resource);
 
 #endif // SHADER_HPP

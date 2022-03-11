@@ -146,13 +146,14 @@ void foeMaterialLoader::gfxMaintenance() {
 
     for (auto &it : toLoad) {
         // Check to see if what we need has been loaded yet
-        auto subResLoadState = getWorstSubResourceState(it.data.pFragmentShader, it.data.image);
+        auto subResLoadState = getWorstSubResourceState(it.data.fragmentShader, it.data.image);
 
         if (subResLoadState == foeResourceState::Loaded) {
             { // Using the sub-resources that are loaded, and definition data, create the resource
-                foeGfxShader fragShader = (it.data.pFragmentShader != nullptr)
-                                              ? it.data.pFragmentShader->data.shader
-                                              : FOE_NULL_HANDLE;
+                foeGfxShader fragShader =
+                    (it.data.fragmentShader != FOE_NULL_HANDLE)
+                        ? ((foeShader const *)foeResourceGetData(it.data.fragmentShader))->shader
+                        : FOE_NULL_HANDLE;
 
                 auto *pMaterialCI = reinterpret_cast<foeMaterialCreateInfo *>(it.pCreateInfo.get());
 
@@ -184,8 +185,10 @@ void foeMaterialLoader::gfxMaintenance() {
                 nullptr, nullptr, nullptr, nullptr, nullptr);
 
             // Unload the data we did get
-            if (it.data.pFragmentShader != nullptr)
-                it.data.pFragmentShader->decrementRefCount();
+            if (it.data.fragmentShader != nullptr) {
+                foeResourceDecrementUseCount(it.data.fragmentShader);
+                foeResourceDecrementRefCount(it.data.fragmentShader);
+            }
             if (it.data.image != FOE_NULL_HANDLE) {
                 foeResourceDecrementUseCount(it.data.image);
                 foeResourceDecrementRefCount(it.data.image);
@@ -235,11 +238,11 @@ void foeMaterialLoader::load(foeResource resource,
 
     // Fragment Shader
     if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {
-        data.pFragmentShader = mShaderPool->findOrAdd(pMaterialCI->fragmentShader);
+        data.fragmentShader = mShaderPool->findOrAdd(pMaterialCI->fragmentShader);
 
-        data.pFragmentShader->incrementRefCount();
-        data.pFragmentShader->incrementUseCount();
-        data.pFragmentShader->loadResource(false);
+        foeResourceIncrementRefCount(data.fragmentShader);
+        foeResourceIncrementUseCount(data.fragmentShader);
+        foeResourceLoad(data.fragmentShader, false);
     }
 
     // Image
@@ -268,11 +271,12 @@ std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialDat
         return {};
     }
 
+    auto const *pShader = (foeShader const *)foeResourceGetData(pMaterialData->fragmentShader);
+
     VkDescriptorSet set;
     VkDevice vkDevice = foeGfxVkGetDevice(mGfxSession);
 
-    auto descriptorSetLayout =
-        foeGfxVkGetShaderDescriptorSetLayout(pMaterialData->pFragmentShader->data.shader);
+    auto descriptorSetLayout = foeGfxVkGetShaderDescriptorSetLayout(pShader->shader);
 
     VkDescriptorSetAllocateInfo setAI{
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -326,13 +330,13 @@ void foeMaterialLoader::unloadResource(void *pContext,
             pSrcData->~foeMaterial();
         };
 
-        foeMaterial data;
+        foeMaterial data{};
 
         if (pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
             // Decrement the references of any sub-resources
-            if (data.pFragmentShader != nullptr) {
-                data.pFragmentShader->decrementUseCount();
-                data.pFragmentShader->decrementRefCount();
+            if (data.fragmentShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(data.fragmentShader);
+                foeResourceDecrementRefCount(data.fragmentShader);
             }
             if (data.image != FOE_NULL_HANDLE) {
                 foeResourceDecrementUseCount(data.image);

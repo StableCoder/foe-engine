@@ -68,23 +68,27 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
 
     for (auto &it : toLoad) {
         auto subResLoadState =
-            getWorstSubResourceState(it.data.pVertex, it.data.pTessellationControl,
-                                     it.data.pTessellationEvaluation, it.data.pGeometry);
+            getWorstSubResourceState(it.data.vertexShader, it.data.tessellationControlShader,
+                                     it.data.tessellationEvaluationShader, it.data.geometryShader);
 
         if (subResLoadState == foeResourceState::Loaded) {
-            if (it.data.pVertex != nullptr) {
-                it.data.vertexDescriptor.mVertex = it.data.pVertex->data.shader;
+            if (it.data.vertexShader != FOE_NULL_HANDLE) {
+                it.data.vertexDescriptor.mVertex =
+                    ((foeShader const *)foeResourceGetData(it.data.vertexShader))->shader;
             }
-            if (it.data.pTessellationControl != nullptr) {
+            if (it.data.tessellationControlShader != FOE_NULL_HANDLE) {
                 it.data.vertexDescriptor.mTessellationControl =
-                    it.data.pTessellationControl->data.shader;
+                    ((foeShader const *)foeResourceGetData(it.data.tessellationControlShader))
+                        ->shader;
             }
-            if (it.data.pTessellationEvaluation != nullptr) {
+            if (it.data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
                 it.data.vertexDescriptor.mTessellationEvaluation =
-                    it.data.pTessellationEvaluation->data.shader;
+                    ((foeShader const *)foeResourceGetData(it.data.tessellationEvaluationShader))
+                        ->shader;
             }
-            if (it.data.pGeometry != nullptr) {
-                it.data.vertexDescriptor.mGeometry = it.data.pGeometry->data.shader;
+            if (it.data.geometryShader != FOE_NULL_HANDLE) {
+                it.data.vertexDescriptor.mGeometry =
+                    ((foeShader const *)foeResourceGetData(it.data.geometryShader))->shader;
             }
 
             auto *pCreateInfo =
@@ -108,21 +112,21 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
 
         } else if (subResLoadState == foeResourceState::Failed) {
             // At least one of the items failed to load
-            if (it.data.pVertex != nullptr) {
-                it.data.pVertex->decrementUseCount();
-                it.data.pVertex->decrementRefCount();
+            if (it.data.vertexShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.vertexShader);
+                foeResourceDecrementRefCount(it.data.vertexShader);
             }
-            if (it.data.pTessellationControl != nullptr) {
-                it.data.pTessellationControl->decrementUseCount();
-                it.data.pTessellationControl->decrementRefCount();
+            if (it.data.tessellationControlShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.tessellationControlShader);
+                foeResourceDecrementRefCount(it.data.tessellationControlShader);
             }
-            if (it.data.pTessellationEvaluation != nullptr) {
-                it.data.pTessellationEvaluation->decrementUseCount();
-                it.data.pTessellationEvaluation->decrementRefCount();
+            if (it.data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.tessellationEvaluationShader);
+                foeResourceDecrementRefCount(it.data.tessellationEvaluationShader);
             }
-            if (it.data.pGeometry != nullptr) {
-                it.data.pGeometry->decrementUseCount();
-                it.data.pGeometry->decrementRefCount();
+            if (it.data.geometryShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.geometryShader);
+                foeResourceDecrementRefCount(it.data.geometryShader);
             }
 
             it.pPostLoadFn(
@@ -176,32 +180,33 @@ void foeVertexDescriptorLoader::load(foeResource resource,
 
     // Find all of the subresources
     if (pCI->vertexShader != FOE_INVALID_ID) {
-        data.pVertex = mShaderPool->findOrAdd(pCI->vertexShader);
+        data.vertexShader = mShaderPool->findOrAdd(pCI->vertexShader);
 
-        data.pVertex->incrementRefCount();
-        data.pVertex->incrementUseCount();
-        data.pVertex->loadResource(false);
+        foeResourceIncrementRefCount(data.vertexShader);
+        foeResourceIncrementUseCount(data.vertexShader);
+        foeResourceLoad(data.vertexShader, false);
     }
     if (pCI->tessellationControlShader != FOE_INVALID_ID) {
-        data.pTessellationControl = mShaderPool->findOrAdd(pCI->tessellationControlShader);
+        data.tessellationControlShader = mShaderPool->findOrAdd(pCI->tessellationControlShader);
 
-        data.pTessellationControl->incrementRefCount();
-        data.pTessellationControl->incrementUseCount();
-        data.pTessellationControl->loadResource(false);
+        foeResourceIncrementRefCount(data.tessellationControlShader);
+        foeResourceIncrementUseCount(data.tessellationControlShader);
+        foeResourceLoad(data.tessellationControlShader, false);
     }
     if (pCI->tessellationEvaluationShader != FOE_INVALID_ID) {
-        data.pTessellationEvaluation = mShaderPool->findOrAdd(pCI->tessellationEvaluationShader);
+        data.tessellationEvaluationShader =
+            mShaderPool->findOrAdd(pCI->tessellationEvaluationShader);
 
-        data.pTessellationEvaluation->incrementRefCount();
-        data.pTessellationEvaluation->incrementUseCount();
-        data.pTessellationEvaluation->loadResource(false);
+        foeResourceIncrementRefCount(data.tessellationEvaluationShader);
+        foeResourceIncrementUseCount(data.tessellationEvaluationShader);
+        foeResourceLoad(data.tessellationEvaluationShader, false);
     }
     if (pCI->geometryShader != FOE_INVALID_ID) {
-        data.pGeometry = mShaderPool->findOrAdd(pCI->geometryShader);
+        data.geometryShader = mShaderPool->findOrAdd(pCI->geometryShader);
 
-        data.pGeometry->incrementRefCount();
-        data.pGeometry->incrementUseCount();
-        data.pGeometry->loadResource(false);
+        foeResourceIncrementRefCount(data.geometryShader);
+        foeResourceIncrementUseCount(data.geometryShader);
+        foeResourceLoad(data.geometryShader, false);
     }
 
     // Send to the loading queue
@@ -240,21 +245,21 @@ void foeVertexDescriptorLoader::unloadResource(void *pContext,
         }
 
         // Decrement the ref/use count of any sub-resources
-        if (data.pVertex != nullptr) {
-            data.pVertex->decrementUseCount();
-            data.pVertex->decrementRefCount();
+        if (data.vertexShader != FOE_NULL_HANDLE) {
+            foeResourceDecrementUseCount(data.vertexShader);
+            foeResourceDecrementRefCount(data.vertexShader);
         }
-        if (data.pTessellationControl != nullptr) {
-            data.pTessellationControl->decrementUseCount();
-            data.pTessellationControl->decrementRefCount();
+        if (data.tessellationControlShader != FOE_NULL_HANDLE) {
+            foeResourceDecrementUseCount(data.tessellationControlShader);
+            foeResourceDecrementRefCount(data.tessellationControlShader);
         }
-        if (data.pTessellationEvaluation != nullptr) {
-            data.pTessellationEvaluation->decrementUseCount();
-            data.pTessellationEvaluation->decrementRefCount();
+        if (data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
+            foeResourceDecrementUseCount(data.tessellationEvaluationShader);
+            foeResourceDecrementRefCount(data.tessellationEvaluationShader);
         }
-        if (data.pGeometry != nullptr) {
-            data.pGeometry->decrementUseCount();
-            data.pGeometry->decrementRefCount();
+        if (data.geometryShader != FOE_NULL_HANDLE) {
+            foeResourceDecrementUseCount(data.geometryShader);
+            foeResourceDecrementRefCount(data.geometryShader);
         }
     } else {
         foeResourceIncrementRefCount(resource);

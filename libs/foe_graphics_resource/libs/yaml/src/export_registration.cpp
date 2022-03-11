@@ -123,14 +123,16 @@ std::vector<foeKeyYamlPair> exportShader(foeResourceID resource, foeSimulation c
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (pShaderPool != nullptr) {
-        auto const *pShader = pShaderPool->find(resource);
-        if (pShader && pShader->pCreateInfo) {
-            if (auto pShaderCI = dynamic_cast<foeShaderCreateInfo *>(pShader->pCreateInfo.get());
-                pShaderCI)
+        foeResource shader = pShaderPool->find(resource);
+        if (shader != FOE_NULL_HANDLE) {
+            auto pCreateInfo = foeResourceGetCreateInfo(shader);
+            if (auto pShaderCI = dynamic_cast<foeShaderCreateInfo *>(pCreateInfo.get());
+                pShaderCI) {
                 keyDataPairs.emplace_back(foeKeyYamlPair{
                     .key = yaml_shader_key(),
                     .data = yaml_write_shader(*pShaderCI),
                 });
+            }
         }
     }
 

@@ -79,12 +79,14 @@ bool foeShaderLoader::initializedGraphics() const noexcept {
 
 void foeShaderLoader::gfxMaintenance() {
     // Destruction
+    mDestroySync.lock();
     ++mDataDestroyIndex;
     if (mDataDestroyIndex >= mDataDestroyLists.size()) {
         mDataDestroyIndex = 0;
     }
-
     auto toDestroy = std::move(mDataDestroyLists[mDataDestroyIndex]);
+    mDestroySync.unlock();
+
     for (auto &it : toDestroy) {
         if (it.shader != FOE_NULL_HANDLE) {
             foeGfxDestroyShader(mGfxSession, it.shader);
@@ -97,8 +99,8 @@ void foeShaderLoader::gfxMaintenance() {
     mUnloadRequestsSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.pShader, it.iteration, true);
-        it.pShader->decrementRefCount();
+        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        foeResourceDecrementRefCount(it.resource);
     }
 
     // Loads
@@ -107,18 +109,13 @@ void foeShaderLoader::gfxMaintenance() {
     mLoadSync.unlock();
 
     for (auto &it : toLoad) {
-        it.pShader->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeShader *)pSrc;
+            new (pDst) foeShader(std::move(*pSrcData));
+        };
 
-        if (it.pShader->data.pUnloadFn != nullptr) {
-            it.pShader->data.pUnloadFn(it.pShader->data.pUnloadContext, it.pShader,
-                                       it.pShader->iteration, true);
-        }
-
-        ++it.pShader->iteration;
-        it.pShader->data = std::move(it.data);
-        it.pPostLoadFn(it.pShader, {});
-
-        it.pShader->modifySync.unlock();
+        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                       foeShaderLoader::unloadResource);
     }
 }
 
@@ -127,29 +124,25 @@ bool foeShaderLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInf
 }
 
 void foeShaderLoader::load(void *pLoader,
-                           void *pResource,
+                           foeResource resource,
                            std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                           void (*pPostLoadFn)(void *, std::error_code)) {
-    reinterpret_cast<foeShaderLoader *>(pLoader)->load(pResource, pCreateInfo, pPostLoadFn);
+                           PFN_foeResourcePostLoad *pPostLoadFn) {
+    reinterpret_cast<foeShaderLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
 }
 
-void foeShaderLoader::load(void *pResource,
+void foeShaderLoader::load(foeResource resource,
                            std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
-                           void (*pPostLoadFn)(void *, std::error_code)) {
+                           PFN_foeResourcePostLoad *pPostLoadFn) {
     std::error_code errC;
-    auto *pShader = reinterpret_cast<foeShader *>(pResource);
     auto *pShaderCI = dynamic_cast<foeShaderCreateInfo *>(pCreateInfo.get());
 
     if (pShaderCI == nullptr) {
-        pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO);
+        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                    nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
-    foeShader::Data shaderData{
-        .pUnloadContext = this,
-        .pUnloadFn = unloadResource,
-        .pCreateInfo = pCreateInfo,
-    };
+    foeShader data{};
 
     { // Load Shader SPIR-V from external file
         auto filePath = mExternalFileSearchFn(pShaderCI->shaderCodeFile);
@@ -160,9 +153,9 @@ void foeShaderLoader::load(void *pResource,
 
         auto shaderCode = loadShaderDataFromFile(filePath);
 
-        errC = foeGfxVkCreateShader(
-            mGfxSession, &pShaderCI->gfxCreateInfo, static_cast<uint32_t>(shaderCode.size()),
-            reinterpret_cast<uint32_t *>(shaderCode.data()), &shaderData.shader);
+        errC = foeGfxVkCreateShader(mGfxSession, &pShaderCI->gfxCreateInfo,
+                                    static_cast<uint32_t>(shaderCode.size()),
+                                    reinterpret_cast<uint32_t *>(shaderCode.data()), &data.shader);
         if (errC) {
             goto LOAD_FAILED;
         }
@@ -172,46 +165,53 @@ LOAD_FAILED:
     if (errC) {
         // Failed at some point
         FOE_LOG(foeGraphicsResource, Error, "Failed to load foeShader {} with error {}:{}",
-                foeIdToString(pShader->getID()), errC.value(), errC.message())
+                foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
 
-        pPostLoadFn(pShader, errC);
+        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
     } else {
         // Loaded upto this point successfully
         mLoadSync.lock();
         mLoadRequests.emplace_back(LoadData{
-            .pShader = pShader,
+            .resource = resource,
+            .pCreateInfo = pCreateInfo,
             .pPostLoadFn = pPostLoadFn,
-            .data = std::move(shaderData),
+            .data = std::move(data),
         });
         mLoadSync.unlock();
     }
 }
 
 void foeShaderLoader::unloadResource(void *pContext,
-                                     void *pResource,
+                                     foeResource resource,
                                      uint32_t resourceIteration,
+                                     PFN_foeResourceUnloadCall *pUnloadCallFn,
                                      bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeShaderLoader *>(pContext);
-    auto *pShader = reinterpret_cast<foeShader *>(pResource);
 
     if (immediateUnload) {
-        pShader->modifySync.lock();
+        auto moveFn = [](void *pSrc, void *pDst) {
+            auto *pSrcData = (foeShader *)pSrc;
+            auto *pDstData = (foeShader *)pDst;
 
-        if (pShader->iteration == resourceIteration) {
-            pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(
-                std::move(pShader->data));
-            pShader->data = {};
-            pShader->state = foeResourceState::Unloaded;
-            ++pShader->iteration;
+            *pDstData = std::move(*pSrcData);
+            pSrcData->~foeShader();
+        };
+
+        foeShader data{};
+
+        if (pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
+            pLoader->mDestroySync.lock();
+            pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
+            pLoader->mDestroySync.unlock();
         }
-
-        pShader->modifySync.unlock();
     } else {
+        foeResourceIncrementRefCount(resource);
         pLoader->mUnloadRequestsSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
-            .pShader = pShader,
+            .resource = resource,
             .iteration = resourceIteration,
+            .pUnloadCallFn = pUnloadCallFn,
         });
 
         pLoader->mUnloadRequestsSync.unlock();

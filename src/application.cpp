@@ -430,10 +430,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             foeResourceLoad(it, false);
         }
 
-        for (auto *ptr : ((foeShaderPool *)foeSimulationGetResourcePool(
-                              pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL))
-                             ->getDataVector()) {
-            ptr->loadResource(false);
+        for (auto it : ((foeShaderPool *)foeSimulationGetResourcePool(
+                            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL))
+                           ->getDataVector()) {
+            foeResourceLoad(it, false);
         }
 
         for (auto it :

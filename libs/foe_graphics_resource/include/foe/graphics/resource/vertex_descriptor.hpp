@@ -18,14 +18,13 @@
 #define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_HPP
 
 #include <foe/graphics/vk/vertex_descriptor.hpp>
-
-struct foeShader;
+#include <foe/resource/resource.h>
 
 struct foeVertexDescriptor {
-    foeShader *pVertex;
-    foeShader *pTessellationControl;
-    foeShader *pTessellationEvaluation;
-    foeShader *pGeometry;
+    foeResource vertexShader;
+    foeResource tessellationControlShader;
+    foeResource tessellationEvaluationShader;
+    foeResource geometryShader;
 
     foeGfxVertexDescriptor vertexDescriptor;
 };

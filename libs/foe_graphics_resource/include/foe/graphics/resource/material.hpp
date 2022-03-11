@@ -21,13 +21,11 @@
 #include <foe/resource/resource.h>
 #include <vulkan/vulkan.h>
 
-struct foeShader;
-struct foeImage;
 struct foeGfxVkFragmentDescriptor;
 
 struct foeMaterial {
     // For the FragmentDescriptor
-    foeShader *pFragmentShader{nullptr};
+    foeResource fragmentShader;
     // For the Material
     foeResource image;
 

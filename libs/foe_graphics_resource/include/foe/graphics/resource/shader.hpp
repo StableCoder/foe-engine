@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,26 +17,10 @@
 #ifndef FOE_GRAPHICS_RESOURCE_SHADER_HPP
 #define FOE_GRAPHICS_RESOURCE_SHADER_HPP
 
-#include <foe/graphics/resource/export.h>
 #include <foe/graphics/shader.hpp>
-#include <foe/simulation/core/resource.hpp>
 
-struct FOE_GFX_RES_EXPORT foeShader : public foeResourceBase {
-    foeShader(foeResourceID resource, foeResourceFns const *pResourceFns);
-    ~foeShader();
-
-    void loadCreateInfo();
-    void loadResource(bool refreshCreateInfo);
-    void unloadResource();
-
-    struct Data {
-        void *pUnloadContext{nullptr};
-        void (*pUnloadFn)(void *, void *, uint32_t, bool){nullptr};
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
-
-        foeGfxShader shader{FOE_NULL_HANDLE};
-    };
-    Data data{};
+struct foeShader {
+    foeGfxShader shader;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_SHADER_HPP

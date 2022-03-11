@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 #include "shader.hpp"
 
 #include <foe/graphics/resource/shader.hpp>
-#include <foe/simulation/imgui/resource_base.hpp>
+#include <foe/resource/imgui/resource.h>
 #include <imgui.h>
 
-void imgui_foeShader(foeShader *pShader) {
+void imgui_foeShader(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeShader");
 
-    imgui_renderResourceBase(pShader);
+    imgui_renderResource(resource);
 }

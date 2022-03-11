@@ -89,19 +89,20 @@ void materialLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoa
                 nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
-void shaderLoadFn(void *pContext, void *pResource, void (*pPostLoadFn)(void *, std::error_code)) {
+void shaderLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-    auto *pShader = reinterpret_cast<foeShader *>(pResource);
 
-    auto pLocalCreateInfo = pShader->pCreateInfo;
+    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, pShader, pLocalCreateInfo, pPostLoadFn);
+            return it.pLoadFn2(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
         }
     }
 
-    pPostLoadFn(pResource, FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER);
+    pPostLoadFn(resource,
+                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void vertexDescriptorLoadFn(void *pContext,
@@ -330,7 +331,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = shaderLoadFn,
+                .pLoadFn2 = shaderLoadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -457,7 +458,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER,
             .pLoader = new foeShaderLoader,
             .pCanProcessCreateInfoFn = foeShaderLoader::canProcessCreateInfo,
-            .pLoadFn = foeShaderLoader::load,
+            .pLoadFn2 = foeShaderLoader::load,
             .pGfxMaintenanceFn =
                 [](void *pLoader) {
                     reinterpret_cast<foeShaderLoader *>(pLoader)->gfxMaintenance();
