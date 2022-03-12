@@ -26,6 +26,7 @@
                                                                                                    \
         CHECK(errC.value() == X);                                                                  \
         CHECK(errC.message() == #X);                                                               \
+        CHECK(std::string_view{errC.category().name()} == "foeImGuiVkResult");                     \
     }
 
 TEST_CASE("Ensure error codes return correct values and strings") {

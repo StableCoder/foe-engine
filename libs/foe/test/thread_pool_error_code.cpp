@@ -26,6 +26,7 @@
                                                                                                    \
         CHECK(errC.value() == X);                                                                  \
         CHECK(errC.message() == #X);                                                               \
+        CHECK(std::string_view{errC.category().name()} == "foeSplitThreadResult");                 \
     }
 
 TEST_CASE("foeSplitThreadResult - Ensure error codes return correct values and strings") {

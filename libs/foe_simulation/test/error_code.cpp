@@ -26,6 +26,7 @@
                                                                                                    \
         CHECK(errC.value() == X);                                                                  \
         CHECK(errC.message() == #X);                                                               \
+        CHECK(std::string_view{errC.category().name()} == "foeSimulationResult");                  \
     }
 
 TEST_CASE("foeSimulationResult - Ensure error codes return correct values and strings") {

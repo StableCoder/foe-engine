@@ -20,12 +20,13 @@
 
 #include <climits>
 
-#define ERROR_CODE_CATCH_CHECK(name, val)                                                          \
-    SECTION(#name) {                                                                               \
-        errC = name;                                                                               \
+#define ERROR_CODE_CATCH_CHECK(ERROR_NAME, val)                                                    \
+    SECTION(#ERROR_NAME) {                                                                         \
+        errC = ERROR_NAME;                                                                         \
                                                                                                    \
-        CHECK(errC.value() == name);                                                               \
-        CHECK(errC.message() == #name);                                                            \
+        CHECK(errC.value() == ERROR_NAME);                                                         \
+        CHECK(errC.message() == #ERROR_NAME);                                                      \
+        CHECK(std::string_view{errC.category().name()} == "XrResult");                             \
     }
 
 TEST_CASE("XrResult - Ensure error codes return correct values and strings") {
