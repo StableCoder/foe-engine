@@ -36,6 +36,8 @@ std::string ErrorCategory::message(int ev) const {
         RESULT_CASE(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY)
         // Resource Specific
         RESULT_CASE(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED)
+        // CreateInfo Specific
+        RESULT_CASE(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED)
 
     default:
         if (ev > 0)

@@ -44,6 +44,9 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
     void *pData,
     void (*pDataFn)(void *, void *),
     foeResourceCreateInfo *pCreateInfo) {
+    if (pDataFn == nullptr)
+        return foeToErrorCode(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
+
     auto *pNewCI = (foeResourceCreateInfoImpl *)malloc(sizeof(foeResourceCreateInfoImpl) + size);
     if (pNewCI == nullptr) {
         return foeToErrorCode(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
@@ -65,10 +68,9 @@ extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {
     auto *pCreateInfo = resource_create_info_from_handle(createInfo);
 
     if (pCreateInfo->refCount > 0) {
-        FOE_LOG(
-            foeResourceCore, Warning,
-            "foeResourceCreateInfo[{},{}] - Destroying while there are more than zero references",
-            (void *)pCreateInfo, pCreateInfo->type)
+        FOE_LOG(foeResourceCore, Warning,
+                "foeResourceCreateInfo[{},{}] - Destroying while reference count is non-zero",
+                (void *)pCreateInfo, pCreateInfo->type)
     }
 
     if (pCreateInfo->pDestroyFn != nullptr) {
