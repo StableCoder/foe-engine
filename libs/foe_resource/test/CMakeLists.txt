@@ -8,7 +8,8 @@ add_test(NAME FoE-Resource-Test COMMAND test_foe_resource)
 # Definition
 target_sources(
   test_foe_resource
-  PRIVATE error_code.cpp
+  PRIVATE create_info.cpp
+          error_code.cpp
           # The following set are sources that needs to be recompiled as the
           # symbols may not be exported or have been stripped from  thelinked
           # libraries
