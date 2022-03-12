@@ -60,7 +60,7 @@ void loadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPost
     }
 
     pPostLoadFn(resource, foeToErrorCode(FOE_PHYSICS_ERROR_IMPORT_FAILED), nullptr, nullptr,
-                createInfo, nullptr, nullptr);
+                nullptr, nullptr, nullptr);
 }
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {

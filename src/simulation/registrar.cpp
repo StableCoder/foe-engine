@@ -73,7 +73,7 @@ void armatureLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoa
     }
 
     pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, createInfo, nullptr, nullptr);
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {

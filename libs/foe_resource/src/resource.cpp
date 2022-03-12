@@ -98,6 +98,14 @@ extern "C" void foeDestroyResource(foeResource resource) {
 
     foeResourceUnload(resource, true);
 
+    // Clear createInfo
+    if (pResource->createInfo != FOE_NULL_HANDLE) {
+        auto count = foeResourceCreateInfoDecrementRefCount(pResource->createInfo);
+        if (count == 0) {
+            foeDestroyResourceCreateInfo(pResource->createInfo);
+        }
+    }
+
     FOE_LOG(foeResourceCore, Verbose, "foeResource[{},{}] - Destroyed", pResource->id,
             pResource->type)
 
@@ -233,11 +241,10 @@ void postLoadFn(
                 pResource->id, pResource->type, errC.message())
         auto expected = foeResourceLoadState::Unloaded;
         pResource->state.compare_exchange_strong(expected, foeResourceLoadState::Failed);
-
-        // Since we're not using the create info anymore, decrement the reference for it
-        foeResourceCreateInfoDecrementRefCount(createInfo);
     } else {
         // It loaded successfully and the data is ready to be moved now
+        foeResourceCreateInfoIncrementRefCount(createInfo);
+
         pResource->sync.lock();
 
         // Unload any previous data
@@ -248,7 +255,7 @@ void postLoadFn(
 
         oldCreateInfo = pResource->loadedCreateInfo;
 
-        pResource->loadedCreateInfo = createInfo; // Should already be incremented from earlier
+        pResource->loadedCreateInfo = createInfo;
         pResource->pUnloadContext = pUnloadContext;
         pResource->pUnloadFn = pUnloadFn;
 

@@ -70,7 +70,7 @@ void loadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPost
 
     pPostLoadFn(resource,
                 foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, createInfo, nullptr, nullptr);
+                nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 template <typename T>

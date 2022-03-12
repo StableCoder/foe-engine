@@ -142,7 +142,7 @@ void foeShaderLoader::load(foeResource resource,
                            PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, createInfo, nullptr, nullptr);
+                    nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
@@ -174,7 +174,7 @@ LOAD_FAILED:
         FOE_LOG(foeGraphicsResource, Error, "Failed to load foeShader {} with error {}:{}",
                 foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
 
-        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, createInfo, nullptr, nullptr);
+        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
     } else {
         // Loaded upto this point successfully
         mLoadSync.lock();

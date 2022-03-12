@@ -235,7 +235,7 @@ void foeMaterialLoader::load(foeResource resource,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, createInfo, nullptr, nullptr);
+                    nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
