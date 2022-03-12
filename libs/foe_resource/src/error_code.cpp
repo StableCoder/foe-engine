@@ -32,8 +32,10 @@ const char *ErrorCategory::name() const noexcept { return "foeResourceResult"; }
 std::string ErrorCategory::message(int ev) const {
     switch (static_cast<foeResourceResult>(ev)) {
         RESULT_CASE(FOE_RESOURCE_SUCCESS)
-
+        // General
         RESULT_CASE(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY)
+        // Resource Specific
+        RESULT_CASE(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED)
 
     default:
         if (ev > 0)

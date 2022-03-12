@@ -32,7 +32,7 @@ struct foeResourceImpl {
     foeResourceID id;
     foeResourceType type;
 
-    foeResourceFns *pResourceFns;
+    foeResourceFns const *pResourceFns;
 
     std::recursive_mutex sync;
 
@@ -51,7 +51,7 @@ struct foeResourceImpl {
     void *pUnloadContext{nullptr};
     void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool){nullptr};
 
-    foeResourceImpl(foeResourceID id, foeResourceType type, foeResourceFns *pResourceFns) :
+    foeResourceImpl(foeResourceID id, foeResourceType type, foeResourceFns const *pResourceFns) :
         id{id}, type{type}, pResourceFns{pResourceFns} {}
 };
 
@@ -66,9 +66,12 @@ void *foeResourceGetMutableData(foeResource resource) {
 
 extern "C" foeErrorCode foeCreateResource(foeResourceID id,
                                           foeResourceType type,
-                                          foeResourceFns *pResourceFns,
+                                          foeResourceFns const *pResourceFns,
                                           size_t size,
                                           foeResource *pResource) {
+    if (pResourceFns == nullptr)
+        return foeToErrorCode(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
+
     auto *pNewResource = (foeResourceImpl *)malloc(sizeof(foeResourceImpl) + size);
     if (pNewResource == nullptr) {
         return foeToErrorCode(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);

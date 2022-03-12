@@ -45,6 +45,8 @@ TEST_CASE("foeResourceResult - Ensure error codes return correct values and stri
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_RESOURCE_SUCCESS)
-
+    // General
     ERROR_CODE_CATCH_CHECK(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY)
+    // Resource specific
+    ERROR_CODE_CATCH_CHECK(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED)
 }

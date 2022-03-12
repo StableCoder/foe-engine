@@ -23,8 +23,10 @@ extern "C" {
 
 enum foeResourceResult {
     FOE_RESOURCE_SUCCESS = 0,
-
+    // General
     FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY,
+    // Resource Specific
+    FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED,
 };
 
 #ifdef __cplusplus

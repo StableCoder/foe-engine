@@ -59,7 +59,7 @@ enum foeResourceLoadState {
 
 FOE_RES_EXPORT foeErrorCode foeCreateResource(foeResourceID id,
                                               foeResourceType type,
-                                              foeResourceFns *pResourceFns,
+                                              foeResourceFns const *pResourceFns,
                                               size_t size,
                                               foeResource *pResource);
 
