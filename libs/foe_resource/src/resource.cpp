@@ -57,11 +57,6 @@ struct foeResourceImpl {
 
 FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
 
-void *foeResourceGetMutableData(foeResource resource) {
-    auto *pResource = resource_from_handle(resource);
-    return (char *)pResource + sizeof(foeResourceImpl);
-}
-
 } // namespace
 
 extern "C" foeErrorCode foeCreateResource(foeResourceID id,
@@ -249,7 +244,7 @@ void postLoadFn(
         foeResourceUnload(resource, true);
 
         // Move the new data in
-        pMoveDataFn(pSrc, foeResourceGetMutableData(resource));
+        pMoveDataFn(pSrc, (void *)foeResourceGetData(resource));
 
         oldCreateInfo = pResource->loadedCreateInfo;
 
@@ -347,7 +342,7 @@ bool resourceUnloadCall(foeResource resource,
     if (iteration == pResource->iteration) {
         retVal = true;
 
-        pMoveFn(foeResourceGetMutableData(resource), pDst);
+        pMoveFn((void *)foeResourceGetData(resource), pDst);
 
         oldCreateInfo = pResource->loadedCreateInfo;
 
