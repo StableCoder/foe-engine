@@ -21,7 +21,6 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/imex/yaml/generator.hpp>
-#include <foe/simulation/core/create_info.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -260,16 +259,16 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
             // Resource Type
             for (auto const &it : mGenerator->mResourceFns) {
                 if (auto subNode = node[it.first]; subNode) {
-                    foeResourceCreateInfoBase *pCreateInfo{nullptr};
-                    it.second.pImport(node, &mGroupTranslator, &pCreateInfo);
+                    foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
+                    it.second.pImport(node, &mGroupTranslator, &createInfo);
 
                     if (it.second.pCreate != nullptr) {
-                        auto errC = it.second.pCreate(resource, pCreateInfo, pSimulation);
+                        auto errC = it.second.pCreate(resource, createInfo, pSimulation);
                         if (errC)
                             return false;
                     }
 
-                    delete pCreateInfo;
+                    foeDestroyResourceCreateInfo(createInfo);
                     break;
                 }
             }
@@ -289,7 +288,7 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
     return true;
 }
 
-foeResourceCreateInfoBase *foeYamlImporter::getResource(foeId id) {
+foeResourceCreateInfo foeYamlImporter::getResource(foeId id) {
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
         return nullptr;
 
@@ -319,12 +318,12 @@ foeResourceCreateInfoBase *foeYamlImporter::getResource(foeId id) {
 GOT_RESOURCE_NODE:
 
     try {
-        foeResourceCreateInfoBase *pCreateInfo{nullptr};
+        foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
 
         for (auto const &it : mGenerator->mResourceFns) {
             if (auto subNode = rootNode[it.first]; subNode) {
-                it.second.pImport(rootNode, &mGroupTranslator, &pCreateInfo);
-                return pCreateInfo;
+                it.second.pImport(rootNode, &mGroupTranslator, &createInfo);
+                return createInfo;
             }
         }
     } catch (foeYamlException const &e) {

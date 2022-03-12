@@ -48,6 +48,11 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 
 } // namespace
 
+void foeDestroyShaderCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeShaderCreateInfo *)pCreateInfo;
+    pCI->~foeShaderCreateInfo();
+}
+
 std::error_code foeShaderLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (!externalFileSearchFn)
@@ -114,35 +119,37 @@ void foeShaderLoader::gfxMaintenance() {
             new (pDst) foeShader(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                        foeShaderLoader::unloadResource);
     }
 }
 
-bool foeShaderLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foeShaderCreateInfo *>(pCreateInfo) != nullptr;
+bool foeShaderLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
+    return foeResourceCreateInfoGetType(createInfo) ==
+           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO;
 }
 
 void foeShaderLoader::load(void *pLoader,
                            foeResource resource,
-                           std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                           foeResourceCreateInfo createInfo,
                            PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeShaderLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
+
+    reinterpret_cast<foeShaderLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
 }
 
 void foeShaderLoader::load(foeResource resource,
-                           std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                           foeResourceCreateInfo createInfo,
                            PFN_foeResourcePostLoad *pPostLoadFn) {
-    std::error_code errC;
-    auto *pShaderCI = dynamic_cast<foeShaderCreateInfo *>(pCreateInfo.get());
-
-    if (pShaderCI == nullptr) {
+    if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+                    nullptr, nullptr, createInfo, nullptr, nullptr);
         return;
     }
 
+    auto const *pShaderCI = (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
     foeShader data{};
+    std::error_code errC;
 
     { // Load Shader SPIR-V from external file
         auto filePath = mExternalFileSearchFn(pShaderCI->shaderCodeFile);
@@ -167,13 +174,13 @@ LOAD_FAILED:
         FOE_LOG(foeGraphicsResource, Error, "Failed to load foeShader {} with error {}:{}",
                 foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
 
-        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, createInfo, nullptr, nullptr);
     } else {
         // Loaded upto this point successfully
         mLoadSync.lock();
         mLoadRequests.emplace_back(LoadData{
             .resource = resource,
-            .pCreateInfo = pCreateInfo,
+            .createInfo = createInfo,
             .pPostLoadFn = pPostLoadFn,
             .data = std::move(data),
         });

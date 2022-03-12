@@ -25,7 +25,6 @@
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
 #include <foe/resource/resource.h>
-#include <foe/simulation/core/create_info.hpp>
 
 #include <array>
 #include <filesystem>
@@ -49,9 +48,11 @@ struct foeMeshIcosphereSource : public foeMeshSource {
     int recursion;
 };
 
-struct foeMeshCreateInfo : public foeResourceCreateInfoBase {
+struct foeMeshCreateInfo {
     std::unique_ptr<foeMeshSource> source;
 };
+
+FOE_GFX_RES_EXPORT void foeDestroyMeshCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
 
 class FOE_GFX_RES_EXPORT foeMeshLoader {
   public:
@@ -67,10 +68,10 @@ class FOE_GFX_RES_EXPORT foeMeshLoader {
 
     void gfxMaintenance();
 
-    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
                      foeResource resource,
-                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     foeResourceCreateInfo createInfo,
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
@@ -81,7 +82,7 @@ class FOE_GFX_RES_EXPORT foeMeshLoader {
                                bool immediateUnload);
 
     void load(foeResource resource,
-              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
@@ -91,7 +92,7 @@ class FOE_GFX_RES_EXPORT foeMeshLoader {
 
     struct LoadData {
         foeResource resource;
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeMesh data;
 

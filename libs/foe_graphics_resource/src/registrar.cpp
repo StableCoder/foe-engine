@@ -51,93 +51,26 @@ struct TypeSelection {
     bool meshLoader;
 };
 
-foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
+foeResourceCreateInfo importFn(void *pContext, foeResourceID resource) {
     auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
     return pGroupData->getResourceDefinition(resource);
 }
 
-void imageLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
+void loadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
 
-    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
+    auto createInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(createInfo)) {
+            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
             return;
         }
     }
 
     pPostLoadFn(resource,
                 foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
-}
-
-void materialLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-
-    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
-
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
-        }
-    }
-
-    pPostLoadFn(resource,
-                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
-}
-
-void shaderLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-
-    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
-
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
-        }
-    }
-
-    pPostLoadFn(resource,
-                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
-}
-
-void vertexDescriptorLoadFn(void *pContext,
-                            foeResource resource,
-                            PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-
-    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
-
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
-            return;
-        }
-    }
-
-    pPostLoadFn(resource,
-                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
-}
-
-void meshLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-
-    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
-
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            return it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
-        }
-    }
-
-    pPostLoadFn(resource,
-                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
+                nullptr, nullptr, createInfo, nullptr, nullptr);
 }
 
 template <typename T>
@@ -281,7 +214,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = imageLoadFn,
+                .pLoadFn = loadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -306,7 +239,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = materialLoadFn,
+                .pLoadFn = loadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -331,7 +264,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = shaderLoadFn,
+                .pLoadFn = loadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -356,7 +289,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = vertexDescriptorLoadFn,
+                .pLoadFn = loadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -382,7 +315,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = meshLoadFn,
+                .pLoadFn = loadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);

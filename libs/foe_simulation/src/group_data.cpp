@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -205,17 +205,17 @@ auto foeGroupData::temporaryResourceIndices() noexcept -> foeIdIndexGenerator * 
     return &mTemporaryResourceIndices;
 }
 
-foeResourceCreateInfoBase *foeGroupData::getResourceDefinition(foeId id) {
+foeResourceCreateInfo foeGroupData::getResourceDefinition(foeId id) {
     if (mPersistentImporter != nullptr) {
-        if (auto *pCreateInfo = mPersistentImporter->getResource(id); pCreateInfo) {
-            return pCreateInfo;
+        if (auto createInfo = mPersistentImporter->getResource(id); createInfo != FOE_NULL_HANDLE) {
+            return createInfo;
         }
     }
 
     for (auto it = mDynamicGroups.rbegin(); it != mDynamicGroups.rend(); ++it) {
         if (it->pImporter != nullptr) {
-            if (auto *pCreateInfo = it->pImporter->getResource(id)) {
-                return pCreateInfo;
+            if (auto createInfo = it->pImporter->getResource(id)) {
+                return createInfo;
             }
         }
     }

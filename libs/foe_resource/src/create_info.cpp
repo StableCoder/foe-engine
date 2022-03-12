@@ -41,6 +41,8 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
     foeResourceCreateInfoType type,
     void (*pDestroyFn)(foeResourceCreateInfoType type, void *),
     size_t size,
+    void *pData,
+    void (*pDataFn)(void *, void *),
     foeResourceCreateInfo *pCreateInfo) {
     auto *pNewCI = (foeResourceCreateInfoImpl *)malloc(sizeof(foeResourceCreateInfoImpl) + size);
     if (pNewCI == nullptr) {
@@ -48,6 +50,8 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
     }
 
     new (pNewCI) foeResourceCreateInfoImpl(type, pDestroyFn);
+
+    pDataFn(pData, (void *)foeResourceCreateInfoGetData(resource_create_info_to_handle(pNewCI)));
 
     *pCreateInfo = resource_create_info_to_handle(pNewCI);
 
@@ -68,7 +72,8 @@ extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {
     }
 
     if (pCreateInfo->pDestroyFn != nullptr) {
-        pCreateInfo->pDestroyFn(pCreateInfo->type, foeResourceCreateInfoGetData(createInfo));
+        pCreateInfo->pDestroyFn(pCreateInfo->type,
+                                (void *)foeResourceCreateInfoGetData(createInfo));
     }
 
     FOE_LOG(foeResourceCore, Verbose, "foeResourceCreateInfo[{},{}] - Destroyed",
@@ -100,7 +105,7 @@ extern "C" int foeResourceCreateInfoDecrementRefCount(foeResourceCreateInfo crea
     return --pCreateInfo->refCount;
 }
 
-extern "C" void *foeResourceCreateInfoGetData(foeResourceCreateInfo createInfo) {
+extern "C" void const *foeResourceCreateInfoGetData(foeResourceCreateInfo createInfo) {
     auto *pCreateInfo = resource_create_info_from_handle(createInfo);
     return (char *)pCreateInfo + sizeof(foeResourceCreateInfoImpl);
 }

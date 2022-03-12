@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #include "shader.hpp"
 
 #include <foe/graphics/resource/shader_loader.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/yaml/shader.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -72,12 +73,26 @@ char const *yaml_shader_key() { return "shader_v1"; }
 
 void yaml_read_shader(YAML::Node const &node,
                       foeIdGroupTranslator const *pTranslator,
-                      foeResourceCreateInfoBase **ppCreateInfo) {
-    foeShaderCreateInfo ci;
+                      foeResourceCreateInfo *pCreateInfo) {
+    foeShaderCreateInfo shaderCI;
+    foeResourceCreateInfo createInfo;
 
-    yaml_read_shader_internal(yaml_shader_key(), node, pTranslator, ci);
+    yaml_read_shader_internal(yaml_shader_key(), node, pTranslator, shaderCI);
 
-    *ppCreateInfo = new foeShaderCreateInfo(std::move(ci));
+    auto dataFn = [](void *pSrc, void *pDst) {
+        auto *pSrcData = (foeShaderCreateInfo *)pSrc;
+        new (pDst) foeShaderCreateInfo(std::move(*pSrcData));
+    };
+
+    std::error_code errC = foeCreateResourceCreateInfo(
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO, foeDestroyShaderCreateInfo,
+        sizeof(foeShaderCreateInfo), &shaderCI, dataFn, &createInfo);
+    if (errC) {
+        throw foeYamlException{std::string{"Failed to create foeShaderCreateInfo due to error: "} +
+                               errC.message()};
+    }
+
+    *pCreateInfo = createInfo;
 }
 
 auto yaml_write_shader(foeShaderCreateInfo const &data) -> YAML::Node {

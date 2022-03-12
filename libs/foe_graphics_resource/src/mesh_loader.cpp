@@ -29,6 +29,11 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
+void foeDestroyMeshCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeMeshCreateInfo *)pCreateInfo;
+    pCI->~foeMeshCreateInfo();
+}
+
 auto foeMeshLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
     -> std::error_code {
@@ -118,7 +123,7 @@ void foeMeshLoader::gfxMaintenance() {
                     new (pDst) foeMesh(std::move(*pSrcData));
                 };
 
-                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                                foeMeshLoader::unloadResource);
             } else {
                 // No target resource, this is to be discarded
@@ -153,27 +158,28 @@ void foeMeshLoader::gfxMaintenance() {
     }
 }
 
-bool foeMeshLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foeMeshCreateInfo *>(pCreateInfo) != nullptr;
+bool foeMeshLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
+    return foeResourceCreateInfoGetType(createInfo) ==
+           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO;
 }
 
 void foeMeshLoader::load(void *pLoader,
                          foeResource resource,
-                         std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                         foeResourceCreateInfo createInfo,
                          PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeMeshLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
+    reinterpret_cast<foeMeshLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
 }
 
 void foeMeshLoader::load(foeResource resource,
-                         std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                         foeResourceCreateInfo createInfo,
                          PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pMeshCI = dynamic_cast<foeMeshCreateInfo *>(pCreateInfo.get());
-
-    if (pMeshCI == nullptr) {
+    if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+                    nullptr, nullptr, createInfo, nullptr, nullptr);
         return;
     }
+
+    auto const *pMeshCI = (foeMeshCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
@@ -445,7 +451,7 @@ LOAD_FAILED:
         // Failed at some point
         FOE_LOG(foeGraphicsResource, Error, "Failed to load foeMesh {} with error {}:{}",
                 foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
-        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, createInfo, nullptr, nullptr);
 
         if (uploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pMesh as nullptr, so the upload completes then
@@ -470,7 +476,7 @@ LOAD_FAILED:
 
         mLoadRequests.emplace_back(LoadData{
             .resource = resource,
-            .pCreateInfo = pCreateInfo,
+            .createInfo = createInfo,
             .pPostLoadFn = pPostLoadFn,
             .data = std::move(data),
             .uploadRequest = uploadRequest,

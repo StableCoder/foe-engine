@@ -32,9 +32,12 @@
 #include <mutex>
 #include <vector>
 
-struct foeImageCreateInfo : public foeResourceCreateInfoBase {
+struct foeImageCreateInfo {
     std::string fileName;
 };
+
+FOE_GFX_RES_EXPORT void foeDestroyImageCreateInfo(foeResourceCreateInfoType type,
+                                                  void *pCreateInfo);
 
 class FOE_GFX_RES_EXPORT foeImageLoader {
   public:
@@ -50,10 +53,10 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
 
     void gfxMaintenance();
 
-    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
                      foeResource resource,
-                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     foeResourceCreateInfo createInfo,
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
@@ -64,7 +67,7 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
                                bool immediateUnload);
 
     void load(foeResource resource,
-              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
@@ -74,7 +77,7 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
 
     struct LoadData {
         foeResource resource;
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeImage data;
 

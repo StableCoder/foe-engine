@@ -18,11 +18,10 @@
 #define FOE_RESOURCE_RESOURCE_FNS_HPP
 
 #include <foe/ecs/id.hpp>
+#include <foe/resource/create_info.h>
 #include <foe/resource/resource.h>
 
 #include <functional>
-
-struct foeResourceCreateInfoBase;
 
 /**
  * Set of functions common to all foeResource types for importing definitions, loading data and
@@ -30,7 +29,7 @@ struct foeResourceCreateInfoBase;
  */
 struct foeResourceFns {
     void *pImportContext;
-    foeResourceCreateInfoBase *(*pImportFn)(void *, foeResourceID);
+    foeResourceCreateInfo (*pImportFn)(void *, foeResourceID);
     void *pLoadContext;
     void (*pLoadFn)(void *, foeResource, PFN_foeResourcePostLoad *);
     std::function<void(std::function<void()>)> asyncTaskFn;

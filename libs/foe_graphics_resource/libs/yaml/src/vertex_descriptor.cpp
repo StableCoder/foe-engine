@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/resource/shader.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/vk/yaml/vertex_descriptor.hpp>
 #include <foe/yaml/exception.hpp>
@@ -114,12 +115,28 @@ char const *yaml_vertex_descriptor_key() { return "vertex_descriptor_v1"; }
 
 void yaml_read_vertex_descriptor(YAML::Node const &node,
                                  foeIdGroupTranslator const *pTranslator,
-                                 foeResourceCreateInfoBase **ppCreateInfo) {
-    foeVertexDescriptorCreateInfo ci{};
+                                 foeResourceCreateInfo *pCreateInfo) {
+    foeVertexDescriptorCreateInfo vdCI{};
+    foeResourceCreateInfo createInfo;
 
-    yaml_read_vertex_descriptor_internal(yaml_vertex_descriptor_key(), node, pTranslator, ci);
+    yaml_read_vertex_descriptor_internal(yaml_vertex_descriptor_key(), node, pTranslator, vdCI);
 
-    *ppCreateInfo = new foeVertexDescriptorCreateInfo(std::move(ci));
+    auto dataFn = [](void *pSrc, void *pDst) {
+        auto *pSrcData = (foeVertexDescriptorCreateInfo *)pSrc;
+        new (pDst) foeVertexDescriptorCreateInfo(std::move(*pSrcData));
+    };
+
+    std::error_code errC = foeCreateResourceCreateInfo(
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO,
+        foeDestroyVertexDescriptorCreateInfo, sizeof(foeVertexDescriptorCreateInfo), &vdCI, dataFn,
+        &createInfo);
+    if (errC) {
+        throw foeYamlException{
+            std::string{"Failed to create foeVertexDescriptorCreateInfo due to error: "} +
+            errC.message()};
+    }
+
+    *pCreateInfo = createInfo;
 }
 
 auto yaml_write_vertex_descriptor(foeVertexDescriptorCreateInfo const &vertexDescriptor)

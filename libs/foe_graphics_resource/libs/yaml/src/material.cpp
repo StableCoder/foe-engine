@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -106,13 +107,27 @@ char const *yaml_material_key() { return "material_v1"; }
 
 void yaml_read_material(YAML::Node const &node,
                         foeIdGroupTranslator const *pTranslator,
-                        foeResourceCreateInfoBase **ppCreateInfo) {
-    std::unique_ptr<foeMaterialCreateInfo> pCI{new foeMaterialCreateInfo};
-    *pCI = {};
+                        foeResourceCreateInfo *pCreateInfo) {
+    foeMaterialCreateInfo materialCI{};
+    foeResourceCreateInfo createInfo;
 
-    yaml_read_material_definition_internal(yaml_material_key(), node, pTranslator, *pCI);
+    yaml_read_material_definition_internal(yaml_material_key(), node, pTranslator, materialCI);
 
-    *ppCreateInfo = pCI.release();
+    auto dataFn = [](void *pSrc, void *pDst) {
+        auto *pSrcData = (foeMaterialCreateInfo *)pSrc;
+        new (pDst) foeMaterialCreateInfo(std::move(*pSrcData));
+    };
+
+    std::error_code errC = foeCreateResourceCreateInfo(
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO, foeDestroyMaterialCreateInfo,
+        sizeof(foeMaterialCreateInfo), &materialCI, dataFn, &createInfo);
+    if (errC) {
+        throw foeYamlException{
+            std::string{"Failed to create foeMaterialCreateInfo due to error: "} + errC.message()};
+    }
+
+    materialCI = {};
+    *pCreateInfo = createInfo;
 }
 
 auto yaml_write_material(foeMaterialCreateInfo const &data,

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,18 +17,18 @@
 #ifndef ARMATURE_HPP
 #define ARMATURE_HPP
 
+#include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
-struct foeResourceCreateInfoBase;
 struct foeArmatureCreateInfo;
 
 char const *yaml_armature_key();
 
 void yaml_read_armature(YAML::Node const &node,
                         foeIdGroupTranslator const *pTranslator,
-                        foeResourceCreateInfoBase **ppCreateInfo);
+                        foeResourceCreateInfo *pCreateInfo);
 
-auto yaml_write_armature(foeArmatureCreateInfo &data) -> YAML::Node;
+auto yaml_write_armature(foeArmatureCreateInfo const &data) -> YAML::Node;
 
 #endif // ARMATURE_HPP

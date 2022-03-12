@@ -21,13 +21,12 @@
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/resource.h>
-#include <foe/simulation/core/create_info.hpp>
 #include <vulkan/vulkan.h>
 
 #include <mutex>
 #include <vector>
 
-struct FOE_GFX_RES_EXPORT foeVertexDescriptorCreateInfo : public foeResourceCreateInfoBase {
+struct foeVertexDescriptorCreateInfo {
     foeId vertexShader;
     foeId tessellationControlShader;
     foeId tessellationEvaluationShader;
@@ -39,6 +38,9 @@ struct FOE_GFX_RES_EXPORT foeVertexDescriptorCreateInfo : public foeResourceCrea
     VkPipelineTessellationStateCreateInfo tessellationSCI;
 };
 
+FOE_GFX_RES_EXPORT void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type,
+                                                             void *pCreateInfo);
+
 class foeShaderPool;
 
 class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
@@ -49,10 +51,10 @@ class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
 
     void gfxMaintenance();
 
-    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
                      foeResource resource,
-                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     foeResourceCreateInfo createInfo,
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
@@ -63,14 +65,14 @@ class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
                                bool immediateUnload);
 
     void load(foeResource resource,
-              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeShaderPool *mShaderPool{nullptr};
 
     struct LoadData {
         foeResource resource;
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeVertexDescriptor data;
     };

@@ -19,7 +19,6 @@
 
 #include "armature.hpp"
 #include <foe/resource/resource.h>
-#include <foe/simulation/core/create_info.hpp>
 
 #include <filesystem>
 #include <functional>
@@ -33,11 +32,13 @@ struct AnimationImportInfo {
     std::vector<std::string> animationNames;
 };
 
-struct foeArmatureCreateInfo : public foeResourceCreateInfoBase {
+struct foeArmatureCreateInfo {
     std::string fileName;
     std::string rootArmatureNode;
     std::vector<AnimationImportInfo> animations;
 };
+
+void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
 
 class foeArmatureLoader {
   public:
@@ -48,10 +49,10 @@ class foeArmatureLoader {
 
     void maintenance();
 
-    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
                      foeResource resource,
-                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     foeResourceCreateInfo createInfo,
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
@@ -62,14 +63,14 @@ class foeArmatureLoader {
                                bool immediateUnload);
 
     void load(foeResource resource,
-              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
 
     struct LoadData {
         foeResource resource;
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeArmature data;
     };

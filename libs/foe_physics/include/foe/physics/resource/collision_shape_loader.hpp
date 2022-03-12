@@ -21,16 +21,18 @@
 #include <foe/physics/export.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/resource/resource.h>
-#include <foe/simulation/core/create_info.hpp>
 #include <glm/glm.hpp>
 
 #include <mutex>
 #include <system_error>
 #include <vector>
 
-struct foeCollisionShapeCreateInfo : public foeResourceCreateInfoBase {
+struct foeCollisionShapeCreateInfo {
     glm::vec3 boxSize;
 };
+
+FOE_PHYSICS_EXPORT void foeDestroyCollisionShapeCreateInfo(foeResourceCreateInfoType type,
+                                                           void *pCreateInfo);
 
 class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
   public:
@@ -42,10 +44,10 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
 
     void maintenance();
 
-    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
                      foeResource resource,
-                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     foeResourceCreateInfo createInfo,
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
@@ -56,12 +58,12 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
                                bool immediateUnload);
 
     void load(foeResource resource,
-              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     struct LoadData {
         foeResource resource;
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeCollisionShape data;
     };

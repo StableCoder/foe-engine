@@ -44,8 +44,8 @@ class DummyImporter : public foeImporterBase {
     bool importResourceDefinitions(foeEditorNameMap *pNameMap, foeSimulation const *pSimulation) {
         return false;
     }
-    foeResourceCreateInfoBase *getResource(foeId id) final {
-        return static_cast<foeResourceCreateInfoBase *>(mResReturn);
+    foeResourceCreateInfo getResource(foeId id) final {
+        return static_cast<foeResourceCreateInfo>(mResReturn);
     }
 
     std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) final {
@@ -360,7 +360,7 @@ TEST_CASE("foeGroupData - IndexGenerator/Importer retrieval", "[foe]") {
 
 TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
     foeGroupData test;
-    foeResourceCreateInfoBase *pCreateInfo;
+    foeResourceCreateInfo createInfo;
 
     SECTION("No importers always fails") {
         REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);

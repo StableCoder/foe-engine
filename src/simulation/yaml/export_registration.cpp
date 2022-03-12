@@ -40,15 +40,17 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
         foeResource armature = pArmaturePool->find(resource);
 
         if (armature != FOE_NULL_HANDLE) {
-            auto pCreateInfo = foeResourceGetCreateInfo(armature);
-            if (pCreateInfo != nullptr) {
-                if (auto dynPtr = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
-                    dynPtr) {
-                    keyDataPairs.emplace_back(foeKeyYamlPair{
-                        .key = yaml_armature_key(),
-                        .data = yaml_write_armature(*dynPtr),
-                    });
-                }
+            auto createInfo = foeResourceGetCreateInfo(armature);
+
+            if (foeResourceCreateInfoGetType(createInfo) ==
+                FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO) {
+                auto const *pCreateInfo =
+                    (foeArmatureCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
+                keyDataPairs.emplace_back(foeKeyYamlPair{
+                    .key = yaml_armature_key(),
+                    .data = yaml_write_armature(*pCreateInfo),
+                });
             }
         }
     }

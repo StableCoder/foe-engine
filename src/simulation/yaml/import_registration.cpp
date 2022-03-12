@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
 namespace {
 
 std::error_code armatureCreateProcessing(foeResourceID resource,
-                                         foeResourceCreateInfoBase *pCreateInfo,
+                                         foeResourceCreateInfo createInfo,
                                          foeSimulation const *pSimulation) {
     auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);

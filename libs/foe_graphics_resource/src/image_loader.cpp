@@ -26,6 +26,11 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
+void foeDestroyImageCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeImageCreateInfo *)pCreateInfo;
+    pCI->~foeImageCreateInfo();
+}
+
 std::error_code foeImageLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (!externalFileSearchFn)
@@ -122,7 +127,7 @@ void foeImageLoader::gfxMaintenance() {
                     new (pDst) foeImage(std::move(*pSrcData));
                 };
 
-                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                                foeImageLoader::unloadResource);
             } else {
                 // Destroy the data immediately
@@ -163,27 +168,27 @@ void foeImageLoader::gfxMaintenance() {
     }
 }
 
-bool foeImageLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foeImageCreateInfo *>(pCreateInfo) != nullptr;
+bool foeImageLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
+    return foeResourceCreateInfoGetType(createInfo) ==
+           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 }
 
 void foeImageLoader::load(void *pLoader,
                           foeResource resource,
-                          std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                          foeResourceCreateInfo createInfo,
                           PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeImageLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
+    reinterpret_cast<foeImageLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
 }
 
 void foeImageLoader::load(foeResource resource,
-                          std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                          foeResourceCreateInfo createInfo,
                           PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pImageCI = dynamic_cast<foeImageCreateInfo *>(pCreateInfo.get());
-
-    if (pImageCI == nullptr) {
+    if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+                    nullptr, nullptr, createInfo, nullptr, nullptr);
         return;
     }
+    auto const *pImageCI = (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     std::error_code errC;
     VkResult vkRes{VK_SUCCESS};
@@ -403,7 +408,7 @@ LOADING_FAILED:
                 foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
 
         // Run the post-load function with the error
-        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, createInfo, nullptr, nullptr);
 
         if (gfxUploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pimage an nullptr, so the upload completes then the
@@ -432,7 +437,7 @@ LOADING_FAILED:
         mLoadSync.lock();
         mToLoad.emplace_back(LoadData{
             .resource = resource,
-            .pCreateInfo = pCreateInfo,
+            .createInfo = createInfo,
             .pPostLoadFn = pPostLoadFn,
             .data = std::move(imgData),
             .uploadRequest = gfxUploadRequest,

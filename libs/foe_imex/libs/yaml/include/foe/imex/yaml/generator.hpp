@@ -20,6 +20,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/imex/yaml/export.h>
+#include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
 #include <filesystem>
@@ -30,7 +31,6 @@
 #include <vector>
 
 struct foeIdGroupTranslator;
-struct foeResourceCreateInfoBase;
 struct foeSimulation;
 struct foeSimulationLoaderData;
 struct foeComponentPoolBase;
@@ -43,11 +43,11 @@ class FOE_IMEX_YAML_EXPORT foeYamlImporterGenerator : public foeImporterGenerato
     /// Imports the definition of a resource from a YAML node
     using ResourceImportFn = void (*)(YAML::Node const &,
                                       foeIdGroupTranslator const *,
-                                      foeResourceCreateInfoBase **);
+                                      foeResourceCreateInfo *);
 
     /// Creates a resource from a given CreateInfo definition
     using ResourceCreateFn = std::error_code (*)(foeResourceID,
-                                                 foeResourceCreateInfoBase *,
+                                                 foeResourceCreateInfo,
                                                  foeSimulation const *);
 
     /// Imports component data from a YAML node

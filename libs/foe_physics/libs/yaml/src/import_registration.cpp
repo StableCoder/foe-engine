@@ -31,7 +31,7 @@
 namespace {
 
 std::error_code collisionShapeCreateProcessing(foeResourceID resource,
-                                               foeResourceCreateInfoBase *pCreateInfo,
+                                               foeResourceCreateInfo createInfo,
                                                foeSimulation const *pSimulation) {
     auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);

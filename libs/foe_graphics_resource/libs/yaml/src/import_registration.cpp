@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 namespace {
 
 std::error_code imageCreateProcessing(foeResourceID resource,
-                                      foeResourceCreateInfoBase *pCreateInfo,
+                                      foeResourceCreateInfo createInfo,
                                       foeSimulation const *pSimulation) {
     auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
@@ -53,7 +53,7 @@ std::error_code imageCreateProcessing(foeResourceID resource,
 }
 
 std::error_code materialCreateProcessing(foeResourceID resource,
-                                         foeResourceCreateInfoBase *pCreateInfo,
+                                         foeResourceCreateInfo createInfo,
                                          foeSimulation const *pSimulation) {
     auto *pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
@@ -70,7 +70,7 @@ std::error_code materialCreateProcessing(foeResourceID resource,
 }
 
 std::error_code meshCreateProcessing(foeResourceID resource,
-                                     foeResourceCreateInfoBase *pCreateInfo,
+                                     foeResourceCreateInfo createInfo,
                                      foeSimulation const *pSimulation) {
     auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
@@ -87,7 +87,7 @@ std::error_code meshCreateProcessing(foeResourceID resource,
 }
 
 std::error_code shaderCreateProcessing(foeResourceID resource,
-                                       foeResourceCreateInfoBase *pCreateInfo,
+                                       foeResourceCreateInfo createInfo,
                                        foeSimulation const *pSimulation) {
     auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
@@ -104,7 +104,7 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
 }
 
 std::error_code vertexDescriptorCreateProcessing(foeResourceID resource,
-                                                 foeResourceCreateInfoBase *pCreateInfo,
+                                                 foeResourceCreateInfo createInfo,
                                                  foeSimulation const *pSimulation) {
     auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);

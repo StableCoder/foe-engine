@@ -33,6 +33,8 @@ FOE_RES_EXPORT foeErrorCode
 foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
                             void (*pDestroyFn)(foeResourceCreateInfoType, void *),
                             size_t size,
+                            void *pData,
+                            void (*pDataFn)(void *, void *),
                             foeResourceCreateInfo *pCreateInfo);
 
 FOE_RES_EXPORT void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo);
@@ -44,7 +46,7 @@ FOE_RES_EXPORT int foeResourceCreateInfoGetRefCount(foeResourceCreateInfo create
 FOE_RES_EXPORT int foeResourceCreateInfoIncrementRefCount(foeResourceCreateInfo createInfo);
 FOE_RES_EXPORT int foeResourceCreateInfoDecrementRefCount(foeResourceCreateInfo createInfo);
 
-FOE_RES_EXPORT void *foeResourceCreateInfoGetData(foeResourceCreateInfo createInfo);
+FOE_RES_EXPORT void const *foeResourceCreateInfoGetData(foeResourceCreateInfo createInfo);
 
 #ifdef __cplusplus
 }

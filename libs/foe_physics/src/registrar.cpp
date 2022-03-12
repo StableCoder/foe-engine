@@ -42,27 +42,25 @@ struct TypeSelection {
     bool physicsSystem;
 };
 
-foeResourceCreateInfoBase *importFn(void *pContext, foeResourceID resource) {
+foeResourceCreateInfo importFn(void *pContext, foeResourceID resource) {
     auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
     return pGroupData->getResourceDefinition(resource);
 }
 
-void collisionShapeLoadFn(void *pContext,
-                          foeResource resource,
-                          PFN_foeResourcePostLoad *pPostLoadFn) {
+void loadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
 
-    auto pLocalCreateInfo = foeResourceGetCreateInfo(resource);
+    auto createInfo = foeResourceGetCreateInfo(resource);
 
     for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(pLocalCreateInfo.get())) {
-            it.pLoadFn(it.pLoader, resource, pLocalCreateInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(createInfo)) {
+            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
             return;
         }
     }
 
     pPostLoadFn(resource, foeToErrorCode(FOE_PHYSICS_ERROR_IMPORT_FAILED), nullptr, nullptr,
-                nullptr, nullptr, nullptr);
+                createInfo, nullptr, nullptr);
 }
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
@@ -184,7 +182,7 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                 .pImportContext = &pSimulation->groupData,
                 .pImportFn = importFn,
                 .pLoadContext = pSimulation,
-                .pLoadFn = collisionShapeLoadFn,
+                .pLoadFn = loadFn,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);

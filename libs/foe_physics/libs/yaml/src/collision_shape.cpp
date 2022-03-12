@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #include "collision_shape.hpp"
 
 #include <foe/physics/resource/collision_shape_loader.hpp>
+#include <foe/physics/type_defs.h>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -74,16 +75,31 @@ char const *yaml_collision_shape_key() { return "collision_shape_v1"; }
 
 void yaml_read_collision_shape(YAML::Node const &node,
                                foeIdGroupTranslator const *pTranslator,
-                               foeResourceCreateInfoBase **ppCreateInfo) {
-    foeCollisionShapeCreateInfo ci;
+                               foeResourceCreateInfo *pCreateInfo) {
+    foeCollisionShapeCreateInfo ci{};
+    foeResourceCreateInfo createInfo;
 
     yaml_read_collision_shape_definition_internal(yaml_collision_shape_key(), node, pTranslator,
                                                   ci);
 
-    *ppCreateInfo = new foeCollisionShapeCreateInfo(std::move(ci));
+    auto dataFn = [](void *pSrc, void *pDst) {
+        auto *pSrcData = (foeCollisionShapeCreateInfo *)pSrc;
+        new (pDst) foeCollisionShapeCreateInfo(std::move(*pSrcData));
+    };
+
+    std::error_code errC = foeCreateResourceCreateInfo(
+        FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO, foeDestroyCollisionShapeCreateInfo,
+        sizeof(foeCollisionShapeCreateInfo), &ci, dataFn, &createInfo);
+    if (errC) {
+        throw foeYamlException{
+            std::string{"Failed to create foeCollisionShapeCreateInfo due to error: "} +
+            errC.message()};
+    }
+
+    *pCreateInfo = createInfo;
 }
 
-auto yaml_write_collision_shape(foeCollisionShapeCreateInfo &data) -> YAML::Node {
+auto yaml_write_collision_shape(foeCollisionShapeCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
     yaml_write_collision_shape_definition_internal("", data, outNode);

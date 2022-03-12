@@ -43,6 +43,11 @@ foeMaterialCreateInfo::~foeMaterialCreateInfo() {
         cleanup_VkPipelineRasterizationStateCreateInfo(&rasterizationSCI);
 }
 
+void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeMaterialCreateInfo *)pCreateInfo;
+    pCI->~foeMaterialCreateInfo();
+}
+
 auto foeMaterialLoader::initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool)
     -> std::error_code {
     if (pShaderPool == nullptr || pImagePool == nullptr)
@@ -155,7 +160,8 @@ void foeMaterialLoader::gfxMaintenance() {
                         ? ((foeShader const *)foeResourceGetData(it.data.fragmentShader))->shader
                         : FOE_NULL_HANDLE;
 
-                auto *pMaterialCI = reinterpret_cast<foeMaterialCreateInfo *>(it.pCreateInfo.get());
+                auto const *pMaterialCI =
+                    (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(it.createInfo);
 
                 it.data.pGfxFragDescriptor = mGfxFragmentDescriptorPool->get(
                     (pMaterialCI->hasRasterizationSCI) ? &pMaterialCI->rasterizationSCI : nullptr,
@@ -174,7 +180,7 @@ void foeMaterialLoader::gfxMaintenance() {
                 new (pDst) foeMaterial(std::move(*pSrcData));
             };
 
-            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                            foeMaterialLoader::unloadResource);
         } else if (subResLoadState == foeResourceLoadState::Failed) {
         DESCRIPTOR_CREATE_FAILED:
@@ -212,27 +218,29 @@ void foeMaterialLoader::gfxMaintenance() {
     }
 }
 
-bool foeMaterialLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo) != nullptr;
+bool foeMaterialLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
+    return foeResourceCreateInfoGetType(createInfo) ==
+           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO;
 }
 
 void foeMaterialLoader::load(void *pLoader,
                              foeResource resource,
-                             std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                             foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeMaterialLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
+    reinterpret_cast<foeMaterialLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
 }
 
 void foeMaterialLoader::load(foeResource resource,
-                             std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                             foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pMaterialCI = dynamic_cast<foeMaterialCreateInfo *>(pCreateInfo.get());
-
-    if (pMaterialCI == nullptr) {
+    if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+                    nullptr, nullptr, createInfo, nullptr, nullptr);
         return;
     }
+
+    auto const *pMaterialCI =
+        (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     foeMaterial data{};
 
@@ -258,7 +266,7 @@ void foeMaterialLoader::load(foeResource resource,
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
-        .pCreateInfo = pCreateInfo,
+        .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });

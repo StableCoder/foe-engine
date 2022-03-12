@@ -20,6 +20,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/error_code.h>
 #include <foe/handle.h>
+#include <foe/resource/create_info.h>
 #include <foe/resource/export.h>
 
 #ifdef __cplusplus
@@ -38,6 +39,16 @@ typedef bool(PFN_foeResourceUnloadCall)(foeResource,             // Resource
                                         uint32_t,                // Iteration
                                         void *,                  // Destination
                                         void (*)(void *, void *) // Data handling call
+);
+
+typedef void(PFN_foeResourcePostLoad)(
+    foeResource,                                                               // Resource
+    foeErrorCode,                                                              // ErrorCode
+    void *,                                                                    // Source
+    void (*)(void *, void *),                                                  // Move Fn
+    foeResourceCreateInfo,                                                     // CreateInfo
+    void *,                                                                    // Unload Context
+    void (*)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool) // Unload Fn
 );
 
 enum foeResourceLoadState {
@@ -74,25 +85,12 @@ FOE_RES_EXPORT void foeResourceImportCreateInfo(foeResource resource);
 FOE_RES_EXPORT void foeResourceLoad(foeResource resource, bool refreshCreateInfo);
 FOE_RES_EXPORT void foeResourceUnload(foeResource resource, bool immediate);
 
+// @warning The handle has already been pre-incremented before being returned. The used is
+// responsible for decrementing the reference count before disposing of it.
+FOE_RES_EXPORT foeResourceCreateInfo foeResourceGetCreateInfo(foeResource resource);
+
 #ifdef __cplusplus
 }
 #endif
-
-#include <foe/simulation/core/create_info.hpp>
-
-#include <memory>
-
-typedef void(PFN_foeResourcePostLoad)(
-    foeResource,                                                               // Resource
-    foeErrorCode,                                                              // ErrorCode
-    void *,                                                                    // Source
-    void (*)(void *, void *),                                                  // Move Fn
-    std::shared_ptr<foeResourceCreateInfoBase>,                                // CreateInfo
-    void *,                                                                    // Unload Context
-    void (*)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool) // Unload Fn
-);
-
-FOE_RES_EXPORT std::shared_ptr<foeResourceCreateInfoBase> foeResourceGetCreateInfo(
-    foeResource resource);
 
 #endif // FOE_RESOURCE_RESOURCE_H

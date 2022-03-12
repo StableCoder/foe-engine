@@ -23,6 +23,11 @@
 #include "error_code.hpp"
 #include "log.hpp"
 
+void foeDestroyCollisionShapeCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeCollisionShapeCreateInfo *)pCreateInfo;
+    pCI->~foeCollisionShapeCreateInfo();
+}
+
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 
 std::error_code foeCollisionShapeLoader::initialize() {
@@ -61,33 +66,34 @@ void foeCollisionShapeLoader::maintenance() {
             new (pDst) foeCollisionShape(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                        foeCollisionShapeLoader::unloadResource);
     }
 }
 
-bool foeCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo) != nullptr;
+bool foeCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
+    return foeResourceCreateInfoGetType(createInfo) ==
+           FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO;
 }
 
 void foeCollisionShapeLoader::load(void *pLoader,
                                    foeResource resource,
-                                   std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                                   foeResourceCreateInfo createInfo,
                                    PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
+    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
 }
 
 void foeCollisionShapeLoader::load(foeResource resource,
-                                   std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                                   foeResourceCreateInfo createInfo,
                                    PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pCollisionShapeCreateInfo =
-        dynamic_cast<foeCollisionShapeCreateInfo *>(pCreateInfo.get());
-
-    if (pCollisionShapeCreateInfo == nullptr) {
+    if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
                     nullptr, nullptr, nullptr, nullptr);
         return;
     }
+
+    auto const *pCollisionShapeCreateInfo =
+        (foeCollisionShapeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     foeCollisionShape data{};
 
@@ -97,7 +103,7 @@ void foeCollisionShapeLoader::load(foeResource resource,
     mLoadSync.lock();
     mToLoad.emplace_back(LoadData{
         .resource = resource,
-        .pCreateInfo = pCreateInfo,
+        .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });

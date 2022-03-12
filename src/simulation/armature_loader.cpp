@@ -23,6 +23,11 @@
 #include "armature.hpp"
 #include "type_defs.h"
 
+void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeArmatureCreateInfo *)pCreateInfo;
+    pCI->~foeArmatureCreateInfo();
+}
+
 std::error_code foeArmatureLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     std::error_code errC;
@@ -62,20 +67,21 @@ void foeArmatureLoader::maintenance() {
             new (pDst) foeArmature(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                        foeArmatureLoader::unloadResource);
     }
 }
 
-bool foeArmatureLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo) != nullptr;
+bool foeArmatureLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
+    return foeResourceCreateInfoGetType(createInfo) ==
+           FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO;
 }
 
 namespace {
 
 bool processCreateInfo(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
-    foeArmatureCreateInfo *pCreateInfo,
+    foeArmatureCreateInfo const *pCreateInfo,
     foeArmature &data) {
     { // Armature
         std::filesystem::path filePath = externalFileSearchFn(pCreateInfo->fileName);
@@ -117,21 +123,22 @@ bool processCreateInfo(
 
 void foeArmatureLoader::load(void *pLoader,
                              foeResource resource,
-                             std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                             foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeArmatureLoader *>(pLoader)->load(resource, pCreateInfo, pPostLoadFn);
+    reinterpret_cast<foeArmatureLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
 }
 
 void foeArmatureLoader::load(foeResource resource,
-                             std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                             foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pArmatureCreateInfo = dynamic_cast<foeArmatureCreateInfo *>(pCreateInfo.get());
-
-    if (pArmatureCreateInfo == nullptr) {
+    if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
                     nullptr, nullptr, nullptr, nullptr);
         return;
     }
+
+    auto const *pArmatureCreateInfo =
+        (foeArmatureCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     foeArmature data{};
 
@@ -144,7 +151,7 @@ void foeArmatureLoader::load(foeResource resource,
     mLoadSync.lock();
     mToLoad.emplace_back(LoadData{
         .resource = resource,
-        .pCreateInfo = pCreateInfo,
+        .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });

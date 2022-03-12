@@ -31,7 +31,7 @@
 class foeShaderPool;
 class foeImagePool;
 
-struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo : public foeResourceCreateInfoBase {
+struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo {
     ~foeMaterialCreateInfo();
 
     foeId fragmentShader = FOE_INVALID_ID;
@@ -45,6 +45,9 @@ struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo : public foeResourceCreateInfoBa
     std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
 };
 
+FOE_GFX_RES_EXPORT void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type,
+                                                     void *pCreateInfo);
+
 class FOE_GFX_RES_EXPORT foeMaterialLoader {
   public:
     auto initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool) -> std::error_code;
@@ -57,10 +60,10 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
 
     void gfxMaintenance();
 
-    static bool canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo);
+    static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
                      foeResource resource,
-                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                     foeResourceCreateInfo createInfo,
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
@@ -73,7 +76,7 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
                                bool immediateUnload);
 
     void load(foeResource resource,
-              std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+              foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeShaderPool *mShaderPool{nullptr};
@@ -86,7 +89,7 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
 
     struct LoadData {
         foeResource resource;
-        std::shared_ptr<foeResourceCreateInfoBase> pCreateInfo;
+        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeMaterial data;
     };

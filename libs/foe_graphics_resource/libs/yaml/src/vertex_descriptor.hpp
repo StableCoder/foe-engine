@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@
 #ifndef VERTEX_DESCRIPTOR_HPP
 #define VERTEX_DESCRIPTOR_HPP
 
+#include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
-struct foeResourceCreateInfoBase;
 struct foeVertexDescriptorCreateInfo;
 
 char const *yaml_vertex_descriptor_key();
 
 void yaml_read_vertex_descriptor(YAML::Node const &node,
                                  foeIdGroupTranslator const *pTranslator,
-                                 foeResourceCreateInfoBase **ppCreateInfo);
+                                 foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_vertex_descriptor(foeVertexDescriptorCreateInfo const &data) -> YAML::Node;
 

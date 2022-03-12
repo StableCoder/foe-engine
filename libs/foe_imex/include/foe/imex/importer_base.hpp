@@ -18,6 +18,7 @@
 #define FOE_IMEX_IMPORTER_BASE_HPP
 
 #include <foe/ecs/id.hpp>
+#include <foe/resource/create_info.h>
 
 #include <filesystem>
 #include <string>
@@ -29,7 +30,6 @@ class foeIdIndexGenerator;
 struct foeEditorNameMap;
 
 struct foeSimulation;
-struct foeResourceCreateInfoBase;
 
 class foeImporterBase {
   public:
@@ -47,7 +47,7 @@ class foeImporterBase {
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
                                            foeSimulation const *pSimulation) = 0;
-    virtual foeResourceCreateInfoBase *getResource(foeId id) = 0;
+    virtual foeResourceCreateInfo getResource(foeId id) = 0;
 
     virtual std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) = 0;
 };

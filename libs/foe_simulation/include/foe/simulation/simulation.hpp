@@ -42,7 +42,6 @@
  * such as graphics.
  */
 
-struct foeResourceCreateInfoBase;
 struct foeResourcePoolBase;
 struct foeResourceLoaderBase;
 struct foeComponentPoolBase;
@@ -60,12 +59,9 @@ struct foeSimulationLoaderData {
     /// The loader itself
     void *pLoader;
     /// Function that returns whether the loader can process a given ResourceCreateInfo type
-    bool (*pCanProcessCreateInfoFn)(foeResourceCreateInfoBase *);
+    bool (*pCanProcessCreateInfoFn)(foeResourceCreateInfo);
     /// Function to be called to load a resource with a compatible ResourceCreateInfo
-    void (*pLoadFn)(void *,
-                    foeResource,
-                    std::shared_ptr<foeResourceCreateInfoBase> const &,
-                    PFN_foeResourcePostLoad *);
+    void (*pLoadFn)(void *, foeResource, foeResourceCreateInfo, PFN_foeResourcePostLoad *);
     /// Maintenance to be performed as part of the regular simulation loop
     void (*pMaintenanceFn)(void *);
     /// Maintenance to be performed as part of the graphics loop

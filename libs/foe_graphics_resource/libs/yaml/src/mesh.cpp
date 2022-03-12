@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #include "mesh.hpp"
 
 #include <foe/graphics/resource/mesh_loader.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/model/assimp/flags.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -123,12 +124,26 @@ char const *yaml_mesh_key() { return "mesh_v1"; }
 
 void yaml_read_mesh(YAML::Node const &node,
                     foeIdGroupTranslator const *pTranslator,
-                    foeResourceCreateInfoBase **ppCreateInfo) {
-    foeMeshCreateInfo ci{};
+                    foeResourceCreateInfo *pCreateInfo) {
+    foeMeshCreateInfo meshCI{};
+    foeResourceCreateInfo createInfo;
 
-    yaml_read_mesh_definition_internal(yaml_mesh_key(), node, pTranslator, ci);
+    yaml_read_mesh_definition_internal(yaml_mesh_key(), node, pTranslator, meshCI);
 
-    *ppCreateInfo = new foeMeshCreateInfo(std::move(ci));
+    auto dataFn = [](void *pSrc, void *pDst) {
+        auto *pSrcData = (foeMeshCreateInfo *)pSrc;
+        new (pDst) foeMeshCreateInfo(std::move(*pSrcData));
+    };
+
+    std::error_code errC = foeCreateResourceCreateInfo(
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO, foeDestroyMeshCreateInfo,
+        sizeof(foeMeshCreateInfo), &meshCI, dataFn, &createInfo);
+    if (errC) {
+        throw foeYamlException{std::string{"Failed to create foeMeshCreateInfo due to error: "} +
+                               errC.message()};
+    }
+
+    *pCreateInfo = createInfo;
 }
 
 auto yaml_write_mesh(foeMeshCreateInfo const &data) -> YAML::Node {

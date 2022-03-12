@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <foe/yaml/parsing.hpp>
 
 #include "../armature_loader.hpp"
+#include "../type_defs.h"
 
 namespace {
 
@@ -123,15 +124,29 @@ char const *yaml_armature_key() { return "armature_v1"; }
 
 void yaml_read_armature(YAML::Node const &node,
                         foeIdGroupTranslator const *pTranslator,
-                        foeResourceCreateInfoBase **ppCreateInfo) {
-    foeArmatureCreateInfo ci;
+                        foeResourceCreateInfo *pCreateInfo) {
+    foeArmatureCreateInfo armatureCI{};
+    foeResourceCreateInfo createInfo;
 
-    yaml_read_armature_definition_internal(yaml_armature_key(), node, pTranslator, ci);
+    yaml_read_armature_definition_internal(yaml_armature_key(), node, pTranslator, armatureCI);
 
-    *ppCreateInfo = new foeArmatureCreateInfo(std::move(ci));
+    auto dataFn = [](void *pSrc, void *pDst) {
+        auto *pSrcData = (foeArmatureCreateInfo *)pSrc;
+        new (pDst) foeArmatureCreateInfo(std::move(*pSrcData));
+    };
+
+    std::error_code errC = foeCreateResourceCreateInfo(
+        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO, foeDestroyArmatureCreateInfo,
+        sizeof(foeArmatureCreateInfo), &armatureCI, dataFn, &createInfo);
+    if (errC) {
+        throw foeYamlException{
+            std::string{"Failed to create foeArmatureCreateInfo due to error: "} + errC.message()};
+    }
+
+    *pCreateInfo = createInfo;
 }
 
-auto yaml_write_armature(foeArmatureCreateInfo &data) -> YAML::Node {
+auto yaml_write_armature(foeArmatureCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
     yaml_write_armature_internal("", data, outNode);

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include <foe/ecs/id.hpp>
 #include <foe/ecs/index_generator.hpp>
 #include <foe/imex/importer_base.hpp>
+#include <foe/resource/create_info.h>
 #include <foe/simulation/export.h>
 
 #include <array>
@@ -52,7 +53,7 @@ class foeGroupData {
     FOE_SIM_EXPORT auto temporaryResourceIndices() noexcept -> foeIdIndexGenerator *;
 
     // Used for resource loaders
-    FOE_SIM_EXPORT foeResourceCreateInfoBase *getResourceDefinition(foeId id);
+    FOE_SIM_EXPORT foeResourceCreateInfo getResourceDefinition(foeId id);
     // Used for resource loaders
     FOE_SIM_EXPORT std::filesystem::path findExternalFile(std::filesystem::path externalFilePath);
 

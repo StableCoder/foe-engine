@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
+#include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
-struct foeResourceCreateInfoBase;
 struct foeShaderCreateInfo;
 
 char const *yaml_shader_key();
 
 void yaml_read_shader(YAML::Node const &node,
                       foeIdGroupTranslator const *pTranslator,
-                      foeResourceCreateInfoBase **ppCreateInfo);
+                      foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_shader(foeShaderCreateInfo const &data) -> YAML::Node;
 

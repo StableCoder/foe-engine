@@ -24,6 +24,11 @@
 #include "log.hpp"
 #include "worst_subresource_fn.hpp"
 
+void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeVertexDescriptorCreateInfo *)pCreateInfo;
+    pCI->~foeVertexDescriptorCreateInfo();
+}
+
 std::error_code foeVertexDescriptorLoader::initialize(foeShaderPool *pShaderPool) {
     if (pShaderPool == nullptr) {
         return FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_LOADER_INITIALIZATION_FAILED;
@@ -91,8 +96,8 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                     ((foeShader const *)foeResourceGetData(it.data.geometryShader))->shader;
             }
 
-            auto *pCreateInfo =
-                reinterpret_cast<foeVertexDescriptorCreateInfo *>(it.pCreateInfo.get());
+            auto const *pCreateInfo =
+                (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(it.createInfo);
 
             it.data.vertexDescriptor.mVertexInputSCI = pCreateInfo->vertexInputSCI;
             it.data.vertexDescriptor.mVertexInputBindings = pCreateInfo->inputBindings;
@@ -107,7 +112,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 new (pDst) foeVertexDescriptor(std::move(*pSrcData));
             };
 
-            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, std::move(it.pCreateInfo), this,
+            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                            foeVertexDescriptorLoader::unloadResource);
 
         } else if (subResLoadState == foeResourceLoadState::Failed) {
@@ -153,28 +158,29 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
     }
 }
 
-bool foeVertexDescriptorLoader::canProcessCreateInfo(foeResourceCreateInfoBase *pCreateInfo) {
-    return dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo) != nullptr;
+bool foeVertexDescriptorLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
+    return foeResourceCreateInfoGetType(createInfo) ==
+           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO;
 }
 
 void foeVertexDescriptorLoader::load(void *pLoader,
                                      foeResource resource,
-                                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                                     foeResourceCreateInfo createInfo,
                                      PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->load(resource, pCreateInfo,
-                                                                 pPostLoadFn);
+    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
 }
 
 void foeVertexDescriptorLoader::load(foeResource resource,
-                                     std::shared_ptr<foeResourceCreateInfoBase> const &pCreateInfo,
+                                     foeResourceCreateInfo createInfo,
                                      PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pCI = dynamic_cast<foeVertexDescriptorCreateInfo *>(pCreateInfo.get());
-
-    if (pCI == nullptr) {
+    if (!canProcessCreateInfo(createInfo)) {
         pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
                     nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
+
+    auto const *pCI =
+        (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     foeVertexDescriptor data{};
 
@@ -213,7 +219,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
-        .pCreateInfo = pCreateInfo,
+        .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });

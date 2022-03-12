@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
+#include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
 struct foeIdGroupTranslator;
-struct foeResourceCreateInfoBase;
 struct foeMaterialCreateInfo;
 struct foeGfxVkFragmentDescriptor;
 
@@ -28,7 +28,7 @@ char const *yaml_material_key();
 
 void yaml_read_material(YAML::Node const &node,
                         foeIdGroupTranslator const *pTranslator,
-                        foeResourceCreateInfoBase **ppCreateInfo);
+                        foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_material(foeMaterialCreateInfo const &data,
                          foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node;
