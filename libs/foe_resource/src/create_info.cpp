@@ -67,6 +67,9 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
 extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {
     auto *pCreateInfo = resource_create_info_from_handle(createInfo);
 
+    FOE_LOG(foeResourceCore, Verbose, "foeResourceCreateInfo[{},{}] - Destroying...",
+            (void *)pCreateInfo, pCreateInfo->type)
+
     int refCount = pCreateInfo->refCount;
     if (refCount != 0) {
         FOE_LOG(foeResourceCore, Warning,

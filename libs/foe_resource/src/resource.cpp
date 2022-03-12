@@ -85,15 +85,21 @@ extern "C" foeErrorCode foeCreateResource(foeResourceID id,
 extern "C" void foeDestroyResource(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
 
-    if (pResource->useCount > 0) {
+    FOE_LOG(foeResourceCore, Verbose, "foeResource[{},{}] - Destroying...", pResource->id,
+            pResource->type)
+
+    int useCount = pResource->useCount;
+    if (useCount != 0) {
         FOE_LOG(foeResourceCore, Warning,
-                "foeResource[{},{}] - Destroying while use count is non-zero", pResource->id,
-                pResource->type)
+                "foeResource[{},{}] - Destroying with a non-zero use count of: {}", pResource->id,
+                pResource->type, useCount)
     }
-    if (pResource->refCount > 0) {
+
+    int refCount = pResource->refCount;
+    if (refCount != 0) {
         FOE_LOG(foeResourceCore, Warning,
-                "foeResource[{},{}] - Destroying while reference count is non-zero", pResource->id,
-                pResource->type)
+                "foeResource[{},{}] - Destroying with a non-zero reference count of: {}",
+                pResource->id, pResource->type, refCount)
     }
 
     foeResourceUnload(resource, true);
@@ -365,8 +371,9 @@ bool resourceUnloadCall(foeResource resource,
     // To prevent issues due to maybe slower destruction of ResourceCreateInfo, decrement/destroy it
     // outside the sync-locked portion
     if (oldCreateInfo != FOE_NULL_HANDLE) {
-        foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-        foeDestroyResourceCreateInfo(oldCreateInfo);
+        auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
+        if (refCount == 0)
+            foeDestroyResourceCreateInfo(oldCreateInfo);
     }
 
     return retVal;

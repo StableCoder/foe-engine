@@ -10,6 +10,8 @@ target_sources(
   test_foe_resource
   PRIVATE create_info.cpp
           error_code.cpp
+          resource.cpp
+          resource_importing_loading.cpp
           # The following set are sources that needs to be recompiled as the
           # symbols may not be exported or have been stripped from  thelinked
           # libraries
