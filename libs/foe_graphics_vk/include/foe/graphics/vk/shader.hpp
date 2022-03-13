@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ struct foeGfxVkShaderCreateInfo {
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
     VkPushConstantRange pushConstantRange;
 };
+
+FOE_GFX_EXPORT void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo);
 
 FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(foeGfxSession session,
                                                     foeGfxVkShaderCreateInfo const *pCreateInfo,

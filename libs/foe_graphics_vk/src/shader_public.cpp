@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #include <foe/graphics/vk/shader.hpp>
 
 #include <vk_error_code.hpp>
+#include <vk_struct_cleanup.h>
 
 #include "session.hpp"
 #include "shader.hpp"
@@ -32,6 +33,10 @@ void foeGfxVkDestroyShader(foeGfxVkSession *pSession, foeGfxVkShader *pShader) {
 }
 
 } // namespace
+
+void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo) {
+    cleanup_VkDescriptorSetLayoutCreateInfo(&pCreateInfo->descriptorSetLayoutCI);
+}
 
 std::error_code foeGfxVkCreateShader(foeGfxSession session,
                                      foeGfxVkShaderCreateInfo const *pCreateInfo,

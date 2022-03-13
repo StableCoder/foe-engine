@@ -50,6 +50,9 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 
 void foeDestroyShaderCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
     auto *pCI = (foeShaderCreateInfo *)pCreateInfo;
+
+    foeGfxVkDestroyShaderCreateInfo(&pCI->gfxCreateInfo);
+
     pCI->~foeShaderCreateInfo();
 }
 
