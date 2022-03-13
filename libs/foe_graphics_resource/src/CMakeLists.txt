@@ -12,4 +12,5 @@ target_sources(
           shader_loader.cpp
           shader_pool.cpp
           vertex_descriptor_loader.cpp
-          vertex_descriptor_pool.cpp)
+          vertex_descriptor_pool.cpp
+          worst_resource_state.cpp)

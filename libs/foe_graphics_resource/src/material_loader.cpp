@@ -30,8 +30,9 @@
 
 #include "error_code.hpp"
 #include "log.hpp"
-#include "worst_subresource_fn.hpp"
+#include "worst_resource_state.hpp"
 
+#include <array>
 #include <type_traits>
 
 foeMaterialCreateInfo::~foeMaterialCreateInfo() {
@@ -151,7 +152,12 @@ void foeMaterialLoader::gfxMaintenance() {
 
     for (auto &it : toLoad) {
         // Check to see if what we need has been loaded yet
-        auto subResLoadState = getWorstSubResourceState(it.data.fragmentShader, it.data.image);
+        std::array<foeResource, 2> subResources = {
+            it.data.fragmentShader,
+            it.data.image,
+        };
+
+        auto subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
 
         if (subResLoadState == foeResourceLoadState::Loaded) {
             { // Using the sub-resources that are loaded, and definition data, create the resource

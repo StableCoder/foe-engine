@@ -22,7 +22,9 @@
 
 #include "error_code.hpp"
 #include "log.hpp"
-#include "worst_subresource_fn.hpp"
+#include "worst_resource_state.hpp"
+
+#include <array>
 
 void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
     auto *pCI = (foeVertexDescriptorCreateInfo *)pCreateInfo;
@@ -72,9 +74,14 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
     std::vector<LoadData> stillLoading;
 
     for (auto &it : toLoad) {
-        auto subResLoadState =
-            getWorstSubResourceState(it.data.vertexShader, it.data.tessellationControlShader,
-                                     it.data.tessellationEvaluationShader, it.data.geometryShader);
+        std::array<foeResource, 4> subResources = {
+            it.data.vertexShader,
+            it.data.tessellationControlShader,
+            it.data.tessellationEvaluationShader,
+            it.data.geometryShader,
+        };
+
+        auto subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
 
         if (subResLoadState == foeResourceLoadState::Loaded) {
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
