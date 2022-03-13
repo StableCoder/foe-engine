@@ -78,7 +78,7 @@ foeResource foeArmaturePool::findOrAdd(foeResourceID resource) {
 }
 
 foeResource foeArmaturePool::find(foeResourceID resource) {
-    foeResource outResource;
+    foeResource outResource{FOE_NULL_HANDLE};
 
     mSync.lock_shared();
     for (auto const it : mResources) {

@@ -81,7 +81,7 @@ foeResource foeVertexDescriptorPool::findOrAdd(foeResourceID resource) {
 }
 
 foeResource foeVertexDescriptorPool::find(foeResourceID resource) {
-    foeResource outResource;
+    foeResource outResource{FOE_NULL_HANDLE};
 
     mSync.lock_shared();
     for (auto const it : mResources) {
