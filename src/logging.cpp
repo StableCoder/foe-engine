@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ namespace {
 
 class StdOutSink : public foeLogSink {
     void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
-        std::cout << pCategory->name() << " : " << std::to_string(level) << " : " << message
+        std::cout << std::to_string(level) << " : " << pCategory->name() << " : " << message
                   << "\n";
     }
 
