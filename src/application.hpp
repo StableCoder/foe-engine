@@ -17,7 +17,7 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>

@@ -18,7 +18,7 @@
 #define CAMERA_POOL_HPP
 
 #include <foe/data_pool.hpp>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 
 #include "camera.hpp"
 #include "type_defs.h"

@@ -18,7 +18,7 @@
 #define FOE_PHYSICS_SYSTEM_HPP
 
 #include <btBulletDynamicsCommon.h>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/physics/export.h>
 #include <foe/resource/resource.h>
 

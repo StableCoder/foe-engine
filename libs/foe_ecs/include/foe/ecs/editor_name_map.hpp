@@ -18,7 +18,7 @@
 #define FOE_ECS_EDITOR_NAME_MAP_HPP
 
 #include <foe/ecs/export.h>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 
 #include <map>
 #include <shared_mutex>

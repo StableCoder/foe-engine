@@ -17,7 +17,7 @@
 #ifndef FOE_SIMULATION_CORE_HPP
 #define FOE_SIMULATION_CORE_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/graphics/session.hpp>
 #include <foe/resource/resource.h>
 #include <foe/simulation/export.h>

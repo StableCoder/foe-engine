@@ -18,7 +18,7 @@
 #define FOE_ECS_GROUP_TRANSLATOR_HPP
 
 #include <foe/ecs/export.h>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 
 #include <string>
 #include <system_error>

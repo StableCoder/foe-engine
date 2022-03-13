@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id_to_string.hpp>
 
 #include <iomanip>
 #include <sstream>

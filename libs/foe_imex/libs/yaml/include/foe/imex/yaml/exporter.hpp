@@ -17,7 +17,7 @@
 #ifndef FOE_IMEX_YAML_EXPORTER_HPP
 #define FOE_IMEX_YAML_EXPORTER_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/imex/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 

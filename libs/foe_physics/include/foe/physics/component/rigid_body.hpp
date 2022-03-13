@@ -18,7 +18,7 @@
 #define FOE_PHYSICS_COMPONENT_RIGID_BODY_HPP
 
 #include <btBulletDynamicsCommon.h>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 
 #include <memory>
 

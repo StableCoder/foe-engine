@@ -17,7 +17,7 @@
 #ifndef IMPORTERS_HPP
 #define IMPORTERS_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/imex/export.h>
 
 #include <filesystem>

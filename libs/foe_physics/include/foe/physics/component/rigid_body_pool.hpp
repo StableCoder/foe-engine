@@ -18,7 +18,7 @@
 #define FOE_PHYSICS_COMPONENT_RIGID_BODY_POOL_HPP
 
 #include <foe/data_pool.hpp>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/physics/component/rigid_body.hpp>
 #include <foe/physics/type_defs.h>
 

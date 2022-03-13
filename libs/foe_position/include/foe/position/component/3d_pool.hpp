@@ -18,7 +18,7 @@
 #define FOE_POSITION_COMPONENT_3D_POOL_HPP
 
 #include <foe/data_pool.hpp>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/position/component/3d.hpp>
 #include <foe/position/type_defs.h>
 

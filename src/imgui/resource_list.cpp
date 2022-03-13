@@ -17,6 +17,7 @@
 #include "resource_list.hpp"
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>

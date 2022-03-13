@@ -17,7 +17,9 @@
 #ifndef POSITION_3D_HPP
 #define POSITION_3D_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
+
+#include <cstddef>
 
 struct foeComponentPoolBase;
 

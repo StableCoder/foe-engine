@@ -18,6 +18,7 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
 #include <foe/imex/yaml/generator.hpp>

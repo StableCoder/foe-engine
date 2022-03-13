@@ -17,6 +17,7 @@
 #include <foe/ecs/yaml/id.hpp>
 
 #include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 

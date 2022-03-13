@@ -16,6 +16,7 @@
 
 #include <foe/simulation/imgui/group_data.hpp>
 
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <imgui.h>

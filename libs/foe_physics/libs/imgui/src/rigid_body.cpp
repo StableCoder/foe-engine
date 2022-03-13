@@ -16,6 +16,7 @@
 
 #include "rigid_body.hpp"
 
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/physics/component/rigid_body.hpp>
 #include <imgui.h>
 

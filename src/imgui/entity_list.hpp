@@ -17,7 +17,7 @@
 #ifndef IMGUI_ENTITY_LIST_HPP
 #define IMGUI_ENTITY_LIST_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 
 #include <vector>
 

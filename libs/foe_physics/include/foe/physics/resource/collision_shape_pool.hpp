@@ -17,7 +17,7 @@
 #ifndef FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_POOL_HPP
 #define FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_POOL_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/physics/export.h>
 #include <foe/resource/resource.h>
 #include <foe/resource/resource_fns.hpp>

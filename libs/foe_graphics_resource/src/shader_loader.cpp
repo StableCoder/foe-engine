@@ -16,6 +16,7 @@
 
 #include <foe/graphics/resource/shader_loader.hpp>
 
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/shader.hpp>
 

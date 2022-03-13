@@ -17,7 +17,7 @@
 #ifndef FOE_IMEX_YAML_GENERATOR_HPP
 #define FOE_IMEX_YAML_GENERATOR_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/imex/importers.hpp>
 #include <foe/imex/yaml/export.h>
 #include <foe/resource/create_info.h>

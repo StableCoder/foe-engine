@@ -18,7 +18,7 @@
 #define FOE_IMEX_YAML_IMPORTER_HPP
 
 #include <foe/ecs/group_translator.hpp>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/imex/importer_base.hpp>
 #include <foe/imex/yaml/export.h>
 #include <yaml-cpp/yaml.h>

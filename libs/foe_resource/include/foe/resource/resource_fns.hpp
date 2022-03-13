@@ -17,7 +17,7 @@
 #ifndef FOE_RESOURCE_RESOURCE_FNS_HPP
 #define FOE_RESOURCE_RESOURCE_FNS_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/resource.h>
 

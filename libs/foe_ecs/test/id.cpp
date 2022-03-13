@@ -15,7 +15,8 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
+#include <foe/ecs/id_to_string.hpp>
 
 TEST_CASE("foeID - Creating and converting IDs", "[foe][ecs]") {
     foeIdIndex index = 12345;

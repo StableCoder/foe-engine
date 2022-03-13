@@ -18,7 +18,7 @@
 #define POSITION_DESCRIPTOR_POOL_HPP
 
 #include <foe/data_pool.hpp>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>

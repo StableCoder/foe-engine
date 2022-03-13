@@ -16,6 +16,8 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 
+#include <foe/ecs/id_to_string.hpp>
+
 #include "log.hpp"
 
 foeId foeEditorNameMap::find(std::string_view editorName) {

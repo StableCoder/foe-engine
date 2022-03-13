@@ -15,7 +15,7 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/simulation/group_data.hpp>
 
 #include <filesystem>

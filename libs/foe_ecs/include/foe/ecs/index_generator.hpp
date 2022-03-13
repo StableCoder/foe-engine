@@ -18,7 +18,7 @@
 #define FOE_ECS_INDEX_GENERATOR_HPP
 
 #include <foe/ecs/export.h>
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 
 #include <atomic>
 #include <mutex>

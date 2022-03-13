@@ -17,7 +17,7 @@
 #ifndef ARMATURE_STATE_HPP
 #define ARMATURE_STATE_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <glm/glm.hpp>
 
 #include <vector>

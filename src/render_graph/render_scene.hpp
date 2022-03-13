@@ -17,7 +17,7 @@
 #ifndef RENDER_SCENE_HPP
 #define RENDER_SCENE_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/graphics/vk/render_graph.hpp>
 
 #include <system_error>

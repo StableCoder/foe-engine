@@ -17,7 +17,7 @@
 #ifndef FOE_SIMULATION_GROUP_DATA_HPP
 #define FOE_SIMULATION_GROUP_DATA_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/ecs/index_generator.hpp>
 #include <foe/imex/importer_base.hpp>
 #include <foe/resource/create_info.h>

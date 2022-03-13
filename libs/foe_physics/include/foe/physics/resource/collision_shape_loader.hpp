@@ -17,7 +17,7 @@
 #ifndef FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_LOADER_HPP
 #define FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_LOADER_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/physics/export.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/resource/resource.h>

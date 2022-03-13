@@ -17,7 +17,7 @@
 #ifndef FOE_IMEX_IMPORTER_BASE_HPP
 #define FOE_IMEX_IMPORTER_BASE_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/resource/create_info.h>
 
 #include <filesystem>

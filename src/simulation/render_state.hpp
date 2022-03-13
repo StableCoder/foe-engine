@@ -17,7 +17,7 @@
 #ifndef RENDER_STATE_HPP
 #define RENDER_STATE_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <vulkan/vulkan.h>
 
 struct foeRenderState {

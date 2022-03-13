@@ -17,7 +17,7 @@
 #ifndef FOE_SIMULATION_IMGUI_GROUP_DATA_HPP
 #define FOE_SIMULATION_IMGUI_GROUP_DATA_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/simulation/imgui/export.h>
 
 struct foeSimulation;

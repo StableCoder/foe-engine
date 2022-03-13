@@ -17,7 +17,7 @@
 #ifndef FOE_ECS_YAML_ID_HPP
 #define FOE_ECS_YAML_ID_HPP
 
-#include <foe/ecs/id.hpp>
+#include <foe/ecs/id.h>
 #include <foe/ecs/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
