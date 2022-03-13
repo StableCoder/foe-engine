@@ -8,7 +8,8 @@ add_executable(test_foe_graphics_vk)
 # Definition
 target_sources(
   test_foe_graphics_vk
-  PRIVATE error_code.cpp
+  PRIVATE c_header_compatability.c
+          error_code.cpp
           sample_count.cpp
           # The following set are sources that needs to be recompiled as the
           # symbols may not be exported or have been stripped from  thelinked

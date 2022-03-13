@@ -8,7 +8,8 @@ add_test(NAME FoE-Resource-Test COMMAND test_foe_resource)
 # Definition
 target_sources(
   test_foe_resource
-  PRIVATE create_info.cpp
+  PRIVATE c_header_compatability.c
+          create_info.cpp
           error_code.cpp
           resource.cpp
           resource_importing_loading.cpp

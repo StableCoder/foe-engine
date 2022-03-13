@@ -21,6 +21,8 @@
 #include <foe/handle.h>
 #include <foe/resource/export.h>
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

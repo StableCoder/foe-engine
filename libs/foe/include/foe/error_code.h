@@ -32,16 +32,18 @@
  * In C++, there are several constructors, including one to build straight from a std::error_code
  * type, or vice-versa implicitly.
  */
-struct foeErrorCode {
+typedef struct foeErrorCode {
     int value;
     void const *pCategory;
-};
+} foeErrorCode;
 
 inline foeErrorCode foeToErrorCode(int value, void const *pCategory) {
-    return foeErrorCode{
+    foeErrorCode errC = {
         .value = value,
         .pCategory = pCategory,
     };
+
+    return errC;
 }
 
 #ifdef __cplusplus

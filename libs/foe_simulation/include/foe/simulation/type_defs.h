@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-struct foeSimulation;
+typedef struct foeSimulation foeSimulation;
 
 /**
  * This macro is used to help diferentiate different binaries/plugin's functionality set.

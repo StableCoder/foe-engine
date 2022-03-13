@@ -8,7 +8,8 @@ add_test(NAME FoE-Simulation-Test COMMAND test_foe_simulation)
 # Definition
 target_sources(
   test_foe_simulation
-  PRIVATE error_code.cpp
+  PRIVATE c_header_compatability.c
+          error_code.cpp
           group_data.cpp
           simulation.cpp
           # The following set are sources that needs to be recompiled as the

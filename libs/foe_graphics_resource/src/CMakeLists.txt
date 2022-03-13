@@ -1,6 +1,7 @@
 target_sources(
   foe_graphics_resource
-  PRIVATE error_code.cpp
+  PRIVATE c_header_compatability.c
+          error_code.cpp
           image_loader.cpp
           image_pool.cpp
           log.cpp

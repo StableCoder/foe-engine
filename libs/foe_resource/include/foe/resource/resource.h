@@ -23,11 +23,13 @@
 #include <foe/resource/create_info.h>
 #include <foe/resource/export.h>
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct foeResourceFns;
+typedef struct foeResourceFns foeResourceFns;
 
 FOE_DEFINE_HANDLE(foeResource)
 
@@ -51,11 +53,11 @@ typedef void(PFN_foeResourcePostLoad)(
     void (*)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool) // Unload Fn
 );
 
-enum foeResourceLoadState {
+typedef enum foeResourceLoadState {
     Unloaded = 0,
     Loaded,
     Failed,
-};
+} foeResourceLoadState;
 
 FOE_RES_EXPORT foeErrorCode foeCreateResource(foeResourceID id,
                                               foeResourceType type,
