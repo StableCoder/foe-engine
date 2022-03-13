@@ -46,9 +46,10 @@ void imgui_foePhysicsResources(foeResourceID resource, foeSimulation const *pSim
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (pCollisionShapePool != nullptr) {
-        auto pResource = pCollisionShapePool->find(resource);
-        if (pResource != nullptr) {
-            imgui_render_foeCollisionShape(pResource);
+        foeResource res = pCollisionShapePool->find(resource);
+        if (res != FOE_NULL_HANDLE &&
+            foeResourceGetType(res) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+            imgui_render_foeCollisionShape(res);
         }
     }
 }
