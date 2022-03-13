@@ -39,9 +39,10 @@ void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSi
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (pImagePool != nullptr) {
-        auto pResource = pImagePool->find(resource);
-        if (pResource != nullptr) {
-            imgui_foeImage(pResource);
+        foeResource res = pImagePool->find(resource);
+        if (res != FOE_NULL_HANDLE &&
+            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
+            imgui_foeImage(res);
         }
     }
 
@@ -50,9 +51,10 @@ void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSi
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (pMaterialPool != nullptr) {
-        auto pResource = pMaterialPool->find(resource);
-        if (pResource != nullptr) {
-            imgui_foeMaterial(pResource);
+        foeResource res = pMaterialPool->find(resource);
+        if (res != FOE_NULL_HANDLE &&
+            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
+            imgui_foeMaterial(res);
         }
     }
 
@@ -61,9 +63,10 @@ void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSi
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (pMeshPool != nullptr) {
-        auto pResource = pMeshPool->find(resource);
-        if (pResource != nullptr) {
-            imgui_foeMesh(pResource);
+        foeResource res = pMeshPool->find(resource);
+        if (res != FOE_NULL_HANDLE &&
+            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
+            imgui_foeMesh(res);
         }
     }
 
@@ -72,9 +75,10 @@ void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSi
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (pShaderPool != nullptr) {
-        auto pResource = pShaderPool->find(resource);
-        if (pResource != nullptr) {
-            imgui_foeShader(pResource);
+        foeResource res = pShaderPool->find(resource);
+        if (res != FOE_NULL_HANDLE &&
+            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+            imgui_foeShader(res);
         }
     }
 
@@ -83,8 +87,9 @@ void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSi
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (pVertexDescriptorPool != nullptr) {
-        auto res = pVertexDescriptorPool->find(resource);
-        if (res != FOE_NULL_HANDLE) {
+        foeResource res = pVertexDescriptorPool->find(resource);
+        if (res != FOE_NULL_HANDLE &&
+            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
             imgui_foeVertexDescriptor(res);
         }
     }
