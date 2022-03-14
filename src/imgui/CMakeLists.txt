@@ -1,6 +1,7 @@
 target_sources(
   foe_engine_imgui
   PRIVATE armature_state.cpp
+          armature.cpp
           bringup_registration.cpp
           camera.cpp
           developer_console.cpp

@@ -16,11 +16,16 @@
 
 #include "bringup_registration.hpp"
 
+#include <foe/resource/imgui/create_info.h>
+#include <foe/resource/imgui/resource.h>
 #include <foe/simulation/imgui/registrar.hpp>
+#include <imgui.h>
 
+#include "../simulation/armature_pool.hpp"
 #include "../simulation/armature_state_pool.hpp"
 #include "../simulation/camera_pool.hpp"
 #include "../simulation/render_state_pool.hpp"
+#include "armature.hpp"
 #include "armature_state.hpp"
 #include "camera.hpp"
 #include "render_state.hpp"
@@ -66,12 +71,57 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimula
     }
 }
 
+void imgui_foeBringupResources(
+    foeResourceID resourceID,
+    foeSimulation const *pSimulation,
+    std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
+    // foeArmature
+    if (auto *pPool = (foeArmaturePool *)foeSimulationGetResourcePool(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
+        pPool) {
+        foeResource resource = pPool->find(resourceID);
+        if (resource != FOE_NULL_HANDLE &&
+            foeResourceGetType(resource) == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+            imgui_foeResource(resource);
+
+            std::string resDataHeader = "Data: ";
+            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                    imgui_foeArmature((foeArmature const *)foeResourceGetData(resource));
+                }
+            }
+
+            if (ImGui::CollapsingHeader("CreateInfo")) {
+                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+                if (createInfo != FOE_NULL_HANDLE) {
+                    imgui_foeResourceCreateInfo(createInfo);
+                    ImGui::Separator();
+                    showResourceCreateInfoDataFn(createInfo);
+
+                    foeResourceCreateInfoDecrementRefCount(createInfo);
+                }
+            }
+        }
+    }
+}
+
+void imgui_BringupResourceCreateInfo(foeResourceCreateInfo resourceCreateInfo) {
+    if (foeResourceCreateInfoGetType(resourceCreateInfo) ==
+        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO) {
+        imgui_foeArmatureCreateInfo(
+            (foeArmatureCreateInfo const *)foeResourceCreateInfoGetData(resourceCreateInfo));
+    }
+}
+
 } // namespace
 
 auto foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->registerElements(&imgui_foeBringupComponents, nullptr, nullptr, nullptr);
+    return pRegistrar->registerElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
+                                        imgui_BringupResourceCreateInfo, nullptr);
 }
 
 auto foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->deregisterElements(&imgui_foeBringupComponents, nullptr, nullptr, nullptr);
+    return pRegistrar->deregisterElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
+                                          imgui_BringupResourceCreateInfo, nullptr);
 }
