@@ -19,14 +19,18 @@
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/type_defs.h>
+#include <foe/resource/imgui/create_info.h>
+#include <foe/resource/imgui/resource.h>
+#include <foe/resource/resource.h>
 #include <foe/simulation/imgui/registrar.hpp>
+#include <imgui.h>
 
 #include "collision_shape.hpp"
 #include "rigid_body.hpp"
 
 namespace {
 
-void imgui_foePhysicsComponents(foeEntityID entity, foeSimulation const *pSimulation) {
+void imgui_foePhysicsComponent(foeEntityID entity, foeSimulation const *pSimulation) {
     // foeRigidBody
     auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
@@ -40,8 +44,8 @@ void imgui_foePhysicsComponents(foeEntityID entity, foeSimulation const *pSimula
     }
 }
 
-void imgui_foePhysicsResources(
-    foeResourceID resource,
+void imgui_foePhysicsResource(
+    foeResourceID resourceID,
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     // foeCollisionShape
@@ -49,22 +53,50 @@ void imgui_foePhysicsResources(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (pCollisionShapePool != nullptr) {
-        foeResource res = pCollisionShapePool->find(resource);
-        if (res != FOE_NULL_HANDLE &&
-            foeResourceGetType(res) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
-            imgui_foeCollisionShape(res);
+        foeResource resource = pCollisionShapePool->find(resourceID);
+        if (resource != FOE_NULL_HANDLE &&
+            foeResourceGetType(resource) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+            imgui_foeResource(resource);
+
+            std::string resDataHeader = "Data: ";
+            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                    imgui_foeCollisionShape(
+                        (foeCollisionShape const *)foeResourceGetData(resource));
+                }
+            }
+
+            if (ImGui::CollapsingHeader("CreateInfo")) {
+                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+                if (createInfo != FOE_NULL_HANDLE) {
+                    imgui_foeResourceCreateInfo(createInfo);
+                    ImGui::Separator();
+                    showResourceCreateInfoDataFn(createInfo);
+
+                    foeResourceCreateInfoDecrementRefCount(createInfo);
+                }
+            }
         }
+    }
+}
+
+void imgui_foePhysicsResourceCreateInfo(foeResourceCreateInfo createInfo) {
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO) {
+        imgui_foeCollisionShapeCreateInfo(
+            (foeCollisionShapeCreateInfo const *)foeResourceCreateInfoGetData(createInfo));
     }
 }
 
 } // namespace
 
 auto foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->registerElements(&imgui_foePhysicsComponents, &imgui_foePhysicsResources,
-                                        nullptr, nullptr);
+    return pRegistrar->registerElements(imgui_foePhysicsComponent, imgui_foePhysicsResource,
+                                        imgui_foePhysicsResourceCreateInfo, nullptr);
 }
 
 auto foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->deregisterElements(&imgui_foePhysicsComponents, &imgui_foePhysicsResources,
-                                          nullptr, nullptr);
+    return pRegistrar->deregisterElements(imgui_foePhysicsComponent, imgui_foePhysicsResource,
+                                          imgui_foePhysicsResourceCreateInfo, nullptr);
 }

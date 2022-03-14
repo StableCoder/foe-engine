@@ -17,12 +17,18 @@
 #include "collision_shape.hpp"
 
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/resource/imgui/resource.h>
+#include <foe/physics/resource/collision_shape_loader.hpp>
 #include <imgui.h>
 
-void imgui_foeCollisionShape(foeResource resource) {
-    ImGui::Separator();
+void imgui_foeCollisionShape(foeCollisionShape const *pResource) {
     ImGui::Text("foeCollisionShape");
 
-    imgui_foeResource(resource);
+    ImGui::Text("CollisionShape %p", pResource->collisionShape.get());
+}
+
+void imgui_foeCollisionShapeCreateInfo(foeCollisionShapeCreateInfo const *pCreateInfo) {
+    ImGui::Text("foeCollsionShapeCreateInfo");
+
+    ImGui::Text("Box Size: X %.2f Y %.2f Z %.2f", pCreateInfo->boxSize.x, pCreateInfo->boxSize.y,
+                pCreateInfo->boxSize.z);
 }

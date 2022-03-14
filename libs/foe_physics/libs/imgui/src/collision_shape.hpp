@@ -17,8 +17,11 @@
 #ifndef COLLISION_SHAPE_HPP
 #define COLLISION_SHAPE_HPP
 
-#include <foe/resource/resource.h>
+struct foeCollisionShape;
+struct foeCollisionShapeCreateInfo;
 
-void imgui_foeCollisionShape(foeResource resource);
+void imgui_foeCollisionShape(foeCollisionShape const *pResource);
+
+void imgui_foeCollisionShapeCreateInfo(foeCollisionShapeCreateInfo const *pCreateInfo);
 
 #endif // COLLISION_SHAPE_HPP
