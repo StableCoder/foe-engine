@@ -290,6 +290,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     viewFrameTimeInfo.registerUI(&imguiState);
     windowInfo.registerUI(&imguiState);
 
+#ifdef IMGUI_SHOW_DEMO
+    demo.registerUI(&imguiState);
+#endif
+
     uiSave.setSimulationState(pSimulationSet);
 
     // Per SimState UI

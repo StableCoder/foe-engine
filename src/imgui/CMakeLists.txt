@@ -11,3 +11,7 @@ target_sources(
           resource_list.cpp
           save.cpp
           termination.cpp)
+
+if(IMGUI_DEMO)
+  target_sources(foe_engine_imgui PRIVATE demo.cpp)
+endif()

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -58,6 +58,10 @@
 #include "imgui/resource_list.hpp"
 #include "imgui/save.hpp"
 #include "imgui/termination.hpp"
+
+#ifdef IMGUI_SHOW_DEMO
+#include "imgui/demo.hpp"
+#endif
 #endif
 
 struct foeSimulation;
@@ -117,6 +121,10 @@ struct Application {
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
     foeWsiImGuiWindow windowInfo;
     foeImGuiSave uiSave;
+
+#ifdef IMGUI_SHOW_DEMO
+    foeImGuiDemo demo;
+#endif
 
     // Per SimState UI
     std::unique_ptr<foeSimulationImGuiGroupData> pSimGroupDataUI;

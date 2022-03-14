@@ -6,6 +6,7 @@ include(afl-fuzzing)
 project(FoE-Engine C CXX)
 
 # Global Options
+include(CMakeDependentOption)
 option(BUILD_EXAMPLES "Build example programs" OFF)
 option(BUILD_EXTRAS "Builds other programs, such as benchmarks" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
@@ -13,6 +14,8 @@ option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_VULKAN_RUNTIME_TESTS
        "Build tests that require an available Vulkan runtime" OFF)
 option(EDITOR_MODE "Build with the editor UI capability" OFF)
+cmake_dependent_option(
+  IMGUI_DEMO "Build with the ImGui demo in the bringup app" OFF EDITOR_MODE OFF)
 
 # WSI Loader/Implementation Settings
 option(
@@ -204,6 +207,11 @@ target_link_libraries(
          foe_physics_imgui
          foe_simulation_imgui
          foe_wsi_imgui)
+
+if(IMGUI_DEMO)
+  target_compile_definitions(foe_engine_imgui PUBLIC IMGUI_SHOW_DEMO)
+  target_link_libraries(foe_engine_imgui PRIVATE imgui_demo)
+endif()
 
 target_code_coverage(foe_engine_imgui)
 
