@@ -59,6 +59,8 @@ typedef enum foeResourceLoadState {
     Failed,
 } foeResourceLoadState;
 
+FOE_RES_EXPORT char const *foeResourceLoadStateToString(foeResourceLoadState state);
+
 FOE_RES_EXPORT foeErrorCode foeCreateResource(foeResourceID id,
                                               foeResourceType type,
                                               foeResourceFns const *pResourceFns,
