@@ -17,8 +17,11 @@
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 
-#include <foe/resource/resource.h>
+struct foeImage;
+struct foeImageCreateInfo;
 
-void imgui_foeImage(foeResource resource);
+void imgui_foeImage(foeImage const *pResource);
+
+void imgui_foeImageCreateInfo(foeImageCreateInfo const *pCreateInfo);
 
 #endif // IMAGE_HPP

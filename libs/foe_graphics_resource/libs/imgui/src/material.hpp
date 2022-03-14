@@ -17,8 +17,11 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
-#include <foe/resource/resource.h>
+struct foeMaterial;
+struct foeMaterialCreateInfo;
 
-void imgui_foeMaterial(foeResource resource);
+void imgui_foeMaterial(foeMaterial const *pResource);
+
+void imgui_foeMaterialCreateInfo(foeMaterialCreateInfo const *pCreateInfo);
 
 #endif // MATERIAL_HPP

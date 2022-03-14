@@ -17,12 +17,13 @@
 #include "image.hpp"
 
 #include <foe/graphics/resource/image.hpp>
-#include <foe/resource/imgui/resource.h>
+#include <foe/graphics/resource/image_loader.hpp>
 #include <imgui.h>
 
-void imgui_foeImage(foeResource resource) {
-    ImGui::Separator();
-    ImGui::Text("foeImage");
+void imgui_foeImage(foeImage const *pResource) { ImGui::Text("foeImage"); }
 
-    imgui_foeResource(resource);
+void imgui_foeImageCreateInfo(foeImageCreateInfo const *pCreateInfo) {
+    ImGui::Text("foeImageCreateInfo");
+
+    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
 }

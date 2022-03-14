@@ -17,8 +17,11 @@
 #ifndef VERTEX_DESCRIPTOR_HPP
 #define VERTEX_DESCRIPTOR_HPP
 
-#include <foe/resource/resource.h>
+struct foeVertexDescriptor;
+struct foeVertexDescriptorCreateInfo;
 
-void imgui_foeVertexDescriptor(foeResource resource);
+void imgui_foeVertexDescriptor(foeVertexDescriptor const *pResource);
+
+void imgui_foeVertexDescriptorCreateInfo(foeVertexDescriptorCreateInfo const *pCreateInfo);
 
 #endif // VERTEX_DESCRIPTOR_HPP

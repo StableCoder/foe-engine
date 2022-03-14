@@ -17,8 +17,11 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
-#include <foe/resource/resource.h>
+struct foeShader;
+struct foeShaderCreateInfo;
 
-void imgui_foeShader(foeResource resource);
+void imgui_foeShader(foeShader const *pResource);
+
+void imgui_foeShaderCreateInfo(foeShaderCreateInfo const *pCreateInfo);
 
 #endif // SHADER_HPP

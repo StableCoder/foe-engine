@@ -17,12 +17,18 @@
 #include "shader.hpp"
 
 #include <foe/graphics/resource/shader.hpp>
-#include <foe/resource/imgui/resource.h>
+#include <foe/graphics/resource/shader_loader.hpp>
 #include <imgui.h>
 
-void imgui_foeShader(foeResource resource) {
-    ImGui::Separator();
+void imgui_foeShader(foeShader const *pResource) {
     ImGui::Text("foeShader");
 
-    imgui_foeResource(resource);
+    ImGui::Text("Shader: %p", pResource->shader);
+}
+
+void imgui_foeShaderCreateInfo(foeShaderCreateInfo const *pCreateInfo) {
+    ImGui::Text("foeShaderCreateInfo");
+
+    ImGui::Text("File: %s", pCreateInfo->shaderCodeFile.c_str());
+    // @todo Implement imgui_foeGfxVkShaderCreateInfo
 }

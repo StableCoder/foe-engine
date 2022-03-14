@@ -17,8 +17,11 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 
-#include <foe/resource/resource.h>
+struct foeMesh;
+struct foeMeshCreateInfo;
 
-void imgui_foeMesh(foeResource resource);
+void imgui_foeMesh(foeMesh const *pResource);
+
+void imgui_foeMeshCreateInfo(foeMeshCreateInfo const *pCreateInfo);
 
 #endif // MESH_HPP

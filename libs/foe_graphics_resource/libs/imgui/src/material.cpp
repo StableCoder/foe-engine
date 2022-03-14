@@ -16,13 +16,35 @@
 
 #include "material.hpp"
 
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/material.hpp>
-#include <foe/resource/imgui/resource.h>
+#include <foe/graphics/resource/material_loader.hpp>
 #include <imgui.h>
 
-void imgui_foeMaterial(foeResource resource) {
-    ImGui::Separator();
+void imgui_foeMaterial(foeMaterial const *pResource) {
     ImGui::Text("foeMaterial");
 
-    imgui_foeResource(resource);
+    foeResourceID id;
+    if (pResource->fragmentShader != FOE_NULL_HANDLE)
+        id = foeResourceGetID(pResource->fragmentShader);
+    else
+        id = FOE_INVALID_ID;
+    ImGui::Text("fragmentShader: %u", id);
+
+    if (pResource->image != FOE_NULL_HANDLE)
+        id = foeResourceGetID(pResource->image);
+    else
+        id = FOE_INVALID_ID;
+    ImGui::Text("image: %u", id);
+
+    // @todo Implement VK type ImGui elements to display
+}
+
+void imgui_foeMaterialCreateInfo(foeMaterialCreateInfo const *pCreateInfo) {
+    ImGui::Text("foeMaterialCreateInfo");
+
+    ImGui::Text("Fragment Shader: %s", foeIdToString(pCreateInfo->fragmentShader).c_str());
+    ImGui::Text("Image: %s", foeIdToString(pCreateInfo->image).c_str());
+
+    // @todo Implement VK type ImGui elements to display
 }
