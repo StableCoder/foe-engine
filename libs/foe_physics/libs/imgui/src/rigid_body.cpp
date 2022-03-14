@@ -20,7 +20,7 @@
 #include <foe/physics/component/rigid_body.hpp>
 #include <imgui.h>
 
-void imgui_render_foeRigidBody(foeRigidBody *pComponent) {
+void imgui_foeRigidBody(foeRigidBody *pComponent) {
     ImGui::Separator();
     ImGui::Text("foeRigidBody");
 

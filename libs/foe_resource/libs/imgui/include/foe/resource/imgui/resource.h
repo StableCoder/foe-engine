@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-FOE_RES_IMGUI_EXPORT void imgui_renderResource(foeResource resource);
+FOE_RES_IMGUI_EXPORT void imgui_foeResource(foeResource resource);
 
 #ifdef __cplusplus
 }

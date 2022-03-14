@@ -19,6 +19,6 @@
 
 struct foeRigidBody;
 
-void imgui_render_foeRigidBody(foeRigidBody *pComponent);
+void imgui_foeRigidBody(foeRigidBody *pComponent);
 
 #endif // RIGID_BODY_HPP

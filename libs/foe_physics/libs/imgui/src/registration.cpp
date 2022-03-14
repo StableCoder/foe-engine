@@ -35,7 +35,7 @@ void imgui_foePhysicsComponents(foeEntityID entity, foeSimulation const *pSimula
         auto offset = pRigidBodyPool->find(entity);
         if (offset != pRigidBodyPool->size()) {
             auto *pComponent = pRigidBodyPool->begin<1>() + offset;
-            imgui_render_foeRigidBody(pComponent);
+            imgui_foeRigidBody(pComponent);
         }
     }
 }
@@ -49,7 +49,7 @@ void imgui_foePhysicsResources(foeResourceID resource, foeSimulation const *pSim
         foeResource res = pCollisionShapePool->find(resource);
         if (res != FOE_NULL_HANDLE &&
             foeResourceGetType(res) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
-            imgui_render_foeCollisionShape(res);
+            imgui_foeCollisionShape(res);
         }
     }
 }

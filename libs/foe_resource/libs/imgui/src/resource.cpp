@@ -18,7 +18,7 @@
 
 #include <imgui.h>
 
-extern "C" void imgui_renderResource(foeResource resource) {
+extern "C" void imgui_foeResource(foeResource resource) {
     // Is Loading
     if (foeResourceGetIsLoading(resource))
         ImGui::Text("Is Loading: true");

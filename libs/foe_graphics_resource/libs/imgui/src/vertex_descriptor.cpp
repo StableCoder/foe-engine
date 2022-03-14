@@ -24,5 +24,5 @@ void imgui_foeVertexDescriptor(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeVertexDescriptor");
 
-    imgui_renderResource(resource);
+    imgui_foeResource(resource);
 }

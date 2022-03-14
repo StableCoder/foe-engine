@@ -24,5 +24,5 @@ void imgui_foeImage(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeImage");
 
-    imgui_renderResource(resource);
+    imgui_foeResource(resource);
 }

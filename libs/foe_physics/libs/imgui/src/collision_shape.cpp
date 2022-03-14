@@ -20,9 +20,9 @@
 #include <foe/resource/imgui/resource.h>
 #include <imgui.h>
 
-void imgui_render_foeCollisionShape(foeResource resource) {
+void imgui_foeCollisionShape(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeCollisionShape");
 
-    imgui_renderResource(resource);
+    imgui_foeResource(resource);
 }

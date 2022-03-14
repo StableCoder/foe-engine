@@ -21,10 +21,6 @@
 
 #include <cstddef>
 
-struct foeComponentPoolBase;
-
-void imgui_Position3d(foeEntityID entity, foeComponentPoolBase **ppPools, size_t poolCount);
-
 struct foePosition3d;
 
 void imgui_foePosition3d(foePosition3d *pPosition3d);

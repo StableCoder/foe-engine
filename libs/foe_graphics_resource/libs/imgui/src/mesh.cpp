@@ -24,5 +24,5 @@ void imgui_foeMesh(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeMesh");
 
-    imgui_renderResource(resource);
+    imgui_foeResource(resource);
 }

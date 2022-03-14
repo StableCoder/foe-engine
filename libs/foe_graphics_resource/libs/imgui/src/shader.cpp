@@ -24,5 +24,5 @@ void imgui_foeShader(foeResource resource) {
     ImGui::Separator();
     ImGui::Text("foeShader");
 
-    imgui_renderResource(resource);
+    imgui_foeResource(resource);
 }

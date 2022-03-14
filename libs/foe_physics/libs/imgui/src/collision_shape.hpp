@@ -19,6 +19,6 @@
 
 #include <foe/resource/resource.h>
 
-void imgui_render_foeCollisionShape(foeResource resource);
+void imgui_foeCollisionShape(foeResource resource);
 
 #endif // COLLISION_SHAPE_HPP
