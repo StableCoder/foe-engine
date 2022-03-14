@@ -40,7 +40,10 @@ void imgui_foePhysicsComponents(foeEntityID entity, foeSimulation const *pSimula
     }
 }
 
-void imgui_foePhysicsResources(foeResourceID resource, foeSimulation const *pSimulation) {
+void imgui_foePhysicsResources(
+    foeResourceID resource,
+    foeSimulation const *pSimulation,
+    std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     // foeCollisionShape
     auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
@@ -58,10 +61,10 @@ void imgui_foePhysicsResources(foeResourceID resource, foeSimulation const *pSim
 
 auto foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
     return pRegistrar->registerElements(&imgui_foePhysicsComponents, &imgui_foePhysicsResources,
-                                        nullptr);
+                                        nullptr, nullptr);
 }
 
 auto foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
     return pRegistrar->deregisterElements(&imgui_foePhysicsComponents, &imgui_foePhysicsResources,
-                                          nullptr);
+                                          nullptr, nullptr);
 }

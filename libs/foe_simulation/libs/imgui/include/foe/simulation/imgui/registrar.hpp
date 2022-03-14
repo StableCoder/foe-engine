@@ -18,8 +18,10 @@
 #define FOE_SIMULATION_IMGUI_REGISTRAR_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/resource/create_info.h>
 #include <foe/simulation/imgui/export.h>
 
+#include <functional>
 #include <mutex>
 #include <system_error>
 #include <vector>
@@ -43,58 +45,73 @@ struct foeResourceLoaderBase;
 class foeSimulationImGuiRegistrar {
   public:
     using ComponentFn = void (*)(foeEntityID, foeSimulation const *);
-    using ResourceFn = void (*)(foeResourceID, foeSimulation const *);
+    using ResourceFn = void (*)(foeResourceID,
+                                foeSimulation const *,
+                                std::function<void(foeResourceCreateInfo)>);
+    using ResourceCreateInfoFn = void (*)(foeResourceCreateInfo);
     using LoaderFn = void (*)(foeResourceID, foeResourceLoaderBase **, size_t);
 
     /** @brief Registers a set of ImGui element rendering functions
      * @param componentFn Function for component types
      * @param resourceFn Function for various resource types
+     * @param resourceCreateInfoFn is the function that would be called to display
+     * foeResourceCreateInfo types
      * @param loaderFn Function for various loader types
      * @return An appropriate error code based on the success or failure of the call
      */
     FOE_SIM_IMGUI_EXPORT auto registerElements(ComponentFn componentFn,
                                                ResourceFn resourceFn,
+                                               ResourceCreateInfoFn resourceCreateInfoFn,
                                                LoaderFn loaderFn) -> std::error_code;
 
     /** @brief Deregisters a set of ImGui element rendering functions
      * @param componentFn Function for component types
      * @param resourceFn Function for various resource types
+     * @param resourceCreateInfoFn is the function that would be called to display
+     * foeResourceCreateInfo types
      * @param loaderFn Function for various loader types
      * @return An appropriate error code based on the success or failure of the call
      */
     FOE_SIM_IMGUI_EXPORT auto deregisterElements(ComponentFn componentFn,
                                                  ResourceFn resourceFn,
+                                                 ResourceCreateInfoFn resourceCreateInfoFn,
                                                  LoaderFn loaderFn) -> std::error_code;
 
     /** @brief Attempts to render components associated with the entity
      * @param entity ID to find associated components to
-     * @param ppPools List of pools to search for associated components
-     * @param poolCount Number of pools passed in for ppPools
+     * @param pSimulation is a pointer to the simulation to search for the entity
      */
     FOE_SIM_IMGUI_EXPORT void displayEntity(foeEntityID entity, foeSimulation const *pSimulation);
 
     /** @brief Attempts to render resources associated with the ID
      * @param resource ID to find associated components to
-     * @param ppPools List of pools to search for associated components
-     * @param poolCount Number of pools passed in for ppPools
+     * @param pSimulation is a pointer to the simulation to search for the resource
      */
     FOE_SIM_IMGUI_EXPORT void displayResource(foeResourceID resource,
                                               foeSimulation const *pSimulation);
+
+    /** @brief Attempts to render resources associated with the ID
+     * @param createInfo is the handle of the resource to attempt to display
+     */
+    FOE_SIM_IMGUI_EXPORT void displayResourceCreateInfo(foeResourceCreateInfo createInfo);
 
   private:
     struct DisplayFns {
         ComponentFn componentFn;
         ResourceFn resourceFn;
+        ResourceCreateInfoFn resourceCreateInfoFn;
         LoaderFn loaderFn;
     };
 
     bool matchFunctionList(ComponentFn componentFn,
                            ResourceFn resourceFn,
+                           ResourceCreateInfoFn resourceCreateInfoFn,
                            LoaderFn loaderFn,
                            DisplayFns const *pDisplayFns) const;
 
-    std::mutex mSync;
-
+    /// Used to synchronize access to mFnLists
+    std::recursive_mutex mSync;
+    /// List of registered functions to display different types
     std::vector<DisplayFns> mFnLists;
 };
 

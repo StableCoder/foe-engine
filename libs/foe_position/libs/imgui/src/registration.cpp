@@ -40,9 +40,9 @@ void imgui_foePositionComponents(foeEntityID entity, foeSimulation const *pSimul
 } // namespace
 
 auto foePositionImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->registerElements(&imgui_foePositionComponents, nullptr, nullptr);
+    return pRegistrar->registerElements(&imgui_foePositionComponents, nullptr, nullptr, nullptr);
 }
 
 auto foePositionImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->deregisterElements(&imgui_foePositionComponents, nullptr, nullptr);
+    return pRegistrar->deregisterElements(&imgui_foePositionComponents, nullptr, nullptr, nullptr);
 }

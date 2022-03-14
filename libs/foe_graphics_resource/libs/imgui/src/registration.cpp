@@ -33,7 +33,10 @@
 
 namespace {
 
-void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSimulation) {
+void imgui_foeGraphicsResources(
+    foeResourceID resource,
+    foeSimulation const *pSimulation,
+    std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     // foeImage
     auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
@@ -98,10 +101,10 @@ void imgui_foeGraphicsResources(foeResourceID resource, foeSimulation const *pSi
 } // namespace
 
 auto foeGraphicsResourceImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->registerElements(nullptr, &imgui_foeGraphicsResources, nullptr);
+    return pRegistrar->registerElements(nullptr, &imgui_foeGraphicsResources, nullptr, nullptr);
 }
 
 auto foeGraphicsResourceImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar)
     -> std::error_code {
-    return pRegistrar->registerElements(nullptr, &imgui_foeGraphicsResources, nullptr);
+    return pRegistrar->registerElements(nullptr, &imgui_foeGraphicsResources, nullptr, nullptr);
 }

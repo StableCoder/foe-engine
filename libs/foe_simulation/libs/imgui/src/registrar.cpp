@@ -22,14 +22,17 @@
 
 bool foeSimulationImGuiRegistrar::matchFunctionList(ComponentFn componentFn,
                                                     ResourceFn resourceFn,
+                                                    ResourceCreateInfoFn resourceCreateInfoFn,
                                                     LoaderFn loaderFn,
                                                     DisplayFns const *pDisplayFns) const {
     return pDisplayFns->componentFn == componentFn && pDisplayFns->resourceFn == resourceFn &&
+           pDisplayFns->resourceCreateInfoFn == resourceCreateInfoFn &&
            pDisplayFns->loaderFn == loaderFn;
 }
 
 auto foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
                                                    ResourceFn resourceFn,
+                                                   ResourceCreateInfoFn resourceCreateInfoFn,
                                                    LoaderFn loaderFn) -> std::error_code {
     if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
         return FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL;
@@ -37,13 +40,14 @@ auto foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
-        if (matchFunctionList(componentFn, resourceFn, loaderFn, &it))
+        if (matchFunctionList(componentFn, resourceFn, resourceCreateInfoFn, loaderFn, &it))
             return FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_ALREADY_REGISTERED;
     }
 
     mFnLists.emplace_back(DisplayFns{
         .componentFn = componentFn,
         .resourceFn = resourceFn,
+        .resourceCreateInfoFn = resourceCreateInfoFn,
         .loaderFn = loaderFn,
     });
 
@@ -52,6 +56,7 @@ auto foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
 
 auto foeSimulationImGuiRegistrar::deregisterElements(ComponentFn componentFn,
                                                      ResourceFn resourceFn,
+                                                     ResourceCreateInfoFn resourceCreateInfoFn,
                                                      LoaderFn loaderFn) -> std::error_code {
     if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
         return FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL;
@@ -59,7 +64,7 @@ auto foeSimulationImGuiRegistrar::deregisterElements(ComponentFn componentFn,
     std::scoped_lock lock{mSync};
 
     for (auto it = mFnLists.begin(); it != mFnLists.end(); ++it) {
-        if (matchFunctionList(componentFn, resourceFn, loaderFn, &(*it))) {
+        if (matchFunctionList(componentFn, resourceFn, resourceCreateInfoFn, loaderFn, &(*it))) {
             mFnLists.erase(it);
             return FOE_SIMULATION_IMGUI_SUCCESS;
         }
@@ -83,7 +88,21 @@ void foeSimulationImGuiRegistrar::displayResource(foeEntityID entity,
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
-        if (it.resourceFn)
-            it.resourceFn(entity, pSimulation);
+        if (it.resourceFn) {
+            it.resourceFn(entity, pSimulation, [this](foeResourceCreateInfo createInfo) {
+                this->displayResourceCreateInfo(createInfo);
+            });
+        }
+    }
+}
+
+void foeSimulationImGuiRegistrar::displayResourceCreateInfo(
+    foeResourceCreateInfo resourceCreateInfo) {
+    std::scoped_lock lock{mSync};
+
+    for (auto const &it : mFnLists) {
+        if (it.resourceCreateInfoFn) {
+            it.resourceCreateInfoFn(resourceCreateInfo);
+        }
     }
 }

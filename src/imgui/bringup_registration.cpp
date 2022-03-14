@@ -69,9 +69,9 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimula
 } // namespace
 
 auto foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->registerElements(&imgui_foeBringupComponents, nullptr, nullptr);
+    return pRegistrar->registerElements(&imgui_foeBringupComponents, nullptr, nullptr, nullptr);
 }
 
 auto foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
-    return pRegistrar->deregisterElements(&imgui_foeBringupComponents, nullptr, nullptr);
+    return pRegistrar->deregisterElements(&imgui_foeBringupComponents, nullptr, nullptr, nullptr);
 }

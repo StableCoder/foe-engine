@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/resource/imgui/resource.h>
+#include <foe/resource/imgui/create_info.h>
 
 #include <imgui.h>
 
