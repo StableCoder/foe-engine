@@ -28,4 +28,5 @@ else()
 endif()
 
 # Auxiliary Targets
+add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
