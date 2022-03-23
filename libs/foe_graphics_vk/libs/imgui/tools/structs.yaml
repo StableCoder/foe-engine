@@ -1,0 +1,23 @@
+VkPushConstantRange:
+VkDescriptorSetLayoutBinding:
+  exclude:
+    - pImmutableSamplers
+VkDescriptorSetLayoutCreateInfo:
+  exclude:
+    - bindingCount
+VkStencilOpState:
+VkPipelineRasterizationStateCreateInfo:
+VkPipelineDepthStencilStateCreateInfo:
+VkPipelineColorBlendAttachmentState:
+VkPipelineColorBlendStateCreateInfo:
+  exclude:
+    - attachmentCount
+    - blendConstants
+VkVertexInputBindingDescription:
+VkVertexInputAttributeDescription:
+VkPipelineVertexInputStateCreateInfo:
+  exclude:
+    - vertexBindingDescriptionCount
+    - vertexAttributeDescriptionCount
+VkPipelineInputAssemblyStateCreateInfo:
+VkPipelineTessellationStateCreateInfo:

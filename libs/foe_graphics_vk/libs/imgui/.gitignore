@@ -1,0 +1,3 @@
+tools/*.cpp
+Vulkan-Docs/
+.gen_cache.xml
