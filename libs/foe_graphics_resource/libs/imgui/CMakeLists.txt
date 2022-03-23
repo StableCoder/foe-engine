@@ -16,8 +16,9 @@ target_include_directories(foe_graphics_resource_imgui
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(
-  foe_graphics_resource_imgui PUBLIC foe_graphics_resource foe_imgui
-                                     foe_resource_imgui foe_simulation_imgui)
+  foe_graphics_resource_imgui
+  PUBLIC foe_graphics_resource foe_graphics_vk_imgui foe_imgui
+         foe_resource_imgui foe_simulation_imgui)
 
 target_code_coverage(foe_graphics_resource_imgui)
 

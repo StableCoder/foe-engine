@@ -18,6 +18,7 @@
 
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_loader.hpp>
+#include <foe/graphics/vk/imgui/shader.hpp>
 #include <imgui.h>
 
 void imgui_foeShader(foeShader const *pResource) {
@@ -30,5 +31,8 @@ void imgui_foeShaderCreateInfo(foeShaderCreateInfo const *pCreateInfo) {
     ImGui::Text("foeShaderCreateInfo");
 
     ImGui::Text("File: %s", pCreateInfo->shaderCodeFile.c_str());
-    // @todo Implement imgui_foeGfxVkShaderCreateInfo
+    if (ImGui::TreeNode("gfxCreateInfo (foeGfxVkShaderCreateInfo)")) {
+        imgui_foeGfxVkShaderCreateInfo(pCreateInfo->gfxCreateInfo);
+        ImGui::TreePop();
+    }
 }
