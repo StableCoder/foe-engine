@@ -19,6 +19,8 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
+#include <foe/graphics/vk/imgui/fragment_descriptor.hpp>
+#include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <imgui.h>
 
 void imgui_foeMaterial(foeMaterial const *pResource) {
@@ -37,7 +39,7 @@ void imgui_foeMaterial(foeMaterial const *pResource) {
         id = FOE_INVALID_ID;
     ImGui::Text("image: %u", id);
 
-    // @todo Implement VK type ImGui elements to display
+    imgui_foeGfxVkFragmentDescriptor(*pResource->pGfxFragDescriptor);
 }
 
 void imgui_foeMaterialCreateInfo(foeMaterialCreateInfo const *pCreateInfo) {
@@ -46,5 +48,30 @@ void imgui_foeMaterialCreateInfo(foeMaterialCreateInfo const *pCreateInfo) {
     ImGui::Text("Fragment Shader: %s", foeIdToString(pCreateInfo->fragmentShader).c_str());
     ImGui::Text("Image: %s", foeIdToString(pCreateInfo->image).c_str());
 
-    // @todo Implement VK type ImGui elements to display
+    if (pCreateInfo->hasRasterizationSCI) {
+        if (ImGui::TreeNode("rasterizationSCI")) {
+            imgui_VkPipelineRasterizationStateCreateInfo(pCreateInfo->rasterizationSCI);
+            ImGui::TreePop();
+        }
+    } else {
+        ImGui::Text("rasterizationSCI: No Data");
+    }
+
+    if (pCreateInfo->hasDepthStencilSCI) {
+        if (ImGui::TreeNode("depthStencilSCI")) {
+            imgui_VkPipelineDepthStencilStateCreateInfo(pCreateInfo->depthStencilSCI);
+            ImGui::TreePop();
+        }
+    } else {
+        ImGui::Text("depthStencilSCI: No Data");
+    }
+
+    if (pCreateInfo->hasColourBlendSCI) {
+        if (ImGui::TreeNode("colourBlendSCI")) {
+            imgui_VkPipelineColorBlendStateCreateInfo(pCreateInfo->colourBlendSCI);
+            ImGui::TreePop();
+        }
+    } else {
+        ImGui::Text("colourBlendSCI: No Data");
+    }
 }

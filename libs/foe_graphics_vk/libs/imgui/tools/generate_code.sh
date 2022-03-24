@@ -6,14 +6,37 @@ START=72 # Prior to v72, vk.xml was not published, so that's the default minimum
 END=
 SKIP_PARSE=0
 
+help_blurb() {
+    echo " -s, --start <INT> The starting version of Vulkan to generate for (default: 72)"
+    echo " -e, --end <INT>   The ending version of Vulkan to generate for (default: none)"
+    echo " --skip-parse      Skips generating new XML cache, just generate header files"
+}
+
 # Command-line parsing
 while [[ $# -gt 0 ]]; do
     key="$1"
 
     case $key in
+    -s | --start)
+        START="$2"
+        shift
+        shift
+        ;;
+    -e | --end)
+        END="$2"
+        shift
+        shift
+        ;;
     --skip-parse)
         SKIP_PARSE=1
         shift
+        ;;
+    -h | --help)
+        help_blurb
+        exit 0
+        ;;
+    *)
+        exit 1
         ;;
     esac
 done
@@ -46,9 +69,7 @@ if [ $SKIP_PARSE -eq 0 ]; then
     popd >/dev/null
 fi
 
-./generate_vk_imgui_code.py -x .gen_cache.xml -y structs.yaml
+./generate_struct_source.py -x .gen_cache.xml -y structs.yaml
 
-clang-format -i ../include/foe/graphics/vk/imgui/display_vk_enums.hpp
-clang-format -i ../src/display_vk_enums.cpp
-clang-format -i ../include/foe/graphics/vk/imgui/display_vk_structs.hpp
-clang-format -i ../src/display_vk_structs.cpp
+clang-format -i ../include/foe/graphics/vk/imgui/vk_struct.hpp
+clang-format -i ../src/vk_struct.cpp

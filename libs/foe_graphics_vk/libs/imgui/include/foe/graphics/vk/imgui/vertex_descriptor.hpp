@@ -14,14 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_VK_IMGUI_DISPLAY_VK_TYPES_HPP
-#define FOE_GRAPHICS_VK_IMGUI_DISPLAY_VK_TYPES_HPP
+#ifndef FOE_GRAPHICS_VK_IMGUI_VERTEX_DESCRIPTOR_HPP
+#define FOE_GRAPHICS_VK_IMGUI_VERTEX_DESCRIPTOR_HPP
 
 #include <foe/graphics/vk/imgui/export.h>
-#include <vulkan/vulkan.h>
 
-#include <string>
+struct foeGfxVertexDescriptor;
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkBool32(std::string const &label, VkBool32 const &data);
+FOE_GFX_VK_IMGUI_EXPORT void imgui_foeGfxVertexDescriptor(foeGfxVertexDescriptor const &data);
 
-#endif // FOE_GRAPHICS_VK_IMGUI_DISPLAY_VK_TYPES_HPP
+#endif // FOE_GRAPHICS_VK_IMGUI_VERTEX_DESCRIPTOR_HPP

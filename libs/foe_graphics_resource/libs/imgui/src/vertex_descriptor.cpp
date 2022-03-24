@@ -18,6 +18,8 @@
 
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
+#include <foe/graphics/vk/imgui/vertex_descriptor.hpp>
+#include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <imgui.h>
 
 void imgui_foeVertexDescriptor(foeVertexDescriptor const *pResource) {
@@ -28,7 +30,7 @@ void imgui_foeVertexDescriptor(foeVertexDescriptor const *pResource) {
     ImGui::Text("Tessellation Evaluation Shader: %p", pResource->tessellationEvaluationShader);
     ImGui::Text("Geometry Shader: %p", pResource->geometryShader);
 
-    // @todo Implement imgui_foeGfxVertexDescriptor
+    imgui_foeGfxVertexDescriptor(pResource->vertexDescriptor);
 }
 
 void imgui_foeVertexDescriptorCreateInfo(foeVertexDescriptorCreateInfo const *pCreateInfo) {
@@ -38,6 +40,4 @@ void imgui_foeVertexDescriptorCreateInfo(foeVertexDescriptorCreateInfo const *pC
     ImGui::Text("Tessellation Control Shader: %u", pCreateInfo->tessellationControlShader);
     ImGui::Text("Tessellation Evaluation Shader: %u", pCreateInfo->tessellationEvaluationShader);
     ImGui::Text("Geometry Shader: %u", pCreateInfo->geometryShader);
-
-    // @todo Implement numerous VK ImGui display elements
 }

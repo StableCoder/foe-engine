@@ -17,7 +17,7 @@
 #include <foe/graphics/vk/imgui/shader.hpp>
 
 #include <foe/graphics/imgui/builtin_descriptor_sets.hpp>
-#include <foe/graphics/vk/imgui/display_vk_structs.hpp>
+#include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <foe/graphics/vk/shader.hpp>
 #include <imgui.h>
 
