@@ -5,6 +5,7 @@ import sys
 import getopt
 import xml.etree.ElementTree as ET
 import yaml
+import datetime
 
 
 def main(argv):
@@ -42,6 +43,41 @@ def main(argv):
     except:
         print("Error: Could not open Yaml file: ", yamlFile)
         sys.exit(1)
+
+    # Get first/last versions
+    firstVersion = xmlRoot.get('first')
+    lastVersion = xmlRoot.get('last')
+
+    # Copyright / Headers
+    year = datetime.date.today().year
+    if year != 2022:
+        year = '2022-{}'.format(year)
+
+    print("""/*
+    Copyright (C) {0} George Cave.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+#include <foe/graphics/vk/yaml/vk_enum.hpp>
+#include <foe/yaml/exception.hpp>
+#include <foe/yaml/parsing.hpp>
+#include <vk_struct_cleanup.h>
+#include <vulkan/vulkan.h>
+
+#include <cstring>
+#include <string>
+""".format(year))
 
     # Main Processing
     for struct in xmlRoot.findall('structs/'):
@@ -166,22 +202,22 @@ FOE_GFX_VK_YAML_EXPORT void yaml_write_required<{0}>(std::string const& nodeName
         writeNode["{3}"] = {3}Node;
 """.format(memberType, memberName, countMember, formattedName)
 
-            elif 'Vk' in memberType and 'Flags' in memberType:
+            elif xmlRoot.find('enums/{}'.format(memberType)):
                 readOptional += """
         // {0} - {1}
-        read |= yaml_read_optional_vk<{0}>("{0}", "{1}", subNode, newData.{1});
+        read |= yaml_read_optional_VkEnum("{0}", "{1}", subNode, newData.{1});
 """.format(memberType, memberName)
                 readRequired += """
         // {0} - {1}
-        read |= yaml_read_optional_vk<{0}>("{0}", "{1}", subNode, newData.{1}); 
+        read |= yaml_read_optional_VkEnum("{0}", "{1}", subNode, newData.{1}); 
 """.format(memberType, memberName)
                 writeOptional += """
         // {0} - {1}
-        addedNode |= yaml_write_optional_vk<{0}>("{0}", "{1}", defaultData.{1}, data.{1}, writeNode);
+        addedNode |= yaml_write_optional_VkEnum("{0}", "{1}", defaultData.{1}, data.{1}, writeNode);
 """.format(memberType, memberName)
                 writeRequired += """
         // {0} - {1}
-        yaml_write_required_vk<{0}>("{0}", "{1}", data.{1}, writeNode);
+        yaml_write_required_VkEnum("{0}", "{1}", data.{1}, writeNode);
 """.format(memberType, memberName)
 
             else:

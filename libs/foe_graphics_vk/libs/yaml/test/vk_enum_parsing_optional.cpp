@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 
 #include <catch.hpp>
+#include <foe/graphics/vk/yaml/vk_enum.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <vulkan/vulkan.h>
@@ -26,7 +27,8 @@ TEST_CASE("Reading of Optional Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 )"));
 
         VkPrimitiveTopology testVal = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-        REQUIRE_NOTHROW(yaml_read_optional<VkPrimitiveTopology>("topology", root, testVal));
+        REQUIRE_NOTHROW(
+            yaml_read_optional_VkEnum("VkPrimitiveTopology", "topology", root, testVal));
         REQUIRE(testVal == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     }
     SECTION("Node does not exist and doesn't update the value") {
@@ -35,7 +37,7 @@ TEST_CASE("Reading of Optional Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 )"));
 
         VkPrimitiveTopology testVal = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-        REQUIRE_NOTHROW(yaml_read_optional<VkPrimitiveTopology>("topLOL", root, testVal));
+        REQUIRE_NOTHROW(yaml_read_optional_VkEnum("VkPrimitiveTopology", "topLOL", root, testVal));
         REQUIRE(testVal == VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
     }
     SECTION("Node exists with bad data fails") {
@@ -45,7 +47,8 @@ TEST_CASE("Reading of Optional Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 
         VkPrimitiveTopology testVal = VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_optional<VkPrimitiveTopology>("topology", root, testVal), foeYamlException,
+            yaml_read_optional_VkEnum("VkPrimitiveTopology", "topology", root, testVal),
+            foeYamlException,
             Catch::Matchers::Contains(
                 " - Could not parse node as 'VkPrimitiveTopology' with value of: "));
     }
@@ -55,8 +58,9 @@ TEST_CASE("Writing of Optional Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
     YAML::Node test;
 
     SECTION("Correct data succeeds") {
-        yaml_write_optional<VkPrimitiveTopology>("topology", VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
-                                                 VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, test);
+        yaml_write_optional_VkEnum("VkPrimitiveTopology", "topology",
+                                   VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
+                                   VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, test);
 
         YAML::Emitter emitter;
         emitter << test;
@@ -69,8 +73,9 @@ TEST_CASE("Writing of Optional Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
     }
 
     SECTION("When a value is the same as the 'default', it doesn't write the node") {
-        yaml_write_optional<VkPrimitiveTopology>("topology", VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
-                                                 VK_PRIMITIVE_TOPOLOGY_LINE_LIST, test);
+        yaml_write_optional_VkEnum("VkPrimitiveTopology", "topology",
+                                   VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
+                                   test);
 
         YAML::Emitter emitter;
         emitter << test;
@@ -80,8 +85,9 @@ TEST_CASE("Writing of Optional Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 
     SECTION("Incorrect data fails") {
         REQUIRE_THROWS_MATCHES(
-            yaml_write_optional<VkPrimitiveTopology>("topology", VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
-                                                     static_cast<VkPrimitiveTopology>(3434), test),
+            yaml_write_optional_VkEnum("VkPrimitiveTopology", "topology",
+                                       VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
+                                       static_cast<VkPrimitiveTopology>(3434), test),
             foeYamlException,
             Catch::Matchers::EndsWith(" - Failed to serialize node as 'VkPrimitiveTopology'"));
     }

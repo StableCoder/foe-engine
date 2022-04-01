@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 
 #include <catch.hpp>
+#include <foe/graphics/vk/yaml/vk_enum.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <vulkan/vulkan.h>
@@ -26,7 +27,8 @@ TEST_CASE("Reading of Required Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 )"));
 
         VkPrimitiveTopology testVal = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
-        REQUIRE_NOTHROW(yaml_read_required<VkPrimitiveTopology>("topology", root, testVal));
+        REQUIRE_NOTHROW(
+            yaml_read_required_VkEnum("VkPrimitiveTopology", "topology", root, testVal));
         REQUIRE(testVal == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     }
     SECTION("Node does not exist and fails") {
@@ -35,9 +37,9 @@ TEST_CASE("Reading of Required Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 )"));
 
         VkPrimitiveTopology testVal = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
-        REQUIRE_THROWS_MATCHES(yaml_read_required<VkPrimitiveTopology>("topLOL", root, testVal),
-                               foeYamlException,
-                               Catch::Matchers::Contains(" - Required node not found"));
+        REQUIRE_THROWS_MATCHES(
+            yaml_read_required_VkEnum("VkPrimitiveTopology", "topLOL", root, testVal),
+            foeYamlException, Catch::Matchers::Contains(" - Required node not found"));
     }
     SECTION("Node exists with bad data fails") {
         YAML::Node root;
@@ -46,7 +48,8 @@ TEST_CASE("Reading of Required Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 
         VkPrimitiveTopology testVal = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
         REQUIRE_THROWS_MATCHES(
-            yaml_read_required<VkPrimitiveTopology>("topology", root, testVal), foeYamlException,
+            yaml_read_required_VkEnum("VkPrimitiveTopology", "topology", root, testVal),
+            foeYamlException,
             Catch::Matchers::Contains(
                 " - Could not parse node as 'VkPrimitiveTopology' with value of: "));
     }
@@ -56,8 +59,8 @@ TEST_CASE("Writing of Required Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
     YAML::Node test;
 
     SECTION("Correct data succeeds") {
-        yaml_write_required<VkPrimitiveTopology>("topology", VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-                                                 test);
+        yaml_write_required_VkEnum("VkPrimitiveTopology", "topology",
+                                   VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, test);
 
         YAML::Emitter emitter;
         emitter << test;
@@ -71,16 +74,16 @@ TEST_CASE("Writing of Required Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
 
     SECTION("Empty data fails if a node could not be generated") {
         REQUIRE_THROWS_MATCHES(
-            yaml_write_required<VkBufferUsageFlagBits>("topology",
-                                                       static_cast<VkBufferUsageFlagBits>(0), test),
+            yaml_write_required_VkEnum("VkBufferUsageFlagBits", "topology",
+                                       static_cast<VkBufferUsageFlags>(0), test),
             foeYamlException,
             Catch::Matchers::EndsWith(" - Failed to serialize node as 'VkBufferUsageFlagBits'"));
     }
 
     SECTION("Incorrect data fails") {
         REQUIRE_THROWS_MATCHES(
-            yaml_write_required<VkQueueFlagBits>("topology", static_cast<VkQueueFlagBits>(3434),
-                                                 test),
+            yaml_write_required_VkEnum("VkQueueFlagBits", "topology",
+                                       static_cast<VkQueueFlagBits>(3434), test),
             foeYamlException,
             Catch::Matchers::EndsWith(" - Failed to serialize node as 'VkQueueFlagBits'"));
     }

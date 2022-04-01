@@ -8,11 +8,11 @@ add_executable(test_foe_graphics_vk_yaml)
 # Definition
 target_sources(
   test_foe_graphics_vk_yaml
-  PRIVATE vk_struct_parsing.cpp
+  PRIVATE vk_enum_parsing_optional.cpp
+          vk_enum_parsing_required.cpp
+          vk_struct_parsing.cpp
           vk_struct_VkPipelineDepthStencilStateCreateInfo.cpp
-          vk_struct_VkStencilOpState.cpp
-          vk_type_parsing_optional.cpp
-          vk_type_parsing_required.cpp)
+          vk_struct_VkStencilOpState.cpp)
 
 target_compile_definitions(
   test_foe_graphics_vk_yaml
