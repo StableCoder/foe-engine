@@ -34,7 +34,7 @@
 FOE_GFX_VK_YAML_EXPORT void yaml_read_required_VkEnum32(std::string const &typeName,
                                                         std::string const &nodeName,
                                                         YAML::Node const &node,
-                                                        VkFlags &data);
+                                                        uint32_t &data);
 
 /** @brief Read a node and parse it into the given data type (32-bit)
  * @param typeName String name of the Vulkan type
@@ -48,7 +48,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required_VkEnum32(std::string const &typeN
 FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional_VkEnum32(std::string const &typeName,
                                                         std::string const &nodeName,
                                                         YAML::Node const &node,
-                                                        VkFlags &data);
+                                                        uint32_t &data);
 
 /** @brief Encodes the given data object to Yaml (32-bit)
  * @param typeName String name of the Vulkan type
@@ -59,7 +59,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional_VkEnum32(std::string const &typeN
  */
 FOE_GFX_VK_YAML_EXPORT void yaml_write_required_VkEnum32(std::string const &typeName,
                                                          std::string const &nodeName,
-                                                         VkFlags const &data,
+                                                         uint32_t const &data,
                                                          YAML::Node &node);
 
 /** @brief Encodes the given data object to Yaml optionally (32-bit)
@@ -74,8 +74,8 @@ FOE_GFX_VK_YAML_EXPORT void yaml_write_required_VkEnum32(std::string const &type
  */
 FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional_VkEnum32(std::string const &typeName,
                                                          std::string const &nodeName,
-                                                         VkFlags const &defaultData,
-                                                         VkFlags const &data,
+                                                         uint32_t const &defaultData,
+                                                         uint32_t const &data,
                                                          YAML::Node &node);
 
 /** @brief Read a node and parse it into the given data type (64-bit)
@@ -89,7 +89,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional_VkEnum32(std::string const &type
 FOE_GFX_VK_YAML_EXPORT void yaml_read_required_VkEnum64(std::string const &typeName,
                                                         std::string const &nodeName,
                                                         YAML::Node const &node,
-                                                        VkFlags64 &data);
+                                                        uint64_t &data);
 
 /** @brief Read a node and parse it into the given data type (64-bit)
  * @param typeName String name of the Vulkan type
@@ -103,7 +103,7 @@ FOE_GFX_VK_YAML_EXPORT void yaml_read_required_VkEnum64(std::string const &typeN
 FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional_VkEnum64(std::string const &typeName,
                                                         std::string const &nodeName,
                                                         YAML::Node const &node,
-                                                        VkFlags64 &data);
+                                                        uint64_t &data);
 
 /** @brief Encodes the given data object to Yaml (64-bit)
  * @param typeName String name of the Vulkan type
@@ -114,7 +114,7 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_optional_VkEnum64(std::string const &typeN
  */
 FOE_GFX_VK_YAML_EXPORT void yaml_write_required_VkEnum64(std::string const &typeName,
                                                          std::string const &nodeName,
-                                                         VkFlags64 const &data,
+                                                         uint64_t const &data,
                                                          YAML::Node &node);
 
 /** @brief Encodes the given data object to Yaml optionally
@@ -130,8 +130,8 @@ FOE_GFX_VK_YAML_EXPORT void yaml_write_required_VkEnum64(std::string const &type
  */
 FOE_GFX_VK_YAML_EXPORT bool yaml_write_optional_VkEnum64(std::string const &typeName,
                                                          std::string const &nodeName,
-                                                         VkFlags64 const &defaultData,
-                                                         VkFlags64 const &data,
+                                                         uint64_t const &defaultData,
+                                                         uint64_t const &data,
                                                          YAML::Node &node);
 
 /** @brief Read a node and parse it into the given data type (template)
@@ -152,9 +152,9 @@ void yaml_read_required_VkEnum(std::string const &typeName,
                   "yaml_read_required_VkEnum only supports 32 and 64-bit types currently.");
 
     if constexpr (sizeof(T) == 4) {
-        yaml_read_required_VkEnum32(typeName, nodeName, node, reinterpret_cast<VkFlags &>(data));
+        yaml_read_required_VkEnum32(typeName, nodeName, node, reinterpret_cast<uint32_t &>(data));
     } else {
-        yaml_read_required_VkEnum64(typeName, nodeName, node, reinterpret_cast<VkFlags64 &>(data));
+        yaml_read_required_VkEnum64(typeName, nodeName, node, reinterpret_cast<uint64_t &>(data));
     }
 }
 
@@ -178,10 +178,10 @@ bool yaml_read_optional_VkEnum(std::string const &typeName,
 
     if (sizeof(T) == 4) {
         return yaml_read_optional_VkEnum32(typeName, nodeName, node,
-                                           reinterpret_cast<VkFlags &>(data));
+                                           reinterpret_cast<uint32_t &>(data));
     } else {
         return yaml_read_optional_VkEnum64(typeName, nodeName, node,
-                                           reinterpret_cast<VkFlags64 &>(data));
+                                           reinterpret_cast<uint64_t &>(data));
     }
 }
 
@@ -202,10 +202,9 @@ void yaml_write_required_VkEnum(std::string const &typeName,
                   "yaml_write_required_VkEnum only supports 32 and 64-bit types currently.");
 
     if (sizeof(T) == 4) {
-        yaml_write_required_VkEnum32(typeName, nodeName, static_cast<VkFlags const &>(data), node);
+        yaml_write_required_VkEnum32(typeName, nodeName, static_cast<uint32_t const &>(data), node);
     } else {
-        yaml_write_required_VkEnum64(typeName, nodeName, static_cast<VkFlags64 const &>(data),
-                                     node);
+        yaml_write_required_VkEnum64(typeName, nodeName, static_cast<uint64_t const &>(data), node);
     }
 }
 
@@ -231,12 +230,12 @@ bool yaml_write_optional_VkEnum(std::string const &typeName,
 
     if (sizeof(T) == 4) {
         return yaml_write_optional_VkEnum32(typeName, nodeName,
-                                            static_cast<VkFlags const &>(defaultData),
-                                            static_cast<VkFlags const &>(data), node);
+                                            static_cast<uint32_t const &>(defaultData),
+                                            static_cast<uint32_t const &>(data), node);
     } else {
         return yaml_write_optional_VkEnum64(typeName, nodeName,
-                                            static_cast<VkFlags64 const &>(defaultData),
-                                            static_cast<VkFlags64 const &>(data), node);
+                                            static_cast<uint64_t const &>(defaultData),
+                                            static_cast<uint64_t const &>(data), node);
     }
 }
 

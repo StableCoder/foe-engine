@@ -24,11 +24,11 @@
 
 FOE_GFX_VK_IMGUI_EXPORT void imgui_VkEnum32(std::string const &typeName,
                                             std::string const &label,
-                                            VkFlags const &data);
+                                            uint32_t const &data);
 
 FOE_GFX_VK_IMGUI_EXPORT void imgui_VkEnum64(std::string const &typeName,
                                             std::string const &label,
-                                            VkFlags64 const &data);
+                                            uint64_t const &data);
 
 template <typename VkEnum>
 void imgui_VkEnum(std::string const &typeName, std::string const &label, VkEnum const &data) {

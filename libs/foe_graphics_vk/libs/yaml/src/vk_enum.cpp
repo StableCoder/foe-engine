@@ -103,28 +103,28 @@ bool yaml_write_optional_vk(std::string const &typeName,
 void yaml_read_required_VkEnum32(std::string const &typeName,
                                  std::string const &nodeName,
                                  YAML::Node const &node,
-                                 VkFlags &data) {
+                                 uint32_t &data) {
     yaml_read_required_vk(typeName, nodeName, node, data);
 }
 
 bool yaml_read_optional_VkEnum32(std::string const &typeName,
                                  std::string const &nodeName,
                                  YAML::Node const &node,
-                                 VkFlags &data) {
+                                 uint32_t &data) {
     return yaml_read_optional_vk(typeName, nodeName, node, data);
 }
 
 void yaml_write_required_VkEnum32(std::string const &typeName,
                                   std::string const &nodeName,
-                                  VkFlags const &data,
+                                  uint32_t const &data,
                                   YAML::Node &node) {
     yaml_write_required_vk(typeName, nodeName, data, node);
 }
 
 bool yaml_write_optional_VkEnum32(std::string const &typeName,
                                   std::string const &nodeName,
-                                  VkFlags const &defaultData,
-                                  VkFlags const &data,
+                                  uint32_t const &defaultData,
+                                  uint32_t const &data,
                                   YAML::Node &node) {
     return yaml_write_optional_vk(typeName, nodeName, defaultData, data, node);
 }
@@ -132,28 +132,28 @@ bool yaml_write_optional_VkEnum32(std::string const &typeName,
 void yaml_read_required_VkEnum64(std::string const &typeName,
                                  std::string const &nodeName,
                                  YAML::Node const &node,
-                                 VkFlags64 &data) {
+                                 uint64_t &data) {
     yaml_read_required_vk(typeName, nodeName, node, data);
 }
 
 bool yaml_read_optional_VkEnum64(std::string const &typeName,
                                  std::string const &nodeName,
                                  YAML::Node const &node,
-                                 VkFlags64 &data) {
+                                 uint64_t &data) {
     return yaml_read_optional_vk(typeName, nodeName, node, data);
 }
 
 void yaml_write_required_VkEnum64(std::string const &typeName,
                                   std::string const &nodeName,
-                                  VkFlags64 const &data,
+                                  uint64_t const &data,
                                   YAML::Node &node) {
     yaml_write_required_vk(typeName, nodeName, data, node);
 }
 
 bool yaml_write_optional_VkEnum64(std::string const &typeName,
                                   std::string const &nodeName,
-                                  VkFlags64 const &defaultData,
-                                  VkFlags64 const &data,
+                                  uint64_t const &defaultData,
+                                  uint64_t const &data,
                                   YAML::Node &node) {
     return yaml_write_optional_vk(typeName, nodeName, defaultData, data, node);
 }

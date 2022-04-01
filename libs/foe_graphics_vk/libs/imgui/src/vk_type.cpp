@@ -20,14 +20,14 @@
 #include <imgui.h>
 #include <vk_value_serialization.hpp>
 
-void imgui_VkEnum32(std::string const &typeName, std::string const &label, VkFlags const &data) {
+void imgui_VkEnum32(std::string const &typeName, std::string const &label, uint32_t const &data) {
     std::string serializedStr;
     assert(vk_serialize(typeName.c_str(), data, &serializedStr) ==
            STEC_VK_SERIALIZATION_RESULT_SUCCESS);
     ImGui::Text("%s: %s", label.c_str(), serializedStr.c_str());
 }
 
-void imgui_VkEnum64(std::string const &typeName, std::string const &label, VkFlags64 const &data) {
+void imgui_VkEnum64(std::string const &typeName, std::string const &label, uint64_t const &data) {
     std::string serializedStr;
     assert(vk_serialize(typeName.c_str(), data, &serializedStr) ==
            STEC_VK_SERIALIZATION_RESULT_SUCCESS);
