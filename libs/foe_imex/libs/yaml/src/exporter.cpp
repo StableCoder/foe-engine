@@ -85,24 +85,18 @@ std::string id_to_filename(foeId id, std::string const &editorName) {
     return filename;
 }
 
-void exportResource(
+YAML::Node exportResource(
     foeResourceID resource,
-    std::filesystem::path directory,
-    foeEditorNameMap *pNameMap,
+    std::string const &name,
     std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulation const *)> const
         &resourceFns,
     foeSimulation const *pSimulation) {
-    std::string editorName;
-    if (pNameMap != nullptr) {
-        editorName = pNameMap->find(resource);
-    }
-
     YAML::Node rootNode;
 
     yaml_write_id("", resource, rootNode);
 
-    if (!editorName.empty()) {
-        yaml_write_required("editor_name", editorName, rootNode);
+    if (!name.empty()) {
+        yaml_write_required("editor_name", name, rootNode);
     }
 
     for (auto const &fn : resourceFns) {
@@ -113,27 +107,21 @@ void exportResource(
         }
     }
 
-    emitYaml(directory / std::string{id_to_filename(resource, editorName) + ".yml"}, rootNode);
+    return rootNode;
 }
 
-void exportComponents(
+YAML::Node exportComponents(
     foeEntityID entity,
-    std::filesystem::path directory,
-    foeEditorNameMap *pNameMap,
+    std::string const &name,
     std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulation const *)> const
         &componentFns,
     foeSimulation const *pSimulation) {
-    std::string editorName;
-    if (pNameMap != nullptr) {
-        editorName = pNameMap->find(entity);
-    }
-
     YAML::Node rootNode;
 
     yaml_write_id("", entity, rootNode);
 
-    if (!editorName.empty()) {
-        yaml_write_required("editor_name", editorName, rootNode);
+    if (!name.empty()) {
+        yaml_write_required("editor_name", name, rootNode);
     }
 
     for (auto const &fn : componentFns) {
@@ -144,12 +132,11 @@ void exportComponents(
         }
     }
 
-    emitYaml(directory / std::string{id_to_filename(entity, editorName) + ".yml"}, rootNode);
+    return rootNode;
 }
 
-std::error_code exportDependencies(std::filesystem::path rootOutPath, foeSimulation *pSimState) {
+std::error_code exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
     try {
-        YAML::Node rootNode;
 
         for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
             foeIdGroup groupID = foeIdValueToGroup(i);
@@ -165,10 +152,8 @@ std::error_code exportDependencies(std::filesystem::path rootOutPath, foeSimulat
             node["name"] = std::string{pGroup->name()};
             node["group_id"] = i;
 
-            rootNode.push_back(node);
+            data.push_back(node);
         }
-
-        emitYaml(rootOutPath / dependenciesFilePath, rootNode);
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to write general dependencies node with exception: {}",
                 e.what())
@@ -178,79 +163,32 @@ std::error_code exportDependencies(std::filesystem::path rootOutPath, foeSimulat
     return FOE_IMEX_YAML_SUCCESS;
 }
 
-bool exportIndexDataToFile(std::filesystem::path path, foeIdIndexGenerator *pData) {
-    YAML::Node rootNode;
-
+bool exportIndexDataToFile(foeIdIndexGenerator *pData, YAML::Node &data) {
     try {
-        yaml_write_index_generator("", *pData, rootNode);
+        yaml_write_index_generator("", *pData, data);
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to write index data node with exception: {}", e.what())
         return false;
     }
 
-    emitYaml(path, rootNode);
-
     return true;
 }
 
-std::error_code exportGroupResourceIndexData(std::filesystem::path rootOutPath,
-                                             foeSimulation *pSimState) {
-    if (exportIndexDataToFile(rootOutPath / resourceIndexDataFilePath,
-                              pSimState->groupData.persistentResourceIndices()))
+std::error_code exportGroupResourceIndexData(foeSimulation *pSimState, YAML::Node &data) {
+    if (exportIndexDataToFile(pSimState->groupData.persistentResourceIndices(), data))
         return FOE_IMEX_YAML_SUCCESS;
 
     return FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_INDEX_DATA;
 }
 
-std::error_code exportGroupEntityIndexData(std::filesystem::path rootOutPath,
-                                           foeSimulation *pSimState) {
-    if (exportIndexDataToFile(rootOutPath / entityIndexDataFilePath,
-                              pSimState->groupData.persistentEntityIndices()))
+std::error_code exportGroupEntityIndexData(foeSimulation *pSimState, YAML::Node &data) {
+    if (exportIndexDataToFile(pSimState->groupData.persistentEntityIndices(), data))
         return FOE_IMEX_YAML_SUCCESS;
 
     return FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_INDEX_DATA;
 }
 
-std::error_code exportResources(std::filesystem::path rootOutPath,
-                                foeIdGroup group,
-                                foeSimulation *pSimState) {
-    // Make sure the export directory exists
-    auto const dirPath = rootOutPath / resourceDirectoryPath;
-    // Check if it exists already
-    if (std::filesystem::exists(dirPath)) {
-        // Determine if it's a file or a directory
-        if (std::filesystem::is_regular_file(dirPath)) {
-            FOE_LOG(foeImexYaml, Error,
-                    "Attempted to export state data as a single Yaml file '{}', unsupported",
-                    dirPath.string())
-            return FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY;
-        } else if (std::filesystem::is_directory(dirPath)) {
-            FOE_LOG(foeImexYaml, Info,
-                    "Attempting to export state via Yaml to an existing  directory at '{}'",
-                    dirPath.string())
-            std::filesystem::remove_all(dirPath);
-        }
-    }
-
-    // Create the resource sub-directory
-    std::error_code errC;
-
-    bool created = std::filesystem::create_directories(dirPath, errC);
-    if (errC) {
-        FOE_LOG(foeImexYaml, Error,
-                "Failed to create directory '{}' to export Yaml state, with error: {}",
-                dirPath.string(), errC.message())
-        return errC;
-    } else if (!created) {
-        FOE_LOG(foeImexYaml, Error,
-                "Failed to create directory '{}' to export Yaml state, no error given",
-                dirPath.string())
-        return FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION;
-    } else {
-        FOE_LOG(foeImexYaml, Info, "Created new directory at '{}' to export state as Yaml",
-                dirPath.string())
-    }
-
+std::error_code exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
     // Get the valid set of resource indices
     foeIdIndex maxIndices;
     std::vector<foeIdIndex> unusedIndices;
@@ -269,7 +207,12 @@ std::error_code exportResources(std::filesystem::path rootOutPath,
 
             resource = foeIdCreate(group, idx);
 
-            exportResource(resource, dirPath, pSimState->pResourceNameMap, gResourceFns, pSimState);
+            std::string name;
+            if (pSimState->pResourceNameMap != nullptr) {
+                name = pSimState->pResourceNameMap->find(resource);
+            }
+
+            data.push_back(exportResource(resource, name, gResourceFns, pSimState));
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resource),
@@ -280,46 +223,7 @@ std::error_code exportResources(std::filesystem::path rootOutPath,
     return FOE_IMEX_YAML_SUCCESS;
 }
 
-std::error_code exportComponentData(std::filesystem::path rootOutPath,
-                                    foeIdGroup group,
-                                    foeSimulation *pSimState) {
-    // Make sure the export directory exists
-    auto const dirPath = rootOutPath / entityDirectoryPath;
-    // Check if it exists already
-    if (std::filesystem::exists(dirPath)) {
-        // Determine if it's a file or a directory
-        if (std::filesystem::is_regular_file(dirPath)) {
-            FOE_LOG(foeImexYaml, Error,
-                    "Attempted to export state data as a single Yaml file '{}', unsupported",
-                    dirPath.string())
-            return FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY;
-        } else if (std::filesystem::is_directory(dirPath)) {
-            FOE_LOG(foeImexYaml, Info,
-                    "Attempting to export state via Yaml to an existing  directory at '{}'",
-                    dirPath.string())
-            std::filesystem::remove_all(dirPath);
-        }
-    }
-
-    // Create the resource sub-directory
-    std::error_code errC;
-
-    bool created = std::filesystem::create_directories(dirPath, errC);
-    if (errC) {
-        FOE_LOG(foeImexYaml, Error,
-                "Failed to create directory '{}' to export Yaml state, with error: {}",
-                dirPath.string(), errC.message())
-        return errC;
-    } else if (!created) {
-        FOE_LOG(foeImexYaml, Error,
-                "Failed to create directory '{}' to export Yaml state, no error given",
-                dirPath.string())
-        return FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION;
-    } else {
-        FOE_LOG(foeImexYaml, Info, "Created new directory at '{}' to export state as Yaml",
-                dirPath.string())
-    }
-
+std::error_code exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
     // Get the valid set of entity indices
     foeIdIndex maxIndices;
     std::vector<foeIdIndex> unusedIndices;
@@ -338,7 +242,12 @@ std::error_code exportComponentData(std::filesystem::path rootOutPath,
 
             entity = foeIdCreate(group, idx);
 
-            exportComponents(entity, dirPath, pSimState->pEntityNameMap, gComponentFns, pSimState);
+            std::string name;
+            if (pSimState->pEntityNameMap != nullptr) {
+                name = pSimState->pEntityNameMap->find(entity);
+            }
+
+            data.push_back(exportComponents(entity, name, gComponentFns, pSimState));
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export entity: {} - {}", foeIdToString(entity),
@@ -391,25 +300,140 @@ std::error_code foeImexYamlExport(std::filesystem::path rootPath, foeSimulation 
 
     gSync.lock_shared();
 
-    errC = exportDependencies(rootPath, pSimState);
-    if (errC)
-        goto EXPORT_FAILED;
+    { // Dependency Data
+        YAML::Node dependencies;
+        errC = exportDependencies(pSimState, dependencies);
+        if (errC)
+            goto EXPORT_FAILED;
+        emitYaml(rootPath / dependenciesFilePath, dependencies);
+    }
 
-    errC = exportGroupResourceIndexData(rootPath, pSimState);
-    if (errC)
-        goto EXPORT_FAILED;
+    { // Resource Indices
+        YAML::Node resourceIndices;
+        errC = exportGroupResourceIndexData(pSimState, resourceIndices);
+        if (errC)
+            goto EXPORT_FAILED;
+        emitYaml(rootPath / resourceIndexDataFilePath, resourceIndices);
+    }
 
-    errC = exportGroupEntityIndexData(rootPath, pSimState);
-    if (errC)
-        goto EXPORT_FAILED;
+    { // Entity Indices
+        YAML::Node entityIndices;
+        errC = exportGroupEntityIndexData(pSimState, entityIndices);
+        if (errC)
+            goto EXPORT_FAILED;
+        emitYaml(rootPath / entityIndexDataFilePath, entityIndices);
+    }
 
-    errC = exportResources(rootPath, foeIdPersistentGroup, pSimState);
-    if (errC)
-        goto EXPORT_FAILED;
+    { // Resource Data
+        YAML::Node resourceData;
+        errC = exportResources(0, pSimState, resourceData);
+        if (errC)
+            goto EXPORT_FAILED;
 
-    errC = exportComponentData(rootPath, foeIdPersistentGroup, pSimState);
-    if (errC)
-        goto EXPORT_FAILED;
+        // Make sure the export directory exists
+        auto const dirPath = rootPath / resourceDirectoryPath;
+
+        // Check if it exists already
+        if (std::filesystem::exists(dirPath)) {
+            // Determine if it's a file or a directory
+            if (std::filesystem::is_regular_file(dirPath)) {
+                FOE_LOG(foeImexYaml, Error,
+                        "Attempted to export state data as a single Yaml file '{}', unsupported",
+                        dirPath.string())
+                errC = FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY;
+                goto EXPORT_FAILED;
+            } else if (std::filesystem::is_directory(dirPath)) {
+                FOE_LOG(foeImexYaml, Info,
+                        "Attempting to export state via Yaml to an existing  directory at '{}'",
+                        dirPath.string())
+                std::filesystem::remove_all(dirPath);
+            }
+        }
+
+        // Create the resource sub-directory
+        bool created = std::filesystem::create_directories(dirPath, errC);
+        if (errC) {
+            FOE_LOG(foeImexYaml, Error,
+                    "Failed to create directory '{}' to export Yaml state, with error: {}",
+                    dirPath.string(), errC.message())
+            goto EXPORT_FAILED;
+        } else if (!created) {
+            FOE_LOG(foeImexYaml, Error,
+                    "Failed to create directory '{}' to export Yaml state, no error given",
+                    dirPath.string())
+            errC = FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION;
+            goto EXPORT_FAILED;
+        } else {
+            FOE_LOG(foeImexYaml, Info, "Created new directory at '{}' to export state as Yaml",
+                    dirPath.string())
+        }
+
+        // Loop through the yaml list, emitting data
+        for (auto const &it : resourceData) {
+            std::string name;
+            yaml_read_optional("editor_name", it, name);
+
+            foeResourceID resourceID;
+            yaml_read_id_required("", it, nullptr, resourceID);
+
+            emitYaml(dirPath / std::string{id_to_filename(resourceID, name) + ".yml"}, it);
+        }
+    }
+
+    { // Entity Data
+        YAML::Node entityData;
+        errC = exportComponentData(0, pSimState, entityData);
+        if (errC)
+            goto EXPORT_FAILED;
+
+        // Make sure the export directory exists
+        auto const dirPath = rootPath / entityDirectoryPath;
+        // Check if it exists already
+        if (std::filesystem::exists(dirPath)) {
+            // Determine if it's a file or a directory
+            if (std::filesystem::is_regular_file(dirPath)) {
+                FOE_LOG(foeImexYaml, Error,
+                        "Attempted to export state data as a single Yaml file '{}', unsupported",
+                        dirPath.string())
+                errC = FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY;
+                goto EXPORT_FAILED;
+            } else if (std::filesystem::is_directory(dirPath)) {
+                FOE_LOG(foeImexYaml, Info,
+                        "Attempting to export state via Yaml to an existing  directory at '{}'",
+                        dirPath.string())
+                std::filesystem::remove_all(dirPath);
+            }
+        }
+
+        // Create the resource sub-directory
+        bool created = std::filesystem::create_directories(dirPath, errC);
+        if (errC) {
+            FOE_LOG(foeImexYaml, Error,
+                    "Failed to create directory '{}' to export Yaml state, with error: {}",
+                    dirPath.string(), errC.message())
+            goto EXPORT_FAILED;
+        } else if (!created) {
+            FOE_LOG(foeImexYaml, Error,
+                    "Failed to create directory '{}' to export Yaml state, no error given",
+                    dirPath.string())
+            errC = FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION;
+            goto EXPORT_FAILED;
+        } else {
+            FOE_LOG(foeImexYaml, Info, "Created new directory at '{}' to export state as Yaml",
+                    dirPath.string())
+        }
+
+        // Loop through the yaml list, emitting data
+        for (auto const &it : entityData) {
+            std::string name;
+            yaml_read_optional("editor_name", it, name);
+
+            foeEntityID entityID;
+            yaml_read_id_required("", it, nullptr, entityID);
+
+            emitYaml(dirPath / std::string{id_to_filename(entityID, name) + ".yml"}, it);
+        }
+    }
 
 EXPORT_FAILED:
     gSync.unlock_shared();
