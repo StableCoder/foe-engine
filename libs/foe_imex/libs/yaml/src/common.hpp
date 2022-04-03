@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,9 +20,13 @@
 #include <string_view>
 
 constexpr std::string_view dependenciesFilePath = "dependencies.yml";
+
 constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
 constexpr std::string_view resourceDirectoryPath = "resources";
+
 constexpr std::string_view entityIndexDataFilePath = "entity_index_data.yml";
 constexpr std::string_view entityDirectoryPath = "entities";
+
+constexpr std::string_view externalDirectoryPath = "external";
 
 #endif // COMMON_HPP

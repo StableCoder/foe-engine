@@ -18,18 +18,8 @@
 
 #include <foe/imex/yaml/importer.hpp>
 
+#include "common.hpp"
 #include "log.hpp"
-
-namespace {
-
-constexpr std::string_view dependenciesFilePath = "dependencies.yml";
-constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
-constexpr std::string_view resourceDirectoryPath = "resources";
-constexpr std::string_view externalDirectoryPath = "external";
-constexpr std::string_view stateIndexDataFilePath = "state_index_data.yml";
-constexpr std::string_view stateDirectoryPath = "state";
-
-} // namespace
 
 auto foeYamlImporterGenerator::createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
     -> foeImporterBase * {
@@ -41,8 +31,8 @@ auto foeYamlImporterGenerator::createImporter(foeIdGroup group, std::filesystem:
         (std::filesystem::exists(stateDataPath / resourceIndexDataFilePath) &&
          std::filesystem::is_regular_file(stateDataPath / resourceIndexDataFilePath)) &&
         // State Index Data
-        (std::filesystem::exists(stateDataPath / stateIndexDataFilePath) &&
-         std::filesystem::is_regular_file(stateDataPath / stateIndexDataFilePath))) {
+        (std::filesystem::exists(stateDataPath / entityIndexDataFilePath) &&
+         std::filesystem::is_regular_file(stateDataPath / entityIndexDataFilePath))) {
 
         // Check optional directories (state data, resources and external data), fail if they fail
 
@@ -57,8 +47,8 @@ auto foeYamlImporterGenerator::createImporter(foeIdGroup group, std::filesystem:
             return nullptr;
 
         // State Data Directory
-        if (std::filesystem::exists(stateDataPath / stateDirectoryPath) &&
-            !std::filesystem::is_directory(stateDataPath / stateDirectoryPath))
+        if (std::filesystem::exists(stateDataPath / entityDirectoryPath) &&
+            !std::filesystem::is_directory(stateDataPath / entityDirectoryPath))
             return nullptr;
 
         return new foeYamlImporter{this, group, stateDataPath};

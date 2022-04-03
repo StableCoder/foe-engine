@@ -25,19 +25,13 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+#include "common.hpp"
 #include "log.hpp"
 
 #include <string>
 #include <string_view>
 
 namespace {
-
-constexpr std::string_view dependenciesFilePath = "dependencies.yml";
-constexpr std::string_view resourceIndexDataFilePath = "resource_index_data.yml";
-constexpr std::string_view resourceDirectoryPath = "resources";
-constexpr std::string_view externalDirectoryPath = "external";
-constexpr std::string_view stateIndexDataFilePath = "state_index_data.yml";
-constexpr std::string_view stateDirectoryPath = "state";
 
 /** @brief Parses a Yaml filename to determine the IdGroupValue and IdIndex
  * @param path File path to parse
@@ -158,7 +152,7 @@ bool getGroupIndexData(std::filesystem::path path, foeIdIndexGenerator &ecsGroup
 } // namespace
 
 bool foeYamlImporter::getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) {
-    return getGroupIndexData(mRootDir / stateIndexDataFilePath, ecsGroup);
+    return getGroupIndexData(mRootDir / entityIndexDataFilePath, ecsGroup);
 }
 
 bool foeYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) {
@@ -167,11 +161,11 @@ bool foeYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) {
 
 bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
                                       foeSimulation const *pSimulation) {
-    if (!std::filesystem::exists(mRootDir / stateDirectoryPath))
+    if (!std::filesystem::exists(mRootDir / entityDirectoryPath))
         return true;
 
     for (auto &dirIt :
-         std::filesystem::recursive_directory_iterator{mRootDir / stateDirectoryPath}) {
+         std::filesystem::recursive_directory_iterator{mRootDir / entityDirectoryPath}) {
         FOE_LOG(foeImexYaml, Info, "Visiting: {}", dirIt.path().string())
         if (std::filesystem::is_directory(dirIt))
             continue;
