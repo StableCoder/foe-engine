@@ -72,14 +72,6 @@ TEST_CASE("Writing of Required Vulkan YAML Nodes", "[foe][yaml][vulkan]") {
         REQUIRE(std::string_view{emitter.c_str()} == "topology: TRIANGLE_LIST");
     }
 
-    SECTION("Empty data fails if a node could not be generated") {
-        REQUIRE_THROWS_MATCHES(
-            yaml_write_required_VkEnum("VkBufferUsageFlagBits", "topology",
-                                       static_cast<VkBufferUsageFlags>(0), test),
-            foeYamlException,
-            Catch::Matchers::EndsWith(" - Failed to serialize node as 'VkBufferUsageFlagBits'"));
-    }
-
     SECTION("Incorrect data fails") {
         REQUIRE_THROWS_MATCHES(
             yaml_write_required_VkEnum("VkQueueFlagBits", "topology",
