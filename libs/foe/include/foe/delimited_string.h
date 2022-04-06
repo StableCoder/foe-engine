@@ -17,14 +17,14 @@
 #ifndef FOE_DELIMITED_STRING_H
 #define FOE_DELIMITED_STRING_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <foe/export.h>
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** @brief Converts sets of individual strings into a single larger one
  * @param srcCount Number of source strings in ppSrc

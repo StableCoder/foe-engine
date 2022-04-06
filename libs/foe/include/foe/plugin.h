@@ -17,14 +17,14 @@
 #ifndef FOE_PLUGIN_CORE_H
 #define FOE_PLUGIN_CORE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <foe/export.h>
 #include <foe/handle.h>
 
 #include <stdbool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_DEFINE_HANDLE(foePlugin)
 
