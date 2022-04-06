@@ -470,7 +470,9 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxWaitIdle(gfxSession);
 
-    { // Resource Unloading
+    // Deinit simulation
+    if (pSimulationSet) {
+        // Resource Unloading
         auto *pCollisionShapePool = ((foeCollisionShapePool *)foeSimulationGetResourcePool(
             pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL));
         pCollisionShapePool->unloadAll();
@@ -524,10 +526,7 @@ void Application::deinitialize() {
                 pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
             pShaderLoader->gfxMaintenance();
         }
-    }
 
-    // Deinit simulation
-    if (pSimulationSet) {
         foeDeinitializeSimulationGraphics(pSimulationSet);
         foeDeinitializeSimulation(pSimulationSet);
     }
@@ -540,14 +539,16 @@ void Application::deinitialize() {
 #endif
 
     // Cleanup per-frame data
-    for (auto &it : frameData)
-        it.destroy(foeGfxVkGetDevice(gfxSession));
-    for (auto &it : swapImageFramebuffers)
-        vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
+    if (gfxSession != FOE_NULL_HANDLE) {
+        for (auto &it : frameData)
+            it.destroy(foeGfxVkGetDevice(gfxSession));
+        for (auto &it : swapImageFramebuffers)
+            vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
 #ifdef EDITOR_MODE
-    imguiRenderer.deinitialize(gfxSession);
+        imguiRenderer.deinitialize(gfxSession);
 #endif
+    }
 
     // Destroy window data
     for (auto &it : windowData) {
@@ -558,7 +559,8 @@ void Application::deinitialize() {
             foeGfxDestroyRenderTarget(it.gfxOffscreenRenderTarget);
         it.gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
 
-        it.swapchain.destroy(foeGfxVkGetDevice(gfxSession));
+        if (gfxSession != FOE_NULL_HANDLE)
+            it.swapchain.destroy(foeGfxVkGetDevice(gfxSession));
 
         if (it.surface != VK_NULL_HANDLE)
             vkDestroySurfaceKHR(foeGfxVkGetInstance(gfxRuntime), it.surface, nullptr);
