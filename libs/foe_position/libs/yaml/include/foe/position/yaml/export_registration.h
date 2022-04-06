@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,15 +14,22 @@
     limitations under the License.
 */
 
-#ifndef FOE_POSITION_YAML_IMPORT_REGISTRATION_HPP
-#define FOE_POSITION_YAML_IMPORT_REGISTRATION_HPP
+#ifndef FOE_POSITION_YAML_EXPORT_REGISTRATION_H
+#define FOE_POSITION_YAML_EXPORT_REGISTRATION_H
 
+#include <foe/error_code.h>
 #include <foe/position/yaml/export.h>
 
-#include <system_error>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-FOE_POSITION_YAML_EXPORT auto foePositionYamlRegisterImporters() -> std::error_code;
+FOE_POSITION_YAML_EXPORT foeErrorCode foePositionYamlRegisterExporters();
 
-FOE_POSITION_YAML_EXPORT void foePositionYamlDeregisterImporters();
+FOE_POSITION_YAML_EXPORT void foePositionYamlDeregisterExporters();
 
-#endif // FOE_POSITION_YAML_IMPORT_REGISTRATION_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_POSITION_YAML_EXPORT_REGISTRATION_H

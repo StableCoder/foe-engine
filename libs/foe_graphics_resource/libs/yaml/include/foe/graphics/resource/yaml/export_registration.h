@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,14 +14,22 @@
     limitations under the License.
 */
 
-#ifndef FOE_IMEX_YAML_EXPORTER_REGISTRATION_HPP
-#define FOE_IMEX_YAML_EXPORTER_REGISTRATION_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_YAML_EXPORT_REGISTRATION_HPP
+#define FOE_GRAPHICS_RESOURCE_YAML_EXPORT_REGISTRATION_HPP
 
-#include <foe/imex/yaml/export.h>
+#include <foe/error_code.h>
+#include <foe/graphics/resource/yaml/export.h>
 
-#include <system_error>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-FOE_IMEX_YAML_EXPORT auto foeImexYamlRegisterExporter() -> std::error_code;
-FOE_IMEX_YAML_EXPORT auto foeImexYamlDeregisterExporter() -> std::error_code;
+FOE_GFX_RES_YAML_EXPORT foeErrorCode foeGraphicsResourceYamlRegisterExporters();
 
-#endif // FOE_IMEX_YAML_EXPORTER_REGISTRATION_HPP
+FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlDeregisterExporters();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_RESOURCE_YAML_EXPORT_REGISTRATION_HPP

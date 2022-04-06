@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_PHYSICS_YAML_IMPORT_REGISTRATION_HPP
-#define FOE_PHYSICS_YAML_IMPORT_REGISTRATION_HPP
-
-#include <foe/physics/yaml/export.h>
+#ifndef BRINGUP_REGISTRATION_HPP
+#define BRINGUP_REGISTRATION_HPP
 
 #include <system_error>
 
-FOE_PHYSICS_YAML_EXPORT auto foePhysicsYamlRegisterImporters() -> std::error_code;
+auto foeBringupRegisterFunctionality() -> std::error_code;
 
-FOE_PHYSICS_YAML_EXPORT void foePhysicsYamlDeregisterImporters();
+void foeBringupDeregisterFunctionality();
 
-#endif // FOE_PHYSICS_YAML_IMPORT_REGISTRATION_HPP
+#endif // BRINGUP_REGISTRATION_HPP

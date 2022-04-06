@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,17 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_PHYSICS_REGISTRAR_HPP
-#define FOE_PHYSICS_REGISTRAR_HPP
+#ifndef FOE_IMEX_YAML_EXPORTER_REGISTRATION_H
+#define FOE_IMEX_YAML_EXPORTER_REGISTRATION_H
 
-#include <foe/physics/export.h>
+#include <foe/error_code.h>
+#include <foe/imex/yaml/export.h>
 
-#include <system_error>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-FOE_PHYSICS_EXPORT int foePhysicsFunctionalityID();
+FOE_IMEX_YAML_EXPORT foeErrorCode foeImexYamlRegisterExporter();
+FOE_IMEX_YAML_EXPORT void foeImexYamlDeregisterExporter();
 
-FOE_PHYSICS_EXPORT auto foePhysicsRegisterFunctionality() -> std::error_code;
+#ifdef __cplusplus
+}
+#endif
 
-FOE_PHYSICS_EXPORT void foePhysicsDeregisterFunctionality();
-
-#endif // FOE_PHYSICS_REGISTRAR_HPP
+#endif // FOE_IMEX_YAML_EXPORTER_REGISTRATION_H

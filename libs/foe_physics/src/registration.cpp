@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/physics/registrar.hpp>
+#include <foe/physics/registration.h>
 
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
@@ -409,7 +409,7 @@ size_t deinitialize(foeSimulation *pSimulation) {
 
 int foePhysicsFunctionalityID() { return FOE_PHYSICS_FUNCTIONALITY_ID; }
 
-auto foePhysicsRegisterFunctionality() -> std::error_code {
+extern "C" foeErrorCode foePhysicsRegisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsRegisterFunctionality - Starting to register functionality")
 
@@ -430,10 +430,10 @@ auto foePhysicsRegisterFunctionality() -> std::error_code {
                 "foePhysicsRegisterFunctionality - Completed registering functionality")
     }
 
-    return errC;
+    return foeToErrorCode(errC);
 }
 
-void foePhysicsDeregisterFunctionality() {
+extern "C" void foePhysicsDeregisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsDeregisterFunctionality - Starting to deregister functionality")
 

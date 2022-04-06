@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/position/registrar.hpp>
+#include <foe/position/registration.h>
 
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/position/type_defs.h>
@@ -86,7 +86,7 @@ size_t destroy(foeSimulation *pSimulation) {
 
 int foePositionFunctionalityID() { return FOE_POSITION_FUNCTIONALITY_ID; }
 
-auto foePositionRegisterFunctionality() -> std::error_code {
+extern "C" foeErrorCode foePositionRegisterFunctionality() {
     FOE_LOG(foePosition, Verbose,
             "foePositionRegisterFunctionality - Starting to register functionality")
 
@@ -105,10 +105,10 @@ auto foePositionRegisterFunctionality() -> std::error_code {
                 "foePositionRegisterFunctionality - Completed registering functionality")
     }
 
-    return errC;
+    return foeToErrorCode(errC);
 }
 
-void foePositionDeregisterFunctionality() {
+extern "C" void foePositionDeregisterFunctionality() {
     FOE_LOG(foePosition, Verbose,
             "foePositionDeregisterFunctionality - Starting to deregister functionality")
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,13 +14,21 @@
     limitations under the License.
 */
 
-#ifndef BRINGUP_REGISTRAR_HPP
-#define BRINGUP_REGISTRAR_HPP
+#ifndef FOE_IMEX_YAML_IMPORTER_REGISTRATION_H
+#define FOE_IMEX_YAML_IMPORTER_REGISTRATION_H
 
-#include <system_error>
+#include <foe/error_code.h>
+#include <foe/imex/yaml/export.h>
 
-auto foeBringupRegisterFunctionality() -> std::error_code;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void foeBringupDeregisterFunctionality();
+FOE_IMEX_YAML_EXPORT foeErrorCode foeRegisterYamlImportGenerator();
+FOE_IMEX_YAML_EXPORT foeErrorCode foeDeregisterYamlImportGenerator();
 
-#endif // BRINGUP_REGISTRAR_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_IMEX_YAML_IMPORTER_REGISTRATION_H

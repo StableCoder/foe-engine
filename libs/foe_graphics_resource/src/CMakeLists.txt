@@ -9,7 +9,7 @@ target_sources(
           material_pool.cpp
           mesh_loader.cpp
           mesh_pool.cpp
-          registrar.cpp
+          registration.cpp
           shader_loader.cpp
           shader_pool.cpp
           vertex_descriptor_loader.cpp

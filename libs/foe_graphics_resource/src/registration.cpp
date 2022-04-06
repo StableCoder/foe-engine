@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/resource/registrar.hpp>
+#include <foe/graphics/resource/registration.h>
 
 #include <foe/graphics/resource/image_loader.hpp>
 #include <foe/graphics/resource/image_pool.hpp>
@@ -802,7 +802,7 @@ size_t deinitializeGraphics(foeSimulation *pSimulation) {
 
 int foeGraphicsResourceFunctionalityID() { return FOE_GRAPHICS_RESOURCE_FUNCTIONALITY_ID; }
 
-auto foeGraphicsResourceRegisterFunctionality() -> std::error_code {
+extern "C" foeErrorCode foeGraphicsResourceRegisterFunctionality() {
     FOE_LOG(foeGraphicsResource, Verbose,
             "foeGraphicsResourceRegisterFunctionality - Starting to register functionality")
 
@@ -826,10 +826,10 @@ auto foeGraphicsResourceRegisterFunctionality() -> std::error_code {
                 "foeGraphicsResourceRegisterFunctionality - Completed registering functionality")
     }
 
-    return errC;
+    return foeToErrorCode(errC);
 }
 
-void foeGraphicsResourceDeregisterFunctionality() {
+extern "C" void foeGraphicsResourceDeregisterFunctionality() {
     FOE_LOG(foeGraphicsResource, Verbose,
             "foeGraphicsResourceDeregisterFunctionality - Starting to deregister functionality")
 

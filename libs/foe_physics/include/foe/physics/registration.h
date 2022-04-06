@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,17 +14,24 @@
     limitations under the License.
 */
 
-#ifndef FOE_POSITION_REGISTRAR_HPP
-#define FOE_POSITION_REGISTRAR_HPP
+#ifndef FOE_PHYSICS_REGISTRATION_H
+#define FOE_PHYSICS_REGISTRATION_H
 
-#include <foe/position/export.h>
+#include <foe/error_code.h>
+#include <foe/physics/export.h>
 
-#include <system_error>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-FOE_POSITION_EXPORT int foePositionFunctionalityID();
+FOE_PHYSICS_EXPORT int foePhysicsFunctionalityID();
 
-FOE_POSITION_EXPORT auto foePositionRegisterFunctionality() -> std::error_code;
+FOE_PHYSICS_EXPORT foeErrorCode foePhysicsRegisterFunctionality();
 
-FOE_POSITION_EXPORT void foePositionDeregisterFunctionality();
+FOE_PHYSICS_EXPORT void foePhysicsDeregisterFunctionality();
 
-#endif // FOE_POSITION_REGISTRAR_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_PHYSICS_REGISTRATION_H

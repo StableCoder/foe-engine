@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/imex/yaml/exporter_registration.hpp>
+#include <foe/imex/yaml/exporter_registration.h>
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
@@ -30,16 +30,18 @@ foeExporterVersion version{
 
 } // namespace
 
-auto foeImexYamlRegisterExporter() -> std::error_code {
-    return foeImexRegisterExporter(foeExporter{
+extern "C" foeErrorCode foeImexYamlRegisterExporter() {
+    std::error_code errC = foeImexRegisterExporter(foeExporter{
         .pName = name.data(),
         .version = version,
         .pExportFn = foeImexYamlExport,
     });
+
+    return foeToErrorCode(errC);
 }
 
-auto foeImexYamlDeregisterExporter() -> std::error_code {
-    return foeImexDeregisterExporter(foeExporter{
+extern "C" void foeImexYamlDeregisterExporter() {
+    foeImexDeregisterExporter(foeExporter{
         .pName = name.data(),
         .version = version,
         .pExportFn = foeImexYamlExport,

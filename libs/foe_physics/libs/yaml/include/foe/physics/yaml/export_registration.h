@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,15 +14,22 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
-#define FOE_GRAPHICS_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
+#ifndef FOE_PHYSICS_YAML_EXPORT_REGISTRATION_H
+#define FOE_PHYSICS_YAML_EXPORT_REGISTRATION_H
 
-#include <foe/graphics/resource/yaml/export.h>
+#include <foe/error_code.h>
+#include <foe/physics/yaml/export.h>
 
-#include <system_error>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-FOE_GFX_RES_YAML_EXPORT auto foeGraphicsResourceYamlRegisterImporters() -> std::error_code;
+FOE_PHYSICS_YAML_EXPORT foeErrorCode foePhysicsYamlRegisterExporters();
 
-FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlDeregisterImporters();
+FOE_PHYSICS_YAML_EXPORT void foePhysicsYamlDeregisterExporters();
 
-#endif // FOE_GRAPHICS_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_PHYSICS_YAML_EXPORT_REGISTRATION_H

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 
 #include <foe/imex/yaml/generator.hpp>
+#include <foe/imex/yaml/importer_registration.h>
 
 #include <foe/imex/yaml/importer.hpp>
 
@@ -135,10 +136,14 @@ namespace {
 foeYamlImporterGenerator gGenerator;
 }
 
-auto foeRegisterYamlImportGenerator() -> std::error_code {
-    return foeRegisterImportGenerator(&gGenerator);
+extern "C" foeErrorCode foeRegisterYamlImportGenerator() {
+    std::error_code errC = foeRegisterImportGenerator(&gGenerator);
+
+    return foeToErrorCode(errC);
 }
 
-auto foeDeregisterYamlImportGenerator() -> std::error_code {
-    return foeDeregisterImportGenerator(&gGenerator);
+extern "C" foeErrorCode foeDeregisterYamlImportGenerator() {
+    std::error_code errC = foeDeregisterImportGenerator(&gGenerator);
+
+    return foeToErrorCode(errC);
 }

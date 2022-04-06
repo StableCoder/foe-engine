@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include "registrar.hpp"
+#include "registration.hpp"
 
 #include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>

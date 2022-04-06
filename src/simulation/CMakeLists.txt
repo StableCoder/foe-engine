@@ -5,7 +5,7 @@ target_sources(
           armature_system.cpp
           camera_system.cpp
           position_descriptor_pool.cpp
-          registrar.cpp
+          registration.cpp
           vk_animation.cpp)
 
 add_subdirectory(yaml)

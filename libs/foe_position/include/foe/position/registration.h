@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,17 +14,24 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
-#define FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
+#ifndef FOE_POSITION_REGISTRATION_H
+#define FOE_POSITION_REGISTRATION_H
 
-#include <foe/graphics/resource/export.h>
+#include <foe/error_code.h>
+#include <foe/position/export.h>
 
-#include <system_error>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-FOE_GFX_RES_EXPORT int foeGraphicsResourceFunctionalityID();
+FOE_POSITION_EXPORT int foePositionFunctionalityID();
 
-FOE_GFX_RES_EXPORT auto foeGraphicsResourceRegisterFunctionality() -> std::error_code;
+FOE_POSITION_EXPORT foeErrorCode foePositionRegisterFunctionality();
 
-FOE_GFX_RES_EXPORT void foeGraphicsResourceDeregisterFunctionality();
+FOE_POSITION_EXPORT void foePositionDeregisterFunctionality();
 
-#endif // FOE_GRAPHICS_RESOURCE_REGISTRAR_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_POSITION_REGISTRATION_H

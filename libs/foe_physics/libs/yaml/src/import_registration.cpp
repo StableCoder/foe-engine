@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/physics/yaml/import_registration.hpp>
+#include <foe/physics/yaml/import_registration.h>
 
 #include <foe/imex/yaml/generator.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
@@ -106,19 +106,21 @@ REGISTRATION_FAILED:
     if (errC)
         onDeregister(pGenerator);
 
-    return errC;
+    return foeToErrorCode(errC);
 }
 
 } // namespace
 
-auto foePhysicsYamlRegisterImporters() -> std::error_code {
-    return foeRegisterImportFunctionality(foeImportFunctionality{
+extern "C" foeErrorCode foePhysicsYamlRegisterImporters() {
+    std::error_code errC = foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
+
+    return foeToErrorCode(errC);
 }
 
-void foePhysicsYamlDeregisterImporters() {
+extern "C" void foePhysicsYamlDeregisterImporters() {
     foeDeregisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
