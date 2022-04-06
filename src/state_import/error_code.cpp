@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -50,6 +50,9 @@ std::string foeStateImportErrorCategory::message(int ev) const {
 
     case FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE:
         return "FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE";
+
+    case FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER:
+        return "FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER";
 
     default:
         if (ev > 0)

@@ -196,9 +196,20 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
                 }
             }
 
-            for (auto const &it : mGenerator->mComponentFns) {
-                if (auto subNode = entityNode[it.first]; subNode) {
-                    it.second(entityNode, &mGroupTranslator, entity, pSimulation);
+            auto const &componentFnMap = mGenerator->mComponentFns;
+            for (auto const &it : entityNode) {
+                std::string key = it.first.as<std::string>();
+                if (key == "index_id" || key == "group_id" || key == "editor_name")
+                    continue;
+
+                auto searchIt = componentFnMap.find(key);
+                if (searchIt != componentFnMap.end()) {
+                    searchIt->second(entityNode, &mGroupTranslator, entity, pSimulation);
+                } else {
+                    FOE_LOG(foeImexYaml, Error,
+                            "Failed to find importer for '{}' component key for {} entity ({})",
+                            key, foeIdToString(entity), dirIt.path().string())
+                    return false;
                 }
             }
 
@@ -252,20 +263,40 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
             }
 
             // Resource Type
-            for (auto const &it : mGenerator->mResourceFns) {
-                if (auto subNode = node[it.first]; subNode) {
-                    foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
-                    it.second.pImport(node, &mGroupTranslator, &createInfo);
+            bool processed = false;
+            auto const &resourceFnMap = mGenerator->mResourceFns;
+            for (auto const &it : node) {
+                std::string key = it.first.as<std::string>();
+                if (key == "index_id" || key == "group_id" || key == "editor_name")
+                    continue;
 
-                    if (it.second.pCreate != nullptr) {
-                        auto errC = it.second.pCreate(resource, createInfo, pSimulation);
-                        if (errC)
+                auto searchIt = resourceFnMap.find(key);
+                if (searchIt != resourceFnMap.end()) {
+                    foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
+                    searchIt->second.pImport(node, &mGroupTranslator, &createInfo);
+
+                    if (searchIt->second.pCreate != nullptr) {
+                        auto errC = searchIt->second.pCreate(resource, createInfo, pSimulation);
+                        if (errC) {
                             return false;
+                        }
                     }
 
                     foeDestroyResourceCreateInfo(createInfo);
+                    processed = true;
                     break;
+                } else {
+                    FOE_LOG(foeImexYaml, Error,
+                            "Failed to find importer for '{}' resource key for {} resource ({})",
+                            key, foeIdToString(resource), dirIt.path().string())
+                    return false;
                 }
+            }
+
+            if (!processed) {
+                FOE_LOG(foeImexYaml, Error, "Failed to generate resource for {} resource ({})",
+                        foeIdToString(resource), dirIt.path().string())
+                return false;
             }
         } catch (foeYamlException const &e) {
             FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());

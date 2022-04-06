@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ enum foeStateImportResult : int {
     FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE,
     FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA,
     FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE,
+    FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER,
 };
 
 namespace std {
