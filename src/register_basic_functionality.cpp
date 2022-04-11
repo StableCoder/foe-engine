@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -34,8 +34,6 @@
 #include "simulation/registration.hpp"
 #include "simulation/yaml/export_registration.hpp"
 #include "simulation/yaml/import_registration.hpp"
-#include "yaml_export_registration.hpp"
-#include "yaml_import_registration.hpp"
 
 auto registerBasicFunctionality() noexcept -> std::error_code {
     std::error_code errC;
@@ -74,10 +72,6 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
     if (errC)
         return errC;
 
-    errC = foeArmatureYamlRegisterExporters();
-    if (errC)
-        return errC;
-
     errC = foeBringupYamlRegisterExporters();
     if (errC)
         return errC;
@@ -99,10 +93,6 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
     if (errC)
         return errC;
 
-    errC = foeArmatureYamlRegisterImporters();
-    if (errC)
-        return errC;
-
     errC = foeBringupYamlRegisterImporters();
     if (errC)
         return errC;
@@ -113,7 +103,6 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
 void deregisterBasicFunctionality() noexcept {
     // Import
     foeBringupYamlDeregisterImporters();
-    foeArmatureYamlDeregisterImporters();
     foeGraphicsResourceYamlDeregisterImporters();
     foePositionYamlDeregisterImporters();
     foePhysicsYamlDeregisterImporters();
@@ -122,7 +111,6 @@ void deregisterBasicFunctionality() noexcept {
 
     // Export
     foeBringupYamlDeregisterExporters();
-    foeArmatureYamlDeregisterExporters();
     foeGraphicsResourceYamlDeregisterExporters();
     foePositionYamlDeregisterExporters();
     foePhysicsYamlDeregisterExporters();

@@ -17,10 +17,8 @@ if(XR_SUPPORT)
 endif()
 
 # Exception-handled code
-target_sources(
-  foe_engine_lib_eh
-  PRIVATE register_basic_functionality.cpp settings.cpp
-          yaml_export_registration.cpp yaml_import_registration.cpp)
+target_sources(foe_engine_lib_eh PRIVATE register_basic_functionality.cpp
+                                         settings.cpp)
 
 add_subdirectory(imgui)
 add_subdirectory(simulation)

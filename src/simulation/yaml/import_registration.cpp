@@ -17,15 +17,24 @@
 #include "import_registration.hpp"
 
 #include <foe/imex/yaml/generator.hpp>
+#include <foe/yaml/exception.hpp>
 
 #include "../armature.hpp"
 #include "../armature_loader.hpp"
 #include "../armature_pool.hpp"
+#include "../armature_state_imex.hpp"
+#include "../armature_state_pool.hpp"
+#include "../camera_imex.hpp"
+#include "../camera_pool.hpp"
+#include "../render_state_imex.hpp"
+#include "../render_state_pool.hpp"
 #include "../type_defs.h"
 #include "armature.hpp"
 #include "error_code.hpp"
 
 namespace {
+
+// Resources
 
 std::error_code armatureCreateProcessing(foeResourceID resource,
                                          foeResourceCreateInfo createInfo,
@@ -34,18 +43,101 @@ std::error_code armatureCreateProcessing(foeResourceID resource,
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
     if (pArmaturePool == nullptr)
-        return FOE_RESOURCE_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;
+        return FOE_BRINGUP_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;
 
     auto *pArmature = pArmaturePool->add(resource);
 
     if (!pArmature)
-        return FOE_RESOURCE_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS;
+        return FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS;
 
-    return FOE_RESOURCE_YAML_SUCCESS;
+    return FOE_BRINGUP_YAML_SUCCESS;
+}
+
+// Components
+
+bool importArmatureState(YAML::Node const &node,
+                         foeIdGroupTranslator const *pGroupTranslator,
+                         foeEntityID entity,
+                         foeSimulation const *pSimulation) {
+    if (auto dataNode = node[yaml_armature_state_key()]; dataNode) {
+        auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+
+        if (pPool == nullptr)
+            return false;
+
+        try {
+            foeArmatureState data = yaml_read_ArmatureState(dataNode, pGroupTranslator);
+
+            pPool->insert(entity, std::move(data));
+
+            return true;
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{std::string{yaml_armature_state_key()} + "::" + e.whatStr()};
+        }
+    }
+
+    return false;
+}
+
+bool importRenderState(YAML::Node const &node,
+                       foeIdGroupTranslator const *pGroupTranslator,
+                       foeEntityID entity,
+                       foeSimulation const *pSimulation) {
+    if (auto dataNode = node[yaml_render_state_key()]; dataNode) {
+        auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+
+        if (pPool == nullptr)
+            return false;
+
+        try {
+            foeRenderState data = yaml_read_RenderState(dataNode, pGroupTranslator);
+
+            pPool->insert(entity, std::move(data));
+
+            return true;
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{std::string{yaml_render_state_key()} + "::" + e.whatStr()};
+        }
+    }
+
+    return false;
+}
+
+bool importCamera(YAML::Node const &node,
+                  foeIdGroupTranslator const *,
+                  foeEntityID entity,
+                  foeSimulation const *pSimulation) {
+    if (auto dataNode = node[yaml_camera_key()]; dataNode) {
+        auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
+
+        if (pPool == nullptr)
+            return false;
+
+        try {
+            std::unique_ptr<Camera> pData(new Camera);
+            *pData = yaml_read_Camera(dataNode);
+
+            pPool->insert(entity, std::move(pData));
+
+            return true;
+        } catch (foeYamlException const &e) {
+            throw foeYamlException{"camera::" + e.whatStr()};
+        }
+    }
+
+    return false;
 }
 
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
+        // Component
+        pYamlImporter->deregisterComponentFn(yaml_armature_state_key(), importArmatureState);
+        pYamlImporter->deregisterComponentFn(yaml_render_state_key(), importRenderState);
+        pYamlImporter->deregisterComponentFn(yaml_camera_key(), importCamera);
+
         // Resources
         pYamlImporter->deregisterResourceFns(yaml_armature_key(), yaml_read_armature,
                                              armatureCreateProcessing);
@@ -59,7 +151,23 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
         // Resources
         if (!pYamlImporter->registerResourceFns(yaml_armature_key(), yaml_read_armature,
                                                 armatureCreateProcessing)) {
-            errC = FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER;
+            errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
+        // Component
+        if (!pYamlImporter->registerComponentFn(yaml_armature_state_key(), importArmatureState)) {
+            errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
+        if (!pYamlImporter->registerComponentFn(yaml_render_state_key(), importRenderState)) {
+            errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER;
+            goto REGISTRATION_FAILED;
+        }
+
+        if (!pYamlImporter->registerComponentFn(yaml_camera_key(), importCamera)) {
+            errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER;
             goto REGISTRATION_FAILED;
         }
     }
@@ -73,14 +181,14 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeArmatureYamlRegisterImporters() -> std::error_code {
+auto foeBringupYamlRegisterImporters() -> std::error_code {
     return foeRegisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
 }
 
-void foeArmatureYamlDeregisterImporters() {
+void foeBringupYamlDeregisterImporters() {
     foeDeregisterImportFunctionality(foeImportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,54 +18,47 @@
 
 namespace {
 
-struct foeYamlResourceErrorCategory : std::error_category {
+struct ErrorCategory : std::error_category {
     const char *name() const noexcept override;
     std::string message(int ev) const override;
 };
 
-const char *foeYamlResourceErrorCategory::name() const noexcept { return "foeResourceYamlResult"; }
+const char *ErrorCategory::name() const noexcept { return "foeBringupYamlResult"; }
 
 #define RESULT_CASE(X)                                                                             \
     case X:                                                                                        \
         return #X;
 
-std::string foeYamlResourceErrorCategory::message(int ev) const {
-    switch (static_cast<foeResourceYamlResult>(ev)) {
-        RESULT_CASE(FOE_RESOURCE_YAML_SUCCESS)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_UNSPECIFIED)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_ARMATURE_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_IMAGE_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_MATERIAL_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_SHADER_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_SHADER_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS)
+std::string ErrorCategory::message(int ev) const {
+    switch (static_cast<foeBringupYamlResult>(ev)) {
+        RESULT_CASE(FOE_BRINGUP_YAML_SUCCESS)
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_UNSPECIFIED)
 
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER)
-        RESULT_CASE(FOE_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS)
+        // Importers
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_ARMATURE_POOL_NOT_FOUND)
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS)
+
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER)
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER)
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER)
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER)
+
+        // Exporters
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS)
+        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_COMPONENT_EXPORTERS)
 
     default:
         if (ev > 0)
-            return "(unrecognized positive foeResourceYamlResult value)";
+            return "(unrecognized positive foeBringupYamlResult value)";
         else
-            return "(unrecognized negative foeResourceYamlResult value)";
+            return "(unrecognized negative foeBringupYamlResult value)";
     }
 }
 
-const foeYamlResourceErrorCategory yamlResourceErrorCategory{};
+const ErrorCategory errorCategory{};
 
 } // namespace
 
-std::error_code make_error_code(foeResourceYamlResult e) {
-    return {static_cast<int>(e), yamlResourceErrorCategory};
+std::error_code make_error_code(foeBringupYamlResult e) {
+    return {static_cast<int>(e), errorCategory};
 }

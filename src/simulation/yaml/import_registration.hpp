@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
-#define FOE_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
+#ifndef SIMULATION_YAML_IMPORT_REGISTRATION_HPP
+#define SIMULATION_YAML_IMPORT_REGISTRATION_HPP
 
 #include <system_error>
 
-auto foeArmatureYamlRegisterImporters() -> std::error_code;
+auto foeBringupYamlRegisterImporters() -> std::error_code;
 
-void foeArmatureYamlDeregisterImporters();
+void foeBringupYamlDeregisterImporters();
 
-#endif // FOE_RESOURCE_YAML_IMPORT_REGISTRATION_HPP
+#endif // SIMULATION_YAML_IMPORT_REGISTRATION_HPP
