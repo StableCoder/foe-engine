@@ -1,5 +1,5 @@
 target_sources(
-  foe_engine_imgui
+  foe_bringup_imgui
   PRIVATE armature_state.cpp
           armature.cpp
           bringup_registration.cpp
@@ -14,5 +14,5 @@ target_sources(
           termination.cpp)
 
 if(IMGUI_DEMO)
-  target_sources(foe_engine_imgui PRIVATE demo.cpp)
+  target_sources(foe_bringup_imgui PRIVATE demo.cpp)
 endif()

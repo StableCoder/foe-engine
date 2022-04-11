@@ -1,7 +1,7 @@
-target_sources(foe_engine PRIVATE main.cpp)
+target_sources(foe_bringup PRIVATE main.cpp)
 
 target_sources(
-  foe_engine_lib
+  foe_bringup_lib
   PRIVATE application.cpp
           error_code.cpp
           frame_timer.cpp
@@ -9,16 +9,16 @@ target_sources(
           log.cpp
           logging.cpp
           window.cpp
+          register_basic_functionality.cpp
           #
           render_graph/render_scene.cpp)
 
 if(XR_SUPPORT)
-  target_sources(foe_engine_lib PRIVATE xr.cpp xr_vk_camera_system.cpp)
+  target_sources(foe_bringup_lib PRIVATE xr.cpp xr_vk_camera_system.cpp)
 endif()
 
 # Exception-handled code
-target_sources(foe_engine_lib_eh PRIVATE register_basic_functionality.cpp
-                                         settings.cpp)
+target_sources(foe_bringup_lib_eh PRIVATE settings.cpp)
 
 add_subdirectory(imgui)
 add_subdirectory(simulation)

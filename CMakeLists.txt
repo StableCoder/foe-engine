@@ -115,10 +115,10 @@ add_subdirectory(external)
 add_subdirectory(libs)
 
 # Engine Entrypoint
-add_executable(foe_engine)
-target_link_libraries(foe_engine PRIVATE foe_engine_lib)
-target_code_coverage(foe_engine OBJECTS foe_engine_lib ARGS --config
-                     ../foe-settings.yml)
+add_executable(foe_bringup)
+target_link_libraries(foe_bringup PRIVATE foe_bringup_lib)
+target_code_coverage(foe_bringup OBJECTS foe_bringup_lib ARGS --config
+                     ${CMAKE_CURRENT_SOURCE_DIR}/foe-settings.yml)
 
 # Engine Library
 set(CMAKE_C_VISIBILITY_PRESET default)
@@ -127,113 +127,104 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN OFF)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Delcarations
-add_library(foe_engine_lib)
-add_library(foe_engine_imgui STATIC)
-add_library(foe_engine_lib_eh STATIC)
+add_library(foe_bringup_lib)
+add_library(foe_bringup_imgui STATIC)
+add_library(foe_bringup_lib_eh STATIC)
 
 # Sources
 add_subdirectory(src)
 
 # Engine Definition
 target_link_libraries(
-  foe_engine_lib
+  foe_bringup_lib
   PUBLIC foe
          foe_ecs
-         foe_ecs_yaml
-         foe_engine_lib_eh
+         foe_bringup_lib_eh
          foe_graphics_resource
-         foe_graphics_resource_yaml
          foe_graphics_vk
          foe_imex
-         foe_imex_yaml
          foe_model
          foe_physics
-         foe_physics_yaml
          foe_position
-         foe_position_yaml
          foe_simulation)
 
 if(MSVC)
-  target_compile_options(foe_engine_lib PRIVATE /EHsc)
+  target_compile_options(foe_bringup_lib PRIVATE /EHsc)
 else()
-  target_compile_options(foe_engine_lib PRIVATE -fno-exceptions)
+  target_compile_options(foe_bringup_lib PRIVATE -fno-exceptions)
 endif()
 
 if(EDITOR_MODE)
-  target_link_libraries(foe_engine_lib PUBLIC foe_engine_imgui)
+  target_link_libraries(foe_bringup_lib PUBLIC foe_bringup_imgui)
 endif()
 
 target_code_coverage(
-  foe_engine_lib
+  foe_bringup_lib
   OBJECTS
   foe
   foe_ecs
-  foe_ecs_yaml
-  foe_engine_lib_eh
+  foe_bringup_lib_eh
   foe_graphics_resource
-  foe_graphics_resource_yaml
   foe_graphics_vk
   foe_imex
-  foe_imex_yaml
   foe_model
   foe_physics
-  foe_physics_yaml
   foe_position
-  foe_position_yaml
   foe_simulation)
 
 if(WSI_LOADER)
-  target_link_libraries(foe_engine_lib PUBLIC foe_wsi_loader)
+  target_link_libraries(foe_bringup_lib PUBLIC foe_wsi_loader)
 else()
-  target_link_libraries(foe_engine_lib PUBLIC foe_wsi_${WSI_LIBRARY})
+  target_link_libraries(foe_bringup_lib PUBLIC foe_wsi_${WSI_LIBRARY})
 endif()
 
 if(XR_SUPPORT)
-  target_link_libraries(foe_engine_lib PUBLIC foe_xr_openxr foe_xr_openxr_vk)
+  target_link_libraries(foe_bringup_lib PUBLIC foe_xr_openxr foe_xr_openxr_vk)
 else()
-  target_link_libraries(foe_engine_lib PUBLIC foe_xr)
+  target_link_libraries(foe_bringup_lib PUBLIC foe_xr)
 endif()
 
 # Engine ImGUI Definition
-target_compile_definitions(foe_engine_imgui PUBLIC EDITOR_MODE)
+target_compile_definitions(foe_bringup_imgui PUBLIC EDITOR_MODE)
 
 target_link_libraries(
-  foe_engine_imgui
+  foe_bringup_imgui
   PUBLIC foe_imgui
          foe_imgui_vk
          foe_graphics_resource_imgui
-         foe_imex_yaml
          foe_position_imgui
          foe_physics_imgui
          foe_simulation_imgui
          foe_wsi_imgui)
 
 if(IMGUI_DEMO)
-  target_compile_definitions(foe_engine_imgui PUBLIC IMGUI_SHOW_DEMO)
-  target_link_libraries(foe_engine_imgui PRIVATE imgui_demo)
+  target_compile_definitions(foe_bringup_imgui PUBLIC IMGUI_SHOW_DEMO)
+  target_link_libraries(foe_bringup_imgui PRIVATE imgui_demo)
 endif()
 
-target_code_coverage(foe_engine_imgui)
+target_code_coverage(foe_bringup_imgui)
 
 if(UNIX)
-  target_compile_options(foe_engine_imgui PRIVATE -fPIC)
+  target_compile_options(foe_bringup_imgui PRIVATE -fPIC)
 endif()
 
 # Exception-handling Definition
 target_link_libraries(
-  foe_engine_lib_eh
+  foe_bringup_lib_eh
   PUBLIC CLI11
+         foe
+         foe_yaml
+         #
          foe_ecs_yaml
          foe_graphics_resource_yaml
          foe_imex_yaml
          foe_physics_yaml
-         foe_position_yaml
-         foe_simulation)
+         foe_position_yaml)
 
-target_code_coverage(foe_engine_lib_eh)
+target_code_coverage(foe_bringup_lib_eh)
 
 if(UNIX)
-  target_compile_options(foe_engine_lib_eh PRIVATE -fPIC)
+  target_compile_options(foe_bringup_lib_eh PRIVATE -fPIC)
 endif()
 
 # Auxiliary Items
@@ -248,6 +239,6 @@ if(BUILD_SHADERS)
     data/*.frag
     data/*.comp)
 
-  target_glsl_shaders(foe_engine PRIVATE ${GLSL_FILES})
+  target_glsl_shaders(foe_bringup PRIVATE ${GLSL_FILES})
   clang_format(format_shaders ${GLSL_FILES})
 endif()
