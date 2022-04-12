@@ -17,10 +17,18 @@
 #ifndef SIMULATION_YAML_EXPORT_REGISTRATION_HPP
 #define SIMULATION_YAML_EXPORT_REGISTRATION_HPP
 
-#include <system_error>
+#include <foe/error_code.h>
 
-auto foeBringupYamlRegisterExporters() -> std::error_code;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+foeErrorCode foeBringupYamlRegisterExporters();
 
 void foeBringupYamlDeregisterExporters();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SIMULATION_YAML_EXPORT_REGISTRATION_HPP

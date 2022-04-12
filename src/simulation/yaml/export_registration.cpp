@@ -143,14 +143,16 @@ REGISTRATION_FAILED:
 
 } // namespace
 
-auto foeBringupYamlRegisterExporters() -> std::error_code {
-    return foeRegisterExportFunctionality(foeExportFunctionality{
+extern "C" foeErrorCode foeBringupYamlRegisterExporters() {
+    std::error_code errC = foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
+
+    return foeToErrorCode(errC);
 }
 
-void foeBringupYamlDeregisterExporters() {
+extern "C" void foeBringupYamlDeregisterExporters() {
     foeDeregisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,

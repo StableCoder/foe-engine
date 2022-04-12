@@ -128,8 +128,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Delcarations
 add_library(foe_bringup_lib)
-add_library(foe_bringup_imgui STATIC)
-add_library(foe_bringup_lib_eh STATIC)
+add_library(foe_bringup_imgui)
+add_library(foe_bringup_lib_eh)
+add_library(foe_bringup_shared SHARED)
+add_library(foe_bringup_yaml SHARED)
 
 # Sources
 add_subdirectory(src)
@@ -139,14 +141,23 @@ target_link_libraries(
   foe_bringup_lib
   PUBLIC foe
          foe_ecs
+         foe_bringup_shared
          foe_bringup_lib_eh
          foe_graphics_resource
          foe_graphics_vk
          foe_imex
-         foe_model
          foe_physics
-         foe_position
-         foe_simulation)
+         foe_position)
+
+target_include_directories(foe_bringup_lib
+                           PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
+target_compile_definitions(
+  foe_bringup_lib
+  PRIVATE IMEX_YAML_LIB="$<TARGET_FILE:foe_imex_yaml>"
+          PHYSICS_LIB="$<TARGET_FILE:foe_physics_yaml>"
+          POSITION_LIB="$<TARGET_FILE:foe_position_yaml>"
+          GRAPHICS_RESOURCE_LIB="$<TARGET_FILE:foe_graphics_resource_yaml>"
+          ENGINE_YAML="$<TARGET_FILE:foe_bringup_yaml>")
 
 if(MSVC)
   target_compile_options(foe_bringup_lib PRIVATE /EHsc)
@@ -163,6 +174,7 @@ target_code_coverage(
   OBJECTS
   foe
   foe_ecs
+  foe_bringup_shared
   foe_bringup_lib_eh
   foe_graphics_resource
   foe_graphics_vk
@@ -189,7 +201,8 @@ target_compile_definitions(foe_bringup_imgui PUBLIC EDITOR_MODE)
 
 target_link_libraries(
   foe_bringup_imgui
-  PUBLIC foe_imgui
+  PUBLIC foe_bringup_shared
+         foe_imgui
          foe_imgui_vk
          foe_graphics_resource_imgui
          foe_position_imgui
@@ -209,23 +222,26 @@ if(UNIX)
 endif()
 
 # Exception-handling Definition
-target_link_libraries(
-  foe_bringup_lib_eh
-  PUBLIC CLI11
-         foe
-         foe_yaml
-         #
-         foe_ecs_yaml
-         foe_graphics_resource_yaml
-         foe_imex_yaml
-         foe_physics_yaml
-         foe_position_yaml)
+target_link_libraries(foe_bringup_lib_eh PUBLIC CLI11 foe_simulation foe_yaml)
 
 target_code_coverage(foe_bringup_lib_eh)
 
 if(UNIX)
   target_compile_options(foe_bringup_lib_eh PRIVATE -fPIC)
 endif()
+
+# Bringup Functionality
+target_include_directories(foe_bringup_shared
+                           PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
+target_link_libraries(
+  foe_bringup_shared PRIVATE foe_model foe_model_assimp foe_resource
+                             foe_simulation foe_position foe_graphics_resource)
+
+# Yaml Definition
+target_include_directories(foe_bringup_yaml
+                           PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
+target_link_libraries(foe_bringup_yaml PRIVATE foe_bringup_shared foe_ecs_yaml
+                                               foe_imex_yaml)
 
 # Auxiliary Items
 if(BUILD_SHADERS)

@@ -1,3 +1,5 @@
 target_sources(
-  foe_bringup_lib_eh PRIVATE armature.cpp error_code.cpp
-                             export_registration.cpp import_registration.cpp)
+  foe_bringup_yaml PRIVATE armature.cpp error_code.cpp export_registration.cpp
+                           import_registration.cpp)
+
+target_link_libraries(foe_bringup_yaml PRIVATE foe_model foe_position)

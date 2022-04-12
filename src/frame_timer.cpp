@@ -29,8 +29,3 @@ void FrameTimer::newFrame() {
         mCurrentBetweenFrames = mTimeBetweenFrames.begin();
     }
 }
-
-auto FrameTimer::framesPerSecond() const noexcept -> float {
-    auto avg = averageFrameTime<std::chrono::nanoseconds>();
-    return std::chrono::seconds(1) / avg;
-}

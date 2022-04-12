@@ -17,10 +17,18 @@
 #ifndef SIMULATION_YAML_IMPORT_REGISTRATION_HPP
 #define SIMULATION_YAML_IMPORT_REGISTRATION_HPP
 
-#include <system_error>
+#include <foe/error_code.h>
 
-auto foeBringupYamlRegisterImporters() -> std::error_code;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+foeErrorCode foeBringupYamlRegisterImporters();
 
 void foeBringupYamlDeregisterImporters();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SIMULATION_YAML_IMPORT_REGISTRATION_HPP

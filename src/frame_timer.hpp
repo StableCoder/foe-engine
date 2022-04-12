@@ -29,7 +29,10 @@ class FrameTimer {
     void newFrame();
 
     /// Returns current average frames per second based on last 128 frames
-    auto framesPerSecond() const noexcept -> float;
+    auto framesPerSecond() const noexcept -> float {
+        auto avg = averageFrameTime<std::chrono::nanoseconds>();
+        return std::chrono::seconds(1) / avg;
+    }
 
     /** Returns the time of the last frame
      * @tparam Duration Time scale to return as

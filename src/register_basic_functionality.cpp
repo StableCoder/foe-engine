@@ -16,24 +16,90 @@
 
 #include "register_basic_functionality.hpp"
 
+#include <foe/plugin.h>
+
 #include <foe/graphics/resource/registration.h>
 #include <foe/physics/registration.h>
 #include <foe/position/registration.h>
 #include <foe/simulation/simulation.hpp>
 
-#include <foe/imex/yaml/exporter_registration.h>
-#include <foe/imex/yaml/importer_registration.h>
-
-#include <foe/graphics/resource/yaml/export_registration.h>
-#include <foe/graphics/resource/yaml/import_registration.h>
-#include <foe/physics/yaml/export_registration.h>
-#include <foe/physics/yaml/import_registration.h>
-#include <foe/position/yaml/export_registration.h>
-#include <foe/position/yaml/import_registration.h>
-
+#include "error_code.hpp"
 #include "simulation/registration.hpp"
-#include "simulation/yaml/export_registration.hpp"
-#include "simulation/yaml/import_registration.hpp"
+
+#include <array>
+#include <string>
+
+namespace {
+
+struct ImExPlugin {
+    std::string path;
+    std::vector<std::string> initFn;
+    std::vector<std::string> deinitFn;
+    foePlugin plugin;
+};
+
+std::array<ImExPlugin, 5> pluginList{
+    ImExPlugin{
+        .path = IMEX_YAML_LIB,
+        .initFn = {"foeImexYamlRegisterExporter", "foeRegisterYamlImportGenerator"},
+        .deinitFn = {"foeDeregisterYamlImportGenerator", "foeImexYamlDeregisterExporter"},
+    },
+    ImExPlugin{
+        .path = PHYSICS_LIB,
+        .initFn = {"foePhysicsYamlRegisterExporters", "foePhysicsYamlRegisterImporters"},
+        .deinitFn = {"foePhysicsYamlDeregisterImporters", "foePhysicsYamlDeregisterExporters"},
+    },
+    ImExPlugin{
+        .path = POSITION_LIB,
+        .initFn = {"foePositionYamlRegisterExporters", "foePositionYamlRegisterImporters"},
+        .deinitFn = {"foePositionYamlDeregisterImporters", "foePositionYamlDeregisterExporters"},
+    },
+    ImExPlugin{
+        .path = GRAPHICS_RESOURCE_LIB,
+        .initFn = {"foeGraphicsResourceYamlRegisterExporters",
+                   "foeGraphicsResourceYamlRegisterImporters"},
+        .deinitFn = {"foeGraphicsResourceYamlDeregisterImporters",
+                     "foeGraphicsResourceYamlDeregisterExporters"},
+    },
+    ImExPlugin{
+        .path = ENGINE_YAML,
+        .initFn = {"foeBringupYamlRegisterExporters", "foeBringupYamlRegisterImporters"},
+        .deinitFn = {"foeBringupYamlDeregisterImporters", "foeBringupYamlDeregisterExporters"},
+    },
+};
+
+std::error_code initItem(ImExPlugin &plugin) {
+    foeCreatePlugin(plugin.path.c_str(), &plugin.plugin);
+    if (plugin.plugin == FOE_NULL_HANDLE) {
+        return FOE_BRINGUP_FAILED_TO_LOAD_PLUGIN;
+    }
+
+    std::error_code errC = FOE_BRINGUP_SUCCESS;
+    for (auto const &it : plugin.initFn) {
+        foeErrorCode (*pFn)() = (foeErrorCode(*)())foeGetPluginSymbol(plugin.plugin, it.c_str());
+        std::error_code fnErrC = pFn();
+        if (fnErrC) {
+            errC = fnErrC;
+            break;
+        }
+    }
+
+    return errC;
+}
+
+void deinitItem(ImExPlugin &plugin) {
+    if (plugin.plugin != FOE_NULL_HANDLE) {
+        for (auto const &it : plugin.deinitFn) {
+            void (*pFn)() = (void (*)())foeGetPluginSymbol(plugin.plugin, it.c_str());
+            pFn();
+        }
+
+        foeDestroyPlugin(plugin.plugin);
+        plugin.plugin = FOE_NULL_HANDLE;
+    }
+}
+
+} // namespace
 
 auto registerBasicFunctionality() noexcept -> std::error_code {
     std::error_code errC;
@@ -55,67 +121,21 @@ auto registerBasicFunctionality() noexcept -> std::error_code {
     if (errC)
         return errC;
 
-    // Export
-    errC = foeImexYamlRegisterExporter();
-    if (errC)
-        return errC;
-
-    errC = foePhysicsYamlRegisterExporters();
-    if (errC)
-        return errC;
-
-    errC = foePositionYamlRegisterExporters();
-    if (errC)
-        return errC;
-
-    errC = foeGraphicsResourceYamlRegisterExporters();
-    if (errC)
-        return errC;
-
-    errC = foeBringupYamlRegisterExporters();
-    if (errC)
-        return errC;
-
-    // Import
-    errC = foeRegisterYamlImportGenerator();
-    if (errC)
-        return errC;
-
-    errC = foePhysicsYamlRegisterImporters();
-    if (errC)
-        return errC;
-
-    errC = foePositionYamlRegisterImporters();
-    if (errC)
-        return errC;
-
-    errC = foeGraphicsResourceYamlRegisterImporters();
-    if (errC)
-        return errC;
-
-    errC = foeBringupYamlRegisterImporters();
-    if (errC)
-        return errC;
+    // Plugins
+    for (auto &it : pluginList) {
+        errC = initItem(it);
+        if (errC)
+            break;
+    }
 
     return errC;
 }
 
 void deregisterBasicFunctionality() noexcept {
-    // Import
-    foeBringupYamlDeregisterImporters();
-    foeGraphicsResourceYamlDeregisterImporters();
-    foePositionYamlDeregisterImporters();
-    foePhysicsYamlDeregisterImporters();
-
-    foeDeregisterYamlImportGenerator();
-
-    // Export
-    foeBringupYamlDeregisterExporters();
-    foeGraphicsResourceYamlDeregisterExporters();
-    foePositionYamlDeregisterExporters();
-    foePhysicsYamlDeregisterExporters();
-
-    foeImexYamlDeregisterExporter();
+    // Plugins
+    for (auto &it : pluginList) {
+        deinitItem(it);
+    }
 
     // Core
     foeBringupDeregisterFunctionality();

@@ -1,6 +1,8 @@
 target_sources(
-  foe_bringup_lib_eh
-  PRIVATE armature_loader.cpp
+  foe_bringup_shared
+  PRIVATE ../log.cpp
+          ../error_code.cpp
+          armature_loader.cpp
           armature_pool.cpp
           armature_system.cpp
           camera_system.cpp

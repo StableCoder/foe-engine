@@ -18,7 +18,7 @@ if(XR_SUPPORT)
 endif()
 
 # Exception-handled code
-target_sources(foe_bringup_lib_eh PRIVATE settings.cpp)
+target_sources(foe_bringup_lib_eh PRIVATE log.cpp settings.cpp)
 
 add_subdirectory(imgui)
 add_subdirectory(simulation)
