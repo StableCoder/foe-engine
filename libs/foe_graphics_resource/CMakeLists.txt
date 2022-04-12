@@ -13,7 +13,7 @@ endif()
 mark_as_advanced(FORCE freeimage_INCLUDE_DIRS freeimage_LIBRARIES)
 
 # Declaration
-add_library(foe_graphics_resource)
+add_library(foe_graphics_resource SHARED)
 
 # Definition
 add_subdirectory(src)

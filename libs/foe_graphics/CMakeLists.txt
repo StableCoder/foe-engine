@@ -5,7 +5,7 @@ project(foe_graphics)
 find_package(Vulkan REQUIRED)
 
 # Declaration
-add_library(foe_graphics)
+add_library(foe_graphics SHARED)
 
 # Definition
 add_subdirectory(src)

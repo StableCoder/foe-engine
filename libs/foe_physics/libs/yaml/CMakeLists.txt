@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_physics_yaml)
 
 # Declaration
-add_library(foe_physics_yaml)
+add_library(foe_physics_yaml SHARED)
 
 # Definition
 add_subdirectory(src)

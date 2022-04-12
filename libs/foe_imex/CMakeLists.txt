@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_imex)
 
 # Declaration
-add_library(foe_imex)
+add_library(foe_imex SHARED)
 
 # Definition
 add_subdirectory(src)

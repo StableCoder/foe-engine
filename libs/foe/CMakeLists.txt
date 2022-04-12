@@ -5,7 +5,7 @@ project(foe)
 find_package(fmt REQUIRED)
 
 # Declaration
-add_library(foe)
+add_library(foe SHARED)
 
 # Definition
 add_subdirectory(src)

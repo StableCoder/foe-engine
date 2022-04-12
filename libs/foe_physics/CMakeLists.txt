@@ -5,7 +5,7 @@ project(foe_physics)
 find_package(Bullet REQUIRED)
 
 # Declaration
-add_library(foe_physics)
+add_library(foe_physics SHARED)
 
 # Definition
 add_subdirectory(src)

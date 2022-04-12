@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_resource)
 
 # Declaration
-add_library(foe_resource)
+add_library(foe_resource SHARED)
 
 # Definition
 add_subdirectory(src)

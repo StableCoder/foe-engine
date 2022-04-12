@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_position_yaml)
 
 # Declaration
-add_library(foe_position_yaml)
+add_library(foe_position_yaml SHARED)
 
 # Definition
 add_subdirectory(src)

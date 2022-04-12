@@ -5,7 +5,7 @@ project(foe_yaml)
 find_package(yamlcpp REQUIRED)
 
 # Declaration
-add_library(foe_yaml)
+add_library(foe_yaml SHARED)
 
 # Definition
 add_subdirectory(src)

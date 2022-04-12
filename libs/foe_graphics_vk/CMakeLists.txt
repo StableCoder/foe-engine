@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_graphics_vk)
 
 # Declaration
-add_library(foe_graphics_vk)
+add_library(foe_graphics_vk SHARED)
 
 # Definition
 add_subdirectory(src)

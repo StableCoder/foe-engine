@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_simulation)
 
 # Declaration
-add_library(foe_simulation)
+add_library(foe_simulation SHARED)
 
 # Definition
 add_subdirectory(src)

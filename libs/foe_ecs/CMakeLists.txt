@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_ecs)
 
 # Declaration
-add_library(foe_ecs)
+add_library(foe_ecs SHARED)
 
 # Definition
 add_subdirectory(src)

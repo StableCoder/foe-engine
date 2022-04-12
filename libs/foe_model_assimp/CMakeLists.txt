@@ -5,7 +5,7 @@ project(foe_model_assimp)
 find_package(assimp REQUIRED)
 
 # Declaration
-add_library(foe_model_assimp)
+add_library(foe_model_assimp SHARED)
 
 # Definition
 add_subdirectory(src)
