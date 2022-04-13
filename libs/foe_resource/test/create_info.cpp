@@ -183,8 +183,9 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
     CHECK(createInfo != FOE_NULL_HANDLE);
 
     foeDestroyResourceCreateInfo(createInfo);
-
     foeLogger::instance()->deregisterSink(&testSink);
+
+    REQUIRE(testSink.logMessages.size() == 3);
 
     CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
     CHECK(testSink.logMessages[0].msg.starts_with("foeResourceCreateInfo["));
