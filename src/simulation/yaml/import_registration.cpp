@@ -17,6 +17,7 @@
 #include "import_registration.hpp"
 
 #include <foe/imex/yaml/generator.hpp>
+#include <foe/imex/yaml/importer.hpp>
 #include <foe/yaml/exception.hpp>
 
 #include "../armature.hpp"
@@ -134,13 +135,13 @@ bool importCamera(YAML::Node const &node,
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Component
-        pYamlImporter->deregisterComponentFn(yaml_armature_state_key(), importArmatureState);
-        pYamlImporter->deregisterComponentFn(yaml_render_state_key(), importRenderState);
-        pYamlImporter->deregisterComponentFn(yaml_camera_key(), importCamera);
+        foeImexYamlDeregisterComponentFn(yaml_armature_state_key(), importArmatureState);
+        foeImexYamlDeregisterComponentFn(yaml_render_state_key(), importRenderState);
+        foeImexYamlDeregisterComponentFn(yaml_camera_key(), importCamera);
 
         // Resources
-        pYamlImporter->deregisterResourceFns(yaml_armature_key(), yaml_read_armature,
-                                             armatureCreateProcessing);
+        foeImexYamlDeregisterResourceFns(yaml_armature_key(), yaml_read_armature,
+                                         armatureCreateProcessing);
     }
 }
 
@@ -149,24 +150,24 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
 
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        if (!pYamlImporter->registerResourceFns(yaml_armature_key(), yaml_read_armature,
-                                                armatureCreateProcessing)) {
+        if (!foeImexYamlRegisterResourceFns(yaml_armature_key(), yaml_read_armature,
+                                            armatureCreateProcessing)) {
             errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER;
             goto REGISTRATION_FAILED;
         }
 
         // Component
-        if (!pYamlImporter->registerComponentFn(yaml_armature_state_key(), importArmatureState)) {
+        if (!foeImexYamlRegisterComponentFn(yaml_armature_state_key(), importArmatureState)) {
             errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER;
             goto REGISTRATION_FAILED;
         }
 
-        if (!pYamlImporter->registerComponentFn(yaml_render_state_key(), importRenderState)) {
+        if (!foeImexYamlRegisterComponentFn(yaml_render_state_key(), importRenderState)) {
             errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER;
             goto REGISTRATION_FAILED;
         }
 
-        if (!pYamlImporter->registerComponentFn(yaml_camera_key(), importCamera)) {
+        if (!foeImexYamlRegisterComponentFn(yaml_camera_key(), importCamera)) {
             errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER;
             goto REGISTRATION_FAILED;
         }

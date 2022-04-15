@@ -17,6 +17,7 @@
 #include <foe/physics/yaml/import_registration.h>
 
 #include <foe/imex/yaml/generator.hpp>
+#include <foe/imex/yaml/importer.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
@@ -75,11 +76,11 @@ bool importRigidBody(YAML::Node const &node,
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        pYamlImporter->deregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
-                                             collisionShapeCreateProcessing);
+        foeImexYamlDeregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
+                                         collisionShapeCreateProcessing);
 
         // Components
-        pYamlImporter->deregisterComponentFn(yaml_rigid_body_key(), importRigidBody);
+        foeImexYamlDeregisterComponentFn(yaml_rigid_body_key(), importRigidBody);
     }
 }
 
@@ -88,15 +89,14 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
 
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Resources
-        if (!pYamlImporter->registerResourceFns(yaml_collision_shape_key(),
-                                                yaml_read_collision_shape,
-                                                collisionShapeCreateProcessing)) {
+        if (!foeImexYamlRegisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
+                                            collisionShapeCreateProcessing)) {
             errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER;
             goto REGISTRATION_FAILED;
         }
 
         // Components
-        if (!pYamlImporter->registerComponentFn(yaml_rigid_body_key(), importRigidBody)) {
+        if (!foeImexYamlRegisterComponentFn(yaml_rigid_body_key(), importRigidBody)) {
             errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_IMPORTER;
             goto REGISTRATION_FAILED;
         }

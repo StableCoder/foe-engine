@@ -26,6 +26,7 @@
 #include <foe/yaml/parsing.hpp>
 
 #include "common.hpp"
+#include "import_functionality.hpp"
 #include "log.hpp"
 
 #include <string>
@@ -196,7 +197,8 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
                 }
             }
 
-            auto const &componentFnMap = mGenerator->mComponentFns;
+            auto lock = sharedLockImportFunctionality();
+            auto const &componentFnMap = getComponentFns();
             for (auto const &it : entityNode) {
                 std::string key = it.first.as<std::string>();
                 if (key == "index_id" || key == "group_id" || key == "editor_name")
@@ -264,7 +266,8 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
 
             // Resource Type
             bool processed = false;
-            auto const &resourceFnMap = mGenerator->mResourceFns;
+            auto lock = sharedLockImportFunctionality();
+            auto const &resourceFnMap = getResourceFns();
             for (auto const &it : node) {
                 std::string key = it.first.as<std::string>();
                 if (key == "index_id" || key == "group_id" || key == "editor_name")
@@ -346,7 +349,8 @@ GOT_RESOURCE_NODE:
     try {
         foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
 
-        for (auto const &it : mGenerator->mResourceFns) {
+        auto lock = sharedLockImportFunctionality();
+        for (auto const &it : getResourceFns()) {
             if (auto subNode = rootNode[it.first]; subNode) {
                 it.second.pImport(rootNode, &mGroupTranslator, &createInfo);
                 return createInfo;

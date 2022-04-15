@@ -56,7 +56,7 @@ bool importPosition3D(YAML::Node const &node,
 void onDeregister(foeImporterGenerator *pGenerator) {
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Components
-        pYamlImporter->deregisterComponentFn(yaml_position3d_key(), importPosition3D);
+        foeImexYamlDeregisterComponentFn(yaml_position3d_key(), importPosition3D);
     }
 }
 
@@ -65,7 +65,7 @@ std::error_code onRegister(foeImporterGenerator *pGenerator) {
 
     if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
         // Components
-        if (!pYamlImporter->registerComponentFn(yaml_position3d_key(), importPosition3D)) {
+        if (!foeImexYamlRegisterComponentFn(yaml_position3d_key(), importPosition3D)) {
             errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER;
             goto REGISTRATION_ERROR;
         }
