@@ -20,3 +20,6 @@ target_link_libraries(foe_imex_yaml PUBLIC foe_imex foe_yaml foe_ecs_yaml
 target_code_coverage(foe_imex_yaml)
 
 # Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
