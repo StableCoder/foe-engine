@@ -26,48 +26,49 @@ namespace {
 
 std::mutex gSync;
 
-std::vector<foeImporterGenerator *> generators;
+std::vector<PFN_foeImexCreateImporter> gCreateImporterFns;
 
 } // namespace
 
-auto foeRegisterImportGenerator(foeImporterGenerator *pGenerator) -> std::error_code {
+foeErrorCode foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter) {
     std::scoped_lock lock{gSync};
 
-    for (auto const &it : generators) {
-        if (it == pGenerator)
-            return FOE_IMEX_ERROR_IMPORTER_ALREADY_REGISTERED;
+    for (auto const &it : gCreateImporterFns) {
+        if (it == createImporter)
+            return foeToErrorCode(FOE_IMEX_ERROR_IMPORTER_ALREADY_REGISTERED);
     }
 
     // Add the generator
-    generators.emplace_back(pGenerator);
+    gCreateImporterFns.emplace_back(createImporter);
 
-    return FOE_IMEX_SUCCESS;
+    return foeToErrorCode(FOE_IMEX_SUCCESS);
 }
 
-auto foeDeregisterImportGenerator(foeImporterGenerator *pGenerator) -> std::error_code {
+foeErrorCode foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter) {
     std::scoped_lock lock{gSync};
 
-    for (auto it = generators.begin(); it != generators.end(); ++it) {
-        if (*it != pGenerator)
+    for (auto it = gCreateImporterFns.begin(); it != gCreateImporterFns.end(); ++it) {
+        if (*it != createImporter)
             continue;
 
         // Found, remove it
-        generators.erase(it);
+        gCreateImporterFns.erase(it);
 
-        return FOE_IMEX_SUCCESS;
+        return foeToErrorCode(FOE_IMEX_SUCCESS);
     }
 
-    return FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED;
+    return foeToErrorCode(FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED);
 }
 
 auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> foeImporterBase * {
     std::scoped_lock lock{gSync};
 
-    for (auto it : generators) {
-        auto *pImporter = it->createImporter(group, stateDataPath);
+    foeImporterBase *pImporter{nullptr};
+    for (auto it : gCreateImporterFns) {
+        it(group, stateDataPath.string().c_str(), &pImporter);
         if (pImporter != nullptr)
-            return pImporter;
+            break;
     }
 
-    return nullptr;
+    return pImporter;
 }

@@ -21,7 +21,6 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
-#include <foe/imex/yaml/generator.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -88,10 +87,8 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 
 } // namespace
 
-foeYamlImporter::foeYamlImporter(foeYamlImporterGenerator *pGenerator,
-                                 foeIdGroup group,
-                                 std::filesystem::path rootDir) :
-    mRootDir{std::move(rootDir)}, mGroup{group}, mGenerator{pGenerator} {}
+foeYamlImporter::foeYamlImporter(foeIdGroup group, std::filesystem::path rootDir) :
+    mRootDir{std::move(rootDir)}, mGroup{group} {}
 
 namespace {
 

@@ -3,7 +3,7 @@ target_sources(
   PRIVATE error_code.cpp
           exporter_registration.cpp
           exporter.cpp
-          generator.cpp
           import_functionality.cpp
+          importer_registration.cpp
           importer.cpp
           log.cpp)

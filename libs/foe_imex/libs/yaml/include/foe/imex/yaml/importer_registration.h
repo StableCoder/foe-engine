@@ -24,8 +24,8 @@
 extern "C" {
 #endif
 
-FOE_IMEX_YAML_EXPORT foeErrorCode foeRegisterYamlImportGenerator();
-FOE_IMEX_YAML_EXPORT foeErrorCode foeDeregisterYamlImportGenerator();
+FOE_IMEX_YAML_EXPORT foeErrorCode foeImexYamlRegisterImporter();
+FOE_IMEX_YAML_EXPORT foeErrorCode foeImexYamlDeregisterImporter();
 
 #ifdef __cplusplus
 }

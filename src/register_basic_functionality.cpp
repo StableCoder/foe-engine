@@ -41,8 +41,8 @@ struct ImExPlugin {
 std::array<ImExPlugin, 5> pluginList{
     ImExPlugin{
         .path = IMEX_YAML_LIB,
-        .initFn = {"foeImexYamlRegisterExporter", "foeRegisterYamlImportGenerator"},
-        .deinitFn = {"foeDeregisterYamlImportGenerator", "foeImexYamlDeregisterExporter"},
+        .initFn = {"foeImexYamlRegisterExporter", "foeImexYamlRegisterImporter"},
+        .deinitFn = {"foeImexYamlDeregisterImporter", "foeImexYamlDeregisterExporter"},
     },
     ImExPlugin{
         .path = PHYSICS_LIB,

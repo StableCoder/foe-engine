@@ -18,26 +18,17 @@
 #define IMPORTERS_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/imex/export.h>
-
-#include <filesystem>
-#include <system_error>
-#include <vector>
 
 class foeImporterBase;
 
-class foeImporterGenerator {
-  public:
-    virtual ~foeImporterGenerator() = default;
+typedef foeErrorCode (*PFN_foeImexCreateImporter)(foeIdGroup, char const *, foeImporterBase **);
 
-    virtual auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
-        -> foeImporterBase * = 0;
-};
+FOE_IMEX_EXPORT foeErrorCode foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter);
+FOE_IMEX_EXPORT foeErrorCode foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter);
 
-FOE_IMEX_EXPORT auto foeRegisterImportGenerator(foeImporterGenerator *pGenerator)
-    -> std::error_code;
-FOE_IMEX_EXPORT auto foeDeregisterImportGenerator(foeImporterGenerator *pGenerator)
-    -> std::error_code;
+#include <filesystem>
 
 FOE_IMEX_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
     -> foeImporterBase *;
