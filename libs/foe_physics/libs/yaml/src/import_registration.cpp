@@ -16,7 +16,6 @@
 
 #include <foe/physics/yaml/import_registration.h>
 
-#include <foe/imex/yaml/generator.hpp>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
@@ -73,56 +72,36 @@ bool importRigidBody(YAML::Node const &node,
     return false;
 }
 
-void onDeregister(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-        foeImexYamlDeregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
-                                         collisionShapeCreateProcessing);
+} // namespace
 
-        // Components
-        foeImexYamlDeregisterComponentFn(yaml_rigid_body_key(), importRigidBody);
-    }
-}
-
-std::error_code onRegister(foeImporterGenerator *pGenerator) {
+extern "C" foeErrorCode foePhysicsYamlRegisterImporters() {
     std::error_code errC;
 
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-        if (!foeImexYamlRegisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
-                                            collisionShapeCreateProcessing)) {
-            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
+    // Resources
+    if (!foeImexYamlRegisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
+                                        collisionShapeCreateProcessing)) {
+        errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER;
+        goto REGISTRATION_FAILED;
+    }
 
-        // Components
-        if (!foeImexYamlRegisterComponentFn(yaml_rigid_body_key(), importRigidBody)) {
-            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
+    // Components
+    if (!foeImexYamlRegisterComponentFn(yaml_rigid_body_key(), importRigidBody)) {
+        errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_IMPORTER;
+        goto REGISTRATION_FAILED;
     }
 
 REGISTRATION_FAILED:
     if (errC)
-        onDeregister(pGenerator);
-
-    return foeToErrorCode(errC);
-}
-
-} // namespace
-
-extern "C" foeErrorCode foePhysicsYamlRegisterImporters() {
-    std::error_code errC = foeRegisterImportFunctionality(foeImportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+        foePhysicsYamlDeregisterImporters();
 
     return foeToErrorCode(errC);
 }
 
 extern "C" void foePhysicsYamlDeregisterImporters() {
-    foeDeregisterImportFunctionality(foeImportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+    // Components
+    foeImexYamlDeregisterComponentFn(yaml_rigid_body_key(), importRigidBody);
+
+    // Resources
+    foeImexYamlDeregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
+                                     collisionShapeCreateProcessing);
 }

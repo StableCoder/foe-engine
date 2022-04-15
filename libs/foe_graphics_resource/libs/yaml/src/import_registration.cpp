@@ -23,7 +23,6 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/imex/importers.hpp>
-#include <foe/imex/yaml/generator.hpp>
 #include <foe/imex/yaml/importer.hpp>
 
 #include "error_code.hpp"
@@ -120,76 +119,52 @@ std::error_code vertexDescriptorCreateProcessing(foeResourceID resource,
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
 
-void onDeregister(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-        foeImexYamlDeregisterResourceFns(yaml_vertex_descriptor_key(), yaml_read_vertex_descriptor,
-                                         vertexDescriptorCreateProcessing);
-        foeImexYamlDeregisterResourceFns(yaml_shader_key(), yaml_read_shader,
-                                         shaderCreateProcessing);
-        foeImexYamlDeregisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing);
-        foeImexYamlDeregisterResourceFns(yaml_material_key(), yaml_read_material,
-                                         materialCreateProcessing);
-        foeImexYamlDeregisterResourceFns(yaml_image_key(), yaml_read_image, imageCreateProcessing);
-    }
-}
+} // namespace
 
-std::error_code onRegister(foeImporterGenerator *pGenerator) {
+extern "C" foeErrorCode foeGraphicsResourceYamlRegisterImporters() {
     std::error_code errC;
 
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Resources
-        if (!foeImexYamlRegisterResourceFns(yaml_image_key(), yaml_read_image,
-                                            imageCreateProcessing)) {
-            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
-        if (!foeImexYamlRegisterResourceFns(yaml_material_key(), yaml_read_material,
-                                            materialCreateProcessing)) {
-            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
+    // Resources
+    if (!foeImexYamlRegisterResourceFns(yaml_image_key(), yaml_read_image, imageCreateProcessing)) {
+        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER;
+        goto REGISTRATION_FAILED;
+    }
+    if (!foeImexYamlRegisterResourceFns(yaml_material_key(), yaml_read_material,
+                                        materialCreateProcessing)) {
+        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER;
+        goto REGISTRATION_FAILED;
+    }
 
-        if (!foeImexYamlRegisterResourceFns(yaml_mesh_key(), yaml_read_mesh,
-                                            meshCreateProcessing)) {
-            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
+    if (!foeImexYamlRegisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing)) {
+        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER;
+        goto REGISTRATION_FAILED;
+    }
 
-        if (!foeImexYamlRegisterResourceFns(yaml_shader_key(), yaml_read_shader,
-                                            shaderCreateProcessing)) {
-            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
-        if (!foeImexYamlRegisterResourceFns(yaml_vertex_descriptor_key(),
-                                            yaml_read_vertex_descriptor,
-                                            vertexDescriptorCreateProcessing)) {
-            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER;
-            goto REGISTRATION_FAILED;
-        }
+    if (!foeImexYamlRegisterResourceFns(yaml_shader_key(), yaml_read_shader,
+                                        shaderCreateProcessing)) {
+        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER;
+        goto REGISTRATION_FAILED;
+    }
+    if (!foeImexYamlRegisterResourceFns(yaml_vertex_descriptor_key(), yaml_read_vertex_descriptor,
+                                        vertexDescriptorCreateProcessing)) {
+        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER;
+        goto REGISTRATION_FAILED;
     }
 
 REGISTRATION_FAILED:
     if (errC)
-        onDeregister(pGenerator);
-
-    return foeToErrorCode(errC);
-}
-
-} // namespace
-
-extern "C" foeErrorCode foeGraphicsResourceYamlRegisterImporters() {
-    std::error_code errC = foeRegisterImportFunctionality(foeImportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+        foeGraphicsResourceYamlDeregisterImporters();
 
     return foeToErrorCode(errC);
 }
 
 extern "C" void foeGraphicsResourceYamlDeregisterImporters() {
-    foeDeregisterImportFunctionality(foeImportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+    // Resources
+    foeImexYamlDeregisterResourceFns(yaml_vertex_descriptor_key(), yaml_read_vertex_descriptor,
+                                     vertexDescriptorCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_shader_key(), yaml_read_shader, shaderCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_material_key(), yaml_read_material,
+                                     materialCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_image_key(), yaml_read_image, imageCreateProcessing);
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,22 +38,6 @@ FOE_IMEX_EXPORT auto foeRegisterImportGenerator(foeImporterGenerator *pGenerator
     -> std::error_code;
 FOE_IMEX_EXPORT auto foeDeregisterImportGenerator(foeImporterGenerator *pGenerator)
     -> std::error_code;
-
-struct foeImportFunctionality {
-    std::error_code (*onRegister)(foeImporterGenerator *);
-    void (*onDeregister)(foeImporterGenerator *);
-
-    inline bool operator==(foeImportFunctionality const &rhs) const noexcept {
-        return onRegister == rhs.onRegister && onDeregister == rhs.onDeregister;
-    }
-    inline bool operator!=(foeImportFunctionality const &rhs) const noexcept {
-        return !(this == &rhs);
-    }
-};
-
-FOE_IMEX_EXPORT auto foeRegisterImportFunctionality(foeImportFunctionality const &functionality)
-    -> std::error_code;
-FOE_IMEX_EXPORT void foeDeregisterImportFunctionality(foeImportFunctionality const &functionality);
 
 FOE_IMEX_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
     -> foeImporterBase *;

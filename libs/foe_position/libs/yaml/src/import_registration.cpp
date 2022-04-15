@@ -16,8 +16,6 @@
 
 #include <foe/position/yaml/import_registration.h>
 
-#include <foe/imex/importers.hpp>
-#include <foe/imex/yaml/generator.hpp>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/yaml/exception.hpp>
@@ -53,45 +51,25 @@ bool importPosition3D(YAML::Node const &node,
     return false;
 }
 
-void onDeregister(foeImporterGenerator *pGenerator) {
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Components
-        foeImexYamlDeregisterComponentFn(yaml_position3d_key(), importPosition3D);
-    }
-}
+} // namespace
 
-std::error_code onRegister(foeImporterGenerator *pGenerator) {
+extern "C" foeErrorCode foePositionYamlRegisterImporters() {
     std::error_code errC;
 
-    if (auto pYamlImporter = dynamic_cast<foeYamlImporterGenerator *>(pGenerator); pYamlImporter) {
-        // Components
-        if (!foeImexYamlRegisterComponentFn(yaml_position3d_key(), importPosition3D)) {
-            errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER;
-            goto REGISTRATION_ERROR;
-        }
+    // Components
+    if (!foeImexYamlRegisterComponentFn(yaml_position3d_key(), importPosition3D)) {
+        errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER;
+        goto REGISTRATION_ERROR;
     }
 
 REGISTRATION_ERROR:
     if (errC)
-        onDeregister(pGenerator);
-
-    return foeToErrorCode(errC);
-}
-
-} // namespace
-
-extern "C" foeErrorCode foePositionYamlRegisterImporters() {
-    std::error_code errC = foeRegisterImportFunctionality(foeImportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+        foePositionYamlDeregisterImporters();
 
     return foeToErrorCode(errC);
 }
 
 extern "C" void foePositionYamlDeregisterImporters() {
-    foeDeregisterImportFunctionality(foeImportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+    // Components
+    foeImexYamlDeregisterComponentFn(yaml_position3d_key(), importPosition3D);
 }
