@@ -1,0 +1,4 @@
+- name: test01
+  group_id: 0
+- name: test02
+  group_id: 1

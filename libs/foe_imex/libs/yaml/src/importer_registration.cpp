@@ -21,15 +21,14 @@
 
 #include "common.hpp"
 #include "error_code.hpp"
+#include "importer_registration.hpp"
 #include "log.hpp"
 
 #include <filesystem>
 
-namespace {
-
-foeErrorCode createYamlImporter(foeIdGroup group,
-                                char const *pFilesystemPath,
-                                foeImporterBase **ppImporter) {
+foeErrorCode foeImexYamlCreateImporter(foeIdGroup group,
+                                       char const *pFilesystemPath,
+                                       foeImporterBase **ppImporter) {
     std::filesystem::path fsPath{pFilesystemPath};
 
     // Root Directory
@@ -75,12 +74,10 @@ foeErrorCode createYamlImporter(foeIdGroup group,
     return foeToErrorCode(FOE_IMEX_YAML_SUCCESS);
 }
 
-} // namespace
-
 extern "C" foeErrorCode foeImexYamlRegisterImporter() {
-    return foeToErrorCode(foeImexRegisterImporter(&createYamlImporter));
+    return foeToErrorCode(foeImexRegisterImporter(&foeImexYamlCreateImporter));
 }
 
 extern "C" foeErrorCode foeImexYamlDeregisterImporter() {
-    return foeToErrorCode(foeImexDeregisterImporter(&createYamlImporter));
+    return foeToErrorCode(foeImexDeregisterImporter(&foeImexYamlCreateImporter));
 }
