@@ -57,6 +57,7 @@ class foeYamlImporter : public foeImporterBase {
     std::filesystem::path mRootDir;
     foeIdGroup mGroup;
 
+    bool mHasTranslation{false};
     foeIdGroupTranslator mGroupTranslator;
 };
 
