@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,16 +37,16 @@
  * 'updateTime' would be the unique commandName that would be searched for and if found, the
  * function associated with it would be called.
  */
-class foeCommandStringRunner {
+class FOE_EXPORT foeCommandStringRunner {
   public:
     // Function call type for when a command finds a match
     using CommandFn = std::function<void(std::string_view)>;
 
     /// Default constructor
-    FOE_EXPORT foeCommandStringRunner();
+    foeCommandStringRunner();
 
     /// Default destructor
-    FOE_EXPORT virtual ~foeCommandStringRunner();
+    virtual ~foeCommandStringRunner();
 
     /** @brief Register a unique command name and the associated function to call
      * @param commandName Unique command name that would trigger the function call
@@ -54,26 +54,26 @@ class foeCommandStringRunner {
      * @return True if the function was registered for use. False if the commandName is already
      * registered
      */
-    FOE_EXPORT bool registerCommand(std::string_view commandName, CommandFn &&commandFn);
+    bool registerCommand(std::string_view commandName, CommandFn &&commandFn);
 
     /** @brief Deregister a unique command name and the associated function to call
      * @param commandName Unique command name that would trigger the function call
      * @return True if the function was deregistered for use. False if the command name wasn't found
      * and thus not deregistered
      */
-    FOE_EXPORT bool deregisterCommand(std::string_view commandName);
+    bool deregisterCommand(std::string_view commandName);
 
     /** @brief Given the string, attempts to find and run an associated function
      * @param commandCall Full string to try to find a registered command for
      * @return True if a command was found and run, false otherwise.
      */
-    FOE_EXPORT virtual bool runCommand(std::string_view commandCall);
+    virtual bool runCommand(std::string_view commandCall);
 
   private:
     /// Synchronizes access to the command map
-    std::mutex mSync;
+    FOE_NO_EXPORT std::mutex mSync;
     /// Map of command names and the associated functions to call
-    std::unordered_map<std::string, CommandFn> mCommandMap;
+    FOE_NO_EXPORT std::unordered_map<std::string, CommandFn> mCommandMap;
 };
 
 #endif // FOE_COMMAND_STRING_RUNNER_HPP
