@@ -8,7 +8,8 @@ add_executable(test_foe_ecs)
 # Definition
 target_sources(
   test_foe_ecs
-  PRIVATE editor_name_map.cpp
+  PRIVATE c_header_compatability.c
+          editor_name_map.cpp
           error_code.cpp
           group_translator.cpp
           id.cpp
