@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -41,11 +41,13 @@ TEST_CASE("foeID - Creating and converting IDs", "[foe][ecs]") {
 TEST_CASE("foeID - Stringify functionality", "[foe][ecs]") {
     SECTION("Group 0x4") {
         CHECK(foeIdToString(foeIdCreate(foeIdValueToGroup(0x4), 0x404)) == "0x40000404");
-        CHECK(foeIdToSplitString(foeIdCreate(foeIdValueToGroup(0x4), 0x404)) == "0x4-0x0000404");
+        CHECK(foeIdGroupToString(foeIdValueToGroup(0x4)) == "0x4");
+        CHECK(foeIdIndexToString(0x404) == "0x0000404");
     }
     SECTION("Group 0xF") {
         CHECK(foeIdToString(foeIdCreate(foeIdValueToGroup(0xF), 0x404)) == "0xF0000404");
-        CHECK(foeIdToSplitString(foeIdCreate(foeIdValueToGroup(0xF), 0x404)) == "0xF-0x0000404");
+        CHECK(foeIdGroupToString(foeIdValueToGroup(0xF)) == "0xF");
+        CHECK(foeIdIndexToString(0x404) == "0x0000404");
     }
 }
 

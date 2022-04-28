@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -44,9 +44,4 @@ std::string foeIdIndexToString(foeIdIndex id) {
     ss << "0x" << std::hex << std::setw(indexWidth) << std::uppercase << std::setfill('0') << id;
 
     return ss.str();
-}
-
-std::string foeIdToSplitString(foeId id) {
-    return foeIdGroupToString(foeIdGroupToValue(id)) + "-" +
-           foeIdIndexToString(foeIdIndexToValue(id));
 }

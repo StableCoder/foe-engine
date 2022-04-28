@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,14 +39,5 @@ FOE_ECS_EXPORT std::string foeIdGroupToString(foeIdGroup group);
  * @return The ID in a hexadecimal format
  */
 FOE_ECS_EXPORT std::string foeIdIndexToString(foeIdIndex index);
-
-/** @brief Converts the foeId to a more readable hexadecimal string, witht he different parts split
- * @param id ID to convert
- * @return The ID in a split-hexadecimal format
- *
- * Each of the constituent parts of the ID are split via '-', with the format being
- * Group-Index.
- */
-FOE_ECS_EXPORT std::string foeIdToSplitString(foeId id);
 
 #endif // FOE_ECS_ID_TO_STRING_HPP
