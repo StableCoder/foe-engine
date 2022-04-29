@@ -32,7 +32,8 @@ std::string foeIdGroupToString(foeIdGroup id) {
     constexpr int groupWidth = (foeIdNumGroupBits / 4) + ((foeIdNumGroupBits % 4) ? 1 : 0);
 
     std::stringstream ss;
-    ss << "0x" << std::hex << std::setw(groupWidth) << std::uppercase << std::setfill('0') << id;
+    ss << "0x" << std::hex << std::setw(groupWidth) << std::uppercase << std::setfill('0')
+       << foeIdGroupToValue(id);
 
     return ss.str();
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -94,9 +94,8 @@ void yaml_write_id(std::string const &nodeName, foeId data, YAML::Node &node) {
     }
 
     try {
-        yaml_write_optional("group_id", foeIdGroupToString(foeIdGroupToValue(foeIdPersistentGroup)),
-                            foeIdGroupToString(foeIdGroupToValue(foeIdGetGroup(data))),
-                            *pWriteNode);
+        yaml_write_optional("group_id", foeIdGroupToString(foeIdPersistentGroup),
+                            foeIdGroupToString(foeIdGetGroup(data)), *pWriteNode);
 
         yaml_write_required("index_id", foeIdIndexToString(foeIdIndexToValue(data)), *pWriteNode);
     } catch (foeYamlException const &e) {
