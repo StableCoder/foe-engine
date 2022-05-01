@@ -33,7 +33,7 @@ std::vector<foeSimulationFunctionalty> mRegistered;
 std::vector<foeSimulation *> mStates;
 
 void acquireExclusiveLock(foeSimulation *pSimulation, char const *pReason) {
-    FOE_LOG(SimulationState, Verbose, "Acquiring exclusive lock for SimulationState {} for {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Acquiring exclusive lock for {}",
             static_cast<void *>(pSimulation), pReason)
     foeEasyHighResClock waitingTime;
 
@@ -41,14 +41,14 @@ void acquireExclusiveLock(foeSimulation *pSimulation, char const *pReason) {
 
     waitingTime.update();
     FOE_LOG(SimulationState, Verbose,
-            "Acquired exclusive lock for SimulationState {} for {} after {}ms",
+            "[{}] foeSimulation - Acquired exclusive lock for {} after {}ms",
             static_cast<void *>(pSimulation), pReason,
             waitingTime.elapsed<std::chrono::milliseconds>().count())
 }
 
 // Assumes that the mutex has already been acquired
 void deinitSimulation(foeSimulation *pSimulation) {
-    FOE_LOG(SimulationState, Verbose, "Deinitializing SimulationState: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Deinitializing",
             static_cast<void *>(pSimulation));
 
     // Deinit functionality
@@ -63,13 +63,13 @@ void deinitSimulation(foeSimulation *pSimulation) {
 
     pSimulation->simSync.unlock();
 
-    FOE_LOG(SimulationState, Verbose, "Deinitialized SimulationState: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Deinitialized",
             static_cast<void *>(pSimulation));
 }
 
 // Assumes that the mutex has already been acquired
 void deinitializeSimulationGraphics(foeSimulation *pSimulation) {
-    FOE_LOG(SimulationState, Verbose, "Deinitializing SimulationState Graphics: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Deinitializing Graphics",
             static_cast<void *>(pSimulation));
 
     // Iterate through all and deinitialize
@@ -84,7 +84,7 @@ void deinitializeSimulationGraphics(foeSimulation *pSimulation) {
 
     pSimulation->simSync.unlock();
 
-    FOE_LOG(SimulationState, Verbose, "Deinitialized SimulationState Graphics: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Deinitialized Graphics",
             static_cast<void *>(pSimulation));
 }
 
@@ -271,7 +271,7 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
         newSimState->pEntityNameMap = nullptr;
     }
 
-    FOE_LOG(SimulationState, Verbose, "Creating SimulationState: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Creating",
             static_cast<void *>(newSimState.get()));
 
     // Go through each registered set of functionality, add its items
@@ -283,7 +283,7 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
             errC = it->pCreateFn(newSimState.get());
             if (errC) {
                 FOE_LOG(SimulationState, Error,
-                        "Error creating SimulationState: {} due to error: {}",
+                        "[{}] foeSimulation - Error creating due to error: {}",
                         static_cast<void *>(newSimState.get()), errC.message());
                 break;
             }
@@ -299,7 +299,7 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
     }
 
     if (!errC) {
-        FOE_LOG(SimulationState, Verbose, "Created SimulationState: {}",
+        FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Created",
                 static_cast<void *>(newSimState.get()));
         mStates.emplace_back(newSimState.get());
         *ppSimulationState = newSimState.release();
@@ -311,15 +311,15 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
 auto foeDestroySimulation(foeSimulation *pSimulation) -> std::error_code {
     std::scoped_lock lock{mSync};
 
-    FOE_LOG(SimulationState, Verbose, "Destroying SimulationState: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Destroying",
             static_cast<void *>(pSimulation));
 
     auto searchIt = std::find(mStates.begin(), mStates.end(), pSimulation);
     if (searchIt == mStates.end()) {
         // We were given a simulation state that wasn't created from here?
         FOE_LOG(SimulationState, Warning,
-                "destroySimulation - Given a SimulationState that wasn't created via "
-                "foeCreateSimulation: {}",
+                "[{}] foeSimulation - Given a SimulationState that wasn't created via "
+                "foeCreateSimulation and isn't registered",
                 static_cast<void *>(pSimulation));
         return FOE_SIMULATION_ERROR_NOT_REGISTERED;
     } else {
@@ -348,7 +348,7 @@ auto foeDestroySimulation(foeSimulation *pSimulation) -> std::error_code {
     // Delete it
     delete pSimulation;
 
-    FOE_LOG(SimulationState, Verbose, "Destroyed SimulationState: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Destroyed",
             static_cast<void *>(pSimulation));
 
     return FOE_SIMULATION_SUCCESS;
@@ -359,12 +359,12 @@ auto foeInitializeSimulation(foeSimulation *pSimulation, foeSimulationInitInfo c
     std::scoped_lock lock{mSync};
 
     if (foeSimulationIsInitialized(pSimulation)) {
-        FOE_LOG(SimulationState, Error, "Attempting to re-initialize SimulationState: {}",
+        FOE_LOG(SimulationState, Error, "[{}] foeSimulation - Attempted to re-initialize",
                 static_cast<void *>(pSimulation))
         return FOE_SIMULATION_ERROR_SIMULATION_ALREADY_INITIALIZED;
     }
 
-    FOE_LOG(SimulationState, Verbose, "Initializing SimulationState: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initializing",
             static_cast<void *>(pSimulation));
 
     acquireExclusiveLock(pSimulation, "initialization");
@@ -379,7 +379,7 @@ auto foeInitializeSimulation(foeSimulation *pSimulation, foeSimulationInitInfo c
             errC = it->pInitializeFn(pSimulation, pInitInfo);
             if (errC) {
                 FOE_LOG(SimulationState, Error,
-                        "Failed to initialize SimulationState: {} due to error: {}",
+                        "[{}] foeSimulation - Failed to initialize due to error: {}",
                         static_cast<void *>(pSimulation), errC.message());
                 break;
             }
@@ -399,7 +399,7 @@ auto foeInitializeSimulation(foeSimulation *pSimulation, foeSimulationInitInfo c
     if (!errC) {
         // On a successful initialization, set it into the state itself
         pSimulation->initInfo = *pInitInfo;
-        FOE_LOG(SimulationState, Verbose, "Initialized SimulationState: {}",
+        FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initialized",
                 static_cast<void *>(pSimulation));
     }
 
@@ -424,12 +424,12 @@ auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession g
     std::scoped_lock lock{mSync};
 
     if (foeSimulationIsGraphicsInitialzied(pSimulation)) {
-        FOE_LOG(SimulationState, Error, "Attempting to re-initialize SimulationState graphics: {}",
+        FOE_LOG(SimulationState, Error, "[{}] foeSimulation - Attempted to re-initialize graphics",
                 static_cast<void *>(pSimulation))
         return FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED;
     }
 
-    FOE_LOG(SimulationState, Verbose, "Initializing SimulationState graphics: {}",
+    FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initializing graphics",
             static_cast<void *>(pSimulation));
 
     acquireExclusiveLock(pSimulation, "initializing graphics");
@@ -444,7 +444,7 @@ auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession g
             errC = it->pInitializeGraphicsFn(pSimulation, gfxSession);
             if (errC) {
                 FOE_LOG(SimulationState, Error,
-                        "Failed to initialize SimulationState graphics: {} due to error: {}",
+                        "[{}] foeSimulation - Failed to initialize graphics due to error: {}",
                         static_cast<void *>(pSimulation), errC.message());
                 break;
             }
@@ -464,7 +464,7 @@ auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession g
     if (!errC) {
         // With success, set the simulation's graphics session handle
         pSimulation->gfxSession = gfxSession;
-        FOE_LOG(SimulationState, Verbose, "Initialized SimulationState graphics: {}",
+        FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initialized graphics",
                 static_cast<void *>(pSimulation));
     }
 
@@ -476,8 +476,11 @@ auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession g
 auto foeDeinitializeSimulationGraphics(foeSimulation *pSimulation) -> std::error_code {
     std::scoped_lock lock{mSync};
 
-    if (!foeSimulationIsGraphicsInitialzied(pSimulation))
+    if (!foeSimulationIsGraphicsInitialzied(pSimulation)) {
+        FOE_LOG(SimulationState, Warning,
+                "[{}] foeSimulation - Attempted to deinitialize uninitialized graphics");
         return FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED;
+    }
 
     acquireExclusiveLock(pSimulation, "deinitializing graphics");
     deinitializeSimulationGraphics(pSimulation);

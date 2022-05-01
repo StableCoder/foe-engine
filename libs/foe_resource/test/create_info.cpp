@@ -188,16 +188,16 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
     REQUIRE(testSink.logMessages.size() == 3);
 
     CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[0].msg.starts_with("foeResourceCreateInfo["));
-    CHECK(testSink.logMessages[0].msg.ends_with(",0] - Created"));
+    CHECK(testSink.logMessages[0].msg.starts_with("["));
+    CHECK(testSink.logMessages[0].msg.ends_with(",0] foeResourceCreateInfo - Created"));
 
     CHECK(testSink.logMessages[1].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[1].msg.starts_with("foeResourceCreateInfo["));
-    CHECK(testSink.logMessages[1].msg.ends_with(",0] - Destroying..."));
+    CHECK(testSink.logMessages[1].msg.starts_with("["));
+    CHECK(testSink.logMessages[1].msg.ends_with(",0] foeResourceCreateInfo - Destroying"));
 
     CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[2].msg.starts_with("foeResourceCreateInfo["));
-    CHECK(testSink.logMessages[2].msg.ends_with(",0] - Destroyed"));
+    CHECK(testSink.logMessages[2].msg.starts_with("["));
+    CHECK(testSink.logMessages[2].msg.ends_with(",0] foeResourceCreateInfo - Destroyed"));
 }
 
 TEST_CASE("foeResourceCreateInfo - Warning logged when destroyed with non-zero reference count") {
@@ -221,15 +221,15 @@ TEST_CASE("foeResourceCreateInfo - Warning logged when destroyed with non-zero r
     foeLogger::instance()->deregisterSink(&testSink);
 
     CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[0].msg.starts_with("foeResourceCreateInfo["));
-    CHECK(testSink.logMessages[0].msg.ends_with("0] - Destroying..."));
+    CHECK(testSink.logMessages[0].msg.starts_with("["));
+    CHECK(testSink.logMessages[0].msg.ends_with("0] foeResourceCreateInfo - Destroying"));
 
     CHECK(testSink.logMessages[1].level == foeLogLevel::Warning);
-    CHECK(testSink.logMessages[1].msg.starts_with("foeResourceCreateInfo["));
+    CHECK(testSink.logMessages[1].msg.starts_with("["));
     CHECK(testSink.logMessages[1].msg.ends_with(
-        "0] - Destroying with a non-zero reference count of: 3"));
+        "0] foeResourceCreateInfo - Destroying with a non-zero reference count of: 3"));
 
     CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[2].msg.starts_with("foeResourceCreateInfo["));
-    CHECK(testSink.logMessages[2].msg.ends_with("0] - Destroyed"));
+    CHECK(testSink.logMessages[2].msg.starts_with("["));
+    CHECK(testSink.logMessages[2].msg.ends_with("0] foeResourceCreateInfo - Destroyed"));
 }

@@ -213,16 +213,16 @@ TEST_CASE("foeResource - Regular lifetime logs (no import/loading)") {
     foeLogger::instance()->deregisterSink(&testSink);
 
     CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[0].msg.starts_with("foeResource["));
-    CHECK(testSink.logMessages[0].msg.find(",0] - Created @ ") != std::string::npos);
+    CHECK(testSink.logMessages[0].msg.starts_with("["));
+    CHECK(testSink.logMessages[0].msg.find(",0] foeResource - Created @ ") != std::string::npos);
 
     CHECK(testSink.logMessages[1].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[1].msg.starts_with("foeResource["));
-    CHECK(testSink.logMessages[1].msg.ends_with(",0] - Destroying..."));
+    CHECK(testSink.logMessages[1].msg.starts_with("["));
+    CHECK(testSink.logMessages[1].msg.ends_with(",0] foeResource - Destroying"));
 
     CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[2].msg.starts_with("foeResource["));
-    CHECK(testSink.logMessages[2].msg.ends_with(",0] - Destroyed"));
+    CHECK(testSink.logMessages[2].msg.starts_with("["));
+    CHECK(testSink.logMessages[2].msg.ends_with(",0] foeResource - Destroyed"));
 }
 
 TEST_CASE("foeResource - Warning logged when destroyed with non-zero reference or use count") {
@@ -245,14 +245,14 @@ TEST_CASE("foeResource - Warning logged when destroyed with non-zero reference o
         foeLogger::instance()->deregisterSink(&testSink);
 
         CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
-        CHECK(testSink.logMessages[0].msg == "foeResource[0,0] - Destroying...");
+        CHECK(testSink.logMessages[0].msg == "[0x00000000,0] foeResource - Destroying");
 
         CHECK(testSink.logMessages[1].level == foeLogLevel::Warning);
         CHECK(testSink.logMessages[1].msg ==
-              "foeResource[0,0] - Destroying with a non-zero reference count of: 1");
+              "[0x00000000,0] foeResource - Destroying with a non-zero reference count of: 1");
 
         CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
-        CHECK(testSink.logMessages[2].msg == "foeResource[0,0] - Destroyed");
+        CHECK(testSink.logMessages[2].msg == "[0x00000000,0] foeResource - Destroyed");
     }
     SECTION("Use Count") {
         foeResourceIncrementUseCount(resource);
@@ -265,13 +265,13 @@ TEST_CASE("foeResource - Warning logged when destroyed with non-zero reference o
         foeLogger::instance()->deregisterSink(&testSink);
 
         CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
-        CHECK(testSink.logMessages[0].msg == "foeResource[0,0] - Destroying...");
+        CHECK(testSink.logMessages[0].msg == "[0x00000000,0] foeResource - Destroying");
 
         CHECK(testSink.logMessages[1].level == foeLogLevel::Warning);
         CHECK(testSink.logMessages[1].msg ==
-              "foeResource[0,0] - Destroying with a non-zero use count of: 2");
+              "[0x00000000,0] foeResource - Destroying with a non-zero use count of: 2");
 
         CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
-        CHECK(testSink.logMessages[2].msg == "foeResource[0,0] - Destroyed");
+        CHECK(testSink.logMessages[2].msg == "[0x00000000,0] foeResource - Destroyed");
     }
 }

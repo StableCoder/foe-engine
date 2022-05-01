@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ auto foeGfxCreateDelayedDestructor(foeGfxSession session,
 
     *pDelayedDestructor = delayed_destructor_to_handle(pNewDelayedDestructor);
 
-    FOE_LOG(foeGraphics, Verbose, "Created foeGfxDelayedDestructor {}",
+    FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedDestructor - Created",
             static_cast<void *>(pNewDelayedDestructor));
 
     return std::error_code{};
@@ -62,7 +62,7 @@ auto foeGfxCreateDelayedDestructor(foeGfxSession session,
 void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
     auto *pDelayedDestructor = delayed_destructor_from_handle(delayedDestructor);
 
-    FOE_LOG(foeGraphics, Verbose, "Destroying foeGfxDelayedDestructor {}",
+    FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedDestructor - Destroying",
             static_cast<void *>(delayedDestructor));
 
     // Go through all of the remaining call lists rapidly, then destroy
@@ -82,7 +82,7 @@ void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {
 
     delete pDelayedDestructor;
 
-    FOE_LOG(foeGraphics, Verbose, "Destroyed foeGfxDelayedDestructor {}",
+    FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedDestructor - Destroyed",
             static_cast<void *>(delayedDestructor));
 }
 
@@ -126,9 +126,9 @@ void foeGfxAddDelayedDestructionCall(foeGfxDelayedDestructor delayedDestructor,
     if (numDelayed > pDelayedDestructor->fnLists.size()) {
         // Need to enlarge the number of function lists to accomodate a delayed call for further
         // into the future than currently supported
-        FOE_LOG(foeGraphics, Verbose, "Expanding foeGfxDelayedDestructor {} delay from {} to {}",
-                static_cast<void *>(delayedDestructor), pDelayedDestructor->fnLists.size(),
-                numDelayed);
+        FOE_LOG(
+            foeGraphics, Verbose, "[{}] foeGfxDelayedDestructor - Expanding delay from {} to {}",
+            static_cast<void *>(delayedDestructor), pDelayedDestructor->fnLists.size(), numDelayed);
 
         pDelayedDestructor->currentList = pDelayedDestructor->fnLists.end() - 1;
 

@@ -58,7 +58,7 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
 
     *pCreateInfo = resource_create_info_to_handle(pNewCI);
 
-    FOE_LOG(foeResourceCore, Verbose, "foeResourceCreateInfo[{},{}] - Created", (void *)pNewCI,
+    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Created", (void *)pNewCI,
             type)
 
     return foeToErrorCode(FOE_RESOURCE_SUCCESS);
@@ -67,13 +67,13 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
 extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {
     auto *pCreateInfo = resource_create_info_from_handle(createInfo);
 
-    FOE_LOG(foeResourceCore, Verbose, "foeResourceCreateInfo[{},{}] - Destroying...",
+    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Destroying",
             (void *)pCreateInfo, pCreateInfo->type)
 
     int refCount = pCreateInfo->refCount;
     if (refCount != 0) {
         FOE_LOG(foeResourceCore, Warning,
-                "foeResourceCreateInfo[{},{}] - Destroying with a non-zero reference count of: {}",
+                "[{},{}] foeResourceCreateInfo - Destroying with a non-zero reference count of: {}",
                 (void *)pCreateInfo, pCreateInfo->type, refCount)
     }
 
@@ -82,7 +82,7 @@ extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {
                                 (void *)foeResourceCreateInfoGetData(createInfo));
     }
 
-    FOE_LOG(foeResourceCore, Verbose, "foeResourceCreateInfo[{},{}] - Destroyed",
+    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Destroyed",
             (void *)pCreateInfo, pCreateInfo->type)
 
     pCreateInfo->~foeResourceCreateInfoImpl();
