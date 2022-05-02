@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,16 +14,9 @@
     limitations under the License.
 */
 
-#include "image.hpp"
+#include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
 
-#include <foe/graphics/resource/image.hpp>
-#include <foe/graphics/resource/image_create_info.hpp>
-#include <imgui.h>
-
-void imgui_foeImage(foeImage const *pResource) { ImGui::Text("foeImage"); }
-
-void imgui_foeImageCreateInfo(foeImageCreateInfo const *pCreateInfo) {
-    ImGui::Text("foeImageCreateInfo");
-
-    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
+void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeVertexDescriptorCreateInfo *)pCreateInfo;
+    pCI->~foeVertexDescriptorCreateInfo();
 }

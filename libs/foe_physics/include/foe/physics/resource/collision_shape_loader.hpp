@@ -21,18 +21,10 @@
 #include <foe/physics/export.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/resource/resource.h>
-#include <glm/glm.hpp>
 
 #include <mutex>
 #include <system_error>
 #include <vector>
-
-struct foeCollisionShapeCreateInfo {
-    glm::vec3 boxSize;
-};
-
-FOE_PHYSICS_EXPORT void foeDestroyCollisionShapeCreateInfo(foeResourceCreateInfoType type,
-                                                           void *pCreateInfo);
 
 class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
   public:

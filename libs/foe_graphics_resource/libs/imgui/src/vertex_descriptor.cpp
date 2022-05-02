@@ -17,7 +17,7 @@
 #include "vertex_descriptor.hpp"
 
 #include <foe/graphics/resource/vertex_descriptor.hpp>
-#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
+#include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
 #include <foe/graphics/vk/imgui/vertex_descriptor.hpp>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <imgui.h>

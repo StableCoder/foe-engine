@@ -17,6 +17,7 @@
 #include <foe/graphics/resource/shader_loader.hpp>
 
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/graphics/resource/shader_create_info.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/shader.hpp>
 
@@ -48,14 +49,6 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 }
 
 } // namespace
-
-void foeDestroyShaderCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeShaderCreateInfo *)pCreateInfo;
-
-    foeGfxVkDestroyShaderCreateInfo(&pCI->gfxCreateInfo);
-
-    pCI->~foeShaderCreateInfo();
-}
 
 std::error_code foeShaderLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {

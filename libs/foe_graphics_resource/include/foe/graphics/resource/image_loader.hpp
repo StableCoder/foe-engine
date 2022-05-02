@@ -32,13 +32,6 @@
 #include <mutex>
 #include <vector>
 
-struct foeImageCreateInfo {
-    std::string fileName;
-};
-
-FOE_GFX_RES_EXPORT void foeDestroyImageCreateInfo(foeResourceCreateInfoType type,
-                                                  void *pCreateInfo);
-
 class FOE_GFX_RES_EXPORT foeImageLoader {
   public:
     auto initialize(

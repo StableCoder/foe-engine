@@ -27,19 +27,6 @@
 #include <system_error>
 #include <vector>
 
-struct AnimationImportInfo {
-    std::string file;
-    std::vector<std::string> animationNames;
-};
-
-struct foeArmatureCreateInfo {
-    std::string fileName;
-    std::string rootArmatureNode;
-    std::vector<AnimationImportInfo> animations;
-};
-
-void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
-
 class foeArmatureLoader {
   public:
     std::error_code initialize(

@@ -32,28 +32,6 @@
 #include <mutex>
 #include <vector>
 
-struct foeMeshSource {
-    virtual ~foeMeshSource() = default;
-};
-
-struct foeMeshFileSource : public foeMeshSource {
-    std::string fileName;
-    std::string meshName;
-    unsigned int postProcessFlags;
-};
-
-struct foeMeshCubeSource : public foeMeshSource {};
-
-struct foeMeshIcosphereSource : public foeMeshSource {
-    int recursion;
-};
-
-struct foeMeshCreateInfo {
-    std::unique_ptr<foeMeshSource> source;
-};
-
-FOE_GFX_RES_EXPORT void foeDestroyMeshCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
-
 class FOE_GFX_RES_EXPORT foeMeshLoader {
   public:
     auto initialize(

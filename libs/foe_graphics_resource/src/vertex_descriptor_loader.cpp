@@ -19,17 +19,13 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
+#include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
 
 #include "error_code.hpp"
 #include "log.hpp"
 #include "worst_resource_state.hpp"
 
 #include <array>
-
-void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeVertexDescriptorCreateInfo *)pCreateInfo;
-    pCI->~foeVertexDescriptorCreateInfo();
-}
 
 std::error_code foeVertexDescriptorLoader::initialize(foeShaderPool *pShaderPool) {
     if (pShaderPool == nullptr) {

@@ -16,7 +16,7 @@
 
 #include "shader.hpp"
 
-#include <foe/graphics/resource/shader_loader.hpp>
+#include <foe/graphics/resource/shader_create_info.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/yaml/shader.hpp>
 #include <foe/yaml/exception.hpp>

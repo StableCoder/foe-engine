@@ -17,16 +17,12 @@
 #include <foe/physics/resource/collision_shape_loader.hpp>
 
 #include <foe/physics/resource/collision_shape.hpp>
+#include <foe/physics/resource/collision_shape_create_info.hpp>
 #include <foe/physics/type_defs.h>
 
 #include "bt_glm_conversion.hpp"
 #include "error_code.hpp"
 #include "log.hpp"
-
-void foeDestroyCollisionShapeCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeCollisionShapeCreateInfo *)pCreateInfo;
-    pCI->~foeCollisionShapeCreateInfo();
-}
 
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 

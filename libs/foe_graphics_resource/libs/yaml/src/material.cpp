@@ -17,7 +17,7 @@
 #include "material.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/graphics/resource/material_loader.hpp>
+#include <foe/graphics/resource/material_create_info.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>

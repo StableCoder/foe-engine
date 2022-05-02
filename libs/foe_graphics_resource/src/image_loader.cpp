@@ -18,6 +18,7 @@
 
 #include <FreeImage.h>
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/graphics/resource/image_create_info.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/format.hpp>
 #include <foe/graphics/vk/image.hpp>
@@ -26,11 +27,6 @@
 
 #include "error_code.hpp"
 #include "log.hpp"
-
-void foeDestroyImageCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeImageCreateInfo *)pCreateInfo;
-    pCI->~foeImageCreateInfo();
-}
 
 std::error_code foeImageLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {

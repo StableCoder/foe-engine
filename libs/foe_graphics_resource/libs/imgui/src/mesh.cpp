@@ -17,7 +17,7 @@
 #include "mesh.hpp"
 
 #include <foe/graphics/resource/mesh.hpp>
-#include <foe/graphics/resource/mesh_loader.hpp>
+#include <foe/graphics/resource/mesh_create_info.hpp>
 #include <imgui.h>
 
 void imgui_foeMesh(foeMesh const *pResource) {

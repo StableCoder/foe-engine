@@ -17,7 +17,7 @@
 #include "shader.hpp"
 
 #include <foe/graphics/resource/shader.hpp>
-#include <foe/graphics/resource/shader_loader.hpp>
+#include <foe/graphics/resource/shader_create_info.hpp>
 #include <foe/graphics/vk/imgui/shader.hpp>
 #include <imgui.h>
 

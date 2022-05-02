@@ -19,7 +19,7 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
+#include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
 #include <foe/graphics/vk/yaml/vertex_descriptor.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>

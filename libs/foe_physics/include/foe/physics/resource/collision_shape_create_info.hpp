@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
     limitations under the License.
 */
 
-#include "image.hpp"
+#ifndef FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_CREATE_INFO_HPP
+#define FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_CREATE_INFO_HPP
 
-#include <foe/graphics/resource/image.hpp>
-#include <foe/graphics/resource/image_create_info.hpp>
-#include <imgui.h>
+#include <foe/physics/export.h>
+#include <foe/resource/create_info.h>
+#include <glm/glm.hpp>
 
-void imgui_foeImage(foeImage const *pResource) { ImGui::Text("foeImage"); }
+struct foeCollisionShapeCreateInfo {
+    glm::vec3 boxSize;
+};
 
-void imgui_foeImageCreateInfo(foeImageCreateInfo const *pCreateInfo) {
-    ImGui::Text("foeImageCreateInfo");
+FOE_PHYSICS_EXPORT void foeDestroyCollisionShapeCreateInfo(foeResourceCreateInfoType type,
+                                                           void *pCreateInfo);
 
-    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
-}
+#endif // FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_CREATE_INFO_HPP

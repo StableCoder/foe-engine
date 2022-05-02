@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
     limitations under the License.
 */
 
-#include "image.hpp"
+#ifndef FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_HPP
+#define FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_HPP
 
-#include <foe/graphics/resource/image.hpp>
-#include <foe/graphics/resource/image_create_info.hpp>
-#include <imgui.h>
+#include <foe/graphics/resource/export.h>
+#include <foe/resource/create_info.h>
 
-void imgui_foeImage(foeImage const *pResource) { ImGui::Text("foeImage"); }
+#include <string>
 
-void imgui_foeImageCreateInfo(foeImageCreateInfo const *pCreateInfo) {
-    ImGui::Text("foeImageCreateInfo");
+struct foeImageCreateInfo {
+    std::string fileName;
+};
 
-    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
-}
+FOE_GFX_RES_EXPORT void foeDestroyImageCreateInfo(foeResourceCreateInfoType type,
+                                                  void *pCreateInfo);
+
+#endif // FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_HPP

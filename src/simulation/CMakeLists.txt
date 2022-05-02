@@ -2,6 +2,7 @@ target_sources(
   foe_bringup_shared
   PRIVATE ../log.cpp
           ../error_code.cpp
+          armature_create_info.cpp
           armature_loader.cpp
           armature_pool.cpp
           armature_system.cpp

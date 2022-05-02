@@ -19,7 +19,7 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "../armature_loader.hpp"
+#include "../armature_create_info.hpp"
 #include "../type_defs.h"
 
 namespace {

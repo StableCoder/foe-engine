@@ -28,14 +28,6 @@
 #include <mutex>
 #include <vector>
 
-struct foeShaderCreateInfo {
-    std::string shaderCodeFile;
-    foeGfxVkShaderCreateInfo gfxCreateInfo;
-};
-
-FOE_GFX_RES_EXPORT void foeDestroyShaderCreateInfo(foeResourceCreateInfoType type,
-                                                   void *pCreateInfo);
-
 class FOE_GFX_RES_EXPORT foeShaderLoader {
   public:
     auto initialize(

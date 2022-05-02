@@ -31,23 +31,6 @@
 class foeShaderPool;
 class foeImagePool;
 
-struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo {
-    ~foeMaterialCreateInfo();
-
-    foeId fragmentShader = FOE_INVALID_ID;
-    foeId image = FOE_INVALID_ID;
-    bool hasRasterizationSCI;
-    VkPipelineRasterizationStateCreateInfo rasterizationSCI;
-    bool hasDepthStencilSCI;
-    VkPipelineDepthStencilStateCreateInfo depthStencilSCI;
-    bool hasColourBlendSCI;
-    VkPipelineColorBlendStateCreateInfo colourBlendSCI;
-    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
-};
-
-FOE_GFX_RES_EXPORT void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type,
-                                                     void *pCreateInfo);
-
 class FOE_GFX_RES_EXPORT foeMaterialLoader {
   public:
     auto initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool) -> std::error_code;

@@ -17,6 +17,7 @@
 #include <foe/graphics/resource/mesh_loader.hpp>
 
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/graphics/resource/mesh_create_info.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/model.hpp>
@@ -29,11 +30,6 @@
 
 #include "error_code.hpp"
 #include "log.hpp"
-
-void foeDestroyMeshCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeMeshCreateInfo *)pCreateInfo;
-    pCI->~foeMeshCreateInfo();
-}
 
 auto foeMeshLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)

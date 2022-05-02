@@ -16,7 +16,7 @@
 
 #include "mesh.hpp"
 
-#include <foe/graphics/resource/mesh_loader.hpp>
+#include <foe/graphics/resource/mesh_create_info.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/model/assimp/flags.hpp>
 #include <foe/yaml/exception.hpp>

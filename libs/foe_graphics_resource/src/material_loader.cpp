@@ -18,6 +18,7 @@
 
 #include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/image_pool.hpp>
+#include <foe/graphics/resource/material_create_info.hpp>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
@@ -25,8 +26,6 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
 #include <vk_error_code.hpp>
-#include <vk_struct_cleanup.h>
-#include <vulkan/vulkan.h>
 
 #include "error_code.hpp"
 #include "log.hpp"
@@ -34,20 +33,6 @@
 
 #include <array>
 #include <type_traits>
-
-foeMaterialCreateInfo::~foeMaterialCreateInfo() {
-    if (hasColourBlendSCI)
-        cleanup_VkPipelineColorBlendStateCreateInfo(&colourBlendSCI);
-    if (hasDepthStencilSCI)
-        cleanup_VkPipelineDepthStencilStateCreateInfo(&depthStencilSCI);
-    if (hasRasterizationSCI)
-        cleanup_VkPipelineRasterizationStateCreateInfo(&rasterizationSCI);
-}
-
-void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeMaterialCreateInfo *)pCreateInfo;
-    pCI->~foeMaterialCreateInfo();
-}
 
 auto foeMaterialLoader::initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool)
     -> std::error_code {

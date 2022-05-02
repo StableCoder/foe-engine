@@ -21,25 +21,9 @@
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/resource.h>
-#include <vulkan/vulkan.h>
 
 #include <mutex>
 #include <vector>
-
-struct foeVertexDescriptorCreateInfo {
-    foeId vertexShader;
-    foeId tessellationControlShader;
-    foeId tessellationEvaluationShader;
-    foeId geometryShader;
-    VkPipelineVertexInputStateCreateInfo vertexInputSCI;
-    std::vector<VkVertexInputBindingDescription> inputBindings;
-    std::vector<VkVertexInputAttributeDescription> inputAttributes;
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
-    VkPipelineTessellationStateCreateInfo tessellationSCI;
-};
-
-FOE_GFX_RES_EXPORT void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type,
-                                                             void *pCreateInfo);
 
 class foeShaderPool;
 

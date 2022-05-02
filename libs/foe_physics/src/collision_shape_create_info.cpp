@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,21 +14,9 @@
     limitations under the License.
 */
 
-#include "collision_shape.hpp"
-
-#include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_create_info.hpp>
-#include <imgui.h>
 
-void imgui_foeCollisionShape(foeCollisionShape const *pResource) {
-    ImGui::Text("foeCollisionShape");
-
-    ImGui::Text("CollisionShape %p", pResource->collisionShape.get());
-}
-
-void imgui_foeCollisionShapeCreateInfo(foeCollisionShapeCreateInfo const *pCreateInfo) {
-    ImGui::Text("foeCollsionShapeCreateInfo");
-
-    ImGui::Text("Box Size: X %.2f Y %.2f Z %.2f", pCreateInfo->boxSize.x, pCreateInfo->boxSize.y,
-                pCreateInfo->boxSize.z);
+void foeDestroyCollisionShapeCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    auto *pCI = (foeCollisionShapeCreateInfo *)pCreateInfo;
+    pCI->~foeCollisionShapeCreateInfo();
 }

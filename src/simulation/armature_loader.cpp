@@ -21,12 +21,8 @@
 #include "../error_code.hpp"
 #include "../log.hpp"
 #include "armature.hpp"
+#include "armature_create_info.hpp"
 #include "type_defs.h"
-
-void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeArmatureCreateInfo *)pCreateInfo;
-    pCI->~foeArmatureCreateInfo();
-}
 
 std::error_code foeArmatureLoader::initialize(
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
