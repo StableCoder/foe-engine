@@ -35,7 +35,7 @@ class FOE_PHYSICS_EXPORT foeCollisionShapePool {
 
     foeResource add(foeResourceID resource);
     foeResource findOrAdd(foeResourceID resource);
-    foeResource find(foeResourceID id);
+    foeResource find(foeResourceID resource);
 
     void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
 

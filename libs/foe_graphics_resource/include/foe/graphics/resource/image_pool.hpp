@@ -31,7 +31,7 @@ class FOE_GFX_RES_EXPORT foeImagePool {
 
     foeResource add(foeResourceID resource);
     foeResource findOrAdd(foeResourceID resource);
-    foeResource find(foeId id);
+    foeResource find(foeResourceID resource);
 
     void setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn);
 
