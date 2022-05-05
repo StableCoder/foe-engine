@@ -14,14 +14,18 @@
     limitations under the License.
 */
 
-#ifndef FOE_SPLIT_THREAD_POOL_HPP
-#define FOE_SPLIT_THREAD_POOL_HPP
+#ifndef FOE_SPLIT_THREAD_POOL_H
+#define FOE_SPLIT_THREAD_POOL_H
 
+#include <foe/error_code.h>
 #include <foe/export.h>
 #include <foe/handle.h>
 
 #include <stdint.h>
-#include <system_error>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 enum foeSplitThreadResult {
     FOE_THREAD_POOL_SUCCESS = 0,
@@ -48,13 +52,13 @@ typedef void (*PFN_foeScheduleTask)(void *, PFN_foeTask, void *);
  */
 FOE_DEFINE_HANDLE(foeSplitThreadPool)
 
-FOE_EXPORT auto foeCreateThreadPool(uint32_t syncThreads,
-                                    uint32_t asyncThreads,
-                                    foeSplitThreadPool *pPool) -> std::error_code;
+FOE_EXPORT foeErrorCode foeCreateThreadPool(uint32_t syncThreads,
+                                            uint32_t asyncThreads,
+                                            foeSplitThreadPool *pPool);
 FOE_EXPORT void foeDestroyThreadPool(foeSplitThreadPool pool);
 
-FOE_EXPORT auto foeStartThreadPool(foeSplitThreadPool pool) -> std::error_code;
-FOE_EXPORT auto foeStopThreadPool(foeSplitThreadPool pool) -> std::error_code;
+FOE_EXPORT foeErrorCode foeStartThreadPool(foeSplitThreadPool pool);
+FOE_EXPORT foeErrorCode foeStopThreadPool(foeSplitThreadPool pool);
 
 FOE_EXPORT uint32_t foeNumSyncThreads(foeSplitThreadPool pool);
 FOE_EXPORT uint32_t foeNumAsyncThreads(foeSplitThreadPool pool);
@@ -65,13 +69,19 @@ FOE_EXPORT uint32_t foeNumQueuedAsyncTasks(foeSplitThreadPool pool);
 FOE_EXPORT uint32_t foeNumProcessingSyncTasks(foeSplitThreadPool pool);
 FOE_EXPORT uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool);
 
-FOE_EXPORT auto foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext)
-    -> std::error_code;
-FOE_EXPORT auto foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext)
-    -> std::error_code;
+FOE_EXPORT foeErrorCode foeScheduleSyncTask(foeSplitThreadPool pool,
+                                            PFN_foeTask task,
+                                            void *pTaskContext);
+FOE_EXPORT foeErrorCode foeScheduleAsyncTask(foeSplitThreadPool pool,
+                                             PFN_foeTask task,
+                                             void *pTaskContext);
 
-FOE_EXPORT auto foeWaitSyncThreads(foeSplitThreadPool pool) -> std::error_code;
-FOE_EXPORT auto foeWaitAsyncThreads(foeSplitThreadPool pool) -> std::error_code;
-FOE_EXPORT auto foeWaitAllThreads(foeSplitThreadPool pool) -> std::error_code;
+FOE_EXPORT foeErrorCode foeWaitSyncThreads(foeSplitThreadPool pool);
+FOE_EXPORT foeErrorCode foeWaitAsyncThreads(foeSplitThreadPool pool);
+FOE_EXPORT foeErrorCode foeWaitAllThreads(foeSplitThreadPool pool);
 
-#endif // FOE_SPLIT_THREAD_POOL_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_SPLIT_THREAD_POOL_H

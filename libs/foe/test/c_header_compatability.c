@@ -19,3 +19,4 @@
 #include <foe/error_code.h>
 #include <foe/handle.h>
 #include <foe/plugin.h>
+#include <foe/split_thread_pool.h>

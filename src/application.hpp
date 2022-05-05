@@ -24,7 +24,7 @@
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
-#include <foe/split_thread_pool.hpp>
+#include <foe/split_thread_pool.h>
 #include <foe/xr/runtime.hpp>
 
 #include "per_frame_data.hpp"

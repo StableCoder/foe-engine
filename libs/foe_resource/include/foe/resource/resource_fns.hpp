@@ -20,9 +20,7 @@
 #include <foe/ecs/id.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/resource.h>
-#include <foe/split_thread_pool.hpp>
-
-#include <functional>
+#include <foe/split_thread_pool.h>
 
 /**
  * Set of functions common to all foeResource types for importing definitions, loading data and
