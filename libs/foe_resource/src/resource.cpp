@@ -416,6 +416,12 @@ extern "C" void foeResourceUnload(foeResource resource, bool immediate) {
     pResource->sync.lock();
 
     if (pResource->pUnloadFn != nullptr) {
+        if (int uses = pResource->useCount; uses > 0) {
+            FOE_LOG(foeResourceCore, Warning,
+                    "[{},{}] foeResource - Unloading while still actively used {} times",
+                    foeIdToString(pResource->id), pResource->type, uses)
+        }
+
         if (immediate) {
             FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Unloading immediately",
                     foeIdToString(pResource->id), pResource->type)
