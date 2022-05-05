@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,6 +27,11 @@ using namespace std::chrono_literals;
 
 namespace {
 
+struct Task {
+    PFN_foeTask task;
+    void *pTaskContext;
+};
+
 struct TaskGroupData {
     /// Number of threads in the task group
     uint32_t threadCount;
@@ -34,7 +39,7 @@ struct TaskGroupData {
     /// Synchronizes the task list
     std::mutex sync;
     /// Upcoming scheduled tasks
-    std::queue<std::function<void()>> tasks;
+    std::queue<Task> tasks;
     /// Notified when a new task has been scheduled/queued
     std::condition_variable available;
     /// Number of tasks queued
@@ -43,10 +48,13 @@ struct TaskGroupData {
     std::atomic_uint runningCount;
 };
 
-void scheduleTask(TaskGroupData &taskGroup, std::function<void()> &&task) {
+void scheduleTask(TaskGroupData &taskGroup, PFN_foeTask task, void *pTaskContext) {
     taskGroup.sync.lock();
     ++taskGroup.queuedCount;
-    taskGroup.tasks.emplace(std::move(task));
+    taskGroup.tasks.emplace(Task{
+        .task = task,
+        .pTaskContext = pTaskContext,
+    });
     taskGroup.sync.unlock();
 
     taskGroup.available.notify_one();
@@ -71,7 +79,7 @@ struct SplitThreadPoolImpl {
 FOE_DEFINE_HANDLE_CASTS(split_thread_pool, SplitThreadPoolImpl, foeSplitThreadPool)
 
 void syncTaskRunner(SplitThreadPoolImpl *pPool) {
-    std::function<void()> task;
+    Task task;
     std::unique_lock syncLock{pPool->syncTasks.sync, std::defer_lock};
 
     while (true) {
@@ -92,7 +100,7 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
             syncLock.unlock();
 
             // Run the task
-            task();
+            task.task(task.pTaskContext);
 
             // Task complete, cleanup
             --pPool->syncTasks.runningCount;
@@ -107,7 +115,7 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
 }
 
 void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
-    std::function<void()> task;
+    Task task;
     std::unique_lock asyncLock{pPool->asyncTasks.sync, std::defer_lock};
 
     while (true) {
@@ -130,7 +138,7 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
             asyncLock.unlock();
 
             // Run the task
-            task();
+            task.task(task.pTaskContext);
 
             // Task complete, cleanup
             --pPool->asyncTasks.runningCount;
@@ -150,7 +158,7 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
             pPool->syncTasks.sync.unlock();
 
             if (gotWork) {
-                task();
+                task.task(task.pTaskContext);
                 --pPool->syncTasks.runningCount;
             }
         } else if (pPool->terminate) {
@@ -295,26 +303,27 @@ uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool) {
     return pPool->asyncTasks.runningCount;
 }
 
-auto foeScheduleSyncTask(foeSplitThreadPool pool, std::function<void()> &&task) -> std::error_code {
-    auto *pPool = split_thread_pool_from_handle(pool);
-
-    if (!pPool->started)
-        return FOE_THREAD_POOL_ERROR_NOT_STARTED;
-
-    scheduleTask(pPool->syncTasks, std::move(task));
-    pPool->asyncTasks.available.notify_one();
-
-    return FOE_THREAD_POOL_SUCCESS;
-}
-
-auto foeScheduleAsyncTask(foeSplitThreadPool pool, std::function<void()> &&task)
+auto foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext)
     -> std::error_code {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
         return FOE_THREAD_POOL_ERROR_NOT_STARTED;
 
-    scheduleTask(pPool->asyncTasks, std::move(task));
+    scheduleTask(pPool->syncTasks, task, pTaskContext);
+    pPool->asyncTasks.available.notify_one();
+
+    return FOE_THREAD_POOL_SUCCESS;
+}
+
+auto foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext)
+    -> std::error_code {
+    auto *pPool = split_thread_pool_from_handle(pool);
+
+    if (!pPool->started)
+        return FOE_THREAD_POOL_ERROR_NOT_STARTED;
+
+    scheduleTask(pPool->asyncTasks, task, pTaskContext);
 
     return FOE_THREAD_POOL_SUCCESS;
 }

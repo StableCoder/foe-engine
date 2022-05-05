@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@
 #include <foe/export.h>
 #include <foe/handle.h>
 
-#include <cstdint>
-#include <functional>
+#include <stdint.h>
 #include <system_error>
 
 enum foeSplitThreadResult {
@@ -32,6 +31,12 @@ enum foeSplitThreadResult {
     FOE_THREAD_POOL_ERROR_ALREADY_STARTED,
     FOE_THREAD_POOL_ERROR_NOT_STARTED,
 };
+
+// Any task can be scheduled with the use of a function pointer and context data
+typedef void (*PFN_foeTask)(void *);
+
+// This can be used as a guiding pattern to be able to schedule any task with any scheduler
+typedef void (*PFN_foeScheduleTask)(void *, PFN_foeTask, void *);
 
 /** @brief A thread pool that deal with both sync and async threads
  *
@@ -60,9 +65,9 @@ FOE_EXPORT uint32_t foeNumQueuedAsyncTasks(foeSplitThreadPool pool);
 FOE_EXPORT uint32_t foeNumProcessingSyncTasks(foeSplitThreadPool pool);
 FOE_EXPORT uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool);
 
-FOE_EXPORT auto foeScheduleSyncTask(foeSplitThreadPool pool, std::function<void()> &&task)
+FOE_EXPORT auto foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext)
     -> std::error_code;
-FOE_EXPORT auto foeScheduleAsyncTask(foeSplitThreadPool pool, std::function<void()> &&task)
+FOE_EXPORT auto foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext)
     -> std::error_code;
 
 FOE_EXPORT auto foeWaitSyncThreads(foeSplitThreadPool pool) -> std::error_code;
