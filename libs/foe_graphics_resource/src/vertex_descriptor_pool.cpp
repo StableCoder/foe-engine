@@ -95,9 +95,10 @@ foeResource foeVertexDescriptorPool::find(foeResourceID resource) {
     return outResource;
 }
 
-void foeVertexDescriptorPool::setAsyncTaskFn(
-    std::function<void(std::function<void()>)> asyncTaskFn) {
-    mResourceFns.asyncTaskFn = asyncTaskFn;
+void foeVertexDescriptorPool::setAsyncTaskFn(PFN_foeScheduleTask scheduleAsyncTask,
+                                             void *pScheduleAsyncTaskContext) {
+    mResourceFns.scheduleAsyncTask = scheduleAsyncTask;
+    mResourceFns.pScheduleAsyncTaskContext = pScheduleAsyncTaskContext;
 }
 
 void foeVertexDescriptorPool::unloadAll() {

@@ -92,8 +92,10 @@ foeResource foeImagePool::find(foeResourceID resource) {
     return outResource;
 }
 
-void foeImagePool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn) {
-    mResourceFns.asyncTaskFn = asyncTaskFn;
+void foeImagePool::setAsyncTaskFn(PFN_foeScheduleTask scheduleAsyncTask,
+                                  void *pScheduleAsyncTaskContext) {
+    mResourceFns.scheduleAsyncTask = scheduleAsyncTask;
+    mResourceFns.pScheduleAsyncTaskContext = pScheduleAsyncTaskContext;
 }
 
 void foeImagePool::unloadAll() {

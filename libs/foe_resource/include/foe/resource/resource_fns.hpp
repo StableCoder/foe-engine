@@ -20,6 +20,7 @@
 #include <foe/ecs/id.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/resource.h>
+#include <foe/split_thread_pool.hpp>
 
 #include <functional>
 
@@ -32,7 +33,8 @@ struct foeResourceFns {
     foeResourceCreateInfo (*pImportFn)(void *, foeResourceID);
     void *pLoadContext;
     void (*pLoadFn)(void *, foeResource, PFN_foeResourcePostLoad *);
-    std::function<void(std::function<void()>)> asyncTaskFn;
+    PFN_foeScheduleTask scheduleAsyncTask;
+    void *pScheduleAsyncTaskContext;
 };
 
 #endif // FOE_RESOURCE_RESOURCE_FNS_HPP

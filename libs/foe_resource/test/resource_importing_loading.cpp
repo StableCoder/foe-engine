@@ -97,10 +97,10 @@ TEST_CASE("foeResource - Importing CreateInfo") {
         }
     }
     SECTION("Import asynchronously") {
-        auto asyncRunFn = [&](std::function<void()> asyncFn) { asyncFn(); };
+        auto asyncRunFn = [](void *, PFN_foeTask task, void *pTaskContext) { task(pTaskContext); };
 
         gGlobalIterator = 0;
-        fns.asyncTaskFn = asyncRunFn;
+        fns.scheduleAsyncTask = asyncRunFn;
 
         CHECK_FALSE(foeResourceGetIsLoading(resource));
         foeResourceImportCreateInfo(resource);

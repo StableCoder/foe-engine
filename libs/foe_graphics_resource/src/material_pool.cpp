@@ -94,8 +94,10 @@ foeResource foeMaterialPool::find(foeResourceID resource) {
     return outResource;
 }
 
-void foeMaterialPool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn) {
-    mResourceFns.asyncTaskFn = asyncTaskFn;
+void foeMaterialPool::setAsyncTaskFn(PFN_foeScheduleTask scheduleAsyncTask,
+                                     void *pScheduleAsyncTaskContext) {
+    mResourceFns.scheduleAsyncTask = scheduleAsyncTask;
+    mResourceFns.pScheduleAsyncTaskContext = pScheduleAsyncTaskContext;
 }
 
 void foeMaterialPool::unloadAll() {

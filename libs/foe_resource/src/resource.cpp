@@ -176,6 +176,36 @@ extern "C" void const *foeResourceGetData(foeResource resource) {
     return (char *)pResource + sizeof(foeResourceImpl);
 }
 
+namespace {
+
+void loadCreateInfoTask(foeResourceImpl *pResource) {
+    foeResourceCreateInfo newCreateInfo =
+        pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext, pResource->id);
+    foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
+
+    foeResourceCreateInfoIncrementRefCount(newCreateInfo);
+
+    pResource->sync.lock();
+    if (newCreateInfo != FOE_NULL_HANDLE) {
+        oldCreateInfo = pResource->createInfo;
+    }
+    pResource->createInfo = newCreateInfo;
+    pResource->isLoading = false;
+    pResource->sync.unlock();
+
+    foeResourceDecrementRefCount(resource_to_handle(pResource));
+
+    // If destroying old create info data, do it outside the locked area, could be expensive
+    if (oldCreateInfo != FOE_NULL_HANDLE) {
+        auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
+        if (refCount == 0) {
+            foeDestroyResourceCreateInfo(oldCreateInfo);
+        }
+    }
+}
+
+} // namespace
+
 extern "C" void foeResourceImportCreateInfo(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
 
@@ -189,43 +219,20 @@ extern "C" void foeResourceImportCreateInfo(foeResource resource) {
         return;
     }
 
-    auto createFn = [resource, pResource]() {
-        foeResourceCreateInfo newCreateInfo = pResource->pResourceFns->pImportFn(
-            pResource->pResourceFns->pImportContext, pResource->id);
-        foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
-
-        foeResourceCreateInfoIncrementRefCount(newCreateInfo);
-
-        pResource->sync.lock();
-        if (newCreateInfo != FOE_NULL_HANDLE) {
-            oldCreateInfo = pResource->createInfo;
-
-            pResource->createInfo = newCreateInfo;
-        }
-        pResource->isLoading = false;
-        pResource->sync.unlock();
-
-        foeResourceDecrementRefCount(resource);
-
-        // If destroying old create info data, do it outside the locked area, could be expensive
-        if (oldCreateInfo != FOE_NULL_HANDLE) {
-            auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-            if (refCount == 0) {
-                foeDestroyResourceCreateInfo(oldCreateInfo);
-            }
-        }
-    };
-
-    if (pResource->pResourceFns->asyncTaskFn) {
+    if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
         FOE_LOG(foeResourceCore, Verbose,
                 "[{},{}] foeResource - Importing CreateInfo asynchronously",
                 foeIdToString(pResource->id), pResource->type)
-        pResource->pResourceFns->asyncTaskFn(createFn);
+
+        pResource->pResourceFns->scheduleAsyncTask(
+            pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadCreateInfoTask,
+            pResource);
     } else {
         FOE_LOG(foeResourceCore, Verbose,
                 "[{},{}] foeResource - Importing CreateInfo synchronously", pResource->id,
                 pResource->type)
-        createFn();
+
+        loadCreateInfoTask(pResource);
     }
 }
 
@@ -283,6 +290,48 @@ void postLoadFn(
     }
 }
 
+struct LoadTaskData {
+    foeResourceImpl *pResource;
+    bool refreshCreateInfo;
+};
+
+void loadResourceTask(LoadTaskData *pContext) {
+    auto const &pResource = pContext->pResource;
+
+    auto createInfo = foeResourceGetCreateInfo(resource_to_handle(pResource));
+
+    if (pContext->refreshCreateInfo || createInfo == FOE_NULL_HANDLE) {
+        foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
+
+        if (createInfo != FOE_NULL_HANDLE)
+            foeResourceCreateInfoDecrementRefCount(createInfo);
+
+        createInfo = pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext,
+                                                        pResource->id);
+
+        pResource->sync.lock();
+        if (createInfo != FOE_NULL_HANDLE) {
+            oldCreateInfo = pResource->createInfo;
+        }
+        pResource->createInfo = createInfo;
+        pResource->sync.unlock();
+
+        // If destroying old create info data, do it outside the locked area, could be expensive
+        if (oldCreateInfo != FOE_NULL_HANDLE) {
+            auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
+            if (refCount == 0) {
+                foeDestroyResourceCreateInfo(oldCreateInfo);
+            }
+        }
+    }
+
+    pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
+                                     resource_to_handle(pResource), postLoadFn);
+
+    // Free the heap-allocated context data
+    free(pContext);
+}
+
 } // namespace
 
 extern "C" void foeResourceLoad(foeResource resource, bool refreshCreateInfo) {
@@ -298,46 +347,25 @@ extern "C" void foeResourceLoad(foeResource resource, bool refreshCreateInfo) {
         return;
     }
 
-    auto loadFn = [resource, pResource, refreshCreateInfo]() {
-        auto createInfo = foeResourceGetCreateInfo(resource);
-
-        if (refreshCreateInfo || createInfo == FOE_NULL_HANDLE) {
-            foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
-
-            if (createInfo != FOE_NULL_HANDLE)
-                foeResourceCreateInfoDecrementRefCount(createInfo);
-
-            createInfo = pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext,
-                                                            pResource->id);
-
-            pResource->sync.lock();
-            if (createInfo != FOE_NULL_HANDLE) {
-                oldCreateInfo = pResource->createInfo;
-            }
-            pResource->createInfo = createInfo;
-            pResource->sync.unlock();
-
-            // If destroying old create info data, do it outside the locked area, could be expensive
-            if (oldCreateInfo != FOE_NULL_HANDLE) {
-                auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-                if (refCount == 0) {
-                    foeDestroyResourceCreateInfo(oldCreateInfo);
-                }
-            }
-        }
-
-        pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
-                                         resource_to_handle(pResource), postLoadFn);
+    LoadTaskData *pTaskContext = (LoadTaskData *)malloc(sizeof(LoadTaskData));
+    *pTaskContext = {
+        .pResource = pResource,
+        .refreshCreateInfo = refreshCreateInfo,
     };
 
-    if (pResource->pResourceFns->asyncTaskFn) {
-        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Loading asynchronously",
+    if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
+        FOE_LOG(foeResourceCore, Verbose,
+                "[{},{}] foeResource - Importing CreateInfo asynchronously",
                 foeIdToString(pResource->id), pResource->type)
-        pResource->pResourceFns->asyncTaskFn(loadFn);
+
+        pResource->pResourceFns->scheduleAsyncTask(
+            pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadResourceTask,
+            pTaskContext);
     } else {
         FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Loading synchronously",
                 foeIdToString(pResource->id), pResource->type)
-        loadFn();
+
+        loadResourceTask(pTaskContext);
     }
 }
 
@@ -369,8 +397,8 @@ bool resourceUnloadCall(foeResource resource,
 
     pResource->sync.unlock();
 
-    // To prevent issues due to maybe slower destruction of ResourceCreateInfo, decrement/destroy it
-    // outside the sync-locked portion
+    // To prevent issues due to maybe slower destruction of ResourceCreateInfo,
+    // decrement/destroy it outside the sync-locked portion
     if (oldCreateInfo != FOE_NULL_HANDLE) {
         auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
         if (refCount == 0)

@@ -92,8 +92,10 @@ foeResource foeArmaturePool::find(foeResourceID resource) {
     return outResource;
 }
 
-void foeArmaturePool::setAsyncTaskFn(std::function<void(std::function<void()>)> asyncTaskFn) {
-    mResourceFns.asyncTaskFn = asyncTaskFn;
+void foeArmaturePool::setAsyncTaskFn(PFN_foeScheduleTask scheduleAsyncTask,
+                                     void *pScheduleAsyncTaskContext) {
+    mResourceFns.scheduleAsyncTask = scheduleAsyncTask;
+    mResourceFns.pScheduleAsyncTaskContext = pScheduleAsyncTaskContext;
 }
 
 void foeArmaturePool::unloadAll() {
