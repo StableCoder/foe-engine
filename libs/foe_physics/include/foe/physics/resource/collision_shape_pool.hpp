@@ -20,7 +20,7 @@
 #include <foe/ecs/id.h>
 #include <foe/physics/export.h>
 #include <foe/resource/resource.h>
-#include <foe/resource/resource_fns.hpp>
+#include <foe/resource/resource_fns.h>
 
 #include <functional>
 #include <shared_mutex>

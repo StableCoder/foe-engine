@@ -17,7 +17,7 @@
 #include <foe/resource/resource.h>
 
 #include <foe/ecs/id_to_string.hpp>
-#include <foe/resource/resource_fns.hpp>
+#include <foe/resource/resource_fns.h>
 
 #include <atomic>
 #include <mutex>

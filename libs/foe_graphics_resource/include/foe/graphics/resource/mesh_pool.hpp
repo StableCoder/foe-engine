@@ -19,7 +19,7 @@
 
 #include <foe/graphics/resource/export.h>
 #include <foe/resource/resource.h>
-#include <foe/resource/resource_fns.hpp>
+#include <foe/resource/resource_fns.h>
 
 #include <shared_mutex>
 #include <vector>

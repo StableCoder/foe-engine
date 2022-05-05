@@ -14,13 +14,17 @@
     limitations under the License.
 */
 
-#ifndef FOE_RESOURCE_RESOURCE_FNS_HPP
-#define FOE_RESOURCE_RESOURCE_FNS_HPP
+#ifndef FOE_RESOURCE_RESOURCE_FNS_H
+#define FOE_RESOURCE_RESOURCE_FNS_H
 
 #include <foe/ecs/id.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/resource.h>
 #include <foe/split_thread_pool.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Set of functions common to all foeResource types for importing definitions, loading data and
@@ -35,4 +39,8 @@ struct foeResourceFns {
     void *pScheduleAsyncTaskContext;
 };
 
-#endif // FOE_RESOURCE_RESOURCE_FNS_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_RESOURCE_RESOURCE_FNS_H

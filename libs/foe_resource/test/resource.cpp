@@ -17,7 +17,7 @@
 #include <catch.hpp>
 #include <foe/resource/error_code.h>
 #include <foe/resource/resource.h>
-#include <foe/resource/resource_fns.hpp>
+#include <foe/resource/resource_fns.h>
 
 #include "test_log_sink.hpp"
 
