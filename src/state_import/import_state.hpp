@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 #ifndef IMPORT_STATE_HPP
 #define IMPORT_STATE_HPP
 
-#include <functional>
 #include <string_view>
 #include <system_error>
 
@@ -27,7 +26,6 @@ struct foeSimulation;
 /// Imports data set and its dependencies
 auto importState(std::string_view topLevelDataSet,
                  foeSearchPaths *pSearchPaths,
-                 std::function<void(std::function<void()>)> asyncTaskFn,
                  foeSimulation **ppSimulationSet) -> std::error_code;
 
 #endif // IMPORT_STATE_HPP

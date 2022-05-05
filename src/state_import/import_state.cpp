@@ -83,7 +83,6 @@ bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &depe
 
 auto importState(std::string_view topLevelDataSet,
                  foeSearchPaths *pSearchPaths,
-                 std::function<void(std::function<void()>)> asyncTaskFn,
                  foeSimulation **ppSimulationSet) -> std::error_code {
     foeSimulation *pTempSimSet;
     std::error_code errC = foeCreateSimulation(true, &pTempSimSet);

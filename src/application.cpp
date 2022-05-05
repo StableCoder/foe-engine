@@ -151,12 +151,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (errC)
         ERRC_END_PROGRAM_TUPLE
 
-    auto asyncTaskFunc = [&](std::function<void()> task) {
-        task();
-        // foeScheduleAsyncTask(threadPool, std::move(task));
-    };
-
-    errC = importState("persistent", &searchPaths, asyncTaskFunc, &pSimulationSet);
+    errC = importState("persistent", &searchPaths, &pSimulationSet);
     if (errC) {
         FOE_LOG(General, Fatal, "Error importing '{}' state with error: {} - {}", "persistent",
                 errC.value(), errC.message())
