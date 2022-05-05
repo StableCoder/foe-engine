@@ -305,34 +305,44 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
     { // Load all available resources
-        for (auto it : ((foeArmaturePool *)foeSimulationGetResourcePool(
-                            pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL))
-                           ->getDataVector()) {
+        auto asyncTaskFunc = [](void *pScheduleContext, PFN_foeTask task, void *pTaskContext) {
+            auto threadPool = reinterpret_cast<foeSplitThreadPool>(pScheduleContext);
+
+            foeScheduleAsyncTask(threadPool, task, pTaskContext);
+        };
+
+        auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+            pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
+        pArmaturePool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
+        for (auto it : pArmaturePool->getDataVector()) {
             foeResourceLoad(it, false);
         }
 
-        for (auto it : ((foeMaterialPool *)foeSimulationGetResourcePool(
-                            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL))
-                           ->getDataVector()) {
+        auto *pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
+            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
+        pMaterialPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
+        for (auto it : pMaterialPool->getDataVector()) {
             foeResourceLoad(it, false);
         }
 
-        for (auto it : ((foeMeshPool *)foeSimulationGetResourcePool(
-                            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL))
-                           ->getDataVector()) {
+        auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
+            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
+        pMeshPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
+        for (auto it : pMeshPool->getDataVector()) {
             foeResourceLoad(it, false);
         }
 
-        for (auto it : ((foeShaderPool *)foeSimulationGetResourcePool(
-                            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL))
-                           ->getDataVector()) {
+        auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
+            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
+        pShaderPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
+        for (auto it : pShaderPool->getDataVector()) {
             foeResourceLoad(it, false);
         }
 
-        for (auto it :
-             ((foeVertexDescriptorPool *)foeSimulationGetResourcePool(
-                  pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL))
-                 ->getDataVector()) {
+        auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
+            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
+        pVertexDescriptorPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
+        for (auto it : pVertexDescriptorPool->getDataVector()) {
             foeResourceLoad(it, false);
         }
     }
