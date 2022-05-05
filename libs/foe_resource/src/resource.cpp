@@ -313,9 +313,8 @@ extern "C" void foeResourceLoad(foeResource resource, bool refreshCreateInfo) {
             pResource->sync.lock();
             if (createInfo != FOE_NULL_HANDLE) {
                 oldCreateInfo = pResource->createInfo;
-
-                pResource->createInfo = createInfo;
             }
+            pResource->createInfo = createInfo;
             pResource->sync.unlock();
 
             // If destroying old create info data, do it outside the locked area, could be expensive
