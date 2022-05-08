@@ -17,14 +17,15 @@
 #ifndef ARMATURE_SYSTEM_HPP
 #define ARMATURE_SYSTEM_HPP
 
+#include <foe/resource/pool.h>
+
 #include <system_error>
 
 class foeArmatureStatePool;
-class foeArmaturePool;
 
 class foeArmatureSystem {
   public:
-    auto initialize(foeArmaturePool *pArmaturePool, foeArmatureStatePool *pArmatureStatePool)
+    auto initialize(foeResourcePool armaturePool, foeArmatureStatePool *pArmatureStatePool)
         -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
@@ -33,7 +34,7 @@ class foeArmatureSystem {
 
   private:
     // Resources
-    foeArmaturePool *mpArmaturePool{nullptr};
+    foeResourcePool mArmaturePool{FOE_NULL_HANDLE};
 
     // Components
     foeArmatureStatePool *mpArmatureStatePool{nullptr};

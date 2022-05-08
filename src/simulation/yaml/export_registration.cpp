@@ -18,10 +18,10 @@
 
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
+#include <foe/resource/pool.h>
 
 #include "../armature.hpp"
 #include "../armature_loader.hpp"
-#include "../armature_pool.hpp"
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.hpp"
 #include "../camera_imex.hpp"
@@ -39,11 +39,11 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     // Armature
-    auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+    foeResourcePool armaturePool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
-    if (pArmaturePool != nullptr) {
-        foeResource armature = pArmaturePool->find(resource);
+    if (armaturePool != FOE_NULL_HANDLE) {
+        foeResource armature = foeResourcePoolFind(armaturePool, resource);
 
         if (armature != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(armature);

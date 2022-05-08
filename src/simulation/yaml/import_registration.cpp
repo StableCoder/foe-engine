@@ -17,11 +17,11 @@
 #include "import_registration.hpp"
 
 #include <foe/imex/yaml/importer.hpp>
+#include <foe/resource/pool.h>
 #include <foe/yaml/exception.hpp>
 
 #include "../armature.hpp"
 #include "../armature_loader.hpp"
-#include "../armature_pool.hpp"
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.hpp"
 #include "../camera_imex.hpp"
@@ -39,15 +39,15 @@ namespace {
 std::error_code armatureCreateProcessing(foeResourceID resource,
                                          foeResourceCreateInfo createInfo,
                                          foeSimulation const *pSimulation) {
-    auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+    foeResourcePool armaturePool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
-    if (pArmaturePool == nullptr)
+    if (armaturePool == FOE_NULL_HANDLE)
         return FOE_BRINGUP_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;
 
-    auto *pArmature = pArmaturePool->add(resource);
+    foeResource armature = foeResourcePoolAdd(armaturePool, resource);
 
-    if (!pArmature)
+    if (armature == FOE_NULL_HANDLE)
         return FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS;
 
     return FOE_BRINGUP_YAML_SUCCESS;

@@ -20,6 +20,7 @@
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.h>
 #include <foe/physics/export.h>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
 #include <memory>
@@ -27,7 +28,6 @@
 #include <vector>
 
 class foeCollisionShapeLoader;
-class foeCollisionShapePool;
 class foeRigidBodyPool;
 class foePosition3dPool;
 
@@ -41,7 +41,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     ~foePhysicsSystem();
 
     auto initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
-                    foeCollisionShapePool *pCollisionShapePool,
+                    foeResourcePool collisionShapePool,
                     foeRigidBodyPool *pRigidBodyPool,
                     foePosition3dPool *pPosition3dPool) -> std::error_code;
     void deinitialize();
@@ -58,7 +58,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
 
     // Resources
     foeCollisionShapeLoader *mpCollisionShapeLoader{nullptr};
-    foeCollisionShapePool *mpCollisionShapePool{nullptr};
+    foeResourcePool mCollisionShapePool{FOE_NULL_HANDLE};
 
     // Components
     foeRigidBodyPool *mpRigidBodyPool{nullptr};

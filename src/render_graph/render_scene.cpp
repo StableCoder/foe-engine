@@ -18,18 +18,16 @@
 
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/material.hpp>
-#include <foe/graphics/resource/material_pool.hpp>
 #include <foe/graphics/resource/mesh.hpp>
-#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
-#include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/simulation.hpp>
 #include <vk_error_code.hpp>
@@ -51,11 +49,11 @@ auto renderCall(foeId entity,
                 VkDescriptorSet cameraDescriptor) -> bool {
     VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
-    auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
+    foeResourcePool vertexDescriptorPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
-    auto *pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
+    foeResourcePool materialPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
-    auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
+    foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     foeResource vertexDescriptor{FOE_NULL_HANDLE};
@@ -64,15 +62,17 @@ auto renderCall(foeId entity,
         pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
         boned = true;
 
-        vertexDescriptor = pVertexDescriptorPool->find(pRenderState->bonedVertexDescriptor);
+        vertexDescriptor =
+            foeResourcePoolFind(vertexDescriptorPool, pRenderState->bonedVertexDescriptor);
     }
 
     if (vertexDescriptor == FOE_NULL_HANDLE) {
-        vertexDescriptor = pVertexDescriptorPool->find(pRenderState->vertexDescriptor);
+        vertexDescriptor =
+            foeResourcePoolFind(vertexDescriptorPool, pRenderState->vertexDescriptor);
     }
 
-    foeResource material = pMaterialPool->find(pRenderState->material);
-    foeResource mesh = pMeshPool->find(pRenderState->mesh);
+    foeResource material = foeResourcePoolFind(materialPool, pRenderState->material);
+    foeResource mesh = foeResourcePoolFind(meshPool, pRenderState->mesh);
 
     if (vertexDescriptor == FOE_NULL_HANDLE || material == FOE_NULL_HANDLE ||
         mesh == FOE_NULL_HANDLE) {

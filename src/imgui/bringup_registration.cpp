@@ -18,10 +18,10 @@
 
 #include <foe/resource/imgui/create_info.h>
 #include <foe/resource/imgui/resource.h>
+#include <foe/resource/pool.h>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <imgui.h>
 
-#include "../simulation/armature_pool.hpp"
 #include "../simulation/armature_state_pool.hpp"
 #include "../simulation/camera_pool.hpp"
 #include "../simulation/render_state_pool.hpp"
@@ -76,10 +76,10 @@ void imgui_foeBringupResources(
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     // foeArmature
-    if (auto *pPool = (foeArmaturePool *)foeSimulationGetResourcePool(
+    if (foeResourcePool resourcePool = (foeResourcePool)foeSimulationGetResourcePool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
-        pPool) {
-        foeResource resource = pPool->find(resourceID);
+        resourcePool != FOE_NULL_HANDLE) {
+        foeResource resource = foeResourcePoolFind(resourcePool, resourceID);
         if (resource != FOE_NULL_HANDLE &&
             foeResourceGetType(resource) == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
             imgui_foeResource(resource);

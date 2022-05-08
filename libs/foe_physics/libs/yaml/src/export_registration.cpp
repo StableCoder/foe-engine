@@ -20,8 +20,8 @@
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
-#include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/type_defs.h>
+#include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
 
 #include "collision_shape.hpp"
@@ -34,11 +34,11 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
                                             foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+    foeResourcePool collisionShapePool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
-    if (pCollisionShapePool != nullptr) {
-        foeResource collisionShape = pCollisionShapePool->find(resource);
+    if (collisionShapePool != FOE_NULL_HANDLE) {
+        foeResource collisionShape = foeResourcePoolFind(collisionShapePool, resource);
 
         if (collisionShape != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(collisionShape);

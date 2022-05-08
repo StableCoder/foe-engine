@@ -17,10 +17,10 @@
 #include <foe/physics/imgui/registration.hpp>
 
 #include <foe/physics/component/rigid_body_pool.hpp>
-#include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/type_defs.h>
 #include <foe/resource/imgui/create_info.h>
 #include <foe/resource/imgui/resource.h>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <imgui.h>
@@ -49,11 +49,11 @@ void imgui_foePhysicsResource(
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     // foeCollisionShape
-    auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+    foeResourcePool collisionShapePool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
-    if (pCollisionShapePool != nullptr) {
-        foeResource resource = pCollisionShapePool->find(resourceID);
+    if (collisionShapePool != FOE_NULL_HANDLE) {
+        foeResource resource = foeResourcePoolFind(collisionShapePool, resourceID);
         if (resource != FOE_NULL_HANDLE &&
             foeResourceGetType(resource) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
             imgui_foeResource(resource);

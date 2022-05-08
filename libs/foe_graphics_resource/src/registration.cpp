@@ -17,16 +17,13 @@
 #include <foe/graphics/resource/registration.h>
 
 #include <foe/graphics/resource/image_loader.hpp>
-#include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
-#include <foe/graphics/resource/material_pool.hpp>
 #include <foe/graphics/resource/mesh_loader.hpp>
-#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader_loader.hpp>
-#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
-#include <foe/graphics/resource/vertex_descriptor_pool.hpp>
+#include <foe/resource/pool.h>
+#include <foe/resource/resource_fns.h>
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -79,28 +76,28 @@ auto destroyItem(foeSimulation *pSimulation,
     return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
-template <typename T>
-auto destroyItem2(foeSimulation *pSimulation,
-                  foeSimulationStructureType sType,
-                  char const *pTypeName) -> std::error_code {
+auto destroyResourcePool(foeSimulation *pSimulation,
+                         foeSimulationStructureType sType,
+                         char const *pTypeName) -> std::error_code {
     size_t count;
 
     std::error_code errC = foeSimulationDecrementRefCount(pSimulation, sType, &count);
     if (errC) {
         // Trying to destroy something that doesn't exist? Not optimal
         FOE_LOG(foeGraphicsResource, Warning,
-                "Attempted to decrement/destroy {} that doesn't exist - {}", pTypeName,
-                errC.message());
+                "Attempted to decrement/destroy foeResourcePool for {} that doesn't exist - {}",
+                pTypeName, errC.message());
         return errC;
     } else if (count == 0) {
-        T *pLoader;
-        errC = foeSimulationReleaseResourcePool(pSimulation, sType, (void **)&pLoader);
+        foeResourcePool resourcePool;
+        errC = foeSimulationReleaseResourcePool(pSimulation, sType, (void **)&resourcePool);
         if (errC) {
-            FOE_LOG(foeGraphicsResource, Warning, "Could not release {} to destroy - {}", pTypeName,
+            FOE_LOG(foeGraphicsResource, Warning,
+                    "Could not release the {} foeResourcePool to destroy - {}", pTypeName,
                     errC.message());
             return errC;
         } else {
-            delete pLoader;
+            foeDestroyResourcePool(resourcePool);
         }
     }
 
@@ -145,33 +142,33 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     // Resources
     if (pSelection == nullptr || pSelection->meshResources) {
-        if (destroyItem2<foeMeshPool>(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
-                                      "foeMeshPool"))
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
+                                "mesh"))
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->vertexDescriptorResources) {
-        if (destroyItem2<foeVertexDescriptorPool>(
-                pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL,
-                "foeVertexDescriptorPool"))
+        if (destroyResourcePool(pSimulation,
+                                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL,
+                                "vertex descriptor"))
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->shaderResources) {
-        if (destroyItem2<foeShaderPool>(
-                pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL, "foeShaderPool"))
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL,
+                                "shader"))
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->materialResources) {
-        if (destroyItem2<foeMaterialPool>(
-                pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL, "foeMaterialPool"))
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL,
+                                "material"))
             ++errors;
     }
 
     if (pSelection == nullptr || pSelection->imageResources) {
-        if (destroyItem2<foeImagePool>(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
-                                       "foeImagePool"))
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
+                                "image"))
             ++errors;
     }
 
@@ -183,21 +180,31 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     TypeSelection selection = {};
 
     // Resources
+    foeResourceFns resourceCallbacks{
+        .pImportContext = &pSimulation->groupData,
+        .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
+        .pLoadContext = pSimulation,
+        .pLoadFn = TEMP_foeSimulationLoadResource,
+    };
+
     if (foeSimulationIncrementRefCount(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
                                        nullptr)) {
         // Couldn't incement it, doesn't exist yet
+        foeResourcePool imagePool{FOE_NULL_HANDLE};
+
+        errC = foeCreateResourcePool(
+            &resourceCallbacks, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE, sizeof(foeImage), &imagePool);
+        if (errC)
+            goto CREATE_FAILED;
+
         foeSimulationResourcePoolData createInfo{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
-            .pResourcePool = new foeImagePool{foeResourceFns{
-                .pImportContext = &pSimulation->groupData,
-                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-                .pLoadContext = pSimulation,
-                .pLoadFn = TEMP_foeSimulationLoadResource,
-            }},
+            .pResourcePool = imagePool,
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
         if (errC) {
-            delete (foeImagePool *)createInfo.pResourcePool;
+            foeDestroyResourcePool(imagePool);
             FOE_LOG(foeGraphicsResource, Error,
                     "onCreate - Failed to create foeImagePool on Simulation {} due to {}",
                     (void *)pSimulation, errC.message());
@@ -211,18 +218,21 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     if (foeSimulationIncrementRefCount(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL, nullptr)) {
         // Couldn't incement it, doesn't exist yet
+        foeResourcePool materialPool{FOE_NULL_HANDLE};
+
+        errC = foeCreateResourcePool(
+            &resourceCallbacks, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL,
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, sizeof(foeMaterial), &materialPool);
+        if (errC)
+            goto CREATE_FAILED;
+
         foeSimulationResourcePoolData createInfo{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL,
-            .pResourcePool = new foeMaterialPool{foeResourceFns{
-                .pImportContext = &pSimulation->groupData,
-                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-                .pLoadContext = pSimulation,
-                .pLoadFn = TEMP_foeSimulationLoadResource,
-            }},
+            .pResourcePool = materialPool,
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
         if (errC) {
-            delete (foeMaterialPool *)createInfo.pResourcePool;
+            foeDestroyResourcePool(materialPool);
             FOE_LOG(foeGraphicsResource, Error,
                     "onCreate - Failed to create foeMaterialPool on Simulation {} due to {}",
                     (void *)pSimulation, errC.message());
@@ -236,18 +246,21 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     if (foeSimulationIncrementRefCount(pSimulation,
                                        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL, nullptr)) {
         // Couldn't incement it, doesn't exist yet
+        foeResourcePool shaderPool{FOE_NULL_HANDLE};
+
+        errC = foeCreateResourcePool(
+            &resourceCallbacks, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL,
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader), &shaderPool);
+        if (errC)
+            goto CREATE_FAILED;
+
         foeSimulationResourcePoolData createInfo{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL,
-            .pResourcePool = new foeShaderPool{foeResourceFns{
-                .pImportContext = &pSimulation->groupData,
-                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-                .pLoadContext = pSimulation,
-                .pLoadFn = TEMP_foeSimulationLoadResource,
-            }},
+            .pResourcePool = shaderPool,
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
         if (errC) {
-            delete (foeShaderPool *)createInfo.pResourcePool;
+            foeDestroyResourcePool(shaderPool);
             FOE_LOG(foeGraphicsResource, Error,
                     "onCreate - Failed to create foeShaderPool on Simulation {} due to {}",
                     (void *)pSimulation, errC.message());
@@ -261,22 +274,26 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     if (foeSimulationIncrementRefCount(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL, nullptr)) {
         // Couldn't incement it, doesn't exist yet
+        foeResourcePool vertexDescriptorPool{FOE_NULL_HANDLE};
+
+        errC = foeCreateResourcePool(&resourceCallbacks,
+                                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL,
+                                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
+                                     sizeof(foeVertexDescriptor), &vertexDescriptorPool);
+        if (errC)
+            goto CREATE_FAILED;
+
         foeSimulationResourcePoolData createInfo{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL,
-            .pResourcePool = new foeVertexDescriptorPool{foeResourceFns{
-                .pImportContext = &pSimulation->groupData,
-                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-                .pLoadContext = pSimulation,
-                .pLoadFn = TEMP_foeSimulationLoadResource,
-            }},
+            .pResourcePool = vertexDescriptorPool,
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
         if (errC) {
-            delete (foeVertexDescriptorPool *)createInfo.pResourcePool;
-            FOE_LOG(
-                foeGraphicsResource, Error,
-                "onCreate - Failed to create foeVertexDescriptorPool on Simulation {} due to {}",
-                (void *)pSimulation, errC.message());
+            foeDestroyResourcePool(vertexDescriptorPool);
+            FOE_LOG(foeGraphicsResource, Error,
+                    "onCreate - Failed to create foeVertexDescriptor resource pool on Simulation "
+                    "{} due to {}",
+                    (void *)pSimulation, errC.message());
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(
@@ -287,18 +304,22 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     if (foeSimulationIncrementRefCount(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
                                        nullptr)) {
         // Couldn't incement it, doesn't exist yet
+        foeResourcePool meshPool{FOE_NULL_HANDLE};
+
+        foeCreateResourcePool(&resourceCallbacks, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
+                              FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh),
+                              &meshPool);
+        if (errC)
+            goto CREATE_FAILED;
+
         foeSimulationResourcePoolData createInfo{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
-            .pResourcePool = new foeMeshPool{foeResourceFns{
-                .pImportContext = &pSimulation->groupData,
-                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-                .pLoadContext = pSimulation,
-                .pLoadFn = TEMP_foeSimulationLoadResource,
-            }},
+            .pResourcePool = meshPool,
+
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
         if (errC) {
-            delete (foeMeshPool *)createInfo.pResourcePool;
+            foeDestroyResourcePool(meshPool);
             FOE_LOG(foeGraphicsResource, Error,
                     "onCreate - Failed to create foeMeshPool on Simulation {} due to {}",
                     (void *)pSimulation, errC.message());
@@ -547,14 +568,14 @@ std::error_code initialize(foeSimulation *pSimulation, foeSimulationInitInfo con
     }
     selection.materialLoader = true;
     if (count == 1) {
-        auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
+        foeResourcePool shaderPool = (foeResourcePool)foeSimulationGetResourcePool(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
-        auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
+        foeResourcePool imagePool = (foeResourcePool)foeSimulationGetResourcePool(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
         auto *pLoader = (foeMaterialLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
-        errC = pLoader->initialize(pShaderPool, pImagePool);
+        errC = pLoader->initialize(shaderPool, imagePool);
         if (errC) {
             FOE_LOG(foeGraphicsResource, Error,
                     "Failed to initialize foeMaterialLoader with error: {}", errC.message());
@@ -595,12 +616,12 @@ std::error_code initialize(foeSimulation *pSimulation, foeSimulationInitInfo con
     }
     selection.vertexDescriptorLoader = true;
     if (count == 1) {
-        auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
+        foeResourcePool shaderPool = (foeResourcePool)foeSimulationGetResourcePool(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
         auto *pLoader = (foeVertexDescriptorLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
-        errC = pLoader->initialize(pShaderPool);
+        errC = pLoader->initialize(shaderPool);
         if (errC) {
             FOE_LOG(foeGraphicsResource, Error,
                     "Failed to initialize foeVertexDescriptorLoader on Simulation {} with error {}",

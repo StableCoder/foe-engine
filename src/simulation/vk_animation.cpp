@@ -17,7 +17,6 @@
 #include "vk_animation.hpp"
 
 #include <foe/graphics/resource/mesh.hpp>
-#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <glm/glm.hpp>
 #include <vk_error_code.hpp>
@@ -25,22 +24,21 @@
 
 #include "../error_code.hpp"
 #include "armature.hpp"
-#include "armature_pool.hpp"
 #include "armature_state_pool.hpp"
 #include "render_state_pool.hpp"
 #include "type_defs.h"
 
-auto VkAnimationPool::initialize(foeArmaturePool *pArmaturePool,
-                                 foeMeshPool *pMeshPool,
+auto VkAnimationPool::initialize(foeResourcePool armaturePool,
+                                 foeResourcePool meshPool,
                                  foeArmatureStatePool *pArmatureStatePool,
                                  foeRenderStatePool *pRenderStatePool) -> std::error_code {
-    if (pArmaturePool == nullptr || pMeshPool == nullptr || pArmatureStatePool == nullptr ||
-        pRenderStatePool == nullptr)
+    if (armaturePool == FOE_NULL_HANDLE || meshPool == FOE_NULL_HANDLE ||
+        pArmatureStatePool == nullptr || pRenderStatePool == nullptr)
         return FOE_BRINGUP_INITIALIZATION_FAILED;
 
     // External
-    mpArmaturePool = pArmaturePool;
-    mpMeshPool = pMeshPool;
+    mArmaturePool = armaturePool;
+    mMeshPool = meshPool;
 
     mpArmatureStatePool = pArmatureStatePool;
     mpRenderStatePool = pRenderStatePool;
@@ -53,11 +51,11 @@ void VkAnimationPool::deinitialize() {
     mpRenderStatePool = nullptr;
     mpArmatureStatePool = nullptr;
 
-    mpMeshPool = nullptr;
-    mpArmaturePool = nullptr;
+    mMeshPool = FOE_NULL_HANDLE;
+    mArmaturePool = FOE_NULL_HANDLE;
 }
 
-bool VkAnimationPool::initialized() const noexcept { return mpArmaturePool != nullptr; }
+bool VkAnimationPool::initialized() const noexcept { return mArmaturePool != FOE_NULL_HANDLE; }
 
 auto VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
     if (!initialized())
@@ -232,8 +230,8 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             continue;
         }
 
-        foeResource mesh = mpMeshPool->find(pRenderState->mesh);
-        foeResource armature = mpArmaturePool->find(pArmatureState->armatureID);
+        foeResource mesh = foeResourcePoolFind(mMeshPool, pRenderState->mesh);
+        foeResource armature = foeResourcePoolFind(mArmaturePool, pArmatureState->armatureID);
 
         if (mesh == FOE_NULL_HANDLE || armature == FOE_NULL_HANDLE ||
             foeResourceGetState(mesh) != foeResourceLoadState::Loaded ||

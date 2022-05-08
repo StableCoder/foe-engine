@@ -17,10 +17,8 @@
 #include <foe/graphics/resource/material_loader.hpp>
 
 #include <foe/graphics/resource/image.hpp>
-#include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material_create_info.hpp>
 #include <foe/graphics/resource/shader.hpp>
-#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
@@ -34,25 +32,25 @@
 #include <array>
 #include <type_traits>
 
-auto foeMaterialLoader::initialize(foeShaderPool *pShaderPool, foeImagePool *pImagePool)
+auto foeMaterialLoader::initialize(foeResourcePool shaderPool, foeResourcePool imagePool)
     -> std::error_code {
-    if (pShaderPool == nullptr || pImagePool == nullptr)
+    if (shaderPool == FOE_NULL_HANDLE || imagePool == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED;
 
     // External
-    mShaderPool = pShaderPool;
-    mImagePool = pImagePool;
+    mShaderPool = shaderPool;
+    mImagePool = imagePool;
 
     return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
 void foeMaterialLoader::deinitialize() {
     // External
-    mImagePool = nullptr;
-    mShaderPool = nullptr;
+    mImagePool = FOE_NULL_HANDLE;
+    mShaderPool = FOE_NULL_HANDLE;
 }
 
-bool foeMaterialLoader::initialized() const noexcept { return mShaderPool != nullptr; }
+bool foeMaterialLoader::initialized() const noexcept { return mShaderPool != FOE_NULL_HANDLE; }
 
 auto foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
     if (!initialized())
@@ -237,7 +235,12 @@ void foeMaterialLoader::load(foeResource resource,
 
     // Fragment Shader
     if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {
-        data.fragmentShader = mShaderPool->findOrAdd(pMaterialCI->fragmentShader);
+        while (data.fragmentShader == FOE_NULL_HANDLE) {
+            data.fragmentShader = foeResourcePoolFind(mShaderPool, pMaterialCI->fragmentShader);
+
+            if (data.fragmentShader == FOE_NULL_HANDLE)
+                data.fragmentShader = foeResourcePoolAdd(mShaderPool, pMaterialCI->fragmentShader);
+        }
 
         foeResourceIncrementRefCount(data.fragmentShader);
         foeResourceIncrementUseCount(data.fragmentShader);
@@ -249,7 +252,12 @@ void foeMaterialLoader::load(foeResource resource,
 
     // Image
     if (pMaterialCI->image != FOE_INVALID_ID) {
-        data.image = mImagePool->findOrAdd(pMaterialCI->image);
+        while (data.image == FOE_NULL_HANDLE) {
+            data.image = foeResourcePoolFind(mImagePool, pMaterialCI->fragmentShader);
+
+            if (data.image == FOE_NULL_HANDLE)
+                data.image = foeResourcePoolAdd(mImagePool, pMaterialCI->fragmentShader);
+        }
 
         foeResourceIncrementRefCount(data.image);
         foeResourceIncrementUseCount(data.image);

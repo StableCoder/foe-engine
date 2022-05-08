@@ -19,21 +19,20 @@
 
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/resource/pool.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <array>
 #include <system_error>
 
-class foeArmaturePool;
-class foeMeshPool;
 class foeArmatureStatePool;
 class foeRenderStatePool;
 
 class VkAnimationPool {
   public:
-    auto initialize(foeArmaturePool *pArmaturePool,
-                    foeMeshPool *pMeshPool,
+    auto initialize(foeResourcePool armaturePool,
+                    foeResourcePool meshPool,
                     foeArmatureStatePool *pArmatureStatePool,
                     foeRenderStatePool *pRenderStatePool) -> std::error_code;
     void deinitialize();
@@ -53,8 +52,8 @@ class VkAnimationPool {
     };
 
     // Resources
-    foeArmaturePool *mpArmaturePool{nullptr};
-    foeMeshPool *mpMeshPool{nullptr};
+    foeResourcePool mArmaturePool{FOE_NULL_HANDLE};
+    foeResourcePool mMeshPool{FOE_NULL_HANDLE};
 
     // Components
     foeArmatureStatePool *mpArmatureStatePool{nullptr};

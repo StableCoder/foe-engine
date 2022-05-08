@@ -18,22 +18,18 @@
 
 #include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/image_loader.hpp>
-#include <foe/graphics/resource/image_pool.hpp>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
-#include <foe/graphics/resource/material_pool.hpp>
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/resource/mesh_loader.hpp>
-#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_loader.hpp>
-#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
-#include <foe/graphics/resource/vertex_descriptor_pool.hpp>
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
+#include <foe/resource/pool.h>
 
 #include "error_code.hpp"
 #include "image.hpp"
@@ -47,11 +43,11 @@ namespace {
 std::vector<foeKeyYamlPair> exportImage(foeResourceID resource, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pImagePool = (foeImagePool *)foeSimulationGetResourcePool(
+    foeResourcePool imagePool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
-    if (pImagePool != nullptr) {
-        foeResource image = pImagePool->find(resource);
+    if (imagePool != FOE_NULL_HANDLE) {
+        foeResource image = foeResourcePoolFind(imagePool, resource);
 
         if (image != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(image);
@@ -75,11 +71,11 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
                                            foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
+    foeResourcePool materialPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
-    if (pMaterialPool != nullptr) {
-        foeResource material = pMaterialPool->find(resource);
+    if (materialPool != FOE_NULL_HANDLE) {
+        foeResource material = foeResourcePoolFind(materialPool, resource);
 
         if (material != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(material);
@@ -103,11 +99,11 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
 std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
+    foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
-    if (pMeshPool != nullptr) {
-        foeResource mesh = pMeshPool->find(resource);
+    if (meshPool != FOE_NULL_HANDLE) {
+        foeResource mesh = foeResourcePoolFind(meshPool, resource);
         if (mesh != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(mesh);
             if (foeResourceCreateInfoGetType(createInfo) ==
@@ -129,11 +125,11 @@ std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource, foeSimulation con
 std::vector<foeKeyYamlPair> exportShader(foeResourceID resource, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
+    foeResourcePool shaderPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
-    if (pShaderPool != nullptr) {
-        foeResource shader = pShaderPool->find(resource);
+    if (shaderPool != FOE_NULL_HANDLE) {
+        foeResource shader = foeResourcePoolFind(shaderPool, resource);
         if (shader != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(shader);
             if (foeResourceCreateInfoGetType(createInfo) ==
@@ -156,11 +152,11 @@ std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
                                                    foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
+    foeResourcePool vertexDescriptorPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
-    if (pVertexDescriptorPool != nullptr) {
-        foeResource vertexDescriptor = pVertexDescriptorPool->find(resource);
+    if (vertexDescriptorPool != FOE_NULL_HANDLE) {
+        foeResource vertexDescriptor = foeResourcePoolFind(vertexDescriptorPool, resource);
 
         if (vertexDescriptor != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(vertexDescriptor);

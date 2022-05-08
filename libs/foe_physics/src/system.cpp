@@ -19,7 +19,6 @@
 #include <foe/physics/component/rigid_body.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -40,12 +39,12 @@ foePhysicsSystem::foePhysicsSystem() :
 foePhysicsSystem::~foePhysicsSystem() {}
 
 auto foePhysicsSystem::initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
-                                  foeCollisionShapePool *pCollisionShapePool,
+                                  foeResourcePool collisionShapePool,
                                   foeRigidBodyPool *pRigidBodyPool,
                                   foePosition3dPool *pPosition3dPool) -> std::error_code {
     if (pCollisionShapeLoader == nullptr)
         return FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER;
-    if (pCollisionShapePool == nullptr)
+    if (collisionShapePool == FOE_NULL_HANDLE)
         return FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES;
     if (pRigidBodyPool == nullptr)
         return FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS;
@@ -53,7 +52,7 @@ auto foePhysicsSystem::initialize(foeCollisionShapeLoader *pCollisionShapeLoader
         return FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS;
 
     mpCollisionShapeLoader = pCollisionShapeLoader;
-    mpCollisionShapePool = pCollisionShapePool;
+    mCollisionShapePool = collisionShapePool;
 
     mpRigidBodyPool = pRigidBodyPool;
     mpPosition3dPool = pPosition3dPool;
@@ -104,7 +103,7 @@ void foePhysicsSystem::deinitialize() {
     mpPosition3dPool = nullptr;
     mpRigidBodyPool = nullptr;
 
-    mpCollisionShapePool = nullptr;
+    mCollisionShapePool = FOE_NULL_HANDLE;
     mpCollisionShapeLoader = nullptr;
 }
 
@@ -219,7 +218,10 @@ void foePhysicsSystem::addObject(foeEntityID entity,
 
     // CollisionShape
     while (collisionShape == FOE_NULL_HANDLE) {
-        collisionShape = mpCollisionShapePool->findOrAdd(pRigidBody->collisionShape);
+        collisionShape = foeResourcePoolFind(mCollisionShapePool, pRigidBody->collisionShape);
+
+        if (collisionShape == FOE_NULL_HANDLE)
+            collisionShape = foeResourcePoolAdd(mCollisionShapePool, pRigidBody->collisionShape);
     }
 
     if (auto collisionShapeState = foeResourceGetState(collisionShape);

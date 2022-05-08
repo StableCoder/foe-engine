@@ -16,9 +16,10 @@
 
 #include "armature_system.hpp"
 
+#include <foe/resource/pool.h>
+
 #include "../error_code.hpp"
 #include "armature.hpp"
-#include "armature_pool.hpp"
 #include "armature_state.hpp"
 #include "armature_state_pool.hpp"
 #include "type_defs.h"
@@ -77,16 +78,16 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 
 } // namespace
 
-auto foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
+auto foeArmatureSystem::initialize(foeResourcePool armaturePool,
                                    foeArmatureStatePool *pArmatureStatePool) -> std::error_code {
-    if (pArmaturePool == nullptr) {
+    if (armaturePool == nullptr) {
         return FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED;
     }
     if (pArmatureStatePool == nullptr) {
         return FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED;
     }
 
-    mpArmaturePool = pArmaturePool;
+    mArmaturePool = armaturePool;
     mpArmatureStatePool = pArmatureStatePool;
 
     return FOE_BRINGUP_SUCCESS;
@@ -94,10 +95,10 @@ auto foeArmatureSystem::initialize(foeArmaturePool *pArmaturePool,
 
 void foeArmatureSystem::deinitialize() {
     mpArmatureStatePool = nullptr;
-    mpArmaturePool = nullptr;
+    mArmaturePool = nullptr;
 }
 
-bool foeArmatureSystem::initialized() const noexcept { return mpArmaturePool != nullptr; }
+bool foeArmatureSystem::initialized() const noexcept { return mArmaturePool != nullptr; }
 
 void foeArmatureSystem::process(float timePassed) {
     auto *pArmatureState = mpArmatureStatePool->begin<1>();
@@ -111,7 +112,7 @@ void foeArmatureSystem::process(float timePassed) {
         if (pArmatureState->armatureID == FOE_INVALID_ID)
             continue;
 
-        foeResource armature = mpArmaturePool->find(pArmatureState->armatureID);
+        foeResource armature = foeResourcePoolFind(mArmaturePool, pArmatureState->armatureID);
         // If the armature we're trying to use isn't here, skip this entry
         if (armature == FOE_NULL_HANDLE) {
             std::abort();

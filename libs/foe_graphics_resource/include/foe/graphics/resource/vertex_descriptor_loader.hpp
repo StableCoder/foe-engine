@@ -20,16 +20,15 @@
 #include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/type_defs.hpp>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
 #include <mutex>
 #include <vector>
 
-class foeShaderPool;
-
 class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
   public:
-    std::error_code initialize(foeShaderPool *pShaderPool);
+    std::error_code initialize(foeResourcePool shaderPool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -52,7 +51,7 @@ class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
               foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
-    foeShaderPool *mShaderPool{nullptr};
+    foeResourcePool mShaderPool{FOE_NULL_HANDLE};
 
     struct LoadData {
         foeResource resource;

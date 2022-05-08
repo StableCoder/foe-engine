@@ -20,8 +20,8 @@
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
-#include <foe/physics/resource/collision_shape_pool.hpp>
 #include <foe/physics/type_defs.h>
+#include <foe/resource/pool.h>
 #include <foe/yaml/exception.hpp>
 
 #include "collision_shape.hpp"
@@ -33,15 +33,15 @@ namespace {
 std::error_code collisionShapeCreateProcessing(foeResourceID resource,
                                                foeResourceCreateInfo createInfo,
                                                foeSimulation const *pSimulation) {
-    auto *pCollisionShapePool = (foeCollisionShapePool *)foeSimulationGetResourcePool(
+    foeResourcePool collisionShapePool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
-    if (pCollisionShapePool == nullptr)
+    if (collisionShapePool == nullptr)
         return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND;
 
-    auto *pCollisionShape = pCollisionShapePool->add(resource);
+    foeResource collisionShape = foeResourcePoolAdd(collisionShapePool, resource);
 
-    if (!pCollisionShape)
+    if (collisionShape == FOE_NULL_HANDLE)
         return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS;
 
     return FOE_PHYSICS_YAML_SUCCESS;

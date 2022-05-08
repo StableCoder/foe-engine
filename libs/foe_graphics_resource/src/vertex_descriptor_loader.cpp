@@ -17,7 +17,6 @@
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 
 #include <foe/graphics/resource/shader.hpp>
-#include <foe/graphics/resource/shader_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
 
@@ -27,14 +26,14 @@
 
 #include <array>
 
-std::error_code foeVertexDescriptorLoader::initialize(foeShaderPool *pShaderPool) {
-    if (pShaderPool == nullptr) {
+std::error_code foeVertexDescriptorLoader::initialize(foeResourcePool shaderPool) {
+    if (shaderPool == FOE_NULL_HANDLE) {
         return FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_LOADER_INITIALIZATION_FAILED;
     }
 
     std::error_code errC{FOE_GRAPHICS_RESOURCE_SUCCESS};
 
-    mShaderPool = pShaderPool;
+    mShaderPool = shaderPool;
 
     if (errC) {
         deinitialize();
@@ -189,7 +188,12 @@ void foeVertexDescriptorLoader::load(foeResource resource,
 
     // Find all of the subresources
     if (pCI->vertexShader != FOE_INVALID_ID) {
-        data.vertexShader = mShaderPool->findOrAdd(pCI->vertexShader);
+        while (data.vertexShader == FOE_NULL_HANDLE) {
+            data.vertexShader = foeResourcePoolFind(mShaderPool, pCI->vertexShader);
+
+            if (data.vertexShader == FOE_NULL_HANDLE)
+                data.vertexShader = foeResourcePoolAdd(mShaderPool, pCI->vertexShader);
+        }
 
         foeResourceIncrementRefCount(data.vertexShader);
         foeResourceIncrementUseCount(data.vertexShader);
@@ -199,7 +203,14 @@ void foeVertexDescriptorLoader::load(foeResource resource,
             foeResourceLoad(data.vertexShader, false);
     }
     if (pCI->tessellationControlShader != FOE_INVALID_ID) {
-        data.tessellationControlShader = mShaderPool->findOrAdd(pCI->tessellationControlShader);
+        while (data.tessellationControlShader == FOE_NULL_HANDLE) {
+            data.tessellationControlShader =
+                foeResourcePoolFind(mShaderPool, pCI->tessellationControlShader);
+
+            if (data.tessellationControlShader == FOE_NULL_HANDLE)
+                data.tessellationControlShader =
+                    foeResourcePoolAdd(mShaderPool, pCI->tessellationControlShader);
+        }
 
         foeResourceIncrementRefCount(data.tessellationControlShader);
         foeResourceIncrementUseCount(data.tessellationControlShader);
@@ -209,8 +220,14 @@ void foeVertexDescriptorLoader::load(foeResource resource,
             foeResourceLoad(data.tessellationControlShader, false);
     }
     if (pCI->tessellationEvaluationShader != FOE_INVALID_ID) {
-        data.tessellationEvaluationShader =
-            mShaderPool->findOrAdd(pCI->tessellationEvaluationShader);
+        while (data.tessellationEvaluationShader == FOE_NULL_HANDLE) {
+            data.tessellationEvaluationShader =
+                foeResourcePoolFind(mShaderPool, pCI->tessellationEvaluationShader);
+
+            if (data.tessellationEvaluationShader == FOE_NULL_HANDLE)
+                data.tessellationEvaluationShader =
+                    foeResourcePoolAdd(mShaderPool, pCI->tessellationEvaluationShader);
+        }
 
         foeResourceIncrementRefCount(data.tessellationEvaluationShader);
         foeResourceIncrementUseCount(data.tessellationEvaluationShader);
@@ -221,7 +238,12 @@ void foeVertexDescriptorLoader::load(foeResource resource,
             foeResourceLoad(data.tessellationEvaluationShader, false);
     }
     if (pCI->geometryShader != FOE_INVALID_ID) {
-        data.geometryShader = mShaderPool->findOrAdd(pCI->geometryShader);
+        while (data.geometryShader == FOE_NULL_HANDLE) {
+            data.geometryShader = foeResourcePoolFind(mShaderPool, pCI->geometryShader);
+
+            if (data.geometryShader == FOE_NULL_HANDLE)
+                data.geometryShader = foeResourcePoolAdd(mShaderPool, pCI->geometryShader);
+        }
 
         foeResourceIncrementRefCount(data.geometryShader);
         foeResourceIncrementUseCount(data.geometryShader);

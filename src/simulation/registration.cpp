@@ -16,9 +16,10 @@
 
 #include "registration.hpp"
 
-#include <foe/graphics/resource/mesh_pool.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
+#include <foe/resource/pool.h>
+#include <foe/resource/resource_fns.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <vk_error_code.hpp>
@@ -27,7 +28,6 @@
 #include "../log.hpp"
 #include "armature.hpp"
 #include "armature_loader.hpp"
-#include "armature_pool.hpp"
 #include "armature_state_pool.hpp"
 #include "armature_system.hpp"
 #include "camera_pool.hpp"
@@ -251,15 +251,15 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
                     errC.message());
             ++errors;
         } else if (count == 0) {
-            foeArmaturePool *pItem;
+            foeResourcePool resourcePool;
             errC = foeSimulationReleaseResourcePool(
-                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL, (void **)&pItem);
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL, (void **)&resourcePool);
             if (errC) {
                 FOE_LOG(foeBringup, Warning, "Could not release foeArmaturePool to destroy - {}",
                         errC.message());
                 ++errors;
             } else {
-                delete pItem;
+                foeDestroyResourcePool(resourcePool);
             }
         }
     }
@@ -271,21 +271,31 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     std::error_code errC;
     TypeSelection created = {};
 
+    foeResourceFns resourceFns{
+        .pImportContext = &pSimulation->groupData,
+        .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
+        .pLoadContext = pSimulation,
+        .pLoadFn = TEMP_foeSimulationLoadResource,
+    };
+
     // Resources
     if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL,
                                        nullptr)) {
+        foeResourcePool armaturePool{FOE_NULL_HANDLE};
+
+        errC = foeCreateResourcePool(&resourceFns, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL,
+                                     FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature),
+                                     &armaturePool);
+        if (errC)
+            goto CREATE_FAILED;
+
         foeSimulationResourcePoolData loaderCI{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL,
-            .pResourcePool = new foeArmaturePool{foeResourceFns{
-                .pImportContext = &pSimulation->groupData,
-                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-                .pLoadContext = pSimulation,
-                .pLoadFn = TEMP_foeSimulationLoadResource,
-            }},
+            .pResourcePool = armaturePool,
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &loaderCI);
         if (errC) {
-            delete (foeArmatureLoader *)loaderCI.pResourcePool;
+            foeDestroyResourcePool(armaturePool);
             FOE_LOG(foeBringup, Error,
                     "onCreate - Failed to create foeArmaturePool on Simulation {} due to {}",
                     (void *)pSimulation, errC.message());
@@ -606,14 +616,14 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
     }
     selection.armatureSystem = true;
     if (count == 1) {
-        auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+        foeResourcePool armaturePool = (foeResourcePool)foeSimulationGetResourcePool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
         auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
         auto *pData = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-        errC = pData->initialize(pArmaturePool, pArmatureStatePool);
+        errC = pData->initialize(armaturePool, pArmatureStatePool);
         if (errC) {
             FOE_LOG(foeBringup, Error,
                     "Failed to initialize foeArmatureSystem on Simulation {} with error {}",
@@ -686,9 +696,9 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
     }
     selection.animationSystem = true;
     if (count == 1) {
-        auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
+        foeResourcePool armaturePool = (foeResourcePool)foeSimulationGetResourcePool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
-        auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
+        foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
         auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
@@ -697,7 +707,7 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
 
         auto *pData = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
-        errC = pData->initialize(pArmaturePool, pMeshPool, pArmatureStatePool, pRenderStatePool);
+        errC = pData->initialize(armaturePool, meshPool, pArmatureStatePool, pRenderStatePool);
         if (errC) {
             FOE_LOG(foeBringup, Error,
                     "Failed to initialize VkAnimationPool on Simulation {} with error {}",
