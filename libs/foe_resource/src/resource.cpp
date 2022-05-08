@@ -256,6 +256,7 @@ void postLoadFn(
                 foeIdToString(pResource->id), pResource->type, errC.message())
         auto expected = foeResourceLoadState::Unloaded;
         pResource->state.compare_exchange_strong(expected, foeResourceLoadState::Failed);
+        pResource->isLoading = false;
     } else {
         // It loaded successfully and the data is ready to be moved now
         foeResourceCreateInfoIncrementRefCount(createInfo);
@@ -391,6 +392,7 @@ bool resourceUnloadCall(foeResource resource,
         pResource->loadedCreateInfo = FOE_NULL_HANDLE;
         pResource->pUnloadContext = nullptr;
         pResource->pUnloadFn = nullptr;
+        pResource->state = foeResourceLoadState::Unloaded;
 
         ++pResource->iteration;
     }
