@@ -314,37 +314,22 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         auto *pArmaturePool = (foeArmaturePool *)foeSimulationGetResourcePool(
             pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
         pArmaturePool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
-        for (auto it : pArmaturePool->getDataVector()) {
-            foeResourceLoad(it, false);
-        }
 
         auto *pMaterialPool = (foeMaterialPool *)foeSimulationGetResourcePool(
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
         pMaterialPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
-        for (auto it : pMaterialPool->getDataVector()) {
-            foeResourceLoad(it, false);
-        }
 
         auto *pMeshPool = (foeMeshPool *)foeSimulationGetResourcePool(
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
         pMeshPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
-        for (auto it : pMeshPool->getDataVector()) {
-            foeResourceLoad(it, false);
-        }
 
         auto *pShaderPool = (foeShaderPool *)foeSimulationGetResourcePool(
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
         pShaderPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
-        for (auto it : pShaderPool->getDataVector()) {
-            foeResourceLoad(it, false);
-        }
 
         auto *pVertexDescriptorPool = (foeVertexDescriptorPool *)foeSimulationGetResourcePool(
             pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
         pVertexDescriptorPool->setAsyncTaskFn(asyncTaskFunc, (void *)threadPool);
-        for (auto it : pVertexDescriptorPool->getDataVector()) {
-            foeResourceLoad(it, false);
-        }
     }
 
 #ifdef FOE_XR_SUPPORT

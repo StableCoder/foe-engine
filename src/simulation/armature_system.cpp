@@ -113,9 +113,17 @@ void foeArmatureSystem::process(float timePassed) {
 
         foeResource armature = mpArmaturePool->find(pArmatureState->armatureID);
         // If the armature we're trying to use isn't here, skip this entry
-        if (armature == FOE_NULL_HANDLE ||
-            foeResourceGetState(armature) != foeResourceLoadState::Loaded)
+        if (armature == FOE_NULL_HANDLE) {
+            std::abort();
+        }
+
+        if (foeResourceGetState(armature) != foeResourceLoadState::Loaded) {
+            if (!foeResourceGetIsLoading(armature))
+                foeResourceLoad(armature, false);
+
             continue;
+        }
+
         foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
 
         // If the animation index isn't on the given armature, then just set the default armature

@@ -16,6 +16,7 @@
 
 #include "render_scene.hpp"
 
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_pool.hpp>
 #include <foe/graphics/resource/mesh.hpp>
@@ -34,6 +35,7 @@
 #include <vk_error_code.hpp>
 
 #include "../error_code.hpp"
+#include "../log.hpp"
 #include "../simulation/camera_pool.hpp"
 #include "../simulation/render_state_pool.hpp"
 
@@ -76,11 +78,45 @@ auto renderCall(foeId entity,
         mesh == FOE_NULL_HANDLE) {
         return false;
     }
-    if (foeResourceGetState(vertexDescriptor) != foeResourceLoadState::Loaded ||
-        foeResourceGetState(material) != foeResourceLoadState::Loaded ||
-        foeResourceGetState(mesh) != foeResourceLoadState::Loaded) {
-        return false;
+
+    bool skip = false;
+    if (foeResourceGetState(vertexDescriptor) != foeResourceLoadState::Loaded) {
+        if (!foeResourceGetIsLoading(vertexDescriptor)) {
+            FOE_LOG(foeBringup, Verbose,
+                    "While attempting to render {}, VertexDeescriptor resource {} was not loaded "
+                    "and wasn't being loaded, requesting load",
+                    foeIdToString(entity), foeIdToString(foeResourceGetID(vertexDescriptor)));
+            foeResourceLoad(vertexDescriptor, false);
+        }
+
+        skip = true;
     }
+
+    if (foeResourceGetState(material) != foeResourceLoadState::Loaded) {
+        if (!foeResourceGetIsLoading(material)) {
+            FOE_LOG(foeBringup, Verbose,
+                    "While attempting to render {}, Material resource {} was not loaded "
+                    "and wasn't being loaded, requesting load",
+                    foeIdToString(entity), foeIdToString(foeResourceGetID(material)));
+            foeResourceLoad(material, false);
+        }
+
+        skip = true;
+    }
+
+    if (foeResourceGetState(mesh) != foeResourceLoadState::Loaded) {
+        if (!foeResourceGetIsLoading(mesh)) {
+            FOE_LOG(foeBringup, Verbose,
+                    "While attempting to render {}, Mesh resource {} was not loaded "
+                    "and wasn't being loaded, requesting load",
+                    foeIdToString(entity), foeIdToString(foeResourceGetID(mesh)));
+            foeResourceLoad(mesh, false);
+        }
+
+        skip = true;
+    }
+    if (skip)
+        return false;
 
     // Get Resource Data
     auto const *pVertexDescriptor =

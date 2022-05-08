@@ -193,14 +193,20 @@ void foeVertexDescriptorLoader::load(foeResource resource,
 
         foeResourceIncrementRefCount(data.vertexShader);
         foeResourceIncrementUseCount(data.vertexShader);
-        foeResourceLoad(data.vertexShader, false);
+
+        if (foeResourceGetState(data.vertexShader) != foeResourceLoadState::Loaded &&
+            !foeResourceGetIsLoading(data.vertexShader))
+            foeResourceLoad(data.vertexShader, false);
     }
     if (pCI->tessellationControlShader != FOE_INVALID_ID) {
         data.tessellationControlShader = mShaderPool->findOrAdd(pCI->tessellationControlShader);
 
         foeResourceIncrementRefCount(data.tessellationControlShader);
         foeResourceIncrementUseCount(data.tessellationControlShader);
-        foeResourceLoad(data.tessellationControlShader, false);
+
+        if (foeResourceGetState(data.tessellationControlShader) != foeResourceLoadState::Loaded &&
+            !foeResourceGetIsLoading(data.tessellationControlShader))
+            foeResourceLoad(data.tessellationControlShader, false);
     }
     if (pCI->tessellationEvaluationShader != FOE_INVALID_ID) {
         data.tessellationEvaluationShader =
@@ -208,14 +214,21 @@ void foeVertexDescriptorLoader::load(foeResource resource,
 
         foeResourceIncrementRefCount(data.tessellationEvaluationShader);
         foeResourceIncrementUseCount(data.tessellationEvaluationShader);
-        foeResourceLoad(data.tessellationEvaluationShader, false);
+
+        if (foeResourceGetState(data.tessellationEvaluationShader) !=
+                foeResourceLoadState::Loaded &&
+            !foeResourceGetIsLoading(data.tessellationEvaluationShader))
+            foeResourceLoad(data.tessellationEvaluationShader, false);
     }
     if (pCI->geometryShader != FOE_INVALID_ID) {
         data.geometryShader = mShaderPool->findOrAdd(pCI->geometryShader);
 
         foeResourceIncrementRefCount(data.geometryShader);
         foeResourceIncrementUseCount(data.geometryShader);
-        foeResourceLoad(data.geometryShader, false);
+
+        if (foeResourceGetState(data.geometryShader) != foeResourceLoadState::Loaded &&
+            !foeResourceGetIsLoading(data.geometryShader))
+            foeResourceLoad(data.geometryShader, false);
     }
 
     // Send to the loading queue

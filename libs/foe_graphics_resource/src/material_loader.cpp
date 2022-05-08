@@ -241,7 +241,10 @@ void foeMaterialLoader::load(foeResource resource,
 
         foeResourceIncrementRefCount(data.fragmentShader);
         foeResourceIncrementUseCount(data.fragmentShader);
-        foeResourceLoad(data.fragmentShader, false);
+
+        if (foeResourceGetState(data.fragmentShader) != foeResourceLoadState::Loaded &&
+            !foeResourceGetIsLoading(data.fragmentShader))
+            foeResourceLoad(data.fragmentShader, false);
     }
 
     // Image
@@ -250,7 +253,10 @@ void foeMaterialLoader::load(foeResource resource,
 
         foeResourceIncrementRefCount(data.image);
         foeResourceIncrementUseCount(data.image);
-        foeResourceLoad(data.image, false);
+
+        if (foeResourceGetState(data.image) != foeResourceLoadState::Loaded &&
+            !foeResourceGetIsLoading(data.image))
+            foeResourceLoad(data.image, false);
     }
 
     // Send to the loading queue to await results
