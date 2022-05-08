@@ -23,6 +23,7 @@ extern "C" {
 
 enum foeResourceResult {
     FOE_RESOURCE_SUCCESS = 0,
+    FOE_RESOURCE_ERROR_NOT_FOUND,
     // General
     FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY,
     // Resource Specific
