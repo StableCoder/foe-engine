@@ -276,4 +276,11 @@ FOE_SIM_EXPORT auto foeSimulationReleaseSystem(foeSimulation *pSimulation,
                                                foeSimulationStructureType sType,
                                                void **ppSystem) -> std::error_code;
 
+FOE_SIM_EXPORT foeResourceCreateInfo
+TEMP_foeSimulationGetResourceCreateInfo(void *pContext, foeResourceID resourceID);
+
+FOE_SIM_EXPORT void TEMP_foeSimulationLoadResource(void *pContext,
+                                                   foeResource resource,
+                                                   PFN_foeResourcePostLoad *pPostLoadFn);
+
 #endif // FOE_SIMULATION_CORE_HPP

@@ -931,3 +931,28 @@ FOE_SIM_EXPORT auto foeSimulationReleaseSystem(foeSimulation *pSimulation,
 
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
+
+foeResourceCreateInfo TEMP_foeSimulationGetResourceCreateInfo(void *pContext,
+                                                              foeResourceID resourceID) {
+    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
+
+    return pGroupData->getResourceDefinition(resourceID);
+}
+
+void TEMP_foeSimulationLoadResource(void *pContext,
+                                    foeResource resource,
+                                    PFN_foeResourcePostLoad *pPostLoadFn) {
+    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
+
+    auto createInfo = foeResourceGetCreateInfo(resource);
+
+    for (auto const &it : pSimulation->resourceLoaders) {
+        if (it.pCanProcessCreateInfoFn(createInfo)) {
+            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
+            return;
+        }
+    }
+
+    pPostLoadFn(resource, foeToErrorCode(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
+                nullptr, nullptr, nullptr);
+}

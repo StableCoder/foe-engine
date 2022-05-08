@@ -51,28 +51,6 @@ struct TypeSelection {
     bool meshLoader;
 };
 
-foeResourceCreateInfo importFn(void *pContext, foeResourceID resource) {
-    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
-    return pGroupData->getResourceDefinition(resource);
-}
-
-void loadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-
-    auto createInfo = foeResourceGetCreateInfo(resource);
-
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(createInfo)) {
-            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
-            return;
-        }
-    }
-
-    pPostLoadFn(resource,
-                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
-}
-
 template <typename T>
 auto destroyItem(foeSimulation *pSimulation,
                  foeSimulationStructureType sType,
@@ -212,9 +190,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
             .pResourcePool = new foeImagePool{foeResourceFns{
                 .pImportContext = &pSimulation->groupData,
-                .pImportFn = importFn,
+                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
                 .pLoadContext = pSimulation,
-                .pLoadFn = loadFn,
+                .pLoadFn = TEMP_foeSimulationLoadResource,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -237,9 +215,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL,
             .pResourcePool = new foeMaterialPool{foeResourceFns{
                 .pImportContext = &pSimulation->groupData,
-                .pImportFn = importFn,
+                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
                 .pLoadContext = pSimulation,
-                .pLoadFn = loadFn,
+                .pLoadFn = TEMP_foeSimulationLoadResource,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -262,9 +240,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL,
             .pResourcePool = new foeShaderPool{foeResourceFns{
                 .pImportContext = &pSimulation->groupData,
-                .pImportFn = importFn,
+                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
                 .pLoadContext = pSimulation,
-                .pLoadFn = loadFn,
+                .pLoadFn = TEMP_foeSimulationLoadResource,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -287,9 +265,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL,
             .pResourcePool = new foeVertexDescriptorPool{foeResourceFns{
                 .pImportContext = &pSimulation->groupData,
-                .pImportFn = importFn,
+                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
                 .pLoadContext = pSimulation,
-                .pLoadFn = loadFn,
+                .pLoadFn = TEMP_foeSimulationLoadResource,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
@@ -313,9 +291,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
             .pResourcePool = new foeMeshPool{foeResourceFns{
                 .pImportContext = &pSimulation->groupData,
-                .pImportFn = importFn,
+                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
                 .pLoadContext = pSimulation,
-                .pLoadFn = loadFn,
+                .pLoadFn = TEMP_foeSimulationLoadResource,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);

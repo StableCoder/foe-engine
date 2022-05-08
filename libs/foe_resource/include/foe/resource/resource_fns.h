@@ -26,15 +26,18 @@
 extern "C" {
 #endif
 
+typedef foeResourceCreateInfo (*PFN_foeGetResourceCreateInfoData)(void *, foeResourceID);
+typedef void (*PFN_foeLoadResourceData)(void *, foeResource, PFN_foeResourcePostLoad *);
+
 /**
  * Set of functions common to all foeResource types for importing definitions, loading data and
  * making the importation and loading run asynchronously.
  */
 struct foeResourceFns {
     void *pImportContext;
-    foeResourceCreateInfo (*pImportFn)(void *, foeResourceID);
+    PFN_foeGetResourceCreateInfoData pImportFn;
     void *pLoadContext;
-    void (*pLoadFn)(void *, foeResource, PFN_foeResourcePostLoad *);
+    PFN_foeLoadResourceData pLoadFn;
     PFN_foeScheduleTask scheduleAsyncTask;
     void *pScheduleAsyncTaskContext;
 };

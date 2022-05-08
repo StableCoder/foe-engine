@@ -55,27 +55,6 @@ struct TypeSelection {
     bool animationSystem;
 };
 
-foeResourceCreateInfo importFn(void *pContext, foeResourceID resource) {
-    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
-    return pGroupData->getResourceDefinition(resource);
-}
-
-void armatureLoadFn(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-
-    auto createInfo = foeResourceGetCreateInfo(resource);
-
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(createInfo)) {
-            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
-            return;
-        }
-    }
-
-    pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_FAILED_TO_FIND_COMPATIBLE_LOADER),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
-}
-
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
     std::error_code errC;
     size_t count;
@@ -299,9 +278,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL,
             .pResourcePool = new foeArmaturePool{foeResourceFns{
                 .pImportContext = &pSimulation->groupData,
-                .pImportFn = importFn,
+                .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
                 .pLoadContext = pSimulation,
-                .pLoadFn = armatureLoadFn,
+                .pLoadFn = TEMP_foeSimulationLoadResource,
             }},
         };
         errC = foeSimulationInsertResourcePool(pSimulation, &loaderCI);
