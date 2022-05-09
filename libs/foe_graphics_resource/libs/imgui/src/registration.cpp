@@ -41,21 +41,21 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (imagePool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(imagePool, resourceID);
-        if (res != FOE_NULL_HANDLE &&
-            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
-            imgui_foeResource(res);
+        foeResource resource = foeResourcePoolFind(imagePool, resourceID);
+        if (resource != FOE_NULL_HANDLE &&
+            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
+            imgui_foeResource(resource);
 
             std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(res));
+            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
             if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(res) == foeResourceLoadState::Loaded) {
-                    imgui_foeImage((foeImage const *)foeResourceGetData(res));
+                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                    imgui_foeImage((foeImage const *)foeResourceGetData(resource));
                 }
             }
 
             if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(res);
+                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
                 if (createInfo != FOE_NULL_HANDLE) {
                     imgui_foeResourceCreateInfo(createInfo);
                     ImGui::Separator();
@@ -72,21 +72,21 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (materialPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(materialPool, resourceID);
-        if (res != FOE_NULL_HANDLE &&
-            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
-            imgui_foeResource(res);
+        foeResource resource = foeResourcePoolFind(materialPool, resourceID);
+        if (resource != FOE_NULL_HANDLE &&
+            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
+            imgui_foeResource(resource);
 
             std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(res));
+            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
             if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(res) == foeResourceLoadState::Loaded) {
-                    imgui_foeMaterial((foeMaterial const *)foeResourceGetData(res));
+                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                    imgui_foeMaterial((foeMaterial const *)foeResourceGetData(resource));
                 }
             }
 
             if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(res);
+                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
                 if (createInfo != FOE_NULL_HANDLE) {
                     imgui_foeResourceCreateInfo(createInfo);
                     ImGui::Separator();
@@ -103,21 +103,21 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (meshPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(meshPool, resourceID);
-        if (res != FOE_NULL_HANDLE &&
-            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
-            imgui_foeResource(res);
+        foeResource resource = foeResourcePoolFind(meshPool, resourceID);
+        if (resource != FOE_NULL_HANDLE &&
+            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
+            imgui_foeResource(resource);
 
             std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(res));
+            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
             if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(res) == foeResourceLoadState::Loaded) {
-                    imgui_foeMesh((foeMesh const *)foeResourceGetData(res));
+                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                    imgui_foeMesh((foeMesh const *)foeResourceGetData(resource));
                 }
             }
 
             if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(res);
+                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
                 if (createInfo != FOE_NULL_HANDLE) {
                     imgui_foeResourceCreateInfo(createInfo);
                     ImGui::Separator();
@@ -134,21 +134,21 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (shaderPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(shaderPool, resourceID);
-        if (res != FOE_NULL_HANDLE &&
-            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
-            imgui_foeResource(res);
+        foeResource resource = foeResourcePoolFind(shaderPool, resourceID);
+        if (resource != FOE_NULL_HANDLE &&
+            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+            imgui_foeResource(resource);
 
             std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(res));
+            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
             if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(res) == foeResourceLoadState::Loaded) {
-                    imgui_foeShader((foeShader const *)foeResourceGetData(res));
+                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                    imgui_foeShader((foeShader const *)foeResourceGetData(resource));
                 }
             }
 
             if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(res);
+                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
                 if (createInfo != FOE_NULL_HANDLE) {
                     imgui_foeResourceCreateInfo(createInfo);
                     ImGui::Separator();
@@ -165,21 +165,23 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (vertexDescriptorPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(vertexDescriptorPool, resourceID);
-        if (res != FOE_NULL_HANDLE &&
-            foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
-            imgui_foeResource(res);
+        foeResource resource = foeResourcePoolFind(vertexDescriptorPool, resourceID);
+        if (resource != FOE_NULL_HANDLE &&
+            foeResourceGetType(resource) ==
+                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
+            imgui_foeResource(resource);
 
             std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(res));
+            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
             if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(res) == foeResourceLoadState::Loaded) {
-                    imgui_foeVertexDescriptor((foeVertexDescriptor const *)foeResourceGetData(res));
+                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                    imgui_foeVertexDescriptor(
+                        (foeVertexDescriptor const *)foeResourceGetData(resource));
                 }
             }
 
             if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(res);
+                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
                 if (createInfo != FOE_NULL_HANDLE) {
                     imgui_foeResourceCreateInfo(createInfo);
                     ImGui::Separator();
