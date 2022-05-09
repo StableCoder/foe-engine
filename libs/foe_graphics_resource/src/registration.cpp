@@ -107,6 +107,38 @@ auto destroyResourcePool(foeSimulation *pSimulation,
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
     size_t errors = 0;
 
+    // Resources
+    if (pSelection == nullptr || pSelection->meshResources) {
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
+                                "mesh"))
+            ++errors;
+    }
+
+    if (pSelection == nullptr || pSelection->vertexDescriptorResources) {
+        if (destroyResourcePool(pSimulation,
+                                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL,
+                                "vertex descriptor"))
+            ++errors;
+    }
+
+    if (pSelection == nullptr || pSelection->shaderResources) {
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL,
+                                "shader"))
+            ++errors;
+    }
+
+    if (pSelection == nullptr || pSelection->materialResources) {
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL,
+                                "material"))
+            ++errors;
+    }
+
+    if (pSelection == nullptr || pSelection->imageResources) {
+        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
+                                "image"))
+            ++errors;
+    }
+
     // Loaders
     if (pSelection == nullptr || pSelection->meshLoader) {
         if (destroyItem<foeMeshLoader>(
@@ -137,38 +169,6 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     if (pSelection == nullptr || pSelection->imageLoader) {
         if (destroyItem<foeImageLoader>(
                 pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER, "foeImageLoader"))
-            ++errors;
-    }
-
-    // Resources
-    if (pSelection == nullptr || pSelection->meshResources) {
-        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL,
-                                "mesh"))
-            ++errors;
-    }
-
-    if (pSelection == nullptr || pSelection->vertexDescriptorResources) {
-        if (destroyResourcePool(pSimulation,
-                                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL,
-                                "vertex descriptor"))
-            ++errors;
-    }
-
-    if (pSelection == nullptr || pSelection->shaderResources) {
-        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL,
-                                "shader"))
-            ++errors;
-    }
-
-    if (pSelection == nullptr || pSelection->materialResources) {
-        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL,
-                                "material"))
-            ++errors;
-    }
-
-    if (pSelection == nullptr || pSelection->imageResources) {
-        if (destroyResourcePool(pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL,
-                                "image"))
             ++errors;
     }
 
