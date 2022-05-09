@@ -34,7 +34,7 @@
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
+std::vector<foeKeyYamlPair> exportResources(foeResourceID resourceID,
                                             foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
@@ -43,7 +43,7 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
 
     if (armaturePool != FOE_NULL_HANDLE) {
-        foeResource armature = foeResourcePoolFind(armaturePool, resource);
+        foeResource armature = foeResourcePoolFind(armaturePool, resourceID);
 
         if (armature != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(armature);

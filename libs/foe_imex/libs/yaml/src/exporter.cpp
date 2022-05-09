@@ -86,21 +86,21 @@ std::string id_to_filename(foeId id, std::string const &editorName) {
 }
 
 YAML::Node exportResource(
-    foeResourceID resource,
+    foeResourceID resourceID,
     std::string const &name,
     std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulation const *)> const
         &resourceFns,
     foeSimulation const *pSimulation) {
     YAML::Node rootNode;
 
-    yaml_write_id("", resource, rootNode);
+    yaml_write_id("", resourceID, rootNode);
 
     if (!name.empty()) {
         yaml_write_required("editor_name", name, rootNode);
     }
 
     for (auto const &fn : resourceFns) {
-        auto keyDataPairs = fn(resource, pSimulation);
+        auto keyDataPairs = fn(resourceID, pSimulation);
 
         for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
@@ -194,7 +194,7 @@ std::error_code exportResources(foeIdGroup group, foeSimulation *pSimState, YAML
     std::vector<foeIdIndex> unusedIndices;
     pSimState->groupData.resourceIndices(group)->exportState(maxIndices, unusedIndices);
 
-    foeResourceID resource;
+    foeResourceID resourceID;
     auto unused = unusedIndices.begin();
 
     try {
@@ -205,17 +205,17 @@ std::error_code exportResources(foeIdGroup group, foeSimulation *pSimState, YAML
                     continue;
             }
 
-            resource = foeIdCreate(group, idx);
+            resourceID = foeIdCreate(group, idx);
 
             std::string name;
             if (pSimState->pResourceNameMap != nullptr) {
-                name = pSimState->pResourceNameMap->find(resource);
+                name = pSimState->pResourceNameMap->find(resourceID);
             }
 
-            data.push_back(exportResource(resource, name, gResourceFns, pSimState));
+            data.push_back(exportResource(resourceID, name, gResourceFns, pSimState));
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resource),
+        FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resourceID),
                 e.what());
         return FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_DATA;
     }

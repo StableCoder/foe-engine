@@ -40,14 +40,15 @@
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportImage(foeResourceID resource, foeSimulation const *pSimulation) {
+std::vector<foeKeyYamlPair> exportImage(foeResourceID resourceID,
+                                        foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     foeResourcePool imagePool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (imagePool != FOE_NULL_HANDLE) {
-        foeResource image = foeResourcePoolFind(imagePool, resource);
+        foeResource image = foeResourcePoolFind(imagePool, resourceID);
 
         if (image != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(image);
@@ -67,7 +68,7 @@ std::vector<foeKeyYamlPair> exportImage(foeResourceID resource, foeSimulation co
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
+std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resourceID,
                                            foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
@@ -75,7 +76,7 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (materialPool != FOE_NULL_HANDLE) {
-        foeResource material = foeResourcePoolFind(materialPool, resource);
+        foeResource material = foeResourcePoolFind(materialPool, resourceID);
 
         if (material != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(material);
@@ -96,14 +97,14 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resource,
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource, foeSimulation const *pSimulation) {
+std::vector<foeKeyYamlPair> exportMesh(foeResourceID resourceID, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (meshPool != FOE_NULL_HANDLE) {
-        foeResource mesh = foeResourcePoolFind(meshPool, resource);
+        foeResource mesh = foeResourcePoolFind(meshPool, resourceID);
         if (mesh != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(mesh);
             if (foeResourceCreateInfoGetType(createInfo) ==
@@ -122,14 +123,15 @@ std::vector<foeKeyYamlPair> exportMesh(foeResourceID resource, foeSimulation con
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportShader(foeResourceID resource, foeSimulation const *pSimulation) {
+std::vector<foeKeyYamlPair> exportShader(foeResourceID resourceID,
+                                         foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     foeResourcePool shaderPool = (foeResourcePool)foeSimulationGetResourcePool(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (shaderPool != FOE_NULL_HANDLE) {
-        foeResource shader = foeResourcePoolFind(shaderPool, resource);
+        foeResource shader = foeResourcePoolFind(shaderPool, resourceID);
         if (shader != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(shader);
             if (foeResourceCreateInfoGetType(createInfo) ==
@@ -148,7 +150,7 @@ std::vector<foeKeyYamlPair> exportShader(foeResourceID resource, foeSimulation c
     return keyDataPairs;
 }
 
-std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
+std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resourceID,
                                                    foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
@@ -156,7 +158,7 @@ std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resource,
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (vertexDescriptorPool != FOE_NULL_HANDLE) {
-        foeResource vertexDescriptor = foeResourcePoolFind(vertexDescriptorPool, resource);
+        foeResource vertexDescriptor = foeResourcePoolFind(vertexDescriptorPool, resourceID);
 
         if (vertexDescriptor != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(vertexDescriptor);

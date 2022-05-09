@@ -36,7 +36,7 @@ namespace {
 
 // Resources
 
-std::error_code armatureCreateProcessing(foeResourceID resource,
+std::error_code armatureCreateProcessing(foeResourceID resourceID,
                                          foeResourceCreateInfo createInfo,
                                          foeSimulation const *pSimulation) {
     foeResourcePool armaturePool = (foeResourcePool)foeSimulationGetResourcePool(
@@ -45,7 +45,7 @@ std::error_code armatureCreateProcessing(foeResourceID resource,
     if (armaturePool == FOE_NULL_HANDLE)
         return FOE_BRINGUP_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;
 
-    foeResource armature = foeResourcePoolAdd(armaturePool, resource);
+    foeResource armature = foeResourcePoolAdd(armaturePool, resourceID);
 
     if (armature == FOE_NULL_HANDLE)
         return FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS;

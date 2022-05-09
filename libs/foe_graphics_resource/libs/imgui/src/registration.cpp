@@ -33,7 +33,7 @@
 namespace {
 
 void imgui_foeGraphicsResources(
-    foeResourceID resource,
+    foeResourceID resourceID,
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     // foeImage
@@ -41,7 +41,7 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
 
     if (imagePool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(imagePool, resource);
+        foeResource res = foeResourcePoolFind(imagePool, resourceID);
         if (res != FOE_NULL_HANDLE &&
             foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
             imgui_foeResource(res);
@@ -72,7 +72,7 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
 
     if (materialPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(materialPool, resource);
+        foeResource res = foeResourcePoolFind(materialPool, resourceID);
         if (res != FOE_NULL_HANDLE &&
             foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
             imgui_foeResource(res);
@@ -103,7 +103,7 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
 
     if (meshPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(meshPool, resource);
+        foeResource res = foeResourcePoolFind(meshPool, resourceID);
         if (res != FOE_NULL_HANDLE &&
             foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
             imgui_foeResource(res);
@@ -134,7 +134,7 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
 
     if (shaderPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(shaderPool, resource);
+        foeResource res = foeResourcePoolFind(shaderPool, resourceID);
         if (res != FOE_NULL_HANDLE &&
             foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
             imgui_foeResource(res);
@@ -165,7 +165,7 @@ void imgui_foeGraphicsResources(
         pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
 
     if (vertexDescriptorPool != FOE_NULL_HANDLE) {
-        foeResource res = foeResourcePoolFind(vertexDescriptorPool, resource);
+        foeResource res = foeResourcePoolFind(vertexDescriptorPool, resourceID);
         if (res != FOE_NULL_HANDLE &&
             foeResourceGetType(res) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
             imgui_foeResource(res);

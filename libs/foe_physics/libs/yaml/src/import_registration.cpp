@@ -30,7 +30,7 @@
 
 namespace {
 
-std::error_code collisionShapeCreateProcessing(foeResourceID resource,
+std::error_code collisionShapeCreateProcessing(foeResourceID resourceID,
                                                foeResourceCreateInfo createInfo,
                                                foeSimulation const *pSimulation) {
     foeResourcePool collisionShapePool = (foeResourcePool)foeSimulationGetResourcePool(
@@ -39,7 +39,7 @@ std::error_code collisionShapeCreateProcessing(foeResourceID resource,
     if (collisionShapePool == nullptr)
         return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND;
 
-    foeResource collisionShape = foeResourcePoolAdd(collisionShapePool, resource);
+    foeResource collisionShape = foeResourcePoolAdd(collisionShapePool, resourceID);
 
     if (collisionShape == FOE_NULL_HANDLE)
         return FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS;

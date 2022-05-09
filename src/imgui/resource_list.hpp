@@ -35,7 +35,7 @@ class foeImGuiResourceList {
 
   private:
     struct ResourceDisplayData {
-        foeResourceID resource;
+        foeResourceID resourceID;
         bool open;
         bool focus;
     };

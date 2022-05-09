@@ -30,7 +30,7 @@
 
 namespace {
 
-std::error_code imageCreateProcessing(foeResourceID resource,
+std::error_code imageCreateProcessing(foeResourceID resourceID,
                                       foeResourceCreateInfo createInfo,
                                       foeSimulation const *pSimulation) {
     foeResourcePool imagePool = (foeResourcePool)foeSimulationGetResourcePool(
@@ -39,7 +39,7 @@ std::error_code imageCreateProcessing(foeResourceID resource,
     if (imagePool == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_POOL_NOT_FOUND;
 
-    foeResource image = foeResourcePoolAdd(imagePool, resource);
+    foeResource image = foeResourcePoolAdd(imagePool, resourceID);
 
     if (image == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS;
@@ -47,7 +47,7 @@ std::error_code imageCreateProcessing(foeResourceID resource,
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
 
-std::error_code materialCreateProcessing(foeResourceID resource,
+std::error_code materialCreateProcessing(foeResourceID resourceID,
                                          foeResourceCreateInfo createInfo,
                                          foeSimulation const *pSimulation) {
     foeResourcePool materialPool = (foeResourcePool)foeSimulationGetResourcePool(
@@ -56,7 +56,7 @@ std::error_code materialCreateProcessing(foeResourceID resource,
     if (materialPool == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_POOL_NOT_FOUND;
 
-    foeResource material = foeResourcePoolAdd(materialPool, resource);
+    foeResource material = foeResourcePoolAdd(materialPool, resourceID);
 
     if (material == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS;
@@ -64,7 +64,7 @@ std::error_code materialCreateProcessing(foeResourceID resource,
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
 
-std::error_code meshCreateProcessing(foeResourceID resource,
+std::error_code meshCreateProcessing(foeResourceID resourceID,
                                      foeResourceCreateInfo createInfo,
                                      foeSimulation const *pSimulation) {
     foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
@@ -73,7 +73,7 @@ std::error_code meshCreateProcessing(foeResourceID resource,
     if (meshPool == nullptr)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND;
 
-    foeResource mesh = foeResourcePoolAdd(meshPool, resource);
+    foeResource mesh = foeResourcePoolAdd(meshPool, resourceID);
 
     if (mesh == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS;
@@ -81,7 +81,7 @@ std::error_code meshCreateProcessing(foeResourceID resource,
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
 
-std::error_code shaderCreateProcessing(foeResourceID resource,
+std::error_code shaderCreateProcessing(foeResourceID resourceID,
                                        foeResourceCreateInfo createInfo,
                                        foeSimulation const *pSimulation) {
     foeResourcePool shaderPool = (foeResourcePool)foeSimulationGetResourcePool(
@@ -90,7 +90,7 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
     if (shaderPool == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_POOL_NOT_FOUND;
 
-    auto *pShader = foeResourcePoolAdd(shaderPool, resource);
+    auto *pShader = foeResourcePoolAdd(shaderPool, resourceID);
 
     if (!pShader)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_RESOURCE_ALREADY_EXISTS;
@@ -98,7 +98,7 @@ std::error_code shaderCreateProcessing(foeResourceID resource,
     return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
 }
 
-std::error_code vertexDescriptorCreateProcessing(foeResourceID resource,
+std::error_code vertexDescriptorCreateProcessing(foeResourceID resourceID,
                                                  foeResourceCreateInfo createInfo,
                                                  foeSimulation const *pSimulation) {
     foeResourcePool vertexDescriptorPool = (foeResourcePool)foeSimulationGetResourcePool(
@@ -107,7 +107,7 @@ std::error_code vertexDescriptorCreateProcessing(foeResourceID resource,
     if (vertexDescriptorPool == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_POOL_NOT_FOUND;
 
-    auto *pVertexResource = foeResourcePoolAdd(vertexDescriptorPool, resource);
+    auto *pVertexResource = foeResourcePoolAdd(vertexDescriptorPool, resourceID);
 
     if (!pVertexResource)
         return FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS;

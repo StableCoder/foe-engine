@@ -30,7 +30,7 @@
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
+std::vector<foeKeyYamlPair> exportResources(foeResourceID resourceID,
                                             foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
@@ -38,7 +38,7 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resource,
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
 
     if (collisionShapePool != FOE_NULL_HANDLE) {
-        foeResource collisionShape = foeResourcePoolFind(collisionShapePool, resource);
+        foeResource collisionShape = foeResourcePoolFind(collisionShapePool, resourceID);
 
         if (collisionShape != FOE_NULL_HANDLE) {
             auto createInfo = foeResourceGetCreateInfo(collisionShape);

@@ -87,7 +87,7 @@ class foeSimulationImGuiRegistrar {
      * @param resource ID to find associated components to
      * @param pSimulation is a pointer to the simulation to search for the resource
      */
-    FOE_SIM_IMGUI_EXPORT void displayResource(foeResourceID resource,
+    FOE_SIM_IMGUI_EXPORT void displayResource(foeResourceID resourceID,
                                               foeSimulation const *pSimulation);
 
     /** @brief Attempts to render resources associated with the ID

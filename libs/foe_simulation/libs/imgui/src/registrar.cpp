@@ -83,13 +83,13 @@ void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity,
     }
 }
 
-void foeSimulationImGuiRegistrar::displayResource(foeResourceID resource,
+void foeSimulationImGuiRegistrar::displayResource(foeResourceID resourceID,
                                                   foeSimulation const *pSimulation) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (it.resourceFn) {
-            it.resourceFn(resource, pSimulation, [this](foeResourceCreateInfo createInfo) {
+            it.resourceFn(resourceID, pSimulation, [this](foeResourceCreateInfo createInfo) {
                 this->displayResourceCreateInfo(createInfo);
             });
         }

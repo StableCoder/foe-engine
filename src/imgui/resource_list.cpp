@@ -154,13 +154,13 @@ void foeImGuiResourceList::customUI() {
                     break;
             }
 
-            foeResourceID resource = foeIdCreate(currentGroupData->group, index);
+            foeResourceID resourceID = foeIdCreate(currentGroupData->group, index);
             ResourceDisplayData *pDisplayData{nullptr};
             bool selected{false};
 
             // See if the entity already has a window displaying it's data
             for (auto &it : mDisplayed) {
-                if (resource == it.resource) {
+                if (resourceID == it.resourceID) {
                     pDisplayData = &it;
                     break;
                 }
@@ -170,14 +170,14 @@ void foeImGuiResourceList::customUI() {
 
             // ID
             ImGui::TableNextColumn();
-            if (ImGui::Selectable(foeIdToString(resource).c_str(), pDisplayData != nullptr)) {
+            if (ImGui::Selectable(foeIdToString(resourceID).c_str(), pDisplayData != nullptr)) {
                 selected = true;
             }
 
             // EditorName
             ImGui::TableNextColumn();
             std::string editorName = (mpSimulationState->pResourceNameMap)
-                                         ? mpSimulationState->pResourceNameMap->find(resource)
+                                         ? mpSimulationState->pResourceNameMap->find(resourceID)
                                          : "";
             if (ImGui::Selectable(editorName.c_str(), pDisplayData != nullptr)) {
                 selected = true;
@@ -188,7 +188,7 @@ void foeImGuiResourceList::customUI() {
                     pDisplayData->focus = true;
                 } else {
                     mDisplayed.emplace_back(ResourceDisplayData{
-                        .resource = resource,
+                        .resourceID = resourceID,
                         .open = true,
                         .focus = true,
                     });
@@ -227,7 +227,7 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
         pData->focus = false;
     }
 
-    std::string windowTitle = "Entity " + foeIdToString(pData->resource);
+    std::string windowTitle = "Entity " + foeIdToString(pData->resourceID);
 
     if (!ImGui::Begin(windowTitle.data(), &pData->open, 0)) {
         ImGui::End();
@@ -237,10 +237,10 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     // EditorID
     if (mpSimulationState->pResourceNameMap != nullptr) {
         ImGui::Text("EditorID: %s",
-                    mpSimulationState->pResourceNameMap->find(pData->resource).data());
+                    mpSimulationState->pResourceNameMap->find(pData->resourceID).data());
     }
 
-    mpRegistrar->displayResource(pData->resource, mpSimulationState);
+    mpRegistrar->displayResource(pData->resourceID, mpSimulationState);
 
     ImGui::End();
 
