@@ -24,6 +24,7 @@
 #include <foe/graphics/upload_buffer.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
 #include <array>
@@ -35,6 +36,7 @@
 class FOE_GFX_RES_EXPORT foeImageLoader {
   public:
     auto initialize(
+        foeResourcePool resourcePool,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
         -> std::error_code;
     void deinitialize();
@@ -63,8 +65,10 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
               foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
-    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
+
+    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
     foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
 

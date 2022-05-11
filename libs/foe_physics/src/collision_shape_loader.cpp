@@ -26,8 +26,13 @@
 
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 
-std::error_code foeCollisionShapeLoader::initialize() {
+std::error_code foeCollisionShapeLoader::initialize(foeResourcePool resourcePool) {
+    if (resourcePool == FOE_NULL_HANDLE)
+        return FOE_PHYSICS_ERROR_COLLISION_SHAPE_LOADER_INITIALIZATION_FAILED;
+
     std::error_code errC;
+
+    mResourcePool = resourcePool;
 
     if (errC) {
         deinitialize();
@@ -36,7 +41,27 @@ std::error_code foeCollisionShapeLoader::initialize() {
     return errC;
 }
 
-void foeCollisionShapeLoader::deinitialize() {}
+void foeCollisionShapeLoader::deinitialize() {
+    // Unload all resources this loader loaded
+    bool upcomingWork;
+    do {
+        upcomingWork = foeResourcePoolUnloadType(mResourcePool,
+                                                 FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) > 0;
+
+        maintenance();
+
+        mLoadSync.lock();
+        upcomingWork |= !mToLoad.empty();
+        mLoadSync.unlock();
+
+        mUnloadRequestsSync.lock();
+        upcomingWork |= !mUnloadRequests.empty();
+        mUnloadRequestsSync.unlock();
+    } while (upcomingWork);
+
+    // External
+    mResourcePool = FOE_NULL_HANDLE;
+}
 
 bool foeCollisionShapeLoader::initialized() const noexcept { return false; }
 

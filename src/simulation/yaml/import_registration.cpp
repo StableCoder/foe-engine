@@ -18,6 +18,7 @@
 
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/resource/pool.h>
+#include <foe/simulation/simulation.hpp>
 #include <foe/yaml/exception.hpp>
 
 #include "../armature.hpp"
@@ -39,13 +40,9 @@ namespace {
 std::error_code armatureCreateProcessing(foeResourceID resourceID,
                                          foeResourceCreateInfo createInfo,
                                          foeSimulation const *pSimulation) {
-    foeResourcePool armaturePool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
-
-    if (armaturePool == FOE_NULL_HANDLE)
-        return FOE_BRINGUP_YAML_ERROR_ARMATURE_POOL_NOT_FOUND;
-
-    foeResource armature = foeResourcePoolAdd(armaturePool, resourceID);
+    foeResource armature =
+        foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
+                           FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
 
     if (armature == FOE_NULL_HANDLE)
         return FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS;

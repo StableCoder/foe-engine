@@ -31,7 +31,7 @@
 
 class FOE_GFX_RES_EXPORT foeMaterialLoader {
   public:
-    auto initialize(foeResourcePool shaderPool, foeResourcePool imagePool) -> std::error_code;
+    auto initialize(foeResourcePool resourcePool) -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -60,8 +60,7 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
               foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
-    foeResourcePool mShaderPool{FOE_NULL_HANDLE};
-    foeResourcePool mImagePool{FOE_NULL_HANDLE};
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
     foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
@@ -87,6 +86,7 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
     std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
 
+    std::mutex mDestroySync;
     size_t mDataDestroyIndex{0};
     std::array<std::vector<foeMaterial>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };

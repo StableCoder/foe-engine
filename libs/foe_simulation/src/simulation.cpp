@@ -19,6 +19,7 @@
 
 #include <foe/chrono/easy_clock.hpp>
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/resource/resource_fns.h>
 
 #include "error_code.hpp"
 #include "log.hpp"
@@ -261,6 +262,19 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
 
     std::unique_ptr<foeSimulation> newSimState{new foeSimulation};
     newSimState->gfxSession = FOE_NULL_HANDLE;
+    newSimState->resourcePool = FOE_NULL_HANDLE;
+
+    // Resource Pool
+    foeResourceFns resourceCallbacks{
+        .pImportContext = &newSimState->groupData,
+        .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
+        .pLoadContext = newSimState.get(),
+        .pLoadFn = TEMP_foeSimulationLoadResource,
+    };
+
+    std::error_code errC = foeCreateResourcePool(&resourceCallbacks, &newSimState->resourcePool);
+    if (errC)
+        return errC;
 
     // Editor Name Maps, if requested
     if (addNameMaps) {
@@ -275,7 +289,6 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
             static_cast<void *>(newSimState.get()));
 
     // Go through each registered set of functionality, add its items
-    std::error_code errC{FOE_SIMULATION_SUCCESS};
     auto it = mRegistered.begin();
     auto const endIt = mRegistered.end();
     for (; it != endIt; ++it) {
@@ -303,6 +316,8 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
                 static_cast<void *>(newSimState.get()));
         mStates.emplace_back(newSimState.get());
         *ppSimulationState = newSimState.release();
+    } else {
+        foeDestroySimulation(newSimState.get());
     }
 
     return errC;
@@ -344,6 +359,9 @@ auto foeDestroySimulation(foeSimulation *pSimulation) -> std::error_code {
         delete pSimulation->pEntityNameMap;
     if (pSimulation->pResourceNameMap)
         delete pSimulation->pResourceNameMap;
+
+    // Destroy ResourcePool
+    foeDestroyResourcePool(pSimulation->resourcePool);
 
     // Delete it
     delete pSimulation;
@@ -499,15 +517,6 @@ auto foeSimulationGetRefCount(foeSimulation const *pSimulation,
         }
     }
 
-    // Resource Pools
-    for (auto const &it : pSimulation->resourcePools) {
-        if (it.sType == sType) {
-            *pRefCount = it.refCount;
-
-            return FOE_SIMULATION_SUCCESS;
-        }
-    }
-
     // Component Pools
     for (auto const &it : pSimulation->componentPools) {
         if (it.sType == sType) {
@@ -534,18 +543,6 @@ auto foeSimulationIncrementRefCount(foeSimulation *pSimulation,
                                     size_t *pRefCount) -> std::error_code {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
-        if (it.sType == sType) {
-            if (pRefCount != nullptr)
-                *pRefCount = ++it.refCount;
-            else
-                ++it.refCount;
-
-            return FOE_SIMULATION_SUCCESS;
-        }
-    }
-
-    // Resource Pools
-    for (auto &it : pSimulation->resourcePools) {
         if (it.sType == sType) {
             if (pRefCount != nullptr)
                 *pRefCount = ++it.refCount;
@@ -588,18 +585,6 @@ auto foeSimulationDecrementRefCount(foeSimulation *pSimulation,
                                     size_t *pRefCount) -> std::error_code {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
-        if (it.sType == sType) {
-            if (pRefCount != nullptr)
-                *pRefCount = --it.refCount;
-            else
-                --it.refCount;
-
-            return FOE_SIMULATION_SUCCESS;
-        }
-    }
-
-    // Resource Pools
-    for (auto &it : pSimulation->resourcePools) {
         if (it.sType == sType) {
             if (pRefCount != nullptr)
                 *pRefCount = --it.refCount;
@@ -809,8 +794,7 @@ auto foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
                                        foeSimulationLoaderData const *pCreateInfo)
     -> std::error_code {
     // Make sure the type doesn't exist yet
-    if (foeSimulationGetResourcePool(pSimulation, pCreateInfo->sType) != nullptr ||
-        foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
+    if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetComponentPool(pSimulation, pCreateInfo->sType) != nullptr) {
         return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
@@ -837,44 +821,11 @@ auto foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
     return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
 }
 
-auto foeSimulationInsertResourcePool(foeSimulation *pSimulation,
-                                     foeSimulationResourcePoolData const *pCreateInfo)
-    -> std::error_code {
-    // Make sure the type doesn't exist yet
-    if (foeSimulationGetResourcePool(pSimulation, pCreateInfo->sType) != nullptr ||
-        foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
-        foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
-        foeSimulationGetComponentPool(pSimulation, pCreateInfo->sType) != nullptr) {
-        return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
-    }
-
-    pSimulation->resourcePools.emplace_back(*pCreateInfo);
-
-    return FOE_SIMULATION_SUCCESS;
-}
-
-auto foeSimulationReleaseResourcePool(foeSimulation *pSimulation,
-                                      foeSimulationStructureType sType,
-                                      void **ppPool) -> std::error_code {
-    auto const endIt = pSimulation->resourcePools.end();
-    for (auto it = pSimulation->resourcePools.begin(); it != endIt; ++it) {
-        if (it->sType == sType) {
-            *ppPool = it->pResourcePool;
-            pSimulation->resourcePools.erase(it);
-
-            return FOE_SIMULATION_SUCCESS;
-        }
-    }
-
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
-}
-
 auto foeSimulationInsertComponentPool(foeSimulation *pSimulation,
                                       foeSimulationComponentPoolData const *pCreateInfo)
     -> std::error_code {
     // Make sure the type doesn't exist yet
-    if (foeSimulationGetResourcePool(pSimulation, pCreateInfo->sType) != nullptr ||
-        foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
+    if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetComponentPool(pSimulation, pCreateInfo->sType) != nullptr) {
         return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
@@ -904,8 +855,7 @@ auto foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
 auto foeSimulationInsertSystem(foeSimulation *pSimulation,
                                foeSimulationSystemData const *pCreateInfo)
     -> std::error_code { // Make sure the type doesn't exist yet
-    if (foeSimulationGetResourcePool(pSimulation, pCreateInfo->sType) != nullptr ||
-        foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
+    if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetComponentPool(pSimulation, pCreateInfo->sType) != nullptr) {
         return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;

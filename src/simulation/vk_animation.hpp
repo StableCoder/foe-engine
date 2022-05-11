@@ -31,8 +31,7 @@ class foeRenderStatePool;
 
 class VkAnimationPool {
   public:
-    auto initialize(foeResourcePool armaturePool,
-                    foeResourcePool meshPool,
+    auto initialize(foeResourcePool resourcePool,
                     foeArmatureStatePool *pArmatureStatePool,
                     foeRenderStatePool *pRenderStatePool) -> std::error_code;
     void deinitialize();
@@ -52,8 +51,7 @@ class VkAnimationPool {
     };
 
     // Resources
-    foeResourcePool mArmaturePool{FOE_NULL_HANDLE};
-    foeResourcePool mMeshPool{FOE_NULL_HANDLE};
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
 
     // Components
     foeArmatureStatePool *mpArmatureStatePool{nullptr};

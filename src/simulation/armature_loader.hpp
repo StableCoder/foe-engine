@@ -18,6 +18,7 @@
 #define FOE_RESOURCE_ARMATURE_LOADER_HPP
 
 #include "armature.hpp"
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
 #include <filesystem>
@@ -30,6 +31,7 @@
 class foeArmatureLoader {
   public:
     std::error_code initialize(
+        foeResourcePool resourcePool,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
     bool initialized() const noexcept;
@@ -53,6 +55,7 @@ class foeArmatureLoader {
               foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
 
     struct LoadData {

@@ -20,6 +20,7 @@
 #include <foe/ecs/id.h>
 #include <foe/physics/export.h>
 #include <foe/physics/resource/collision_shape.hpp>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
 #include <mutex>
@@ -30,7 +31,7 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
   public:
     ~foeCollisionShapeLoader();
 
-    std::error_code initialize();
+    std::error_code initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -52,6 +53,8 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
     void load(foeResource resource,
               foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
+
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
 
     struct LoadData {
         foeResource resource;

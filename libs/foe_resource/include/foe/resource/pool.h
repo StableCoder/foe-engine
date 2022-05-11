@@ -35,15 +35,14 @@ typedef int foeResourcePoolType;
 FOE_DEFINE_HANDLE(foeResourcePool)
 
 FOE_RES_EXPORT foeErrorCode foeCreateResourcePool(foeResourceFns const *pResourceFns,
-                                                  foeResourcePoolType resourcePoolType,
-                                                  foeResourceType resourceType,
-                                                  size_t resourceSize,
                                                   foeResourcePool *pResourcePool);
 
 FOE_RES_EXPORT void foeDestroyResourcePool(foeResourcePool resourcePool);
 
 FOE_RES_EXPORT foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
-                                              foeResourceID resourceID);
+                                              foeResourceID resourceID,
+                                              foeResourceType resourceType,
+                                              size_t resourceSize);
 
 FOE_RES_EXPORT foeResource foeResourcePoolFind(foeResourcePool resourcePool,
                                                foeResourceID resourceID);
@@ -56,6 +55,9 @@ FOE_RES_EXPORT void foeResourcePoolAddAsyncTaskCallback(foeResourcePool resource
                                                         void *pScheduleAsyncTaskContext);
 
 FOE_RES_EXPORT void foeResourcePoolUnloadAll(foeResourcePool resourcePool);
+
+FOE_RES_EXPORT uint32_t foeResourcePoolUnloadType(foeResourcePool resourcePool,
+                                                  foeResourceType resourceType);
 
 #ifdef __cplusplus
 }

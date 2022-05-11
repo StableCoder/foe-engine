@@ -19,6 +19,7 @@
 
 #include <foe/ecs/id.h>
 #include <foe/graphics/session.hpp>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/export.h>
 #include <foe/simulation/group_data.hpp>
@@ -42,7 +43,6 @@
  * such as graphics.
  */
 
-struct foeResourcePoolBase;
 struct foeResourceLoaderBase;
 struct foeComponentPoolBase;
 struct foeSystemBase;
@@ -66,12 +66,6 @@ struct foeSimulationLoaderData {
     void (*pMaintenanceFn)(void *);
     /// Maintenance to be performed as part of the graphics loop
     void (*pGfxMaintenanceFn)(void *);
-};
-
-struct foeSimulationResourcePoolData {
-    foeSimulationStructureType sType;
-    size_t refCount;
-    void *pResourcePool;
 };
 
 struct foeSimulationComponentPoolData {
@@ -115,8 +109,8 @@ struct foeSimulation {
 
     // Resource Data
     foeEditorNameMap *pResourceNameMap;
+    foeResourcePool resourcePool;
     std::vector<foeSimulationLoaderData> resourceLoaders;
-    std::vector<foeSimulationResourcePoolData> resourcePools;
 
     // Entity / Component Data
     foeEditorNameMap *pEntityNameMap;
@@ -251,14 +245,6 @@ FOE_SIM_EXPORT auto foeSimulationInsertResourceLoader(foeSimulation *pSimulation
 FOE_SIM_EXPORT auto foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
                                                        foeSimulationStructureType sType,
                                                        void **ppLoader) -> std::error_code;
-
-FOE_SIM_EXPORT auto foeSimulationInsertResourcePool(
-    foeSimulation *pSimulation, foeSimulationResourcePoolData const *pCreateInfo)
-    -> std::error_code;
-
-FOE_SIM_EXPORT auto foeSimulationReleaseResourcePool(foeSimulation *pSimulation,
-                                                     foeSimulationStructureType sType,
-                                                     void **ppPool) -> std::error_code;
 
 FOE_SIM_EXPORT auto foeSimulationInsertComponentPool(
     foeSimulation *pSimulation, foeSimulationComponentPoolData const *pCreateInfo)

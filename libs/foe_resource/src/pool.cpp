@@ -29,10 +29,6 @@
 namespace {
 
 struct ResourcePool {
-    foeResourcePoolType resourcePoolType;
-    foeResourceType resourceType;
-    size_t resourceSize;
-
     std::shared_mutex sync;
     foeResourceFns callbacks;
     std::vector<foeResource> resources;
@@ -43,14 +39,8 @@ FOE_DEFINE_HANDLE_CASTS(resource_pool, ResourcePool, foeResourcePool)
 } // namespace
 
 extern "C" foeErrorCode foeCreateResourcePool(foeResourceFns const *pResourceFns,
-                                              foeResourcePoolType resourcePoolType,
-                                              foeResourceType resourceType,
-                                              size_t resourceSize,
                                               foeResourcePool *pResourcePool) {
     ResourcePool *pNewResourcePool = new ResourcePool{
-        .resourcePoolType = resourcePoolType,
-        .resourceType = resourceType,
-        .resourceSize = resourceSize,
         .callbacks = *pResourceFns,
     };
 
@@ -69,17 +59,20 @@ extern "C" void foeDestroyResourcePool(foeResourcePool resourcePool) {
             foeDestroyResource(resource);
         } else {
             FOE_LOG(foeResourceCore, Warning,
-                    "[{},{}] foeResourcePool - While destroying, found foeResource [{},{}] that "
+                    "[{}] foeResourcePool - While destroying, found foeResource [{},{}] that "
                     "still has external references and thus skipped immediate destruction",
-                    (void *)pResourcePool, pResourcePool->resourcePoolType,
-                    foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+                    (void *)pResourcePool, foeIdToString(foeResourceGetID(resource)),
+                    foeResourceGetType(resource));
         }
     }
 
     delete pResourcePool;
 }
 
-extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool, foeResourceID resourceID) {
+extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
+                                          foeResourceID resourceID,
+                                          foeResourceType resourceType,
+                                          size_t resourceSize) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
 
     std::unique_lock lock{pResourcePool->sync};
@@ -93,9 +86,8 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool, foeResou
 
     // Not found, add it
     foeResource newResource;
-    std::error_code errC =
-        foeCreateResource(resourceID, pResourcePool->resourceType, &pResourcePool->callbacks,
-                          pResourcePool->resourceSize, &newResource);
+    std::error_code errC = foeCreateResource(resourceID, resourceType, &pResourcePool->callbacks,
+                                             resourceSize, &newResource);
     if (errC)
         return FOE_NULL_HANDLE;
 
@@ -144,10 +136,10 @@ extern "C" foeErrorCode foeResourcePoolRemove(foeResourcePool resourcePool,
         foeDestroyResource(resource);
     } else {
         FOE_LOG(foeResourceCore, Warning,
-                "[{},{}] foeResourcePool - While removing foeResource [{},{}], it still has "
+                "[{}] foeResourcePool - While removing foeResource [{},{}], it still has "
                 "external references and thus skipped immediate destruction",
-                (void *)pResourcePool, pResourcePool->resourcePoolType,
-                foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+                (void *)pResourcePool, foeIdToString(foeResourceGetID(resource)),
+                foeResourceGetType(resource));
     }
 
     return foeToErrorCode(FOE_RESOURCE_SUCCESS);
@@ -170,4 +162,23 @@ extern "C" void foeResourcePoolUnloadAll(foeResourcePool resourcePool) {
     for (foeResource it : pResourcePool->resources) {
         foeResourceUnload(it, false);
     }
+}
+
+extern "C" uint32_t foeResourcePoolUnloadType(foeResourcePool resourcePool,
+                                              foeResourceType resourceType) {
+    uint32_t count = 0;
+    ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
+
+    std::shared_lock lock{pResourcePool->sync};
+
+    for (foeResource it : pResourcePool->resources) {
+        if (foeResourceGetType(it) == resourceType &&
+            (foeResourceGetIsLoading(it) ||
+             foeResourceGetState(it) == foeResourceLoadState::Loaded)) {
+            foeResourceUnload(it, false);
+            ++count;
+        }
+    }
+
+    return count;
 }

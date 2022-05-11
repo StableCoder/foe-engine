@@ -18,20 +18,6 @@
 
 #include <foe/simulation/simulation.hpp>
 
-extern "C" void *foeSimulationGetResourcePool(foeSimulation const *pSimulation,
-                                              foeSimulationStructureType sType) {
-    auto *pIt = pSimulation->resourcePools.data();
-    auto *pEndIt = pIt + pSimulation->resourcePools.size();
-
-    for (; pIt != pEndIt; ++pIt) {
-        if (pIt->sType == sType) {
-            return (void *)pIt->pResourcePool;
-        }
-    }
-
-    return nullptr;
-}
-
 extern "C" void *foeSimulationGetResourceLoader(foeSimulation const *pSimulation,
                                                 foeSimulationStructureType sType) {
     auto *pIt = pSimulation->resourceLoaders.data();

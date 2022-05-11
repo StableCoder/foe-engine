@@ -29,16 +29,21 @@
 #include "log.hpp"
 
 std::error_code foeImageLoader::initialize(
+    foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
-    if (!externalFileSearchFn)
+    if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED;
 
+    mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
 
     return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
-void foeImageLoader::deinitialize() { mExternalFileSearchFn = {}; }
+void foeImageLoader::deinitialize() {
+    mExternalFileSearchFn = {};
+    mResourcePool = FOE_NULL_HANDLE;
+}
 
 bool foeImageLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
 
@@ -58,10 +63,35 @@ auto foeImageLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_
 }
 
 void foeImageLoader::deinitializeGraphics() {
+    // Unload all resources this loader loaded
+    bool upcomingWork;
+    do {
+        upcomingWork = foeResourcePoolUnloadType(mResourcePool,
+                                                 FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) > 0;
+
+        gfxMaintenance();
+
+        mLoadSync.lock();
+        upcomingWork |= !mToLoad.empty();
+        mLoadSync.unlock();
+
+        mUnloadRequestsSync.lock();
+        upcomingWork |= !mUnloadRequests.empty();
+        mUnloadRequestsSync.unlock();
+
+        mDestroySync.lock();
+        for (auto const &it : mDataDestroyLists) {
+            upcomingWork |= !it.empty();
+        }
+        mDestroySync.unlock();
+    } while (upcomingWork);
+
+    // Internal
     if (mGfxUploadContext != FOE_NULL_HANDLE)
         foeGfxDestroyUploadContext(mGfxUploadContext);
     mGfxUploadContext = FOE_NULL_HANDLE;
 
+    // External
     mGfxSession = FOE_NULL_HANDLE;
 }
 

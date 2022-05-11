@@ -21,6 +21,7 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/vk/shader.hpp>
+#include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
 #include <filesystem>
@@ -31,6 +32,7 @@
 class FOE_GFX_RES_EXPORT foeShaderLoader {
   public:
     auto initialize(
+        foeResourcePool resourcePool,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
         -> std::error_code;
     void deinitialize();
@@ -59,8 +61,10 @@ class FOE_GFX_RES_EXPORT foeShaderLoader {
               foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
-    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
+
+    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
     struct LoadData {
         foeResource resource;

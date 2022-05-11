@@ -33,8 +33,6 @@
 namespace {
 
 struct TypeSelection {
-    // Resources
-    bool collisionShapeResource;
     // Loaders
     bool collisionShapeLoader;
     // Components
@@ -120,31 +118,6 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         }
     }
 
-    // Resources
-    if (pSelection == nullptr || pSelection->collisionShapeResource) {
-        errC = foeSimulationDecrementRefCount(
-            pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL, &count);
-        if (errC) {
-            // Trying to destroy something that doesn't exist? Not optimal
-            FOE_LOG(foePhysics, Warning,
-                    "Attempted to decrement/destroy foeCollisionShapePool that doesn't exist - {}",
-                    errC.message());
-            ++errors;
-        } else if (count == 0) {
-            foeResourcePool resourcePool;
-            errC = foeSimulationReleaseResourcePool(pSimulation,
-                                                    FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL,
-                                                    (void **)&resourcePool);
-            if (errC) {
-                FOE_LOG(foePhysics, Warning,
-                        "Could not release foeCollisionShapePool to destroy - {}", errC.message());
-                ++errors;
-            } else {
-                foeDestroyResourcePool(resourcePool);
-            }
-        }
-    }
-
     return errors;
 }
 
@@ -159,36 +132,6 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
         .pLoadContext = pSimulation,
         .pLoadFn = TEMP_foeSimulationLoadResource,
     };
-
-    // Resources
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL,
-                                       nullptr)) {
-        // Couldn't incement it, doesn't exist yet
-        foeResourcePool collisionShapePool{FOE_NULL_HANDLE};
-
-        errC =
-            foeCreateResourcePool(&resourcePoolFns, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL,
-                                  FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE,
-                                  sizeof(foeCollisionShape), &collisionShapePool);
-        if (errC)
-            goto CREATE_FAILED;
-
-        foeSimulationResourcePoolData createInfo{
-            .sType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL,
-            .pResourcePool = collisionShapePool,
-        };
-        errC = foeSimulationInsertResourcePool(pSimulation, &createInfo);
-        if (errC) {
-            foeDestroyResourcePool(collisionShapePool);
-            FOE_LOG(foePhysics, Error,
-                    "onCreate - Failed to create foeCollisionShapePool on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
-            goto CREATE_FAILED;
-        }
-        foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL,
-                                       nullptr);
-    }
-    selection.collisionShapeResource = true;
 
     // Loaders
     if (foeSimulationIncrementRefCount(
@@ -340,7 +283,8 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
     if (count == 1) {
         auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-        errC = pLoader->initialize();
+
+        errC = pLoader->initialize(pSimulation->resourcePool);
         if (errC) {
             FOE_LOG(foePhysics, Error,
                     "Failed to initialize foeArmatureLoader on Simulation {} with error {}",
@@ -363,8 +307,7 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
     if (count == 1) {
         auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-        foeResourcePool collisionShapePool = (foeResourcePool)foeSimulationGetResourcePool(
-            pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+
         auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
         auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
@@ -372,7 +315,8 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
 
         auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
-        errC = pSystem->initialize(pCollisionShapeLoader, collisionShapePool, pRigidBodyPool,
+
+        errC = pSystem->initialize(pSimulation->resourcePool, pCollisionShapeLoader, pRigidBodyPool,
                                    pPosition3dPool);
         if (errC) {
             FOE_LOG(foePhysics, Error,

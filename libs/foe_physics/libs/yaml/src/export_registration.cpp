@@ -34,25 +34,23 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceID resourceID,
                                             foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    foeResourcePool collisionShapePool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL);
+    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
 
-    if (collisionShapePool != FOE_NULL_HANDLE) {
-        foeResource collisionShape = foeResourcePoolFind(collisionShapePool, resourceID);
+    if (resource == FOE_NULL_HANDLE)
+        return keyDataPairs;
 
-        if (collisionShape != FOE_NULL_HANDLE) {
-            auto createInfo = foeResourceGetCreateInfo(collisionShape);
+    if (foeResourceGetType(resource) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+        auto createInfo = foeResourceGetCreateInfo(resource);
 
-            if (foeResourceCreateInfoGetType(createInfo) ==
-                FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO) {
-                auto const *pCreateInfo =
-                    (foeCollisionShapeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO) {
+            auto const *pCreateInfo =
+                (foeCollisionShapeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_collision_shape_key(),
-                    .data = yaml_write_collision_shape(*pCreateInfo),
-                });
-            }
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_collision_shape_key(),
+                .data = yaml_write_collision_shape(*pCreateInfo),
+            });
         }
     }
 

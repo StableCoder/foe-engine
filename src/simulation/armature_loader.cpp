@@ -25,9 +25,14 @@
 #include "type_defs.h"
 
 std::error_code foeArmatureLoader::initialize(
+    foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
+    if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
+        return FOE_BRINGUP_ERROR_LOADER_INITIALIZATION_FAILED;
+
     std::error_code errC;
 
+    mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
 
     if (errC) {
@@ -37,7 +42,28 @@ std::error_code foeArmatureLoader::initialize(
     return errC;
 }
 
-void foeArmatureLoader::deinitialize() { mExternalFileSearchFn = {}; }
+void foeArmatureLoader::deinitialize() {
+    // Unload all resources this loader loaded
+    bool upcomingWork;
+    do {
+        upcomingWork =
+            foeResourcePoolUnloadType(mResourcePool, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) > 0;
+
+        maintenance();
+
+        mLoadSync.lock();
+        upcomingWork |= !mToLoad.empty();
+        mLoadSync.unlock();
+
+        mUnloadRequestsSync.lock();
+        upcomingWork |= !mUnloadRequests.empty();
+        mUnloadRequestsSync.unlock();
+    } while (upcomingWork);
+
+    // External
+    mExternalFileSearchFn = {};
+    mResourcePool = FOE_NULL_HANDLE;
+}
 
 bool foeArmatureLoader::initialized() const noexcept { return bool(mExternalFileSearchFn); }
 

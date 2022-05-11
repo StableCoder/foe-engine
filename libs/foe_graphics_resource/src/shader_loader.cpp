@@ -51,10 +51,12 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 } // namespace
 
 std::error_code foeShaderLoader::initialize(
+    foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
-    if (!externalFileSearchFn)
+    if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_INITIALIZATION_FAILED;
 
+    mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
 
     return FOE_GRAPHICS_RESOURCE_SUCCESS;
@@ -73,7 +75,33 @@ auto foeShaderLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error
     return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
-void foeShaderLoader::deinitializeGraphics() { mGfxSession = FOE_NULL_HANDLE; }
+void foeShaderLoader::deinitializeGraphics() {
+    // Unload all resources this loader loaded
+    bool upcomingWork;
+    do {
+        upcomingWork = foeResourcePoolUnloadType(mResourcePool,
+                                                 FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) > 0;
+
+        gfxMaintenance();
+
+        mLoadSync.lock();
+        upcomingWork |= !mLoadRequests.empty();
+        mLoadSync.unlock();
+
+        mUnloadRequestsSync.lock();
+        upcomingWork |= !mUnloadRequests.empty();
+        mUnloadRequestsSync.unlock();
+
+        mDestroySync.lock();
+        for (auto const &it : mDataDestroyLists) {
+            upcomingWork |= !it.empty();
+        }
+        mDestroySync.unlock();
+    } while (upcomingWork);
+
+    // External
+    mGfxSession = FOE_NULL_HANDLE;
+}
 
 bool foeShaderLoader::initializedGraphics() const noexcept {
     return mGfxSession != FOE_NULL_HANDLE;

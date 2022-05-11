@@ -20,6 +20,7 @@
 #include <foe/resource/imgui/resource.h>
 #include <foe/resource/pool.h>
 #include <foe/simulation/imgui/registrar.hpp>
+#include <foe/simulation/simulation.hpp>
 #include <imgui.h>
 
 #include "../simulation/armature_state_pool.hpp"
@@ -75,32 +76,31 @@ void imgui_foeBringupResources(
     foeResourceID resourceID,
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
+    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
+
+    if (resource == FOE_NULL_HANDLE)
+        return;
+
     // foeArmature
-    if (foeResourcePool resourcePool = (foeResourcePool)foeSimulationGetResourcePool(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
-        resourcePool != FOE_NULL_HANDLE) {
-        foeResource resource = foeResourcePoolFind(resourcePool, resourceID);
-        if (resource != FOE_NULL_HANDLE &&
-            foeResourceGetType(resource) == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
-            imgui_foeResource(resource);
+    if (foeResourceGetType(resource) == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+        imgui_foeResource(resource);
 
-            std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
-                    imgui_foeArmature((foeArmature const *)foeResourceGetData(resource));
-                }
+        std::string resDataHeader = "Data: ";
+        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                imgui_foeArmature((foeArmature const *)foeResourceGetData(resource));
             }
+        }
 
-            if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
-                if (createInfo != FOE_NULL_HANDLE) {
-                    imgui_foeResourceCreateInfo(createInfo);
-                    ImGui::Separator();
-                    showResourceCreateInfoDataFn(createInfo);
+        if (ImGui::CollapsingHeader("CreateInfo")) {
+            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            if (createInfo != FOE_NULL_HANDLE) {
+                imgui_foeResourceCreateInfo(createInfo);
+                ImGui::Separator();
+                showResourceCreateInfoDataFn(createInfo);
 
-                    foeResourceCreateInfoDecrementRefCount(createInfo);
-                }
+                foeResourceCreateInfoDecrementRefCount(createInfo);
             }
         }
     }

@@ -49,13 +49,6 @@ auto renderCall(foeId entity,
                 VkDescriptorSet cameraDescriptor) -> bool {
     VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
-    foeResourcePool vertexDescriptorPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
-    foeResourcePool materialPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
-    foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
-
     foeResource vertexDescriptor{FOE_NULL_HANDLE};
     bool boned{false};
     if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
@@ -63,16 +56,17 @@ auto renderCall(foeId entity,
         boned = true;
 
         vertexDescriptor =
-            foeResourcePoolFind(vertexDescriptorPool, pRenderState->bonedVertexDescriptor);
+            foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->bonedVertexDescriptor);
     }
 
     if (vertexDescriptor == FOE_NULL_HANDLE) {
         vertexDescriptor =
-            foeResourcePoolFind(vertexDescriptorPool, pRenderState->vertexDescriptor);
+            foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->vertexDescriptor);
     }
 
-    foeResource material = foeResourcePoolFind(materialPool, pRenderState->material);
-    foeResource mesh = foeResourcePoolFind(meshPool, pRenderState->mesh);
+    foeResource material =
+        foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->material);
+    foeResource mesh = foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->mesh);
 
     if (vertexDescriptor == FOE_NULL_HANDLE || material == FOE_NULL_HANDLE ||
         mesh == FOE_NULL_HANDLE) {

@@ -28,7 +28,7 @@
 
 class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
   public:
-    std::error_code initialize(foeResourcePool shaderPool);
+    std::error_code initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -51,7 +51,7 @@ class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
               foeResourceCreateInfo createInfo,
               PFN_foeResourcePostLoad *pPostLoadFn);
 
-    foeResourcePool mShaderPool{FOE_NULL_HANDLE};
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
 
     struct LoadData {
         foeResource resource;

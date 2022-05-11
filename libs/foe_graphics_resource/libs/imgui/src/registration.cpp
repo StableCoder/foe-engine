@@ -36,159 +36,128 @@ void imgui_foeGraphicsResources(
     foeResourceID resourceID,
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
+    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
+
+    if (resource == FOE_NULL_HANDLE)
+        return;
+
     // foeImage
-    foeResourcePool imagePool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
+    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
+        imgui_foeResource(resource);
 
-    if (imagePool != FOE_NULL_HANDLE) {
-        foeResource resource = foeResourcePoolFind(imagePool, resourceID);
-        if (resource != FOE_NULL_HANDLE &&
-            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
-            imgui_foeResource(resource);
-
-            std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
-                    imgui_foeImage((foeImage const *)foeResourceGetData(resource));
-                }
+        std::string resDataHeader = "Data: ";
+        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                imgui_foeImage((foeImage const *)foeResourceGetData(resource));
             }
+        }
 
-            if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
-                if (createInfo != FOE_NULL_HANDLE) {
-                    imgui_foeResourceCreateInfo(createInfo);
-                    ImGui::Separator();
-                    showResourceCreateInfoDataFn(createInfo);
+        if (ImGui::CollapsingHeader("CreateInfo")) {
+            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            if (createInfo != FOE_NULL_HANDLE) {
+                imgui_foeResourceCreateInfo(createInfo);
+                ImGui::Separator();
+                showResourceCreateInfoDataFn(createInfo);
 
-                    foeResourceCreateInfoDecrementRefCount(createInfo);
-                }
+                foeResourceCreateInfoDecrementRefCount(createInfo);
             }
         }
     }
 
     // foeMaterial
-    foeResourcePool materialPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
+    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
+        imgui_foeResource(resource);
 
-    if (materialPool != FOE_NULL_HANDLE) {
-        foeResource resource = foeResourcePoolFind(materialPool, resourceID);
-        if (resource != FOE_NULL_HANDLE &&
-            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
-            imgui_foeResource(resource);
-
-            std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
-                    imgui_foeMaterial((foeMaterial const *)foeResourceGetData(resource));
-                }
+        std::string resDataHeader = "Data: ";
+        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                imgui_foeMaterial((foeMaterial const *)foeResourceGetData(resource));
             }
+        }
 
-            if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
-                if (createInfo != FOE_NULL_HANDLE) {
-                    imgui_foeResourceCreateInfo(createInfo);
-                    ImGui::Separator();
-                    showResourceCreateInfoDataFn(createInfo);
+        if (ImGui::CollapsingHeader("CreateInfo")) {
+            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            if (createInfo != FOE_NULL_HANDLE) {
+                imgui_foeResourceCreateInfo(createInfo);
+                ImGui::Separator();
+                showResourceCreateInfoDataFn(createInfo);
 
-                    foeResourceCreateInfoDecrementRefCount(createInfo);
-                }
+                foeResourceCreateInfoDecrementRefCount(createInfo);
             }
         }
     }
 
     // foeMesh
-    foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
+    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
+        imgui_foeResource(resource);
 
-    if (meshPool != FOE_NULL_HANDLE) {
-        foeResource resource = foeResourcePoolFind(meshPool, resourceID);
-        if (resource != FOE_NULL_HANDLE &&
-            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
-            imgui_foeResource(resource);
-
-            std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
-                    imgui_foeMesh((foeMesh const *)foeResourceGetData(resource));
-                }
+        std::string resDataHeader = "Data: ";
+        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                imgui_foeMesh((foeMesh const *)foeResourceGetData(resource));
             }
+        }
 
-            if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
-                if (createInfo != FOE_NULL_HANDLE) {
-                    imgui_foeResourceCreateInfo(createInfo);
-                    ImGui::Separator();
-                    showResourceCreateInfoDataFn(createInfo);
+        if (ImGui::CollapsingHeader("CreateInfo")) {
+            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            if (createInfo != FOE_NULL_HANDLE) {
+                imgui_foeResourceCreateInfo(createInfo);
+                ImGui::Separator();
+                showResourceCreateInfoDataFn(createInfo);
 
-                    foeResourceCreateInfoDecrementRefCount(createInfo);
-                }
+                foeResourceCreateInfoDecrementRefCount(createInfo);
             }
         }
     }
 
     // foeShader
-    foeResourcePool shaderPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
+    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+        imgui_foeResource(resource);
 
-    if (shaderPool != FOE_NULL_HANDLE) {
-        foeResource resource = foeResourcePoolFind(shaderPool, resourceID);
-        if (resource != FOE_NULL_HANDLE &&
-            foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
-            imgui_foeResource(resource);
-
-            std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
-                    imgui_foeShader((foeShader const *)foeResourceGetData(resource));
-                }
+        std::string resDataHeader = "Data: ";
+        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                imgui_foeShader((foeShader const *)foeResourceGetData(resource));
             }
+        }
 
-            if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
-                if (createInfo != FOE_NULL_HANDLE) {
-                    imgui_foeResourceCreateInfo(createInfo);
-                    ImGui::Separator();
-                    showResourceCreateInfoDataFn(createInfo);
+        if (ImGui::CollapsingHeader("CreateInfo")) {
+            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            if (createInfo != FOE_NULL_HANDLE) {
+                imgui_foeResourceCreateInfo(createInfo);
+                ImGui::Separator();
+                showResourceCreateInfoDataFn(createInfo);
 
-                    foeResourceCreateInfoDecrementRefCount(createInfo);
-                }
+                foeResourceCreateInfoDecrementRefCount(createInfo);
             }
         }
     }
 
     // foeVertexDescriptor
-    foeResourcePool vertexDescriptorPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
+    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
+        imgui_foeResource(resource);
 
-    if (vertexDescriptorPool != FOE_NULL_HANDLE) {
-        foeResource resource = foeResourcePoolFind(vertexDescriptorPool, resourceID);
-        if (resource != FOE_NULL_HANDLE &&
-            foeResourceGetType(resource) ==
-                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
-            imgui_foeResource(resource);
-
-            std::string resDataHeader = "Data: ";
-            resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-            if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-                if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
-                    imgui_foeVertexDescriptor(
-                        (foeVertexDescriptor const *)foeResourceGetData(resource));
-                }
+        std::string resDataHeader = "Data: ";
+        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
+        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
+            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+                imgui_foeVertexDescriptor(
+                    (foeVertexDescriptor const *)foeResourceGetData(resource));
             }
+        }
 
-            if (ImGui::CollapsingHeader("CreateInfo")) {
-                foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
-                if (createInfo != FOE_NULL_HANDLE) {
-                    imgui_foeResourceCreateInfo(createInfo);
-                    ImGui::Separator();
-                    showResourceCreateInfoDataFn(createInfo);
+        if (ImGui::CollapsingHeader("CreateInfo")) {
+            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            if (createInfo != FOE_NULL_HANDLE) {
+                imgui_foeResourceCreateInfo(createInfo);
+                ImGui::Separator();
+                showResourceCreateInfoDataFn(createInfo);
 
-                    foeResourceCreateInfoDecrementRefCount(createInfo);
-                }
+                foeResourceCreateInfoDecrementRefCount(createInfo);
             }
         }
     }

@@ -28,17 +28,15 @@
 #include "render_state_pool.hpp"
 #include "type_defs.h"
 
-auto VkAnimationPool::initialize(foeResourcePool armaturePool,
-                                 foeResourcePool meshPool,
+auto VkAnimationPool::initialize(foeResourcePool resourcePool,
                                  foeArmatureStatePool *pArmatureStatePool,
                                  foeRenderStatePool *pRenderStatePool) -> std::error_code {
-    if (armaturePool == FOE_NULL_HANDLE || meshPool == FOE_NULL_HANDLE ||
-        pArmatureStatePool == nullptr || pRenderStatePool == nullptr)
+    if (resourcePool == FOE_NULL_HANDLE || pArmatureStatePool == nullptr ||
+        pRenderStatePool == nullptr)
         return FOE_BRINGUP_INITIALIZATION_FAILED;
 
     // External
-    mArmaturePool = armaturePool;
-    mMeshPool = meshPool;
+    mResourcePool = resourcePool;
 
     mpArmatureStatePool = pArmatureStatePool;
     mpRenderStatePool = pRenderStatePool;
@@ -51,11 +49,10 @@ void VkAnimationPool::deinitialize() {
     mpRenderStatePool = nullptr;
     mpArmatureStatePool = nullptr;
 
-    mMeshPool = FOE_NULL_HANDLE;
-    mArmaturePool = FOE_NULL_HANDLE;
+    mResourcePool = FOE_NULL_HANDLE;
 }
 
-bool VkAnimationPool::initialized() const noexcept { return mArmaturePool != FOE_NULL_HANDLE; }
+bool VkAnimationPool::initialized() const noexcept { return mResourcePool != FOE_NULL_HANDLE; }
 
 auto VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
     if (!initialized())
@@ -230,8 +227,8 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             continue;
         }
 
-        foeResource mesh = foeResourcePoolFind(mMeshPool, pRenderState->mesh);
-        foeResource armature = foeResourcePoolFind(mArmaturePool, pArmatureState->armatureID);
+        foeResource mesh = foeResourcePoolFind(mResourcePool, pRenderState->mesh);
+        foeResource armature = foeResourcePoolFind(mResourcePool, pArmatureState->armatureID);
 
         if (mesh == FOE_NULL_HANDLE || armature == FOE_NULL_HANDLE ||
             foeResourceGetState(mesh) != foeResourceLoadState::Loaded ||

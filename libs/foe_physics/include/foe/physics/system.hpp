@@ -40,8 +40,8 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     foePhysicsSystem();
     ~foePhysicsSystem();
 
-    auto initialize(foeCollisionShapeLoader *pCollisionShapeLoader,
-                    foeResourcePool collisionShapePool,
+    auto initialize(foeResourcePool resourcePool,
+                    foeCollisionShapeLoader *pCollisionShapeLoader,
                     foeRigidBodyPool *pRigidBodyPool,
                     foePosition3dPool *pPosition3dPool) -> std::error_code;
     void deinitialize();
@@ -57,8 +57,8 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     void removeObject(foeEntityID entity, foeRigidBody *pRigidBody);
 
     // Resources
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     foeCollisionShapeLoader *mpCollisionShapeLoader{nullptr};
-    foeResourcePool mCollisionShapePool{FOE_NULL_HANDLE};
 
     // Components
     foeRigidBodyPool *mpRigidBodyPool{nullptr};

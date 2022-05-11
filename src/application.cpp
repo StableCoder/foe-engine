@@ -305,25 +305,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             foeScheduleAsyncTask(threadPool, task, pTaskContext);
         };
 
-        foeResourcePool resourcePool = (foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_POOL);
-        foeResourcePoolAddAsyncTaskCallback(resourcePool, asyncTaskFunc, (void *)threadPool);
-
-        resourcePool = (foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
-        foeResourcePoolAddAsyncTaskCallback(resourcePool, asyncTaskFunc, (void *)threadPool);
-
-        foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
-        foeResourcePoolAddAsyncTaskCallback(resourcePool, asyncTaskFunc, (void *)threadPool);
-
-        resourcePool = (foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
-        foeResourcePoolAddAsyncTaskCallback(resourcePool, asyncTaskFunc, (void *)threadPool);
-
-        resourcePool = (foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
-        foeResourcePoolAddAsyncTaskCallback(resourcePool, asyncTaskFunc, (void *)threadPool);
+        foeResourcePoolAddAsyncTaskCallback(pSimulationSet->resourcePool, asyncTaskFunc,
+                                            (void *)threadPool);
     }
 
 #ifdef FOE_XR_SUPPORT
@@ -350,61 +333,6 @@ void Application::deinitialize() {
 
     // Deinit simulation
     if (pSimulationSet) {
-        // Resource Unloading
-        foeResourcePool collisionShapePool = ((foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_POOL));
-        foeResourcePoolUnloadAll(collisionShapePool);
-
-        auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
-            pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-        pCollisionShapeLoader->maintenance();
-
-        foeResourcePool meshPool = ((foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL));
-        foeResourcePoolUnloadAll(meshPool);
-        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pMeshLoader = (foeMeshLoader *)foeSimulationGetResourceLoader(
-                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER);
-            pMeshLoader->gfxMaintenance();
-        }
-
-        foeResourcePool materialPool = ((foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL));
-        foeResourcePoolUnloadAll(materialPool);
-        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pMaterialLoader = (foeMaterialLoader *)foeSimulationGetResourceLoader(
-                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER);
-            pMaterialLoader->gfxMaintenance();
-        }
-
-        foeResourcePool imagePool = ((foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL));
-        foeResourcePoolUnloadAll(imagePool);
-        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pImageLoader = (foeImageLoader *)foeSimulationGetResourceLoader(
-                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER);
-            pImageLoader->gfxMaintenance();
-        }
-
-        foeResourcePool vertexDescriptorPool = ((foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL));
-        foeResourcePoolUnloadAll(vertexDescriptorPool);
-        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pVertexDescriptorLoader =
-                (foeVertexDescriptorLoader *)foeSimulationGetResourceLoader(
-                    pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER);
-            pVertexDescriptorLoader->gfxMaintenance();
-        }
-
-        foeResourcePool shaderPool = ((foeResourcePool)foeSimulationGetResourcePool(
-            pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL));
-        foeResourcePoolUnloadAll(vertexDescriptorPool);
-        for (int i = 0; i < FOE_GRAPHICS_MAX_BUFFERED_FRAMES * 2; ++i) {
-            auto *pShaderLoader = (foeShaderLoader *)foeSimulationGetResourceLoader(
-                pSimulationSet, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER);
-            pShaderLoader->gfxMaintenance();
-        }
-
         foeDeinitializeSimulationGraphics(pSimulationSet);
         foeDeinitializeSimulation(pSimulationSet);
     }

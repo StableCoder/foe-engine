@@ -30,6 +30,7 @@
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/resource/pool.h>
+#include <foe/simulation/simulation.hpp>
 
 #include "error_code.hpp"
 #include "image.hpp"
@@ -44,24 +45,22 @@ std::vector<foeKeyYamlPair> exportImage(foeResourceID resourceID,
                                         foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    foeResourcePool imagePool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_POOL);
+    foeResource image = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
 
-    if (imagePool != FOE_NULL_HANDLE) {
-        foeResource image = foeResourcePoolFind(imagePool, resourceID);
+    if (image == FOE_NULL_HANDLE)
+        return keyDataPairs;
 
-        if (image != FOE_NULL_HANDLE) {
-            auto createInfo = foeResourceGetCreateInfo(image);
-            if (foeResourceCreateInfoGetType(createInfo) ==
-                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO) {
-                auto const *pCreateInfo =
-                    (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (foeResourceGetType(image) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
+        auto createInfo = foeResourceGetCreateInfo(image);
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO) {
+            auto const *pCreateInfo =
+                (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_image_key(),
-                    .data = yaml_write_image(*pCreateInfo),
-                });
-            }
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_image_key(),
+                .data = yaml_write_image(*pCreateInfo),
+            });
         }
     }
 
@@ -72,25 +71,23 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resourceID,
                                            foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    foeResourcePool materialPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_POOL);
+    foeResource material = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
 
-    if (materialPool != FOE_NULL_HANDLE) {
-        foeResource material = foeResourcePoolFind(materialPool, resourceID);
+    if (material == FOE_NULL_HANDLE)
+        return keyDataPairs;
 
-        if (material != FOE_NULL_HANDLE) {
-            auto createInfo = foeResourceGetCreateInfo(material);
-            if (foeResourceCreateInfoGetType(createInfo) ==
-                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO) {
-                auto const *pCreateInfo =
-                    (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-                auto const *pMaterial = (foeMaterial const *)foeResourceGetData(material);
+    if (foeResourceGetType(material) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
+        auto createInfo = foeResourceGetCreateInfo(material);
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO) {
+            auto const *pCreateInfo =
+                (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+            auto const *pMaterial = (foeMaterial const *)foeResourceGetData(material);
 
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_material_key(),
-                    .data = yaml_write_material(*pCreateInfo, pMaterial->pGfxFragDescriptor),
-                });
-            }
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_material_key(),
+                .data = yaml_write_material(*pCreateInfo, pMaterial->pGfxFragDescriptor),
+            });
         }
     }
 
@@ -100,23 +97,22 @@ std::vector<foeKeyYamlPair> exportMaterial(foeResourceID resourceID,
 std::vector<foeKeyYamlPair> exportMesh(foeResourceID resourceID, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    foeResourcePool meshPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_POOL);
+    foeResource mesh = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
 
-    if (meshPool != FOE_NULL_HANDLE) {
-        foeResource mesh = foeResourcePoolFind(meshPool, resourceID);
-        if (mesh != FOE_NULL_HANDLE) {
-            auto createInfo = foeResourceGetCreateInfo(mesh);
-            if (foeResourceCreateInfoGetType(createInfo) ==
-                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO) {
-                auto const *pCreateInfo =
-                    (foeMeshCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (mesh == FOE_NULL_HANDLE)
+        return keyDataPairs;
 
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_mesh_key(),
-                    .data = yaml_write_mesh(*pCreateInfo),
-                });
-            }
+    if (foeResourceGetType(mesh) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
+        auto createInfo = foeResourceGetCreateInfo(mesh);
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO) {
+            auto const *pCreateInfo =
+                (foeMeshCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_mesh_key(),
+                .data = yaml_write_mesh(*pCreateInfo),
+            });
         }
     }
 
@@ -127,23 +123,22 @@ std::vector<foeKeyYamlPair> exportShader(foeResourceID resourceID,
                                          foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    foeResourcePool shaderPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_POOL);
+    foeResource shader = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
 
-    if (shaderPool != FOE_NULL_HANDLE) {
-        foeResource shader = foeResourcePoolFind(shaderPool, resourceID);
-        if (shader != FOE_NULL_HANDLE) {
-            auto createInfo = foeResourceGetCreateInfo(shader);
-            if (foeResourceCreateInfoGetType(createInfo) ==
-                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO) {
-                auto const *pCreateInfo =
-                    (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (shader == FOE_NULL_HANDLE)
+        return keyDataPairs;
 
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_shader_key(),
-                    .data = yaml_write_shader(*pCreateInfo),
-                });
-            }
+    if (foeResourceGetType(shader) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+        auto createInfo = foeResourceGetCreateInfo(shader);
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO) {
+            auto const *pCreateInfo =
+                (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_shader_key(),
+                .data = yaml_write_shader(*pCreateInfo),
+            });
         }
     }
 
@@ -154,24 +149,23 @@ std::vector<foeKeyYamlPair> exportVertexDescriptor(foeResourceID resourceID,
                                                    foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    foeResourcePool vertexDescriptorPool = (foeResourcePool)foeSimulationGetResourcePool(
-        pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_POOL);
+    foeResource vertexDescriptor = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
 
-    if (vertexDescriptorPool != FOE_NULL_HANDLE) {
-        foeResource vertexDescriptor = foeResourcePoolFind(vertexDescriptorPool, resourceID);
+    if (vertexDescriptor == FOE_NULL_HANDLE)
+        return keyDataPairs;
 
-        if (vertexDescriptor != FOE_NULL_HANDLE) {
-            auto createInfo = foeResourceGetCreateInfo(vertexDescriptor);
-            if (foeResourceCreateInfoGetType(createInfo) ==
-                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO) {
-                auto const *pCreateInfo =
-                    (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (foeResourceGetType(vertexDescriptor) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
+        auto createInfo = foeResourceGetCreateInfo(vertexDescriptor);
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO) {
+            auto const *pCreateInfo =
+                (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-                keyDataPairs.emplace_back(foeKeyYamlPair{
-                    .key = yaml_vertex_descriptor_key(),
-                    .data = yaml_write_vertex_descriptor(*pCreateInfo),
-                });
-            }
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_vertex_descriptor_key(),
+                .data = yaml_write_vertex_descriptor(*pCreateInfo),
+            });
         }
     }
 

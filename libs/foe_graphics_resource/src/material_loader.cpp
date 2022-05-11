@@ -32,25 +32,22 @@
 #include <array>
 #include <type_traits>
 
-auto foeMaterialLoader::initialize(foeResourcePool shaderPool, foeResourcePool imagePool)
-    -> std::error_code {
-    if (shaderPool == FOE_NULL_HANDLE || imagePool == FOE_NULL_HANDLE)
+auto foeMaterialLoader::initialize(foeResourcePool resourcePool) -> std::error_code {
+    if (resourcePool == FOE_NULL_HANDLE)
         return FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED;
 
     // External
-    mShaderPool = shaderPool;
-    mImagePool = imagePool;
+    mResourcePool = resourcePool;
 
     return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
 void foeMaterialLoader::deinitialize() {
     // External
-    mImagePool = FOE_NULL_HANDLE;
-    mShaderPool = FOE_NULL_HANDLE;
+    mResourcePool = FOE_NULL_HANDLE;
 }
 
-bool foeMaterialLoader::initialized() const noexcept { return mShaderPool != FOE_NULL_HANDLE; }
+bool foeMaterialLoader::initialized() const noexcept { return mResourcePool != FOE_NULL_HANDLE; }
 
 auto foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
     if (!initialized())
@@ -84,6 +81,29 @@ auto foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) -> std::err
 }
 
 void foeMaterialLoader::deinitializeGraphics() {
+    // Unload all resources this loader loaded
+    bool upcomingWork;
+    do {
+        upcomingWork = foeResourcePoolUnloadType(mResourcePool,
+                                                 FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) > 0;
+
+        gfxMaintenance();
+
+        mLoadSync.lock();
+        upcomingWork |= !mLoadRequests.empty();
+        mLoadSync.unlock();
+
+        mUnloadSync.lock();
+        upcomingWork |= !mUnloadRequests.empty();
+        mUnloadSync.unlock();
+
+        mDestroySync.lock();
+        for (auto const &it : mDataDestroyLists) {
+            upcomingWork |= !it.empty();
+        }
+        mDestroySync.unlock();
+    } while (upcomingWork);
+
     // Internal
     if (mDescriptorPool != VK_NULL_HANDLE)
         vkDestroyDescriptorPool(foeGfxVkGetDevice(mGfxSession), mDescriptorPool, nullptr);
@@ -100,12 +120,13 @@ bool foeMaterialLoader::initializedGraphics() const noexcept {
 
 void foeMaterialLoader::gfxMaintenance() {
     // Process Delayed Data Destruction
+    mDestroySync.lock();
     ++mDataDestroyIndex;
     if (mDataDestroyIndex >= mDataDestroyLists.size()) {
         mDataDestroyIndex = 0;
     }
-
     auto toDestroy = std::move(mDataDestroyLists[mDataDestroyIndex]);
+    mDestroySync.unlock();
 
     auto vkDevice = foeGfxVkGetDevice(mGfxSession);
 
@@ -236,10 +257,12 @@ void foeMaterialLoader::load(foeResource resource,
     // Fragment Shader
     if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {
         while (data.fragmentShader == FOE_NULL_HANDLE) {
-            data.fragmentShader = foeResourcePoolFind(mShaderPool, pMaterialCI->fragmentShader);
+            data.fragmentShader = foeResourcePoolFind(mResourcePool, pMaterialCI->fragmentShader);
 
             if (data.fragmentShader == FOE_NULL_HANDLE)
-                data.fragmentShader = foeResourcePoolAdd(mShaderPool, pMaterialCI->fragmentShader);
+                data.fragmentShader = foeResourcePoolAdd(
+                    mResourcePool, pMaterialCI->fragmentShader,
+                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
         }
 
         foeResourceIncrementRefCount(data.fragmentShader);
@@ -253,10 +276,12 @@ void foeMaterialLoader::load(foeResource resource,
     // Image
     if (pMaterialCI->image != FOE_INVALID_ID) {
         while (data.image == FOE_NULL_HANDLE) {
-            data.image = foeResourcePoolFind(mImagePool, pMaterialCI->fragmentShader);
+            data.image = foeResourcePoolFind(mResourcePool, pMaterialCI->image);
 
             if (data.image == FOE_NULL_HANDLE)
-                data.image = foeResourcePoolAdd(mImagePool, pMaterialCI->fragmentShader);
+                data.image = foeResourcePoolAdd(mResourcePool, pMaterialCI->image,
+                                                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE,
+                                                sizeof(foeImage));
         }
 
         foeResourceIncrementRefCount(data.image);
@@ -357,7 +382,9 @@ void foeMaterialLoader::unloadResource(void *pContext,
             }
 
             // Queue for delayed destruction
+            pLoader->mDestroySync.lock();
             pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
+            pLoader->mDestroySync.unlock();
         }
     } else {
         foeResourceIncrementRefCount(resource);

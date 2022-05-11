@@ -55,9 +55,6 @@ struct foeSimulationBaseStruct {
     void *pNext;
 };
 
-FOE_SIM_EXPORT void *foeSimulationGetResourcePool(foeSimulation const *pSimulation,
-                                                  foeSimulationStructureType sType);
-
 FOE_SIM_EXPORT void *foeSimulationGetResourceLoader(foeSimulation const *pSimulation,
                                                     foeSimulationStructureType sType);
 

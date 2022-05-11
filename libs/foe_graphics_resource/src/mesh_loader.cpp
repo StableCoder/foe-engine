@@ -32,17 +32,22 @@
 #include "log.hpp"
 
 auto foeMeshLoader::initialize(
+    foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
     -> std::error_code {
-    if (!externalFileSearchFn)
+    if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return FOE_GRAPHICS_RESOURCE_ERROR_MESH_LOADER_INITIALIZATION_FAILED;
 
+    mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
 
     return FOE_GRAPHICS_RESOURCE_SUCCESS;
 }
 
-void foeMeshLoader::deinitialize() { mExternalFileSearchFn = {}; }
+void foeMeshLoader::deinitialize() {
+    mExternalFileSearchFn = {};
+    mResourcePool = FOE_NULL_HANDLE;
+}
 
 bool foeMeshLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
 
@@ -62,6 +67,29 @@ auto foeMeshLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_c
 }
 
 void foeMeshLoader::deinitializeGraphics() {
+    // Unload all resources this loader loaded
+    bool upcomingWork;
+    do {
+        upcomingWork =
+            foeResourcePoolUnloadType(mResourcePool, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) > 0;
+
+        gfxMaintenance();
+
+        mLoadSync.lock();
+        upcomingWork |= !mLoadRequests.empty();
+        mLoadSync.unlock();
+
+        mUnloadSync.lock();
+        upcomingWork |= !mUnloadRequests.empty();
+        mUnloadSync.unlock();
+
+        mDestroySync.lock();
+        for (auto const &it : mDataDestroyLists) {
+            upcomingWork |= !it.empty();
+        }
+        mDestroySync.unlock();
+    } while (upcomingWork);
+
     // Internal
     if (mGfxUploadContext != FOE_NULL_HANDLE)
         foeGfxDestroyUploadContext(mGfxUploadContext);
