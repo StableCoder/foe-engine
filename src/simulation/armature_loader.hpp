@@ -66,7 +66,7 @@ class foeArmatureLoader {
     };
 
     std::mutex mLoadSync;
-    std::vector<LoadData> mToLoad;
+    std::vector<LoadData> mLoadRequests;
 
     struct UnloadData {
         foeResource resource;
@@ -74,7 +74,7 @@ class foeArmatureLoader {
         PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
-    std::mutex mUnloadRequestsSync;
+    std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
 };
 

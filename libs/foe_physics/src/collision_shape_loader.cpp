@@ -51,12 +51,12 @@ void foeCollisionShapeLoader::deinitialize() {
         maintenance();
 
         mLoadSync.lock();
-        upcomingWork |= !mToLoad.empty();
+        upcomingWork |= !mLoadRequests.empty();
         mLoadSync.unlock();
 
-        mUnloadRequestsSync.lock();
+        mUnloadSync.lock();
         upcomingWork |= !mUnloadRequests.empty();
-        mUnloadRequestsSync.unlock();
+        mUnloadSync.unlock();
     } while (upcomingWork);
 
     // External
@@ -67,9 +67,9 @@ bool foeCollisionShapeLoader::initialized() const noexcept { return false; }
 
 void foeCollisionShapeLoader::maintenance() {
     // Process Unloads
-    mUnloadRequestsSync.lock();
+    mUnloadSync.lock();
     auto toUnload = std::move(mUnloadRequests);
-    mUnloadRequestsSync.unlock();
+    mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
         unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
@@ -78,7 +78,7 @@ void foeCollisionShapeLoader::maintenance() {
 
     // Process Loads
     mLoadSync.lock();
-    auto toLoad = std::move(mToLoad);
+    auto toLoad = std::move(mLoadRequests);
     mLoadSync.unlock();
 
     for (auto &it : toLoad) {
@@ -122,7 +122,7 @@ void foeCollisionShapeLoader::load(foeResource resource,
         std::make_unique<btBoxShape>(glmToBtVec3(pCollisionShapeCreateInfo->boxSize));
 
     mLoadSync.lock();
-    mToLoad.emplace_back(LoadData{
+    mLoadRequests.emplace_back(LoadData{
         .resource = resource,
         .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
@@ -152,7 +152,7 @@ void foeCollisionShapeLoader::unloadResource(void *pContext,
         pUnloadCallFn(resource, resourceIteration, &data, moveFn);
     } else {
         foeResourceIncrementRefCount(resource);
-        pLoader->mUnloadRequestsSync.lock();
+        pLoader->mUnloadSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
@@ -160,6 +160,6 @@ void foeCollisionShapeLoader::unloadResource(void *pContext,
             .pUnloadCallFn = pUnloadCallFn,
         });
 
-        pLoader->mUnloadRequestsSync.unlock();
+        pLoader->mUnloadSync.unlock();
     }
 }

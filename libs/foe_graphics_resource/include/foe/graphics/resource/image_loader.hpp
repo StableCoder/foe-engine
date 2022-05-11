@@ -83,7 +83,7 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
     };
 
     std::mutex mLoadSync;
-    std::vector<LoadData> mToLoad;
+    std::vector<LoadData> mLoadRequests;
 
     struct UnloadData {
         foeResource resource;
@@ -91,7 +91,7 @@ class FOE_GFX_RES_EXPORT foeImageLoader {
         PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
-    std::mutex mUnloadRequestsSync;
+    std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
 
     std::mutex mDestroySync;

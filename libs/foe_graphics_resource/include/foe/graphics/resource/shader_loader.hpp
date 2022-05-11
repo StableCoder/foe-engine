@@ -82,7 +82,7 @@ class FOE_GFX_RES_EXPORT foeShaderLoader {
         PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
-    std::mutex mUnloadRequestsSync;
+    std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
 
     std::mutex mDestroySync;

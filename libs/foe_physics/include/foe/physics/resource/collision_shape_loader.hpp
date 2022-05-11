@@ -64,7 +64,7 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
     };
 
     std::mutex mLoadSync;
-    std::vector<LoadData> mToLoad;
+    std::vector<LoadData> mLoadRequests;
 
     struct UnloadData {
         foeResource resource;
@@ -72,7 +72,7 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
         PFN_foeResourceUnloadCall *pUnloadCallFn;
     };
 
-    std::mutex mUnloadRequestsSync;
+    std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
 };
 

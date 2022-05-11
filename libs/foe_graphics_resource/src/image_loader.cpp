@@ -72,12 +72,12 @@ void foeImageLoader::deinitializeGraphics() {
         gfxMaintenance();
 
         mLoadSync.lock();
-        upcomingWork |= !mToLoad.empty();
+        upcomingWork |= !mLoadRequests.empty();
         mLoadSync.unlock();
 
-        mUnloadRequestsSync.lock();
+        mUnloadSync.lock();
         upcomingWork |= !mUnloadRequests.empty();
-        mUnloadRequestsSync.unlock();
+        mUnloadSync.unlock();
 
         mDestroySync.lock();
         for (auto const &it : mDataDestroyLists) {
@@ -122,9 +122,9 @@ void foeImageLoader::gfxMaintenance() {
     }
 
     // Process Unloads
-    mUnloadRequestsSync.lock();
+    mUnloadSync.lock();
     auto toUnload = std::move(mUnloadRequests);
-    mUnloadRequestsSync.unlock();
+    mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
         // Unload the resource, adding it'd data for later destruction
@@ -134,7 +134,7 @@ void foeImageLoader::gfxMaintenance() {
 
     // Process Loads
     mLoadSync.lock();
-    auto toLoad = std::move(mToLoad);
+    auto toLoad = std::move(mLoadRequests);
     mLoadSync.unlock();
 
     std::vector<LoadData> stillLoading;
@@ -185,10 +185,10 @@ void foeImageLoader::gfxMaintenance() {
     if (!stillLoading.empty()) {
         mLoadSync.lock();
 
-        mToLoad.reserve(mToLoad.size() + stillLoading.size());
+        mLoadRequests.reserve(mLoadRequests.size() + stillLoading.size());
 
         for (auto &it : stillLoading) {
-            mToLoad.emplace_back(std::move(it));
+            mLoadRequests.emplace_back(std::move(it));
         }
 
         mLoadSync.unlock();
@@ -441,7 +441,7 @@ LOADING_FAILED:
             // A partial upload success, leave pimage an nullptr, so the upload completes then the
             // data is safely destroyed
             mLoadSync.lock();
-            mToLoad.emplace_back(LoadData{
+            mLoadRequests.emplace_back(LoadData{
                 .data = std::move(imgData),
                 .uploadRequest = gfxUploadRequest,
                 .uploadBuffer = gfxUploadBuffer,
@@ -462,7 +462,7 @@ LOADING_FAILED:
     } else {
         // Successfully processed and is being uploaded now
         mLoadSync.lock();
-        mToLoad.emplace_back(LoadData{
+        mLoadRequests.emplace_back(LoadData{
             .resource = resource,
             .createInfo = createInfo,
             .pPostLoadFn = pPostLoadFn,
@@ -499,7 +499,7 @@ void foeImageLoader::unloadResource(void *pContext,
         }
 
     } else {
-        pLoader->mUnloadRequestsSync.lock();
+        pLoader->mUnloadSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
@@ -507,6 +507,6 @@ void foeImageLoader::unloadResource(void *pContext,
             .pUnloadCallFn = pUnloadCallFn,
         });
 
-        pLoader->mUnloadRequestsSync.unlock();
+        pLoader->mUnloadSync.unlock();
     }
 }

@@ -88,9 +88,9 @@ void foeShaderLoader::deinitializeGraphics() {
         upcomingWork |= !mLoadRequests.empty();
         mLoadSync.unlock();
 
-        mUnloadRequestsSync.lock();
+        mUnloadSync.lock();
         upcomingWork |= !mUnloadRequests.empty();
-        mUnloadRequestsSync.unlock();
+        mUnloadSync.unlock();
 
         mDestroySync.lock();
         for (auto const &it : mDataDestroyLists) {
@@ -124,9 +124,9 @@ void foeShaderLoader::gfxMaintenance() {
     }
 
     // Unloads
-    mUnloadRequestsSync.lock();
+    mUnloadSync.lock();
     auto toUnload = std::move(mUnloadRequests);
-    mUnloadRequestsSync.unlock();
+    mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
         unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
@@ -238,7 +238,7 @@ void foeShaderLoader::unloadResource(void *pContext,
         }
     } else {
         foeResourceIncrementRefCount(resource);
-        pLoader->mUnloadRequestsSync.lock();
+        pLoader->mUnloadSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
@@ -246,6 +246,6 @@ void foeShaderLoader::unloadResource(void *pContext,
             .pUnloadCallFn = pUnloadCallFn,
         });
 
-        pLoader->mUnloadRequestsSync.unlock();
+        pLoader->mUnloadSync.unlock();
     }
 }

@@ -52,12 +52,12 @@ void foeArmatureLoader::deinitialize() {
         maintenance();
 
         mLoadSync.lock();
-        upcomingWork |= !mToLoad.empty();
+        upcomingWork |= !mLoadRequests.empty();
         mLoadSync.unlock();
 
-        mUnloadRequestsSync.lock();
+        mUnloadSync.lock();
         upcomingWork |= !mUnloadRequests.empty();
-        mUnloadRequestsSync.unlock();
+        mUnloadSync.unlock();
     } while (upcomingWork);
 
     // External
@@ -69,9 +69,9 @@ bool foeArmatureLoader::initialized() const noexcept { return bool(mExternalFile
 
 void foeArmatureLoader::maintenance() {
     // Process Unloads
-    mUnloadRequestsSync.lock();
+    mUnloadSync.lock();
     auto toUnload = std::move(mUnloadRequests);
-    mUnloadRequestsSync.unlock();
+    mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
         unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
@@ -80,7 +80,7 @@ void foeArmatureLoader::maintenance() {
 
     // Process Loads
     mLoadSync.lock();
-    auto toLoad = std::move(mToLoad);
+    auto toLoad = std::move(mLoadRequests);
     mLoadSync.unlock();
 
     for (auto &it : toLoad) {
@@ -171,7 +171,7 @@ void foeArmatureLoader::load(foeResource resource,
     }
 
     mLoadSync.lock();
-    mToLoad.emplace_back(LoadData{
+    mLoadRequests.emplace_back(LoadData{
         .resource = resource,
         .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
@@ -196,7 +196,7 @@ void foeArmatureLoader::unloadResource(void *pContext,
         pUnloadCallFn(resource, resourceIteration, nullptr, destroyFn);
     } else {
         foeResourceIncrementRefCount(resource);
-        pLoader->mUnloadRequestsSync.lock();
+        pLoader->mUnloadSync.lock();
 
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
@@ -204,6 +204,6 @@ void foeArmatureLoader::unloadResource(void *pContext,
             .pUnloadCallFn = pUnloadCallFn,
         });
 
-        pLoader->mUnloadRequestsSync.unlock();
+        pLoader->mUnloadSync.unlock();
     }
 }
