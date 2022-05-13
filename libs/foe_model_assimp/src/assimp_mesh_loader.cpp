@@ -19,6 +19,7 @@
 #include "ai_glm_conversion.hpp"
 
 #include <algorithm>
+#include <tuple>
 
 void importMeshVertexData(aiMesh const *pMesh,
                           uint32_t componentCount,
