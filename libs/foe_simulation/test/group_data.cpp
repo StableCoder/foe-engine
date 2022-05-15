@@ -44,6 +44,7 @@ class DummyImporter : public foeImporterBase {
     bool importResourceDefinitions(foeEditorNameMap *pNameMap, foeSimulation const *pSimulation) {
         return false;
     }
+    std::string getResourceEditorName(foeIdIndex resourceIndexID) { return std::string{}; }
     foeResourceCreateInfo getResource(foeId id) final {
         return static_cast<foeResourceCreateInfo>(mResReturn);
     }

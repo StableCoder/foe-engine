@@ -47,6 +47,7 @@ class foeImporterBase {
 
     virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
                                            foeSimulation const *pSimulation) = 0;
+    virtual std::string getResourceEditorName(foeResourceID resourceID) = 0;
     virtual foeResourceCreateInfo getResource(foeId id) = 0;
 
     virtual std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) = 0;

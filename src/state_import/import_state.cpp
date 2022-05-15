@@ -16,6 +16,7 @@
 
 #include "import_state.hpp"
 
+#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/group_translator.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/search_paths.hpp>
@@ -244,6 +245,40 @@ auto importState(std::string_view topLevelDataSet,
         *pSimulationSet->groupData.persistentResourceIndices());
     if (!retVal)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
+
+    // Read the Resource Editor Names
+    if (pSimulationSet->pResourceNameMap != nullptr) {
+        // Dependent Groups
+        for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
+            auto *pGroupImporter =
+                pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
+            if (pGroupImporter == nullptr)
+                continue;
+
+            // Go through all the indexes for the group, set any available editor names
+            pSimulationSet->groupData.resourceIndices(foeIdValueToGroup(groupValue))
+                ->forEachID([&](foeId id) {
+                    std::string editorName =
+                        pGroupImporter->getResourceEditorName(foeIdGetIndex(id));
+
+                    if (!editorName.empty())
+                        pSimulationSet->pResourceNameMap->add(id, editorName);
+                });
+        }
+
+        // Persistent Group
+        auto *pGroupImporter = pSimulationSet->groupData.persistentImporter();
+
+        // Go through all the indexes for the group, set any available editor names
+        foeIdIndex nextFreshIndex;
+        std::vector<foeIdIndex> recycledIndexes;
+        pSimulationSet->groupData.persistentResourceIndices()->forEachID([&](foeId id) {
+            std::string editorName = pGroupImporter->getResourceEditorName(foeIdGetIndex(id));
+
+            if (!editorName.empty())
+                pSimulationSet->pResourceNameMap->add(id, editorName);
+        });
+    }
 
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {

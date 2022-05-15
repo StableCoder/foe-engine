@@ -323,6 +323,60 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
     return true;
 }
 
+std::string foeYamlImporter::getResourceEditorName(foeIdIndex resourceIndexID) {
+    std::string editorName;
+    if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
+        return editorName;
+
+    YAML::Node rootNode;
+
+    for (auto const &dirEntry :
+         std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
+        if (!dirEntry.is_regular_file())
+            continue;
+
+        foeIdGroupValue fileGroupValue;
+        foeIdIndex fileIndex;
+        if (!parseFileStem(dirEntry, fileGroupValue, fileIndex))
+            continue;
+
+        // Check the IndexID
+        if (fileIndex != resourceIndexID)
+            continue;
+
+        // Check the GroupID (must be persistent, names can only be set by the initial group)
+        if (foeIdValueToGroup(fileGroupValue) != foeIdPersistentGroup)
+            continue;
+
+        // If here, found the file
+        if (openYamlFile(dirEntry, rootNode))
+            goto OPENED_YAML_FILE;
+    }
+
+    return editorName;
+
+OPENED_YAML_FILE:
+    try {
+        // ID
+        foeResourceID readID;
+        yaml_read_id_required("", rootNode, nullptr, readID);
+
+        if (readID != foeIdCreate(foeIdPersistentGroup, resourceIndexID))
+            std::abort();
+
+        // Editor Name
+        yaml_read_optional("editor_name", rootNode, editorName);
+    } catch (foeYamlException const &e) {
+        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
+    } catch (std::exception const &e) {
+        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
+    } catch (...) {
+        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition with unknown exception");
+    }
+
+    return editorName;
+}
+
 foeResourceCreateInfo foeYamlImporter::getResource(foeId id) {
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
         return nullptr;
@@ -336,22 +390,20 @@ foeResourceCreateInfo foeYamlImporter::getResource(foeId id) {
 
     for (auto &dirEntry :
          std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
-        if (std::filesystem::is_directory(dirEntry))
+        if (!dirEntry.is_regular_file())
             continue;
 
-        if (dirEntry.is_regular_file()) {
-            foeIdGroupValue fileGroupValue;
-            foeIdIndex fileIndex;
-            if (!parseFileStem(dirEntry, fileGroupValue, fileIndex))
-                continue;
+        foeIdGroupValue fileGroupValue;
+        foeIdIndex fileIndex;
+        if (!parseFileStem(dirEntry, fileGroupValue, fileIndex))
+            continue;
 
-            if (fileIndex == FOE_INVALID_ID || fileIndex != index)
-                continue;
+        if (fileIndex == FOE_INVALID_ID || fileIndex != index)
+            continue;
 
-            if (fileIndex == index) {
-                if (openYamlFile(dirEntry, rootNode))
-                    goto GOT_RESOURCE_NODE;
-            }
+        if (fileIndex == index) {
+            if (openYamlFile(dirEntry, rootNode))
+                goto GOT_RESOURCE_NODE;
         }
     }
 GOT_RESOURCE_NODE:
