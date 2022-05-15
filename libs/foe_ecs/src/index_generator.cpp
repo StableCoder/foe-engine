@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -73,6 +73,27 @@ foeIdGroup foeIdIndexGenerator::groupID() const noexcept { return cGroupID; }
 foeIdIndex foeIdIndexGenerator::peekNextFreshIndex() const noexcept { return mNextFreeID; }
 
 size_t foeIdIndexGenerator::recyclable() const noexcept { return mNumRecycled; }
+
+void foeIdIndexGenerator::forEachID(std::function<void(foeId)> callFn) {
+    foeIdIndex nextFreshIndex;
+    std::vector<foeIdIndex> recycledIndexes;
+    exportState(nextFreshIndex, recycledIndexes);
+    std::sort(recycledIndexes.begin(), recycledIndexes.end());
+
+    size_t const numIndexes = nextFreshIndex - recycledIndexes.size() - foeIdIndexMinValue;
+    for (size_t i = 0; i < numIndexes; ++i) {
+        foeResourceID indexID = foeIdIndexMinValue + i;
+
+        for (auto it : recycledIndexes) {
+            if (it <= indexID)
+                ++indexID;
+            else
+                break;
+        }
+
+        callFn(foeIdCreate(cGroupID, indexID));
+    }
+}
 
 void foeIdIndexGenerator::importState(foeIdIndex nextIndex,
                                       const std::vector<foeIdIndex> &recycledIndices) {

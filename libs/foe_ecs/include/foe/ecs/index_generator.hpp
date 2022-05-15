@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <foe/ecs/id.h>
 
 #include <atomic>
+#include <functional>
 #include <mutex>
 #include <queue>
 #include <string>
@@ -95,14 +96,16 @@ class foeIdIndexGenerator {
      */
     FOE_ECS_EXPORT std::size_t recyclable() const noexcept;
 
+    FOE_ECS_EXPORT void forEachID(std::function<void(foeId)> callFn);
+
     /**
      * @brief Overwrites the current state of the generator with that provided
      * @param nextIndex Next free index that will be generated
      * @param recycledIndices The new set of recycled indices
      * @warning Overwrites the current state of the object
      */
-    FOE_ECS_EXPORT void importState(foeIdIndex nextIndex,
-                                    std::vector<foeIdIndex> const &recycledIndices);
+    FOE_ECS_EXPORT
+    void importState(foeIdIndex nextIndex, std::vector<foeIdIndex> const &recycledIndices);
 
     /**
      * @brief Returns the current state of the object for import/export

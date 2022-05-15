@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -237,6 +237,38 @@ TEST_CASE("IndexGenerator - Attempting to free incorrect/invalid IDs from list",
         std::array<foeId, 1> ids = {foeId(0x15)};
         REQUIRE(!test.free(ids.size(), ids.data()));
     }
+}
+
+TEST_CASE("IndexGenerator - Iterating through IDs", "[foe][ecs][IndexGenerator]") {
+    foeIdIndexGenerator testGenerator{0};
+
+    for (int i = 0; i < 15; ++i) {
+        testGenerator.generate();
+    }
+
+    REQUIRE(testGenerator.peekNextFreshIndex() == 16);
+
+    testGenerator.free(13);
+    testGenerator.free(8);
+    testGenerator.free(4);
+    testGenerator.free(10);
+
+    std::vector<foeId> existingIDs;
+
+    testGenerator.forEachID([&](foeId id) { existingIDs.emplace_back(id); });
+
+    REQUIRE(existingIDs.size() == 11);
+    CHECK(existingIDs[0] == 1);
+    CHECK(existingIDs[1] == 2);
+    CHECK(existingIDs[2] == 3);
+    CHECK(existingIDs[3] == 5);
+    CHECK(existingIDs[4] == 6);
+    CHECK(existingIDs[5] == 7);
+    CHECK(existingIDs[6] == 9);
+    CHECK(existingIDs[7] == 11);
+    CHECK(existingIDs[8] == 12);
+    CHECK(existingIDs[9] == 14);
+    CHECK(existingIDs[10] == 15);
 }
 
 TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]") {
