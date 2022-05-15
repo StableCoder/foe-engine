@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,12 +25,14 @@ struct foeEcsErrCategory : std::error_category {
 
 const char *foeEcsErrCategory::name() const noexcept { return "foeEcsResult"; }
 
+#define RESULT_CASE(X)                                                                             \
+    case X:                                                                                        \
+        return #X;
+
 std::string foeEcsErrCategory::message(int ev) const {
     switch (static_cast<foeEcsResult>(ev)) {
-    case FOE_ECS_SUCCESS:
-        return "FOE_ECS_SUCCESS";
-    case FOE_ECS_ERROR_NO_MATCHING_DESTINATION_GROUP:
-        return "FOE_ECS_ERROR_NO_MATCHING_DESTINATION_GROUP";
+        RESULT_CASE(FOE_ECS_SUCCESS)
+        RESULT_CASE(FOE_ECS_ERROR_NO_MATCHING_GROUP)
 
     default:
         if (ev > 0)

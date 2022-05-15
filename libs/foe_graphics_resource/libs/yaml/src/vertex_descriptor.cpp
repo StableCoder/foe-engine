@@ -28,7 +28,7 @@ namespace {
 
 bool yaml_read_vertex_descriptor_internal(std::string const &nodeName,
                                           YAML::Node const &node,
-                                          foeIdGroupTranslator const *pTranslator,
+                                          foeEcsGroupTranslator groupTranslator,
                                           foeVertexDescriptorCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -40,13 +40,13 @@ bool yaml_read_vertex_descriptor_internal(std::string const &nodeName,
     try {
         // Resources
         if (auto resNode = subNode["resources"]; resNode) {
-            read |= yaml_read_id_optional("vertex_shader", resNode, pTranslator,
+            read |= yaml_read_id_optional("vertex_shader", resNode, groupTranslator,
                                           createInfo.vertexShader);
-            read |= yaml_read_id_optional("tessellation_control_shader", resNode, pTranslator,
+            read |= yaml_read_id_optional("tessellation_control_shader", resNode, groupTranslator,
                                           createInfo.tessellationControlShader);
-            read |= yaml_read_id_optional("tessellation_evaluation_shader", resNode, pTranslator,
-                                          createInfo.tessellationEvaluationShader);
-            read |= yaml_read_id_optional("geometry_shader", resNode, pTranslator,
+            read |= yaml_read_id_optional("tessellation_evaluation_shader", resNode,
+                                          groupTranslator, createInfo.tessellationEvaluationShader);
+            read |= yaml_read_id_optional("geometry_shader", resNode, groupTranslator,
                                           createInfo.geometryShader);
         }
 
@@ -114,12 +114,12 @@ bool yaml_write_vertex_descriptor_internal(std::string const &nodeName,
 char const *yaml_vertex_descriptor_key() { return "vertex_descriptor_v1"; }
 
 void yaml_read_vertex_descriptor(YAML::Node const &node,
-                                 foeIdGroupTranslator const *pTranslator,
+                                 foeEcsGroupTranslator groupTranslator,
                                  foeResourceCreateInfo *pCreateInfo) {
     foeVertexDescriptorCreateInfo vdCI{};
     foeResourceCreateInfo createInfo;
 
-    yaml_read_vertex_descriptor_internal(yaml_vertex_descriptor_key(), node, pTranslator, vdCI);
+    yaml_read_vertex_descriptor_internal(yaml_vertex_descriptor_key(), node, groupTranslator, vdCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeVertexDescriptorCreateInfo *)pSrc;

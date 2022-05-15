@@ -30,6 +30,11 @@
 
 static_assert(TEST_DATA_DIR != nullptr, "TEST_DATA_DIR must be added as a compilation definition.");
 
+struct foeIdGroupValueNameSet {
+    foeIdGroupValue groupValue;
+    std::string name;
+};
+
 TEST_CASE("foeYamlImporter - Function Tests") {
     std::filesystem::path testPath{TEST_DATA_DIR};
     testPath /= "11-good-content";

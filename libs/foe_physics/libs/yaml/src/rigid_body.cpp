@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@
 
 char const *yaml_rigid_body_key() { return "rigid_body"; }
 
-auto yaml_read_rigid_body(YAML::Node const &node, foeIdGroupTranslator const *pIdGroupTranslator)
+auto yaml_read_rigid_body(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
     -> foeRigidBody {
     foeRigidBody rigidBody;
 
     yaml_read_required("mass", node, rigidBody.mass);
-    yaml_read_id_optional("collision_shape", node, pIdGroupTranslator, rigidBody.collisionShape);
+    yaml_read_id_optional("collision_shape", node, groupTranslator, rigidBody.collisionShape);
 
     return rigidBody;
 }

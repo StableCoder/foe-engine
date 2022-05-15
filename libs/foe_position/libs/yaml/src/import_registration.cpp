@@ -26,7 +26,7 @@
 namespace {
 
 bool importPosition3D(YAML::Node const &node,
-                      foeIdGroupTranslator const *,
+                      foeEcsGroupTranslator groupTranslator,
                       foeEntityID entity,
                       foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_position3d_key()]; dataNode) {

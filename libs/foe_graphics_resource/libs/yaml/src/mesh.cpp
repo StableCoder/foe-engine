@@ -26,7 +26,7 @@ namespace {
 
 bool yaml_read_mesh_definition_internal(std::string const &nodeName,
                                         YAML::Node const &node,
-                                        foeIdGroupTranslator const *pTranslator,
+                                        foeEcsGroupTranslator groupTranslator,
                                         foeMeshCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -123,12 +123,12 @@ void yaml_write_mesh_internal(std::string const &nodeName,
 char const *yaml_mesh_key() { return "mesh_v1"; }
 
 void yaml_read_mesh(YAML::Node const &node,
-                    foeIdGroupTranslator const *pTranslator,
+                    foeEcsGroupTranslator groupTranslator,
                     foeResourceCreateInfo *pCreateInfo) {
     foeMeshCreateInfo meshCI{};
     foeResourceCreateInfo createInfo;
 
-    yaml_read_mesh_definition_internal(yaml_mesh_key(), node, pTranslator, meshCI);
+    yaml_read_mesh_definition_internal(yaml_mesh_key(), node, groupTranslator, meshCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeMeshCreateInfo *)pSrc;

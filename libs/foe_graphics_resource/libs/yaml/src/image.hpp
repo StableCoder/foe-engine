@@ -17,16 +17,16 @@
 #ifndef IMAGE_HPP
 #define IMAGE_HPP
 
+#include <foe/ecs/group_translator.h>
 #include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
-struct foeIdGroupTranslator;
 struct foeImageCreateInfo;
 
 char const *yaml_image_key();
 
 void yaml_read_image(YAML::Node const &node,
-                     foeIdGroupTranslator const *pTranslator,
+                     foeEcsGroupTranslator groupTranslator,
                      foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_image(foeImageCreateInfo const &data) -> YAML::Node;

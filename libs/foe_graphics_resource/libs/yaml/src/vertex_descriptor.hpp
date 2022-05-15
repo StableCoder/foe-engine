@@ -17,16 +17,16 @@
 #ifndef VERTEX_DESCRIPTOR_HPP
 #define VERTEX_DESCRIPTOR_HPP
 
+#include <foe/ecs/group_translator.h>
 #include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
-struct foeIdGroupTranslator;
 struct foeVertexDescriptorCreateInfo;
 
 char const *yaml_vertex_descriptor_key();
 
 void yaml_read_vertex_descriptor(YAML::Node const &node,
-                                 foeIdGroupTranslator const *pTranslator,
+                                 foeEcsGroupTranslator groupTranslator,
                                  foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_vertex_descriptor(foeVertexDescriptorCreateInfo const &data) -> YAML::Node;

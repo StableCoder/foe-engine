@@ -17,16 +17,16 @@
 #ifndef ARMATURE_HPP
 #define ARMATURE_HPP
 
+#include <foe/ecs/group_translator.h>
 #include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
-struct foeIdGroupTranslator;
 struct foeArmatureCreateInfo;
 
 char const *yaml_armature_key();
 
 void yaml_read_armature(YAML::Node const &node,
-                        foeIdGroupTranslator const *pTranslator,
+                        foeEcsGroupTranslator groupTranslator,
                         foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_armature(foeArmatureCreateInfo const &data) -> YAML::Node;

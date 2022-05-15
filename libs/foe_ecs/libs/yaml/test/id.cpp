@@ -15,7 +15,8 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/error_code.h>
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/exception.hpp>
 
@@ -109,23 +110,34 @@ TEST_CASE("Reading foeId with Group and Index and GroupTranslator") {
     YAML::Node root;
     foeId test;
 
-    foeIdGroupTranslator translator;
-    foeIdCreateTranslator({{10, "10"}, {15, "15"}}, {{0, "15"}, {1, "10"}}, &translator);
+    foeEcsGroupTranslator translator{FOE_NULL_HANDLE};
+    std::vector<char const *> srcNames = {"10", "15"};
+    std::vector<foeIdGroup> srcGroups = {foeIdValueToGroup(10), foeIdValueToGroup(15)};
+    std::vector<char const *> dstNames = {"15", "10"};
+    std::vector<foeIdGroup> dstGroups = {foeIdValueToGroup(0), foeIdValueToGroup(1)};
+    REQUIRE(foeEcsCreateGroupTranslator(srcNames.size(), srcNames.data(), srcGroups.data(),
+                                        dstNames.size(), dstNames.data(), dstGroups.data(),
+                                        &translator)
+                .value == FOE_ECS_SUCCESS);
+    REQUIRE(translator != FOE_NULL_HANDLE);
 
     SECTION("Success Case") {
         REQUIRE_NOTHROW(root = YAML::Load(R"(index_id: 12
 group_id: 15)"));
-        CHECK_NOTHROW(yaml_read_id_optional("", root, &translator, test));
+        CHECK_NOTHROW(yaml_read_id_optional("", root, translator, test));
         CHECK(test == foeIdCreate(foeIdValueToGroup(0), 12));
     }
+
     SECTION("Failure Case") {
         REQUIRE_NOTHROW(root = YAML::Load(R"(index_id: 12
 group_id: 14)"));
         CHECK_THROWS_MATCHES(
-            yaml_read_id_optional("", root, &translator, test), foeYamlException,
-            Catch::Matchers::Equals(
-                "group_id - Was given groupValue of '14' for which no translation exists."));
+            yaml_read_id_optional("", root, translator, test), foeYamlException,
+            Catch::Matchers::Equals("group_id - Was given groupValue of '14' for which no "
+                                    "translation exists - FOE_ECS_ERROR_NO_MATCHING_GROUP"));
     }
+
+    foeEcsDestroyGroupTranslator(translator);
 }
 
 TEST_CASE("Reading foeId with Group & Index - Failure Cases", "[foe][ecs][yaml][id]") {

@@ -25,14 +25,14 @@ namespace {
 
 // Component
 bool importIdComponent(YAML::Node const &node,
-                       foeIdGroupTranslator const *pGroupTranslator,
+                       foeEcsGroupTranslator groupTranslator,
                        foeEntityID entity,
                        foeSimulation const *pSimulation) {
     if (auto dataNode = node[cNodeKey]; dataNode) {
         try {
             foeId readID;
 
-            yaml_read_id_required("", dataNode, pGroupTranslator, readID);
+            yaml_read_id_required("", dataNode, groupTranslator, readID);
 
             return true;
         } catch (foeYamlException const &e) {

@@ -14,4 +14,5 @@
     limitations under the License.
 */
 
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>

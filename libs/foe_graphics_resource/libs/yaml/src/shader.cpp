@@ -26,7 +26,7 @@ namespace {
 
 bool yaml_read_shader_internal(std::string const &nodeName,
                                YAML::Node const &node,
-                               foeIdGroupTranslator const *pTranslator,
+                               foeEcsGroupTranslator groupTranslator,
                                foeShaderCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -72,12 +72,12 @@ bool yaml_write_shader_internal(std::string const &nodeName,
 char const *yaml_shader_key() { return "shader_v1"; }
 
 void yaml_read_shader(YAML::Node const &node,
-                      foeIdGroupTranslator const *pTranslator,
+                      foeEcsGroupTranslator groupTranslator,
                       foeResourceCreateInfo *pCreateInfo) {
     foeShaderCreateInfo shaderCI;
     foeResourceCreateInfo createInfo;
 
-    yaml_read_shader_internal(yaml_shader_key(), node, pTranslator, shaderCI);
+    yaml_read_shader_internal(yaml_shader_key(), node, groupTranslator, shaderCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeShaderCreateInfo *)pSrc;

@@ -17,13 +17,18 @@
 #include "import_state.hpp"
 
 #include <foe/ecs/editor_name_map.hpp>
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/group_translator.h>
 #include <foe/imex/importers.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
 
 #include "../log.hpp"
 #include "error_code.hpp"
+
+struct foeIdGroupValueNameSet {
+    foeIdGroupValue groupValue;
+    std::string name;
+};
 
 namespace {
 
@@ -176,14 +181,29 @@ auto importState(std::string_view topLevelDataSet,
                 .name = "Persistent",
             });
 
+            std::vector<char const *> srcNames;
+            std::vector<foeIdGroup> srcIDs;
+            for (auto const &it : srcDependencies) {
+                srcNames.emplace_back(it.name.c_str());
+                srcIDs.emplace_back(foeIdValueToGroup(it.groupValue));
+            }
+
             auto dstDependencies = dependencies;
             dstDependencies.emplace_back(foeIdGroupValueNameSet{
                 .groupValue = groupValue,
                 .name = "Persistent",
             });
+            std::vector<char const *> dstNames;
+            std::vector<foeIdGroup> dstIDs;
+            for (auto const &it : dstDependencies) {
+                dstNames.emplace_back(it.name.c_str());
+                dstIDs.emplace_back(foeIdValueToGroup(it.groupValue));
+            }
 
-            foeIdGroupTranslator newTranslator;
-            auto errC = foeIdCreateTranslator(srcDependencies, dstDependencies, &newTranslator);
+            foeEcsGroupTranslator newTranslator{FOE_NULL_HANDLE};
+            std::error_code errC = foeEcsCreateGroupTranslator(
+                srcNames.size(), srcNames.data(), srcIDs.data(), dstNames.size(), dstNames.data(),
+                dstIDs.data(), &newTranslator);
             if (errC) {
                 return errC;
             }

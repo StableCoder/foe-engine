@@ -17,7 +17,7 @@
 #ifndef FOE_IMEX_YAML_IMPORTER_HPP
 #define FOE_IMEX_YAML_IMPORTER_HPP
 
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
 #include <foe/imex/importer_base.hpp>
 #include <foe/imex/yaml/export.h>
@@ -37,7 +37,7 @@ class foeYamlImporter : public foeImporterBase {
 
     FOE_IMEX_YAML_EXPORT foeIdGroup group() const noexcept override;
     FOE_IMEX_YAML_EXPORT std::string name() const noexcept override;
-    FOE_IMEX_YAML_EXPORT void setGroupTranslator(foeIdGroupTranslator &&groupTranslator) override;
+    FOE_IMEX_YAML_EXPORT void setGroupTranslator(foeEcsGroupTranslator groupTranslator) override;
 
     FOE_IMEX_YAML_EXPORT bool getDependencies(
         std::vector<foeIdGroupValueNameSet> &dependencies) override;
@@ -59,12 +59,12 @@ class foeYamlImporter : public foeImporterBase {
     foeIdGroup mGroup;
 
     bool mHasTranslation{false};
-    foeIdGroupTranslator mGroupTranslator;
+    foeEcsGroupTranslator mGroupTranslator{FOE_NULL_HANDLE};
 };
 
 /// Imports the definition of a resource from a YAML node
 using PFN_foeImexYamlResourceImport = void (*)(YAML::Node const &,
-                                               foeIdGroupTranslator const *,
+                                               foeEcsGroupTranslator,
                                                foeResourceCreateInfo *);
 
 /// Creates a resource from a given CreateInfo definition
@@ -74,7 +74,7 @@ using PFN_foeImexYamlResourceCreate = std::error_code (*)(foeResourceID,
 
 /// Imports component data from a YAML node
 using PFN_foeImexYamlComponent = bool (*)(YAML::Node const &,
-                                          foeIdGroupTranslator const *,
+                                          foeEcsGroupTranslator,
                                           foeEntityID,
                                           foeSimulation const *);
 

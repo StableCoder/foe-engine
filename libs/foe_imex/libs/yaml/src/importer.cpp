@@ -17,7 +17,7 @@
 #include <foe/imex/yaml/importer.hpp>
 
 #include <foe/ecs/editor_name_map.hpp>
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/index_generator.hpp>
@@ -30,6 +30,11 @@
 
 #include <string>
 #include <string_view>
+
+struct foeIdGroupValueNameSet {
+    foeIdGroupValue groupValue;
+    std::string name;
+};
 
 namespace {
 
@@ -117,8 +122,8 @@ foeIdGroup foeYamlImporter::group() const noexcept { return mGroup; }
 
 std::string foeYamlImporter::name() const noexcept { return mRootDir.stem().string(); }
 
-void foeYamlImporter::setGroupTranslator(foeIdGroupTranslator &&groupTranslation) {
-    mGroupTranslator = std::move(groupTranslation);
+void foeYamlImporter::setGroupTranslator(foeEcsGroupTranslator groupTranslator) {
+    mGroupTranslator = groupTranslator;
     mHasTranslation = true;
 }
 
@@ -163,10 +168,6 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
     if (!std::filesystem::exists(mRootDir / entityDirectoryPath))
         return true;
 
-    foeIdGroupTranslator *pTranslator{nullptr};
-    if (mHasTranslation)
-        pTranslator = &mGroupTranslator;
-
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / entityDirectoryPath}) {
         FOE_LOG(foeImexYaml, Info, "Visiting: {}", dirIt.path().string())
@@ -188,7 +189,7 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 
         try {
             foeId entity;
-            yaml_read_id_required("", entityNode, pTranslator, entity);
+            yaml_read_id_required("", entityNode, mGroupTranslator, entity);
 
             if (pEntityNameMap != nullptr) {
                 std::string editorName;
@@ -208,7 +209,7 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 
                 auto searchIt = componentFnMap.find(key);
                 if (searchIt != componentFnMap.end()) {
-                    searchIt->second(entityNode, pTranslator, entity, pSimulation);
+                    searchIt->second(entityNode, mGroupTranslator, entity, pSimulation);
                 } else {
                     FOE_LOG(foeImexYaml, Error,
                             "Failed to find importer for '{}' component key for {} entity ({})",
@@ -233,10 +234,6 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
         return true;
 
-    foeIdGroupTranslator *pTranslator{nullptr};
-    if (mHasTranslation)
-        pTranslator = &mGroupTranslator;
-
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
         if (std::filesystem::is_directory(dirIt))
@@ -258,7 +255,7 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
 
         try {
             // ID
-            yaml_read_id_required("", node, pTranslator, resource);
+            yaml_read_id_required("", node, mGroupTranslator, resource);
 
             // Editor Name
             if (pNameMap != nullptr) {
@@ -282,7 +279,7 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
                 auto searchIt = resourceFnMap.find(key);
                 if (searchIt != resourceFnMap.end()) {
                     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
-                    searchIt->second.pImport(node, pTranslator, &createInfo);
+                    searchIt->second.pImport(node, mGroupTranslator, &createInfo);
 
                     if (searchIt->second.pCreate != nullptr) {
                         auto errC = searchIt->second.pCreate(resource, createInfo, pSimulation);
@@ -381,10 +378,6 @@ foeResourceCreateInfo foeYamlImporter::getResource(foeId id) {
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
         return nullptr;
 
-    foeIdGroupTranslator *pTranslator{nullptr};
-    if (mHasTranslation)
-        pTranslator = &mGroupTranslator;
-
     YAML::Node rootNode;
     foeIdIndex index = foeIdGetIndex(id);
 
@@ -414,7 +407,7 @@ GOT_RESOURCE_NODE:
         auto lock = sharedLockImportFunctionality();
         for (auto const &it : getResourceFns()) {
             if (auto subNode = rootNode[it.first]; subNode) {
-                it.second.pImport(rootNode, pTranslator, &createInfo);
+                it.second.pImport(rootNode, mGroupTranslator, &createInfo);
                 return createInfo;
             }
         }

@@ -26,7 +26,7 @@ namespace {
 
 bool yaml_read_material_definition_internal(std::string const &nodeName,
                                             YAML::Node const &node,
-                                            foeIdGroupTranslator const *pTranslator,
+                                            foeEcsGroupTranslator groupTranslator,
                                             foeMaterialCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -36,9 +36,9 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
     bool read{false};
     try {
         // Resources
-        read |= yaml_read_id_optional("fragment_shader", subNode, pTranslator,
+        read |= yaml_read_id_optional("fragment_shader", subNode, groupTranslator,
                                       createInfo.fragmentShader);
-        read |= yaml_read_id_optional("image", subNode, pTranslator, createInfo.image);
+        read |= yaml_read_id_optional("image", subNode, groupTranslator, createInfo.image);
 
         createInfo.hasRasterizationSCI =
             yaml_read_optional("rasterization", subNode, createInfo.rasterizationSCI);
@@ -106,12 +106,12 @@ void yaml_write_material_internal(std::string const &nodeName,
 char const *yaml_material_key() { return "material_v1"; }
 
 void yaml_read_material(YAML::Node const &node,
-                        foeIdGroupTranslator const *pTranslator,
+                        foeEcsGroupTranslator groupTranslator,
                         foeResourceCreateInfo *pCreateInfo) {
     foeMaterialCreateInfo materialCI{};
     foeResourceCreateInfo createInfo;
 
-    yaml_read_material_definition_internal(yaml_material_key(), node, pTranslator, materialCI);
+    yaml_read_material_definition_internal(yaml_material_key(), node, groupTranslator, materialCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeMaterialCreateInfo *)pSrc;

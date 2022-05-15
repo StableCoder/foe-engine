@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,51 +14,100 @@
     limitations under the License.
 */
 
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/group_translator.h>
 
 #include "error_code.hpp"
 
-auto foeIdCreateTranslator(std::vector<foeIdGroupValueNameSet> const &source,
-                           std::vector<foeIdGroupValueNameSet> const &destination,
-                           foeIdGroupTranslator *pTranslator) -> std::error_code {
-    foeIdGroupTranslator newTranslator;
+#include <string.h>
 
-    for (auto const &src : source) {
-        bool found{false};
-        foeIdGroup dstGroup;
-        for (auto const &dst : destination) {
-            if (src.name == dst.name) {
-                dstGroup = foeIdValueToGroup(dst.groupValue);
+namespace {
+
+struct Translation {
+    foeIdGroup originalGroup;
+    foeIdGroup translatedGroup;
+};
+
+} // namespace
+
+extern "C" foeErrorCode foeEcsCreateGroupTranslator(uint32_t originalCount,
+                                                    char const **ppOriginalNames,
+                                                    foeIdGroup *pOriginalGroups,
+                                                    uint32_t translatedCount,
+                                                    char const **ppTranslatedNames,
+                                                    foeIdGroup *pTranslatedGroups,
+                                                    foeEcsGroupTranslator *pGroupTranslator) {
+    std::error_code errC{FOE_ECS_SUCCESS};
+    size_t translatorSize = sizeof(uint32_t) + (originalCount * sizeof(Translation));
+    void *pNewGroupTranslator = malloc(translatorSize);
+
+    uint32_t *pCount = (uint32_t *)pNewGroupTranslator;
+    *pCount = originalCount;
+
+    Translation *pTranslations = (Translation *)(pCount + 1);
+    for (uint32_t i = 0; i < originalCount; ++i) {
+        bool found = false;
+
+        for (uint32_t j = 0; j < translatedCount; ++j) {
+            if (strcmp(ppOriginalNames[i], ppTranslatedNames[j]) == 0) {
+                *pTranslations = Translation{
+                    .originalGroup = pOriginalGroups[i],
+                    .translatedGroup = pTranslatedGroups[j],
+                };
+                ++pTranslations;
                 found = true;
                 break;
             }
         }
 
         if (!found) {
-            // Failed to find the matching group
-            return FOE_ECS_ERROR_NO_MATCHING_DESTINATION_GROUP;
+            errC = FOE_ECS_ERROR_NO_MATCHING_GROUP;
+            break;
         }
-
-        // Otherwise we found a valid translation, add it
-        newTranslator.translations.emplace_back(foeIdGroupValueTranslation{
-            .sourceGroupValue = src.groupValue,
-            .destinationGroup = dstGroup,
-        });
     }
 
-    *pTranslator = std::move(newTranslator);
+    if (errC) {
+        // If an error, then free the data
+        free(pNewGroupTranslator);
+    } else {
+        // If no error, set the output variable
+        *pGroupTranslator = (foeEcsGroupTranslator)pNewGroupTranslator;
+    }
 
-    return FOE_ECS_SUCCESS;
+    return foeToErrorCode(errC);
 }
 
-auto foeIdTranslateGroupValue(foeIdGroupTranslator const *pTranslator, foeIdGroupValue groupValue)
-    -> foeIdGroup {
-    for (auto const &it : pTranslator->translations) {
-        if (it.sourceGroupValue == groupValue) {
-            return it.destinationGroup;
+extern "C" void foeEcsDestroyGroupTranslator(foeEcsGroupTranslator groupTranslator) {
+    free(groupTranslator);
+}
+
+extern "C" foeErrorCode foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTranslator,
+                                                 foeIdGroup originalGroup,
+                                                 foeIdGroup *pTranslatedGroup) {
+    uint32_t const *pCount = (uint32_t const *)groupTranslator;
+    Translation const *pTranslations = (Translation const *)(pCount + 1);
+
+    for (uint32_t i = 0; i < *pCount; ++i) {
+        if (pTranslations[i].originalGroup == originalGroup) {
+            *pTranslatedGroup = pTranslations[i].translatedGroup;
+            return foeToErrorCode(FOE_ECS_SUCCESS);
         }
     }
 
-    // If no translation, assume it's part of the persistent group
-    return foeIdTemporaryGroup;
+    return foeToErrorCode(FOE_ECS_ERROR_NO_MATCHING_GROUP);
+}
+
+extern "C" foeErrorCode foeEcsGetOriginalGroup(foeEcsGroupTranslator groupTranslator,
+                                               foeIdGroup translatedGroup,
+                                               foeIdGroup *pOriginalGroup) {
+    uint32_t const *pCount = (uint32_t const *)groupTranslator;
+    Translation const *pTranslations = (Translation const *)(pCount + 1);
+
+    for (uint32_t i = 0; i < *pCount; ++i) {
+        if (pTranslations[i].translatedGroup == translatedGroup) {
+            *pOriginalGroup = pTranslations[i].originalGroup;
+            return foeToErrorCode(FOE_ECS_SUCCESS);
+        }
+    }
+
+    return foeToErrorCode(FOE_ECS_ERROR_NO_MATCHING_GROUP);
 }

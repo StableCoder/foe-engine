@@ -17,17 +17,17 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
+#include <foe/ecs/group_translator.h>
 #include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
-struct foeIdGroupTranslator;
 struct foeMaterialCreateInfo;
 struct foeGfxVkFragmentDescriptor;
 
 char const *yaml_material_key();
 
 void yaml_read_material(YAML::Node const &node,
-                        foeIdGroupTranslator const *pTranslator,
+                        foeEcsGroupTranslator groupTranslator,
                         foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_material(foeMaterialCreateInfo const &data,

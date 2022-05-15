@@ -16,14 +16,14 @@
 
 #include <foe/ecs/yaml/id.hpp>
 
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
 void yaml_read_id_required(std::string const &nodeName,
                            YAML::Node const &node,
-                           foeIdGroupTranslator const *pTranslator,
+                           foeEcsGroupTranslator groupTranslator,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -31,7 +31,7 @@ void yaml_read_id_required(std::string const &nodeName,
     }
 
     try {
-        if (!yaml_read_id_optional("", subNode, pTranslator, id)) {
+        if (!yaml_read_id_optional("", subNode, groupTranslator, id)) {
             throw foeYamlException("index_id - Could not find required node to parse foeId");
         }
     } catch (foeYamlException const &e) {
@@ -45,7 +45,7 @@ void yaml_read_id_required(std::string const &nodeName,
 
 bool yaml_read_id_optional(std::string const &nodeName,
                            YAML::Node const &node,
-                           foeIdGroupTranslator const *pTranslator,
+                           foeEcsGroupTranslator groupTranslator,
                            foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -57,12 +57,13 @@ bool yaml_read_id_optional(std::string const &nodeName,
         foeIdGroup group;
         foeIdGroupValue groupValue = foeIdPersistentGroupValue;
         yaml_read_optional("group_id", subNode, groupValue);
-        if (pTranslator != nullptr) {
-            group = foeIdTranslateGroupValue(pTranslator, groupValue);
-            if (group == foeIdTemporaryGroup) {
+        if (groupTranslator != FOE_NULL_HANDLE) {
+            std::error_code errC =
+                foeEcsGetTranslatedGroup(groupTranslator, foeIdValueToGroup(groupValue), &group);
+            if (errC) {
                 throw foeYamlException("group_id - Was given groupValue of '" +
                                        std::to_string(groupValue) +
-                                       "' for which no translation exists.");
+                                       "' for which no translation exists - " + errC.message());
             }
         } else {
             group = foeIdValueToGroup(groupValue);

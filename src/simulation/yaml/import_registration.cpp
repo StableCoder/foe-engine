@@ -53,7 +53,7 @@ std::error_code armatureCreateProcessing(foeResourceID resourceID,
 // Components
 
 bool importArmatureState(YAML::Node const &node,
-                         foeIdGroupTranslator const *pGroupTranslator,
+                         foeEcsGroupTranslator groupTranslator,
                          foeEntityID entity,
                          foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_armature_state_key()]; dataNode) {
@@ -64,7 +64,7 @@ bool importArmatureState(YAML::Node const &node,
             return false;
 
         try {
-            foeArmatureState data = yaml_read_ArmatureState(dataNode, pGroupTranslator);
+            foeArmatureState data = yaml_read_ArmatureState(dataNode, groupTranslator);
 
             pPool->insert(entity, std::move(data));
 
@@ -78,7 +78,7 @@ bool importArmatureState(YAML::Node const &node,
 }
 
 bool importRenderState(YAML::Node const &node,
-                       foeIdGroupTranslator const *pGroupTranslator,
+                       foeEcsGroupTranslator groupTranslator,
                        foeEntityID entity,
                        foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_render_state_key()]; dataNode) {
@@ -89,7 +89,7 @@ bool importRenderState(YAML::Node const &node,
             return false;
 
         try {
-            foeRenderState data = yaml_read_RenderState(dataNode, pGroupTranslator);
+            foeRenderState data = yaml_read_RenderState(dataNode, groupTranslator);
 
             pPool->insert(entity, std::move(data));
 
@@ -103,7 +103,7 @@ bool importRenderState(YAML::Node const &node,
 }
 
 bool importCamera(YAML::Node const &node,
-                  foeIdGroupTranslator const *,
+                  foeEcsGroupTranslator groupTranslator,
                   foeEntityID entity,
                   foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_camera_key()]; dataNode) {

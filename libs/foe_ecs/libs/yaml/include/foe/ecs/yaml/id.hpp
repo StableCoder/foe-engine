@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,16 +17,16 @@
 #ifndef FOE_ECS_YAML_ID_HPP
 #define FOE_ECS_YAML_ID_HPP
 
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
 #include <foe/ecs/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
-struct foeIdGroupTranslator;
-
 /** @brief Reads the GroupValue and Index portions of an ID
  * @param nodeName The name of the sub-node to read the id from, or empty for the given node
  * @param node Yaml node to parse
- * @param pTranslator If given, translates the read-in groupValue to a different final IdGroup
+ * @param groupTranslator If given, translates the read-in original GroupID and gets the translated
+ * one
  * @param id Returns the final foeId value
  * @throws A descriptive exception on failure to parse.
  *
@@ -35,13 +35,14 @@ struct foeIdGroupTranslator;
  */
 FOE_ECS_YAML_EXPORT void yaml_read_id_required(std::string const &nodeName,
                                                YAML::Node const &node,
-                                               foeIdGroupTranslator const *pTranslator,
+                                               foeEcsGroupTranslator groupTranslator,
                                                foeId &id);
 
 /** @brief Reads the GroupValue and Index portions of an ID
  * @param nodeName The name of the sub-node to read the id from, or empty for the given node
  * @param node Yaml node to parse
- * @param pTranslator If given, translates the read-in groupValue to a different final IdGroup
+ * @param groupTranslator If given, translates the read-in original GroupID and gets the translated
+ * one
  * @param id Returns the final foeId value
  * @throws A descriptive exception on failure to parse.
  * @returns True if the ID was read in, false if the index_id node was missing
@@ -51,7 +52,7 @@ FOE_ECS_YAML_EXPORT void yaml_read_id_required(std::string const &nodeName,
  */
 FOE_ECS_YAML_EXPORT bool yaml_read_id_optional(std::string const &nodeName,
                                                YAML::Node const &node,
-                                               foeIdGroupTranslator const *pTranslator,
+                                               foeEcsGroupTranslator groupTranslator,
                                                foeId &id);
 
 /** @brief Writes the given ID's GroupValue and Index to the Yaml node

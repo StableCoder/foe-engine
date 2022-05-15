@@ -26,7 +26,7 @@ namespace {
 
 bool yaml_read_armature_definition_internal(std::string const &nodeName,
                                             YAML::Node const &node,
-                                            foeIdGroupTranslator const *pTranslator,
+                                            foeEcsGroupTranslator groupTranslator,
                                             foeArmatureCreateInfo &createInfo) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
@@ -123,12 +123,12 @@ void yaml_write_armature_internal(std::string const &nodeName,
 char const *yaml_armature_key() { return "armature_v1"; }
 
 void yaml_read_armature(YAML::Node const &node,
-                        foeIdGroupTranslator const *pTranslator,
+                        foeEcsGroupTranslator groupTranslator,
                         foeResourceCreateInfo *pCreateInfo) {
     foeArmatureCreateInfo armatureCI{};
     foeResourceCreateInfo createInfo;
 
-    yaml_read_armature_definition_internal(yaml_armature_key(), node, pTranslator, armatureCI);
+    yaml_read_armature_definition_internal(yaml_armature_key(), node, groupTranslator, armatureCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeArmatureCreateInfo *)pSrc;

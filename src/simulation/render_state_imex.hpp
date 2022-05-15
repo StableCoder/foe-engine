@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #ifndef RENDER_STATE_IMEX_HPP
 #define RENDER_STATE_IMEX_HPP
 
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>
@@ -26,15 +26,15 @@
 
 inline char const *yaml_render_state_key() { return "render_state"; }
 
-inline auto yaml_read_RenderState(YAML::Node const &node, foeIdGroupTranslator const *pTranslator)
+inline auto yaml_read_RenderState(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
     -> foeRenderState {
     foeRenderState renderState;
 
-    yaml_read_id_optional("vertex_descriptor", node, pTranslator, renderState.vertexDescriptor);
-    yaml_read_id_optional("boned_vertex_descriptor", node, pTranslator,
+    yaml_read_id_optional("vertex_descriptor", node, groupTranslator, renderState.vertexDescriptor);
+    yaml_read_id_optional("boned_vertex_descriptor", node, groupTranslator,
                           renderState.bonedVertexDescriptor);
-    yaml_read_id_optional("material", node, pTranslator, renderState.material);
-    yaml_read_id_optional("mesh", node, pTranslator, renderState.mesh);
+    yaml_read_id_optional("material", node, groupTranslator, renderState.material);
+    yaml_read_id_optional("mesh", node, groupTranslator, renderState.mesh);
 
     return renderState;
 }

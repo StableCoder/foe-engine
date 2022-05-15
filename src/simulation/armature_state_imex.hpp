@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #ifndef ARMATURE_STATE_IMEX_HPP
 #define ARMATURE_STATE_IMEX_HPP
 
-#include <foe/ecs/group_translator.hpp>
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/yaml/parsing.hpp>
 #include <yaml-cpp/yaml.h>
@@ -26,11 +26,11 @@
 
 inline char const *yaml_armature_state_key() { return "armature_state"; }
 
-inline auto yaml_read_ArmatureState(YAML::Node const &node, foeIdGroupTranslator const *pTranslator)
+inline auto yaml_read_ArmatureState(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
     -> foeArmatureState {
     foeArmatureState armatureState;
 
-    yaml_read_id_optional("armature", node, pTranslator, armatureState.armatureID);
+    yaml_read_id_optional("armature", node, groupTranslator, armatureState.armatureID);
 
     yaml_read_required("animation", node, armatureState.animationID);
     yaml_read_required("time", node, armatureState.time);

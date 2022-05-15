@@ -17,16 +17,16 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
+#include <foe/ecs/group_translator.h>
 #include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
-struct foeIdGroupTranslator;
 struct foeShaderCreateInfo;
 
 char const *yaml_shader_key();
 
 void yaml_read_shader(YAML::Node const &node,
-                      foeIdGroupTranslator const *pTranslator,
+                      foeEcsGroupTranslator groupTranslator,
                       foeResourceCreateInfo *pCreateInfo);
 
 auto yaml_write_shader(foeShaderCreateInfo const &data) -> YAML::Node;

@@ -32,7 +32,7 @@ class DummyImporter : public foeImporterBase {
 
     foeIdGroup group() const noexcept final { return mGroup; }
     std::string name() const noexcept final { return mName; }
-    void setGroupTranslator(foeIdGroupTranslator &&groupTranslation) final {}
+    void setGroupTranslator(foeEcsGroupTranslator groupTranslator) final {}
 
     bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) final { return false; }
     bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }

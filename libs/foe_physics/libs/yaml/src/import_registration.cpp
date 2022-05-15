@@ -45,7 +45,7 @@ std::error_code collisionShapeCreateProcessing(foeResourceID resourceID,
 }
 
 bool importRigidBody(YAML::Node const &node,
-                     foeIdGroupTranslator const *pGroupTranslator,
+                     foeEcsGroupTranslator groupTranslator,
                      foeEntityID entity,
                      foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_rigid_body_key()]; dataNode) {
@@ -56,7 +56,7 @@ bool importRigidBody(YAML::Node const &node,
             return false;
 
         try {
-            foeRigidBody data = yaml_read_rigid_body(dataNode, pGroupTranslator);
+            foeRigidBody data = yaml_read_rigid_body(dataNode, groupTranslator);
 
             pPool->insert(entity, std::move(data));
 

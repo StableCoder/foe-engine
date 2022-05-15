@@ -17,6 +17,7 @@
 #ifndef FOE_IMEX_IMPORTER_BASE_HPP
 #define FOE_IMEX_IMPORTER_BASE_HPP
 
+#include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
 #include <foe/resource/create_info.h>
 
@@ -24,7 +25,6 @@
 #include <string>
 #include <vector>
 
-struct foeIdGroupTranslator;
 struct foeIdGroupValueNameSet;
 class foeIdIndexGenerator;
 struct foeEditorNameMap;
@@ -37,7 +37,7 @@ class foeImporterBase {
 
     virtual foeIdGroup group() const noexcept = 0;
     virtual std::string name() const noexcept = 0;
-    virtual void setGroupTranslator(foeIdGroupTranslator &&groupTranslator) = 0;
+    virtual void setGroupTranslator(foeEcsGroupTranslator groupTranslator) = 0;
 
     virtual bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) = 0;
     virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
