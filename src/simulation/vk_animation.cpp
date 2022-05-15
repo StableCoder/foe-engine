@@ -17,10 +17,10 @@
 #include "vk_animation.hpp"
 
 #include <foe/graphics/resource/mesh.hpp>
+#include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/session.hpp>
 #include <glm/glm.hpp>
 #include <vk_error_code.hpp>
-#include <vulkan/vulkan_core.h>
 
 #include "../error_code.hpp"
 #include "armature.hpp"
@@ -227,11 +227,30 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             continue;
         }
 
-        foeResource mesh = foeResourcePoolFind(mResourcePool, pRenderState->mesh);
-        foeResource armature = foeResourcePoolFind(mResourcePool, pArmatureState->armatureID);
+        foeResource mesh{FOE_NULL_HANDLE};
+        foeResource armature{FOE_NULL_HANDLE};
 
-        if (mesh == FOE_NULL_HANDLE || armature == FOE_NULL_HANDLE ||
-            foeResourceGetState(mesh) != foeResourceLoadState::Loaded ||
+        do {
+            mesh = foeResourcePoolFind(mResourcePool, pRenderState->mesh);
+
+            if (mesh == FOE_NULL_HANDLE) {
+                mesh =
+                    foeResourcePoolAdd(mResourcePool, pRenderState->mesh,
+                                       FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh));
+            }
+        } while (mesh == FOE_NULL_HANDLE);
+
+        do {
+            armature = foeResourcePoolFind(mResourcePool, pArmatureState->armatureID);
+
+            if (armature == FOE_NULL_HANDLE) {
+                armature =
+                    foeResourcePoolAdd(mResourcePool, pArmatureState->armatureID,
+                                       FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
+            }
+        } while (armature == FOE_NULL_HANDLE);
+
+        if (foeResourceGetState(mesh) != foeResourceLoadState::Loaded ||
             foeResourceGetState(armature) != foeResourceLoadState::Loaded ||
             pArmatureState->armatureState.empty()) {
             continue;

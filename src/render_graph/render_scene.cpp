@@ -50,23 +50,57 @@ auto renderCall(foeId entity,
     VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
     foeResource vertexDescriptor{FOE_NULL_HANDLE};
+    foeResource material{FOE_NULL_HANDLE};
+    foeResource mesh{FOE_NULL_HANDLE};
+
     bool boned{false};
     if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
         pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
         boned = true;
 
-        vertexDescriptor =
-            foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->bonedVertexDescriptor);
+        do {
+            vertexDescriptor = foeResourcePoolFind(pSimulationSet->resourcePool,
+                                                   pRenderState->bonedVertexDescriptor);
+
+            if (vertexDescriptor == FOE_NULL_HANDLE) {
+                vertexDescriptor = foeResourcePoolAdd(
+                    pSimulationSet->resourcePool, pRenderState->bonedVertexDescriptor,
+                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
+                    sizeof(foeVertexDescriptor));
+            }
+        } while (vertexDescriptor == FOE_NULL_HANDLE);
+    } else {
+        do {
+            vertexDescriptor =
+                foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->vertexDescriptor);
+
+            if (vertexDescriptor == FOE_NULL_HANDLE) {
+                vertexDescriptor =
+                    foeResourcePoolAdd(pSimulationSet->resourcePool, pRenderState->vertexDescriptor,
+                                       FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
+                                       sizeof(foeVertexDescriptor));
+            }
+        } while (vertexDescriptor == FOE_NULL_HANDLE);
     }
 
-    if (vertexDescriptor == FOE_NULL_HANDLE) {
-        vertexDescriptor =
-            foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->vertexDescriptor);
-    }
+    do {
+        material = foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->material);
 
-    foeResource material =
-        foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->material);
-    foeResource mesh = foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->mesh);
+        if (material == FOE_NULL_HANDLE) {
+            material = foeResourcePoolAdd(pSimulationSet->resourcePool, pRenderState->material,
+                                          FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL,
+                                          sizeof(foeMaterial));
+        }
+    } while (material == FOE_NULL_HANDLE);
+
+    do {
+        mesh = foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->mesh);
+
+        if (mesh == FOE_NULL_HANDLE) {
+            mesh = foeResourcePoolAdd(pSimulationSet->resourcePool, pRenderState->mesh,
+                                      FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh));
+        }
+    } while (mesh == FOE_NULL_HANDLE);
 
     if (vertexDescriptor == FOE_NULL_HANDLE || material == FOE_NULL_HANDLE ||
         mesh == FOE_NULL_HANDLE) {
