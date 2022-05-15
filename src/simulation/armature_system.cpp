@@ -78,16 +78,16 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 
 } // namespace
 
-auto foeArmatureSystem::initialize(foeResourcePool armaturePool,
+auto foeArmatureSystem::initialize(foeResourcePool resourcePool,
                                    foeArmatureStatePool *pArmatureStatePool) -> std::error_code {
-    if (armaturePool == nullptr) {
+    if (resourcePool == nullptr) {
         return FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED;
     }
     if (pArmatureStatePool == nullptr) {
         return FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED;
     }
 
-    mArmaturePool = armaturePool;
+    mResourcePool = resourcePool;
     mpArmatureStatePool = pArmatureStatePool;
 
     return FOE_BRINGUP_SUCCESS;
@@ -95,10 +95,10 @@ auto foeArmatureSystem::initialize(foeResourcePool armaturePool,
 
 void foeArmatureSystem::deinitialize() {
     mpArmatureStatePool = nullptr;
-    mArmaturePool = nullptr;
+    mResourcePool = nullptr;
 }
 
-bool foeArmatureSystem::initialized() const noexcept { return mArmaturePool != nullptr; }
+bool foeArmatureSystem::initialized() const noexcept { return mResourcePool != nullptr; }
 
 void foeArmatureSystem::process(float timePassed) {
     auto *pArmatureState = mpArmatureStatePool->begin<1>();
@@ -112,11 +112,17 @@ void foeArmatureSystem::process(float timePassed) {
         if (pArmatureState->armatureID == FOE_INVALID_ID)
             continue;
 
-        foeResource armature = foeResourcePoolFind(mArmaturePool, pArmatureState->armatureID);
-        // If the armature we're trying to use isn't here, skip this entry
-        if (armature == FOE_NULL_HANDLE) {
-            std::abort();
-        }
+        foeResource armature = FOE_NULL_HANDLE;
+
+        do {
+            armature = foeResourcePoolFind(mResourcePool, pArmatureState->armatureID);
+
+            if (armature == FOE_NULL_HANDLE) {
+                armature =
+                    foeResourcePoolAdd(mResourcePool, pArmatureState->armatureID,
+                                       FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
+            }
+        } while (armature == FOE_NULL_HANDLE);
 
         if (foeResourceGetState(armature) != foeResourceLoadState::Loaded) {
             if (!foeResourceGetIsLoading(armature))

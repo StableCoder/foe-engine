@@ -25,7 +25,7 @@ class foeArmatureStatePool;
 
 class foeArmatureSystem {
   public:
-    auto initialize(foeResourcePool armaturePool, foeArmatureStatePool *pArmatureStatePool)
+    auto initialize(foeResourcePool resourcePool, foeArmatureStatePool *pArmatureStatePool)
         -> std::error_code;
     void deinitialize();
     bool initialized() const noexcept;
@@ -34,7 +34,7 @@ class foeArmatureSystem {
 
   private:
     // Resources
-    foeResourcePool mArmaturePool{FOE_NULL_HANDLE};
+    foeResourcePool mResourcePool{FOE_NULL_HANDLE};
 
     // Components
     foeArmatureStatePool *mpArmatureStatePool{nullptr};
