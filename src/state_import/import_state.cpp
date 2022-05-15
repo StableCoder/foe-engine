@@ -245,22 +245,6 @@ auto importState(std::string_view topLevelDataSet,
     if (!retVal)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
 
-    // Load Persistent resource definitions
-    for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-        auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
-        if (pGroupImporter != nullptr) {
-            if (!pGroupImporter->importResourceDefinitions(pSimulationSet->pResourceNameMap,
-                                                           pSimulationSet.get()))
-                return FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE;
-        }
-    }
-
-    // Load dependency resource definitions
-    retVal = pSimulationSet->groupData.persistentImporter()->importResourceDefinitions(
-        pSimulationSet->pResourceNameMap, pSimulationSet.get());
-    if (!retVal)
-        return FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE;
-
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
