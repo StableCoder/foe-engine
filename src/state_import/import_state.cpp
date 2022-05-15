@@ -207,19 +207,6 @@ auto importState(std::string_view topLevelDataSet,
             ++groupValue;
         }
 
-        // Translator for persistent top-level group
-        foeIdGroupTranslator newTranslator;
-        auto dstDependencies = dependencies;
-        dstDependencies.emplace_back(foeIdGroupValueNameSet{
-            .groupValue = foeIdPersistentGroupValue,
-            .name = "Persistent",
-        });
-        auto errC = foeIdCreateTranslator(dstDependencies, dstDependencies, &newTranslator);
-        if (errC) {
-            return errC;
-        }
-        persistentImporter->setGroupTranslator(std::move(newTranslator));
-
         pSimulationSet->groupData.setPersistentImporter(std::move(persistentImporter));
     }
 
