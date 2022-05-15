@@ -248,7 +248,7 @@ TEST_CASE("IndexGenerator - Iterating through IDs", "[foe][ecs][IndexGenerator]"
 
     REQUIRE(testGenerator.peekNextFreshIndex() == 16);
 
-    testGenerator.free(13);
+    testGenerator.free(15);
     testGenerator.free(8);
     testGenerator.free(4);
     testGenerator.free(10);
@@ -267,8 +267,8 @@ TEST_CASE("IndexGenerator - Iterating through IDs", "[foe][ecs][IndexGenerator]"
     CHECK(existingIDs[6] == 9);
     CHECK(existingIDs[7] == 11);
     CHECK(existingIDs[8] == 12);
-    CHECK(existingIDs[9] == 14);
-    CHECK(existingIDs[10] == 15);
+    CHECK(existingIDs[9] == 13);
+    CHECK(existingIDs[10] == 14);
 }
 
 TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]") {

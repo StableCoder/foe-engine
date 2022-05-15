@@ -80,16 +80,19 @@ void foeIdIndexGenerator::forEachID(std::function<void(foeId)> callFn) {
     exportState(nextFreshIndex, recycledIndexes);
     std::sort(recycledIndexes.begin(), recycledIndexes.end());
 
-    size_t const numIndexes = nextFreshIndex - recycledIndexes.size() - foeIdIndexMinValue;
-    for (size_t i = 0; i < numIndexes; ++i) {
-        foeResourceID indexID = foeIdIndexMinValue + i;
+    auto currentRecycled = recycledIndexes.begin();
 
-        for (auto it : recycledIndexes) {
-            if (it <= indexID)
-                ++indexID;
-            else
-                break;
+    for (foeIdIndex indexID = foeIdIndexMinValue; indexID < nextFreshIndex; ++indexID) {
+        // Skip through any recycled indexes
+        while (currentRecycled != recycledIndexes.end() && indexID == *currentRecycled) {
+            ++currentRecycled;
+            ++indexID;
         }
+
+        // Make sure we didn't go past the end (can happen if the last non-fresh index has been
+        // recycled)
+        if (indexID >= nextFreshIndex)
+            break;
 
         callFn(foeIdCreate(cGroupID, indexID));
     }
