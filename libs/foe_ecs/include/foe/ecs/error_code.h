@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021-2022 George Cave.
+    Copyright (C) 2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
     limitations under the License.
 */
 
-#ifndef ERROR_CODE_HPP
-#define ERROR_CODE_HPP
+#ifndef FOE_ECS_ERROR_CODE_H
+#define FOE_ECS_ERROR_CODE_H
 
-#include <foe/ecs/error_code.h>
+enum foeEcsResult {
+    FOE_ECS_SUCCESS = 0,
+    FOE_ECS_ERROR_NO_MATCHING_DESTINATION_GROUP,
+};
 
-#include <system_error>
-
-namespace std {
-template <>
-struct is_error_code_enum<foeEcsResult> : true_type {};
-} // namespace std
-
-std::error_code make_error_code(foeEcsResult);
-
-#endif // ERROR_CODE_HPP
+#endif // FOE_ECS_ERROR_CODE_H
