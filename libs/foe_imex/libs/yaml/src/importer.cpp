@@ -61,7 +61,7 @@ bool parseFileStem(std::filesystem::path const &path,
 
     // Parsing
     char *endCh;
-    groupValue = foeIdPersistentGroup;
+    groupValue = foeIdPersistentGroupValue;
     if (!idGroupStem.empty()) {
         groupValue = std::strtoul(idGroupStem.c_str(), &endCh, 0);
     }
