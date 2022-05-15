@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -111,6 +111,7 @@ void foeImGuiResourceList::customUI() {
             .group = group,
         };
         pIndexGenerator->exportState(indiceData.nextIndex, indiceData.recycledIndices);
+        std::sort(indiceData.recycledIndices.begin(), indiceData.recycledIndices.end());
 
         totalEntityCount +=
             indiceData.nextIndex - indiceData.recycledIndices.size() - foeIdIndexMinValue;

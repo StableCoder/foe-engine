@@ -111,6 +111,7 @@ void foeImGuiEntityList::customUI() {
             .group = group,
         };
         pIndexGenerator->exportState(indiceData.nextIndex, indiceData.recycledIndices);
+        std::sort(indiceData.recycledIndices.begin(), indiceData.recycledIndices.end());
 
         totalEntityCount +=
             indiceData.nextIndex - indiceData.recycledIndices.size() - foeIdIndexMinValue;
