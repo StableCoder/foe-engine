@@ -25,16 +25,12 @@
 #include <foe/yaml/parsing.hpp>
 
 #include "common.hpp"
+#include "error_code.hpp"
 #include "import_functionality.hpp"
 #include "log.hpp"
 
 #include <string>
 #include <string_view>
-
-struct foeIdGroupValueNameSet {
-    foeIdGroupValue groupValue;
-    std::string name;
-};
 
 namespace {
 
@@ -95,29 +91,6 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 foeYamlImporter::foeYamlImporter(foeIdGroup group, std::filesystem::path rootDir) :
     mRootDir{std::move(rootDir)}, mGroup{group} {}
 
-namespace {
-
-bool importDependenciesFromNode(YAML::Node const &dependenciesNode,
-                                std::vector<foeIdGroupValueNameSet> &dependencies) {
-    try {
-        for (auto it = dependenciesNode.begin(); it != dependenciesNode.end(); ++it) {
-            foeIdGroupValueNameSet newDependency;
-
-            yaml_read_required("name", *it, newDependency.name);
-            yaml_read_required("group_id", *it, newDependency.groupValue);
-
-            dependencies.emplace_back(newDependency);
-        }
-    } catch (YAML::Exception const &e) {
-        FOE_LOG(foeImexYaml, Error, "{}", e.what())
-        return false;
-    }
-
-    return true;
-}
-
-} // namespace
-
 foeIdGroup foeYamlImporter::group() const noexcept { return mGroup; }
 
 std::string foeYamlImporter::name() const noexcept { return mRootDir.stem().string(); }
@@ -127,12 +100,68 @@ void foeYamlImporter::setGroupTranslator(foeEcsGroupTranslator groupTranslator) 
     mHasTranslation = true;
 }
 
-bool foeYamlImporter::getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) {
-    YAML::Node node;
-    if (!openYamlFile(mRootDir / dependenciesFilePath, node))
-        return false;
+foeErrorCode foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
+                                              foeIdGroup *pDependencyGroups,
+                                              uint32_t *pNamesLength,
+                                              char *pNames) {
+    YAML::Node dependenciesNode;
 
-    return importDependenciesFromNode(node, dependencies);
+    if (!openYamlFile(mRootDir / dependenciesFilePath, dependenciesNode))
+        return foeToErrorCode(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_EXIST);
+
+    struct DependencyNode {
+        std::string name;
+        foeIdGroupValue groupValue;
+    };
+
+    uint32_t namesLength = 0;
+    std::vector<DependencyNode> dependencies;
+
+    try {
+        for (auto it = dependenciesNode.begin(); it != dependenciesNode.end(); ++it) {
+            DependencyNode data;
+
+            yaml_read_required("name", *it, data.name);
+            yaml_read_required("group_id", *it, data.groupValue);
+
+            namesLength += data.name.size() + 1;
+            dependencies.emplace_back(data);
+        }
+    } catch (YAML::Exception const &e) {
+        FOE_LOG(foeImexYaml, Error, "{}", e.what())
+        return foeToErrorCode(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DEPENDENCIES);
+    }
+
+    std::error_code errC = FOE_IMEX_YAML_SUCCESS;
+
+    if (pDependencyGroups == nullptr && pNames == nullptr) {
+        *pDependencyCount = dependencies.size();
+        *pNamesLength = namesLength;
+    } else {
+        if (*pDependencyCount < dependencies.size() || *pNamesLength < namesLength)
+            errC = FOE_IMEX_YAML_INCOMPLETE;
+
+        char *const pEndName = pNames + *pNamesLength;
+        uint32_t const processedCount = std::min(*pDependencyCount, (uint32_t)dependencies.size());
+
+        for (uint32_t i = 0; i < processedCount; ++i) {
+            pDependencyGroups[i] = foeIdValueToGroup(dependencies[i].groupValue);
+
+            size_t copyLength = dependencies[i].name.size() + 1;
+            if (pEndName - pNames < copyLength) {
+                copyLength = pEndName - pNames;
+            }
+
+            strncpy(pNames, dependencies[i].name.data(), copyLength);
+
+            pNames += copyLength;
+        }
+
+        *pDependencyCount = processedCount;
+        *pNamesLength = std::min(*pNamesLength, namesLength);
+    }
+
+    return foeToErrorCode(errC);
 }
 
 namespace {

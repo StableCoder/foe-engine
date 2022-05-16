@@ -39,8 +39,10 @@ class foeYamlImporter : public foeImporterBase {
     FOE_IMEX_YAML_EXPORT std::string name() const noexcept override;
     FOE_IMEX_YAML_EXPORT void setGroupTranslator(foeEcsGroupTranslator groupTranslator) override;
 
-    FOE_IMEX_YAML_EXPORT bool getDependencies(
-        std::vector<foeIdGroupValueNameSet> &dependencies) override;
+    FOE_IMEX_YAML_EXPORT foeErrorCode getDependencies(uint32_t *pDependencyCount,
+                                                      foeIdGroup *pDependencyGroups,
+                                                      uint32_t *pNamesLength,
+                                                      char *pNames) override;
     FOE_IMEX_YAML_EXPORT bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool importStateData(foeEditorNameMap *pEntityNameMap,

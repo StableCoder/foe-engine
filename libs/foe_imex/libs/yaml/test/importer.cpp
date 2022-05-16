@@ -24,16 +24,13 @@
 #include "../src/importer_registration.hpp"
 #include "test_common.hpp"
 
+#include <cstring>
+
 #ifndef TEST_DATA_DIR
 #define TEST_DATA_DIR nullptr
 #endif
 
 static_assert(TEST_DATA_DIR != nullptr, "TEST_DATA_DIR must be added as a compilation definition.");
-
-struct foeIdGroupValueNameSet {
-    foeIdGroupValue groupValue;
-    std::string name;
-};
 
 TEST_CASE("foeYamlImporter - Function Tests") {
     std::filesystem::path testPath{TEST_DATA_DIR};
@@ -49,17 +46,83 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     CHECK(pTestImporter->name() == "11-good-content");
 
     SECTION("Dependencies (getDependencies)") {
-        std::vector<foeIdGroupValueNameSet> dependencies;
+        uint32_t dependenciesCount;
+        uint32_t namesLength;
 
-        pTestImporter->getDependencies(dependencies);
+        REQUIRE(pTestImporter->getDependencies(&dependenciesCount, nullptr, &namesLength, nullptr)
+                    .value == FOE_IMEX_YAML_SUCCESS);
+        REQUIRE(dependenciesCount == 2);
+        REQUIRE(namesLength == 14);
 
-        REQUIRE(dependencies.size() == 2);
+        SECTION("With correctly sizes buffers") {
+            std::array<foeIdGroup, 2> groups;
+            std::array<char, 14> names;
 
-        CHECK(dependencies[0].name == "test01");
-        CHECK(dependencies[0].groupValue == 0);
+            REQUIRE(
+                pTestImporter
+                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
+                    .value == FOE_IMEX_YAML_SUCCESS);
+            REQUIRE(dependenciesCount == 2);
+            REQUIRE(namesLength == 14);
 
-        CHECK(dependencies[1].name == "test02");
-        CHECK(dependencies[1].groupValue == 1);
+            CHECK(groups[0] == 0);
+            CHECK(std::string_view{&names[0]} == "test01");
+
+            CHECK(groups[1] == foeIdValueToGroup(1));
+            CHECK(std::string_view{&names[7]} == "test02");
+        }
+        SECTION("With oversized buffers") {
+            std::array<foeIdGroup, 3> groups;
+            dependenciesCount = 3;
+            std::array<char, 24> names;
+            namesLength = 24;
+
+            REQUIRE(
+                pTestImporter
+                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
+                    .value == FOE_IMEX_YAML_SUCCESS);
+            REQUIRE(dependenciesCount == 2);
+            REQUIRE(namesLength == 14);
+
+            CHECK(groups[0] == 0);
+            CHECK(std::string_view{&names[0]} == "test01");
+
+            CHECK(groups[1] == foeIdValueToGroup(1));
+            CHECK(std::string_view{&names[7]} == "test02");
+        }
+        SECTION("With undersized GroupID buffers") {
+            std::array<foeIdGroup, 1> groups;
+            dependenciesCount = 1;
+            std::array<char, 14> names;
+
+            REQUIRE(
+                pTestImporter
+                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
+                    .value == FOE_IMEX_YAML_INCOMPLETE);
+            REQUIRE(dependenciesCount == 1);
+            REQUIRE(namesLength == 14);
+
+            CHECK(groups[0] == 0);
+            CHECK(std::string_view{&names[0]} == "test01");
+        }
+        SECTION("With undersized GroupID buffers") {
+            std::array<foeIdGroup, 2> groups;
+            std::array<char, 10> names;
+            namesLength = 10;
+
+            REQUIRE(
+                pTestImporter
+                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
+                    .value == FOE_IMEX_YAML_INCOMPLETE);
+            REQUIRE(dependenciesCount == 2);
+            REQUIRE(namesLength == 10);
+
+            CHECK(groups[0] == 0);
+            CHECK(strcmp(&names[0], "test01") == 0);
+
+            CHECK(groups[1] == foeIdValueToGroup(1));
+            CHECK(strncmp(&names[7], "tes", 3) == 0);
+        }
     }
 
     SECTION("Resource Index Data (getGroupResourceIndexData)") {

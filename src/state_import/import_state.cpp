@@ -16,6 +16,7 @@
 
 #include "import_state.hpp"
 
+#include <foe/delimited_string.h>
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/group_translator.h>
 #include <foe/imex/importers.hpp>
@@ -24,11 +25,6 @@
 
 #include "../log.hpp"
 #include "error_code.hpp"
-
-struct foeIdGroupValueNameSet {
-    foeIdGroupValue groupValue;
-    std::string name;
-};
 
 namespace {
 
@@ -61,22 +57,24 @@ std::unique_ptr<foeImporterBase> searchAndCreateImporter(std::string_view dataSe
     return nullptr;
 }
 
-bool generateDependencyImporters(std::vector<foeIdGroupValueNameSet> const &dependencies,
+bool generateDependencyImporters(uint32_t dependencyCount,
+                                 char const **ppDependencyNames,
+                                 foeIdGroup *pDependencyGroups,
                                  foeSearchPaths *pSearchPaths,
                                  std::vector<std::unique_ptr<foeImporterBase>> &importers) {
     std::vector<std::unique_ptr<foeImporterBase>> newImporters;
 
     auto pathReader = pSearchPaths->getReader();
 
-    for (auto const &depIt : dependencies) {
+    for (uint32_t i = 0; i < dependencyCount; ++i) {
         auto pImporter =
-            searchAndCreateImporter(depIt.name, foeIdValueToGroup(depIt.groupValue), *pSearchPaths);
+            searchAndCreateImporter(ppDependencyNames[i], pDependencyGroups[i], *pSearchPaths);
 
         if (pImporter != nullptr) {
             newImporters.emplace_back(std::move(pImporter));
         } else {
             FOE_LOG(General, Error, "Failed to find dataset and/or importer for dependency: {}",
-                    depIt.name)
+                    ppDependencyNames[i])
             return false;
         }
     }
@@ -115,16 +113,34 @@ auto importState(std::string_view topLevelDataSet,
     }
 
     // Get the list of dependencies
-    std::vector<foeIdGroupValueNameSet> dependencies;
-    bool pass = persistentImporter->getDependencies(dependencies);
-    if (!pass)
+    uint32_t dependencyCount;
+    std::vector<foeIdGroup> dependencyGroups;
+    uint32_t namesLength;
+    std::vector<char const *> dependencyNames;
+    std::vector<char> nameArray;
+
+    errC = persistentImporter->getDependencies(&dependencyCount, nullptr, &namesLength, nullptr);
+    if (errC)
         return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
 
+    dependencyGroups.resize(dependencyCount);
+    nameArray.resize(namesLength);
+    errC = persistentImporter->getDependencies(&dependencyCount, dependencyGroups.data(),
+                                               &namesLength, nameArray.data());
+    if (errC)
+        return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
+
+    for (uint32_t i = 0; i < dependencyCount; ++i) {
+        char const *pStr = nullptr;
+        foeIndexedDelimitedString(namesLength, nameArray.data(), i, &pStr);
+        dependencyNames.emplace_back(pStr);
+    }
+
     // Check for duplicate dependencies
-    for (auto it = dependencies.begin(); it != dependencies.end(); ++it) {
-        for (auto innerIt = it + 1; innerIt != dependencies.end(); ++innerIt) {
-            if (innerIt->name == it->name) {
-                FOE_LOG(General, Error, "Duplicate dependency '{}' detected")
+    for (auto it = dependencyNames.begin(); it != dependencyNames.end(); ++it) {
+        for (auto innerIt = it + 1; innerIt != dependencyNames.end(); ++innerIt) {
+            if (strcmp(*innerIt, *it) == 0) {
+                FOE_LOG(General, Error, "Duplicate dependency '{}' detected", *it)
                 return FOE_STATE_IMPORT_ERROR_DUPLICATE_DEPENDENCIES;
             }
         }
@@ -132,29 +148,53 @@ auto importState(std::string_view topLevelDataSet,
 
     // Generate importers for all of the dependencies
     std::vector<std::unique_ptr<foeImporterBase>> dependencyImporters;
-    pass = generateDependencyImporters(dependencies, pSearchPaths, dependencyImporters);
+    bool pass =
+        generateDependencyImporters(dependencyNames.size(), dependencyNames.data(),
+                                    dependencyGroups.data(), pSearchPaths, dependencyImporters);
     if (!pass)
         return FOE_STATE_IMPORT_ERROR_NO_IMPORTER;
 
     { // Check transitive dependencies
         auto pImporter = dependencyImporters.begin();
-        for (auto depIt = dependencies.begin(); depIt != dependencies.end(); ++depIt, ++pImporter) {
-            std::vector<foeIdGroupValueNameSet> transitiveDependencies;
-            pass = pImporter->get()->getDependencies(transitiveDependencies);
-            if (!pass) {
+        for (uint32_t i = 0; i < dependencyCount; ++i, ++pImporter) {
+            uint32_t transitiveCount;
+            uint32_t transitiveStringLength;
+
+            errC = pImporter->get()->getDependencies(&transitiveCount, nullptr,
+                                                     &transitiveStringLength, nullptr);
+            if (errC)
+                std::abort();
+
+            std::vector<foeIdGroup> transitiveGroups;
+            std::vector<char> transitiveNameArray;
+            std::vector<char const *> transitiveNames;
+
+            transitiveGroups.resize(transitiveCount);
+            transitiveNameArray.resize(transitiveStringLength);
+
+            errC = pImporter->get()->getDependencies(&transitiveCount, transitiveGroups.data(),
+                                                     &transitiveStringLength,
+                                                     transitiveNameArray.data());
+            if (errC) {
                 FOE_LOG(General, Error, "Failed to import sub-dependencies of the '{}' dependency",
-                        depIt->name)
+                        dependencyNames[i])
                 return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
+            }
+
+            for (uint32_t i = 0; i < transitiveCount; ++i) {
+                char const *pStr;
+                foeIndexedDelimitedString(transitiveNameArray.size(), transitiveNameArray.data(), i,
+                                          &pStr);
+                transitiveNames.emplace_back(pStr);
             }
 
             // Check that all required transitive dependencies are available *before* it is
             // loaded, and in the correct order
-            auto checkIt = dependencies.begin();
-            for (auto const &transIt : transitiveDependencies) {
+            for (uint32_t j = 0; j < transitiveCount; ++j) {
                 bool depFound{false};
 
-                for (; checkIt != depIt; ++checkIt) {
-                    if (checkIt->name == transIt.name) {
+                for (uint32_t k = 0; k < i; ++k) {
+                    if (strcmp(dependencyNames[k], transitiveNames[j]) == 0) {
                         depFound = true;
                         break;
                     }
@@ -163,7 +203,7 @@ auto importState(std::string_view topLevelDataSet,
                 if (!depFound) {
                     FOE_LOG(General, Error,
                             "Could not find transitive dependency '{}' for dependency group '{}'",
-                            transIt.name, depIt->name)
+                            transitiveNames[j], dependencyNames[i])
                     return FOE_STATE_IMPORT_ERROR_TRANSITIVE_DEPENDENCIES_UNFULFILLED;
                 }
             }
@@ -174,36 +214,41 @@ auto importState(std::string_view topLevelDataSet,
         foeIdGroup groupValue = 0;
         for (auto &it : dependencyImporters) {
             // Setup importer translations
-            std::vector<foeIdGroupValueNameSet> srcDependencies;
-            it->getDependencies(srcDependencies);
-            srcDependencies.emplace_back(foeIdGroupValueNameSet{
-                .groupValue = foeIdPersistentGroupValue,
-                .name = "Persistent",
-            });
+            uint32_t srcDependencyCount;
+            uint32_t srcNameArrayLength;
+            errC = it->getDependencies(&srcDependencyCount, nullptr, &srcNameArrayLength, nullptr);
+            if (errC)
+                std::abort();
 
+            std::vector<foeIdGroup> srcGroups;
+            std::vector<char> srcNameArray;
             std::vector<char const *> srcNames;
-            std::vector<foeIdGroup> srcIDs;
-            for (auto const &it : srcDependencies) {
-                srcNames.emplace_back(it.name.c_str());
-                srcIDs.emplace_back(foeIdValueToGroup(it.groupValue));
+            srcGroups.resize(srcDependencyCount);
+            srcNameArray.resize(srcNameArrayLength);
+
+            errC = it->getDependencies(&srcDependencyCount, srcGroups.data(), &srcNameArrayLength,
+                                       srcNameArray.data());
+            if (errC)
+                std::abort();
+
+            for (uint32_t i = 0; i < srcDependencyCount; ++i) {
+                char const *pStr;
+                foeIndexedDelimitedString(srcNameArray.size(), srcNameArray.data(), i, &pStr);
+                srcNames.emplace_back(pStr);
             }
 
-            auto dstDependencies = dependencies;
-            dstDependencies.emplace_back(foeIdGroupValueNameSet{
-                .groupValue = groupValue,
-                .name = "Persistent",
-            });
-            std::vector<char const *> dstNames;
-            std::vector<foeIdGroup> dstIDs;
-            for (auto const &it : dstDependencies) {
-                dstNames.emplace_back(it.name.c_str());
-                dstIDs.emplace_back(foeIdValueToGroup(it.groupValue));
-            }
+            srcGroups.emplace_back(foeIdPersistentGroup);
+            srcNames.emplace_back("Persistent");
+
+            std::vector<char const *> dstNames = dependencyNames;
+            std::vector<foeIdGroup> dstIDs = dependencyGroups;
+            dstNames.emplace_back("Persistent");
+            dstIDs.emplace_back(foeIdValueToGroup(groupValue));
 
             foeEcsGroupTranslator newTranslator{FOE_NULL_HANDLE};
             std::error_code errC = foeEcsCreateGroupTranslator(
-                srcNames.size(), srcNames.data(), srcIDs.data(), dstNames.size(), dstNames.data(),
-                dstIDs.data(), &newTranslator);
+                srcNames.size(), srcNames.data(), srcGroups.data(), dstNames.size(),
+                dstNames.data(), dstIDs.data(), &newTranslator);
             if (errC) {
                 return errC;
             }

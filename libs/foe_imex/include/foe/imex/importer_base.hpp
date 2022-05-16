@@ -19,13 +19,13 @@
 
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/resource/create_info.h>
 
 #include <filesystem>
 #include <string>
 #include <vector>
 
-struct foeIdGroupValueNameSet;
 class foeIdIndexGenerator;
 struct foeEditorNameMap;
 
@@ -39,7 +39,10 @@ class foeImporterBase {
     virtual std::string name() const noexcept = 0;
     virtual void setGroupTranslator(foeEcsGroupTranslator groupTranslator) = 0;
 
-    virtual bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) = 0;
+    virtual foeErrorCode getDependencies(uint32_t *pDependencyCount,
+                                         foeIdGroup *pDependencyGroups,
+                                         uint32_t *pNamesLength,
+                                         char *pNames) = 0;
     virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) = 0;
     virtual bool importStateData(foeEditorNameMap *pEntityNameMap,

@@ -34,7 +34,12 @@ class DummyImporter : public foeImporterBase {
     std::string name() const noexcept final { return mName; }
     void setGroupTranslator(foeEcsGroupTranslator groupTranslator) final {}
 
-    bool getDependencies(std::vector<foeIdGroupValueNameSet> &dependencies) final { return false; }
+    foeErrorCode getDependencies(uint32_t *pDependencyCount,
+                                 foeIdGroup *pDependencyGroups,
+                                 uint32_t *pNamesLength,
+                                 char *pNames) {
+        return foeToErrorCode(std::error_code{});
+    }
     bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) final { return false; }
     bool importStateData(foeEditorNameMap *pEntityNameMap, foeSimulation const *pSimulation) final {
