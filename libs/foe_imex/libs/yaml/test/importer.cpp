@@ -105,7 +105,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             CHECK(groups[0] == 0);
             CHECK(std::string_view{&names[0]} == "test01");
         }
-        SECTION("With undersized GroupID buffers") {
+        SECTION("With undersized name buffer") {
             std::array<foeIdGroup, 2> groups;
             std::array<char, 10> names;
             namesLength = 10;
@@ -121,7 +121,21 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             CHECK(strcmp(&names[0], "test01") == 0);
 
             CHECK(groups[1] == foeIdValueToGroup(1));
-            CHECK(strncmp(&names[7], "tes", 3) == 0);
+            CHECK(strncmp(&names[7], "te", 3) == 0);
+        }
+        SECTION("With zero-sized name buffer") {
+            std::array<foeIdGroup, 2> groups;
+            std::array<char, 0> names;
+            namesLength = 0;
+
+            REQUIRE(
+                pTestImporter
+                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
+                    .value == FOE_IMEX_YAML_INCOMPLETE);
+            REQUIRE(dependenciesCount == 2);
+            REQUIRE(namesLength == 0);
+
+            CHECK(groups[0] == 0);
         }
     }
 

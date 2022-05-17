@@ -159,6 +159,11 @@ foeErrorCode foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
 
         *pDependencyCount = processedCount;
         *pNamesLength = std::min(*pNamesLength, namesLength);
+
+        if (*pNamesLength != 0) {
+            --pNames;
+            *pNames = '\0';
+        }
     }
 
     return foeToErrorCode(errC);
