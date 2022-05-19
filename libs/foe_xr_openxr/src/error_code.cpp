@@ -25,21 +25,10 @@ struct foeOpenXrErrCategory : std::error_category {
 
 const char *foeOpenXrErrCategory::name() const noexcept { return "foeOpenXrResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeOpenXrErrCategory::message(int ev) const {
-    switch (static_cast<foeOpenXrResult>(ev)) {
-        RESULT_CASE(FOE_OPENXR_SUCCESS)
-        RESULT_CASE(FOE_OPENXR_INCOMPLETE)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeOpenXrResult value)";
-        else
-            return "(unrecognized negative foeOpenXrResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeOpenXrResultToString((foeOpenXrResult)ev, buffer);
+    return buffer;
 }
 
 const foeOpenXrErrCategory openXrErrCategory{};

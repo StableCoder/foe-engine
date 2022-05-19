@@ -3,6 +3,7 @@ target_sources(foe_bringup PRIVATE main.cpp)
 target_sources(
   foe_bringup_lib
   PRIVATE application.cpp
+          error_code.c
           error_code.cpp
           frame_timer.cpp
           graphics.cpp

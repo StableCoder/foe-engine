@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,26 +25,11 @@ struct foeWsiErrCategory : std::error_category {
 
 const char *foeWsiErrCategory::name() const noexcept { return "foeWsiResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeWsiErrCategory::message(int ev) const {
-    switch (static_cast<foeWsiResult>(ev)) {
-        RESULT_CASE(FOE_WSI_SUCCESS)
-        RESULT_CASE(FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND)
-        RESULT_CASE(FOE_WSI_ERROR_FAILED_TO_CREATE_WINDOW)
-        RESULT_CASE(FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeWsiResult value)";
-        else
-            return "(unrecognized negative foeWsiResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeWsiResultToString((foeWsiResult)ev, buffer);
+    return buffer;
 }
-
-#undef RESULT_CASE
 
 const foeWsiErrCategory errorCategory{};
 

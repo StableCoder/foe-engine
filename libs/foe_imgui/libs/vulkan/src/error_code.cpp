@@ -25,24 +25,10 @@ struct foeImGuiVkErrCategory : std::error_category {
 
 const char *foeImGuiVkErrCategory::name() const noexcept { return "foeImGuiVkResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeImGuiVkErrCategory::message(int ev) const {
-    switch (static_cast<foeImGuiVkResult>(ev)) {
-        RESULT_CASE(FOE_IMGUI_VK_SUCCESS)
-        // RenderGraph - UI Job
-        RESULT_CASE(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE)
-        RESULT_CASE(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE)
-        RESULT_CASE(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_MISSING_STATE)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeImGuiVkResult value)";
-        else
-            return "(unrecognized negative foeImGuiVkResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeImGuiVkResultToString((foeImGuiVkResult)ev, buffer);
+    return buffer;
 }
 
 const foeImGuiVkErrCategory cImGuiVkErrCategory{};

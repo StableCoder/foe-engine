@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,25 +25,10 @@ struct foeThreadPoolErrCategory : std::error_category {
 
 const char *foeThreadPoolErrCategory::name() const noexcept { return "foeSplitThreadResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeThreadPoolErrCategory::message(int ev) const {
-    switch (static_cast<foeSplitThreadResult>(ev)) {
-        RESULT_CASE(FOE_THREAD_POOL_SUCCESS)
-        RESULT_CASE(FOE_THREAD_POOL_ERROR_ZERO_SYNC_THREADS)
-        RESULT_CASE(FOE_THREAD_POOL_ERROR_ZERO_ASYNC_THREADS)
-        RESULT_CASE(FOE_THREAD_POOL_ERROR_ALLOCATION_FAILED)
-        RESULT_CASE(FOE_THREAD_POOL_ERROR_ALREADY_STARTED)
-        RESULT_CASE(FOE_THREAD_POOL_ERROR_NOT_STARTED)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeSplitThreadResult value)";
-        else
-            return "(unrecognized negative foeSplitThreadResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeSplitThreadResultToString((foeSplitThreadResult)ev, buffer);
+    return buffer;
 }
 
 const foeThreadPoolErrCategory threadPoolErrCategory{};

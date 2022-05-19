@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,14 +17,9 @@
 #ifndef ERROR_CODE_HPP
 #define ERROR_CODE_HPP
 
-#include <system_error>
+#include <foe/position/yaml/error_code.h>
 
-enum foePositionYamlResult {
-    FOE_POSITION_YAML_SUCCESS = 0,
-    // Position3D Component
-    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER,
-    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER,
-};
+#include <system_error>
 
 namespace std {
 template <>

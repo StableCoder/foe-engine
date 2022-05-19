@@ -30,29 +30,9 @@ const char *ErrorCategory::name() const noexcept { return "foeBringupYamlResult"
         return #X;
 
 std::string ErrorCategory::message(int ev) const {
-    switch (static_cast<foeBringupYamlResult>(ev)) {
-        RESULT_CASE(FOE_BRINGUP_YAML_SUCCESS)
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_UNSPECIFIED)
-
-        // Importers
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_ARMATURE_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS)
-
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER)
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER)
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER)
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER)
-
-        // Exporters
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS)
-        RESULT_CASE(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_COMPONENT_EXPORTERS)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeBringupYamlResult value)";
-        else
-            return "(unrecognized negative foeBringupYamlResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeBringupYamlResultToString((foeBringupYamlResult)ev, buffer);
+    return buffer;
 }
 
 const ErrorCategory errorCategory{};

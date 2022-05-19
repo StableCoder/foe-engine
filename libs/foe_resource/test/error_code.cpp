@@ -18,8 +18,6 @@
 
 #include "../src/error_code.hpp"
 
-#include <climits>
-
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         errC = X;                                                                                  \
@@ -33,16 +31,16 @@ TEST_CASE("foeResourceResult - Ensure error codes return correct values and stri
     std::error_code errC;
 
     SECTION("Generic non-existant negative value") {
-        errC = static_cast<foeResourceResult>(INT_MIN);
+        errC = static_cast<foeResourceResult>(FOE_RESULT_MIN_ENUM);
 
-        CHECK(errC.value() == INT_MIN);
-        CHECK(errC.message() == "(unrecognized negative foeResourceResult value)");
+        CHECK(errC.value() == FOE_RESULT_MIN_ENUM);
+        CHECK(errC.message() == "FOE_RESOURCE_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
-        errC = static_cast<foeResourceResult>(INT_MAX);
+        errC = static_cast<foeResourceResult>(FOE_RESULT_MAX_ENUM);
 
-        CHECK(errC.value() == INT_MAX);
-        CHECK(errC.message() == "(unrecognized positive foeResourceResult value)");
+        CHECK(errC.value() == FOE_RESULT_MAX_ENUM);
+        CHECK(errC.message() == "FOE_RESOURCE_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_RESOURCE_SUCCESS)

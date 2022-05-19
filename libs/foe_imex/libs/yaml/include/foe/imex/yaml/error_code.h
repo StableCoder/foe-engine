@@ -17,11 +17,14 @@
 #ifndef FOE_IMEX_YAML_ERROR_CODE_H
 #define FOE_IMEX_YAML_ERROR_CODE_H
 
+#include <foe/error_code.h>
+#include <foe/imex/yaml/export.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum foeImexYamlResult {
+typedef enum foeImexYamlResult {
     FOE_IMEX_YAML_SUCCESS = 0,
     FOE_IMEX_YAML_INCOMPLETE,
     FOE_IMEX_YAML_ERROR_FUNCTIONALITY_ALREADY_REGISTERED,
@@ -47,8 +50,14 @@ enum foeImexYamlResult {
     FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_INDEX_DATA,
     FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_INDEX_DATA,
     FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_DATA,
-    FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_DATA
-};
+    FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_DATA,
+
+    // Need to have a negative enum value to prevent treatment as a flag
+    FOE_IMEX_YAML_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+} foeImexYamlResult;
+
+FOE_IMEX_YAML_EXPORT void foeImexYamlResultToString(foeImexYamlResult value,
+                                                    char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

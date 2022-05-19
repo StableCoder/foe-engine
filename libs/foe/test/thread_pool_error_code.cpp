@@ -18,8 +18,6 @@
 
 #include "../src/thread_pool_error_code.hpp"
 
-#include <climits>
-
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         errC = X;                                                                                  \
@@ -33,16 +31,16 @@ TEST_CASE("foeSplitThreadResult - Ensure error codes return correct values and s
     std::error_code errC;
 
     SECTION("Generic non-existant negative value") {
-        errC = static_cast<foeSplitThreadResult>(INT_MIN);
+        errC = static_cast<foeSplitThreadResult>(FOE_RESULT_MIN_ENUM);
 
-        CHECK(errC.value() == INT_MIN);
-        CHECK(errC.message() == "(unrecognized negative foeSplitThreadResult value)");
+        CHECK(errC.value() == FOE_RESULT_MIN_ENUM);
+        CHECK(errC.message() == "FOE_THREAD_POOL_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
-        errC = static_cast<foeSplitThreadResult>(INT_MAX);
+        errC = static_cast<foeSplitThreadResult>(FOE_RESULT_MAX_ENUM);
 
-        CHECK(errC.value() == INT_MAX);
-        CHECK(errC.message() == "(unrecognized positive foeSplitThreadResult value)");
+        CHECK(errC.value() == FOE_RESULT_MAX_ENUM);
+        CHECK(errC.message() == "FOE_THREAD_POOL_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_THREAD_POOL_SUCCESS)

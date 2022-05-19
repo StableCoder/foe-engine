@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,27 +25,10 @@ struct ErrorCategory : std::error_category {
 
 const char *ErrorCategory::name() const noexcept { return "foeImexResult"; }
 
-#define ENUM_CASE(X)                                                                               \
-    case X:                                                                                        \
-        return #X;
-
 std::string ErrorCategory::message(int ev) const {
-    switch (static_cast<foeImexResult>(ev)) {
-        ENUM_CASE(FOE_IMEX_SUCCESS)
-        ENUM_CASE(FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED)
-        // Exporter
-        ENUM_CASE(FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED)
-        ENUM_CASE(FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED)
-        // Importer
-        ENUM_CASE(FOE_IMEX_ERROR_IMPORTER_ALREADY_REGISTERED)
-        ENUM_CASE(FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeImexResult value)";
-        else
-            return "(unrecognized negative foeImexResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeImexResultToString((foeImexResult)ev, buffer);
+    return buffer;
 }
 
 const ErrorCategory errorCategory{};

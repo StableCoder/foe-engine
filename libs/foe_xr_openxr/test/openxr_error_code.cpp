@@ -18,8 +18,6 @@
 #include <foe/xr/openxr/error_code.hpp>
 #include <openxr/openxr_reflection.h>
 
-#include <climits>
-
 #define ERROR_CODE_CATCH_CHECK(ERROR_NAME, val)                                                    \
     SECTION(#ERROR_NAME) {                                                                         \
         errC = ERROR_NAME;                                                                         \
@@ -33,21 +31,21 @@ TEST_CASE("XrResult - Ensure error codes return correct values and strings") {
     std::error_code errC;
 
     SECTION("Generic non-existant negative value") {
-        errC = static_cast<XrResult>(INT_MIN);
+        errC = static_cast<XrResult>(FOE_RESULT_MIN_ENUM);
 
-        CHECK(errC.value() == INT_MIN);
+        CHECK(errC.value() == FOE_RESULT_MIN_ENUM);
         CHECK(errC.message() == "(unrecognized negative XrResult value)");
     }
     SECTION("Generic non-existant positive value") {
-        errC = static_cast<XrResult>(INT_MAX - 1);
+        errC = static_cast<XrResult>(FOE_RESULT_MAX_ENUM - 1);
 
-        CHECK(errC.value() == INT_MAX - 1);
+        CHECK(errC.value() == FOE_RESULT_MAX_ENUM - 1);
         CHECK(errC.message() == "(unrecognized positive XrResult value)");
     }
     SECTION("Generic non-existant positive value") {
-        errC = static_cast<XrResult>(INT_MAX);
+        errC = static_cast<XrResult>(FOE_RESULT_MAX_ENUM);
 
-        CHECK(errC.value() == INT_MAX);
+        CHECK(errC.value() == FOE_RESULT_MAX_ENUM);
         CHECK(errC.message() == "XR_RESULT_MAX_ENUM");
     }
 

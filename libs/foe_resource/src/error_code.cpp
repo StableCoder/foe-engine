@@ -25,27 +25,10 @@ struct ErrorCategory : std::error_category {
 
 const char *ErrorCategory::name() const noexcept { return "foeResourceResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string ErrorCategory::message(int ev) const {
-    switch (static_cast<foeResourceResult>(ev)) {
-        RESULT_CASE(FOE_RESOURCE_SUCCESS)
-        RESULT_CASE(FOE_RESOURCE_ERROR_NOT_FOUND)
-        // General
-        RESULT_CASE(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY)
-        // Resource Specific
-        RESULT_CASE(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED)
-        // CreateInfo Specific
-        RESULT_CASE(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeResourceResult value)";
-        else
-            return "(unrecognized negative foeResourceResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeResourceResultToString((foeResourceResult)ev, buffer);
+    return buffer;
 }
 
 const ErrorCategory errorCategory{};

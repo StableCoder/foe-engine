@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,11 +17,14 @@
 #ifndef FOE_GRAPHICS_VK_ERROR_CODE_H
 #define FOE_GRAPHICS_VK_ERROR_CODE_H
 
+#include <foe/error_code.h>
+#include <foe/graphics/export.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum foeGraphicsVkResult {
+typedef enum foeGraphicsVkResult {
     FOE_GRAPHICS_VK_SUCCESS = 0,
     FOE_GRAPHICS_VK_INCOMPLETE,
     // Session
@@ -47,7 +50,13 @@ enum foeGraphicsVkResult {
     // RenderGraph - PresentSwapchainImage
     FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_PRESENT_SWAPCHAIN_RESOURCE_NOT_SWAPCHAIN,
     FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_PRESENT_SWAPCHAIN_RESOURCE_NO_STATE,
-};
+
+    // Need to have a negative enum value to prevent treatment as a flag
+    FOE_GRAPHICS_VK_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+} foeGraphicsVkResult;
+
+FOE_GFX_EXPORT void foeGraphicsVkResultToString(foeGraphicsVkResult value,
+                                                char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

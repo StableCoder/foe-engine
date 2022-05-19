@@ -21,6 +21,17 @@
 #include <system_error>
 #endif
 
+/// Global value for an unqualified 'SUCCESS' result code
+#define FOE_SUCCESS 0
+/// The minimum possible result code (not quite the full rangle to allow conversion to the absolute
+/// value)
+#define FOE_RESULT_MIN_ENUM -0x7FFFFFFF
+/// The maximum possible result code
+#define FOE_RESULT_MAX_ENUM 0x7FFFFFFF
+/// The maximum length that a result code name that can be returned from a
+/// <result>ToString(<result>) function
+#define FOE_MAX_RESULT_STRING_SIZE 128
+
 /** @brief Type to transport std::error_code data across C-API boundaries
  *
  * The value/category combination is too useful to pass up. As such, this simple struct type can be

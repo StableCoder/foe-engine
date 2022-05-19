@@ -17,11 +17,14 @@
 #ifndef FOE_SIMULATION_ERROR_CODE_H
 #define FOE_SIMULATION_ERROR_CODE_H
 
+#include <foe/error_code.h>
+#include <foe/simulation/export.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum foeSimulationResult {
+typedef enum foeSimulationResult {
     FOE_SIMULATION_SUCCESS = 0,
     FOE_SIMULATION_ERROR_NOT_REGISTERED,
     FOE_SIMULATION_ERROR_NO_LOADER_FOUND,
@@ -36,7 +39,13 @@ enum foeSimulationResult {
     FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED,
     FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED,
     FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED,
-};
+
+    // Need to have a negative enum value to prevent treatment as a flag
+    FOE_SIMULATION_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+} foeSimulationResult;
+
+FOE_SIM_EXPORT void foeSimulationResultToString(foeSimulationResult value,
+                                                char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

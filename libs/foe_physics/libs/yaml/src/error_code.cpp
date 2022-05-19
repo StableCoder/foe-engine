@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 #include "error_code.hpp"
 
 namespace {
-
 struct foePhysicsYamlErrorCategory : std::error_category {
     const char *name() const noexcept override;
     std::string message(int ev) const override;
@@ -25,27 +24,10 @@ struct foePhysicsYamlErrorCategory : std::error_category {
 
 const char *foePhysicsYamlErrorCategory::name() const noexcept { return "foePhysicsYamlResult"; }
 
-#define ENUM_CASE(X)                                                                               \
-    case X:                                                                                        \
-        return #X;
-
 std::string foePhysicsYamlErrorCategory::message(int ev) const {
-    switch (static_cast<foePhysicsYamlResult>(ev)) {
-        ENUM_CASE(FOE_PHYSICS_YAML_SUCCESS)
-        // Collision Shape
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_EXPORTER)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_IMPORTER)
-        ENUM_CASE(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foePhysicsYamlResult value)";
-        else
-            return "(unrecognized negative foePhysicsYamlResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foePhysicsYamlResultToString((foePhysicsYamlResult)ev, buffer);
+    return buffer;
 }
 
 const foePhysicsYamlErrorCategory errorCategory{};

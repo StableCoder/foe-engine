@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef FOE_XR_OPENXR_ERROR_CODE_HPP
 #define FOE_XR_OPENXR_ERROR_CODE_HPP
 
+#include <foe/error_code.h>
 #include <foe/xr/export.h>
 #include <openxr/openxr.h>
 

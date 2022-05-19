@@ -25,43 +25,10 @@ struct foeBringupErrorCategory : std::error_category {
 
 const char *foeBringupErrorCategory::name() const noexcept { return "foeBringupResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeBringupErrorCategory::message(int ev) const {
-    switch (static_cast<foeBringupResult>(ev)) {
-        RESULT_CASE(FOE_BRINGUP_SUCCESS)
-
-        RESULT_CASE(FOE_BRINGUP_INITIALIZATION_FAILED)
-        RESULT_CASE(FOE_BRINGUP_NOT_INITIALIZED)
-        RESULT_CASE(FOE_BRINGUP_FAILED_TO_LOAD_PLUGIN)
-
-        // Loaders
-        RESULT_CASE(FOE_BRINGUP_ERROR_LOADER_INITIALIZATION_FAILED)
-        RESULT_CASE(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO)
-        RESULT_CASE(FOE_BRINGUP_ERROR_IMPORT_FAILED)
-
-        RESULT_CASE(FOE_BRINGUP_ERROR_NO_PHYSICAL_DEVICE_MEETS_REQUIREMENTS)
-
-        // RenderGraph - RenderScene
-        RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NOT_IMAGE)
-        RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NOT_MUTABLE)
-        RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NO_STATE)
-        RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NOT_IMAGE)
-        RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NOT_MUTABLE)
-        RESULT_CASE(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NO_STATE)
-
-        // Armature System
-        RESULT_CASE(FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED)
-        RESULT_CASE(FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeBringupResult value)";
-        else
-            return "(unrecognized negative foeBringupResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeBringupResultToString((foeBringupResult)ev, buffer);
+    return buffer;
 }
 
 const foeBringupErrorCategory errorCategory{};

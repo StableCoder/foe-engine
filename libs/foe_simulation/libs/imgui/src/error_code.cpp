@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,23 +25,10 @@ struct foeSimulationImGuiErrCategory : std::error_category {
 
 const char *foeSimulationImGuiErrCategory::name() const noexcept { return "foeSimulationResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeSimulationImGuiErrCategory::message(int ev) const {
-    switch (static_cast<foeSimulationImGuiResult>(ev)) {
-        RESULT_CASE(FOE_SIMULATION_IMGUI_SUCCESS)
-        RESULT_CASE(FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL)
-        RESULT_CASE(FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_ALREADY_REGISTERED)
-        RESULT_CASE(FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_NOT_REGISTERED)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeSimulationImGuiResult value)";
-        else
-            return "(unrecognized negative foeSimulationImGuiResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeSimulationImGuiResultToString((foeSimulationImGuiResult)ev, buffer);
+    return buffer;
 }
 
 const foeSimulationImGuiErrCategory errorCategory{};

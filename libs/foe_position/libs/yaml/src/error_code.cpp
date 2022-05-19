@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,23 +25,10 @@ struct foePositionYamlErrorCategory : std::error_category {
 
 const char *foePositionYamlErrorCategory::name() const noexcept { return "foePositionYamlResult"; }
 
-#define ENUM_CASE(X)                                                                               \
-    case X:                                                                                        \
-        return #X;
-
 std::string foePositionYamlErrorCategory::message(int ev) const {
-    switch (static_cast<foePositionYamlResult>(ev)) {
-        ENUM_CASE(FOE_POSITION_YAML_SUCCESS)
-        // Position3D
-        ENUM_CASE(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER)
-        ENUM_CASE(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foePositionYamlResult value)";
-        else
-            return "(unrecognized negative foePositionYamlResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foePositionYamlResultToString((foePositionYamlResult)ev, buffer);
+    return buffer;
 }
 
 const foePositionYamlErrorCategory errorCategory{};

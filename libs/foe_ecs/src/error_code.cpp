@@ -25,21 +25,10 @@ struct foeEcsErrCategory : std::error_category {
 
 const char *foeEcsErrCategory::name() const noexcept { return "foeEcsResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeEcsErrCategory::message(int ev) const {
-    switch (static_cast<foeEcsResult>(ev)) {
-        RESULT_CASE(FOE_ECS_SUCCESS)
-        RESULT_CASE(FOE_ECS_ERROR_NO_MATCHING_GROUP)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeEcsResult value)";
-        else
-            return "(unrecognized negative foeEcsResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeEcsResultToString((foeEcsResult)ev, buffer);
+    return buffer;
 }
 
 const foeEcsErrCategory ecsErrCategory{};

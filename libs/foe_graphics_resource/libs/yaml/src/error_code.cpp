@@ -27,38 +27,10 @@ const char *foeGraphicsResourceYamlErrorCategory::name() const noexcept {
     return "foeGraphicsResourceYamlResult";
 }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeGraphicsResourceYamlErrorCategory::message(int ev) const {
-    switch (static_cast<foeGraphicsResourceYamlResult>(ev)) {
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS)
-        // Exporter
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTER)
-        // Image Resource
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER)
-        // Material Resource
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER)
-        // Mesh Resource
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER)
-        // Vertex Descriptor Resource
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_POOL_NOT_FOUND)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS)
-        RESULT_CASE(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeGraphicsResourceYamlResult value)";
-        else
-            return "(unrecognized negative foeGraphicsResourceYamlResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeGraphicsResourceYamlResultToString((foeGraphicsResourceYamlResult)ev, buffer);
+    return buffer;
 }
 
 const foeGraphicsResourceYamlErrorCategory errorCategory{};

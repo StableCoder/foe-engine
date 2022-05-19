@@ -26,40 +26,9 @@ struct foeStateImportErrorCategory : std::error_category {
 const char *foeStateImportErrorCategory::name() const noexcept { return "foeStateImportResult"; }
 
 std::string foeStateImportErrorCategory::message(int ev) const {
-    switch (static_cast<foeStateImportResult>(ev)) {
-    case FOE_STATE_IMPORT_SUCCESS:
-        return "FOE_STATE_IMPORT_SUCCESS";
-
-    case FOE_STATE_IMPORT_ERROR_NO_IMPORTER:
-        return "FOE_STATE_IMPORT_ERROR_NO_IMPORTER";
-
-    case FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES:
-        return "FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES";
-
-    case FOE_STATE_IMPORT_ERROR_DUPLICATE_DEPENDENCIES:
-        return "FOE_STATE_IMPORT_ERROR_DUPLICATE_DEPENDENCIES";
-
-    case FOE_STATE_IMPORT_ERROR_TRANSITIVE_DEPENDENCIES_UNFULFILLED:
-        return "FOE_STATE_IMPORT_ERROR_TRANSITIVE_DEPENDENCIES_UNFULFILLED";
-
-    case FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE:
-        return "FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE";
-
-    case FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA:
-        return "FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA";
-
-    case FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE:
-        return "FOE_STATE_IMPORT_ERROR_IMPORTING_RESOURCE";
-
-    case FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER:
-        return "FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER";
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeStateImportResult value)";
-        else
-            return "(unrecognized negative foeStateImportResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeStateImportResultToString((foeStateImportResult)ev, buffer);
+    return buffer;
 }
 
 const foeStateImportErrorCategory importStateErrorCategory{};

@@ -25,32 +25,10 @@ struct foeSimulationErrCategory : std::error_category {
 
 const char *foeSimulationErrCategory::name() const noexcept { return "foeSimulationResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string foeSimulationErrCategory::message(int ev) const {
-    switch (static_cast<foeSimulationResult>(ev)) {
-        RESULT_CASE(FOE_SIMULATION_SUCCESS)
-        RESULT_CASE(FOE_SIMULATION_ERROR_NOT_REGISTERED)
-        // Functionality Registration
-        RESULT_CASE(FOE_SIMULATION_ERROR_ID_INVALID)
-        RESULT_CASE(FOE_SIMULATION_ERROR_ID_ALREADY_IN_USE)
-        // Types
-        RESULT_CASE(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND)
-        RESULT_CASE(FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS)
-        // Simulation
-        RESULT_CASE(FOE_SIMULATION_ERROR_SIMULATION_ALREADY_INITIALIZED)
-        RESULT_CASE(FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED)
-        RESULT_CASE(FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED)
-        RESULT_CASE(FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeSimulationResult value)";
-        else
-            return "(unrecognized negative foeSimulationResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeSimulationResultToString((foeSimulationResult)ev, buffer);
+    return buffer;
 }
 
 const foeSimulationErrCategory errorCategory{};

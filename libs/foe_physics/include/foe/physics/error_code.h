@@ -17,11 +17,14 @@
 #ifndef FOE_PHYSICS_ERROR_CODE_H
 #define FOE_PHYSICS_ERROR_CODE_H
 
+#include <foe/error_code.h>
+#include <foe/physics/export.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum foePhysicsResult {
+typedef enum foePhysicsResult {
     FOE_PHYSICS_SUCCESS = 0,
     // Loaders
     FOE_PHYSICS_ERROR_COLLISION_SHAPE_LOADER_INITIALIZATION_FAILED,
@@ -31,7 +34,13 @@ enum foePhysicsResult {
     FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES,
     FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS,
     FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS,
-};
+
+    // Need to have a negative enum value to prevent treatment as a flag
+    FOE_PHYSICS_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+} foePhysicsResult;
+
+FOE_PHYSICS_EXPORT void foePhysicsResultToString(foePhysicsResult value,
+                                                 char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

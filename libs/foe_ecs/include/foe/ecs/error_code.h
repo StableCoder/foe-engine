@@ -17,9 +17,26 @@
 #ifndef FOE_ECS_ERROR_CODE_H
 #define FOE_ECS_ERROR_CODE_H
 
-enum foeEcsResult {
+#include <foe/ecs/export.h>
+#include <foe/error_code.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef enum foeEcsResult {
     FOE_ECS_SUCCESS = 0,
     FOE_ECS_ERROR_NO_MATCHING_GROUP,
-};
+
+    // Need to have a negative enum value to prevent treatment as a flag
+    FOE_ECS_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+} foeEcsResult;
+
+FOE_ECS_EXPORT void foeEcsResultToString(foeEcsResult value,
+                                         char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // FOE_ECS_ERROR_CODE_H

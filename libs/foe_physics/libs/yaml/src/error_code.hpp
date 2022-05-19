@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,19 +17,9 @@
 #ifndef ERROR_CODE_HPP
 #define ERROR_CODE_HPP
 
-#include <system_error>
+#include <foe/physics/yaml/error_code.h>
 
-enum foePhysicsYamlResult {
-    FOE_PHYSICS_YAML_SUCCESS = 0,
-    // CollisionShape Resource
-    FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER,
-    FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_EXPORTER,
-    FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_POOL_NOT_FOUND,
-    FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS,
-    // RigidBody Component
-    FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_IMPORTER,
-    FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER,
-};
+#include <system_error>
 
 namespace std {
 template <>

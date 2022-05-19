@@ -4,6 +4,7 @@ target_sources(
           builtin_descriptor_sets.cpp
           debug_callback.cpp
           descriptor_set_layout_pool.cpp
+          error_code.c
           error_code.cpp
           error_colour_image.cpp
           error_depth_stencil_image.cpp

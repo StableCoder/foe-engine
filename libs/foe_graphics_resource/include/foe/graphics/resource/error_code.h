@@ -17,11 +17,14 @@
 #ifndef FOE_GRAPHICS_RESOURCE_ERROR_CODE_H
 #define FOE_GRAPHICS_RESOURCE_ERROR_CODE_H
 
+#include <foe/error_code.h>
+#include <foe/graphics/resource/export.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum foeGraphicsResourceResult {
+typedef enum foeGraphicsResourceResult {
     FOE_GRAPHICS_RESOURCE_SUCCESS = 0,
     // Loaders
     FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO,
@@ -46,7 +49,13 @@ enum foeGraphicsResourceResult {
     FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_INITIALIZATION_FAILED,
     FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_NOT_INITIALIZED,
     FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_BINARY_FILE_NOT_FOUND,
-};
+
+    // Need to have a negative enum value to prevent treatment as a flag
+    FOE_GRAPHICS_RESOURCE_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+} foeGraphicsResourceResult;
+
+FOE_GFX_RES_EXPORT void foeGraphicsResourceResultToString(foeGraphicsResourceResult value,
+                                                          char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

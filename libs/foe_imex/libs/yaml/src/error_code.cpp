@@ -25,45 +25,10 @@ struct ErrorCategory : std::error_category {
 
 const char *ErrorCategory::name() const noexcept { return "foeImexYamlResult"; }
 
-#define RESULT_CASE(X)                                                                             \
-    case X:                                                                                        \
-        return #X;
-
 std::string ErrorCategory::message(int ev) const {
-    switch (static_cast<foeImexYamlResult>(ev)) {
-        RESULT_CASE(FOE_IMEX_YAML_SUCCESS)
-        RESULT_CASE(FOE_IMEX_YAML_INCOMPLETE)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FUNCTIONALITY_ALREADY_REGISTERED)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FUNCTIONALITY_NOT_REGISTERED)
-        // Importer
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_PATH_NOT_DIRECTORY)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_EXIST)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_REGULAR_FILE)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DEPENDENCIES)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_RESOURCE_INDEX_FILE_NOT_EXIST)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_RESOURCE_INDEX_FILE_NOT_REGULAR_FILE)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_ENTITY_INDEX_FILE_NOT_EXIST)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_ENTITY_INDEX_FILE_NOT_REGULAR_FILE)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_RESOURCE_DIRECTORY_NOT_DIRECTORY)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_ENTITY_DIRECTORY_NOT_DIRECTORY)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_EXTERNAL_DIRECTORY_NOT_DIRECTORY)
-        // Exporter
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_EXPORTER_ALREADY_REGISTERED)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_EXPORTER_NOT_REGISTERED)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_DEPENDENCIES)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_INDEX_DATA)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_INDEX_DATA)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_DATA)
-        RESULT_CASE(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_DATA)
-
-    default:
-        if (ev > 0)
-            return "(unrecognized positive foeImexYamlResult value)";
-        else
-            return "(unrecognized negative foeImexYamlResult value)";
-    }
+    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+    foeImexYamlResultToString((foeImexYamlResult)ev, buffer);
+    return buffer;
 }
 
 const ErrorCategory errorCategory{};

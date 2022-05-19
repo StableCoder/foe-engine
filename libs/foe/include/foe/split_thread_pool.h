@@ -27,14 +27,20 @@
 extern "C" {
 #endif
 
-enum foeSplitThreadResult {
+typedef enum foeSplitThreadResult {
     FOE_THREAD_POOL_SUCCESS = 0,
     FOE_THREAD_POOL_ERROR_ZERO_SYNC_THREADS,
     FOE_THREAD_POOL_ERROR_ZERO_ASYNC_THREADS,
     FOE_THREAD_POOL_ERROR_ALLOCATION_FAILED,
     FOE_THREAD_POOL_ERROR_ALREADY_STARTED,
     FOE_THREAD_POOL_ERROR_NOT_STARTED,
-};
+
+    // Need to have a negative enum value to prevent treatment as a flag
+    FOE_THREAD_POOL_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+} foeSplitThreadResult;
+
+FOE_EXPORT void foeSplitThreadResultToString(foeSplitThreadResult value,
+                                             char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 // Any task can be scheduled with the use of a function pointer and context data
 typedef void (*PFN_foeTask)(void *);
