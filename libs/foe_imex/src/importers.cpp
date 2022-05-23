@@ -16,8 +16,8 @@
 
 #include <foe/imex/importers.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 #include <mutex>
 #include <vector>
@@ -30,21 +30,21 @@ std::vector<PFN_foeImexCreateImporter> gCreateImporterFns;
 
 } // namespace
 
-foeErrorCode foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter) {
+foeResult foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter) {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gCreateImporterFns) {
         if (it == createImporter)
-            return foeToErrorCode(FOE_IMEX_ERROR_IMPORTER_ALREADY_REGISTERED);
+            return to_foeResult(FOE_IMEX_ERROR_IMPORTER_ALREADY_REGISTERED);
     }
 
     // Add the generator
     gCreateImporterFns.emplace_back(createImporter);
 
-    return foeToErrorCode(FOE_IMEX_SUCCESS);
+    return to_foeResult(FOE_IMEX_SUCCESS);
 }
 
-foeErrorCode foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter) {
+foeResult foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter) {
     std::scoped_lock lock{gSync};
 
     for (auto it = gCreateImporterFns.begin(); it != gCreateImporterFns.end(); ++it) {
@@ -54,10 +54,10 @@ foeErrorCode foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter)
         // Found, remove it
         gCreateImporterFns.erase(it);
 
-        return foeToErrorCode(FOE_IMEX_SUCCESS);
+        return to_foeResult(FOE_IMEX_SUCCESS);
     }
 
-    return foeToErrorCode(FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED);
+    return to_foeResult(FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED);
 }
 
 auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> foeImporterBase * {

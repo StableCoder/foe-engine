@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 #include <foe/imex/exporters.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 #include <algorithm>
 #include <mutex>
@@ -55,37 +55,37 @@ bool operator==(foeExporter const &lhs, foeExporter const &rhs) {
 
 bool operator!=(foeExporter const &lhs, foeExporter const &rhs) { return !(lhs == rhs); }
 
-auto foeImexRegisterExporter(foeExporter exporter) -> std::error_code {
+foeResult foeImexRegisterExporter(foeExporter exporter) {
     std::scoped_lock lock{gExporterRegistrar.sync};
 
     for (auto const &it : gExporterRegistrar.exporters) {
         if (it == exporter) {
-            return FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED;
+            return to_foeResult(FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED);
         }
     }
 
-    std::error_code errC;
+    foeResult result = to_foeResult(FOE_IMEX_SUCCESS);
     for (auto const &it : gExporterRegistrar.functionality) {
         if (it.onRegister)
-            errC = it.onRegister(exporter);
-        if (errC)
+            result = it.onRegister(exporter);
+        if (result.value != FOE_SUCCESS)
             goto REGISTRATION_FAILED;
     }
 
     gExporterRegistrar.exporters.emplace_back(exporter);
 
 REGISTRATION_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         for (auto const &it : gExporterRegistrar.functionality) {
             if (it.onDeregister)
                 it.onDeregister(exporter);
         }
     }
 
-    return errC;
+    return result;
 }
 
-auto foeImexDeregisterExporter(foeExporter exporter) -> std::error_code {
+foeResult foeImexDeregisterExporter(foeExporter exporter) {
     std::scoped_lock lock{gExporterRegistrar.sync};
 
     for (auto it = gExporterRegistrar.exporters.begin(); it != gExporterRegistrar.exporters.end();
@@ -98,7 +98,7 @@ auto foeImexDeregisterExporter(foeExporter exporter) -> std::error_code {
 
     FOE_LOG(foeImex, Error,
             "foeDeregisterExporter - Attempted to deregister exporter that was not registered");
-    return FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED;
+    return to_foeResult(FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED);
 
 CONTINUE_DEREGISTER:
     for (auto const &it : gExporterRegistrar.functionality) {
@@ -106,7 +106,7 @@ CONTINUE_DEREGISTER:
             it.onDeregister(exporter);
     }
 
-    return FOE_IMEX_SUCCESS;
+    return to_foeResult(FOE_IMEX_SUCCESS);
 }
 
 void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters) {
@@ -128,24 +128,23 @@ void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters) {
     *pExporterCount = minCount;
 }
 
-auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
-    -> std::error_code {
-    std::error_code errC;
+foeResult foeRegisterExportFunctionality(foeExportFunctionality const &functionality) {
+    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
     std::scoped_lock lock{gExporterRegistrar.sync};
 
     for (auto const &it : gExporterRegistrar.functionality) {
         if (it == functionality) {
             FOE_LOG(foeImex, Warning,
                     "foeRegisterExportFunctionality - Attempted to re-register functionality");
-            return FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED;
+            return to_foeResult(FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED);
         }
     }
 
     // Add the *new* functionality to any already-existing exporters
     if (functionality.onRegister) {
         for (auto const &it : gExporterRegistrar.exporters) {
-            errC = functionality.onRegister(it);
-            if (errC)
+            result = functionality.onRegister(it);
+            if (result.value != FOE_SUCCESS)
                 goto REGISTRATION_FAILED;
         }
     }
@@ -154,13 +153,13 @@ auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
     gExporterRegistrar.functionality.emplace_back(functionality);
 
 REGISTRATION_FAILED:
-    if (errC && functionality.onDeregister) {
+    if (result.value != FOE_SUCCESS && functionality.onDeregister) {
         for (auto const &it : gExporterRegistrar.exporters) {
             functionality.onDeregister(it);
         }
     }
 
-    return errC;
+    return result;
 }
 
 void foeDeregisterExportFunctionality(foeExportFunctionality const &functionality) {

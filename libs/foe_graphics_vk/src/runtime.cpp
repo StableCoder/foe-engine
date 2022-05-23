@@ -18,12 +18,12 @@
 
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
-#include <vk_error_code.hpp>
 
 #include "debug_callback.hpp"
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 #include "runtime.hpp"
+#include "vk_result.h"
 
 namespace {
 
@@ -43,16 +43,16 @@ void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
 
 } // namespace
 
-std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
-                                      uint32_t applicationVersion,
-                                      uint32_t applicationApiVersion,
-                                      uint32_t layerCount,
-                                      char const *const *ppLayerNames,
-                                      uint32_t extensionCount,
-                                      char const *const *ppExtensionNames,
-                                      bool validation,
-                                      bool debugLogging,
-                                      foeGfxRuntime *pRuntime) {
+foeResult foeGfxVkCreateRuntime(char const *pApplicationName,
+                                uint32_t applicationVersion,
+                                uint32_t applicationApiVersion,
+                                uint32_t layerCount,
+                                char const *const *ppLayerNames,
+                                uint32_t extensionCount,
+                                char const *const *ppExtensionNames,
+                                bool validation,
+                                bool debugLogging,
+                                foeGfxRuntime *pRuntime) {
     auto *pNewRuntime = new foeGfxVkRuntime;
     *pNewRuntime = {};
 
@@ -93,8 +93,8 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
         .ppEnabledExtensionNames = extensions.data(),
     };
 
-    VkResult vkRes = vkCreateInstance(&instanceCI, nullptr, &pNewRuntime->instance);
-    if (vkRes != VK_SUCCESS)
+    VkResult vkResult = vkCreateInstance(&instanceCI, nullptr, &pNewRuntime->instance);
+    if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
     // Se tthe runtime API version
@@ -117,43 +117,43 @@ std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
     }
 
     if (debugLogging) {
-        vkRes = foeVkCreateDebugCallback(pNewRuntime->instance, &pNewRuntime->debugCallback);
-        if (vkRes != VK_SUCCESS)
+        vkResult = foeVkCreateDebugCallback(pNewRuntime->instance, &pNewRuntime->debugCallback);
+        if (vkResult != VK_SUCCESS)
             goto CREATE_FAILED;
 
         FOE_LOG(foeVkGraphics, Verbose, "Added debug logging to new VkInstance");
     }
 
 CREATE_FAILED:
-    if (vkRes != VK_SUCCESS) {
+    if (vkResult != VK_SUCCESS) {
         foeGfxVkDestroyRuntime(pNewRuntime);
     } else {
         *pRuntime = runtime_to_handle(pNewRuntime);
     }
 
-    return vkRes;
+    return vk_to_foeResult(vkResult);
 }
 
-std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
-                                               uint32_t *pLayerNamesLength,
-                                               char *pLayerNames) {
+foeResult foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
+                                         uint32_t *pLayerNamesLength,
+                                         char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames,
                                   pLayerNamesLength, pLayerNames)
-               ? FOE_GRAPHICS_VK_SUCCESS
-               : FOE_GRAPHICS_VK_INCOMPLETE;
+               ? to_foeResult(FOE_GRAPHICS_VK_SUCCESS)
+               : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
-std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
-                                                   uint32_t *pExtensionNamesLength,
-                                                   char *pExtensionNames) {
+foeResult foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
+                                             uint32_t *pExtensionNamesLength,
+                                             char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames,
                                   pExtensionNamesLength, pExtensionNames)
-               ? FOE_GRAPHICS_VK_SUCCESS
-               : FOE_GRAPHICS_VK_INCOMPLETE;
+               ? to_foeResult(FOE_GRAPHICS_VK_SUCCESS)
+               : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
 uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime) {

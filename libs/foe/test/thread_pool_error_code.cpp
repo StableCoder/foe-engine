@@ -16,31 +16,24 @@
 
 #include <catch.hpp>
 
-#include "../src/thread_pool_error_code.hpp"
+#include <foe/split_thread_pool.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
-        errC = X;                                                                                  \
-                                                                                                   \
-        CHECK(errC.value() == X);                                                                  \
-        CHECK(errC.message() == #X);                                                               \
-        CHECK(std::string_view{errC.category().name()} == "foeSplitThreadResult");                 \
+        foeSplitThreadResultToString(X, resultString);                                             \
+        CHECK(std::string_view{resultString} == #X);                                               \
     }
 
 TEST_CASE("foeSplitThreadResult - Ensure error codes return correct values and strings") {
-    std::error_code errC;
+    char resultString[FOE_MAX_RESULT_STRING_SIZE];
 
     SECTION("Generic non-existant negative value") {
-        errC = static_cast<foeSplitThreadResult>(FOE_RESULT_MIN_ENUM);
-
-        CHECK(errC.value() == FOE_RESULT_MIN_ENUM);
-        CHECK(errC.message() == "FOE_THREAD_POOL_UNKNOWN_ERROR_2147483647");
+        foeSplitThreadResultToString((foeSplitThreadResult)FOE_RESULT_MIN_ENUM, resultString);
+        CHECK(std::string_view{resultString} == "FOE_THREAD_POOL_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
-        errC = static_cast<foeSplitThreadResult>(FOE_RESULT_MAX_ENUM);
-
-        CHECK(errC.value() == FOE_RESULT_MAX_ENUM);
-        CHECK(errC.message() == "FOE_THREAD_POOL_UNKNOWN_SUCCESS_2147483647");
+        foeSplitThreadResultToString((foeSplitThreadResult)FOE_RESULT_MAX_ENUM, resultString);
+        CHECK(std::string_view{resultString} == "FOE_THREAD_POOL_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_THREAD_POOL_SUCCESS)

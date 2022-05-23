@@ -5,7 +5,6 @@ target_sources(
           debug_callback.cpp
           descriptor_set_layout_pool.cpp
           error_code.c
-          error_code.cpp
           error_colour_image.cpp
           error_depth_stencil_image.cpp
           fragment_descriptor_pool.cpp
@@ -26,7 +25,8 @@ target_sources(
           upload_buffer_public.cpp
           upload_context_public.cpp
           upload_request_public.cpp
-          upload_request.cpp)
+          upload_request.cpp
+          vk_result.c)
 
 add_subdirectory(render_graph/job)
 add_subdirectory(render_graph/resource)

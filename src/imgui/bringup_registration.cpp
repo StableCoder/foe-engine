@@ -116,12 +116,12 @@ void imgui_BringupResourceCreateInfo(foeResourceCreateInfo resourceCreateInfo) {
 
 } // namespace
 
-auto foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
+foeResult foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->registerElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
                                         imgui_BringupResourceCreateInfo, nullptr);
 }
 
-auto foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
+foeResult foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->deregisterElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
                                           imgui_BringupResourceCreateInfo, nullptr);
 }

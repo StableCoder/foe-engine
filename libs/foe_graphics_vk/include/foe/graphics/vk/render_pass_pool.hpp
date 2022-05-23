@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_VK_RENDER_PASS_HPP
 #define FOE_GRAPHICS_VK_RENDER_PASS_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
 #include <vulkan/vulkan.h>
@@ -26,7 +27,7 @@
 
 class foeGfxVkRenderPassPool {
   public:
-    FOE_GFX_EXPORT auto initialize(foeGfxSession session) noexcept -> std::error_code;
+    FOE_GFX_EXPORT foeResult initialize(foeGfxSession session) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
 
     /**

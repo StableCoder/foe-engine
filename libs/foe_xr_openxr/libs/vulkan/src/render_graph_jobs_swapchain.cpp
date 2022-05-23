@@ -18,11 +18,11 @@
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/xr/openxr/error_code.hpp>
-#include <vk_error_code.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
+#include "vk_result.h"
+#include "xr_result.h"
 
 struct foeOpenXrRenderGraphSwapchainResource {
     foeGfxVkRenderGraphStructureType sType;
@@ -30,27 +30,22 @@ struct foeOpenXrRenderGraphSwapchainResource {
     XrSwapchain swapchain;
 };
 
-auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                              std::string_view name,
-                                              VkFence fence,
-                                              std::string_view resourceName,
-                                              XrSwapchain swapchain,
-                                              VkImage image,
-                                              VkImageView view,
-                                              VkFormat format,
-                                              VkExtent2D extent,
-                                              VkImageLayout layout,
-                                              foeGfxVkRenderGraphResource *pResourcesOut)
-    -> std::error_code {
-    std::error_code errC;
-
+foeResult foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                   std::string_view name,
+                                                   VkFence fence,
+                                                   std::string_view resourceName,
+                                                   XrSwapchain swapchain,
+                                                   VkImage image,
+                                                   VkImageView view,
+                                                   VkFormat format,
+                                                   VkExtent2D extent,
+                                                   VkImageLayout layout,
+                                                   foeGfxVkRenderGraphResource *pResourcesOut) {
     // Add the job that waits on the timeline semaphore and signals any dependent jobs to start
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
-        std::error_code errC;
-
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
         // Create the timeline semaphore
         VkSemaphoreTypeCreateInfo timelineCI{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
@@ -66,10 +61,10 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         };
 
         VkSemaphore timelineSemaphore;
-        errC = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
-                                 &timelineSemaphore);
-        if (errC)
-            return errC;
+        VkResult vkResult = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
+                                              &timelineSemaphore);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
         foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
             vkDestroySemaphore(foeGfxVkGetDevice(session), timelineSemaphore, nullptr);
@@ -81,15 +76,16 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .timeout = 10000, // In nanoseconds (0.01 ms)
             };
 
-            XrResult xrRes{XR_TIMEOUT_EXPIRED};
+            XrResult xrResult{XR_TIMEOUT_EXPIRED};
 
             do {
-                xrRes = xrWaitSwapchainImage(swapchain, &waitInfo);
-            } while (xrRes == XR_TIMEOUT_EXPIRED);
+                xrResult = xrWaitSwapchainImage(swapchain, &waitInfo);
+            } while (xrResult == XR_TIMEOUT_EXPIRED);
 
-            if (xrRes != XR_SUCCESS && xrRes != XR_SESSION_LOSS_PENDING) {
-                std::error_code errC = xrRes;
-                FOE_LOG(foeOpenXrVk, Error, "xrWaitSwapchainImage failed: {}", errC.message());
+            if (xrResult != XR_SUCCESS && xrResult != XR_SESSION_LOSS_PENDING) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                XrResultToString(xrResult, buffer);
+                FOE_LOG(foeOpenXrVk, Error, "xrWaitSwapchainImage failed: {}", buffer);
             } else {
                 VkSemaphoreSignalInfo signalInfo{
                     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,
@@ -105,9 +101,11 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
             };
 
-            std::error_code errC = xrReleaseSwapchainImage(swapchain, &releaseInfo);
-            if (errC) {
-                FOE_LOG(foeOpenXrVk, Fatal, "xrReleaseSwapchainImage error: {}", errC.message())
+            xrResult = xrReleaseSwapchainImage(swapchain, &releaseInfo);
+            if (xrResult != XR_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                XrResultToString(xrResult, buffer);
+                FOE_LOG(foeOpenXrVk, Fatal, "xrReleaseSwapchainImage error: {}", buffer)
             }
         });
 
@@ -133,10 +131,10 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         };
 
         auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        errC = vkQueueSubmit(queue, 1, &submitInfo, fence);
+        vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
-        return errC;
+        return vk_to_foeResult(vkResult);
     };
 
     // Resource management
@@ -173,13 +171,13 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name, true,
-                                     std::move(jobFn), &renderGraphJob);
-    if (errC) {
+    foeResult result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name,
+                                                 true, std::move(jobFn), &renderGraphJob);
+    if (result.value != FOE_SUCCESS) {
         // If we couldn't add it to the render graph, delete all heap data now
         freeDataFn();
 
-        return errC;
+        return result;
     }
 
     // Outgoing resources
@@ -189,5 +187,5 @@ auto foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImageState),
     };
 
-    return FOE_OPENXR_VK_SUCCESS;
+    return to_foeResult(FOE_OPENXR_VK_SUCCESS);
 }

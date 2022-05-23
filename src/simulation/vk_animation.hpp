@@ -17,6 +17,7 @@
 #ifndef VK_ANIMATION_HPP
 #define VK_ANIMATION_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/pool.h>
@@ -24,20 +25,19 @@
 #include <vulkan/vulkan.h>
 
 #include <array>
-#include <system_error>
 
 class foeArmatureStatePool;
 class foeRenderStatePool;
 
 class VkAnimationPool {
   public:
-    auto initialize(foeResourcePool resourcePool,
-                    foeArmatureStatePool *pArmatureStatePool,
-                    foeRenderStatePool *pRenderStatePool) -> std::error_code;
+    foeResult initialize(foeResourcePool resourcePool,
+                         foeArmatureStatePool *pArmatureStatePool,
+                         foeRenderStatePool *pRenderStatePool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    foeResult initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

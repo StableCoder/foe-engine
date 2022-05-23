@@ -18,29 +18,28 @@
 
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
-#include <vk_error_code.hpp>
-#include <vulkan/vulkan_core.h>
 
-#include "../error_code.hpp"
+#include "../result.h"
+#include "../vk_result.h"
 #include "type_defs.h"
 
-auto PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) -> std::error_code {
+foeResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) {
     if (pPosition3dPool == nullptr) {
-        return FOE_BRINGUP_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
     }
 
     mpPosition3dPool = pPosition3dPool;
 
-    return VK_SUCCESS;
+    return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
 
 void PositionDescriptorPool::deinitialize() { mpPosition3dPool = nullptr; }
 
 bool PositionDescriptorPool::initialized() const noexcept { return mpPosition3dPool != nullptr; }
 
-auto PositionDescriptorPool::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+foeResult PositionDescriptorPool::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
-        return FOE_BRINGUP_NOT_INITIALIZED;
+        return to_foeResult(FOE_BRINGUP_NOT_INITIALIZED);
 
     // External
     mDevice = foeGfxVkGetDevice(gfxSession);
@@ -87,7 +86,7 @@ INITIALIZATION_FAILED:
         deinitialize();
     }
 
-    return res;
+    return vk_to_foeResult(res);
 }
 
 void PositionDescriptorPool::deinitializeGraphics() {

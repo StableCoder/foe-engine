@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@
 #define RENDER_SCENE_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/graphics/vk/render_graph.hpp>
-
-#include <system_error>
 
 struct foeSimulation;
 
@@ -29,16 +28,16 @@ struct RenderSceneOutputResources {
     foeGfxVkRenderGraphResource depthRenderTarget;
 };
 
-auto renderSceneJob(foeGfxVkRenderGraph renderGraph,
-                    std::string_view name,
-                    VkFence fence,
-                    foeGfxVkRenderGraphResource colourRenderTarget,
-                    VkImageLayout finalColourLayout,
-                    foeGfxVkRenderGraphResource depthRenderTarget,
-                    VkImageLayout finalDepthLayout,
-                    VkSampleCountFlags renderTargetSamples,
-                    foeSimulation *pSimulation,
-                    VkDescriptorSet cameraDescriptor,
-                    RenderSceneOutputResources &outputResources) -> std::error_code;
+foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
+                         std::string_view name,
+                         VkFence fence,
+                         foeGfxVkRenderGraphResource colourRenderTarget,
+                         VkImageLayout finalColourLayout,
+                         foeGfxVkRenderGraphResource depthRenderTarget,
+                         VkImageLayout finalDepthLayout,
+                         VkSampleCountFlags renderTargetSamples,
+                         foeSimulation *pSimulation,
+                         VkDescriptorSet cameraDescriptor,
+                         RenderSceneOutputResources &outputResources);
 
 #endif // RENDER_SCENE_HPP

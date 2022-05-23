@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@
 #ifndef FOE_GRAPHICS_UPLOAD_REQUEST_HPP
 #define FOE_GRAPHICS_UPLOAD_REQUEST_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/handle.h>
-
-#include <system_error>
 
 FOE_DEFINE_HANDLE(foeGfxUploadRequest)
 
@@ -43,7 +42,7 @@ FOE_GFX_EXPORT UploadRequestStatus foeGfxGetUploadRequestStatus(foeGfxUploadRequ
 FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
                                                foeGfxUploadRequest uploadRequest);
 
-FOE_GFX_EXPORT std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
-                                                           foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
+                                                     foeGfxUploadRequest uploadRequest);
 
 #endif // FOE_GRAPHICS_UPLOAD_REQUEST_HPP

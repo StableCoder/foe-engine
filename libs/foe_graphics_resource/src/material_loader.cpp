@@ -23,23 +23,23 @@
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>
-#include <vk_error_code.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
+#include "vk_result.h"
 #include "worst_resource_state.hpp"
 
 #include <array>
 #include <type_traits>
 
-auto foeMaterialLoader::initialize(foeResourcePool resourcePool) -> std::error_code {
+foeResult foeMaterialLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE)
-        return FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED);
 
     // External
     mResourcePool = resourcePool;
 
-    return FOE_GRAPHICS_RESOURCE_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
 void foeMaterialLoader::deinitialize() {
@@ -49,9 +49,9 @@ void foeMaterialLoader::deinitialize() {
 
 bool foeMaterialLoader::initialized() const noexcept { return mResourcePool != FOE_NULL_HANDLE; }
 
-auto foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+foeResult foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
-        return FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_NOT_INITIALIZED;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_NOT_INITIALIZED);
 
     // External
     mGfxSession = gfxSession;
@@ -77,7 +77,7 @@ auto foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) -> std::err
         deinitialize();
     }
 
-    return vkRes;
+    return vk_to_foeResult(vkRes);
 }
 
 void foeMaterialLoader::deinitializeGraphics() {
@@ -180,8 +180,8 @@ void foeMaterialLoader::gfxMaintenance() {
                     fragShader);
             }
 
-            auto errC = createDescriptorSet(&it.data);
-            if (errC)
+            VkResult vkResult = createDescriptorSet(&it.data);
+            if (vkResult != VK_SUCCESS)
                 goto DESCRIPTOR_CREATE_FAILED;
 
             // Everything's ready, load the resource
@@ -197,7 +197,7 @@ void foeMaterialLoader::gfxMaintenance() {
             // One of them failed to load, we're not proceeding with this resource
             it.pPostLoadFn(
                 it.resource,
-                foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
+                to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
                 nullptr, nullptr, nullptr, nullptr, nullptr);
 
             // Unload the data we did get
@@ -244,7 +244,7 @@ void foeMaterialLoader::load(foeResource resource,
                              foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
                     nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
@@ -303,7 +303,7 @@ void foeMaterialLoader::load(foeResource resource,
     mLoadSync.unlock();
 }
 
-std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialData) {
+VkResult foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialData) {
     // If there's no elements to create a descriptor set with, just return
     if (pMaterialData->image == FOE_NULL_HANDLE) {
         return {};
@@ -323,9 +323,9 @@ std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialDat
         .pSetLayouts = &descriptorSetLayout,
     };
 
-    VkResult vkRes = vkAllocateDescriptorSets(vkDevice, &setAI, &set);
-    if (vkRes != VK_SUCCESS) {
-        return vkRes;
+    VkResult vkResult = vkAllocateDescriptorSets(vkDevice, &setAI, &set);
+    if (vkResult != VK_SUCCESS) {
+        return vkResult;
     }
 
     auto const *pImage = (foeImage const *)foeResourceGetData(pMaterialData->image);
@@ -349,7 +349,7 @@ std::error_code foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialDat
 
     pMaterialData->materialDescriptorSet = set;
 
-    return {};
+    return VK_SUCCESS;
 }
 
 void foeMaterialLoader::unloadResource(void *pContext,

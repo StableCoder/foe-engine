@@ -22,10 +22,9 @@
 #include <foe/resource/resource_fns.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <vk_error_code.hpp>
 
-#include "../error_code.hpp"
 #include "../log.hpp"
+#include "../result.h"
 #include "armature.hpp"
 #include "armature_loader.hpp"
 #include "armature_state_pool.hpp"
@@ -54,26 +53,32 @@ struct TypeSelection {
 };
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    std::error_code errC;
     size_t count;
     size_t errors = 0;
+    foeResult result;
 
     // Systems
     if (pSelection == nullptr || pSelection->animationSystem) {
-        errC = foeSimulationDecrementRefCount(pSimulation,
-                                              FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy VkAnimationPool that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy VkAnimationPool that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             VkAnimationPool *pData;
-            errC = foeSimulationReleaseSystem(
+            result = foeSimulationReleaseSystem(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, (void **)&pData);
-            if (errC) {
-                FOE_LOG(foeBringup, Warning, "Could not release VkAnimationPool to destroy - {}",
-                        errC.message());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, Warning, "Could not release VkAnimationPool to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -82,20 +87,26 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     }
 
     if (pSelection == nullptr || pSelection->positionSystem) {
-        errC = foeSimulationDecrementRefCount(
+        result = foeSimulationDecrementRefCount(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, &count);
-        if (errC) {
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy PositionDescriptorPool that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy PositionDescriptorPool that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             PositionDescriptorPool *pData;
-            errC = foeSimulationReleaseSystem(
+            result = foeSimulationReleaseSystem(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, (void **)&pData);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(foeBringup, Warning,
-                        "Could not release PositionDescriptorPool to destroy - {}", errC.message());
+                        "Could not release PositionDescriptorPool to destroy: {}", buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -104,20 +115,26 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     }
 
     if (pSelection == nullptr || pSelection->cameraSystem) {
-        errC = foeSimulationDecrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
-                                              &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(pSimulation,
+                                                FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy foeCameraSystem that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foeCameraSystem that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foeCameraSystem *pData;
-            errC = foeSimulationReleaseSystem(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
-                                              (void **)&pData);
-            if (errC) {
-                FOE_LOG(foeBringup, Warning, "Could not release foeCameraSystem to destroy - {}",
-                        errC.message());
+            result = foeSimulationReleaseSystem(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, (void **)&pData);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, Warning, "Could not release foeCameraSystem to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -126,20 +143,26 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     }
 
     if (pSelection == nullptr || pSelection->armatureSystem) {
-        errC = foeSimulationDecrementRefCount(pSimulation,
-                                              FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(pSimulation,
+                                                FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy foeArmatureSystem that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foeArmatureSystem that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foeArmatureSystem *pData;
-            errC = foeSimulationReleaseSystem(
+            result = foeSimulationReleaseSystem(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, (void **)&pData);
-            if (errC) {
-                FOE_LOG(foeBringup, Warning, "Could not release foeArmatureSystem to destroy - {}",
-                        errC.message());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, Warning, "Could not release foeArmatureSystem to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -149,20 +172,26 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     // Components
     if (pSelection == nullptr || pSelection->renderStateComponents) {
-        errC = foeSimulationDecrementRefCount(pSimulation,
-                                              FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy foeRenderStatePool that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foeRenderStatePool that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foeRenderStatePool *pData;
-            errC = foeSimulationReleaseComponentPool(
+            result = foeSimulationReleaseComponentPool(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, (void **)&pData);
-            if (errC) {
-                FOE_LOG(foeBringup, Warning, "Could not release foeRenderStatePool to destroy - {}",
-                        errC.message());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, Warning, "Could not release foeRenderStatePool to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -171,20 +200,25 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     }
 
     if (pSelection == nullptr || pSelection->cameraComponents) {
-        errC = foeSimulationDecrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
-                                              &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
+                                                &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy foeCameraPool that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foeCameraPool that doesn't exist: {}", buffer);
+
             ++errors;
         } else if (count == 0) {
             foeCameraPool *pData;
-            errC = foeSimulationReleaseComponentPool(
+            result = foeSimulationReleaseComponentPool(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL, (void **)&pData);
-            if (errC) {
-                FOE_LOG(foeBringup, Warning, "Could not release foeCameraPool to destroy - {}",
-                        errC.message());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, Warning, "Could not release foeCameraPool to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -193,20 +227,26 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     }
 
     if (pSelection == nullptr || pSelection->armatureComponents) {
-        errC = foeSimulationDecrementRefCount(
+        result = foeSimulationDecrementRefCount(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, &count);
-        if (errC) {
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy foeArmatureStatePool that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foeArmatureStatePool that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foeArmatureStatePool *pData;
-            errC = foeSimulationReleaseComponentPool(
+            result = foeSimulationReleaseComponentPool(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, (void **)&pData);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(foeBringup, Warning,
-                        "Could not release foeArmatureStatePool to destroy - {}", errC.message());
+                        "Could not release foeArmatureStatePool to destroy: {}", buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -216,21 +256,27 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
-        errC = foeSimulationDecrementRefCount(pSimulation,
-                                              FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(pSimulation,
+                                                FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+        if (result.value != FOE_SUCCESS) {
             // Trying to destroy something that doesn't exist? Not optimal
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Attempted to decrement/destroy foeArmatureLoader that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foeArmatureLoader that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foeArmatureLoader *pLoader;
-            errC = foeSimulationReleaseResourceLoader(
+            result = foeSimulationReleaseResourceLoader(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, (void **)&pLoader);
-            if (errC) {
-                FOE_LOG(foeBringup, Warning, "Could not release foeArmatureLoader to destroy - {}",
-                        errC.message());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, Warning, "Could not release foeArmatureLoader to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pLoader;
@@ -241,8 +287,8 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     return errors;
 }
 
-auto create(foeSimulation *pSimulation) -> std::error_code {
-    std::error_code errC;
+foeResult create(foeSimulation *pSimulation) {
+    foeResult result;
     TypeSelection created = {};
 
     foeResourceFns resourceFns{
@@ -253,8 +299,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     };
 
     // Loaders
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
+                                            nullptr);
+    if (result.value != FOE_SUCCESS) {
         // Couldn't incement it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
@@ -266,12 +313,16 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                     reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
                 },
         };
-        errC = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
-        if (errC) {
+        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        if (result.value != FOE_SUCCESS) {
             delete (foeArmatureLoader *)loaderCI.pLoader;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "onCreate - Failed to create foeArmatureLoader on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "onCreate - Failed to create foeArmatureLoader on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
@@ -280,19 +331,24 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     created.armatureLoader = true;
 
     // Components
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
             .pComponentPool = new foeArmatureStatePool,
             .pMaintenanceFn = [](void *pData) { ((foeArmatureStatePool *)pData)->maintenance(); },
         };
-        errC = foeSimulationInsertComponentPool(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (foeArmatureStatePool *)createInfo.pComponentPool;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "create - Failed to create foeArmatureStatePool on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "create - Failed to create foeArmatureStatePool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
@@ -300,19 +356,24 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     }
     created.armatureComponents = true;
 
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
+                                            nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
             .pComponentPool = new foeCameraPool,
             .pMaintenanceFn = [](void *pData) { ((foeCameraPool *)pData)->maintenance(); },
         };
-        errC = foeSimulationInsertComponentPool(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (foeCameraPool *)createInfo.pComponentPool;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "create - Failed to create foeCameraPool on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "create - Failed to create foeCameraPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
@@ -320,19 +381,24 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     }
     created.cameraComponents = true;
 
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation,
+                                            FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
             .pComponentPool = new foeRenderStatePool,
             .pMaintenanceFn = [](void *pData) { ((foeRenderStatePool *)pData)->maintenance(); },
         };
-        errC = foeSimulationInsertComponentPool(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (foeRenderStatePool *)createInfo.pComponentPool;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "create - Failed to create foeRenderStatePool on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "create - Failed to create foeRenderStatePool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
@@ -341,18 +407,23 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     created.renderStateComponents = true;
 
     // Systems
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
+                                            nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
             .pSystem = new foeArmatureSystem,
         };
-        errC = foeSimulationInsertSystem(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertSystem(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (foeArmatureSystem *)createInfo.pSystem;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "create - Failed to create foeArmatureSystem on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "create - Failed to create foeArmatureSystem on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
@@ -360,18 +431,23 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     }
     created.armatureSystem = true;
 
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
+                                            nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
             .pSystem = new foeCameraSystem,
         };
-        errC = foeSimulationInsertSystem(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertSystem(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (foeCameraSystem *)createInfo.pSystem;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "create - Failed to create foeCameraSystem on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "create - Failed to create foeCameraSystem on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
@@ -379,18 +455,23 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     }
     created.cameraSystem = true;
 
-    if (foeSimulationIncrementRefCount(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, nullptr)) {
+    result = foeSimulationIncrementRefCount(
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL,
             .pSystem = new PositionDescriptorPool,
         };
-        errC = foeSimulationInsertSystem(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertSystem(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (PositionDescriptorPool *)createInfo.pSystem;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "create - Failed to create PositionDescriptorPool on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "create - Failed to create PositionDescriptorPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(
@@ -398,18 +479,23 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     }
     created.positionSystem = true;
 
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation,
+                                            FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL,
             .pSystem = new VkAnimationPool,
         };
-        errC = foeSimulationInsertSystem(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertSystem(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (VkAnimationPool *)createInfo.pSystem;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "create - Failed to create VkAnimationPool on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "create - Failed to create VkAnimationPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL,
@@ -418,32 +504,34 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     created.animationSystem = true;
 
 CREATE_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         size_t errors = destroySelection(pSimulation, &created);
         if (errors > 0)
             FOE_LOG(foeBringup, Warning, "Encountered {} issues destroying after failed creation",
                     errors);
     }
 
-    return errC;
+    return result;
 }
 
 size_t destroy(foeSimulation *pSimulation) { return destroySelection(pSimulation, nullptr); }
 
 size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    std::error_code errC;
+    foeResult result;
     size_t count;
     size_t errors = 0;
 
     // Systems
     if (pSelection == nullptr || pSelection->animationSystem) {
-        errC = foeSimulationDecrementInitCount(
+        result = foeSimulationDecrementInitCount(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
-        if (errC) {
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Failed to decrement VkAnimationPool initialization count on Simulation {} "
-                    "with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to decrement VkAnimationPool initialization count on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             ++errors;
         } else if (count == 0) {
             auto *pData = (VkAnimationPool *)foeSimulationGetSystem(
@@ -453,14 +541,16 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     }
 
     if (pSelection == nullptr || pSelection->positionSystem) {
-        errC = foeSimulationDecrementInitCount(
+        result = foeSimulationDecrementInitCount(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, &count);
-        if (errC) {
-            FOE_LOG(
-                foeBringup, Warning,
-                "Failed to decrement PositionDescriptorPool initialization count on Simulation {} "
-                "with error {}",
-                (void *)pSimulation, errC.message());
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foeBringup, Warning,
+                    "Failed to decrement PositionDescriptorPool initialization count on Simulation "
+                    "{}: {}",
+                    (void *)pSimulation, buffer);
+
             ++errors;
         } else if (count == 0) {
             auto *pData = (PositionDescriptorPool *)foeSimulationGetSystem(
@@ -470,13 +560,15 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     }
 
     if (pSelection == nullptr || pSelection->cameraSystem) {
-        errC = foeSimulationDecrementInitCount(pSimulation,
-                                               FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
-        if (errC) {
+        result = foeSimulationDecrementInitCount(pSimulation,
+                                                 FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
-                    "Failed to decrement foeCameraSystem initialization count on Simulation {} "
-                    "with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to decrement foeCameraSystem initialization count on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             ++errors;
         } else if (count == 0) {
             auto *pData = (foeCameraSystem *)foeSimulationGetSystem(
@@ -486,13 +578,15 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     }
 
     if (pSelection == nullptr || pSelection->armatureSystem) {
-        errC = foeSimulationDecrementInitCount(pSimulation,
-                                               FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
-        if (errC) {
-            FOE_LOG(foeBringup, Warning,
-                    "Failed to decrement foeArmatureSystem initialization count on Simulation {} "
-                    "with error {}",
-                    (void *)pSimulation, errC.message());
+        result = foeSimulationDecrementInitCount(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(
+                foeBringup, Warning,
+                "Failed to decrement foeArmatureSystem initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
             auto *pLoader = (foeArmatureSystem *)foeSimulationGetSystem(
@@ -503,13 +597,15 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
 
     // Loaders
     if (pSelection == nullptr || pSelection->armatureLoader) {
-        auto errC = foeSimulationDecrementInitCount(
+        auto result = foeSimulationDecrementInitCount(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
-        if (errC) {
-            FOE_LOG(foeBringup, Warning,
-                    "Failed to decrement foeArmatureLoader initialization count on Simulation {} "
-                    "with error {}",
-                    (void *)pSimulation, errC.message());
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(
+                foeBringup, Warning,
+                "Failed to decrement foeArmatureLoader initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
             auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
@@ -521,20 +617,21 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     return errors;
 }
 
-auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo)
-    -> std::error_code {
-    std::error_code errC;
+foeResult initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
+    foeResult result;
     size_t count;
     TypeSelection selection = {};
 
     // Loaders
-    errC = foeSimulationIncrementInitCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
-                                           &count);
-    if (errC) {
+    result = foeSimulationIncrementInitCount(pSimulation,
+                                             FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER, &count);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
-                "Failed to increment foeArmatureLoader initialization count on Simulation {} with "
-                "error {}",
-                (void *)pSimulation, errC.message());
+                "Failed to increment foeArmatureLoader initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.armatureLoader = true;
@@ -542,23 +639,28 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
         auto *pLoader = (foeArmatureLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER);
 
-        errC = pLoader->initialize(pSimulation->resourcePool, pInitInfo->externalFileSearchFn);
-        if (errC) {
+        result = pLoader->initialize(pSimulation->resourcePool, pInitInfo->externalFileSearchFn);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "Failed to initialize foeArmatureLoader on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to initialize foeArmatureLoader on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
     // Systems
-    errC = foeSimulationIncrementInitCount((foeSimulation *)pSimulation,
-                                           FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
-    if (errC) {
+    result = foeSimulationIncrementInitCount((foeSimulation *)pSimulation,
+                                             FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
-                "Failed to increment foeArmatureSystem initialization count on Simulation {} with "
-                "error {}",
-                (void *)pSimulation, errC.message());
+                "Failed to increment foeArmatureSystem initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.armatureSystem = true;
@@ -568,22 +670,27 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
 
         auto *pData = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-        errC = pData->initialize(pSimulation->resourcePool, pArmatureStatePool);
-        if (errC) {
+        result = pData->initialize(pSimulation->resourcePool, pArmatureStatePool);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "Failed to initialize foeArmatureSystem on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to initialize foeArmatureSystem on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
-    errC = foeSimulationIncrementInitCount((foeSimulation *)pSimulation,
-                                           FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
-    if (errC) {
+    result = foeSimulationIncrementInitCount((foeSimulation *)pSimulation,
+                                             FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
-                "Failed to increment foeCameraSystem initialization count on Simulation {} with "
-                "error {}",
-                (void *)pSimulation, errC.message());
+                "Failed to increment foeCameraSystem initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.cameraSystem = true;
@@ -595,23 +702,27 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
 
         auto *pData = (foeCameraSystem *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
-        errC = pData->initialize(pPosition3dPool, pCameraPool);
-        if (errC) {
-            FOE_LOG(foeBringup, Error,
-                    "Failed to initialize foeCameraSystem on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+        result = pData->initialize(pPosition3dPool, pCameraPool);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foeBringup, Error, "Failed to initialize foeCameraSystem on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
-    errC = foeSimulationIncrementInitCount(
+    result = foeSimulationIncrementInitCount(
         (foeSimulation *)pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, &count);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(
             foeBringup, Error,
-            "Failed to increment PositionDescriptorPool initialization count on Simulation {} with "
-            "error {}",
-            (void *)pSimulation, errC.message());
+            "Failed to increment PositionDescriptorPool initialization count on Simulation {}: {}",
+            (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.positionSystem = true;
@@ -621,22 +732,27 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
 
         auto *pData = (PositionDescriptorPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        errC = pData->initialize(pPosition3dPool);
-        if (errC) {
+        result = pData->initialize(pPosition3dPool);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "Failed to initialize PositionDescriptorPool on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to initialize PositionDescriptorPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
-    errC = foeSimulationIncrementInitCount((foeSimulation *)pSimulation,
-                                           FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
-    if (errC) {
+    result = foeSimulationIncrementInitCount((foeSimulation *)pSimulation,
+                                             FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
-                "Failed to increment VkAnimationPool initialization count on Simulation {} with "
-                "error {}",
-                (void *)pSimulation, errC.message());
+                "Failed to increment VkAnimationPool initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.animationSystem = true;
@@ -649,24 +765,26 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
         auto *pData = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
 
-        errC = pData->initialize(pSimulation->resourcePool, pArmatureStatePool, pRenderStatePool);
-        if (errC) {
-            FOE_LOG(foeBringup, Error,
-                    "Failed to initialize VkAnimationPool on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+        result = pData->initialize(pSimulation->resourcePool, pArmatureStatePool, pRenderStatePool);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foeBringup, Error, "Failed to initialize VkAnimationPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
 INITIALIZATION_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeSelection(pSimulation, &selection);
         if (errors > 0)
             FOE_LOG(foeBringup, Warning,
                     "Encountered {} issues deinitializing after failed initialization", errors);
     }
 
-    return errC;
+    return result;
 }
 
 size_t deinitialize(foeSimulation *pSimulation) {
@@ -674,19 +792,21 @@ size_t deinitialize(foeSimulation *pSimulation) {
 }
 
 size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    std::error_code errC;
+    foeResult result;
     size_t count;
     size_t errors = 0;
 
     // Systems
     if (pSelection == nullptr || pSelection->animationSystem) {
-        errC = foeSimulationDecrementGfxInitCount(
+        result = foeSimulationDecrementGfxInitCount(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
-        if (errC) {
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
                     "Failed to decrement VkAnimationPool graphics initialization count on "
-                    "Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Simulation {}: {}",
+                    (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
             auto *pData = (VkAnimationPool *)foeSimulationGetSystem(
@@ -696,13 +816,15 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
     }
 
     if (pSelection == nullptr || pSelection->positionSystem) {
-        errC = foeSimulationDecrementGfxInitCount(
+        result = foeSimulationDecrementGfxInitCount(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, &count);
-        if (errC) {
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
                     "Failed to decrement PositionDescriptorPool graphics initialization count on "
-                    "Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Simulation {}: {}",
+                    (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
             auto *pData = (PositionDescriptorPool *)foeSimulationGetSystem(
@@ -712,13 +834,16 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
     }
 
     if (pSelection == nullptr || pSelection->cameraSystem) {
-        errC = foeSimulationDecrementGfxInitCount(pSimulation,
-                                                  FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
-        if (errC) {
+        result = foeSimulationDecrementGfxInitCount(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Warning,
                     "Failed to decrement foeCameraSystem graphics initialization count on "
-                    "Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             ++errors;
         } else if (count == 0) {
             auto *pData = (foeCameraSystem *)foeSimulationGetSystem(
@@ -730,82 +855,98 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
     return errors;
 }
 
-auto initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) -> std::error_code {
-    std::error_code errC;
+foeResult initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
+    foeResult result;
     size_t count;
     TypeSelection selection = {};
 
     // Systems
-    errC = foeSimulationIncrementGfxInitCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
-                                              &count);
-    if (errC) {
+    result = foeSimulationIncrementGfxInitCount(pSimulation,
+                                                FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM, &count);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
                 "Failed to increment foeCameraSystem graphics initialization count on Simulation "
-                "{} with error {}",
-                (void *)pSimulation, errC.message());
+                "{}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.cameraSystem = true;
     if (count == 1) {
         auto *pData = (foeCameraSystem *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM);
-        errC = pData->initializeGraphics(gfxSession);
-        if (errC) {
+        result = pData->initializeGraphics(gfxSession);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "Failed to initialize graphics foeCameraSystem on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to initialize graphics foeCameraSystem on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
-    errC = foeSimulationIncrementGfxInitCount(
+    result = foeSimulationIncrementGfxInitCount(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL, &count);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
                 "Failed to increment PositionDescriptorPool graphics initialization count on "
-                "Simulation {} with error {}",
-                (void *)pSimulation, errC.message());
+                "Simulation {}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.positionSystem = true;
     if (count == 1) {
         auto *pData = (PositionDescriptorPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        errC = pData->initializeGraphics(gfxSession);
-        if (errC) {
+        result = pData->initializeGraphics(gfxSession);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "Failed to initialize graphics PositionDescriptorPool on Simulation {} with "
-                    "error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to initialize graphics PositionDescriptorPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
-    errC = foeSimulationIncrementGfxInitCount(pSimulation,
-                                              FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
-    if (errC) {
+    result = foeSimulationIncrementGfxInitCount(
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL, &count);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
                 "Failed to increment VkAnimationPool graphics initialization count on "
-                "Simulation {} with error {}",
-                (void *)pSimulation, errC.message());
+                "Simulation {}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.animationSystem = true;
     if (count == 1) {
         auto *pData = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
-        errC = pData->initializeGraphics(gfxSession);
-        if (errC) {
+        result = pData->initializeGraphics(gfxSession);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foeBringup, Error,
-                    "Failed to initialize graphics VkAnimationPool on Simulation {} with "
-                    "error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to initialize graphics VkAnimationPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
 INITIALIZATION_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeGraphicsSelection(pSimulation, &selection);
         if (errors > 0)
             FOE_LOG(foeBringup, Warning,
@@ -813,7 +954,7 @@ INITIALIZATION_FAILED:
                     errors);
     }
 
-    return errC;
+    return result;
 }
 
 size_t deinitializeGraphics(foeSimulation *pSimulation) {
@@ -822,11 +963,11 @@ size_t deinitializeGraphics(foeSimulation *pSimulation) {
 
 } // namespace
 
-auto foeBringupRegisterFunctionality() -> std::error_code {
+foeResult foeBringupRegisterFunctionality() {
     FOE_LOG(foeBringup, Verbose,
             "foeBringupRegisterFunctionality - Starting to register functionality")
 
-    auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeResult result = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
         .pCreateFn = create,
         .pDestroyFn = destroy,
@@ -836,16 +977,17 @@ auto foeBringupRegisterFunctionality() -> std::error_code {
         .pDeinitializeGraphicsFn = deinitializeGraphics,
     });
 
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foeBringup, Error,
-                "foeBringupRegisterFunctionality - Failed registering functionality: {} - {}",
-                errC.value(), errC.message())
+                "foeBringupRegisterFunctionality - Failed registering functionality: {}", buffer)
     } else {
         FOE_LOG(foeBringup, Verbose,
                 "foeBringupRegisterFunctionality - Completed registering functionality")
     }
 
-    return errC;
+    return result;
 }
 
 void foeBringupDeregisterFunctionality() {

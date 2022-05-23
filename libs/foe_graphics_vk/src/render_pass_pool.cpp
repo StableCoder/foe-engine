@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,20 +17,20 @@
 #include <foe/graphics/vk/render_pass_pool.hpp>
 
 #include <foe/graphics/vk/format.hpp>
-#include <vk_error_code.hpp>
 
 #include <array>
 #include <mutex>
 
 #include "log.hpp"
 #include "session.hpp"
+#include "vk_result.h"
 
-auto foeGfxVkRenderPassPool::initialize(foeGfxSession session) noexcept -> std::error_code {
+foeResult foeGfxVkRenderPassPool::initialize(foeGfxSession session) noexcept {
     auto *pSession = session_from_handle(session);
 
     mDevice = pSession->device;
 
-    return VK_SUCCESS;
+    return vk_to_foeResult(VK_SUCCESS);
 }
 
 void foeGfxVkRenderPassPool::deinitialize() noexcept {

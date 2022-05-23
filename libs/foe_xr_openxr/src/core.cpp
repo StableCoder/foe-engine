@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,34 +17,33 @@
 #include <foe/xr/openxr/core.hpp>
 
 #include <foe/engine_detail.h>
-#include <foe/xr/openxr/error_code.hpp>
 
-#include <cstring>
+#include "xr_result.h"
 
-auto foeOpenXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties)
-    -> std::error_code {
+foeResult foeOpenXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties) {
     uint32_t propertyCount;
-    XrResult res = xrEnumerateApiLayerProperties(0, &propertyCount, nullptr);
-    if (res != XR_SUCCESS)
-        return res;
+    XrResult xrResult = xrEnumerateApiLayerProperties(0, &propertyCount, nullptr);
+    if (xrResult != XR_SUCCESS)
+        return xr_to_foeResult(xrResult);
 
     properties.resize(propertyCount);
     for (auto &it : properties) {
         it.type = XR_TYPE_API_LAYER_PROPERTIES;
     }
 
-    return xrEnumerateApiLayerProperties(static_cast<uint32_t>(properties.size()), &propertyCount,
-                                         properties.data());
+    xrResult = xrEnumerateApiLayerProperties(static_cast<uint32_t>(properties.size()),
+                                             &propertyCount, properties.data());
+
+    return xr_to_foeResult(xrResult);
 }
 
-auto foeOpenXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
-                                                   std::vector<XrExtensionProperties> &properties)
-    -> std::error_code {
+foeResult foeOpenXrEnumerateInstanceExtensionProperties(
+    char const *pApiLayerName, std::vector<XrExtensionProperties> &properties) {
     uint32_t propertyCount;
-    XrResult res =
+    XrResult xrResult =
         xrEnumerateInstanceExtensionProperties(pApiLayerName, 0, &propertyCount, nullptr);
-    if (res != XR_SUCCESS) {
-        return res;
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
     properties.resize(propertyCount);
@@ -52,33 +51,37 @@ auto foeOpenXrEnumerateInstanceExtensionProperties(char const *pApiLayerName,
         it.type = XR_TYPE_EXTENSION_PROPERTIES;
     }
 
-    return xrEnumerateInstanceExtensionProperties(
+    xrResult = xrEnumerateInstanceExtensionProperties(
         pApiLayerName, static_cast<uint32_t>(properties.size()), &propertyCount, properties.data());
+
+    return xr_to_foeResult(xrResult);
 }
 
-auto foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
-                                       std::vector<XrReferenceSpaceType> &spaces)
-    -> std::error_code {
+foeResult foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
+                                            std::vector<XrReferenceSpaceType> &spaces) {
     uint32_t spaceCount;
-    XrResult res = xrEnumerateReferenceSpaces(xrSession, 0, &spaceCount, nullptr);
-    if (res != XR_SUCCESS) {
-        return res;
+    XrResult xrResult = xrEnumerateReferenceSpaces(xrSession, 0, &spaceCount, nullptr);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
     spaces.resize(spaceCount);
-    return xrEnumerateReferenceSpaces(xrSession, static_cast<uint32_t>(spaces.size()), &spaceCount,
-                                      spaces.data());
+    xrResult = xrEnumerateReferenceSpaces(xrSession, static_cast<uint32_t>(spaces.size()),
+                                          &spaceCount, spaces.data());
+
+    return xr_to_foeResult(xrResult);
 }
 
-auto foeOpenXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats)
-    -> std::error_code {
+foeResult foeOpenXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats) {
     uint32_t formatCount;
-    XrResult res = xrEnumerateSwapchainFormats(xrSession, 0, &formatCount, nullptr);
-    if (res != XR_SUCCESS) {
-        return res;
+    XrResult xrResult = xrEnumerateSwapchainFormats(xrSession, 0, &formatCount, nullptr);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
     formats.resize(formatCount);
-    return xrEnumerateSwapchainFormats(xrSession, static_cast<uint32_t>(formats.size()),
-                                       &formatCount, formats.data());
+    xrResult = xrEnumerateSwapchainFormats(xrSession, static_cast<uint32_t>(formats.size()),
+                                           &formatCount, formats.data());
+
+    return xr_to_foeResult(xrResult);
 }

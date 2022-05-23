@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
 #ifndef FOE_POSITION_IMGUI_REGISTRATION_HPP
 #define FOE_POSITION_IMGUI_REGISTRATION_HPP
 
+#include <foe/error_code.h>
 #include <foe/position/imgui/export.h>
-
-#include <system_error>
 
 class foeSimulationImGuiRegistrar;
 
-FOE_POSITION_IMGUI_EXPORT auto foePositionImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar)
-    -> std::error_code;
+FOE_POSITION_IMGUI_EXPORT foeResult
+foePositionImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
 
-FOE_POSITION_IMGUI_EXPORT auto foePositionImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar)
-    -> std::error_code;
+FOE_POSITION_IMGUI_EXPORT foeResult
+foePositionImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
 
 #endif // FOE_POSITION_IMGUI_REGISTRATION_HPP

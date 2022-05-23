@@ -21,7 +21,6 @@ target_sources(
           data_pool_int.cpp
           data_pool_multi.cpp
           delimited_string.cpp
-          error_code.cpp
           filesystem.cpp
           plugin.cpp
           search_paths.cpp)
@@ -42,14 +41,8 @@ target_code_coverage(
   .*/test/.*)
 
 # Thread Pool Definition
-target_sources(
-  test_foe_thread_pool
-  PRIVATE thread_pool_error_code.cpp
-          thread_pool.cpp
-          # The following set are sources that needs to be recompiled as the
-          # symbols may not be exported or have been stripped from  thelinked
-          # libraries
-          ../src/thread_pool_error_code.cpp)
+target_sources(test_foe_thread_pool PRIVATE thread_pool_error_code.cpp
+                                            thread_pool.cpp)
 
 target_link_libraries(test_foe_thread_pool PRIVATE catch foe)
 

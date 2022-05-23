@@ -118,12 +118,14 @@ void yaml_read_material(YAML::Node const &node,
         new (pDst) foeMaterialCreateInfo(std::move(*pSrcData));
     };
 
-    std::error_code errC = foeCreateResourceCreateInfo(
+    foeResult result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO, foeDestroyMaterialCreateInfo,
         sizeof(foeMaterialCreateInfo), &materialCI, dataFn, &createInfo);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         throw foeYamlException{
-            std::string{"Failed to create foeMaterialCreateInfo due to error: "} + errC.message()};
+            std::string{"Failed to create foeMaterialCreateInfo due to error: "} + buffer};
     }
 
     materialCI = {};

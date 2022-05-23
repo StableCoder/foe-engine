@@ -23,7 +23,6 @@
 
 #include <functional>
 #include <mutex>
-#include <system_error>
 #include <vector>
 
 struct foeSimulation;
@@ -59,10 +58,10 @@ class foeSimulationImGuiRegistrar {
      * @param loaderFn Function for various loader types
      * @return An appropriate error code based on the success or failure of the call
      */
-    FOE_SIM_IMGUI_EXPORT auto registerElements(ComponentFn componentFn,
-                                               ResourceFn resourceFn,
-                                               ResourceCreateInfoFn resourceCreateInfoFn,
-                                               LoaderFn loaderFn) -> std::error_code;
+    FOE_SIM_IMGUI_EXPORT foeResult registerElements(ComponentFn componentFn,
+                                                    ResourceFn resourceFn,
+                                                    ResourceCreateInfoFn resourceCreateInfoFn,
+                                                    LoaderFn loaderFn);
 
     /** @brief Deregisters a set of ImGui element rendering functions
      * @param componentFn Function for component types
@@ -72,10 +71,10 @@ class foeSimulationImGuiRegistrar {
      * @param loaderFn Function for various loader types
      * @return An appropriate error code based on the success or failure of the call
      */
-    FOE_SIM_IMGUI_EXPORT auto deregisterElements(ComponentFn componentFn,
-                                                 ResourceFn resourceFn,
-                                                 ResourceCreateInfoFn resourceCreateInfoFn,
-                                                 LoaderFn loaderFn) -> std::error_code;
+    FOE_SIM_IMGUI_EXPORT foeResult deregisterElements(ComponentFn componentFn,
+                                                      ResourceFn resourceFn,
+                                                      ResourceCreateInfoFn resourceCreateInfoFn,
+                                                      LoaderFn loaderFn);
 
     /** @brief Attempts to render components associated with the entity
      * @param entity ID to find associated components to

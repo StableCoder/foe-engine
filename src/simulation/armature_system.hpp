@@ -19,14 +19,11 @@
 
 #include <foe/resource/pool.h>
 
-#include <system_error>
-
 class foeArmatureStatePool;
 
 class foeArmatureSystem {
   public:
-    auto initialize(foeResourcePool resourcePool, foeArmatureStatePool *pArmatureStatePool)
-        -> std::error_code;
+    foeResult initialize(foeResourcePool resourcePool, foeArmatureStatePool *pArmatureStatePool);
     void deinitialize();
     bool initialized() const noexcept;
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,19 +17,18 @@
 #ifndef FOE_GRAPHICS_VK_MESH_HPP
 #define FOE_GRAPHICS_VK_MESH_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/mesh.hpp>
 #include <vulkan/vulkan.h>
 
-#include <system_error>
-
-FOE_GFX_EXPORT std::error_code foeGfxVkCreateMesh(foeGfxSession session,
-                                                  uint64_t vertexDataSize,
-                                                  uint64_t indexDataSize,
-                                                  uint32_t numIndices,
-                                                  VkIndexType indexType,
-                                                  uint64_t boneDataOffset,
-                                                  bool *pHostVisible,
-                                                  foeGfxMesh *pMesh);
+FOE_GFX_EXPORT foeResult foeGfxVkCreateMesh(foeGfxSession session,
+                                            uint64_t vertexDataSize,
+                                            uint64_t indexDataSize,
+                                            uint32_t numIndices,
+                                            VkIndexType indexType,
+                                            uint64_t boneDataOffset,
+                                            bool *pHostVisible,
+                                            foeGfxMesh *pMesh);
 
 FOE_GFX_EXPORT void foeGfxVkBindMesh(foeGfxMesh mesh,
                                      VkCommandBuffer commandBuffer,

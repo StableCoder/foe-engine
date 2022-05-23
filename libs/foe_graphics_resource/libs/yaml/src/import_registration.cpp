@@ -27,117 +27,120 @@
 #include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
 
-#include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
 #include "mesh.hpp"
+#include "result.h"
 #include "shader.hpp"
 #include "vertex_descriptor.hpp"
 
 namespace {
 
-std::error_code imageCreateProcessing(foeResourceID resourceID,
-                                      foeResourceCreateInfo createInfo,
-                                      foeSimulation const *pSimulation) {
+foeResult imageCreateProcessing(foeResourceID resourceID,
+                                foeResourceCreateInfo createInfo,
+                                foeSimulation const *pSimulation) {
     foeResource image =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE, sizeof(foeImage));
 
     if (image == FOE_NULL_HANDLE)
-        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS);
 
-    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-std::error_code materialCreateProcessing(foeResourceID resourceID,
-                                         foeResourceCreateInfo createInfo,
-                                         foeSimulation const *pSimulation) {
+foeResult materialCreateProcessing(foeResourceID resourceID,
+                                   foeResourceCreateInfo createInfo,
+                                   foeSimulation const *pSimulation) {
     foeResource material =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, sizeof(foeMaterial));
 
     if (material == FOE_NULL_HANDLE)
-        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS);
 
-    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-std::error_code meshCreateProcessing(foeResourceID resourceID,
-                                     foeResourceCreateInfo createInfo,
-                                     foeSimulation const *pSimulation) {
+foeResult meshCreateProcessing(foeResourceID resourceID,
+                               foeResourceCreateInfo createInfo,
+                               foeSimulation const *pSimulation) {
     foeResource mesh =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh));
 
     if (mesh == FOE_NULL_HANDLE)
-        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS);
 
-    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-std::error_code shaderCreateProcessing(foeResourceID resourceID,
-                                       foeResourceCreateInfo createInfo,
-                                       foeSimulation const *pSimulation) {
+foeResult shaderCreateProcessing(foeResourceID resourceID,
+                                 foeResourceCreateInfo createInfo,
+                                 foeSimulation const *pSimulation) {
     auto *pShader =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
 
     if (!pShader)
-        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_RESOURCE_ALREADY_EXISTS;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_RESOURCE_ALREADY_EXISTS);
 
-    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-std::error_code vertexDescriptorCreateProcessing(foeResourceID resourceID,
-                                                 foeResourceCreateInfo createInfo,
-                                                 foeSimulation const *pSimulation) {
+foeResult vertexDescriptorCreateProcessing(foeResourceID resourceID,
+                                           foeResourceCreateInfo createInfo,
+                                           foeSimulation const *pSimulation) {
     auto *pVertexResource = foeResourcePoolAdd(
         pSimulation->resourcePool, resourceID,
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, sizeof(foeVertexDescriptor));
 
     if (!pVertexResource)
-        return FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS;
+        return to_foeResult(
+            FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS);
 
-    return FOE_GRAPHICS_RESOURCE_YAML_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
 } // namespace
 
-extern "C" foeErrorCode foeGraphicsResourceYamlRegisterImporters() {
-    std::error_code errC;
+extern "C" foeResult foeGraphicsResourceYamlRegisterImporters() {
+    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 
     // Resources
     if (!foeImexYamlRegisterResourceFns(yaml_image_key(), yaml_read_image, imageCreateProcessing)) {
-        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER;
+        result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_IMAGE_IMPORTER);
         goto REGISTRATION_FAILED;
     }
     if (!foeImexYamlRegisterResourceFns(yaml_material_key(), yaml_read_material,
                                         materialCreateProcessing)) {
-        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER;
+        result =
+            to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MATERIAL_IMPORTER);
         goto REGISTRATION_FAILED;
     }
 
     if (!foeImexYamlRegisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing)) {
-        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER;
+        result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER);
         goto REGISTRATION_FAILED;
     }
 
     if (!foeImexYamlRegisterResourceFns(yaml_shader_key(), yaml_read_shader,
                                         shaderCreateProcessing)) {
-        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER;
+        result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER);
         goto REGISTRATION_FAILED;
     }
     if (!foeImexYamlRegisterResourceFns(yaml_vertex_descriptor_key(), yaml_read_vertex_descriptor,
                                         vertexDescriptorCreateProcessing)) {
-        errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER;
+        result = to_foeResult(
+            FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_VERTEX_DESCRIPTOR_IMPORTER);
         goto REGISTRATION_FAILED;
     }
 
 REGISTRATION_FAILED:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         foeGraphicsResourceYamlDeregisterImporters();
 
-    return foeToErrorCode(errC);
+    return result;
 }
 
 extern "C" void foeGraphicsResourceYamlDeregisterImporters() {

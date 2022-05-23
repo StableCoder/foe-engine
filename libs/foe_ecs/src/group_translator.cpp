@@ -16,8 +16,9 @@
 
 #include <foe/ecs/group_translator.h>
 
-#include "error_code.hpp"
+#include "result.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 namespace {
@@ -29,14 +30,14 @@ struct Translation {
 
 } // namespace
 
-extern "C" foeErrorCode foeEcsCreateGroupTranslator(uint32_t originalCount,
-                                                    char const **ppOriginalNames,
-                                                    foeIdGroup *pOriginalGroups,
-                                                    uint32_t translatedCount,
-                                                    char const **ppTranslatedNames,
-                                                    foeIdGroup *pTranslatedGroups,
-                                                    foeEcsGroupTranslator *pGroupTranslator) {
-    std::error_code errC{FOE_ECS_SUCCESS};
+extern "C" foeResult foeEcsCreateGroupTranslator(uint32_t originalCount,
+                                                 char const **ppOriginalNames,
+                                                 foeIdGroup *pOriginalGroups,
+                                                 uint32_t translatedCount,
+                                                 char const **ppTranslatedNames,
+                                                 foeIdGroup *pTranslatedGroups,
+                                                 foeEcsGroupTranslator *pGroupTranslator) {
+    foeEcsResult result{FOE_ECS_SUCCESS};
     size_t translatorSize = sizeof(uint32_t) + (originalCount * sizeof(Translation));
     void *pNewGroupTranslator = malloc(translatorSize);
 
@@ -60,12 +61,12 @@ extern "C" foeErrorCode foeEcsCreateGroupTranslator(uint32_t originalCount,
         }
 
         if (!found) {
-            errC = FOE_ECS_ERROR_NO_MATCHING_GROUP;
+            result = FOE_ECS_ERROR_NO_MATCHING_GROUP;
             break;
         }
     }
 
-    if (errC) {
+    if (result != FOE_ECS_SUCCESS) {
         // If an error, then free the data
         free(pNewGroupTranslator);
     } else {
@@ -73,41 +74,41 @@ extern "C" foeErrorCode foeEcsCreateGroupTranslator(uint32_t originalCount,
         *pGroupTranslator = (foeEcsGroupTranslator)pNewGroupTranslator;
     }
 
-    return foeToErrorCode(errC);
+    return to_foeResult(result);
 }
 
 extern "C" void foeEcsDestroyGroupTranslator(foeEcsGroupTranslator groupTranslator) {
     free(groupTranslator);
 }
 
-extern "C" foeErrorCode foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTranslator,
-                                                 foeIdGroup originalGroup,
-                                                 foeIdGroup *pTranslatedGroup) {
+extern "C" foeResult foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTranslator,
+                                              foeIdGroup originalGroup,
+                                              foeIdGroup *pTranslatedGroup) {
     uint32_t const *pCount = (uint32_t const *)groupTranslator;
     Translation const *pTranslations = (Translation const *)(pCount + 1);
 
     for (uint32_t i = 0; i < *pCount; ++i) {
         if (pTranslations[i].originalGroup == originalGroup) {
             *pTranslatedGroup = pTranslations[i].translatedGroup;
-            return foeToErrorCode(FOE_ECS_SUCCESS);
+            return to_foeResult(FOE_ECS_SUCCESS);
         }
     }
 
-    return foeToErrorCode(FOE_ECS_ERROR_NO_MATCHING_GROUP);
+    return to_foeResult(FOE_ECS_ERROR_NO_MATCHING_GROUP);
 }
 
-extern "C" foeErrorCode foeEcsGetOriginalGroup(foeEcsGroupTranslator groupTranslator,
-                                               foeIdGroup translatedGroup,
-                                               foeIdGroup *pOriginalGroup) {
+extern "C" foeResult foeEcsGetOriginalGroup(foeEcsGroupTranslator groupTranslator,
+                                            foeIdGroup translatedGroup,
+                                            foeIdGroup *pOriginalGroup) {
     uint32_t const *pCount = (uint32_t const *)groupTranslator;
     Translation const *pTranslations = (Translation const *)(pCount + 1);
 
     for (uint32_t i = 0; i < *pCount; ++i) {
         if (pTranslations[i].translatedGroup == translatedGroup) {
             *pOriginalGroup = pTranslations[i].originalGroup;
-            return foeToErrorCode(FOE_ECS_SUCCESS);
+            return to_foeResult(FOE_ECS_SUCCESS);
         }
     }
 
-    return foeToErrorCode(FOE_ECS_ERROR_NO_MATCHING_GROUP);
+    return to_foeResult(FOE_ECS_ERROR_NO_MATCHING_GROUP);
 }

@@ -23,7 +23,7 @@
 #include <foe/position/registration.h>
 #include <foe/simulation/simulation.hpp>
 
-#include "error_code.hpp"
+#include "result.h"
 #include "simulation/registration.hpp"
 
 #include <array>
@@ -68,23 +68,23 @@ std::array<ImExPlugin, 5> pluginList{
     },
 };
 
-std::error_code initItem(ImExPlugin &plugin) {
+foeResult initItem(ImExPlugin &plugin) {
     foeCreatePlugin(plugin.path.c_str(), &plugin.plugin);
     if (plugin.plugin == FOE_NULL_HANDLE) {
-        return FOE_BRINGUP_FAILED_TO_LOAD_PLUGIN;
+        return to_foeResult(FOE_BRINGUP_FAILED_TO_LOAD_PLUGIN);
     }
 
-    std::error_code errC = FOE_BRINGUP_SUCCESS;
+    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
     for (auto const &it : plugin.initFn) {
-        foeErrorCode (*pFn)() = (foeErrorCode(*)())foeGetPluginSymbol(plugin.plugin, it.c_str());
-        std::error_code fnErrC = pFn();
-        if (fnErrC) {
-            errC = fnErrC;
+        foeResult (*pFn)() = (foeResult(*)())foeGetPluginSymbol(plugin.plugin, it.c_str());
+        foeResult fnResult = pFn();
+        if (fnResult.value != FOE_SUCCESS) {
+            result = fnResult;
             break;
         }
     }
 
-    return errC;
+    return result;
 }
 
 void deinitItem(ImExPlugin &plugin) {
@@ -101,34 +101,34 @@ void deinitItem(ImExPlugin &plugin) {
 
 } // namespace
 
-auto registerBasicFunctionality() noexcept -> std::error_code {
-    std::error_code errC;
+foeResult registerBasicFunctionality() noexcept {
+    foeResult result;
 
     // Core
-    errC = foePhysicsRegisterFunctionality();
-    if (errC)
-        return errC;
+    result = foePhysicsRegisterFunctionality();
+    if (result.value != FOE_SUCCESS)
+        return result;
 
-    errC = foePositionRegisterFunctionality();
-    if (errC)
-        return errC;
+    result = foePositionRegisterFunctionality();
+    if (result.value != FOE_SUCCESS)
+        return result;
 
-    errC = foeGraphicsResourceRegisterFunctionality();
-    if (errC)
-        return errC;
+    result = foeGraphicsResourceRegisterFunctionality();
+    if (result.value != FOE_SUCCESS)
+        return result;
 
-    errC = foeBringupRegisterFunctionality();
-    if (errC)
-        return errC;
+    result = foeBringupRegisterFunctionality();
+    if (result.value != FOE_SUCCESS)
+        return result;
 
     // Plugins
     for (auto &it : pluginList) {
-        errC = initItem(it);
-        if (errC)
+        result = initItem(it);
+        if (result.value != FOE_SUCCESS)
             break;
     }
 
-    return errC;
+    return result;
 }
 
 void deregisterBasicFunctionality() noexcept {

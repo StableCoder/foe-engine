@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,23 +17,20 @@
 #ifndef FOE_XR_OPENXR_RUNTIME_HPP
 #define FOE_XR_OPENXR_RUNTIME_HPP
 
+#include <foe/error_code.h>
 #include <foe/xr/export.h>
 #include <foe/xr/runtime.hpp>
 #include <openxr/openxr.h>
 
-#include <string>
-#include <system_error>
-#include <vector>
-
-FOE_XR_EXPORT std::error_code foeOpenXrCreateRuntime(char const *appName,
-                                                     uint32_t appVersion,
-                                                     uint32_t layerCount,
-                                                     char const *const *ppLayerNames,
-                                                     uint32_t extensionCount,
-                                                     char const *const *ppExtensionNames,
-                                                     bool validation,
-                                                     bool debugLogging,
-                                                     foeXrRuntime *pRuntime);
+FOE_XR_EXPORT foeResult foeOpenXrCreateRuntime(char const *appName,
+                                               uint32_t appVersion,
+                                               uint32_t layerCount,
+                                               char const *const *ppLayerNames,
+                                               uint32_t extensionCount,
+                                               char const *const *ppExtensionNames,
+                                               bool validation,
+                                               bool debugLogging,
+                                               foeXrRuntime *pRuntime);
 
 /** @brief Queries the XrInstance-level functionality the runtime was created with
  * @param runtime is the handle to the runtime to query
@@ -41,8 +38,8 @@ FOE_XR_EXPORT std::error_code foeOpenXrCreateRuntime(char const *appName,
  * created with.
  * @return FOE_OPENXR_SUCCESS
  */
-FOE_XR_EXPORT std::error_code foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime,
-                                                               XrVersion *pApiVersion);
+FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime,
+                                                         XrVersion *pApiVersion);
 
 /** @brief Enumerate the enabled layers for the given runtime
  * @param runtime is the handle to the runtime whose layers will be queried.
@@ -58,9 +55,9 @@ FOE_XR_EXPORT std::error_code foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runt
  * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
  * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
  */
-FOE_XR_EXPORT std::error_code foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
-                                                              uint32_t *pLayerNamesLength,
-                                                              char *pLayerNames);
+FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
+                                                        uint32_t *pLayerNamesLength,
+                                                        char *pLayerNames);
 
 /** @brief Enumerate the enabled extensions for the given runtime
  * @param runtime is the handle to the runtime whose extensions will be queried.
@@ -77,13 +74,13 @@ FOE_XR_EXPORT std::error_code foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runti
  * written, and FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate
  * that not all names were returned.
  */
-FOE_XR_EXPORT std::error_code foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
-                                                                  uint32_t *pExtensionNamesLength,
-                                                                  char *pExtensionNames);
+FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
+                                                            uint32_t *pExtensionNamesLength,
+                                                            char *pExtensionNames);
 
-FOE_XR_EXPORT auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code;
+FOE_XR_EXPORT foeResult foeXrDestroyRuntime(foeXrRuntime runtime);
 
-FOE_XR_EXPORT auto foeXrProcessEvents(foeXrRuntime runtime) -> std::error_code;
+FOE_XR_EXPORT foeResult foeXrProcessEvents(foeXrRuntime runtime);
 
 #include <openxr/openxr.h>
 

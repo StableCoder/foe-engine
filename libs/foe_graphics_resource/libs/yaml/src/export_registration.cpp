@@ -32,10 +32,10 @@
 #include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
 
-#include "error_code.hpp"
 #include "image.hpp"
 #include "material.hpp"
 #include "mesh.hpp"
+#include "result.h"
 #include "shader.hpp"
 #include "vertex_descriptor.hpp"
 
@@ -131,33 +131,33 @@ void onDeregister(foeExporter exporter) {
     }
 }
 
-std::error_code onRegister(foeExporter exporter) {
-    std::error_code errC;
+foeResult onRegister(foeExporter exporter) {
+    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 
     if (std::string_view{exporter.pName} == "Yaml") {
         // Resource
-        if (foeImexYamlRegisterResourceFn(exportResource)) {
-            errC = FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTER;
+        result = foeImexYamlRegisterResourceFn(exportResource);
+        if (result.value != FOE_SUCCESS) {
+            result =
+                to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTER);
             goto REGISTRATION_FAILED;
         }
     }
 
 REGISTRATION_FAILED:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         onDeregister(exporter);
 
-    return errC;
+    return result;
 }
 
 } // namespace
 
-extern "C" foeErrorCode foeGraphicsResourceYamlRegisterExporters() {
-    auto errC = foeRegisterExportFunctionality(foeExportFunctionality{
+extern "C" foeResult foeGraphicsResourceYamlRegisterExporters() {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
-
-    return foeToErrorCode(errC);
 }
 
 extern "C" void foeGraphicsResourceYamlDeregisterExporters() {

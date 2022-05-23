@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,25 +18,26 @@
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
-#include <vk_error_code.hpp>
 
 #include <array>
 
 #include "builtin_descriptor_sets.hpp"
 #include "log.hpp"
+#include "result.h"
 #include "session.hpp"
 #include "shader.hpp"
+#include "vk_result.h"
 
-VkResult foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {
+foeResult foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {
     if (initialized())
-        return VK_ERROR_INITIALIZATION_FAILED;
+        return vk_to_foeResult(VK_ERROR_INITIALIZATION_FAILED);
 
     auto *pSession = session_from_handle(session);
 
     mDevice = pSession->device;
     mBuiltinDescriptorSets = &pSession->builtinDescriptorSets;
 
-    return VK_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
 void foeGfxVkPipelinePool::deinitialize() noexcept {
@@ -82,14 +83,14 @@ size_t sampleCountIndex(VkSampleCountFlags samples) {
 
 } // namespace
 
-VkResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
-                                           foeGfxVkFragmentDescriptor *fragmentDescriptor,
-                                           VkRenderPass renderPass,
-                                           uint32_t subpass,
-                                           VkSampleCountFlags samples,
-                                           VkPipelineLayout *pPipelineLayout,
-                                           uint32_t *pDescriptorSetLayoutCount,
-                                           VkPipeline *pPipeline) {
+foeResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
+                                            foeGfxVkFragmentDescriptor *fragmentDescriptor,
+                                            VkRenderPass renderPass,
+                                            uint32_t subpass,
+                                            VkSampleCountFlags samples,
+                                            VkPipelineLayout *pPipelineLayout,
+                                            uint32_t *pDescriptorSetLayoutCount,
+                                            VkPipeline *pPipeline) {
     auto sampleIndex = sampleCountIndex(samples);
     PipelineSet *pPipelineSet{nullptr};
 
@@ -104,7 +105,7 @@ VkResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescrip
                 *pDescriptorSetLayoutCount = pipeline.descriptorSetLayoutCount;
                 *pPipeline = pipeline.pipelines[sampleIndex];
 
-                return VK_SUCCESS;
+                return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
             } else {
                 // Otherwise, we'll be creating just a new pipeline for it
                 pPipelineSet = &pipeline;
@@ -116,9 +117,10 @@ VkResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescrip
     // Generate a new pipeline
     FOE_LOG(foeVkGraphics, Verbose, "Generating a new Graphics Pipeline")
 
-    VkResult res = createPipeline(vertexDescriptor, fragmentDescriptor, renderPass, subpass,
-                                  samples, pPipelineLayout, pDescriptorSetLayoutCount, pPipeline);
-    if (res == VK_SUCCESS) {
+    VkResult vkResult =
+        createPipeline(vertexDescriptor, fragmentDescriptor, renderPass, subpass, samples,
+                       pPipelineLayout, pDescriptorSetLayoutCount, pPipeline);
+    if (vkResult == VK_SUCCESS) {
         if (pPipelineSet != nullptr) {
             // Already have the set available, just need the specific sample count variant
             pPipelineSet->pipelines[sampleIndex] = *pPipeline;
@@ -139,7 +141,7 @@ VkResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescrip
         }
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
 VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDescriptor,
@@ -150,7 +152,7 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
                                               VkPipelineLayout *pPipelineLayout,
                                               uint32_t *pDescriptorSetLayoutCount,
                                               VkPipeline *pPipeline) const noexcept {
-    VkResult res{VK_SUCCESS};
+    VkResult vkResult{VK_SUCCESS};
     VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
     uint32_t descriptorSetLayoutCount{0};
     VkPipeline pipeline{VK_NULL_HANDLE};
@@ -291,10 +293,13 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
         };
 
         descriptorSetLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-        res = vkCreatePipelineLayout(mDevice, &pipelineLayoutCI, nullptr, &pipelineLayout);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreatePipelineLayout(mDevice, &pipelineLayoutCI, nullptr, &pipelineLayout);
+        if (vkResult != VK_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            VkResultToString(vkResult, buffer);
             FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipelineLayout with error: {}",
-                    std::error_code{res}.message())
+                    buffer)
+
             goto CREATE_FAILED;
         }
     }
@@ -406,16 +411,17 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
             .subpass = subpass,
         };
 
-        res =
+        vkResult =
             vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &pipeline);
-        if (res != VK_SUCCESS) {
-            FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipeline with error: {}",
-                    std::error_code{res}.message())
+        if (vkResult != VK_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            VkResultToString(vkResult, buffer);
+            FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipeline with error: {}", buffer)
         }
     }
 
 CREATE_FAILED:
-    if (res != VK_SUCCESS) {
+    if (vkResult != VK_SUCCESS) {
         if (pipeline != VK_NULL_HANDLE)
             vkDestroyPipeline(mDevice, pipeline, nullptr);
 
@@ -427,5 +433,5 @@ CREATE_FAILED:
         *pPipeline = pipeline;
     }
 
-    return res;
+    return vkResult;
 }

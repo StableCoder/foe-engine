@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 #include <foe/graphics/upload_context.hpp>
 
 #include <foe/graphics/vk/session.hpp>
-#include <vk_error_code.hpp>
 
 #include "session.hpp"
 #include "upload_context.hpp"
+#include "vk_result.h"
 
 namespace {
 
@@ -36,10 +36,9 @@ void foeGfxVkDestroyUploadContext(foeGfxVkUploadContext *pUploadContext) {
 
 } // namespace
 
-std::error_code foeGfxCreateUploadContext(foeGfxSession session,
-                                          foeGfxUploadContext *pUploadContext) {
+foeResult foeGfxCreateUploadContext(foeGfxSession session, foeGfxUploadContext *pUploadContext) {
     auto *pSession = session_from_handle(session);
-    VkResult res{VK_SUCCESS};
+    VkResult vkResult = VK_SUCCESS;
     auto *pNewContext = new foeGfxVkUploadContext;
 
     auto transferQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_TRANSFER_BIT);
@@ -62,29 +61,29 @@ std::error_code foeGfxCreateUploadContext(foeGfxSession session,
     if (pNewContext->srcQueueFamily != nullptr) {
         cmdPoolCI.queueFamilyIndex = transferQueue;
 
-        res = vkCreateCommandPool(pNewContext->device, &cmdPoolCI, nullptr,
-                                  &pNewContext->srcCommandPool);
-        if (res != VK_SUCCESS)
+        vkResult = vkCreateCommandPool(pNewContext->device, &cmdPoolCI, nullptr,
+                                       &pNewContext->srcCommandPool);
+        if (vkResult != VK_SUCCESS)
             goto CREATE_FAILED;
     }
 
     if (pNewContext->dstQueueFamily != nullptr) {
         cmdPoolCI.queueFamilyIndex = graphicsQueue;
 
-        res = vkCreateCommandPool(pNewContext->device, &cmdPoolCI, nullptr,
-                                  &pNewContext->dstCommandPool);
-        if (res != VK_SUCCESS)
+        vkResult = vkCreateCommandPool(pNewContext->device, &cmdPoolCI, nullptr,
+                                       &pNewContext->dstCommandPool);
+        if (vkResult != VK_SUCCESS)
             goto CREATE_FAILED;
     }
 
 CREATE_FAILED:
-    if (res != VK_SUCCESS) {
+    if (vkResult != VK_SUCCESS) {
         foeGfxVkDestroyUploadContext(pNewContext);
     } else {
         *pUploadContext = upload_context_to_handle(pNewContext);
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
 void foeGfxDestroyUploadContext(foeGfxUploadContext uploadContext) {

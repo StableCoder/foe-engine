@@ -6,13 +6,7 @@ add_executable(test_foe_wsi_glfw3)
 add_test(NAME FoE-WSI-GLFW3-Test COMMAND test_foe_wsi_glfw3)
 
 # Definition
-target_sources(
-  test_foe_wsi_glfw3
-  PRIVATE error_code.cpp
-          # The following set are sources that needs to be recompiled as the
-          # symbols may not be exported or have been stripped from  thelinked
-          # libraries
-          ../src/error_code.cpp)
+target_sources(test_foe_wsi_glfw3 PRIVATE error_code.cpp)
 
 if(BUILD_WINDOW_TESTS)
   target_sources(test_foe_wsi_glfw3 PRIVATE window.cpp)

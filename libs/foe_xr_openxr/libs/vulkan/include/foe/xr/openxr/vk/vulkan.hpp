@@ -17,6 +17,7 @@
 #ifndef FOE_XR_OPENXR_VK_VULKAN_HPP
 #define FOE_XR_OPENXR_VK_VULKAN_HPP
 
+#include <foe/error_code.h>
 #include <foe/xr/openxr/vk/export.h>
 #include <vulkan/vulkan.h>
 
@@ -24,28 +25,25 @@
 #include <openxr/openxr_platform.h>
 
 #include <string>
-#include <system_error>
 #include <vector>
 
-FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanInstanceExtensions(XrInstance instance,
-                                                           std::vector<std::string> &extensions)
-    -> std::error_code;
+FOE_OPENXR_VK_EXPORT foeResult
+foeXrGetVulkanInstanceExtensions(XrInstance instance, std::vector<std::string> &extensions);
 
-FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                                         std::vector<std::string> &extensions)
-    -> std::error_code;
+FOE_OPENXR_VK_EXPORT foeResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
+                                                              std::vector<std::string> &extensions);
 
-FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                                       XrSystemId systemId,
-                                                       VkInstance vkInstance,
-                                                       VkPhysicalDevice *vkPhysicalDevice)
-    -> std::error_code;
+FOE_OPENXR_VK_EXPORT foeResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                                            XrSystemId systemId,
+                                                            VkInstance vkInstance,
+                                                            VkPhysicalDevice *vkPhysicalDevice);
 
-FOE_OPENXR_VK_EXPORT auto foeXrGetVulkanGraphicsRequirements(
-    XrInstance instance, XrSystemId systemId, XrGraphicsRequirementsVulkanKHR *graphicsRequirements)
-    -> std::error_code;
+FOE_OPENXR_VK_EXPORT foeResult
+foeXrGetVulkanGraphicsRequirements(XrInstance instance,
+                                   XrSystemId systemId,
+                                   XrGraphicsRequirementsVulkanKHR *graphicsRequirements);
 
-FOE_OPENXR_VK_EXPORT auto foeOpenXrEnumerateSwapchainVkImages(
-    XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images) -> std::error_code;
+FOE_OPENXR_VK_EXPORT foeResult foeOpenXrEnumerateSwapchainVkImages(
+    XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images);
 
 #endif // FOE_XR_OPENXR_VK_VULKAN_HPP

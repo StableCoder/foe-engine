@@ -17,29 +17,28 @@
 #ifndef FOE_SIMULATION_REGISTRATION_HPP
 #define FOE_SIMULATION_REGISTRATION_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/session.hpp>
 #include <foe/simulation/export.h>
 
-#include <cstddef>
-#include <system_error>
+#include <stddef.h>
 
 struct foeSimulation;
 struct foeSimulationInitInfo;
 
 typedef int foeSimulationUUID;
 
-typedef std::error_code (*PFN_foeSimulationCreate)(foeSimulation *);
+typedef foeResult (*PFN_foeSimulationCreate)(foeSimulation *);
 
 /// @return Number of warnings/errors the occurred during the call.
 typedef size_t (*PFN_foeSimulationDestroy)(foeSimulation *);
 
-typedef std::error_code (*PFN_foeSimulationInitialize)(foeSimulation *,
-                                                       foeSimulationInitInfo const *);
+typedef foeResult (*PFN_foeSimulationInitialize)(foeSimulation *, foeSimulationInitInfo const *);
 
 /// @return Number of warnings/errors the occurred during the call.
 typedef size_t (*PFN_foeSimulationDeinitialize)(foeSimulation *);
 
-typedef std::error_code (*PFN_foeSimulationInitializeGraphics)(foeSimulation *, foeGfxSession);
+typedef foeResult (*PFN_foeSimulationInitializeGraphics)(foeSimulation *, foeGfxSession);
 
 /// @return Number of warnings/errors the occurred during the call.
 typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulation *);
@@ -83,8 +82,7 @@ struct foeSimulationFunctionalty {
  * If a failure occurs, then the functionality is fully removed from anywhere it may have succeeded
  * and is then not considered registered.
  */
-FOE_SIM_EXPORT auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality)
-    -> std::error_code;
+FOE_SIM_EXPORT foeResult foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
 
 /**
  * @brief Attempts to deregister a set of simulation functionality globally
@@ -95,7 +93,6 @@ FOE_SIM_EXPORT auto foeRegisterFunctionality(foeSimulationFunctionalty const &fu
  * simulations and call 'pDeinitializeFn' and 'pDestroyFn' to remove the functionality before
  * finally returning.
  */
-FOE_SIM_EXPORT auto foeDeregisterFunctionality(foeSimulationUUID functionalityUUID)
-    -> std::error_code;
+FOE_SIM_EXPORT foeResult foeDeregisterFunctionality(foeSimulationUUID functionalityUUID);
 
 #endif // FOE_SIMULATION_REGISTRATION_HPP

@@ -17,25 +17,25 @@
 #ifndef FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
 #define FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/xr/openxr/vk/export.h>
 #include <openxr/openxr.h>
 #include <vulkan/vulkan.h>
 
 #include <string_view>
-#include <system_error>
 
-FOE_OPENXR_VK_EXPORT auto foeOpenXrVkImportSwapchainImageRenderJob(
-    foeGfxVkRenderGraph renderGraph,
-    std::string_view name,
-    VkFence fence,
-    std::string_view resourceName,
-    XrSwapchain swapchain,
-    VkImage image,
-    VkImageView view,
-    VkFormat format,
-    VkExtent2D extent,
-    VkImageLayout layout,
-    foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code;
+FOE_OPENXR_VK_EXPORT foeResult
+foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                         std::string_view name,
+                                         VkFence fence,
+                                         std::string_view resourceName,
+                                         XrSwapchain swapchain,
+                                         VkImage image,
+                                         VkImageView view,
+                                         VkFormat format,
+                                         VkExtent2D extent,
+                                         VkImageLayout layout,
+                                         foeGfxVkRenderGraphResource *pResourcesOut);
 
 #endif // FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP

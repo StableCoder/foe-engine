@@ -197,13 +197,12 @@ void imgui_GraphicsResourceCreateInfo(foeResourceCreateInfo resourceCreateInfo) 
 
 } // namespace
 
-auto foeGraphicsResourceImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
+foeResult foeGraphicsResourceImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->registerElements(nullptr, imgui_foeGraphicsResources,
                                         imgui_GraphicsResourceCreateInfo, nullptr);
 }
 
-auto foeGraphicsResourceImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar)
-    -> std::error_code {
+foeResult foeGraphicsResourceImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->registerElements(nullptr, imgui_foeGraphicsResources,
                                         imgui_GraphicsResourceCreateInfo, nullptr);
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 #ifndef FOE_GRAPHICS_VK_RUNTIME_HPP
 #define FOE_GRAPHICS_VK_RUNTIME_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.hpp>
 #include <vulkan/vulkan.h>
 
 #include <string>
-#include <system_error>
 #include <vector>
 
 /** @brief Creates a graphics runtime using the Vulkan API
@@ -43,16 +43,16 @@
  * @param pRuntime points to a foeGfxRuntime handle in which the resulting runtime is returned.
  * @return FOE_GFX_VK_SUCCESS on success, or an appropriate error otherwise.
  */
-FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *pApplicationName,
-                                                     uint32_t applicationVersion,
-                                                     uint32_t applicationApiVersion,
-                                                     uint32_t layerCount,
-                                                     char const *const *ppLayerNames,
-                                                     uint32_t extensionCount,
-                                                     char const *const *ppExtensionNames,
-                                                     bool validation,
-                                                     bool debugLogging,
-                                                     foeGfxRuntime *pRuntime);
+FOE_GFX_EXPORT foeResult foeGfxVkCreateRuntime(char const *pApplicationName,
+                                               uint32_t applicationVersion,
+                                               uint32_t applicationApiVersion,
+                                               uint32_t layerCount,
+                                               char const *const *ppLayerNames,
+                                               uint32_t extensionCount,
+                                               char const *const *ppExtensionNames,
+                                               bool validation,
+                                               bool debugLogging,
+                                               foeGfxRuntime *pRuntime);
 
 /** @brief Enumerate the enabled layers for the given runtime
  * @param runtime is the handle to the runtime whose layers will be queried.
@@ -69,9 +69,9 @@ FOE_GFX_EXPORT std::error_code foeGfxVkCreateRuntime(char const *pApplicationNam
  * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
  * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
  */
-FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
-                                                              uint32_t *pLayerNamesLength,
-                                                              char *pLayerNames);
+FOE_GFX_EXPORT foeResult foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
+                                                        uint32_t *pLayerNamesLength,
+                                                        char *pLayerNames);
 
 /** @brief Enumerate the enabled extensions for the given runtime
  * @param runtime is the handle to the runtime whose extensions will be queried.
@@ -89,9 +89,9 @@ FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runt
  * written, and FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate
  * that not all names were returned.
  */
-FOE_GFX_EXPORT std::error_code foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
-                                                                  uint32_t *pExtensionNamesLength,
-                                                                  char *pExtensionNames);
+FOE_GFX_EXPORT foeResult foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
+                                                            uint32_t *pExtensionNamesLength,
+                                                            char *pExtensionNames);
 
 /** @brief Returns the API version a Vulkan graphics runtime was created with
  * @param runtime Runtime to query

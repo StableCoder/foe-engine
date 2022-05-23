@@ -7,15 +7,8 @@ add_test(NAME FoE-Simulation-Test COMMAND test_foe_simulation)
 
 # Definition
 target_sources(
-  test_foe_simulation
-  PRIVATE c_header_compatability.c
-          error_code.cpp
-          group_data.cpp
-          simulation.cpp
-          # The following set are sources that needs to be recompiled as the
-          # symbols may not be exported or have been stripped from  thelinked
-          # libraries
-          ../src/error_code.cpp)
+  test_foe_simulation PRIVATE c_header_compatability.c error_code.cpp
+                              group_data.cpp simulation.cpp)
 
 target_compile_definitions(
   test_foe_simulation

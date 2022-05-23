@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 #ifndef FOE_IMGUI_VK_RENDERER_HPP
 #define FOE_IMGUI_VK_RENDERER_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/session.hpp>
 #include <foe/imgui/vk/export.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-#include <system_error>
 #include <vector>
 
 struct ImGuiContext;
@@ -33,17 +33,17 @@ class foeImGuiRenderer {
   public:
     FOE_IMGUI_VK_EXPORT void setImGuiContext(ImGuiContext *pContext);
 
-    FOE_IMGUI_VK_EXPORT auto initialize(foeGfxSession session,
-                                        VkSampleCountFlags rasterSampleFlags,
-                                        VkRenderPass renderPass,
-                                        uint32_t subpass) -> std::error_code;
+    FOE_IMGUI_VK_EXPORT foeResult initialize(foeGfxSession session,
+                                             VkSampleCountFlags rasterSampleFlags,
+                                             VkRenderPass renderPass,
+                                             uint32_t subpass);
     FOE_IMGUI_VK_EXPORT void deinitialize(foeGfxSession session);
     FOE_IMGUI_VK_EXPORT bool initialized() const noexcept;
 
     FOE_IMGUI_VK_EXPORT void newFrame();
     FOE_IMGUI_VK_EXPORT void endFrame();
 
-    FOE_IMGUI_VK_EXPORT auto update(uint32_t bufferedFrame) -> std::error_code;
+    FOE_IMGUI_VK_EXPORT foeResult update(uint32_t bufferedFrame);
     FOE_IMGUI_VK_EXPORT void draw(VkCommandBuffer commandBuffer, uint32_t frameIndex);
 
     FOE_IMGUI_VK_EXPORT void resize(float width, float height);

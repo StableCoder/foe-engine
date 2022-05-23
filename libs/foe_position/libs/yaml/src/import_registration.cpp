@@ -21,7 +21,7 @@
 #include <foe/yaml/exception.hpp>
 
 #include "3d.hpp"
-#include "error_code.hpp"
+#include "result.h"
 
 namespace {
 
@@ -53,20 +53,20 @@ bool importPosition3D(YAML::Node const &node,
 
 } // namespace
 
-extern "C" foeErrorCode foePositionYamlRegisterImporters() {
-    std::error_code errC;
+extern "C" foeResult foePositionYamlRegisterImporters() {
+    foeResult result = to_foeResult(FOE_POSITION_YAML_SUCCESS);
 
     // Components
     if (!foeImexYamlRegisterComponentFn(yaml_position3d_key(), importPosition3D)) {
-        errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER;
+        result = to_foeResult(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER);
         goto REGISTRATION_ERROR;
     }
 
 REGISTRATION_ERROR:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         foePositionYamlDeregisterImporters();
 
-    return foeToErrorCode(errC);
+    return result;
 }
 
 extern "C" void foePositionYamlDeregisterImporters() {

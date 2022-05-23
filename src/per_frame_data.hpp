@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "vk_result.h"
+
 #include <array>
 
 struct PerFrameData {
@@ -31,20 +33,20 @@ struct PerFrameData {
     VkCommandBuffer commandBuffer;
     std::array<VkCommandBuffer, 2> xrCommandBuffers;
 
-    VkResult create(VkDevice device) noexcept {
-        VkResult res{VK_SUCCESS};
+    foeResult create(VkDevice device) noexcept {
+        VkResult vkResult{VK_SUCCESS};
 
         // Semaphores
         VkSemaphoreCreateInfo semaphoreCI{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         };
 
-        res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &preGraph);
-        if (res != VK_SUCCESS)
-            return res;
-        res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &postGraph);
-        if (res != VK_SUCCESS)
-            return res;
+        vkResult = vkCreateSemaphore(device, &semaphoreCI, nullptr, &preGraph);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
+        vkResult = vkCreateSemaphore(device, &semaphoreCI, nullptr, &postGraph);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
         // Fences
         VkFenceCreateInfo fenceCI{
@@ -52,18 +54,18 @@ struct PerFrameData {
             .flags = VK_FENCE_CREATE_SIGNALED_BIT,
         };
 
-        res = vkCreateFence(device, &fenceCI, nullptr, &frameComplete);
-        if (res != VK_SUCCESS)
-            return res;
+        vkResult = vkCreateFence(device, &fenceCI, nullptr, &frameComplete);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
         // Command Pools
         VkCommandPoolCreateInfo poolCI{
             .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .queueFamilyIndex = 0,
         };
-        res = vkCreateCommandPool(device, &poolCI, nullptr, &commandPool);
-        if (res != VK_SUCCESS)
-            return res;
+        vkResult = vkCreateCommandPool(device, &poolCI, nullptr, &commandPool);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
         // Command Buffers
         VkCommandBufferAllocateInfo commandBufferAI{
@@ -72,16 +74,16 @@ struct PerFrameData {
             .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
             .commandBufferCount = 1,
         };
-        res = vkAllocateCommandBuffers(device, &commandBufferAI, &commandBuffer);
-        if (res != VK_SUCCESS)
-            return res;
+        vkResult = vkAllocateCommandBuffers(device, &commandBufferAI, &commandBuffer);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
         commandBufferAI.commandBufferCount = 2;
-        res = vkAllocateCommandBuffers(device, &commandBufferAI, xrCommandBuffers.data());
-        if (res != VK_SUCCESS)
-            return res;
+        vkResult = vkAllocateCommandBuffers(device, &commandBufferAI, xrCommandBuffers.data());
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
-        return res;
+        return vk_to_foeResult(vkResult);
     }
 
     void destroy(VkDevice device) {

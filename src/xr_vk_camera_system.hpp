@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef XR_VS_CAMERA_SYSTEM_HPP
 #define XR_VS_CAMERA_SYSTEM_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>
@@ -29,10 +30,10 @@
 
 class foeXrVkCameraSystem {
   public:
-    VkResult initialize(foeGfxSession gfxSession);
+    foeResult initialize(foeGfxSession gfxSession);
     void deinitialize();
 
-    VkResult processCameras(uint32_t frameIndex, std::vector<foeXrVkSessionView> &xrViews);
+    foeResult processCameras(uint32_t frameIndex, std::vector<foeXrVkSessionView> &xrViews);
 
   private:
     struct UniformBuffer {

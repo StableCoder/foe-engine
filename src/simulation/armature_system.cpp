@@ -18,7 +18,7 @@
 
 #include <foe/resource/pool.h>
 
-#include "../error_code.hpp"
+#include "../result.h"
 #include "armature.hpp"
 #include "armature_state.hpp"
 #include "armature_state_pool.hpp"
@@ -78,19 +78,19 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 
 } // namespace
 
-auto foeArmatureSystem::initialize(foeResourcePool resourcePool,
-                                   foeArmatureStatePool *pArmatureStatePool) -> std::error_code {
+foeResult foeArmatureSystem::initialize(foeResourcePool resourcePool,
+                                        foeArmatureStatePool *pArmatureStatePool) {
     if (resourcePool == nullptr) {
-        return FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED;
+        return to_foeResult(FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED);
     }
     if (pArmatureStatePool == nullptr) {
-        return FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED;
+        return to_foeResult(FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED);
     }
 
     mResourcePool = resourcePool;
     mpArmatureStatePool = pArmatureStatePool;
 
-    return FOE_BRINGUP_SUCCESS;
+    return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
 
 void foeArmatureSystem::deinitialize() {

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,30 +22,30 @@
 
 #include "bringup_registration.hpp"
 
-auto registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept -> std::error_code {
-    std::error_code errC;
+foeResult registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept {
+    foeResult result;
 
-    errC = foePositionImGuiRegister(pRegistrar);
-    if (errC)
+    result = foePositionImGuiRegister(pRegistrar);
+    if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
-    errC = foePhysicsImGuiRegister(pRegistrar);
-    if (errC)
+    result = foePhysicsImGuiRegister(pRegistrar);
+    if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
-    errC = foeGraphicsResourceImGuiRegister(pRegistrar);
-    if (errC)
+    result = foeGraphicsResourceImGuiRegister(pRegistrar);
+    if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
-    errC = foeBringupImGuiRegister(pRegistrar);
-    if (errC)
+    result = foeBringupImGuiRegister(pRegistrar);
+    if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
 REGISTRATION_FAILED:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         deregisterImGui(pRegistrar);
 
-    return errC;
+    return result;
 }
 
 void deregisterImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept {

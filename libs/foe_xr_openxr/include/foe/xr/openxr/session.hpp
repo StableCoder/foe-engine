@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,23 +17,21 @@
 #ifndef FOE_XR_OPENXR_SESSION_HPP
 #define FOE_XR_OPENXR_SESSION_HPP
 
+#include <foe/error_code.h>
 #include <foe/xr/export.h>
 #include <foe/xr/runtime.hpp>
 #include <openxr/openxr.h>
 
-#include <system_error>
-#include <vector>
-
 struct FOE_XR_EXPORT foeOpenXrSession {
-    std::error_code createSession(foeXrRuntime runtime,
-                                  XrSystemId systemId,
-                                  XrViewConfigurationType configType,
-                                  void const *pGraphicsBinding);
+    foeResult createSession(foeXrRuntime runtime,
+                            XrSystemId systemId,
+                            XrViewConfigurationType configType,
+                            void const *pGraphicsBinding);
     void destroySession();
 
-    std::error_code beginSession();
-    std::error_code requestExitSession();
-    std::error_code endSession();
+    foeResult beginSession();
+    foeResult requestExitSession();
+    foeResult endSession();
 
     // From the runtime
     foeXrRuntime runtime;

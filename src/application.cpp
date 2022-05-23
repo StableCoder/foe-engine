@@ -54,7 +54,6 @@
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
 #include <foe/wsi/vulkan.h>
-#include <vk_error_code.hpp>
 
 #include "graphics.hpp"
 #include "log.hpp"
@@ -72,11 +71,11 @@
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/core.hpp>
-#include <foe/xr/openxr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
 
 #include "xr.hpp"
+#include "xr_result.h"
 #endif
 
 #ifdef EDITOR_MODE
@@ -93,16 +92,20 @@
 
 #define ERRC_END_PROGRAM_TUPLE                                                                     \
     {                                                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
-                errC.message());                                                                   \
-        return std::make_tuple(false, errC.value());                                               \
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
+        result.toString(result.value, buffer);                                                     \
+        FOE_LOG(General, Fatal, "End called from {}:{} with error: {}", __FILE__, __LINE__,        \
+                buffer);                                                                           \
+        return std::make_tuple(false, result.value);                                               \
     }
 
 #define ERRC_END_PROGRAM                                                                           \
     {                                                                                              \
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
+        result.toString(result.value, buffer);                                                     \
         FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
-                errC.message());                                                                   \
-        return errC.value();                                                                       \
+                buffer);                                                                           \
+        return result.value;                                                                       \
     }
 
 #define END_PROGRAM_TUPLE                                                                          \
@@ -120,14 +123,15 @@
 #include "state_import/import_state.hpp"
 
 auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
-    std::error_code errC;
+    foeResult result;
 
     initializeLogging();
-    errC = registerBasicFunctionality();
-    if (errC) {
-        FOE_LOG(General, Fatal, "Error registering basic functionality with error: {} - {}",
-                errC.value(), errC.message())
-        return std::make_tuple(false, errC.value());
+    result = registerBasicFunctionality();
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(General, Fatal, "Error registering basic functionality: {}", buffer)
+        return std::make_tuple(false, result.value);
     }
 
     foeSearchPaths searchPaths;
@@ -137,19 +141,21 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         return std::make_tuple(false, retVal);
     }
 
-    errC = foeCreateThreadPool(1, 1, &threadPool);
-    if (errC)
+    result = foeCreateThreadPool(1, 1, &threadPool);
+    if (result.value != FOE_SUCCESS)
         ERRC_END_PROGRAM_TUPLE
 
-    errC = foeStartThreadPool(threadPool);
-    if (errC)
+    result = foeStartThreadPool(threadPool);
+    if (result.value != FOE_SUCCESS)
         ERRC_END_PROGRAM_TUPLE
 
-    errC = importState("persistent", &searchPaths, &pSimulationSet);
-    if (errC) {
-        FOE_LOG(General, Fatal, "Error importing '{}' state with error: {} - {}", "persistent",
-                errC.value(), errC.message())
-        return std::make_tuple(false, errC.value());
+    result = importState("persistent", &searchPaths, &pSimulationSet);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(General, Fatal, "Error importing '{}' state with error: {}", "persistent", buffer)
+
+        return std::make_tuple(false, result.value);
     }
 
     // Special Entities
@@ -158,8 +164,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
     auto *pImGuiContext = ImGui::CreateContext();
 
-    errC = registerImGui(&imguiRegistrar);
-    if (errC)
+    result = registerImGui(&imguiRegistrar);
+    if (result.value != FOE_SUCCESS)
         ERRC_END_PROGRAM_TUPLE
 
     foeLogger::instance()->registerSink(&devConsole);
@@ -202,9 +208,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     {
         for (auto &it : windowData) {
-            errC = foeWsiCreateWindow(settings.window.width, settings.window.height, "FoE Engine",
-                                      true, &it.window);
-            if (errC)
+            result = foeWsiCreateWindow(settings.window.width, settings.window.height, "FoE Engine",
+                                        true, &it.window);
+            if (result.value != FOE_SUCCESS)
                 ERRC_END_PROGRAM_TUPLE
 
 #ifdef EDITOR_MODE
@@ -214,23 +220,24 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
 #ifdef FOE_XR_SUPPORT
         if (settings.xr.enableXr || settings.xr.forceXr) {
-            errC = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
-            if (errC && settings.xr.forceXr) {
+            result = createXrRuntime(settings.xr.debugLogging, &xrRuntime);
+            if (result.value != FOE_SUCCESS && settings.xr.forceXr) {
                 ERRC_END_PROGRAM_TUPLE
             }
         }
 #endif
 
-        errC = createGfxRuntime(xrRuntime, settings.window.enableWSI, settings.graphics.validation,
-                                settings.graphics.debugLogging, &gfxRuntime);
-        if (errC) {
+        result =
+            createGfxRuntime(xrRuntime, settings.window.enableWSI, settings.graphics.validation,
+                             settings.graphics.debugLogging, &gfxRuntime);
+        if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
         }
 
         for (auto &it : windowData) {
-            errC =
+            result =
                 foeWsiWindowGetVkSurface(it.window, foeGfxVkGetInstance(gfxRuntime), &it.surface);
-            if (errC)
+            if (result.value != FOE_SUCCESS)
                 ERRC_END_PROGRAM_TUPLE
         }
 
@@ -239,10 +246,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             surfaces.push_back(it.surface);
         }
 
-        errC =
+        result =
             createGfxSession(gfxRuntime, xrRuntime, settings.window.enableWSI, std::move(surfaces),
                              settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
-        if (errC) {
+        if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
         }
 
@@ -262,14 +269,14 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         } while (globalMSAA == 0);
     }
 
-    errC = foeGfxCreateUploadContext(gfxSession, &gfxResUploadContext);
-    if (errC) {
+    result = foeGfxCreateUploadContext(gfxSession, &gfxResUploadContext);
+    if (result.value != FOE_SUCCESS) {
         ERRC_END_PROGRAM_TUPLE
     }
 
-    errC = foeGfxCreateDelayedDestructor(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES,
-                                         &gfxDelayedDestructor);
-    if (errC) {
+    result = foeGfxCreateDelayedDestructor(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES,
+                                           &gfxDelayedDestructor);
+    if (result.value != FOE_SUCCESS) {
         ERRC_END_PROGRAM_TUPLE
     }
 
@@ -282,8 +289,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     // Create per-frame data
     for (auto &it : frameData) {
-        errC = it.create(foeGfxVkGetDevice(gfxSession));
-        if (errC) {
+        result = it.create(foeGfxVkGetDevice(gfxSession));
+        if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
         }
     }
@@ -322,11 +329,11 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 #endif
 
-    return std::make_tuple(true, 0);
+    return std::make_tuple(true, FOE_SUCCESS);
 }
 
 void Application::deinitialize() {
-    std::error_code errC;
+    foeResult result;
 
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxWaitIdle(gfxSession);
@@ -341,7 +348,7 @@ void Application::deinitialize() {
     stopXR(true);
 
     if (xrRuntime != FOE_NULL_HANDLE)
-        errC = foeXrDestroyRuntime(xrRuntime);
+        result = foeXrDestroyRuntime(xrRuntime);
 #endif
 
     // Cleanup per-frame data
@@ -470,18 +477,21 @@ void processUserInput(double timeElapsedInSeconds,
 
 } // namespace
 
-std::error_code Application::startXR(bool localPoll) {
-    std::error_code errC;
+foeResult Application::startXR(bool localPoll) {
+    foeResult result{.value = FOE_SUCCESS, .toString = NULL};
 
     if (xrRuntime == FOE_NULL_HANDLE) {
         FOE_LOG(General, Error, "Tried to start an XR session, but no XR runtime has been started");
     }
 #ifdef FOE_XR_SUPPORT
     else {
-        errC = createXrSession(xrRuntime, gfxSession, &xrSession);
-        if (errC) {
+        result = createXrSession(xrRuntime, gfxSession, &xrSession);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    errC.message());
+                    buffer);
+
             goto START_XR_FAILED;
         }
 
@@ -490,10 +500,13 @@ std::error_code Application::startXR(bool localPoll) {
         // Wait for the session to be ready
         while (xrSession.state != XR_SESSION_STATE_READY) {
             if (localPoll) {
-                errC = foeXrProcessEvents(xrRuntime);
-                if (errC) {
+                result = foeXrProcessEvents(xrRuntime);
+                if (result.value != FOE_SUCCESS) {
+                    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                    result.toString(result.value, buffer);
                     FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, errC.message());
+                            __LINE__, buffer);
+
                     goto START_XR_FAILED;
                 }
             } else {
@@ -503,24 +516,30 @@ std::error_code Application::startXR(bool localPoll) {
 
         // Session Views
         uint32_t viewConfigViewCount;
-        errC =
+        result = xr_to_foeResult(
             xrEnumerateViewConfigurationViews(foeOpenXrGetInstance(xrRuntime), xrSession.systemId,
-                                              xrSession.type, 0, &viewConfigViewCount, nullptr);
-        if (errC) {
+                                              xrSession.type, 0, &viewConfigViewCount, nullptr));
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    errC.message());
+                    buffer);
+
             goto START_XR_FAILED;
         }
 
         std::vector<XrViewConfigurationView> viewConfigs;
         viewConfigs.resize(viewConfigViewCount);
 
-        errC = xrEnumerateViewConfigurationViews(
+        result = xr_to_foeResult(xrEnumerateViewConfigurationViews(
             foeOpenXrGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
-            &viewConfigViewCount, viewConfigs.data());
-        if (errC) {
+            &viewConfigViewCount, viewConfigs.data()));
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    errC.message());
+                    buffer);
+
             goto START_XR_FAILED;
         }
         xrViews.clear();
@@ -530,10 +549,13 @@ std::error_code Application::startXR(bool localPoll) {
 
         // OpenXR Swapchains
         std::vector<int64_t> swapchainFormats;
-        errC = foeOpenXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
-        if (errC) {
+        result = foeOpenXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    errC.message());
+                    buffer);
+
             goto START_XR_FAILED;
         }
         for (auto &it : xrViews) {
@@ -590,12 +612,15 @@ std::error_code Application::startXR(bool localPoll) {
             };
 
             foeGfxRenderTarget newRenderTarget{FOE_NULL_HANDLE};
-            errC =
+            result =
                 foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor, offscreenSpecs.data(),
                                            offscreenSpecs.size(), globalMSAA, &newRenderTarget);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                        errC.message());
+                        buffer);
+
                 goto START_XR_FAILED;
             }
 
@@ -603,7 +628,8 @@ std::error_code Application::startXR(bool localPoll) {
                                            view.viewConfig.recommendedImageRectWidth,
                                            view.viewConfig.recommendedImageRectHeight);
 
-            errC = foeGfxAcquireNextRenderTarget(newRenderTarget, FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
+            result =
+                foeGfxAcquireNextRenderTarget(newRenderTarget, FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
 
             xrOffscreenRenderTargets.emplace_back(newRenderTarget);
 
@@ -622,18 +648,25 @@ std::error_code Application::startXR(bool localPoll) {
                 .mipCount = 1,
             };
 
-            errC = xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain);
-            if (errC) {
+            result = xr_to_foeResult(
+                xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain));
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                        errC.message());
+                        buffer);
+
                 goto START_XR_FAILED;
             }
 
             // Images
-            errC = foeOpenXrEnumerateSwapchainVkImages(view.swapchain, view.images);
-            if (errC) {
+            result = foeOpenXrEnumerateSwapchainVkImages(view.swapchain, view.images);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                        errC.message());
+                        buffer);
+
                 goto START_XR_FAILED;
             }
 
@@ -659,10 +692,14 @@ std::error_code Application::startXR(bool localPoll) {
             for (auto it : view.images) {
                 viewCI.image = it.image;
                 VkImageView vkView{VK_NULL_HANDLE};
-                errC = vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView);
-                if (errC) {
+                result = vk_to_foeResult(
+                    vkCreateImageView(foeGfxVkGetDevice(gfxSession), &viewCI, nullptr, &vkView));
+                if (result.value != FOE_SUCCESS) {
+                    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                    result.toString(result.value, buffer);
                     FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, errC.message());
+                            __LINE__, buffer);
+
                     goto START_XR_FAILED;
                 }
 
@@ -682,11 +719,14 @@ std::error_code Application::startXR(bool localPoll) {
                 };
 
                 VkFramebuffer newFramebuffer;
-                errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
-                                           &newFramebuffer);
-                if (errC) {
+                result = vk_to_foeResult(vkCreateFramebuffer(
+                    foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr, &newFramebuffer));
+                if (result.value != FOE_SUCCESS) {
+                    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                    result.toString(result.value, buffer);
                     FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, errC.message());
+                            __LINE__, buffer);
+
                     goto START_XR_FAILED;
                 }
 
@@ -694,17 +734,23 @@ std::error_code Application::startXR(bool localPoll) {
             }
         }
 
-        errC = xrVkCameraSystem.initialize(gfxSession);
-        if (errC) {
+        result = xrVkCameraSystem.initialize(gfxSession);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    errC.message());
+                    buffer);
+
             goto START_XR_FAILED;
         }
 
-        errC = xrSession.beginSession();
-        if (errC) {
+        result = xrSession.beginSession();
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    errC.message());
+                    buffer);
+
             goto START_XR_FAILED;
         }
 
@@ -712,16 +758,16 @@ std::error_code Application::startXR(bool localPoll) {
     }
 
 START_XR_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         stopXR(localPoll);
     }
 #endif // FOE_XR_SUPPORT
 
-    return errC;
+    return result;
 }
 
-std::error_code Application::stopXR(bool localPoll) {
-    std::error_code errC;
+foeResult Application::stopXR(bool localPoll) {
+    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
 
 #ifdef FOE_XR_SUPPORT
     if (xrSession.session != XR_NULL_HANDLE) {
@@ -729,13 +775,14 @@ std::error_code Application::stopXR(bool localPoll) {
 
         while (xrSession.state != XR_SESSION_STATE_STOPPING) {
             if (localPoll) {
-                errC = foeXrProcessEvents(xrRuntime);
-                {
-                    if (errC)
-                        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                                __LINE__, errC.message());
-                    return errC;
+                result = foeXrProcessEvents(xrRuntime);
+                if (result.value != FOE_SUCCESS) {
+                    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                    result.toString(result.value, buffer);
+                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
+                            __LINE__, buffer);
                 }
+                return result;
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
@@ -745,11 +792,13 @@ std::error_code Application::stopXR(bool localPoll) {
 
         while (xrSession.state != XR_SESSION_STATE_IDLE) {
             if (localPoll) {
-                errC = foeXrProcessEvents(xrRuntime);
-                if (errC) {
+                result = foeXrProcessEvents(xrRuntime);
+                if (result.value != FOE_SUCCESS) {
+                    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                    result.toString(result.value, buffer);
                     FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, errC.message());
-                    return errC;
+                            __LINE__, buffer);
+                    return result;
                 }
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -773,11 +822,13 @@ std::error_code Application::stopXR(bool localPoll) {
 
         while (xrSession.state != XR_SESSION_STATE_EXITING) {
             if (localPoll) {
-                errC = foeXrProcessEvents(xrRuntime);
-                if (errC) {
+                result = foeXrProcessEvents(xrRuntime);
+                if (result.value != FOE_SUCCESS) {
+                    char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                    result.toString(result.value, buffer);
                     FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, errC.message());
-                    return errC;
+                            __LINE__, buffer);
+                    return result;
                 }
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -789,14 +840,13 @@ std::error_code Application::stopXR(bool localPoll) {
 
 #endif // FOE_XR_SUPPORT
 
-    return errC;
+    return result;
 }
 
 int Application::mainloop() {
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
-
-    std::error_code errC;
+    foeResult result;
 
     uint32_t lastFrameIndex = UINT32_MAX;
     uint32_t frameIndex = UINT32_MAX;
@@ -932,8 +982,9 @@ int Application::mainloop() {
 
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
                 xrFrameState = XrFrameState{.type = XR_TYPE_FRAME_STATE};
-                errC = xrWaitFrame(xrSession.session, &frameWaitInfo, &xrFrameState);
-                if (errC) {
+                result =
+                    xr_to_foeResult(xrWaitFrame(xrSession.session, &frameWaitInfo, &xrFrameState));
+                if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
             } else
@@ -971,17 +1022,18 @@ int Application::mainloop() {
             windowRenderList.reserve(windowData.size());
 
             for (auto &it : windowData) {
-                errC = it.swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession));
-                if (errC == VK_TIMEOUT || errC == VK_NOT_READY) {
+                result =
+                    vk_to_foeResult(it.swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession)));
+                if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
                     // Waiting for an image to become ready
-                } else if (errC == VK_ERROR_OUT_OF_DATE_KHR) {
+                } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
                     // Surface changed, need to rebuild swapchains
                     it.swapchain.needRebuild();
-                } else if (errC == VK_SUBOPTIMAL_KHR) {
+                } else if (result.value == VK_SUBOPTIMAL_KHR) {
                     // Surface is still usable, but should rebuild next time
                     it.swapchain.needRebuild();
                     windowRenderList.emplace_back(&it);
-                } else if (errC) {
+                } else if (result.value) {
                     // Catastrophic error
                     ERRC_END_PROGRAM
                 } else {
@@ -1012,8 +1064,8 @@ int Application::mainloop() {
             // OpenXR Render Section
             if (xrAcquiredFrame) {
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
-                errC = xrBeginFrame(xrSession.session, &frameBeginInfo);
-                if (errC) {
+                result = xr_to_foeResult(xrBeginFrame(xrSession.session, &frameBeginInfo));
+                if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
 
@@ -1032,9 +1084,10 @@ int Application::mainloop() {
                     XrViewState viewState{.type = XR_TYPE_VIEW_STATE};
                     std::vector<XrView> views{xrViews.size(), XrView{.type = XR_TYPE_VIEW}};
                     uint32_t viewCountOutput;
-                    errC = xrLocateViews(xrSession.session, &viewLocateInfo, &viewState,
-                                         views.size(), &viewCountOutput, views.data());
-                    if (errC) {
+                    result = xr_to_foeResult(xrLocateViews(xrSession.session, &viewLocateInfo,
+                                                           &viewState, views.size(),
+                                                           &viewCountOutput, views.data()));
+                    if (result.value != FOE_SUCCESS) {
                         ERRC_END_PROGRAM
                     }
 
@@ -1063,17 +1116,18 @@ int Application::mainloop() {
                         auto &it = xrViews[i];
                         auto &renderTarget = xrOffscreenRenderTargets[i];
 
-                        errC = foeGfxAcquireNextRenderTarget(renderTarget,
-                                                             FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
-                        if (errC)
+                        result = foeGfxAcquireNextRenderTarget(renderTarget,
+                                                               FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
+                        if (result.value != FOE_SUCCESS)
                             ERRC_END_PROGRAM
 
                         XrSwapchainImageAcquireInfo acquireInfo{
                             .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
 
                         uint32_t newIndex;
-                        errC = xrAcquireSwapchainImage(it.swapchain, &acquireInfo, &newIndex);
-                        if (errC) {
+                        result = xr_to_foeResult(
+                            xrAcquireSwapchainImage(it.swapchain, &acquireInfo, &newIndex));
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
@@ -1092,15 +1146,15 @@ int Application::mainloop() {
                         };
 
                         foeGfxVkRenderGraph renderGraph;
-                        errC = foeGfxVkCreateRenderGraph(&renderGraph);
-                        if (errC) {
+                        result = foeGfxVkCreateRenderGraph(&renderGraph);
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
                         foeGfxVkRenderGraphResource renderTargetColourImageResource;
                         foeGfxVkRenderGraphResource renderTargetDepthImageResource;
 
-                        errC = foeGfxVkImportImageRenderJob(
+                        result = foeGfxVkImportImageRenderJob(
                             renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
                             foeGfxVkGetRenderTargetImage(renderTarget, 0),
                             foeGfxVkGetRenderTargetImageView(renderTarget, 0), it.format,
@@ -1109,11 +1163,11 @@ int Application::mainloop() {
                                 .height = it.viewConfig.recommendedImageRectHeight,
                             },
                             VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource);
-                        if (errC) {
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
-                        errC = foeGfxVkImportImageRenderJob(
+                        result = foeGfxVkImportImageRenderJob(
                             renderGraph, "importRenderTargetDepthImage", VK_NULL_HANDLE,
                             "renderTargetDepthImage", foeGfxVkGetRenderTargetImage(renderTarget, 1),
                             foeGfxVkGetRenderTargetImageView(renderTarget, 1), depthFormat,
@@ -1122,12 +1176,12 @@ int Application::mainloop() {
                                 .height = it.viewConfig.recommendedImageRectHeight,
                             },
                             VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetDepthImageResource);
-                        if (errC) {
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
                         foeGfxVkRenderGraphResource xrSwapchainImageResource;
-                        errC = foeOpenXrVkImportSwapchainImageRenderJob(
+                        result = foeOpenXrVkImportSwapchainImageRenderJob(
                             renderGraph, "importXrViewSwapchainImage", VK_NULL_HANDLE,
                             "importXrViewSwapchainImage", it.swapchain, it.images[newIndex].image,
                             it.imageViews[newIndex], it.format,
@@ -1136,18 +1190,18 @@ int Application::mainloop() {
                                 .height = it.viewConfig.recommendedImageRectHeight,
                             },
                             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &xrSwapchainImageResource);
-                        if (errC) {
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
                         RenderSceneOutputResources output;
-                        errC = renderSceneJob(renderGraph, "render3dScene", VK_NULL_HANDLE,
-                                              renderTargetColourImageResource,
-                                              VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                              renderTargetDepthImageResource,
-                                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA,
-                                              pSimulationSet, it.camera.descriptor, output);
-                        if (errC) {
+                        result = renderSceneJob(
+                            renderGraph, "render3dScene", VK_NULL_HANDLE,
+                            renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                            renderTargetDepthImageResource,
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
+                            it.camera.descriptor, output);
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
@@ -1157,12 +1211,12 @@ int Application::mainloop() {
                         if (foeGfxVkGetRenderTargetSamples(renderTarget) != VK_SAMPLE_COUNT_1_BIT) {
                             // Resolve
                             ResolveJobUsedResources resources;
-                            errC = foeGfxVkResolveImageRenderJob(
+                            result = foeGfxVkResolveImageRenderJob(
                                 renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                                 renderTargetColourImageResource,
                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &resources);
-                            if (errC) {
+                            if (result.value != FOE_SUCCESS) {
                                 ERRC_END_PROGRAM
                             }
 
@@ -1171,12 +1225,12 @@ int Application::mainloop() {
                         } else {
                             // Copy
                             BlitJobUsedResources resources;
-                            errC = foeGfxVkBlitImageRenderJob(
+                            result = foeGfxVkBlitImageRenderJob(
                                 renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                                 renderTargetColourImageResource,
                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &resources);
-                            if (errC) {
+                            if (result.value != FOE_SUCCESS) {
                                 ERRC_END_PROGRAM
                             }
 
@@ -1184,16 +1238,16 @@ int Application::mainloop() {
                             xrSwapchainImageResource = resources.dstImage;
                         }
 
-                        errC = foeGfxVkExportImageRenderJob(
+                        result = foeGfxVkExportImageRenderJob(
                             renderGraph, "exportPresentationImage", VK_NULL_HANDLE,
                             xrSwapchainImageResource, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, {});
-                        if (errC) {
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
-                        errC = foeGfxVkExecuteRenderGraph(renderGraph, gfxSession,
-                                                          gfxDelayedDestructor);
-                        if (errC) {
+                        result = foeGfxVkExecuteRenderGraph(renderGraph, gfxSession,
+                                                            gfxDelayedDestructor);
+                        if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
@@ -1221,8 +1275,8 @@ int Application::mainloop() {
                     .layerCount = static_cast<uint32_t>(layers.size()),
                     .layers = layers.data(),
                 };
-                errC = xrEndFrame(xrSession.session, &endFrameInfo);
-                if (errC) {
+                result = xr_to_foeResult(xrEndFrame(xrSession.session, &endFrameInfo));
+                if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
             }
@@ -1230,39 +1284,39 @@ int Application::mainloop() {
 
             auto &window = windowRenderList[0];
 
-            errC = foeGfxAcquireNextRenderTarget(window->gfxOffscreenRenderTarget,
-                                                 FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
-            if (errC) {
+            result = foeGfxAcquireNextRenderTarget(window->gfxOffscreenRenderTarget,
+                                                   FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
             foeGfxVkRenderGraph renderGraph;
-            errC = foeGfxVkCreateRenderGraph(&renderGraph);
-            if (errC) {
+            result = foeGfxVkCreateRenderGraph(&renderGraph);
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
             foeGfxVkRenderGraphResource renderTargetColourImageResource;
             foeGfxVkRenderGraphResource renderTargetDepthImageResource;
 
-            errC = foeGfxVkImportImageRenderJob(
+            result = foeGfxVkImportImageRenderJob(
                 renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
                 foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
                 foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
                 window->swapchain.surfaceFormat().format, window->swapchain.extent(),
                 VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
-            errC = foeGfxVkImportImageRenderJob(
+            result = foeGfxVkImportImageRenderJob(
                 renderGraph, "importRenderTargetDepthImage", VK_NULL_HANDLE,
                 "renderTargetDepthImage",
                 foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 1),
                 foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 1), depthFormat,
                 window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED, true, {},
                 &renderTargetDepthImageResource);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
@@ -1272,12 +1326,12 @@ int Application::mainloop() {
             auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
             RenderSceneOutputResources output;
-            errC = renderSceneJob(
+            result = renderSceneJob(
                 renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource,
                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource,
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
                 (*pCamera)->descriptor, output);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
@@ -1286,7 +1340,7 @@ int Application::mainloop() {
 
             foeGfxVkRenderGraphResource presentImageResource;
 
-            errC = foeGfxVkImportSwapchainImageRenderJob(
+            result = foeGfxVkImportSwapchainImageRenderJob(
                 renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
                 window->swapchain, window->swapchain.acquiredIndex(),
                 window->swapchain.image(window->swapchain.acquiredIndex()),
@@ -1294,7 +1348,7 @@ int Application::mainloop() {
                 window->swapchain.surfaceFormat().format, window->swapchain.extent(),
                 VK_IMAGE_LAYOUT_UNDEFINED, window->swapchain.imageReadySemaphore(),
                 &presentImageResource);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
@@ -1302,11 +1356,11 @@ int Application::mainloop() {
                 VK_SAMPLE_COUNT_1_BIT) {
                 // Resolve
                 ResolveJobUsedResources resources;
-                errC = foeGfxVkResolveImageRenderJob(
+                result = foeGfxVkResolveImageRenderJob(
                     renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                     renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
-                if (errC) {
+                if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
 
@@ -1315,11 +1369,11 @@ int Application::mainloop() {
             } else {
                 // Copy
                 BlitJobUsedResources resources;
-                errC = foeGfxVkBlitImageRenderJob(
+                result = foeGfxVkBlitImageRenderJob(
                     renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                     renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
-                if (errC) {
+                if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
 
@@ -1328,11 +1382,11 @@ int Application::mainloop() {
             }
 
 #ifdef EDITOR_MODE
-            errC = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
-                                         presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                         &imguiRenderer, &imguiState, frameIndex,
-                                         &presentImageResource);
-            if (errC) {
+            result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
+                                           presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                           &imguiRenderer, &imguiState, frameIndex,
+                                           &presentImageResource);
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 #endif
@@ -1342,15 +1396,15 @@ int Application::mainloop() {
             uint32_t index;
             window->swapchain.presentData(&swapchain2, &index);
 
-            errC = foeGfxVkPresentSwapchainImageRenderJob(renderGraph, "presentFinalImage",
-                                                          frameData[frameIndex].frameComplete,
-                                                          presentImageResource);
-            if (errC) {
+            result = foeGfxVkPresentSwapchainImageRenderJob(renderGraph, "presentFinalImage",
+                                                            frameData[frameIndex].frameComplete,
+                                                            presentImageResource);
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
-            errC = foeGfxVkExecuteRenderGraph(renderGraph, gfxSession, gfxDelayedDestructor);
-            if (errC) {
+            result = foeGfxVkExecuteRenderGraph(renderGraph, gfxSession, gfxDelayedDestructor);
+            if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 

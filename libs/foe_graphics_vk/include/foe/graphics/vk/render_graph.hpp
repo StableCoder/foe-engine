@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_VK_RENDER_GRAPH_HPP
 #define FOE_GRAPHICS_VK_RENDER_GRAPH_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
@@ -25,7 +26,6 @@
 
 #include <functional>
 #include <string>
-#include <system_error>
 
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraphJob)
@@ -53,11 +53,11 @@ struct foeGfxVkRenderGraphResource {
     foeGfxVkRenderGraphStructure const *pResourceState;
 };
 
-FOE_GFX_EXPORT auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_code;
+FOE_GFX_EXPORT foeResult foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph);
 
 FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
 
-FOE_GFX_EXPORT auto foeGfxVkRenderGraphAddJob(
+FOE_GFX_EXPORT foeResult foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraph renderGraph,
     uint32_t resourcesCount,
     foeGfxVkRenderGraphResource const *pResourcesIn,
@@ -65,17 +65,16 @@ FOE_GFX_EXPORT auto foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraphFn freeDataFn,
     std::string_view name,
     bool required,
-    std::function<std::error_code(foeGfxSession,
-                                  foeGfxDelayedDestructor,
-                                  std::vector<VkSemaphore> const &,
-                                  std::vector<VkSemaphore> const &,
-                                  std::function<void(std::function<void()>)>)> &&jobFn,
-    foeGfxVkRenderGraphJob *pJob) -> std::error_code;
+    std::function<foeResult(foeGfxSession,
+                            foeGfxDelayedDestructor,
+                            std::vector<VkSemaphore> const &,
+                            std::vector<VkSemaphore> const &,
+                            std::function<void(std::function<void()>)>)> &&jobFn,
+    foeGfxVkRenderGraphJob *pJob);
 
-FOE_GFX_EXPORT auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
-                                               foeGfxSession gfxSession,
-                                               foeGfxDelayedDestructor gfxDelayedDestructor)
-    -> std::error_code;
+FOE_GFX_EXPORT foeResult foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
+                                                    foeGfxSession gfxSession,
+                                                    foeGfxDelayedDestructor gfxDelayedDestructor);
 
 FOE_GFX_EXPORT void foeGfxVkExecuteRenderGraphCpuJobs(foeGfxVkRenderGraph renderGraph);
 

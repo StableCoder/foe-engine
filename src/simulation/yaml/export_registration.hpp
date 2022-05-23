@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-foeErrorCode foeBringupYamlRegisterExporters();
+foeResult foeBringupYamlRegisterExporters();
 
 void foeBringupYamlDeregisterExporters();
 

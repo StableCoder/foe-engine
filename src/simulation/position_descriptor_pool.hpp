@@ -19,6 +19,7 @@
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>
@@ -32,11 +33,11 @@ class foePosition3dPool;
 
 struct PositionDescriptorPool {
   public:
-    auto initialize(foePosition3dPool *pPosition3dPool) -> std::error_code;
+    foeResult initialize(foePosition3dPool *pPosition3dPool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    foeResult initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

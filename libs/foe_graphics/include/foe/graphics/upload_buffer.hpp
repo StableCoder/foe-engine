@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,25 +17,25 @@
 #ifndef FOE_GRAPHICS_BUFFER_HPP
 #define FOE_GRAPHICS_BUFFER_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/handle.h>
 
 #include <cstdint>
-#include <system_error>
 
 FOE_DEFINE_HANDLE(foeGfxUploadBuffer)
 
-FOE_GFX_EXPORT std::error_code foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
-                                                        uint64_t size,
-                                                        foeGfxUploadBuffer *pUploadBuffer);
+FOE_GFX_EXPORT foeResult foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
+                                                  uint64_t size,
+                                                  foeGfxUploadBuffer *pUploadBuffer);
 
 FOE_GFX_EXPORT void foeGfxDestroyUploadBuffer(foeGfxUploadContext uploadContext,
                                               foeGfxUploadBuffer uploadBuffer);
 
-FOE_GFX_EXPORT std::error_code foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
-                                                     foeGfxUploadBuffer uploadBuffer,
-                                                     void **ppData);
+FOE_GFX_EXPORT foeResult foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
+                                               foeGfxUploadBuffer uploadBuffer,
+                                               void **ppData);
 
 FOE_GFX_EXPORT void foeGfxUnmapUploadBuffer(foeGfxUploadContext uploadContext,
                                             foeGfxUploadBuffer uploadBuffer);

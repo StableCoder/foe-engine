@@ -17,12 +17,12 @@
 #include <foe/graphics/vk/render_graph.hpp>
 
 #include <foe/graphics/vk/session.hpp>
-#include <vk_error_code.hpp>
 
 #include <memory>
 #include <queue>
 
-#include "error_code.hpp"
+#include "result.h"
+#include "vk_result.h"
 
 namespace {
 
@@ -33,11 +33,11 @@ struct RenderGraphJob {
     /// outputting something, but other reasons exist.
     bool required{false};
     bool processed{false};
-    std::function<std::error_code(foeGfxSession,
-                                  foeGfxDelayedDestructor,
-                                  std::vector<VkSemaphore> const &,
-                                  std::vector<VkSemaphore> const &,
-                                  std::function<void(std::function<void()>)>)>
+    std::function<foeResult(foeGfxSession,
+                            foeGfxDelayedDestructor,
+                            std::vector<VkSemaphore> const &,
+                            std::vector<VkSemaphore> const &,
+                            std::function<void(std::function<void()>)>)>
         jobFn;
 };
 
@@ -85,13 +85,13 @@ foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
     return nullptr;
 }
 
-auto foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) -> std::error_code {
+foeResult foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) {
     RenderGraph *pNewRenderGraph = new RenderGraph;
     *pNewRenderGraph = {};
 
     *pRenderGraph = render_graph_to_handle(pNewRenderGraph);
 
-    return FOE_GRAPHICS_VK_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
 void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
@@ -106,7 +106,7 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
     delete pRenderGraph;
 }
 
-auto foeGfxVkRenderGraphAddJob(
+foeResult foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraph renderGraph,
     uint32_t resourcesCount,
     foeGfxVkRenderGraphResource const *pResourcesIn,
@@ -114,12 +114,12 @@ auto foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraphFn freeDataFn,
     std::string_view name,
     bool required,
-    std::function<std::error_code(foeGfxSession,
-                                  foeGfxDelayedDestructor,
-                                  std::vector<VkSemaphore> const &,
-                                  std::vector<VkSemaphore> const &,
-                                  std::function<void(std::function<void()>)>)> &&jobFn,
-    foeGfxVkRenderGraphJob *pJob) -> std::error_code {
+    std::function<foeResult(foeGfxSession,
+                            foeGfxDelayedDestructor,
+                            std::vector<VkSemaphore> const &,
+                            std::vector<VkSemaphore> const &,
+                            std::function<void(std::function<void()>)>)> &&jobFn,
+    foeGfxVkRenderGraphJob *pJob) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Add job to graph to be run
@@ -155,14 +155,13 @@ auto foeGfxVkRenderGraphAddJob(
 
     *pJob = render_graph_job_to_handle(pNewJob.release());
 
-    return FOE_GRAPHICS_VK_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
-auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
-                                foeGfxSession gfxSession,
-                                foeGfxDelayedDestructor gfxDelayedDestructor) -> std::error_code {
+foeResult foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
+                                     foeGfxSession gfxSession,
+                                     foeGfxDelayedDestructor gfxDelayedDestructor) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
-    std::error_code errC;
 
     // COMPILE
 
@@ -206,10 +205,10 @@ auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
                 };
 
-                errC = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
-                                         &relationship.semaphore);
-                if (errC)
-                    return errC;
+                VkResult vkResult = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI,
+                                                      nullptr, &relationship.semaphore);
+                if (vkResult != VK_SUCCESS)
+                    return vk_to_foeResult(vkResult);
 
                 allSemaphores.emplace_back(relationship.semaphore);
             }
@@ -245,7 +244,7 @@ auto foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
         }
     });
 
-    return FOE_GRAPHICS_VK_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
 void foeGfxVkExecuteRenderGraphCpuJobs(foeGfxVkRenderGraph renderGraph) {

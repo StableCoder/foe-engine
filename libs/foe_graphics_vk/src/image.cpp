@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include "upload_buffer.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
+#include "vk_result.h"
 
 #include <cmath>
 
@@ -60,15 +61,15 @@ VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept {
     return pelCount;
 }
 
-VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                   VkImageSubresourceRange const *pSubresourceRange,
-                                   uint32_t copyRegionCount,
-                                   VkBufferImageCopy const *pCopyRegions,
-                                   foeGfxUploadBuffer srcBuffer,
-                                   VkImage dstImage,
-                                   VkAccessFlags dstAccessFlags,
-                                   VkImageLayout dstImageLayout,
-                                   foeGfxUploadRequest *pUploadRequst) {
+foeResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                                    VkImageSubresourceRange const *pSubresourceRange,
+                                    uint32_t copyRegionCount,
+                                    VkBufferImageCopy const *pCopyRegions,
+                                    foeGfxUploadBuffer srcBuffer,
+                                    VkImage dstImage,
+                                    VkAccessFlags dstAccessFlags,
+                                    VkImageLayout dstImageLayout,
+                                    foeGfxUploadRequest *pUploadRequst) {
     auto *pSrcBuffer = upload_buffer_from_handle(srcBuffer);
 
     return recordImageUploadCommands(uploadContext, pSubresourceRange, copyRegionCount,
@@ -76,24 +77,24 @@ VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
                                      dstImageLayout, pUploadRequst);
 }
 
-VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                   VkImageSubresourceRange const *pSubresourceRange,
-                                   uint32_t copyRegionCount,
-                                   VkBufferImageCopy const *pCopyRegions,
-                                   VkBuffer srcBuffer,
-                                   VkImage dstImage,
-                                   VkAccessFlags dstAccessFlags,
-                                   VkImageLayout dstImageLayout,
-                                   foeGfxUploadRequest *pUploadRequst) {
+foeResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                                    VkImageSubresourceRange const *pSubresourceRange,
+                                    uint32_t copyRegionCount,
+                                    VkBufferImageCopy const *pCopyRegions,
+                                    VkBuffer srcBuffer,
+                                    VkImage dstImage,
+                                    VkAccessFlags dstAccessFlags,
+                                    VkImageLayout dstImageLayout,
+                                    foeGfxUploadRequest *pUploadRequst) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
-    VkResult res;
+    VkResult vkResult;
     foeGfxVkUploadRequest *uploadData{nullptr};
 
-    res = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
-                                   pUploadContext->dstCommandPool, &uploadData);
-    if (res != VK_SUCCESS) {
-        return res;
+    vkResult = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
+                                        pUploadContext->dstCommandPool, &uploadData);
+    if (vkResult != VK_SUCCESS) {
+        return vk_to_foeResult(vkResult);
     }
 
     { // Begin Recording
@@ -103,14 +104,14 @@ VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
         };
 
         if (uploadData->srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkBeginCommandBuffer(uploadData->srcCmdBuffer, &cmdBufBI);
-            if (res != VK_SUCCESS) {
+            vkResult = vkBeginCommandBuffer(uploadData->srcCmdBuffer, &cmdBufBI);
+            if (vkResult != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkBeginCommandBuffer(uploadData->dstCmdBuffer, &cmdBufBI);
-        if (res != VK_SUCCESS) {
+        vkResult = vkBeginCommandBuffer(uploadData->dstCmdBuffer, &cmdBufBI);
+        if (vkResult != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
     }
@@ -176,26 +177,26 @@ VkResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
 
     { // End Recording
         if (uploadData->srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkEndCommandBuffer(uploadData->srcCmdBuffer);
-            if (res != VK_SUCCESS) {
+            vkResult = vkEndCommandBuffer(uploadData->srcCmdBuffer);
+            if (vkResult != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkEndCommandBuffer(uploadData->dstCmdBuffer);
-        if (res != VK_SUCCESS) {
+        vkResult = vkEndCommandBuffer(uploadData->dstCmdBuffer);
+        if (vkResult != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
     }
 
 RECORDING_FAILED:
-    if (res == VK_SUCCESS) {
+    if (vkResult == VK_SUCCESS) {
         *pUploadRequst = upload_request_to_handle(uploadData);
     } else {
         foeGfxVkDestroyUploadRequest(pUploadContext->device, uploadData);
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
 VkImageAspectFlags formatAspects(VkFormat format) noexcept {

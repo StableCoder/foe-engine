@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 #ifndef IMGUI_REGISTER_ELEMENTS_HPP
 #define IMGUI_REGISTER_ELEMENTS_HPP
 
-#include <system_error>
+#include <foe/error_code.h>
 
 class foeSimulationImGuiRegistrar;
 
-auto registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept -> std::error_code;
+foeResult registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept;
 
 void deregisterImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept;
 

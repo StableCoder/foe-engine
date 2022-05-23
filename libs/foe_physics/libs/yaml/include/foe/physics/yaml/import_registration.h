@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-FOE_PHYSICS_YAML_EXPORT foeErrorCode foePhysicsYamlRegisterImporters();
+FOE_PHYSICS_YAML_EXPORT foeResult foePhysicsYamlRegisterImporters();
 
 FOE_PHYSICS_YAML_EXPORT void foePhysicsYamlDeregisterImporters();
 

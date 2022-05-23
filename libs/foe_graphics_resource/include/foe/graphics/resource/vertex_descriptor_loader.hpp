@@ -28,7 +28,7 @@
 
 class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
   public:
-    std::error_code initialize(foeResourcePool resourcePool);
+    foeResult initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 

@@ -23,10 +23,10 @@
 
 class foeImporterBase;
 
-typedef foeErrorCode (*PFN_foeImexCreateImporter)(foeIdGroup, char const *, foeImporterBase **);
+typedef foeResult (*PFN_foeImexCreateImporter)(foeIdGroup, char const *, foeImporterBase **);
 
-FOE_IMEX_EXPORT foeErrorCode foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter);
-FOE_IMEX_EXPORT foeErrorCode foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter);
+FOE_IMEX_EXPORT foeResult foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter);
+FOE_IMEX_EXPORT foeResult foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter);
 
 #include <filesystem>
 

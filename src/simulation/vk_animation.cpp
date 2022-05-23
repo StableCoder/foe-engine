@@ -20,20 +20,20 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/session.hpp>
 #include <glm/glm.hpp>
-#include <vk_error_code.hpp>
 
-#include "../error_code.hpp"
+#include "../result.h"
+#include "../vk_result.h"
 #include "armature.hpp"
 #include "armature_state_pool.hpp"
 #include "render_state_pool.hpp"
 #include "type_defs.h"
 
-auto VkAnimationPool::initialize(foeResourcePool resourcePool,
-                                 foeArmatureStatePool *pArmatureStatePool,
-                                 foeRenderStatePool *pRenderStatePool) -> std::error_code {
+foeResult VkAnimationPool::initialize(foeResourcePool resourcePool,
+                                      foeArmatureStatePool *pArmatureStatePool,
+                                      foeRenderStatePool *pRenderStatePool) {
     if (resourcePool == FOE_NULL_HANDLE || pArmatureStatePool == nullptr ||
         pRenderStatePool == nullptr)
-        return FOE_BRINGUP_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
 
     // External
     mResourcePool = resourcePool;
@@ -41,7 +41,7 @@ auto VkAnimationPool::initialize(foeResourcePool resourcePool,
     mpArmatureStatePool = pArmatureStatePool;
     mpRenderStatePool = pRenderStatePool;
 
-    return VK_SUCCESS;
+    return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
 
 void VkAnimationPool::deinitialize() {
@@ -54,16 +54,16 @@ void VkAnimationPool::deinitialize() {
 
 bool VkAnimationPool::initialized() const noexcept { return mResourcePool != FOE_NULL_HANDLE; }
 
-auto VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+foeResult VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
-        return FOE_BRINGUP_NOT_INITIALIZED;
+        return to_foeResult(FOE_BRINGUP_NOT_INITIALIZED);
 
     // External
     mDevice = foeGfxVkGetDevice(gfxSession);
     mAllocator = foeGfxVkGetAllocator(gfxSession);
 
     // Internal
-    VkResult res;
+    VkResult vkResult = VK_SUCCESS;
 
     mBoneSetLayout = foeGfxVkGetBuiltinLayout(
         gfxSession, foeBuiltinDescriptorSetLayoutFlagBits::
@@ -93,25 +93,25 @@ auto VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) -> std::error
     };
 
     for (auto &it : mModelDescriptorPools) {
-        res = vkCreateDescriptorPool(mDevice, &poolCI, nullptr, &it);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateDescriptorPool(mDevice, &poolCI, nullptr, &it);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
     }
 
     for (auto &it : mBoneDescriptorPools) {
-        res = vkCreateDescriptorPool(mDevice, &poolCI, nullptr, &it);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateDescriptorPool(mDevice, &poolCI, nullptr, &it);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
     }
 
 INITIALIZATION_FAILED:
-    if (res != VK_SUCCESS) {
+    if (vkResult != VK_SUCCESS) {
         deinitialize();
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
 void VkAnimationPool::deinitializeGraphics() {
@@ -152,7 +152,7 @@ void VkAnimationPool::deinitializeGraphics() {
 bool VkAnimationPool::initializedGraphics() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
-    VkResult res{VK_SUCCESS};
+    VkResult vkResult{VK_SUCCESS};
 
     UniformBuffer &modelUniform = mModelBuffers[frameIndex];
     UniformBuffer &boneUniform = mBoneBuffers[frameIndex];
@@ -168,10 +168,10 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             .usage = VMA_MEMORY_USAGE_CPU_TO_GPU,
         };
 
-        res = vmaCreateBuffer(mAllocator, &bufferCI, &allocCI, &modelUniform.buffer,
-                              &modelUniform.alloc, nullptr);
-        if (res != VK_SUCCESS) {
-            return res;
+        vkResult = vmaCreateBuffer(mAllocator, &bufferCI, &allocCI, &modelUniform.buffer,
+                                   &modelUniform.alloc, nullptr);
+        if (vkResult != VK_SUCCESS) {
+            return vkResult;
         }
 
         modelUniform.capacity = 1;
@@ -188,10 +188,10 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             .usage = VMA_MEMORY_USAGE_CPU_TO_GPU,
         };
 
-        res = vmaCreateBuffer(mAllocator, &bufferCI, &allocCI, &boneUniform.buffer,
-                              &boneUniform.alloc, nullptr);
-        if (res != VK_SUCCESS) {
-            return res;
+        vkResult = vmaCreateBuffer(mAllocator, &bufferCI, &allocCI, &boneUniform.buffer,
+                                   &boneUniform.alloc, nullptr);
+        if (vkResult != VK_SUCCESS) {
+            return vkResult;
         }
 
         boneUniform.capacity = 1024;
@@ -292,9 +292,9 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
                 .pSetLayouts = &mBoneSetLayout,
             };
 
-            res = vkAllocateDescriptorSets(mDevice, &setAI, &pRenderState->boneDescriptorSet);
-            if (res != VK_SUCCESS) {
-                return res;
+            vkResult = vkAllocateDescriptorSets(mDevice, &setAI, &pRenderState->boneDescriptorSet);
+            if (vkResult != VK_SUCCESS) {
+                return vkResult;
             }
 
             VkDescriptorBufferInfo bufferInfo{
@@ -321,5 +321,5 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
 
     vmaUnmapMemory(mAllocator, boneUniform.alloc);
 
-    return res;
+    return vkResult;
 }

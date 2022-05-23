@@ -20,26 +20,27 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 #include "worst_resource_state.hpp"
 
 #include <array>
 
-std::error_code foeVertexDescriptorLoader::initialize(foeResourcePool resourcePool) {
+foeResult foeVertexDescriptorLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE) {
-        return FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_LOADER_INITIALIZATION_FAILED;
+        return to_foeResult(
+            FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_LOADER_INITIALIZATION_FAILED);
     }
 
-    std::error_code errC{FOE_GRAPHICS_RESOURCE_SUCCESS};
+    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 
     mResourcePool = resourcePool;
 
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         deinitialize();
     }
 
-    return errC;
+    return result;
 }
 
 void foeVertexDescriptorLoader::deinitialize() {
@@ -158,7 +159,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
 
             it.pPostLoadFn(
                 it.resource,
-                foeToErrorCode(
+                to_foeResult(
                     FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_FAILED_TO_LOAD),
                 nullptr, nullptr, nullptr, nullptr, nullptr);
         } else {
@@ -196,7 +197,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                                      foeResourceCreateInfo createInfo,
                                      PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
                     nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }

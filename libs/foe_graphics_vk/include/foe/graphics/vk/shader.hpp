@@ -17,11 +17,10 @@
 #ifndef FOE_GRPAHICS_VK_SHADER_HPP
 #define FOE_GRPAHICS_VK_SHADER_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/shader.hpp>
 #include <vulkan/vulkan.h>
-
-#include <system_error>
 
 struct foeGfxVkShaderCreateInfo {
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
@@ -31,11 +30,11 @@ struct foeGfxVkShaderCreateInfo {
 
 FOE_GFX_EXPORT void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo);
 
-FOE_GFX_EXPORT std::error_code foeGfxVkCreateShader(foeGfxSession session,
-                                                    foeGfxVkShaderCreateInfo const *pCreateInfo,
-                                                    uint32_t shaderCodeSize,
-                                                    uint32_t const *pShaderCode,
-                                                    foeGfxShader *pShader);
+FOE_GFX_EXPORT foeResult foeGfxVkCreateShader(foeGfxSession session,
+                                              foeGfxVkShaderCreateInfo const *pCreateInfo,
+                                              uint32_t shaderCodeSize,
+                                              uint32_t const *pShaderCode,
+                                              foeGfxShader *pShader);
 
 FOE_GFX_EXPORT auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader)
     -> VkDescriptorSetLayout;

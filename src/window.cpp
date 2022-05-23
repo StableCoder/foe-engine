@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,17 +18,18 @@
 
 #include <foe/graphics/vk/render_target.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <vk_error_code.hpp>
+
+#include "vk_result.h"
 
 #include <memory>
 
-auto performWindowMaintenance(WindowData *pWindow,
-                              foeGfxSession gfxSession,
-                              foeGfxDelayedDestructor gfxDelayedDestructor,
-                              VkSampleCountFlags sampleCount,
-                              VkFormat depthFormat) -> std::error_code {
-    VkResult vkRes{VK_SUCCESS};
-    std::error_code errC;
+foeResult performWindowMaintenance(WindowData *pWindow,
+                                   foeGfxSession gfxSession,
+                                   foeGfxDelayedDestructor gfxDelayedDestructor,
+                                   VkSampleCountFlags sampleCount,
+                                   VkFormat depthFormat) {
+    VkResult vkResult{VK_SUCCESS};
+    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
 
     // Check if need to rebuild a swapchain
     if (!pWindow->swapchain || pWindow->swapchain.needRebuild()) {
@@ -38,19 +39,19 @@ auto performWindowMaintenance(WindowData *pWindow,
         if (!pWindow->swapchain) {
             // Surface Format
             uint32_t formatCount;
-            vkRes = vkGetPhysicalDeviceSurfaceFormatsKHR(foeGfxVkGetPhysicalDevice(gfxSession),
-                                                         pWindow->surface, &formatCount, nullptr);
-            if (vkRes != VK_SUCCESS)
-                return vkRes;
+            vkResult = vkGetPhysicalDeviceSurfaceFormatsKHR(
+                foeGfxVkGetPhysicalDevice(gfxSession), pWindow->surface, &formatCount, nullptr);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
             std::unique_ptr<VkSurfaceFormatKHR[]> surfaceFormats(
                 new VkSurfaceFormatKHR[formatCount]);
 
-            vkRes = vkGetPhysicalDeviceSurfaceFormatsKHR(foeGfxVkGetPhysicalDevice(gfxSession),
-                                                         pWindow->surface, &formatCount,
-                                                         surfaceFormats.get());
-            if (vkRes != VK_SUCCESS)
-                return vkRes;
+            vkResult = vkGetPhysicalDeviceSurfaceFormatsKHR(foeGfxVkGetPhysicalDevice(gfxSession),
+                                                            pWindow->surface, &formatCount,
+                                                            surfaceFormats.get());
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
             pWindow->swapchain.surfaceFormat(surfaceFormats.get()[0]);
 
@@ -81,22 +82,22 @@ auto performWindowMaintenance(WindowData *pWindow,
                 },
             };
 
-            errC = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor,
-                                              offscreenSpecs.data(), offscreenSpecs.size(),
-                                              sampleCount, &pWindow->gfxOffscreenRenderTarget);
-            if (errC) {
-                return errC;
+            result = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor,
+                                                offscreenSpecs.data(), offscreenSpecs.size(),
+                                                sampleCount, &pWindow->gfxOffscreenRenderTarget);
+            if (result.value != FOE_SUCCESS) {
+                return result;
             }
         }
 
         // Create new swapchain
         foeGfxVkSwapchain newSwapchain;
-        vkRes = newSwapchain.create(
+        vkResult = newSwapchain.create(
             foeGfxVkGetPhysicalDevice(gfxSession), foeGfxVkGetDevice(gfxSession), pWindow->surface,
             pWindow->swapchain.surfaceFormat(), pWindow->swapchain.presentMode(),
             VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain, 3, width, height);
-        if (vkRes != VK_SUCCESS)
-            return vkRes;
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
         // If the old swapchain exists, we need to destroy it
         if (pWindow->swapchain) {
@@ -111,5 +112,5 @@ auto performWindowMaintenance(WindowData *pWindow,
         foeGfxUpdateRenderTargetExtent(pWindow->gfxOffscreenRenderTarget, width, height);
     }
 
-    return errC;
+    return result;
 }

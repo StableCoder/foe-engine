@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@
 
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
-#include <vk_error_code.hpp>
 
 #include "session.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
+#include "vk_result.h"
 
 void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
                                 foeGfxUploadRequest uploadRequest) {
@@ -32,11 +32,11 @@ void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
     foeGfxVkDestroyUploadRequest(pUploadContext->device, pUploadRequest);
 }
 
-VkResult foeGfxVkCreateUploadData(VkDevice device,
-                                  VkCommandPool srcCommandPool,
-                                  VkCommandPool dstCommandPool,
-                                  foeGfxUploadRequest *pUploadRequest) {
-    VkResult res;
+foeResult foeGfxVkCreateUploadData(VkDevice device,
+                                   VkCommandPool srcCommandPool,
+                                   VkCommandPool dstCommandPool,
+                                   foeGfxUploadRequest *pUploadRequest) {
+    VkResult vkResult;
     auto *pNewRequest = new foeGfxVkUploadRequest;
     *pNewRequest = {
         .srcCmdPool = srcCommandPool,
@@ -55,13 +55,13 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
     };
 
     // Destination
-    res = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->dstCmdBuffer);
-    if (res != VK_SUCCESS) {
+    vkResult = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->dstCmdBuffer);
+    if (vkResult != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
-    res = vkCreateFence(device, &fenceCI, nullptr, &pNewRequest->dstFence);
-    if (res != VK_SUCCESS) {
+    vkResult = vkCreateFence(device, &fenceCI, nullptr, &pNewRequest->dstFence);
+    if (vkResult != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
@@ -69,13 +69,13 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
     if (pNewRequest->srcCmdPool != VK_NULL_HANDLE) {
         bufferAI.commandPool = pNewRequest->srcCmdPool;
 
-        res = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->srcCmdBuffer);
-        if (res != VK_SUCCESS) {
+        vkResult = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->srcCmdBuffer);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
-        res = vkCreateFence(device, &fenceCI, nullptr, &pNewRequest->srcFence);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateFence(device, &fenceCI, nullptr, &pNewRequest->srcFence);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -84,29 +84,29 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
                 .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             };
 
-            res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &pNewRequest->copyComplete);
-            if (res != VK_SUCCESS) {
+            vkResult = vkCreateSemaphore(device, &semaphoreCI, nullptr, &pNewRequest->copyComplete);
+            if (vkResult != VK_SUCCESS) {
                 goto CREATE_FAILED;
             }
         }
     }
 
 CREATE_FAILED:
-    if (res == VK_SUCCESS) {
+    if (vkResult == VK_SUCCESS) {
         *pUploadRequest = upload_request_to_handle(pNewRequest);
     } else {
         foeGfxVkDestroyUploadRequest(device, pNewRequest);
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
-std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
-                                            foeGfxUploadRequest uploadRequest) {
+foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
+                                      foeGfxUploadRequest uploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
-    VkResult res;
+    VkResult vkResult;
 
     if (pUploadRequest->srcCmdBuffer != VK_NULL_HANDLE) { // Source command submission
         VkSubmitInfo submitInfo{
@@ -118,10 +118,10 @@ std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
         };
 
         auto queue = foeGfxGetQueue(pUploadContext->srcQueueFamily);
-        res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->srcFence);
+        vkResult = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->srcFence);
         foeGfxReleaseQueue(pUploadContext->srcQueueFamily, queue);
-        if (res != VK_SUCCESS) {
-            return res;
+        if (vkResult != VK_SUCCESS) {
+            return vk_to_foeResult(vkResult);
         }
         pUploadRequest->srcSubmitted = true;
     }
@@ -138,20 +138,20 @@ std::error_code foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
     };
 
     auto queue = foeGfxGetQueue(pUploadContext->dstQueueFamily);
-    res = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->dstFence);
+    vkResult = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->dstFence);
     foeGfxReleaseQueue(pUploadContext->dstQueueFamily, queue);
-    if (res == VK_SUCCESS) {
+    if (vkResult == VK_SUCCESS) {
         pUploadRequest->dstSubmitted = true;
     }
 
     // If the dst failed to submit but the src one *did*, then we need to wait for the source one to
     // complete or error-out before leaving.
-    if (res != VK_SUCCESS && pUploadRequest->srcFence != VK_NULL_HANDLE) {
+    if (vkResult != VK_SUCCESS && pUploadRequest->srcFence != VK_NULL_HANDLE) {
         while (vkGetFenceStatus(pUploadContext->device, pUploadRequest->srcFence) == VK_NOT_READY)
             ;
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
 namespace {

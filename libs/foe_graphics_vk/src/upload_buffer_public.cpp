@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 #include <foe/graphics/upload_buffer.hpp>
 
-#include <vk_error_code.hpp>
-
 #include "upload_buffer.hpp"
 #include "upload_context.hpp"
+#include "vk_result.h"
 
 namespace {
 
@@ -35,9 +34,9 @@ void foeGfxVkDestroyUploadBuffer(foeGfxUploadContext uploadContext,
 
 } // namespace
 
-std::error_code foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
-                                         uint64_t size,
-                                         foeGfxUploadBuffer *pUploadBuffer) {
+foeResult foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
+                                   uint64_t size,
+                                   foeGfxUploadBuffer *pUploadBuffer) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
@@ -74,7 +73,7 @@ ALLOCATION_FAILED:
         *pUploadBuffer = upload_buffer_to_handle(pNew);
     }
 
-    return vkRes;
+    return vk_to_foeResult(vkRes);
 }
 
 void foeGfxDestroyUploadBuffer(foeGfxUploadContext uploadContext, foeGfxUploadBuffer uploadBuffer) {
@@ -83,13 +82,13 @@ void foeGfxDestroyUploadBuffer(foeGfxUploadContext uploadContext, foeGfxUploadBu
     foeGfxVkDestroyUploadBuffer(uploadContext, pUploadBuffer);
 }
 
-std::error_code foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
-                                      foeGfxUploadBuffer uploadBuffer,
-                                      void **ppData) {
+foeResult foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
+                                foeGfxUploadBuffer uploadBuffer,
+                                void **ppData) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadBuffer = upload_buffer_from_handle(uploadBuffer);
 
-    return vmaMapMemory(pUploadContext->allocator, pUploadBuffer->alloc, ppData);
+    return vk_to_foeResult(vmaMapMemory(pUploadContext->allocator, pUploadBuffer->alloc, ppData));
 }
 
 void foeGfxUnmapUploadBuffer(foeGfxUploadContext uploadContext, foeGfxUploadBuffer uploadBuffer) {

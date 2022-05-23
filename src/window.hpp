@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/render_target.hpp>
 #include <foe/graphics/session.hpp>
@@ -24,8 +25,6 @@
 #include <foe/wsi/window.h>
 
 #include "frame_timer.hpp"
-
-#include <system_error>
 
 struct WindowData {
     foeWsiWindow window{FOE_NULL_HANDLE};
@@ -37,10 +36,10 @@ struct WindowData {
     // foeEntityId attachedCamera;
 };
 
-auto performWindowMaintenance(WindowData *pWindow,
-                              foeGfxSession gfxSession,
-                              foeGfxDelayedDestructor gfxDelayedDestructor,
-                              VkSampleCountFlags sampleCount,
-                              VkFormat depthFormat) -> std::error_code;
+foeResult performWindowMaintenance(WindowData *pWindow,
+                                   foeGfxSession gfxSession,
+                                   foeGfxDelayedDestructor gfxDelayedDestructor,
+                                   VkSampleCountFlags sampleCount,
+                                   VkFormat depthFormat);
 
 #endif // WINDOW_HPP

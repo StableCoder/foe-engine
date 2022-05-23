@@ -1,7 +1,6 @@
 target_sources(
   foe_imex_yaml
   PRIVATE error_code.c
-          error_code.cpp
           exporter_registration.cpp
           exporter.cpp
           import_functionality.cpp

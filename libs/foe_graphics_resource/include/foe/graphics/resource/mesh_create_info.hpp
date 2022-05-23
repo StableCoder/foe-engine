@@ -21,6 +21,7 @@
 #include <foe/resource/create_info.h>
 
 #include <memory>
+#include <string>
 
 struct foeMeshSource {
     virtual ~foeMeshSource() = default;

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@
 #include <foe/graphics/vk/format.hpp>
 #include <foe/graphics/vk/image.hpp>
 
+#include "result.h"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
+#include "vk_result.h"
 
 #include <array>
 #include <cmath>
@@ -88,17 +90,18 @@ void fillErrorStencilData(uint32_t extent, uint32_t numCheckSquare, uint8_t *pDa
 
 } // namespace
 
-VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
-                                         uint32_t numMipLevels,
-                                         uint32_t numCheckSquares,
-                                         VmaAllocation *pAlloc,
-                                         VkImage *pImage,
-                                         VkImageView *pImageDepthView,
-                                         VkImageView *pImageStencilView,
-                                         VkSampler *pSampler) {
+foeResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
+                                          uint32_t numMipLevels,
+                                          uint32_t numCheckSquares,
+                                          VmaAllocation *pAlloc,
+                                          VkImage *pImage,
+                                          VkImageView *pImageDepthView,
+                                          VkImageView *pImageStencilView,
+                                          VkSampler *pSampler) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
-    VkResult res;
+    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    VkResult vkResult{VK_SUCCESS};
     constexpr VkFormat format = VK_FORMAT_D32_SFLOAT_S8_UINT;
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
     VkExtent3D extent = VkExtent3D{maxExtent, maxExtent, 1U};
@@ -131,9 +134,9 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
             .usage = VMA_MEMORY_USAGE_CPU_ONLY,
         };
 
-        res = vmaCreateBuffer(pUploadContext->allocator, &bufferCI, &allocCI, &stagingBuffer,
-                              &stagingAlloc, nullptr);
-        if (res != VK_SUCCESS) {
+        vkResult = vmaCreateBuffer(pUploadContext->allocator, &bufferCI, &allocCI, &stagingBuffer,
+                                   &stagingAlloc, nullptr);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -156,9 +159,9 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
             .usage = VMA_MEMORY_USAGE_GPU_ONLY,
         };
 
-        res =
+        vkResult =
             vmaCreateImage(pUploadContext->allocator, &imageCI, &allocCI, &image, &alloc, nullptr);
-        if (res != VK_SUCCESS) {
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -170,9 +173,9 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
         auto const depth_bpp = foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT);
         auto const stencil_bpp = foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_STENCIL_BIT);
 
-        res = vmaMapMemory(pUploadContext->allocator, stagingAlloc,
-                           reinterpret_cast<void **>(&pData));
-        if (res != VK_SUCCESS) {
+        vkResult = vmaMapMemory(pUploadContext->allocator, stagingAlloc,
+                                reinterpret_cast<void **>(&pData));
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -231,13 +234,12 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
                                   static_cast<uint32_t>(copyRegions.size()), copyRegions.data(),
                                   stagingBuffer, image, VK_ACCESS_SHADER_READ_BIT,
                                   VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadRequest);
-        if (res != VK_SUCCESS) {
+        if (vkResult != VK_SUCCESS) {
             goto SUBMIT_FAILED;
         }
 
-        auto errC = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
-        if (errC) {
-            res = static_cast<VkResult>(errC.value());
+        result = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
+        if (result.value != FOE_SUCCESS) {
             goto SUBMIT_FAILED;
         }
     }
@@ -261,15 +263,15 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
         };
 
         // Depth
-        res = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &depthView);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &depthView);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
         // Stencil
         viewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
-        res = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &stencilView);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &stencilView);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -289,8 +291,8 @@ VkResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
             .maxLod = static_cast<float>(numMipLevels - 1),
         };
 
-        res = vkCreateSampler(pUploadContext->device, &samplerCI, nullptr, &sampler);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateSampler(pUploadContext->device, &samplerCI, nullptr, &sampler);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -301,7 +303,7 @@ CREATE_FAILED : {
         requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
     }
     if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE) {
-        res = VK_ERROR_DEVICE_LOST;
+        vkResult = VK_ERROR_DEVICE_LOST;
     }
 }
 
@@ -312,7 +314,10 @@ SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed t
         vmaDestroyBuffer(pUploadContext->allocator, stagingBuffer, stagingAlloc);
     }
 
-    if (res == VK_SUCCESS) {
+    if (result.value == FOE_SUCCESS && vkResult != VK_SUCCESS)
+        result = vk_to_foeResult(vkResult);
+
+    if (result.value == FOE_SUCCESS) {
         *pImage = image;
         *pAlloc = alloc;
         *pImageDepthView = depthView;
@@ -336,5 +341,5 @@ SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed t
         }
     }
 
-    return res;
+    return result;
 }

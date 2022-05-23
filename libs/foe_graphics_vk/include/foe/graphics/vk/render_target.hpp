@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_VK_RENDER_TARGET_HPP
 #define FOE_GRAPHICS_VK_RENDER_TARGET_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/render_target.hpp>
 #include <foe/graphics/session.hpp>
@@ -24,7 +25,6 @@
 #include <vulkan/vulkan.h>
 
 #include <cstdint>
-#include <system_error>
 
 struct foeGfxVkRenderTargetSpec {
     VkFormat format;
@@ -33,13 +33,12 @@ struct foeGfxVkRenderTargetSpec {
     uint32_t count;
 };
 
-FOE_GFX_EXPORT std::error_code foeGfxVkCreateRenderTarget(
-    foeGfxSession session,
-    foeGfxDelayedDestructor delayedDestructor,
-    foeGfxVkRenderTargetSpec const *pSpecifications,
-    uint32_t count,
-    VkSampleCountFlags samples,
-    foeGfxRenderTarget *pRenderTarget);
+FOE_GFX_EXPORT foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
+                                                    foeGfxDelayedDestructor delayedDestructor,
+                                                    foeGfxVkRenderTargetSpec const *pSpecifications,
+                                                    uint32_t count,
+                                                    VkSampleCountFlags samples,
+                                                    foeGfxRenderTarget *pRenderTarget);
 
 FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget)
     -> VkSampleCountFlags;

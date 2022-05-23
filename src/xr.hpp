@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
 #ifndef XR_HPP
 #define XR_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/session.hpp>
 #include <foe/xr/openxr/session.hpp>
 #include <foe/xr/runtime.hpp>
 
-#include <system_error>
+foeResult createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
 
-std::error_code createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
-
-std::error_code createXrSession(foeXrRuntime runtime,
-                                foeGfxSession gfxSession,
-                                foeOpenXrSession *pSession);
+foeResult createXrSession(foeXrRuntime runtime,
+                          foeGfxSession gfxSession,
+                          foeOpenXrSession *pSession);
 
 #endif // XR_HPP

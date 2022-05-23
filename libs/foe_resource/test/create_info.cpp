@@ -28,17 +28,17 @@ constexpr size_t cNumCount = 8192 * 8;
 TEST_CASE("foeResourceCreateInfo - Create without a data function fails") {
     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
 
-    foeErrorCode errC = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, nullptr, &createInfo);
+    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, nullptr, &createInfo);
 
-    CHECK(errC.value == FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
+    CHECK(result.value == FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
     CHECK(createInfo == FOE_NULL_HANDLE);
 
     SECTION("Ensure the 'pCreateInfo' variable isn't updated on a failure case") {
         createInfo = (foeResourceCreateInfo)0xbebebebebebe;
 
-        errC = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, nullptr, &createInfo);
+        result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, nullptr, &createInfo);
 
-        CHECK(errC.value == FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
+        CHECK(result.value == FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
         CHECK(createInfo == (foeResourceCreateInfo)0xbebebebebebe);
     }
 }
@@ -61,10 +61,10 @@ TEST_CASE("foeResourceCreateInfo - Check that given destroy function is called o
         *pTestStruct->pBool = true;
     };
 
-    foeErrorCode errC = foeCreateResourceCreateInfo(0, destroyFn, sizeof(TestStruct), &testStruct,
-                                                    testDataFn, &createInfo);
+    foeResult result = foeCreateResourceCreateInfo(0, destroyFn, sizeof(TestStruct), &testStruct,
+                                                   testDataFn, &createInfo);
 
-    CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+    CHECK(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
 
     CHECK(!destroyCalled);
@@ -77,28 +77,28 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
     auto dummyData = [](void *, void *) {};
 
     SECTION("Type: 0") {
-        foeErrorCode errC =
+        foeResult result =
             foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
-        CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+        CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
 
         CHECK(foeResourceCreateInfoGetType(createInfo) == 0);
     }
     SECTION("Type: 1") {
-        foeErrorCode errC =
+        foeResult result =
             foeCreateResourceCreateInfo(1, nullptr, 0, nullptr, dummyData, &createInfo);
 
-        CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+        CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
 
         CHECK(foeResourceCreateInfoGetType(createInfo) == 1);
     }
     SECTION("Type: UINT32_MAX") {
-        foeErrorCode errC =
+        foeResult result =
             foeCreateResourceCreateInfo(UINT32_MAX, nullptr, 0, nullptr, dummyData, &createInfo);
 
-        CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+        CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
 
         CHECK(foeResourceCreateInfoGetType(createInfo) == UINT32_MAX);
@@ -111,9 +111,9 @@ TEST_CASE("foeResourceCreateInfo - Incrementing/Decrementing reference count") {
     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
     auto dummyData = [](void *, void *) {};
 
-    foeErrorCode errC = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
+    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
-    CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+    CHECK(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
 
     SECTION("Single-threaded") {
@@ -177,9 +177,9 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
 
     foeLogger::instance()->registerSink(&testSink);
 
-    foeErrorCode errC = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
+    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
-    CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+    CHECK(result.value == FOE_RESOURCE_SUCCESS);
     CHECK(createInfo != FOE_NULL_HANDLE);
 
     foeDestroyResourceCreateInfo(createInfo);
@@ -205,9 +205,9 @@ TEST_CASE("foeResourceCreateInfo - Warning logged when destroyed with non-zero r
     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
     auto dummyData = [](void *, void *) {};
 
-    foeErrorCode errC = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
+    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
-    CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+    CHECK(result.value == FOE_RESOURCE_SUCCESS);
     CHECK(createInfo != FOE_NULL_HANDLE);
 
     foeResourceCreateInfoIncrementRefCount(createInfo);

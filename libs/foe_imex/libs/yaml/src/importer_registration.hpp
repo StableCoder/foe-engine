@@ -23,8 +23,8 @@
 
 class foeImporterBase;
 
-FOE_IMEX_YAML_EXPORT foeErrorCode foeImexYamlCreateImporter(foeIdGroup group,
-                                                            char const *pFilesystemPath,
-                                                            foeImporterBase **ppImporter);
+FOE_IMEX_YAML_EXPORT foeResult foeImexYamlCreateImporter(foeIdGroup group,
+                                                         char const *pFilesystemPath,
+                                                         foeImporterBase **ppImporter);
 
 #endif // IMPORTER_REGISTRATION_HPP

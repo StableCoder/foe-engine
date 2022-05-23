@@ -29,17 +29,17 @@ constexpr size_t cNumCount = 8192 * 8;
 TEST_CASE("foeResource - Create while not providing foeResourceFns fails") {
     foeResource resource{FOE_NULL_HANDLE};
 
-    foeErrorCode errC = foeCreateResource(0, 0, nullptr, 0, &resource);
+    foeResult result = foeCreateResource(0, 0, nullptr, 0, &resource);
 
-    CHECK(errC.value == FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
+    CHECK(result.value == FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
     CHECK(resource == FOE_NULL_HANDLE);
 
     SECTION("Ensure the 'pResource' variable isn't updated on a failure case") {
         resource = (foeResource)0xbebebebebebe;
 
-        errC = foeCreateResource(0, 0, nullptr, 0, &resource);
+        result = foeCreateResource(0, 0, nullptr, 0, &resource);
 
-        CHECK(errC.value == FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
+        CHECK(result.value == FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
         CHECK(resource == (foeResource)0xbebebebebebe);
     }
 }
@@ -49,25 +49,25 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
     foeResource resource{FOE_NULL_HANDLE};
 
     SECTION("Type: 0 / ID: 0") {
-        foeErrorCode errC = foeCreateResource(0, 0, &fns, 0, &resource);
+        foeResult result = foeCreateResource(0, 0, &fns, 0, &resource);
 
-        CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+        CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(resource != FOE_NULL_HANDLE);
         CHECK(foeResourceGetID(resource) == 0);
         CHECK(foeResourceGetType(resource) == 0);
     }
     SECTION("Type: 1 / ID: 1") {
-        foeErrorCode errC = foeCreateResource(1, 1, &fns, 0, &resource);
+        foeResult result = foeCreateResource(1, 1, &fns, 0, &resource);
 
-        CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+        CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(resource != FOE_NULL_HANDLE);
         CHECK(foeResourceGetID(resource) == 1);
         CHECK(foeResourceGetType(resource) == 1);
     }
     SECTION("Type: UINT32_MAX / ID: UINT32_MAX") {
-        foeErrorCode errC = foeCreateResource(UINT32_MAX, UINT32_MAX, &fns, 0, &resource);
+        foeResult result = foeCreateResource(UINT32_MAX, UINT32_MAX, &fns, 0, &resource);
 
-        CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+        CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(resource != FOE_NULL_HANDLE);
         CHECK(foeResourceGetID(resource) == UINT32_MAX);
         CHECK(foeResourceGetType(resource) == UINT32_MAX);
@@ -84,9 +84,9 @@ TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
     foeResourceFns fns{};
     foeResource resource{FOE_NULL_HANDLE};
 
-    foeErrorCode errC = foeCreateResource(0, 0, &fns, 0, &resource);
+    foeResult result = foeCreateResource(0, 0, &fns, 0, &resource);
 
-    CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+    CHECK(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);
 
     SECTION("Single-threaded") {
@@ -203,9 +203,9 @@ TEST_CASE("foeResource - Regular lifetime logs (no import/loading)") {
 
     foeLogger::instance()->registerSink(&testSink);
 
-    foeErrorCode errC = foeCreateResource(0, 0, &fns, 0, &resource);
+    foeResult result = foeCreateResource(0, 0, &fns, 0, &resource);
 
-    CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+    CHECK(result.value == FOE_RESOURCE_SUCCESS);
     CHECK(resource != FOE_NULL_HANDLE);
 
     foeDestroyResource(resource);
@@ -230,9 +230,9 @@ TEST_CASE("foeResource - Warning logged when destroyed with non-zero reference o
     foeResourceFns fns{};
     foeResource resource{FOE_NULL_HANDLE};
 
-    foeErrorCode errC = foeCreateResource(0, 0, &fns, 0, &resource);
+    foeResult result = foeCreateResource(0, 0, &fns, 0, &resource);
 
-    CHECK(errC.value == FOE_RESOURCE_SUCCESS);
+    CHECK(result.value == FOE_RESOURCE_SUCCESS);
     CHECK(resource != FOE_NULL_HANDLE);
 
     SECTION("Reference Count") {

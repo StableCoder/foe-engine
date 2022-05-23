@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,44 +21,42 @@
 #include <foe/graphics/vk/session.hpp>
 #include <foe/imgui/state.hpp>
 #include <foe/imgui/vk/renderer.hpp>
-#include <vk_error_code.hpp>
 
-#include "error_code.hpp"
+#include "result.h"
+#include "vk_result.h"
 
-auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                           std::string_view name,
-                           VkFence fence,
-                           foeGfxVkRenderGraphResource renderTarget,
-                           VkImageLayout finalLayout,
-                           foeImGuiRenderer *pImguiRenderer,
-                           foeImGuiState *pImguiState,
-                           uint32_t frameIndex,
-                           foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
-    std::error_code errC;
-
+foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
+                                std::string_view name,
+                                VkFence fence,
+                                foeGfxVkRenderGraphResource renderTarget,
+                                VkImageLayout finalLayout,
+                                foeImGuiRenderer *pImguiRenderer,
+                                foeImGuiState *pImguiState,
+                                uint32_t frameIndex,
+                                foeGfxVkRenderGraphResource *pResourcesOut) {
     // Check that render target is a mutable image
     auto const *pColourTargetImageData =
         (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
             renderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pColourTargetImageData == nullptr)
-        return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE;
+        return to_foeResult(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE);
     if (!pColourTargetImageData->isMutable)
-        return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE;
+        return to_foeResult(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE);
 
     // Get the render target's previous layout
     auto const *pColourTargetState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         renderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pColourTargetState == nullptr)
-        return FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_MISSING_STATE;
+        return to_foeResult(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_MISSING_STATE);
 
     // Job Data
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
-        std::error_code errC;
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+        VkResult vkResult;
 
         VkRenderPass renderPass = foeGfxVkGetRenderPassPool(gfxSession)
                                       ->renderPass({VkAttachmentDescription{
@@ -84,10 +82,10 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                 .height = pColourTargetImageData->extent.height,
                 .layers = 1,
             };
-            errC = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
-                                       &framebuffer);
-            if (errC)
-                return errC;
+            vkResult = vkCreateFramebuffer(foeGfxVkGetDevice(gfxSession), &framebufferCI, nullptr,
+                                           &framebuffer);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
             foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
                 vkDestroyFramebuffer(foeGfxVkGetDevice(session), framebuffer, nullptr);
@@ -102,10 +100,10 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                 .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                 .queueFamilyIndex = 0,
             };
-            errC =
+            vkResult =
                 vkCreateCommandPool(foeGfxVkGetDevice(gfxSession), &poolCI, nullptr, &commandPool);
-            if (errC)
-                return errC;
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
             foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
                 vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
@@ -120,10 +118,10 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                 .commandBufferCount = 1,
             };
 
-            errC = vkAllocateCommandBuffers(foeGfxVkGetDevice(gfxSession), &commandBufferAI,
-                                            &commandBuffer);
-            if (errC)
-                return errC;
+            vkResult = vkAllocateCommandBuffers(foeGfxVkGetDevice(gfxSession), &commandBufferAI,
+                                                &commandBuffer);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
         }
 
         { // Start CommandBuffer
@@ -131,9 +129,9 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
             };
-            errC = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
-            if (errC)
-                return errC;
+            vkResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
         }
 
         { // Setup common render viewport data
@@ -175,25 +173,26 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         }
 
         if (!pImguiRenderer->initialized()) {
-            errC = pImguiRenderer->initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT, renderPass, 0);
-            if (errC)
-                return errC;
+            foeResult result =
+                pImguiRenderer->initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT, renderPass, 0);
+            if (result.value != FOE_SUCCESS)
+                return result;
         }
 
         pImguiRenderer->newFrame();
         pImguiState->runUI();
         pImguiRenderer->endFrame();
 
-        errC = pImguiRenderer->update(frameIndex);
-        if (errC)
-            return errC;
+        foeResult result = pImguiRenderer->update(frameIndex);
+        if (result.value != FOE_SUCCESS)
+            return result;
 
         pImguiRenderer->draw(commandBuffer, frameIndex);
 
         vkCmdEndRenderPass(commandBuffer);
-        errC = vkEndCommandBuffer(commandBuffer);
-        if (errC)
-            return errC;
+        vkResult = vkEndCommandBuffer(commandBuffer);
+        if (vkResult)
+            return vk_to_foeResult(vkResult);
 
         // Job Submission
         std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
@@ -211,10 +210,10 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         };
 
         auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        errC = vkQueueSubmit(queue, 1, &submitInfo, fence);
+        vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
-        return errC;
+        return vk_to_foeResult(vkResult);
     };
 
     // Resource Management
@@ -230,20 +229,20 @@ auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     bool const resourcesInReadOnly = false;
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 1, &renderTarget, &resourcesInReadOnly,
-                                     freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
-    if (errC) {
+    foeResult result =
+        foeGfxVkRenderGraphAddJob(renderGraph, 1, &renderTarget, &resourcesInReadOnly, freeDataFn,
+                                  name, false, std::move(jobFn), &renderGraphJob);
+    if (result.value != FOE_SUCCESS) {
         freeDataFn();
-
-        return errC;
+    } else {
+        // Outgoing resources
+        *pResourcesOut = {
+            .provider = renderGraphJob,
+            .pResourceData = renderTarget.pResourceData,
+            .pResourceState =
+                reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageState),
+        };
     }
 
-    // Outgoing resources
-    *pResourcesOut = {
-        .provider = renderGraphJob,
-        .pResourceData = renderTarget.pResourceData,
-        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageState),
-    };
-
-    return errC;
+    return result;
 }

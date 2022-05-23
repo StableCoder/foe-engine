@@ -15,32 +15,24 @@
 */
 
 #include <catch.hpp>
-
-#include "../src/error_code.hpp"
+#include <foe/ecs/error_code.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
-        errC = X;                                                                                  \
-                                                                                                   \
-        CHECK(errC.value() == X);                                                                  \
-        CHECK(errC.message() == #X);                                                               \
-        CHECK(std::string_view{errC.category().name()} == "foeEcsResult");                         \
+        foeEcsResultToString(X, resultString);                                                     \
+        CHECK(std::string_view{resultString} == #X);                                               \
     }
 
 TEST_CASE("Ensure error codes return correct values and strings") {
-    std::error_code errC;
+    char resultString[FOE_MAX_RESULT_STRING_SIZE];
 
     SECTION("Generic non-existant negative value") {
-        errC = static_cast<foeEcsResult>(FOE_RESULT_MIN_ENUM);
-
-        CHECK(errC.value() == FOE_RESULT_MIN_ENUM);
-        CHECK(errC.message() == "FOE_ECS_UNKNOWN_ERROR_2147483647");
+        foeEcsResultToString((foeEcsResult)FOE_RESULT_MIN_ENUM, resultString);
+        CHECK(std::string_view{resultString} == "FOE_ECS_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
-        errC = static_cast<foeEcsResult>(FOE_RESULT_MAX_ENUM);
-
-        CHECK(errC.value() == FOE_RESULT_MAX_ENUM);
-        CHECK(errC.message() == "FOE_ECS_UNKNOWN_SUCCESS_2147483647");
+        foeEcsResultToString((foeEcsResult)FOE_RESULT_MAX_ENUM, resultString);
+        CHECK(std::string_view{resultString} == "FOE_ECS_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_ECS_SUCCESS)

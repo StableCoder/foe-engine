@@ -19,8 +19,8 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/resource/resource_fns.h>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 #include <mutex>
 #include <shared_mutex>
@@ -38,15 +38,15 @@ FOE_DEFINE_HANDLE_CASTS(resource_pool, ResourcePool, foeResourcePool)
 
 } // namespace
 
-extern "C" foeErrorCode foeCreateResourcePool(foeResourceFns const *pResourceFns,
-                                              foeResourcePool *pResourcePool) {
+extern "C" foeResult foeCreateResourcePool(foeResourceFns const *pResourceFns,
+                                           foeResourcePool *pResourcePool) {
     ResourcePool *pNewResourcePool = new ResourcePool{
         .callbacks = *pResourceFns,
     };
 
     *pResourcePool = resource_pool_to_handle(pNewResourcePool);
 
-    return foeToErrorCode(FOE_RESOURCE_SUCCESS);
+    return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
 extern "C" void foeDestroyResourcePool(foeResourcePool resourcePool) {
@@ -86,10 +86,17 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
 
     // Not found, add it
     foeResource newResource;
-    std::error_code errC = foeCreateResource(resourceID, resourceType, &pResourcePool->callbacks,
-                                             resourceSize, &newResource);
-    if (errC)
+    foeResult result = foeCreateResource(resourceID, resourceType, &pResourcePool->callbacks,
+                                         resourceSize, &newResource);
+    if (result.value != FOE_RESOURCE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeResourceCore, Error,
+                "[{}] foeResourcePool - Error while creating a new resource [{}]: {}",
+                (void *)pResourcePool, foeIdToString(resourceID), buffer)
+
         return FOE_NULL_HANDLE;
+    }
 
     foeResourceIncrementRefCount(newResource);
 
@@ -113,8 +120,7 @@ extern "C" foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeReso
     return FOE_NULL_HANDLE;
 }
 
-extern "C" foeErrorCode foeResourcePoolRemove(foeResourcePool resourcePool,
-                                              foeResourceID resourceID) {
+extern "C" foeResult foeResourcePoolRemove(foeResourcePool resourcePool, foeResourceID resourceID) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
 
     std::unique_lock lock{pResourcePool->sync};
@@ -129,7 +135,7 @@ extern "C" foeErrorCode foeResourcePoolRemove(foeResourcePool resourcePool,
     lock.unlock();
 
     if (resource == FOE_NULL_HANDLE)
-        return foeToErrorCode(FOE_RESOURCE_ERROR_NOT_FOUND);
+        return to_foeResult(FOE_RESOURCE_ERROR_NOT_FOUND);
 
     int refCount = foeResourceDecrementRefCount(resource);
     if (refCount == 0) {
@@ -142,7 +148,7 @@ extern "C" foeErrorCode foeResourcePoolRemove(foeResourcePool resourcePool,
                 foeResourceGetType(resource));
     }
 
-    return foeToErrorCode(FOE_RESOURCE_SUCCESS);
+    return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
 extern "C" void foeResourcePoolAddAsyncTaskCallback(foeResourcePool resourcePool,

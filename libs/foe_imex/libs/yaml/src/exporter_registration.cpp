@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -30,14 +30,12 @@ foeExporterVersion version{
 
 } // namespace
 
-extern "C" foeErrorCode foeImexYamlRegisterExporter() {
-    std::error_code errC = foeImexRegisterExporter(foeExporter{
+extern "C" foeResult foeImexYamlRegisterExporter() {
+    return foeImexRegisterExporter(foeExporter{
         .pName = name.data(),
         .version = version,
         .pExportFn = foeImexYamlExport,
     });
-
-    return foeToErrorCode(errC);
 }
 
 extern "C" void foeImexYamlDeregisterExporter() {

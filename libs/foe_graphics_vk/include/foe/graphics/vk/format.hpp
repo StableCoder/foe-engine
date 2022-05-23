@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 #define FOE_GRAPHICS_VK_FORMAT_HPP
 
 #include <vulkan/vulkan.h>
+
+#include <cstdlib>
 
 /// Returns if the given format is a depth compatible format
 constexpr bool foeGfxVkIsDepthFormat(VkFormat format) noexcept {

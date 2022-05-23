@@ -89,12 +89,12 @@ void imgui_foePhysicsResourceCreateInfo(foeResourceCreateInfo createInfo) {
 
 } // namespace
 
-auto foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
+foeResult foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->registerElements(imgui_foePhysicsComponent, imgui_foePhysicsResource,
                                         imgui_foePhysicsResourceCreateInfo, nullptr);
 }
 
-auto foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code {
+foeResult foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->deregisterElements(imgui_foePhysicsComponent, imgui_foePhysicsResource,
                                           imgui_foePhysicsResourceCreateInfo, nullptr);
 }

@@ -87,12 +87,14 @@ void yaml_read_image(YAML::Node const &node,
         new (pDst) foeImageCreateInfo(std::move(*pSrcData));
     };
 
-    std::error_code errC = foeCreateResourceCreateInfo(
+    foeResult result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO, foeDestroyImageCreateInfo,
         sizeof(foeImageCreateInfo), &imageCI, dataFn, &createInfo);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         throw foeYamlException{
-            std::string{"Failed to create foeResourceCreateInfo due to error: "} + errC.message()};
+            std::string{"Failed to create foeResourceCreateInfo due to error: "} + buffer};
     }
 
     *pCreateInfo = createInfo;

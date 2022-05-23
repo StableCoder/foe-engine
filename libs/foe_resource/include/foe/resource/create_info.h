@@ -31,13 +31,13 @@ FOE_DEFINE_HANDLE(foeResourceCreateInfo)
 
 typedef int foeResourceCreateInfoType;
 
-FOE_RES_EXPORT foeErrorCode
-foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
-                            void (*pDestroyFn)(foeResourceCreateInfoType, void *),
-                            size_t size,
-                            void *pData,
-                            void (*pDataFn)(void *, void *),
-                            foeResourceCreateInfo *pCreateInfo);
+FOE_RES_EXPORT foeResult foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
+                                                     void (*pDestroyFn)(foeResourceCreateInfoType,
+                                                                        void *),
+                                                     size_t size,
+                                                     void *pData,
+                                                     void (*pDataFn)(void *, void *),
+                                                     foeResourceCreateInfo *pCreateInfo);
 
 FOE_RES_EXPORT void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo);
 

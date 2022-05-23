@@ -18,6 +18,7 @@
 #define APPLICATION_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/runtime.hpp>
 #include <foe/graphics/session.hpp>
@@ -70,8 +71,8 @@ struct Application {
     auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
     void deinitialize();
 
-    std::error_code startXR(bool localPoll);
-    std::error_code stopXR(bool localPoll);
+    foeResult startXR(bool localPoll);
+    foeResult stopXR(bool localPoll);
 
     int mainloop();
 

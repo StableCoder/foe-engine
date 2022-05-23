@@ -21,8 +21,8 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/shader.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 #include <fstream>
 
@@ -50,29 +50,29 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 
 } // namespace
 
-std::error_code foeShaderLoader::initialize(
+foeResult foeShaderLoader::initialize(
     foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
-        return FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_INITIALIZATION_FAILED);
 
     mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
 
-    return FOE_GRAPHICS_RESOURCE_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
 void foeShaderLoader::deinitialize() { mExternalFileSearchFn = {}; }
 
 bool foeShaderLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
 
-auto foeShaderLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+foeResult foeShaderLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
-        return FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_NOT_INITIALIZED;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_NOT_INITIALIZED);
 
     mGfxSession = gfxSession;
 
-    return FOE_GRAPHICS_RESOURCE_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
 void foeShaderLoader::deinitializeGraphics() {
@@ -166,7 +166,7 @@ void foeShaderLoader::load(foeResource resource,
                            foeResourceCreateInfo createInfo,
                            PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
                     nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
@@ -174,32 +174,34 @@ void foeShaderLoader::load(foeResource resource,
     auto const *pShaderCI = (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     foeShader data{};
-    std::error_code errC;
+    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 
     { // Load Shader SPIR-V from external file
         auto filePath = mExternalFileSearchFn(pShaderCI->shaderCodeFile);
         if (filePath.empty()) {
-            errC = FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_BINARY_FILE_NOT_FOUND;
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_BINARY_FILE_NOT_FOUND);
             goto LOAD_FAILED;
         }
 
         auto shaderCode = loadShaderDataFromFile(filePath);
 
-        errC = foeGfxVkCreateShader(mGfxSession, &pShaderCI->gfxCreateInfo,
-                                    static_cast<uint32_t>(shaderCode.size()),
-                                    reinterpret_cast<uint32_t *>(shaderCode.data()), &data.shader);
-        if (errC) {
+        result = foeGfxVkCreateShader(
+            mGfxSession, &pShaderCI->gfxCreateInfo, static_cast<uint32_t>(shaderCode.size()),
+            reinterpret_cast<uint32_t *>(shaderCode.data()), &data.shader);
+        if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }
     }
 
 LOAD_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         // Failed at some point
-        FOE_LOG(foeGraphicsResource, Error, "Failed to load foeShader {} with error {}:{}",
-                foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeGraphicsResource, Error, "Failed to load foeShader {}: {}",
+                foeIdToString(foeResourceGetID(resource)), buffer)
 
-        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
     } else {
         // Loaded upto this point successfully
         mLoadSync.lock();

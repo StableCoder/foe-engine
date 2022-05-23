@@ -16,39 +16,37 @@
 
 #include <foe/wsi/vulkan.h>
 
-#include <vk_error_code.hpp>
-
-#include "error_code.hpp"
+#include "result.h"
+#include "vk_result.h"
 #include "window.hpp"
 
 namespace {
 
-auto foeWsiWindowGetVulkanExtensionsErrC(uint32_t *pExtensionCount, char const ***pppExtensions)
-    -> std::error_code {
+foeResult foeWsiWindowGetVulkanExtensionsErrC(uint32_t *pExtensionCount,
+                                              char const ***pppExtensions) {
     if (!glfwInit()) {
-        return FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND;
+        return to_foeResult(FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND);
     }
 
     if (!glfwVulkanSupported()) {
-        return FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED;
+        return to_foeResult(FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED);
     }
 
     *pppExtensions = glfwGetRequiredInstanceExtensions(pExtensionCount);
 
-    return FOE_WSI_SUCCESS;
+    return to_foeResult(FOE_WSI_SUCCESS);
 }
 
 } // namespace
 
-foeErrorCode foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
-                                             char const ***pppExtensions) {
-    return foeToErrorCode(foeWsiWindowGetVulkanExtensionsErrC(pExtensionCount, pppExtensions));
+foeResult foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount, char const ***pppExtensions) {
+    return foeWsiWindowGetVulkanExtensionsErrC(pExtensionCount, pppExtensions);
 }
 
-foeErrorCode foeWsiWindowGetVkSurface(foeWsiWindow window,
-                                      VkInstance instance,
-                                      VkSurfaceKHR *pSurface) {
+foeResult foeWsiWindowGetVkSurface(foeWsiWindow window,
+                                   VkInstance instance,
+                                   VkSurfaceKHR *pSurface) {
     auto *pWindow = window_from_handle(window);
 
-    return foeToErrorCode(glfwCreateWindowSurface(instance, pWindow->pWindow, nullptr, pSurface));
+    return vk_to_foeResult(glfwCreateWindowSurface(instance, pWindow->pWindow, nullptr, pSurface));
 }

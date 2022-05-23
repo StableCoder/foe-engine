@@ -37,9 +37,9 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     testPath /= "11-good-content";
     foeImporterBase *pTestImporter{nullptr};
 
-    std::error_code errC = foeImexYamlCreateImporter(2, testPath.string().c_str(), &pTestImporter);
+    foeResult result = foeImexYamlCreateImporter(2, testPath.string().c_str(), &pTestImporter);
 
-    REQUIRE(errC.value() == FOE_IMEX_YAML_SUCCESS);
+    REQUIRE(result.value == FOE_IMEX_YAML_SUCCESS);
     REQUIRE(pTestImporter != nullptr);
 
     CHECK(pTestImporter->group() == 2);
@@ -170,8 +170,8 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     SECTION("Entity State Data (importStateData)") {
         foeSimulation *pTestSimulation{nullptr};
 
-        std::error_code errC = foeCreateSimulation(true, &pTestSimulation);
-        REQUIRE_FALSE(errC);
+        foeResult result = foeCreateSimulation(true, &pTestSimulation);
+        REQUIRE(result.value == FOE_SUCCESS);
         REQUIRE(pTestSimulation != nullptr);
 
         SECTION("With the importer plugin data not registered, the import fails") {

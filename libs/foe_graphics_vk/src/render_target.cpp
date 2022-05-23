@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,19 +18,19 @@
 
 #include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <vk_error_code.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 #include "session.hpp"
+#include "vk_result.h"
 
 namespace {
 
-VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
-                           foeGfxVkRenderTargetSpec const &specification,
-                           VkSampleCountFlags samples,
-                           VkExtent2D extent,
-                           RenderTargetImageData &image) {
+foeResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
+                            foeGfxVkRenderTargetSpec const &specification,
+                            VkSampleCountFlags samples,
+                            VkExtent2D extent,
+                            RenderTargetImageData &image) {
     RenderTargetImageData data{
         .latest = true,
     };
@@ -63,7 +63,7 @@ VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
         vkRes = vmaCreateImage(pGfxVkSession->allocator, &imageCI, &allocCI, &data.image,
                                &data.alloc, nullptr);
         if (vkRes != VK_SUCCESS)
-            return vkRes;
+            return vk_to_foeResult(vkRes);
     }
 
     { // Image View
@@ -86,7 +86,7 @@ VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
 
         vkRes = vkCreateImageView(pGfxVkSession->device, &viewCI, nullptr, &data.view);
         if (vkRes != VK_SUCCESS)
-            return vkRes;
+            return vk_to_foeResult(vkRes);
     }
 
     if (vkRes != VK_SUCCESS) {
@@ -99,17 +99,17 @@ VkResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
         image = data;
     }
 
-    return vkRes;
+    return vk_to_foeResult(vkRes);
 }
 
 } // namespace
 
-std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
-                                           foeGfxDelayedDestructor delayedDestructor,
-                                           foeGfxVkRenderTargetSpec const *pSpecifications,
-                                           uint32_t count,
-                                           VkSampleCountFlags samples,
-                                           foeGfxRenderTarget *pRenderTarget) {
+foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
+                                     foeGfxDelayedDestructor delayedDestructor,
+                                     foeGfxVkRenderTargetSpec const *pSpecifications,
+                                     uint32_t count,
+                                     VkSampleCountFlags samples,
+                                     foeGfxRenderTarget *pRenderTarget) {
     auto *pSession = session_from_handle(session);
 
     uint32_t imageCount = 0;
@@ -124,7 +124,7 @@ std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
     VkRenderPass compatibleRenderPass =
         foeGfxVkGetRenderPassPool(session)->renderPass(formatList, sampleList);
     if (compatibleRenderPass == VK_NULL_HANDLE) {
-        return FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS;
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS);
     }
 
     auto *pNewRenderTarget = new foeGfxVkRenderTarget{
@@ -140,7 +140,7 @@ std::error_code foeGfxVkCreateRenderTarget(foeGfxSession session,
 
     *pRenderTarget = render_target_to_handle(pNewRenderTarget);
 
-    return VK_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
 void foeGfxDestroyRenderTarget(foeGfxRenderTarget renderTarget) {
@@ -181,11 +181,11 @@ void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
     }
 }
 
-std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
-                                              uint32_t maxBufferedFrames) {
+foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
+                                        uint32_t maxBufferedFrames) {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
     uint32_t const numImages = static_cast<uint32_t>(pRenderTarget->imageSpecifications.size());
-    std::error_code errC;
+    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 
     // Increment the indices, making sure to not go over the specified image counts for each type
     for (uint32_t i = 0; i < numImages; ++i) {
@@ -226,12 +226,14 @@ std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
                 image = {};
             }
 
-            errC = createTargetImage(pRenderTarget->pSession, spec, pRenderTarget->samples,
-                                     pRenderTarget->extent, image);
-            if (errC) {
-                FOE_LOG(foeVkGraphics, Error, "Failed to create RenderTarget Image: {} - {}",
-                        errC.value(), errC.message());
-                return errC;
+            result = createTargetImage(pRenderTarget->pSession, spec, pRenderTarget->samples,
+                                       pRenderTarget->extent, image);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeVkGraphics, Error, "Failed to create RenderTarget Image: {}", buffer);
+
+                return result;
             }
 
             image.latest = true;
@@ -269,15 +271,17 @@ std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
         .layers = 1,
     };
 
-    errC = vkCreateFramebuffer(pRenderTarget->pSession->device, &framebufferCI, nullptr,
-                               &pRenderTarget->framebuffer);
-    if (errC) {
-        FOE_LOG(foeVkGraphics, Error, "Failed to create RenderTarget Framebuffer: {} - {}",
-                errC.value(), errC.message());
-        return errC;
+    result = vk_to_foeResult(vkCreateFramebuffer(pRenderTarget->pSession->device, &framebufferCI,
+                                                 nullptr, &pRenderTarget->framebuffer));
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeVkGraphics, Error, "Failed to create RenderTarget Framebuffer: {}", buffer);
+
+        return result;
     }
 
-    return errC;
+    return result;
 }
 
 auto foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget) -> VkSampleCountFlags {

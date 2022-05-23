@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,10 +24,11 @@
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
 #include <imgui.h>
-#include <vk_error_code.hpp>
 
 #include "fragment_shader.h"
+#include "result.h"
 #include "vertex_shader.h"
+#include "vk_result.h"
 
 #include <array>
 #include <cmath>
@@ -84,15 +85,16 @@ void foeImGuiRenderer::setImGuiContext(ImGuiContext *pContext) {
     io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 }
 
-auto foeImGuiRenderer::initialize(foeGfxSession session,
-                                  VkSampleCountFlags rasterSampleFlags,
-                                  VkRenderPass renderPass,
-                                  uint32_t subpass) -> std::error_code {
+foeResult foeImGuiRenderer::initialize(foeGfxSession session,
+                                       VkSampleCountFlags rasterSampleFlags,
+                                       VkRenderPass renderPass,
+                                       uint32_t subpass) {
     if (initialized()) {
-        return VK_ERROR_INITIALIZATION_FAILED;
+        return vk_to_foeResult(VK_ERROR_INITIALIZATION_FAILED);
     }
 
-    std::error_code errC;
+    foeResult result = to_foeResult(FOE_IMGUI_VK_SUCCESS);
+    VkResult vkResult = VK_SUCCESS;
     foeGfxUploadContext uploadContext{FOE_NULL_HANDLE};
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
@@ -102,8 +104,8 @@ auto foeImGuiRenderer::initialize(foeGfxSession session,
 
     mGfxSession = session;
 
-    errC = foeGfxCreateUploadContext(session, &uploadContext);
-    if (errC) {
+    result = foeGfxCreateUploadContext(session, &uploadContext);
+    if (result.value != FOE_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
@@ -127,16 +129,16 @@ auto foeImGuiRenderer::initialize(foeGfxSession session,
             .usage = VMA_MEMORY_USAGE_CPU_ONLY,
         };
 
-        errC = vmaCreateBuffer(foeGfxVkGetAllocator(session), &bufferCI, &allocCI, &stagingBuffer,
-                               &stagingAlloc, nullptr);
-        if (errC) {
+        vkResult = vmaCreateBuffer(foeGfxVkGetAllocator(session), &bufferCI, &allocCI,
+                                   &stagingBuffer, &stagingAlloc, nullptr);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
 
         // Map data in
         void *pData;
-        errC = vmaMapMemory(foeGfxVkGetAllocator(session), stagingAlloc, &pData);
-        if (errC) {
+        vkResult = vmaMapMemory(foeGfxVkGetAllocator(session), stagingAlloc, &pData);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
 
@@ -159,9 +161,9 @@ auto foeImGuiRenderer::initialize(foeGfxSession session,
 
         allocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        errC = vmaCreateImage(foeGfxVkGetAllocator(session), &imageCI, &allocCI, &mFontImage,
-                              &mFontAlloc, nullptr);
-        if (errC) {
+        vkResult = vmaCreateImage(foeGfxVkGetAllocator(session), &imageCI, &allocCI, &mFontImage,
+                                  &mFontAlloc, nullptr);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
     }
@@ -186,16 +188,15 @@ auto foeImGuiRenderer::initialize(foeGfxSession session,
             .imageExtent = fontExtent,
         };
 
-        errC = recordImageUploadCommands(uploadContext, &subresourceRange, 1, &imgCopy,
-                                         stagingBuffer, mFontImage, VK_ACCESS_SHADER_READ_BIT,
-                                         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
-        if (errC) {
+        result = recordImageUploadCommands(
+            uploadContext, &subresourceRange, 1, &imgCopy, stagingBuffer, mFontImage,
+            VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
+        if (result.value != FOE_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
 
-        errC = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
-        if (errC) {
-            errC = static_cast<VkResult>(errC.value());
+        result = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
+        if (result.value != FOE_SUCCESS) {
             goto SUBMIT_FAILED;
         }
     }
@@ -216,8 +217,8 @@ auto foeImGuiRenderer::initialize(foeGfxSession session,
                 },
         };
 
-        errC = vkCreateImageView(foeGfxVkGetDevice(session), &viewCI, nullptr, &mFontView);
-        if (errC) {
+        vkResult = vkCreateImageView(foeGfxVkGetDevice(session), &viewCI, nullptr, &mFontView);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
     }
@@ -238,34 +239,35 @@ auto foeImGuiRenderer::initialize(foeGfxSession session,
             .maxLod = 1000,
         };
 
-        errC = vkCreateSampler(foeGfxVkGetDevice(session), &samplerCI, nullptr, &mFontSampler);
-        if (errC) {
+        vkResult = vkCreateSampler(foeGfxVkGetDevice(session), &samplerCI, nullptr, &mFontSampler);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
     }
 
-    errC = initializeDescriptorPool(foeGfxVkGetDevice(session));
-    if (errC) {
+    vkResult = initializeDescriptorPool(foeGfxVkGetDevice(session));
+    if (vkResult != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    errC = initializeDescriptorSetLayout(foeGfxVkGetDevice(session));
-    if (errC) {
+    vkResult = initializeDescriptorSetLayout(foeGfxVkGetDevice(session));
+    if (vkResult != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    errC = initializeDescriptorSet(foeGfxVkGetDevice(session));
-    if (errC) {
+    vkResult = initializeDescriptorSet(foeGfxVkGetDevice(session));
+    if (vkResult != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    errC = initializePipelineLayout(foeGfxVkGetDevice(session));
-    if (errC) {
+    vkResult = initializePipelineLayout(foeGfxVkGetDevice(session));
+    if (vkResult != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
-    errC = initializePipeline(foeGfxVkGetDevice(session), rasterSampleFlags, renderPass, subpass);
-    if (errC) {
+    vkResult =
+        initializePipeline(foeGfxVkGetDevice(session), rasterSampleFlags, renderPass, subpass);
+    if (vkResult != VK_SUCCESS) {
         goto INITIALIZATION_FAILED;
     }
 
@@ -275,7 +277,7 @@ SUBMIT_FAILED : {
         requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
     }
     if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE) {
-        errC = VK_ERROR_DEVICE_LOST;
+        vkResult = VK_ERROR_DEVICE_LOST;
     }
 }
 
@@ -288,11 +290,14 @@ INITIALIZATION_FAILED:
 
     foeGfxDestroyUploadContext(uploadContext);
 
-    if (errC) {
+    if (result.value == FOE_SUCCESS && vkResult != VK_SUCCESS)
+        result = vk_to_foeResult(vkResult);
+
+    if (result.value != FOE_SUCCESS) {
         deinitialize(session);
     }
 
-    return errC;
+    return result;
 }
 
 void foeImGuiRenderer::deinitialize(foeGfxSession session) {
@@ -351,8 +356,8 @@ void foeImGuiRenderer::newFrame() { ImGui::NewFrame(); }
 
 void foeImGuiRenderer::endFrame() { ImGui::Render(); }
 
-auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
-    std::error_code errC;
+foeResult foeImGuiRenderer::update(uint32_t frameIndex) {
+    VkResult vkResult;
 
     if (mDrawBuffers.size() <= frameIndex) {
         mDrawBuffers.resize(frameIndex + 1);
@@ -362,7 +367,7 @@ auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
 
     ImDrawData const *pDrawData = ImGui::GetDrawData();
     if (pDrawData == nullptr) {
-        return VK_SUCCESS;
+        return to_foeResult(FOE_IMGUI_VK_SUCCESS);
     }
 
     VmaAllocator allocator = foeGfxVkGetAllocator(mGfxSession);
@@ -372,7 +377,7 @@ auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
     // Update buffers only if vertex or indice count has been changed compared to the current buffer
     // size
     if (vertexBufferSize == 0 || indexBufferSize == 0)
-        return VK_SUCCESS;
+        return to_foeResult(FOE_IMGUI_VK_SUCCESS);
 
     // Vertex Buffer
     if (vertices.buffer == VK_NULL_HANDLE ||
@@ -391,10 +396,10 @@ auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
             .usage = VMA_MEMORY_USAGE_CPU_TO_GPU,
         };
 
-        errC = vmaCreateBuffer(allocator, &bufferCI, &allocCI, &vertices.buffer, &vertices.alloc,
-                               nullptr);
-        if (errC) {
-            return errC;
+        vkResult = vmaCreateBuffer(allocator, &bufferCI, &allocCI, &vertices.buffer,
+                                   &vertices.alloc, nullptr);
+        if (vkResult != VK_SUCCESS) {
+            return vk_to_foeResult(vkResult);
         }
 
         vertices.count = pDrawData->TotalVtxCount;
@@ -417,10 +422,10 @@ auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
             .usage = VMA_MEMORY_USAGE_CPU_TO_GPU,
         };
 
-        errC = vmaCreateBuffer(allocator, &bufferCI, &allocCI, &indices.buffer, &indices.alloc,
-                               nullptr);
-        if (errC) {
-            return errC;
+        vkResult = vmaCreateBuffer(allocator, &bufferCI, &allocCI, &indices.buffer, &indices.alloc,
+                                   nullptr);
+        if (vkResult != VK_SUCCESS) {
+            return vk_to_foeResult(vkResult);
         }
 
         indices.count = pDrawData->TotalIdxCount;
@@ -430,14 +435,14 @@ auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
     ImDrawVert *pVertexData;
     ImDrawIdx *pIndexData;
 
-    errC = vmaMapMemory(allocator, vertices.alloc, reinterpret_cast<void **>(&pVertexData));
-    if (errC != VK_SUCCESS) {
-        return errC;
+    vkResult = vmaMapMemory(allocator, vertices.alloc, reinterpret_cast<void **>(&pVertexData));
+    if (vkResult != VK_SUCCESS) {
+        return vk_to_foeResult(vkResult);
     }
 
-    errC = vmaMapMemory(allocator, indices.alloc, reinterpret_cast<void **>(&pIndexData));
-    if (errC != VK_SUCCESS) {
-        return errC;
+    vkResult = vmaMapMemory(allocator, indices.alloc, reinterpret_cast<void **>(&pIndexData));
+    if (vkResult != VK_SUCCESS) {
+        return vk_to_foeResult(vkResult);
     }
 
     for (int i = 0; i < pDrawData->CmdListsCount; ++i) {
@@ -453,7 +458,7 @@ auto foeImGuiRenderer::update(uint32_t frameIndex) -> std::error_code {
     vmaUnmapMemory(allocator, indices.alloc);
     vmaUnmapMemory(allocator, vertices.alloc);
 
-    return VK_SUCCESS;
+    return to_foeResult(FOE_IMGUI_VK_SUCCESS);
 }
 
 void foeImGuiRenderer::draw(VkCommandBuffer commandBuffer, uint32_t frameIndex) {

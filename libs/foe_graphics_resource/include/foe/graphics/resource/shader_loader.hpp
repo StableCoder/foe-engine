@@ -31,14 +31,13 @@
 
 class FOE_GFX_RES_EXPORT foeShaderLoader {
   public:
-    auto initialize(
+    foeResult initialize(
         foeResourcePool resourcePool,
-        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
-        -> std::error_code;
+        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
     bool initialized() const noexcept;
 
-    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    foeResult initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

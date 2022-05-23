@@ -31,7 +31,7 @@
 #include "../render_state_pool.hpp"
 #include "../type_defs.h"
 #include "armature.hpp"
-#include "error_code.hpp"
+#include "result.h"
 
 namespace {
 
@@ -116,39 +116,39 @@ void onDeregister(foeExporter exporter) {
     }
 }
 
-std::error_code onRegister(foeExporter exporter) {
-    std::error_code errC;
+foeResult onRegister(foeExporter exporter) {
+    foeResult result = to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
 
     if (std::string_view{exporter.pName} == "Yaml") {
         // Resource
-        if (foeImexYamlRegisterResourceFn(exportResources)) {
-            errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS;
+        result = foeImexYamlRegisterResourceFn(exportResources);
+        if (result.value != FOE_SUCCESS) {
+            result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RESOURCE_EXPORTERS);
             goto REGISTRATION_FAILED;
         }
 
         // Component
-        if (foeImexYamlRegisterComponentFn(exportComponents)) {
-            errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_COMPONENT_EXPORTERS;
+        result = foeImexYamlRegisterComponentFn(exportComponents);
+        if (result.value != FOE_SUCCESS) {
+            result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_COMPONENT_EXPORTERS);
             goto REGISTRATION_FAILED;
         }
     }
 
 REGISTRATION_FAILED:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         onDeregister(exporter);
 
-    return errC;
+    return result;
 }
 
 } // namespace
 
-extern "C" foeErrorCode foeBringupYamlRegisterExporters() {
-    std::error_code errC = foeRegisterExportFunctionality(foeExportFunctionality{
+extern "C" foeResult foeBringupYamlRegisterExporters() {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
-
-    return foeToErrorCode(errC);
 }
 
 extern "C" void foeBringupYamlDeregisterExporters() {

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,20 +18,18 @@
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <vk_error_code.hpp>
 
-#include "../../error_code.hpp"
+#include "../../result.h"
+#include "../../vk_result.h"
 
-auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                std::string_view name,
-                                VkFence fence,
-                                foeGfxVkRenderGraphResource srcImage,
-                                VkImageLayout srcFinalLayout,
-                                foeGfxVkRenderGraphResource dstImage,
-                                VkImageLayout dstFinalLayout,
-                                BlitJobUsedResources *pResourcesOut) -> std::error_code {
-    std::error_code errC;
-
+foeResult foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                     std::string_view name,
+                                     VkFence fence,
+                                     foeGfxVkRenderGraphResource srcImage,
+                                     VkImageLayout srcFinalLayout,
+                                     foeGfxVkRenderGraphResource dstImage,
+                                     VkImageLayout dstFinalLayout,
+                                     BlitJobUsedResources *pResourcesOut) {
     // Check that resources are correct types
     auto const *pSrcImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         srcImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
@@ -39,11 +37,11 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
         dstImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pSrcImageData == nullptr)
-        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_SOURCE_NOT_IMAGE;
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_SOURCE_NOT_IMAGE);
     if (pDstImageData == nullptr)
-        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NOT_IMAGE;
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NOT_IMAGE);
     if (!pDstImageData->isMutable)
-        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NOT_MUTABLE;
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NOT_MUTABLE);
 
     // Get the last states of the images
     auto const *pSrcImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
@@ -52,16 +50,16 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
         dstImage.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pSrcImageState == nullptr)
-        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_SOURCE_NO_STATE;
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_SOURCE_NO_STATE);
     if (pDstImageState == nullptr)
-        return FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NO_STATE;
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_BLIT_DESTINATION_NO_STATE);
 
     // Proceed with job
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
-        std::error_code errC;
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+        VkResult vkResult;
 
         VkCommandPool commandPool;
         VkCommandBuffer commandBuffer;
@@ -71,10 +69,10 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                 .queueFamilyIndex = 0,
             };
-            errC =
+            vkResult =
                 vkCreateCommandPool(foeGfxVkGetDevice(gfxSession), &poolCI, nullptr, &commandPool);
-            if (errC)
-                return errC;
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
             foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
                 vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
@@ -89,10 +87,10 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .commandBufferCount = 1,
             };
 
-            errC = vkAllocateCommandBuffers(foeGfxVkGetDevice(gfxSession), &commandBufferAI,
-                                            &commandBuffer);
-            if (errC)
-                return errC;
+            vkResult = vkAllocateCommandBuffers(foeGfxVkGetDevice(gfxSession), &commandBufferAI,
+                                                &commandBuffer);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
         }
 
         { // Start CommandBuffer
@@ -100,9 +98,9 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
             };
-            errC = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
-            if (errC)
-                return errC;
+            vkResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
         }
 
         // Transition image layout/mask states of incoming
@@ -214,9 +212,9 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                              numBarriers, imgMemBarrier);
 
         // End Command buffer and submit
-        errC = vkEndCommandBuffer(commandBuffer);
-        if (errC)
-            return errC;
+        vkResult = vkEndCommandBuffer(commandBuffer);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
 
         // Job Submission
         std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
@@ -234,10 +232,10 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
         };
 
         auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        errC = vkQueueSubmit(queue, 1, &submitInfo, fence);
+        vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
-        return errC;
+        return vk_to_foeResult(vkResult);
     };
 
     // Resource Management
@@ -258,31 +256,31 @@ auto foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
     std::array<bool const, 2> resourcesInReadOnly{true, false};
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
-                                     freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
-    if (errC) {
+    foeResult result =
+        foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
+                                  freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
+    if (result.value != FOE_SUCCESS) {
         freeDataFn();
+    } else {
 
-        return errC;
+        // Outgoing resources
+        *pResourcesOut = BlitJobUsedResources{
+            .srcImage =
+                {
+                    .provider = renderGraphJob,
+                    .pResourceData = srcImage.pResourceData,
+                    .pResourceState =
+                        reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates),
+                },
+            .dstImage =
+                {
+                    .provider = renderGraphJob,
+                    .pResourceData = dstImage.pResourceData,
+                    .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(
+                        pFinalImageStates + 1),
+                },
+        };
     }
 
-    // Outgoing resources
-    *pResourcesOut = BlitJobUsedResources{
-        .srcImage =
-            {
-                .provider = renderGraphJob,
-                .pResourceData = srcImage.pResourceData,
-                .pResourceState =
-                    reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates),
-            },
-        .dstImage =
-            {
-                .provider = renderGraphJob,
-                .pResourceData = dstImage.pResourceData,
-                .pResourceState =
-                    reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates + 1),
-            },
-    };
-
-    return FOE_GRAPHICS_VK_SUCCESS;
+    return result;
 }

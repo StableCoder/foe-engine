@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 #ifndef IMGUI_BRINGUP_REGISTRATION_HPP
 #define IMGUI_BRINGUP_REGISTRATION_HPP
 
-#include <system_error>
+#include <foe/error_code.h>
 
 class foeSimulationImGuiRegistrar;
 
-auto foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code;
+foeResult foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
 
-auto foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) -> std::error_code;
+foeResult foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
 
 #endif // IMGUI_BRINGUP_REGISTRATION_HPP

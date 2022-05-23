@@ -8,11 +8,11 @@ if(UNIX OR APPLE)
   add_compile_options(-fPIC)
 endif()
 
-# Error Code
-add_library(vk_error_code STATIC src/error_code.cpp)
+# Interface Library
+add_library(khronos_mini_libs INTERFACE)
 
-target_include_directories(vk_error_code PUBLIC vulkan-mini-libs-2/include)
-target_link_libraries(vk_error_code PUBLIC Vulkan::Vulkan)
+target_include_directories(khronos_mini_libs
+                           INTERFACE vulkan-mini-libs-2/include)
 
 # Struct Cleanup
 add_library(vk_struct_cleanup STATIC src/struct_cleanup.c)

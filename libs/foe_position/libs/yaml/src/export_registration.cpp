@@ -22,7 +22,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "3d.hpp"
-#include "error_code.hpp"
+#include "result.h"
 
 namespace {
 
@@ -50,33 +50,32 @@ void onDeregister(foeExporter exporter) {
     }
 }
 
-std::error_code onRegister(foeExporter exporter) {
-    std::error_code errC;
+foeResult onRegister(foeExporter exporter) {
+    foeResult result = to_foeResult(FOE_POSITION_YAML_SUCCESS);
 
     if (std::string_view{exporter.pName} == "Yaml") {
         // Components
-        if (foeImexYamlRegisterComponentFn(exportComponents)) {
-            errC = FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER;
+        result = foeImexYamlRegisterComponentFn(exportComponents);
+        if (result.value != FOE_SUCCESS) {
+            result = to_foeResult(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER);
             goto REGISTRATION_FAILED;
         }
     }
 
 REGISTRATION_FAILED:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         onDeregister(exporter);
 
-    return errC;
+    return result;
 }
 
 } // namespace
 
-extern "C" foeErrorCode foePositionYamlRegisterExporters() {
-    auto errC = foeRegisterExportFunctionality(foeExportFunctionality{
+extern "C" foeResult foePositionYamlRegisterExporters() {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
-
-    return foeToErrorCode(errC);
 }
 
 extern "C" void foePositionYamlDeregisterExporters() {

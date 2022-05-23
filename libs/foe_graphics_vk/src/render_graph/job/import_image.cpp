@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,28 +18,26 @@
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <vk_error_code.hpp>
 
-#include "../../error_code.hpp"
+#include "../../result.h"
+#include "../../vk_result.h"
 
-auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                  std::string_view name,
-                                  VkFence fence,
-                                  std::string_view imageName,
-                                  VkImage image,
-                                  VkImageView view,
-                                  VkFormat format,
-                                  VkExtent2D extent,
-                                  VkImageLayout layout,
-                                  bool isMutable,
-                                  std::vector<VkSemaphore> waitSemaphores,
-                                  foeGfxVkRenderGraphResource *pResourcesOut) -> std::error_code {
-    std::error_code errC;
-
+foeResult foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                       std::string_view name,
+                                       VkFence fence,
+                                       std::string_view imageName,
+                                       VkImage image,
+                                       VkImageView view,
+                                       VkFormat format,
+                                       VkExtent2D extent,
+                                       VkImageLayout layout,
+                                       bool isMutable,
+                                       std::vector<VkSemaphore> waitSemaphores,
+                                       foeGfxVkRenderGraphResource *pResourcesOut) {
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> std::error_code {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
         auto realWaitSemaphores = waitSemaphores;
         std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -54,10 +52,10 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         };
 
         auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        std::error_code errC = vkQueueSubmit(queue, 1, &submitInfo, fence);
+        VkResult vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
-        return errC;
+        return vk_to_foeResult(vkResult);
     };
 
     // Resource management
@@ -87,20 +85,18 @@ auto foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    errC = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name, false,
-                                     std::move(jobFn), &renderGraphJob);
-    if (errC) {
+    foeResult result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name,
+                                                 false, std::move(jobFn), &renderGraphJob);
+    if (result.value != FOE_SUCCESS) {
         freeDataFn();
-
-        return errC;
+    } else {
+        // Outgoing resources
+        *pResourcesOut = foeGfxVkRenderGraphResource{
+            .provider = renderGraphJob,
+            .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImportedImage),
+            .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImageState),
+        };
     }
 
-    // Outgoing resources
-    *pResourcesOut = foeGfxVkRenderGraphResource{
-        .provider = renderGraphJob,
-        .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImportedImage),
-        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImageState),
-    };
-
-    return FOE_GRAPHICS_VK_SUCCESS;
+    return result;
 }

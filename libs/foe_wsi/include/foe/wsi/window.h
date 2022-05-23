@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ FOE_WSI_EXPORT void foeWsiGlobalProcessing();
  * @param pWindow [out] Window handle will be put here on success
  * @return FOE_WSI_SUCCESS on success, an appropriate error code otherwise
  */
-FOE_WSI_EXPORT foeErrorCode
+FOE_WSI_EXPORT foeResult
 foeWsiCreateWindow(int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow);
 
 /// Destroys the given window

@@ -18,10 +18,9 @@
 
 #include <foe/graphics/vk/session.hpp>
 #include <foe/position/component/3d_pool.hpp>
-#include <vk_error_code.hpp>
-#include <vulkan/vulkan_core.h>
 
-#include "../error_code.hpp"
+#include "../result.h"
+#include "../vk_result.h"
 #include "camera.hpp"
 #include "camera_pool.hpp"
 #include "type_defs.h"
@@ -35,16 +34,16 @@ glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
 
 } // namespace
 
-auto foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
-    -> std::error_code {
+foeResult foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
+                                      foeCameraPool *pCameraPool) {
     if (pPosition3dPool == nullptr || pCameraPool == nullptr)
-        return FOE_BRINGUP_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
 
     // External
     mpPosition3dPool = pPosition3dPool;
     mpCameraPool = pCameraPool;
 
-    return VK_SUCCESS;
+    return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
 
 void foeCameraSystem::deinitialize() {
@@ -54,16 +53,16 @@ void foeCameraSystem::deinitialize() {
 
 bool foeCameraSystem::initialized() const noexcept { return mpPosition3dPool != nullptr; }
 
-auto foeCameraSystem::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+foeResult foeCameraSystem::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
-        return FOE_BRINGUP_NOT_INITIALIZED;
+        return to_foeResult(FOE_BRINGUP_NOT_INITIALIZED);
 
     // External
     mDevice = foeGfxVkGetDevice(gfxSession);
     mAllocator = foeGfxVkGetAllocator(gfxSession);
 
     // Internal
-    VkResult res{VK_SUCCESS};
+    VkResult vkResult{VK_SUCCESS};
 
     VkPhysicalDeviceProperties devProperties;
     vkGetPhysicalDeviceProperties(foeGfxVkGetPhysicalDevice(gfxSession), &devProperties);
@@ -92,18 +91,18 @@ auto foeCameraSystem::initializeGraphics(foeGfxSession gfxSession) -> std::error
     };
 
     for (auto &it : mDescriptorPools) {
-        res = vkCreateDescriptorPool(mDevice, &poolCI, nullptr, &it);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateDescriptorPool(mDevice, &poolCI, nullptr, &it);
+        if (vkResult != VK_SUCCESS) {
             goto INITIALIZATION_FAILED;
         }
     }
 
 INITIALIZATION_FAILED:
-    if (res != VK_SUCCESS) {
+    if (vkResult != VK_SUCCESS) {
         deinitialize();
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
 void foeCameraSystem::deinitializeGraphics() {
@@ -132,7 +131,7 @@ void foeCameraSystem::deinitializeGraphics() {
 bool foeCameraSystem::initializedGraphics() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
-    VkResult res{VK_SUCCESS};
+    VkResult vkResult{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];
 
@@ -152,10 +151,10 @@ VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
             .usage = VMA_MEMORY_USAGE_CPU_TO_GPU,
         };
 
-        res = vmaCreateBuffer(mAllocator, &bufferCI, &allocCI, &uniform.buffer, &uniform.alloc,
-                              nullptr);
-        if (res != VK_SUCCESS) {
-            return res;
+        vkResult = vmaCreateBuffer(mAllocator, &bufferCI, &allocCI, &uniform.buffer, &uniform.alloc,
+                                   nullptr);
+        if (vkResult != VK_SUCCESS) {
+            return vkResult;
         }
 
         uniform.capacity = mpCameraPool->size();
@@ -191,9 +190,9 @@ VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
                 .pSetLayouts = &mProjecionViewLayout,
             };
 
-            res = vkAllocateDescriptorSets(mDevice, &setAI, &set);
-            if (res != VK_SUCCESS) {
-                return res;
+            vkResult = vkAllocateDescriptorSets(mDevice, &setAI, &set);
+            if (vkResult != VK_SUCCESS) {
+                return vkResult;
             }
 
             VkDescriptorBufferInfo bufferInfo{
@@ -222,5 +221,5 @@ VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
 
     vmaUnmapMemory(mAllocator, uniform.alloc);
 
-    return res;
+    return vkResult;
 }

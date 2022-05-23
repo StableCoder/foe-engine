@@ -25,9 +25,9 @@
 #include <foe/yaml/parsing.hpp>
 
 #include "common.hpp"
-#include "error_code.hpp"
 #include "import_functionality.hpp"
 #include "log.hpp"
+#include "result.h"
 
 #include <string>
 #include <string_view>
@@ -100,14 +100,14 @@ void foeYamlImporter::setGroupTranslator(foeEcsGroupTranslator groupTranslator) 
     mHasTranslation = true;
 }
 
-foeErrorCode foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
-                                              foeIdGroup *pDependencyGroups,
-                                              uint32_t *pNamesLength,
-                                              char *pNames) {
+foeResult foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
+                                           foeIdGroup *pDependencyGroups,
+                                           uint32_t *pNamesLength,
+                                           char *pNames) {
     YAML::Node dependenciesNode;
 
     if (!openYamlFile(mRootDir / dependenciesFilePath, dependenciesNode))
-        return foeToErrorCode(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_EXIST);
+        return to_foeResult(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_EXIST);
 
     struct DependencyNode {
         std::string name;
@@ -129,17 +129,17 @@ foeErrorCode foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
         }
     } catch (YAML::Exception const &e) {
         FOE_LOG(foeImexYaml, Error, "{}", e.what())
-        return foeToErrorCode(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DEPENDENCIES);
+        return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DEPENDENCIES);
     }
 
-    std::error_code errC = FOE_IMEX_YAML_SUCCESS;
+    foeResult result = to_foeResult(FOE_IMEX_YAML_SUCCESS);
 
     if (pDependencyGroups == nullptr && pNames == nullptr) {
         *pDependencyCount = dependencies.size();
         *pNamesLength = namesLength;
     } else {
         if (*pDependencyCount < dependencies.size() || *pNamesLength < namesLength)
-            errC = FOE_IMEX_YAML_INCOMPLETE;
+            result = to_foeResult(FOE_IMEX_YAML_INCOMPLETE);
 
         char *const pEndName = pNames + *pNamesLength;
         uint32_t const processedCount = std::min(*pDependencyCount, (uint32_t)dependencies.size());
@@ -166,7 +166,7 @@ foeErrorCode foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
         }
     }
 
-    return foeToErrorCode(errC);
+    return result;
 }
 
 namespace {
@@ -316,8 +316,9 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
                     searchIt->second.pImport(node, mGroupTranslator, &createInfo);
 
                     if (searchIt->second.pCreate != nullptr) {
-                        auto errC = searchIt->second.pCreate(resource, createInfo, pSimulation);
-                        if (errC) {
+                        foeResult result =
+                            searchIt->second.pCreate(resource, createInfo, pSimulation);
+                        if (result.value != FOE_SUCCESS) {
                             return false;
                         }
                     }

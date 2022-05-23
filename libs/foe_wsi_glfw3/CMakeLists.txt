@@ -21,7 +21,8 @@ add_subdirectory(src)
 
 target_include_directories(foe_wsi_glfw3 PUBLIC ${glfw_INCLUDE_DIR})
 
-target_link_libraries(foe_wsi_glfw3 PUBLIC foe_wsi glfw vk_error_code)
+target_link_libraries(foe_wsi_glfw3 PUBLIC foe_wsi glfw)
+target_link_libraries(foe_wsi_glfw3 PRIVATE khronos_mini_libs)
 
 target_code_coverage(foe_wsi_glfw3)
 

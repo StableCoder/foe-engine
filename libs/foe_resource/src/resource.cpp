@@ -22,8 +22,8 @@
 #include <atomic>
 #include <mutex>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 struct foeResourceFns;
 
@@ -60,17 +60,17 @@ FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
 
 } // namespace
 
-extern "C" foeErrorCode foeCreateResource(foeResourceID id,
-                                          foeResourceType type,
-                                          foeResourceFns const *pResourceFns,
-                                          size_t size,
-                                          foeResource *pResource) {
+extern "C" foeResult foeCreateResource(foeResourceID id,
+                                       foeResourceType type,
+                                       foeResourceFns const *pResourceFns,
+                                       size_t size,
+                                       foeResource *pResource) {
     if (pResourceFns == nullptr)
-        return foeToErrorCode(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
+        return to_foeResult(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
 
     auto *pNewResource = (foeResourceImpl *)malloc(sizeof(foeResourceImpl) + size);
     if (pNewResource == nullptr) {
-        return foeToErrorCode(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
+        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
     }
 
     new (pNewResource) foeResourceImpl(id, type, pResourceFns);
@@ -80,7 +80,7 @@ extern "C" foeErrorCode foeCreateResource(foeResourceID id,
     FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Created @ {}", foeIdToString(id), type,
             (void *)pNewResource)
 
-    return foeToErrorCode(FOE_RESOURCE_SUCCESS);
+    return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
 extern "C" void foeDestroyResource(foeResource resource) {
@@ -240,20 +240,22 @@ namespace {
 
 void postLoadFn(
     foeResource resource,
-    foeErrorCode errorCode,
+    foeResult loadResult,
     void *pSrc,
     void (*pMoveDataFn)(void *, void *),
     foeResourceCreateInfo createInfo,
     void *pUnloadContext,
     void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool)) {
     auto *pResource = resource_from_handle(resource);
-    std::error_code errC = errorCode;
     foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
 
-    if (errC) {
+    if (loadResult.value != FOE_SUCCESS) {
         // Loading didn't go well
-        FOE_LOG(foeResourceCore, Error, "[{},{}] foeResource - Failed to load  with error {}",
-                foeIdToString(pResource->id), pResource->type, errC.message())
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        loadResult.toString(loadResult.value, buffer);
+        FOE_LOG(foeResourceCore, Error, "[{},{}] foeResource - Failed to load  with error: {}",
+                foeIdToString(pResource->id), pResource->type, buffer)
+
         auto expected = foeResourceLoadState::Unloaded;
         pResource->state.compare_exchange_strong(expected, foeResourceLoadState::Failed);
         pResource->isLoading = false;

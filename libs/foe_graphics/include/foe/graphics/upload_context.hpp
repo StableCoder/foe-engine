@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
 #ifndef FOE_GRAPHICS_UPLOAD_CONTEXT_HPP
 #define FOE_GRAPHICS_UPLOAD_CONTEXT_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
 #include <foe/handle.h>
 
-#include <system_error>
-
 FOE_DEFINE_HANDLE(foeGfxUploadContext)
 
-FOE_GFX_EXPORT std::error_code foeGfxCreateUploadContext(foeGfxSession session,
-                                                         foeGfxUploadContext *pUploadContext);
+FOE_GFX_EXPORT foeResult foeGfxCreateUploadContext(foeGfxSession session,
+                                                   foeGfxUploadContext *pUploadContext);
 
 FOE_GFX_EXPORT void foeGfxDestroyUploadContext(foeGfxUploadContext uploadContext);
 

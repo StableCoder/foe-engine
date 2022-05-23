@@ -18,12 +18,12 @@
 
 #include <foe/delimited_string.h>
 #include <foe/graphics/vk/runtime.hpp>
-#include <vk_error_code.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 #include "runtime.hpp"
 #include "session.hpp"
+#include "vk_result.h"
 
 #include <memory>
 
@@ -391,18 +391,20 @@ void mergeFeatureSet_VkPhysicalDeviceVulkan13Features(VkPhysicalDeviceVulkan13Fe
 
 } // namespace
 
-std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
-                                      VkPhysicalDevice vkPhysicalDevice,
-                                      uint32_t layerCount,
-                                      char const *const *ppLayerNames,
-                                      uint32_t extensionCount,
-                                      char const *const *ppExtensionNames,
-                                      VkPhysicalDeviceFeatures const *pBasicFeatures,
-                                      void const *pFeatures,
-                                      foeGfxSession *pSession) {
+foeResult foeGfxVkCreateSession(foeGfxRuntime runtime,
+                                VkPhysicalDevice vkPhysicalDevice,
+                                uint32_t layerCount,
+                                char const *const *ppLayerNames,
+                                uint32_t extensionCount,
+                                char const *const *ppExtensionNames,
+                                VkPhysicalDeviceFeatures const *pBasicFeatures,
+                                void const *pFeatures,
+                                foeGfxSession *pSession) {
     auto *pNewSession = new foeGfxVkSession;
     auto sessionHandle = session_to_handle(pNewSession);
-    std::error_code errC;
+
+    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    VkResult vkResult = VK_SUCCESS;
 
     pNewSession->instance = reinterpret_cast<foeGfxVkRuntime *>(runtime)->instance;
     pNewSession->physicalDevice = vkPhysicalDevice;
@@ -495,7 +497,8 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                     &pNewSession->features_1_1);
                 processed = true;
             } else {
-                errC = FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT;
+                result =
+                    to_foeResult(FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT);
                 break;
             }
         }
@@ -508,7 +511,8 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                     &pNewSession->features_1_2);
                 processed = true;
             } else {
-                errC = FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT;
+                result =
+                    to_foeResult(FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT);
                 break;
             }
         }
@@ -521,20 +525,21 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
                     &pNewSession->features_1_3);
                 processed = true;
             } else {
-                errC = FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT;
+                result =
+                    to_foeResult(FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT);
                 break;
             }
         }
 #endif
 
         if (!processed) {
-            errC = FOE_GRAPHICS_VK_ERROR_SESSION_UNKNOWN_FEATURE_STRUCT;
+            result = to_foeResult(FOE_GRAPHICS_VK_ERROR_SESSION_UNKNOWN_FEATURE_STRUCT);
             break;
         }
 
         pFeatures = pIn->pNext;
     }
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
     {
@@ -564,9 +569,10 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
 #endif
         };
 
-        errC = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
-        if (errC)
+        vkResult = vkCreateDevice(vkPhysicalDevice, &deviceCI, nullptr, &pNewSession->device);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
+        }
     }
 
     // Add layer/extension/feature state to session struct for future queries
@@ -597,60 +603,63 @@ std::error_code foeGfxVkCreateSession(foeGfxRuntime runtime,
             .device = pNewSession->device,
         };
 
-        errC = vmaCreateAllocator(&allocatorCI, &pNewSession->allocator);
-        if (errC) {
+        vkResult = vmaCreateAllocator(&allocatorCI, &pNewSession->allocator);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
 
     // Internal pools
-    errC = pNewSession->renderPassPool.initialize(sessionHandle);
-    if (errC)
+    result = pNewSession->renderPassPool.initialize(sessionHandle);
+    if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
-    errC = pNewSession->descriptorSetLayoutPool.initialize(pNewSession->device);
-    if (errC)
+    vkResult = pNewSession->descriptorSetLayoutPool.initialize(pNewSession->device);
+    if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
-    errC = pNewSession->builtinDescriptorSets.initialize(pNewSession->device,
-                                                         &pNewSession->descriptorSetLayoutPool);
-    if (errC)
+    vkResult = pNewSession->builtinDescriptorSets.initialize(pNewSession->device,
+                                                             &pNewSession->descriptorSetLayoutPool);
+    if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
-    errC = pNewSession->pipelinePool.initialize(sessionHandle);
-    if (errC)
+    result = pNewSession->pipelinePool.initialize(sessionHandle);
+    if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
 CREATE_FAILED:
-    if (errC) {
+    if (result.value == FOE_SUCCESS && vkResult != VK_SUCCESS)
+        result = vk_to_foeResult(vkResult);
+
+    if (result.value != FOE_SUCCESS) {
         foeGfxVkDestroySession(pNewSession);
     } else {
         *pSession = sessionHandle;
     }
 
-    return errC;
+    return result;
 }
 
-std::error_code foeGfxVkEnumerateSessionLayers(foeGfxSession session,
-                                               uint32_t *pLayerNamesLength,
-                                               char *pLayerNames) {
+foeResult foeGfxVkEnumerateSessionLayers(foeGfxSession session,
+                                         uint32_t *pLayerNamesLength,
+                                         char *pLayerNames) {
     auto *pSession = session_from_handle(session);
 
     return foeCopyDelimitedString(pSession->layerNamesLength, pSession->pLayerNames,
                                   pLayerNamesLength, pLayerNames)
-               ? FOE_GRAPHICS_VK_SUCCESS
-               : FOE_GRAPHICS_VK_INCOMPLETE;
+               ? to_foeResult(FOE_GRAPHICS_VK_SUCCESS)
+               : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
-std::error_code foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
-                                                   uint32_t *pExtensionNamesLength,
-                                                   char *pExtensionNames) {
+foeResult foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
+                                             uint32_t *pExtensionNamesLength,
+                                             char *pExtensionNames) {
     auto *pSession = session_from_handle(session);
 
     return foeCopyDelimitedString(pSession->extensionNamesLength, pSession->pExtensionNames,
                                   pExtensionNamesLength, pExtensionNames)
-               ? FOE_GRAPHICS_VK_SUCCESS
-               : FOE_GRAPHICS_VK_INCOMPLETE;
+               ? to_foeResult(FOE_GRAPHICS_VK_SUCCESS)
+               : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
 void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,

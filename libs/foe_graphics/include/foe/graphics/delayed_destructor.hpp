@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,21 +17,21 @@
 #ifndef FOE_GRAPHICS_DELAYED_DESTRUCTOR_HPP
 #define FOE_GRAPHICS_DELAYED_DESTRUCTOR_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
 #include <foe/handle.h>
 
+#include <cstdint>
 #include <functional>
-#include <system_error>
 
 FOE_DEFINE_HANDLE(foeGfxDelayedDestructor)
 
 using foeGfxDelayedDestructorFn = std::function<void(foeGfxSession)>;
 
-FOE_GFX_EXPORT auto foeGfxCreateDelayedDestructor(foeGfxSession session,
-                                                  uint32_t initialDelay,
-                                                  foeGfxDelayedDestructor *pDelayedDestructor)
-    -> std::error_code;
+FOE_GFX_EXPORT foeResult foeGfxCreateDelayedDestructor(foeGfxSession session,
+                                                       uint32_t initialDelay,
+                                                       foeGfxDelayedDestructor *pDelayedDestructor);
 
 FOE_GFX_EXPORT void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor);
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@
 #include <foe/graphics/vk/session.hpp>
 #include <glm/glm.hpp>
 
-VkResult foeXrVkCameraSystem::initialize(foeGfxSession session) {
+#include "vk_result.h"
+
+foeResult foeXrVkCameraSystem::initialize(foeGfxSession session) {
     VkResult res{VK_SUCCESS};
 
     mDevice = foeGfxVkGetDevice(session);
@@ -63,7 +65,7 @@ INITIALIZATION_FAILED:
         deinitialize();
     }
 
-    return res;
+    return vk_to_foeResult(res);
 }
 
 void foeXrVkCameraSystem::deinitialize() {
@@ -86,8 +88,8 @@ void foeXrVkCameraSystem::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkResult foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
-                                             std::vector<foeXrVkSessionView> &xrViews) {
+foeResult foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
+                                              std::vector<foeXrVkSessionView> &xrViews) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];
@@ -111,7 +113,7 @@ VkResult foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
         res = vmaCreateBuffer(mAllocator, &bufferCI, &allocCI, &uniform.buffer, &uniform.alloc,
                               nullptr);
         if (res != VK_SUCCESS) {
-            return res;
+            return vk_to_foeResult(res);
         }
 
         uniform.capacity = static_cast<uint32_t>(xrViews.size());
@@ -142,7 +144,7 @@ VkResult foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
 
             res = vkAllocateDescriptorSets(mDevice, &setAI, &set);
             if (res != VK_SUCCESS) {
-                return res;
+                return vk_to_foeResult(res);
             }
 
             VkDescriptorBufferInfo bufferInfo{
@@ -171,5 +173,5 @@ VkResult foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
 
     vmaUnmapMemory(mAllocator, uniform.alloc);
 
-    return res;
+    return vk_to_foeResult(res);
 }

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ namespace {
 
 typedef void (*PFN_foeWsiGlobalProcessing)();
 
-typedef foeErrorCode (*PFN_foeWsiCreateWindow)(int, int, const char *, bool, foeWsiWindow *);
+typedef foeResult (*PFN_foeWsiCreateWindow)(int, int, const char *, bool, foeWsiWindow *);
 typedef void (*PFN_foeWsiDestroyWindow)(foeWsiWindow);
 typedef void (*PFN_foeWsiWindowProcessing)(foeWsiWindow);
 
@@ -47,11 +47,11 @@ typedef void (*PFN_foeWsiWindowGetContentScale)(foeWsiWindow, float *, float *);
 typedef foeWsiKeyboard const *(*PFN_foeWsiGetKeyboard)(foeWsiWindow);
 typedef foeWsiMouse const *(*PFN_foeWsiGetMouse)(foeWsiWindow);
 
-typedef foeErrorCode (*PFN_foeWsiWindowGetVulkanExtensions)(uint32_t *pExtensionCount,
-                                                            char const ***pppExtensions);
-typedef foeErrorCode (*PFN_foeWsiWindowGetVkSurface)(foeWsiWindow window,
-                                                     VkInstance instance,
-                                                     VkSurfaceKHR *pSurface);
+typedef foeResult (*PFN_foeWsiWindowGetVulkanExtensions)(uint32_t *pExtensionCount,
+                                                         char const ***pppExtensions);
+typedef foeResult (*PFN_foeWsiWindowGetVkSurface)(foeWsiWindow window,
+                                                  VkInstance instance,
+                                                  VkSurfaceKHR *pSurface);
 
 struct DispatchTable {
     // Global
@@ -159,7 +159,7 @@ bool foeWsiLoadImplementation(char const *pPath) {
 
 void foeWsiGlobalProcessing() { gDispatchTable.GlobalProcessing(); }
 
-foeErrorCode foeWsiCreateWindow(
+foeResult foeWsiCreateWindow(
     int width, int height, const char *pTitle, bool visible, foeWsiWindow *pWindow) {
     return gDispatchTable.CreateWindow(width, height, pTitle, visible, pWindow);
 }
@@ -210,13 +210,12 @@ foeWsiKeyboard const *foeWsiGetKeyboard(foeWsiWindow window) {
 
 foeWsiMouse const *foeWsiGetMouse(foeWsiWindow window) { return gDispatchTable.GetMouse(window); }
 
-foeErrorCode foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
-                                             char const ***pppExtensions) {
+foeResult foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount, char const ***pppExtensions) {
     return gDispatchTable.WindowGetVulkanExtensions(pExtensionCount, pppExtensions);
 }
 
-foeErrorCode foeWsiWindowGetVkSurface(foeWsiWindow window,
-                                      VkInstance instance,
-                                      VkSurfaceKHR *pSurface) {
+foeResult foeWsiWindowGetVkSurface(foeWsiWindow window,
+                                   VkInstance instance,
+                                   VkSurfaceKHR *pSurface) {
     return gDispatchTable.WindowGetVkSurface(window, instance, pSurface);
 }

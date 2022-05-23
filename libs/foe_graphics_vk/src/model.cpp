@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,42 +17,43 @@
 #include <foe/graphics/vk/model.hpp>
 
 #include <foe/graphics/vk/queue_family.hpp>
-#include <vk_error_code.hpp>
 
+#include "result.h"
 #include "upload_buffer.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
+#include "vk_result.h"
 
 #include <array>
 
-std::error_code mapModelBuffers(VmaAllocator allocator,
-                                VkDeviceSize vertexDataSize,
-                                VmaAllocation vertexAlloc,
-                                VmaAllocation indexAlloc,
-                                foeGfxUploadContext uploadContext,
-                                foeGfxUploadBuffer uploadBuffer,
-                                void **ppVertexData,
-                                void **ppIndexData) {
+foeResult mapModelBuffers(VmaAllocator allocator,
+                          VkDeviceSize vertexDataSize,
+                          VmaAllocation vertexAlloc,
+                          VmaAllocation indexAlloc,
+                          foeGfxUploadContext uploadContext,
+                          foeGfxUploadBuffer uploadBuffer,
+                          void **ppVertexData,
+                          void **ppIndexData) {
     if (uploadBuffer != FOE_NULL_HANDLE) {
-        auto errC = foeGfxMapUploadBuffer(uploadContext, uploadBuffer, ppVertexData);
-        if (errC) {
-            return errC;
+        foeResult result = foeGfxMapUploadBuffer(uploadContext, uploadBuffer, ppVertexData);
+        if (result.value != FOE_SUCCESS) {
+            return result;
         }
         *ppIndexData = static_cast<uint8_t *>(*ppVertexData) + vertexDataSize;
     } else {
-        VkResult res;
-        res = vmaMapMemory(allocator, vertexAlloc, ppVertexData);
-        if (res != VK_SUCCESS) {
-            return res;
+        VkResult vkResult;
+        vkResult = vmaMapMemory(allocator, vertexAlloc, ppVertexData);
+        if (vkResult != VK_SUCCESS) {
+            return vk_to_foeResult(vkResult);
         }
 
-        res = vmaMapMemory(allocator, indexAlloc, ppIndexData);
-        if (res != VK_SUCCESS) {
-            return res;
+        vkResult = vmaMapMemory(allocator, indexAlloc, ppIndexData);
+        if (vkResult != VK_SUCCESS) {
+            return vk_to_foeResult(vkResult);
         }
     }
 
-    return std::error_code{};
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
 void unmapModelBuffers(VmaAllocator allocator,
@@ -68,27 +69,27 @@ void unmapModelBuffers(VmaAllocator allocator,
     }
 }
 
-VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
-                                   VkBuffer vertexBuffer,
-                                   VkDeviceSize vertexDataSize,
-                                   VkBuffer indexBuffer,
-                                   VkDeviceSize indexDataSize,
-                                   foeGfxUploadBuffer uploadBuffer,
-                                   foeGfxUploadRequest *pUploadRequest) {
+foeResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
+                                    VkBuffer vertexBuffer,
+                                    VkDeviceSize vertexDataSize,
+                                    VkBuffer indexBuffer,
+                                    VkDeviceSize indexDataSize,
+                                    foeGfxUploadBuffer uploadBuffer,
+                                    foeGfxUploadRequest *pUploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
-    VkResult res;
+    VkResult vkResult;
     foeGfxVkUploadRequest *uploadRequest{nullptr};
 
     if (uploadBuffer != FOE_NULL_HANDLE) {
         // Need both queues for a tranfer
-        res = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
-                                       pUploadContext->dstCommandPool, &uploadRequest);
+        vkResult = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
+                                            pUploadContext->dstCommandPool, &uploadRequest);
     } else {
-        res = foeGfxVkCreateUploadData(pUploadContext->device, VK_NULL_HANDLE,
-                                       pUploadContext->dstCommandPool, &uploadRequest);
+        vkResult = foeGfxVkCreateUploadData(pUploadContext->device, VK_NULL_HANDLE,
+                                            pUploadContext->dstCommandPool, &uploadRequest);
     }
-    if (res != VK_SUCCESS) {
+    if (vkResult != VK_SUCCESS) {
         goto RECORDING_FAILED;
     }
 
@@ -99,14 +100,14 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
         };
 
         if (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkBeginCommandBuffer(uploadRequest->srcCmdBuffer, &cmdBufBI);
-            if (res != VK_SUCCESS) {
+            vkResult = vkBeginCommandBuffer(uploadRequest->srcCmdBuffer, &cmdBufBI);
+            if (vkResult != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkBeginCommandBuffer(uploadRequest->dstCmdBuffer, &cmdBufBI);
-        if (res != VK_SUCCESS) {
+        vkResult = vkBeginCommandBuffer(uploadRequest->dstCmdBuffer, &cmdBufBI);
+        if (vkResult != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
     }
@@ -202,24 +203,24 @@ VkResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
 
     { // End Recording
         if (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE) {
-            res = vkEndCommandBuffer(uploadRequest->srcCmdBuffer);
-            if (res != VK_SUCCESS) {
+            vkResult = vkEndCommandBuffer(uploadRequest->srcCmdBuffer);
+            if (vkResult != VK_SUCCESS) {
                 goto RECORDING_FAILED;
             }
         }
 
-        res = vkEndCommandBuffer(uploadRequest->dstCmdBuffer);
-        if (res != VK_SUCCESS) {
+        vkResult = vkEndCommandBuffer(uploadRequest->dstCmdBuffer);
+        if (vkResult != VK_SUCCESS) {
             goto RECORDING_FAILED;
         }
     }
 
 RECORDING_FAILED:
-    if (res == VK_SUCCESS) {
+    if (vkResult == VK_SUCCESS) {
         *pUploadRequest = upload_request_to_handle(uploadRequest);
     } else if (uploadRequest != FOE_NULL_HANDLE) {
         foeGfxVkDestroyUploadRequest(pUploadContext->device, uploadRequest);
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }

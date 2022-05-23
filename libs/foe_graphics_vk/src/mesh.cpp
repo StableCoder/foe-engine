@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 #include <foe/graphics/vk/mesh.hpp>
 
-#include <vk_error_code.hpp>
-
 #include "mesh.hpp"
 #include "session.hpp"
+#include "vk_result.h"
 
 namespace {
 
@@ -37,16 +36,16 @@ void foeGfxVkDestroyMesh(foeGfxSession session, foeGfxVkMesh *pMesh) {
 
 } // namespace
 
-std::error_code foeGfxVkCreateMesh(foeGfxSession session,
-                                   uint64_t vertexDataSize,
-                                   uint64_t indexDataSize,
-                                   uint32_t numIndices,
-                                   VkIndexType indexType,
-                                   uint64_t boneDataOffset,
-                                   bool *pHostVisible,
-                                   foeGfxMesh *pMesh) {
+foeResult foeGfxVkCreateMesh(foeGfxSession session,
+                             uint64_t vertexDataSize,
+                             uint64_t indexDataSize,
+                             uint32_t numIndices,
+                             VkIndexType indexType,
+                             uint64_t boneDataOffset,
+                             bool *pHostVisible,
+                             foeGfxMesh *pMesh) {
     auto *pSession = session_from_handle(session);
-    VkResult vkRes{VK_SUCCESS};
+    VkResult vkResult = VK_SUCCESS;
 
     bool bothHostVisible = true;
     auto *pNewMesh = new foeGfxVkMesh;
@@ -68,9 +67,9 @@ std::error_code foeGfxVkCreateMesh(foeGfxSession session,
         };
 
         VmaAllocationInfo allocInfo;
-        vkRes = vmaCreateBuffer(pSession->allocator, &bufferCI, &allocCI, &pNewMesh->vertexBuffer,
-                                &pNewMesh->vertexAlloc, &allocInfo);
-        if (vkRes != VK_SUCCESS) {
+        vkResult = vmaCreateBuffer(pSession->allocator, &bufferCI, &allocCI,
+                                   &pNewMesh->vertexBuffer, &pNewMesh->vertexAlloc, &allocInfo);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -93,9 +92,9 @@ std::error_code foeGfxVkCreateMesh(foeGfxSession session,
         };
 
         VmaAllocationInfo allocInfo;
-        vkRes = vmaCreateBuffer(pSession->allocator, &bufferCI, &allocCI, &pNewMesh->indexBuffer,
-                                &pNewMesh->indexAlloc, &allocInfo);
-        if (vkRes != VK_SUCCESS) {
+        vkResult = vmaCreateBuffer(pSession->allocator, &bufferCI, &allocCI, &pNewMesh->indexBuffer,
+                                   &pNewMesh->indexAlloc, &allocInfo);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -107,14 +106,14 @@ std::error_code foeGfxVkCreateMesh(foeGfxSession session,
     }
 
 CREATE_FAILED:
-    if (vkRes != VK_SUCCESS) {
+    if (vkResult != VK_SUCCESS) {
         foeGfxVkDestroyMesh(session, pNewMesh);
     } else {
         *pMesh = mesh_to_handle(pNewMesh);
         *pHostVisible = bothHostVisible;
     }
 
-    return vkRes;
+    return vk_to_foeResult(vkResult);
 }
 
 uint32_t foeGfxGetMeshIndices(foeGfxMesh mesh) {

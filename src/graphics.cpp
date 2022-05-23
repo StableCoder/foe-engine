@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,34 +19,32 @@
 #include <foe/graphics/vk/runtime.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/wsi/vulkan.h>
-#include <vk_error_code.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
+#include "vk_result.h"
 
 #include <memory>
 
 #ifdef FOE_XR_SUPPORT
-#include <foe/xr/openxr/error_code.hpp>
 #include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/openxr/vk/vulkan.hpp>
 #endif
 
-std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
-                                 bool enableWindowing,
-                                 bool validation,
-                                 bool debugLogging,
-                                 foeGfxRuntime *pGfxRuntime) {
-    std::error_code errC;
+foeResult createGfxRuntime(foeXrRuntime xrRuntime,
+                           bool enableWindowing,
+                           bool validation,
+                           bool debugLogging,
+                           foeGfxRuntime *pGfxRuntime) {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
     if (enableWindowing) {
         uint32_t extensionCount;
         const char **extensionNames;
-        errC = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
-        if (errC) {
-            return errC;
+        foeResult result = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
+        if (result.value != FOE_SUCCESS) {
+            return result;
         }
 
         for (uint32_t i = 0; i < extensionCount; ++i) {
@@ -59,9 +57,10 @@ std::error_code createGfxRuntime(foeXrRuntime xrRuntime,
     if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        errC = foeXrGetVulkanInstanceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
-        if (errC) {
-            return errC;
+        foeResult result =
+            foeXrGetVulkanInstanceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
+        if (result.value != FOE_SUCCESS) {
+            return result;
         }
 
         extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
@@ -209,19 +208,19 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
 
 } // namespace
 
-std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
-                                 foeXrRuntime xrRuntime,
-                                 bool enableWindowing,
-                                 std::vector<VkSurfaceKHR> windowSurfaces,
-                                 uint32_t explicitGpu,
-                                 bool forceXr,
-                                 foeGfxSession *pGfxSession) {
+foeResult createGfxSession(foeGfxRuntime gfxRuntime,
+                           foeXrRuntime xrRuntime,
+                           bool enableWindowing,
+                           std::vector<VkSurfaceKHR> windowSurfaces,
+                           uint32_t explicitGpu,
+                           bool forceXr,
+                           foeGfxSession *pGfxSession) {
     // Determine the physical device
     VkPhysicalDevice vkPhysicalDevice =
         determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces.size(),
                                   windowSurfaces.data(), explicitGpu, forceXr);
     if (vkPhysicalDevice == VK_NULL_HANDLE)
-        return FOE_BRINGUP_ERROR_NO_PHYSICAL_DEVICE_MEETS_REQUIREMENTS;
+        return to_foeResult(FOE_BRINGUP_ERROR_NO_PHYSICAL_DEVICE_MEETS_REQUIREMENTS);
 
     // Layers and Extensions
     std::vector<std::string> layers;
@@ -236,9 +235,9 @@ std::error_code createGfxSession(foeGfxRuntime gfxRuntime,
     if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        std::error_code errC =
+        foeResult result =
             foeXrGetVulkanDeviceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
-        if (!errC) {
+        if (result.value == FOE_SUCCESS) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
         }
     }

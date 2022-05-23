@@ -135,12 +135,14 @@ void yaml_read_armature(YAML::Node const &node,
         new (pDst) foeArmatureCreateInfo(std::move(*pSrcData));
     };
 
-    std::error_code errC = foeCreateResourceCreateInfo(
+    foeResult result = foeCreateResourceCreateInfo(
         FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO, foeDestroyArmatureCreateInfo,
         sizeof(foeArmatureCreateInfo), &armatureCI, dataFn, &createInfo);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         throw foeYamlException{
-            std::string{"Failed to create foeArmatureCreateInfo due to error: "} + errC.message()};
+            std::string{"Failed to create foeArmatureCreateInfo due to error: "} + buffer};
     }
 
     *pCreateInfo = createInfo;

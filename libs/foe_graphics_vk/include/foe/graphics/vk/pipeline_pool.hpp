@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_VK_PIPELINE_POOL_HPP
 #define FOE_GRAPHICS_VK_PIPELINE_POOL_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.hpp>
 #include <vulkan/vulkan.h>
@@ -30,18 +31,18 @@ class foeGfxVkBuiltinDescriptorSets;
 
 class foeGfxVkPipelinePool {
   public:
-    FOE_GFX_EXPORT VkResult initialize(foeGfxSession session) noexcept;
+    FOE_GFX_EXPORT foeResult initialize(foeGfxSession session) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
     FOE_GFX_EXPORT bool initialized() const noexcept;
 
-    FOE_GFX_EXPORT VkResult getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
-                                        foeGfxVkFragmentDescriptor *fragmentDescriptor,
-                                        VkRenderPass renderPass,
-                                        uint32_t subpass,
-                                        VkSampleCountFlags samples,
-                                        VkPipelineLayout *pPipelineLayout,
-                                        uint32_t *pDescriptorSetLayoutCount,
-                                        VkPipeline *pPipeline);
+    FOE_GFX_EXPORT foeResult getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
+                                         foeGfxVkFragmentDescriptor *fragmentDescriptor,
+                                         VkRenderPass renderPass,
+                                         uint32_t subpass,
+                                         VkSampleCountFlags samples,
+                                         VkPipelineLayout *pPipelineLayout,
+                                         uint32_t *pDescriptorSetLayoutCount,
+                                         VkPipeline *pPipeline);
 
   private:
     // Counts upto 64, powers of 2.

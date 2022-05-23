@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave - gcave@stablecoder.ca
+    Copyright (C) 2021-2022 George Cave - gcave@stablecoder.ca
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 TEST_CASE("WSI-GLFW - Vulkan Extensions") {
     uint32_t count{0};
     char const **ppExtensionNames{nullptr};
-    CHECK_FALSE(std::error_code{foeWsiWindowGetVulkanExtensions(&count, &ppExtensionNames)});
+    CHECK(foeWsiWindowGetVulkanExtensions(&count, &ppExtensionNames).value == FOE_SUCCESS);
 
     CHECK(count > 0);
     CHECK(ppExtensionNames != nullptr);

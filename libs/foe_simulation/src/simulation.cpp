@@ -21,8 +21,8 @@
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/resource/resource_fns.h>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 #include <mutex>
 #include <vector>
@@ -91,13 +91,13 @@ void deinitializeSimulationGraphics(foeSimulation *pSimulation) {
 
 } // namespace
 
-auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) -> std::error_code {
+foeResult foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
     std::scoped_lock lock{mSync};
 
     if (functionality.id < 1000000000 || functionality.id % 1000 != 0) {
         FOE_LOG(SimulationState, Warning,
                 "foeRegisterFunctionality - Attempted to register functionality with invalid ID");
-        return FOE_SIMULATION_ERROR_ID_INVALID;
+        return to_foeResult(FOE_SIMULATION_ERROR_ID_INVALID);
     }
 
     for (auto const &it : mRegistered) {
@@ -105,7 +105,7 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
             FOE_LOG(SimulationState, Warning,
                     "foeRegisterFunctionality - Attempted to register functionality with an ID "
                     "already in use");
-            return FOE_SIMULATION_ERROR_ID_ALREADY_IN_USE;
+            return to_foeResult(FOE_SIMULATION_ERROR_ID_ALREADY_IN_USE);
         }
     }
 
@@ -119,7 +119,7 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
         bool gfxInitialized;
     } passedStates;
 
-    std::error_code errC;
+    foeResult result = to_foeResult(FOE_SIMULATION_SUCCESS);
     foeSimulation **ppSimState = mStates.data();
     foeSimulation **ppEndSimState = mStates.data() + mStates.size();
 
@@ -130,49 +130,55 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
         acquireExclusiveLock(*ppSimState, "functionality registration");
 
         if (functionality.pCreateFn) {
-            errC = functionality.pCreateFn(*ppSimState);
-            if (errC) {
+            result = functionality.pCreateFn(*ppSimState);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(SimulationState, Error,
                         "foeRegisterFunctionality - Failed creating functionality on "
                         "SimulationState: {} due "
                         "to error: {}",
-                        static_cast<void *>(*ppSimState), errC.message());
+                        static_cast<void *>(*ppSimState), buffer);
                 break;
             }
             passedStates.created = true;
         }
         if (foeSimulationIsInitialized(*ppSimState) && functionality.pInitializeFn) {
-            errC = functionality.pInitializeFn(*ppSimState, &(*ppSimState)->initInfo);
-            if (errC) {
+            result = functionality.pInitializeFn(*ppSimState, &(*ppSimState)->initInfo);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(SimulationState, Error,
                         "foeRegisterFunctionality - Failed initializing functionality on "
                         "SimulationState: {} due to error: {}",
-                        static_cast<void *>(*ppSimState), errC.message());
+                        static_cast<void *>(*ppSimState), buffer);
                 break;
             }
             passedStates.initialized = true;
         }
         if (foeSimulationIsGraphicsInitialzied(*ppSimState) &&
             functionality.pInitializeGraphicsFn) {
-            errC = functionality.pInitializeGraphicsFn(*ppSimState, (*ppSimState)->gfxSession);
-            if (errC) {
+            result = functionality.pInitializeGraphicsFn(*ppSimState, (*ppSimState)->gfxSession);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(SimulationState, Error,
                         "foeRegisterFunctionality - Failed initializing graphics functionality on "
                         "SimulationState: {} due to error: {}",
-                        static_cast<void *>(*ppSimState), errC.message());
+                        static_cast<void *>(*ppSimState), buffer);
                 break;
             }
             passedStates.gfxInitialized = true;
         }
 
         (*ppSimState)->simSync.unlock();
-        if (errC)
+        if (result.value != FOE_SUCCESS)
             break;
     }
 
     // If we failed to initialize in one of the simulations above, then we need to go through and
     // deinitialize/destroy this functionality in all the ones it was already added to successfully
-    if (errC && ppSimState != mStates.data()) {
+    if (result.value != FOE_SUCCESS && ppSimState != mStates.data()) {
         // Deal with the potential half-initialized simState that was being worked on
         if (passedStates.gfxInitialized && functionality.pDeinitializeGraphicsFn &&
             foeSimulationIsGraphicsInitialzied(*ppSimState)) {
@@ -209,13 +215,13 @@ auto foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) ->
             (*ppSimState)->simSync.unlock();
         }
 
-        return errC;
+        return result;
     }
 
-    return FOE_SIMULATION_SUCCESS;
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-auto foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) -> std::error_code {
+foeResult foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) {
     std::scoped_lock lock{mSync};
 
     for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it) {
@@ -239,14 +245,14 @@ auto foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) -> std::err
             }
 
             mRegistered.erase(it);
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
     FOE_LOG(
         SimulationState, Warning,
         "registerFunctionality - Attempted to deregister functionality that was never registered");
-    return FOE_SIMULATION_ERROR_NOT_REGISTERED;
+    return to_foeResult(FOE_SIMULATION_ERROR_NOT_REGISTERED);
 }
 
 bool foeSimulationIsInitialized(foeSimulation const *pSimulation) {
@@ -257,7 +263,7 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation) {
     return pSimulation->gfxSession != FOE_NULL_HANDLE;
 }
 
-auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) -> std::error_code {
+foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) {
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulation> newSimState{new foeSimulation};
@@ -272,9 +278,15 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
         .pLoadFn = TEMP_foeSimulationLoadResource,
     };
 
-    std::error_code errC = foeCreateResourcePool(&resourceCallbacks, &newSimState->resourcePool);
-    if (errC)
-        return errC;
+    foeResult result = foeCreateResourcePool(&resourceCallbacks, &newSimState->resourcePool);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(SimulationState, Error, "foeSimulation - Failed to create ResourcePool due to: {}",
+                buffer);
+
+        return result;
+    }
 
     // Editor Name Maps, if requested
     if (addNameMaps) {
@@ -293,25 +305,28 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
     auto const endIt = mRegistered.end();
     for (; it != endIt; ++it) {
         if (it->pCreateFn) {
-            errC = it->pCreateFn(newSimState.get());
-            if (errC) {
+            result = it->pCreateFn(newSimState.get());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(SimulationState, Error,
                         "[{}] foeSimulation - Error creating due to error: {}",
-                        static_cast<void *>(newSimState.get()), errC.message());
+                        static_cast<void *>(newSimState.get()), buffer);
+
                 break;
             }
         }
     }
 
     // If there is an error code at this point, then we need to walk-back what was created so far
-    if (errC && it != mRegistered.begin()) {
+    if (result.value != FOE_SUCCESS && it != mRegistered.begin()) {
         --it;
         for (; it >= mRegistered.begin(); --it) {
             it->pDestroyFn(newSimState.get());
         }
     }
 
-    if (!errC) {
+    if (result.value == FOE_SUCCESS) {
         FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Created",
                 static_cast<void *>(newSimState.get()));
         mStates.emplace_back(newSimState.get());
@@ -320,10 +335,10 @@ auto foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) ->
         foeDestroySimulation(newSimState.get());
     }
 
-    return errC;
+    return result;
 }
 
-auto foeDestroySimulation(foeSimulation *pSimulation) -> std::error_code {
+foeResult foeDestroySimulation(foeSimulation *pSimulation) {
     std::scoped_lock lock{mSync};
 
     FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Destroying",
@@ -336,7 +351,7 @@ auto foeDestroySimulation(foeSimulation *pSimulation) -> std::error_code {
                 "[{}] foeSimulation - Given a SimulationState that wasn't created via "
                 "foeCreateSimulation and isn't registered",
                 static_cast<void *>(pSimulation));
-        return FOE_SIMULATION_ERROR_NOT_REGISTERED;
+        return to_foeResult(FOE_SIMULATION_ERROR_NOT_REGISTERED);
     } else {
         mStates.erase(searchIt);
     }
@@ -369,17 +384,17 @@ auto foeDestroySimulation(foeSimulation *pSimulation) -> std::error_code {
     FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Destroyed",
             static_cast<void *>(pSimulation));
 
-    return FOE_SIMULATION_SUCCESS;
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-auto foeInitializeSimulation(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo)
-    -> std::error_code {
+foeResult foeInitializeSimulation(foeSimulation *pSimulation,
+                                  foeSimulationInitInfo const *pInitInfo) {
     std::scoped_lock lock{mSync};
 
     if (foeSimulationIsInitialized(pSimulation)) {
         FOE_LOG(SimulationState, Error, "[{}] foeSimulation - Attempted to re-initialize",
                 static_cast<void *>(pSimulation))
-        return FOE_SIMULATION_ERROR_SIMULATION_ALREADY_INITIALIZED;
+        return to_foeResult(FOE_SIMULATION_ERROR_SIMULATION_ALREADY_INITIALIZED);
     }
 
     FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initializing",
@@ -388,24 +403,26 @@ auto foeInitializeSimulation(foeSimulation *pSimulation, foeSimulationInitInfo c
     acquireExclusiveLock(pSimulation, "initialization");
 
     // Go through each set of functionality and call the initialization function, if one is attached
-    std::error_code errC{FOE_SIMULATION_SUCCESS};
+    foeResult result = to_foeResult(FOE_SIMULATION_SUCCESS);
     auto it = mRegistered.begin();
     auto const endIt = mRegistered.end();
 
     for (; it != endIt; ++it) {
         if (it->pInitializeFn) {
-            errC = it->pInitializeFn(pSimulation, pInitInfo);
-            if (errC) {
+            result = it->pInitializeFn(pSimulation, pInitInfo);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(SimulationState, Error,
                         "[{}] foeSimulation - Failed to initialize due to error: {}",
-                        static_cast<void *>(pSimulation), errC.message());
+                        static_cast<void *>(pSimulation), buffer);
                 break;
             }
         }
     }
 
     // If there is an error code at this point, then we need to walk-back what was created so far
-    if (errC && it != mRegistered.begin()) {
+    if (result.value != FOE_SUCCESS && it != mRegistered.begin()) {
         --it;
         for (; it >= mRegistered.begin(); --it) {
             if (it->pDeinitializeFn) {
@@ -414,7 +431,7 @@ auto foeInitializeSimulation(foeSimulation *pSimulation, foeSimulationInitInfo c
         }
     }
 
-    if (!errC) {
+    if (result.value == FOE_SUCCESS) {
         // On a successful initialization, set it into the state itself
         pSimulation->initInfo = *pInitInfo;
         FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initialized",
@@ -423,28 +440,28 @@ auto foeInitializeSimulation(foeSimulation *pSimulation, foeSimulationInitInfo c
 
     pSimulation->simSync.unlock();
 
-    return errC;
+    return result;
 }
 
-auto foeDeinitializeSimulation(foeSimulation *pSimulation) -> std::error_code {
+foeResult foeDeinitializeSimulation(foeSimulation *pSimulation) {
     std::scoped_lock lock{mSync};
 
     if (!foeSimulationIsInitialized(pSimulation))
-        return FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED;
+        return to_foeResult(FOE_SIMULATION_ERROR_SIMULATION_NOT_INITIALIZED);
 
     acquireExclusiveLock(pSimulation, "deinitialization");
     deinitSimulation(pSimulation);
-    return FOE_SIMULATION_SUCCESS;
+
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession)
-    -> std::error_code {
+foeResult foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
     std::scoped_lock lock{mSync};
 
     if (foeSimulationIsGraphicsInitialzied(pSimulation)) {
         FOE_LOG(SimulationState, Error, "[{}] foeSimulation - Attempted to re-initialize graphics",
                 static_cast<void *>(pSimulation))
-        return FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED;
+        return to_foeResult(FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED);
     }
 
     FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initializing graphics",
@@ -453,24 +470,27 @@ auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession g
     acquireExclusiveLock(pSimulation, "initializing graphics");
 
     // Go through each set of functionality and call the initialization function, if one is attached
-    std::error_code errC{FOE_SIMULATION_SUCCESS};
+    foeResult result = to_foeResult(FOE_SIMULATION_SUCCESS);
     auto it = mRegistered.begin();
     auto const endIt = mRegistered.end();
 
     for (; it != endIt; ++it) {
         if (it->pInitializeGraphicsFn) {
-            errC = it->pInitializeGraphicsFn(pSimulation, gfxSession);
-            if (errC) {
+            result = it->pInitializeGraphicsFn(pSimulation, gfxSession);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(SimulationState, Error,
                         "[{}] foeSimulation - Failed to initialize graphics due to error: {}",
-                        static_cast<void *>(pSimulation), errC.message());
+                        static_cast<void *>(pSimulation), buffer);
+
                 break;
             }
         }
     }
 
     // If there is an error code at this point, then we need to walk-back what was created so far
-    if (errC && it != mRegistered.begin()) {
+    if (result.value != FOE_SUCCESS && it != mRegistered.begin()) {
         --it;
         for (; it >= mRegistered.begin(); --it) {
             if (it->pDeinitializeGraphicsFn) {
@@ -479,7 +499,7 @@ auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession g
         }
     }
 
-    if (!errC) {
+    if (result.value == FOE_SUCCESS) {
         // With success, set the simulation's graphics session handle
         pSimulation->gfxSession = gfxSession;
         FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Initialized graphics",
@@ -488,32 +508,32 @@ auto foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession g
 
     pSimulation->simSync.unlock();
 
-    return errC;
+    return result;
 }
 
-auto foeDeinitializeSimulationGraphics(foeSimulation *pSimulation) -> std::error_code {
+foeResult foeDeinitializeSimulationGraphics(foeSimulation *pSimulation) {
     std::scoped_lock lock{mSync};
 
     if (!foeSimulationIsGraphicsInitialzied(pSimulation)) {
         FOE_LOG(SimulationState, Warning,
                 "[{}] foeSimulation - Attempted to deinitialize uninitialized graphics");
-        return FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED;
+        return to_foeResult(FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED);
     }
 
     acquireExclusiveLock(pSimulation, "deinitializing graphics");
     deinitializeSimulationGraphics(pSimulation);
-    return FOE_SIMULATION_SUCCESS;
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-auto foeSimulationGetRefCount(foeSimulation const *pSimulation,
-                              foeSimulationStructureType sType,
-                              size_t *pRefCount) -> std::error_code {
+foeResult foeSimulationGetRefCount(foeSimulation const *pSimulation,
+                                   foeSimulationStructureType sType,
+                                   size_t *pRefCount) {
     // Resource Loaders
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
             *pRefCount = it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -522,7 +542,7 @@ auto foeSimulationGetRefCount(foeSimulation const *pSimulation,
         if (it.sType == sType) {
             *pRefCount = it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -531,16 +551,16 @@ auto foeSimulationGetRefCount(foeSimulation const *pSimulation,
         if (it.sType == sType) {
             *pRefCount = it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationIncrementRefCount(foeSimulation *pSimulation,
-                                    foeSimulationStructureType sType,
-                                    size_t *pRefCount) -> std::error_code {
+foeResult foeSimulationIncrementRefCount(foeSimulation *pSimulation,
+                                         foeSimulationStructureType sType,
+                                         size_t *pRefCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -549,7 +569,7 @@ auto foeSimulationIncrementRefCount(foeSimulation *pSimulation,
             else
                 ++it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -561,7 +581,7 @@ auto foeSimulationIncrementRefCount(foeSimulation *pSimulation,
             else
                 ++it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -573,16 +593,16 @@ auto foeSimulationIncrementRefCount(foeSimulation *pSimulation,
             else
                 ++it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationDecrementRefCount(foeSimulation *pSimulation,
-                                    foeSimulationStructureType sType,
-                                    size_t *pRefCount) -> std::error_code {
+foeResult foeSimulationDecrementRefCount(foeSimulation *pSimulation,
+                                         foeSimulationStructureType sType,
+                                         size_t *pRefCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -591,7 +611,7 @@ auto foeSimulationDecrementRefCount(foeSimulation *pSimulation,
             else
                 --it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -603,7 +623,7 @@ auto foeSimulationDecrementRefCount(foeSimulation *pSimulation,
             else
                 --it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -615,22 +635,22 @@ auto foeSimulationDecrementRefCount(foeSimulation *pSimulation,
             else
                 --it.refCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationGetInitCount(foeSimulation const *pSimulation,
-                               foeSimulationStructureType sType,
-                               size_t *pInitCount) -> std::error_code {
+foeResult foeSimulationGetInitCount(foeSimulation const *pSimulation,
+                                    foeSimulationStructureType sType,
+                                    size_t *pInitCount) {
     // Resource Loaders
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
             *pInitCount = it.initCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -639,16 +659,16 @@ auto foeSimulationGetInitCount(foeSimulation const *pSimulation,
         if (it.sType == sType) {
             *pInitCount = it.initCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationIncrementInitCount(foeSimulation *pSimulation,
-                                     foeSimulationStructureType sType,
-                                     size_t *pInitCount) -> std::error_code {
+foeResult foeSimulationIncrementInitCount(foeSimulation *pSimulation,
+                                          foeSimulationStructureType sType,
+                                          size_t *pInitCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -657,7 +677,7 @@ auto foeSimulationIncrementInitCount(foeSimulation *pSimulation,
             else
                 ++it.initCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -669,16 +689,16 @@ auto foeSimulationIncrementInitCount(foeSimulation *pSimulation,
             else
                 ++it.initCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationDecrementInitCount(foeSimulation *pSimulation,
-                                     foeSimulationStructureType sType,
-                                     size_t *pInitCount) -> std::error_code {
+foeResult foeSimulationDecrementInitCount(foeSimulation *pSimulation,
+                                          foeSimulationStructureType sType,
+                                          size_t *pInitCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -687,7 +707,7 @@ auto foeSimulationDecrementInitCount(foeSimulation *pSimulation,
             else
                 --it.initCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -699,22 +719,22 @@ auto foeSimulationDecrementInitCount(foeSimulation *pSimulation,
             else
                 --it.initCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
-                                  foeSimulationStructureType sType,
-                                  size_t *pGfxInitCount) -> std::error_code {
+foeResult foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
+                                       foeSimulationStructureType sType,
+                                       size_t *pGfxInitCount) {
     // Resource Loaders
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
             *pGfxInitCount = it.gfxInitCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -723,16 +743,16 @@ auto foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
         if (it.sType == sType) {
             *pGfxInitCount = it.gfxInitCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
-                                        foeSimulationStructureType sType,
-                                        size_t *pGfxInitCount) -> std::error_code {
+foeResult foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
+                                             foeSimulationStructureType sType,
+                                             size_t *pGfxInitCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -741,7 +761,7 @@ auto foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
             else
                 ++it.gfxInitCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -753,16 +773,16 @@ auto foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
             else
                 ++it.gfxInitCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
-                                        foeSimulationStructureType sType,
-                                        size_t *pGfxInitCount) -> std::error_code {
+foeResult foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
+                                             foeSimulationStructureType sType,
+                                             size_t *pGfxInitCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -771,7 +791,7 @@ auto foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
             else
                 --it.gfxInitCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
@@ -783,103 +803,101 @@ auto foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
             else
                 --it.gfxInitCount;
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
-                                       foeSimulationLoaderData const *pCreateInfo)
-    -> std::error_code {
+foeResult foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
+                                            foeSimulationLoaderData const *pCreateInfo) {
     // Make sure the type doesn't exist yet
     if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetComponentPool(pSimulation, pCreateInfo->sType) != nullptr) {
-        return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
+        return to_foeResult(FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS);
     }
 
     pSimulation->resourceLoaders.emplace_back(*pCreateInfo);
 
-    return FOE_SIMULATION_SUCCESS;
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-auto foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
-                                        foeSimulationStructureType sType,
-                                        void **ppLoader) -> std::error_code {
+foeResult foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
+                                             foeSimulationStructureType sType,
+                                             void **ppLoader) {
     auto const endIt = pSimulation->resourceLoaders.end();
     for (auto it = pSimulation->resourceLoaders.begin(); it != endIt; ++it) {
         if (it->sType == sType) {
             *ppLoader = it->pLoader;
             pSimulation->resourceLoaders.erase(it);
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationInsertComponentPool(foeSimulation *pSimulation,
-                                      foeSimulationComponentPoolData const *pCreateInfo)
-    -> std::error_code {
+foeResult foeSimulationInsertComponentPool(foeSimulation *pSimulation,
+                                           foeSimulationComponentPoolData const *pCreateInfo) {
     // Make sure the type doesn't exist yet
     if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetComponentPool(pSimulation, pCreateInfo->sType) != nullptr) {
-        return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
+        return to_foeResult(FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS);
     }
 
     pSimulation->componentPools.emplace_back(*pCreateInfo);
 
-    return FOE_SIMULATION_SUCCESS;
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-auto foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
-                                       foeSimulationStructureType sType,
-                                       void **ppComponentPool) -> std::error_code {
+foeResult foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
+                                            foeSimulationStructureType sType,
+                                            void **ppComponentPool) {
     auto const endIt = pSimulation->componentPools.end();
     for (auto it = pSimulation->componentPools.begin(); it != endIt; ++it) {
         if (it->sType == sType) {
             *ppComponentPool = it->pComponentPool;
             pSimulation->componentPools.erase(it);
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-auto foeSimulationInsertSystem(foeSimulation *pSimulation,
-                               foeSimulationSystemData const *pCreateInfo)
-    -> std::error_code { // Make sure the type doesn't exist yet
+foeResult foeSimulationInsertSystem(foeSimulation *pSimulation,
+                                    foeSimulationSystemData const *pCreateInfo) {
+    // Make sure the type doesn't exist yet
     if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetComponentPool(pSimulation, pCreateInfo->sType) != nullptr) {
-        return FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS;
+        return to_foeResult(FOE_SIMULATION_ERROR_TYPE_ALREADY_EXISTS);
     }
 
     pSimulation->systems.emplace_back(*pCreateInfo);
 
-    return FOE_SIMULATION_SUCCESS;
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-FOE_SIM_EXPORT auto foeSimulationReleaseSystem(foeSimulation *pSimulation,
-                                               foeSimulationStructureType sType,
-                                               void **ppSystem) -> std::error_code {
+foeResult foeSimulationReleaseSystem(foeSimulation *pSimulation,
+                                     foeSimulationStructureType sType,
+                                     void **ppSystem) {
     auto const endIt = pSimulation->systems.end();
     for (auto it = pSimulation->systems.begin(); it != endIt; ++it) {
         if (it->sType == sType) {
             *ppSystem = it->pSystem;
             pSimulation->systems.erase(it);
 
-            return FOE_SIMULATION_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_ERROR_TYPE_NOT_FOUND;
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
 foeResourceCreateInfo TEMP_foeSimulationGetResourceCreateInfo(void *pContext,
@@ -903,6 +921,6 @@ void TEMP_foeSimulationLoadResource(void *pContext,
         }
     }
 
-    pPostLoadFn(resource, foeToErrorCode(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
+    pPostLoadFn(resource, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
                 nullptr, nullptr, nullptr);
 }

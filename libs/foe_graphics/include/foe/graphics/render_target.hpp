@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 #ifndef FOE_GRAPHICS_RENDER_TARGET_HPP
 #define FOE_GRAPHICS_RENDER_TARGET_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/handle.h>
-
-#include <system_error>
 
 FOE_DEFINE_HANDLE(foeGfxRenderTarget)
 
@@ -30,7 +29,7 @@ FOE_GFX_EXPORT void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarg
                                                    uint32_t width,
                                                    uint32_t height);
 
-FOE_GFX_EXPORT std::error_code foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
-                                                             uint32_t maxBufferedFrames);
+FOE_GFX_EXPORT foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
+                                                       uint32_t maxBufferedFrames);
 
 #endif // FOE_GRAPHICS_RENDER_TARGET_HPP

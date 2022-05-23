@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@
 #define FOE_IMEX_EXPORTERS_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/imex/export.h>
 
 #include <filesystem>
-#include <system_error>
 
 struct foeSimulation;
 
@@ -39,19 +39,19 @@ static_assert(sizeof(foeExporterVersion) == sizeof(unsigned int));
 struct foeExporter {
     char const *pName;
     foeExporterVersion version;
-    std::error_code (*pExportFn)(std::filesystem::path, foeSimulation *);
+    foeResult (*pExportFn)(std::filesystem::path, foeSimulation *);
 };
 
 FOE_IMEX_EXPORT bool operator==(foeExporter const &lhs, foeExporter const &rhs);
 FOE_IMEX_EXPORT bool operator!=(foeExporter const &lhs, foeExporter const &rhs);
 
-FOE_IMEX_EXPORT auto foeImexRegisterExporter(foeExporter exporter) -> std::error_code;
-FOE_IMEX_EXPORT auto foeImexDeregisterExporter(foeExporter exporter) -> std::error_code;
+FOE_IMEX_EXPORT foeResult foeImexRegisterExporter(foeExporter exporter);
+FOE_IMEX_EXPORT foeResult foeImexDeregisterExporter(foeExporter exporter);
 
 FOE_IMEX_EXPORT void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters);
 
 struct foeExportFunctionality {
-    std::error_code (*onRegister)(foeExporter);
+    foeResult (*onRegister)(foeExporter);
     void (*onDeregister)(foeExporter);
 
     inline bool operator==(foeExportFunctionality const &rhs) const noexcept {
@@ -62,8 +62,8 @@ struct foeExportFunctionality {
     }
 };
 
-FOE_IMEX_EXPORT auto foeRegisterExportFunctionality(foeExportFunctionality const &functionality)
-    -> std::error_code;
+FOE_IMEX_EXPORT foeResult
+foeRegisterExportFunctionality(foeExportFunctionality const &functionality);
 FOE_IMEX_EXPORT void foeDeregisterExportFunctionality(foeExportFunctionality const &functionality);
 
 #endif // FOE_IMEX_EXPORTERS_HPP

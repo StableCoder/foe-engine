@@ -135,12 +135,14 @@ void yaml_read_mesh(YAML::Node const &node,
         new (pDst) foeMeshCreateInfo(std::move(*pSrcData));
     };
 
-    std::error_code errC = foeCreateResourceCreateInfo(
+    foeResult result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO, foeDestroyMeshCreateInfo,
         sizeof(foeMeshCreateInfo), &meshCI, dataFn, &createInfo);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         throw foeYamlException{std::string{"Failed to create foeMeshCreateInfo due to error: "} +
-                               errC.message()};
+                               buffer};
     }
 
     *pCreateInfo = createInfo;

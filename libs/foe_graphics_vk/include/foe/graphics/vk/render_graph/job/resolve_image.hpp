@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_RENDER_GRAPH_JOB_RESOLVE_IMAGE_HPP
 #define FOE_GRAPHICS_RENDER_GRAPH_JOB_RESOLVE_IMAGE_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <vulkan/vulkan.h>
@@ -28,14 +29,13 @@ struct ResolveJobUsedResources {
     foeGfxVkRenderGraphResource dstImage;
 };
 
-FOE_GFX_EXPORT auto foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                  std::string_view name,
-                                                  VkFence fence,
-                                                  foeGfxVkRenderGraphResource srcImage,
-                                                  VkImageLayout srcFinalLayout,
-                                                  foeGfxVkRenderGraphResource dstImage,
-                                                  VkImageLayout dstFinalLayout,
-                                                  ResolveJobUsedResources *pResourcesOut)
-    -> std::error_code;
+FOE_GFX_EXPORT foeResult foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                       std::string_view name,
+                                                       VkFence fence,
+                                                       foeGfxVkRenderGraphResource srcImage,
+                                                       VkImageLayout srcFinalLayout,
+                                                       foeGfxVkRenderGraphResource dstImage,
+                                                       VkImageLayout dstFinalLayout,
+                                                       ResolveJobUsedResources *pResourcesOut);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_RESOLVE_IMAGE_HPP

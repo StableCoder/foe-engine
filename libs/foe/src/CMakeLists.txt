@@ -11,7 +11,6 @@ target_sources(
           search_paths.cpp
           split_thread_pool.cpp
           thread_pool_error_code.c
-          thread_pool_error_code.cpp
           thread_pool.cpp)
 
 add_subdirectory(chrono)

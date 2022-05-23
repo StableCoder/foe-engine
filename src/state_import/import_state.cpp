@@ -24,7 +24,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "../log.hpp"
-#include "error_code.hpp"
+#include "result.h"
 
 namespace {
 
@@ -85,13 +85,13 @@ bool generateDependencyImporters(uint32_t dependencyCount,
 
 } // namespace
 
-auto importState(std::string_view topLevelDataSet,
-                 foeSearchPaths *pSearchPaths,
-                 foeSimulation **ppSimulationSet) -> std::error_code {
+foeResult importState(std::string_view topLevelDataSet,
+                      foeSearchPaths *pSearchPaths,
+                      foeSimulation **ppSimulationSet) {
     foeSimulation *pTempSimSet;
-    std::error_code errC = foeCreateSimulation(true, &pTempSimSet);
-    if (errC)
-        return errC;
+    foeResult result = foeCreateSimulation(true, &pTempSimSet);
+    if (result.value != FOE_SUCCESS)
+        return result;
 
     std::unique_ptr<foeSimulation, std::function<void(foeSimulation *)>> pSimulationSet{
         pTempSimSet, [](foeSimulation *ptr) { foeDestroySimulation(ptr); }};
@@ -108,7 +108,7 @@ auto importState(std::string_view topLevelDataSet,
             FOE_LOG(General, Error,
                     "Could not find dataset and/or importer for top-level data set: {}",
                     topLevelDataSet)
-            return FOE_STATE_IMPORT_ERROR_NO_IMPORTER;
+            return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_IMPORTER);
         }
     }
 
@@ -119,16 +119,16 @@ auto importState(std::string_view topLevelDataSet,
     std::vector<char const *> dependencyNames;
     std::vector<char> nameArray;
 
-    errC = persistentImporter->getDependencies(&dependencyCount, nullptr, &namesLength, nullptr);
-    if (errC)
-        return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
+    result = persistentImporter->getDependencies(&dependencyCount, nullptr, &namesLength, nullptr);
+    if (result.value != FOE_SUCCESS)
+        return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES);
 
     dependencyGroups.resize(dependencyCount);
     nameArray.resize(namesLength);
-    errC = persistentImporter->getDependencies(&dependencyCount, dependencyGroups.data(),
-                                               &namesLength, nameArray.data());
-    if (errC)
-        return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
+    result = persistentImporter->getDependencies(&dependencyCount, dependencyGroups.data(),
+                                                 &namesLength, nameArray.data());
+    if (result.value != FOE_SUCCESS)
+        return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES);
 
     for (uint32_t i = 0; i < dependencyCount; ++i) {
         char const *pStr = nullptr;
@@ -141,7 +141,7 @@ auto importState(std::string_view topLevelDataSet,
         for (auto innerIt = it + 1; innerIt != dependencyNames.end(); ++innerIt) {
             if (strcmp(*innerIt, *it) == 0) {
                 FOE_LOG(General, Error, "Duplicate dependency '{}' detected", *it)
-                return FOE_STATE_IMPORT_ERROR_DUPLICATE_DEPENDENCIES;
+                return to_foeResult(FOE_STATE_IMPORT_ERROR_DUPLICATE_DEPENDENCIES);
             }
         }
     }
@@ -152,7 +152,7 @@ auto importState(std::string_view topLevelDataSet,
         generateDependencyImporters(dependencyNames.size(), dependencyNames.data(),
                                     dependencyGroups.data(), pSearchPaths, dependencyImporters);
     if (!pass)
-        return FOE_STATE_IMPORT_ERROR_NO_IMPORTER;
+        return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_IMPORTER);
 
     { // Check transitive dependencies
         auto pImporter = dependencyImporters.begin();
@@ -160,9 +160,9 @@ auto importState(std::string_view topLevelDataSet,
             uint32_t transitiveCount;
             uint32_t transitiveStringLength;
 
-            errC = pImporter->get()->getDependencies(&transitiveCount, nullptr,
-                                                     &transitiveStringLength, nullptr);
-            if (errC)
+            result = pImporter->get()->getDependencies(&transitiveCount, nullptr,
+                                                       &transitiveStringLength, nullptr);
+            if (result.value != FOE_SUCCESS)
                 std::abort();
 
             std::vector<foeIdGroup> transitiveGroups;
@@ -172,13 +172,13 @@ auto importState(std::string_view topLevelDataSet,
             transitiveGroups.resize(transitiveCount);
             transitiveNameArray.resize(transitiveStringLength);
 
-            errC = pImporter->get()->getDependencies(&transitiveCount, transitiveGroups.data(),
-                                                     &transitiveStringLength,
-                                                     transitiveNameArray.data());
-            if (errC) {
+            result = pImporter->get()->getDependencies(&transitiveCount, transitiveGroups.data(),
+                                                       &transitiveStringLength,
+                                                       transitiveNameArray.data());
+            if (result.value != FOE_SUCCESS) {
                 FOE_LOG(General, Error, "Failed to import sub-dependencies of the '{}' dependency",
                         dependencyNames[i])
-                return FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES;
+                return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES);
             }
 
             for (uint32_t i = 0; i < transitiveCount; ++i) {
@@ -204,7 +204,7 @@ auto importState(std::string_view topLevelDataSet,
                     FOE_LOG(General, Error,
                             "Could not find transitive dependency '{}' for dependency group '{}'",
                             transitiveNames[j], dependencyNames[i])
-                    return FOE_STATE_IMPORT_ERROR_TRANSITIVE_DEPENDENCIES_UNFULFILLED;
+                    return to_foeResult(FOE_STATE_IMPORT_ERROR_TRANSITIVE_DEPENDENCIES_UNFULFILLED);
                 }
             }
         }
@@ -216,8 +216,9 @@ auto importState(std::string_view topLevelDataSet,
             // Setup importer translations
             uint32_t srcDependencyCount;
             uint32_t srcNameArrayLength;
-            errC = it->getDependencies(&srcDependencyCount, nullptr, &srcNameArrayLength, nullptr);
-            if (errC)
+            result =
+                it->getDependencies(&srcDependencyCount, nullptr, &srcNameArrayLength, nullptr);
+            if (result.value != FOE_SUCCESS)
                 std::abort();
 
             std::vector<foeIdGroup> srcGroups;
@@ -226,9 +227,9 @@ auto importState(std::string_view topLevelDataSet,
             srcGroups.resize(srcDependencyCount);
             srcNameArray.resize(srcNameArrayLength);
 
-            errC = it->getDependencies(&srcDependencyCount, srcGroups.data(), &srcNameArrayLength,
-                                       srcNameArray.data());
-            if (errC)
+            result = it->getDependencies(&srcDependencyCount, srcGroups.data(), &srcNameArrayLength,
+                                         srcNameArray.data());
+            if (result.value != FOE_SUCCESS)
                 std::abort();
 
             for (uint32_t i = 0; i < srcDependencyCount; ++i) {
@@ -246,11 +247,11 @@ auto importState(std::string_view topLevelDataSet,
             dstIDs.emplace_back(foeIdValueToGroup(groupValue));
 
             foeEcsGroupTranslator newTranslator{FOE_NULL_HANDLE};
-            std::error_code errC = foeEcsCreateGroupTranslator(
-                srcNames.size(), srcNames.data(), srcGroups.data(), dstNames.size(),
-                dstNames.data(), dstIDs.data(), &newTranslator);
-            if (errC) {
-                return errC;
+            result = foeEcsCreateGroupTranslator(srcNames.size(), srcNames.data(), srcGroups.data(),
+                                                 dstNames.size(), dstNames.data(), dstIDs.data(),
+                                                 &newTranslator);
+            if (result.value != FOE_SUCCESS) {
+                return result;
             }
 
             it->setGroupTranslator(std::move(newTranslator));
@@ -267,7 +268,7 @@ auto importState(std::string_view topLevelDataSet,
                 std::move(it));
             if (!success) {
                 FOE_LOG(General, Error, "Could not setup Group '{}'", name);
-                return FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE;
+                return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
             }
             ++groupValue;
         }
@@ -291,12 +292,12 @@ auto importState(std::string_view topLevelDataSet,
     bool retVal = pSimulationSet->groupData.persistentImporter()->getGroupEntityIndexData(
         *pSimulationSet->groupData.persistentEntityIndices());
     if (!retVal)
-        return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
+        return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
     retVal = pSimulationSet->groupData.persistentImporter()->getGroupResourceIndexData(
         *pSimulationSet->groupData.persistentResourceIndices());
     if (!retVal)
-        return FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA;
+        return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
     // Read the Resource Editor Names
     if (pSimulationSet->pResourceNameMap != nullptr) {
@@ -338,7 +339,7 @@ auto importState(std::string_view topLevelDataSet,
         if (pGroupImporter != nullptr) {
             if (!pGroupImporter->importStateData(pSimulationSet->pEntityNameMap,
                                                  pSimulationSet.get())) {
-                return FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER;
+                return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER);
             }
         }
     }
@@ -346,9 +347,9 @@ auto importState(std::string_view topLevelDataSet,
     // Importing Persistent State Data
     if (!pSimulationSet->groupData.persistentImporter()->importStateData(
             pSimulationSet->pEntityNameMap, pSimulationSet.get()))
-        return FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER;
+        return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER);
 
     // Successfully returning
     *ppSimulationSet = pSimulationSet.release();
-    return FOE_STATE_IMPORT_SUCCESS;
+    return to_foeResult(FOE_STATE_IMPORT_SUCCESS);
 }

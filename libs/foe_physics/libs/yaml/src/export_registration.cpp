@@ -25,7 +25,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "collision_shape.hpp"
-#include "error_code.hpp"
+#include "result.h"
 #include "rigid_body.hpp"
 
 namespace {
@@ -84,38 +84,39 @@ void onDeregister(foeExporter exporter) {
     }
 }
 
-std::error_code onRegister(foeExporter exporter) {
-    std::error_code errC;
+foeResult onRegister(foeExporter exporter) {
+    foeResult result = to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
 
     if (std::string_view{exporter.pName} == "Yaml") {
         // Resources
-        if (foeImexYamlRegisterResourceFn(exportResources)) {
-            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_EXPORTER;
+        result = foeImexYamlRegisterResourceFn(exportResources);
+        if (result.value != FOE_SUCCESS) {
+            result =
+                to_foeResult(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_EXPORTER);
             goto REGISTRATION_FAILED;
         }
 
         // Components
-        if (foeImexYamlRegisterComponentFn(exportComponents)) {
-            errC = FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER;
+        result = foeImexYamlRegisterComponentFn(exportComponents);
+        if (result.value != FOE_SUCCESS) {
+            result = to_foeResult(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER);
             goto REGISTRATION_FAILED;
         }
     }
 REGISTRATION_FAILED:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         onDeregister(exporter);
 
-    return errC;
+    return result;
 }
 
 } // namespace
 
-extern "C" foeErrorCode foePhysicsYamlRegisterExporters() {
-    auto errC = foeRegisterExportFunctionality(foeExportFunctionality{
+extern "C" foeResult foePhysicsYamlRegisterExporters() {
+    return foeRegisterExportFunctionality(foeExportFunctionality{
         .onRegister = onRegister,
         .onDeregister = onDeregister,
     });
-
-    return foeToErrorCode(errC);
 }
 
 extern "C" void foePhysicsYamlDeregisterExporters() {

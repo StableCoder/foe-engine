@@ -18,28 +18,28 @@
 
 #include <foe/model/assimp/importer.hpp>
 
-#include "../error_code.hpp"
 #include "../log.hpp"
+#include "../result.h"
 #include "armature.hpp"
 #include "armature_create_info.hpp"
 #include "type_defs.h"
 
-std::error_code foeArmatureLoader::initialize(
+foeResult foeArmatureLoader::initialize(
     foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
-        return FOE_BRINGUP_ERROR_LOADER_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_BRINGUP_ERROR_LOADER_INITIALIZATION_FAILED);
 
-    std::error_code errC;
+    foeResult result{.value = FOE_SUCCESS, .toString = NULL};
 
     mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
 
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         deinitialize();
     }
 
-    return errC;
+    return result;
 }
 
 void foeArmatureLoader::deinitialize() {
@@ -154,7 +154,7 @@ void foeArmatureLoader::load(foeResource resource,
                              foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
                     nullptr, nullptr, nullptr, nullptr);
         return;
     }
@@ -165,7 +165,7 @@ void foeArmatureLoader::load(foeResource resource,
     foeArmature data{};
 
     if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
-        pPostLoadFn(resource, foeToErrorCode(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr, nullptr,
+        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr, nullptr,
                     nullptr, nullptr, nullptr);
         return;
     }

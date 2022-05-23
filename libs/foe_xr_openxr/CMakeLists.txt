@@ -27,6 +27,7 @@ target_include_directories(foe_xr_openxr
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader)
+target_link_libraries(foe_xr_openxr PRIVATE khronos_mini_libs)
 
 target_code_coverage(foe_xr_openxr)
 

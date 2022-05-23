@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,16 +17,14 @@
 #ifndef FOE_PHYSICS_IMGUI_REGISTRATION_HPP
 #define FOE_PHYSICS_IMGUI_REGISTRATION_HPP
 
+#include <foe/error_code.h>
 #include <foe/physics/imgui/export.h>
-
-#include <system_error>
 
 class foeSimulationImGuiRegistrar;
 
-FOE_PHYSICS_IMGUI_EXPORT auto foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar)
-    -> std::error_code;
+FOE_PHYSICS_IMGUI_EXPORT foeResult foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
 
-FOE_PHYSICS_IMGUI_EXPORT auto foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar)
-    -> std::error_code;
+FOE_PHYSICS_IMGUI_EXPORT foeResult
+foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
 
 #endif // FOE_PHYSICS_IMGUI_REGISTRATION_HPP

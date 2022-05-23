@@ -19,6 +19,7 @@
 
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/imex/importer_base.hpp>
 #include <foe/imex/yaml/export.h>
 #include <yaml-cpp/yaml.h>
@@ -39,10 +40,10 @@ class foeYamlImporter : public foeImporterBase {
     FOE_IMEX_YAML_EXPORT std::string name() const noexcept override;
     FOE_IMEX_YAML_EXPORT void setGroupTranslator(foeEcsGroupTranslator groupTranslator) override;
 
-    FOE_IMEX_YAML_EXPORT foeErrorCode getDependencies(uint32_t *pDependencyCount,
-                                                      foeIdGroup *pDependencyGroups,
-                                                      uint32_t *pNamesLength,
-                                                      char *pNames) override;
+    FOE_IMEX_YAML_EXPORT foeResult getDependencies(uint32_t *pDependencyCount,
+                                                   foeIdGroup *pDependencyGroups,
+                                                   uint32_t *pNamesLength,
+                                                   char *pNames) override;
     FOE_IMEX_YAML_EXPORT bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) override;
     FOE_IMEX_YAML_EXPORT bool importStateData(foeEditorNameMap *pEntityNameMap,
@@ -70,9 +71,9 @@ using PFN_foeImexYamlResourceImport = void (*)(YAML::Node const &,
                                                foeResourceCreateInfo *);
 
 /// Creates a resource from a given CreateInfo definition
-using PFN_foeImexYamlResourceCreate = std::error_code (*)(foeResourceID,
-                                                          foeResourceCreateInfo,
-                                                          foeSimulation const *);
+using PFN_foeImexYamlResourceCreate = foeResult (*)(foeResourceID,
+                                                    foeResourceCreateInfo,
+                                                    foeSimulation const *);
 
 /// Imports component data from a YAML node
 using PFN_foeImexYamlComponent = bool (*)(YAML::Node const &,

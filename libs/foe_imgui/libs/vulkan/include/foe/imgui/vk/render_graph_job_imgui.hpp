@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,23 +17,21 @@
 #ifndef FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP
 #define FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/imgui/vk/export.h>
-
-#include <system_error>
 
 class foeImGuiRenderer;
 class foeImGuiState;
 
-FOE_IMGUI_VK_EXPORT auto foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                                               std::string_view name,
-                                               VkFence fence,
-                                               foeGfxVkRenderGraphResource renderTarget,
-                                               VkImageLayout finalLayout,
-                                               foeImGuiRenderer *pImguiRenderer,
-                                               foeImGuiState *pImguiState,
-                                               uint32_t frameIndex,
-                                               foeGfxVkRenderGraphResource *pResourcesOut)
-    -> std::error_code;
+FOE_IMGUI_VK_EXPORT foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
+                                                    std::string_view name,
+                                                    VkFence fence,
+                                                    foeGfxVkRenderGraphResource renderTarget,
+                                                    VkImageLayout finalLayout,
+                                                    foeImGuiRenderer *pImguiRenderer,
+                                                    foeImGuiState *pImguiState,
+                                                    uint32_t frameIndex,
+                                                    foeGfxVkRenderGraphResource *pResourcesOut);
 
 #endif // FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP

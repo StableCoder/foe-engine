@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 #include "builtin_descriptor_sets.hpp"
 
-#include <vk_error_code.hpp>
-
 #include "descriptor_set_layout_pool.hpp"
 #include "log.hpp"
+#include "vk_result.h"
 
 auto foeGfxVkBuiltinDescriptorSets::initialize(
     VkDevice device, foeGfxVkDescriptorSetLayoutPool *pDescriptorSetLayoutPool) -> VkResult {
@@ -111,12 +110,15 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
             .pPoolSizes = &size,
         };
 
-        VkResult res = vkCreateDescriptorPool(device, &poolCI, nullptr, &mDescriptorPool);
-        if (res != VK_SUCCESS) {
+        VkResult vkResult = vkCreateDescriptorPool(device, &poolCI, nullptr, &mDescriptorPool);
+        if (vkResult != VK_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            VkResultToString(vkResult, buffer);
             FOE_LOG(foeVkGraphics, Error,
                     "Failed to create foeGfxVkBuiltinDescriptorSets descriptor pool with error: {}",
-                    std::error_code{res}.message());
-            return res;
+                    buffer);
+
+            return vkResult;
         }
     }
 
@@ -140,12 +142,14 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
             .pSetLayouts = &mDummyLayout,
         };
 
-        VkResult res = vkAllocateDescriptorSets(device, &setAI, &mDummySet);
-        if (res != VK_SUCCESS) {
+        VkResult vkResult = vkAllocateDescriptorSets(device, &setAI, &mDummySet);
+        if (vkResult != VK_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            VkResultToString(vkResult, buffer);
             FOE_LOG(foeVkGraphics, Error,
-                    "Failed to allocate builtin descriptor set 'Dummy' with error: {}",
-                    std::error_code{res}.message());
-            return res;
+                    "Failed to allocate builtin descriptor set 'Dummy' with error: {}", buffer);
+
+            return vkResult;
         }
     }
 

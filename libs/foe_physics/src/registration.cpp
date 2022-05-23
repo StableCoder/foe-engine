@@ -27,8 +27,8 @@
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 namespace {
 
@@ -42,26 +42,32 @@ struct TypeSelection {
 };
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    std::error_code errC;
+    foeResult result;
     size_t count;
     size_t errors = 0;
 
     // Systems
     if (pSelection == nullptr || pSelection->physicsSystem) {
-        errC = foeSimulationDecrementRefCount(pSimulation,
-                                              FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(pSimulation,
+                                                FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foePhysics, Warning,
-                    "Attempted to decrement/destroy foePhysicsSystem that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foePhysicsSystem that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foePhysicsSystem *pData;
-            errC = foeSimulationReleaseSystem(
+            result = foeSimulationReleaseSystem(
                 pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, (void **)&pData);
-            if (errC) {
-                FOE_LOG(foePhysics, Warning, "Could not release foePhysicsSystem to destroy - {}",
-                        errC.message());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foePhysics, Warning, "Could not release foePhysicsSystem to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -71,20 +77,26 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     // Components
     if (pSelection == nullptr || pSelection->rigidBodyComponent) {
-        errC = foeSimulationDecrementRefCount(pSimulation,
-                                              FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL, &count);
-        if (errC) {
+        result = foeSimulationDecrementRefCount(pSimulation,
+                                                FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foePhysics, Warning,
-                    "Attempted to decrement/destroy foeRigidBodyPool that doesn't exist - {}",
-                    errC.message());
+                    "Attempted to decrement/destroy foeRigidBodyPool that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foeRigidBodyPool *pData;
-            errC = foeSimulationReleaseComponentPool(
+            result = foeSimulationReleaseComponentPool(
                 pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL, (void **)&pData);
-            if (errC) {
-                FOE_LOG(foePhysics, Warning, "Could not release foeRigidBodyPool to destroy - {}",
-                        errC.message());
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foePhysics, Warning, "Could not release foeRigidBodyPool to destroy: {}",
+                        buffer);
+
                 ++errors;
             } else {
                 delete pData;
@@ -94,23 +106,27 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
     // Loaders
     if (pSelection == nullptr || pSelection->collisionShapeLoader) {
-        errC = foeSimulationDecrementRefCount(
+        result = foeSimulationDecrementRefCount(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, &count);
-        if (errC) {
+        if (result.value != FOE_SUCCESS) {
             // Trying to destroy something that doesn't exist? Not optimal
-            FOE_LOG(
-                foePhysics, Warning,
-                "Attempted to decrement/destroy foeCollisionShapeLoader that doesn't exist - {}",
-                errC.message());
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foePhysics, Warning,
+                    "Attempted to decrement/destroy foeCollisionShapeLoader that doesn't exist: {}",
+                    buffer);
+
             ++errors;
         } else if (count == 0) {
             foeCollisionShapeLoader *pLoader;
-            errC = foeSimulationReleaseResourceLoader(
+            result = foeSimulationReleaseResourceLoader(
                 pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, (void **)&pLoader);
-            if (errC) {
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
                 FOE_LOG(foePhysics, Warning,
-                        "Could not release foeCollisionShapeLoader to destroy - {}",
-                        errC.message());
+                        "Could not release foeCollisionShapeLoader to destroy: {}", buffer);
+
                 ++errors;
             } else {
                 delete pLoader;
@@ -121,8 +137,8 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     return errors;
 }
 
-auto create(foeSimulation *pSimulation) -> std::error_code {
-    std::error_code errC;
+foeResult create(foeSimulation *pSimulation) {
+    foeResult result;
     size_t count;
     TypeSelection selection = {};
 
@@ -134,8 +150,9 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     };
 
     // Loaders
-    if (foeSimulationIncrementRefCount(
-            pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, nullptr)) {
+    result = foeSimulationIncrementRefCount(
+        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, nullptr);
+    if (result.value != FOE_SUCCESS) {
         // Couldn't incement it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER,
@@ -147,39 +164,42 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
                     reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();
                 },
         };
-        errC = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
-        if (errC) {
+        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        if (result.value != FOE_SUCCESS) {
             delete (foeCollisionShapeLoader *)loaderCI.pLoader;
-            FOE_LOG(
-                foePhysics, Error,
-                "onCreate - Failed to create foeCollisionShapeLoader on Simulation {} due to {}",
-                (void *)pSimulation, errC.message());
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foePhysics, Error,
+                    "onCreate - Failed to create foeCollisionShapeLoader on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
-        if (foeSimulationIncrementRefCount(
-                pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, nullptr)) {
-            FOE_LOG(foePhysics, Error,
-                    "onCreate - Failed to increment newly created foeCollisionShapeLoader on "
-                    "Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
-        }
+        foeSimulationIncrementRefCount(pSimulation,
+                                       FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, nullptr);
     }
     selection.collisionShapeLoader = true;
 
     // Components
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
+                                            nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
             .pComponentPool = new foeRigidBodyPool,
             .pMaintenanceFn = [](void *pData) { ((foeRigidBodyPool *)pData)->maintenance(); },
         };
-        errC = foeSimulationInsertComponentPool(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (foeRigidBodyPool *)createInfo.pComponentPool;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foePhysics, Error,
-                    "onCreate - Failed to create foeRigidBodyPool on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "onCreate - Failed to create foeRigidBodyPool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
@@ -188,18 +208,23 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     selection.rigidBodyComponent = true;
 
     // Systems
-    if (foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
-                                       nullptr)) {
+    result = foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
+                                            nullptr);
+    if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
             .pSystem = new foePhysicsSystem,
         };
-        errC = foeSimulationInsertSystem(pSimulation, &createInfo);
-        if (errC) {
+        result = foeSimulationInsertSystem(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
             delete (foePhysicsSystem *)createInfo.pSystem;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foePhysics, Error,
-                    "onCreate - Failed to create foePhysicsSystem on Simulation {} due to {}",
-                    (void *)pSimulation, errC.message());
+                    "onCreate - Failed to create foePhysicsSystem on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto CREATE_FAILED;
         }
         foeSimulationIncrementRefCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
@@ -208,32 +233,34 @@ auto create(foeSimulation *pSimulation) -> std::error_code {
     selection.physicsSystem = true;
 
 CREATE_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         size_t errors = destroySelection(pSimulation, &selection);
         if (errors > 0)
             FOE_LOG(foePhysics, Warning, "Encountered {} issues destroying after failed creation.",
                     errors);
     }
 
-    return errC;
+    return result;
 }
 
 size_t destroy(foeSimulation *pSimulation) { return destroySelection(pSimulation, nullptr); }
 
 size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    std::error_code errC;
+    foeResult result;
     size_t count;
     size_t errors = 0;
 
     // Systems
     if (pSelection == nullptr || pSelection->physicsSystem) {
-        errC = foeSimulationDecrementInitCount(pSimulation,
-                                               FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, &count);
-        if (errC) {
-            FOE_LOG(foePhysics, Warning,
-                    "Failed to decrement foePhysicsSystem initialization count on Simulation {} "
-                    "with error {}",
-                    (void *)pSimulation, errC.message());
+        result = foeSimulationDecrementInitCount(pSimulation,
+                                                 FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(
+                foePhysics, Warning,
+                "Failed to decrement foePhysicsSystem initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
             auto *pLoader = (foePhysicsSystem *)foeSimulationGetSystem(
@@ -244,14 +271,15 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
 
     // Loaders
     if (pSelection == nullptr || pSelection->collisionShapeLoader) {
-        errC = foeSimulationDecrementInitCount(
+        result = foeSimulationDecrementInitCount(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, &count);
-        if (errC) {
-            FOE_LOG(
-                foePhysics, Warning,
-                "Failed to decrement foeCollisionShapeLoader initialization count on Simulation {} "
-                "with error {}",
-                (void *)pSimulation, errC.message());
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foePhysics, Warning,
+                    "Failed to decrement foeCollisionShapeLoader initialization count on "
+                    "Simulation {}: {}",
+                    (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
             auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
@@ -263,20 +291,20 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     return errors;
 }
 
-auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo)
-    -> std::error_code {
-    std::error_code errC;
+foeResult initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
+    foeResult result;
     size_t count;
     TypeSelection selection{};
 
     // Loaders
-    errC = foeSimulationIncrementInitCount(
+    result = foeSimulationIncrementInitCount(
         (foeSimulation *)pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, &count);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foePhysics, Error,
-                "Failed to increment foeArmatureLoader initialization count on Simulation {} with "
-                "error {}",
-                (void *)pSimulation, errC.message());
+                "Failed to increment foeArmatureLoader initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
         goto INITIALIZATION_FAILED;
     }
     selection.collisionShapeLoader = true;
@@ -284,23 +312,27 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
         auto *pLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
 
-        errC = pLoader->initialize(pSimulation->resourcePool);
-        if (errC) {
+        result = pLoader->initialize(pSimulation->resourcePool);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
             FOE_LOG(foePhysics, Error,
-                    "Failed to initialize foeArmatureLoader on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+                    "Failed to initialize foeArmatureLoader on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
             goto INITIALIZATION_FAILED;
         }
     }
 
     // Systems
-    errC = foeSimulationIncrementInitCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
-                                           &count);
-    if (errC) {
+    result = foeSimulationIncrementInitCount(pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
+                                             &count);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foePhysics, Error,
-                "Failed to increment foePhysicsSystem initialization count on Simulation {} with "
-                "error {}",
-                (void *)pSimulation, errC.message());
+                "Failed to increment foePhysicsSystem initialization count on Simulation {}: {}",
+                (void *)pSimulation, buffer);
+
         goto INITIALIZATION_FAILED;
     }
     selection.physicsSystem = true;
@@ -316,25 +348,27 @@ auto initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitIn
         auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
 
-        errC = pSystem->initialize(pSimulation->resourcePool, pCollisionShapeLoader, pRigidBodyPool,
-                                   pPosition3dPool);
-        if (errC) {
-            FOE_LOG(foePhysics, Error,
-                    "Failed to initialize foePhysicsSystem on Simulation {} with error {}",
-                    (void *)pSimulation, errC.message());
+        result = pSystem->initialize(pSimulation->resourcePool, pCollisionShapeLoader,
+                                     pRigidBodyPool, pPosition3dPool);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foePhysics, Error, "Failed to initialize foePhysicsSystem on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
             goto INITIALIZATION_FAILED;
         }
     }
 
 INITIALIZATION_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeSelection(pSimulation, &selection);
         if (errors > 0)
             FOE_LOG(foePhysics, Warning,
                     "Encountered {} issues deinitializing after failed initialization", errors);
     }
 
-    return errC;
+    return result;
 }
 
 size_t deinitialize(foeSimulation *pSimulation) {
@@ -345,11 +379,11 @@ size_t deinitialize(foeSimulation *pSimulation) {
 
 int foePhysicsFunctionalityID() { return FOE_PHYSICS_FUNCTIONALITY_ID; }
 
-extern "C" foeErrorCode foePhysicsRegisterFunctionality() {
+extern "C" foeResult foePhysicsRegisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsRegisterFunctionality - Starting to register functionality")
 
-    auto errC = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeResult result = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foePhysicsFunctionalityID(),
         .pCreateFn = create,
         .pDestroyFn = destroy,
@@ -357,16 +391,17 @@ extern "C" foeErrorCode foePhysicsRegisterFunctionality() {
         .pDeinitializeFn = deinitialize,
     });
 
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         FOE_LOG(foePhysics, Error,
-                "foePhysicsRegisterFunctionality - Failed registering functionality: {} - {}",
-                errC.value(), errC.message())
+                "foePhysicsRegisterFunctionality - Failed registering functionality: {}", buffer)
     } else {
         FOE_LOG(foePhysics, Verbose,
                 "foePhysicsRegisterFunctionality - Completed registering functionality")
     }
 
-    return foeToErrorCode(errC);
+    return result;
 }
 
 extern "C" void foePhysicsDeregisterFunctionality() {

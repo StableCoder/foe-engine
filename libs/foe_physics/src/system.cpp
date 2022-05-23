@@ -24,7 +24,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "bt_glm_conversion.hpp"
-#include "error_code.hpp"
+#include "result.h"
 
 foePhysicsSystem::foePhysicsSystem() :
     mpBroadphase{new btDbvtBroadphase{}},
@@ -38,18 +38,18 @@ foePhysicsSystem::foePhysicsSystem() :
 
 foePhysicsSystem::~foePhysicsSystem() {}
 
-auto foePhysicsSystem::initialize(foeResourcePool resourcePool,
-                                  foeCollisionShapeLoader *pCollisionShapeLoader,
-                                  foeRigidBodyPool *pRigidBodyPool,
-                                  foePosition3dPool *pPosition3dPool) -> std::error_code {
+foeResult foePhysicsSystem::initialize(foeResourcePool resourcePool,
+                                       foeCollisionShapeLoader *pCollisionShapeLoader,
+                                       foeRigidBodyPool *pRigidBodyPool,
+                                       foePosition3dPool *pPosition3dPool) {
     if (resourcePool == FOE_NULL_HANDLE)
-        return FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES;
+        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES);
     if (pCollisionShapeLoader == nullptr)
-        return FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER;
+        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER);
     if (pRigidBodyPool == nullptr)
-        return FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS;
+        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS);
     if (pPosition3dPool == nullptr)
-        return FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS;
+        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS);
 
     mResourcePool = resourcePool;
     mpCollisionShapeLoader = pCollisionShapeLoader;
@@ -71,7 +71,7 @@ auto foePhysicsSystem::initialize(foeResourcePool resourcePool,
         }
     }
 
-    return FOE_PHYSICS_SUCCESS;
+    return to_foeResult(FOE_PHYSICS_SUCCESS);
 }
 
 void foePhysicsSystem::deinitialize() {

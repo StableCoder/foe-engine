@@ -19,12 +19,12 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 #include <foe/physics/export.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
 #include <memory>
-#include <system_error>
 #include <vector>
 
 class foeCollisionShapeLoader;
@@ -40,10 +40,10 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     foePhysicsSystem();
     ~foePhysicsSystem();
 
-    auto initialize(foeResourcePool resourcePool,
-                    foeCollisionShapeLoader *pCollisionShapeLoader,
-                    foeRigidBodyPool *pRigidBodyPool,
-                    foePosition3dPool *pPosition3dPool) -> std::error_code;
+    foeResult initialize(foeResourcePool resourcePool,
+                         foeCollisionShapeLoader *pCollisionShapeLoader,
+                         foeRigidBodyPool *pRigidBodyPool,
+                         foePosition3dPool *pPosition3dPool);
     void deinitialize();
     bool initialized() const noexcept;
 

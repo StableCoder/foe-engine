@@ -23,21 +23,21 @@
 #include <foe/graphics/vk/format.hpp>
 #include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <vk_error_code.hpp>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
+#include "vk_result.h"
 
-std::error_code foeImageLoader::initialize(
+foeResult foeImageLoader::initialize(
     foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
-        return FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED);
 
     mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
 
-    return FOE_GRAPHICS_RESOURCE_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
 void foeImageLoader::deinitialize() {
@@ -47,19 +47,19 @@ void foeImageLoader::deinitialize() {
 
 bool foeImageLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
 
-auto foeImageLoader::initializeGraphics(foeGfxSession gfxSession) -> std::error_code {
+foeResult foeImageLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized()) {
-        return FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_NOT_INITIALIZED;
+        return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_NOT_INITIALIZED);
     }
 
     mGfxSession = gfxSession;
 
-    std::error_code errC = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
-    if (errC) {
+    foeResult result = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
+    if (result.value != FOE_SUCCESS) {
         deinitializeGraphics();
     }
 
-    return errC;
+    return result;
 }
 
 void foeImageLoader::deinitializeGraphics() {
@@ -175,8 +175,8 @@ void foeImageLoader::gfxMaintenance() {
         } else if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
             // There's an error, this is lost.
             it.pPostLoadFn(it.resource,
-                           foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_UPLOAD_FAILURE),
-                           nullptr, nullptr, nullptr, nullptr, nullptr);
+                           to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_UPLOAD_FAILURE), nullptr,
+                           nullptr, nullptr, nullptr, nullptr);
         } else {
             stillLoading.emplace_back(std::move(it));
         }
@@ -211,13 +211,13 @@ void foeImageLoader::load(foeResource resource,
                           foeResourceCreateInfo createInfo,
                           PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, foeToErrorCode(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
                     nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
     auto const *pImageCI = (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-    std::error_code errC;
+    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
     VkResult vkRes{VK_SUCCESS};
     foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
@@ -234,7 +234,7 @@ void foeImageLoader::load(foeResource resource,
         if (imageFormat == FIF_UNKNOWN) {
             FOE_LOG(foeGraphicsResource, Error, "Could not determine image format for: {}",
                     filePath.string())
-            errC = FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_FORMAT_UNKNOWN;
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_FORMAT_UNKNOWN);
             goto LOADING_FAILED;
         }
 
@@ -242,7 +242,7 @@ void foeImageLoader::load(foeResource resource,
         auto *bitmap = FreeImage_Load(imageFormat, filePath.string().c_str(), 0);
         if (bitmap == nullptr) {
             FOE_LOG(foeGraphicsResource, Error, "Failed to load image: {}", filePath.string())
-            errC = FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_LOAD_FAILURE;
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_LOAD_FAILURE);
             goto LOADING_FAILED;
         }
 
@@ -286,8 +286,8 @@ void foeImageLoader::load(foeResource resource,
 
         // Create the resources
         { // Staging Buffer
-            errC = foeGfxCreateUploadBuffer(mGfxUploadContext, totalDataSize, &gfxUploadBuffer);
-            if (errC)
+            result = foeGfxCreateUploadBuffer(mGfxUploadContext, totalDataSize, &gfxUploadBuffer);
+            if (result.value != FOE_SUCCESS)
                 goto LOADING_FAILED;
         }
 
@@ -370,9 +370,9 @@ void foeImageLoader::load(foeResource resource,
                 VkDeviceSize offset = 0;
                 copyRegions.resize(mipLevels);
 
-                errC = foeGfxMapUploadBuffer(mGfxUploadContext, gfxUploadBuffer,
-                                             reinterpret_cast<void **>(&pData));
-                if (errC)
+                result = foeGfxMapUploadBuffer(mGfxUploadContext, gfxUploadBuffer,
+                                               reinterpret_cast<void **>(&pData));
+                if (result.value != FOE_SUCCESS)
                     goto LOADING_FAILED;
 
                 for (uint32_t i = 0; i < mipLevels; ++i) {
@@ -408,17 +408,16 @@ void foeImageLoader::load(foeResource resource,
                     .layerCount = 1,
                 };
 
-                vkRes = recordImageUploadCommands(
+                result = recordImageUploadCommands(
                     mGfxUploadContext, &subresourceRange, static_cast<uint32_t>(copyRegions.size()),
                     copyRegions.data(), gfxUploadBuffer, imgData.image, VK_ACCESS_SHADER_READ_BIT,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &gfxUploadRequest);
-                if (vkRes != VK_SUCCESS) {
+                if (result.value != FOE_SUCCESS) {
                     goto LOADING_FAILED;
                 }
 
-                errC = foeSubmitUploadDataCommands(mGfxUploadContext, gfxUploadRequest);
-                if (errC) {
-                    vkRes = static_cast<VkResult>(errC.value());
+                result = foeSubmitUploadDataCommands(mGfxUploadContext, gfxUploadRequest);
+                if (result.value != FOE_SUCCESS) {
                     goto LOADING_FAILED;
                 }
             }
@@ -426,16 +425,19 @@ void foeImageLoader::load(foeResource resource,
     }
 
 LOADING_FAILED:
-    if (!errC && vkRes != VK_SUCCESS) {
-        errC = vkRes;
+    if (result.value == FOE_SUCCESS && vkRes != VK_SUCCESS) {
+        result = vk_to_foeResult(vkRes);
     }
-    if (errC) {
+
+    if (result.value != FOE_SUCCESS) {
         // Failed at some point, clear all relevant data
-        FOE_LOG(foeGraphicsResource, Error, "Failed to load foeImage {} with error {}:{}",
-                foeIdToString(foeResourceGetID(resource)), errC.value(), errC.message())
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeGraphicsResource, Error, "Failed to load foeImage {} with error {}",
+                foeIdToString(foeResourceGetID(resource)), buffer)
 
         // Run the post-load function with the error
-        pPostLoadFn(resource, foeToErrorCode(errC), nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
 
         if (gfxUploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pimage an nullptr, so the upload completes then the

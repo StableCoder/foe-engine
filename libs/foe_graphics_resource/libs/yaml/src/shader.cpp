@@ -84,12 +84,14 @@ void yaml_read_shader(YAML::Node const &node,
         new (pDst) foeShaderCreateInfo(std::move(*pSrcData));
     };
 
-    std::error_code errC = foeCreateResourceCreateInfo(
+    foeResult result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO, foeDestroyShaderCreateInfo,
         sizeof(foeShaderCreateInfo), &shaderCI, dataFn, &createInfo);
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
         throw foeYamlException{std::string{"Failed to create foeShaderCreateInfo due to error: "} +
-                               errC.message()};
+                               buffer};
     }
 
     *pCreateInfo = createInfo;

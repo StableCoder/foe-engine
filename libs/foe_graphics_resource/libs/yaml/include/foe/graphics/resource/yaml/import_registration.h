@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-FOE_GFX_RES_YAML_EXPORT foeErrorCode foeGraphicsResourceYamlRegisterImporters();
+FOE_GFX_RES_YAML_EXPORT foeResult foeGraphicsResourceYamlRegisterImporters();
 
 FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlDeregisterImporters();
 

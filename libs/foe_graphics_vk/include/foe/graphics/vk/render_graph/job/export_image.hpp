@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,19 +17,18 @@
 #ifndef FOE_GRAPHICS_RENDER_GRAPH_JOB_EXPORT_IMAGE_HPP
 #define FOE_GRAPHICS_RENDER_GRAPH_JOB_EXPORT_IMAGE_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <vulkan/vulkan.h>
 
 #include <string_view>
-#include <system_error>
 
-FOE_GFX_EXPORT auto foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                 std::string_view name,
-                                                 VkFence fence,
-                                                 foeGfxVkRenderGraphResource resource,
-                                                 VkImageLayout requiredLayout,
-                                                 std::vector<VkSemaphore> signalSemaphores)
-    -> std::error_code;
+FOE_GFX_EXPORT foeResult foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                      std::string_view name,
+                                                      VkFence fence,
+                                                      foeGfxVkRenderGraphResource resource,
+                                                      VkImageLayout requiredLayout,
+                                                      std::vector<VkSemaphore> signalSemaphores);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_EXPORT_IMAGE_HPP

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
 #include <foe/xr/openxr/session.hpp>
 
 #include <foe/xr/openxr/core.hpp>
-#include <foe/xr/openxr/error_code.hpp>
 
+#include "result.h"
 #include "runtime.hpp"
+#include "xr_result.h"
 
-std::error_code foeOpenXrSession::createSession(foeXrRuntime runtime,
-                                                XrSystemId systemId,
-                                                XrViewConfigurationType configType,
-                                                void const *pGraphicsBinding) {
+foeResult foeOpenXrSession::createSession(foeXrRuntime runtime,
+                                          XrSystemId systemId,
+                                          XrViewConfigurationType configType,
+                                          void const *pGraphicsBinding) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     XrSessionCreateInfo sessionCI{
@@ -32,9 +33,9 @@ std::error_code foeOpenXrSession::createSession(foeXrRuntime runtime,
         .next = pGraphicsBinding,
         .systemId = systemId,
     };
-    std::error_code errC = xrCreateSession(pRuntime->instance, &sessionCI, &session);
-    if (errC) {
-        return errC;
+    XrResult xrResult = xrCreateSession(pRuntime->instance, &sessionCI, &session);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     } else {
         // Add the new session to the runtime
         foeOpenXrAddSessionToRuntime(pRuntime, this);
@@ -48,9 +49,9 @@ std::error_code foeOpenXrSession::createSession(foeXrRuntime runtime,
 
     // Reference Space
     std::vector<XrReferenceSpaceType> refSpaces;
-    errC = foeOpenXrEnumerateReferenceSpaces(session, refSpaces);
-    if (errC) {
-        return errC;
+    foeResult result = foeOpenXrEnumerateReferenceSpaces(session, refSpaces);
+    if (result.value != FOE_SUCCESS) {
+        return result;
     }
 
     XrPosef identity{
@@ -63,12 +64,12 @@ std::error_code foeOpenXrSession::createSession(foeXrRuntime runtime,
         .referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL,
         .poseInReferenceSpace = identity,
     };
-    errC = xrCreateReferenceSpace(session, &refSpaceCI, &space);
-    if (errC) {
-        return errC;
+    xrResult = xrCreateReferenceSpace(session, &refSpaceCI, &space);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
-    return errC;
+    return to_foeResult(FOE_OPENXR_SUCCESS);
 }
 
 void foeOpenXrSession::destroySession() {
@@ -86,22 +87,24 @@ void foeOpenXrSession::destroySession() {
     session = XR_NULL_HANDLE;
 }
 
-std::error_code foeOpenXrSession::beginSession() {
+foeResult foeOpenXrSession::beginSession() {
     XrSessionBeginInfo sessionBI{
         .type = XR_TYPE_SESSION_BEGIN_INFO,
         .primaryViewConfigurationType = type,
     };
-    auto errC = xrBeginSession(session, &sessionBI);
+    XrResult xrResult = xrBeginSession(session, &sessionBI);
 
-    if (!errC) {
+    if (xrResult != XR_SUCCESS) {
         // We've got everything readied and are beginning the active state, so to sycnhronize it
         // will start calling upon the wait/begin/end frame functions
         active = true;
     }
 
-    return errC;
+    return xr_to_foeResult(XR_SUCCESS);
 }
 
-std::error_code foeOpenXrSession::requestExitSession() { return xrRequestExitSession(session); }
+foeResult foeOpenXrSession::requestExitSession() {
+    return xr_to_foeResult(xrRequestExitSession(session));
+}
 
-std::error_code foeOpenXrSession::endSession() { return xrEndSession(session); }
+foeResult foeOpenXrSession::endSession() { return xr_to_foeResult(xrEndSession(session)); }

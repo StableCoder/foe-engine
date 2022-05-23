@@ -24,14 +24,13 @@
 #include <foe/resource/resource.h>
 
 #include <mutex>
-#include <system_error>
 #include <vector>
 
 class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
   public:
     ~foeCollisionShapeLoader();
 
-    std::error_code initialize(foeResourcePool resourcePool);
+    foeResult initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 #include "descriptor_set_layout_pool.hpp"
 
-#include <vk_error_code.hpp>
-
 #include "log.hpp"
+#include "vk_result.h"
 
 auto foeGfxVkDescriptorSetLayoutPool::initialize(VkDevice device) -> VkResult {
     if (mDevice != VK_NULL_HANDLE)
@@ -78,11 +77,13 @@ auto foeGfxVkDescriptorSetLayoutPool::get(
     FOE_LOG(foeVkGraphics, Verbose, "Creating a new DescriptorSetLayout");
 
     VkDescriptorSetLayout newLayout;
-    std::error_code errc =
+    VkResult vkResult =
         vkCreateDescriptorSetLayout(mDevice, pDescriptorSetLayoutCI, nullptr, &newLayout);
-    if (errc) {
-        FOE_LOG(foeVkGraphics, Error, "vkCreateDescriptorSetLayout failed with error: {}",
-                errc.message());
+    if (vkResult != VK_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        VkResultToString(vkResult, buffer);
+        FOE_LOG(foeVkGraphics, Error, "vkCreateDescriptorSetLayout failed with error: {}", buffer);
+
         return VK_NULL_HANDLE;
     }
 

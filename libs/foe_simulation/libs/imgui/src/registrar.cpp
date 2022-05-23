@@ -16,7 +16,7 @@
 
 #include <foe/simulation/imgui/registrar.hpp>
 
-#include "error_code.hpp"
+#include "result.h"
 
 #include <cstring>
 
@@ -30,18 +30,18 @@ bool foeSimulationImGuiRegistrar::matchFunctionList(ComponentFn componentFn,
            pDisplayFns->loaderFn == loaderFn;
 }
 
-auto foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
-                                                   ResourceFn resourceFn,
-                                                   ResourceCreateInfoFn resourceCreateInfoFn,
-                                                   LoaderFn loaderFn) -> std::error_code {
+foeResult foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
+                                                        ResourceFn resourceFn,
+                                                        ResourceCreateInfoFn resourceCreateInfoFn,
+                                                        LoaderFn loaderFn) {
     if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
-        return FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL;
+        return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL);
 
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (matchFunctionList(componentFn, resourceFn, resourceCreateInfoFn, loaderFn, &it))
-            return FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_ALREADY_REGISTERED;
+            return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_ALREADY_REGISTERED);
     }
 
     mFnLists.emplace_back(DisplayFns{
@@ -51,26 +51,26 @@ auto foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
         .loaderFn = loaderFn,
     });
 
-    return FOE_SIMULATION_IMGUI_SUCCESS;
+    return to_foeResult(FOE_SIMULATION_IMGUI_SUCCESS);
 }
 
-auto foeSimulationImGuiRegistrar::deregisterElements(ComponentFn componentFn,
-                                                     ResourceFn resourceFn,
-                                                     ResourceCreateInfoFn resourceCreateInfoFn,
-                                                     LoaderFn loaderFn) -> std::error_code {
+foeResult foeSimulationImGuiRegistrar::deregisterElements(ComponentFn componentFn,
+                                                          ResourceFn resourceFn,
+                                                          ResourceCreateInfoFn resourceCreateInfoFn,
+                                                          LoaderFn loaderFn) {
     if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
-        return FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL;
+        return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL);
 
     std::scoped_lock lock{mSync};
 
     for (auto it = mFnLists.begin(); it != mFnLists.end(); ++it) {
         if (matchFunctionList(componentFn, resourceFn, resourceCreateInfoFn, loaderFn, &(*it))) {
             mFnLists.erase(it);
-            return FOE_SIMULATION_IMGUI_SUCCESS;
+            return to_foeResult(FOE_SIMULATION_IMGUI_SUCCESS);
         }
     }
 
-    return FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_NOT_REGISTERED;
+    return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_NOT_REGISTERED);
 }
 
 void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity,

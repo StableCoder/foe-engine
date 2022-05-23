@@ -16,9 +16,9 @@
 
 #include <foe/xr/openxr/vk/vulkan.hpp>
 
-#include <foe/xr/openxr/error_code.hpp>
-
 #include <memory>
+
+#include "xr_result.h"
 
 namespace {
 
@@ -68,111 +68,116 @@ std::vector<XrSystemId> getAllSystemIds(XrInstance instance) {
 
 } // namespace
 
-auto foeXrGetVulkanInstanceExtensions(XrInstance instance, std::vector<std::string> &extensions)
-    -> std::error_code {
+foeResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
+                                           std::vector<std::string> &extensions) {
     PFN_xrGetVulkanInstanceExtensionsKHR GetVulkanInstanceExtensions{nullptr};
-    XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR",
-                                         (PFN_xrVoidFunction *)&GetVulkanInstanceExtensions);
-    if (res != XR_SUCCESS) {
-        return res;
+    XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR",
+                                              (PFN_xrVoidFunction *)&GetVulkanInstanceExtensions);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
     // Iterate through all systems available annd add their required extensions
     auto systemIds = getAllSystemIds(instance);
     for (auto id : systemIds) {
         uint32_t bufferCapacity;
-        res = GetVulkanInstanceExtensions(instance, id, 0, &bufferCapacity, nullptr);
-        if (res != XR_SUCCESS) {
-            return res;
+        xrResult = GetVulkanInstanceExtensions(instance, id, 0, &bufferCapacity, nullptr);
+        if (xrResult != XR_SUCCESS) {
+            return xr_to_foeResult(xrResult);
         }
 
         std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
-        res = GetVulkanInstanceExtensions(instance, id, bufferCapacity, &bufferCapacity,
-                                          buffer.get());
-        if (res != XR_SUCCESS) {
-            return res;
+        xrResult = GetVulkanInstanceExtensions(instance, id, bufferCapacity, &bufferCapacity,
+                                               buffer.get());
+        if (xrResult != XR_SUCCESS) {
+            return xr_to_foeResult(xrResult);
         }
 
         auto newExtensions = splitString(buffer.get(), bufferCapacity);
         extensions.insert(extensions.end(), newExtensions.begin(), newExtensions.end());
     }
 
-    return res;
+    return xr_to_foeResult(xrResult);
 }
 
-auto foeXrGetVulkanDeviceExtensions(XrInstance instance, std::vector<std::string> &extensions)
-    -> std::error_code {
+foeResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
+                                         std::vector<std::string> &extensions) {
     PFN_xrGetVulkanDeviceExtensionsKHR GetVulkanDeviceExtensions{nullptr};
-    XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR",
-                                         (PFN_xrVoidFunction *)&GetVulkanDeviceExtensions);
-    if (res != XR_SUCCESS) {
-        return res;
+    XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR",
+                                              (PFN_xrVoidFunction *)&GetVulkanDeviceExtensions);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
     // Iterate through all systems available annd add their required extensions
     auto systemIds = getAllSystemIds(instance);
     for (auto id : systemIds) {
         uint32_t bufferCapacity;
-        res = GetVulkanDeviceExtensions(instance, id, 0, &bufferCapacity, nullptr);
-        if (res != XR_SUCCESS) {
-            return res;
+        xrResult = GetVulkanDeviceExtensions(instance, id, 0, &bufferCapacity, nullptr);
+        if (xrResult != XR_SUCCESS) {
+            return xr_to_foeResult(xrResult);
         }
 
         std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
-        res =
+        xrResult =
             GetVulkanDeviceExtensions(instance, id, bufferCapacity, &bufferCapacity, buffer.get());
-        if (res != XR_SUCCESS) {
-            return res;
+        if (xrResult != XR_SUCCESS) {
+            return xr_to_foeResult(xrResult);
         }
 
         auto newExtensions = splitString(buffer.get(), bufferCapacity);
         extensions.insert(extensions.end(), newExtensions.begin(), newExtensions.end());
     }
 
-    return res;
+    return xr_to_foeResult(xrResult);
 }
 
-auto foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                  XrSystemId systemId,
-                                  VkInstance vkInstance,
-                                  VkPhysicalDevice *vkPhysicalDevice) -> std::error_code {
+foeResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                       XrSystemId systemId,
+                                       VkInstance vkInstance,
+                                       VkPhysicalDevice *vkPhysicalDevice) {
     PFN_xrGetVulkanGraphicsDeviceKHR GetVulkanGraphicsDevice{nullptr};
-    XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR",
-                                         (PFN_xrVoidFunction *)&GetVulkanGraphicsDevice);
-    if (res != XR_SUCCESS) {
-        return res;
+    XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR",
+                                              (PFN_xrVoidFunction *)&GetVulkanGraphicsDevice);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
-    return GetVulkanGraphicsDevice(instance, systemId, vkInstance, vkPhysicalDevice);
+    xrResult = GetVulkanGraphicsDevice(instance, systemId, vkInstance, vkPhysicalDevice);
+
+    return xr_to_foeResult(xrResult);
 }
 
-auto foeXrGetVulkanGraphicsRequirements(XrInstance instance,
-                                        XrSystemId systemId,
-                                        XrGraphicsRequirementsVulkanKHR *graphicsRequirements)
-    -> std::error_code {
+foeResult foeXrGetVulkanGraphicsRequirements(
+    XrInstance instance,
+    XrSystemId systemId,
+    XrGraphicsRequirementsVulkanKHR *graphicsRequirements) {
     PFN_xrGetVulkanGraphicsRequirementsKHR GetVulkanGraphicsRequirements{nullptr};
-    XrResult res = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR",
-                                         (PFN_xrVoidFunction *)&GetVulkanGraphicsRequirements);
-    if (res != XR_SUCCESS) {
-        return res;
+    XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsRequirementsKHR",
+                                              (PFN_xrVoidFunction *)&GetVulkanGraphicsRequirements);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
     graphicsRequirements->type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR;
 
-    return GetVulkanGraphicsRequirements(instance, systemId, graphicsRequirements);
+    xrResult = GetVulkanGraphicsRequirements(instance, systemId, graphicsRequirements);
+
+    return xr_to_foeResult(xrResult);
 }
 
-auto foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
-                                         std::vector<XrSwapchainImageVulkanKHR> &images)
-    -> std::error_code {
+foeResult foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
+                                              std::vector<XrSwapchainImageVulkanKHR> &images) {
     uint32_t imageCount;
-    XrResult res = xrEnumerateSwapchainImages(xrSwapchain, 0, &imageCount, nullptr);
-    if (res != XR_SUCCESS) {
-        return res;
+    XrResult xrResult = xrEnumerateSwapchainImages(xrSwapchain, 0, &imageCount, nullptr);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
     }
 
     images.resize(imageCount);
-    return xrEnumerateSwapchainImages(
-        xrSwapchain, static_cast<uint32_t>(images.size()), &imageCount,
-        reinterpret_cast<XrSwapchainImageBaseHeader *>(images.data()));
+    xrResult =
+        xrEnumerateSwapchainImages(xrSwapchain, static_cast<uint32_t>(images.size()), &imageCount,
+                                   reinterpret_cast<XrSwapchainImageBaseHeader *>(images.data()));
+
+    return xr_to_foeResult(xrResult);
 }

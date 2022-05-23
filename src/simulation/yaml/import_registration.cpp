@@ -31,23 +31,23 @@
 #include "../render_state_pool.hpp"
 #include "../type_defs.h"
 #include "armature.hpp"
-#include "error_code.hpp"
+#include "result.h"
 
 namespace {
 
 // Resources
 
-std::error_code armatureCreateProcessing(foeResourceID resourceID,
-                                         foeResourceCreateInfo createInfo,
-                                         foeSimulation const *pSimulation) {
+foeResult armatureCreateProcessing(foeResourceID resourceID,
+                                   foeResourceCreateInfo createInfo,
+                                   foeSimulation const *pSimulation) {
     foeResource armature =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
 
     if (armature == FOE_NULL_HANDLE)
-        return FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS;
+        return to_foeResult(FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS);
 
-    return FOE_BRINGUP_YAML_SUCCESS;
+    return to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
 }
 
 // Components
@@ -130,37 +130,37 @@ bool importCamera(YAML::Node const &node,
 
 } // namespace
 
-extern "C" foeErrorCode foeBringupYamlRegisterImporters() {
-    std::error_code errC;
+extern "C" foeResult foeBringupYamlRegisterImporters() {
+    foeResult result = to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
 
     // Resources
     if (!foeImexYamlRegisterResourceFns(yaml_armature_key(), yaml_read_armature,
                                         armatureCreateProcessing)) {
-        errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER;
+        result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER);
         goto REGISTRATION_FAILED;
     }
 
     // Component
     if (!foeImexYamlRegisterComponentFn(yaml_armature_state_key(), importArmatureState)) {
-        errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER;
+        result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_STATE_IMPORTER);
         goto REGISTRATION_FAILED;
     }
 
     if (!foeImexYamlRegisterComponentFn(yaml_render_state_key(), importRenderState)) {
-        errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER;
+        result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_RENDER_STATE_IMPORTER);
         goto REGISTRATION_FAILED;
     }
 
     if (!foeImexYamlRegisterComponentFn(yaml_camera_key(), importCamera)) {
-        errC = FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER;
+        result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER);
         goto REGISTRATION_FAILED;
     }
 
 REGISTRATION_FAILED:
-    if (errC)
+    if (result.value != FOE_SUCCESS)
         foeBringupYamlDeregisterImporters();
 
-    return foeToErrorCode(errC);
+    return result;
 }
 
 extern "C" void foeBringupYamlDeregisterImporters() {

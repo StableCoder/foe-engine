@@ -38,10 +38,9 @@ FOE_DEFINE_HANDLE_CASTS(delayed_destructor, foeGfxDelayedDestructorImpl, foeGfxD
 
 } // namespace
 
-auto foeGfxCreateDelayedDestructor(foeGfxSession session,
-                                   uint32_t initialDelay,
-                                   foeGfxDelayedDestructor *pDelayedDestructor) -> std::error_code {
-
+foeResult foeGfxCreateDelayedDestructor(foeGfxSession session,
+                                        uint32_t initialDelay,
+                                        foeGfxDelayedDestructor *pDelayedDestructor) {
     auto *pNewDelayedDestructor = new foeGfxDelayedDestructorImpl{
         .session = session,
         .currentDelay = initialDelay,
@@ -56,7 +55,7 @@ auto foeGfxCreateDelayedDestructor(foeGfxSession session,
     FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedDestructor - Created",
             static_cast<void *>(pNewDelayedDestructor));
 
-    return std::error_code{};
+    return foeResult{.value = FOE_SUCCESS, .toString = NULL};
 }
 
 void foeGfxDestroyDelayedDestructor(foeGfxDelayedDestructor delayedDestructor) {

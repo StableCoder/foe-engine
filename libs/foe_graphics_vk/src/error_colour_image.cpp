@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@
 #include <foe/graphics/vk/format.hpp>
 #include <foe/graphics/vk/image.hpp>
 
+#include "result.h"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
+#include "vk_result.h"
 
 #include <array>
 #include <cmath>
@@ -68,17 +70,18 @@ void fillErrorImageData(VkFormat format, uint32_t extent, uint32_t numCheckSquar
 
 } // namespace
 
-VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
-                                   VkFormat format,
-                                   uint32_t numMipLevels,
-                                   uint32_t numCheckSquares,
-                                   VmaAllocation *pAlloc,
-                                   VkImage *pImage,
-                                   VkImageView *pImageView,
-                                   VkSampler *pSampler) {
+foeResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
+                                    VkFormat format,
+                                    uint32_t numMipLevels,
+                                    uint32_t numCheckSquares,
+                                    VmaAllocation *pAlloc,
+                                    VkImage *pImage,
+                                    VkImageView *pImageView,
+                                    VkSampler *pSampler) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
-    VkResult res;
+    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    VkResult vkResult{VK_SUCCESS};
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
     VkExtent3D extent = VkExtent3D{maxExtent, maxExtent, 1U};
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
@@ -108,9 +111,9 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
             .usage = VMA_MEMORY_USAGE_CPU_ONLY,
         };
 
-        res = vmaCreateBuffer(pUploadContext->allocator, &bufferCI, &allocCI, &stagingBuffer,
-                              &stagingAlloc, nullptr);
-        if (res != VK_SUCCESS) {
+        vkResult = vmaCreateBuffer(pUploadContext->allocator, &bufferCI, &allocCI, &stagingBuffer,
+                                   &stagingAlloc, nullptr);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -132,9 +135,9 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
             .usage = VMA_MEMORY_USAGE_GPU_ONLY,
         };
 
-        res =
+        vkResult =
             vmaCreateImage(pUploadContext->allocator, &imageCI, &allocCI, &image, &alloc, nullptr);
-        if (res != VK_SUCCESS) {
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -144,9 +147,9 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
         VkDeviceSize offset = 0;
         copyRegions.resize(numMipLevels);
 
-        res = vmaMapMemory(pUploadContext->allocator, stagingAlloc,
-                           reinterpret_cast<void **>(&pData));
-        if (res != VK_SUCCESS) {
+        vkResult = vmaMapMemory(pUploadContext->allocator, stagingAlloc,
+                                reinterpret_cast<void **>(&pData));
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -182,17 +185,16 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
             .layerCount = 1,
         };
 
-        res = recordImageUploadCommands(
+        result = recordImageUploadCommands(
             uploadContext, &subresourceRange, static_cast<uint32_t>(copyRegions.size()),
             copyRegions.data(), stagingBuffer, image, VK_ACCESS_SHADER_READ_BIT,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
-        if (res != VK_SUCCESS) {
+        if (result.value != FOE_SUCCESS) {
             goto SUBMIT_FAILED;
         }
 
-        auto errC = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
-        if (errC) {
-            res = static_cast<VkResult>(errC.value());
+        result = foeSubmitUploadDataCommands(uploadContext, uploadRequest);
+        if (result.value != FOE_SUCCESS) {
             goto SUBMIT_FAILED;
         }
     }
@@ -215,8 +217,8 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
                 },
         };
 
-        res = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &view);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateImageView(pUploadContext->device, &viewCI, nullptr, &view);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -236,8 +238,8 @@ VkResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
             .maxLod = static_cast<float>(numMipLevels - 1),
         };
 
-        res = vkCreateSampler(pUploadContext->device, &samplerCI, nullptr, &sampler);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateSampler(pUploadContext->device, &samplerCI, nullptr, &sampler);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
     }
@@ -248,7 +250,7 @@ CREATE_FAILED : {
         requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
     }
     if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE) {
-        res = VK_ERROR_DEVICE_LOST;
+        vkResult = VK_ERROR_DEVICE_LOST;
     }
 }
 
@@ -261,7 +263,10 @@ SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed t
         vmaDestroyBuffer(pUploadContext->allocator, stagingBuffer, stagingAlloc);
     }
 
-    if (res == VK_SUCCESS) {
+    if (result.value == FOE_SUCCESS && vkResult != VK_SUCCESS)
+        result = vk_to_foeResult(vkResult);
+
+    if (result.value == FOE_SUCCESS) {
         *pImage = image;
         *pAlloc = alloc;
         *pImageView = view;
@@ -280,5 +285,5 @@ SUBMIT_FAILED: // Skips waiting for destination queue to complete if it failed t
         }
     }
 
-    return res;
+    return result;
 }

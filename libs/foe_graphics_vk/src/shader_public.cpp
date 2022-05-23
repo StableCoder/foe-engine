@@ -17,11 +17,11 @@
 #include <foe/graphics/shader.hpp>
 #include <foe/graphics/vk/shader.hpp>
 
-#include <vk_error_code.hpp>
 #include <vk_struct_cleanup.h>
 
 #include "session.hpp"
 #include "shader.hpp"
+#include "vk_result.h"
 
 namespace {
 
@@ -38,14 +38,14 @@ void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo
     cleanup_VkDescriptorSetLayoutCreateInfo(&pCreateInfo->descriptorSetLayoutCI);
 }
 
-std::error_code foeGfxVkCreateShader(foeGfxSession session,
-                                     foeGfxVkShaderCreateInfo const *pCreateInfo,
-                                     uint32_t shaderCodeSize,
-                                     uint32_t const *pShaderCode,
-                                     foeGfxShader *pShader) {
+foeResult foeGfxVkCreateShader(foeGfxSession session,
+                               foeGfxVkShaderCreateInfo const *pCreateInfo,
+                               uint32_t shaderCodeSize,
+                               uint32_t const *pShaderCode,
+                               foeGfxShader *pShader) {
     auto *pSession = session_from_handle(session);
 
-    VkResult vkRes{VK_SUCCESS};
+    VkResult vkResult = VK_SUCCESS;
     auto *pNew = new foeGfxVkShader;
 
     // Get the DescriptorSetLayout directly from the gfxSession
@@ -64,18 +64,18 @@ std::error_code foeGfxVkCreateShader(foeGfxSession session,
         .pCode = pShaderCode,
     };
 
-    vkRes = vkCreateShaderModule(pSession->device, &shaderCI, nullptr, &pNew->module);
-    if (vkRes != VK_SUCCESS)
+    vkResult = vkCreateShaderModule(pSession->device, &shaderCI, nullptr, &pNew->module);
+    if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
 CREATE_FAILED:
-    if (vkRes == VK_SUCCESS) {
+    if (vkResult == VK_SUCCESS) {
         *pShader = shader_to_handle(pNew);
     } else {
         foeGfxVkDestroyShader(pSession, pNew);
     }
 
-    return vkRes;
+    return vk_to_foeResult(vkResult);
 }
 
 void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader) {

@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-FOE_POSITION_YAML_EXPORT foeErrorCode foePositionYamlRegisterImporters();
+FOE_POSITION_YAML_EXPORT foeResult foePositionYamlRegisterImporters();
 
 FOE_POSITION_YAML_EXPORT void foePositionYamlDeregisterImporters();
 

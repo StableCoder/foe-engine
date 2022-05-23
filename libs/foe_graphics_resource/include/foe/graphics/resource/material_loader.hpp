@@ -31,11 +31,11 @@
 
 class FOE_GFX_RES_EXPORT foeMaterialLoader {
   public:
-    auto initialize(foeResourcePool resourcePool) -> std::error_code;
+    foeResult initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    foeResult initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 
@@ -48,7 +48,7 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
-    std::error_code createDescriptorSet(foeMaterial *pMaterialData);
+    VkResult createDescriptorSet(foeMaterial *pMaterialData);
 
     static void unloadResource(void *pContext,
                                foeResource resource,

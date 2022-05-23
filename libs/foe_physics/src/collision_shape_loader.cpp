@@ -21,24 +21,24 @@
 #include <foe/physics/type_defs.h>
 
 #include "bt_glm_conversion.hpp"
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 
-std::error_code foeCollisionShapeLoader::initialize(foeResourcePool resourcePool) {
+foeResult foeCollisionShapeLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE)
-        return FOE_PHYSICS_ERROR_COLLISION_SHAPE_LOADER_INITIALIZATION_FAILED;
+        return to_foeResult(FOE_PHYSICS_ERROR_COLLISION_SHAPE_LOADER_INITIALIZATION_FAILED);
 
-    std::error_code errC;
+    foeResult result = to_foeResult(FOE_PHYSICS_SUCCESS);
 
     mResourcePool = resourcePool;
 
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         deinitialize();
     }
 
-    return errC;
+    return result;
 }
 
 void foeCollisionShapeLoader::deinitialize() {
@@ -108,7 +108,7 @@ void foeCollisionShapeLoader::load(foeResource resource,
                                    foeResourceCreateInfo createInfo,
                                    PFN_foeResourcePostLoad *pPostLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, foeToErrorCode(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
                     nullptr, nullptr, nullptr, nullptr);
         return;
     }

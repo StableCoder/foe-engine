@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,23 +19,23 @@
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
 #include <foe/xr/openxr/core.hpp>
-#include <foe/xr/openxr/error_code.hpp>
 #include <foe/xr/openxr/session.hpp>
 
 #include "debug_utils.hpp"
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 #include "runtime.hpp"
+#include "xr_result.h"
 
-std::error_code foeOpenXrCreateRuntime(char const *appName,
-                                       uint32_t appVersion,
-                                       uint32_t layerCount,
-                                       char const *const *ppLayerNames,
-                                       uint32_t extensionCount,
-                                       char const *const *ppExtensionNames,
-                                       bool validation,
-                                       bool debugLogging,
-                                       foeXrRuntime *pRuntime) {
+foeResult foeOpenXrCreateRuntime(char const *appName,
+                                 uint32_t appVersion,
+                                 uint32_t layerCount,
+                                 char const *const *ppLayerNames,
+                                 uint32_t extensionCount,
+                                 char const *const *ppExtensionNames,
+                                 bool validation,
+                                 bool debugLogging,
+                                 foeXrRuntime *pRuntime) {
     auto *pNewRuntime = new foeOpenXrRuntime;
     XrResult xrRes{XR_SUCCESS};
 
@@ -115,54 +115,54 @@ CREATE_FAILED:
         *pRuntime = runtime_to_handle(pNewRuntime);
     }
 
-    return xrRes;
+    return xr_to_foeResult(xrRes);
 }
 
-std::error_code foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiVersion) {
+foeResult foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiVersion) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     *pApiVersion = pRuntime->apiVersion;
 
-    return FOE_OPENXR_SUCCESS;
+    return to_foeResult(FOE_OPENXR_SUCCESS);
 }
 
-std::error_code foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
-                                                uint32_t *pLayerNamesLength,
-                                                char *pLayerNames) {
+foeResult foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
+                                          uint32_t *pLayerNamesLength,
+                                          char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames,
                                   pLayerNamesLength, pLayerNames)
-               ? FOE_OPENXR_SUCCESS
-               : FOE_OPENXR_INCOMPLETE;
+               ? to_foeResult(FOE_OPENXR_SUCCESS)
+               : to_foeResult(FOE_OPENXR_INCOMPLETE);
 }
 
-std::error_code foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
-                                                    uint32_t *pExtensionNamesLength,
-                                                    char *pExtensionNames) {
+foeResult foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
+                                              uint32_t *pExtensionNamesLength,
+                                              char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames,
                                   pExtensionNamesLength, pExtensionNames)
-               ? FOE_OPENXR_SUCCESS
-               : FOE_OPENXR_INCOMPLETE;
+               ? to_foeResult(FOE_OPENXR_SUCCESS)
+               : to_foeResult(FOE_OPENXR_INCOMPLETE);
 }
 
-std::error_code foeXrProcessEvents(foeXrRuntime runtime) {
+foeResult foeXrProcessEvents(foeXrRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     XrEventDataBuffer event = {
         .type = XR_TYPE_EVENT_DATA_BUFFER,
     };
 
-    std::error_code errC = xrPollEvent(pRuntime->instance, &event);
+    XrResult xrResult = xrPollEvent(pRuntime->instance, &event);
 
-    if (errC == XR_EVENT_UNAVAILABLE) {
+    if (xrResult == XR_EVENT_UNAVAILABLE) {
         // No event
-        return XR_SUCCESS;
-    } else if (errC) {
+        return xr_to_foeResult(XR_SUCCESS);
+    } else if (xrResult) {
         // Some other error occurred
-        return errC;
+        return xr_to_foeResult(xrResult);
     } else {
         // Actual event retrieved
         switch (event.type) {
@@ -192,7 +192,7 @@ std::error_code foeXrProcessEvents(foeXrRuntime runtime) {
         }
     }
 
-    return XR_SUCCESS;
+    return to_foeResult(FOE_OPENXR_SUCCESS);
 }
 
 XrInstance foeOpenXrGetInstance(foeXrRuntime runtime) {
@@ -200,19 +200,19 @@ XrInstance foeOpenXrGetInstance(foeXrRuntime runtime) {
     return pRuntime->instance;
 }
 
-auto foeXrDestroyRuntime(foeXrRuntime runtime) -> std::error_code {
+foeResult foeXrDestroyRuntime(foeXrRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
-    std::error_code errC;
+    XrResult xrResult = XR_SUCCESS;
 
     if (pRuntime->debugMessenger != XR_NULL_HANDLE)
         foeOpenXrDestroyDebugUtilsMessenger(pRuntime->instance, pRuntime->debugMessenger);
 
     if (pRuntime->instance != XR_NULL_HANDLE)
-        errC = xrDestroyInstance(pRuntime->instance);
+        xrResult = xrDestroyInstance(pRuntime->instance);
 
     delete pRuntime;
 
-    return errC;
+    return xr_to_foeResult(xrResult);
 }
 
 void foeOpenXrAddSessionToRuntime(foeOpenXrRuntime *pRuntime, foeOpenXrSession *pSession) {

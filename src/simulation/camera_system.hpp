@@ -17,25 +17,24 @@
 #ifndef CAMERA_SYSTEM_HPP
 #define CAMERA_SYSTEM_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <array>
-#include <system_error>
 
 class foePosition3dPool;
 class foeCameraPool;
 
 class foeCameraSystem {
   public:
-    auto initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool)
-        -> std::error_code;
+    foeResult initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    foeResult initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

@@ -18,8 +18,8 @@
 
 #include <atomic>
 
-#include "error_code.hpp"
 #include "log.hpp"
+#include "result.h"
 
 namespace {
 
@@ -37,19 +37,19 @@ FOE_DEFINE_HANDLE_CASTS(resource_create_info, foeResourceCreateInfoImpl, foeReso
 
 } // namespace
 
-extern "C" foeErrorCode foeCreateResourceCreateInfo(
-    foeResourceCreateInfoType type,
-    void (*pDestroyFn)(foeResourceCreateInfoType type, void *),
-    size_t size,
-    void *pData,
-    void (*pDataFn)(void *, void *),
-    foeResourceCreateInfo *pCreateInfo) {
+extern "C" foeResult foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
+                                                 void (*pDestroyFn)(foeResourceCreateInfoType type,
+                                                                    void *),
+                                                 size_t size,
+                                                 void *pData,
+                                                 void (*pDataFn)(void *, void *),
+                                                 foeResourceCreateInfo *pCreateInfo) {
     if (pDataFn == nullptr)
-        return foeToErrorCode(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
+        return to_foeResult(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
 
     auto *pNewCI = (foeResourceCreateInfoImpl *)malloc(sizeof(foeResourceCreateInfoImpl) + size);
     if (pNewCI == nullptr) {
-        return foeToErrorCode(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
+        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
     }
 
     new (pNewCI) foeResourceCreateInfoImpl(type, pDestroyFn);
@@ -61,7 +61,7 @@ extern "C" foeErrorCode foeCreateResourceCreateInfo(
     FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Created", (void *)pNewCI,
             type)
 
-    return foeToErrorCode(FOE_RESOURCE_SUCCESS);
+    return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
 extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {

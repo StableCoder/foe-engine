@@ -17,6 +17,7 @@
 #ifndef FOE_GRAPHICS_RESOURCE_MESH_LOADER_HPP
 #define FOE_GRAPHICS_RESOURCE_MESH_LOADER_HPP
 
+#include <foe/error_code.h>
 #include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/session.hpp>
@@ -35,14 +36,13 @@
 
 class FOE_GFX_RES_EXPORT foeMeshLoader {
   public:
-    auto initialize(
+    foeResult initialize(
         foeResourcePool resourcePool,
-        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn)
-        -> std::error_code;
+        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
     bool initialized() const noexcept;
 
-    auto initializeGraphics(foeGfxSession gfxSession) -> std::error_code;
+    foeResult initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

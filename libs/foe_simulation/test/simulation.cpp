@@ -21,7 +21,7 @@
 #include <foe/simulation/type_defs.h>
 
 namespace {
-std::error_code pCreateFn(foeSimulation *) { return {}; }
+foeResult pCreateFn(foeSimulation *) { return {}; }
 size_t pDestroyFn(foeSimulation *) { return 0; }
 } // namespace
 
@@ -29,13 +29,14 @@ constexpr foeSimulationUUID cTestFunctionalityID = FOE_SIMULATION_FUNCTIONALITY_
 
 TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
     SECTION("Registering and deregistering the same set succeeds") {
-        REQUIRE_FALSE(foeRegisterFunctionality(foeSimulationFunctionalty{
-            .id = cTestFunctionalityID,
-            .pCreateFn = pCreateFn,
-            .pDestroyFn = pDestroyFn,
-        }));
+        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
+                                             .id = cTestFunctionalityID,
+                                             .pCreateFn = pCreateFn,
+                                             .pDestroyFn = pDestroyFn,
+                                         })
+                    .value == FOE_SUCCESS);
 
-        REQUIRE_FALSE(foeDeregisterFunctionality(cTestFunctionalityID));
+        REQUIRE(foeDeregisterFunctionality(cTestFunctionalityID).value == FOE_SUCCESS);
     }
 
     SECTION("Registering functionality with a invalid IDs fails") {
@@ -44,39 +45,39 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
                                              .pCreateFn = pCreateFn,
                                              .pDestroyFn = pDestroyFn,
                                          })
-                    .value() == FOE_SIMULATION_ERROR_ID_INVALID);
+                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
 
         REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
                                              .id = -1,
                                              .pCreateFn = pCreateFn,
                                              .pDestroyFn = pDestroyFn,
                                          })
-                    .value() == FOE_SIMULATION_ERROR_ID_INVALID);
+                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
 
         REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
                                              .id = -cTestFunctionalityID,
                                              .pCreateFn = pCreateFn,
                                              .pDestroyFn = pDestroyFn,
                                          })
-                    .value() == FOE_SIMULATION_ERROR_ID_INVALID);
+                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
 
         REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
                                              .id = cTestFunctionalityID + 1,
                                              .pCreateFn = pCreateFn,
                                              .pDestroyFn = pDestroyFn,
                                          })
-                    .value() == FOE_SIMULATION_ERROR_ID_INVALID);
+                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
 
         REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
                                              .id = cTestFunctionalityID - 1,
                                              .pCreateFn = pCreateFn,
                                              .pDestroyFn = pDestroyFn,
                                          })
-                    .value() == FOE_SIMULATION_ERROR_ID_INVALID);
+                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
     }
 
     SECTION("Deregistering what wasn't registered fails") {
-        REQUIRE(foeDeregisterFunctionality(cTestFunctionalityID).value() ==
+        REQUIRE(foeDeregisterFunctionality(cTestFunctionalityID).value ==
                 FOE_SIMULATION_ERROR_NOT_REGISTERED);
     }
 }
@@ -85,23 +86,23 @@ TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
           "[foe][simulation]") {
     foeSimulation *pSimState{nullptr};
 
-    REQUIRE(!foeCreateSimulation(false, &pSimState));
+    REQUIRE(foeCreateSimulation(false, &pSimState).value == FOE_SUCCESS);
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap == nullptr);
     REQUIRE(pSimState->pEntityNameMap == nullptr);
 
-    REQUIRE_FALSE(foeDestroySimulation(pSimState));
+    REQUIRE(foeDestroySimulation(pSimState).value == FOE_SUCCESS);
 }
 
 TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe][simulation]") {
     foeSimulation *pSimState{nullptr};
 
-    REQUIRE(!foeCreateSimulation(true, &pSimState));
+    REQUIRE(foeCreateSimulation(true, &pSimState).value == FOE_SUCCESS);
 
     REQUIRE(pSimState != nullptr);
     REQUIRE(pSimState->pResourceNameMap != nullptr);
     REQUIRE(pSimState->pEntityNameMap != nullptr);
 
-    REQUIRE_FALSE(foeDestroySimulation(pSimState));
+    REQUIRE(foeDestroySimulation(pSimState).value == FOE_SUCCESS);
 }

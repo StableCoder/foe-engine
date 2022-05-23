@@ -19,7 +19,7 @@
 #include <foe/wsi/mouse.hpp>
 #include <foe/wsi/window.h>
 
-#include "error_code.hpp"
+#include "result.h"
 #include "window.hpp"
 
 #include <mutex>
@@ -74,15 +74,12 @@ void buttonCallback(GLFWwindow *pWindow, int button, int action, int mods) {
     buttonCallback(&pWsiWindow->mouse, button, action, mods);
 }
 
-auto foeWsiCreateWindowErrC(int width,
-                            int height,
-                            char const *pTitle,
-                            bool visible,
-                            foeWsiWindow *pWindow) -> std::error_code {
+foeResult foeWsiCreateWindowErrC(
+    int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow) {
     if (!glfwInit()) {
-        return FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND;
+        return to_foeResult(FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND);
     }
-    std::error_code errC{FOE_WSI_SUCCESS};
+    foeResult result = to_foeResult(FOE_WSI_SUCCESS);
 
     // Since this is exclusively a Vulkan platform, don't initialize OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -98,7 +95,7 @@ auto foeWsiCreateWindowErrC(int width,
 
     pNewWindow->pWindow = glfwCreateWindow(width, height, pTitle, nullptr, nullptr);
     if (pNewWindow->pWindow == nullptr) {
-        errC = FOE_WSI_ERROR_FAILED_TO_CREATE_WINDOW;
+        result = to_foeResult(FOE_WSI_ERROR_FAILED_TO_CREATE_WINDOW);
         goto CREATE_FAILED;
     }
 
@@ -119,7 +116,7 @@ auto foeWsiCreateWindowErrC(int width,
     glfwSetWindowSizeCallback(pNewWindow->pWindow, windowResizedCallback);
 
 CREATE_FAILED:
-    if (errC) {
+    if (result.value != FOE_SUCCESS) {
         foeWsiDestroyWindow(window_to_handle(pNewWindow));
     } else {
         *pWindow = window_to_handle(pNewWindow);
@@ -128,7 +125,7 @@ CREATE_FAILED:
         windowList.emplace_back(pNewWindow);
     }
 
-    return errC;
+    return result;
 }
 
 } // namespace
@@ -145,9 +142,9 @@ void foeWsiGlobalProcessing() {
     glfwPollEvents();
 }
 
-foeErrorCode foeWsiCreateWindow(
+foeResult foeWsiCreateWindow(
     int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow) {
-    return foeToErrorCode(foeWsiCreateWindowErrC(width, height, pTitle, visible, pWindow));
+    return foeWsiCreateWindowErrC(width, height, pTitle, visible, pWindow);
 }
 
 void foeWsiDestroyWindow(foeWsiWindow window) {
