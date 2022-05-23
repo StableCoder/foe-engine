@@ -20,7 +20,7 @@
 #include <foe/error_code.h>
 #include <foe/graphics/session.h>
 #include <foe/xr/openxr/session.hpp>
-#include <foe/xr/runtime.hpp>
+#include <foe/xr/runtime.h>
 
 foeResult createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
 

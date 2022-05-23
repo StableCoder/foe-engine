@@ -19,7 +19,7 @@
 
 #include <foe/error_code.h>
 #include <foe/xr/export.h>
-#include <foe/xr/runtime.hpp>
+#include <foe/xr/runtime.h>
 #include <openxr/openxr.h>
 
 struct FOE_XR_EXPORT foeOpenXrSession {

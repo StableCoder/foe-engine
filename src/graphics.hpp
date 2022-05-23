@@ -20,7 +20,7 @@
 #include <foe/error_code.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
-#include <foe/xr/runtime.hpp>
+#include <foe/xr/runtime.h>
 #include <vulkan/vulkan.h>
 
 #include <vector>

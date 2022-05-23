@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@
 
 #include <foe/handle.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Handle definition for foeXrRuntime
  *
  * Not all platforms support XR, espeically the Apple ecosystem. However, we still need the XR
@@ -29,5 +33,9 @@
  * or fancy export work, no functions are actually exported by this library.
  */
 FOE_DEFINE_HANDLE(foeXrRuntime)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // FOE_XR_RUNTIME_H
