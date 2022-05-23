@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020-2021 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/export.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/handle.h>
 
 FOE_DEFINE_HANDLE(foeGfxShader)

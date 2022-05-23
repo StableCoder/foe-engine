@@ -18,7 +18,7 @@
 #define CAMERA_SYSTEM_HPP
 
 #include <foe/error_code.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>

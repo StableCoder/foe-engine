@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,11 +14,15 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_SESSION_HPP
-#define FOE_GRAPHICS_SESSION_HPP
+#ifndef FOE_GRAPHICS_SESSION_H
+#define FOE_GRAPHICS_SESSION_H
 
 #include <foe/graphics/export.h>
 #include <foe/handle.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_DEFINE_HANDLE(foeGfxSession)
 
@@ -32,4 +36,8 @@ FOE_GFX_EXPORT void foeGfxDestroySession(foeGfxSession session);
  */
 FOE_GFX_EXPORT void foeGfxWaitIdle(foeGfxSession session);
 
-#endif // FOE_GRAPHICS_SESSION_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_SESSION_H

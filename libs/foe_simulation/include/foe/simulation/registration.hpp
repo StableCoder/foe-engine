@@ -18,7 +18,7 @@
 #define FOE_SIMULATION_REGISTRATION_HPP
 
 #include <foe/error_code.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/simulation/export.h>
 
 #include <stddef.h>

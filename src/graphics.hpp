@@ -19,7 +19,7 @@
 
 #include <foe/error_code.h>
 #include <foe/graphics/runtime.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/xr/runtime.hpp>
 #include <vulkan/vulkan.h>
 

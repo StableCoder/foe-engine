@@ -19,7 +19,7 @@
 
 #include <foe/error_code.h>
 #include <foe/graphics/export.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/handle.h>
 
 #include <cstdint>

@@ -21,7 +21,7 @@
 
 #include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/material.hpp>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/resource/pool.h>
 #include <vulkan/vulkan.h>

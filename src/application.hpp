@@ -21,7 +21,7 @@
 #include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/runtime.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>

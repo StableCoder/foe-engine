@@ -20,7 +20,7 @@
 #include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
 #include <foe/graphics/render_target.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <vulkan/vulkan.h>
 

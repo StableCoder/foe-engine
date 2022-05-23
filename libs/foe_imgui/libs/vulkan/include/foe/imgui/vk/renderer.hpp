@@ -18,7 +18,7 @@
 #define FOE_IMGUI_VK_RENDERER_HPP
 
 #include <foe/error_code.h>
-#include <foe/graphics/session.hpp>
+#include <foe/graphics/session.h>
 #include <foe/imgui/vk/export.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
