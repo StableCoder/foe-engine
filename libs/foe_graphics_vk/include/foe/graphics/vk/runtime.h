@@ -14,16 +14,17 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_VK_RUNTIME_HPP
-#define FOE_GRAPHICS_VK_RUNTIME_HPP
+#ifndef FOE_GRAPHICS_VK_RUNTIME_H
+#define FOE_GRAPHICS_VK_RUNTIME_H
 
 #include <foe/error_code.h>
 #include <foe/graphics/export.h>
-#include <foe/graphics/runtime.hpp>
+#include <foe/graphics/runtime.h>
 #include <vulkan/vulkan.h>
 
-#include <string>
-#include <vector>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** @brief Creates a graphics runtime using the Vulkan API
  * @param pApplicationName is NULL or is a pointer to a null-terminated UTF-8 string containing the
@@ -105,4 +106,8 @@ FOE_GFX_EXPORT uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime);
  */
 FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime);
 
-#endif // FOE_GRAPHICS_VK_RUNTIME_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_VK_RUNTIME_H

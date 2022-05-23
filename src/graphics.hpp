@@ -18,7 +18,7 @@
 #define GRAPHICS_HPP
 
 #include <foe/error_code.h>
-#include <foe/graphics/runtime.hpp>
+#include <foe/graphics/runtime.h>
 #include <foe/graphics/session.hpp>
 #include <foe/xr/runtime.hpp>
 #include <vulkan/vulkan.h>

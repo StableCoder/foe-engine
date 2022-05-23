@@ -20,7 +20,7 @@
 #include <foe/error_code.h>
 #include <foe/graphics/builtin_descriptor_sets.hpp>
 #include <foe/graphics/export.h>
-#include <foe/graphics/runtime.hpp>
+#include <foe/graphics/runtime.h>
 #include <foe/graphics/session.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>

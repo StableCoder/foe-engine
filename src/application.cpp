@@ -39,7 +39,7 @@
 #include <foe/graphics/vk/render_graph/job/resolve_image.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <foe/graphics/vk/render_target.h>
-#include <foe/graphics/vk/runtime.hpp>
+#include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/graphics/vk/shader.hpp>

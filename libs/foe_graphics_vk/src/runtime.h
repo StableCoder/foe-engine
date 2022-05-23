@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,15 +14,19 @@
     limitations under the License.
 */
 
-#ifndef RUNTIME_HPP
-#define RUNTIME_HPP
+#ifndef RUNTIME_H
+#define RUNTIME_H
 
-#include <foe/graphics/runtime.hpp>
+#include <foe/graphics/runtime.h>
 #include <vulkan/vulkan.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct foeGfxVkRuntime {
-    VkInstance instance{VK_NULL_HANDLE};
-    VkDebugReportCallbackEXT debugCallback{VK_NULL_HANDLE};
+    VkInstance instance;
+    VkDebugReportCallbackEXT debugCallback;
 
     /// Vulkan API version the runtime was created with
     uint32_t apiVersion;
@@ -38,4 +42,8 @@ struct foeGfxVkRuntime {
 
 FOE_DEFINE_HANDLE_CASTS(runtime, foeGfxVkRuntime, foeGfxRuntime)
 
-#endif // RUNTIME_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // RUNTIME_H

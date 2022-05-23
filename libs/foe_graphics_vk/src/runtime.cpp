@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/vk/runtime.hpp>
+#include <foe/graphics/vk/runtime.h>
 
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
@@ -22,7 +22,7 @@
 #include "debug_callback.hpp"
 #include "log.hpp"
 #include "result.h"
-#include "runtime.hpp"
+#include "runtime.h"
 #include "vk_result.h"
 
 namespace {
@@ -43,16 +43,16 @@ void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
 
 } // namespace
 
-foeResult foeGfxVkCreateRuntime(char const *pApplicationName,
-                                uint32_t applicationVersion,
-                                uint32_t applicationApiVersion,
-                                uint32_t layerCount,
-                                char const *const *ppLayerNames,
-                                uint32_t extensionCount,
-                                char const *const *ppExtensionNames,
-                                bool validation,
-                                bool debugLogging,
-                                foeGfxRuntime *pRuntime) {
+extern "C" foeResult foeGfxVkCreateRuntime(char const *pApplicationName,
+                                           uint32_t applicationVersion,
+                                           uint32_t applicationApiVersion,
+                                           uint32_t layerCount,
+                                           char const *const *ppLayerNames,
+                                           uint32_t extensionCount,
+                                           char const *const *ppExtensionNames,
+                                           bool validation,
+                                           bool debugLogging,
+                                           foeGfxRuntime *pRuntime) {
     auto *pNewRuntime = new foeGfxVkRuntime;
     *pNewRuntime = {};
 
@@ -134,9 +134,9 @@ CREATE_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-foeResult foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
-                                         uint32_t *pLayerNamesLength,
-                                         char *pLayerNames) {
+extern "C" foeResult foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
+                                                    uint32_t *pLayerNamesLength,
+                                                    char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames,
@@ -145,9 +145,9 @@ foeResult foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
                : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
-foeResult foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
-                                             uint32_t *pExtensionNamesLength,
-                                             char *pExtensionNames) {
+extern "C" foeResult foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
+                                                        uint32_t *pExtensionNamesLength,
+                                                        char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames,
@@ -156,18 +156,18 @@ foeResult foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
                : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
-uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime) {
+extern "C" uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return pRuntime->apiVersion;
 }
 
-VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime) {
+extern "C" VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
     return pRuntime->instance;
 }
 
-void foeGfxDestroyRuntime(foeGfxRuntime runtime) {
+extern "C" void foeGfxDestroyRuntime(foeGfxRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     foeGfxVkDestroyRuntime(pRuntime);

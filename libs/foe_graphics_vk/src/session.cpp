@@ -17,11 +17,11 @@
 #include <foe/graphics/vk/session.hpp>
 
 #include <foe/delimited_string.h>
-#include <foe/graphics/vk/runtime.hpp>
+#include <foe/graphics/vk/runtime.h>
 
 #include "log.hpp"
 #include "result.h"
-#include "runtime.hpp"
+#include "runtime.h"
 #include "session.hpp"
 #include "vk_result.h"
 

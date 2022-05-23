@@ -20,7 +20,7 @@
 #include <foe/ecs/id.h>
 #include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
-#include <foe/graphics/runtime.hpp>
+#include <foe/graphics/runtime.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/type_defs.hpp>
 #include <foe/graphics/upload_context.hpp>

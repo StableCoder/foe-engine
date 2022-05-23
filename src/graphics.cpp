@@ -16,7 +16,7 @@
 
 #include "graphics.hpp"
 
-#include <foe/graphics/vk/runtime.hpp>
+#include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/wsi/vulkan.h>
 
