@@ -22,9 +22,9 @@
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
-#include <foe/graphics/upload_buffer.hpp>
-#include <foe/graphics/upload_context.hpp>
-#include <foe/graphics/upload_request.hpp>
+#include <foe/graphics/upload_buffer.h>
+#include <foe/graphics/upload_context.h>
+#include <foe/graphics/upload_request.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 

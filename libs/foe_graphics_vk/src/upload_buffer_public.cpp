@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/upload_buffer.hpp>
+#include <foe/graphics/upload_buffer.h>
 
 #include "upload_buffer.hpp"
 #include "upload_context.hpp"
@@ -34,9 +34,9 @@ void foeGfxVkDestroyUploadBuffer(foeGfxUploadContext uploadContext,
 
 } // namespace
 
-foeResult foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
-                                   uint64_t size,
-                                   foeGfxUploadBuffer *pUploadBuffer) {
+extern "C" foeResult foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
+                                              uint64_t size,
+                                              foeGfxUploadBuffer *pUploadBuffer) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
@@ -76,22 +76,24 @@ ALLOCATION_FAILED:
     return vk_to_foeResult(vkRes);
 }
 
-void foeGfxDestroyUploadBuffer(foeGfxUploadContext uploadContext, foeGfxUploadBuffer uploadBuffer) {
+extern "C" void foeGfxDestroyUploadBuffer(foeGfxUploadContext uploadContext,
+                                          foeGfxUploadBuffer uploadBuffer) {
     auto *pUploadBuffer = upload_buffer_from_handle(uploadBuffer);
 
     foeGfxVkDestroyUploadBuffer(uploadContext, pUploadBuffer);
 }
 
-foeResult foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
-                                foeGfxUploadBuffer uploadBuffer,
-                                void **ppData) {
+extern "C" foeResult foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
+                                           foeGfxUploadBuffer uploadBuffer,
+                                           void **ppData) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadBuffer = upload_buffer_from_handle(uploadBuffer);
 
     return vk_to_foeResult(vmaMapMemory(pUploadContext->allocator, pUploadBuffer->alloc, ppData));
 }
 
-void foeGfxUnmapUploadBuffer(foeGfxUploadContext uploadContext, foeGfxUploadBuffer uploadBuffer) {
+extern "C" void foeGfxUnmapUploadBuffer(foeGfxUploadContext uploadContext,
+                                        foeGfxUploadBuffer uploadBuffer) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadBuffer = upload_buffer_from_handle(uploadBuffer);
 

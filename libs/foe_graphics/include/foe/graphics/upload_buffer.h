@@ -14,15 +14,19 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_BUFFER_HPP
-#define FOE_GRAPHICS_BUFFER_HPP
+#ifndef FOE_GRAPHICS_UPLOAD_BUFFER_H
+#define FOE_GRAPHICS_UPLOAD_BUFFER_H
 
 #include <foe/error_code.h>
 #include <foe/graphics/export.h>
-#include <foe/graphics/upload_context.hpp>
+#include <foe/graphics/upload_context.h>
 #include <foe/handle.h>
 
-#include <cstdint>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_DEFINE_HANDLE(foeGfxUploadBuffer)
 
@@ -40,4 +44,8 @@ FOE_GFX_EXPORT foeResult foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext
 FOE_GFX_EXPORT void foeGfxUnmapUploadBuffer(foeGfxUploadContext uploadContext,
                                             foeGfxUploadBuffer uploadBuffer);
 
-#endif // FOE_GRAPHICS_BUFFER_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_UPLOAD_BUFFER_H

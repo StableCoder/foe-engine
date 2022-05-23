@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/upload_context.hpp>
+#include <foe/graphics/upload_context.h>
 
 #include <foe/graphics/vk/session.hpp>
 
@@ -36,7 +36,8 @@ void foeGfxVkDestroyUploadContext(foeGfxVkUploadContext *pUploadContext) {
 
 } // namespace
 
-foeResult foeGfxCreateUploadContext(foeGfxSession session, foeGfxUploadContext *pUploadContext) {
+extern "C" foeResult foeGfxCreateUploadContext(foeGfxSession session,
+                                               foeGfxUploadContext *pUploadContext) {
     auto *pSession = session_from_handle(session);
     VkResult vkResult = VK_SUCCESS;
     auto *pNewContext = new foeGfxVkUploadContext;
@@ -86,7 +87,7 @@ CREATE_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-void foeGfxDestroyUploadContext(foeGfxUploadContext uploadContext) {
+extern "C" void foeGfxDestroyUploadContext(foeGfxUploadContext uploadContext) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     foeGfxVkDestroyUploadContext(pUploadContext);

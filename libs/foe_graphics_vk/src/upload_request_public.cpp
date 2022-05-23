@@ -14,9 +14,9 @@
     limitations under the License.
 */
 
-#include <foe/graphics/upload_request.hpp>
+#include <foe/graphics/upload_request.h>
 
-#include <foe/graphics/upload_context.hpp>
+#include <foe/graphics/upload_context.h>
 #include <foe/graphics/vk/queue_family.hpp>
 
 #include "session.hpp"
@@ -24,18 +24,18 @@
 #include "upload_request.hpp"
 #include "vk_result.h"
 
-void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
-                                foeGfxUploadRequest uploadRequest) {
+extern "C" void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
+                                           foeGfxUploadRequest uploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
     foeGfxVkDestroyUploadRequest(pUploadContext->device, pUploadRequest);
 }
 
-foeResult foeGfxVkCreateUploadData(VkDevice device,
-                                   VkCommandPool srcCommandPool,
-                                   VkCommandPool dstCommandPool,
-                                   foeGfxUploadRequest *pUploadRequest) {
+extern "C" foeResult foeGfxVkCreateUploadData(VkDevice device,
+                                              VkCommandPool srcCommandPool,
+                                              VkCommandPool dstCommandPool,
+                                              foeGfxUploadRequest *pUploadRequest) {
     VkResult vkResult;
     auto *pNewRequest = new foeGfxVkUploadRequest;
     *pNewRequest = {
@@ -101,8 +101,8 @@ CREATE_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
-                                      foeGfxUploadRequest uploadRequest) {
+extern "C" foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
+                                                 foeGfxUploadRequest uploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
@@ -156,7 +156,7 @@ foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
 
 namespace {
 
-UploadRequestStatus vkResultToRequestStatus(VkResult vkResult) {
+foeGfxUploadRequestStatus vkResultToRequestStatus(VkResult vkResult) {
     switch (vkResult) {
     case VK_SUCCESS:
         return FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE;
@@ -169,7 +169,8 @@ UploadRequestStatus vkResultToRequestStatus(VkResult vkResult) {
 
 } // namespace
 
-UploadRequestStatus foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest) {
+extern "C" foeGfxUploadRequestStatus foeGfxGetUploadRequestStatus(
+    foeGfxUploadRequest uploadRequest) {
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 
     // If the destination commands were submitted

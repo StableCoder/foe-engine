@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #ifndef UPLOAD_REQUEST_HPP
 #define UPLOAD_REQUEST_HPP
 
-#include <foe/graphics/upload_request.hpp>
+#include <foe/graphics/upload_request.h>
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkUploadRequest {

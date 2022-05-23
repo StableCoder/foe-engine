@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #ifndef UPLOAD_BUFFER_HPP
 #define UPLOAD_BUFFER_HPP
 
-#include <foe/graphics/upload_buffer.hpp>
+#include <foe/graphics/upload_buffer.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 

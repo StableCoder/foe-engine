@@ -19,7 +19,7 @@
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
-#include <foe/graphics/upload_context.hpp>
+#include <foe/graphics/upload_context.h>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>

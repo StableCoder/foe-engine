@@ -22,6 +22,8 @@
 #include <foe/graphics/runtime.h>
 #include <vulkan/vulkan.h>
 
+#include <stdbool.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

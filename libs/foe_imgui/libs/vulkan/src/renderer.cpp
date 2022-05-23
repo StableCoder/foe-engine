@@ -17,8 +17,8 @@
 #include <foe/imgui/vk/renderer.hpp>
 
 #include <GLFW/glfw3.h>
-#include <foe/graphics/upload_context.hpp>
-#include <foe/graphics/upload_request.hpp>
+#include <foe/graphics/upload_context.h>
+#include <foe/graphics/upload_request.h>
 #include <foe/graphics/vk/image.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/wsi/keyboard.hpp>

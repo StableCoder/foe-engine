@@ -14,22 +14,26 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_UPLOAD_REQUEST_HPP
-#define FOE_GRAPHICS_UPLOAD_REQUEST_HPP
+#ifndef FOE_GRAPHICS_UPLOAD_REQUEST_H
+#define FOE_GRAPHICS_UPLOAD_REQUEST_H
 
 #include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
-#include <foe/graphics/upload_context.hpp>
+#include <foe/graphics/upload_context.h>
 #include <foe/handle.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_DEFINE_HANDLE(foeGfxUploadRequest)
 
-enum UploadRequestStatus {
+typedef enum foeGfxUploadRequestStatus {
     FOE_GFX_UPLOAD_REQUEST_STATUS_COMPLETE = 0,
     FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE,
     FOE_GFX_UPLOAD_REQUEST_STATUS_DEVICE_LOST,
-};
+} foeGfxUploadRequestStatus;
 
 /**
  * @brief Returns the status of an upload request
@@ -37,7 +41,8 @@ enum UploadRequestStatus {
  * @return VK_SUCCESS if the request hasn't been submitted, or if it has and has finished. An
  * appropriate value otherwise.
  */
-FOE_GFX_EXPORT UploadRequestStatus foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT foeGfxUploadRequestStatus
+foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest);
 
 FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
                                                foeGfxUploadRequest uploadRequest);
@@ -45,4 +50,8 @@ FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext
 FOE_GFX_EXPORT foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
                                                      foeGfxUploadRequest uploadRequest);
 
-#endif // FOE_GRAPHICS_UPLOAD_REQUEST_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_UPLOAD_REQUEST_H

@@ -19,9 +19,9 @@
 
 #include <foe/error_code.h>
 #include <foe/graphics/export.h>
-#include <foe/graphics/upload_buffer.hpp>
-#include <foe/graphics/upload_context.hpp>
-#include <foe/graphics/upload_request.hpp>
+#include <foe/graphics/upload_buffer.h>
+#include <foe/graphics/upload_context.h>
+#include <foe/graphics/upload_request.h>
 #include <vulkan/vulkan.h>
 
 /** @brief Returns the maximum mipmap levels for the given extent.

@@ -15,3 +15,4 @@
 */
 
 #include <foe/graphics/vk/error_code.h>
+#include <foe/graphics/vk/runtime.h>
