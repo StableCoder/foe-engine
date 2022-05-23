@@ -14,17 +14,21 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_VK_RENDER_TARGET_HPP
-#define FOE_GRAPHICS_VK_RENDER_TARGET_HPP
+#ifndef FOE_GRAPHICS_VK_RENDER_TARGET_H
+#define FOE_GRAPHICS_VK_RENDER_TARGET_H
 
 #include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
-#include <foe/graphics/render_target.hpp>
+#include <foe/graphics/render_target.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <vulkan/vulkan.h>
 
-#include <cstdint>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct foeGfxVkRenderTargetSpec {
     VkFormat format;
@@ -40,16 +44,18 @@ FOE_GFX_EXPORT foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
                                                     VkSampleCountFlags samples,
                                                     foeGfxRenderTarget *pRenderTarget);
 
-FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget)
-    -> VkSampleCountFlags;
+FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget);
 
-FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t index)
-    -> VkImage;
+FOE_GFX_EXPORT VkImage foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget,
+                                                    uint32_t index);
 
-FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget,
-                                                     uint32_t index) -> VkImageView;
+FOE_GFX_EXPORT VkImageView foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget,
+                                                            uint32_t index);
 
-FOE_GFX_EXPORT auto foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget)
-    -> VkFramebuffer;
+FOE_GFX_EXPORT VkFramebuffer foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget);
 
-#endif // FOE_GRAPHICS_VK_RENDER_TARGET_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_VK_RENDER_TARGET_H

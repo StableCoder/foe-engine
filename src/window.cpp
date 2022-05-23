@@ -16,7 +16,7 @@
 
 #include "window.hpp"
 
-#include <foe/graphics/vk/render_target.hpp>
+#include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/session.hpp>
 
 #include "vk_result.h"

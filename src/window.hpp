@@ -19,7 +19,7 @@
 
 #include <foe/error_code.h>
 #include <foe/graphics/delayed_destructor.hpp>
-#include <foe/graphics/render_target.hpp>
+#include <foe/graphics/render_target.h>
 #include <foe/graphics/session.hpp>
 #include <foe/graphics/vk/swapchain.hpp>
 #include <foe/wsi/window.h>

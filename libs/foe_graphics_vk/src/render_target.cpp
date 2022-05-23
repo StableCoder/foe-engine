@@ -143,7 +143,7 @@ foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
-void foeGfxDestroyRenderTarget(foeGfxRenderTarget renderTarget) {
+extern "C" void foeGfxDestroyRenderTarget(foeGfxRenderTarget renderTarget) {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
 
     // Framebuffer
@@ -161,9 +161,9 @@ void foeGfxDestroyRenderTarget(foeGfxRenderTarget renderTarget) {
     delete pRenderTarget;
 }
 
-void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
-                                    uint32_t width,
-                                    uint32_t height) {
+extern "C" void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
+                                               uint32_t width,
+                                               uint32_t height) {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
 
     if (pRenderTarget->extent.width == width && pRenderTarget->extent.height == height) {
@@ -181,8 +181,8 @@ void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
     }
 }
 
-foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
-                                        uint32_t maxBufferedFrames) {
+extern "C" foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
+                                                   uint32_t maxBufferedFrames) {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
     uint32_t const numImages = static_cast<uint32_t>(pRenderTarget->imageSpecifications.size());
     foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);

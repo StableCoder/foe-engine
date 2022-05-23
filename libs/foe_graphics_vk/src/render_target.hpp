@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 #define RENDER_TARGET_HPP
 
 #include <foe/graphics/delayed_destructor.hpp>
-#include <foe/graphics/render_target.hpp>
-#include <foe/graphics/vk/render_target.hpp>
+#include <foe/graphics/render_target.h>
+#include <foe/graphics/vk/render_target.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
