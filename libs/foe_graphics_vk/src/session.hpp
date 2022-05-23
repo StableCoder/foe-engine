@@ -18,7 +18,7 @@
 #define SESSION_HPP
 
 #include <foe/graphics/session.h>
-#include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/queue_family.hpp>

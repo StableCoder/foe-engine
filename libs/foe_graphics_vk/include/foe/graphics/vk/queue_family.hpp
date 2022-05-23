@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #define FOE_GRAPHICS_VK_QUEUE_FAMILY_HPP
 
 #include <foe/graphics/export.h>
-#include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/type_defs.h>
 #include <vulkan/vulkan.h>
 
 #include <array>

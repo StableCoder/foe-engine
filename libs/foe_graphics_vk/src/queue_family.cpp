@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 #include <foe/graphics/vk/queue_family.hpp>
 
-#include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/type_defs.h>
 
 VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily *pQueueFamily) {
     for (uint32_t i = 0; i < pQueueFamily->numQueues; ++i) {

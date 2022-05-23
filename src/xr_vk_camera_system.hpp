@@ -19,7 +19,7 @@
 
 #include <foe/error_code.h>
 #include <foe/graphics/session.h>
-#include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/type_defs.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 

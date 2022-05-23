@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
+
+#include <algorithm>
 
 foeGfxVkFragmentDescriptor::foeGfxVkFragmentDescriptor(
     VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,

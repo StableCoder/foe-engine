@@ -21,7 +21,7 @@
 #include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/session.h>
-#include <foe/graphics/type_defs.hpp>
+#include <foe/graphics/type_defs.h>
 #include <foe/graphics/upload_buffer.hpp>
 #include <foe/graphics/upload_context.hpp>
 #include <foe/graphics/upload_request.hpp>

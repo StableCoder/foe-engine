@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,8 +14,12 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_TYPE_DEFS_HPP
-#define FOE_GRAPHICS_TYPE_DEFS_HPP
+#ifndef FOE_GRAPHICS_TYPE_DEFS_H
+#define FOE_GRAPHICS_TYPE_DEFS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 enum {
     FOE_GRAPHICS_MAX_BUFFERED_FRAMES = 3,
@@ -26,4 +30,8 @@ enum {
     MaxQueuesPerFamily = 8U,
 };
 
-#endif // FOE_GRAPHICS_TYPE_DEFS_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_TYPE_DEFS_H
