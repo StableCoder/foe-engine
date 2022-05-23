@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
     limitations under the License.
 */
 
-#include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/builtin_descriptor_sets.h>
 
-#include <limits>
+#include <string.h>
 
-std::string to_string(foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout) {
+char const *builtin_set_layout_to_string(foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout) {
     switch (builtinSetLayout) {
     case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX:
         return "ProjectionViewMatrix";
@@ -30,19 +30,19 @@ std::string to_string(foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout) {
         return "BoneStateMatrices";
 
     default:
-        return {};
+        return NULL;
     }
 }
 
-foeBuiltinDescriptorSetLayoutFlagBits to_builtin_set_layout(std::string_view str) {
-    if (str == "ProjectionViewMatrix")
+foeBuiltinDescriptorSetLayoutFlagBits string_to_builtin_set_layout(char const *pString) {
+    if (strcmp(pString, "ProjectionViewMatrix") == 0)
         return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_PROJECTION_VIEW_MATRIX;
 
-    if (str == "ModelMatrix")
+    if (strcmp(pString, "ModelMatrix") == 0)
         return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX;
 
-    if (str == "BoneStateMatrices")
+    if (strcmp(pString, "BoneStateMatrices") == 0)
         return FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES;
 
-    return static_cast<foeBuiltinDescriptorSetLayoutFlagBits>(0);
+    return (foeBuiltinDescriptorSetLayoutFlagBits)0;
 }

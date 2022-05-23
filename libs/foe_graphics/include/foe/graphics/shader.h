@@ -14,13 +14,17 @@
     limitations under the License.
 */
 
-#ifndef FOE_GRAPHICS_SHADER_HPP
-#define FOE_GRAPHICS_SHADER_HPP
+#ifndef FOE_GRAPHICS_SHADER_H
+#define FOE_GRAPHICS_SHADER_H
 
-#include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
 #include <foe/handle.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_DEFINE_HANDLE(foeGfxShader)
 
@@ -29,4 +33,8 @@ FOE_GFX_EXPORT void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shad
 FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlags
 foeGfxShaderGetBuiltinDescriptorSetLayouts(foeGfxShader shader);
 
-#endif // FOE_GRAPHICS_SHADER_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_SHADER_H

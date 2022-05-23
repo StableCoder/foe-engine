@@ -15,10 +15,12 @@
 */
 
 #include <foe/graphics/backend.h>
+#include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/mesh.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
+#include <foe/graphics/shader.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/upload_buffer.h>
 #include <foe/graphics/upload_context.h>

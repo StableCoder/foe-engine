@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 #ifndef BUILTIN_DESCRIPTOR_SETS_HPP
 #define BUILTIN_DESCRIPTOR_SETS_HPP
 
-#include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/export.h>
 #include <vulkan/vulkan.h>
+
+#include <array>
 
 class foeGfxVkDescriptorSetLayoutPool;
 

@@ -17,7 +17,7 @@
 #ifndef FOE_GRAPHICS_IMGUI_BUILTIN_DESCRIPTOR_SETS_HPP
 #define FOE_GRAPHICS_IMGUI_BUILTIN_DESCRIPTOR_SETS_HPP
 
-#include <foe/graphics/builtin_descriptor_sets.hpp>
+#include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/imgui/export.h>
 
 #include <string>

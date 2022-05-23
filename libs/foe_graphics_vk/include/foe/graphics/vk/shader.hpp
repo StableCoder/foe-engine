@@ -19,7 +19,7 @@
 
 #include <foe/error_code.h>
 #include <foe/graphics/export.h>
-#include <foe/graphics/shader.hpp>
+#include <foe/graphics/shader.h>
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkShaderCreateInfo {

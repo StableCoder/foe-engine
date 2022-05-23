@@ -18,7 +18,7 @@
 #define FOE_GRAPHICS_VK_YAML_SHADER_HPP
 
 #include <foe/graphics/session.h>
-#include <foe/graphics/shader.hpp>
+#include <foe/graphics/shader.h>
 #include <foe/graphics/vk/shader.hpp>
 #include <foe/graphics/vk/yaml/export.h>
 #include <vulkan/vulkan.h>

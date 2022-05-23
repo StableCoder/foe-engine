@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -34,7 +34,9 @@ void yaml_write_builtin_descriptor_set_layouts(std::string const &nodeName,
                 static_cast<foeBuiltinDescriptorSetLayoutFlagBits>(1 << i);
 
             if ((data & setFlag) != 0) {
-                writeNode.push_back(to_string(setFlag));
+                char const *pStr = builtin_set_layout_to_string(setFlag);
+                if (pStr != NULL)
+                    writeNode.push_back(pStr);
             }
         }
     } catch (foeYamlException const &e) {
@@ -68,7 +70,7 @@ bool yaml_read_builtin_descriptor_set_layouts(std::string const &nodeName,
                 std::string builtinName;
                 yaml_read_required("", *it, builtinName);
 
-                tempData |= to_builtin_set_layout(builtinName);
+                tempData |= string_to_builtin_set_layout(builtinName.c_str());
             }
         }
     } catch (foeYamlException const &e) {

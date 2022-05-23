@@ -24,6 +24,7 @@
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
+#include <array>
 #include <filesystem>
 #include <functional>
 #include <mutex>

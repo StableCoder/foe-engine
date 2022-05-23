@@ -20,6 +20,7 @@
 
 void imgui_foeBuiltinDescriptorSetLayoutFlags(std::string const &label,
                                               foeBuiltinDescriptorSetLayoutFlags const &data) {
-    std::string serializedStr = to_string((foeBuiltinDescriptorSetLayoutFlagBits)data);
+    std::string serializedStr =
+        builtin_set_layout_to_string((foeBuiltinDescriptorSetLayoutFlagBits)data);
     ImGui::Text("%s: %s", label.c_str(), serializedStr.c_str());
 }

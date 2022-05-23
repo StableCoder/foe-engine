@@ -17,7 +17,7 @@
 #ifndef FOE_GRAPHICS_RESOURCE_SHADER_HPP
 #define FOE_GRAPHICS_RESOURCE_SHADER_HPP
 
-#include <foe/graphics/shader.hpp>
+#include <foe/graphics/shader.h>
 
 struct foeShader {
     foeGfxShader shader;

@@ -14,7 +14,7 @@
     limitations under the License.
 */
 
-#include <foe/graphics/shader.hpp>
+#include <foe/graphics/shader.h>
 #include <foe/graphics/vk/shader.hpp>
 
 #include <vk_struct_cleanup.h>
@@ -78,14 +78,15 @@ CREATE_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader) {
+extern "C" void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader) {
     auto *pSession = session_from_handle(session);
     auto *pShader = shader_from_handle(shader);
 
     foeGfxVkDestroyShader(pSession, pShader);
 }
 
-foeBuiltinDescriptorSetLayoutFlags foeGfxShaderGetBuiltinDescriptorSetLayouts(foeGfxShader shader) {
+extern "C" foeBuiltinDescriptorSetLayoutFlags foeGfxShaderGetBuiltinDescriptorSetLayouts(
+    foeGfxShader shader) {
     auto *pShader = shader_from_handle(shader);
 
     return pShader->builtinSetLayouts;

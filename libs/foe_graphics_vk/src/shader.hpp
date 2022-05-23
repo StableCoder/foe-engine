@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #ifndef FOE_GRAPHICS_VK_SHADER_HPP
 #define FOE_GRAPHICS_VK_SHADER_HPP
 
-#include <foe/graphics/shader.hpp>
+#include <foe/graphics/shader.h>
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkShader {
