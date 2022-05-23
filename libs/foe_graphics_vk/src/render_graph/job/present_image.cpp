@@ -42,7 +42,7 @@ foeResult foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                 VkImageLayout initialLayout,
                                                 VkSemaphore waitSemaphore,
                                                 foeGfxVkRenderGraphResource *pResourcesOut) {
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
@@ -118,6 +118,14 @@ foeResult foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
+namespace {
+
+void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
+    vkDestroySemaphore(foeGfxVkGetDevice(session), semaphore, nullptr);
+}
+
+} // namespace
+
 foeResult foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                  std::string_view name,
                                                  VkFence fence,
@@ -140,7 +148,7 @@ foeResult foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph
     if (pImageState->layout != VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
         std::abort();
 
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
@@ -159,9 +167,9 @@ foeResult foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph
             if (vkResult)
                 return vk_to_foeResult(vkResult);
 
-            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-                vkDestroySemaphore(foeGfxVkGetDevice(session), signalSemaphore, nullptr);
-            });
+            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                        (PFN_foeGfxDelayedCall)destroy_VkSemaphore,
+                                        (void *)signalSemaphore);
         }
 
         VkSubmitInfo submitInfo{

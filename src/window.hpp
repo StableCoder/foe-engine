@@ -18,7 +18,7 @@
 #define WINDOW_HPP
 
 #include <foe/error_code.h>
-#include <foe/graphics/delayed_destructor.hpp>
+#include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/swapchain.hpp>
@@ -38,7 +38,7 @@ struct WindowData {
 
 foeResult performWindowMaintenance(WindowData *pWindow,
                                    foeGfxSession gfxSession,
-                                   foeGfxDelayedDestructor gfxDelayedDestructor,
+                                   foeGfxDelayedCaller gfxDelayedDestructor,
                                    VkSampleCountFlags sampleCount,
                                    VkFormat depthFormat);
 

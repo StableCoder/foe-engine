@@ -205,6 +205,14 @@ auto renderCall(foeId entity,
     return true;
 }
 
+void destroy_VkFramebuffer(VkFramebuffer framebuffer, foeGfxSession session) {
+    vkDestroyFramebuffer(foeGfxVkGetDevice(session), framebuffer, nullptr);
+}
+
+void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
+    vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
+}
+
 } // namespace
 
 foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
@@ -249,7 +257,7 @@ foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
         return to_foeResult(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NO_STATE);
 
     // Proceed with the job
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
@@ -298,9 +306,9 @@ foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-                vkDestroyFramebuffer(foeGfxVkGetDevice(session), framebuffer, nullptr);
-            });
+            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                        (PFN_foeGfxDelayedCall)destroy_VkFramebuffer,
+                                        (void *)framebuffer);
         }
 
         VkCommandPool commandPool;
@@ -316,9 +324,9 @@ foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-                vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
-            });
+            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                        (PFN_foeGfxDelayedCall)destroy_VkCommandPool,
+                                        (void *)commandPool);
         }
 
         { // Create CommandBuffer

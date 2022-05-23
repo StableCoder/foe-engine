@@ -22,6 +22,14 @@
 #include "../../result.h"
 #include "../../vk_result.h"
 
+namespace {
+
+void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
+    vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
+}
+
+} // namespace
+
 foeResult foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                         std::string_view name,
                                         VkFence fence,
@@ -55,7 +63,7 @@ foeResult foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_DESTINATION_NO_STATE);
 
     // Proceed with the job
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
@@ -74,9 +82,9 @@ foeResult foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-                vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
-            });
+            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                        (PFN_foeGfxDelayedCall)destroy_VkCommandPool,
+                                        (void *)commandPool);
         }
 
         { // Create CommandBuffer

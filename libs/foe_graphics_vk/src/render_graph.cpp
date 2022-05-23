@@ -34,7 +34,7 @@ struct RenderGraphJob {
     bool required{false};
     bool processed{false};
     std::function<foeResult(foeGfxSession,
-                            foeGfxDelayedDestructor,
+                            foeGfxDelayedCaller,
                             std::vector<VkSemaphore> const &,
                             std::vector<VkSemaphore> const &,
                             std::function<void(std::function<void()>)>)>
@@ -115,7 +115,7 @@ foeResult foeGfxVkRenderGraphAddJob(
     std::string_view name,
     bool required,
     std::function<foeResult(foeGfxSession,
-                            foeGfxDelayedDestructor,
+                            foeGfxDelayedCaller,
                             std::vector<VkSemaphore> const &,
                             std::vector<VkSemaphore> const &,
                             std::function<void(std::function<void()>)>)> &&jobFn,
@@ -158,9 +158,22 @@ foeResult foeGfxVkRenderGraphAddJob(
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
+namespace {
+
+void destroy_RenderGraphSemaphores(std::vector<VkSemaphore> const *pAllSemaphores,
+                                   foeGfxSession session) {
+    for (auto it : *pAllSemaphores) {
+        vkDestroySemaphore(foeGfxVkGetDevice(session), it, nullptr);
+    }
+
+    delete pAllSemaphores;
+}
+
+} // namespace
+
 foeResult foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                                      foeGfxSession gfxSession,
-                                     foeGfxDelayedDestructor gfxDelayedDestructor) {
+                                     foeGfxDelayedCaller gfxDelayedDestructor) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // COMPILE
@@ -238,11 +251,12 @@ foeResult foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
     }
 
     // Cleanup graph semaphores after execution
-    foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-        for (auto it : allSemaphores) {
-            vkDestroySemaphore(foeGfxVkGetDevice(session), it, nullptr);
-        }
-    });
+    std::vector<VkSemaphore> const *pAllSemaphores =
+        new std::vector<VkSemaphore>{std::move(allSemaphores)};
+
+    foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                (PFN_foeGfxDelayedCall)destroy_RenderGraphSemaphores,
+                                (void *)pAllSemaphores);
 
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }

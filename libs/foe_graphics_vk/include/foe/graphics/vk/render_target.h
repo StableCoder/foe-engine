@@ -18,7 +18,7 @@
 #define FOE_GRAPHICS_VK_RENDER_TARGET_H
 
 #include <foe/error_code.h>
-#include <foe/graphics/delayed_destructor.hpp>
+#include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/render_pass_pool.hpp>
@@ -38,7 +38,7 @@ struct foeGfxVkRenderTargetSpec {
 };
 
 FOE_GFX_EXPORT foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
-                                                    foeGfxDelayedDestructor delayedDestructor,
+                                                    foeGfxDelayedCaller delayedCaller,
                                                     foeGfxVkRenderTargetSpec const *pSpecifications,
                                                     uint32_t count,
                                                     VkSampleCountFlags samples,

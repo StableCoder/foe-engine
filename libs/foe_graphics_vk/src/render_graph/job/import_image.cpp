@@ -34,7 +34,7 @@ foeResult foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                        bool isMutable,
                                        std::vector<VkSemaphore> waitSemaphores,
                                        foeGfxVkRenderGraphResource *pResourcesOut) {
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {

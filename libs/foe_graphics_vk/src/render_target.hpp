@@ -17,7 +17,7 @@
 #ifndef RENDER_TARGET_HPP
 #define RENDER_TARGET_HPP
 
-#include <foe/graphics/delayed_destructor.hpp>
+#include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/vk/render_target.h>
 #include <vk_mem_alloc.h>
@@ -36,7 +36,7 @@ struct RenderTargetImageData {
 
 struct foeGfxVkRenderTarget {
     foeGfxVkSession const *const pSession;
-    foeGfxDelayedDestructor const delayedDestructor;
+    foeGfxDelayedCaller const delayedCaller;
     std::vector<foeGfxVkRenderTargetSpec> const imageSpecifications;
     VkSampleCountFlags const samples;
     VkRenderPass const compatibleRenderPass;

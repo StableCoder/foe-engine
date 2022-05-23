@@ -274,8 +274,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         ERRC_END_PROGRAM_TUPLE
     }
 
-    result = foeGfxCreateDelayedDestructor(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES,
-                                           &gfxDelayedDestructor);
+    result = foeGfxCreateDelayedCaller(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES,
+                                       &gfxDelayedDestructor);
     if (result.value != FOE_SUCCESS) {
         ERRC_END_PROGRAM_TUPLE
     }
@@ -386,7 +386,7 @@ void Application::deinitialize() {
 
     // Cleanup graphics
     if (gfxDelayedDestructor != FOE_NULL_HANDLE)
-        foeGfxDestroyDelayedDestructor(gfxDelayedDestructor);
+        foeGfxDestroyDelayedCaller(gfxDelayedDestructor);
     gfxDelayedDestructor = FOE_NULL_HANDLE;
 
     if (gfxResUploadContext != FOE_NULL_HANDLE)
@@ -968,7 +968,7 @@ int Application::mainloop() {
                                    0);
 
                 // Advance and destroy items related to this frame
-                foeGfxRunDelayedDestructor(gfxDelayedDestructor);
+                foeGfxRunDelayedCalls(gfxDelayedDestructor);
             }
         }
 

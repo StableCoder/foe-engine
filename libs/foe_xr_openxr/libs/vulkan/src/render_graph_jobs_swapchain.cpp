@@ -30,6 +30,14 @@ struct foeOpenXrRenderGraphSwapchainResource {
     XrSwapchain swapchain;
 };
 
+namespace {
+
+void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
+    vkDestroySemaphore(foeGfxVkGetDevice(session), semaphore, nullptr);
+}
+
+} // namespace
+
 foeResult foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                    std::string_view name,
                                                    VkFence fence,
@@ -42,7 +50,7 @@ foeResult foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
                                                    VkImageLayout layout,
                                                    foeGfxVkRenderGraphResource *pResourcesOut) {
     // Add the job that waits on the timeline semaphore and signals any dependent jobs to start
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
@@ -66,9 +74,9 @@ foeResult foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
         if (vkResult != VK_SUCCESS)
             return vk_to_foeResult(vkResult);
 
-        foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-            vkDestroySemaphore(foeGfxVkGetDevice(session), timelineSemaphore, nullptr);
-        });
+        foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                    (PFN_foeGfxDelayedCall)destroy_VkSemaphore,
+                                    (void *)timelineSemaphore);
 
         addCpuFnFn([=]() {
             XrSwapchainImageWaitInfo waitInfo{

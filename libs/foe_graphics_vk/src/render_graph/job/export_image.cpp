@@ -45,7 +45,7 @@ foeResult foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         std::abort();
 
     // Proceed with job creation
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {

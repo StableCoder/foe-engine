@@ -23,9 +23,19 @@
 
 #include <memory>
 
+namespace {
+
+void destroy_foeGfxVkSwapchain(foeGfxVkSwapchain *pSwapchain, foeGfxSession session) {
+    pSwapchain->destroy(foeGfxVkGetDevice(session));
+
+    delete pSwapchain;
+}
+
+} // namespace
+
 foeResult performWindowMaintenance(WindowData *pWindow,
                                    foeGfxSession gfxSession,
-                                   foeGfxDelayedDestructor gfxDelayedDestructor,
+                                   foeGfxDelayedCaller gfxDelayedDestructor,
                                    VkSampleCountFlags sampleCount,
                                    VkFormat depthFormat) {
     VkResult vkResult{VK_SUCCESS};
@@ -101,10 +111,11 @@ foeResult performWindowMaintenance(WindowData *pWindow,
 
         // If the old swapchain exists, we need to destroy it
         if (pWindow->swapchain) {
-            foeGfxVkSwapchain swapchainCopy = pWindow->swapchain;
-            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-                const_cast<foeGfxVkSwapchain &>(swapchainCopy).destroy(foeGfxVkGetDevice(session));
-            });
+            foeGfxVkSwapchain *pOldSwapchain = new foeGfxVkSwapchain{std::move(pWindow->swapchain)};
+
+            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                        (PFN_foeGfxDelayedCall)destroy_foeGfxVkSwapchain,
+                                        (void *)pOldSwapchain);
         }
 
         pWindow->swapchain = std::move(newSwapchain);

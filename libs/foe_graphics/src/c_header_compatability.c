@@ -16,6 +16,7 @@
 
 #include <foe/graphics/backend.h>
 #include <foe/graphics/builtin_descriptor_sets.h>
+#include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/mesh.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/runtime.h>

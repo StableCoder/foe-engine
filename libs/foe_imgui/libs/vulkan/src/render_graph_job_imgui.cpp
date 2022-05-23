@@ -25,6 +25,18 @@
 #include "result.h"
 #include "vk_result.h"
 
+namespace {
+
+void destroy_VkFramebuffer(VkFramebuffer framebuffer, foeGfxSession session) {
+    vkDestroyFramebuffer(foeGfxVkGetDevice(session), framebuffer, nullptr);
+}
+
+void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
+    vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
+}
+
+} // namespace
+
 foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                                 std::string_view name,
                                 VkFence fence,
@@ -52,7 +64,7 @@ foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         return to_foeResult(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_MISSING_STATE);
 
     // Job Data
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedDestructor gfxDelayedDestructor,
+    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
                      std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
@@ -87,9 +99,9 @@ foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-                vkDestroyFramebuffer(foeGfxVkGetDevice(session), framebuffer, nullptr);
-            });
+            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                        (PFN_foeGfxDelayedCall)destroy_VkFramebuffer,
+                                        (void *)framebuffer);
         }
 
         VkCommandPool commandPool;
@@ -105,9 +117,9 @@ foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            foeGfxAddDelayedDestructionCall(gfxDelayedDestructor, [=](foeGfxSession session) {
-                vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
-            });
+            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                        (PFN_foeGfxDelayedCall)destroy_VkCommandPool,
+                                        (void *)commandPool);
         }
 
         { // Create CommandBuffer

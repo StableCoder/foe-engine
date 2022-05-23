@@ -19,7 +19,7 @@
 
 #include <foe/ecs/id.h>
 #include <foe/error_code.h>
-#include <foe/graphics/delayed_destructor.hpp>
+#include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
@@ -106,7 +106,7 @@ struct Application {
     foeGfxRuntime gfxRuntime{FOE_NULL_HANDLE};
     foeGfxSession gfxSession{FOE_NULL_HANDLE};
     foeGfxUploadContext gfxResUploadContext{FOE_NULL_HANDLE};
-    foeGfxDelayedDestructor gfxDelayedDestructor{FOE_NULL_HANDLE};
+    foeGfxDelayedCaller gfxDelayedDestructor{FOE_NULL_HANDLE};
     VkFormat depthFormat{VK_FORMAT_D16_UNORM};
     VkSampleCountFlags globalMSAA;
 

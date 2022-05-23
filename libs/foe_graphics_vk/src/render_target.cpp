@@ -105,7 +105,7 @@ foeResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
 } // namespace
 
 foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
-                                     foeGfxDelayedDestructor delayedDestructor,
+                                     foeGfxDelayedCaller delayedCaller,
                                      foeGfxVkRenderTargetSpec const *pSpecifications,
                                      uint32_t count,
                                      VkSampleCountFlags samples,
@@ -129,7 +129,7 @@ foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
 
     auto *pNewRenderTarget = new foeGfxVkRenderTarget{
         .pSession = pSession,
-        .delayedDestructor = delayedDestructor,
+        .delayedCaller = delayedCaller,
         .imageSpecifications =
             std::vector<foeGfxVkRenderTargetSpec>{pSpecifications, pSpecifications + count},
         .samples = samples,
@@ -181,6 +181,28 @@ extern "C" void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
     }
 }
 
+namespace {
+
+void destroy_RenderTargetImageData(RenderTargetImageData *pOldImage, foeGfxSession session) {
+    auto *pSession = session_from_handle(session);
+
+    if (pOldImage->view != VK_NULL_HANDLE)
+        vkDestroyImageView(pSession->device, pOldImage->view, nullptr);
+
+    if (pOldImage->image != VK_NULL_HANDLE)
+        vmaDestroyImage(pSession->allocator, pOldImage->image, pOldImage->alloc);
+
+    delete pOldImage;
+}
+
+void destroy_VkFramebuffer(VkFramebuffer framebuffer, foeGfxSession session) {
+    auto *pSession = session_from_handle(session);
+
+    vkDestroyFramebuffer(pSession->device, framebuffer, nullptr);
+}
+
+} // namespace
+
 extern "C" foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
                                                    uint32_t maxBufferedFrames) {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
@@ -208,20 +230,11 @@ extern "C" foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarg
         if (!image.latest) {
             // Need to re-create the image, maybe delete the old
             if (image.image != VK_NULL_HANDLE) {
-                // @todo Add delayed destruction for old images
-                auto oldImage = image;
-                foeGfxAddDelayedDestructionCall(
-                    pRenderTarget->delayedDestructor,
-                    [=](foeGfxSession session) {
-                        auto *pSession = session_from_handle(session);
+                RenderTargetImageData const *pOldImage = new RenderTargetImageData{image};
 
-                        if (image.view != VK_NULL_HANDLE)
-                            vkDestroyImageView(pSession->device, oldImage.view, nullptr);
-
-                        if (image.image != VK_NULL_HANDLE)
-                            vmaDestroyImage(pSession->allocator, oldImage.image, oldImage.alloc);
-                    },
-                    maxBufferedFrames);
+                foeGfxAddDelayedCall(pRenderTarget->delayedCaller,
+                                     (PFN_foeGfxDelayedCall)destroy_RenderTargetImageData,
+                                     (void *)pOldImage, maxBufferedFrames);
 
                 image = {};
             }
@@ -248,15 +261,9 @@ extern "C" foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarg
 
     // Destroy old framebuffer in a delayed manner
     if (pRenderTarget->framebuffer != VK_NULL_HANDLE) {
-        VkFramebuffer oldFramebuffer = pRenderTarget->framebuffer;
-        foeGfxAddDelayedDestructionCall(
-            pRenderTarget->delayedDestructor,
-            [=](foeGfxSession session) {
-                auto *pSession = session_from_handle(session);
-
-                vkDestroyFramebuffer(pSession->device, oldFramebuffer, nullptr);
-            },
-            maxBufferedFrames);
+        foeGfxAddDelayedCall(pRenderTarget->delayedCaller,
+                             (PFN_foeGfxDelayedCall)destroy_VkFramebuffer,
+                             (void *)pRenderTarget->framebuffer, maxBufferedFrames);
         pRenderTarget->framebuffer = VK_NULL_HANDLE;
     }
 

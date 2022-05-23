@@ -18,7 +18,7 @@
 #define FOE_GRAPHICS_VK_RENDER_GRAPH_HPP
 
 #include <foe/error_code.h>
-#include <foe/graphics/delayed_destructor.hpp>
+#include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
 #include <foe/handle.h>
@@ -66,7 +66,7 @@ FOE_GFX_EXPORT foeResult foeGfxVkRenderGraphAddJob(
     std::string_view name,
     bool required,
     std::function<foeResult(foeGfxSession,
-                            foeGfxDelayedDestructor,
+                            foeGfxDelayedCaller,
                             std::vector<VkSemaphore> const &,
                             std::vector<VkSemaphore> const &,
                             std::function<void(std::function<void()>)>)> &&jobFn,
@@ -74,7 +74,7 @@ FOE_GFX_EXPORT foeResult foeGfxVkRenderGraphAddJob(
 
 FOE_GFX_EXPORT foeResult foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                                                     foeGfxSession gfxSession,
-                                                    foeGfxDelayedDestructor gfxDelayedDestructor);
+                                                    foeGfxDelayedCaller gfxDelayedDestructor);
 
 FOE_GFX_EXPORT void foeGfxVkExecuteRenderGraphCpuJobs(foeGfxVkRenderGraph renderGraph);
 
