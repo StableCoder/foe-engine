@@ -17,7 +17,7 @@
 #ifndef FOE_GRAPHICS_RESOURCE_MESH_HPP
 #define FOE_GRAPHICS_RESOURCE_MESH_HPP
 
-#include <foe/graphics/mesh.hpp>
+#include <foe/graphics/mesh.h>
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
 

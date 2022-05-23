@@ -36,14 +36,14 @@ void foeGfxVkDestroyMesh(foeGfxSession session, foeGfxVkMesh *pMesh) {
 
 } // namespace
 
-foeResult foeGfxVkCreateMesh(foeGfxSession session,
-                             uint64_t vertexDataSize,
-                             uint64_t indexDataSize,
-                             uint32_t numIndices,
-                             VkIndexType indexType,
-                             uint64_t boneDataOffset,
-                             bool *pHostVisible,
-                             foeGfxMesh *pMesh) {
+extern "C" foeResult foeGfxVkCreateMesh(foeGfxSession session,
+                                        uint64_t vertexDataSize,
+                                        uint64_t indexDataSize,
+                                        uint32_t numIndices,
+                                        VkIndexType indexType,
+                                        uint64_t boneDataOffset,
+                                        bool *pHostVisible,
+                                        foeGfxMesh *pMesh) {
     auto *pSession = session_from_handle(session);
     VkResult vkResult = VK_SUCCESS;
 
@@ -116,13 +116,15 @@ CREATE_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-uint32_t foeGfxGetMeshIndices(foeGfxMesh mesh) {
+extern "C" uint32_t foeGfxGetMeshIndices(foeGfxMesh mesh) {
     auto *pMesh = mesh_from_handle(mesh);
 
     return pMesh->numIndices;
 }
 
-void foeGfxVkBindMesh(foeGfxMesh mesh, VkCommandBuffer commandBuffer, bool bindBoneData) {
+extern "C" void foeGfxVkBindMesh(foeGfxMesh mesh,
+                                 VkCommandBuffer commandBuffer,
+                                 bool bindBoneData) {
     auto *pMesh = mesh_from_handle(mesh);
 
     std::array<VkDeviceSize, 2> offsets{0, pMesh->boneDataOffset};
@@ -134,7 +136,7 @@ void foeGfxVkBindMesh(foeGfxMesh mesh, VkCommandBuffer commandBuffer, bool bindB
     vkCmdBindIndexBuffer(commandBuffer, pMesh->indexBuffer, 0, pMesh->indexType);
 }
 
-void foeGfxDestroyMesh(foeGfxSession session, foeGfxMesh mesh) {
+extern "C" void foeGfxDestroyMesh(foeGfxSession session, foeGfxMesh mesh) {
     auto *pMesh = mesh_from_handle(mesh);
 
     foeGfxVkDestroyMesh(session, pMesh);

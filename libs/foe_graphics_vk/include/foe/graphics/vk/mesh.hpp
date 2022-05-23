@@ -18,8 +18,12 @@
 #define FOE_GRAPHICS_VK_MESH_HPP
 
 #include <foe/error_code.h>
-#include <foe/graphics/mesh.hpp>
+#include <foe/graphics/mesh.h>
 #include <vulkan/vulkan.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_GFX_EXPORT foeResult foeGfxVkCreateMesh(foeGfxSession session,
                                             uint64_t vertexDataSize,
@@ -33,6 +37,10 @@ FOE_GFX_EXPORT foeResult foeGfxVkCreateMesh(foeGfxSession session,
 FOE_GFX_EXPORT void foeGfxVkBindMesh(foeGfxMesh mesh,
                                      VkCommandBuffer commandBuffer,
                                      bool bindBoneData);
+
+#ifdef __cplusplus
+}
+#endif
 
 // TEMP
 #include <tuple>
