@@ -19,6 +19,7 @@
 
 #include <foe/ecs/export.h>
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 
 #include <atomic>
 #include <functional>
@@ -100,21 +101,37 @@ class foeIdIndexGenerator {
 
     /**
      * @brief Overwrites the current state of the generator with that provided
-     * @param nextIndex Next free index that will be generated
-     * @param recycledIndices The new set of recycled indices
+     * @param nextIndex is the next free index that would be generated
+     * @param recycledCount is the integer related to the number of recycled Index IDs in pRecycled
+     * @param pRecycledIndexes is a pointer to recycled Index IDs to be imported
      * @warning Overwrites the current state of the object
      */
     FOE_ECS_EXPORT
-    void importState(foeIdIndex nextIndex, std::vector<foeIdIndex> const &recycledIndices);
+    foeResult importState(foeIdIndex nextIndex,
+                          uint32_t recycledCount,
+                          foeIdIndex const *pRecycledIndexes);
 
     /**
      * @brief Returns the current state of the object for import/export
-     * @param[out] nextIndex Next free index
-     * @param[out] recycledIndices The set of recycled indices
-     * @warning Overwrites the current state of the object
+     * @param[out] pNextIndex is a pointer representing the next fresh IndexID that would be
+     * generated
+     * @param[out] pRecycledCount is a pointer to an integer related to the number of recycled
+     * IndexIDs available or the size of pRecycled, as described below.
+     * @param[out] pRecycledIndexes is either NULL or a pointer to an array of foeIdIndex's
+     * @return An appropriate error code, as described below.
+     *
+     * If either pNextIndex or pRecycled is NULL, then the number of recycled items available will
+     * be returned via pRecycledCount. Otherwise pRecycledCount must point to a variable set by the
+     * user to the size of the pRecycled array, and on the return the variable is overwritted with
+     * the number of recycled IndexIDs actually writted to pRecycled.
+     *
+     * If pRecycledCount is less than the total size required to return all names, at most
+     * pRecycledCount is written, and FOE_ECS_ERROR_INCOMPLETE will be returned instead of
+     * FOE_ECS_SUCCESS, to indicate that not all IndexIDs were returned.
      */
-    FOE_ECS_EXPORT void exportState(foeIdIndex &nextIndex,
-                                    std::vector<foeIdIndex> &recycledIndices);
+    FOE_ECS_EXPORT foeResult exportState(foeIdIndex *pNextIndex,
+                                         uint32_t *pRecycledCount,
+                                         foeIdIndex *pRecycledIndexes);
 
   private:
     /// The group of the entity IDs being managed

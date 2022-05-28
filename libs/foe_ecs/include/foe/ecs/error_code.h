@@ -26,6 +26,8 @@ extern "C" {
 
 typedef enum foeEcsResult {
     FOE_ECS_SUCCESS = 0,
+    FOE_ECS_INCOMPLETE,
+    FOE_ECS_ERROR_INDEX_BELOW_MINIMUM,
     FOE_ECS_ERROR_NO_MATCHING_GROUP,
 
     // Need to have a negative enum value to prevent treatment as a flag

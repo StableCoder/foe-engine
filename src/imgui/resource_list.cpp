@@ -107,10 +107,20 @@ void foeImGuiResourceList::customUI() {
         if (pIndexGenerator == nullptr)
             continue;
 
+        foeResult result;
         PerGroupData indiceData{
             .group = group,
         };
-        pIndexGenerator->exportState(indiceData.nextIndex, indiceData.recycledIndices);
+
+        do {
+            uint32_t count;
+            pIndexGenerator->exportState(nullptr, &count, nullptr);
+
+            indiceData.recycledIndices.resize(count);
+            result = pIndexGenerator->exportState(&indiceData.nextIndex, &count,
+                                                  indiceData.recycledIndices.data());
+            indiceData.recycledIndices.resize(count);
+        } while (result.value != FOE_SUCCESS);
         std::sort(indiceData.recycledIndices.begin(), indiceData.recycledIndices.end());
 
         totalEntityCount +=

@@ -15,6 +15,7 @@
 */
 
 #include <catch.hpp>
+#include <foe/ecs/error_code.h>
 #include <foe/ecs/index_generator.hpp>
 
 #include <array>
@@ -82,7 +83,7 @@ TEST_CASE("IndexGenerator - Reset with custom values", "[foe][ecs][IndexGenerato
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
     };
 
-    test.importState(100, list);
+    REQUIRE(test.importState(100, list.size(), list.data()).value == FOE_ECS_SUCCESS);
     REQUIRE(test.peekNextFreshIndex() == 100);
     REQUIRE(test.recyclable() == 10);
 
@@ -101,6 +102,14 @@ TEST_CASE("IndexGenerator - Reset with custom values", "[foe][ecs][IndexGenerato
     REQUIRE(test.peekNextFreshIndex() == 101);
     REQUIRE(test.recyclable() == 0);
     REQUIRE(id == foeId(100));
+}
+
+TEST_CASE("IndexGenerator - Import fails with a value less than the minimum index",
+          "[foe][ecs][IndexGenerator]") {
+    foeIdIndexGenerator test(0);
+
+    REQUIRE(test.importState(foeIdIndexMinValue - 1, 0, nullptr).value ==
+            FOE_ECS_ERROR_INDEX_BELOW_MINIMUM);
 }
 
 TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
@@ -147,7 +156,7 @@ TEST_CASE("IndexGenerator - GroupID of 0x0", "[foe][ecs][IndexGenerator]") {
 
     SECTION("Should return an Invalid ID when it runs out of indexes.") {
         // Shortcut to near the end of the index range
-        test.importState(foeIdIndexMaxValue - 10001, {});
+        REQUIRE(test.importState(foeIdIndexMaxValue - 10001, 0, nullptr).value == FOE_ECS_SUCCESS);
 
         for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ID) {
@@ -206,7 +215,7 @@ TEST_CASE("IndexGenerator - GroupID of 0xF", "[foe][ecs][IndexGenerator]") {
 
     SECTION("Should return an eInvalidID when it runs out of indexes.") {
         // Shortcut to near the end of the index range
-        test.importState(foeIdIndexMaxValue - 10001, {});
+        REQUIRE(test.importState(foeIdIndexMaxValue - 10001, 0, nullptr).value == FOE_ECS_SUCCESS);
 
         for (uint64_t i = 0; i < 10001; ++i) {
             if (auto temp = test.generate(); temp == FOE_INVALID_ID) {
@@ -288,7 +297,7 @@ TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]
         foeIdIndex nextFreeId = 10905;
         std::vector<foeIdIndex> recycledIds = {109, 4, 1000, 9876};
 
-        testGenerator.importState(nextFreeId, recycledIds);
+        testGenerator.importState(nextFreeId, recycledIds.size(), recycledIds.data());
 
         CHECK(testGenerator.generate() == 109);
         CHECK(testGenerator.generate() == 4);
@@ -301,10 +310,25 @@ TEST_CASE("IndexGenerator - ImexData import/export", "[foe][ecs][IndexGenerator]
         foeIdIndex nextFreeId;
         std::vector<foeIdIndex> recycledIds;
 
-        testGenerator.exportState(nextFreeId, recycledIds);
+        uint32_t count;
+        REQUIRE(testGenerator.exportState(nullptr, &count, nullptr).value == FOE_ECS_SUCCESS);
+        CHECK(count == 3);
+
+        recycledIds.resize(count);
+
+        SECTION("If the output array is too small, then FOE_ECS_INCOMPLETE is returned") {
+            uint32_t tempCount = 2;
+            REQUIRE(testGenerator.exportState(&nextFreeId, &tempCount, recycledIds.data()).value ==
+                    FOE_ECS_INCOMPLETE);
+        }
+
+        REQUIRE(testGenerator.exportState(&nextFreeId, &count, recycledIds.data()).value ==
+                FOE_ECS_SUCCESS);
 
         foeIdIndexGenerator testGenerator2{0};
-        testGenerator2.importState(nextFreeId, recycledIds);
+        REQUIRE(
+            testGenerator2.importState(nextFreeId, recycledIds.size(), recycledIds.data()).value ==
+            FOE_ECS_SUCCESS);
 
         CHECK(testGenerator2.generate() == 8);
         CHECK(testGenerator2.generate() == 4);

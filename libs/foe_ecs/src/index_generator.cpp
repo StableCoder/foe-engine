@@ -16,6 +16,8 @@
 
 #include <foe/ecs/index_generator.hpp>
 
+#include "result.h"
+
 #include <cassert>
 
 foeIdIndexGenerator::foeIdIndexGenerator(foeIdGroup groupId) :
@@ -75,9 +77,19 @@ foeIdIndex foeIdIndexGenerator::peekNextFreshIndex() const noexcept { return mNe
 size_t foeIdIndexGenerator::recyclable() const noexcept { return mNumRecycled; }
 
 void foeIdIndexGenerator::forEachID(std::function<void(foeId)> callFn) {
+    foeResult result;
     foeIdIndex nextFreshIndex;
     std::vector<foeIdIndex> recycledIndexes;
-    exportState(nextFreshIndex, recycledIndexes);
+
+    do {
+        uint32_t count;
+        exportState(nullptr, &count, nullptr);
+
+        recycledIndexes.resize(count);
+        result = exportState(&nextFreshIndex, &count, recycledIndexes.data());
+        recycledIndexes.resize(count);
+    } while (result.value != FOE_SUCCESS);
+
     std::sort(recycledIndexes.begin(), recycledIndexes.end());
 
     auto currentRecycled = recycledIndexes.begin();
@@ -98,40 +110,55 @@ void foeIdIndexGenerator::forEachID(std::function<void(foeId)> callFn) {
     }
 }
 
-void foeIdIndexGenerator::importState(foeIdIndex nextIndex,
-                                      const std::vector<foeIdIndex> &recycledIndices) {
-    /// @todo Replace with contract
-    /// @todo FOE_LOG this
-    assert(nextIndex != 0);
+foeResult foeIdIndexGenerator::importState(foeIdIndex nextIndex,
+                                           uint32_t recycledCount,
+                                           foeIdIndex const *pRecycledIndexes) {
+    if (nextIndex < foeIdIndexMinValue) {
+        return to_foeResult(FOE_ECS_ERROR_INDEX_BELOW_MINIMUM);
+    }
 
     std::scoped_lock lock{mSync};
 
     mNextFreeID = nextIndex;
-    mNumRecycled = recycledIndices.size();
+    mNumRecycled = recycledCount;
 
     // Clear the old recycled list
     while (!mRecycled.empty())
         mRecycled.pop();
 
     // Insert new indices
-    for (auto const it : recycledIndices) {
-        mRecycled.emplace(it);
+    for (uint32_t i = 0; i < recycledCount; ++i) {
+        mRecycled.emplace(pRecycledIndexes[i]);
     }
+
+    return to_foeResult(FOE_ECS_SUCCESS);
 }
 
-void foeIdIndexGenerator::exportState(foeIdIndex &nextIndex,
-                                      std::vector<foeIdIndex> &recycledIndices) {
-    std::scoped_lock lock{mSync};
+foeResult foeIdIndexGenerator::exportState(foeIdIndex *pNextIndex,
+                                           uint32_t *pRecycledCount,
+                                           foeIdIndex *pRecycledIndexes) {
+    foeResult result = to_foeResult(FOE_ECS_SUCCESS);
+    std::unique_lock lock{mSync};
 
-    nextIndex = mNextFreeID;
+    if (pNextIndex != nullptr)
+        *pNextIndex = mNextFreeID;
+    if (pRecycledIndexes == nullptr) {
+        *pRecycledCount = mRecycled.size();
+        return result;
+    }
 
     auto tempList = mRecycled;
+    lock.unlock();
 
-    recycledIndices.clear();
-    recycledIndices.reserve(mNumRecycled);
+    uint32_t returnCount = std::min((uint32_t)tempList.size(), *pRecycledCount);
+    if (returnCount < tempList.size()) {
+        result = to_foeResult(FOE_ECS_INCOMPLETE);
+    }
 
-    while (!tempList.empty()) {
-        recycledIndices.emplace_back(tempList.front());
+    for (uint32_t i = 0; i < returnCount; ++i) {
+        pRecycledIndexes[i] = tempList.front();
         tempList.pop();
     }
+
+    return result;
 }

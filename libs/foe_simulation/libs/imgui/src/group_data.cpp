@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -46,10 +46,18 @@ void renderImporterData(foeImporterBase *pImporter) {
 }
 
 void renderIndexData(foeIdIndexGenerator *pIndexGenerator, char const *subGroupName) {
+    foeResult result;
     foeIdIndex nextFreeIndex;
     std::vector<foeIdIndex> recyclableIndices;
 
-    pIndexGenerator->exportState(nextFreeIndex, recyclableIndices);
+    do {
+        uint32_t count;
+        pIndexGenerator->exportState(nullptr, &count, nullptr);
+
+        recyclableIndices.resize(count);
+        result = pIndexGenerator->exportState(&nextFreeIndex, &count, recyclableIndices.data());
+        recyclableIndices.resize(count);
+    } while (result.value != FOE_SUCCESS);
 
     ImGui::Text("Next Free Index: %s / %u", foeIdToString(nextFreeIndex).c_str(), nextFreeIndex);
     ImGui::Text("Num Recycled: %zu", recyclableIndices.size());

@@ -16,6 +16,7 @@
 
 #include <catch.hpp>
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/error_code.h>
 #include <foe/ecs/index_generator.hpp>
 #include <foe/imex/yaml/error_code.h>
 #include <foe/imex/yaml/importer.hpp>
@@ -145,10 +146,17 @@ TEST_CASE("foeYamlImporter - Function Tests") {
 
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycled;
-        generator.exportState(nextFreshIndex, recycled);
+
+        uint32_t count;
+        REQUIRE(generator.exportState(nullptr, &count, nullptr).value == FOE_ECS_SUCCESS);
+        CHECK(count == 2);
+
+        recycled.resize(count);
+        REQUIRE(generator.exportState(&nextFreshIndex, &count, recycled.data()).value ==
+                FOE_ECS_SUCCESS);
+        REQUIRE(count == 2);
 
         CHECK(nextFreshIndex == 4);
-        REQUIRE(recycled.size() == 2);
         CHECK(recycled[0] == 3);
         CHECK(recycled[1] == 1);
     }
@@ -159,10 +167,17 @@ TEST_CASE("foeYamlImporter - Function Tests") {
 
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycled;
-        generator.exportState(nextFreshIndex, recycled);
+
+        uint32_t count;
+        REQUIRE(generator.exportState(nullptr, &count, nullptr).value == FOE_ECS_SUCCESS);
+        CHECK(count == 2);
+
+        recycled.resize(count);
+        REQUIRE(generator.exportState(&nextFreshIndex, &count, recycled.data()).value ==
+                FOE_ECS_SUCCESS);
+        REQUIRE(count == 2);
 
         CHECK(nextFreshIndex == 3);
-        REQUIRE(recycled.size() == 2);
         CHECK(recycled[0] == 0);
         CHECK(recycled[1] == 2);
     }

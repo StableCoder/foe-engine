@@ -190,9 +190,19 @@ foeResult exportGroupEntityIndexData(foeSimulation *pSimState, YAML::Node &data)
 
 foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
     // Get the valid set of resource indices
+    foeResult result;
     foeIdIndex maxIndices;
     std::vector<foeIdIndex> unusedIndices;
-    pSimState->groupData.resourceIndices(group)->exportState(maxIndices, unusedIndices);
+
+    do {
+        uint32_t count;
+        pSimState->groupData.resourceIndices(group)->exportState(nullptr, &count, nullptr);
+
+        unusedIndices.resize(count);
+        result = pSimState->groupData.resourceIndices(group)->exportState(&maxIndices, &count,
+                                                                          unusedIndices.data());
+        unusedIndices.resize(count);
+    } while (result.value != FOE_SUCCESS);
 
     foeResourceID resourceID;
     auto unused = unusedIndices.begin();
@@ -225,9 +235,19 @@ foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node
 
 foeResult exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
     // Get the valid set of entity indices
+    foeResult result;
     foeIdIndex maxIndices;
     std::vector<foeIdIndex> unusedIndices;
-    pSimState->groupData.entityIndices(group)->exportState(maxIndices, unusedIndices);
+
+    do {
+        uint32_t count;
+        pSimState->groupData.entityIndices(group)->exportState(nullptr, &count, nullptr);
+
+        unusedIndices.resize(count);
+        result = pSimState->groupData.entityIndices(group)->exportState(&maxIndices, &count,
+                                                                        unusedIndices.data());
+        unusedIndices.resize(count);
+    } while (result.value != FOE_SUCCESS);
 
     foeEntityID entity;
     auto unused = unusedIndices.begin();

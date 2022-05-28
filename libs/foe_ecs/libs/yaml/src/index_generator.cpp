@@ -62,7 +62,7 @@ void yaml_read_index_generator(std::string const &nodeName,
         }
     }
 
-    indexGenerator.importState(nextIndex, recycledIndices);
+    indexGenerator.importState(nextIndex, recycledIndices.size(), recycledIndices.data());
 }
 
 void yaml_write_index_generator(std::string const &nodeName,
@@ -79,10 +79,18 @@ void yaml_write_index_generator(std::string const &nodeName,
         }
     }
 
+    foeResult result;
     foeIdIndex nextIndex;
     std::vector<foeIdIndex> recycledIndices;
 
-    data.exportState(nextIndex, recycledIndices);
+    do {
+        uint32_t recycledCount;
+        data.exportState(nullptr, &recycledCount, nullptr);
+
+        recycledIndices.resize(recycledCount);
+        result = data.exportState(&nextIndex, &recycledCount, recycledIndices.data());
+        recycledIndices.resize(recycledCount);
+    } while (result.value != FOE_SUCCESS);
 
     try {
         // Next Free Index

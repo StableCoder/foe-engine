@@ -31,6 +31,8 @@ void foeEcsResultToString(foeEcsResult value, char buffer[FOE_MAX_RESULT_STRING_
 
     switch (value) {
         RESULT_CASE(FOE_ECS_SUCCESS)
+        RESULT_CASE(FOE_ECS_INCOMPLETE)
+        RESULT_CASE(FOE_ECS_ERROR_INDEX_BELOW_MINIMUM)
         RESULT_CASE(FOE_ECS_ERROR_NO_MATCHING_GROUP)
 
     default:
