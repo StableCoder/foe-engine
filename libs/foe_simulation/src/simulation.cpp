@@ -90,9 +90,9 @@ void deinitializeSimulationGraphics(foeSimulation *pSimulation) {
 }
 
 foeResourceCreateInfo getResourceCreateInfo(void *pContext, foeResourceID resourceID) {
-    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
+    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
 
-    return pGroupData->getResourceDefinition(resourceID);
+    return pSimulation->groupData.getResourceDefinition(resourceID);
 }
 
 void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
@@ -294,7 +294,7 @@ foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationStat
 
     // Resource Pool
     foeResourceFns resourceCallbacks{
-        .pImportContext = &newSimState->groupData,
+        .pImportContext = newSimState.get(),
         .pImportFn = getResourceCreateInfo,
         .pLoadContext = newSimState.get(),
         .pLoadFn = loadResource,
