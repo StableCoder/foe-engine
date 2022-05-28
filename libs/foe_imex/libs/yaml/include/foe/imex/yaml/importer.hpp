@@ -35,6 +35,7 @@ class foeYamlImporterGenerator;
 class foeYamlImporter : public foeImporterBase {
   public:
     FOE_IMEX_YAML_EXPORT foeYamlImporter(foeIdGroup group, std::filesystem::path rootDir);
+    FOE_IMEX_YAML_EXPORT ~foeYamlImporter();
 
     FOE_IMEX_YAML_EXPORT foeIdGroup group() const noexcept override;
     FOE_IMEX_YAML_EXPORT std::string name() const noexcept override;
