@@ -142,13 +142,6 @@ foeResult create(foeSimulation *pSimulation) {
     size_t count;
     TypeSelection selection = {};
 
-    foeResourceFns resourcePoolFns{
-        .pImportContext = &pSimulation->groupData,
-        .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-        .pLoadContext = pSimulation,
-        .pLoadFn = TEMP_foeSimulationLoadResource,
-    };
-
     // Loaders
     result = foeSimulationIncrementRefCount(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER, nullptr);

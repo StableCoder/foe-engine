@@ -291,13 +291,6 @@ foeResult create(foeSimulation *pSimulation) {
     foeResult result;
     TypeSelection created = {};
 
-    foeResourceFns resourceFns{
-        .pImportContext = &pSimulation->groupData,
-        .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
-        .pLoadContext = pSimulation,
-        .pLoadFn = TEMP_foeSimulationLoadResource,
-    };
-
     // Loaders
     result = foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
                                             nullptr);

@@ -89,6 +89,28 @@ void deinitializeSimulationGraphics(foeSimulation *pSimulation) {
             static_cast<void *>(pSimulation));
 }
 
+foeResourceCreateInfo getResourceCreateInfo(void *pContext, foeResourceID resourceID) {
+    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
+
+    return pGroupData->getResourceDefinition(resourceID);
+}
+
+void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
+    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
+
+    auto createInfo = foeResourceGetCreateInfo(resource);
+
+    for (auto const &it : pSimulation->resourceLoaders) {
+        if (it.pCanProcessCreateInfoFn(createInfo)) {
+            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
+            return;
+        }
+    }
+
+    pPostLoadFn(resource, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
+                nullptr, nullptr, nullptr);
+}
+
 } // namespace
 
 foeResult foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
@@ -273,9 +295,9 @@ foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationStat
     // Resource Pool
     foeResourceFns resourceCallbacks{
         .pImportContext = &newSimState->groupData,
-        .pImportFn = TEMP_foeSimulationGetResourceCreateInfo,
+        .pImportFn = getResourceCreateInfo,
         .pLoadContext = newSimState.get(),
-        .pLoadFn = TEMP_foeSimulationLoadResource,
+        .pLoadFn = loadResource,
     };
 
     foeResult result = foeCreateResourcePool(&resourceCallbacks, &newSimState->resourcePool);
@@ -898,29 +920,4 @@ foeResult foeSimulationReleaseSystem(foeSimulation *pSimulation,
     }
 
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
-}
-
-foeResourceCreateInfo TEMP_foeSimulationGetResourceCreateInfo(void *pContext,
-                                                              foeResourceID resourceID) {
-    auto *pGroupData = reinterpret_cast<foeGroupData *>(pContext);
-
-    return pGroupData->getResourceDefinition(resourceID);
-}
-
-void TEMP_foeSimulationLoadResource(void *pContext,
-                                    foeResource resource,
-                                    PFN_foeResourcePostLoad *pPostLoadFn) {
-    auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
-
-    auto createInfo = foeResourceGetCreateInfo(resource);
-
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(createInfo)) {
-            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
-            return;
-        }
-    }
-
-    pPostLoadFn(resource, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
-                nullptr, nullptr, nullptr);
 }
