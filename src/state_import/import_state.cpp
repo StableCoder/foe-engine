@@ -333,6 +333,65 @@ foeResult importState(std::string_view topLevelDataSet,
         });
     }
 
+    // Import Resource History/Records
+    {
+        // Dynamic Groups
+        for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
+            auto *pGroupImporter =
+                pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
+            if (pGroupImporter == nullptr)
+                continue;
+
+            // Go through all GroupIDs upto this group, and import any resource data for all of it
+            for (foeIdGroupValue resourceGroupValue = 0; resourceGroupValue <= groupValue;
+                 ++resourceGroupValue) {
+                auto *pGroupIndexes = pSimulationSet->groupData.resourceIndices(
+                    foeIdValueToGroup(resourceGroupValue));
+                if (pGroupIndexes == nullptr)
+                    continue;
+
+                pGroupIndexes->forEachID([&](foeId id) {
+                    foeResourceCreateInfo resourceCI = pGroupImporter->getResource(id);
+
+                    if (foeIdGroupToValue(foeIdGetGroup(id)) == groupValue) {
+                        foeResourceAddRecordEntry(pSimulationSet->resourceRecords, id);
+                    }
+
+                    if (resourceCI != FOE_NULL_HANDLE) {
+                        foeResourceAddSavedRecord(pSimulationSet->resourceRecords,
+                                                  foeIdValueToGroup(groupValue), id, resourceCI);
+                    }
+                });
+            }
+        }
+
+        // Persistent Group
+        auto *pGroupImporter = pSimulationSet->groupData.persistentImporter();
+
+        // Go through all GroupIDs upto this group, and import any resource data for all of it
+        for (foeIdGroupValue resourceGroupValue = 0;
+             resourceGroupValue <= foeIdPersistentGroupValue; ++resourceGroupValue) {
+            auto *pGroupIndexes =
+                pSimulationSet->groupData.resourceIndices(foeIdValueToGroup(resourceGroupValue));
+            if (pGroupIndexes == nullptr)
+                continue;
+
+            pGroupIndexes->forEachID([&](foeId id) {
+                foeResourceCreateInfo resourceCI = pGroupImporter->getResource(id);
+
+                if (foeIdGroupToValue(foeIdGetGroup(id)) == foeIdPersistentGroupValue) {
+                    foeResourceAddRecordEntry(pSimulationSet->resourceRecords, id);
+                }
+
+                if (resourceCI != FOE_NULL_HANDLE) {
+                    foeResult result = foeResourceAddSavedRecord(
+                        pSimulationSet->resourceRecords,
+                        foeIdValueToGroup(foeIdPersistentGroupValue), id, resourceCI);
+                }
+            });
+        }
+    }
+
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));

@@ -92,6 +92,12 @@ void deinitializeSimulationGraphics(foeSimulation *pSimulation) {
 foeResourceCreateInfo getResourceCreateInfo(void *pContext, foeResourceID resourceID) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
 
+    if (pSimulation->resourceRecords != FOE_NULL_HANDLE) {
+        foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
+        foeResourceRecordsGetCreateInfo(pSimulation->resourceRecords, resourceID, &resourceCI);
+        return resourceCI;
+    }
+
     return pSimulation->groupData.getResourceDefinition(resourceID);
 }
 
@@ -286,11 +292,24 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation) {
 }
 
 foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) {
+    foeResult result;
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulation> newSimState{new foeSimulation};
     newSimState->gfxSession = FOE_NULL_HANDLE;
+    newSimState->resourceRecords = FOE_NULL_HANDLE;
     newSimState->resourcePool = FOE_NULL_HANDLE;
+
+    // Resource Records
+    result = foeResourceCreateRecords(&newSimState->resourceRecords);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(SimulationState, Error,
+                "foeSimulation - Failed to create foeResourceRecords due to: {}", buffer);
+
+        return result;
+    }
 
     // Resource Pool
     foeResourceFns resourceCallbacks{
@@ -300,7 +319,7 @@ foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationStat
         .pLoadFn = loadResource,
     };
 
-    foeResult result = foeCreateResourcePool(&resourceCallbacks, &newSimState->resourcePool);
+    result = foeCreateResourcePool(&resourceCallbacks, &newSimState->resourcePool);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -399,6 +418,10 @@ foeResult foeDestroySimulation(foeSimulation *pSimulation) {
 
     // Destroy ResourcePool
     foeDestroyResourcePool(pSimulation->resourcePool);
+
+    // Destroy Records
+    if (pSimulation->resourceRecords != FOE_NULL_HANDLE)
+        foeResourceDestroyRecords(pSimulation->resourceRecords);
 
     // Delete it
     delete pSimulation;
