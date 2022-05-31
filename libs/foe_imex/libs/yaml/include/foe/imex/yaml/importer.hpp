@@ -45,8 +45,8 @@ class foeYamlImporter : public foeImporterBase {
                                                    foeIdGroup *pDependencyGroups,
                                                    uint32_t *pNamesLength,
                                                    char *pNames) override;
-    FOE_IMEX_YAML_EXPORT bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) override;
-    FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) override;
+    FOE_IMEX_YAML_EXPORT bool getGroupEntityIndexData(foeEcsIndexes indexes) override;
+    FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeEcsIndexes indexes) override;
     FOE_IMEX_YAML_EXPORT bool importStateData(foeEditorNameMap *pEntityNameMap,
                                               foeSimulation const *pSimulation) override;
 

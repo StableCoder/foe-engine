@@ -19,7 +19,7 @@
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/ecs/yaml/index_generator.hpp>
+#include <foe/ecs/yaml/indexes.hpp>
 #include <foe/imex/importers.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/yaml/exception.hpp>
@@ -163,9 +163,9 @@ foeResult exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-bool exportIndexDataToFile(foeIdIndexGenerator *pData, YAML::Node &data) {
+bool exportIndexDataToFile(foeEcsIndexes indexes, YAML::Node &data) {
     try {
-        yaml_write_index_generator("", *pData, data);
+        yaml_write_indexes("", indexes, data);
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to write index data node with exception: {}", e.what())
         return false;
@@ -175,14 +175,14 @@ bool exportIndexDataToFile(foeIdIndexGenerator *pData, YAML::Node &data) {
 }
 
 foeResult exportGroupResourceIndexData(foeSimulation *pSimState, YAML::Node &data) {
-    if (exportIndexDataToFile(pSimState->groupData.persistentResourceIndices(), data))
+    if (exportIndexDataToFile(pSimState->groupData.persistentResourceIndexes(), data))
         return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_INDEX_DATA);
 }
 
 foeResult exportGroupEntityIndexData(foeSimulation *pSimState, YAML::Node &data) {
-    if (exportIndexDataToFile(pSimState->groupData.persistentEntityIndices(), data))
+    if (exportIndexDataToFile(pSimState->groupData.persistentEntityIndexes(), data))
         return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_INDEX_DATA);
@@ -196,11 +196,11 @@ foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node
 
     do {
         uint32_t count;
-        pSimState->groupData.resourceIndices(group)->exportState(nullptr, &count, nullptr);
+        foeEcsExportIndexes(pSimState->groupData.resourceIndexes(group), nullptr, &count, nullptr);
 
         unusedIndices.resize(count);
-        result = pSimState->groupData.resourceIndices(group)->exportState(&maxIndices, &count,
-                                                                          unusedIndices.data());
+        result = foeEcsExportIndexes(pSimState->groupData.resourceIndexes(group), &maxIndices,
+                                     &count, unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
 
@@ -241,11 +241,11 @@ foeResult exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::
 
     do {
         uint32_t count;
-        pSimState->groupData.entityIndices(group)->exportState(nullptr, &count, nullptr);
+        foeEcsExportIndexes(pSimState->groupData.entityIndexes(group), nullptr, &count, nullptr);
 
         unusedIndices.resize(count);
-        result = pSimState->groupData.entityIndices(group)->exportState(&maxIndices, &count,
-                                                                        unusedIndices.data());
+        result = foeEcsExportIndexes(pSimState->groupData.entityIndexes(group), &maxIndices, &count,
+                                     unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
 

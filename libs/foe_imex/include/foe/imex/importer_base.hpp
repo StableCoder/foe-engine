@@ -19,6 +19,7 @@
 
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
+#include <foe/ecs/indexes.h>
 #include <foe/error_code.h>
 #include <foe/resource/create_info.h>
 
@@ -26,7 +27,6 @@
 #include <string>
 #include <vector>
 
-class foeIdIndexGenerator;
 struct foeEditorNameMap;
 
 struct foeSimulation;
@@ -43,8 +43,8 @@ class foeImporterBase {
                                       foeIdGroup *pDependencyGroups,
                                       uint32_t *pNamesLength,
                                       char *pNames) = 0;
-    virtual bool getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) = 0;
-    virtual bool getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) = 0;
+    virtual bool getGroupEntityIndexData(foeEcsIndexes indexes) = 0;
+    virtual bool getGroupResourceIndexData(foeEcsIndexes indexes) = 0;
     virtual bool importStateData(foeEditorNameMap *pEntityNameMap,
                                  foeSimulation const *pSimulation) = 0;
 

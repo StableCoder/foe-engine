@@ -14,5 +14,7 @@
     limitations under the License.
 */
 
+#include <foe/ecs/error_code.h>
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
+#include <foe/ecs/indexes.h>

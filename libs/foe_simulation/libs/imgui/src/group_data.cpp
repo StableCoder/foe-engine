@@ -45,17 +45,17 @@ void renderImporterData(foeImporterBase *pImporter) {
     ImGui::Text("Name: %s", pImporter->name().c_str());
 }
 
-void renderIndexData(foeIdIndexGenerator *pIndexGenerator, char const *subGroupName) {
+void renderIndexData(foeEcsIndexes indexes, char const *subGroupName) {
     foeResult result;
     foeIdIndex nextFreeIndex;
     std::vector<foeIdIndex> recyclableIndices;
 
     do {
         uint32_t count;
-        pIndexGenerator->exportState(nullptr, &count, nullptr);
+        foeEcsExportIndexes(indexes, nullptr, &count, nullptr);
 
         recyclableIndices.resize(count);
-        result = pIndexGenerator->exportState(&nextFreeIndex, &count, recyclableIndices.data());
+        result = foeEcsExportIndexes(indexes, &nextFreeIndex, &count, recyclableIndices.data());
         recyclableIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
 
@@ -231,20 +231,20 @@ void foeSimulationImGuiGroupData::customUI() {
             renderImporterData(pImporter);
         }
 
-        auto *pEntityIndices = mpSimulationState->groupData.entityIndices(mSelected);
-        if (pEntityIndices != nullptr) {
+        foeEcsIndexes entityIndexes = mpSimulationState->groupData.entityIndexes(mSelected);
+        if (entityIndexes != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Entity Index Data");
 
-            renderIndexData(pEntityIndices, "EntityIndices");
+            renderIndexData(entityIndexes, "EntityIndexes");
         }
 
-        auto *pResourceIndices = mpSimulationState->groupData.resourceIndices(mSelected);
-        if (pResourceIndices != nullptr) {
+        foeEcsIndexes resourceIndexes = mpSimulationState->groupData.resourceIndexes(mSelected);
+        if (resourceIndexes != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Resource Index Data");
 
-            renderIndexData(pResourceIndices, "ResourceIndices");
+            renderIndexData(resourceIndexes, "ResourceIndexes");
         }
 
         ImGui::EndGroup();

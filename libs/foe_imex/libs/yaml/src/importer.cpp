@@ -20,7 +20,7 @@
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
-#include <foe/ecs/yaml/index_generator.hpp>
+#include <foe/ecs/yaml/indexes.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -176,13 +176,13 @@ foeResult foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
 
 namespace {
 
-bool getGroupIndexData(std::filesystem::path path, foeIdIndexGenerator &ecsGroup) {
+bool getGroupIndexData(std::filesystem::path path, foeEcsIndexes indexes) {
     YAML::Node node;
     if (!openYamlFile(path, node))
         return false;
 
     try {
-        yaml_read_index_generator("", node, ecsGroup);
+        yaml_read_indexes("", node, indexes);
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to parse Group State Index Data from Yaml file: {}",
                 e.what())
@@ -194,12 +194,12 @@ bool getGroupIndexData(std::filesystem::path path, foeIdIndexGenerator &ecsGroup
 
 } // namespace
 
-bool foeYamlImporter::getGroupEntityIndexData(foeIdIndexGenerator &ecsGroup) {
-    return getGroupIndexData(mRootDir / entityIndexDataFilePath, ecsGroup);
+bool foeYamlImporter::getGroupEntityIndexData(foeEcsIndexes indexes) {
+    return getGroupIndexData(mRootDir / entityIndexDataFilePath, indexes);
 }
 
-bool foeYamlImporter::getGroupResourceIndexData(foeIdIndexGenerator &ecsGroup) {
-    return getGroupIndexData(mRootDir / resourceIndexDataFilePath, ecsGroup);
+bool foeYamlImporter::getGroupResourceIndexData(foeEcsIndexes indexes) {
+    return getGroupIndexData(mRootDir / resourceIndexDataFilePath, indexes);
 }
 
 bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,

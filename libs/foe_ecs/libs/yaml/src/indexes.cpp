@@ -14,25 +14,23 @@
     limitations under the License.
 */
 
-#include <foe/ecs/yaml/index_generator.hpp>
+#include <foe/ecs/yaml/indexes.hpp>
 
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-void yaml_read_index_generator(std::string const &nodeName,
-                               YAML::Node const &node,
-                               foeIdIndexGenerator &indexGenerator) {
+void yaml_read_indexes(std::string const &nodeName, YAML::Node const &node, foeEcsIndexes indexes) {
     YAML::Node const &readNode = (nodeName.empty()) ? node : node[nodeName];
     if (!readNode) {
         throw foeYamlException(nodeName + " - Required node to parse not found");
     }
 
-    foeIdIndex nextIndex;
+    foeIdIndex nextNewIndex;
     std::vector<foeIdIndex> recycledIndices;
 
     // Next Free Index
     try {
-        yaml_read_required("next_free_index", readNode, nextIndex);
+        yaml_read_required("next_free_index", readNode, nextNewIndex);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw foeYamlException{e.whatStr()};
@@ -62,12 +60,10 @@ void yaml_read_index_generator(std::string const &nodeName,
         }
     }
 
-    indexGenerator.importState(nextIndex, recycledIndices.size(), recycledIndices.data());
+    foeEcsImportIndexes(indexes, nextNewIndex, recycledIndices.size(), recycledIndices.data());
 }
 
-void yaml_write_index_generator(std::string const &nodeName,
-                                foeIdIndexGenerator &data,
-                                YAML::Node &node) {
+void yaml_write_indexes(std::string const &nodeName, foeEcsIndexes indexes, YAML::Node &node) {
     YAML::Node newNode;
     YAML::Node *pWriteNode{nullptr};
     if (nodeName.empty()) {
@@ -80,21 +76,22 @@ void yaml_write_index_generator(std::string const &nodeName,
     }
 
     foeResult result;
-    foeIdIndex nextIndex;
+    foeIdIndex nextNewIndex;
     std::vector<foeIdIndex> recycledIndices;
 
     do {
         uint32_t recycledCount;
-        data.exportState(nullptr, &recycledCount, nullptr);
+        foeEcsExportIndexes(indexes, nullptr, &recycledCount, nullptr);
 
         recycledIndices.resize(recycledCount);
-        result = data.exportState(&nextIndex, &recycledCount, recycledIndices.data());
+        result =
+            foeEcsExportIndexes(indexes, &nextNewIndex, &recycledCount, recycledIndices.data());
         recycledIndices.resize(recycledCount);
     } while (result.value != FOE_SUCCESS);
 
     try {
         // Next Free Index
-        yaml_write_required("next_free_index", nextIndex, *pWriteNode);
+        yaml_write_required("next_free_index", nextNewIndex, *pWriteNode);
 
         // Recycled Indices
         YAML::Node recycledNode;

@@ -17,7 +17,7 @@
 #include <catch.hpp>
 #include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/error_code.h>
-#include <foe/ecs/index_generator.hpp>
+#include <foe/ecs/indexes.h>
 #include <foe/imex/yaml/error_code.h>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -141,45 +141,57 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     }
 
     SECTION("Resource Index Data (getGroupResourceIndexData)") {
-        foeIdIndexGenerator generator{foeIdValueToGroup(0)};
-        pTestImporter->getGroupResourceIndexData(generator);
+        foeEcsIndexes indexes{FOE_NULL_HANDLE};
+
+        REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0), &indexes).value == FOE_ECS_SUCCESS);
+        CHECK(indexes != FOE_NULL_HANDLE);
+
+        pTestImporter->getGroupResourceIndexData(indexes);
 
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycled;
 
         uint32_t count;
-        REQUIRE(generator.exportState(nullptr, &count, nullptr).value == FOE_ECS_SUCCESS);
+        REQUIRE(foeEcsExportIndexes(indexes, nullptr, &count, nullptr).value == FOE_ECS_SUCCESS);
         CHECK(count == 2);
 
         recycled.resize(count);
-        REQUIRE(generator.exportState(&nextFreshIndex, &count, recycled.data()).value ==
+        REQUIRE(foeEcsExportIndexes(indexes, &nextFreshIndex, &count, recycled.data()).value ==
                 FOE_ECS_SUCCESS);
         REQUIRE(count == 2);
 
         CHECK(nextFreshIndex == 4);
         CHECK(recycled[0] == 3);
         CHECK(recycled[1] == 1);
+
+        foeEcsDestroyIndexes(indexes);
     }
 
     SECTION("Entity Index Data (getGroupEntityIndexData)") {
-        foeIdIndexGenerator generator{foeIdValueToGroup(0)};
-        pTestImporter->getGroupEntityIndexData(generator);
+        foeEcsIndexes indexes{FOE_NULL_HANDLE};
+
+        REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0), &indexes).value == FOE_ECS_SUCCESS);
+        CHECK(indexes != FOE_NULL_HANDLE);
+
+        pTestImporter->getGroupEntityIndexData(indexes);
 
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycled;
 
         uint32_t count;
-        REQUIRE(generator.exportState(nullptr, &count, nullptr).value == FOE_ECS_SUCCESS);
+        REQUIRE(foeEcsExportIndexes(indexes, nullptr, &count, nullptr).value == FOE_ECS_SUCCESS);
         CHECK(count == 2);
 
         recycled.resize(count);
-        REQUIRE(generator.exportState(&nextFreshIndex, &count, recycled.data()).value ==
+        REQUIRE(foeEcsExportIndexes(indexes, &nextFreshIndex, &count, recycled.data()).value ==
                 FOE_ECS_SUCCESS);
         REQUIRE(count == 2);
 
         CHECK(nextFreshIndex == 3);
         CHECK(recycled[0] == 0);
         CHECK(recycled[1] == 2);
+
+        foeEcsDestroyIndexes(indexes);
     }
 
     SECTION("Entity State Data (importStateData)") {

@@ -7,7 +7,7 @@ add_test(NAME FoE-ECS-Yaml-Tests COMMAND test_foe_ecs_yaml)
 add_executable(test_foe_ecs_yaml)
 
 # Definition
-target_sources(test_foe_ecs_yaml PRIVATE id.cpp index_generator.cpp)
+target_sources(test_foe_ecs_yaml PRIVATE id.cpp indexes.cpp)
 
 target_link_libraries(test_foe_ecs_yaml PRIVATE foe_ecs_yaml catch)
 

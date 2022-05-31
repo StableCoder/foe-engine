@@ -258,14 +258,21 @@ foeResult importState(std::string_view topLevelDataSet,
 
             // Add to GroupData
             std::string name{it->name()};
-            auto newGroupEntityIndices =
-                std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(groupValue));
-            auto newGroupResourceIndices =
-                std::make_unique<foeIdIndexGenerator>(foeIdValueToGroup(groupValue));
+            foeEcsIndexes newGroupEntityIndexes = FOE_NULL_HANDLE;
+            foeEcsIndexes newGroupResourceIndexes = FOE_NULL_HANDLE;
+
+            result = foeEcsCreateIndexes(foeIdValueToGroup(groupValue), &newGroupEntityIndexes);
+            if (result.value != FOE_SUCCESS)
+                return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
+
+            result = foeEcsCreateIndexes(foeIdValueToGroup(groupValue), &newGroupResourceIndexes);
+            if (result.value != FOE_SUCCESS) {
+                foeEcsDestroyIndexes(newGroupEntityIndexes);
+                return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
+            }
 
             auto success = pSimulationSet->groupData.addDynamicGroup(
-                std::move(newGroupEntityIndices), std::move(newGroupResourceIndices),
-                std::move(it));
+                newGroupEntityIndexes, newGroupResourceIndexes, std::move(it));
             if (!success) {
                 FOE_LOG(General, Error, "Could not setup Group '{}'", name);
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
@@ -281,21 +288,21 @@ foeResult importState(std::string_view topLevelDataSet,
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
             pGroupImporter->getGroupResourceIndexData(
-                *pSimulationSet->groupData.resourceIndices(foeIdValueToGroup(groupValue)));
+                pSimulationSet->groupData.resourceIndexes(foeIdValueToGroup(groupValue)));
 
             pGroupImporter->getGroupEntityIndexData(
-                *pSimulationSet->groupData.entityIndices(foeIdValueToGroup(groupValue)));
+                pSimulationSet->groupData.entityIndexes(foeIdValueToGroup(groupValue)));
         }
     }
 
     // Persistent Indice Data
     bool retVal = pSimulationSet->groupData.persistentImporter()->getGroupEntityIndexData(
-        *pSimulationSet->groupData.persistentEntityIndices());
+        pSimulationSet->groupData.persistentEntityIndexes());
     if (!retVal)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
     retVal = pSimulationSet->groupData.persistentImporter()->getGroupResourceIndexData(
-        *pSimulationSet->groupData.persistentResourceIndices());
+        pSimulationSet->groupData.persistentResourceIndexes());
     if (!retVal)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
@@ -303,20 +310,33 @@ foeResult importState(std::string_view topLevelDataSet,
     if (pSimulationSet->pResourceNameMap != nullptr) {
         // Dependent Groups
         for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-            auto *pGroupImporter =
+            foeImporterBase *pGroupImporter =
                 pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
             if (pGroupImporter == nullptr)
                 continue;
 
+            struct CallContext {
+                foeImporterBase *pImporter;
+                foeEditorNameMap *pNameMap;
+            };
+            CallContext callContext = {
+                .pImporter = pGroupImporter,
+                .pNameMap = pSimulationSet->pResourceNameMap,
+            };
+
             // Go through all the indexes for the group, set any available editor names
-            pSimulationSet->groupData.resourceIndices(foeIdValueToGroup(groupValue))
-                ->forEachID([&](foeId id) {
+            foeEcsForEachID(
+                pSimulationSet->groupData.resourceIndexes(foeIdValueToGroup(groupValue)),
+                [](void *pContext, foeId id) {
+                    CallContext *pCallContext = (CallContext *)pContext;
+
                     std::string editorName =
-                        pGroupImporter->getResourceEditorName(foeIdGetIndex(id));
+                        pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
 
                     if (!editorName.empty())
-                        pSimulationSet->pResourceNameMap->add(id, editorName);
-                });
+                        pCallContext->pNameMap->add(id, editorName);
+                },
+                &callContext);
         }
 
         // Persistent Group
@@ -325,12 +345,28 @@ foeResult importState(std::string_view topLevelDataSet,
         // Go through all the indexes for the group, set any available editor names
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycledIndexes;
-        pSimulationSet->groupData.persistentResourceIndices()->forEachID([&](foeId id) {
-            std::string editorName = pGroupImporter->getResourceEditorName(foeIdGetIndex(id));
 
-            if (!editorName.empty())
-                pSimulationSet->pResourceNameMap->add(id, editorName);
-        });
+        struct CallContext {
+            foeImporterBase *pImporter;
+            foeEditorNameMap *pNameMap;
+        };
+        CallContext callContext = {
+            .pImporter = pGroupImporter,
+            .pNameMap = pSimulationSet->pResourceNameMap,
+        };
+
+        foeEcsForEachID(
+            pSimulationSet->groupData.persistentResourceIndexes(),
+            [](void *pContext, foeId id) {
+                CallContext *pCallContext = (CallContext *)pContext;
+
+                std::string editorName =
+                    pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
+
+                if (!editorName.empty())
+                    pCallContext->pNameMap->add(id, editorName);
+            },
+            &callContext);
     }
 
     // Import Resource History/Records
@@ -345,23 +381,41 @@ foeResult importState(std::string_view topLevelDataSet,
             // Go through all GroupIDs upto this group, and import any resource data for all of it
             for (foeIdGroupValue resourceGroupValue = 0; resourceGroupValue <= groupValue;
                  ++resourceGroupValue) {
-                auto *pGroupIndexes = pSimulationSet->groupData.resourceIndices(
+                auto *pGroupIndexes = pSimulationSet->groupData.resourceIndexes(
                     foeIdValueToGroup(resourceGroupValue));
                 if (pGroupIndexes == nullptr)
                     continue;
 
-                pGroupIndexes->forEachID([&](foeId id) {
-                    foeResourceCreateInfo resourceCI = pGroupImporter->getResource(id);
+                struct CallContext {
+                    foeImporterBase *pImporter;
+                    foeResourceRecords records;
+                    foeIdGroupValue groupValue;
+                };
+                CallContext callContext = {
+                    .pImporter = pGroupImporter,
+                    .records = pSimulationSet->resourceRecords,
+                    .groupValue = groupValue,
+                };
 
-                    if (foeIdGroupToValue(foeIdGetGroup(id)) == groupValue) {
-                        foeResourceAddRecordEntry(pSimulationSet->resourceRecords, id);
-                    }
+                // Go through all the indexes for the group, set any available editor names
+                foeEcsForEachID(
+                    pSimulationSet->groupData.resourceIndexes(foeIdValueToGroup(groupValue)),
+                    [](void *pContext, foeId id) {
+                        CallContext *pCallContext = (CallContext *)pContext;
 
-                    if (resourceCI != FOE_NULL_HANDLE) {
-                        foeResourceAddSavedRecord(pSimulationSet->resourceRecords,
-                                                  foeIdValueToGroup(groupValue), id, resourceCI);
-                    }
-                });
+                        foeResourceCreateInfo resourceCI = pCallContext->pImporter->getResource(id);
+
+                        if (foeIdGroupToValue(foeIdGetGroup(id)) == pCallContext->groupValue) {
+                            foeResourceAddRecordEntry(pCallContext->records, id);
+                        }
+
+                        if (resourceCI != FOE_NULL_HANDLE) {
+                            foeResourceAddSavedRecord(pCallContext->records,
+                                                      foeIdValueToGroup(pCallContext->groupValue),
+                                                      id, resourceCI);
+                        }
+                    },
+                    &callContext);
             }
         }
 
@@ -372,23 +426,39 @@ foeResult importState(std::string_view topLevelDataSet,
         for (foeIdGroupValue resourceGroupValue = 0;
              resourceGroupValue <= foeIdPersistentGroupValue; ++resourceGroupValue) {
             auto *pGroupIndexes =
-                pSimulationSet->groupData.resourceIndices(foeIdValueToGroup(resourceGroupValue));
+                pSimulationSet->groupData.resourceIndexes(foeIdValueToGroup(resourceGroupValue));
             if (pGroupIndexes == nullptr)
                 continue;
 
-            pGroupIndexes->forEachID([&](foeId id) {
-                foeResourceCreateInfo resourceCI = pGroupImporter->getResource(id);
+            struct CallContext {
+                foeImporterBase *pImporter;
+                foeResourceRecords records;
+            };
+            CallContext callContext = {
+                .pImporter = pGroupImporter,
+                .records = pSimulationSet->resourceRecords,
+            };
 
-                if (foeIdGroupToValue(foeIdGetGroup(id)) == foeIdPersistentGroupValue) {
-                    foeResourceAddRecordEntry(pSimulationSet->resourceRecords, id);
-                }
+            // Go through all the indexes for the group, set any available editor names
+            foeEcsForEachID(
+                pSimulationSet->groupData.resourceIndexes(
+                    foeIdValueToGroup(foeIdPersistentGroupValue)),
+                [](void *pContext, foeId id) {
+                    CallContext *pCallContext = (CallContext *)pContext;
 
-                if (resourceCI != FOE_NULL_HANDLE) {
-                    foeResult result = foeResourceAddSavedRecord(
-                        pSimulationSet->resourceRecords,
-                        foeIdValueToGroup(foeIdPersistentGroupValue), id, resourceCI);
-                }
-            });
+                    foeResourceCreateInfo resourceCI = pCallContext->pImporter->getResource(id);
+
+                    if (foeIdGroupToValue(foeIdGetGroup(id)) == foeIdPersistentGroupValue) {
+                        foeResourceAddRecordEntry(pCallContext->records, id);
+                    }
+
+                    if (resourceCI != FOE_NULL_HANDLE) {
+                        foeResourceAddSavedRecord(pCallContext->records,
+                                                  foeIdValueToGroup(foeIdPersistentGroupValue), id,
+                                                  resourceCI);
+                    }
+                },
+                &callContext);
         }
     }
 

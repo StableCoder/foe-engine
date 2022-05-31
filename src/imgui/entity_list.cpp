@@ -104,8 +104,8 @@ void foeImGuiEntityList::customUI() {
     for (foeIdGroup groupValue = 0; groupValue <= foeIdGroupMaxValue; ++groupValue) {
 
         foeIdGroup group = foeIdValueToGroup(groupValue);
-        auto *pIndexGenerator = mpSimulationState->groupData.entityIndices(group);
-        if (pIndexGenerator == nullptr)
+        foeEcsIndexes indexes = mpSimulationState->groupData.entityIndexes(group);
+        if (indexes == FOE_NULL_HANDLE)
             continue;
 
         foeResult result;
@@ -115,11 +115,11 @@ void foeImGuiEntityList::customUI() {
 
         do {
             uint32_t count;
-            pIndexGenerator->exportState(nullptr, &count, nullptr);
+            foeEcsExportIndexes(indexes, nullptr, &count, nullptr);
 
             indiceData.recycledIndices.resize(count);
-            result = pIndexGenerator->exportState(&indiceData.nextIndex, &count,
-                                                  indiceData.recycledIndices.data());
+            result = foeEcsExportIndexes(indexes, &indiceData.nextIndex, &count,
+                                         indiceData.recycledIndices.data());
             indiceData.recycledIndices.resize(count);
         } while (result.value != FOE_SUCCESS);
         std::sort(indiceData.recycledIndices.begin(), indiceData.recycledIndices.end());

@@ -18,13 +18,43 @@
 
 #include "log.hpp"
 
-bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntityIndices,
-                                   std::unique_ptr<foeIdIndexGenerator> &&pResourceIndices,
+foeGroupData::CombinedGroup::~CombinedGroup() {
+    if (resourceIndexes != FOE_NULL_HANDLE)
+        foeEcsDestroyIndexes(resourceIndexes);
+    if (entityIndexes != FOE_NULL_HANDLE)
+        foeEcsDestroyIndexes(entityIndexes);
+}
+
+foeGroupData::foeGroupData() {
+    foeResult result;
+
+    result = foeEcsCreateIndexes(foeIdPersistentGroup, &mPersistentEntityIndexes);
+    result = foeEcsCreateIndexes(foeIdPersistentGroup, &mPersistentResourceIndexes);
+
+    result = foeEcsCreateIndexes(foeIdTemporaryGroup, &mTemporaryEntityIndexes);
+    result = foeEcsCreateIndexes(foeIdTemporaryGroup, &mTemporaryResourceIndexes);
+}
+
+foeGroupData::~foeGroupData() {
+    if (mTemporaryResourceIndexes != FOE_NULL_HANDLE)
+        foeEcsDestroyIndexes(mTemporaryResourceIndexes);
+    if (mTemporaryEntityIndexes != FOE_NULL_HANDLE)
+        foeEcsDestroyIndexes(mTemporaryEntityIndexes);
+
+    if (mPersistentResourceIndexes != FOE_NULL_HANDLE)
+        foeEcsDestroyIndexes(mPersistentResourceIndexes);
+    if (mPersistentEntityIndexes != FOE_NULL_HANDLE)
+        foeEcsDestroyIndexes(mPersistentEntityIndexes);
+}
+
+bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
+                                   foeEcsIndexes resourceIndexes,
                                    std::unique_ptr<foeImporterBase> &&pImporter) {
     // Make sure both items are valid pointers
-    if (pEntityIndices == nullptr || pResourceIndices == nullptr || pImporter == nullptr) {
+    if (entityIndexes == FOE_NULL_HANDLE || resourceIndexes == FOE_NULL_HANDLE ||
+        pImporter == nullptr) {
         FOE_LOG(SimulationState, Error,
-                "foeGroupData::addDynamicGroup - Either the given indices or importer are nullptr");
+                "foeGroupData::addDynamicGroup - Either the given indexes or importer are nullptr");
         return false;
     }
 
@@ -36,16 +66,16 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
     }
 
     // Check both have the same ID Group
-    if (pEntityIndices->groupID() != pImporter->group() ||
-        pResourceIndices->groupID() != pImporter->group()) {
+    if (foeEcsIndexesGetGroupID(entityIndexes) != pImporter->group() ||
+        foeEcsIndexesGetGroupID(resourceIndexes) != pImporter->group()) {
         FOE_LOG(SimulationState, Error,
-                "foeGroupData::addDynamicGroup - ID Groups don't match between the indices and "
+                "foeGroupData::addDynamicGroup - ID Groups don't match between the indexes and "
                 "importer");
         return false;
     }
 
     // Must be within the dynamic groups valid range
-    auto groupValue = foeIdGroupToValue(pEntityIndices->groupID());
+    auto groupValue = foeIdGroupToValue(foeEcsIndexesGetGroupID(entityIndexes));
     if (groupValue >= foeIdNumDynamicGroups) {
         FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - ID Group is not within the valid dynamic group "
@@ -54,7 +84,7 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
     }
 
     // Check that the group isn't already used
-    if (mDynamicGroups[groupValue].pEntityIndices != nullptr) {
+    if (mDynamicGroups[groupValue].entityIndexes != FOE_NULL_HANDLE) {
         FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - Attempted to add ID group that is already used")
         return false;
@@ -76,8 +106,8 @@ bool foeGroupData::addDynamicGroup(std::unique_ptr<foeIdIndexGenerator> &&pEntit
         }
     }
 
-    mDynamicGroups[groupValue].pEntityIndices = std::move(pEntityIndices);
-    mDynamicGroups[groupValue].pResourceIndices = std::move(pResourceIndices);
+    mDynamicGroups[groupValue].entityIndexes = entityIndexes;
+    mDynamicGroups[groupValue].resourceIndexes = resourceIndexes;
     mDynamicGroups[groupValue].pImporter = std::move(pImporter);
     return true;
 }
@@ -100,56 +130,56 @@ bool foeGroupData::setPersistentImporter(std::unique_ptr<foeImporterBase> &&pImp
     return true;
 }
 
-auto foeGroupData::entityIndices(foeIdGroup group) noexcept -> foeIdIndexGenerator * {
+foeEcsIndexes foeGroupData::entityIndexes(foeIdGroup group) noexcept {
     auto idGroup = foeIdGetGroup(group);
 
     if (idGroup == foeIdPersistentGroup) {
-        return persistentEntityIndices();
+        return persistentEntityIndexes();
     } else if (idGroup == foeIdTemporaryGroup) {
-        return temporaryEntityIndices();
+        return temporaryEntityIndexes();
     }
 
-    return mDynamicGroups[foeIdGroupToValue(idGroup)].pEntityIndices.get();
+    return mDynamicGroups[foeIdGroupToValue(idGroup)].entityIndexes;
 }
 
-auto foeGroupData::entityIndices(std::string_view groupName) noexcept -> foeIdIndexGenerator * {
+foeEcsIndexes foeGroupData::entityIndexes(std::string_view groupName) noexcept {
     if (groupName == cPersistentName) {
-        return persistentEntityIndices();
+        return persistentEntityIndexes();
     } else if (groupName == cTemporaryName) {
-        return temporaryEntityIndices();
+        return temporaryEntityIndexes();
     }
 
     for (auto const &it : mDynamicGroups) {
         if (it.pImporter != nullptr && it.pImporter->name() == groupName) {
-            return it.pEntityIndices.get();
+            return it.entityIndexes;
         }
     }
 
     return nullptr;
 }
 
-auto foeGroupData::resourceIndices(foeIdGroup group) noexcept -> foeIdIndexGenerator * {
+foeEcsIndexes foeGroupData::resourceIndexes(foeIdGroup group) noexcept {
     auto idGroup = foeIdGetGroup(group);
 
     if (idGroup == foeIdPersistentGroup) {
-        return persistentResourceIndices();
+        return persistentResourceIndexes();
     } else if (idGroup == foeIdTemporaryGroup) {
-        return temporaryResourceIndices();
+        return temporaryResourceIndexes();
     }
 
-    return mDynamicGroups[foeIdGroupToValue(idGroup)].pResourceIndices.get();
+    return mDynamicGroups[foeIdGroupToValue(idGroup)].resourceIndexes;
 }
 
-auto foeGroupData::resourceIndices(std::string_view groupName) noexcept -> foeIdIndexGenerator * {
+foeEcsIndexes foeGroupData::resourceIndexes(std::string_view groupName) noexcept {
     if (groupName == cPersistentName) {
-        return persistentResourceIndices();
+        return persistentResourceIndexes();
     } else if (groupName == cTemporaryName) {
-        return temporaryResourceIndices();
+        return temporaryResourceIndexes();
     }
 
     for (auto const &it : mDynamicGroups) {
         if (it.pImporter != nullptr && it.pImporter->name() == groupName) {
-            return it.pResourceIndices.get();
+            return it.resourceIndexes;
         }
     }
 
@@ -185,24 +215,22 @@ auto foeGroupData::importer(std::string_view groupName) noexcept -> foeImporterB
     return nullptr;
 }
 
-auto foeGroupData::persistentEntityIndices() noexcept -> foeIdIndexGenerator * {
-    return &mPersistentEntityIndices;
-}
+foeEcsIndexes foeGroupData::persistentEntityIndexes() noexcept { return mPersistentEntityIndexes; }
 
-auto foeGroupData::persistentResourceIndices() noexcept -> foeIdIndexGenerator * {
-    return &mPersistentResourceIndices;
+foeEcsIndexes foeGroupData::persistentResourceIndexes() noexcept {
+    return mPersistentResourceIndexes;
 }
 
 auto foeGroupData::persistentImporter() noexcept -> foeImporterBase * {
     return mPersistentImporter.get();
 }
 
-auto foeGroupData::temporaryEntityIndices() noexcept -> foeIdIndexGenerator * {
-    return &mTemporaryEntityIndices;
+auto foeGroupData::temporaryEntityIndexes() noexcept -> foeEcsIndexes {
+    return mTemporaryEntityIndexes;
 }
 
-auto foeGroupData::temporaryResourceIndices() noexcept -> foeIdIndexGenerator * {
-    return &mTemporaryResourceIndices;
+auto foeGroupData::temporaryResourceIndexes() noexcept -> foeEcsIndexes {
+    return mTemporaryResourceIndexes;
 }
 
 foeResourceCreateInfo foeGroupData::getResourceDefinition(foeId id) {
