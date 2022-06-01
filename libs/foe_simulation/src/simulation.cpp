@@ -18,7 +18,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include <foe/chrono/easy_clock.hpp>
-#include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/name_map.h>
 #include <foe/resource/resource_fns.h>
 
 #include "log.hpp"
@@ -331,11 +331,27 @@ foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationStat
 
     // Editor Name Maps, if requested
     if (addNameMaps) {
-        newSimState->pResourceNameMap = new foeEditorNameMap;
-        newSimState->pEntityNameMap = new foeEditorNameMap;
-    } else {
-        newSimState->pResourceNameMap = nullptr;
-        newSimState->pEntityNameMap = nullptr;
+        result = foeEcsCreateNameMap(&newSimState->resourceNameMap);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(SimulationState, Error, "foeSimulation - Failed to create Name Map due to: {}",
+                    buffer);
+
+            return result;
+        }
+
+        result = foeEcsCreateNameMap(&newSimState->entityNameMap);
+        if (result.value != FOE_SUCCESS) {
+            foeEcsDestroyNameMap(newSimState->resourceNameMap);
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(SimulationState, Error, "foeSimulation - Failed to create Name Map due to: {}",
+                    buffer);
+
+            return result;
+        }
     }
 
     FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Creating",
@@ -411,10 +427,10 @@ foeResult foeDestroySimulation(foeSimulation *pSimulation) {
     pSimulation->simSync.unlock();
 
     // Destroy Name Maps
-    if (pSimulation->pEntityNameMap)
-        delete pSimulation->pEntityNameMap;
-    if (pSimulation->pResourceNameMap)
-        delete pSimulation->pResourceNameMap;
+    if (pSimulation->entityNameMap != FOE_NULL_HANDLE)
+        foeEcsDestroyNameMap(pSimulation->entityNameMap);
+    if (pSimulation->resourceNameMap != FOE_NULL_HANDLE)
+        foeEcsDestroyNameMap(pSimulation->resourceNameMap);
 
     // Destroy ResourcePool
     foeDestroyResourcePool(pSimulation->resourcePool);

@@ -18,6 +18,7 @@
 #define FOE_SIMULATION_CORE_HPP
 
 #include <foe/ecs/id.h>
+#include <foe/ecs/name_map.h>
 #include <foe/graphics/session.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/records.h>
@@ -108,13 +109,13 @@ struct foeSimulation {
     foeGfxSession gfxSession;
 
     // Resource Data
-    foeEditorNameMap *pResourceNameMap;
+    foeEcsNameMap resourceNameMap = FOE_NULL_HANDLE;
     foeResourceRecords resourceRecords;
     foeResourcePool resourcePool;
     std::vector<foeSimulationLoaderData> resourceLoaders;
 
     // Entity / Component Data
-    foeEditorNameMap *pEntityNameMap;
+    foeEcsNameMap entityNameMap = FOE_NULL_HANDLE;
     std::vector<foeSimulationComponentPoolData> componentPools;
 
     // Systems

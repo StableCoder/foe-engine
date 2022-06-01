@@ -89,8 +89,8 @@ TEST_CASE("SimState - EditorNameMap not created when addNameMaps set to false",
     REQUIRE(foeCreateSimulation(false, &pSimState).value == FOE_SUCCESS);
 
     REQUIRE(pSimState != nullptr);
-    REQUIRE(pSimState->pResourceNameMap == nullptr);
-    REQUIRE(pSimState->pEntityNameMap == nullptr);
+    REQUIRE(pSimState->resourceNameMap == FOE_NULL_HANDLE);
+    REQUIRE(pSimState->entityNameMap == FOE_NULL_HANDLE);
 
     REQUIRE(foeDestroySimulation(pSimState).value == FOE_SUCCESS);
 }
@@ -101,8 +101,8 @@ TEST_CASE("SimState - EditorNameMap created when addNameMaps set to true", "[foe
     REQUIRE(foeCreateSimulation(true, &pSimState).value == FOE_SUCCESS);
 
     REQUIRE(pSimState != nullptr);
-    REQUIRE(pSimState->pResourceNameMap != nullptr);
-    REQUIRE(pSimState->pEntityNameMap != nullptr);
+    REQUIRE(pSimState->resourceNameMap != FOE_NULL_HANDLE);
+    REQUIRE(pSimState->entityNameMap != FOE_NULL_HANDLE);
 
     REQUIRE(foeDestroySimulation(pSimState).value == FOE_SUCCESS);
 }

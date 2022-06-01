@@ -17,8 +17,8 @@
 #include "import_state.hpp"
 
 #include <foe/delimited_string.h>
-#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/group_translator.h>
+#include <foe/ecs/name_map.h>
 #include <foe/imex/importers.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -307,7 +307,7 @@ foeResult importState(std::string_view topLevelDataSet,
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
     // Read the Resource Editor Names
-    if (pSimulationSet->pResourceNameMap != nullptr) {
+    if (pSimulationSet->resourceNameMap != FOE_NULL_HANDLE) {
         // Dependent Groups
         for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
             foeImporterBase *pGroupImporter =
@@ -317,11 +317,11 @@ foeResult importState(std::string_view topLevelDataSet,
 
             struct CallContext {
                 foeImporterBase *pImporter;
-                foeEditorNameMap *pNameMap;
+                foeEcsNameMap nameMap;
             };
             CallContext callContext = {
                 .pImporter = pGroupImporter,
-                .pNameMap = pSimulationSet->pResourceNameMap,
+                .nameMap = pSimulationSet->resourceNameMap,
             };
 
             // Go through all the indexes for the group, set any available editor names
@@ -334,7 +334,7 @@ foeResult importState(std::string_view topLevelDataSet,
                         pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
 
                     if (!editorName.empty())
-                        pCallContext->pNameMap->add(id, editorName.c_str());
+                        foeEcsNameMapAdd(pCallContext->nameMap, id, editorName.c_str());
                 },
                 &callContext);
         }
@@ -348,11 +348,11 @@ foeResult importState(std::string_view topLevelDataSet,
 
         struct CallContext {
             foeImporterBase *pImporter;
-            foeEditorNameMap *pNameMap;
+            foeEcsNameMap nameMap;
         };
         CallContext callContext = {
             .pImporter = pGroupImporter,
-            .pNameMap = pSimulationSet->pResourceNameMap,
+            .nameMap = pSimulationSet->resourceNameMap,
         };
 
         foeEcsForEachID(
@@ -364,7 +364,7 @@ foeResult importState(std::string_view topLevelDataSet,
                     pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
 
                 if (!editorName.empty())
-                    pCallContext->pNameMap->add(id, editorName.c_str());
+                    foeEcsNameMapAdd(pCallContext->nameMap, id, editorName.c_str());
             },
             &callContext);
     }
@@ -466,7 +466,7 @@ foeResult importState(std::string_view topLevelDataSet,
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            if (!pGroupImporter->importStateData(pSimulationSet->pEntityNameMap,
+            if (!pGroupImporter->importStateData(pSimulationSet->entityNameMap,
                                                  pSimulationSet.get())) {
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER);
             }
@@ -475,7 +475,7 @@ foeResult importState(std::string_view topLevelDataSet,
 
     // Importing Persistent State Data
     if (!pSimulationSet->groupData.persistentImporter()->importStateData(
-            pSimulationSet->pEntityNameMap, pSimulationSet.get()))
+            pSimulationSet->entityNameMap, pSimulationSet.get()))
         return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER);
 
     // Successfully returning

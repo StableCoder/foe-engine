@@ -16,9 +16,9 @@
 
 #include "entity_list.hpp"
 
-#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/ecs/name_map.h>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -195,12 +195,12 @@ void foeImGuiEntityList::customUI() {
             // EditorName
             ImGui::TableNextColumn();
             char const *pEditorName = "";
-            if (mpSimulationState->pEntityNameMap != FOE_NULL_HANDLE) {
+            if (mpSimulationState->entityNameMap != FOE_NULL_HANDLE) {
                 uint32_t localStrLength = strLength;
                 foeResult result;
                 do {
-                    result =
-                        mpSimulationState->pEntityNameMap->find(entity, &localStrLength, pTempStr);
+                    result = foeEcsNameMapFindName(mpSimulationState->entityNameMap, entity,
+                                                   &localStrLength, pTempStr);
                     if (result.value == FOE_ECS_INCOMPLETE) {
                         strLength = localStrLength;
                         pTempStr = (char *)realloc(pTempStr, localStrLength);
@@ -273,12 +273,12 @@ bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
 
     // EditorID
     char *pEditorName = NULL;
-    if (mpSimulationState->pEntityNameMap != nullptr) {
+    if (mpSimulationState->entityNameMap != nullptr) {
         uint32_t strLength = 0;
         foeResult result;
         do {
-            result =
-                mpSimulationState->pEntityNameMap->find(pData->entity, &strLength, pEditorName);
+            result = foeEcsNameMapFindName(mpSimulationState->entityNameMap, pData->entity,
+                                           &strLength, pEditorName);
             if (result.value == FOE_ECS_SUCCESS && pEditorName != NULL) {
                 break;
             } else if ((result.value == FOE_ECS_SUCCESS && pEditorName == NULL) ||

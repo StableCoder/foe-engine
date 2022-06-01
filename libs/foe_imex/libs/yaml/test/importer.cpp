@@ -15,9 +15,9 @@
 */
 
 #include <catch.hpp>
-#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/error_code.h>
 #include <foe/ecs/indexes.h>
+#include <foe/ecs/name_map.h>
 #include <foe/imex/yaml/error_code.h>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -203,7 +203,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
 
         SECTION("With the importer plugin data not registered, the import fails") {
             bool imported =
-                pTestImporter->importStateData(pTestSimulation->pEntityNameMap, pTestSimulation);
+                pTestImporter->importStateData(pTestSimulation->entityNameMap, pTestSimulation);
             CHECK_FALSE(imported);
         }
 
@@ -211,16 +211,18 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             REQUIRE(registerTestImporterContent());
 
             bool imported =
-                pTestImporter->importStateData(pTestSimulation->pEntityNameMap, pTestSimulation);
+                pTestImporter->importStateData(pTestSimulation->entityNameMap, pTestSimulation);
             CHECK(imported);
 
-            CHECK(pTestSimulation->pEntityNameMap->find("Entity-0x2") ==
-                  (foeIdPersistentGroup | 0x2));
+            foeId id;
+            CHECK(foeEcsNameMapFindID(pTestSimulation->entityNameMap, "Entity-0x2", &id).value ==
+                  FOE_ECS_SUCCESS);
+            REQUIRE(id == (foeIdPersistentGroup | 0x2));
 
             uint32_t strLength = 15;
             char cmpStr[15];
-            CHECK(pTestSimulation->pEntityNameMap
-                      ->find(foeIdPersistentGroup | 0x2, &strLength, cmpStr)
+            CHECK(foeEcsNameMapFindName(pTestSimulation->entityNameMap, foeIdPersistentGroup | 0x2,
+                                        &strLength, cmpStr)
                       .value == FOE_ECS_SUCCESS);
             CHECK(strLength == 11);
             CHECK(memcmp(cmpStr, "Entity-0x2", 11) == 0);

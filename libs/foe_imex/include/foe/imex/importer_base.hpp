@@ -20,14 +20,13 @@
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
 #include <foe/ecs/indexes.h>
+#include <foe/ecs/name_map.h>
 #include <foe/error_code.h>
 #include <foe/resource/create_info.h>
 
 #include <filesystem>
 #include <string>
 #include <vector>
-
-struct foeEditorNameMap;
 
 struct foeSimulation;
 
@@ -45,10 +44,9 @@ class foeImporterBase {
                                       char *pNames) = 0;
     virtual bool getGroupEntityIndexData(foeEcsIndexes indexes) = 0;
     virtual bool getGroupResourceIndexData(foeEcsIndexes indexes) = 0;
-    virtual bool importStateData(foeEditorNameMap *pEntityNameMap,
-                                 foeSimulation const *pSimulation) = 0;
+    virtual bool importStateData(foeEcsNameMap entityNameMap, foeSimulation const *pSimulation) = 0;
 
-    virtual bool importResourceDefinitions(foeEditorNameMap *pNameMap,
+    virtual bool importResourceDefinitions(foeEcsNameMap nameMap,
                                            foeSimulation const *pSimulation) = 0;
     virtual std::string getResourceEditorName(foeResourceID resourceID) = 0;
     virtual foeResourceCreateInfo getResource(foeId id) = 0;

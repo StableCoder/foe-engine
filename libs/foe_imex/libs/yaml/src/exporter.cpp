@@ -16,9 +16,9 @@
 
 #include <foe/imex/yaml/exporter.hpp>
 
-#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/ecs/name_map.h>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/indexes.hpp>
 #include <foe/imex/importers.hpp>
@@ -220,12 +220,12 @@ foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node
 
             // Resource Name
             char *pResourceName = NULL;
-            if (pSimState->pResourceNameMap != nullptr) {
+            if (pSimState->resourceNameMap != FOE_NULL_HANDLE) {
                 uint32_t strLength = 0;
                 foeResult result;
                 do {
-                    result =
-                        pSimState->pResourceNameMap->find(resourceID, &strLength, pResourceName);
+                    result = foeEcsNameMapFindName(pSimState->resourceNameMap, resourceID,
+                                                   &strLength, pResourceName);
                     if (result.value == FOE_ECS_SUCCESS && pResourceName != NULL) {
                         break;
                     } else if ((result.value == FOE_ECS_SUCCESS && pResourceName == NULL) ||
@@ -279,11 +279,12 @@ foeResult exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::
 
             // Entity Name
             char *pName = NULL;
-            if (pSimState->pEntityNameMap != nullptr) {
+            if (pSimState->entityNameMap != FOE_NULL_HANDLE) {
                 uint32_t strLength = 0;
                 foeResult result;
                 do {
-                    result = pSimState->pEntityNameMap->find(entity, &strLength, pName);
+                    result =
+                        foeEcsNameMapFindName(pSimState->entityNameMap, entity, &strLength, pName);
                     if (result.value == FOE_ECS_SUCCESS && pName != NULL) {
                         break;
                     } else if ((result.value == FOE_ECS_SUCCESS && pName == NULL) ||

@@ -19,7 +19,7 @@
 #include <GLFW/glfw3.h>
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
-#include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/name_map.h>
 #include <foe/graphics/resource/image_loader.hpp>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_loader.hpp>
@@ -159,7 +159,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
     // Special Entities
-    cameraID = pSimulationSet->pEntityNameMap->find("camera");
+    foeEcsNameMapFindID(pSimulationSet->entityNameMap, "camera", &cameraID);
 
 #ifdef EDITOR_MODE
     auto *pImGuiContext = ImGui::CreateContext();

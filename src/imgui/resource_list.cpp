@@ -16,9 +16,9 @@
 
 #include "resource_list.hpp"
 
-#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/ecs/name_map.h>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -195,12 +195,12 @@ void foeImGuiResourceList::customUI() {
             // EditorName
             ImGui::TableNextColumn();
             char const *pEditorName = "";
-            if (mpSimulationState->pResourceNameMap != FOE_NULL_HANDLE) {
+            if (mpSimulationState->resourceNameMap != FOE_NULL_HANDLE) {
                 uint32_t localStrLength = strLength;
                 foeResult result;
                 do {
-                    result = mpSimulationState->pResourceNameMap->find(resourceID, &localStrLength,
-                                                                       pTempStr);
+                    result = foeEcsNameMapFindName(mpSimulationState->resourceNameMap, resourceID,
+                                                   &localStrLength, pTempStr);
                     if (result.value == FOE_ECS_INCOMPLETE) {
                         strLength = localStrLength;
                         pTempStr = (char *)realloc(pTempStr, localStrLength);
@@ -273,12 +273,12 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
 
     // EditorID
     char *pEditorName = NULL;
-    if (mpSimulationState->pResourceNameMap != nullptr) {
+    if (mpSimulationState->resourceNameMap != FOE_NULL_HANDLE) {
         uint32_t strLength = 0;
         foeResult result;
         do {
-            result = mpSimulationState->pResourceNameMap->find(pData->resourceID, &strLength,
-                                                               pEditorName);
+            result = foeEcsNameMapFindName(mpSimulationState->resourceNameMap, pData->resourceID,
+                                           &strLength, pEditorName);
             if (result.value == FOE_ECS_SUCCESS && pEditorName != NULL) {
                 break;
             } else if ((result.value == FOE_ECS_SUCCESS && pEditorName == NULL) ||

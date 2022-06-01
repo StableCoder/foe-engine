@@ -16,7 +16,6 @@
 
 #include <foe/imex/yaml/importer.hpp>
 
-#include <foe/ecs/editor_name_map.hpp>
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
@@ -202,8 +201,7 @@ bool foeYamlImporter::getGroupResourceIndexData(foeEcsIndexes indexes) {
     return getGroupIndexData(mRootDir / resourceIndexDataFilePath, indexes);
 }
 
-bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
-                                      foeSimulation const *pSimulation) {
+bool foeYamlImporter::importStateData(foeEcsNameMap nameMap, foeSimulation const *pSimulation) {
     if (!std::filesystem::exists(mRootDir / entityDirectoryPath))
         return true;
 
@@ -230,12 +228,12 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
             foeId entity;
             yaml_read_id_required("", entityNode, mGroupTranslator, entity);
 
-            if (pEntityNameMap != nullptr) {
+            if (nameMap != FOE_NULL_HANDLE) {
                 std::string editorName;
                 yaml_read_optional("editor_name", entityNode, editorName);
 
                 if (!editorName.empty()) {
-                    pEntityNameMap->add(entity, editorName.c_str());
+                    foeEcsNameMapAdd(nameMap, entity, editorName.c_str());
                 }
             }
 
@@ -268,7 +266,7 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
 }
 
 // @todo Add group translations for imported resource definitions
-bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
+bool foeYamlImporter::importResourceDefinitions(foeEcsNameMap nameMap,
                                                 foeSimulation const *pSimulation) {
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
         return true;
@@ -297,12 +295,12 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
             yaml_read_id_required("", node, mGroupTranslator, resource);
 
             // Editor Name
-            if (pNameMap != nullptr) {
+            if (nameMap != FOE_NULL_HANDLE) {
                 std::string editorName;
                 yaml_read_optional("editor_name", node, editorName);
 
                 if (!editorName.empty()) {
-                    pNameMap->add(resource, editorName.c_str());
+                    foeEcsNameMapAdd(nameMap, resource, editorName.c_str());
                 }
             }
 

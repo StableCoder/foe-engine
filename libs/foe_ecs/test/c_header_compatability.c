@@ -18,3 +18,4 @@
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
 #include <foe/ecs/indexes.h>
+#include <foe/ecs/name_map.h>

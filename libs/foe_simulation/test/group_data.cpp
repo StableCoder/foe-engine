@@ -43,11 +43,11 @@ class DummyImporter : public foeImporterBase {
     }
     bool getGroupEntityIndexData(foeEcsIndexes indexes) final { return false; }
     bool getGroupResourceIndexData(foeEcsIndexes indexes) final { return false; }
-    bool importStateData(foeEditorNameMap *pEntityNameMap, foeSimulation const *pSimulation) final {
+    bool importStateData(foeEcsNameMap nameMap, foeSimulation const *pSimulation) final {
         return false;
     }
 
-    bool importResourceDefinitions(foeEditorNameMap *pNameMap, foeSimulation const *pSimulation) {
+    bool importResourceDefinitions(foeEcsNameMap nameMap, foeSimulation const *pSimulation) {
         return false;
     }
     std::string getResourceEditorName(foeIdIndex resourceIndexID) { return std::string{}; }
