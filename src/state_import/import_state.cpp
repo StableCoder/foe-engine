@@ -334,7 +334,7 @@ foeResult importState(std::string_view topLevelDataSet,
                         pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
 
                     if (!editorName.empty())
-                        pCallContext->pNameMap->add(id, editorName);
+                        pCallContext->pNameMap->add(id, editorName.c_str());
                 },
                 &callContext);
         }
@@ -364,7 +364,7 @@ foeResult importState(std::string_view topLevelDataSet,
                     pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
 
                 if (!editorName.empty())
-                    pCallContext->pNameMap->add(id, editorName);
+                    pCallContext->pNameMap->add(id, editorName.c_str());
             },
             &callContext);
     }

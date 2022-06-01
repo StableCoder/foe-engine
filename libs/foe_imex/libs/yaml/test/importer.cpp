@@ -214,10 +214,16 @@ TEST_CASE("foeYamlImporter - Function Tests") {
                 pTestImporter->importStateData(pTestSimulation->pEntityNameMap, pTestSimulation);
             CHECK(imported);
 
-            CHECK(pTestSimulation->pEntityNameMap->find(foeIdPersistentGroup | 0x2) ==
-                  "Entity-0x2");
             CHECK(pTestSimulation->pEntityNameMap->find("Entity-0x2") ==
                   (foeIdPersistentGroup | 0x2));
+
+            uint32_t strLength = 15;
+            char cmpStr[15];
+            CHECK(pTestSimulation->pEntityNameMap
+                      ->find(foeIdPersistentGroup | 0x2, &strLength, cmpStr)
+                      .value == FOE_ECS_SUCCESS);
+            CHECK(strLength == 11);
+            CHECK(memcmp(cmpStr, "Entity-0x2", 11) == 0);
 
             deregisterTestImporterContent();
         }

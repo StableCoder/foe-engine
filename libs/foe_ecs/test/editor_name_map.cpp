@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 #include <catch.hpp>
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/error_code.h>
+
+#include <cstring>
 
 TEST_CASE("EditorNameMap - Adding") {
     foeEditorNameMap map;
@@ -41,13 +44,31 @@ TEST_CASE("EditorNameMap - Finding/Searching") {
 
     SECTION("Finding existing set succeeds") {
         REQUIRE(map.find("entity0") == 1);
-        REQUIRE(map.find(1) == "entity0");
+
+        uint32_t strLength;
+        char testStr[15];
+        REQUIRE(map.find(1, &strLength, nullptr).value == FOE_ECS_SUCCESS);
+        CHECK(strLength == 8);
+
+        SECTION("Trying with a smaller given string length returns FOE_ECS_INCOMPLETE") {
+            strLength = 4;
+            map.find(1, &strLength, testStr);
+            CHECK(map.find(1, &strLength, testStr).value == FOE_ECS_INCOMPLETE);
+            CHECK(memcmp(testStr, "enti", 4) == 0);
+        }
+
+        strLength = 15;
+        REQUIRE(map.find(1, &strLength, testStr).value == FOE_ECS_SUCCESS);
+        CHECK(strLength == 8);
+        CHECK(memcmp(testStr, "entity0", 8) == 0);
     }
 
     SECTION("Finding non-existant set fails") {
         REQUIRE(map.find("") == FOE_INVALID_ID);
         REQUIRE(map.find("entity1") == FOE_INVALID_ID);
-        REQUIRE(map.find(2) == "");
+
+        uint32_t strLength;
+        REQUIRE(map.find(2, &strLength, nullptr).value == FOE_ECS_NO_MATCH);
     }
 }
 

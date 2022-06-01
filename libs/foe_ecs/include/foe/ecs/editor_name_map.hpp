@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 #include <foe/ecs/export.h>
 #include <foe/ecs/id.h>
+#include <foe/error_code.h>
 
 #include <map>
 #include <shared_mutex>
@@ -48,13 +49,13 @@ struct foeEditorNameMap {
      * @param editorName String to find items with
      * @return The ID that uses that name. If no item does, returns FOE_NULL_HANDLE.
      */
-    FOE_ECS_EXPORT foeId find(std::string_view editorName);
+    FOE_ECS_EXPORT foeId find(char const *pName);
 
     /** @brief Finds the editorName string from the given ID
      * @param id ID to match
      * @return editorName, or if no match, an empty string
      */
-    FOE_ECS_EXPORT std::string find(foeId id);
+    FOE_ECS_EXPORT foeResult find(foeId id, uint32_t *pNameLength, char *pName);
 
     /** @brief Attempts to add a new ID/editorName pairing
      * @param id Unique ID to add.
@@ -62,7 +63,7 @@ struct foeEditorNameMap {
      * @return True if it was added. Returns false if either the ID or name is not unique to the
      * map, or the name was empty.
      */
-    FOE_ECS_EXPORT bool add(foeId id, std::string editorName);
+    FOE_ECS_EXPORT bool add(foeId id, char const *pName);
 
     /** @brief Updates an editorName for the given ID
      * @param id ID to update
@@ -70,7 +71,7 @@ struct foeEditorNameMap {
      * @return True if update was successful. If the ID does not exist in the map, or name is not
      * unique to the map, or the new name is empty, returns false.
      */
-    FOE_ECS_EXPORT bool update(foeId id, std::string editorName);
+    FOE_ECS_EXPORT bool update(foeId id, char const *pName);
 
     /** @brief Removes an ID/editorName pair from the map.
      * @param id ID to find and remove for

@@ -17,6 +17,7 @@
 #include <foe/imex/yaml/exporter.hpp>
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/indexes.hpp>
@@ -217,12 +218,26 @@ foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node
 
             resourceID = foeIdCreate(group, idx);
 
-            std::string name;
+            // Resource Name
+            char *pResourceName = NULL;
             if (pSimState->pResourceNameMap != nullptr) {
-                name = pSimState->pResourceNameMap->find(resourceID);
+                uint32_t strLength = 0;
+                foeResult result;
+                do {
+                    result =
+                        pSimState->pResourceNameMap->find(resourceID, &strLength, pResourceName);
+                    if (result.value == FOE_ECS_SUCCESS && pResourceName != NULL) {
+                        break;
+                    } else if ((result.value == FOE_ECS_SUCCESS && pResourceName == NULL) ||
+                               result.value == FOE_ECS_INCOMPLETE) {
+                        pResourceName = (char *)realloc(pResourceName, strLength);
+                        if (pResourceName == NULL)
+                            std::abort();
+                    }
+                } while (result.value != FOE_ECS_NO_MATCH);
             }
 
-            data.push_back(exportResource(resourceID, name, gResourceFns, pSimState));
+            data.push_back(exportResource(resourceID, pResourceName, gResourceFns, pSimState));
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resourceID),
@@ -262,12 +277,25 @@ foeResult exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::
 
             entity = foeIdCreate(group, idx);
 
-            std::string name;
+            // Entity Name
+            char *pName = NULL;
             if (pSimState->pEntityNameMap != nullptr) {
-                name = pSimState->pEntityNameMap->find(entity);
+                uint32_t strLength = 0;
+                foeResult result;
+                do {
+                    result = pSimState->pEntityNameMap->find(entity, &strLength, pName);
+                    if (result.value == FOE_ECS_SUCCESS && pName != NULL) {
+                        break;
+                    } else if ((result.value == FOE_ECS_SUCCESS && pName == NULL) ||
+                               result.value == FOE_ECS_INCOMPLETE) {
+                        pName = (char *)realloc(pName, strLength);
+                        if (pName == NULL)
+                            std::abort();
+                    }
+                } while (result.value != FOE_ECS_NO_MATCH);
             }
 
-            data.push_back(exportComponents(entity, name, gComponentFns, pSimState));
+            data.push_back(exportComponents(entity, pName, gComponentFns, pSimState));
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export entity: {} - {}", foeIdToString(entity),

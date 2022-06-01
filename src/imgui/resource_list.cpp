@@ -17,6 +17,7 @@
 #include "resource_list.hpp"
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
@@ -147,6 +148,11 @@ void foeImGuiResourceList::customUI() {
     // Current selected group
     auto currentGroupData = groupIndiceData.begin();
 
+    uint32_t strLength = 64;
+    char *pTempStr = (char *)malloc(64);
+    if (pTempStr == NULL)
+        std::abort();
+
     ImGuiListClipper clipper;
     clipper.Begin(totalEntityCount);
     while (clipper.Step()) {
@@ -188,10 +194,27 @@ void foeImGuiResourceList::customUI() {
 
             // EditorName
             ImGui::TableNextColumn();
-            std::string editorName = (mpSimulationState->pResourceNameMap)
-                                         ? mpSimulationState->pResourceNameMap->find(resourceID)
-                                         : "";
-            if (ImGui::Selectable(editorName.c_str(), pDisplayData != nullptr)) {
+            char const *pEditorName = "";
+            if (mpSimulationState->pResourceNameMap != FOE_NULL_HANDLE) {
+                uint32_t localStrLength = strLength;
+                foeResult result;
+                do {
+                    result = mpSimulationState->pResourceNameMap->find(resourceID, &localStrLength,
+                                                                       pTempStr);
+                    if (result.value == FOE_ECS_INCOMPLETE) {
+                        strLength = localStrLength;
+                        pTempStr = (char *)realloc(pTempStr, localStrLength);
+                        if (pTempStr == NULL)
+                            std::abort();
+
+                    } else if (result.value == FOE_ECS_SUCCESS) {
+                        pEditorName = pTempStr;
+                        break;
+                    }
+                } while (result.value != FOE_ECS_NO_MATCH);
+            }
+
+            if (ImGui::Selectable(pEditorName, pDisplayData != nullptr)) {
                 selected = true;
             }
 
@@ -214,6 +237,8 @@ void foeImGuiResourceList::customUI() {
     ImGui::End();
 
     displayOpenResources();
+
+    free(pTempStr);
 }
 
 void foeImGuiResourceList::displayOpenResources() {
@@ -247,10 +272,24 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     }
 
     // EditorID
+    char *pEditorName = NULL;
     if (mpSimulationState->pResourceNameMap != nullptr) {
-        ImGui::Text("EditorID: %s",
-                    mpSimulationState->pResourceNameMap->find(pData->resourceID).data());
+        uint32_t strLength = 0;
+        foeResult result;
+        do {
+            result = mpSimulationState->pResourceNameMap->find(pData->resourceID, &strLength,
+                                                               pEditorName);
+            if (result.value == FOE_ECS_SUCCESS && pEditorName != NULL) {
+                break;
+            } else if ((result.value == FOE_ECS_SUCCESS && pEditorName == NULL) ||
+                       result.value == FOE_ECS_INCOMPLETE) {
+                pEditorName = (char *)realloc(pEditorName, strLength);
+                if (pEditorName == NULL)
+                    std::abort();
+            }
+        } while (result.value != FOE_ECS_NO_MATCH);
     }
+    ImGui::Text("EditorID: %s", pEditorName);
 
     mpRegistrar->displayResource(pData->resourceID, mpSimulationState);
 

@@ -17,6 +17,7 @@
 #include "entity_list.hpp"
 
 #include <foe/ecs/editor_name_map.hpp>
+#include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
@@ -147,6 +148,11 @@ void foeImGuiEntityList::customUI() {
     // Current selected group
     auto currentGroupData = groupIndiceData.begin();
 
+    uint32_t strLength = 64;
+    char *pTempStr = (char *)malloc(64);
+    if (pTempStr == NULL)
+        std::abort();
+
     ImGuiListClipper clipper;
     clipper.Begin(totalEntityCount);
     while (clipper.Step()) {
@@ -188,10 +194,27 @@ void foeImGuiEntityList::customUI() {
 
             // EditorName
             ImGui::TableNextColumn();
-            std::string editorName = (mpSimulationState->pEntityNameMap)
-                                         ? mpSimulationState->pEntityNameMap->find(entity)
-                                         : "";
-            if (ImGui::Selectable(editorName.c_str(), pDisplayData != nullptr)) {
+            char const *pEditorName = "";
+            if (mpSimulationState->pEntityNameMap != FOE_NULL_HANDLE) {
+                uint32_t localStrLength = strLength;
+                foeResult result;
+                do {
+                    result =
+                        mpSimulationState->pEntityNameMap->find(entity, &localStrLength, pTempStr);
+                    if (result.value == FOE_ECS_INCOMPLETE) {
+                        strLength = localStrLength;
+                        pTempStr = (char *)realloc(pTempStr, localStrLength);
+                        if (pTempStr == NULL)
+                            std::abort();
+
+                    } else if (result.value == FOE_ECS_SUCCESS) {
+                        pEditorName = pTempStr;
+                        break;
+                    }
+                } while (result.value != FOE_ECS_NO_MATCH);
+            }
+
+            if (ImGui::Selectable(pEditorName, pDisplayData != nullptr)) {
                 selected = true;
             }
 
@@ -214,6 +237,8 @@ void foeImGuiEntityList::customUI() {
     ImGui::End();
 
     displayOpenEntities();
+
+    free(pTempStr);
 }
 
 void foeImGuiEntityList::displayOpenEntities() {
@@ -247,9 +272,24 @@ bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
     }
 
     // EditorID
+    char *pEditorName = NULL;
     if (mpSimulationState->pEntityNameMap != nullptr) {
-        ImGui::Text("EditorID: %s", mpSimulationState->pEntityNameMap->find(pData->entity).data());
+        uint32_t strLength = 0;
+        foeResult result;
+        do {
+            result =
+                mpSimulationState->pEntityNameMap->find(pData->entity, &strLength, pEditorName);
+            if (result.value == FOE_ECS_SUCCESS && pEditorName != NULL) {
+                break;
+            } else if ((result.value == FOE_ECS_SUCCESS && pEditorName == NULL) ||
+                       result.value == FOE_ECS_INCOMPLETE) {
+                pEditorName = (char *)realloc(pEditorName, strLength);
+                if (pEditorName == NULL)
+                    std::abort();
+            }
+        } while (result.value != FOE_ECS_NO_MATCH);
     }
+    ImGui::Text("EditorID: %s", pEditorName);
 
     mpRegistrar->displayEntity(pData->entity, mpSimulationState);
 

@@ -235,7 +235,7 @@ bool foeYamlImporter::importStateData(foeEditorNameMap *pEntityNameMap,
                 yaml_read_optional("editor_name", entityNode, editorName);
 
                 if (!editorName.empty()) {
-                    pEntityNameMap->add(entity, editorName);
+                    pEntityNameMap->add(entity, editorName.c_str());
                 }
             }
 
@@ -302,7 +302,7 @@ bool foeYamlImporter::importResourceDefinitions(foeEditorNameMap *pNameMap,
                 yaml_read_optional("editor_name", node, editorName);
 
                 if (!editorName.empty()) {
-                    pNameMap->add(resource, editorName);
+                    pNameMap->add(resource, editorName.c_str());
                 }
             }
 

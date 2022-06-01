@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2021 George Cave.
+    Copyright (C) 2021-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,16 +16,18 @@
 
 #include <foe/ecs/editor_name_map.hpp>
 
+#include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
 
 #include "log.hpp"
+#include "result.h"
 
-foeId foeEditorNameMap::find(std::string_view editorName) {
+foeId foeEditorNameMap::find(char const *pName) {
     foeId id = FOE_INVALID_ID;
 
     mSync.lock_shared();
 
-    auto searchIt = mEditorToId.find(std::string{editorName});
+    auto searchIt = mEditorToId.find(pName);
     if (searchIt != mEditorToId.end())
         id = searchIt->second;
 
@@ -34,27 +36,37 @@ foeId foeEditorNameMap::find(std::string_view editorName) {
     return id;
 }
 
-std::string foeEditorNameMap::find(foeId id) {
-    std::string entityName;
-
-    mSync.lock_shared();
+foeResult foeEditorNameMap::find(foeId id, uint32_t *pNameLength, char *pName) {
+    std::shared_lock lock{mSync};
 
     auto searchIt = mIdToEditor.find(id);
-    if (searchIt != mIdToEditor.end())
-        entityName = searchIt->second;
+    if (searchIt != mIdToEditor.end()) {
+        foeResult result = to_foeResult(FOE_ECS_SUCCESS);
+        if (pName == nullptr) {
+            *pNameLength = searchIt->second.size() + 1;
+            return result;
+        }
 
-    mSync.unlock_shared();
+        // Otherwise copy operation
+        uint32_t copySize = std::min((uint32_t)searchIt->second.size() + 1, *pNameLength);
+        if (copySize < searchIt->second.size() + 1)
+            result = to_foeResult(FOE_ECS_INCOMPLETE);
+        memcpy(pName, searchIt->second.data(), copySize);
+        *pNameLength = copySize;
 
-    return entityName;
+        return result;
+    }
+
+    return to_foeResult(FOE_ECS_NO_MATCH);
 }
 
-bool foeEditorNameMap::add(foeId id, std::string editorName) {
+bool foeEditorNameMap::add(foeId id, char const *pName) {
     if (id == FOE_INVALID_ID) {
         FOE_LOG(foeECS, Warning, "Attempted to add an invalid ID with an editor name of '{}'",
-                editorName)
+                pName)
         return false;
     }
-    if (editorName.empty()) {
+    if (strlen(pName) == 0) {
         FOE_LOG(foeECS, Warning, "Attempted to add ID {} with a blank editor name",
                 foeIdToString(id))
         return false;
@@ -67,31 +79,31 @@ bool foeEditorNameMap::add(foeId id, std::string editorName) {
                 foeIdToString(id))
         return false;
     }
-    if (mEditorToId.find(editorName) != mEditorToId.end()) {
+    if (mEditorToId.find(pName) != mEditorToId.end()) {
         FOE_LOG(foeECS, Warning,
                 "Attempted to add ID {} that with editor name {} that is already used by ID {}",
-                foeIdToString(id), editorName, foeIdToString(mEditorToId.find(editorName)->second))
+                foeIdToString(id), pName, foeIdToString(mEditorToId.find(pName)->second))
         return false;
     }
 
-    mIdToEditor.emplace(id, editorName);
-    mEditorToId.emplace(editorName, id);
+    mIdToEditor.emplace(id, pName);
+    mEditorToId.emplace(pName, id);
 
     return true;
 }
 
-bool foeEditorNameMap::update(foeId id, std::string editorName) {
-    if (editorName.empty()) {
+bool foeEditorNameMap::update(foeId id, char const *pName) {
+    if (strlen(pName) == 0) {
         FOE_LOG(foeECS, Warning, "Attempted to update ID {} with a blank editor name",
                 foeIdToString(id))
         return false;
     }
 
     // Make sure editor name not already in use
-    if (mEditorToId.find(editorName) != mEditorToId.end()) {
+    if (mEditorToId.find(pName) != mEditorToId.end()) {
         FOE_LOG(foeECS, Warning,
                 "Attempted to update ID {} with editor name '{}' already used by ID {}",
-                foeIdToString(id), editorName, foeIdToString(mEditorToId.find(editorName)->second))
+                foeIdToString(id), pName, foeIdToString(mEditorToId.find(pName)->second))
         return false;
     }
 
@@ -103,10 +115,10 @@ bool foeEditorNameMap::update(foeId id, std::string editorName) {
         return false;
     }
 
-    mEditorToId.erase(editorName);
-    mEditorToId.emplace(editorName, id);
+    mEditorToId.erase(pName);
+    mEditorToId.emplace(pName, id);
 
-    searchIt->second = editorName;
+    searchIt->second = pName;
 
     return true;
 }
