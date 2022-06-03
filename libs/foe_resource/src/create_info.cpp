@@ -47,10 +47,10 @@ extern "C" foeResult foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
     if (pDataFn == nullptr)
         return to_foeResult(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
 
-    auto *pNewCI = (foeResourceCreateInfoImpl *)malloc(sizeof(foeResourceCreateInfoImpl) + size);
-    if (pNewCI == nullptr) {
-        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
-    }
+    foeResourceCreateInfoImpl *pNewCI =
+        (foeResourceCreateInfoImpl *)malloc(sizeof(foeResourceCreateInfoImpl) + size);
+    if (pNewCI == NULL)
+        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
 
     new (pNewCI) foeResourceCreateInfoImpl(type, pDestroyFn);
 

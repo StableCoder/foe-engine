@@ -40,7 +40,11 @@ FOE_DEFINE_HANDLE_CASTS(resource_pool, ResourcePool, foeResourcePool)
 
 extern "C" foeResult foeCreateResourcePool(foeResourceFns const *pResourceFns,
                                            foeResourcePool *pResourcePool) {
-    ResourcePool *pNewResourcePool = new ResourcePool{
+    ResourcePool *pNewResourcePool = (ResourcePool *)malloc(sizeof(ResourcePool));
+    if (pNewResourcePool == NULL)
+        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
+
+    new (pNewResourcePool) ResourcePool{
         .callbacks = *pResourceFns,
     };
 
@@ -66,7 +70,8 @@ extern "C" void foeDestroyResourcePool(foeResourcePool resourcePool) {
         }
     }
 
-    delete pResourcePool;
+    pResourcePool->~ResourcePool();
+    free(pResourcePool);
 }
 
 extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,

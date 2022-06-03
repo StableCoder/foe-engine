@@ -50,7 +50,11 @@ FOE_DEFINE_HANDLE_CASTS(resource_records, ResourceRecords, foeResourceRecords)
 } // namespace
 
 extern "C" foeResult foeResourceCreateRecords(foeResourceRecords *pResourceRecords) {
-    ResourceRecords *pNewRecords = new ResourceRecords;
+    ResourceRecords *pNewRecords = (ResourceRecords *)malloc(sizeof(ResourceRecords));
+    if (pNewRecords == NULL)
+        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
+
+    new (pNewRecords) ResourceRecords();
 
     *pResourceRecords = resource_records_to_handle(pNewRecords);
 
@@ -77,7 +81,8 @@ extern "C" void foeResourceDestroyRecords(foeResourceRecords resourceRecords) {
         }
     }
 
-    delete pRecords;
+    pRecords->~ResourceRecords();
+    free(pRecords);
 }
 
 extern "C" foeResult foeResourceAddRecordEntry(foeResourceRecords resourceRecords,

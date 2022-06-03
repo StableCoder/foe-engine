@@ -69,9 +69,8 @@ extern "C" foeResult foeCreateResource(foeResourceID id,
         return to_foeResult(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
 
     auto *pNewResource = (foeResourceImpl *)malloc(sizeof(foeResourceImpl) + size);
-    if (pNewResource == nullptr) {
-        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_HOST_MEMORY);
-    }
+    if (pNewResource == NULL)
+        return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
 
     new (pNewResource) foeResourceImpl(id, type, pResourceFns);
 
