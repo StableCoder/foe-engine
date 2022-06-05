@@ -67,7 +67,7 @@ if [ $SKIP_PARSE -eq 0 ]; then
         fi
         git checkout $TAG
 
-        ../../../../../../external/vulkan_mini_libs/vulkan-mini-libs-2/tools/parse_vk_doc.py -i xml/vk.xml -w ../.gen_cache.xml
+        ../../../../../../external/vulkan_mini_libs/vulkan-mini-libs-2/tools/parse_xml.py -i xml/vk.xml -w ../.gen_cache.xml -t Vulkan
         FIRST=0
     done
     popd >/dev/null
