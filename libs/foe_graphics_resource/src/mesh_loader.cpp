@@ -170,8 +170,10 @@ void foeMeshLoader::gfxMaintenance() {
 }
 
 bool foeMeshLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
-    return foeResourceCreateInfoGetType(createInfo) ==
-           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO;
+    auto type = foeResourceCreateInfoGetType(createInfo);
+    return type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO ||
+           type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO ||
+           type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO;
 }
 
 void foeMeshLoader::load(void *pLoader,
@@ -190,14 +192,16 @@ void foeMeshLoader::load(foeResource resource,
         return;
     }
 
-    auto const *pMeshCI = (foeMeshCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    auto type = foeResourceCreateInfoGetType(createInfo);
 
     foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
     foeMesh data{};
 
-    if (auto pCI = dynamic_cast<foeMeshFileSource *>(pMeshCI->source.get()); pCI) {
+    if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
+        foeMeshFileCreateInfo const *pCI =
+            (foeMeshFileCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
         std::filesystem::path filePath = mExternalFileSearchFn(pCI->fileName);
 
         auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(),
@@ -311,7 +315,9 @@ void foeMeshLoader::load(foeResource resource,
         data.perVertexBoneWeights = perVertexBoneWeights;
         data.gfxBones = std::move(meshBones);
         data.gfxVertexComponent = components;
-    } else if (auto pCI = dynamic_cast<foeMeshCubeSource *>(pMeshCI->source.get()); pCI) {
+    } else if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
+        foeMeshCubeCreateInfo const *pCI =
+            (foeMeshCubeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
         std::vector<foeVertexComponent> components{
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
 
@@ -379,7 +385,9 @@ void foeMeshLoader::load(foeResource resource,
 
         data.perVertexBoneWeights = 0;
         data.gfxVertexComponent = std::move(components);
-    } else if (auto pCI = dynamic_cast<foeMeshIcosphereSource *>(pMeshCI->source.get()); pCI) {
+    } else if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
+        foeMeshIcosphereCreateInfo const *pCI =
+            (foeMeshIcosphereCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
         std::vector<foeVertexComponent> components{
             foeVertexComponent::Position, foeVertexComponent::Normal, foeVertexComponent::UV};
 

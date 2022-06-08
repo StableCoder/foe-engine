@@ -165,9 +165,21 @@ void imgui_GraphicsResourceCreateInfo(foeResourceCreateInfo resourceCreateInfo) 
     }
 
     if (foeResourceCreateInfoGetType(resourceCreateInfo) ==
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO) {
-        imgui_foeMeshCreateInfo(
-            (foeMeshCreateInfo const *)foeResourceCreateInfoGetData(resourceCreateInfo));
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
+        imgui_foeMeshFileCreateInfo(
+            (foeMeshFileCreateInfo const *)foeResourceCreateInfoGetData(resourceCreateInfo));
+    }
+
+    if (foeResourceCreateInfoGetType(resourceCreateInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
+        imgui_foeMeshCubeCreateInfo(
+            (foeMeshCubeCreateInfo const *)foeResourceCreateInfoGetData(resourceCreateInfo));
+    }
+
+    if (foeResourceCreateInfoGetType(resourceCreateInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
+        imgui_foeMeshIcosphereCreateInfo(
+            (foeMeshIcosphereCreateInfo const *)foeResourceCreateInfoGetData(resourceCreateInfo));
     }
 
     if (foeResourceCreateInfoGetType(resourceCreateInfo) ==

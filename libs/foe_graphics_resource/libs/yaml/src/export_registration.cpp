@@ -70,13 +70,33 @@ std::vector<foeKeyYamlPair> exportResource(foeResourceID resourceID,
     if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
         auto createInfo = foeResourceGetCreateInfo(resource);
         if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CREATE_INFO) {
-            auto const *pCreateInfo =
-                (foeMeshCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
+            foeMeshFileCreateInfo const *pCreateInfo =
+                (foeMeshFileCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
             keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_mesh_key(),
-                .data = yaml_write_mesh(*pCreateInfo),
+                .key = yaml_mesh_file_key(),
+                .data = yaml_write_mesh_file(*pCreateInfo),
+            });
+        }
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
+            foeMeshCubeCreateInfo const *pCreateInfo =
+                (foeMeshCubeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_mesh_cube_key(),
+                .data = yaml_write_mesh_cube(*pCreateInfo),
+            });
+        }
+        if (foeResourceCreateInfoGetType(createInfo) ==
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
+            foeMeshIcosphereCreateInfo const *pCreateInfo =
+                (foeMeshIcosphereCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
+            keyDataPairs.emplace_back(foeKeyYamlPair{
+                .key = yaml_mesh_icosphere_key(),
+                .data = yaml_write_mesh_icosphere(*pCreateInfo),
             });
         }
     }

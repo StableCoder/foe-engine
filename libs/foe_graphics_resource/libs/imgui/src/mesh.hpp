@@ -6,10 +6,16 @@
 #define MESH_HPP
 
 struct foeMesh;
-struct foeMeshCreateInfo;
+struct foeMeshFileCreateInfo;
+struct foeMeshCubeCreateInfo;
+struct foeMeshIcosphereCreateInfo;
 
 void imgui_foeMesh(foeMesh const *pResource);
 
-void imgui_foeMeshCreateInfo(foeMeshCreateInfo const *pCreateInfo);
+void imgui_foeMeshFileCreateInfo(foeMeshFileCreateInfo const *pCreateInfo);
+
+void imgui_foeMeshCubeCreateInfo(foeMeshCubeCreateInfo const *pCreateInfo);
+
+void imgui_foeMeshIcosphereCreateInfo(foeMeshIcosphereCreateInfo const *pCreateInfo);
 
 #endif // MESH_HPP

@@ -9,14 +9,32 @@
 #include <foe/resource/create_info.h>
 #include <yaml-cpp/yaml.h>
 
-struct foeMeshCreateInfo;
+struct foeMeshFileCreateInfo;
+struct foeMeshCubeCreateInfo;
+struct foeMeshIcosphereCreateInfo;
 
-char const *yaml_mesh_key();
+char const *yaml_mesh_file_key();
 
-void yaml_read_mesh(YAML::Node const &node,
-                    foeEcsGroupTranslator groupTranslator,
-                    foeResourceCreateInfo *pCreateInfo);
+void yaml_read_mesh_file(YAML::Node const &node,
+                         foeEcsGroupTranslator groupTranslator,
+                         foeResourceCreateInfo *pCreateInfo);
 
-auto yaml_write_mesh(foeMeshCreateInfo const &data) -> YAML::Node;
+auto yaml_write_mesh_file(foeMeshFileCreateInfo const &data) -> YAML::Node;
+
+char const *yaml_mesh_cube_key();
+
+void yaml_read_mesh_cube(YAML::Node const &node,
+                         foeEcsGroupTranslator groupTranslator,
+                         foeResourceCreateInfo *pCreateInfo);
+
+auto yaml_write_mesh_cube(foeMeshCubeCreateInfo const &data) -> YAML::Node;
+
+char const *yaml_mesh_icosphere_key();
+
+void yaml_read_mesh_icosphere(YAML::Node const &node,
+                              foeEcsGroupTranslator groupTranslator,
+                              foeResourceCreateInfo *pCreateInfo);
+
+auto yaml_write_mesh_icosphere(foeMeshIcosphereCreateInfo const &data) -> YAML::Node;
 
 #endif // MESH_HPP

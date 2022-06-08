@@ -107,7 +107,20 @@ extern "C" foeResult foeGraphicsResourceYamlRegisterImporters() {
         goto REGISTRATION_FAILED;
     }
 
-    if (!foeImexYamlRegisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing)) {
+    if (!foeImexYamlRegisterResourceFns(yaml_mesh_file_key(), yaml_read_mesh_file,
+                                        meshCreateProcessing)) {
+        result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER);
+        goto REGISTRATION_FAILED;
+    }
+
+    if (!foeImexYamlRegisterResourceFns(yaml_mesh_cube_key(), yaml_read_mesh_cube,
+                                        meshCreateProcessing)) {
+        result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER);
+        goto REGISTRATION_FAILED;
+    }
+
+    if (!foeImexYamlRegisterResourceFns(yaml_mesh_icosphere_key(), yaml_read_mesh_icosphere,
+                                        meshCreateProcessing)) {
         result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_MESH_IMPORTER);
         goto REGISTRATION_FAILED;
     }
@@ -136,7 +149,12 @@ extern "C" void foeGraphicsResourceYamlDeregisterImporters() {
     foeImexYamlDeregisterResourceFns(yaml_vertex_descriptor_key(), yaml_read_vertex_descriptor,
                                      vertexDescriptorCreateProcessing);
     foeImexYamlDeregisterResourceFns(yaml_shader_key(), yaml_read_shader, shaderCreateProcessing);
-    foeImexYamlDeregisterResourceFns(yaml_mesh_key(), yaml_read_mesh, meshCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_mesh_file_key(), yaml_read_mesh_file,
+                                     meshCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_mesh_cube_key(), yaml_read_mesh_cube,
+                                     meshCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_mesh_icosphere_key(), yaml_read_mesh_icosphere,
+                                     meshCreateProcessing);
     foeImexYamlDeregisterResourceFns(yaml_material_key(), yaml_read_material,
                                      materialCreateProcessing);
     foeImexYamlDeregisterResourceFns(yaml_image_key(), yaml_read_image, imageCreateProcessing);

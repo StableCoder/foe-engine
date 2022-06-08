@@ -18,25 +18,20 @@ void imgui_foeMesh(foeMesh const *pResource) {
     ImGui::Text("perVertexBoneWeights: %u", pResource->perVertexBoneWeights);
 }
 
-void imgui_foeMeshCreateInfo(foeMeshCreateInfo const *pCreateInfo) {
-    ImGui::Text("foeMeshCreateInfo");
+void imgui_foeMeshFileCreateInfo(foeMeshFileCreateInfo const *pCreateInfo) {
+    ImGui::Text("foeMeshFileCreateInfo");
 
-    if (pCreateInfo->source.get() != nullptr) {
-        if (auto *ptr = dynamic_cast<foeMeshFileSource const *>(pCreateInfo->source.get()); ptr) {
-            ImGui::Text("File Source:");
-            ImGui::Text("File: %s", ptr->fileName.c_str());
-            ImGui::Text("Mesh Name: %s", ptr->meshName.c_str());
-            ImGui::Text("Post Processing Flags: %u", ptr->postProcessFlags);
-        }
-        if (auto *ptr = dynamic_cast<foeMeshCubeSource const *>(pCreateInfo->source.get()); ptr) {
-            ImGui::Text("Cube Source:");
-        }
-        if (auto *ptr = dynamic_cast<foeMeshIcosphereSource const *>(pCreateInfo->source.get());
-            ptr) {
-            ImGui::Text("IcoSphere Source:");
-            ImGui::Text("Recursion: %i", ptr->recursion);
-        }
-    } else {
-        ImGui::Text("No Source??");
-    }
+    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
+    ImGui::Text("Mesh Name: %s", pCreateInfo->meshName.c_str());
+    ImGui::Text("Post Processing Flags: %u", pCreateInfo->postProcessFlags);
+}
+
+void imgui_foeMeshCubeCreateInfo(foeMeshCubeCreateInfo const *pCreateInfo) {
+    ImGui::Text("foeMeshCubeCreateInfo");
+}
+
+void imgui_foeMeshIcosphereCreateInfo(foeMeshIcosphereCreateInfo const *pCreateInfo) {
+    ImGui::Text("foeMeshIcosphereCreateInfo");
+
+    ImGui::Text("Recursion: %i", pCreateInfo->recursion);
 }
