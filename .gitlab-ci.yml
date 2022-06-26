@@ -20,7 +20,9 @@ Source Files:
   image: docker.io/stabletec/build-foe:arch
   allow_failure: true
   tags:
-    - docker-linux
+    - container
+    - linux
+    - amd64
   script:
     - mkdir build && cd build
     - cmake .. -GNinja
@@ -32,7 +34,9 @@ CMake Files:
   image: docker.io/stabletec/build-foe:arch
   allow_failure: true
   tags:
-    - docker-linux
+    - container
+    - linux
+    - amd64
   script:
     - mkdir build && cd build
     - cmake .. -GNinja
@@ -44,10 +48,11 @@ CMake Files:
 .arch_template: &arch_template
   stage: Arch
   image: docker.io/stabletec/build-foe:arch
-  needs: []
   tags: 
-    - docker-linux
+    - container
+    - linux
     - amd64
+  needs: []
   dependencies: []
   script:
     - mkdir build && cd build
@@ -57,17 +62,14 @@ CMake Files:
 
 .linux_template: &linux_template
   needs:
-    - (Debug) Arch/GCC Static
-    - (Debug) Arch/GCC Shared
-    - (Debug) Arch/Clang Static
-    - (Debug) Arch/Clang Shared
-    - Arch/GCC Static
-    - Arch/GCC Shared
-    - Arch/Clang Static
-    - Arch/Clang Shared
-  tags: 
-    - docker-linux
-    - amd64
+    - (Debug) Arch/GCC Static (amd64)
+    - (Debug) Arch/GCC Shared (amd64)
+    - (Debug) Arch/Clang Static (amd64)
+    - (Debug) Arch/Clang Shared (amd64)
+    - Arch/GCC Static (amd64)
+    - Arch/GCC Shared (amd64)
+    - Arch/Clang Static (amd64)
+    - Arch/Clang Shared (amd64)
   dependencies: []
   script:
     - mkdir build && cd build
@@ -78,17 +80,14 @@ CMake Files:
 .platform_macos_template: &platform_macos_template
   stage: macOS
   needs:
-    - (Debug) Arch/GCC Static
-    - (Debug) Arch/GCC Shared
-    - (Debug) Arch/Clang Static
-    - (Debug) Arch/Clang Shared
-    - Arch/GCC Static
-    - Arch/GCC Shared
-    - Arch/Clang Static
-    - Arch/Clang Shared
-  tags:
-    - macos
-    - amd64
+    - (Debug) Arch/GCC Static (amd64)
+    - (Debug) Arch/GCC Shared (amd64)
+    - (Debug) Arch/Clang Static (amd64)
+    - (Debug) Arch/Clang Shared (amd64)
+    - Arch/GCC Static (amd64)
+    - Arch/GCC Shared (amd64)
+    - Arch/Clang Static (amd64)
+    - Arch/Clang Shared (amd64)
   dependencies: []
   script:
     - mkdir build && cd build
@@ -100,14 +99,14 @@ CMake Files:
   stage: Windows
   image: docker.io/stabletec/build-foe:windows
   needs:
-    - (Debug) Arch/GCC Static
-    - (Debug) Arch/GCC Shared
-    - (Debug) Arch/Clang Static
-    - (Debug) Arch/Clang Shared
-    - Arch/GCC Static
-    - Arch/GCC Shared
-    - Arch/Clang Static
-    - Arch/Clang Shared
+    - (Debug) Arch/GCC Static (amd64)
+    - (Debug) Arch/GCC Shared (amd64)
+    - (Debug) Arch/Clang Static (amd64)
+    - (Debug) Arch/Clang Shared (amd64)
+    - Arch/GCC Static (amd64)
+    - Arch/GCC Shared (amd64)
+    - Arch/Clang Static (amd64)
+    - Arch/Clang Shared (amd64)
   tags:
     - docker-windows
     - amd64
@@ -120,54 +119,54 @@ CMake Files:
 
 # Arch
 
-(Debug) Arch/GCC Static:
+(Debug) Arch/GCC Static (amd64):
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
   <<: *arch_template
 
-(Debug) Arch/GCC Shared:
+(Debug) Arch/GCC Shared (amd64):
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
   <<: *arch_template
 
-(Debug) Arch/Clang Static:
+(Debug) Arch/Clang Static (amd64):
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
   <<: *arch_template
 
-(Debug) Arch/Clang Shared:
+(Debug) Arch/Clang Shared (amd64):
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
   <<: *arch_template
 
-Arch/GCC Static:
+Arch/GCC Static (amd64):
   variables:
     CC: gcc
     CXX: g++
   <<: *arch_template
 
-Arch/GCC Shared:
+Arch/GCC Shared (amd64):
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *arch_template
 
-Arch/Clang Static:
+Arch/Clang Static (amd64):
   variables:
     CC: clang
     CXX: clang++
   <<: *arch_template
 
-Arch/Clang Shared:
+Arch/Clang Shared (amd64):
   variables:
     CC: clang
     CXX: clang++
@@ -176,36 +175,52 @@ Arch/Clang Shared:
 
 # Debian
 
-Debian/GCC Static:
+Debian/GCC Static (amd64):
   stage: Debian
   image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Debian/GCC Shared:
+Debian/GCC Shared (amd64):
   stage: Debian
   image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Debian/Clang Static:
+Debian/Clang Static (amd64):
   stage: Debian
   image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Debian/Clang Shared:
+Debian/Clang Shared (amd64):
   stage: Debian
   image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: clang
     CXX: clang++
@@ -214,34 +229,50 @@ Debian/Clang Shared:
 
 # Fedora
 
-Fedora/GCC Static:
+Fedora/GCC Static (amd64):
   stage: Fedora
   image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: gcc
     CXX: g++
   <<: *linux_template
 
-Fedora/GCC Shared:
+Fedora/GCC Shared (amd64):
   stage: Fedora
   image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *linux_template
 
-Fedora/Clang Static:
+Fedora/Clang Static (amd64):
   stage: Fedora
   image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: clang
     CXX: clang++
   <<: *linux_template
 
-Fedora/Clang Shared:
+Fedora/Clang Shared (amd64):
   stage: Fedora
   image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: clang
     CXX: clang++
@@ -250,36 +281,52 @@ Fedora/Clang Shared:
 
 # Ubuntu
 
-Ubuntu/GCC Static:
+Ubuntu/GCC Static (amd64):
   stage: Ubuntu
   image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Ubuntu/GCC Shared:
+Ubuntu/GCC Shared (amd64):
   stage: Ubuntu
   image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Ubuntu/Clang Static:
+Ubuntu/Clang Static (amd64):
   stage: Ubuntu
   image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Ubuntu/Clang Shared:
+Ubuntu/Clang Shared (amd64):
   stage: Ubuntu
   image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - amd64
   variables:
     CC: clang
     CXX: clang++
@@ -288,13 +335,19 @@ Ubuntu/Clang Shared:
 
 # macOS
 
-macOS/Clang Static:
+macOS/Clang Static (amd64):
+  tags:
+    - macos
+    - amd64
   variables:
     CC: clang
     CXX: clang++
   <<: *platform_macos_template
 
-macOS/Clang Shared:
+macOS/Clang Shared (amd64):
+  tags:
+    - macos
+    - amd64
   variables:
     CC: clang
     CXX: clang++
@@ -303,35 +356,35 @@ macOS/Clang Shared:
 
 # Windows
 
-Windows/MSVC Static:
+Windows/MSVC Static (amd64):
   variables:
   <<: *platform_windows_template
 
-Windows/MSVC Shared:
+Windows/MSVC Shared (amd64):
   variables:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows/Clang-cl Static:
+Windows/Clang-cl Static (amd64):
   variables:
     CC: clang-cl
     CXX: clang-cl
   <<: *platform_windows_template
 
-Windows/Clang-cl Shared:
+Windows/Clang-cl Shared (amd64):
   variables:
     CC: clang-cl
     CXX: clang-cl
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows/Clang Static:
+Windows/Clang Static (amd64):
   variables:
     CC: clang
     CXX: clang
   <<: *platform_windows_template
 
-Windows/Clang Shared:
+Windows/Clang Shared (amd64):
   variables:
     CC: clang
     CXX: clang
@@ -343,18 +396,19 @@ Windows/Clang Shared:
 .analysis_template: &analysis_template
   stage: Analysis
   image: docker.io/stabletec/build-foe:arch
-  needs:
-    - (Debug) Arch/GCC Static
-    - (Debug) Arch/GCC Shared
-    - (Debug) Arch/Clang Static
-    - (Debug) Arch/Clang Shared
-    - Arch/GCC Static
-    - Arch/GCC Shared
-    - Arch/Clang Static
-    - Arch/Clang Shared
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
+  needs:
+    - (Debug) Arch/GCC Static (amd64)
+    - (Debug) Arch/GCC Shared (amd64)
+    - (Debug) Arch/Clang Static (amd64)
+    - (Debug) Arch/Clang Shared (amd64)
+    - Arch/GCC Static (amd64)
+    - Arch/GCC Shared (amd64)
+    - Arch/Clang Static (amd64)
+    - Arch/Clang Shared (amd64)
   dependencies: []
   script:
     - mkdir build && cd build
@@ -367,18 +421,19 @@ Windows/Clang Shared:
 Static Analysis:
   stage: Analysis
   image: docker.io/stabletec/build-foe:arch
-  needs:
-    - (Debug) Arch/GCC Static
-    - (Debug) Arch/GCC Shared
-    - (Debug) Arch/Clang Static
-    - (Debug) Arch/Clang Shared
-    - Arch/GCC Static
-    - Arch/GCC Shared
-    - Arch/Clang Static
-    - Arch/Clang Shared
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
+  needs:
+    - (Debug) Arch/GCC Static (amd64)
+    - (Debug) Arch/GCC Shared (amd64)
+    - (Debug) Arch/Clang Static (amd64)
+    - (Debug) Arch/Clang Shared (amd64)
+    - Arch/GCC Static (amd64)
+    - Arch/GCC Shared (amd64)
+    - Arch/Clang Static (amd64)
+    - Arch/Clang Shared (amd64)
   dependencies: []
   variables:
     CC: clang
@@ -391,18 +446,19 @@ Static Analysis:
 Code Coverage:
   stage: Analysis
   image: docker.io/stabletec/build-foe:arch
-  needs:
-    - (Debug) Arch/GCC Static
-    - (Debug) Arch/GCC Shared
-    - (Debug) Arch/Clang Static
-    - (Debug) Arch/Clang Shared
-    - Arch/GCC Static
-    - Arch/GCC Shared
-    - Arch/Clang Static
-    - Arch/Clang Shared
   tags:
-    - docker-linux
+    - container
+    - linux
     - amd64
+  needs:
+    - (Debug) Arch/GCC Static (amd64)
+    - (Debug) Arch/GCC Shared (amd64)
+    - (Debug) Arch/Clang Static (amd64)
+    - (Debug) Arch/Clang Shared (amd64)
+    - Arch/GCC Static (amd64)
+    - Arch/GCC Shared (amd64)
+    - Arch/Clang Static (amd64)
+    - Arch/Clang Shared (amd64)
   dependencies: []
   variables:
     CC: clang
