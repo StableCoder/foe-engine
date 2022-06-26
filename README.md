@@ -5,6 +5,7 @@
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://git.stabletec.com/foe/engine/blob/main/LICENSE)
 
 - [External Libraries](#external-libraries)
+  - [macOS Environment Setup](#macos-environment-setup)
 
 ## External Libraries
 
@@ -18,3 +19,12 @@
 - [fmt](https://github.com/fmtlib/fmt) - Library for excellent string formatting.
 - [Vulkan](https://www.vulkan.org/) - Graphics API
 - [OpenXR](https://www.khronos.org/OpenXR/) - VR/XR API
+
+### macOS Environment Setup
+
+For the Vulkan/MoltenVK, get the VulkanSDK from LunarG.
+
+For everything else, use Homebrew and get the following:
+```sh
+brew install glfw glm freeimage assimp bullet fmt
+```
