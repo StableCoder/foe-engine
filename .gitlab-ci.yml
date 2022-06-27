@@ -2,12 +2,9 @@
 
 stages:
  - Formatting
- - Arch
- - Debian
- - Fedora
- - Ubuntu
- - Windows
- - macOS
+ - Linux Builds
+ - Windows Builds
+ - macOS Builds
  - Analysis
 
 variables:
@@ -45,182 +42,165 @@ CMake Files:
 
 # Platform Stage Templates
 
-.arch_template: &arch_template
-  stage: Arch
-  image: docker.io/stabletec/build-foe:arch
-  tags: 
-    - container
-    - linux
-    - amd64
+.linux_template: &linux_template
+  stage: Linux Builds
   needs: []
   dependencies: []
   script:
     - mkdir build && cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON ${CMAKE_OPTIONS}
-    - ninja
-    - ninja test
-
-.linux_template: &linux_template
-  needs:
-    - (Debug) Arch/GCC Static (amd64)
-    - (Debug) Arch/GCC Shared (amd64)
-    - (Debug) Arch/Clang Static (amd64)
-    - (Debug) Arch/Clang Shared (amd64)
-    - Arch/GCC Static (amd64)
-    - Arch/GCC Shared (amd64)
-    - Arch/Clang Static (amd64)
-    - Arch/Clang Shared (amd64)
-  dependencies: []
-  script:
-    - mkdir build && cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON ${CMAKE_OPTIONS}
+    - cmake .. -GNinja -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja
     - ninja test
 
 .platform_macos_template: &platform_macos_template
-  stage: macOS
-  needs:
-    - (Debug) Arch/GCC Static (amd64)
-    - (Debug) Arch/GCC Shared (amd64)
-    - (Debug) Arch/Clang Static (amd64)
-    - (Debug) Arch/Clang Shared (amd64)
-    - Arch/GCC Static (amd64)
-    - Arch/GCC Shared (amd64)
-    - Arch/Clang Static (amd64)
-    - Arch/Clang Shared (amd64)
+  stage: macOS Builds
+  needs: []
   dependencies: []
   script:
     - mkdir build && cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON ${CMAKE_OPTIONS}
+    - cmake .. -GNinja -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja
     - ninja test
 
 .platform_windows_template: &platform_windows_template
-  stage: Windows
+  stage: Windows Builds
   image: docker.io/stabletec/build-foe:windows
-  needs:
-    - (Debug) Arch/GCC Static (amd64)
-    - (Debug) Arch/GCC Shared (amd64)
-    - (Debug) Arch/Clang Static (amd64)
-    - (Debug) Arch/Clang Shared (amd64)
-    - Arch/GCC Static (amd64)
-    - Arch/GCC Shared (amd64)
-    - Arch/Clang Static (amd64)
-    - Arch/Clang Shared (amd64)
   tags:
-    - docker-windows
+    - container
+    - windows
     - amd64
+  needs: []
   dependencies: []
   script:
     - mkdir build; cd build
-    - cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON $env:CMAKE_OPTIONS
+    - cmake .. -GNinja -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
     - ninja
     - ninja test
 
 # Arch
 
-(Debug) Arch/GCC Static (amd64):
+Arch/GCC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release, Debug]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
-  <<: *arch_template
+  <<: *linux_template
 
-(Debug) Arch/GCC Shared (amd64):
-  variables:
-    CC: gcc
-    CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
-  <<: *arch_template
-
-(Debug) Arch/Clang Static (amd64):
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE=Debug
-  <<: *arch_template
-
-(Debug) Arch/Clang Shared (amd64):
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Debug
-  <<: *arch_template
-
-Arch/GCC Static (amd64):
-  variables:
-    CC: gcc
-    CXX: g++
-  <<: *arch_template
-
-Arch/GCC Shared (amd64):
+Arch/GCC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release, Debug]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
-  <<: *arch_template
+  <<: *linux_template
 
-Arch/Clang Static (amd64):
+Arch/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release, Debug]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
-  <<: *arch_template
+  <<: *linux_template
 
-Arch/Clang Shared (amd64):
+Arch/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release, Debug]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
-  <<: *arch_template
+  <<: *linux_template
 
 # Debian
 
-Debian/GCC Static (amd64):
-  stage: Debian
+Debian/GCC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Debian/GCC Shared (amd64):
-  stage: Debian
+Debian/GCC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Debian/Clang Static (amd64):
-  stage: Debian
+Debian/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Debian/Clang Shared (amd64):
-  stage: Debian
+Debian/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -229,50 +209,62 @@ Debian/Clang Shared (amd64):
 
 # Fedora
 
-Fedora/GCC Static (amd64):
-  stage: Fedora
+Fedora/GCC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
   <<: *linux_template
 
-Fedora/GCC Shared (amd64):
-  stage: Fedora
+Fedora/GCC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *linux_template
 
-Fedora/Clang Static (amd64):
-  stage: Fedora
+Fedora/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
   <<: *linux_template
 
-Fedora/Clang Shared (amd64):
-  stage: Fedora
+Fedora/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -281,52 +273,64 @@ Fedora/Clang Shared (amd64):
 
 # Ubuntu
 
-Ubuntu/GCC Static (amd64):
-  stage: Ubuntu
+Ubuntu/GCC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Ubuntu/GCC Shared (amd64):
-  stage: Ubuntu
+Ubuntu/GCC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: gcc
     CXX: g++
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Ubuntu/Clang Static (amd64):
-  stage: Ubuntu
+Ubuntu/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -DXR_SUPPORT=OFF
   <<: *linux_template
 
-Ubuntu/Clang Shared (amd64):
-  stage: Ubuntu
+Ubuntu/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -335,19 +339,27 @@ Ubuntu/Clang Shared (amd64):
 
 # macOS
 
-macOS/Clang Static (amd64):
+macOS/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release, Debug]
   tags:
     - macos
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
   <<: *platform_macos_template
 
-macOS/Clang Shared (amd64):
+macOS/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release, Debug]
   tags:
     - macos
-    - amd64
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
@@ -356,35 +368,59 @@ macOS/Clang Shared (amd64):
 
 # Windows
 
-Windows/MSVC Static (amd64):
+Windows/MSVC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
   variables:
   <<: *platform_windows_template
 
-Windows/MSVC Shared (amd64):
+Windows/MSVC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
   variables:
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows/Clang-cl Static (amd64):
+Windows/Clang-cl Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
   variables:
     CC: clang-cl
     CXX: clang-cl
   <<: *platform_windows_template
 
-Windows/Clang-cl Shared (amd64):
+Windows/Clang-cl Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
   variables:
     CC: clang-cl
     CXX: clang-cl
     CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows/Clang Static (amd64):
+Windows/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
   variables:
     CC: clang
     CXX: clang
   <<: *platform_windows_template
 
-Windows/Clang Shared (amd64):
+Windows/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
   variables:
     CC: clang
     CXX: clang
@@ -400,15 +436,6 @@ Windows/Clang Shared (amd64):
     - container
     - linux
     - amd64
-  needs:
-    - (Debug) Arch/GCC Static (amd64)
-    - (Debug) Arch/GCC Shared (amd64)
-    - (Debug) Arch/Clang Static (amd64)
-    - (Debug) Arch/Clang Shared (amd64)
-    - Arch/GCC Static (amd64)
-    - Arch/GCC Shared (amd64)
-    - Arch/Clang Static (amd64)
-    - Arch/Clang Shared (amd64)
   dependencies: []
   script:
     - mkdir build && cd build
@@ -425,15 +452,6 @@ Static Analysis:
     - container
     - linux
     - amd64
-  needs:
-    - (Debug) Arch/GCC Static (amd64)
-    - (Debug) Arch/GCC Shared (amd64)
-    - (Debug) Arch/Clang Static (amd64)
-    - (Debug) Arch/Clang Shared (amd64)
-    - Arch/GCC Static (amd64)
-    - Arch/GCC Shared (amd64)
-    - Arch/Clang Static (amd64)
-    - Arch/Clang Shared (amd64)
   dependencies: []
   variables:
     CC: clang
@@ -450,15 +468,6 @@ Code Coverage:
     - container
     - linux
     - amd64
-  needs:
-    - (Debug) Arch/GCC Static (amd64)
-    - (Debug) Arch/GCC Shared (amd64)
-    - (Debug) Arch/Clang Static (amd64)
-    - (Debug) Arch/Clang Shared (amd64)
-    - Arch/GCC Static (amd64)
-    - Arch/GCC Shared (amd64)
-    - Arch/Clang Static (amd64)
-    - Arch/Clang Shared (amd64)
   dependencies: []
   variables:
     CC: clang
