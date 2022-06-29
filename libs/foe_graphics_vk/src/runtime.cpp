@@ -83,11 +83,20 @@ extern "C" foeResult foeGfxVkCreateRuntime(char const *pApplicationName,
         FOE_LOG(foeVkGraphics, Verbose, "Adding debug report extension to new VkInstance");
     }
 
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+    // From Vulkan Load 216+, for non-conforming implementations (such as MoltenVK),
+    // need to use the portability extension
+    extensions.emplace_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+#endif
+
     // Create Instance
-    VkInstanceCreateInfo instanceCI{
+    VkInstanceCreateInfo instanceCI {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pApplicationInfo = &appinfo,
-        .enabledLayerCount = static_cast<uint32_t>(layers.size()),
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+        .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
+#endif
+        .pApplicationInfo = &appinfo, .enabledLayerCount = static_cast<uint32_t>(layers.size()),
         .ppEnabledLayerNames = layers.data(),
         .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
         .ppEnabledExtensionNames = extensions.data(),
