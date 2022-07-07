@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2020 George Cave.
+    Copyright (C) 2020-2022 George Cave.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -57,7 +57,14 @@ VkResult foeGfxVkSwapchain::create(VkPhysicalDevice physicalDevice,
         extent = VkExtent2D{width, height};
     } else {
         // If the surface size is defined, the swap chain must match
+#ifndef __APPLE__
         extent = capabilities.currentExtent;
+#else
+        // For whatever reason, GLFW is scaling the surface size in the window on 'retina' screens,
+        // so a 1280x720 window on a retina screen has a surface size 2x that, leading to the
+        // rendered portion of the window being a quarter of the screen.
+        extent = VkExtent2D{width, height};
+#endif
     }
 
     // Surface Transform
