@@ -1,3 +1,7 @@
+# Copyright (C) 2022 George Cave.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 cmake_minimum_required(VERSION 3.15)
 project(foe_xr_openxr)
 

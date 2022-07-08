@@ -1,3 +1,7 @@
+# Copyright (C) 2022 George Cave.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 set(CMAKE_C_VISIBILITY_PRESET default)
 set(CMAKE_CXX_VISIBILITY_PRESET default)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 0)

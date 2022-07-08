@@ -1,3 +1,7 @@
+# Copyright (C) 2022 George Cave.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Declaration
 add_library(test_foe_plugin_so SHARED test.c)
 generate_export_header(test_foe_plugin_so EXPORT_MACRO_NAME TEST_EXPORT

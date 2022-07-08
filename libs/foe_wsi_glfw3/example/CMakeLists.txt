@@ -1,3 +1,7 @@
+# Copyright (C) 2022 George Cave.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 add_executable(example_foe_wsi_glfw_simple simple.cpp)
 
 target_include_directories(example_foe_wsi_glfw_simple

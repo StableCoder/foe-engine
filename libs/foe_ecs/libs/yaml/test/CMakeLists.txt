@@ -1,3 +1,7 @@
+# Copyright (C) 2022 George Cave.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 # Test Setup
 enable_testing()
 prepare_catch(COMPILED_CATCH)
