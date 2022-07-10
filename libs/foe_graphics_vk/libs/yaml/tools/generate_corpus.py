@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Copyright (C) 2022 George Cave.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 import os
 import sys
 import getopt
