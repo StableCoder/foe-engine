@@ -4,8 +4,7 @@
 
 target_sources(
   foe_graphics_resource
-  PRIVATE c_header_compatability.c
-          error_code.c
+  PRIVATE error_code.c
           image_create_info.cpp
           image_loader.cpp
           log.cpp

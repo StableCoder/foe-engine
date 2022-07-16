@@ -12,7 +12,7 @@ add_test(NAME FoE-ImEx-Yaml-Test COMMAND test_foe_imex_yaml)
 # Definition
 target_sources(
   test_foe_imex_yaml
-  PRIVATE c_header_compatability.c create_importer.cpp error_code.cpp
+  PRIVATE c_header_compatibility.c create_importer.cpp error_code.cpp
           imex_registration.cpp importer.cpp test_importer.cpp)
 
 target_compile_definitions(

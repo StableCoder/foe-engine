@@ -37,8 +37,8 @@ class foeGfxVkRenderPassPool {
      * @note This is intended for finding render passes quickly for use in geneating framebuffers
      * rather than rendering.
      *
-     * Thanks to the compatability of render passes based on a minimal set of the formnats and
-     * sample count, this function will attempt to find *any* compatable render passes and return
+     * Thanks to the compatibility of render passes based on a minimal set of the formnats and
+     * sample count, this function will attempt to find *any* compatible render passes and return
      * the first found.
      *
      * If no render pass is found, it will generate a basic one instead.
@@ -47,7 +47,7 @@ class foeGfxVkRenderPassPool {
                                    std::vector<VkSampleCountFlags> const &samples) -> VkRenderPass;
 
   private:
-    /// Elements that determine compatability between render passes
+    /// Elements that determine compatibility between render passes
     struct RenderPassCompatibleKey {
         VkFormat format;
         VkSampleCountFlags samples;

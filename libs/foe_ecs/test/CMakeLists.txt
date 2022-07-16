@@ -11,7 +11,7 @@ add_executable(test_foe_ecs)
 
 # Definition
 target_sources(
-  test_foe_ecs PRIVATE c_header_compatability.c editor_name_map.cpp
+  test_foe_ecs PRIVATE c_header_compatibility.c editor_name_map.cpp
                        error_code.cpp group_translator.cpp id.cpp indexes.cpp)
 
 target_link_libraries(test_foe_ecs PRIVATE catch foe_ecs)

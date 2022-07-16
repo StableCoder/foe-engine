@@ -10,7 +10,7 @@ add_test(NAME FoE-ImGui-VK-Test COMMAND test_foe_imgui_vk)
 add_executable(test_foe_imgui_vk)
 
 # Definition
-target_sources(test_foe_imgui_vk PRIVATE c_header_compatability.c
+target_sources(test_foe_imgui_vk PRIVATE c_header_compatibility.c
                                          error_code.cpp)
 
 target_link_libraries(test_foe_imgui_vk PRIVATE catch foe_imgui_vk)
