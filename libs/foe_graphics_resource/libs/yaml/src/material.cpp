@@ -50,7 +50,6 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
 
 void yaml_write_material_internal(std::string const &nodeName,
                                   foeMaterialCreateInfo const &data,
-                                  foeGfxVkFragmentDescriptor const &fragmentDescriptor,
                                   YAML::Node &node) {
     YAML::Node writeNode;
 
@@ -120,11 +119,10 @@ void yaml_read_material(YAML::Node const &node,
     *pCreateInfo = createInfo;
 }
 
-auto yaml_write_material(foeMaterialCreateInfo const &data,
-                         foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node {
+auto yaml_write_material(foeMaterialCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_material_internal("", data, *pFragmentDescriptor, outNode);
+    yaml_write_material_internal("", data, outNode);
 
     return outNode;
 }

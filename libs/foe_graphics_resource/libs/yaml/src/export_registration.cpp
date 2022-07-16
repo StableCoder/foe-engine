@@ -62,7 +62,7 @@ std::vector<foeKeyYamlPair> exportResource(foeResourceID resourceID,
 
             keyDataPairs.emplace_back(foeKeyYamlPair{
                 .key = yaml_material_key(),
-                .data = yaml_write_material(*pCreateInfo, pMaterial->pGfxFragDescriptor),
+                .data = yaml_write_material(*pCreateInfo),
             });
         }
     }

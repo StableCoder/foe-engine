@@ -10,7 +10,6 @@
 #include <yaml-cpp/yaml.h>
 
 struct foeMaterialCreateInfo;
-struct foeGfxVkFragmentDescriptor;
 
 char const *yaml_material_key();
 
@@ -18,7 +17,6 @@ void yaml_read_material(YAML::Node const &node,
                         foeEcsGroupTranslator groupTranslator,
                         foeResourceCreateInfo *pCreateInfo);
 
-auto yaml_write_material(foeMaterialCreateInfo const &data,
-                         foeGfxVkFragmentDescriptor *pFragmentDescriptor) -> YAML::Node;
+auto yaml_write_material(foeMaterialCreateInfo const &data) -> YAML::Node;
 
 #endif // MATERIAL_HPP
