@@ -10,7 +10,8 @@ add_executable(test_foe_graphics_resource)
 add_test(NAME FoE-Graphics-Resource-Test COMMAND test_foe_physics)
 
 # Definition
-target_sources(test_foe_graphics_resource PRIVATE c_header_compatibility.c)
+target_sources(test_foe_graphics_resource PRIVATE c_header_compatibility.c
+                                                  error_code.cpp)
 
 target_link_libraries(test_foe_graphics_resource PRIVATE catch
                                                          foe_graphics_resource)

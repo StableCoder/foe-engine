@@ -10,7 +10,7 @@ add_test(NAME FoE-Graphics-Test COMMAND test_foe_graphics)
 add_executable(test_foe_graphics)
 
 # Definition
-target_sources(test_foe_graphics PRIVATE c_header_compatibility.c)
+target_sources(test_foe_graphics PRIVATE c_header_compatibility.c stub.cpp)
 
 target_link_libraries(test_foe_graphics PRIVATE catch foe_graphics)
 
