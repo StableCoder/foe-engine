@@ -71,6 +71,7 @@ CMake Files:
     - amd64
   needs: []
   dependencies: []
+  retry: 2
   script:
     - mkdir build; cd build
     - cmake .. -GNinja -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
