@@ -15,7 +15,7 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
-#include <foe/imex/exporters.hpp>
+#include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
@@ -159,18 +159,17 @@ REGISTRATION_FAILED:
     return result;
 }
 
+foeExportFunctionality exportFunctionality{
+    .onRegister = onRegister,
+    .onDeregister = onDeregister,
+};
+
 } // namespace
 
 extern "C" foeResult foeGraphicsResourceYamlRegisterExporters() {
-    return foeRegisterExportFunctionality(foeExportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+    return foeRegisterExportFunctionality(&exportFunctionality);
 }
 
 extern "C" void foeGraphicsResourceYamlDeregisterExporters() {
-    foeDeregisterExportFunctionality(foeExportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+    foeDeregisterExportFunctionality(&exportFunctionality);
 }

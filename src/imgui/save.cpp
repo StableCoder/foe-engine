@@ -5,7 +5,7 @@
 #include "save.hpp"
 
 #include <ImGuiFileDialog.h>
-#include <foe/imex/exporters.hpp>
+#include <foe/imex/exporters.h>
 #include <foe/imgui/state.hpp>
 #include <imgui.h>
 
@@ -80,10 +80,11 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
         foeImexGetExporters(&numExporters, pExporters.get());
 
         for (uint32_t i = 0; i < numExporters; ++i) {
-            if (foeCompareExporters(pData->mSelectedExporter, pExporters[i]))
+            if (foeCompareExporters(&(pData->mSelectedExporter), &pExporters[i]))
                 validExporter = true;
-            if (ImGui::RadioButton(pExporters[i].pName,
-                                  foeCompareExporters(pData->mSelectedExporter, pExporters[i]))) {
+            if (ImGui::RadioButton(
+                    pExporters[i].pName,
+                    foeCompareExporters(&(pData->mSelectedExporter), &pExporters[i]))) {
                 pData->mSelectedExporter = pExporters[i];
                 validExporter = true;
             }

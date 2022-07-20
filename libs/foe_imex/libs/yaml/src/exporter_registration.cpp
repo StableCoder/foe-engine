@@ -4,7 +4,7 @@
 
 #include <foe/imex/yaml/exporter_registration.h>
 
-#include <foe/imex/exporters.hpp>
+#include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
 
 #include "exporter.hpp"
@@ -12,11 +12,7 @@
 namespace {
 
 std::string_view name{"Yaml"};
-foeExporterVersion version{
-    .major = 0,
-    .minor = 0,
-    .patch = 0,
-};
+foeExporterVersion version = FOE_EXPORTER_VERSION(0, 0, 0);
 
 } // namespace
 

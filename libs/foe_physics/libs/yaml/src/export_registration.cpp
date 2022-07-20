@@ -4,7 +4,7 @@
 
 #include <foe/physics/yaml/export_registration.h>
 
-#include <foe/imex/exporters.hpp>
+#include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
@@ -98,18 +98,17 @@ REGISTRATION_FAILED:
     return result;
 }
 
+foeExportFunctionality exportFunctionality{
+    .onRegister = onRegister,
+    .onDeregister = onDeregister,
+};
+
 } // namespace
 
 extern "C" foeResult foePhysicsYamlRegisterExporters() {
-    return foeRegisterExportFunctionality(foeExportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+    return foeRegisterExportFunctionality(&exportFunctionality);
 }
 
 extern "C" void foePhysicsYamlDeregisterExporters() {
-    foeDeregisterExportFunctionality(foeExportFunctionality{
-        .onRegister = onRegister,
-        .onDeregister = onDeregister,
-    });
+    foeDeregisterExportFunctionality(&exportFunctionality);
 }
