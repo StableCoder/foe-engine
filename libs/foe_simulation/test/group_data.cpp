@@ -20,7 +20,7 @@ class DummyImporter : public foeImporterBase {
         mName{name}, mGroup{group}, mResReturn{resourceReturn} {}
 
     foeIdGroup group() const noexcept final { return mGroup; }
-    std::string name() const noexcept final { return mName; }
+    char const *name() const noexcept final { return mName.c_str(); }
     void setGroupTranslator(foeEcsGroupTranslator groupTranslator) final {}
 
     foeResult getDependencies(uint32_t *pDependencyCount,

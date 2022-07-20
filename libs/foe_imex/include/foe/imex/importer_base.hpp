@@ -23,7 +23,7 @@ class foeImporterBase {
     virtual ~foeImporterBase() = default;
 
     virtual foeIdGroup group() const noexcept = 0;
-    virtual std::string name() const noexcept = 0;
+    virtual char const *name() const noexcept = 0;
     virtual void setGroupTranslator(foeEcsGroupTranslator groupTranslator) = 0;
 
     virtual foeResult getDependencies(uint32_t *pDependencyCount,

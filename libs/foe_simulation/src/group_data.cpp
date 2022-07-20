@@ -47,7 +47,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     }
 
     // Check against blank name for the importer
-    if (pImporter->name().empty()) {
+    if (std::string_view{pImporter->name()}.empty()) {
         FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - Importer had a blank group name");
         return false;

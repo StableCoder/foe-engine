@@ -26,7 +26,7 @@ class foeYamlImporter : public foeImporterBase {
     FOE_IMEX_YAML_EXPORT ~foeYamlImporter();
 
     FOE_IMEX_YAML_EXPORT foeIdGroup group() const noexcept override;
-    FOE_IMEX_YAML_EXPORT std::string name() const noexcept override;
+    FOE_IMEX_YAML_EXPORT char const *name() const noexcept override;
     FOE_IMEX_YAML_EXPORT void setGroupTranslator(foeEcsGroupTranslator groupTranslator) override;
 
     FOE_IMEX_YAML_EXPORT foeResult getDependencies(uint32_t *pDependencyCount,
@@ -49,6 +49,7 @@ class foeYamlImporter : public foeImporterBase {
   public:
     std::filesystem::path mRootDir;
     foeIdGroup mGroup;
+    std::string mName;
 
     bool mHasTranslation{false};
     foeEcsGroupTranslator mGroupTranslator{FOE_NULL_HANDLE};

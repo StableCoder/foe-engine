@@ -76,7 +76,7 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 } // namespace
 
 foeYamlImporter::foeYamlImporter(foeIdGroup group, std::filesystem::path rootDir) :
-    mRootDir{std::move(rootDir)}, mGroup{group} {}
+    mRootDir{std::move(rootDir)}, mGroup{group}, mName{mRootDir.stem().string()} {}
 
 foeYamlImporter::~foeYamlImporter() {
     if (mGroupTranslator != FOE_NULL_HANDLE)
@@ -85,7 +85,7 @@ foeYamlImporter::~foeYamlImporter() {
 
 foeIdGroup foeYamlImporter::group() const noexcept { return mGroup; }
 
-std::string foeYamlImporter::name() const noexcept { return mRootDir.stem().string(); }
+char const *foeYamlImporter::name() const noexcept { return mName.c_str(); }
 
 void foeYamlImporter::setGroupTranslator(foeEcsGroupTranslator groupTranslator) {
     mGroupTranslator = groupTranslator;
