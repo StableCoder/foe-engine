@@ -17,9 +17,6 @@ struct foeExporterVersion {
     unsigned int patch : 12;
 };
 
-FOE_IMEX_EXPORT bool operator==(foeExporterVersion const &lhs, foeExporterVersion const &rhs);
-FOE_IMEX_EXPORT bool operator!=(foeExporterVersion const &lhs, foeExporterVersion const &rhs);
-
 static_assert(sizeof(foeExporterVersion) == sizeof(unsigned int));
 
 struct foeExporter {
@@ -28,8 +25,7 @@ struct foeExporter {
     foeResult (*pExportFn)(char const *, foeSimulation *);
 };
 
-FOE_IMEX_EXPORT bool operator==(foeExporter const &lhs, foeExporter const &rhs);
-FOE_IMEX_EXPORT bool operator!=(foeExporter const &lhs, foeExporter const &rhs);
+FOE_IMEX_EXPORT bool foeCompareExporters(foeExporter const &lhs, foeExporter const &rhs);
 
 FOE_IMEX_EXPORT foeResult foeImexRegisterExporter(foeExporter exporter);
 FOE_IMEX_EXPORT foeResult foeImexDeregisterExporter(foeExporter exporter);
@@ -51,5 +47,6 @@ struct foeExportFunctionality {
 FOE_IMEX_EXPORT foeResult
 foeRegisterExportFunctionality(foeExportFunctionality const &functionality);
 FOE_IMEX_EXPORT void foeDeregisterExportFunctionality(foeExportFunctionality const &functionality);
+
 
 #endif // FOE_IMEX_EXPORTERS_HPP

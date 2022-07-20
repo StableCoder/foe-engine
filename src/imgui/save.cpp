@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -80,10 +80,10 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
         foeImexGetExporters(&numExporters, pExporters.get());
 
         for (uint32_t i = 0; i < numExporters; ++i) {
-            if (pData->mSelectedExporter == pExporters[i])
+            if (foeCompareExporters(pData->mSelectedExporter, pExporters[i]))
                 validExporter = true;
             if (ImGui::RadioButton(pExporters[i].pName,
-                                   pData->mSelectedExporter == pExporters[i])) {
+                                  foeCompareExporters(pData->mSelectedExporter, pExporters[i]))) {
                 pData->mSelectedExporter = pExporters[i];
                 validExporter = true;
             }

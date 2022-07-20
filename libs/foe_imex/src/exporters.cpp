@@ -21,15 +21,11 @@ struct foeExporterRegistrar {
 
 } // namespace
 
-bool operator==(foeExporterVersion const &lhs, foeExporterVersion const &rhs) {
+bool foeCompareExporterVersions(foeExporterVersion const &lhs, foeExporterVersion const &rhs) {
     return (lhs.major == rhs.major) && (lhs.minor == rhs.minor) && (lhs.patch == rhs.patch);
 }
 
-bool operator!=(foeExporterVersion const &lhs, foeExporterVersion const &rhs) {
-    return !(lhs == rhs);
-}
-
-bool operator==(foeExporter const &lhs, foeExporter const &rhs) {
+bool foeCompareExporters(foeExporter const &lhs, foeExporter const &rhs) {
     if (lhs.pName != rhs.pName) {
         if (lhs.pName == nullptr || rhs.pName == nullptr)
             return false;
@@ -38,16 +34,14 @@ bool operator==(foeExporter const &lhs, foeExporter const &rhs) {
             return false;
     }
 
-    return (lhs.version == rhs.version) && (lhs.pExportFn == rhs.pExportFn);
+    return foeCompareExporterVersions(lhs.version, rhs.version) && (lhs.pExportFn == rhs.pExportFn);
 }
-
-bool operator!=(foeExporter const &lhs, foeExporter const &rhs) { return !(lhs == rhs); }
 
 foeResult foeImexRegisterExporter(foeExporter exporter) {
     std::scoped_lock lock{gExporterRegistrar.sync};
 
     for (auto const &it : gExporterRegistrar.exporters) {
-        if (it == exporter) {
+        if (foeCompareExporters(it, exporter)) {
             return to_foeResult(FOE_IMEX_ERROR_EXPORTER_ALREADY_REGISTERED);
         }
     }
@@ -78,7 +72,7 @@ foeResult foeImexDeregisterExporter(foeExporter exporter) {
 
     for (auto it = gExporterRegistrar.exporters.begin(); it != gExporterRegistrar.exporters.end();
          ++it) {
-        if (*it == exporter) {
+        if (foeCompareExporters(*it, exporter)) {
             gExporterRegistrar.exporters.erase(it);
             goto CONTINUE_DEREGISTER;
         }
