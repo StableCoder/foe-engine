@@ -39,7 +39,11 @@ class DummyImporter : public foeImporterBase {
     bool importResourceDefinitions(foeEcsNameMap nameMap, foeSimulation const *pSimulation) {
         return false;
     }
-    std::string getResourceEditorName(foeIdIndex resourceIndexID) { return std::string{}; }
+    foeResult getResourceEditorName(foeIdIndex resourceIndexID,
+                                    uint32_t *pNameLength,
+                                    char *pName) {
+        return foeResult{.value = FOE_IMEX_SUCCESS};
+    }
     foeResourceCreateInfo getResource(foeId id) final {
         return static_cast<foeResourceCreateInfo>(mResReturn);
     }

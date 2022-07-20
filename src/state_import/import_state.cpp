@@ -319,11 +319,19 @@ foeResult importState(std::string_view topLevelDataSet,
                 [](void *pContext, foeId id) {
                     CallContext *pCallContext = (CallContext *)pContext;
 
-                    std::string editorName =
-                        pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
+                    uint32_t nameLength;
+                    foeResult result = pCallContext->pImporter->getResourceEditorName(
+                        foeIdGetIndex(id), &nameLength, NULL);
+                    if (result.value == FOE_SUCCESS) {
+                        std::string editorName;
+                        do {
+                            editorName.resize(nameLength);
+                            result = pCallContext->pImporter->getResourceEditorName(
+                                foeIdGetIndex(id), &nameLength, editorName.data());
+                        } while (result.value != FOE_SUCCESS);
 
-                    if (!editorName.empty())
                         foeEcsNameMapAdd(pCallContext->nameMap, id, editorName.c_str());
+                    }
                 },
                 &callContext);
         }
@@ -349,11 +357,19 @@ foeResult importState(std::string_view topLevelDataSet,
             [](void *pContext, foeId id) {
                 CallContext *pCallContext = (CallContext *)pContext;
 
-                std::string editorName =
-                    pCallContext->pImporter->getResourceEditorName(foeIdGetIndex(id));
+                uint32_t nameLength;
+                foeResult result = pCallContext->pImporter->getResourceEditorName(
+                    foeIdGetIndex(id), &nameLength, NULL);
+                if (result.value == FOE_SUCCESS) {
+                    std::string editorName;
+                    do {
+                        editorName.resize(nameLength);
+                        result = pCallContext->pImporter->getResourceEditorName(
+                            foeIdGetIndex(id), &nameLength, editorName.data());
+                    } while (result.value != FOE_SUCCESS);
 
-                if (!editorName.empty())
                     foeEcsNameMapAdd(pCallContext->nameMap, id, editorName.c_str());
+                }
             },
             &callContext);
     }

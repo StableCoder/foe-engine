@@ -12,8 +12,6 @@
 #include <foe/error_code.h>
 #include <foe/resource/create_info.h>
 
-#include <string>
-
 struct foeSimulation;
 
 class foeImporterBase {
@@ -34,7 +32,9 @@ class foeImporterBase {
 
     virtual bool importResourceDefinitions(foeEcsNameMap nameMap,
                                            foeSimulation const *pSimulation) = 0;
-    virtual std::string getResourceEditorName(foeResourceID resourceID) = 0;
+    virtual foeResult getResourceEditorName(foeResourceID resourceID,
+                                            uint32_t *pNameLength,
+                                            char *pName) = 0;
     virtual foeResourceCreateInfo getResource(foeId id) = 0;
 
     virtual foeResult findExternalFile(char const *pExternalFilePath,

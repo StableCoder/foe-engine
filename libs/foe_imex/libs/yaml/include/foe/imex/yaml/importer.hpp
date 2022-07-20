@@ -40,7 +40,9 @@ class foeYamlImporter : public foeImporterBase {
 
     FOE_IMEX_YAML_EXPORT bool importResourceDefinitions(foeEcsNameMap nameMap,
                                                         foeSimulation const *pSimulation) override;
-    FOE_IMEX_YAML_EXPORT std::string getResourceEditorName(foeIdIndex resourceIndexID) override;
+    FOE_IMEX_YAML_EXPORT foeResult getResourceEditorName(foeIdIndex resourceIndexID,
+                                                         uint32_t *pNameLength,
+                                                         char *pName) override;
     FOE_IMEX_YAML_EXPORT foeResourceCreateInfo getResource(foeId id) override;
 
     FOE_IMEX_YAML_EXPORT foeResult findExternalFile(char const *pExternalFilePath,

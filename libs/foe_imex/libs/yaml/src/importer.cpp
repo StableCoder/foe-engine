@@ -346,10 +346,11 @@ bool foeYamlImporter::importResourceDefinitions(foeEcsNameMap nameMap,
     return true;
 }
 
-std::string foeYamlImporter::getResourceEditorName(foeIdIndex resourceIndexID) {
-    std::string editorName;
+foeResult foeYamlImporter::getResourceEditorName(foeIdIndex resourceIndexID,
+                                                 uint32_t *pNameLength,
+                                                 char *pName) {
     if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
-        return editorName;
+        return imex_to_foeResult(FOE_IMEX_FILE_NOT_FOUND);
 
     YAML::Node rootNode;
 
@@ -376,7 +377,7 @@ std::string foeYamlImporter::getResourceEditorName(foeIdIndex resourceIndexID) {
             goto OPENED_YAML_FILE;
     }
 
-    return editorName;
+    return imex_to_foeResult(FOE_IMEX_FILE_NOT_FOUND);
 
 OPENED_YAML_FILE:
     try {
@@ -388,7 +389,25 @@ OPENED_YAML_FILE:
             std::abort();
 
         // Editor Name
+        std::string editorName;
         yaml_read_optional("editor_name", rootNode, editorName);
+
+        if (pName == NULL) {
+            // If no return buffer provided, just return length of found name
+            *pNameLength = editorName.size();
+            return imex_to_foeResult(FOE_IMEX_SUCCESS);
+        }
+
+        if (*pNameLength < editorName.size()) {
+            // Not enough space for the full name, copy what we can to the return buffer
+            memcpy(pName, editorName.data(), *pNameLength);
+            return imex_to_foeResult(FOE_IMEX_ERROR_INCOMPLETE);
+        }
+
+        // Copy the full name, adjust the returned number of bytes
+        memcpy(pName, editorName.data(), editorName.size());
+        *pNameLength = editorName.size();
+        return imex_to_foeResult(FOE_IMEX_SUCCESS);
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
     } catch (std::exception const &e) {
@@ -397,7 +416,7 @@ OPENED_YAML_FILE:
         FOE_LOG(foeImexYaml, Error, "Failed to import resource definition with unknown exception");
     }
 
-    return editorName;
+    return imex_to_foeResult(FOE_IMEX_ERROR_FAILED_TO_READ_CONTENT);
 }
 
 foeResourceCreateInfo foeYamlImporter::getResource(foeId id) {
