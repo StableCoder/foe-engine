@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <fstream>
 #include <shared_mutex>
+#include <string_view>
 #include <vector>
 
 namespace {
@@ -101,7 +102,7 @@ YAML::Node exportResource(
 
 YAML::Node exportComponents(
     foeEntityID entity,
-    std::string const &name,
+    char const *pName,
     std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulation const *)> const
         &componentFns,
     foeSimulation const *pSimulation) {
@@ -109,8 +110,8 @@ YAML::Node exportComponents(
 
     yaml_write_id("", entity, rootNode);
 
-    if (!name.empty()) {
-        yaml_write_required("editor_name", name, rootNode);
+    if (pName) {
+        yaml_write_required("editor_name", std::string{pName}, rootNode);
     }
 
     for (auto const &fn : componentFns) {
