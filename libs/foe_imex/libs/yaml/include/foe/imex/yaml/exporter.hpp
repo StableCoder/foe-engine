@@ -21,9 +21,6 @@ struct foeKeyYamlPair {
     YAML::Node data;
 };
 
-FOE_IMEX_YAML_EXPORT foeResult foeImexYamlExport(std::filesystem::path path,
-                                                 foeSimulation *pSimState);
-
 FOE_IMEX_YAML_EXPORT foeResult foeImexYamlRegisterResourceFn(
     std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *));
 

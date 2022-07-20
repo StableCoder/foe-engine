@@ -7,6 +7,8 @@
 #include <foe/imex/exporters.hpp>
 #include <foe/imex/yaml/exporter.hpp>
 
+#include "exporter.hpp"
+
 namespace {
 
 std::string_view name{"Yaml"};

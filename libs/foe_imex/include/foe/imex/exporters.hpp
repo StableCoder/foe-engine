@@ -9,8 +9,6 @@
 #include <foe/error_code.h>
 #include <foe/imex/export.h>
 
-#include <filesystem>
-
 struct foeSimulation;
 
 struct foeExporterVersion {
@@ -27,7 +25,7 @@ static_assert(sizeof(foeExporterVersion) == sizeof(unsigned int));
 struct foeExporter {
     char const *pName;
     foeExporterVersion version;
-    foeResult (*pExportFn)(std::filesystem::path, foeSimulation *);
+    foeResult (*pExportFn)(char const *, foeSimulation *);
 };
 
 FOE_IMEX_EXPORT bool operator==(foeExporter const &lhs, foeExporter const &rhs);

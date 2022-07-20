@@ -22,6 +22,7 @@
 
 #include <array>
 #include <map>
+#include <memory>
 #include <tuple>
 
 #ifdef FOE_XR_SUPPORT
