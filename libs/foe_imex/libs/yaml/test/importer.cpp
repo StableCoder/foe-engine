@@ -6,6 +6,7 @@
 #include <foe/ecs/error_code.h>
 #include <foe/ecs/indexes.h>
 #include <foe/ecs/name_map.h>
+#include <foe/imex/error_code.h>
 #include <foe/imex/yaml/error_code.h>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -32,7 +33,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     REQUIRE(pTestImporter != nullptr);
 
     CHECK(pTestImporter->group() == 2);
-    CHECK(pTestImporter->name() == "11-good-content");
+    CHECK(std::string_view{pTestImporter->name()} == "11-good-content");
 
     SECTION("Dependencies (getDependencies)") {
         uint32_t dependenciesCount;
@@ -222,14 +223,28 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     }
 
     SECTION("Finding external data file (findExternalFile)") {
-        std::filesystem::path externalPath =
-            pTestImporter->findExternalFile("findable_external_file");
+        uint32_t pathLength = UINT32_MAX;
+        foeResult result;
 
-        CHECK_FALSE(externalPath.empty());
+        SECTION("Existing file") {
+            result = pTestImporter->findExternalFile("findable_external_file", &pathLength, NULL);
+            CHECK(result.value == FOE_IMEX_SUCCESS);
+            CHECK(pathLength != UINT32_MAX);
 
-        externalPath = pTestImporter->findExternalFile("non-existing-file");
+            std::string path;
+            path.resize(pathLength);
+            result =
+                pTestImporter->findExternalFile("findable_external_file", &pathLength, path.data());
+            CHECK(result.value == FOE_IMEX_SUCCESS);
+            CHECK(pathLength == path.size());
+            CHECK(path.find("findable_external_file") != std::string::npos);
+        }
 
-        CHECK(externalPath.empty());
+        SECTION("Non-existing file") {
+            result = pTestImporter->findExternalFile("non-existing-file", &pathLength, NULL);
+            CHECK(result.value == FOE_IMEX_FILE_NOT_FOUND);
+            CHECK(pathLength == UINT32_MAX);
+        }
     }
 
     delete pTestImporter;

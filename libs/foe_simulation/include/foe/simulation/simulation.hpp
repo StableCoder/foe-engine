@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <functional>
 #include <shared_mutex>
+#include <vector>
 
 /**
  * The Simulation 'core' is a static global registry of all simulation functionality that has been

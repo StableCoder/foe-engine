@@ -43,8 +43,9 @@ class foeYamlImporter : public foeImporterBase {
     FOE_IMEX_YAML_EXPORT std::string getResourceEditorName(foeIdIndex resourceIndexID) override;
     FOE_IMEX_YAML_EXPORT foeResourceCreateInfo getResource(foeId id) override;
 
-    FOE_IMEX_YAML_EXPORT std::filesystem::path findExternalFile(
-        std::filesystem::path externalFilePath) override;
+    FOE_IMEX_YAML_EXPORT foeResult findExternalFile(char const *pExternalFilePath,
+                                                    uint32_t *pPathLength,
+                                                    char *pPath) override;
 
   public:
     std::filesystem::path mRootDir;

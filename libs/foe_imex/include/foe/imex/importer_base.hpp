@@ -12,9 +12,7 @@
 #include <foe/error_code.h>
 #include <foe/resource/create_info.h>
 
-#include <filesystem>
 #include <string>
-#include <vector>
 
 struct foeSimulation;
 
@@ -39,7 +37,9 @@ class foeImporterBase {
     virtual std::string getResourceEditorName(foeResourceID resourceID) = 0;
     virtual foeResourceCreateInfo getResource(foeId id) = 0;
 
-    virtual std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) = 0;
+    virtual foeResult findExternalFile(char const *pExternalFilePath,
+                                       uint32_t *pPathLength,
+                                       char *pPath) = 0;
 };
 
 #endif // FOE_IMEX_IMPORTER_BASE_HPP

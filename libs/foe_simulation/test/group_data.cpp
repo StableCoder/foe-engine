@@ -5,6 +5,7 @@
 #include <catch.hpp>
 #include <foe/ecs/error_code.h>
 #include <foe/ecs/id.h>
+#include <foe/imex/error_code.h>
 #include <foe/simulation/group_data.hpp>
 
 #include <filesystem>
@@ -43,13 +44,15 @@ class DummyImporter : public foeImporterBase {
         return static_cast<foeResourceCreateInfo>(mResReturn);
     }
 
-    std::filesystem::path findExternalFile(std::filesystem::path externalFilePath) final {
+    foeResult findExternalFile(char const *pExternalFilePath,
+                               uint32_t *pPathLength,
+                               char *pPath) final {
         if (std::filesystem::exists(std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / mName /
-                                    externalFilePath)) {
-            return std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / mName / externalFilePath;
+                                    pExternalFilePath)) {
+            return foeResult{.value = FOE_IMEX_SUCCESS};
         }
 
-        return {};
+        return foeResult{.value = FOE_IMEX_FILE_NOT_FOUND};
     }
 
   private:
@@ -520,60 +523,6 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
             REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes,
                                          std::move(testImporter)));
             REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
-        }
-    }
-}
-
-TEST_CASE("foeGroupData - Finding external files", "[foe]") {
-    foeGroupData test;
-
-    // Add a dynamic group
-    foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
-    foeEcsIndexes testResourceIndexes = FOE_NULL_HANDLE;
-
-    REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testEntityIndexes).value ==
-            FOE_ECS_SUCCESS);
-    REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
-            FOE_ECS_SUCCESS);
-
-    auto testImporter = std::make_unique<DummyImporter>("dynamic", foeIdValueToGroup(0x1));
-
-    REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
-
-    SECTION("Only dynamic group importer set") {
-        SECTION("Dynamic file is found in the dynamic location") {
-            REQUIRE(test.findExternalFile("testDynamic.txt") ==
-                    std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / "dynamic" /
-                        "testDynamic.txt");
-        }
-        SECTION("Common file is found in the dynamic location") {
-            REQUIRE(test.findExternalFile("common.txt") ==
-                    std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / "dynamic" / "common.txt");
-        }
-        SECTION("Persistent file is not found") {
-            REQUIRE(test.findExternalFile("testPersistent.txt").empty());
-        }
-    }
-
-    auto persistentImporter = std::make_unique<DummyImporter>("persistent", foeIdPersistentGroup,
-                                                              static_cast<int *>(NULL) + 1);
-    REQUIRE(test.setPersistentImporter(std::move(persistentImporter)));
-
-    SECTION("With both the dynamic and persistent importer set") {
-        SECTION("Dynamic file is found in the dynamic location") {
-            REQUIRE(test.findExternalFile("testDynamic.txt") ==
-                    std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / "dynamic" /
-                        "testDynamic.txt");
-        }
-        SECTION("Common file is found in the overridden persistent location") {
-            REQUIRE(test.findExternalFile("common.txt") ==
-                    std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / "persistent" /
-                        "common.txt");
-        }
-        SECTION("Persistent file is not found") {
-            REQUIRE(test.findExternalFile("testPersistent.txt") ==
-                    std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / "persistent" /
-                        "testPersistent.txt");
         }
     }
 }

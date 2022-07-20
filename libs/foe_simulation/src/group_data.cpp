@@ -87,7 +87,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     }
 
     for (auto const &it : mDynamicGroups) {
-        if (it.pImporter != nullptr && it.pImporter->name() == pImporter->name()) {
+        if (it.pImporter != nullptr && strcmp(it.pImporter->name(), pImporter->name()) == 0) {
             FOE_LOG(SimulationState, Error,
                     "foeGroupData::addDynamicGroup - Importer group name already exists");
             return false;
@@ -240,20 +240,37 @@ foeResourceCreateInfo foeGroupData::getResourceDefinition(foeId id) {
 }
 
 std::filesystem::path foeGroupData::findExternalFile(std::filesystem::path externalFilePath) {
-    std::filesystem::path foundPath;
     if (mPersistentImporter != nullptr) {
-        foundPath = mPersistentImporter->findExternalFile(externalFilePath);
-        if (!foundPath.empty())
-            return foundPath;
+        uint32_t pathLength;
+        foeResult result = mPersistentImporter->findExternalFile(externalFilePath.string().c_str(),
+                                                                 &pathLength, NULL);
+        if (result.value == FOE_SUCCESS) {
+            std::string path;
+            do {
+                path.resize(pathLength);
+                result = mPersistentImporter->findExternalFile(externalFilePath.string().c_str(),
+                                                               &pathLength, path.data());
+            } while (result.value != FOE_SUCCESS);
+            return path;
+        }
     }
 
     for (auto it = mDynamicGroups.rbegin(); it != mDynamicGroups.rend(); ++it) {
         if (it->pImporter != nullptr) {
-            foundPath = it->pImporter->findExternalFile(externalFilePath);
-            if (!foundPath.empty())
-                return foundPath;
+            uint32_t pathLength;
+            foeResult result = it->pImporter->findExternalFile(externalFilePath.string().c_str(),
+                                                               &pathLength, NULL);
+            if (result.value == FOE_SUCCESS) {
+                std::string path;
+                do {
+                    path.resize(pathLength);
+                    result = it->pImporter->findExternalFile(externalFilePath.string().c_str(),
+                                                             &pathLength, path.data());
+                } while (result.value != FOE_SUCCESS);
+                return path;
+            }
         }
     }
 
-    return foundPath;
+    return {};
 }

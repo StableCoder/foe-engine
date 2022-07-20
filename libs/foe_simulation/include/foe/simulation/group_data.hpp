@@ -12,6 +12,7 @@
 #include <foe/simulation/export.h>
 
 #include <array>
+#include <filesystem>
 #include <memory>
 #include <string_view>
 

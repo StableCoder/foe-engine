@@ -5,6 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
+#include <foe/imex/error_code.h>
 #include <foe/imex/yaml/error_code.h>
 
 #ifdef __cplusplus
@@ -15,6 +16,15 @@ inline foeResult to_foeResult(foeImexYamlResult value) {
     foeResult result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeImexYamlResultToString,
+    };
+
+    return result;
+}
+
+inline foeResult imex_to_foeResult(foeImexResult value) {
+    foeResult result = {
+        .value = value,
+        .toString = (PFN_foeResultToString)foeImexResultToString,
     };
 
     return result;

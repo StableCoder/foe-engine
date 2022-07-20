@@ -451,10 +451,34 @@ GOT_RESOURCE_NODE:
     return nullptr;
 }
 
-std::filesystem::path foeYamlImporter::findExternalFile(std::filesystem::path externalFilePath) {
-    if (std::filesystem::exists(mRootDir / externalDirectoryPath / externalFilePath)) {
-        return mRootDir / externalDirectoryPath / externalFilePath;
-    }
+foeResult foeYamlImporter::findExternalFile(char const *pExternalFilePath,
+                                            uint32_t *pPathLength,
+                                            char *pPath) {
+    std::filesystem::path test;
+    test = mRootDir / externalDirectoryPath / pExternalFilePath;
+    if (std::filesystem::exists(mRootDir / externalDirectoryPath / pExternalFilePath)) {
+        foeResult result = imex_to_foeResult(FOE_IMEX_SUCCESS);
+        std::string path{
+            std::filesystem::path{mRootDir / externalDirectoryPath / pExternalFilePath}.string()};
 
-    return std::filesystem::path{};
+        if (pPath == NULL) {
+            // If no return buffer provided, just return length of found path
+            *pPathLength = path.size();
+            return result;
+        }
+
+        if (*pPathLength < path.size()) {
+            // Not enough space for the full path, copy what we can to the return buffer
+            memcpy(pPath, path.data(), *pPathLength);
+            result = imex_to_foeResult(FOE_IMEX_ERROR_INCOMPLETE);
+        } else {
+            // Copy the full path, adjust the returned number of bytes
+            memcpy(pPath, path.data(), path.size());
+            *pPathLength = path.size();
+        }
+
+        return result;
+    } else {
+        return imex_to_foeResult(FOE_IMEX_FILE_NOT_FOUND);
+    }
 }

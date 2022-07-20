@@ -28,7 +28,7 @@ TEST_CASE("foeImexYamlCreateImporter - Success Case") {
         REQUIRE(pTestImporter != nullptr);
 
         CHECK(pTestImporter->group() == 1);
-        CHECK(pTestImporter->name() == "10-good-empty");
+        CHECK(std::string_view{pTestImporter->name()} == "10-good-empty");
     }
 
     SECTION("Good layout/files, with valid content") {
@@ -39,7 +39,7 @@ TEST_CASE("foeImexYamlCreateImporter - Success Case") {
         CHECK(pTestImporter != nullptr);
 
         CHECK(pTestImporter->group() == 2);
-        CHECK(pTestImporter->name() == "11-good-content");
+        CHECK(std::string_view{pTestImporter->name()} == "11-good-content");
     }
 
     delete pTestImporter;
