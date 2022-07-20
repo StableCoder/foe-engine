@@ -16,9 +16,6 @@ typedef foeResult (*PFN_foeImexCreateImporter)(foeIdGroup, char const *, foeImpo
 FOE_IMEX_EXPORT foeResult foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter);
 FOE_IMEX_EXPORT foeResult foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter);
 
-#include <filesystem>
-
-FOE_IMEX_EXPORT auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath)
-    -> foeImporterBase *;
+FOE_IMEX_EXPORT auto createImporter(foeIdGroup group, char const *pPath) -> foeImporterBase *;
 
 #endif // IMPORTERS_HPP

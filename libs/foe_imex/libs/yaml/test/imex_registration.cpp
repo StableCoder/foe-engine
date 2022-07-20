@@ -19,21 +19,21 @@ TEST_CASE("Imex De/registration") {
     testPath /= "11-good-content";
 
     SECTION("Without being registered, Imex doesn't create importer") {
-        pTestImporter = createImporter(123, testPath);
+        pTestImporter = createImporter(123, testPath.string().c_str());
         REQUIRE(pTestImporter == nullptr);
     }
 
     SECTION("When registered, Imex creates the importer") {
         foeImexYamlRegisterImporter();
 
-        pTestImporter = createImporter(123, testPath);
+        pTestImporter = createImporter(123, testPath.string().c_str());
         REQUIRE(pTestImporter != nullptr);
         delete pTestImporter;
 
         foeImexYamlDeregisterImporter();
 
         SECTION("After being deregistered, Imex doesn't create importer") {
-            pTestImporter = createImporter(123, testPath);
+            pTestImporter = createImporter(123, testPath.string().c_str());
             CHECK(pTestImporter == nullptr);
         }
     }

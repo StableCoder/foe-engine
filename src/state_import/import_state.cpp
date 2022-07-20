@@ -23,8 +23,8 @@ std::unique_ptr<foeImporterBase> searchAndCreateImporter(std::string_view dataSe
 
     for (auto searchPath : *pathReader.searchPaths()) {
         if (std::filesystem::exists(searchPath / dataSetName)) {
-            std::unique_ptr<foeImporterBase> importer{
-                createImporter(group, searchPath / dataSetName)};
+            std::unique_ptr<foeImporterBase> importer{createImporter(
+                group, std::filesystem::path{searchPath / dataSetName}.string().c_str())};
             if (importer != nullptr) {
                 return importer;
             }
@@ -34,7 +34,8 @@ std::unique_ptr<foeImporterBase> searchAndCreateImporter(std::string_view dataSe
             auto path = dirIt.path();
 
             if (path.stem() == dataSetName) {
-                std::unique_ptr<foeImporterBase> importer{createImporter(group, path)};
+                std::unique_ptr<foeImporterBase> importer{
+                    createImporter(group, path.string().c_str())};
                 if (importer != nullptr) {
                     return importer;
                 }
@@ -86,7 +87,7 @@ foeResult importState(std::string_view topLevelDataSet,
 
     // Find the to-level data set, initially as if the full path were given
     std::unique_ptr<foeImporterBase> persistentImporter{
-        createImporter(foeIdPersistentGroup, topLevelDataSet)};
+        createImporter(foeIdPersistentGroup, std::string{topLevelDataSet}.c_str())};
 
     // If not found, try search paths
     if (persistentImporter == nullptr) {

@@ -48,12 +48,12 @@ foeResult foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter) {
     return to_foeResult(FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED);
 }
 
-auto createImporter(foeIdGroup group, std::filesystem::path stateDataPath) -> foeImporterBase * {
+auto createImporter(foeIdGroup group, char const *pPath) -> foeImporterBase * {
     std::scoped_lock lock{gSync};
 
     foeImporterBase *pImporter{nullptr};
     for (auto it : gCreateImporterFns) {
-        it(group, stateDataPath.string().c_str(), &pImporter);
+        it(group, pPath, &pImporter);
         if (pImporter != nullptr)
             break;
     }
