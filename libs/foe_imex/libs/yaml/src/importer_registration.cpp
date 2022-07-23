@@ -57,7 +57,7 @@ foeResult foeImexYamlCreateImporter(foeIdGroup group,
         !std::filesystem::is_directory(fsPath / externalDirectoryPath))
         return to_foeResult(FOE_IMEX_YAML_ERROR_EXTERNAL_DIRECTORY_NOT_DIRECTORY);
 
-    *ppImporter = new foeYamlImporter{group, fsPath};
+    *ppImporter = new foeYamlImporter{group, fsPath.string().c_str()};
 
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }

@@ -13,16 +13,13 @@
 #include <yaml-cpp/yaml.h>
 
 #include <filesystem>
-#include <functional>
-#include <map>
 #include <string>
-#include <string_view>
 
 class foeYamlImporterGenerator;
 
 class foeYamlImporter : public foeImporterBase {
   public:
-    FOE_IMEX_YAML_EXPORT foeYamlImporter(foeIdGroup group, std::filesystem::path rootDir);
+    FOE_IMEX_YAML_EXPORT foeYamlImporter(foeIdGroup group, char const *pRootDir);
     FOE_IMEX_YAML_EXPORT ~foeYamlImporter();
 
     FOE_IMEX_YAML_EXPORT foeResult group(foeIdGroup *pGroup) const noexcept override;
@@ -51,7 +48,7 @@ class foeYamlImporter : public foeImporterBase {
                                                     uint32_t *pPathLength,
                                                     char *pPath) override;
 
-  public:
+  private:
     std::filesystem::path mRootDir;
     foeIdGroup mGroup;
     std::string mName;
