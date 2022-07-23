@@ -1,13 +1,9 @@
-// Copyright (C) 2020 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef FOE_HANDLE_H
 #define FOE_HANDLE_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 // Based on the definition of handle types in Vulkan, sets declarable handle types that are always
 // 64 bits large.
@@ -21,6 +17,11 @@ extern "C" {
 #endif
 #endif
 
+// A null value for FoE handle types
+#define FOE_NULL_HANDLE 0
+
+#ifdef __cplusplus
+
 #define FOE_DEFINE_HANDLE_CASTS(HUMAN_NAME, OBJ_TYPE, HANDLE_TYPE)                                 \
                                                                                                    \
     inline OBJ_TYPE *HUMAN_NAME##_from_handle(HANDLE_TYPE handle) {                                \
@@ -31,11 +32,24 @@ extern "C" {
         return reinterpret_cast<HANDLE_TYPE>(object);                                              \
     }
 
-// A null value for FoE handle types
-#define FOE_NULL_HANDLE 0
+#else
 
-#ifdef __cplusplus
-}
+#define FOE_DEFINE_HANDLE_CASTS(HUMAN_NAME, OBJ_TYPE, HANDLE_TYPE)                                 \
+                                                                                                   \
+    inline OBJ_TYPE *HUMAN_NAME##_from_handle(HANDLE_TYPE handle) { return (OBJ_TYPE *)handle; }   \
+                                                                                                   \
+    inline HANDLE_TYPE HUMAN_NAME##_to_handle(OBJ_TYPE *object) { return (HANDLE_TYPE)object; }
+
+#define FOE_DEFINE_STATIC_HANDLE_CASTS(HUMAN_NAME, OBJ_TYPE, HANDLE_TYPE)                          \
+                                                                                                   \
+    static inline OBJ_TYPE *HUMAN_NAME##_from_handle(HANDLE_TYPE handle) {                         \
+        return (OBJ_TYPE *)handle;                                                                 \
+    }                                                                                              \
+                                                                                                   \
+    static inline HANDLE_TYPE HUMAN_NAME##_to_handle(OBJ_TYPE *object) {                           \
+        return (HANDLE_TYPE)object;                                                                \
+    }
+
 #endif
 
 #endif // FOE_HANDLE_H
