@@ -29,7 +29,12 @@ std::string groupValueToShortHexStr(foeIdGroupValue group) {
     return ss.str();
 }
 
-void renderImporterData(foeImporterBase *pImporter) { ImGui::Text("Name: %s", pImporter->name()); }
+void renderImporterData(foeImporterBase *pImporter) {
+    char const *pGroupName = "Failed to retrieve name";
+    pImporter->name(&pGroupName);
+
+    ImGui::Text("Name: %s", pGroupName);
+}
 
 void renderIndexData(foeEcsIndexes indexes, char const *subGroupName) {
     foeResult result;
@@ -192,7 +197,9 @@ void foeSimulationImGuiGroupData::customUI() {
                 }
 
                 ImGui::TableNextColumn();
-                if (ImGui::Selectable(pImporter->name(), mSelected == group)) {
+                char const *pGroupName = "?Unknown?";
+                foeResult result = pImporter->name(&pGroupName);
+                if (ImGui::Selectable(pGroupName, mSelected == group)) {
                     mSelected = group;
                 }
             }

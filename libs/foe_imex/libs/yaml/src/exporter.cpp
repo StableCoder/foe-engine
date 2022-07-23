@@ -139,7 +139,12 @@ foeResult exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
             // Write the group info to the output node
             YAML::Node node;
 
-            node["name"] = std::string{pGroup->name()};
+            char const *pGroupName;
+            foeResult result = pGroup->name(&pGroupName);
+            if (result.value != FOE_SUCCESS)
+                return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_DEPENDENCIES);
+
+            node["name"] = std::string{pGroupName};
             node["group_id"] = i;
 
             data.push_back(node);

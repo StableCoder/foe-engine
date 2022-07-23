@@ -246,7 +246,12 @@ foeResult importState(std::string_view topLevelDataSet,
             it->setGroupTranslator(std::move(newTranslator));
 
             // Add to GroupData
-            std::string name{it->name()};
+            char const *pGroupName;
+            foeResult result = it->name(&pGroupName);
+            if (result.value != FOE_SUCCESS) {
+                return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
+            }
+
             foeEcsIndexes newGroupEntityIndexes = FOE_NULL_HANDLE;
             foeEcsIndexes newGroupResourceIndexes = FOE_NULL_HANDLE;
 
@@ -263,7 +268,7 @@ foeResult importState(std::string_view topLevelDataSet,
             auto success = pSimulationSet->groupData.addDynamicGroup(
                 newGroupEntityIndexes, newGroupResourceIndexes, std::move(it));
             if (!success) {
-                FOE_LOG(General, Error, "Could not setup Group '{}'", name);
+                FOE_LOG(General, Error, "Could not setup Group '{}'", pGroupName);
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
             }
             ++groupValue;
@@ -285,14 +290,14 @@ foeResult importState(std::string_view topLevelDataSet,
     }
 
     // Persistent Indice Data
-    bool retVal = pSimulationSet->groupData.persistentImporter()->getGroupEntityIndexData(
+    result = pSimulationSet->groupData.persistentImporter()->getGroupEntityIndexData(
         pSimulationSet->groupData.persistentEntityIndexes());
-    if (!retVal)
+    if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
-    retVal = pSimulationSet->groupData.persistentImporter()->getGroupResourceIndexData(
+    result = pSimulationSet->groupData.persistentImporter()->getGroupResourceIndexData(
         pSimulationSet->groupData.persistentResourceIndexes());
-    if (!retVal)
+    if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
     // Read the Resource Editor Names
@@ -408,7 +413,10 @@ foeResult importState(std::string_view topLevelDataSet,
                     [](void *pContext, foeId id) {
                         CallContext *pCallContext = (CallContext *)pContext;
 
-                        foeResourceCreateInfo resourceCI = pCallContext->pImporter->getResource(id);
+                        foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
+                        foeResult result = pCallContext->pImporter->getResource(id, &resourceCI);
+                        if (result.value != FOE_SUCCESS)
+                            return;
 
                         if (foeIdGroupToValue(foeIdGetGroup(id)) == pCallContext->groupValue) {
                             foeResourceAddRecordEntry(pCallContext->records, id);
@@ -451,7 +459,10 @@ foeResult importState(std::string_view topLevelDataSet,
                 [](void *pContext, foeId id) {
                     CallContext *pCallContext = (CallContext *)pContext;
 
-                    foeResourceCreateInfo resourceCI = pCallContext->pImporter->getResource(id);
+                    foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
+                    foeResult result = pCallContext->pImporter->getResource(id, &resourceCI);
+                    if (result.value != FOE_SUCCESS)
+                        return;
 
                     if (foeIdGroupToValue(foeIdGetGroup(id)) == foeIdPersistentGroupValue) {
                         foeResourceAddRecordEntry(pCallContext->records, id);
@@ -471,17 +482,18 @@ foeResult importState(std::string_view topLevelDataSet,
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
         auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
         if (pGroupImporter != nullptr) {
-            if (!pGroupImporter->importStateData(pSimulationSet->entityNameMap,
-                                                 pSimulationSet.get())) {
-                return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER);
-            }
+            result = pGroupImporter->importStateData(pSimulationSet->entityNameMap,
+                                                     pSimulationSet.get());
+            if (result.value != FOE_SUCCESS)
+                return result;
         }
     }
 
     // Importing Persistent State Data
-    if (!pSimulationSet->groupData.persistentImporter()->importStateData(
-            pSimulationSet->entityNameMap, pSimulationSet.get()))
-        return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_COMPONENT_IMPORTER);
+    result = pSimulationSet->groupData.persistentImporter()->importStateData(
+        pSimulationSet->entityNameMap, pSimulationSet.get());
+    if (result.value != FOE_SUCCESS)
+        return result;
 
     // Successfully returning
     *ppSimulationSet = pSimulationSet.release();

@@ -27,8 +27,18 @@ TEST_CASE("foeImexYamlCreateImporter - Success Case") {
         REQUIRE(result.value == FOE_IMEX_YAML_SUCCESS);
         REQUIRE(pTestImporter != nullptr);
 
-        CHECK(pTestImporter->group() == 1);
-        CHECK(std::string_view{pTestImporter->name()} == "10-good-empty");
+        foeIdGroup groupID = FOE_INVALID_ID;
+        result = pTestImporter->group(&groupID);
+
+        CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
+        CHECK(groupID == 1);
+
+        char const *pGroupName = nullptr;
+        result = pTestImporter->name(&pGroupName);
+
+        CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
+        REQUIRE(pGroupName != nullptr);
+        CHECK(std::string_view{pGroupName} == "10-good-empty");
     }
 
     SECTION("Good layout/files, with valid content") {
@@ -38,8 +48,18 @@ TEST_CASE("foeImexYamlCreateImporter - Success Case") {
         CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
         CHECK(pTestImporter != nullptr);
 
-        CHECK(pTestImporter->group() == 2);
-        CHECK(std::string_view{pTestImporter->name()} == "11-good-content");
+        foeIdGroup groupID = FOE_INVALID_ID;
+        result = pTestImporter->group(&groupID);
+
+        CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
+        CHECK(groupID == 2);
+
+        char const *pGroupName = nullptr;
+        result = pTestImporter->name(&pGroupName);
+
+        CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
+        REQUIRE(pGroupName != nullptr);
+        CHECK(std::string_view{pGroupName} == "11-good-content");
     }
 
     delete pTestImporter;

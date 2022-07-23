@@ -25,25 +25,27 @@ class foeYamlImporter : public foeImporterBase {
     FOE_IMEX_YAML_EXPORT foeYamlImporter(foeIdGroup group, std::filesystem::path rootDir);
     FOE_IMEX_YAML_EXPORT ~foeYamlImporter();
 
-    FOE_IMEX_YAML_EXPORT foeIdGroup group() const noexcept override;
-    FOE_IMEX_YAML_EXPORT char const *name() const noexcept override;
-    FOE_IMEX_YAML_EXPORT void setGroupTranslator(foeEcsGroupTranslator groupTranslator) override;
+    FOE_IMEX_YAML_EXPORT foeResult group(foeIdGroup *pGroup) const noexcept override;
+    FOE_IMEX_YAML_EXPORT foeResult name(char const **ppGroupName) const noexcept override;
+    FOE_IMEX_YAML_EXPORT foeResult
+    setGroupTranslator(foeEcsGroupTranslator groupTranslator) override;
 
     FOE_IMEX_YAML_EXPORT foeResult getDependencies(uint32_t *pDependencyCount,
                                                    foeIdGroup *pDependencyGroups,
                                                    uint32_t *pNamesLength,
                                                    char *pNames) override;
-    FOE_IMEX_YAML_EXPORT bool getGroupEntityIndexData(foeEcsIndexes indexes) override;
-    FOE_IMEX_YAML_EXPORT bool getGroupResourceIndexData(foeEcsIndexes indexes) override;
-    FOE_IMEX_YAML_EXPORT bool importStateData(foeEcsNameMap nameMap,
-                                              foeSimulation const *pSimulation) override;
+    FOE_IMEX_YAML_EXPORT foeResult getGroupEntityIndexData(foeEcsIndexes indexes) override;
+    FOE_IMEX_YAML_EXPORT foeResult getGroupResourceIndexData(foeEcsIndexes indexes) override;
+    FOE_IMEX_YAML_EXPORT foeResult importStateData(foeEcsNameMap nameMap,
+                                                   foeSimulation const *pSimulation) override;
 
-    FOE_IMEX_YAML_EXPORT bool importResourceDefinitions(foeEcsNameMap nameMap,
-                                                        foeSimulation const *pSimulation) override;
+    FOE_IMEX_YAML_EXPORT foeResult
+    importResourceDefinitions(foeEcsNameMap nameMap, foeSimulation const *pSimulation) override;
     FOE_IMEX_YAML_EXPORT foeResult getResourceEditorName(foeIdIndex resourceIndexID,
                                                          uint32_t *pNameLength,
                                                          char *pName) override;
-    FOE_IMEX_YAML_EXPORT foeResourceCreateInfo getResource(foeId id) override;
+    FOE_IMEX_YAML_EXPORT foeResult getResource(foeId id,
+                                               foeResourceCreateInfo *pResourceCreateInfo) override;
 
     FOE_IMEX_YAML_EXPORT foeResult findExternalFile(char const *pExternalFilePath,
                                                     uint32_t *pPathLength,

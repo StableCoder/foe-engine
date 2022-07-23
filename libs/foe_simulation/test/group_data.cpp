@@ -20,9 +20,17 @@ class DummyImporter : public foeImporterBase {
     DummyImporter(std::string_view name, foeIdGroup group, void *resourceReturn = nullptr) :
         mName{name}, mGroup{group}, mResReturn{resourceReturn} {}
 
-    foeIdGroup group() const noexcept final { return mGroup; }
-    char const *name() const noexcept final { return mName.c_str(); }
-    void setGroupTranslator(foeEcsGroupTranslator groupTranslator) final {}
+    foeResult group(foeIdGroup *pGroupID) const noexcept final {
+        *pGroupID = mGroup;
+        return foeResult{};
+    }
+    foeResult name(char const **ppGroupName) const noexcept final {
+        *ppGroupName = mName.c_str();
+        return foeResult{};
+    }
+    foeResult setGroupTranslator(foeEcsGroupTranslator groupTranslator) final {
+        return foeResult{};
+    }
 
     foeResult getDependencies(uint32_t *pDependencyCount,
                               foeIdGroup *pDependencyGroups,
@@ -30,22 +38,23 @@ class DummyImporter : public foeImporterBase {
                               char *pNames) {
         return foeResult{};
     }
-    bool getGroupEntityIndexData(foeEcsIndexes indexes) final { return false; }
-    bool getGroupResourceIndexData(foeEcsIndexes indexes) final { return false; }
-    bool importStateData(foeEcsNameMap nameMap, foeSimulation const *pSimulation) final {
-        return false;
+    foeResult getGroupEntityIndexData(foeEcsIndexes indexes) final { return foeResult{}; }
+    foeResult getGroupResourceIndexData(foeEcsIndexes indexes) final { return foeResult{}; }
+    foeResult importStateData(foeEcsNameMap nameMap, foeSimulation const *pSimulation) final {
+        return foeResult{};
     }
 
-    bool importResourceDefinitions(foeEcsNameMap nameMap, foeSimulation const *pSimulation) {
-        return false;
+    foeResult importResourceDefinitions(foeEcsNameMap nameMap, foeSimulation const *pSimulation) {
+        return foeResult{};
     }
     foeResult getResourceEditorName(foeIdIndex resourceIndexID,
                                     uint32_t *pNameLength,
                                     char *pName) {
         return foeResult{.value = FOE_IMEX_SUCCESS};
     }
-    foeResourceCreateInfo getResource(foeId id) final {
-        return static_cast<foeResourceCreateInfo>(mResReturn);
+    foeResult getResource(foeId id, foeResourceCreateInfo *pCI) final {
+        *pCI = static_cast<foeResourceCreateInfo>(mResReturn);
+        return foeResult{};
     }
 
     foeResult findExternalFile(char const *pExternalFilePath,

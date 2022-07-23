@@ -46,16 +46,28 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
         return false;
     }
 
+    char const *pGroupName;
+    foeResult result = pImporter->name(&pGroupName);
+    if (result.value != FOE_SUCCESS) {
+        return false;
+    }
+
     // Check against blank name for the importer
-    if (std::string_view{pImporter->name()}.empty()) {
+    if (std::string_view{pGroupName}.empty()) {
         FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - Importer had a blank group name");
         return false;
     }
 
+    foeIdGroup groupID;
+    result = pImporter->group(&groupID);
+    if (result.value != FOE_SUCCESS) {
+        return false;
+    }
+
     // Check both have the same ID Group
-    if (foeEcsIndexesGetGroupID(entityIndexes) != pImporter->group() ||
-        foeEcsIndexesGetGroupID(resourceIndexes) != pImporter->group()) {
+    if (foeEcsIndexesGetGroupID(entityIndexes) != groupID ||
+        foeEcsIndexesGetGroupID(resourceIndexes) != groupID) {
         FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - ID Groups don't match between the indexes and "
                 "importer");
@@ -79,7 +91,8 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     }
 
     // Check against duplicate names
-    if (pImporter->name() == cPersistentName || pImporter->name() == cTemporaryName) {
+    if (strcmp(pGroupName, cPersistentName.data()) == 0 ||
+        strcmp(pGroupName, cTemporaryName.data()) == 0) {
         FOE_LOG(SimulationState, Error,
                 "foeGroupData::addDynamicGroup - Importer group name is a reserved name, either "
                 "'Persistent' or 'Temporary'");
@@ -87,7 +100,16 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     }
 
     for (auto const &it : mDynamicGroups) {
-        if (it.pImporter != nullptr && strcmp(it.pImporter->name(), pImporter->name()) == 0) {
+        if (it.pImporter == nullptr)
+            continue;
+
+        char const *pDynamicGroupName;
+        result = it.pImporter->name(&pDynamicGroupName);
+        if (result.value != FOE_SUCCESS) {
+            continue;
+        }
+
+        if (strcmp(pDynamicGroupName, pGroupName) == 0) {
             FOE_LOG(SimulationState, Error,
                     "foeGroupData::addDynamicGroup - Importer group name already exists");
             return false;
@@ -107,7 +129,10 @@ bool foeGroupData::setPersistentImporter(std::unique_ptr<foeImporterBase> &&pImp
         return false;
     }
 
-    if (pImporter->group() != foeIdPersistentGroup) {
+    foeIdGroup group;
+    foeResult result = pImporter->group(&group);
+
+    if (group != foeIdPersistentGroup) {
         FOE_LOG(
             SimulationState, Error,
             "foeGroupData::setPersistentImporter - Importer group given not foeIdPersistentGroup");
@@ -138,7 +163,16 @@ foeEcsIndexes foeGroupData::entityIndexes(std::string_view groupName) noexcept {
     }
 
     for (auto const &it : mDynamicGroups) {
-        if (it.pImporter != nullptr && it.pImporter->name() == groupName) {
+        if (it.pImporter == nullptr)
+            continue;
+
+        char const *pDynamicGroupName;
+        foeResult result = it.pImporter->name(&pDynamicGroupName);
+        if (result.value != FOE_SUCCESS) {
+            continue;
+        }
+
+        if (std::string_view{pDynamicGroupName} == groupName) {
             return it.entityIndexes;
         }
     }
@@ -166,7 +200,16 @@ foeEcsIndexes foeGroupData::resourceIndexes(std::string_view groupName) noexcept
     }
 
     for (auto const &it : mDynamicGroups) {
-        if (it.pImporter != nullptr && it.pImporter->name() == groupName) {
+        if (it.pImporter == nullptr)
+            continue;
+
+        char const *pDynamicGroupName;
+        foeResult result = it.pImporter->name(&pDynamicGroupName);
+        if (result.value != FOE_SUCCESS) {
+            continue;
+        }
+
+        if (std::string_view{pDynamicGroupName} == groupName) {
             return it.resourceIndexes;
         }
     }
@@ -187,15 +230,29 @@ auto foeGroupData::importer(foeIdGroup group) noexcept -> foeImporterBase * {
 }
 
 auto foeGroupData::importer(std::string_view groupName) noexcept -> foeImporterBase * {
-    if (groupName == cPersistentName ||
-        (mPersistentImporter != nullptr && mPersistentImporter->name() == groupName)) {
-        return persistentImporter();
-    } else if (groupName == cTemporaryName) {
+    char const *pGroupName;
+
+    if (groupName == cTemporaryName) {
         return nullptr;
+    } else if (groupName == cPersistentName) {
+        return persistentImporter();
+    } else if (mPersistentImporter != nullptr) {
+        foeResult result = mPersistentImporter->name(&pGroupName);
+        if (result.value == FOE_SUCCESS && std::string_view{pGroupName} == groupName) {
+            return persistentImporter();
+        }
     }
 
     for (auto const &it : mDynamicGroups) {
-        if (it.pImporter != nullptr && it.pImporter->name() == groupName) {
+        if (it.pImporter == nullptr)
+            continue;
+
+        foeResult result = it.pImporter->name(&pGroupName);
+        if (result.value != FOE_SUCCESS) {
+            continue;
+        }
+
+        if (std::string_view{pGroupName} == groupName) {
             return it.pImporter.get();
         }
     }
@@ -223,20 +280,24 @@ auto foeGroupData::temporaryResourceIndexes() noexcept -> foeEcsIndexes {
 
 foeResourceCreateInfo foeGroupData::getResourceDefinition(foeId id) {
     if (mPersistentImporter != nullptr) {
-        if (auto createInfo = mPersistentImporter->getResource(id); createInfo != FOE_NULL_HANDLE) {
+        foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
+        foeResult result = mPersistentImporter->getResource(id, &createInfo);
+        if (result.value == FOE_SUCCESS && createInfo != FOE_NULL_HANDLE) {
             return createInfo;
         }
     }
 
     for (auto it = mDynamicGroups.rbegin(); it != mDynamicGroups.rend(); ++it) {
         if (it->pImporter != nullptr) {
-            if (auto createInfo = it->pImporter->getResource(id)) {
+            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
+            foeResult result = it->pImporter->getResource(id, &createInfo);
+            if (result.value == FOE_SUCCESS && createInfo != FOE_NULL_HANDLE) {
                 return createInfo;
             }
         }
     }
 
-    return nullptr;
+    return FOE_NULL_HANDLE;
 }
 
 std::filesystem::path foeGroupData::findExternalFile(std::filesystem::path externalFilePath) {

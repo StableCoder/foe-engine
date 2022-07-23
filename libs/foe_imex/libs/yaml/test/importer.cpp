@@ -32,8 +32,18 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     REQUIRE(result.value == FOE_IMEX_YAML_SUCCESS);
     REQUIRE(pTestImporter != nullptr);
 
-    CHECK(pTestImporter->group() == 2);
-    CHECK(std::string_view{pTestImporter->name()} == "11-good-content");
+    foeIdGroup groupID = FOE_INVALID_ID;
+    result = pTestImporter->group(&groupID);
+
+    CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
+    CHECK(groupID == 2);
+
+    char const *pGroupName = nullptr;
+    result = pTestImporter->name(&pGroupName);
+
+    CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
+    REQUIRE(pGroupName != nullptr);
+    CHECK(std::string_view{pGroupName} == "11-good-content");
 
     SECTION("Dependencies (getDependencies)") {
         uint32_t dependenciesCount;
@@ -191,17 +201,17 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         REQUIRE(pTestSimulation != nullptr);
 
         SECTION("With the importer plugin data not registered, the import fails") {
-            bool imported =
+            result =
                 pTestImporter->importStateData(pTestSimulation->entityNameMap, pTestSimulation);
-            CHECK_FALSE(imported);
+            CHECK(result.value == FOE_IMEX_YAML_ERROR_FAILED_TO_FIND_COMPONENT_IMPORTER);
         }
 
         SECTION("With the importer plugin data registered, the import succeeds") {
             REQUIRE(registerTestImporterContent());
 
-            bool imported =
+            result =
                 pTestImporter->importStateData(pTestSimulation->entityNameMap, pTestSimulation);
-            CHECK(imported);
+            CHECK(result.value == FOE_SUCCESS);
 
             foeId id;
             CHECK(foeEcsNameMapFindID(pTestSimulation->entityNameMap, "Entity-0x2", &id).value ==

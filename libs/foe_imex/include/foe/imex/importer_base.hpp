@@ -18,24 +18,25 @@ class foeImporterBase {
   public:
     virtual ~foeImporterBase() = default;
 
-    virtual foeIdGroup group() const noexcept = 0;
-    virtual char const *name() const noexcept = 0;
-    virtual void setGroupTranslator(foeEcsGroupTranslator groupTranslator) = 0;
+    virtual foeResult group(foeIdGroup *pGroup) const noexcept = 0;
+    virtual foeResult name(char const **ppGroupName) const noexcept = 0;
+    virtual foeResult setGroupTranslator(foeEcsGroupTranslator groupTranslator) = 0;
 
     virtual foeResult getDependencies(uint32_t *pDependencyCount,
                                       foeIdGroup *pDependencyGroups,
                                       uint32_t *pNamesLength,
                                       char *pNames) = 0;
-    virtual bool getGroupEntityIndexData(foeEcsIndexes indexes) = 0;
-    virtual bool getGroupResourceIndexData(foeEcsIndexes indexes) = 0;
-    virtual bool importStateData(foeEcsNameMap entityNameMap, foeSimulation const *pSimulation) = 0;
+    virtual foeResult getGroupEntityIndexData(foeEcsIndexes indexes) = 0;
+    virtual foeResult getGroupResourceIndexData(foeEcsIndexes indexes) = 0;
+    virtual foeResult importStateData(foeEcsNameMap entityNameMap,
+                                      foeSimulation const *pSimulation) = 0;
 
-    virtual bool importResourceDefinitions(foeEcsNameMap nameMap,
-                                           foeSimulation const *pSimulation) = 0;
+    virtual foeResult importResourceDefinitions(foeEcsNameMap nameMap,
+                                                foeSimulation const *pSimulation) = 0;
     virtual foeResult getResourceEditorName(foeResourceID resourceID,
                                             uint32_t *pNameLength,
                                             char *pName) = 0;
-    virtual foeResourceCreateInfo getResource(foeId id) = 0;
+    virtual foeResult getResource(foeId id, foeResourceCreateInfo *pResourceCreateInfo) = 0;
 
     virtual foeResult findExternalFile(char const *pExternalFilePath,
                                        uint32_t *pPathLength,
