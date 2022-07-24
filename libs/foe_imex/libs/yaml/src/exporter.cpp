@@ -9,7 +9,7 @@
 #include <foe/ecs/name_map.h>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/indexes.hpp>
-#include <foe/imex/importers.hpp>
+#include <foe/imex/importer.h>
 #include <foe/simulation/simulation.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
@@ -131,16 +131,15 @@ foeResult exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
         for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
             foeIdGroup groupID = foeIdValueToGroup(i);
 
-            foeImporterBase const *pGroup = pSimState->groupData.importer(groupID);
-            if (pGroup == nullptr) {
+            foeImexImporter group = pSimState->groupData.importer(groupID);
+            if (group == FOE_NULL_HANDLE)
                 continue;
-            }
 
             // Write the group info to the output node
             YAML::Node node;
 
             char const *pGroupName;
-            foeResult result = pGroup->name(&pGroupName);
+            foeResult result = foeImexImporterGetGroupName(group, &pGroupName);
             if (result.value != FOE_SUCCESS)
                 return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_DEPENDENCIES);
 

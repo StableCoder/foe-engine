@@ -10,7 +10,7 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
-#include <foe/imex/importers.hpp>
+#include <foe/imex/importer.h>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>

@@ -11,7 +11,6 @@
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/simulation/simulation.hpp>
 
-#include "../src/importer_registration.hpp"
 #include "test_common.hpp"
 
 #include <cstring>
@@ -25,21 +24,21 @@ static_assert(TEST_DATA_DIR != nullptr, "TEST_DATA_DIR must be added as a compil
 TEST_CASE("foeYamlImporter - Function Tests") {
     std::filesystem::path testPath{TEST_DATA_DIR};
     testPath /= "11-good-content";
-    foeImporterBase *pTestImporter{nullptr};
+    foeImexImporter testImporter{FOE_NULL_HANDLE};
 
-    foeResult result = foeImexYamlCreateImporter(2, testPath.string().c_str(), &pTestImporter);
+    foeResult result = foeCreateYamlImporter(2, testPath.string().c_str(), &testImporter);
 
     REQUIRE(result.value == FOE_IMEX_YAML_SUCCESS);
-    REQUIRE(pTestImporter != nullptr);
+    REQUIRE(testImporter != FOE_NULL_HANDLE);
 
     foeIdGroup groupID = FOE_INVALID_ID;
-    result = pTestImporter->group(&groupID);
+    result = foeImexImporterGetGroupID(testImporter, &groupID);
 
     CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
     CHECK(groupID == 2);
 
     char const *pGroupName = nullptr;
-    result = pTestImporter->name(&pGroupName);
+    result = foeImexImporterGetGroupName(testImporter, &pGroupName);
 
     CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
     REQUIRE(pGroupName != nullptr);
@@ -49,7 +48,8 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         uint32_t dependenciesCount;
         uint32_t namesLength;
 
-        REQUIRE(pTestImporter->getDependencies(&dependenciesCount, nullptr, &namesLength, nullptr)
+        REQUIRE(foeImexImporterGetDependencies(testImporter, &dependenciesCount, nullptr,
+                                               &namesLength, nullptr)
                     .value == FOE_IMEX_YAML_SUCCESS);
         REQUIRE(dependenciesCount == 2);
         REQUIRE(namesLength == 14);
@@ -58,10 +58,9 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             std::array<foeIdGroup, 2> groups;
             std::array<char, 14> names;
 
-            REQUIRE(
-                pTestImporter
-                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
-                    .value == FOE_IMEX_YAML_SUCCESS);
+            REQUIRE(foeImexImporterGetDependencies(testImporter, &dependenciesCount, groups.data(),
+                                                   &namesLength, names.data())
+                        .value == FOE_IMEX_YAML_SUCCESS);
             REQUIRE(dependenciesCount == 2);
             REQUIRE(namesLength == 14);
 
@@ -77,10 +76,9 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             std::array<char, 24> names;
             namesLength = 24;
 
-            REQUIRE(
-                pTestImporter
-                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
-                    .value == FOE_IMEX_YAML_SUCCESS);
+            REQUIRE(foeImexImporterGetDependencies(testImporter, &dependenciesCount, groups.data(),
+                                                   &namesLength, names.data())
+                        .value == FOE_IMEX_YAML_SUCCESS);
             REQUIRE(dependenciesCount == 2);
             REQUIRE(namesLength == 14);
 
@@ -95,10 +93,9 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             dependenciesCount = 1;
             std::array<char, 14> names;
 
-            REQUIRE(
-                pTestImporter
-                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
-                    .value == FOE_IMEX_YAML_INCOMPLETE);
+            REQUIRE(foeImexImporterGetDependencies(testImporter, &dependenciesCount, groups.data(),
+                                                   &namesLength, names.data())
+                        .value == FOE_IMEX_YAML_INCOMPLETE);
             REQUIRE(dependenciesCount == 1);
             REQUIRE(namesLength == 14);
 
@@ -110,10 +107,9 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             std::array<char, 10> names;
             namesLength = 10;
 
-            REQUIRE(
-                pTestImporter
-                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
-                    .value == FOE_IMEX_YAML_INCOMPLETE);
+            REQUIRE(foeImexImporterGetDependencies(testImporter, &dependenciesCount, groups.data(),
+                                                   &namesLength, names.data())
+                        .value == FOE_IMEX_YAML_INCOMPLETE);
             REQUIRE(dependenciesCount == 2);
             REQUIRE(namesLength == 10);
 
@@ -128,10 +124,9 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             std::array<char, 0> names;
             namesLength = 0;
 
-            REQUIRE(
-                pTestImporter
-                    ->getDependencies(&dependenciesCount, groups.data(), &namesLength, names.data())
-                    .value == FOE_IMEX_YAML_INCOMPLETE);
+            REQUIRE(foeImexImporterGetDependencies(testImporter, &dependenciesCount, groups.data(),
+                                                   &namesLength, names.data())
+                        .value == FOE_IMEX_YAML_INCOMPLETE);
             REQUIRE(dependenciesCount == 2);
             REQUIRE(namesLength == 0);
 
@@ -139,13 +134,13 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         }
     }
 
-    SECTION("Resource Index Data (getGroupResourceIndexData)") {
+    SECTION("Resource Index Data (foeImexImporterGetGroupResourceIndexData)") {
         foeEcsIndexes indexes{FOE_NULL_HANDLE};
 
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0), &indexes).value == FOE_ECS_SUCCESS);
         CHECK(indexes != FOE_NULL_HANDLE);
 
-        pTestImporter->getGroupResourceIndexData(indexes);
+        foeImexImporterGetGroupResourceIndexData(testImporter, indexes);
 
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycled;
@@ -166,13 +161,13 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         foeEcsDestroyIndexes(indexes);
     }
 
-    SECTION("Entity Index Data (getGroupEntityIndexData)") {
+    SECTION("Entity Index Data (foeImexImporterGetGroupEntityIndexData)") {
         foeEcsIndexes indexes{FOE_NULL_HANDLE};
 
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0), &indexes).value == FOE_ECS_SUCCESS);
         CHECK(indexes != FOE_NULL_HANDLE);
 
-        pTestImporter->getGroupEntityIndexData(indexes);
+        foeImexImporterGetGroupEntityIndexData(testImporter, indexes);
 
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycled;
@@ -193,7 +188,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         foeEcsDestroyIndexes(indexes);
     }
 
-    SECTION("Entity State Data (importStateData)") {
+    SECTION("Entity State Data (foeImexImporterGetStateData)") {
         foeSimulation *pTestSimulation{nullptr};
 
         foeResult result = foeCreateSimulation(true, &pTestSimulation);
@@ -201,16 +196,16 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         REQUIRE(pTestSimulation != nullptr);
 
         SECTION("With the importer plugin data not registered, the import fails") {
-            result =
-                pTestImporter->importStateData(pTestSimulation->entityNameMap, pTestSimulation);
+            result = foeImexImporterGetStateData(testImporter, pTestSimulation->entityNameMap,
+                                                 pTestSimulation);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_FAILED_TO_FIND_COMPONENT_IMPORTER);
         }
 
         SECTION("With the importer plugin data registered, the import succeeds") {
             REQUIRE(registerTestImporterContent());
 
-            result =
-                pTestImporter->importStateData(pTestSimulation->entityNameMap, pTestSimulation);
+            result = foeImexImporterGetStateData(testImporter, pTestSimulation->entityNameMap,
+                                                 pTestSimulation);
             CHECK(result.value == FOE_SUCCESS);
 
             foeId id;
@@ -232,30 +227,32 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         foeDestroySimulation(pTestSimulation);
     }
 
-    SECTION("Finding external data file (findExternalFile)") {
+    SECTION("Finding external data file (foeImexImporterFindExternalFile)") {
         uint32_t pathLength = UINT32_MAX;
         foeResult result;
 
         SECTION("Existing file") {
-            result = pTestImporter->findExternalFile("findable_external_file", &pathLength, NULL);
+            result = foeImexImporterFindExternalFile(testImporter, "findable_external_file",
+                                                     &pathLength, NULL);
             CHECK(result.value == FOE_IMEX_SUCCESS);
             CHECK(pathLength != UINT32_MAX);
 
             std::string path;
             path.resize(pathLength);
-            result =
-                pTestImporter->findExternalFile("findable_external_file", &pathLength, path.data());
+            result = foeImexImporterFindExternalFile(testImporter, "findable_external_file",
+                                                     &pathLength, path.data());
             CHECK(result.value == FOE_IMEX_SUCCESS);
             CHECK(pathLength == path.size());
             CHECK(path.find("findable_external_file") != std::string::npos);
         }
 
         SECTION("Non-existing file") {
-            result = pTestImporter->findExternalFile("non-existing-file", &pathLength, NULL);
-            CHECK(result.value == FOE_IMEX_FILE_NOT_FOUND);
+            result = foeImexImporterFindExternalFile(testImporter, "non-existing-file", &pathLength,
+                                                     NULL);
+            CHECK(result.value != FOE_SUCCESS);
             CHECK(pathLength == UINT32_MAX);
         }
     }
 
-    delete pTestImporter;
+    foeDestroyImporter(testImporter);
 }

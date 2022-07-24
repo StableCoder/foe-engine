@@ -7,7 +7,7 @@
 #include <foe/delimited_string.h>
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/name_map.h>
-#include <foe/imex/importers.hpp>
+#include <foe/imex/importer.h>
 #include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
 
@@ -16,16 +16,16 @@
 
 namespace {
 
-std::unique_ptr<foeImporterBase> searchAndCreateImporter(std::string_view dataSetName,
-                                                         foeIdGroup group,
-                                                         foeSearchPaths &searchPaths) {
+foeImexImporter searchAndCreateImporter(std::string_view dataSetName,
+                                        foeIdGroup group,
+                                        foeSearchPaths &searchPaths) {
     auto pathReader = searchPaths.getReader();
 
     for (auto searchPath : *pathReader.searchPaths()) {
         if (std::filesystem::exists(searchPath / dataSetName)) {
-            std::unique_ptr<foeImporterBase> importer{createImporter(
-                group, std::filesystem::path{searchPath / dataSetName}.string().c_str())};
-            if (importer != nullptr) {
+            foeImexImporter importer = createImporter(
+                group, std::filesystem::path{searchPath / dataSetName}.string().c_str());
+            if (importer != FOE_NULL_HANDLE) {
                 return importer;
             }
         }
@@ -34,33 +34,32 @@ std::unique_ptr<foeImporterBase> searchAndCreateImporter(std::string_view dataSe
             auto path = dirIt.path();
 
             if (path.stem() == dataSetName) {
-                std::unique_ptr<foeImporterBase> importer{
-                    createImporter(group, path.string().c_str())};
-                if (importer != nullptr) {
+                foeImexImporter importer = createImporter(group, path.string().c_str());
+                if (importer != FOE_NULL_HANDLE) {
                     return importer;
                 }
             }
         }
     }
 
-    return nullptr;
+    return FOE_NULL_HANDLE;
 }
 
 bool generateDependencyImporters(uint32_t dependencyCount,
                                  char const **ppDependencyNames,
                                  foeIdGroup *pDependencyGroups,
                                  foeSearchPaths *pSearchPaths,
-                                 std::vector<std::unique_ptr<foeImporterBase>> &importers) {
-    std::vector<std::unique_ptr<foeImporterBase>> newImporters;
+                                 std::vector<foeImexImporter> &importers) {
+    std::vector<foeImexImporter> newImporters;
 
     auto pathReader = pSearchPaths->getReader();
 
     for (uint32_t i = 0; i < dependencyCount; ++i) {
-        auto pImporter =
+        foeImexImporter importer =
             searchAndCreateImporter(ppDependencyNames[i], pDependencyGroups[i], *pSearchPaths);
 
-        if (pImporter != nullptr) {
-            newImporters.emplace_back(std::move(pImporter));
+        if (importer != FOE_NULL_HANDLE) {
+            newImporters.emplace_back(importer);
         } else {
             FOE_LOG(General, Error, "Failed to find dataset and/or importer for dependency: {}",
                     ppDependencyNames[i])
@@ -86,14 +85,14 @@ foeResult importState(std::string_view topLevelDataSet,
         pTempSimSet, [](foeSimulation *ptr) { foeDestroySimulation(ptr); }};
 
     // Find the to-level data set, initially as if the full path were given
-    std::unique_ptr<foeImporterBase> persistentImporter{
-        createImporter(foeIdPersistentGroup, std::string{topLevelDataSet}.c_str())};
+    foeImexImporter persistentImporter =
+        createImporter(foeIdPersistentGroup, std::string{topLevelDataSet}.c_str());
 
     // If not found, try search paths
-    if (persistentImporter == nullptr) {
+    if (persistentImporter == FOE_NULL_HANDLE) {
         persistentImporter =
             searchAndCreateImporter(topLevelDataSet, foeIdPersistentGroup, *pSearchPaths);
-        if (persistentImporter == nullptr) {
+        if (persistentImporter == FOE_NULL_HANDLE) {
             FOE_LOG(General, Error,
                     "Could not find dataset and/or importer for top-level data set: {}",
                     topLevelDataSet)
@@ -108,14 +107,16 @@ foeResult importState(std::string_view topLevelDataSet,
     std::vector<char const *> dependencyNames;
     std::vector<char> nameArray;
 
-    result = persistentImporter->getDependencies(&dependencyCount, nullptr, &namesLength, nullptr);
+    result = foeImexImporterGetDependencies(persistentImporter, &dependencyCount, nullptr,
+                                            &namesLength, nullptr);
     if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES);
 
     dependencyGroups.resize(dependencyCount);
     nameArray.resize(namesLength);
-    result = persistentImporter->getDependencies(&dependencyCount, dependencyGroups.data(),
-                                                 &namesLength, nameArray.data());
+    result =
+        foeImexImporterGetDependencies(persistentImporter, &dependencyCount,
+                                       dependencyGroups.data(), &namesLength, nameArray.data());
     if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_DEPENDENCIES);
 
@@ -136,7 +137,7 @@ foeResult importState(std::string_view topLevelDataSet,
     }
 
     // Generate importers for all of the dependencies
-    std::vector<std::unique_ptr<foeImporterBase>> dependencyImporters;
+    std::vector<foeImexImporter> dependencyImporters;
     bool pass =
         generateDependencyImporters(dependencyNames.size(), dependencyNames.data(),
                                     dependencyGroups.data(), pSearchPaths, dependencyImporters);
@@ -144,13 +145,13 @@ foeResult importState(std::string_view topLevelDataSet,
         return to_foeResult(FOE_STATE_IMPORT_ERROR_NO_IMPORTER);
 
     { // Check transitive dependencies
-        auto pImporter = dependencyImporters.begin();
-        for (uint32_t i = 0; i < dependencyCount; ++i, ++pImporter) {
+        auto importerIt = dependencyImporters.begin();
+        for (uint32_t i = 0; i < dependencyCount; ++i, ++importerIt) {
             uint32_t transitiveCount;
             uint32_t transitiveStringLength;
 
-            result = pImporter->get()->getDependencies(&transitiveCount, nullptr,
-                                                       &transitiveStringLength, nullptr);
+            result = foeImexImporterGetDependencies(*importerIt, &transitiveCount, nullptr,
+                                                    &transitiveStringLength, nullptr);
             if (result.value != FOE_SUCCESS)
                 std::abort();
 
@@ -161,9 +162,9 @@ foeResult importState(std::string_view topLevelDataSet,
             transitiveGroups.resize(transitiveCount);
             transitiveNameArray.resize(transitiveStringLength);
 
-            result = pImporter->get()->getDependencies(&transitiveCount, transitiveGroups.data(),
-                                                       &transitiveStringLength,
-                                                       transitiveNameArray.data());
+            result = foeImexImporterGetDependencies(
+                *importerIt, &transitiveCount, transitiveGroups.data(), &transitiveStringLength,
+                transitiveNameArray.data());
             if (result.value != FOE_SUCCESS) {
                 FOE_LOG(General, Error, "Failed to import sub-dependencies of the '{}' dependency",
                         dependencyNames[i])
@@ -205,8 +206,8 @@ foeResult importState(std::string_view topLevelDataSet,
             // Setup importer translations
             uint32_t srcDependencyCount;
             uint32_t srcNameArrayLength;
-            result =
-                it->getDependencies(&srcDependencyCount, nullptr, &srcNameArrayLength, nullptr);
+            result = foeImexImporterGetDependencies(it, &srcDependencyCount, nullptr,
+                                                    &srcNameArrayLength, nullptr);
             if (result.value != FOE_SUCCESS)
                 std::abort();
 
@@ -216,8 +217,8 @@ foeResult importState(std::string_view topLevelDataSet,
             srcGroups.resize(srcDependencyCount);
             srcNameArray.resize(srcNameArrayLength);
 
-            result = it->getDependencies(&srcDependencyCount, srcGroups.data(), &srcNameArrayLength,
-                                         srcNameArray.data());
+            result = foeImexImporterGetDependencies(it, &srcDependencyCount, srcGroups.data(),
+                                                    &srcNameArrayLength, srcNameArray.data());
             if (result.value != FOE_SUCCESS)
                 std::abort();
 
@@ -243,11 +244,11 @@ foeResult importState(std::string_view topLevelDataSet,
                 return result;
             }
 
-            it->setGroupTranslator(std::move(newTranslator));
+            foeImexImporterSetGroupTranslator(it, newTranslator);
 
             // Add to GroupData
             char const *pGroupName;
-            foeResult result = it->name(&pGroupName);
+            foeResult result = foeImexImporterGetGroupName(it, &pGroupName);
             if (result.value != FOE_SUCCESS) {
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
             }
@@ -265,8 +266,8 @@ foeResult importState(std::string_view topLevelDataSet,
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
             }
 
-            auto success = pSimulationSet->groupData.addDynamicGroup(
-                newGroupEntityIndexes, newGroupResourceIndexes, std::move(it));
+            auto success = pSimulationSet->groupData.addDynamicGroup(newGroupEntityIndexes,
+                                                                     newGroupResourceIndexes, it);
             if (!success) {
                 FOE_LOG(General, Error, "Could not setup Group '{}'", pGroupName);
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
@@ -274,28 +275,33 @@ foeResult importState(std::string_view topLevelDataSet,
             ++groupValue;
         }
 
-        pSimulationSet->groupData.setPersistentImporter(std::move(persistentImporter));
+        pSimulationSet->groupData.setPersistentImporter(persistentImporter);
     }
 
     // Dependency Indice Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-        auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
-        if (pGroupImporter != nullptr) {
-            pGroupImporter->getGroupResourceIndexData(
-                pSimulationSet->groupData.resourceIndexes(foeIdValueToGroup(groupValue)));
+        foeImexImporter groupImporter =
+            pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
+        if (groupImporter == FOE_NULL_HANDLE)
+            continue;
 
-            pGroupImporter->getGroupEntityIndexData(
-                pSimulationSet->groupData.entityIndexes(foeIdValueToGroup(groupValue)));
-        }
+        foeImexImporterGetGroupResourceIndexData(
+            groupImporter,
+            pSimulationSet->groupData.resourceIndexes(foeIdValueToGroup(groupValue)));
+
+        foeImexImporterGetGroupEntityIndexData(
+            groupImporter, pSimulationSet->groupData.entityIndexes(foeIdValueToGroup(groupValue)));
     }
 
     // Persistent Indice Data
-    result = pSimulationSet->groupData.persistentImporter()->getGroupEntityIndexData(
-        pSimulationSet->groupData.persistentEntityIndexes());
+    result =
+        foeImexImporterGetGroupEntityIndexData(pSimulationSet->groupData.persistentImporter(),
+                                               pSimulationSet->groupData.persistentEntityIndexes());
     if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
 
-    result = pSimulationSet->groupData.persistentImporter()->getGroupResourceIndexData(
+    result = foeImexImporterGetGroupResourceIndexData(
+        pSimulationSet->groupData.persistentImporter(),
         pSimulationSet->groupData.persistentResourceIndexes());
     if (result.value != FOE_SUCCESS)
         return to_foeResult(FOE_STATE_IMPORT_ERROR_IMPORTING_INDEX_DATA);
@@ -304,17 +310,17 @@ foeResult importState(std::string_view topLevelDataSet,
     if (pSimulationSet->resourceNameMap != FOE_NULL_HANDLE) {
         // Dependent Groups
         for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-            foeImporterBase *pGroupImporter =
+            foeImexImporter groupImporter =
                 pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
-            if (pGroupImporter == nullptr)
+            if (groupImporter == FOE_NULL_HANDLE)
                 continue;
 
             struct CallContext {
-                foeImporterBase *pImporter;
+                foeImexImporter importer;
                 foeEcsNameMap nameMap;
             };
             CallContext callContext = {
-                .pImporter = pGroupImporter,
+                .importer = groupImporter,
                 .nameMap = pSimulationSet->resourceNameMap,
             };
 
@@ -325,14 +331,15 @@ foeResult importState(std::string_view topLevelDataSet,
                     CallContext *pCallContext = (CallContext *)pContext;
 
                     uint32_t nameLength;
-                    foeResult result = pCallContext->pImporter->getResourceEditorName(
-                        foeIdGetIndex(id), &nameLength, NULL);
+                    foeResult result = foeImexImporterGetResourceEditorName(
+                        pCallContext->importer, foeIdGetIndex(id), &nameLength, NULL);
                     if (result.value == FOE_SUCCESS) {
                         std::string editorName;
                         do {
                             editorName.resize(nameLength);
-                            result = pCallContext->pImporter->getResourceEditorName(
-                                foeIdGetIndex(id), &nameLength, editorName.data());
+                            result = foeImexImporterGetResourceEditorName(
+                                pCallContext->importer, foeIdGetIndex(id), &nameLength,
+                                editorName.data());
                         } while (result.value != FOE_SUCCESS);
 
                         foeEcsNameMapAdd(pCallContext->nameMap, id, editorName.c_str());
@@ -342,18 +349,18 @@ foeResult importState(std::string_view topLevelDataSet,
         }
 
         // Persistent Group
-        auto *pGroupImporter = pSimulationSet->groupData.persistentImporter();
+        foeImexImporter groupImporter = pSimulationSet->groupData.persistentImporter();
 
         // Go through all the indexes for the group, set any available editor names
         foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycledIndexes;
 
         struct CallContext {
-            foeImporterBase *pImporter;
+            foeImexImporter importer;
             foeEcsNameMap nameMap;
         };
         CallContext callContext = {
-            .pImporter = pGroupImporter,
+            .importer = groupImporter,
             .nameMap = pSimulationSet->resourceNameMap,
         };
 
@@ -363,14 +370,15 @@ foeResult importState(std::string_view topLevelDataSet,
                 CallContext *pCallContext = (CallContext *)pContext;
 
                 uint32_t nameLength;
-                foeResult result = pCallContext->pImporter->getResourceEditorName(
-                    foeIdGetIndex(id), &nameLength, NULL);
+                foeResult result = foeImexImporterGetResourceEditorName(
+                    pCallContext->importer, foeIdGetIndex(id), &nameLength, NULL);
                 if (result.value == FOE_SUCCESS) {
                     std::string editorName;
                     do {
                         editorName.resize(nameLength);
-                        result = pCallContext->pImporter->getResourceEditorName(
-                            foeIdGetIndex(id), &nameLength, editorName.data());
+                        result = foeImexImporterGetResourceEditorName(
+                            pCallContext->importer, foeIdGetIndex(id), &nameLength,
+                            editorName.data());
                     } while (result.value != FOE_SUCCESS);
 
                     foeEcsNameMapAdd(pCallContext->nameMap, id, editorName.c_str());
@@ -383,9 +391,9 @@ foeResult importState(std::string_view topLevelDataSet,
     {
         // Dynamic Groups
         for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-            auto *pGroupImporter =
+            foeImexImporter groupImporter =
                 pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
-            if (pGroupImporter == nullptr)
+            if (groupImporter == FOE_NULL_HANDLE)
                 continue;
 
             // Go through all GroupIDs upto this group, and import any resource data for all of it
@@ -397,12 +405,12 @@ foeResult importState(std::string_view topLevelDataSet,
                     continue;
 
                 struct CallContext {
-                    foeImporterBase *pImporter;
+                    foeImexImporter importer;
                     foeResourceRecords records;
                     foeIdGroupValue groupValue;
                 };
                 CallContext callContext = {
-                    .pImporter = pGroupImporter,
+                    .importer = groupImporter,
                     .records = pSimulationSet->resourceRecords,
                     .groupValue = groupValue,
                 };
@@ -414,7 +422,8 @@ foeResult importState(std::string_view topLevelDataSet,
                         CallContext *pCallContext = (CallContext *)pContext;
 
                         foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
-                        foeResult result = pCallContext->pImporter->getResource(id, &resourceCI);
+                        foeResult result = foeImexImporterGetResourceCreateInfo(
+                            pCallContext->importer, id, &resourceCI);
                         if (result.value != FOE_SUCCESS)
                             return;
 
@@ -433,7 +442,7 @@ foeResult importState(std::string_view topLevelDataSet,
         }
 
         // Persistent Group
-        auto *pGroupImporter = pSimulationSet->groupData.persistentImporter();
+        foeImexImporter persistentImporter = pSimulationSet->groupData.persistentImporter();
 
         // Go through all GroupIDs upto this group, and import any resource data for all of it
         for (foeIdGroupValue resourceGroupValue = 0;
@@ -444,11 +453,11 @@ foeResult importState(std::string_view topLevelDataSet,
                 continue;
 
             struct CallContext {
-                foeImporterBase *pImporter;
+                foeImexImporter importer;
                 foeResourceRecords records;
             };
             CallContext callContext = {
-                .pImporter = pGroupImporter,
+                .importer = persistentImporter,
                 .records = pSimulationSet->resourceRecords,
             };
 
@@ -460,7 +469,8 @@ foeResult importState(std::string_view topLevelDataSet,
                     CallContext *pCallContext = (CallContext *)pContext;
 
                     foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
-                    foeResult result = pCallContext->pImporter->getResource(id, &resourceCI);
+                    foeResult result = foeImexImporterGetResourceCreateInfo(pCallContext->importer,
+                                                                            id, &resourceCI);
                     if (result.value != FOE_SUCCESS)
                         return;
 
@@ -480,18 +490,20 @@ foeResult importState(std::string_view topLevelDataSet,
 
     // Importing Dependency State Data
     for (foeIdGroup groupValue = 0; groupValue < foeIdNumDynamicGroups; ++groupValue) {
-        auto *pGroupImporter = pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
-        if (pGroupImporter != nullptr) {
-            result = pGroupImporter->importStateData(pSimulationSet->entityNameMap,
-                                                     pSimulationSet.get());
-            if (result.value != FOE_SUCCESS)
-                return result;
-        }
+        foeImexImporter groupImporter =
+            pSimulationSet->groupData.importer(foeIdValueToGroup(groupValue));
+        if (groupImporter == FOE_NULL_HANDLE)
+            continue;
+
+        result = foeImexImporterGetStateData(groupImporter, pSimulationSet->entityNameMap,
+                                             pSimulationSet.get());
+        if (result.value != FOE_SUCCESS)
+            return result;
     }
 
     // Importing Persistent State Data
-    result = pSimulationSet->groupData.persistentImporter()->importStateData(
-        pSimulationSet->entityNameMap, pSimulationSet.get());
+    result = foeImexImporterGetStateData(pSimulationSet->groupData.persistentImporter(),
+                                         pSimulationSet->entityNameMap, pSimulationSet.get());
     if (result.value != FOE_SUCCESS)
         return result;
 

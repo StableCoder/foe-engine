@@ -6,73 +6,54 @@
 #include <foe/ecs/error_code.h>
 #include <foe/ecs/id.h>
 #include <foe/imex/error_code.h>
+#include <foe/imex/type_defs.h>
 #include <foe/simulation/group_data.hpp>
 
 #include <filesystem>
 #include <string>
 
-static_assert(FOE_SIMULATION_TEST_DATA_DIR != NULL,
-              "FOE_SIMULATION_TEST_DATA_DIR cannot be left undefined, check that it is defined in "
-              "CMake script!");
+namespace {
 
-class DummyImporter : public foeImporterBase {
-  public:
-    DummyImporter(std::string_view name, foeIdGroup group, void *resourceReturn = nullptr) :
-        mName{name}, mGroup{group}, mResReturn{resourceReturn} {}
+struct DummyImporterData {
+    foeStructureType sType;
+    void *pNext;
 
-    foeResult group(foeIdGroup *pGroupID) const noexcept final {
-        *pGroupID = mGroup;
-        return foeResult{};
-    }
-    foeResult name(char const **ppGroupName) const noexcept final {
-        *ppGroupName = mName.c_str();
-        return foeResult{};
-    }
-    foeResult setGroupTranslator(foeEcsGroupTranslator groupTranslator) final {
-        return foeResult{};
-    }
-
-    foeResult getDependencies(uint32_t *pDependencyCount,
-                              foeIdGroup *pDependencyGroups,
-                              uint32_t *pNamesLength,
-                              char *pNames) {
-        return foeResult{};
-    }
-    foeResult getGroupEntityIndexData(foeEcsIndexes indexes) final { return foeResult{}; }
-    foeResult getGroupResourceIndexData(foeEcsIndexes indexes) final { return foeResult{}; }
-    foeResult importStateData(foeEcsNameMap nameMap, foeSimulation const *pSimulation) final {
-        return foeResult{};
-    }
-
-    foeResult importResourceDefinitions(foeEcsNameMap nameMap, foeSimulation const *pSimulation) {
-        return foeResult{};
-    }
-    foeResult getResourceEditorName(foeIdIndex resourceIndexID,
-                                    uint32_t *pNameLength,
-                                    char *pName) {
-        return foeResult{.value = FOE_IMEX_SUCCESS};
-    }
-    foeResult getResource(foeId id, foeResourceCreateInfo *pCI) final {
-        *pCI = static_cast<foeResourceCreateInfo>(mResReturn);
-        return foeResult{};
-    }
-
-    foeResult findExternalFile(char const *pExternalFilePath,
-                               uint32_t *pPathLength,
-                               char *pPath) final {
-        if (std::filesystem::exists(std::filesystem::path{FOE_SIMULATION_TEST_DATA_DIR} / mName /
-                                    pExternalFilePath)) {
-            return foeResult{.value = FOE_IMEX_SUCCESS};
-        }
-
-        return foeResult{.value = FOE_IMEX_FILE_NOT_FOUND};
-    }
-
-  private:
-    std::string mName;
-    foeIdGroup mGroup;
-    void *mResReturn;
+    std::string name;
+    foeIdGroup group;
+    void *resReturn;
 };
+
+foeResult dummyGetGroupID(foeImexImporter importer, foeIdGroup *pGroupID) {
+    DummyImporterData *pDummyImporter = (DummyImporterData *)importer;
+
+    *pGroupID = pDummyImporter->group;
+    return foeResult{};
+}
+
+foeResult dummyGetGroupName(foeImexImporter importer, char const **ppGroupName) {
+    DummyImporterData *pDummyImporter = (DummyImporterData *)importer;
+
+    *ppGroupName = pDummyImporter->name.c_str();
+    return foeResult{};
+}
+
+foeResult dummyGetResourceCreateInfo(foeImexImporter importer,
+                                     foeId id,
+                                     foeResourceCreateInfo *pCI) {
+    DummyImporterData *pDummyImporter = (DummyImporterData *)importer;
+
+    *pCI = static_cast<foeResourceCreateInfo>(pDummyImporter->resReturn);
+    return foeResult{};
+}
+
+foeImexImporterCalls dummyImporterCalls{
+    .sType = FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS,
+    .getGroupID = dummyGetGroupID,
+    .getGroupName = dummyGetGroupName,
+    .getResourceCreateInfo = dummyGetResourceCreateInfo,
+};
+
+} // namespace
 
 TEST_CASE("foeGroupData - Initial State", "[foe]") {
     foeGroupData test;
@@ -163,8 +144,10 @@ TEST_CASE("foeGroupData - Initial State", "[foe]") {
 }
 
 TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
+    DummyImporterData dummyImporter, dummyImporter2;
     foeGroupData test;
 
+    /*
     SECTION("No EntityIndexes given") {
         foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
         foeEcsIndexes testResourceIndexes = FOE_NULL_HANDLE;
@@ -172,10 +155,14 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("", foeIdValueToGroup(0x1));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdValueToGroup(0x1),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
     }
@@ -187,10 +174,14 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testEntityIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("", foeIdValueToGroup(0x1));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdValueToGroup(0x1),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testEntityIndexes);
     }
@@ -204,10 +195,8 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        std::unique_ptr<DummyImporter> testImporter;
-
         REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, FOE_NULL_HANDLE));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -222,7 +211,12 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("", foeIdValueToGroup(0x1));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "",
+            .group = foeIdValueToGroup(0x1),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
         REQUIRE_FALSE(
             test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
@@ -240,10 +234,14 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x2));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdValueToGroup(0x2),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -258,10 +256,14 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdPersistentGroup, &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("a", foeIdPersistentGroup);
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdPersistentGroup,
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -276,10 +278,14 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("Persistent", foeIdValueToGroup(0x1));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "Persistent",
+            .group = foeIdValueToGroup(0x1),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -294,10 +300,14 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdTemporaryGroup, &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("a", foeIdTemporaryGroup);
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdTemporaryGroup,
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -312,10 +322,14 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("Temporary", foeIdValueToGroup(0x1));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "Temporary",
+            .group = foeIdValueToGroup(0x1),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -330,20 +344,28 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdValueToGroup(0x1),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testEntityIndexes).value ==
                 FOE_ECS_SUCCESS);
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        testImporter = std::make_unique<DummyImporter>("b", foeIdValueToGroup(0x1));
+        dummyImporter2 = {
+            .pNext = &dummyImporterCalls,
+            .name = "test2",
+            .group = foeIdValueToGroup(0x1),
+        };
+        testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter2);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
@@ -358,27 +380,38 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
+        dummyImporter = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdValueToGroup(0x1),
+        };
+        foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
-        REQUIRE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x2), &testEntityIndexes).value ==
                 FOE_ECS_SUCCESS);
         REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x2), &testResourceIndexes).value ==
                 FOE_ECS_SUCCESS);
 
-        testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x2));
+        dummyImporter2 = {
+            .pNext = &dummyImporterCalls,
+            .name = "test",
+            .group = foeIdValueToGroup(0x2),
+        };
+        testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter2);
 
-        REQUIRE_FALSE(
-            test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+        REQUIRE_FALSE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
     }
+    */
 }
 
 TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
+    DummyImporterData dummyImporter;
+    foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
     foeGroupData test;
 
     SECTION("Giving a nullptr") { REQUIRE_FALSE(test.setPersistentImporter(nullptr)); }
@@ -386,37 +419,48 @@ TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
     SECTION("Giving an importer that is not foeIdPersistentGroup") {
         SECTION("Dynamic Groups") {
             for (foeIdGroup group = 0; group < foeIdNumDynamicGroups; ++group) {
-                auto tempImporter = std::make_unique<DummyImporter>("testPersistent", group);
+                dummyImporter = {
+                    .pNext = &dummyImporterCalls,
+                    .name = "test",
+                    .group = group,
+                };
 
-                REQUIRE_FALSE(test.setPersistentImporter(std::move(tempImporter)));
+                REQUIRE_FALSE(test.setPersistentImporter(testImporter));
             }
         }
 
         SECTION("foeIdTemporaryGroup") {
-            auto tempImporter =
-                std::make_unique<DummyImporter>("testPersistent", foeIdTemporaryGroup);
-            REQUIRE_FALSE(test.setPersistentImporter(std::move(tempImporter)));
+            dummyImporter = {
+                .pNext = &dummyImporterCalls,
+                .name = "test",
+                .group = foeIdTemporaryGroup,
+            };
+
+            REQUIRE_FALSE(test.setPersistentImporter(testImporter));
         }
     }
 }
 
 TEST_CASE("foeGroupData - setPersistentImporter success cases", "[foe]") {
+    DummyImporterData dummyImporter = {
+        .pNext = &dummyImporterCalls,
+        .name = "testPersistentImporter",
+        .group = foeIdPersistentGroup,
+    };
+    foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
     foeGroupData test;
 
-    auto tempImporter =
-        std::make_unique<DummyImporter>("testPersistentImporter", foeIdPersistentGroup);
-    auto *pImporter = tempImporter.get();
+    REQUIRE(test.setPersistentImporter(testImporter));
 
-    REQUIRE(test.setPersistentImporter(std::move(tempImporter)));
-
-    REQUIRE(test.importer(foeIdPersistentGroup) == pImporter);
+    REQUIRE(test.importer(foeIdPersistentGroup) == testImporter);
 
     SECTION("Persistent importer with a different importer name also works") {
-        REQUIRE(test.importer("testPersistentImporter") == pImporter);
+        REQUIRE(test.importer("testPersistentImporter") == testImporter);
     }
 }
 
 TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
+    DummyImporterData dummyImporter, dummyImporter2;
     foeGroupData test;
 
     foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
@@ -427,8 +471,14 @@ TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
     REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
             FOE_ECS_SUCCESS);
 
-    auto testImporter = std::make_unique<DummyImporter>("0x1", foeIdValueToGroup(0x1));
-    REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+    dummyImporter = {
+        .pNext = &dummyImporterCalls,
+        .name = "0x1",
+        .group = foeIdValueToGroup(0x1),
+    };
+    foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
+
+    REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
     SECTION("0x1 Group Data") {
         REQUIRE(test.resourceIndexes(foeIdValueToGroup(0x1)) != nullptr);
@@ -446,9 +496,14 @@ TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
     REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(foeIdMaxDynamicGroupValue), &testResourceIndexes)
                 .value == FOE_ECS_SUCCESS);
 
-    testImporter =
-        std::make_unique<DummyImporter>("MaxDynamic", foeIdValueToGroup(foeIdMaxDynamicGroupValue));
-    REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, std::move(testImporter)));
+    dummyImporter2 = {
+        .pNext = &dummyImporterCalls,
+        .name = "MaxDynamic",
+        .group = foeIdValueToGroup(foeIdMaxDynamicGroupValue),
+    };
+    testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter2);
+
+    REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
     SECTION("MaxDynamic Group Data") {
         REQUIRE(test.resourceIndexes(foeIdValueToGroup(foeIdMaxDynamicGroupValue)) != nullptr);
@@ -480,8 +535,10 @@ TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
 }
 
 TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
+    DummyImporterData dummyImporter;
+    foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
+
     foeGroupData test;
-    foeResourceCreateInfo createInfo;
 
     SECTION("No importers always fails") {
         REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
@@ -489,16 +546,25 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
 
     SECTION("Persistent importer added") {
         SECTION("Returning true") {
-            auto persistentImporter = std::make_unique<DummyImporter>(
-                "testPersistent", foeIdPersistentGroup, static_cast<int *>(NULL) + 1);
-            REQUIRE(test.setPersistentImporter(std::move(persistentImporter)));
+            dummyImporter = {
+                .pNext = &dummyImporterCalls,
+                .name = "testPersistent",
+                .group = foeIdPersistentGroup,
+                .resReturn = static_cast<int *>(NULL) + 1,
+            };
+
+            REQUIRE(test.setPersistentImporter(testImporter));
 
             REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
-            auto persistentImporter =
-                std::make_unique<DummyImporter>("testPersistent", foeIdPersistentGroup);
-            REQUIRE(test.setPersistentImporter(std::move(persistentImporter)));
+            dummyImporter = {
+                .pNext = &dummyImporterCalls,
+                .name = "testPersistent",
+                .group = foeIdPersistentGroup,
+            };
+
+            REQUIRE(test.setPersistentImporter(testImporter));
 
             REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
         }
@@ -514,11 +580,14 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
             REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                     FOE_ECS_SUCCESS);
 
-            auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1),
-                                                                static_cast<int *>(NULL) + 1);
+            dummyImporter = {
+                .pNext = &dummyImporterCalls,
+                .name = "0x1",
+                .group = foeIdValueToGroup(0x1),
+                .resReturn = static_cast<int *>(NULL) + 1,
+            };
 
-            REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes,
-                                         std::move(testImporter)));
+            REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
             REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) != nullptr);
         }
@@ -531,10 +600,13 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
             REQUIRE(foeEcsCreateIndexes(foeIdValueToGroup(0x1), &testResourceIndexes).value ==
                     FOE_ECS_SUCCESS);
 
-            auto testImporter = std::make_unique<DummyImporter>("a", foeIdValueToGroup(0x1));
+            dummyImporter = {
+                .pNext = &dummyImporterCalls,
+                .name = "0x1",
+                .group = foeIdValueToGroup(0x1),
+            };
 
-            REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes,
-                                         std::move(testImporter)));
+            REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
             REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
         }
     }

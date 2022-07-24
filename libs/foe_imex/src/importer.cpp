@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/imex/importers.hpp>
+#include <foe/imex/importer.h>
 
 #include "log.hpp"
 #include "result.h"
@@ -48,15 +48,15 @@ foeResult foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter) {
     return to_foeResult(FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED);
 }
 
-auto createImporter(foeIdGroup group, char const *pPath) -> foeImporterBase * {
+auto createImporter(foeIdGroup group, char const *pPath) -> foeImexImporter {
     std::scoped_lock lock{gSync};
 
-    foeImporterBase *pImporter{nullptr};
+    foeImexImporter importer{FOE_NULL_HANDLE};
     for (auto it : gCreateImporterFns) {
-        it(group, pPath, &pImporter);
-        if (pImporter != nullptr)
+        it(group, pPath, &importer);
+        if (importer != FOE_NULL_HANDLE)
             break;
     }
 
-    return pImporter;
+    return importer;
 }

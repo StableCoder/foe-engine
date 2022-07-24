@@ -14,10 +14,6 @@ target_sources(
   test_foe_simulation PRIVATE c_header_compatibility.c error_code.cpp
                               group_data.cpp simulation.cpp)
 
-target_compile_definitions(
-  test_foe_simulation
-  PRIVATE FOE_SIMULATION_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
-
 target_link_libraries(test_foe_simulation PRIVATE catch foe_simulation)
 
 target_code_coverage(

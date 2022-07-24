@@ -29,9 +29,9 @@ std::string groupValueToShortHexStr(foeIdGroupValue group) {
     return ss.str();
 }
 
-void renderImporterData(foeImporterBase *pImporter) {
+void renderImporterData(foeImexImporter importer) {
     char const *pGroupName = "Failed to retrieve name";
-    pImporter->name(&pGroupName);
+    foeImexImporterGetGroupName(importer, &pGroupName);
 
     ImGui::Text("Name: %s", pGroupName);
 }
@@ -182,26 +182,27 @@ void foeSimulationImGuiGroupData::customUI() {
         for (foeIdGroupValue gv = 0; gv < foeIdMaxDynamicGroupValue; ++gv) {
             foeIdGroup group = foeIdValueToGroup(gv);
 
-            auto *pImporter = mpSimulationState->groupData.importer(group);
-            if (pImporter != nullptr) {
-                ImGui::TableNextRow();
+            foeImexImporter importer = mpSimulationState->groupData.importer(group);
+            if (importer == FOE_NULL_HANDLE)
+                continue;
 
-                ImGui::TableNextColumn();
-                if (ImGui::Selectable(std::to_string(gv).c_str(), mSelected == group)) {
-                    mSelected = group;
-                }
+            ImGui::TableNextRow();
 
-                ImGui::TableNextColumn();
-                if (ImGui::Selectable(groupValueToShortHexStr(gv).c_str(), mSelected == group)) {
-                    mSelected = group;
-                }
+            ImGui::TableNextColumn();
+            if (ImGui::Selectable(std::to_string(gv).c_str(), mSelected == group)) {
+                mSelected = group;
+            }
 
-                ImGui::TableNextColumn();
-                char const *pGroupName = "?Unknown?";
-                foeResult result = pImporter->name(&pGroupName);
-                if (ImGui::Selectable(pGroupName, mSelected == group)) {
-                    mSelected = group;
-                }
+            ImGui::TableNextColumn();
+            if (ImGui::Selectable(groupValueToShortHexStr(gv).c_str(), mSelected == group)) {
+                mSelected = group;
+            }
+
+            ImGui::TableNextColumn();
+            char const *pGroupName = "?Unknown?";
+            foeResult result = foeImexImporterGetGroupName(importer, &pGroupName);
+            if (ImGui::Selectable(pGroupName, mSelected == group)) {
+                mSelected = group;
             }
         }
 
@@ -216,12 +217,12 @@ void foeSimulationImGuiGroupData::customUI() {
         ImGui::Text("Group Value: %u", foeIdGroupToValue(mSelected));
         ImGui::Text("GroupID: %s", foeIdToString(mSelected).c_str());
 
-        auto *pImporter = mpSimulationState->groupData.importer(mSelected);
-        if (pImporter != nullptr) {
+        foeImexImporter importer = mpSimulationState->groupData.importer(mSelected);
+        if (importer != FOE_NULL_HANDLE) {
             ImGui::Separator();
             ImGui::Text("Importer Data");
 
-            renderImporterData(pImporter);
+            renderImporterData(importer);
         }
 
         foeEcsIndexes entityIndexes = mpSimulationState->groupData.entityIndexes(mSelected);

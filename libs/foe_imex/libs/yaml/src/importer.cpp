@@ -8,6 +8,7 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/indexes.hpp>
+#include <foe/imex/type_defs.h>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -16,10 +17,25 @@
 #include "log.hpp"
 #include "result.h"
 
+#include <filesystem>
 #include <string>
 #include <string_view>
 
 namespace {
+
+struct foeYamlImporter {
+    foeStructureType sType;
+    void *pNext;
+
+    std::filesystem::path mRootDir;
+    foeIdGroup mGroup;
+    std::string mName;
+
+    bool mHasTranslation{false};
+    foeEcsGroupTranslator mGroupTranslator{FOE_NULL_HANDLE};
+};
+
+FOE_DEFINE_HANDLE_CASTS(importer, foeYamlImporter, foeImexImporter)
 
 /** @brief Parses a Yaml filename to determine the IdGroupValue and IdIndex
  * @param path File path to parse
@@ -75,38 +91,50 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 
 } // namespace
 
-foeYamlImporter::foeYamlImporter(foeIdGroup group, char const *pRootDir) :
-    mRootDir{pRootDir}, mGroup{group}, mName{mRootDir.stem().string()} {}
+void destroy(foeImexImporter importer) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
 
-foeYamlImporter::~foeYamlImporter() {
-    if (mGroupTranslator != FOE_NULL_HANDLE)
-        foeEcsDestroyGroupTranslator(mGroupTranslator);
+    if (pImporter->mGroupTranslator != FOE_NULL_HANDLE)
+        foeEcsDestroyGroupTranslator(pImporter->mGroupTranslator);
+
+    pImporter->~foeYamlImporter();
+
+    free(pImporter);
 }
 
-foeResult foeYamlImporter::group(foeIdGroup *pGroupID) const noexcept {
-    *pGroupID = mGroup;
+foeResult getGroupID(foeImexImporter importer, foeIdGroup *pGroupID) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    *pGroupID = pImporter->mGroup;
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult foeYamlImporter::name(char const **ppGroupName) const noexcept {
-    *ppGroupName = mName.c_str();
+foeResult getGroupName(foeImexImporter importer, char const **ppGroupName) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    *ppGroupName = pImporter->mName.c_str();
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult foeYamlImporter::setGroupTranslator(foeEcsGroupTranslator groupTranslator) {
-    mGroupTranslator = groupTranslator;
-    mHasTranslation = true;
+foeResult setGroupTranslator(foeImexImporter importer, foeEcsGroupTranslator groupTranslator) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    pImporter->mGroupTranslator = groupTranslator;
+    pImporter->mHasTranslation = true;
 
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult foeYamlImporter::getDependencies(uint32_t *pDependencyCount,
-                                           foeIdGroup *pDependencyGroups,
-                                           uint32_t *pNamesLength,
-                                           char *pNames) {
+foeResult getDependencies(foeImexImporter importer,
+                          uint32_t *pDependencyCount,
+                          foeIdGroup *pDependencyGroups,
+                          uint32_t *pNamesLength,
+                          char *pNames) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
     YAML::Node dependenciesNode;
 
-    if (!openYamlFile(mRootDir / dependenciesFilePath, dependenciesNode))
+    if (!openYamlFile(pImporter->mRootDir / dependenciesFilePath, dependenciesNode))
         return to_foeResult(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_EXIST);
 
     struct DependencyNode {
@@ -189,21 +217,28 @@ foeResult getGroupIndexData(std::filesystem::path path, foeEcsIndexes indexes) {
 
 } // namespace
 
-foeResult foeYamlImporter::getGroupEntityIndexData(foeEcsIndexes indexes) {
-    return getGroupIndexData(mRootDir / entityIndexDataFilePath, indexes);
+foeResult getGroupEntityIndexData(foeImexImporter importer, foeEcsIndexes indexes) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    return getGroupIndexData(pImporter->mRootDir / entityIndexDataFilePath, indexes);
 }
 
-foeResult foeYamlImporter::getGroupResourceIndexData(foeEcsIndexes indexes) {
-    return getGroupIndexData(mRootDir / resourceIndexDataFilePath, indexes);
+foeResult getGroupResourceIndexData(foeImexImporter importer, foeEcsIndexes indexes) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    return getGroupIndexData(pImporter->mRootDir / resourceIndexDataFilePath, indexes);
 }
 
-foeResult foeYamlImporter::importStateData(foeEcsNameMap nameMap,
-                                           foeSimulation const *pSimulation) {
-    if (!std::filesystem::exists(mRootDir / entityDirectoryPath))
+foeResult importStateData(foeImexImporter importer,
+                          foeEcsNameMap nameMap,
+                          foeSimulation const *pSimulation) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    if (!std::filesystem::exists(pImporter->mRootDir / entityDirectoryPath))
         return to_foeResult(FOE_IMEX_YAML_ERROR_ENTITY_DIRECTORY_NOT_EXIST);
 
     for (auto &dirIt :
-         std::filesystem::recursive_directory_iterator{mRootDir / entityDirectoryPath}) {
+         std::filesystem::recursive_directory_iterator{pImporter->mRootDir / entityDirectoryPath}) {
         FOE_LOG(foeImexYaml, Info, "Visiting: {}", dirIt.path().string())
         if (std::filesystem::is_directory(dirIt))
             continue;
@@ -223,7 +258,7 @@ foeResult foeYamlImporter::importStateData(foeEcsNameMap nameMap,
 
         try {
             foeId entity;
-            yaml_read_id_required("", entityNode, mGroupTranslator, entity);
+            yaml_read_id_required("", entityNode, pImporter->mGroupTranslator, entity);
 
             if (nameMap != FOE_NULL_HANDLE) {
                 std::string editorName;
@@ -243,7 +278,7 @@ foeResult foeYamlImporter::importStateData(foeEcsNameMap nameMap,
 
                 auto searchIt = componentFnMap.find(key);
                 if (searchIt != componentFnMap.end()) {
-                    searchIt->second(entityNode, mGroupTranslator, entity, pSimulation);
+                    searchIt->second(entityNode, pImporter->mGroupTranslator, entity, pSimulation);
                 } else {
                     FOE_LOG(foeImexYaml, Error,
                             "Failed to find importer for '{}' component key for {} entity ({})",
@@ -262,13 +297,16 @@ foeResult foeYamlImporter::importStateData(foeEcsNameMap nameMap,
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult foeYamlImporter::importResourceDefinitions(foeEcsNameMap nameMap,
-                                                     foeSimulation const *pSimulation) {
-    if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
+foeResult importResourceDefinitions(foeImexImporter importer,
+                                    foeEcsNameMap nameMap,
+                                    foeSimulation const *pSimulation) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    if (!std::filesystem::exists(pImporter->mRootDir / resourceDirectoryPath))
         return to_foeResult(FOE_IMEX_YAML_ERROR_RESOURCE_DIRECTORY_NOT_EXIST);
 
-    for (auto &dirIt :
-         std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
+    for (auto &dirIt : std::filesystem::recursive_directory_iterator{pImporter->mRootDir /
+                                                                     resourceDirectoryPath}) {
         if (std::filesystem::is_directory(dirIt))
             continue;
 
@@ -288,7 +326,7 @@ foeResult foeYamlImporter::importResourceDefinitions(foeEcsNameMap nameMap,
 
         try {
             // ID
-            yaml_read_id_required("", node, mGroupTranslator, resource);
+            yaml_read_id_required("", node, pImporter->mGroupTranslator, resource);
 
             // Editor Name
             if (nameMap != FOE_NULL_HANDLE) {
@@ -312,7 +350,7 @@ foeResult foeYamlImporter::importResourceDefinitions(foeEcsNameMap nameMap,
                 auto searchIt = resourceFnMap.find(key);
                 if (searchIt != resourceFnMap.end()) {
                     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
-                    searchIt->second.pImport(node, mGroupTranslator, &createInfo);
+                    searchIt->second.pImport(node, pImporter->mGroupTranslator, &createInfo);
 
                     if (searchIt->second.pCreate != nullptr) {
                         foeResult result =
@@ -354,16 +392,19 @@ foeResult foeYamlImporter::importResourceDefinitions(foeEcsNameMap nameMap,
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult foeYamlImporter::getResourceEditorName(foeIdIndex resourceIndexID,
-                                                 uint32_t *pNameLength,
-                                                 char *pName) {
-    if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
-        return imex_to_foeResult(FOE_IMEX_FILE_NOT_FOUND);
+foeResult getResourceEditorName(foeImexImporter importer,
+                                foeIdIndex resourceIndexID,
+                                uint32_t *pNameLength,
+                                char *pName) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    if (!std::filesystem::exists(pImporter->mRootDir / resourceDirectoryPath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_OPEN_RESOURCE_FILE);
 
     YAML::Node rootNode;
 
-    for (auto const &dirEntry :
-         std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
+    for (auto const &dirEntry : std::filesystem::recursive_directory_iterator{
+             pImporter->mRootDir / resourceDirectoryPath}) {
         if (!dirEntry.is_regular_file())
             continue;
 
@@ -385,7 +426,7 @@ foeResult foeYamlImporter::getResourceEditorName(foeIdIndex resourceIndexID,
             goto OPENED_YAML_FILE;
     }
 
-    return imex_to_foeResult(FOE_IMEX_FILE_NOT_FOUND);
+    return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_OPEN_RESOURCE_FILE);
 
 OPENED_YAML_FILE:
     try {
@@ -424,18 +465,22 @@ OPENED_YAML_FILE:
         FOE_LOG(foeImexYaml, Error, "Failed to import resource definition with unknown exception");
     }
 
-    return imex_to_foeResult(FOE_IMEX_ERROR_FAILED_TO_READ_CONTENT);
+    return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DATA);
 }
 
-foeResult foeYamlImporter::getResource(foeId id, foeResourceCreateInfo *pResourceCreateInfo) {
-    if (!std::filesystem::exists(mRootDir / resourceDirectoryPath))
+foeResult getResourceCreateInfo(foeImexImporter importer,
+                                foeId id,
+                                foeResourceCreateInfo *pResourceCreateInfo) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
+    if (!std::filesystem::exists(pImporter->mRootDir / resourceDirectoryPath))
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_OPEN_FILE);
 
     YAML::Node rootNode;
     foeIdIndex index = foeIdGetIndex(id);
 
-    for (auto &dirEntry :
-         std::filesystem::recursive_directory_iterator{mRootDir / resourceDirectoryPath}) {
+    for (auto &dirEntry : std::filesystem::recursive_directory_iterator{pImporter->mRootDir /
+                                                                        resourceDirectoryPath}) {
         if (!dirEntry.is_regular_file())
             continue;
 
@@ -460,7 +505,7 @@ GOT_RESOURCE_NODE:
         auto lock = sharedLockImportFunctionality();
         for (auto const &it : getResourceFns()) {
             if (auto subNode = rootNode[it.first]; subNode) {
-                it.second.pImport(rootNode, mGroupTranslator, &createInfo);
+                it.second.pImport(rootNode, pImporter->mGroupTranslator, &createInfo);
                 *pResourceCreateInfo = createInfo;
                 return to_foeResult(FOE_IMEX_YAML_SUCCESS);
             }
@@ -480,15 +525,19 @@ GOT_RESOURCE_NODE:
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DATA);
 }
 
-foeResult foeYamlImporter::findExternalFile(char const *pExternalFilePath,
-                                            uint32_t *pPathLength,
-                                            char *pPath) {
+foeResult findExternalFile(foeImexImporter importer,
+                           char const *pExternalFilePath,
+                           uint32_t *pPathLength,
+                           char *pPath) {
+    foeYamlImporter *pImporter = importer_from_handle(importer);
+
     std::filesystem::path test;
-    test = mRootDir / externalDirectoryPath / pExternalFilePath;
-    if (std::filesystem::exists(mRootDir / externalDirectoryPath / pExternalFilePath)) {
-        foeResult result = imex_to_foeResult(FOE_IMEX_SUCCESS);
+    test = pImporter->mRootDir / externalDirectoryPath / pExternalFilePath;
+    if (std::filesystem::exists(pImporter->mRootDir / externalDirectoryPath / pExternalFilePath)) {
+        foeResult result = to_foeResult(FOE_IMEX_YAML_SUCCESS);
         std::string path{
-            std::filesystem::path{mRootDir / externalDirectoryPath / pExternalFilePath}.string()};
+            std::filesystem::path{pImporter->mRootDir / externalDirectoryPath / pExternalFilePath}
+                .string()};
 
         if (pPath == NULL) {
             // If no return buffer provided, just return length of found path
@@ -508,6 +557,91 @@ foeResult foeYamlImporter::findExternalFile(char const *pExternalFilePath,
 
         return result;
     } else {
-        return imex_to_foeResult(FOE_IMEX_FILE_NOT_FOUND);
+        return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_OPEN_FILE);
     }
+}
+
+namespace {
+
+foeImexImporterCalls cImporterCalls{
+    .sType = FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS,
+    .destroyImporter = destroy,
+    .getGroupID = getGroupID,
+    .getGroupName = getGroupName,
+    .setGroupTranslator = setGroupTranslator,
+    .getDependencies = getDependencies,
+    .getGroupEntityIndexData = getGroupEntityIndexData,
+    .getGroupResourceIndexData = getGroupResourceIndexData,
+    .importStateData = importStateData,
+    .importResourceDefinitions = importResourceDefinitions,
+    .getResourceEditorName = getResourceEditorName,
+    .getResourceCreateInfo = getResourceCreateInfo,
+    .findExternalFile = findExternalFile,
+};
+
+}
+
+foeResult foeCreateYamlImporter(foeIdGroup group,
+                                char const *pRootDir,
+                                foeImexImporter *pImporter) {
+    std::filesystem::path fsPath{pRootDir};
+
+    // Root Directory
+    if (!std::filesystem::is_directory(fsPath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_PATH_NOT_DIRECTORY);
+
+    // Dependencies File
+    if (!std::filesystem::exists(fsPath / dependenciesFilePath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_EXIST);
+    if (!std::filesystem::is_regular_file(fsPath / dependenciesFilePath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_REGULAR_FILE);
+
+    // Resource Index Data File
+    if (!std::filesystem::exists(fsPath / resourceIndexDataFilePath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_RESOURCE_INDEX_FILE_NOT_EXIST);
+    if (!std::filesystem::is_regular_file(fsPath / resourceIndexDataFilePath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_RESOURCE_INDEX_FILE_NOT_REGULAR_FILE);
+
+    // Entity Index Data File
+    if (!std::filesystem::exists(fsPath / entityIndexDataFilePath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_ENTITY_INDEX_FILE_NOT_EXIST);
+    if (!std::filesystem::is_regular_file(fsPath / entityIndexDataFilePath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_ENTITY_INDEX_FILE_NOT_REGULAR_FILE);
+
+    // Check optional directories (resources, components and external data), fail if they fail
+    // Resources Directory
+    if (std::filesystem::exists(fsPath / resourceDirectoryPath) &&
+        !std::filesystem::is_directory(fsPath / resourceDirectoryPath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_RESOURCE_DIRECTORY_NOT_DIRECTORY);
+
+    // Entity Component Data Directory
+    if (std::filesystem::exists(fsPath / entityDirectoryPath) &&
+        !std::filesystem::is_directory(fsPath / entityDirectoryPath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_ENTITY_DIRECTORY_NOT_DIRECTORY);
+
+    // External Data Directory
+    if (std::filesystem::exists(fsPath / externalDirectoryPath) &&
+        !std::filesystem::is_directory(fsPath / externalDirectoryPath))
+        return to_foeResult(FOE_IMEX_YAML_ERROR_EXTERNAL_DIRECTORY_NOT_DIRECTORY);
+
+    // If here, then we're clear to create the importer
+    foeYamlImporter *pNewImporter = (foeYamlImporter *)malloc(sizeof(foeYamlImporter));
+    if (pNewImporter == NULL)
+        return to_foeResult(FOE_IMEX_YAML_ERROR_OUT_OF_MEMORY);
+
+    new (pNewImporter) foeYamlImporter;
+    *pNewImporter = foeYamlImporter{
+        .sType = NULL,
+        .pNext = &cImporterCalls,
+        .mRootDir = pRootDir,
+        .mGroup = group,
+    };
+    pNewImporter->mName = pNewImporter->mRootDir.stem().string(),
+
+    *pImporter = importer_to_handle(pNewImporter);
+
+    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Created ()", (void *)pNewImporter,
+            pNewImporter->mName.c_str())
+
+    return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
