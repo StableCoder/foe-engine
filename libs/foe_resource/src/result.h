@@ -5,7 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/resource/error_code.h>
+#include <foe/resource/result.h>
 
 inline foeResultSet to_foeResult(foeResourceResult value) {
     foeResultSet result = {

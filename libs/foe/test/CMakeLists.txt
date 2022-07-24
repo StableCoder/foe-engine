@@ -45,7 +45,7 @@ target_code_coverage(
   .*/test/.*)
 
 # Thread Pool Definition
-target_sources(test_foe_thread_pool PRIVATE thread_pool_error_code.cpp
+target_sources(test_foe_thread_pool PRIVATE thread_pool_result.cpp
                                             thread_pool.cpp)
 
 target_link_libraries(test_foe_thread_pool PRIVATE catch foe)

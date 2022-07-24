@@ -7,9 +7,9 @@
 
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/imex/importer.h>
 #include <foe/imex/yaml/export.h>
+#include <foe/result.h>
 #include <yaml-cpp/yaml.h>
 
 #include <string_view>

@@ -4,8 +4,8 @@
 
 #include <foe/ecs/name_map.h>
 
-#include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/ecs/result.h>
 
 #include "log.hpp"
 #include "result.h"

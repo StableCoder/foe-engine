@@ -4,7 +4,7 @@
 
 #include <catch.hpp>
 #include <foe/resource/create_info.h>
-#include <foe/resource/error_code.h>
+#include <foe/resource/result.h>
 
 #include "test_log_sink.hpp"
 

@@ -5,7 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/position/yaml/error_code.h>
+#include <foe/position/yaml/result.h>
 
 #ifdef __cplusplus
 extern "C" {

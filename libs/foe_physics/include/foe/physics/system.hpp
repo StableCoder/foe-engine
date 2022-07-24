@@ -7,10 +7,10 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/physics/export.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
+#include <foe/result.h>
 
 #include <memory>
 #include <vector>

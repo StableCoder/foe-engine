@@ -5,7 +5,7 @@
 #ifndef VK_RESULT_H
 #define VK_RESULT_H
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #ifdef __cplusplus

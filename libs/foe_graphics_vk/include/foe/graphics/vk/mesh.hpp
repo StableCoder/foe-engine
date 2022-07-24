@@ -5,8 +5,8 @@
 #ifndef FOE_GRAPHICS_VK_MESH_HPP
 #define FOE_GRAPHICS_VK_MESH_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/mesh.h>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #ifdef __cplusplus

@@ -5,7 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/ecs/error_code.h>
+#include <foe/ecs/result.h>
 
 #ifdef __cplusplus
 extern "C" {

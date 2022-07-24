@@ -6,8 +6,8 @@
 #define FOE_IMEX_YAML_EXPORTER_HPP
 
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/imex/yaml/export.h>
+#include <foe/result.h>
 #include <yaml-cpp/yaml.h>
 
 #include <filesystem>

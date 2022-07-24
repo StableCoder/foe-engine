@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-#include <foe/simulation/error_code.h>
 #include <foe/simulation/registration.hpp>
+#include <foe/simulation/result.h>
 #include <foe/simulation/simulation.hpp>
 #include <foe/type_defs.h>
 

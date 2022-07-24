@@ -5,8 +5,8 @@
 #ifndef FOE_POSITION_REGISTRATION_H
 #define FOE_POSITION_REGISTRATION_H
 
-#include <foe/error_code.h>
 #include <foe/position/export.h>
+#include <foe/result.h>
 
 #ifdef __cplusplus
 extern "C" {

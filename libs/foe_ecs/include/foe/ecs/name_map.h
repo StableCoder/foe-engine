@@ -7,8 +7,8 @@
 
 #include <foe/ecs/export.h>
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/handle.h>
+#include <foe/result.h>
 
 #ifdef __cplusplus
 extern "C" {

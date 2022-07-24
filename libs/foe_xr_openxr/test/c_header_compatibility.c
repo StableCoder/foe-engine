@@ -2,4 +2,4 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/xr/openxr/error_code.h>
+#include <foe/xr/openxr/result.h>

@@ -5,11 +5,11 @@
 #ifndef FOE_GRAPHICS_UPLOAD_REQUEST_H
 #define FOE_GRAPHICS_UPLOAD_REQUEST_H
 
-#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/handle.h>
+#include <foe/result.h>
 
 #ifdef __cplusplus
 extern "C" {

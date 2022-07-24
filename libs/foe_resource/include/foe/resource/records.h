@@ -6,10 +6,10 @@
 #define FOE_RESOURCE_RECORDS_H
 
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/handle.h>
 #include <foe/resource/create_info.h>
 #include <foe/resource/export.h>
+#include <foe/result.h>
 
 #ifdef __cplusplus
 extern "C" {

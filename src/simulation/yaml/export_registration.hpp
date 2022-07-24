@@ -5,7 +5,7 @@
 #ifndef SIMULATION_YAML_EXPORT_REGISTRATION_HPP
 #define SIMULATION_YAML_EXPORT_REGISTRATION_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -5,8 +5,8 @@
 #ifndef FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
 #define FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/vk/render_graph.hpp>
+#include <foe/result.h>
 #include <foe/xr/openxr/vk/export.h>
 #include <openxr/openxr.h>
 #include <vulkan/vulkan.h>

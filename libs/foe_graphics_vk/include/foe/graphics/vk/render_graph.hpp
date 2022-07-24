@@ -5,11 +5,11 @@
 #ifndef FOE_GRAPHICS_VK_RENDER_GRAPH_HPP
 #define FOE_GRAPHICS_VK_RENDER_GRAPH_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
 #include <foe/handle.h>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #include <functional>

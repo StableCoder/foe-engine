@@ -5,8 +5,8 @@
 #ifndef FOE_WSI_WINDOW_H
 #define FOE_WSI_WINDOW_H
 
-#include <foe/error_code.h>
 #include <foe/handle.h>
+#include <foe/result.h>
 #include <foe/wsi/export.h>
 
 #ifdef __cplusplus

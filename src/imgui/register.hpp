@@ -5,7 +5,7 @@
 #ifndef IMGUI_REGISTER_ELEMENTS_HPP
 #define IMGUI_REGISTER_ELEMENTS_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 
 class foeSimulationImGuiRegistrar;
 

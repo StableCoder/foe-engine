@@ -5,8 +5,8 @@
 #ifndef XR_HPP
 #define XR_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/session.h>
+#include <foe/result.h>
 #include <foe/xr/openxr/session.hpp>
 #include <foe/xr/runtime.h>
 

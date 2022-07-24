@@ -5,7 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/physics/yaml/error_code.h>
+#include <foe/physics/yaml/result.h>
 
 #ifdef __cplusplus
 extern "C" {

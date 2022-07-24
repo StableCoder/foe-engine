@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-#include <foe/ecs/error_code.h>
 #include <foe/ecs/name_map.h>
+#include <foe/ecs/result.h>
 
 #include <cstring>
 

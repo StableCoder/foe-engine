@@ -5,7 +5,7 @@
 target_sources(
   foe_bringup_shared
   PRIVATE ../log.cpp
-          ../error_code.c
+          ../result.c
           ../vk_result.c
           armature_create_info.cpp
           armature_loader.cpp

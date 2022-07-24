@@ -5,8 +5,8 @@
 #ifndef FOE_IMEX_YAML_EXPORTER_REGISTRATION_H
 #define FOE_IMEX_YAML_EXPORTER_REGISTRATION_H
 
-#include <foe/error_code.h>
 #include <foe/imex/yaml/export.h>
+#include <foe/result.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -4,9 +4,9 @@
 
 #include "resource_list.hpp"
 
-#include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/name_map.h>
+#include <foe/ecs/result.h>
 #include <foe/imgui/state.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>

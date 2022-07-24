@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-#include <foe/imex/error_code.h>
 #include <foe/imex/importer.h>
+#include <foe/imex/result.h>
 #include <foe/imex/type_defs.h>
 
 TEST_CASE("foeImexImporter - When importer calls struct not available") {

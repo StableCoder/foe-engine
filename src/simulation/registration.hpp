@@ -5,7 +5,7 @@
 #ifndef BRINGUP_REGISTRATION_HPP
 #define BRINGUP_REGISTRATION_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 
 foeResultSet foeBringupRegisterFunctionality();
 

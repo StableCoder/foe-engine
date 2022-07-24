@@ -5,8 +5,8 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/imex/error_code.h>
-#include <foe/imex/yaml/error_code.h>
+#include <foe/imex/result.h>
+#include <foe/imex/yaml/result.h>
 
 #ifdef __cplusplus
 extern "C" {

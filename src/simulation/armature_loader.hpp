@@ -6,9 +6,9 @@
 #define FOE_RESOURCE_ARMATURE_LOADER_HPP
 
 #include "armature.hpp"
-#include <foe/error_code.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
+#include <foe/result.h>
 
 #include <filesystem>
 #include <functional>

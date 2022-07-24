@@ -5,9 +5,9 @@
 #ifndef FOE_GRPAHICS_VK_SHADER_HPP
 #define FOE_GRPAHICS_VK_SHADER_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/shader.h>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkShaderCreateInfo {

@@ -6,10 +6,10 @@
 #define FOE_RESOURCE_POOL_H
 
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/handle.h>
 #include <foe/resource/export.h>
 #include <foe/resource/resource.h>
+#include <foe/result.h>
 #include <foe/split_thread_pool.h>
 
 #ifdef __cplusplus

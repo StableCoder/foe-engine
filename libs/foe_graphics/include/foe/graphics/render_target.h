@@ -5,9 +5,9 @@
 #ifndef FOE_GRAPHICS_RENDER_TARGET_H
 #define FOE_GRAPHICS_RENDER_TARGET_H
 
-#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/handle.h>
+#include <foe/result.h>
 
 #include <stdint.h>
 

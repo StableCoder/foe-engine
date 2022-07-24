@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 
 #ifndef EXPORTER_HPP
 #define EXPORTER_HPP

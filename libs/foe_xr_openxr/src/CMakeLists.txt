@@ -7,8 +7,8 @@ target_sources(
   PRIVATE camera_math.cpp
           core.cpp
           debug_utils.cpp
-          error_code.c
           log.cpp
+          result.c
           runtime.cpp
           session.cpp
           xr_result.c)

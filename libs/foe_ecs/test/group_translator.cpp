@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-#include <foe/ecs/error_code.h>
 #include <foe/ecs/group_translator.h>
+#include <foe/ecs/result.h>
 
 TEST_CASE("foeEcsGroupTranslator - Creation", "[foe][ecs]") {
     foeEcsGroupTranslator test{FOE_NULL_HANDLE};

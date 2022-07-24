@@ -5,7 +5,7 @@
 #ifndef XR_RESULT_H
 #define XR_RESULT_H
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 #include <openxr/openxr.h>
 
 #ifdef __cplusplus

@@ -5,7 +5,7 @@
 #ifndef FOE_XR_OPENXR_CORE_HPP
 #define FOE_XR_OPENXR_CORE_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 #include <foe/xr/export.h>
 #include <openxr/openxr.h>
 

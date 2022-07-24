@@ -5,7 +5,7 @@
 #ifndef FOE_WSI_VULKAN_H
 #define FOE_WSI_VULKAN_H
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 #include <foe/wsi/export.h>
 #include <foe/wsi/window.h>
 #include <vulkan/vulkan.h>

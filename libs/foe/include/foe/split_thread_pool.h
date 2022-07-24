@@ -5,9 +5,9 @@
 #ifndef FOE_SPLIT_THREAD_POOL_H
 #define FOE_SPLIT_THREAD_POOL_H
 
-#include <foe/error_code.h>
 #include <foe/export.h>
 #include <foe/handle.h>
+#include <foe/result.h>
 
 #include <stdint.h>
 

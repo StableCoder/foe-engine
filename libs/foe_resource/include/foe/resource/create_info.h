@@ -5,9 +5,9 @@
 #ifndef FOE_RESOURCE_CREATE_INFO_H
 #define FOE_RESOURCE_CREATE_INFO_H
 
-#include <foe/error_code.h>
 #include <foe/handle.h>
 #include <foe/resource/export.h>
+#include <foe/result.h>
 
 #include <stddef.h>
 

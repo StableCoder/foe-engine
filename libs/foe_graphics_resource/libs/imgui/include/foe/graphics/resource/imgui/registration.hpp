@@ -5,8 +5,8 @@
 #ifndef FOE_GRPAHICS_RESOURCE_IMGUI_REGISTRATION_HPP
 #define FOE_GRPAHICS_RESOURCE_IMGUI_REGISTRATION_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/resource/imgui/export.h>
+#include <foe/result.h>
 
 class foeSimulationImGuiRegistrar;
 

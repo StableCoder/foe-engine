@@ -5,8 +5,8 @@
 #ifndef FOE_SIMULATION_REGISTRATION_HPP
 #define FOE_SIMULATION_REGISTRATION_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/session.h>
+#include <foe/result.h>
 #include <foe/simulation/export.h>
 
 #include <stddef.h>

@@ -10,8 +10,8 @@ add_executable(test_foe_imex)
 add_test(NAME FoE-ImEx-Test COMMAND test_foe_imex)
 
 # Definition
-target_sources(test_foe_imex PRIVATE c_header_compatibility.c error_code.cpp
-                                     importer.cpp)
+target_sources(test_foe_imex PRIVATE c_header_compatibility.c importer.cpp
+                                     result.cpp)
 
 target_link_libraries(test_foe_imex PRIVATE catch foe_imex)
 

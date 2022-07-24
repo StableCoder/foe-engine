@@ -5,10 +5,10 @@
 #ifndef VK_ANIMATION_HPP
 #define VK_ANIMATION_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/resource/pool.h>
+#include <foe/result.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 

@@ -5,8 +5,8 @@
 #ifndef FOE_PHYSICS_IMGUI_REGISTRATION_HPP
 #define FOE_PHYSICS_IMGUI_REGISTRATION_HPP
 
-#include <foe/error_code.h>
 #include <foe/physics/imgui/export.h>
+#include <foe/result.h>
 
 class foeSimulationImGuiRegistrar;
 

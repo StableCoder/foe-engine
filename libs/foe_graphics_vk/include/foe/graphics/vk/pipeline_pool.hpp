@@ -5,9 +5,9 @@
 #ifndef FOE_GRAPHICS_VK_PIPELINE_POOL_HPP
 #define FOE_GRAPHICS_VK_PIPELINE_POOL_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #include <array>

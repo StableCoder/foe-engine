@@ -5,7 +5,7 @@
 #ifndef IMPORT_STATE_HPP
 #define IMPORT_STATE_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 
 #include <string_view>
 

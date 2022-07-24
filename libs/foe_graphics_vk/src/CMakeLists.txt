@@ -8,7 +8,6 @@ target_sources(
           builtin_descriptor_sets.cpp
           debug_callback.cpp
           descriptor_set_layout_pool.cpp
-          error_code.c
           error_colour_image.cpp
           error_depth_stencil_image.cpp
           fragment_descriptor_pool.cpp
@@ -23,6 +22,7 @@ target_sources(
           render_pass_pool.cpp
           render_target.cpp
           runtime.cpp
+          result.c
           session.cpp
           shader_public.cpp
           swapchain.cpp

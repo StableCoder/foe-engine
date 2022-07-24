@@ -2,5 +2,5 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/physics/error_code.h>
+#include <foe/physics/result.h>
 #include <foe/physics/type_defs.h>

@@ -5,7 +5,6 @@
 #ifndef FOE_GRAPHICS_RESOURCE_MESH_LOADER_HPP
 #define FOE_GRAPHICS_RESOURCE_MESH_LOADER_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/session.h>
@@ -15,6 +14,7 @@
 #include <foe/graphics/upload_request.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
+#include <foe/result.h>
 
 #include <array>
 #include <filesystem>

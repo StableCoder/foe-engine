@@ -5,7 +5,7 @@
 #ifndef FOE_XR_OPENXR_VK_VULKAN_HPP
 #define FOE_XR_OPENXR_VK_VULKAN_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 #include <foe/xr/openxr/vk/export.h>
 #include <vulkan/vulkan.h>
 

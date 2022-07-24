@@ -5,9 +5,9 @@
 #ifndef GRAPHICS_HPP
 #define GRAPHICS_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
+#include <foe/result.h>
 #include <foe/xr/runtime.h>
 #include <vulkan/vulkan.h>
 

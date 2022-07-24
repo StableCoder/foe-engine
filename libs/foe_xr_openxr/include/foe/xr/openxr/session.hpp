@@ -5,7 +5,7 @@
 #ifndef FOE_XR_OPENXR_SESSION_HPP
 #define FOE_XR_OPENXR_SESSION_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 #include <foe/xr/export.h>
 #include <foe/xr/runtime.h>
 #include <openxr/openxr.h>

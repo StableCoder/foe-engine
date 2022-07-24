@@ -2,5 +2,5 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/imex/error_code.h>
 #include <foe/imex/exporters.h>
+#include <foe/imex/result.h>

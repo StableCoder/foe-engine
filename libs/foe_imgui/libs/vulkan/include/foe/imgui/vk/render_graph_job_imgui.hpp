@@ -5,9 +5,9 @@
 #ifndef FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP
 #define FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/imgui/vk/export.h>
+#include <foe/result.h>
 
 class foeImGuiRenderer;
 class foeImGuiState;

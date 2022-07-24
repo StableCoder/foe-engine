@@ -4,11 +4,11 @@
 
 target_sources(
   foe_graphics_resource_yaml
-  PRIVATE error_code.c
-          export_registration.cpp
+  PRIVATE export_registration.cpp
           image.cpp
           import_registration.cpp
           material.cpp
           mesh.cpp
+          result.c
           shader.cpp
           vertex_descriptor.cpp)

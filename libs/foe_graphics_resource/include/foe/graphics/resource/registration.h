@@ -5,8 +5,8 @@
 #ifndef FOE_GRAPHICS_RESOURCE_REGISTRATION_H
 #define FOE_GRAPHICS_RESOURCE_REGISTRATION_H
 
-#include <foe/error_code.h>
 #include <foe/graphics/resource/export.h>
+#include <foe/result.h>
 
 #ifdef __cplusplus
 extern "C" {

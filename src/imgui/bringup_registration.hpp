@@ -5,7 +5,7 @@
 #ifndef IMGUI_BRINGUP_REGISTRATION_HPP
 #define IMGUI_BRINGUP_REGISTRATION_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 
 class foeSimulationImGuiRegistrar;
 

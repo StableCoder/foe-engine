@@ -5,8 +5,8 @@
 #ifndef FOE_POSITION_IMGUI_REGISTRATION_HPP
 #define FOE_POSITION_IMGUI_REGISTRATION_HPP
 
-#include <foe/error_code.h>
 #include <foe/position/imgui/export.h>
+#include <foe/result.h>
 
 class foeSimulationImGuiRegistrar;
 

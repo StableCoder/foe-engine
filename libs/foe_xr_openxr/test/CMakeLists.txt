@@ -10,7 +10,7 @@ add_test(NAME FoE-OpenXR-Test COMMAND test_foe_openxr)
 add_executable(test_foe_openxr)
 
 # Definition
-target_sources(test_foe_openxr PRIVATE c_header_compatibility.c error_code.cpp)
+target_sources(test_foe_openxr PRIVATE c_header_compatibility.c result.cpp)
 
 target_link_libraries(test_foe_openxr PRIVATE catch foe_xr_openxr)
 

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-#include <foe/ecs/error_code.h>
 #include <foe/ecs/id.h>
-#include <foe/imex/error_code.h>
+#include <foe/ecs/result.h>
+#include <foe/imex/result.h>
 #include <foe/imex/type_defs.h>
 #include <foe/simulation/group_data.hpp>
 

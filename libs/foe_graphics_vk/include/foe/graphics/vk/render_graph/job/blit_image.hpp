@@ -5,9 +5,9 @@
 #ifndef FOE_GRAPHICS_RENDER_GRAPH_JOB_BLIT_IMAGE_HPP
 #define FOE_GRAPHICS_RENDER_GRAPH_JOB_BLIT_IMAGE_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/vk/render_graph.hpp>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #include <string_view>

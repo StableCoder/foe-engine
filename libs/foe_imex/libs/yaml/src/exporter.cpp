@@ -4,9 +4,9 @@
 
 #include <foe/imex/yaml/exporter.hpp>
 
-#include <foe/ecs/error_code.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/ecs/name_map.h>
+#include <foe/ecs/result.h>
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/indexes.hpp>
 #include <foe/imex/importer.h>

@@ -5,10 +5,10 @@
 #ifndef FOE_GRAPHICS_UPLOAD_BUFFER_H
 #define FOE_GRAPHICS_UPLOAD_BUFFER_H
 
-#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/handle.h>
+#include <foe/result.h>
 
 #include <stdint.h>
 

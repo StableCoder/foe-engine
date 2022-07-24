@@ -6,8 +6,8 @@
 #define RENDER_SCENE_HPP
 
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/graphics/vk/render_graph.hpp>
+#include <foe/result.h>
 
 struct foeSimulation;
 

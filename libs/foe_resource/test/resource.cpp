@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-#include <foe/resource/error_code.h>
 #include <foe/resource/resource.h>
 #include <foe/resource/resource_fns.h>
+#include <foe/resource/result.h>
 
 #include "test_log_sink.hpp"
 

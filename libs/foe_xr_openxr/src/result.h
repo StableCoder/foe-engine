@@ -5,7 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/xr/openxr/error_code.h>
+#include <foe/xr/openxr/result.h>
 
 #ifdef __cplusplus
 extern "C" {

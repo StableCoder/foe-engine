@@ -5,7 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/wsi/error_code.h>
+#include <foe/wsi/result.h>
 
 #ifdef __cplusplus
 extern "C" {

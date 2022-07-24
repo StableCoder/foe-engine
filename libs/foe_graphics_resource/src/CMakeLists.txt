@@ -4,8 +4,7 @@
 
 target_sources(
   foe_graphics_resource
-  PRIVATE error_code.c
-          image_create_info.cpp
+  PRIVATE image_create_info.cpp
           image_loader.cpp
           log.cpp
           material_create_info.cpp
@@ -13,6 +12,7 @@ target_sources(
           mesh_create_info.cpp
           mesh_loader.cpp
           registration.cpp
+          result.c
           shader_create_info.cpp
           shader_loader.cpp
           vertex_descriptor_create_info.cpp

@@ -2,5 +2,5 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe_wsi_glfw3 PRIVATE error_code.c keyboard.cpp mouse.cpp
+target_sources(foe_wsi_glfw3 PRIVATE keyboard.cpp mouse.cpp result.c
                                      vk_result.c vulkan.cpp window.cpp)

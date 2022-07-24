@@ -5,7 +5,7 @@
 #ifndef REGISTER_BASIC_FUNCTIONALITY_HPP
 #define REGISTER_BASIC_FUNCTIONALITY_HPP
 
-#include <foe/error_code.h>
+#include <foe/result.h>
 
 foeResultSet registerBasicFunctionality() noexcept;
 

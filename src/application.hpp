@@ -6,13 +6,13 @@
 #define APPLICATION_HPP
 
 #include <foe/ecs/id.h>
-#include <foe/error_code.h>
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
+#include <foe/result.h>
 #include <foe/split_thread_pool.h>
 #include <foe/xr/runtime.h>
 

@@ -9,10 +9,10 @@
 #include <foe/ecs/id.h>
 #include <foe/ecs/indexes.h>
 #include <foe/ecs/name_map.h>
-#include <foe/error_code.h>
 #include <foe/handle.h>
 #include <foe/imex/export.h>
 #include <foe/resource/create_info.h>
+#include <foe/result.h>
 #include <foe/type_defs.h>
 
 FOE_DEFINE_HANDLE(foeImexImporter)

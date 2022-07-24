@@ -7,13 +7,13 @@ target_sources(foe_bringup PRIVATE main.cpp)
 target_sources(
   foe_bringup_lib
   PRIVATE application.cpp
-          error_code.c
           frame_timer.cpp
           graphics.cpp
           log.cpp
           logging.cpp
           window.cpp
           register_basic_functionality.cpp
+          result.c
           vk_result.c
           #
           render_graph/render_scene.cpp)

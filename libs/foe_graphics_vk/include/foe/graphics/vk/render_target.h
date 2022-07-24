@@ -5,11 +5,11 @@
 #ifndef FOE_GRAPHICS_VK_RENDER_TARGET_H
 #define FOE_GRAPHICS_VK_RENDER_TARGET_H
 
-#include <foe/error_code.h>
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/render_pass_pool.hpp>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #include <stdint.h>

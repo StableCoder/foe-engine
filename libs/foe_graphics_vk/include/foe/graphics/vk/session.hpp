@@ -5,11 +5,11 @@
 #ifndef FOE_GRAPHICS_VK_SESSION_HPP
 #define FOE_GRAPHICS_VK_SESSION_HPP
 
-#include <foe/error_code.h>
 #include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
+#include <foe/result.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 

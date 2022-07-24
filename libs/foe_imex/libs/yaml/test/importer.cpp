@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-#include <foe/ecs/error_code.h>
 #include <foe/ecs/indexes.h>
 #include <foe/ecs/name_map.h>
-#include <foe/imex/error_code.h>
-#include <foe/imex/yaml/error_code.h>
+#include <foe/ecs/result.h>
+#include <foe/imex/result.h>
 #include <foe/imex/yaml/importer.hpp>
+#include <foe/imex/yaml/result.h>
 #include <foe/simulation/simulation.hpp>
 
 #include "test_common.hpp"

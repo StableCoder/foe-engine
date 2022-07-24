@@ -5,7 +5,7 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-#include <foe/simulation/imgui/error_code.h>
+#include <foe/simulation/imgui/result.h>
 
 #ifdef __cplusplus
 extern "C" {

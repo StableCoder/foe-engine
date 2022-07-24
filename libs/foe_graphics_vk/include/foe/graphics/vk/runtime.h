@@ -5,9 +5,9 @@
 #ifndef FOE_GRAPHICS_VK_RUNTIME_H
 #define FOE_GRAPHICS_VK_RUNTIME_H
 
-#include <foe/error_code.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.h>
+#include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #include <stdbool.h>
