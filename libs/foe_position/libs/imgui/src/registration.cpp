@@ -6,6 +6,7 @@
 
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
+#include <foe/simulation/type_defs.h>
 
 #include "position_3d.hpp"
 

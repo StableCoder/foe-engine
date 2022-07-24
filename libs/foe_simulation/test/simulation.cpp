@@ -6,14 +6,14 @@
 #include <foe/simulation/error_code.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <foe/simulation/type_defs.h>
+#include <foe/type_defs.h>
 
 namespace {
 foeResult pCreateFn(foeSimulation *) { return {}; }
 size_t pDestroyFn(foeSimulation *) { return 0; }
 } // namespace
 
-constexpr foeSimulationUUID cTestFunctionalityID = FOE_SIMULATION_FUNCTIONALITY_ID(0);
+constexpr foeSimulationUUID cTestFunctionalityID = FOE_PLUGIN_ID(0);
 
 TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
     SECTION("Registering and deregistering the same set succeeds") {

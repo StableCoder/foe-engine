@@ -5,9 +5,9 @@
 #ifndef FOE_GRAPHICS_RESOURCE_TYPE_DEFS_H
 #define FOE_GRAPHICS_RESOURCE_TYPE_DEFS_H
 
-#include <foe/simulation/type_defs.h>
+#include <foe/type_defs.h>
 
-#define FOE_GRAPHICS_RESOURCE_FUNCTIONALITY_ID FOE_SIMULATION_FUNCTIONALITY_ID(1)
+#define FOE_GRAPHICS_RESOURCE_FUNCTIONALITY_ID FOE_PLUGIN_ID(1)
 
 enum foeGraphicsResourceStructureType {
     // Image

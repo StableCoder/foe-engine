@@ -32,8 +32,7 @@ typedef foeResult (*PFN_foeSimulationInitializeGraphics)(foeSimulation *, foeGfx
 typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulation *);
 
 struct foeSimulationFunctionalty {
-    /// The UUID of the functionality, must be valid/derived from the
-    /// FOE_SIMULATION_FUNCTIONALITY_ID macro
+    /// The UUID of the functionality, must be valid/derived from the FOE_PLUGIN_ID macro
     foeSimulationUUID id;
     /// Called on any created SimulationState, to create related data pools, uninitialized systems.
     PFN_foeSimulationCreate pCreateFn;

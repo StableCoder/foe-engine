@@ -5,13 +5,13 @@
 #ifndef TYPE_DEFS_H
 #define TYPE_DEFS_H
 
-#include <foe/simulation/type_defs.h>
+#include <foe/type_defs.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define FOE_BRINGUP_APP_FUNCTIONALITY_ID FOE_SIMULATION_FUNCTIONALITY_ID(0)
+#define FOE_BRINGUP_APP_FUNCTIONALITY_ID FOE_PLUGIN_ID(0)
 
 typedef enum foeBringupStructureType {
     // Resources

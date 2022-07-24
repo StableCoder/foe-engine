@@ -5,9 +5,9 @@
 #ifndef FOE_PHYSICS_TYPE_DEFS_H
 #define FOE_PHYSICS_TYPE_DEFS_H
 
-#include <foe/simulation/type_defs.h>
+#include <foe/type_defs.h>
 
-#define FOE_PHYSICS_FUNCTIONALITY_ID FOE_SIMULATION_FUNCTIONALITY_ID(2)
+#define FOE_PHYSICS_FUNCTIONALITY_ID FOE_PLUGIN_ID(2)
 
 typedef enum foePhysicsStructureType {
     // Resources
