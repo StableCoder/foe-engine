@@ -21,7 +21,7 @@ struct PerFrameData {
     VkCommandBuffer commandBuffer;
     std::array<VkCommandBuffer, 2> xrCommandBuffers;
 
-    foeResult create(VkDevice device) noexcept {
+    foeResultSet create(VkDevice device) noexcept {
         VkResult vkResult{VK_SUCCESS};
 
         // Semaphores

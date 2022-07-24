@@ -17,13 +17,13 @@ struct ResolveJobUsedResources {
     foeGfxVkRenderGraphResource dstImage;
 };
 
-FOE_GFX_EXPORT foeResult foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                       std::string_view name,
-                                                       VkFence fence,
-                                                       foeGfxVkRenderGraphResource srcImage,
-                                                       VkImageLayout srcFinalLayout,
-                                                       foeGfxVkRenderGraphResource dstImage,
-                                                       VkImageLayout dstFinalLayout,
-                                                       ResolveJobUsedResources *pResourcesOut);
+FOE_GFX_EXPORT foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                          std::string_view name,
+                                                          VkFence fence,
+                                                          foeGfxVkRenderGraphResource srcImage,
+                                                          VkImageLayout srcFinalLayout,
+                                                          foeGfxVkRenderGraphResource dstImage,
+                                                          VkImageLayout dstFinalLayout,
+                                                          ResolveJobUsedResources *pResourcesOut);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_RESOLVE_IMAGE_HPP

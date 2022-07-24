@@ -35,8 +35,8 @@ foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest);
 FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
                                                foeGfxUploadRequest uploadRequest);
 
-FOE_GFX_EXPORT foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
-                                                     foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
+                                                        foeGfxUploadRequest uploadRequest);
 
 #ifdef __cplusplus
 }

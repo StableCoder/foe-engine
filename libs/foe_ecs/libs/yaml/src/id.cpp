@@ -46,7 +46,7 @@ bool yaml_read_id_optional(std::string const &nodeName,
         foeIdGroupValue groupValue = foeIdPersistentGroupValue;
         yaml_read_optional("group_id", subNode, groupValue);
         if (groupTranslator != FOE_NULL_HANDLE) {
-            foeResult result =
+            foeResultSet result =
                 foeEcsGetTranslatedGroup(groupTranslator, foeIdValueToGroup(groupValue), &group);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];

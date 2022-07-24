@@ -13,7 +13,7 @@
 
 #include <string_view>
 
-FOE_OPENXR_VK_EXPORT foeResult
+FOE_OPENXR_VK_EXPORT foeResultSet
 foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                          std::string_view name,
                                          VkFence fence,

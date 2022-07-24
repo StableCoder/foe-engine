@@ -10,22 +10,22 @@
 #include "../../result.h"
 #include "../../vk_result.h"
 
-foeResult foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                       std::string_view name,
-                                       VkFence fence,
-                                       std::string_view imageName,
-                                       VkImage image,
-                                       VkImageView view,
-                                       VkFormat format,
-                                       VkExtent2D extent,
-                                       VkImageLayout layout,
-                                       bool isMutable,
-                                       std::vector<VkSemaphore> waitSemaphores,
-                                       foeGfxVkRenderGraphResource *pResourcesOut) {
+foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                          std::string_view name,
+                                          VkFence fence,
+                                          std::string_view imageName,
+                                          VkImage image,
+                                          VkImageView view,
+                                          VkFormat format,
+                                          VkExtent2D extent,
+                                          VkImageLayout layout,
+                                          bool isMutable,
+                                          std::vector<VkSemaphore> waitSemaphores,
+                                          foeGfxVkRenderGraphResource *pResourcesOut) {
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         auto realWaitSemaphores = waitSemaphores;
         std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -73,8 +73,8 @@ foeResult foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResult result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name,
-                                                 false, std::move(jobFn), &renderGraphJob);
+    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn,
+                                                    name, false, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
     } else {

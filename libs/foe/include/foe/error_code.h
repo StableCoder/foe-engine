@@ -24,10 +24,10 @@ extern "C" {
 /// human-readable string
 typedef void (*PFN_foeResultToString)(int value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
-typedef struct foeResult {
+typedef struct foeResultSet {
     int value;
     PFN_foeResultToString toString;
-} foeResult;
+} foeResultSet;
 
 #ifdef __cplusplus
 }

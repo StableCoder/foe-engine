@@ -62,12 +62,12 @@ void buttonCallback(GLFWwindow *pWindow, int button, int action, int mods) {
     buttonCallback(&pWsiWindow->mouse, button, action, mods);
 }
 
-foeResult foeWsiCreateWindowErrC(
+foeResultSet foeWsiCreateWindowErrC(
     int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow) {
     if (!glfwInit()) {
         return to_foeResult(FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND);
     }
-    foeResult result = to_foeResult(FOE_WSI_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_WSI_SUCCESS);
 
     // Since this is exclusively a Vulkan platform, don't initialize OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -130,7 +130,7 @@ void foeWsiGlobalProcessing() {
     glfwPollEvents();
 }
 
-foeResult foeWsiCreateWindow(
+foeResultSet foeWsiCreateWindow(
     int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow) {
     return foeWsiCreateWindowErrC(width, height, pTitle, visible, pWindow);
 }

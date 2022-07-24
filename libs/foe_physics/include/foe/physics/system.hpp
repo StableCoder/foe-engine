@@ -28,10 +28,10 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     foePhysicsSystem();
     ~foePhysicsSystem();
 
-    foeResult initialize(foeResourcePool resourcePool,
-                         foeCollisionShapeLoader *pCollisionShapeLoader,
-                         foeRigidBodyPool *pRigidBodyPool,
-                         foePosition3dPool *pPosition3dPool);
+    foeResultSet initialize(foeResourcePool resourcePool,
+                            foeCollisionShapeLoader *pCollisionShapeLoader,
+                            foeRigidBodyPool *pRigidBodyPool,
+                            foePosition3dPool *pPosition3dPool);
     void deinitialize();
     bool initialized() const noexcept;
 

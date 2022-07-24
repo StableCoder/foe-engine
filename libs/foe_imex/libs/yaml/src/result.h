@@ -12,8 +12,8 @@
 extern "C" {
 #endif
 
-inline foeResult to_foeResult(foeImexYamlResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foeImexYamlResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeImexYamlResultToString,
     };
@@ -21,8 +21,8 @@ inline foeResult to_foeResult(foeImexYamlResult value) {
     return result;
 }
 
-inline foeResult imex_to_foeResult(foeImexResult value) {
-    foeResult result = {
+inline foeResultSet imex_to_foeResult(foeImexResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeImexResultToString,
     };

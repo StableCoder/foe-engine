@@ -25,12 +25,13 @@ struct foeGfxVkRenderTargetSpec {
     uint32_t count;
 };
 
-FOE_GFX_EXPORT foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
-                                                    foeGfxDelayedCaller delayedCaller,
-                                                    foeGfxVkRenderTargetSpec const *pSpecifications,
-                                                    uint32_t count,
-                                                    VkSampleCountFlags samples,
-                                                    foeGfxRenderTarget *pRenderTarget);
+FOE_GFX_EXPORT foeResultSet
+foeGfxVkCreateRenderTarget(foeGfxSession session,
+                           foeGfxDelayedCaller delayedCaller,
+                           foeGfxVkRenderTargetSpec const *pSpecifications,
+                           uint32_t count,
+                           VkSampleCountFlags samples,
+                           foeGfxRenderTarget *pRenderTarget);
 
 FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget);
 

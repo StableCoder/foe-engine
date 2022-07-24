@@ -13,7 +13,7 @@
 
 #include <cstring>
 
-foeResult createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
+foeResultSet createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
     std::vector<char const *> layers;
     std::vector<char const *> extensions;
 
@@ -27,10 +27,10 @@ foeResult createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
                                   extensions.data(), false, debugLogging, pRuntime);
 }
 
-foeResult createXrSession(foeXrRuntime runtime,
-                          foeGfxSession gfxSession,
-                          foeOpenXrSession *pSession) {
-    foeResult result;
+foeResultSet createXrSession(foeXrRuntime runtime,
+                             foeGfxSession gfxSession,
+                             foeOpenXrSession *pSession) {
+    foeResultSet result;
     XrSystemId xrSystemId{};
 
     // OpenXR SystemId

@@ -15,7 +15,7 @@
 
 class foeGfxVkRenderPassPool {
   public:
-    FOE_GFX_EXPORT foeResult initialize(foeGfxSession session) noexcept;
+    FOE_GFX_EXPORT foeResultSet initialize(foeGfxSession session) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
 
     /**

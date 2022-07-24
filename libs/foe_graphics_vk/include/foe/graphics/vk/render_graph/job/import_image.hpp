@@ -12,17 +12,17 @@
 
 #include <string_view>
 
-FOE_GFX_EXPORT foeResult foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                      std::string_view name,
-                                                      VkFence fence,
-                                                      std::string_view imageName,
-                                                      VkImage image,
-                                                      VkImageView view,
-                                                      VkFormat format,
-                                                      VkExtent2D extent,
-                                                      VkImageLayout layout,
-                                                      bool isMutable,
-                                                      std::vector<VkSemaphore> waitSemaphores,
-                                                      foeGfxVkRenderGraphResource *pResourceOut);
+FOE_GFX_EXPORT foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                         std::string_view name,
+                                                         VkFence fence,
+                                                         std::string_view imageName,
+                                                         VkImage image,
+                                                         VkImageView view,
+                                                         VkFormat format,
+                                                         VkExtent2D extent,
+                                                         VkImageLayout layout,
+                                                         bool isMutable,
+                                                         std::vector<VkSemaphore> waitSemaphores,
+                                                         foeGfxVkRenderGraphResource *pResourceOut);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_IMPORT_IMAGE_HPP

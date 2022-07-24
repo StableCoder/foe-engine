@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-FOE_PHYSICS_YAML_EXPORT foeResult foePhysicsYamlRegisterImporters();
+FOE_PHYSICS_YAML_EXPORT foeResultSet foePhysicsYamlRegisterImporters();
 
 FOE_PHYSICS_YAML_EXPORT void foePhysicsYamlDeregisterImporters();
 

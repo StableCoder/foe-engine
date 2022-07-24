@@ -10,15 +10,15 @@
 #include <foe/xr/runtime.h>
 #include <openxr/openxr.h>
 
-FOE_XR_EXPORT foeResult foeOpenXrCreateRuntime(char const *appName,
-                                               uint32_t appVersion,
-                                               uint32_t layerCount,
-                                               char const *const *ppLayerNames,
-                                               uint32_t extensionCount,
-                                               char const *const *ppExtensionNames,
-                                               bool validation,
-                                               bool debugLogging,
-                                               foeXrRuntime *pRuntime);
+FOE_XR_EXPORT foeResultSet foeOpenXrCreateRuntime(char const *appName,
+                                                  uint32_t appVersion,
+                                                  uint32_t layerCount,
+                                                  char const *const *ppLayerNames,
+                                                  uint32_t extensionCount,
+                                                  char const *const *ppExtensionNames,
+                                                  bool validation,
+                                                  bool debugLogging,
+                                                  foeXrRuntime *pRuntime);
 
 /** @brief Queries the XrInstance-level functionality the runtime was created with
  * @param runtime is the handle to the runtime to query
@@ -26,8 +26,8 @@ FOE_XR_EXPORT foeResult foeOpenXrCreateRuntime(char const *appName,
  * created with.
  * @return FOE_OPENXR_SUCCESS
  */
-FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime,
-                                                         XrVersion *pApiVersion);
+FOE_XR_EXPORT foeResultSet foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime,
+                                                            XrVersion *pApiVersion);
 
 /** @brief Enumerate the enabled layers for the given runtime
  * @param runtime is the handle to the runtime whose layers will be queried.
@@ -43,9 +43,9 @@ FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime,
  * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
  * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
  */
-FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
-                                                        uint32_t *pLayerNamesLength,
-                                                        char *pLayerNames);
+FOE_XR_EXPORT foeResultSet foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
+                                                           uint32_t *pLayerNamesLength,
+                                                           char *pLayerNames);
 
 /** @brief Enumerate the enabled extensions for the given runtime
  * @param runtime is the handle to the runtime whose extensions will be queried.
@@ -62,13 +62,13 @@ FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
  * written, and FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate
  * that not all names were returned.
  */
-FOE_XR_EXPORT foeResult foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
-                                                            uint32_t *pExtensionNamesLength,
-                                                            char *pExtensionNames);
+FOE_XR_EXPORT foeResultSet foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
+                                                               uint32_t *pExtensionNamesLength,
+                                                               char *pExtensionNames);
 
-FOE_XR_EXPORT foeResult foeXrDestroyRuntime(foeXrRuntime runtime);
+FOE_XR_EXPORT foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime);
 
-FOE_XR_EXPORT foeResult foeXrProcessEvents(foeXrRuntime runtime);
+FOE_XR_EXPORT foeResultSet foeXrProcessEvents(foeXrRuntime runtime);
 
 #include <openxr/openxr.h>
 

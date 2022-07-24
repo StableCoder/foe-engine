@@ -16,9 +16,9 @@
 #include "render_state_pool.hpp"
 #include "type_defs.h"
 
-foeResult VkAnimationPool::initialize(foeResourcePool resourcePool,
-                                      foeArmatureStatePool *pArmatureStatePool,
-                                      foeRenderStatePool *pRenderStatePool) {
+foeResultSet VkAnimationPool::initialize(foeResourcePool resourcePool,
+                                         foeArmatureStatePool *pArmatureStatePool,
+                                         foeRenderStatePool *pRenderStatePool) {
     if (resourcePool == FOE_NULL_HANDLE || pArmatureStatePool == nullptr ||
         pRenderStatePool == nullptr)
         return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
@@ -42,7 +42,7 @@ void VkAnimationPool::deinitialize() {
 
 bool VkAnimationPool::initialized() const noexcept { return mResourcePool != FOE_NULL_HANDLE; }
 
-foeResult VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) {
+foeResultSet VkAnimationPool::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
         return to_foeResult(FOE_BRINGUP_NOT_INITIALIZED);
 

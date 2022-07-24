@@ -13,7 +13,7 @@
 #include "session.hpp"
 #include "vk_result.h"
 
-foeResult foeGfxVkRenderPassPool::initialize(foeGfxSession session) noexcept {
+foeResultSet foeGfxVkRenderPassPool::initialize(foeGfxSession session) noexcept {
     auto *pSession = session_from_handle(session);
 
     mDevice = pSession->device;

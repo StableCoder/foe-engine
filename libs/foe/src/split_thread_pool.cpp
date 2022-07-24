@@ -34,8 +34,8 @@ struct TaskGroupData {
     std::atomic_uint runningCount;
 };
 
-inline foeResult to_foeResult(foeSplitThreadResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foeSplitThreadResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeSplitThreadResultToString,
     };
@@ -168,9 +168,9 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
 
 } // namespace
 
-foeResult foeCreateThreadPool(uint32_t syncThreads,
-                              uint32_t asyncThreads,
-                              foeSplitThreadPool *pPool) {
+foeResultSet foeCreateThreadPool(uint32_t syncThreads,
+                                 uint32_t asyncThreads,
+                                 foeSplitThreadPool *pPool) {
     if (syncThreads == 0)
         return to_foeResult(FOE_THREAD_POOL_ERROR_ZERO_SYNC_THREADS);
     if (asyncThreads == 0)
@@ -214,7 +214,7 @@ void foeDestroyThreadPool(foeSplitThreadPool pool) {
     delete pPool;
 }
 
-foeResult foeStartThreadPool(foeSplitThreadPool pool) {
+foeResultSet foeStartThreadPool(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     // Check not already running
@@ -237,7 +237,7 @@ foeResult foeStartThreadPool(foeSplitThreadPool pool) {
     return to_foeResult(FOE_THREAD_POOL_SUCCESS);
 }
 
-foeResult foeStopThreadPool(foeSplitThreadPool pool) {
+foeResultSet foeStopThreadPool(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     bool expected = true;
@@ -299,7 +299,7 @@ uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool) {
     return pPool->asyncTasks.runningCount;
 }
 
-foeResult foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext) {
+foeResultSet foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
@@ -311,7 +311,7 @@ foeResult foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *p
     return to_foeResult(FOE_THREAD_POOL_SUCCESS);
 }
 
-foeResult foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext) {
+foeResultSet foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
@@ -322,7 +322,7 @@ foeResult foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *
     return to_foeResult(FOE_THREAD_POOL_SUCCESS);
 }
 
-foeResult foeWaitSyncThreads(foeSplitThreadPool pool) {
+foeResultSet foeWaitSyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
@@ -334,7 +334,7 @@ foeResult foeWaitSyncThreads(foeSplitThreadPool pool) {
     return to_foeResult(FOE_THREAD_POOL_SUCCESS);
 }
 
-foeResult foeWaitAsyncThreads(foeSplitThreadPool pool) {
+foeResultSet foeWaitAsyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
@@ -346,7 +346,7 @@ foeResult foeWaitAsyncThreads(foeSplitThreadPool pool) {
     return to_foeResult(FOE_THREAD_POOL_SUCCESS);
 }
 
-foeResult foeWaitAllThreads(foeSplitThreadPool pool) {
+foeResultSet foeWaitAllThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)

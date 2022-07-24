@@ -10,10 +10,10 @@
 
 class foeSimulationImGuiRegistrar;
 
-FOE_GFX_RES_IMGUI_EXPORT foeResult
+FOE_GFX_RES_IMGUI_EXPORT foeResultSet
 foeGraphicsResourceImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
 
-FOE_GFX_RES_IMGUI_EXPORT foeResult
+FOE_GFX_RES_IMGUI_EXPORT foeResultSet
 foeGraphicsResourceImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
 
 #endif // FOE_GRPAHICS_RESOURCE_IMGUI_REGISTRATION_HPP

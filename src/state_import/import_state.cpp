@@ -73,11 +73,11 @@ bool generateDependencyImporters(uint32_t dependencyCount,
 
 } // namespace
 
-foeResult importState(std::string_view topLevelDataSet,
-                      foeSearchPaths *pSearchPaths,
-                      foeSimulation **ppSimulationSet) {
+foeResultSet importState(std::string_view topLevelDataSet,
+                         foeSearchPaths *pSearchPaths,
+                         foeSimulation **ppSimulationSet) {
     foeSimulation *pTempSimSet;
-    foeResult result = foeCreateSimulation(true, &pTempSimSet);
+    foeResultSet result = foeCreateSimulation(true, &pTempSimSet);
     if (result.value != FOE_SUCCESS)
         return result;
 
@@ -248,7 +248,7 @@ foeResult importState(std::string_view topLevelDataSet,
 
             // Add to GroupData
             char const *pGroupName;
-            foeResult result = foeImexImporterGetGroupName(it, &pGroupName);
+            foeResultSet result = foeImexImporterGetGroupName(it, &pGroupName);
             if (result.value != FOE_SUCCESS) {
                 return to_foeResult(FOE_STATE_IMPORT_ERROR_ECS_GROUP_SETUP_FAILURE);
             }
@@ -331,7 +331,7 @@ foeResult importState(std::string_view topLevelDataSet,
                     CallContext *pCallContext = (CallContext *)pContext;
 
                     uint32_t nameLength;
-                    foeResult result = foeImexImporterGetResourceEditorName(
+                    foeResultSet result = foeImexImporterGetResourceEditorName(
                         pCallContext->importer, foeIdGetIndex(id), &nameLength, NULL);
                     if (result.value == FOE_SUCCESS) {
                         std::string editorName;
@@ -370,7 +370,7 @@ foeResult importState(std::string_view topLevelDataSet,
                 CallContext *pCallContext = (CallContext *)pContext;
 
                 uint32_t nameLength;
-                foeResult result = foeImexImporterGetResourceEditorName(
+                foeResultSet result = foeImexImporterGetResourceEditorName(
                     pCallContext->importer, foeIdGetIndex(id), &nameLength, NULL);
                 if (result.value == FOE_SUCCESS) {
                     std::string editorName;
@@ -422,7 +422,7 @@ foeResult importState(std::string_view topLevelDataSet,
                         CallContext *pCallContext = (CallContext *)pContext;
 
                         foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
-                        foeResult result = foeImexImporterGetResourceCreateInfo(
+                        foeResultSet result = foeImexImporterGetResourceCreateInfo(
                             pCallContext->importer, id, &resourceCI);
                         if (result.value != FOE_SUCCESS)
                             return;
@@ -469,8 +469,8 @@ foeResult importState(std::string_view topLevelDataSet,
                     CallContext *pCallContext = (CallContext *)pContext;
 
                     foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
-                    foeResult result = foeImexImporterGetResourceCreateInfo(pCallContext->importer,
-                                                                            id, &resourceCI);
+                    foeResultSet result = foeImexImporterGetResourceCreateInfo(
+                        pCallContext->importer, id, &resourceCI);
                     if (result.value != FOE_SUCCESS)
                         return;
 

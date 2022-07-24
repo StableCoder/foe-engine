@@ -16,16 +16,16 @@ struct RenderSceneOutputResources {
     foeGfxVkRenderGraphResource depthRenderTarget;
 };
 
-foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
-                         std::string_view name,
-                         VkFence fence,
-                         foeGfxVkRenderGraphResource colourRenderTarget,
-                         VkImageLayout finalColourLayout,
-                         foeGfxVkRenderGraphResource depthRenderTarget,
-                         VkImageLayout finalDepthLayout,
-                         VkSampleCountFlags renderTargetSamples,
-                         foeSimulation *pSimulation,
-                         VkDescriptorSet cameraDescriptor,
-                         RenderSceneOutputResources &outputResources);
+foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
+                            std::string_view name,
+                            VkFence fence,
+                            foeGfxVkRenderGraphResource colourRenderTarget,
+                            VkImageLayout finalColourLayout,
+                            foeGfxVkRenderGraphResource depthRenderTarget,
+                            VkImageLayout finalDepthLayout,
+                            VkSampleCountFlags renderTargetSamples,
+                            foeSimulation *pSimulation,
+                            VkDescriptorSet cameraDescriptor,
+                            RenderSceneOutputResources &outputResources);
 
 #endif // RENDER_SCENE_HPP

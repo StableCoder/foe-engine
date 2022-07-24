@@ -7,7 +7,7 @@
 
 #include <foe/error_code.h>
 
-foeResult registerBasicFunctionality() noexcept;
+foeResultSet registerBasicFunctionality() noexcept;
 
 void deregisterBasicFunctionality() noexcept;
 

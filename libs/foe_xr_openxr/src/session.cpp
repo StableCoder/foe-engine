@@ -10,10 +10,10 @@
 #include "runtime.hpp"
 #include "xr_result.h"
 
-foeResult foeOpenXrSession::createSession(foeXrRuntime runtime,
-                                          XrSystemId systemId,
-                                          XrViewConfigurationType configType,
-                                          void const *pGraphicsBinding) {
+foeResultSet foeOpenXrSession::createSession(foeXrRuntime runtime,
+                                             XrSystemId systemId,
+                                             XrViewConfigurationType configType,
+                                             void const *pGraphicsBinding) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     XrSessionCreateInfo sessionCI{
@@ -37,7 +37,7 @@ foeResult foeOpenXrSession::createSession(foeXrRuntime runtime,
 
     // Reference Space
     std::vector<XrReferenceSpaceType> refSpaces;
-    foeResult result = foeOpenXrEnumerateReferenceSpaces(session, refSpaces);
+    foeResultSet result = foeOpenXrEnumerateReferenceSpaces(session, refSpaces);
     if (result.value != FOE_SUCCESS) {
         return result;
     }
@@ -75,7 +75,7 @@ void foeOpenXrSession::destroySession() {
     session = XR_NULL_HANDLE;
 }
 
-foeResult foeOpenXrSession::beginSession() {
+foeResultSet foeOpenXrSession::beginSession() {
     XrSessionBeginInfo sessionBI{
         .type = XR_TYPE_SESSION_BEGIN_INFO,
         .primaryViewConfigurationType = type,
@@ -91,8 +91,8 @@ foeResult foeOpenXrSession::beginSession() {
     return xr_to_foeResult(XR_SUCCESS);
 }
 
-foeResult foeOpenXrSession::requestExitSession() {
+foeResultSet foeOpenXrSession::requestExitSession() {
     return xr_to_foeResult(xrRequestExitSession(session));
 }
 
-foeResult foeOpenXrSession::endSession() { return xr_to_foeResult(xrEndSession(session)); }
+foeResultSet foeOpenXrSession::endSession() { return xr_to_foeResult(xrEndSession(session)); }

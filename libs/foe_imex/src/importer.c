@@ -28,7 +28,7 @@ void foeDestroyImporter(foeImexImporter importer) {
         return pBaseFns->destroyImporter(importer);
 }
 
-foeResult foeImexImporterGetGroupID(foeImexImporter importer, foeIdGroup *pGroup) {
+foeResultSet foeImexImporterGetGroupID(foeImexImporter importer, foeIdGroup *pGroup) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -43,7 +43,7 @@ foeResult foeImexImporterGetGroupID(foeImexImporter importer, foeIdGroup *pGroup
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetGroupName(foeImexImporter importer, char const **pGroupName) {
+foeResultSet foeImexImporterGetGroupName(foeImexImporter importer, char const **pGroupName) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -58,8 +58,8 @@ foeResult foeImexImporterGetGroupName(foeImexImporter importer, char const **pGr
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterSetGroupTranslator(foeImexImporter importer,
-                                            foeEcsGroupTranslator groupTranslator) {
+foeResultSet foeImexImporterSetGroupTranslator(foeImexImporter importer,
+                                               foeEcsGroupTranslator groupTranslator) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -74,11 +74,11 @@ foeResult foeImexImporterSetGroupTranslator(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetDependencies(foeImexImporter importer,
-                                         uint32_t *pDependencyCount,
-                                         foeIdGroup *pDependencyGroups,
-                                         uint32_t *pNamesLength,
-                                         char *pNames) {
+foeResultSet foeImexImporterGetDependencies(foeImexImporter importer,
+                                            uint32_t *pDependencyCount,
+                                            foeIdGroup *pDependencyGroups,
+                                            uint32_t *pNamesLength,
+                                            char *pNames) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -94,7 +94,8 @@ foeResult foeImexImporterGetDependencies(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetGroupEntityIndexData(foeImexImporter importer, foeEcsIndexes indexes) {
+foeResultSet foeImexImporterGetGroupEntityIndexData(foeImexImporter importer,
+                                                    foeEcsIndexes indexes) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -109,8 +110,8 @@ foeResult foeImexImporterGetGroupEntityIndexData(foeImexImporter importer, foeEc
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetGroupResourceIndexData(foeImexImporter importer,
-                                                   foeEcsIndexes indexes) {
+foeResultSet foeImexImporterGetGroupResourceIndexData(foeImexImporter importer,
+                                                      foeEcsIndexes indexes) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -125,9 +126,9 @@ foeResult foeImexImporterGetGroupResourceIndexData(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetStateData(foeImexImporter importer,
-                                      foeEcsNameMap entityNameMap,
-                                      struct foeSimulation const *pSimulation) {
+foeResultSet foeImexImporterGetStateData(foeImexImporter importer,
+                                         foeEcsNameMap entityNameMap,
+                                         struct foeSimulation const *pSimulation) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -142,9 +143,9 @@ foeResult foeImexImporterGetStateData(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetResourceDefinitions(foeImexImporter importer,
-                                                foeEcsNameMap resourceNameMap,
-                                                struct foeSimulation const *pSimulation) {
+foeResultSet foeImexImporterGetResourceDefinitions(foeImexImporter importer,
+                                                   foeEcsNameMap resourceNameMap,
+                                                   struct foeSimulation const *pSimulation) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -159,10 +160,10 @@ foeResult foeImexImporterGetResourceDefinitions(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetResourceEditorName(foeImexImporter importer,
-                                               foeResourceID resourceID,
-                                               uint32_t *pNameLength,
-                                               char *pName) {
+foeResultSet foeImexImporterGetResourceEditorName(foeImexImporter importer,
+                                                  foeResourceID resourceID,
+                                                  uint32_t *pNameLength,
+                                                  char *pName) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -177,9 +178,9 @@ foeResult foeImexImporterGetResourceEditorName(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterGetResourceCreateInfo(foeImexImporter importer,
-                                               foeId resourceID,
-                                               foeResourceCreateInfo *pResourceCreateInfo) {
+foeResultSet foeImexImporterGetResourceCreateInfo(foeImexImporter importer,
+                                                  foeId resourceID,
+                                                  foeResourceCreateInfo *pResourceCreateInfo) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
@@ -194,10 +195,10 @@ foeResult foeImexImporterGetResourceCreateInfo(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResult foeImexImporterFindExternalFile(foeImexImporter importer,
-                                          char const *pExternalFilePath,
-                                          uint32_t *pPathLength,
-                                          char *pPath) {
+foeResultSet foeImexImporterFindExternalFile(foeImexImporter importer,
+                                             char const *pExternalFilePath,
+                                             uint32_t *pPathLength,
+                                             char *pPath) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 

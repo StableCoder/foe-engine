@@ -14,7 +14,7 @@ extern "C" {
 
 FOE_PHYSICS_EXPORT int foePhysicsFunctionalityID();
 
-FOE_PHYSICS_EXPORT foeResult foePhysicsRegisterFunctionality();
+FOE_PHYSICS_EXPORT foeResultSet foePhysicsRegisterFunctionality();
 
 FOE_PHYSICS_EXPORT void foePhysicsDeregisterFunctionality();
 

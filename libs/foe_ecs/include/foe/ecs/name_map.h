@@ -34,22 +34,24 @@ extern "C" {
  */
 FOE_DEFINE_HANDLE(foeEcsNameMap)
 
-FOE_ECS_EXPORT foeResult foeEcsCreateNameMap(foeEcsNameMap *pNameMap);
+FOE_ECS_EXPORT foeResultSet foeEcsCreateNameMap(foeEcsNameMap *pNameMap);
 
 FOE_ECS_EXPORT void foeEcsDestroyNameMap(foeEcsNameMap nameMap);
 
-FOE_ECS_EXPORT foeResult foeEcsNameMapFindID(foeEcsNameMap nameMap, char const *pName, foeId *pID);
+FOE_ECS_EXPORT foeResultSet foeEcsNameMapFindID(foeEcsNameMap nameMap,
+                                                char const *pName,
+                                                foeId *pID);
 
-FOE_ECS_EXPORT foeResult foeEcsNameMapFindName(foeEcsNameMap nameMap,
-                                               foeId id,
-                                               uint32_t *pNameLength,
-                                               char *pName);
+FOE_ECS_EXPORT foeResultSet foeEcsNameMapFindName(foeEcsNameMap nameMap,
+                                                  foeId id,
+                                                  uint32_t *pNameLength,
+                                                  char *pName);
 
-FOE_ECS_EXPORT foeResult foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char const *pName);
+FOE_ECS_EXPORT foeResultSet foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char const *pName);
 
-FOE_ECS_EXPORT foeResult foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, char const *pName);
+FOE_ECS_EXPORT foeResultSet foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, char const *pName);
 
-FOE_ECS_EXPORT foeResult foeEcsNameMapRemove(foeEcsNameMap nameMap, foeId id);
+FOE_ECS_EXPORT foeResultSet foeEcsNameMapRemove(foeEcsNameMap nameMap, foeId id);
 
 #ifdef __cplusplus
 }

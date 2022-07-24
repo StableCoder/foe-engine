@@ -15,15 +15,15 @@
 #include "runtime.hpp"
 #include "xr_result.h"
 
-foeResult foeOpenXrCreateRuntime(char const *appName,
-                                 uint32_t appVersion,
-                                 uint32_t layerCount,
-                                 char const *const *ppLayerNames,
-                                 uint32_t extensionCount,
-                                 char const *const *ppExtensionNames,
-                                 bool validation,
-                                 bool debugLogging,
-                                 foeXrRuntime *pRuntime) {
+foeResultSet foeOpenXrCreateRuntime(char const *appName,
+                                    uint32_t appVersion,
+                                    uint32_t layerCount,
+                                    char const *const *ppLayerNames,
+                                    uint32_t extensionCount,
+                                    char const *const *ppExtensionNames,
+                                    bool validation,
+                                    bool debugLogging,
+                                    foeXrRuntime *pRuntime) {
     auto *pNewRuntime = new foeOpenXrRuntime;
     XrResult xrRes{XR_SUCCESS};
 
@@ -106,7 +106,7 @@ CREATE_FAILED:
     return xr_to_foeResult(xrRes);
 }
 
-foeResult foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiVersion) {
+foeResultSet foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiVersion) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     *pApiVersion = pRuntime->apiVersion;
@@ -114,9 +114,9 @@ foeResult foeOpenXrEnumerateRuntimeVersion(foeXrRuntime runtime, uint32_t *pApiV
     return to_foeResult(FOE_OPENXR_SUCCESS);
 }
 
-foeResult foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
-                                          uint32_t *pLayerNamesLength,
-                                          char *pLayerNames) {
+foeResultSet foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
+                                             uint32_t *pLayerNamesLength,
+                                             char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames,
@@ -125,9 +125,9 @@ foeResult foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
                : to_foeResult(FOE_OPENXR_INCOMPLETE);
 }
 
-foeResult foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
-                                              uint32_t *pExtensionNamesLength,
-                                              char *pExtensionNames) {
+foeResultSet foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
+                                                 uint32_t *pExtensionNamesLength,
+                                                 char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames,
@@ -136,7 +136,7 @@ foeResult foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
                : to_foeResult(FOE_OPENXR_INCOMPLETE);
 }
 
-foeResult foeXrProcessEvents(foeXrRuntime runtime) {
+foeResultSet foeXrProcessEvents(foeXrRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
 
     XrEventDataBuffer event = {
@@ -188,7 +188,7 @@ XrInstance foeOpenXrGetInstance(foeXrRuntime runtime) {
     return pRuntime->instance;
 }
 
-foeResult foeXrDestroyRuntime(foeXrRuntime runtime) {
+foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
     XrResult xrResult = XR_SUCCESS;
 

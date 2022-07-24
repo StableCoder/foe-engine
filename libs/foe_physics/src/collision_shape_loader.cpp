@@ -14,11 +14,11 @@
 
 foeCollisionShapeLoader::~foeCollisionShapeLoader() {}
 
-foeResult foeCollisionShapeLoader::initialize(foeResourcePool resourcePool) {
+foeResultSet foeCollisionShapeLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_ERROR_COLLISION_SHAPE_LOADER_INITIALIZATION_FAILED);
 
-    foeResult result = to_foeResult(FOE_PHYSICS_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_PHYSICS_SUCCESS);
 
     mResourcePool = resourcePool;
 

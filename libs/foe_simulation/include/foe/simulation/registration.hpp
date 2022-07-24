@@ -16,17 +16,17 @@ struct foeSimulationInitInfo;
 
 typedef int foeSimulationUUID;
 
-typedef foeResult (*PFN_foeSimulationCreate)(foeSimulation *);
+typedef foeResultSet (*PFN_foeSimulationCreate)(foeSimulation *);
 
 /// @return Number of warnings/errors the occurred during the call.
 typedef size_t (*PFN_foeSimulationDestroy)(foeSimulation *);
 
-typedef foeResult (*PFN_foeSimulationInitialize)(foeSimulation *, foeSimulationInitInfo const *);
+typedef foeResultSet (*PFN_foeSimulationInitialize)(foeSimulation *, foeSimulationInitInfo const *);
 
 /// @return Number of warnings/errors the occurred during the call.
 typedef size_t (*PFN_foeSimulationDeinitialize)(foeSimulation *);
 
-typedef foeResult (*PFN_foeSimulationInitializeGraphics)(foeSimulation *, foeGfxSession);
+typedef foeResultSet (*PFN_foeSimulationInitializeGraphics)(foeSimulation *, foeGfxSession);
 
 /// @return Number of warnings/errors the occurred during the call.
 typedef size_t (*PFN_foeSimulationDeinitializeGraphics)(foeSimulation *);
@@ -69,7 +69,8 @@ struct foeSimulationFunctionalty {
  * If a failure occurs, then the functionality is fully removed from anywhere it may have succeeded
  * and is then not considered registered.
  */
-FOE_SIM_EXPORT foeResult foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
+FOE_SIM_EXPORT foeResultSet
+foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
 
 /**
  * @brief Attempts to deregister a set of simulation functionality globally
@@ -80,6 +81,6 @@ FOE_SIM_EXPORT foeResult foeRegisterFunctionality(foeSimulationFunctionalty cons
  * simulations and call 'pDeinitializeFn' and 'pDestroyFn' to remove the functionality before
  * finally returning.
  */
-FOE_SIM_EXPORT foeResult foeDeregisterFunctionality(foeSimulationUUID functionalityUUID);
+FOE_SIM_EXPORT foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionalityUUID);
 
 #endif // FOE_SIMULATION_REGISTRATION_HPP

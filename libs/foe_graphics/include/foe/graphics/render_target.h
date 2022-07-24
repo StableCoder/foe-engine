@@ -23,8 +23,8 @@ FOE_GFX_EXPORT void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarg
                                                    uint32_t width,
                                                    uint32_t height);
 
-FOE_GFX_EXPORT foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
-                                                       uint32_t maxBufferedFrames);
+FOE_GFX_EXPORT foeResultSet foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
+                                                          uint32_t maxBufferedFrames);
 
 #ifdef __cplusplus
 }

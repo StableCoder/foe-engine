@@ -21,11 +21,11 @@ class foePosition3dPool;
 
 struct PositionDescriptorPool {
   public:
-    foeResult initialize(foePosition3dPool *pPosition3dPool);
+    foeResultSet initialize(foePosition3dPool *pPosition3dPool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    foeResult initializeGraphics(foeGfxSession gfxSession);
+    foeResultSet initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

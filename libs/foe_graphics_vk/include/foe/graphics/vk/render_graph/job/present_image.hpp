@@ -12,7 +12,7 @@
 
 #include <string_view>
 
-FOE_GFX_EXPORT foeResult
+FOE_GFX_EXPORT foeResultSet
 foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                       std::string_view name,
                                       VkFence fence,
@@ -28,7 +28,7 @@ foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                       foeGfxVkRenderGraphResource *pResourceOut);
 
 /// Assumes the image is in VK_IMAGE_LAYOUT_PRESENT_SRC_KHR layout
-FOE_GFX_EXPORT foeResult
+FOE_GFX_EXPORT foeResultSet
 foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                        std::string_view name,
                                        VkFence fence,

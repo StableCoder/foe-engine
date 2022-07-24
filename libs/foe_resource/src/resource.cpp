@@ -48,11 +48,11 @@ FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
 
 } // namespace
 
-extern "C" foeResult foeCreateResource(foeResourceID id,
-                                       foeResourceType type,
-                                       foeResourceFns const *pResourceFns,
-                                       size_t size,
-                                       foeResource *pResource) {
+extern "C" foeResultSet foeCreateResource(foeResourceID id,
+                                          foeResourceType type,
+                                          foeResourceFns const *pResourceFns,
+                                          size_t size,
+                                          foeResource *pResource) {
     if (pResourceFns == nullptr)
         return to_foeResult(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
 
@@ -227,7 +227,7 @@ namespace {
 
 void postLoadFn(
     foeResource resource,
-    foeResult loadResult,
+    foeResultSet loadResult,
     void *pSrc,
     void (*pMoveDataFn)(void *, void *),
     foeResourceCreateInfo createInfo,

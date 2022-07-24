@@ -24,9 +24,9 @@
 
 namespace {
 
-foeResult imageCreateProcessing(foeResourceID resourceID,
-                                foeResourceCreateInfo createInfo,
-                                foeSimulation const *pSimulation) {
+foeResultSet imageCreateProcessing(foeResourceID resourceID,
+                                   foeResourceCreateInfo createInfo,
+                                   foeSimulation const *pSimulation) {
     foeResource image =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE, sizeof(foeImage));
@@ -37,9 +37,9 @@ foeResult imageCreateProcessing(foeResourceID resourceID,
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-foeResult materialCreateProcessing(foeResourceID resourceID,
-                                   foeResourceCreateInfo createInfo,
-                                   foeSimulation const *pSimulation) {
+foeResultSet materialCreateProcessing(foeResourceID resourceID,
+                                      foeResourceCreateInfo createInfo,
+                                      foeSimulation const *pSimulation) {
     foeResource material =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, sizeof(foeMaterial));
@@ -50,9 +50,9 @@ foeResult materialCreateProcessing(foeResourceID resourceID,
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-foeResult meshCreateProcessing(foeResourceID resourceID,
-                               foeResourceCreateInfo createInfo,
-                               foeSimulation const *pSimulation) {
+foeResultSet meshCreateProcessing(foeResourceID resourceID,
+                                  foeResourceCreateInfo createInfo,
+                                  foeSimulation const *pSimulation) {
     foeResource mesh =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh));
@@ -63,9 +63,9 @@ foeResult meshCreateProcessing(foeResourceID resourceID,
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-foeResult shaderCreateProcessing(foeResourceID resourceID,
-                                 foeResourceCreateInfo createInfo,
-                                 foeSimulation const *pSimulation) {
+foeResultSet shaderCreateProcessing(foeResourceID resourceID,
+                                    foeResourceCreateInfo createInfo,
+                                    foeSimulation const *pSimulation) {
     auto *pShader =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
@@ -76,9 +76,9 @@ foeResult shaderCreateProcessing(foeResourceID resourceID,
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
-foeResult vertexDescriptorCreateProcessing(foeResourceID resourceID,
-                                           foeResourceCreateInfo createInfo,
-                                           foeSimulation const *pSimulation) {
+foeResultSet vertexDescriptorCreateProcessing(foeResourceID resourceID,
+                                              foeResourceCreateInfo createInfo,
+                                              foeSimulation const *pSimulation) {
     auto *pVertexResource = foeResourcePoolAdd(
         pSimulation->resourcePool, resourceID,
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, sizeof(foeVertexDescriptor));
@@ -92,8 +92,8 @@ foeResult vertexDescriptorCreateProcessing(foeResourceID resourceID,
 
 } // namespace
 
-extern "C" foeResult foeGraphicsResourceYamlRegisterImporters() {
-    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
+extern "C" foeResultSet foeGraphicsResourceYamlRegisterImporters() {
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 
     // Resources
     if (!foeImexYamlRegisterResourceFns(yaml_image_key(), yaml_read_image, imageCreateProcessing)) {

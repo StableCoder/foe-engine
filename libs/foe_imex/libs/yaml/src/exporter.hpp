@@ -9,6 +9,6 @@
 
 struct foeSimulation;
 
-foeResult foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState);
+foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState);
 
 #endif // EXPORTER_HPP

@@ -60,8 +60,8 @@ struct Application {
     auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
     void deinitialize();
 
-    foeResult startXR(bool localPoll);
-    foeResult stopXR(bool localPoll);
+    foeResultSet startXR(bool localPoll);
+    foeResultSet stopXR(bool localPoll);
 
     int mainloop();
 

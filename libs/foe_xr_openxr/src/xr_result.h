@@ -14,8 +14,8 @@ extern "C" {
 
 void XrResultToString(XrResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
-inline foeResult xr_to_foeResult(XrResult value) {
-    foeResult result = {
+inline foeResultSet xr_to_foeResult(XrResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)XrResultToString,
     };

@@ -11,22 +11,22 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-FOE_GFX_EXPORT foeResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
-                                                   VkFormat format,
-                                                   uint32_t numMipLevels,
-                                                   uint32_t numCheckSquares,
-                                                   VmaAllocation *pAlloc,
-                                                   VkImage *pImage,
-                                                   VkImageView *pImageView,
-                                                   VkSampler *pSampler);
+FOE_GFX_EXPORT foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
+                                                      VkFormat format,
+                                                      uint32_t numMipLevels,
+                                                      uint32_t numCheckSquares,
+                                                      VmaAllocation *pAlloc,
+                                                      VkImage *pImage,
+                                                      VkImageView *pImageView,
+                                                      VkSampler *pSampler);
 
-FOE_GFX_EXPORT foeResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
-                                                         uint32_t numMipLevels,
-                                                         uint32_t numCheckSquares,
-                                                         VmaAllocation *pAlloc,
-                                                         VkImage *pImage,
-                                                         VkImageView *pImageDepthView,
-                                                         VkImageView *pImageStencilView,
-                                                         VkSampler *pSampler);
+FOE_GFX_EXPORT foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
+                                                            uint32_t numMipLevels,
+                                                            uint32_t numCheckSquares,
+                                                            VmaAllocation *pAlloc,
+                                                            VkImage *pImage,
+                                                            VkImageView *pImageDepthView,
+                                                            VkImageView *pImageStencilView,
+                                                            VkSampler *pSampler);
 
 #endif // FOE_GRAPHICS_ERROR_COLOUR_IMAGE_HPP

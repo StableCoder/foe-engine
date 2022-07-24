@@ -21,17 +21,17 @@ class foeImGuiRenderer {
   public:
     FOE_IMGUI_VK_EXPORT void setImGuiContext(ImGuiContext *pContext);
 
-    FOE_IMGUI_VK_EXPORT foeResult initialize(foeGfxSession session,
-                                             VkSampleCountFlags rasterSampleFlags,
-                                             VkRenderPass renderPass,
-                                             uint32_t subpass);
+    FOE_IMGUI_VK_EXPORT foeResultSet initialize(foeGfxSession session,
+                                                VkSampleCountFlags rasterSampleFlags,
+                                                VkRenderPass renderPass,
+                                                uint32_t subpass);
     FOE_IMGUI_VK_EXPORT void deinitialize(foeGfxSession session);
     FOE_IMGUI_VK_EXPORT bool initialized() const noexcept;
 
     FOE_IMGUI_VK_EXPORT void newFrame();
     FOE_IMGUI_VK_EXPORT void endFrame();
 
-    FOE_IMGUI_VK_EXPORT foeResult update(uint32_t bufferedFrame);
+    FOE_IMGUI_VK_EXPORT foeResultSet update(uint32_t bufferedFrame);
     FOE_IMGUI_VK_EXPORT void draw(VkCommandBuffer commandBuffer, uint32_t frameIndex);
 
     FOE_IMGUI_VK_EXPORT void resize(float width, float height);

@@ -78,17 +78,17 @@ void fillErrorStencilData(uint32_t extent, uint32_t numCheckSquare, uint8_t *pDa
 
 } // namespace
 
-foeResult foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
-                                          uint32_t numMipLevels,
-                                          uint32_t numCheckSquares,
-                                          VmaAllocation *pAlloc,
-                                          VkImage *pImage,
-                                          VkImageView *pImageDepthView,
-                                          VkImageView *pImageStencilView,
-                                          VkSampler *pSampler) {
+foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
+                                             uint32_t numMipLevels,
+                                             uint32_t numCheckSquares,
+                                             VmaAllocation *pAlloc,
+                                             VkImage *pImage,
+                                             VkImageView *pImageDepthView,
+                                             VkImageView *pImageStencilView,
+                                             VkSampler *pSampler) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
-    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
     VkResult vkResult{VK_SUCCESS};
     constexpr VkFormat format = VK_FORMAT_D32_SFLOAT_S8_UINT;
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);

@@ -18,7 +18,7 @@
 
 class foeArmatureLoader {
   public:
-    foeResult initialize(
+    foeResultSet initialize(
         foeResourcePool resourcePool,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();

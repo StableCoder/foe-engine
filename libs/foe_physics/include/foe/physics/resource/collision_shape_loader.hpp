@@ -18,7 +18,7 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
   public:
     ~foeCollisionShapeLoader();
 
-    foeResult initialize(foeResourcePool resourcePool);
+    foeResultSet initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 

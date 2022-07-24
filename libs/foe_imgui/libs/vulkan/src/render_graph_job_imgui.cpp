@@ -25,15 +25,15 @@ void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
 
 } // namespace
 
-foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                                std::string_view name,
-                                VkFence fence,
-                                foeGfxVkRenderGraphResource renderTarget,
-                                VkImageLayout finalLayout,
-                                foeImGuiRenderer *pImguiRenderer,
-                                foeImGuiState *pImguiState,
-                                uint32_t frameIndex,
-                                foeGfxVkRenderGraphResource *pResourcesOut) {
+foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
+                                   std::string_view name,
+                                   VkFence fence,
+                                   foeGfxVkRenderGraphResource renderTarget,
+                                   VkImageLayout finalLayout,
+                                   foeImGuiRenderer *pImguiRenderer,
+                                   foeImGuiState *pImguiState,
+                                   uint32_t frameIndex,
+                                   foeGfxVkRenderGraphResource *pResourcesOut) {
     // Check that render target is a mutable image
     auto const *pColourTargetImageData =
         (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
@@ -55,7 +55,7 @@ foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         VkResult vkResult;
 
         VkRenderPass renderPass = foeGfxVkGetRenderPassPool(gfxSession)
@@ -173,7 +173,7 @@ foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         }
 
         if (!pImguiRenderer->initialized()) {
-            foeResult result =
+            foeResultSet result =
                 pImguiRenderer->initialize(gfxSession, VK_SAMPLE_COUNT_1_BIT, renderPass, 0);
             if (result.value != FOE_SUCCESS)
                 return result;
@@ -183,7 +183,7 @@ foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         pImguiState->runUI();
         pImguiRenderer->endFrame();
 
-        foeResult result = pImguiRenderer->update(frameIndex);
+        foeResultSet result = pImguiRenderer->update(frameIndex);
         if (result.value != FOE_SUCCESS)
             return result;
 
@@ -229,7 +229,7 @@ foeResult foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     bool const resourcesInReadOnly = false;
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResult result =
+    foeResultSet result =
         foeGfxVkRenderGraphAddJob(renderGraph, 1, &renderTarget, &resourcesInReadOnly, freeDataFn,
                                   name, false, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {

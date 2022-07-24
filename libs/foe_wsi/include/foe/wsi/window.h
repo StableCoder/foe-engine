@@ -35,7 +35,7 @@ FOE_WSI_EXPORT void foeWsiGlobalProcessing();
  * @param pWindow [out] Window handle will be put here on success
  * @return FOE_WSI_SUCCESS on success, an appropriate error code otherwise
  */
-FOE_WSI_EXPORT foeResult
+FOE_WSI_EXPORT foeResultSet
 foeWsiCreateWindow(int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow);
 
 /// Destroys the given window

@@ -10,12 +10,12 @@
 #include "../../result.h"
 #include "../../vk_result.h"
 
-foeResult foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                       std::string_view name,
-                                       VkFence fence,
-                                       foeGfxVkRenderGraphResource resource,
-                                       VkImageLayout requiredLayout,
-                                       std::vector<VkSemaphore> signalSemaphores) {
+foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                          std::string_view name,
+                                          VkFence fence,
+                                          foeGfxVkRenderGraphResource resource,
+                                          VkImageLayout requiredLayout,
+                                          std::vector<VkSemaphore> signalSemaphores) {
     // Check that this is an image resource
     auto const *pImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         resource.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
@@ -36,7 +36,7 @@ foeResult foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
                                                     VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
 

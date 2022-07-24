@@ -25,22 +25,22 @@ typedef uint32_t foeExporterVersion;
 typedef struct foeExporter {
     char const *pName;
     foeExporterVersion version;
-    foeResult (*pExportFn)(char const *, struct foeSimulation *);
+    foeResultSet (*pExportFn)(char const *, struct foeSimulation *);
 } foeExporter;
 
 FOE_IMEX_EXPORT bool foeCompareExporters(foeExporter const *lhs, foeExporter const *rhs);
 
-FOE_IMEX_EXPORT foeResult foeImexRegisterExporter(foeExporter exporter);
-FOE_IMEX_EXPORT foeResult foeImexDeregisterExporter(foeExporter exporter);
+FOE_IMEX_EXPORT foeResultSet foeImexRegisterExporter(foeExporter exporter);
+FOE_IMEX_EXPORT foeResultSet foeImexDeregisterExporter(foeExporter exporter);
 
 FOE_IMEX_EXPORT void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExporters);
 
 typedef struct foeExportFunctionality {
-    foeResult (*onRegister)(foeExporter);
+    foeResultSet (*onRegister)(foeExporter);
     void (*onDeregister)(foeExporter);
 } foeExportFunctionality;
 
-FOE_IMEX_EXPORT foeResult
+FOE_IMEX_EXPORT foeResultSet
 foeRegisterExportFunctionality(foeExportFunctionality const *functionality);
 FOE_IMEX_EXPORT void foeDeregisterExportFunctionality(foeExportFunctionality const *functionality);
 

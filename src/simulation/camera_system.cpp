@@ -22,8 +22,8 @@ glm::mat4 viewMatrix(foePosition3d const &position) noexcept {
 
 } // namespace
 
-foeResult foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
-                                      foeCameraPool *pCameraPool) {
+foeResultSet foeCameraSystem::initialize(foePosition3dPool *pPosition3dPool,
+                                         foeCameraPool *pCameraPool) {
     if (pPosition3dPool == nullptr || pCameraPool == nullptr)
         return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
 
@@ -41,7 +41,7 @@ void foeCameraSystem::deinitialize() {
 
 bool foeCameraSystem::initialized() const noexcept { return mpPosition3dPool != nullptr; }
 
-foeResult foeCameraSystem::initializeGraphics(foeGfxSession gfxSession) {
+foeResultSet foeCameraSystem::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
         return to_foeResult(FOE_BRINGUP_NOT_INITIALIZED);
 

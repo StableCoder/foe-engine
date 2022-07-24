@@ -37,7 +37,7 @@ void renderImporterData(foeImexImporter importer) {
 }
 
 void renderIndexData(foeEcsIndexes indexes, char const *subGroupName) {
-    foeResult result;
+    foeResultSet result;
     foeIdIndex nextFreeIndex;
     std::vector<foeIdIndex> recyclableIndices;
 
@@ -200,7 +200,7 @@ void foeSimulationImGuiGroupData::customUI() {
 
             ImGui::TableNextColumn();
             char const *pGroupName = "?Unknown?";
-            foeResult result = foeImexImporterGetGroupName(importer, &pGroupName);
+            foeResultSet result = foeImexImporterGetGroupName(importer, &pGroupName);
             if (ImGui::Selectable(pGroupName, mSelected == group)) {
                 mSelected = group;
             }

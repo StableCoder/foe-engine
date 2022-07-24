@@ -13,8 +13,8 @@ class foeSearchPaths;
 struct foeSimulation;
 
 /// Imports data set and its dependencies
-foeResult importState(std::string_view topLevelDataSet,
-                      foeSearchPaths *pSearchPaths,
-                      foeSimulation **ppSimulationSet);
+foeResultSet importState(std::string_view topLevelDataSet,
+                         foeSearchPaths *pSearchPaths,
+                         foeSimulation **ppSimulationSet);
 
 #endif // IMPORT_STATE_HPP

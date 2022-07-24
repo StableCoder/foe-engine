@@ -13,14 +13,14 @@
 extern "C" {
 #endif
 
-FOE_GFX_EXPORT foeResult foeGfxVkCreateMesh(foeGfxSession session,
-                                            uint64_t vertexDataSize,
-                                            uint64_t indexDataSize,
-                                            uint32_t numIndices,
-                                            VkIndexType indexType,
-                                            uint64_t boneDataOffset,
-                                            bool *pHostVisible,
-                                            foeGfxMesh *pMesh);
+FOE_GFX_EXPORT foeResultSet foeGfxVkCreateMesh(foeGfxSession session,
+                                               uint64_t vertexDataSize,
+                                               uint64_t indexDataSize,
+                                               uint32_t numIndices,
+                                               VkIndexType indexType,
+                                               uint64_t boneDataOffset,
+                                               bool *pHostVisible,
+                                               foeGfxMesh *pMesh);
 
 FOE_GFX_EXPORT void foeGfxVkBindMesh(foeGfxMesh mesh,
                                      VkCommandBuffer commandBuffer,

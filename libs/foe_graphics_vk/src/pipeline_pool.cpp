@@ -16,7 +16,7 @@
 #include "shader.hpp"
 #include "vk_result.h"
 
-foeResult foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {
+foeResultSet foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {
     if (initialized())
         return vk_to_foeResult(VK_ERROR_INITIALIZATION_FAILED);
 
@@ -71,14 +71,14 @@ size_t sampleCountIndex(VkSampleCountFlags samples) {
 
 } // namespace
 
-foeResult foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
-                                            foeGfxVkFragmentDescriptor *fragmentDescriptor,
-                                            VkRenderPass renderPass,
-                                            uint32_t subpass,
-                                            VkSampleCountFlags samples,
-                                            VkPipelineLayout *pPipelineLayout,
-                                            uint32_t *pDescriptorSetLayoutCount,
-                                            VkPipeline *pPipeline) {
+foeResultSet foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
+                                               foeGfxVkFragmentDescriptor *fragmentDescriptor,
+                                               VkRenderPass renderPass,
+                                               uint32_t subpass,
+                                               VkSampleCountFlags samples,
+                                               VkPipelineLayout *pPipelineLayout,
+                                               uint32_t *pDescriptorSetLayoutCount,
+                                               VkPipeline *pPipeline) {
     auto sampleIndex = sampleCountIndex(samples);
     PipelineSet *pPipelineSet{nullptr};
 

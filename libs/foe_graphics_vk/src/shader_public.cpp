@@ -26,11 +26,11 @@ void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo
     cleanup_VkDescriptorSetLayoutCreateInfo(&pCreateInfo->descriptorSetLayoutCI);
 }
 
-foeResult foeGfxVkCreateShader(foeGfxSession session,
-                               foeGfxVkShaderCreateInfo const *pCreateInfo,
-                               uint32_t shaderCodeSize,
-                               uint32_t const *pShaderCode,
-                               foeGfxShader *pShader) {
+foeResultSet foeGfxVkCreateShader(foeGfxSession session,
+                                  foeGfxVkShaderCreateInfo const *pCreateInfo,
+                                  uint32_t shaderCodeSize,
+                                  uint32_t const *pShaderCode,
+                                  foeGfxShader *pShader) {
     auto *pSession = session_from_handle(session);
 
     VkResult vkResult = VK_SUCCESS;

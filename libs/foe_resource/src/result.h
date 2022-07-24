@@ -7,8 +7,8 @@
 
 #include <foe/resource/error_code.h>
 
-inline foeResult to_foeResult(foeResourceResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foeResourceResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeResourceResultToString,
     };

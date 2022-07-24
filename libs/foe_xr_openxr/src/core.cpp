@@ -8,7 +8,7 @@
 
 #include "xr_result.h"
 
-foeResult foeOpenXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties) {
+foeResultSet foeOpenXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties) {
     uint32_t propertyCount;
     XrResult xrResult = xrEnumerateApiLayerProperties(0, &propertyCount, nullptr);
     if (xrResult != XR_SUCCESS)
@@ -25,7 +25,7 @@ foeResult foeOpenXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties>
     return xr_to_foeResult(xrResult);
 }
 
-foeResult foeOpenXrEnumerateInstanceExtensionProperties(
+foeResultSet foeOpenXrEnumerateInstanceExtensionProperties(
     char const *pApiLayerName, std::vector<XrExtensionProperties> &properties) {
     uint32_t propertyCount;
     XrResult xrResult =
@@ -45,8 +45,8 @@ foeResult foeOpenXrEnumerateInstanceExtensionProperties(
     return xr_to_foeResult(xrResult);
 }
 
-foeResult foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
-                                            std::vector<XrReferenceSpaceType> &spaces) {
+foeResultSet foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
+                                               std::vector<XrReferenceSpaceType> &spaces) {
     uint32_t spaceCount;
     XrResult xrResult = xrEnumerateReferenceSpaces(xrSession, 0, &spaceCount, nullptr);
     if (xrResult != XR_SUCCESS) {
@@ -60,7 +60,8 @@ foeResult foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
     return xr_to_foeResult(xrResult);
 }
 
-foeResult foeOpenXrEnumerateSwapchainFormats(XrSession xrSession, std::vector<int64_t> &formats) {
+foeResultSet foeOpenXrEnumerateSwapchainFormats(XrSession xrSession,
+                                                std::vector<int64_t> &formats) {
     uint32_t formatCount;
     XrResult xrResult = xrEnumerateSwapchainFormats(xrSession, 0, &formatCount, nullptr);
     if (xrResult != XR_SUCCESS) {

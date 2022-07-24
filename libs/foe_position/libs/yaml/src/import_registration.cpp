@@ -42,8 +42,8 @@ bool importPosition3D(YAML::Node const &node,
 
 } // namespace
 
-extern "C" foeResult foePositionYamlRegisterImporters() {
-    foeResult result = to_foeResult(FOE_POSITION_YAML_SUCCESS);
+extern "C" foeResultSet foePositionYamlRegisterImporters() {
+    foeResultSet result = to_foeResult(FOE_POSITION_YAML_SUCCESS);
 
     // Components
     if (!foeImexYamlRegisterComponentFn(yaml_position3d_key(), importPosition3D)) {

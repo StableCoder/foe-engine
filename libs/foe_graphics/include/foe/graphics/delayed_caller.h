@@ -20,9 +20,9 @@ FOE_DEFINE_HANDLE(foeGfxDelayedCaller)
 
 typedef void (*PFN_foeGfxDelayedCall)(void *, foeGfxSession);
 
-FOE_GFX_EXPORT foeResult foeGfxCreateDelayedCaller(foeGfxSession session,
-                                                   uint32_t initialDelay,
-                                                   foeGfxDelayedCaller *pDelayedCaller);
+FOE_GFX_EXPORT foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
+                                                      uint32_t initialDelay,
+                                                      foeGfxDelayedCaller *pDelayedCaller);
 
 FOE_GFX_EXPORT void foeGfxDestroyDelayedCaller(foeGfxDelayedCaller delayedCaller);
 

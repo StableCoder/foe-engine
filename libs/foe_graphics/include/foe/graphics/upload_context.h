@@ -16,8 +16,8 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeGfxUploadContext)
 
-FOE_GFX_EXPORT foeResult foeGfxCreateUploadContext(foeGfxSession session,
-                                                   foeGfxUploadContext *pUploadContext);
+FOE_GFX_EXPORT foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
+                                                      foeGfxUploadContext *pUploadContext);
 
 FOE_GFX_EXPORT void foeGfxDestroyUploadContext(foeGfxUploadContext uploadContext);
 

@@ -183,7 +183,7 @@ void yaml_read_mesh_file(YAML::Node const &node,
         new (pDst) foeMeshFileCreateInfo(std::move(*pSrcData));
     };
 
-    foeResult result = foeCreateResourceCreateInfo(
+    foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO, foeDestroyMeshCreateInfo,
         sizeof(foeMeshFileCreateInfo), &meshCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
@@ -219,7 +219,7 @@ void yaml_read_mesh_cube(YAML::Node const &node,
         new (pDst) foeMeshCubeCreateInfo(std::move(*pSrcData));
     };
 
-    foeResult result = foeCreateResourceCreateInfo(
+    foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO, foeDestroyMeshCreateInfo,
         sizeof(foeMeshCubeCreateInfo), &meshCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
@@ -256,7 +256,7 @@ void yaml_read_mesh_icosphere(YAML::Node const &node,
         new (pDst) foeMeshIcosphereCreateInfo(std::move(*pSrcData));
     };
 
-    foeResult result = foeCreateResourceCreateInfo(
+    foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO, foeDestroyMeshCreateInfo,
         sizeof(foeMeshIcosphereCreateInfo), &meshCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {

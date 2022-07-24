@@ -15,23 +15,23 @@
 #include <string>
 #include <vector>
 
-FOE_OPENXR_VK_EXPORT foeResult
+FOE_OPENXR_VK_EXPORT foeResultSet
 foeXrGetVulkanInstanceExtensions(XrInstance instance, std::vector<std::string> &extensions);
 
-FOE_OPENXR_VK_EXPORT foeResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                                              std::vector<std::string> &extensions);
+FOE_OPENXR_VK_EXPORT foeResultSet
+foeXrGetVulkanDeviceExtensions(XrInstance instance, std::vector<std::string> &extensions);
 
-FOE_OPENXR_VK_EXPORT foeResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                                            XrSystemId systemId,
-                                                            VkInstance vkInstance,
-                                                            VkPhysicalDevice *vkPhysicalDevice);
+FOE_OPENXR_VK_EXPORT foeResultSet foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                                               XrSystemId systemId,
+                                                               VkInstance vkInstance,
+                                                               VkPhysicalDevice *vkPhysicalDevice);
 
-FOE_OPENXR_VK_EXPORT foeResult
+FOE_OPENXR_VK_EXPORT foeResultSet
 foeXrGetVulkanGraphicsRequirements(XrInstance instance,
                                    XrSystemId systemId,
                                    XrGraphicsRequirementsVulkanKHR *graphicsRequirements);
 
-FOE_OPENXR_VK_EXPORT foeResult foeOpenXrEnumerateSwapchainVkImages(
+FOE_OPENXR_VK_EXPORT foeResultSet foeOpenXrEnumerateSwapchainVkImages(
     XrSwapchain swapchain, std::vector<XrSwapchainImageVulkanKHR> &images);
 
 #endif // FOE_XR_OPENXR_VK_VULKAN_HPP

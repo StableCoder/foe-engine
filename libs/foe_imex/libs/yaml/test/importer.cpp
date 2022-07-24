@@ -26,7 +26,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     testPath /= "11-good-content";
     foeImexImporter testImporter{FOE_NULL_HANDLE};
 
-    foeResult result = foeCreateYamlImporter(2, testPath.string().c_str(), &testImporter);
+    foeResultSet result = foeCreateYamlImporter(2, testPath.string().c_str(), &testImporter);
 
     REQUIRE(result.value == FOE_IMEX_YAML_SUCCESS);
     REQUIRE(testImporter != FOE_NULL_HANDLE);
@@ -191,7 +191,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     SECTION("Entity State Data (foeImexImporterGetStateData)") {
         foeSimulation *pTestSimulation{nullptr};
 
-        foeResult result = foeCreateSimulation(true, &pTestSimulation);
+        foeResultSet result = foeCreateSimulation(true, &pTestSimulation);
         REQUIRE(result.value == FOE_SUCCESS);
         REQUIRE(pTestSimulation != nullptr);
 
@@ -229,7 +229,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
 
     SECTION("Finding external data file (foeImexImporterFindExternalFile)") {
         uint32_t pathLength = UINT32_MAX;
-        foeResult result;
+        foeResultSet result;
 
         SECTION("Existing file") {
             result = foeImexImporterFindExternalFile(testImporter, "findable_external_file",

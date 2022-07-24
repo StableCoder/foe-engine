@@ -18,16 +18,16 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeGfxUploadBuffer)
 
-FOE_GFX_EXPORT foeResult foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
-                                                  uint64_t size,
-                                                  foeGfxUploadBuffer *pUploadBuffer);
+FOE_GFX_EXPORT foeResultSet foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
+                                                     uint64_t size,
+                                                     foeGfxUploadBuffer *pUploadBuffer);
 
 FOE_GFX_EXPORT void foeGfxDestroyUploadBuffer(foeGfxUploadContext uploadContext,
                                               foeGfxUploadBuffer uploadBuffer);
 
-FOE_GFX_EXPORT foeResult foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
-                                               foeGfxUploadBuffer uploadBuffer,
-                                               void **ppData);
+FOE_GFX_EXPORT foeResultSet foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
+                                                  foeGfxUploadBuffer uploadBuffer,
+                                                  void **ppData);
 
 FOE_GFX_EXPORT void foeGfxUnmapUploadBuffer(foeGfxUploadContext uploadContext,
                                             foeGfxUploadBuffer uploadBuffer);

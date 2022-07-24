@@ -9,7 +9,7 @@
 
 #include "vk_result.h"
 
-foeResult foeXrVkCameraSystem::initialize(foeGfxSession session) {
+foeResultSet foeXrVkCameraSystem::initialize(foeGfxSession session) {
     VkResult res{VK_SUCCESS};
 
     mDevice = foeGfxVkGetDevice(session);
@@ -76,8 +76,8 @@ void foeXrVkCameraSystem::deinitialize() {
     mDevice = VK_NULL_HANDLE;
 }
 
-foeResult foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
-                                              std::vector<foeXrVkSessionView> &xrViews) {
+foeResultSet foeXrVkCameraSystem::processCameras(uint32_t frameIndex,
+                                                 std::vector<foeXrVkSessionView> &xrViews) {
     VkResult res{VK_SUCCESS};
 
     UniformBuffer &uniform = mBuffers[frameIndex];

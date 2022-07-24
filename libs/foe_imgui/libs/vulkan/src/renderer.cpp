@@ -73,15 +73,15 @@ void foeImGuiRenderer::setImGuiContext(ImGuiContext *pContext) {
     io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 }
 
-foeResult foeImGuiRenderer::initialize(foeGfxSession session,
-                                       VkSampleCountFlags rasterSampleFlags,
-                                       VkRenderPass renderPass,
-                                       uint32_t subpass) {
+foeResultSet foeImGuiRenderer::initialize(foeGfxSession session,
+                                          VkSampleCountFlags rasterSampleFlags,
+                                          VkRenderPass renderPass,
+                                          uint32_t subpass) {
     if (initialized()) {
         return vk_to_foeResult(VK_ERROR_INITIALIZATION_FAILED);
     }
 
-    foeResult result = to_foeResult(FOE_IMGUI_VK_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_IMGUI_VK_SUCCESS);
     VkResult vkResult = VK_SUCCESS;
     foeGfxUploadContext uploadContext{FOE_NULL_HANDLE};
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
@@ -344,7 +344,7 @@ void foeImGuiRenderer::newFrame() { ImGui::NewFrame(); }
 
 void foeImGuiRenderer::endFrame() { ImGui::Render(); }
 
-foeResult foeImGuiRenderer::update(uint32_t frameIndex) {
+foeResultSet foeImGuiRenderer::update(uint32_t frameIndex) {
     VkResult vkResult;
 
     if (mDrawBuffers.size() <= frameIndex) {

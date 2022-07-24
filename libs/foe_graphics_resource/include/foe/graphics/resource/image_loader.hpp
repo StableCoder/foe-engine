@@ -23,13 +23,13 @@
 
 class FOE_GFX_RES_EXPORT foeImageLoader {
   public:
-    foeResult initialize(
+    foeResultSet initialize(
         foeResourcePool resourcePool,
         std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
     void deinitialize();
     bool initialized() const noexcept;
 
-    foeResult initializeGraphics(foeGfxSession gfxSession);
+    foeResultSet initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

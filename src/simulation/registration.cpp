@@ -43,7 +43,7 @@ struct TypeSelection {
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
     size_t count;
     size_t errors = 0;
-    foeResult result;
+    foeResultSet result;
 
     // Systems
     if (pSelection == nullptr || pSelection->animationSystem) {
@@ -275,8 +275,8 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     return errors;
 }
 
-foeResult create(foeSimulation *pSimulation) {
-    foeResult result;
+foeResultSet create(foeSimulation *pSimulation) {
+    foeResultSet result;
     TypeSelection created = {};
 
     // Loaders
@@ -498,7 +498,7 @@ CREATE_FAILED:
 size_t destroy(foeSimulation *pSimulation) { return destroySelection(pSimulation, nullptr); }
 
 size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    foeResult result;
+    foeResultSet result;
     size_t count;
     size_t errors = 0;
 
@@ -598,8 +598,8 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     return errors;
 }
 
-foeResult initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
-    foeResult result;
+foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
+    foeResultSet result;
     size_t count;
     TypeSelection selection = {};
 
@@ -773,7 +773,7 @@ size_t deinitialize(foeSimulation *pSimulation) {
 }
 
 size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    foeResult result;
+    foeResultSet result;
     size_t count;
     size_t errors = 0;
 
@@ -836,8 +836,8 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
     return errors;
 }
 
-foeResult initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
-    foeResult result;
+foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
+    foeResultSet result;
     size_t count;
     TypeSelection selection = {};
 
@@ -944,11 +944,11 @@ size_t deinitializeGraphics(foeSimulation *pSimulation) {
 
 } // namespace
 
-foeResult foeBringupRegisterFunctionality() {
+foeResultSet foeBringupRegisterFunctionality() {
     FOE_LOG(foeBringup, Verbose,
             "foeBringupRegisterFunctionality - Starting to register functionality")
 
-    foeResult result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
         .pCreateFn = create,
         .pDestroyFn = destroy,

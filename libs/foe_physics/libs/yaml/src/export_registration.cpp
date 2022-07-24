@@ -72,8 +72,8 @@ void onDeregister(foeExporter exporter) {
     }
 }
 
-foeResult onRegister(foeExporter exporter) {
-    foeResult result = to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
+foeResultSet onRegister(foeExporter exporter) {
+    foeResultSet result = to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
 
     if (std::string_view{exporter.pName} == "Yaml") {
         // Resources
@@ -105,7 +105,7 @@ foeExportFunctionality exportFunctionality{
 
 } // namespace
 
-extern "C" foeResult foePhysicsYamlRegisterExporters() {
+extern "C" foeResultSet foePhysicsYamlRegisterExporters() {
     return foeRegisterExportFunctionality(&exportFunctionality);
 }
 

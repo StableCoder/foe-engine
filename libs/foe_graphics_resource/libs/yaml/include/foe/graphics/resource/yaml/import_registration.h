@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-FOE_GFX_RES_YAML_EXPORT foeResult foeGraphicsResourceYamlRegisterImporters();
+FOE_GFX_RES_YAML_EXPORT foeResultSet foeGraphicsResourceYamlRegisterImporters();
 
 FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlDeregisterImporters();
 

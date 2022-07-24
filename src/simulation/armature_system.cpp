@@ -66,8 +66,8 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 
 } // namespace
 
-foeResult foeArmatureSystem::initialize(foeResourcePool resourcePool,
-                                        foeArmatureStatePool *pArmatureStatePool) {
+foeResultSet foeArmatureSystem::initialize(foeResourcePool resourcePool,
+                                           foeArmatureStatePool *pArmatureStatePool) {
     if (resourcePool == nullptr) {
         return to_foeResult(FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED);
     }

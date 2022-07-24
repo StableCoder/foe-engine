@@ -18,10 +18,10 @@
 
 class foeXrVkCameraSystem {
   public:
-    foeResult initialize(foeGfxSession gfxSession);
+    foeResultSet initialize(foeGfxSession gfxSession);
     void deinitialize();
 
-    foeResult processCameras(uint32_t frameIndex, std::vector<foeXrVkSessionView> &xrViews);
+    foeResultSet processCameras(uint32_t frameIndex, std::vector<foeXrVkSessionView> &xrViews);
 
   private:
     struct UniformBuffer {

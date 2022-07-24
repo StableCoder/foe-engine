@@ -30,7 +30,7 @@ struct TypeSelection {
 };
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    foeResult result;
+    foeResultSet result;
     size_t count;
     size_t errors = 0;
 
@@ -125,8 +125,8 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     return errors;
 }
 
-foeResult create(foeSimulation *pSimulation) {
-    foeResult result;
+foeResultSet create(foeSimulation *pSimulation) {
+    foeResultSet result;
     size_t count;
     TypeSelection selection = {};
 
@@ -227,7 +227,7 @@ CREATE_FAILED:
 size_t destroy(foeSimulation *pSimulation) { return destroySelection(pSimulation, nullptr); }
 
 size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
-    foeResult result;
+    foeResultSet result;
     size_t count;
     size_t errors = 0;
 
@@ -272,8 +272,8 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     return errors;
 }
 
-foeResult initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
-    foeResult result;
+foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
+    foeResultSet result;
     size_t count;
     TypeSelection selection{};
 
@@ -360,11 +360,11 @@ size_t deinitialize(foeSimulation *pSimulation) {
 
 int foePhysicsFunctionalityID() { return FOE_PHYSICS_FUNCTIONALITY_ID; }
 
-extern "C" foeResult foePhysicsRegisterFunctionality() {
+extern "C" foeResultSet foePhysicsRegisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,
             "foePhysicsRegisterFunctionality - Starting to register functionality")
 
-    foeResult result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foePhysicsFunctionalityID(),
         .pCreateFn = create,
         .pDestroyFn = destroy,

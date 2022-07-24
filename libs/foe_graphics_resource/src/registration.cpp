@@ -31,12 +31,12 @@ struct TypeSelection {
 };
 
 template <typename T>
-foeResult destroyItem(foeSimulation *pSimulation,
-                      foeSimulationStructureType sType,
-                      char const *pTypeName) {
+foeResultSet destroyItem(foeSimulation *pSimulation,
+                         foeSimulationStructureType sType,
+                         char const *pTypeName) {
     size_t count;
 
-    foeResult result = foeSimulationDecrementRefCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationDecrementRefCount(pSimulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         // Trying to destroy something that doesn't exist? Not optimal
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
@@ -65,7 +65,7 @@ foeResult destroyItem(foeSimulation *pSimulation,
 
 size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
     size_t errors = 0;
-    foeResult result;
+    foeResultSet result;
 
     // Loaders
     if (pSelection == nullptr || pSelection->meshLoader) {
@@ -107,8 +107,8 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
     return errors;
 }
 
-foeResult create(foeSimulation *pSimulation) {
-    foeResult result;
+foeResultSet create(foeSimulation *pSimulation) {
+    foeResultSet result;
     TypeSelection selection = {};
 
     // Loaders
@@ -280,12 +280,12 @@ CREATE_FAILED:
 size_t destroy(foeSimulation *pSimulation) { return destroySelection(pSimulation, nullptr); }
 
 template <typename T>
-foeResult deinitializeItem(foeSimulation *pSimulation,
-                           foeSimulationStructureType sType,
-                           char const *pTypeName) {
+foeResultSet deinitializeItem(foeSimulation *pSimulation,
+                              foeSimulationStructureType sType,
+                              char const *pTypeName) {
     size_t count;
 
-    foeResult result = foeSimulationDecrementInitCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationDecrementInitCount(pSimulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -305,7 +305,7 @@ foeResult deinitializeItem(foeSimulation *pSimulation,
 
 size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
     size_t errors = 0;
-    foeResult result;
+    foeResultSet result;
 
     // Loaders
     if (pSelection == nullptr || pSelection->imageLoader) {
@@ -347,8 +347,8 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     return errors;
 }
 
-foeResult initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
-    foeResult result;
+foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const *pInitInfo) {
+    foeResultSet result;
     size_t count;
     TypeSelection selection = {};
 
@@ -509,12 +509,12 @@ size_t deinitialize(foeSimulation *pSimulation) {
 }
 
 template <typename T>
-foeResult deinitializeGraphicsItem(foeSimulation *pSimulation,
-                                   foeSimulationStructureType sType,
-                                   char const *pTypeName) {
+foeResultSet deinitializeGraphicsItem(foeSimulation *pSimulation,
+                                      foeSimulationStructureType sType,
+                                      char const *pTypeName) {
     size_t count;
 
-    foeResult result = foeSimulationDecrementGfxInitCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationDecrementGfxInitCount(pSimulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -534,7 +534,7 @@ foeResult deinitializeGraphicsItem(foeSimulation *pSimulation,
 
 size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection const *pSelection) {
     size_t errors = 0;
-    foeResult result;
+    foeResultSet result;
 
     // Loaders
     if (pSelection == nullptr || pSelection->imageLoader) {
@@ -569,13 +569,13 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
 }
 
 template <typename T>
-foeResult initializeGraphicsItem(foeSimulation *pSimulation,
-                                 foeGfxSession gfxSession,
-                                 foeSimulationStructureType sType,
-                                 char const *pTypeName) {
+foeResultSet initializeGraphicsItem(foeSimulation *pSimulation,
+                                    foeGfxSession gfxSession,
+                                    foeSimulationStructureType sType,
+                                    char const *pTypeName) {
     size_t count;
 
-    foeResult result = foeSimulationIncrementGfxInitCount(pSimulation, sType, &count);
+    foeResultSet result = foeSimulationIncrementGfxInitCount(pSimulation, sType, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -602,8 +602,8 @@ foeResult initializeGraphicsItem(foeSimulation *pSimulation,
     return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 }
 
-foeResult initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
-    foeResult result;
+foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
+    foeResultSet result;
     TypeSelection selection = {};
 
     // Loaders
@@ -654,11 +654,11 @@ size_t deinitializeGraphics(foeSimulation *pSimulation) {
 
 int foeGraphicsResourceFunctionalityID() { return FOE_GRAPHICS_RESOURCE_FUNCTIONALITY_ID; }
 
-extern "C" foeResult foeGraphicsResourceRegisterFunctionality() {
+extern "C" foeResultSet foeGraphicsResourceRegisterFunctionality() {
     FOE_LOG(foeGraphicsResource, Verbose,
             "foeGraphicsResourceRegisterFunctionality - Starting to register functionality")
 
-    foeResult result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foeGraphicsResourceFunctionalityID(),
         .pCreateFn = create,
         .pDestroyFn = destroy,

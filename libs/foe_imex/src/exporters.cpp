@@ -33,7 +33,7 @@ extern "C" bool foeCompareExporters(foeExporter const *lhs, foeExporter const *r
     return lhs->version == rhs->version && (lhs->pExportFn == rhs->pExportFn);
 }
 
-extern "C" foeResult foeImexRegisterExporter(foeExporter exporter) {
+extern "C" foeResultSet foeImexRegisterExporter(foeExporter exporter) {
     std::scoped_lock lock{gExporterRegistrar.sync};
 
     for (auto const &it : gExporterRegistrar.exporters) {
@@ -42,7 +42,7 @@ extern "C" foeResult foeImexRegisterExporter(foeExporter exporter) {
         }
     }
 
-    foeResult result = to_foeResult(FOE_IMEX_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_IMEX_SUCCESS);
     for (auto const &it : gExporterRegistrar.functionality) {
         if (it.onRegister)
             result = it.onRegister(exporter);
@@ -63,7 +63,7 @@ REGISTRATION_FAILED:
     return result;
 }
 
-extern "C" foeResult foeImexDeregisterExporter(foeExporter exporter) {
+extern "C" foeResultSet foeImexDeregisterExporter(foeExporter exporter) {
     std::scoped_lock lock{gExporterRegistrar.sync};
 
     for (auto it = gExporterRegistrar.exporters.begin(); it != gExporterRegistrar.exporters.end();
@@ -106,8 +106,9 @@ extern "C" void foeImexGetExporters(uint32_t *pExporterCount, foeExporter *pExpo
     *pExporterCount = minCount;
 }
 
-extern "C" foeResult foeRegisterExportFunctionality(foeExportFunctionality const *functionality) {
-    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
+extern "C" foeResultSet foeRegisterExportFunctionality(
+    foeExportFunctionality const *functionality) {
+    foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
     std::scoped_lock lock{gExporterRegistrar.sync};
 
     for (auto const &it : gExporterRegistrar.functionality) {

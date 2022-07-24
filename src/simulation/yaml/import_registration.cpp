@@ -25,9 +25,9 @@ namespace {
 
 // Resources
 
-foeResult armatureCreateProcessing(foeResourceID resourceID,
-                                   foeResourceCreateInfo createInfo,
-                                   foeSimulation const *pSimulation) {
+foeResultSet armatureCreateProcessing(foeResourceID resourceID,
+                                      foeResourceCreateInfo createInfo,
+                                      foeSimulation const *pSimulation) {
     foeResource armature =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
@@ -118,8 +118,8 @@ bool importCamera(YAML::Node const &node,
 
 } // namespace
 
-extern "C" foeResult foeBringupYamlRegisterImporters() {
-    foeResult result = to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
+extern "C" foeResultSet foeBringupYamlRegisterImporters() {
+    foeResultSet result = to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
 
     // Resources
     if (!foeImexYamlRegisterResourceFns(yaml_armature_key(), yaml_read_armature,

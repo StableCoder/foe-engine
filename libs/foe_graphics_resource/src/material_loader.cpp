@@ -20,7 +20,7 @@
 #include <array>
 #include <type_traits>
 
-foeResult foeMaterialLoader::initialize(foeResourcePool resourcePool) {
+foeResultSet foeMaterialLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_INITIALIZATION_FAILED);
 
@@ -37,7 +37,7 @@ void foeMaterialLoader::deinitialize() {
 
 bool foeMaterialLoader::initialized() const noexcept { return mResourcePool != FOE_NULL_HANDLE; }
 
-foeResult foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) {
+foeResultSet foeMaterialLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_LOADER_NOT_INITIALIZED);
 

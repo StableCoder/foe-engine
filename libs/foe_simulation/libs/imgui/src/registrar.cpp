@@ -18,10 +18,11 @@ bool foeSimulationImGuiRegistrar::matchFunctionList(ComponentFn componentFn,
            pDisplayFns->loaderFn == loaderFn;
 }
 
-foeResult foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
-                                                        ResourceFn resourceFn,
-                                                        ResourceCreateInfoFn resourceCreateInfoFn,
-                                                        LoaderFn loaderFn) {
+foeResultSet foeSimulationImGuiRegistrar::registerElements(
+    ComponentFn componentFn,
+    ResourceFn resourceFn,
+    ResourceCreateInfoFn resourceCreateInfoFn,
+    LoaderFn loaderFn) {
     if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
         return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL);
 
@@ -42,10 +43,11 @@ foeResult foeSimulationImGuiRegistrar::registerElements(ComponentFn componentFn,
     return to_foeResult(FOE_SIMULATION_IMGUI_SUCCESS);
 }
 
-foeResult foeSimulationImGuiRegistrar::deregisterElements(ComponentFn componentFn,
-                                                          ResourceFn resourceFn,
-                                                          ResourceCreateInfoFn resourceCreateInfoFn,
-                                                          LoaderFn loaderFn) {
+foeResultSet foeSimulationImGuiRegistrar::deregisterElements(
+    ComponentFn componentFn,
+    ResourceFn resourceFn,
+    ResourceCreateInfoFn resourceCreateInfoFn,
+    LoaderFn loaderFn) {
     if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
         return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL);
 

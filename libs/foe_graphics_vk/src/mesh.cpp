@@ -24,14 +24,14 @@ void foeGfxVkDestroyMesh(foeGfxSession session, foeGfxVkMesh *pMesh) {
 
 } // namespace
 
-extern "C" foeResult foeGfxVkCreateMesh(foeGfxSession session,
-                                        uint64_t vertexDataSize,
-                                        uint64_t indexDataSize,
-                                        uint32_t numIndices,
-                                        VkIndexType indexType,
-                                        uint64_t boneDataOffset,
-                                        bool *pHostVisible,
-                                        foeGfxMesh *pMesh) {
+extern "C" foeResultSet foeGfxVkCreateMesh(foeGfxSession session,
+                                           uint64_t vertexDataSize,
+                                           uint64_t indexDataSize,
+                                           uint32_t numIndices,
+                                           VkIndexType indexType,
+                                           uint64_t boneDataOffset,
+                                           bool *pHostVisible,
+                                           foeGfxMesh *pMesh) {
     auto *pSession = session_from_handle(session);
     VkResult vkResult = VK_SUCCESS;
 

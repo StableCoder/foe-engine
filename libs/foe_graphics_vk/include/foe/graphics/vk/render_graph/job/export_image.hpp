@@ -12,11 +12,11 @@
 
 #include <string_view>
 
-FOE_GFX_EXPORT foeResult foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                      std::string_view name,
-                                                      VkFence fence,
-                                                      foeGfxVkRenderGraphResource resource,
-                                                      VkImageLayout requiredLayout,
-                                                      std::vector<VkSemaphore> signalSemaphores);
+FOE_GFX_EXPORT foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                         std::string_view name,
+                                                         VkFence fence,
+                                                         foeGfxVkRenderGraphResource resource,
+                                                         VkImageLayout requiredLayout,
+                                                         std::vector<VkSemaphore> signalSemaphores);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_EXPORT_IMAGE_HPP

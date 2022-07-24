@@ -9,7 +9,7 @@
 
 class foeSimulationImGuiRegistrar;
 
-foeResult registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept;
+foeResultSet registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept;
 
 void deregisterImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept;
 

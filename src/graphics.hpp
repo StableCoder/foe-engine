@@ -13,18 +13,18 @@
 
 #include <vector>
 
-foeResult createGfxRuntime(foeXrRuntime xrRuntime,
-                           bool enableWindowing,
-                           bool validation,
-                           bool debugLogging,
-                           foeGfxRuntime *pGfxRuntime);
+foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
+                              bool enableWindowing,
+                              bool validation,
+                              bool debugLogging,
+                              foeGfxRuntime *pGfxRuntime);
 
-foeResult createGfxSession(foeGfxRuntime gfxRuntime,
-                           foeXrRuntime xrRuntime,
-                           bool enableWindowing,
-                           std::vector<VkSurfaceKHR> windowSurfaces,
-                           uint32_t explicitGpu,
-                           bool forceXr,
-                           foeGfxSession *pGfxSession);
+foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
+                              foeXrRuntime xrRuntime,
+                              bool enableWindowing,
+                              std::vector<VkSurfaceKHR> windowSurfaces,
+                              uint32_t explicitGpu,
+                              bool forceXr,
+                              foeGfxSession *pGfxSession);
 
 #endif // GRAPHICS_HPP

@@ -29,7 +29,7 @@ FOE_DEFINE_HANDLE_CASTS(indexes, Indexes, foeEcsIndexes)
 
 } // namespace
 
-extern "C" foeResult foeEcsCreateIndexes(foeIdGroup groupID, foeEcsIndexes *pIndexes) {
+extern "C" foeResultSet foeEcsCreateIndexes(foeIdGroup groupID, foeEcsIndexes *pIndexes) {
     if ((groupID & foeIdIndexBits) != 0) {
         return to_foeResult(FOE_ECS_ERROR_NOT_GROUP_ID);
     }
@@ -61,7 +61,7 @@ extern "C" foeIdGroup foeEcsIndexesGetGroupID(foeEcsIndexes indexes) {
     return pIndexes->groupID;
 }
 
-extern "C" foeResult foeEcsGenerateID(foeEcsIndexes indexes, foeId *pID) {
+extern "C" foeResultSet foeEcsGenerateID(foeEcsIndexes indexes, foeId *pID) {
     Indexes *pIndexes = indexes_from_handle(indexes);
 
     std::unique_lock lock{pIndexes->sync};
@@ -80,11 +80,11 @@ extern "C" foeResult foeEcsGenerateID(foeEcsIndexes indexes, foeId *pID) {
     return to_foeResult(FOE_ECS_SUCCESS);
 }
 
-extern "C" foeResult foeEcsFreeID(foeEcsIndexes indexes, foeId id) {
+extern "C" foeResultSet foeEcsFreeID(foeEcsIndexes indexes, foeId id) {
     return foeEcsFreeIDs(indexes, 1, &id);
 }
 
-extern "C" foeResult foeEcsFreeIDs(foeEcsIndexes indexes, uint32_t idCount, foeId const *pIDs) {
+extern "C" foeResultSet foeEcsFreeIDs(foeEcsIndexes indexes, uint32_t idCount, foeId const *pIDs) {
     Indexes *pIndexes = indexes_from_handle(indexes);
 
     // Validate that all the IDs are for the associated GroupID, and the IndexID is less than the
@@ -113,7 +113,7 @@ extern "C" void foeEcsForEachID(foeEcsIndexes indexes,
                                 void *pCallContext) {
     Indexes *pIndexes = indexes_from_handle(indexes);
 
-    foeResult result;
+    foeResultSet result;
     foeIdIndex nextNewIndex;
     std::vector<foeIdIndex> recycledIndexes;
 
@@ -145,10 +145,10 @@ extern "C" void foeEcsForEachID(foeEcsIndexes indexes,
     }
 }
 
-extern "C" foeResult foeEcsImportIndexes(foeEcsIndexes indexes,
-                                         foeIdIndex nextNewIndex,
-                                         uint32_t recycledCount,
-                                         foeIdIndex const *pRecycledIndexes) {
+extern "C" foeResultSet foeEcsImportIndexes(foeEcsIndexes indexes,
+                                            foeIdIndex nextNewIndex,
+                                            uint32_t recycledCount,
+                                            foeIdIndex const *pRecycledIndexes) {
     Indexes *pIndexes = indexes_from_handle(indexes);
 
     if (nextNewIndex < foeIdIndexMinValue) {
@@ -171,13 +171,13 @@ extern "C" foeResult foeEcsImportIndexes(foeEcsIndexes indexes,
     return to_foeResult(FOE_ECS_SUCCESS);
 }
 
-extern "C" foeResult foeEcsExportIndexes(foeEcsIndexes indexes,
-                                         foeIdIndex *pNextNewIndex,
-                                         uint32_t *pRecycledCount,
-                                         foeIdIndex *pRecycledIndexes) {
+extern "C" foeResultSet foeEcsExportIndexes(foeEcsIndexes indexes,
+                                            foeIdIndex *pNextNewIndex,
+                                            uint32_t *pRecycledCount,
+                                            foeIdIndex *pRecycledIndexes) {
     Indexes *pIndexes = indexes_from_handle(indexes);
 
-    foeResult result = to_foeResult(FOE_ECS_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_ECS_SUCCESS);
     std::unique_lock lock{pIndexes->sync};
 
     if (pNextNewIndex != nullptr)

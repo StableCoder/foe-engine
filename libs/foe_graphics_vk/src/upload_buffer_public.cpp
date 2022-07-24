@@ -22,9 +22,9 @@ void foeGfxVkDestroyUploadBuffer(foeGfxUploadContext uploadContext,
 
 } // namespace
 
-extern "C" foeResult foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
-                                              uint64_t size,
-                                              foeGfxUploadBuffer *pUploadBuffer) {
+extern "C" foeResultSet foeGfxCreateUploadBuffer(foeGfxUploadContext uploadContext,
+                                                 uint64_t size,
+                                                 foeGfxUploadBuffer *pUploadBuffer) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkBuffer stagingBuffer{VK_NULL_HANDLE};
@@ -71,9 +71,9 @@ extern "C" void foeGfxDestroyUploadBuffer(foeGfxUploadContext uploadContext,
     foeGfxVkDestroyUploadBuffer(uploadContext, pUploadBuffer);
 }
 
-extern "C" foeResult foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
-                                           foeGfxUploadBuffer uploadBuffer,
-                                           void **ppData) {
+extern "C" foeResultSet foeGfxMapUploadBuffer(foeGfxUploadContext uploadContext,
+                                              foeGfxUploadBuffer uploadBuffer,
+                                              void **ppData) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadBuffer = upload_buffer_from_handle(uploadBuffer);
 

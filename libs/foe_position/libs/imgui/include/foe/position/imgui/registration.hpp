@@ -10,10 +10,10 @@
 
 class foeSimulationImGuiRegistrar;
 
-FOE_POSITION_IMGUI_EXPORT foeResult
+FOE_POSITION_IMGUI_EXPORT foeResultSet
 foePositionImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
 
-FOE_POSITION_IMGUI_EXPORT foeResult
+FOE_POSITION_IMGUI_EXPORT foeResultSet
 foePositionImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
 
 #endif // FOE_POSITION_IMGUI_REGISTRATION_HPP

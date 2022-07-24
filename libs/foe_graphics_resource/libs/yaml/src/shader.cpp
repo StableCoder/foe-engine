@@ -72,7 +72,7 @@ void yaml_read_shader(YAML::Node const &node,
         new (pDst) foeShaderCreateInfo(std::move(*pSrcData));
     };
 
-    foeResult result = foeCreateResourceCreateInfo(
+    foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO, foeDestroyShaderCreateInfo,
         sizeof(foeShaderCreateInfo), &shaderCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {

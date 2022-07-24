@@ -24,8 +24,8 @@ void foeGfxVkDestroyUploadContext(foeGfxVkUploadContext *pUploadContext) {
 
 } // namespace
 
-extern "C" foeResult foeGfxCreateUploadContext(foeGfxSession session,
-                                               foeGfxUploadContext *pUploadContext) {
+extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
+                                                  foeGfxUploadContext *pUploadContext) {
     auto *pSession = session_from_handle(session);
     VkResult vkResult = VK_SUCCESS;
     auto *pNewContext = new foeGfxVkUploadContext;

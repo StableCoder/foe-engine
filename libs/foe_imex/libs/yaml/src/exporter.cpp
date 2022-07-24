@@ -125,7 +125,7 @@ YAML::Node exportComponents(
     return rootNode;
 }
 
-foeResult exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
+foeResultSet exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
     try {
 
         for (uint32_t i = 0; i < foeIdNumDynamicGroups; ++i) {
@@ -139,7 +139,7 @@ foeResult exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
             YAML::Node node;
 
             char const *pGroupName;
-            foeResult result = foeImexImporterGetGroupName(group, &pGroupName);
+            foeResultSet result = foeImexImporterGetGroupName(group, &pGroupName);
             if (result.value != FOE_SUCCESS)
                 return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_DEPENDENCIES);
 
@@ -168,23 +168,23 @@ bool exportIndexDataToFile(foeEcsIndexes indexes, YAML::Node &data) {
     return true;
 }
 
-foeResult exportGroupResourceIndexData(foeSimulation *pSimState, YAML::Node &data) {
+foeResultSet exportGroupResourceIndexData(foeSimulation *pSimState, YAML::Node &data) {
     if (exportIndexDataToFile(pSimState->groupData.persistentResourceIndexes(), data))
         return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_INDEX_DATA);
 }
 
-foeResult exportGroupEntityIndexData(foeSimulation *pSimState, YAML::Node &data) {
+foeResultSet exportGroupEntityIndexData(foeSimulation *pSimState, YAML::Node &data) {
     if (exportIndexDataToFile(pSimState->groupData.persistentEntityIndexes(), data))
         return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_INDEX_DATA);
 }
 
-foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
+foeResultSet exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
     // Get the valid set of resource indices
-    foeResult result;
+    foeResultSet result;
     foeIdIndex maxIndices;
     std::vector<foeIdIndex> unusedIndices;
 
@@ -215,7 +215,7 @@ foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node
             char *pResourceName = NULL;
             if (pSimState->resourceNameMap != FOE_NULL_HANDLE) {
                 uint32_t strLength = 0;
-                foeResult result;
+                foeResultSet result;
                 do {
                     result = foeEcsNameMapFindName(pSimState->resourceNameMap, resourceID,
                                                    &strLength, pResourceName);
@@ -241,9 +241,9 @@ foeResult exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::Node
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
+foeResultSet exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::Node &data) {
     // Get the valid set of entity indices
-    foeResult result;
+    foeResultSet result;
     foeIdIndex maxIndices;
     std::vector<foeIdIndex> unusedIndices;
 
@@ -274,7 +274,7 @@ foeResult exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::
             char *pName = NULL;
             if (pSimState->entityNameMap != FOE_NULL_HANDLE) {
                 uint32_t strLength = 0;
-                foeResult result;
+                foeResultSet result;
                 do {
                     result =
                         foeEcsNameMapFindName(pSimState->entityNameMap, entity, &strLength, pName);
@@ -302,7 +302,7 @@ foeResult exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAML::
 
 } // namespace
 
-foeResult foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState) {
+foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState) {
     // Make sure the export directory exists
     std::filesystem::path path{pExportPath};
 
@@ -342,7 +342,7 @@ foeResult foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState) {
     }
 
     gSync.lock_shared();
-    foeResult result;
+    foeResultSet result;
 
     { // Dependency Data
         YAML::Node dependencies;
@@ -487,7 +487,7 @@ EXPORT_FAILED:
     return result;
 }
 
-foeResult foeImexYamlRegisterResourceFn(
+foeResultSet foeImexYamlRegisterResourceFn(
     std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 
@@ -501,7 +501,7 @@ foeResult foeImexYamlRegisterResourceFn(
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult foeImexYamlDeregisterResourceFn(
+foeResultSet foeImexYamlDeregisterResourceFn(
     std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 
@@ -514,7 +514,7 @@ foeResult foeImexYamlDeregisterResourceFn(
     return to_foeResult(FOE_IMEX_YAML_ERROR_FUNCTIONALITY_NOT_REGISTERED);
 }
 
-foeResult foeImexYamlRegisterComponentFn(
+foeResultSet foeImexYamlRegisterComponentFn(
     std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 
@@ -528,7 +528,7 @@ foeResult foeImexYamlRegisterComponentFn(
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResult foeImexYamlDeregisterComponentFn(
+foeResultSet foeImexYamlDeregisterComponentFn(
     std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *)) {
     std::scoped_lock lock{gSync};
 

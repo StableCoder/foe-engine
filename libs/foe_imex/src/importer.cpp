@@ -18,7 +18,7 @@ std::vector<PFN_foeImexCreateImporter> gCreateImporterFns;
 
 } // namespace
 
-foeResult foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter) {
+foeResultSet foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter) {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gCreateImporterFns) {
@@ -32,7 +32,7 @@ foeResult foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter) {
     return to_foeResult(FOE_IMEX_SUCCESS);
 }
 
-foeResult foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter) {
+foeResultSet foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter) {
     std::scoped_lock lock{gSync};
 
     for (auto it = gCreateImporterFns.begin(); it != gCreateImporterFns.end(); ++it) {

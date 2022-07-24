@@ -18,11 +18,11 @@ class foeCameraPool;
 
 class foeCameraSystem {
   public:
-    foeResult initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool);
+    foeResultSet initialize(foePosition3dPool *pPosition3dPool, foeCameraPool *pCameraPool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    foeResult initializeGraphics(foeGfxSession gfxSession);
+    foeResultSet initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

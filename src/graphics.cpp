@@ -19,18 +19,18 @@
 #include <foe/xr/openxr/vk/vulkan.hpp>
 #endif
 
-foeResult createGfxRuntime(foeXrRuntime xrRuntime,
-                           bool enableWindowing,
-                           bool validation,
-                           bool debugLogging,
-                           foeGfxRuntime *pGfxRuntime) {
+foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
+                              bool enableWindowing,
+                              bool validation,
+                              bool debugLogging,
+                              foeGfxRuntime *pGfxRuntime) {
     std::vector<std::string> layers;
     std::vector<std::string> extensions;
 
     if (enableWindowing) {
         uint32_t extensionCount;
         const char **extensionNames;
-        foeResult result = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
+        foeResultSet result = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
         if (result.value != FOE_SUCCESS) {
             return result;
         }
@@ -45,7 +45,7 @@ foeResult createGfxRuntime(foeXrRuntime xrRuntime,
     if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        foeResult result =
+        foeResultSet result =
             foeXrGetVulkanInstanceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
         if (result.value != FOE_SUCCESS) {
             return result;
@@ -196,13 +196,13 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
 
 } // namespace
 
-foeResult createGfxSession(foeGfxRuntime gfxRuntime,
-                           foeXrRuntime xrRuntime,
-                           bool enableWindowing,
-                           std::vector<VkSurfaceKHR> windowSurfaces,
-                           uint32_t explicitGpu,
-                           bool forceXr,
-                           foeGfxSession *pGfxSession) {
+foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
+                              foeXrRuntime xrRuntime,
+                              bool enableWindowing,
+                              std::vector<VkSurfaceKHR> windowSurfaces,
+                              uint32_t explicitGpu,
+                              bool forceXr,
+                              foeGfxSession *pGfxSession) {
     // Determine the physical device
     VkPhysicalDevice vkPhysicalDevice =
         determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces.size(),
@@ -223,7 +223,7 @@ foeResult createGfxSession(foeGfxRuntime gfxRuntime,
     if (xrRuntime != FOE_NULL_HANDLE) {
         std::vector<std::string> xrExtensions;
 
-        foeResult result =
+        foeResultSet result =
             foeXrGetVulkanDeviceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
         if (result.value == FOE_SUCCESS) {
             extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());

@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-inline foeResult to_foeResult(foePhysicsResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foePhysicsResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foePhysicsResultToString,
     };

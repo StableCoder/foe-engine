@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-inline foeResult to_foeResult(foeGraphicsResourceYamlResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foeGraphicsResourceYamlResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeGraphicsResourceYamlResultToString,
     };

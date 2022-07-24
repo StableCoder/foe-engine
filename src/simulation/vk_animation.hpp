@@ -19,13 +19,13 @@ class foeRenderStatePool;
 
 class VkAnimationPool {
   public:
-    foeResult initialize(foeResourcePool resourcePool,
-                         foeArmatureStatePool *pArmatureStatePool,
-                         foeRenderStatePool *pRenderStatePool);
+    foeResultSet initialize(foeResourcePool resourcePool,
+                            foeArmatureStatePool *pArmatureStatePool,
+                            foeRenderStatePool *pRenderStatePool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    foeResult initializeGraphics(foeGfxSession gfxSession);
+    foeResultSet initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

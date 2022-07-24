@@ -97,7 +97,7 @@ void foeImGuiResourceList::customUI() {
         if (indexes == FOE_NULL_HANDLE)
             continue;
 
-        foeResult result;
+        foeResultSet result;
         PerGroupData indiceData{
             .group = group,
         };
@@ -185,7 +185,7 @@ void foeImGuiResourceList::customUI() {
             char const *pEditorName = "";
             if (mpSimulationState->resourceNameMap != FOE_NULL_HANDLE) {
                 uint32_t localStrLength = strLength;
-                foeResult result;
+                foeResultSet result;
                 do {
                     result = foeEcsNameMapFindName(mpSimulationState->resourceNameMap, resourceID,
                                                    &localStrLength, pTempStr);
@@ -263,7 +263,7 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     char *pEditorName = NULL;
     if (mpSimulationState->resourceNameMap != FOE_NULL_HANDLE) {
         uint32_t strLength = 0;
-        foeResult result;
+        foeResultSet result;
         do {
             result = foeEcsNameMapFindName(mpSimulationState->resourceNameMap, pData->resourceID,
                                            &strLength, pEditorName);

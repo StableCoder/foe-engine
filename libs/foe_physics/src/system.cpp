@@ -26,10 +26,10 @@ foePhysicsSystem::foePhysicsSystem() :
 
 foePhysicsSystem::~foePhysicsSystem() {}
 
-foeResult foePhysicsSystem::initialize(foeResourcePool resourcePool,
-                                       foeCollisionShapeLoader *pCollisionShapeLoader,
-                                       foeRigidBodyPool *pRigidBodyPool,
-                                       foePosition3dPool *pPosition3dPool) {
+foeResultSet foePhysicsSystem::initialize(foeResourcePool resourcePool,
+                                          foeCollisionShapeLoader *pCollisionShapeLoader,
+                                          foeRigidBodyPool *pRigidBodyPool,
+                                          foePosition3dPool *pPosition3dPool) {
     if (resourcePool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES);
     if (pCollisionShapeLoader == nullptr)

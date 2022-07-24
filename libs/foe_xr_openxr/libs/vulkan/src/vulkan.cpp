@@ -56,8 +56,8 @@ std::vector<XrSystemId> getAllSystemIds(XrInstance instance) {
 
 } // namespace
 
-foeResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
-                                           std::vector<std::string> &extensions) {
+foeResultSet foeXrGetVulkanInstanceExtensions(XrInstance instance,
+                                              std::vector<std::string> &extensions) {
     PFN_xrGetVulkanInstanceExtensionsKHR GetVulkanInstanceExtensions{nullptr};
     XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR",
                                               (PFN_xrVoidFunction *)&GetVulkanInstanceExtensions);
@@ -88,8 +88,8 @@ foeResult foeXrGetVulkanInstanceExtensions(XrInstance instance,
     return xr_to_foeResult(xrResult);
 }
 
-foeResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                         std::vector<std::string> &extensions) {
+foeResultSet foeXrGetVulkanDeviceExtensions(XrInstance instance,
+                                            std::vector<std::string> &extensions) {
     PFN_xrGetVulkanDeviceExtensionsKHR GetVulkanDeviceExtensions{nullptr};
     XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR",
                                               (PFN_xrVoidFunction *)&GetVulkanDeviceExtensions);
@@ -120,10 +120,10 @@ foeResult foeXrGetVulkanDeviceExtensions(XrInstance instance,
     return xr_to_foeResult(xrResult);
 }
 
-foeResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                       XrSystemId systemId,
-                                       VkInstance vkInstance,
-                                       VkPhysicalDevice *vkPhysicalDevice) {
+foeResultSet foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                          XrSystemId systemId,
+                                          VkInstance vkInstance,
+                                          VkPhysicalDevice *vkPhysicalDevice) {
     PFN_xrGetVulkanGraphicsDeviceKHR GetVulkanGraphicsDevice{nullptr};
     XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR",
                                               (PFN_xrVoidFunction *)&GetVulkanGraphicsDevice);
@@ -136,7 +136,7 @@ foeResult foeXrGetVulkanGraphicsDevice(XrInstance instance,
     return xr_to_foeResult(xrResult);
 }
 
-foeResult foeXrGetVulkanGraphicsRequirements(
+foeResultSet foeXrGetVulkanGraphicsRequirements(
     XrInstance instance,
     XrSystemId systemId,
     XrGraphicsRequirementsVulkanKHR *graphicsRequirements) {
@@ -154,8 +154,8 @@ foeResult foeXrGetVulkanGraphicsRequirements(
     return xr_to_foeResult(xrResult);
 }
 
-foeResult foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
-                                              std::vector<XrSwapchainImageVulkanKHR> &images) {
+foeResultSet foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
+                                                 std::vector<XrSwapchainImageVulkanKHR> &images) {
     uint32_t imageCount;
     XrResult xrResult = xrEnumerateSwapchainImages(xrSwapchain, 0, &imageCount, nullptr);
     if (xrResult != XR_SUCCESS) {

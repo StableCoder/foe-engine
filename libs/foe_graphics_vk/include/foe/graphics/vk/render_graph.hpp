@@ -41,11 +41,11 @@ struct foeGfxVkRenderGraphResource {
     foeGfxVkRenderGraphStructure const *pResourceState;
 };
 
-FOE_GFX_EXPORT foeResult foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph);
+FOE_GFX_EXPORT foeResultSet foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph);
 
 FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
 
-FOE_GFX_EXPORT foeResult foeGfxVkRenderGraphAddJob(
+FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraph renderGraph,
     uint32_t resourcesCount,
     foeGfxVkRenderGraphResource const *pResourcesIn,
@@ -53,16 +53,16 @@ FOE_GFX_EXPORT foeResult foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraphFn freeDataFn,
     std::string_view name,
     bool required,
-    std::function<foeResult(foeGfxSession,
-                            foeGfxDelayedCaller,
-                            std::vector<VkSemaphore> const &,
-                            std::vector<VkSemaphore> const &,
-                            std::function<void(std::function<void()>)>)> &&jobFn,
+    std::function<foeResultSet(foeGfxSession,
+                               foeGfxDelayedCaller,
+                               std::vector<VkSemaphore> const &,
+                               std::vector<VkSemaphore> const &,
+                               std::function<void(std::function<void()>)>)> &&jobFn,
     foeGfxVkRenderGraphJob *pJob);
 
-FOE_GFX_EXPORT foeResult foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
-                                                    foeGfxSession gfxSession,
-                                                    foeGfxDelayedCaller gfxDelayedDestructor);
+FOE_GFX_EXPORT foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
+                                                       foeGfxSession gfxSession,
+                                                       foeGfxDelayedCaller gfxDelayedDestructor);
 
 FOE_GFX_EXPORT void foeGfxVkExecuteRenderGraphCpuJobs(foeGfxVkRenderGraph renderGraph);
 

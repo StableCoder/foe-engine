@@ -18,7 +18,7 @@
 #include "log.hpp"
 #include "result.h"
 
-foeResult foeMeshLoader::initialize(
+foeResultSet foeMeshLoader::initialize(
     foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
@@ -37,7 +37,7 @@ void foeMeshLoader::deinitialize() {
 
 bool foeMeshLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
 
-foeResult foeMeshLoader::initializeGraphics(foeGfxSession gfxSession) {
+foeResultSet foeMeshLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_LOADER_NOT_INITIALIZED);
 
@@ -45,7 +45,7 @@ foeResult foeMeshLoader::initializeGraphics(foeGfxSession gfxSession) {
     mGfxSession = gfxSession;
 
     // Internal
-    foeResult result = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
+    foeResultSet result = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
     if (result.value != FOE_SUCCESS)
         deinitializeGraphics();
 
@@ -194,7 +194,7 @@ void foeMeshLoader::load(foeResource resource,
 
     auto type = foeResourceCreateInfoGetType(createInfo);
 
-    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
     foeMesh data{};

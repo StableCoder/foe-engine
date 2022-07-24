@@ -379,19 +379,19 @@ void mergeFeatureSet_VkPhysicalDeviceVulkan13Features(VkPhysicalDeviceVulkan13Fe
 
 } // namespace
 
-foeResult foeGfxVkCreateSession(foeGfxRuntime runtime,
-                                VkPhysicalDevice vkPhysicalDevice,
-                                uint32_t layerCount,
-                                char const *const *ppLayerNames,
-                                uint32_t extensionCount,
-                                char const *const *ppExtensionNames,
-                                VkPhysicalDeviceFeatures const *pBasicFeatures,
-                                void const *pFeatures,
-                                foeGfxSession *pSession) {
+foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
+                                   VkPhysicalDevice vkPhysicalDevice,
+                                   uint32_t layerCount,
+                                   char const *const *ppLayerNames,
+                                   uint32_t extensionCount,
+                                   char const *const *ppExtensionNames,
+                                   VkPhysicalDeviceFeatures const *pBasicFeatures,
+                                   void const *pFeatures,
+                                   foeGfxSession *pSession) {
     auto *pNewSession = new foeGfxVkSession;
     auto sessionHandle = session_to_handle(pNewSession);
 
-    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
     VkResult vkResult = VK_SUCCESS;
 
     pNewSession->instance = reinterpret_cast<foeGfxVkRuntime *>(runtime)->instance;
@@ -628,9 +628,9 @@ CREATE_FAILED:
     return result;
 }
 
-foeResult foeGfxVkEnumerateSessionLayers(foeGfxSession session,
-                                         uint32_t *pLayerNamesLength,
-                                         char *pLayerNames) {
+foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
+                                            uint32_t *pLayerNamesLength,
+                                            char *pLayerNames) {
     auto *pSession = session_from_handle(session);
 
     return foeCopyDelimitedString(pSession->layerNamesLength, pSession->pLayerNames,
@@ -639,9 +639,9 @@ foeResult foeGfxVkEnumerateSessionLayers(foeGfxSession session,
                : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
-foeResult foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
-                                             uint32_t *pExtensionNamesLength,
-                                             char *pExtensionNames) {
+foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
+                                                uint32_t *pExtensionNamesLength,
+                                                char *pExtensionNames) {
     auto *pSession = session_from_handle(session);
 
     return foeCopyDelimitedString(pSession->extensionNamesLength, pSession->pExtensionNames,

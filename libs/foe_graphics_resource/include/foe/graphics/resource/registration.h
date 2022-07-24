@@ -14,7 +14,7 @@ extern "C" {
 
 FOE_GFX_RES_EXPORT int foeGraphicsResourceFunctionalityID();
 
-FOE_GFX_RES_EXPORT foeResult foeGraphicsResourceRegisterFunctionality();
+FOE_GFX_RES_EXPORT foeResultSet foeGraphicsResourceRegisterFunctionality();
 
 FOE_GFX_RES_EXPORT void foeGraphicsResourceDeregisterFunctionality();
 

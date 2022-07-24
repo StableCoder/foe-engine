@@ -37,7 +37,7 @@ FOE_DEFINE_HANDLE_CASTS(resource_records, ResourceRecords, foeResourceRecords)
 
 } // namespace
 
-extern "C" foeResult foeResourceCreateRecords(foeResourceRecords *pResourceRecords) {
+extern "C" foeResultSet foeResourceCreateRecords(foeResourceRecords *pResourceRecords) {
     ResourceRecords *pNewRecords = (ResourceRecords *)malloc(sizeof(ResourceRecords));
     if (pNewRecords == NULL)
         return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
@@ -73,8 +73,8 @@ extern "C" void foeResourceDestroyRecords(foeResourceRecords resourceRecords) {
     free(pRecords);
 }
 
-extern "C" foeResult foeResourceAddRecordEntry(foeResourceRecords resourceRecords,
-                                               foeResourceID resourceID) {
+extern "C" foeResultSet foeResourceAddRecordEntry(foeResourceRecords resourceRecords,
+                                                  foeResourceID resourceID) {
     ResourceRecords *pRecords = resource_records_from_handle(resourceRecords);
     std::unique_lock lock{pRecords->sync};
 
@@ -96,8 +96,8 @@ extern "C" foeResult foeResourceAddRecordEntry(foeResourceRecords resourceRecord
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" foeResult foeResourceRemoveRecordEntry(foeResourceRecords resourceRecords,
-                                                  foeResourceID resourceID) {
+extern "C" foeResultSet foeResourceRemoveRecordEntry(foeResourceRecords resourceRecords,
+                                                     foeResourceID resourceID) {
     if (foeIdGetGroup(resourceID) == foeIdPersistentGroup) {
         return to_foeResult(FOE_RESOURCE_ERROR_CANNOT_REMOVE_NON_PERSISTENT_RECORDS);
     }
@@ -117,10 +117,10 @@ extern "C" foeResult foeResourceRemoveRecordEntry(foeResourceRecords resourceRec
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" foeResult foeResourceAddSavedRecord(foeResourceRecords resourceRecords,
-                                               foeIdGroup groupID,
-                                               foeResourceID resourceID,
-                                               foeResourceCreateInfo createInfo) {
+extern "C" foeResultSet foeResourceAddSavedRecord(foeResourceRecords resourceRecords,
+                                                  foeIdGroup groupID,
+                                                  foeResourceID resourceID,
+                                                  foeResourceCreateInfo createInfo) {
     ResourceRecords *pRecords = resource_records_from_handle(resourceRecords);
     std::unique_lock lock{pRecords->sync};
 
@@ -143,9 +143,9 @@ extern "C" foeResult foeResourceAddSavedRecord(foeResourceRecords resourceRecord
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" foeResult foeResourceAddSessionRecord(foeResourceRecords resourceRecords,
-                                                 foeResourceID resourceID,
-                                                 foeResourceCreateInfo createInfo) {
+extern "C" foeResultSet foeResourceAddSessionRecord(foeResourceRecords resourceRecords,
+                                                    foeResourceID resourceID,
+                                                    foeResourceCreateInfo createInfo) {
     ResourceRecords *pRecords = resource_records_from_handle(resourceRecords);
     std::unique_lock lock{pRecords->sync};
 
@@ -174,8 +174,8 @@ extern "C" foeResult foeResourceAddSessionRecord(foeResourceRecords resourceReco
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" foeResult foeResourceUndoSessionRecord(foeResourceRecords resourceRecords,
-                                                  foeResourceID resourceID) {
+extern "C" foeResultSet foeResourceUndoSessionRecord(foeResourceRecords resourceRecords,
+                                                     foeResourceID resourceID) {
     ResourceRecords *pRecords = resource_records_from_handle(resourceRecords);
     std::unique_lock lock{pRecords->sync};
 
@@ -196,8 +196,8 @@ extern "C" foeResult foeResourceUndoSessionRecord(foeResourceRecords resourceRec
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" foeResult foeResourceRedoSessionRecord(foeResourceRecords resourceRecords,
-                                                  foeResourceID resourceID) {
+extern "C" foeResultSet foeResourceRedoSessionRecord(foeResourceRecords resourceRecords,
+                                                     foeResourceID resourceID) {
     ResourceRecords *pRecords = resource_records_from_handle(resourceRecords);
     std::unique_lock lock{pRecords->sync};
 
@@ -217,9 +217,9 @@ extern "C" foeResult foeResourceRedoSessionRecord(foeResourceRecords resourceRec
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" foeResult foeResourceRecordsGetCreateInfo(foeResourceRecords resourceRecords,
-                                                     foeResourceID resourceID,
-                                                     foeResourceCreateInfo *pCreateInfo) {
+extern "C" foeResultSet foeResourceRecordsGetCreateInfo(foeResourceRecords resourceRecords,
+                                                        foeResourceID resourceID,
+                                                        foeResourceCreateInfo *pCreateInfo) {
     ResourceRecords *pRecords = resource_records_from_handle(resourceRecords);
     std::shared_lock lock{pRecords->sync};
 
@@ -247,9 +247,9 @@ extern "C" foeResult foeResourceRecordsGetCreateInfo(foeResourceRecords resource
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" foeResult foeResourceRecordsGetModifiedHistory(foeResourceRecords resourceRecords,
-                                                          foeResourceID resourceID,
-                                                          foeResourceCreateInfo *pCreateInfo) {
+extern "C" foeResultSet foeResourceRecordsGetModifiedHistory(foeResourceRecords resourceRecords,
+                                                             foeResourceID resourceID,
+                                                             foeResourceCreateInfo *pCreateInfo) {
     ResourceRecords *pRecords = resource_records_from_handle(resourceRecords);
     std::shared_lock lock{pRecords->sync};
 

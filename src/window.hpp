@@ -24,10 +24,10 @@ struct WindowData {
     // foeEntityId attachedCamera;
 };
 
-foeResult performWindowMaintenance(WindowData *pWindow,
-                                   foeGfxSession gfxSession,
-                                   foeGfxDelayedCaller gfxDelayedDestructor,
-                                   VkSampleCountFlags sampleCount,
-                                   VkFormat depthFormat);
+foeResultSet performWindowMaintenance(WindowData *pWindow,
+                                      foeGfxSession gfxSession,
+                                      foeGfxDelayedCaller gfxDelayedDestructor,
+                                      VkSampleCountFlags sampleCount,
+                                      VkFormat depthFormat);
 
 #endif // WINDOW_HPP

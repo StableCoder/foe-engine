@@ -16,7 +16,7 @@ constexpr size_t cNumCount = 8192 * 8;
 TEST_CASE("foeResourceCreateInfo - Create without a data function fails") {
     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
 
-    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, nullptr, &createInfo);
+    foeResultSet result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, nullptr, &createInfo);
 
     CHECK(result.value == FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
     CHECK(createInfo == FOE_NULL_HANDLE);
@@ -49,8 +49,8 @@ TEST_CASE("foeResourceCreateInfo - Check that given destroy function is called o
         *pTestStruct->pBool = true;
     };
 
-    foeResult result = foeCreateResourceCreateInfo(0, destroyFn, sizeof(TestStruct), &testStruct,
-                                                   testDataFn, &createInfo);
+    foeResultSet result = foeCreateResourceCreateInfo(0, destroyFn, sizeof(TestStruct), &testStruct,
+                                                      testDataFn, &createInfo);
 
     CHECK(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
@@ -65,7 +65,7 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
     auto dummyData = [](void *, void *) {};
 
     SECTION("Type: 0") {
-        foeResult result =
+        foeResultSet result =
             foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
@@ -74,7 +74,7 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
         CHECK(foeResourceCreateInfoGetType(createInfo) == 0);
     }
     SECTION("Type: 1") {
-        foeResult result =
+        foeResultSet result =
             foeCreateResourceCreateInfo(1, nullptr, 0, nullptr, dummyData, &createInfo);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
@@ -83,7 +83,7 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
         CHECK(foeResourceCreateInfoGetType(createInfo) == 1);
     }
     SECTION("Type: UINT32_MAX") {
-        foeResult result =
+        foeResultSet result =
             foeCreateResourceCreateInfo(UINT32_MAX, nullptr, 0, nullptr, dummyData, &createInfo);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
@@ -99,7 +99,8 @@ TEST_CASE("foeResourceCreateInfo - Incrementing/Decrementing reference count") {
     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
     auto dummyData = [](void *, void *) {};
 
-    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
+    foeResultSet result =
+        foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
     CHECK(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
@@ -165,7 +166,8 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
 
     foeLogger::instance()->registerSink(&testSink);
 
-    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
+    foeResultSet result =
+        foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
     CHECK(result.value == FOE_RESOURCE_SUCCESS);
     CHECK(createInfo != FOE_NULL_HANDLE);
@@ -193,7 +195,8 @@ TEST_CASE("foeResourceCreateInfo - Warning logged when destroyed with non-zero r
     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
     auto dummyData = [](void *, void *) {};
 
-    foeResult result = foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
+    foeResultSet result =
+        foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
 
     CHECK(result.value == FOE_RESOURCE_SUCCESS);
     CHECK(createInfo != FOE_NULL_HANDLE);

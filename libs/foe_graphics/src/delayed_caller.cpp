@@ -30,9 +30,9 @@ FOE_DEFINE_HANDLE_CASTS(delayed_destructor, foeGfxDelayedCallerImpl, foeGfxDelay
 
 } // namespace
 
-extern "C" foeResult foeGfxCreateDelayedCaller(foeGfxSession session,
-                                               uint32_t initialDelay,
-                                               foeGfxDelayedCaller *pDelayedCaller) {
+extern "C" foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
+                                                  uint32_t initialDelay,
+                                                  foeGfxDelayedCaller *pDelayedCaller) {
     auto *pNewDelayedDestructor = new foeGfxDelayedCallerImpl{
         .session = session,
         .currentDelay = initialDelay,
@@ -46,7 +46,7 @@ extern "C" foeResult foeGfxCreateDelayedCaller(foeGfxSession session,
     FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedCaller - Created using foeGfxSession {}",
             static_cast<void *>(pNewDelayedDestructor), (void *)session);
 
-    return foeResult{.value = FOE_SUCCESS, .toString = NULL};
+    return foeResultSet{.value = FOE_SUCCESS, .toString = NULL};
 }
 
 extern "C" void foeGfxDestroyDelayedCaller(foeGfxDelayedCaller delayedCaller) {

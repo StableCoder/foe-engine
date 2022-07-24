@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-foeResult foeBringupYamlRegisterImporters();
+foeResultSet foeBringupYamlRegisterImporters();
 
 void foeBringupYamlDeregisterImporters();
 

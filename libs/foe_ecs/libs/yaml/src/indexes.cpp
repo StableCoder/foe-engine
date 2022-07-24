@@ -63,7 +63,7 @@ void yaml_write_indexes(std::string const &nodeName, foeEcsIndexes indexes, YAML
         }
     }
 
-    foeResult result;
+    foeResultSet result;
     foeIdIndex nextNewIndex;
     std::vector<foeIdIndex> recycledIndices;
 

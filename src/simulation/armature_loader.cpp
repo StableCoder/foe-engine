@@ -12,13 +12,13 @@
 #include "armature_create_info.hpp"
 #include "type_defs.h"
 
-foeResult foeArmatureLoader::initialize(
+foeResultSet foeArmatureLoader::initialize(
     foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return to_foeResult(FOE_BRINGUP_ERROR_LOADER_INITIALIZATION_FAILED);
 
-    foeResult result{.value = FOE_SUCCESS, .toString = NULL};
+    foeResultSet result{.value = FOE_SUCCESS, .toString = NULL};
 
     mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;

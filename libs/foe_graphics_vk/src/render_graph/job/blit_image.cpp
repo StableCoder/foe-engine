@@ -18,14 +18,14 @@ void cleanupOldCommandPool(VkCommandPool commandPool, foeGfxSession session) {
 
 } // namespace
 
-foeResult foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                     std::string_view name,
-                                     VkFence fence,
-                                     foeGfxVkRenderGraphResource srcImage,
-                                     VkImageLayout srcFinalLayout,
-                                     foeGfxVkRenderGraphResource dstImage,
-                                     VkImageLayout dstFinalLayout,
-                                     BlitJobUsedResources *pResourcesOut) {
+foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                        std::string_view name,
+                                        VkFence fence,
+                                        foeGfxVkRenderGraphResource srcImage,
+                                        VkImageLayout srcFinalLayout,
+                                        foeGfxVkRenderGraphResource dstImage,
+                                        VkImageLayout dstFinalLayout,
+                                        BlitJobUsedResources *pResourcesOut) {
     // Check that resources are correct types
     auto const *pSrcImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         srcImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
@@ -54,7 +54,7 @@ foeResult foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         VkResult vkResult;
 
         VkCommandPool commandPool;
@@ -252,7 +252,7 @@ foeResult foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
     std::array<bool const, 2> resourcesInReadOnly{true, false};
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResult result =
+    foeResultSet result =
         foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
                                   freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {

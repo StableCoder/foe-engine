@@ -14,13 +14,13 @@
 
 #include <array>
 
-foeResult foeVertexDescriptorLoader::initialize(foeResourcePool resourcePool) {
+foeResultSet foeVertexDescriptorLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE) {
         return to_foeResult(
             FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_LOADER_INITIALIZATION_FAILED);
     }
 
-    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 
     mResourcePool = resourcePool;
 

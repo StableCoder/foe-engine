@@ -56,16 +56,16 @@ std::array<ImExPlugin, 5> pluginList{
     },
 };
 
-foeResult initItem(ImExPlugin &plugin) {
+foeResultSet initItem(ImExPlugin &plugin) {
     foeCreatePlugin(plugin.path.c_str(), &plugin.plugin);
     if (plugin.plugin == FOE_NULL_HANDLE) {
         return to_foeResult(FOE_BRINGUP_FAILED_TO_LOAD_PLUGIN);
     }
 
-    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
+    foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
     for (auto const &it : plugin.initFn) {
-        foeResult (*pFn)() = (foeResult(*)())foeGetPluginSymbol(plugin.plugin, it.c_str());
-        foeResult fnResult = pFn();
+        foeResultSet (*pFn)() = (foeResultSet(*)())foeGetPluginSymbol(plugin.plugin, it.c_str());
+        foeResultSet fnResult = pFn();
         if (fnResult.value != FOE_SUCCESS) {
             result = fnResult;
             break;
@@ -89,8 +89,8 @@ void deinitItem(ImExPlugin &plugin) {
 
 } // namespace
 
-foeResult registerBasicFunctionality() noexcept {
-    foeResult result;
+foeResultSet registerBasicFunctionality() noexcept {
+    foeResultSet result;
 
     // Core
     result = foePhysicsRegisterFunctionality();

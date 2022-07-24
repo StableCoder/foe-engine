@@ -33,7 +33,7 @@ typedef bool(PFN_foeResourceUnloadCall)(foeResource,             // Resource
 
 typedef void(PFN_foeResourcePostLoad)(
     foeResource,                                                               // Resource
-    foeResult,                                                                 // ErrorCode
+    foeResultSet,                                                              // ErrorCode
     void *,                                                                    // Source
     void (*)(void *, void *),                                                  // Move Fn
     foeResourceCreateInfo,                                                     // CreateInfo
@@ -49,11 +49,11 @@ typedef enum foeResourceLoadState {
 
 FOE_RES_EXPORT char const *foeResourceLoadStateToString(foeResourceLoadState state);
 
-FOE_RES_EXPORT foeResult foeCreateResource(foeResourceID id,
-                                           foeResourceType type,
-                                           foeResourceFns const *pResourceFns,
-                                           size_t size,
-                                           foeResource *pResource);
+FOE_RES_EXPORT foeResultSet foeCreateResource(foeResourceID id,
+                                              foeResourceType type,
+                                              foeResourceFns const *pResourceFns,
+                                              size_t size,
+                                              foeResource *pResource);
 
 FOE_RES_EXPORT void foeDestroyResource(foeResource resource);
 

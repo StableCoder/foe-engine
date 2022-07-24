@@ -58,17 +58,17 @@ void fillErrorImageData(VkFormat format, uint32_t extent, uint32_t numCheckSquar
 
 } // namespace
 
-foeResult foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
-                                    VkFormat format,
-                                    uint32_t numMipLevels,
-                                    uint32_t numCheckSquares,
-                                    VmaAllocation *pAlloc,
-                                    VkImage *pImage,
-                                    VkImageView *pImageView,
-                                    VkSampler *pSampler) {
+foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
+                                       VkFormat format,
+                                       uint32_t numMipLevels,
+                                       uint32_t numCheckSquares,
+                                       VmaAllocation *pAlloc,
+                                       VkImage *pImage,
+                                       VkImageView *pImageView,
+                                       VkSampler *pSampler) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
-    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
     VkResult vkResult{VK_SUCCESS};
     uint32_t const maxExtent = std::pow(2U, numMipLevels - 1U);
     VkExtent3D extent = VkExtent3D{maxExtent, maxExtent, 1U};

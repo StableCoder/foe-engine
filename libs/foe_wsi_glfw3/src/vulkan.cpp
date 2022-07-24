@@ -10,8 +10,8 @@
 
 namespace {
 
-foeResult foeWsiWindowGetVulkanExtensionsErrC(uint32_t *pExtensionCount,
-                                              char const ***pppExtensions) {
+foeResultSet foeWsiWindowGetVulkanExtensionsErrC(uint32_t *pExtensionCount,
+                                                 char const ***pppExtensions) {
     if (!glfwInit()) {
         return to_foeResult(FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND);
     }
@@ -27,13 +27,14 @@ foeResult foeWsiWindowGetVulkanExtensionsErrC(uint32_t *pExtensionCount,
 
 } // namespace
 
-foeResult foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount, char const ***pppExtensions) {
+foeResultSet foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
+                                             char const ***pppExtensions) {
     return foeWsiWindowGetVulkanExtensionsErrC(pExtensionCount, pppExtensions);
 }
 
-foeResult foeWsiWindowGetVkSurface(foeWsiWindow window,
-                                   VkInstance instance,
-                                   VkSurfaceKHR *pSurface) {
+foeResultSet foeWsiWindowGetVkSurface(foeWsiWindow window,
+                                      VkInstance instance,
+                                      VkSurfaceKHR *pSurface) {
     auto *pWindow = window_from_handle(window);
 
     return vk_to_foeResult(glfwCreateWindowSurface(instance, pWindow->pWindow, nullptr, pSurface));

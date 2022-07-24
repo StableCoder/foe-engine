@@ -11,15 +11,15 @@
 #include <openxr/openxr.h>
 
 struct FOE_XR_EXPORT foeOpenXrSession {
-    foeResult createSession(foeXrRuntime runtime,
-                            XrSystemId systemId,
-                            XrViewConfigurationType configType,
-                            void const *pGraphicsBinding);
+    foeResultSet createSession(foeXrRuntime runtime,
+                               XrSystemId systemId,
+                               XrViewConfigurationType configType,
+                               void const *pGraphicsBinding);
     void destroySession();
 
-    foeResult beginSession();
-    foeResult requestExitSession();
-    foeResult endSession();
+    foeResultSet beginSession();
+    foeResultSet requestExitSession();
+    foeResultSet endSession();
 
     // From the runtime
     foeXrRuntime runtime;

@@ -16,7 +16,7 @@
 
 class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
   public:
-    foeResult initialize(foeResourcePool resourcePool);
+    foeResultSet initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 

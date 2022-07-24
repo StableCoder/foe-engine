@@ -11,7 +11,7 @@ class foeArmatureStatePool;
 
 class foeArmatureSystem {
   public:
-    foeResult initialize(foeResourcePool resourcePool, foeArmatureStatePool *pArmatureStatePool);
+    foeResultSet initialize(foeResourcePool resourcePool, foeArmatureStatePool *pArmatureStatePool);
     void deinitialize();
     bool initialized() const noexcept;
 

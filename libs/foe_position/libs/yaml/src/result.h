@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-inline foeResult to_foeResult(foePositionYamlResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foePositionYamlResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foePositionYamlResultToString,
     };

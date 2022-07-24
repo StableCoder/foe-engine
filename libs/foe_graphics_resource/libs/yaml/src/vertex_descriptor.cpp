@@ -114,7 +114,7 @@ void yaml_read_vertex_descriptor(YAML::Node const &node,
         new (pDst) foeVertexDescriptorCreateInfo(std::move(*pSrcData));
     };
 
-    foeResult result = foeCreateResourceCreateInfo(
+    foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO,
         foeDestroyVertexDescriptorCreateInfo, sizeof(foeVertexDescriptorCreateInfo), &vdCI, dataFn,
         &createInfo);

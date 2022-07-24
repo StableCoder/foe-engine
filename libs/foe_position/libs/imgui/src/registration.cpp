@@ -28,10 +28,10 @@ void imgui_foePositionComponents(foeEntityID entity, foeSimulation const *pSimul
 
 } // namespace
 
-foeResult foePositionImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
+foeResultSet foePositionImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->registerElements(&imgui_foePositionComponents, nullptr, nullptr, nullptr);
 }
 
-foeResult foePositionImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
+foeResultSet foePositionImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->deregisterElements(&imgui_foePositionComponents, nullptr, nullptr, nullptr);
 }

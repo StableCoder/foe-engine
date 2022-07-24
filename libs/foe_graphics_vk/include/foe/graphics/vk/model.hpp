@@ -13,14 +13,14 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-FOE_GFX_EXPORT foeResult mapModelBuffers(VmaAllocator allocator,
-                                         VkDeviceSize vertexDataSize,
-                                         VmaAllocation vertexAlloc,
-                                         VmaAllocation indexAlloc,
-                                         foeGfxUploadContext uploadContext,
-                                         foeGfxUploadBuffer uploadBuffer,
-                                         void **ppVertexData,
-                                         void **ppIndexData);
+FOE_GFX_EXPORT foeResultSet mapModelBuffers(VmaAllocator allocator,
+                                            VkDeviceSize vertexDataSize,
+                                            VmaAllocation vertexAlloc,
+                                            VmaAllocation indexAlloc,
+                                            foeGfxUploadContext uploadContext,
+                                            foeGfxUploadBuffer uploadBuffer,
+                                            void **ppVertexData,
+                                            void **ppIndexData);
 
 FOE_GFX_EXPORT void unmapModelBuffers(VmaAllocator allocator,
                                       VmaAllocation vertexAlloc,
@@ -28,12 +28,12 @@ FOE_GFX_EXPORT void unmapModelBuffers(VmaAllocator allocator,
                                       foeGfxUploadContext uploadContext,
                                       foeGfxUploadBuffer uploadBuffer);
 
-FOE_GFX_EXPORT foeResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
-                                                   VkBuffer vertexBuffer,
-                                                   VkDeviceSize vertexDataSize,
-                                                   VkBuffer indexBuffer,
-                                                   VkDeviceSize indexDataSize,
-                                                   foeGfxUploadBuffer uploadBuffer,
-                                                   foeGfxUploadRequest *pUploadRequest);
+FOE_GFX_EXPORT foeResultSet recordModelUploadCommands(foeGfxUploadContext uploadContext,
+                                                      VkBuffer vertexBuffer,
+                                                      VkDeviceSize vertexDataSize,
+                                                      VkBuffer indexBuffer,
+                                                      VkDeviceSize indexDataSize,
+                                                      foeGfxUploadBuffer uploadBuffer,
+                                                      foeGfxUploadRequest *pUploadRequest);
 
 #endif // FOE_GRAPHICS_MODEL_HPP

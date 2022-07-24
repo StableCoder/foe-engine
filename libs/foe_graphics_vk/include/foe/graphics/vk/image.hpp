@@ -33,25 +33,27 @@ FOE_GFX_EXPORT VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noe
  */
 FOE_GFX_EXPORT VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept;
 
-FOE_GFX_EXPORT foeResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                                   VkImageSubresourceRange const *pSubresourceRange,
-                                                   uint32_t copyRegionCount,
-                                                   VkBufferImageCopy const *pCopyRegions,
-                                                   foeGfxUploadBuffer srcBuffer,
-                                                   VkImage dstImage,
-                                                   VkAccessFlags dstAccessFlags,
-                                                   VkImageLayout dstImageLayout,
-                                                   foeGfxUploadRequest *pUploadRequest);
+FOE_GFX_EXPORT foeResultSet
+recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                          VkImageSubresourceRange const *pSubresourceRange,
+                          uint32_t copyRegionCount,
+                          VkBufferImageCopy const *pCopyRegions,
+                          foeGfxUploadBuffer srcBuffer,
+                          VkImage dstImage,
+                          VkAccessFlags dstAccessFlags,
+                          VkImageLayout dstImageLayout,
+                          foeGfxUploadRequest *pUploadRequest);
 
-FOE_GFX_EXPORT foeResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                                   VkImageSubresourceRange const *pSubresourceRange,
-                                                   uint32_t copyRegionCount,
-                                                   VkBufferImageCopy const *pCopyRegions,
-                                                   VkBuffer srcBuffer,
-                                                   VkImage dstImage,
-                                                   VkAccessFlags dstAccessFlags,
-                                                   VkImageLayout dstImageLayout,
-                                                   foeGfxUploadRequest *pUploadRequest);
+FOE_GFX_EXPORT foeResultSet
+recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                          VkImageSubresourceRange const *pSubresourceRange,
+                          uint32_t copyRegionCount,
+                          VkBufferImageCopy const *pCopyRegions,
+                          VkBuffer srcBuffer,
+                          VkImage dstImage,
+                          VkAccessFlags dstAccessFlags,
+                          VkImageLayout dstImageLayout,
+                          foeGfxUploadRequest *pUploadRequest);
 
 FOE_GFX_EXPORT VkImageAspectFlags formatAspects(VkFormat format) noexcept;
 

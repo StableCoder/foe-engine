@@ -11,10 +11,10 @@
 #include "log.hpp"
 #include "result.h"
 
-extern "C" foeResult foeImexYamlRegisterImporter() {
+extern "C" foeResultSet foeImexYamlRegisterImporter() {
     return foeImexRegisterImporter(&foeCreateYamlImporter);
 }
 
-extern "C" foeResult foeImexYamlDeregisterImporter() {
+extern "C" foeResultSet foeImexYamlDeregisterImporter() {
     return foeImexDeregisterImporter(&foeCreateYamlImporter);
 }

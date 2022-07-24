@@ -14,16 +14,16 @@
 
 #include <array>
 
-foeResult mapModelBuffers(VmaAllocator allocator,
-                          VkDeviceSize vertexDataSize,
-                          VmaAllocation vertexAlloc,
-                          VmaAllocation indexAlloc,
-                          foeGfxUploadContext uploadContext,
-                          foeGfxUploadBuffer uploadBuffer,
-                          void **ppVertexData,
-                          void **ppIndexData) {
+foeResultSet mapModelBuffers(VmaAllocator allocator,
+                             VkDeviceSize vertexDataSize,
+                             VmaAllocation vertexAlloc,
+                             VmaAllocation indexAlloc,
+                             foeGfxUploadContext uploadContext,
+                             foeGfxUploadBuffer uploadBuffer,
+                             void **ppVertexData,
+                             void **ppIndexData) {
     if (uploadBuffer != FOE_NULL_HANDLE) {
-        foeResult result = foeGfxMapUploadBuffer(uploadContext, uploadBuffer, ppVertexData);
+        foeResultSet result = foeGfxMapUploadBuffer(uploadContext, uploadBuffer, ppVertexData);
         if (result.value != FOE_SUCCESS) {
             return result;
         }
@@ -57,13 +57,13 @@ void unmapModelBuffers(VmaAllocator allocator,
     }
 }
 
-foeResult recordModelUploadCommands(foeGfxUploadContext uploadContext,
-                                    VkBuffer vertexBuffer,
-                                    VkDeviceSize vertexDataSize,
-                                    VkBuffer indexBuffer,
-                                    VkDeviceSize indexDataSize,
-                                    foeGfxUploadBuffer uploadBuffer,
-                                    foeGfxUploadRequest *pUploadRequest) {
+foeResultSet recordModelUploadCommands(foeGfxUploadContext uploadContext,
+                                       VkBuffer vertexBuffer,
+                                       VkDeviceSize vertexDataSize,
+                                       VkBuffer indexBuffer,
+                                       VkDeviceSize indexDataSize,
+                                       foeGfxUploadBuffer uploadBuffer,
+                                       foeGfxUploadRequest *pUploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkResult vkResult;

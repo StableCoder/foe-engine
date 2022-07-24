@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-inline foeResult to_foeResult(foeWsiResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foeWsiResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeWsiResultToString,
     };

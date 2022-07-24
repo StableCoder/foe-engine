@@ -104,12 +104,12 @@ void imgui_BringupResourceCreateInfo(foeResourceCreateInfo resourceCreateInfo) {
 
 } // namespace
 
-foeResult foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
+foeResultSet foeBringupImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->registerElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
                                         imgui_BringupResourceCreateInfo, nullptr);
 }
 
-foeResult foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
+foeResultSet foeBringupImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar) {
     return pRegistrar->deregisterElements(&imgui_foeBringupComponents, imgui_foeBringupResources,
                                           imgui_BringupResourceCreateInfo, nullptr);
 }

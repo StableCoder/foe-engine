@@ -27,7 +27,7 @@ FOE_DEFINE_HANDLE_CASTS(name_map, NameMap, foeEcsNameMap)
 
 } // namespace
 
-extern "C" foeResult foeEcsCreateNameMap(foeEcsNameMap *pNameMap) {
+extern "C" foeResultSet foeEcsCreateNameMap(foeEcsNameMap *pNameMap) {
     NameMap *pNewNameMap = (NameMap *)malloc(sizeof(NameMap));
     if (pNewNameMap == nullptr)
         return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
@@ -46,7 +46,7 @@ extern "C" void foeEcsDestroyNameMap(foeEcsNameMap nameMap) {
     free(pNameMap);
 }
 
-extern "C" foeResult foeEcsNameMapFindID(foeEcsNameMap nameMap, char const *pName, foeId *pID) {
+extern "C" foeResultSet foeEcsNameMapFindID(foeEcsNameMap nameMap, char const *pName, foeId *pID) {
     NameMap *pNameMap = name_map_from_handle(nameMap);
     std::shared_lock lock{pNameMap->sync};
 
@@ -59,16 +59,16 @@ extern "C" foeResult foeEcsNameMapFindID(foeEcsNameMap nameMap, char const *pNam
     return to_foeResult(FOE_ECS_NO_MATCH);
 }
 
-extern "C" foeResult foeEcsNameMapFindName(foeEcsNameMap nameMap,
-                                           foeId id,
-                                           uint32_t *pNameLength,
-                                           char *pName) {
+extern "C" foeResultSet foeEcsNameMapFindName(foeEcsNameMap nameMap,
+                                              foeId id,
+                                              uint32_t *pNameLength,
+                                              char *pName) {
     NameMap *pNameMap = name_map_from_handle(nameMap);
     std::shared_lock lock{pNameMap->sync};
 
     auto searchIt = pNameMap->idToEditor.find(id);
     if (searchIt != pNameMap->idToEditor.end()) {
-        foeResult result = to_foeResult(FOE_ECS_SUCCESS);
+        foeResultSet result = to_foeResult(FOE_ECS_SUCCESS);
         if (pName == nullptr) {
             *pNameLength = searchIt->second.size() + 1;
             return result;
@@ -87,7 +87,7 @@ extern "C" foeResult foeEcsNameMapFindName(foeEcsNameMap nameMap,
     return to_foeResult(FOE_ECS_NO_MATCH);
 }
 
-extern "C" foeResult foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char const *pName) {
+extern "C" foeResultSet foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char const *pName) {
     if (id == FOE_INVALID_ID) {
         FOE_LOG(foeECS, Warning, "Attempted to add an invalid ID with an editor name of '{}'",
                 pName)
@@ -120,7 +120,7 @@ extern "C" foeResult foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char cons
     return to_foeResult(FOE_ECS_SUCCESS);
 }
 
-extern "C" foeResult foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, char const *pName) {
+extern "C" foeResultSet foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, char const *pName) {
     if (strlen(pName) == 0) {
         FOE_LOG(foeECS, Warning, "Attempted to update ID {} with a blank editor name",
                 foeIdToString(id))
@@ -153,7 +153,7 @@ extern "C" foeResult foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, char c
     return to_foeResult(FOE_ECS_SUCCESS);
 }
 
-extern "C" foeResult foeEcsNameMapRemove(foeEcsNameMap nameMap, foeId id) {
+extern "C" foeResultSet foeEcsNameMapRemove(foeEcsNameMap nameMap, foeId id) {
     NameMap *pNameMap = name_map_from_handle(nameMap);
     std::unique_lock lock{pNameMap->sync};
 

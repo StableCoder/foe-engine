@@ -97,7 +97,7 @@ void foeImGuiEntityList::customUI() {
         if (indexes == FOE_NULL_HANDLE)
             continue;
 
-        foeResult result;
+        foeResultSet result;
         PerGroupData indiceData{
             .group = group,
         };
@@ -185,7 +185,7 @@ void foeImGuiEntityList::customUI() {
             char const *pEditorName = "";
             if (mpSimulationState->entityNameMap != FOE_NULL_HANDLE) {
                 uint32_t localStrLength = strLength;
-                foeResult result;
+                foeResultSet result;
                 do {
                     result = foeEcsNameMapFindName(mpSimulationState->entityNameMap, entity,
                                                    &localStrLength, pTempStr);
@@ -263,7 +263,7 @@ bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
     char *pEditorName = NULL;
     if (mpSimulationState->entityNameMap != nullptr) {
         uint32_t strLength = 0;
-        foeResult result;
+        foeResultSet result;
         do {
             result = foeEcsNameMapFindName(mpSimulationState->entityNameMap, pData->entity,
                                            &strLength, pEditorName);

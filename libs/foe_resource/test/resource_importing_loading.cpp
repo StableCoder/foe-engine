@@ -28,8 +28,8 @@ foeResourceCreateInfo genCreateInfoFn(void *, foeResourceID) {
         pData->value = gGlobalIterator++;
     };
 
-    foeResult result = foeCreateResourceCreateInfo(cCreateInfoType, nullptr, sizeof(TestData),
-                                                   nullptr, dataFn, &createInfo);
+    foeResultSet result = foeCreateResourceCreateInfo(cCreateInfoType, nullptr, sizeof(TestData),
+                                                      nullptr, dataFn, &createInfo);
     REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
 
@@ -43,7 +43,7 @@ TEST_CASE("foeResource - Importing CreateInfo") {
 
     foeResource resource{FOE_NULL_HANDLE};
 
-    foeResult result = foeCreateResource(0, cResourceType, &fns, sizeof(TestData), &resource);
+    foeResultSet result = foeCreateResource(0, cResourceType, &fns, sizeof(TestData), &resource);
     REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);
 

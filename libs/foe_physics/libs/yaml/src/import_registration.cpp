@@ -19,9 +19,9 @@
 
 namespace {
 
-foeResult collisionShapeCreateProcessing(foeResourceID resourceID,
-                                         foeResourceCreateInfo createInfo,
-                                         foeSimulation const *pSimulation) {
+foeResultSet collisionShapeCreateProcessing(foeResourceID resourceID,
+                                            foeResourceCreateInfo createInfo,
+                                            foeSimulation const *pSimulation) {
     foeResource collisionShape =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE, sizeof(foeCollisionShape));
@@ -59,8 +59,8 @@ bool importRigidBody(YAML::Node const &node,
 
 } // namespace
 
-extern "C" foeResult foePhysicsYamlRegisterImporters() {
-    foeResult result = to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
+extern "C" foeResultSet foePhysicsYamlRegisterImporters() {
+    foeResultSet result = to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
 
     // Resources
     if (!foeImexYamlRegisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,

@@ -43,15 +43,15 @@ class foeGfxVkPipelinePool;
  * such as VkPhysicalDeviceFeatures2 or VkPhysicalDeviceVulkan11Features, and as many of these
  * structs can be chained as desired.
  */
-FOE_GFX_EXPORT foeResult foeGfxVkCreateSession(foeGfxRuntime runtime,
-                                               VkPhysicalDevice vkPhysicalDevice,
-                                               uint32_t layerCount,
-                                               char const *const *ppLayerNames,
-                                               uint32_t extensionCount,
-                                               char const *const *ppExtensionNames,
-                                               VkPhysicalDeviceFeatures const *pBasicFeatures,
-                                               void const *pFeatures,
-                                               foeGfxSession *pSession);
+FOE_GFX_EXPORT foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
+                                                  VkPhysicalDevice vkPhysicalDevice,
+                                                  uint32_t layerCount,
+                                                  char const *const *ppLayerNames,
+                                                  uint32_t extensionCount,
+                                                  char const *const *ppExtensionNames,
+                                                  VkPhysicalDeviceFeatures const *pBasicFeatures,
+                                                  void const *pFeatures,
+                                                  foeGfxSession *pSession);
 
 /** @brief Enumerate the enabled layers for the given session
  * @param session is the handle to the session whose layers will be queried.
@@ -66,9 +66,9 @@ FOE_GFX_EXPORT foeResult foeGfxVkCreateSession(foeGfxRuntime runtime,
  * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
  * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
  */
-FOE_GFX_EXPORT foeResult foeGfxVkEnumerateSessionLayers(foeGfxSession session,
-                                                        uint32_t *pLayerNamesLength,
-                                                        char *pLayerNames);
+FOE_GFX_EXPORT foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
+                                                           uint32_t *pLayerNamesLength,
+                                                           char *pLayerNames);
 
 /** @brief Enumerate the enabled extensions for the given session
  * @param session is the handle to the session whose extensions will be queried.
@@ -84,9 +84,9 @@ FOE_GFX_EXPORT foeResult foeGfxVkEnumerateSessionLayers(foeGfxSession session,
  * written, and FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate
  * that not all names were returned.
  */
-FOE_GFX_EXPORT foeResult foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
-                                                            uint32_t *pExtensionNamesLength,
-                                                            char *pExtensionNames);
+FOE_GFX_EXPORT foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
+                                                               uint32_t *pExtensionNamesLength,
+                                                               char *pExtensionNames);
 
 /** @brief Fills out given feature structs with then enabled session's features
  * @param session is the handle to the session whose features will be queried.

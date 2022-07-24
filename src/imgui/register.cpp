@@ -10,8 +10,8 @@
 
 #include "bringup_registration.hpp"
 
-foeResult registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept {
-    foeResult result;
+foeResultSet registerImGui(foeSimulationImGuiRegistrar *pRegistrar) noexcept {
+    foeResultSet result;
 
     result = foePositionImGuiRegister(pRegistrar);
     if (result.value != FOE_SUCCESS)

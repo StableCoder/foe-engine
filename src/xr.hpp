@@ -10,10 +10,10 @@
 #include <foe/xr/openxr/session.hpp>
 #include <foe/xr/runtime.h>
 
-foeResult createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
+foeResultSet createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
 
-foeResult createXrSession(foeXrRuntime runtime,
-                          foeGfxSession gfxSession,
-                          foeOpenXrSession *pSession);
+foeResultSet createXrSession(foeXrRuntime runtime,
+                             foeGfxSession gfxSession,
+                             foeOpenXrSession *pSession);
 
 #endif // XR_HPP

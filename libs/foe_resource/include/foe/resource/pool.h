@@ -22,8 +22,8 @@ typedef int foeResourcePoolType;
 
 FOE_DEFINE_HANDLE(foeResourcePool)
 
-FOE_RES_EXPORT foeResult foeCreateResourcePool(foeResourceFns const *pResourceFns,
-                                               foeResourcePool *pResourcePool);
+FOE_RES_EXPORT foeResultSet foeCreateResourcePool(foeResourceFns const *pResourceFns,
+                                                  foeResourcePool *pResourcePool);
 
 FOE_RES_EXPORT void foeDestroyResourcePool(foeResourcePool resourcePool);
 
@@ -35,8 +35,8 @@ FOE_RES_EXPORT foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
 FOE_RES_EXPORT foeResource foeResourcePoolFind(foeResourcePool resourcePool,
                                                foeResourceID resourceID);
 
-FOE_RES_EXPORT foeResult foeResourcePoolRemove(foeResourcePool resourcePool,
-                                               foeResourceID resourceID);
+FOE_RES_EXPORT foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
+                                                  foeResourceID resourceID);
 
 FOE_RES_EXPORT void foeResourcePoolAddAsyncTaskCallback(foeResourcePool resourcePool,
                                                         PFN_foeScheduleTask scheduleAsyncTask,

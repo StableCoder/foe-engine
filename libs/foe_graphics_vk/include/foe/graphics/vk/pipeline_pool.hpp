@@ -19,18 +19,18 @@ class foeGfxVkBuiltinDescriptorSets;
 
 class foeGfxVkPipelinePool {
   public:
-    FOE_GFX_EXPORT foeResult initialize(foeGfxSession session) noexcept;
+    FOE_GFX_EXPORT foeResultSet initialize(foeGfxSession session) noexcept;
     FOE_GFX_EXPORT void deinitialize() noexcept;
     FOE_GFX_EXPORT bool initialized() const noexcept;
 
-    FOE_GFX_EXPORT foeResult getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
-                                         foeGfxVkFragmentDescriptor *fragmentDescriptor,
-                                         VkRenderPass renderPass,
-                                         uint32_t subpass,
-                                         VkSampleCountFlags samples,
-                                         VkPipelineLayout *pPipelineLayout,
-                                         uint32_t *pDescriptorSetLayoutCount,
-                                         VkPipeline *pPipeline);
+    FOE_GFX_EXPORT foeResultSet getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
+                                            foeGfxVkFragmentDescriptor *fragmentDescriptor,
+                                            VkRenderPass renderPass,
+                                            uint32_t subpass,
+                                            VkSampleCountFlags samples,
+                                            VkPipelineLayout *pPipelineLayout,
+                                            uint32_t *pDescriptorSetLayoutCount,
+                                            VkPipeline *pPipeline);
 
   private:
     // Counts upto 64, powers of 2.

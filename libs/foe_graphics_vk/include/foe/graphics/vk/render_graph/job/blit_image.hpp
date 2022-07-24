@@ -17,13 +17,13 @@ struct BlitJobUsedResources {
     foeGfxVkRenderGraphResource dstImage;
 };
 
-FOE_GFX_EXPORT foeResult foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                    std::string_view name,
-                                                    VkFence fence,
-                                                    foeGfxVkRenderGraphResource srcImage,
-                                                    VkImageLayout srcFinalLayout,
-                                                    foeGfxVkRenderGraphResource dstImage,
-                                                    VkImageLayout dstFinalLayout,
-                                                    BlitJobUsedResources *pResourcesOut);
+FOE_GFX_EXPORT foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                       std::string_view name,
+                                                       VkFence fence,
+                                                       foeGfxVkRenderGraphResource srcImage,
+                                                       VkImageLayout srcFinalLayout,
+                                                       foeGfxVkRenderGraphResource dstImage,
+                                                       VkImageLayout dstFinalLayout,
+                                                       BlitJobUsedResources *pResourcesOut);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_BLIT_IMAGE_HPP

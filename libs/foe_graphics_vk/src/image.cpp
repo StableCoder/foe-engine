@@ -49,15 +49,15 @@ VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept {
     return pelCount;
 }
 
-foeResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                    VkImageSubresourceRange const *pSubresourceRange,
-                                    uint32_t copyRegionCount,
-                                    VkBufferImageCopy const *pCopyRegions,
-                                    foeGfxUploadBuffer srcBuffer,
-                                    VkImage dstImage,
-                                    VkAccessFlags dstAccessFlags,
-                                    VkImageLayout dstImageLayout,
-                                    foeGfxUploadRequest *pUploadRequst) {
+foeResultSet recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                                       VkImageSubresourceRange const *pSubresourceRange,
+                                       uint32_t copyRegionCount,
+                                       VkBufferImageCopy const *pCopyRegions,
+                                       foeGfxUploadBuffer srcBuffer,
+                                       VkImage dstImage,
+                                       VkAccessFlags dstAccessFlags,
+                                       VkImageLayout dstImageLayout,
+                                       foeGfxUploadRequest *pUploadRequst) {
     auto *pSrcBuffer = upload_buffer_from_handle(srcBuffer);
 
     return recordImageUploadCommands(uploadContext, pSubresourceRange, copyRegionCount,
@@ -65,15 +65,15 @@ foeResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
                                      dstImageLayout, pUploadRequst);
 }
 
-foeResult recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                    VkImageSubresourceRange const *pSubresourceRange,
-                                    uint32_t copyRegionCount,
-                                    VkBufferImageCopy const *pCopyRegions,
-                                    VkBuffer srcBuffer,
-                                    VkImage dstImage,
-                                    VkAccessFlags dstAccessFlags,
-                                    VkImageLayout dstImageLayout,
-                                    foeGfxUploadRequest *pUploadRequst) {
+foeResultSet recordImageUploadCommands(foeGfxUploadContext uploadContext,
+                                       VkImageSubresourceRange const *pSubresourceRange,
+                                       uint32_t copyRegionCount,
+                                       VkBufferImageCopy const *pCopyRegions,
+                                       VkBuffer srcBuffer,
+                                       VkImage dstImage,
+                                       VkAccessFlags dstAccessFlags,
+                                       VkImageLayout dstImageLayout,
+                                       foeGfxUploadRequest *pUploadRequst) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkResult vkResult;

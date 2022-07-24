@@ -12,16 +12,16 @@
 #include <string>
 #include <vector>
 
-FOE_XR_EXPORT foeResult
+FOE_XR_EXPORT foeResultSet
 foeOpenXrEnumerateApiLayerProperties(std::vector<XrApiLayerProperties> &properties);
 
-FOE_XR_EXPORT foeResult foeOpenXrEnumerateInstanceExtensionProperties(
+FOE_XR_EXPORT foeResultSet foeOpenXrEnumerateInstanceExtensionProperties(
     char const *pApiLayerName, std::vector<XrExtensionProperties> &properties);
 
-FOE_XR_EXPORT foeResult
+FOE_XR_EXPORT foeResultSet
 foeOpenXrEnumerateReferenceSpaces(XrSession xrSession, std::vector<XrReferenceSpaceType> &spaces);
 
-FOE_XR_EXPORT foeResult foeOpenXrEnumerateSwapchainFormats(XrSession xrSession,
-                                                           std::vector<int64_t> &formats);
+FOE_XR_EXPORT foeResultSet foeOpenXrEnumerateSwapchainFormats(XrSession xrSession,
+                                                              std::vector<int64_t> &formats);
 
 #endif // FOE_XR_OPENXR_CORE_HPP

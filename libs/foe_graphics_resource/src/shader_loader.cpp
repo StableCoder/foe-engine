@@ -38,7 +38,7 @@ auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vec
 
 } // namespace
 
-foeResult foeShaderLoader::initialize(
+foeResultSet foeShaderLoader::initialize(
     foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
@@ -54,7 +54,7 @@ void foeShaderLoader::deinitialize() { mExternalFileSearchFn = {}; }
 
 bool foeShaderLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
 
-foeResult foeShaderLoader::initializeGraphics(foeGfxSession gfxSession) {
+foeResultSet foeShaderLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_NOT_INITIALIZED);
 
@@ -162,7 +162,7 @@ void foeShaderLoader::load(foeResource resource,
     auto const *pShaderCI = (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
     foeShader data{};
-    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 
     { // Load Shader SPIR-V from external file
         auto filePath = mExternalFileSearchFn(pShaderCI->shaderCodeFile);

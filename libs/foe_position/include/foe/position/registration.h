@@ -14,7 +14,7 @@ extern "C" {
 
 FOE_POSITION_EXPORT int foePositionFunctionalityID();
 
-FOE_POSITION_EXPORT foeResult foePositionRegisterFunctionality();
+FOE_POSITION_EXPORT foeResultSet foePositionRegisterFunctionality();
 
 FOE_POSITION_EXPORT void foePositionDeregisterFunctionality();
 

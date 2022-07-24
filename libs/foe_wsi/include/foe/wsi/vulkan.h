@@ -21,17 +21,17 @@ extern "C" {
  * @param pppExtenstions [out] List of extension names
  * @return FOE_WSI_SUCCESS on success, an appropriate error code otherwise.
  */
-FOE_WSI_EXPORT foeResult foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
-                                                         char const ***pppExtensions);
+FOE_WSI_EXPORT foeResultSet foeWsiWindowGetVulkanExtensions(uint32_t *pExtensionCount,
+                                                            char const ***pppExtensions);
 
 /** Retrieves a Vulkan Surface object handle for the current active window
  * @param instance Vulkan instance that the surface will be associated with
  * @param pSurface [out] Pointer used to return the created Surface, if VK_SUCCESS is returned
  * @return VK_SUCCESS on success, an appropriate error otherwise
  */
-FOE_WSI_EXPORT foeResult foeWsiWindowGetVkSurface(foeWsiWindow window,
-                                                  VkInstance instance,
-                                                  VkSurfaceKHR *pSurface);
+FOE_WSI_EXPORT foeResultSet foeWsiWindowGetVkSurface(foeWsiWindow window,
+                                                     VkInstance instance,
+                                                     VkSurfaceKHR *pSurface);
 
 #ifdef __cplusplus
 }

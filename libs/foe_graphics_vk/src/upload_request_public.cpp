@@ -20,10 +20,10 @@ extern "C" void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
     foeGfxVkDestroyUploadRequest(pUploadContext->device, pUploadRequest);
 }
 
-extern "C" foeResult foeGfxVkCreateUploadData(VkDevice device,
-                                              VkCommandPool srcCommandPool,
-                                              VkCommandPool dstCommandPool,
-                                              foeGfxUploadRequest *pUploadRequest) {
+extern "C" foeResultSet foeGfxVkCreateUploadData(VkDevice device,
+                                                 VkCommandPool srcCommandPool,
+                                                 VkCommandPool dstCommandPool,
+                                                 foeGfxUploadRequest *pUploadRequest) {
     VkResult vkResult;
     auto *pNewRequest = new foeGfxVkUploadRequest;
     *pNewRequest = {
@@ -89,8 +89,8 @@ CREATE_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-extern "C" foeResult foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
-                                                 foeGfxUploadRequest uploadRequest) {
+extern "C" foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
+                                                    foeGfxUploadRequest uploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
     auto *pUploadRequest = upload_request_from_handle(uploadRequest);
 

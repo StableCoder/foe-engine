@@ -23,27 +23,27 @@ struct DummyImporterData {
     void *resReturn;
 };
 
-foeResult dummyGetGroupID(foeImexImporter importer, foeIdGroup *pGroupID) {
+foeResultSet dummyGetGroupID(foeImexImporter importer, foeIdGroup *pGroupID) {
     DummyImporterData *pDummyImporter = (DummyImporterData *)importer;
 
     *pGroupID = pDummyImporter->group;
-    return foeResult{};
+    return foeResultSet{};
 }
 
-foeResult dummyGetGroupName(foeImexImporter importer, char const **ppGroupName) {
+foeResultSet dummyGetGroupName(foeImexImporter importer, char const **ppGroupName) {
     DummyImporterData *pDummyImporter = (DummyImporterData *)importer;
 
     *ppGroupName = pDummyImporter->name.c_str();
-    return foeResult{};
+    return foeResultSet{};
 }
 
-foeResult dummyGetResourceCreateInfo(foeImexImporter importer,
-                                     foeId id,
-                                     foeResourceCreateInfo *pCI) {
+foeResultSet dummyGetResourceCreateInfo(foeImexImporter importer,
+                                        foeId id,
+                                        foeResourceCreateInfo *pCI) {
     DummyImporterData *pDummyImporter = (DummyImporterData *)importer;
 
     *pCI = static_cast<foeResourceCreateInfo>(pDummyImporter->resReturn);
-    return foeResult{};
+    return foeResultSet{};
 }
 
 foeImexImporterCalls dummyImporterCalls{

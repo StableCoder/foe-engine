@@ -21,13 +21,13 @@ void destroy_foeGfxVkSwapchain(foeGfxVkSwapchain *pSwapchain, foeGfxSession sess
 
 } // namespace
 
-foeResult performWindowMaintenance(WindowData *pWindow,
-                                   foeGfxSession gfxSession,
-                                   foeGfxDelayedCaller gfxDelayedDestructor,
-                                   VkSampleCountFlags sampleCount,
-                                   VkFormat depthFormat) {
+foeResultSet performWindowMaintenance(WindowData *pWindow,
+                                      foeGfxSession gfxSession,
+                                      foeGfxDelayedCaller gfxDelayedDestructor,
+                                      VkSampleCountFlags sampleCount,
+                                      VkFormat depthFormat) {
     VkResult vkResult{VK_SUCCESS};
-    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
+    foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
 
     // Check if need to rebuild a swapchain
     if (!pWindow->swapchain || pWindow->swapchain.needRebuild()) {

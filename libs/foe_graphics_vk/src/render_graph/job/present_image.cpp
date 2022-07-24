@@ -17,23 +17,23 @@ struct foeGfxVkGraphSwapchainResource {
     uint32_t index;
 };
 
-foeResult foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                std::string_view name,
-                                                VkFence fence,
-                                                std::string_view resourceName,
-                                                VkSwapchainKHR swapchain,
-                                                uint32_t index,
-                                                VkImage image,
-                                                VkImageView view,
-                                                VkFormat format,
-                                                VkExtent2D extent,
-                                                VkImageLayout initialLayout,
-                                                VkSemaphore waitSemaphore,
-                                                foeGfxVkRenderGraphResource *pResourcesOut) {
+foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                   std::string_view name,
+                                                   VkFence fence,
+                                                   std::string_view resourceName,
+                                                   VkSwapchainKHR swapchain,
+                                                   uint32_t index,
+                                                   VkImage image,
+                                                   VkImageView view,
+                                                   VkFormat format,
+                                                   VkExtent2D extent,
+                                                   VkImageLayout initialLayout,
+                                                   VkSemaphore waitSemaphore,
+                                                   foeGfxVkRenderGraphResource *pResourcesOut) {
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         VkPipelineStageFlags waitMask{VK_PIPELINE_STAGE_ALL_COMMANDS_BIT};
         VkSemaphore waitSemaphores{waitSemaphore};
 
@@ -88,8 +88,8 @@ foeResult foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResult result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name,
-                                                 false, jobFn, &renderGraphJob);
+    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn,
+                                                    name, false, jobFn, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
 
@@ -114,10 +114,10 @@ void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
 
 } // namespace
 
-foeResult foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                 std::string_view name,
-                                                 VkFence fence,
-                                                 foeGfxVkRenderGraphResource swapchainResource) {
+foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                    std::string_view name,
+                                                    VkFence fence,
+                                                    foeGfxVkRenderGraphResource swapchainResource) {
     // Check that the given resource is the correct type
     auto const *pSwapchainData = (foeGfxVkGraphSwapchainResource const *)foeGfxVkGraphFindStructure(
         swapchainResource.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN);
@@ -139,7 +139,7 @@ foeResult foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         VkResult vkResult;
 
         // If we have a fence, then we need to signal it

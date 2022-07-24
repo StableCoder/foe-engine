@@ -26,22 +26,22 @@ void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
 
 } // namespace
 
-foeResult foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                   std::string_view name,
-                                                   VkFence fence,
-                                                   std::string_view resourceName,
-                                                   XrSwapchain swapchain,
-                                                   VkImage image,
-                                                   VkImageView view,
-                                                   VkFormat format,
-                                                   VkExtent2D extent,
-                                                   VkImageLayout layout,
-                                                   foeGfxVkRenderGraphResource *pResourcesOut) {
+foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                      std::string_view name,
+                                                      VkFence fence,
+                                                      std::string_view resourceName,
+                                                      XrSwapchain swapchain,
+                                                      VkImage image,
+                                                      VkImageView view,
+                                                      VkFormat format,
+                                                      VkExtent2D extent,
+                                                      VkImageLayout layout,
+                                                      foeGfxVkRenderGraphResource *pResourcesOut) {
     // Add the job that waits on the timeline semaphore and signals any dependent jobs to start
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         // Create the timeline semaphore
         VkSemaphoreTypeCreateInfo timelineCI{
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
@@ -167,8 +167,8 @@ foeResult foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResult result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, name,
-                                                 true, std::move(jobFn), &renderGraphJob);
+    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn,
+                                                    name, true, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         // If we couldn't add it to the render graph, delete all heap data now
         freeDataFn();

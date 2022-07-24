@@ -13,8 +13,8 @@
 
 namespace {
 
-foeResult create(foeSimulation *pSimulation) {
-    foeResult result;
+foeResultSet create(foeSimulation *pSimulation) {
+    foeResultSet result;
 
     // Components Pools
     result = foeSimulationIncrementRefCount(pSimulation,
@@ -48,7 +48,7 @@ CREATE_FAILED:
 size_t destroy(foeSimulation *pSimulation) {
     size_t count;
     size_t errors = 0;
-    foeResult result;
+    foeResultSet result;
 
     // Component Pools
     result = foeSimulationDecrementRefCount(pSimulation,
@@ -84,11 +84,11 @@ size_t destroy(foeSimulation *pSimulation) {
 
 int foePositionFunctionalityID() { return FOE_POSITION_FUNCTIONALITY_ID; }
 
-extern "C" foeResult foePositionRegisterFunctionality() {
+extern "C" foeResultSet foePositionRegisterFunctionality() {
     FOE_LOG(foePosition, Verbose,
             "foePositionRegisterFunctionality - Starting to register functionality")
 
-    foeResult result = foeRegisterFunctionality(foeSimulationFunctionalty{
+    foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
         .id = foePositionFunctionalityID(),
         .pCreateFn = create,
         .pDestroyFn = destroy,

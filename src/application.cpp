@@ -111,7 +111,7 @@
 #include "state_import/import_state.hpp"
 
 auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
-    foeResult result;
+    foeResultSet result;
 
     initializeLogging();
     result = registerBasicFunctionality();
@@ -321,7 +321,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 }
 
 void Application::deinitialize() {
-    foeResult result;
+    foeResultSet result;
 
     if (gfxSession != FOE_NULL_HANDLE)
         foeGfxWaitIdle(gfxSession);
@@ -465,8 +465,8 @@ void processUserInput(double timeElapsedInSeconds,
 
 } // namespace
 
-foeResult Application::startXR(bool localPoll) {
-    foeResult result{.value = FOE_SUCCESS, .toString = NULL};
+foeResultSet Application::startXR(bool localPoll) {
+    foeResultSet result{.value = FOE_SUCCESS, .toString = NULL};
 
     if (xrRuntime == FOE_NULL_HANDLE) {
         FOE_LOG(General, Error, "Tried to start an XR session, but no XR runtime has been started");
@@ -754,8 +754,8 @@ START_XR_FAILED:
     return result;
 }
 
-foeResult Application::stopXR(bool localPoll) {
-    foeResult result = {.value = FOE_SUCCESS, .toString = NULL};
+foeResultSet Application::stopXR(bool localPoll) {
+    foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
 
 #ifdef FOE_XR_SUPPORT
     if (xrSession.session != XR_NULL_HANDLE) {
@@ -834,7 +834,7 @@ foeResult Application::stopXR(bool localPoll) {
 int Application::mainloop() {
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
-    foeResult result;
+    foeResultSet result;
 
     uint32_t lastFrameIndex = UINT32_MAX;
     uint32_t frameIndex = UINT32_MAX;

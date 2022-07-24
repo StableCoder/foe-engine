@@ -29,71 +29,72 @@ typedef struct foeImexImporterCalls {
 
     void (*destroyImporter)(foeImexImporter);
 
-    foeResult (*getGroupID)(foeImexImporter, foeIdGroup *);
-    foeResult (*getGroupName)(foeImexImporter, char const **);
-    foeResult (*setGroupTranslator)(foeImexImporter, foeEcsGroupTranslator);
+    foeResultSet (*getGroupID)(foeImexImporter, foeIdGroup *);
+    foeResultSet (*getGroupName)(foeImexImporter, char const **);
+    foeResultSet (*setGroupTranslator)(foeImexImporter, foeEcsGroupTranslator);
 
-    foeResult (*getDependencies)(foeImexImporter, uint32_t *, foeIdGroup *, uint32_t *, char *);
-    foeResult (*getGroupEntityIndexData)(foeImexImporter, foeEcsIndexes);
-    foeResult (*getGroupResourceIndexData)(foeImexImporter, foeEcsIndexes);
-    foeResult (*importStateData)(foeImexImporter, foeEcsNameMap, struct foeSimulation const *);
+    foeResultSet (*getDependencies)(foeImexImporter, uint32_t *, foeIdGroup *, uint32_t *, char *);
+    foeResultSet (*getGroupEntityIndexData)(foeImexImporter, foeEcsIndexes);
+    foeResultSet (*getGroupResourceIndexData)(foeImexImporter, foeEcsIndexes);
+    foeResultSet (*importStateData)(foeImexImporter, foeEcsNameMap, struct foeSimulation const *);
 
-    foeResult (*importResourceDefinitions)(foeImexImporter,
-                                           foeEcsNameMap,
-                                           struct foeSimulation const *);
-    foeResult (*getResourceEditorName)(foeImexImporter, foeResourceID, uint32_t *, char *);
-    foeResult (*getResourceCreateInfo)(foeImexImporter, foeResourceID, foeResourceCreateInfo *);
-    foeResult (*findExternalFile)(foeImexImporter, char const *, uint32_t *, char *);
+    foeResultSet (*importResourceDefinitions)(foeImexImporter,
+                                              foeEcsNameMap,
+                                              struct foeSimulation const *);
+    foeResultSet (*getResourceEditorName)(foeImexImporter, foeResourceID, uint32_t *, char *);
+    foeResultSet (*getResourceCreateInfo)(foeImexImporter, foeResourceID, foeResourceCreateInfo *);
+    foeResultSet (*findExternalFile)(foeImexImporter, char const *, uint32_t *, char *);
 } foeImexImporterCalls;
 
 FOE_IMEX_EXPORT void foeDestroyImporter(foeImexImporter importer);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetGroupID(foeImexImporter importer, foeIdGroup *pGroup);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetGroupID(foeImexImporter importer,
+                                                       foeIdGroup *pGroup);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetGroupName(foeImexImporter importer,
-                                                      char const **ppGroupName);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetGroupName(foeImexImporter importer,
+                                                         char const **ppGroupName);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterSetGroupTranslator(foeImexImporter importer,
-                                                            foeEcsGroupTranslator groupTranslator);
+FOE_IMEX_EXPORT foeResultSet
+foeImexImporterSetGroupTranslator(foeImexImporter importer, foeEcsGroupTranslator groupTranslator);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetDependencies(foeImexImporter importer,
-                                                         uint32_t *pDependencyCount,
-                                                         foeIdGroup *pDependencyGroups,
-                                                         uint32_t *pNamesLength,
-                                                         char *pNames);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetDependencies(foeImexImporter importer,
+                                                            uint32_t *pDependencyCount,
+                                                            foeIdGroup *pDependencyGroups,
+                                                            uint32_t *pNamesLength,
+                                                            char *pNames);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetGroupEntityIndexData(foeImexImporter importer,
-                                                                 foeEcsIndexes indexes);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetGroupEntityIndexData(foeImexImporter importer,
+                                                                    foeEcsIndexes indexes);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetGroupResourceIndexData(foeImexImporter importer,
-                                                                   foeEcsIndexes indexes);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetGroupResourceIndexData(foeImexImporter importer,
+                                                                      foeEcsIndexes indexes);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetStateData(foeImexImporter importer,
-                                                      foeEcsNameMap entityNameMap,
-                                                      struct foeSimulation const *pSimulation);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetStateData(foeImexImporter importer,
+                                                         foeEcsNameMap entityNameMap,
+                                                         struct foeSimulation const *pSimulation);
 
-FOE_IMEX_EXPORT foeResult
+FOE_IMEX_EXPORT foeResultSet
 foeImexImporterGetResourceDefinitions(foeImexImporter importer,
                                       foeEcsNameMap resourceNameMap,
                                       struct foeSimulation const *pSimulation);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetResourceEditorName(foeImexImporter importer,
-                                                               foeResourceID resourceID,
-                                                               uint32_t *pNameLength,
-                                                               char *pName);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetResourceEditorName(foeImexImporter importer,
+                                                                  foeResourceID resourceID,
+                                                                  uint32_t *pNameLength,
+                                                                  char *pName);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterGetResourceCreateInfo(
+FOE_IMEX_EXPORT foeResultSet foeImexImporterGetResourceCreateInfo(
     foeImexImporter importer, foeId resourceID, foeResourceCreateInfo *pResourceCreateInfo);
 
-FOE_IMEX_EXPORT foeResult foeImexImporterFindExternalFile(foeImexImporter importer,
-                                                          char const *pExternalFilePath,
-                                                          uint32_t *pPathLength,
-                                                          char *pPath);
+FOE_IMEX_EXPORT foeResultSet foeImexImporterFindExternalFile(foeImexImporter importer,
+                                                             char const *pExternalFilePath,
+                                                             uint32_t *pPathLength,
+                                                             char *pPath);
 
-typedef foeResult (*PFN_foeImexCreateImporter)(foeIdGroup, char const *, foeImexImporter *);
+typedef foeResultSet (*PFN_foeImexCreateImporter)(foeIdGroup, char const *, foeImexImporter *);
 
-FOE_IMEX_EXPORT foeResult foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter);
-FOE_IMEX_EXPORT foeResult foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter);
+FOE_IMEX_EXPORT foeResultSet foeImexRegisterImporter(PFN_foeImexCreateImporter createImporter);
+FOE_IMEX_EXPORT foeResultSet foeImexDeregisterImporter(PFN_foeImexCreateImporter createImporter);
 
 FOE_IMEX_EXPORT foeImexImporter createImporter(foeIdGroup group, char const *pPath);
 

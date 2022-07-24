@@ -18,11 +18,11 @@ struct foeGfxVkShaderCreateInfo {
 
 FOE_GFX_EXPORT void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo);
 
-FOE_GFX_EXPORT foeResult foeGfxVkCreateShader(foeGfxSession session,
-                                              foeGfxVkShaderCreateInfo const *pCreateInfo,
-                                              uint32_t shaderCodeSize,
-                                              uint32_t const *pShaderCode,
-                                              foeGfxShader *pShader);
+FOE_GFX_EXPORT foeResultSet foeGfxVkCreateShader(foeGfxSession session,
+                                                 foeGfxVkShaderCreateInfo const *pCreateInfo,
+                                                 uint32_t shaderCodeSize,
+                                                 uint32_t const *pShaderCode,
+                                                 foeGfxShader *pShader);
 
 FOE_GFX_EXPORT auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader)
     -> VkDescriptorSetLayout;

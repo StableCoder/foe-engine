@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-inline foeResult to_foeResult(foeBringupYamlResult value) {
-    foeResult result = {
+inline foeResultSet to_foeResult(foeBringupYamlResult value) {
+    foeResultSet result = {
         .value = value,
         .toString = (PFN_foeResultToString)foeBringupYamlResultToString,
     };

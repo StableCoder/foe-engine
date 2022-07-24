@@ -38,31 +38,33 @@ typedef void (*PFN_foeEcsForEachCall)(void *, foeId);
  */
 FOE_DEFINE_HANDLE(foeEcsIndexes)
 
-FOE_ECS_EXPORT foeResult foeEcsCreateIndexes(foeIdGroup groupID, foeEcsIndexes *pIndexes);
+FOE_ECS_EXPORT foeResultSet foeEcsCreateIndexes(foeIdGroup groupID, foeEcsIndexes *pIndexes);
 
 FOE_ECS_EXPORT void foeEcsDestroyIndexes(foeEcsIndexes indexes);
 
 FOE_ECS_EXPORT foeIdGroup foeEcsIndexesGetGroupID(foeEcsIndexes indexes);
 
-FOE_ECS_EXPORT foeResult foeEcsGenerateID(foeEcsIndexes indexes, foeId *pID);
+FOE_ECS_EXPORT foeResultSet foeEcsGenerateID(foeEcsIndexes indexes, foeId *pID);
 
-FOE_ECS_EXPORT foeResult foeEcsFreeID(foeEcsIndexes indexes, foeId id);
+FOE_ECS_EXPORT foeResultSet foeEcsFreeID(foeEcsIndexes indexes, foeId id);
 
-FOE_ECS_EXPORT foeResult foeEcsFreeIDs(foeEcsIndexes indexes, uint32_t idCount, foeId const *pIDs);
+FOE_ECS_EXPORT foeResultSet foeEcsFreeIDs(foeEcsIndexes indexes,
+                                          uint32_t idCount,
+                                          foeId const *pIDs);
 
 FOE_ECS_EXPORT void foeEcsForEachID(foeEcsIndexes indexes,
                                     PFN_foeEcsForEachCall forEachCall,
                                     void *pCallContext);
 
-FOE_ECS_EXPORT foeResult foeEcsImportIndexes(foeEcsIndexes indexes,
-                                             foeIdIndex nextNewIndex,
-                                             uint32_t recycledCount,
-                                             foeIdIndex const *pRecycledIndexes);
+FOE_ECS_EXPORT foeResultSet foeEcsImportIndexes(foeEcsIndexes indexes,
+                                                foeIdIndex nextNewIndex,
+                                                uint32_t recycledCount,
+                                                foeIdIndex const *pRecycledIndexes);
 
-FOE_ECS_EXPORT foeResult foeEcsExportIndexes(foeEcsIndexes indexes,
-                                             foeIdIndex *pNextNewIndex,
-                                             uint32_t *pRecycledCount,
-                                             foeIdIndex *pRecycledIndexes);
+FOE_ECS_EXPORT foeResultSet foeEcsExportIndexes(foeEcsIndexes indexes,
+                                                foeIdIndex *pNextNewIndex,
+                                                uint32_t *pRecycledCount,
+                                                foeIdIndex *pRecycledIndexes);
 
 #ifdef __cplusplus
 }

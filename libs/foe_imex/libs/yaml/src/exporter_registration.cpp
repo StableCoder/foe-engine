@@ -16,7 +16,7 @@ foeExporterVersion version = FOE_EXPORTER_VERSION(0, 0, 0);
 
 } // namespace
 
-extern "C" foeResult foeImexYamlRegisterExporter() {
+extern "C" foeResultSet foeImexYamlRegisterExporter() {
     return foeImexRegisterExporter(foeExporter{
         .pName = name.data(),
         .version = version,

@@ -203,17 +203,17 @@ void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
 
 } // namespace
 
-foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
-                         std::string_view name,
-                         VkFence fence,
-                         foeGfxVkRenderGraphResource colourRenderTarget,
-                         VkImageLayout finalColourLayout,
-                         foeGfxVkRenderGraphResource depthRenderTarget,
-                         VkImageLayout finalDepthLayout,
-                         VkSampleCountFlags renderTargetSamples,
-                         foeSimulation *pSimulation,
-                         VkDescriptorSet cameraDescriptor,
-                         RenderSceneOutputResources &outputResources) {
+foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
+                            std::string_view name,
+                            VkFence fence,
+                            foeGfxVkRenderGraphResource colourRenderTarget,
+                            VkImageLayout finalColourLayout,
+                            foeGfxVkRenderGraphResource depthRenderTarget,
+                            VkImageLayout finalDepthLayout,
+                            VkSampleCountFlags renderTargetSamples,
+                            foeSimulation *pSimulation,
+                            VkDescriptorSet cameraDescriptor,
+                            RenderSceneOutputResources &outputResources) {
     // Make sure the resources passed in are images, and are mutable
     auto const *pColourImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         colourRenderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
@@ -248,7 +248,7 @@ foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
                      std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResult {
+                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
         VkResult vkResult;
 
         VkRenderPass renderPass =
@@ -453,7 +453,7 @@ foeResult renderSceneJob(foeGfxVkRenderGraph renderGraph,
     std::array<bool const, 2> resourcesInReadOnly{false, false};
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResult result =
+    foeResultSet result =
         foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
                                   freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS)

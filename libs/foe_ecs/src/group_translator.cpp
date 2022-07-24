@@ -18,13 +18,13 @@ struct Translation {
 
 } // namespace
 
-extern "C" foeResult foeEcsCreateGroupTranslator(uint32_t originalCount,
-                                                 char const **ppOriginalNames,
-                                                 foeIdGroup *pOriginalGroups,
-                                                 uint32_t translatedCount,
-                                                 char const **ppTranslatedNames,
-                                                 foeIdGroup *pTranslatedGroups,
-                                                 foeEcsGroupTranslator *pGroupTranslator) {
+extern "C" foeResultSet foeEcsCreateGroupTranslator(uint32_t originalCount,
+                                                    char const **ppOriginalNames,
+                                                    foeIdGroup *pOriginalGroups,
+                                                    uint32_t translatedCount,
+                                                    char const **ppTranslatedNames,
+                                                    foeIdGroup *pTranslatedGroups,
+                                                    foeEcsGroupTranslator *pGroupTranslator) {
     foeEcsResult result{FOE_ECS_SUCCESS};
     size_t translatorSize = sizeof(uint32_t) + (originalCount * sizeof(Translation));
     void *pNewGroupTranslator = malloc(translatorSize);
@@ -69,9 +69,9 @@ extern "C" void foeEcsDestroyGroupTranslator(foeEcsGroupTranslator groupTranslat
     free(groupTranslator);
 }
 
-extern "C" foeResult foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTranslator,
-                                              foeIdGroup originalGroup,
-                                              foeIdGroup *pTranslatedGroup) {
+extern "C" foeResultSet foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTranslator,
+                                                 foeIdGroup originalGroup,
+                                                 foeIdGroup *pTranslatedGroup) {
     uint32_t const *pCount = (uint32_t const *)groupTranslator;
     Translation const *pTranslations = (Translation const *)(pCount + 1);
 
@@ -85,9 +85,9 @@ extern "C" foeResult foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTransla
     return to_foeResult(FOE_ECS_ERROR_NO_MATCHING_GROUP);
 }
 
-extern "C" foeResult foeEcsGetOriginalGroup(foeEcsGroupTranslator groupTranslator,
-                                            foeIdGroup translatedGroup,
-                                            foeIdGroup *pOriginalGroup) {
+extern "C" foeResultSet foeEcsGetOriginalGroup(foeEcsGroupTranslator groupTranslator,
+                                               foeIdGroup translatedGroup,
+                                               foeIdGroup *pOriginalGroup) {
     uint32_t const *pCount = (uint32_t const *)groupTranslator;
     Translation const *pTranslations = (Translation const *)(pCount + 1);
 

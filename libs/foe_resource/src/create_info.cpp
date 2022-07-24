@@ -25,13 +25,13 @@ FOE_DEFINE_HANDLE_CASTS(resource_create_info, foeResourceCreateInfoImpl, foeReso
 
 } // namespace
 
-extern "C" foeResult foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
-                                                 void (*pDestroyFn)(foeResourceCreateInfoType type,
-                                                                    void *),
-                                                 size_t size,
-                                                 void *pData,
-                                                 void (*pDataFn)(void *, void *),
-                                                 foeResourceCreateInfo *pCreateInfo) {
+extern "C" foeResultSet foeCreateResourceCreateInfo(
+    foeResourceCreateInfoType type,
+    void (*pDestroyFn)(foeResourceCreateInfoType type, void *),
+    size_t size,
+    void *pData,
+    void (*pDataFn)(void *, void *),
+    foeResourceCreateInfo *pCreateInfo) {
     if (pDataFn == nullptr)
         return to_foeResult(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
 

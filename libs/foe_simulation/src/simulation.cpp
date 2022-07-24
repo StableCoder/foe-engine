@@ -107,7 +107,7 @@ void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad 
 
 } // namespace
 
-foeResult foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
+foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
     std::scoped_lock lock{mSync};
 
     if (functionality.id < 1000000000 || functionality.id % 1000 != 0) {
@@ -135,7 +135,7 @@ foeResult foeRegisterFunctionality(foeSimulationFunctionalty const &functionalit
         bool gfxInitialized;
     } passedStates;
 
-    foeResult result = to_foeResult(FOE_SIMULATION_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_SIMULATION_SUCCESS);
     foeSimulation **ppSimState = mStates.data();
     foeSimulation **ppEndSimState = mStates.data() + mStates.size();
 
@@ -237,7 +237,7 @@ foeResult foeRegisterFunctionality(foeSimulationFunctionalty const &functionalit
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResult foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) {
+foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionalityUUID) {
     std::scoped_lock lock{mSync};
 
     for (auto it = mRegistered.begin(); it != mRegistered.end(); ++it) {
@@ -279,8 +279,8 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation) {
     return pSimulation->gfxSession != FOE_NULL_HANDLE;
 }
 
-foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) {
-    foeResult result;
+foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState) {
+    foeResultSet result;
     std::scoped_lock lock{mSync};
 
     std::unique_ptr<foeSimulation> newSimState{new foeSimulation};
@@ -383,7 +383,7 @@ foeResult foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationStat
     return result;
 }
 
-foeResult foeDestroySimulation(foeSimulation *pSimulation) {
+foeResultSet foeDestroySimulation(foeSimulation *pSimulation) {
     std::scoped_lock lock{mSync};
 
     FOE_LOG(SimulationState, Verbose, "[{}] foeSimulation - Destroying",
@@ -436,8 +436,8 @@ foeResult foeDestroySimulation(foeSimulation *pSimulation) {
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResult foeInitializeSimulation(foeSimulation *pSimulation,
-                                  foeSimulationInitInfo const *pInitInfo) {
+foeResultSet foeInitializeSimulation(foeSimulation *pSimulation,
+                                     foeSimulationInitInfo const *pInitInfo) {
     std::scoped_lock lock{mSync};
 
     if (foeSimulationIsInitialized(pSimulation)) {
@@ -452,7 +452,7 @@ foeResult foeInitializeSimulation(foeSimulation *pSimulation,
     acquireExclusiveLock(pSimulation, "initialization");
 
     // Go through each set of functionality and call the initialization function, if one is attached
-    foeResult result = to_foeResult(FOE_SIMULATION_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_SIMULATION_SUCCESS);
     auto it = mRegistered.begin();
     auto const endIt = mRegistered.end();
 
@@ -492,7 +492,7 @@ foeResult foeInitializeSimulation(foeSimulation *pSimulation,
     return result;
 }
 
-foeResult foeDeinitializeSimulation(foeSimulation *pSimulation) {
+foeResultSet foeDeinitializeSimulation(foeSimulation *pSimulation) {
     std::scoped_lock lock{mSync};
 
     if (!foeSimulationIsInitialized(pSimulation))
@@ -504,7 +504,7 @@ foeResult foeDeinitializeSimulation(foeSimulation *pSimulation) {
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResult foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
+foeResultSet foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession) {
     std::scoped_lock lock{mSync};
 
     if (foeSimulationIsGraphicsInitialzied(pSimulation)) {
@@ -519,7 +519,7 @@ foeResult foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSess
     acquireExclusiveLock(pSimulation, "initializing graphics");
 
     // Go through each set of functionality and call the initialization function, if one is attached
-    foeResult result = to_foeResult(FOE_SIMULATION_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_SIMULATION_SUCCESS);
     auto it = mRegistered.begin();
     auto const endIt = mRegistered.end();
 
@@ -560,7 +560,7 @@ foeResult foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSess
     return result;
 }
 
-foeResult foeDeinitializeSimulationGraphics(foeSimulation *pSimulation) {
+foeResultSet foeDeinitializeSimulationGraphics(foeSimulation *pSimulation) {
     std::scoped_lock lock{mSync};
 
     if (!foeSimulationIsGraphicsInitialzied(pSimulation)) {
@@ -574,9 +574,9 @@ foeResult foeDeinitializeSimulationGraphics(foeSimulation *pSimulation) {
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResult foeSimulationGetRefCount(foeSimulation const *pSimulation,
-                                   foeSimulationStructureType sType,
-                                   size_t *pRefCount) {
+foeResultSet foeSimulationGetRefCount(foeSimulation const *pSimulation,
+                                      foeSimulationStructureType sType,
+                                      size_t *pRefCount) {
     // Resource Loaders
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -607,9 +607,9 @@ foeResult foeSimulationGetRefCount(foeSimulation const *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationIncrementRefCount(foeSimulation *pSimulation,
-                                         foeSimulationStructureType sType,
-                                         size_t *pRefCount) {
+foeResultSet foeSimulationIncrementRefCount(foeSimulation *pSimulation,
+                                            foeSimulationStructureType sType,
+                                            size_t *pRefCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -649,9 +649,9 @@ foeResult foeSimulationIncrementRefCount(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationDecrementRefCount(foeSimulation *pSimulation,
-                                         foeSimulationStructureType sType,
-                                         size_t *pRefCount) {
+foeResultSet foeSimulationDecrementRefCount(foeSimulation *pSimulation,
+                                            foeSimulationStructureType sType,
+                                            size_t *pRefCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -691,93 +691,93 @@ foeResult foeSimulationDecrementRefCount(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationGetInitCount(foeSimulation const *pSimulation,
-                                    foeSimulationStructureType sType,
-                                    size_t *pInitCount) {
-    // Resource Loaders
-    for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.sType == sType) {
-            *pInitCount = it.initCount;
-
-            return to_foeResult(FOE_SIMULATION_SUCCESS);
-        }
-    }
-
-    // Systems
-    for (auto &it : pSimulation->systems) {
-        if (it.sType == sType) {
-            *pInitCount = it.initCount;
-
-            return to_foeResult(FOE_SIMULATION_SUCCESS);
-        }
-    }
-
-    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
-}
-
-foeResult foeSimulationIncrementInitCount(foeSimulation *pSimulation,
-                                          foeSimulationStructureType sType,
-                                          size_t *pInitCount) {
-    // Resource Loaders
-    for (auto &it : pSimulation->resourceLoaders) {
-        if (it.sType == sType) {
-            if (pInitCount != nullptr)
-                *pInitCount = ++it.initCount;
-            else
-                ++it.initCount;
-
-            return to_foeResult(FOE_SIMULATION_SUCCESS);
-        }
-    }
-
-    // Systems
-    for (auto &it : pSimulation->systems) {
-        if (it.sType == sType) {
-            if (pInitCount != nullptr)
-                *pInitCount = ++it.initCount;
-            else
-                ++it.initCount;
-
-            return to_foeResult(FOE_SIMULATION_SUCCESS);
-        }
-    }
-
-    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
-}
-
-foeResult foeSimulationDecrementInitCount(foeSimulation *pSimulation,
-                                          foeSimulationStructureType sType,
-                                          size_t *pInitCount) {
-    // Resource Loaders
-    for (auto &it : pSimulation->resourceLoaders) {
-        if (it.sType == sType) {
-            if (pInitCount != nullptr)
-                *pInitCount = --it.initCount;
-            else
-                --it.initCount;
-
-            return to_foeResult(FOE_SIMULATION_SUCCESS);
-        }
-    }
-
-    // Systems
-    for (auto &it : pSimulation->systems) {
-        if (it.sType == sType) {
-            if (pInitCount != nullptr)
-                *pInitCount = --it.initCount;
-            else
-                --it.initCount;
-
-            return to_foeResult(FOE_SIMULATION_SUCCESS);
-        }
-    }
-
-    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
-}
-
-foeResult foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
+foeResultSet foeSimulationGetInitCount(foeSimulation const *pSimulation,
                                        foeSimulationStructureType sType,
-                                       size_t *pGfxInitCount) {
+                                       size_t *pInitCount) {
+    // Resource Loaders
+    for (auto const &it : pSimulation->resourceLoaders) {
+        if (it.sType == sType) {
+            *pInitCount = it.initCount;
+
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
+        }
+    }
+
+    // Systems
+    for (auto &it : pSimulation->systems) {
+        if (it.sType == sType) {
+            *pInitCount = it.initCount;
+
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
+        }
+    }
+
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
+}
+
+foeResultSet foeSimulationIncrementInitCount(foeSimulation *pSimulation,
+                                             foeSimulationStructureType sType,
+                                             size_t *pInitCount) {
+    // Resource Loaders
+    for (auto &it : pSimulation->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = ++it.initCount;
+            else
+                ++it.initCount;
+
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
+        }
+    }
+
+    // Systems
+    for (auto &it : pSimulation->systems) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = ++it.initCount;
+            else
+                ++it.initCount;
+
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
+        }
+    }
+
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
+}
+
+foeResultSet foeSimulationDecrementInitCount(foeSimulation *pSimulation,
+                                             foeSimulationStructureType sType,
+                                             size_t *pInitCount) {
+    // Resource Loaders
+    for (auto &it : pSimulation->resourceLoaders) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = --it.initCount;
+            else
+                --it.initCount;
+
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
+        }
+    }
+
+    // Systems
+    for (auto &it : pSimulation->systems) {
+        if (it.sType == sType) {
+            if (pInitCount != nullptr)
+                *pInitCount = --it.initCount;
+            else
+                --it.initCount;
+
+            return to_foeResult(FOE_SIMULATION_SUCCESS);
+        }
+    }
+
+    return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
+}
+
+foeResultSet foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
+                                          foeSimulationStructureType sType,
+                                          size_t *pGfxInitCount) {
     // Resource Loaders
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -799,9 +799,9 @@ foeResult foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
-                                             foeSimulationStructureType sType,
-                                             size_t *pGfxInitCount) {
+foeResultSet foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
+                                                foeSimulationStructureType sType,
+                                                size_t *pGfxInitCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -829,9 +829,9 @@ foeResult foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
-                                             foeSimulationStructureType sType,
-                                             size_t *pGfxInitCount) {
+foeResultSet foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
+                                                foeSimulationStructureType sType,
+                                                size_t *pGfxInitCount) {
     // Resource Loaders
     for (auto &it : pSimulation->resourceLoaders) {
         if (it.sType == sType) {
@@ -859,8 +859,8 @@ foeResult foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
-                                            foeSimulationLoaderData const *pCreateInfo) {
+foeResultSet foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
+                                               foeSimulationLoaderData const *pCreateInfo) {
     // Make sure the type doesn't exist yet
     if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
@@ -873,9 +873,9 @@ foeResult foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResult foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
-                                             foeSimulationStructureType sType,
-                                             void **ppLoader) {
+foeResultSet foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
+                                                foeSimulationStructureType sType,
+                                                void **ppLoader) {
     auto const endIt = pSimulation->resourceLoaders.end();
     for (auto it = pSimulation->resourceLoaders.begin(); it != endIt; ++it) {
         if (it->sType == sType) {
@@ -889,8 +889,8 @@ foeResult foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationInsertComponentPool(foeSimulation *pSimulation,
-                                           foeSimulationComponentPoolData const *pCreateInfo) {
+foeResultSet foeSimulationInsertComponentPool(foeSimulation *pSimulation,
+                                              foeSimulationComponentPoolData const *pCreateInfo) {
     // Make sure the type doesn't exist yet
     if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
@@ -903,9 +903,9 @@ foeResult foeSimulationInsertComponentPool(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResult foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
-                                            foeSimulationStructureType sType,
-                                            void **ppComponentPool) {
+foeResultSet foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
+                                               foeSimulationStructureType sType,
+                                               void **ppComponentPool) {
     auto const endIt = pSimulation->componentPools.end();
     for (auto it = pSimulation->componentPools.begin(); it != endIt; ++it) {
         if (it->sType == sType) {
@@ -919,8 +919,8 @@ foeResult foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
 
-foeResult foeSimulationInsertSystem(foeSimulation *pSimulation,
-                                    foeSimulationSystemData const *pCreateInfo) {
+foeResultSet foeSimulationInsertSystem(foeSimulation *pSimulation,
+                                       foeSimulationSystemData const *pCreateInfo) {
     // Make sure the type doesn't exist yet
     if (foeSimulationGetResourceLoader(pSimulation, pCreateInfo->sType) != nullptr ||
         foeSimulationGetSystem(pSimulation, pCreateInfo->sType) != nullptr ||
@@ -933,9 +933,9 @@ foeResult foeSimulationInsertSystem(foeSimulation *pSimulation,
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-foeResult foeSimulationReleaseSystem(foeSimulation *pSimulation,
-                                     foeSimulationStructureType sType,
-                                     void **ppSystem) {
+foeResultSet foeSimulationReleaseSystem(foeSimulation *pSimulation,
+                                        foeSimulationStructureType sType,
+                                        void **ppSystem) {
     auto const endIt = pSimulation->systems.end();
     for (auto it = pSimulation->systems.begin(); it != endIt; ++it) {
         if (it->sType == sType) {

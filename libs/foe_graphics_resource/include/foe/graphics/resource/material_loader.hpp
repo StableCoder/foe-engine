@@ -19,11 +19,11 @@
 
 class FOE_GFX_RES_EXPORT foeMaterialLoader {
   public:
-    foeResult initialize(foeResourcePool resourcePool);
+    foeResultSet initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    foeResult initializeGraphics(foeGfxSession gfxSession);
+    foeResultSet initializeGraphics(foeGfxSession gfxSession);
     void deinitializeGraphics();
     bool initializedGraphics() const noexcept;
 

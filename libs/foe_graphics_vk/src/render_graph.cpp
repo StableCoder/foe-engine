@@ -21,11 +21,11 @@ struct RenderGraphJob {
     /// outputting something, but other reasons exist.
     bool required{false};
     bool processed{false};
-    std::function<foeResult(foeGfxSession,
-                            foeGfxDelayedCaller,
-                            std::vector<VkSemaphore> const &,
-                            std::vector<VkSemaphore> const &,
-                            std::function<void(std::function<void()>)>)>
+    std::function<foeResultSet(foeGfxSession,
+                               foeGfxDelayedCaller,
+                               std::vector<VkSemaphore> const &,
+                               std::vector<VkSemaphore> const &,
+                               std::function<void(std::function<void()>)>)>
         jobFn;
 };
 
@@ -73,7 +73,7 @@ foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
     return nullptr;
 }
 
-foeResult foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) {
+foeResultSet foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph) {
     RenderGraph *pNewRenderGraph = new RenderGraph;
     *pNewRenderGraph = {};
 
@@ -94,7 +94,7 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
     delete pRenderGraph;
 }
 
-foeResult foeGfxVkRenderGraphAddJob(
+foeResultSet foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraph renderGraph,
     uint32_t resourcesCount,
     foeGfxVkRenderGraphResource const *pResourcesIn,
@@ -102,11 +102,11 @@ foeResult foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraphFn freeDataFn,
     std::string_view name,
     bool required,
-    std::function<foeResult(foeGfxSession,
-                            foeGfxDelayedCaller,
-                            std::vector<VkSemaphore> const &,
-                            std::vector<VkSemaphore> const &,
-                            std::function<void(std::function<void()>)>)> &&jobFn,
+    std::function<foeResultSet(foeGfxSession,
+                               foeGfxDelayedCaller,
+                               std::vector<VkSemaphore> const &,
+                               std::vector<VkSemaphore> const &,
+                               std::function<void(std::function<void()>)>)> &&jobFn,
     foeGfxVkRenderGraphJob *pJob) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
@@ -159,9 +159,9 @@ void destroy_RenderGraphSemaphores(std::vector<VkSemaphore> const *pAllSemaphore
 
 } // namespace
 
-foeResult foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
-                                     foeGfxSession gfxSession,
-                                     foeGfxDelayedCaller gfxDelayedDestructor) {
+foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
+                                        foeGfxSession gfxSession,
+                                        foeGfxDelayedCaller gfxDelayedDestructor) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // COMPILE

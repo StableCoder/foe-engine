@@ -16,7 +16,7 @@
 #include "result.h"
 #include "vk_result.h"
 
-foeResult foeImageLoader::initialize(
+foeResultSet foeImageLoader::initialize(
     foeResourcePool resourcePool,
     std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
@@ -35,14 +35,14 @@ void foeImageLoader::deinitialize() {
 
 bool foeImageLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
 
-foeResult foeImageLoader::initializeGraphics(foeGfxSession gfxSession) {
+foeResultSet foeImageLoader::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized()) {
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_NOT_INITIALIZED);
     }
 
     mGfxSession = gfxSession;
 
-    foeResult result = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
+    foeResultSet result = foeGfxCreateUploadContext(gfxSession, &mGfxUploadContext);
     if (result.value != FOE_SUCCESS) {
         deinitializeGraphics();
     }
@@ -205,7 +205,7 @@ void foeImageLoader::load(foeResource resource,
     }
     auto const *pImageCI = (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-    foeResult result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
     VkResult vkRes{VK_SUCCESS};
     foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};

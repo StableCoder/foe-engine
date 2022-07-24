@@ -9,7 +9,7 @@
 #include <foe/type_defs.h>
 
 namespace {
-foeResult pCreateFn(foeSimulation *) { return {}; }
+foeResultSet pCreateFn(foeSimulation *) { return {}; }
 size_t pDestroyFn(foeSimulation *) { return 0; }
 } // namespace
 

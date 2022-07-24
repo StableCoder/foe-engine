@@ -104,8 +104,8 @@ void onDeregister(foeExporter exporter) {
     }
 }
 
-foeResult onRegister(foeExporter exporter) {
-    foeResult result = to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
+foeResultSet onRegister(foeExporter exporter) {
+    foeResultSet result = to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
 
     if (std::string_view{exporter.pName} == "Yaml") {
         // Resource
@@ -137,7 +137,7 @@ foeExportFunctionality exportFunctionality{
 
 } // namespace
 
-extern "C" foeResult foeBringupYamlRegisterExporters() {
+extern "C" foeResultSet foeBringupYamlRegisterExporters() {
     return foeRegisterExportFunctionality(&exportFunctionality);
 }
 

@@ -14,9 +14,9 @@
 
 #include <string_view>
 
-FOE_IMEX_YAML_EXPORT foeResult foeCreateYamlImporter(foeIdGroup group,
-                                                     char const *pRootDir,
-                                                     foeImexImporter *pImporter);
+FOE_IMEX_YAML_EXPORT foeResultSet foeCreateYamlImporter(foeIdGroup group,
+                                                        char const *pRootDir,
+                                                        foeImexImporter *pImporter);
 
 /// Imports the definition of a resource from a YAML node
 using PFN_foeImexYamlResourceImport = void (*)(YAML::Node const &,
@@ -24,9 +24,9 @@ using PFN_foeImexYamlResourceImport = void (*)(YAML::Node const &,
                                                foeResourceCreateInfo *);
 
 /// Creates a resource from a given CreateInfo definition
-using PFN_foeImexYamlResourceCreate = foeResult (*)(foeResourceID,
-                                                    foeResourceCreateInfo,
-                                                    foeSimulation const *);
+using PFN_foeImexYamlResourceCreate = foeResultSet (*)(foeResourceID,
+                                                       foeResourceCreateInfo,
+                                                       foeSimulation const *);
 
 /// Imports component data from a YAML node
 using PFN_foeImexYamlComponent = bool (*)(YAML::Node const &,

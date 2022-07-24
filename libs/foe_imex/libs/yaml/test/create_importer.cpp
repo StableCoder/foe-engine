@@ -20,7 +20,7 @@ TEST_CASE("foeCreateYamlImporter - Success Case") {
 
     SECTION("Good layout/files, but empty/no content") {
         testPath /= "10-good-empty";
-        foeResult result = foeCreateYamlImporter(1, testPath.string().c_str(), &testImporter);
+        foeResultSet result = foeCreateYamlImporter(1, testPath.string().c_str(), &testImporter);
 
         REQUIRE(result.value == FOE_IMEX_YAML_SUCCESS);
         REQUIRE(testImporter != FOE_NULL_HANDLE);
@@ -41,7 +41,7 @@ TEST_CASE("foeCreateYamlImporter - Success Case") {
 
     SECTION("Good layout/files, with valid content") {
         testPath /= "11-good-content";
-        foeResult result = foeCreateYamlImporter(2, testPath.string().c_str(), &testImporter);
+        foeResultSet result = foeCreateYamlImporter(2, testPath.string().c_str(), &testImporter);
 
         CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
         CHECK(testImporter != FOE_NULL_HANDLE);
@@ -69,7 +69,7 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
 
     SECTION("Root Directory doesn't exist") {
         testPath /= "this_does_no_exist/for_real";
-        foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+        foeResultSet result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
         CHECK(testImporter == FOE_NULL_HANDLE);
         CHECK(result.value == FOE_IMEX_YAML_ERROR_PATH_NOT_DIRECTORY);
@@ -78,7 +78,8 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
     SECTION("Dependencies File") {
         SECTION("Doesn't exist") {
             testPath /= "01-missing-dependencies-file";
-            foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+            foeResultSet result =
+                foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
             CHECK(testImporter == FOE_NULL_HANDLE);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_EXIST);
@@ -86,7 +87,8 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
 
         SECTION("Not a regular file") {
             testPath /= "02-incorrect-dependencies-file";
-            foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+            foeResultSet result =
+                foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
             CHECK(testImporter == FOE_NULL_HANDLE);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_DEPENDENCIES_FILE_NOT_REGULAR_FILE);
@@ -96,7 +98,8 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
     SECTION("Resource Index Data File") {
         SECTION("Doesn't exist") {
             testPath /= "03-missing-resource-index-file";
-            foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+            foeResultSet result =
+                foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
             CHECK(testImporter == FOE_NULL_HANDLE);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_RESOURCE_INDEX_FILE_NOT_EXIST);
@@ -104,7 +107,8 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
 
         SECTION("Not a regular file") {
             testPath /= "04-incorrect-resource-index-file";
-            foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+            foeResultSet result =
+                foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
             CHECK(testImporter == FOE_NULL_HANDLE);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_RESOURCE_INDEX_FILE_NOT_REGULAR_FILE);
@@ -114,7 +118,8 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
     SECTION("Entity Index Data File") {
         SECTION("Doesn't exist") {
             testPath /= "05-missing-entity-index-file";
-            foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+            foeResultSet result =
+                foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
             CHECK(testImporter == FOE_NULL_HANDLE);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_ENTITY_INDEX_FILE_NOT_EXIST);
@@ -122,7 +127,8 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
 
         SECTION("Not a regular file") {
             testPath /= "06-incorrect-entity-index-file";
-            foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+            foeResultSet result =
+                foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
             CHECK(testImporter == FOE_NULL_HANDLE);
             CHECK(result.value == FOE_IMEX_YAML_ERROR_ENTITY_INDEX_FILE_NOT_REGULAR_FILE);
@@ -131,7 +137,7 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
 
     SECTION("Resources directory not a directory") {
         testPath /= "07-bad-resources-dir";
-        foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+        foeResultSet result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
         CHECK(testImporter == FOE_NULL_HANDLE);
         CHECK(result.value == FOE_IMEX_YAML_ERROR_RESOURCE_DIRECTORY_NOT_DIRECTORY);
@@ -139,7 +145,7 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
 
     SECTION("Entities directory not a directory") {
         testPath /= "08-bad-entities-dir";
-        foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+        foeResultSet result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
         CHECK(testImporter == FOE_NULL_HANDLE);
         CHECK(result.value == FOE_IMEX_YAML_ERROR_ENTITY_DIRECTORY_NOT_DIRECTORY);
@@ -147,7 +153,7 @@ TEST_CASE("foeCreateYamlImporter - Failure Cases") {
 
     SECTION("External directory not a directory") {
         testPath /= "09-bad-external-dir";
-        foeResult result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
+        foeResultSet result = foeCreateYamlImporter(0, testPath.string().c_str(), &testImporter);
 
         CHECK(testImporter == FOE_NULL_HANDLE);
         CHECK(result.value == FOE_IMEX_YAML_ERROR_EXTERNAL_DIRECTORY_NOT_DIRECTORY);

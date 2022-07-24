@@ -123,7 +123,7 @@ void yaml_read_armature(YAML::Node const &node,
         new (pDst) foeArmatureCreateInfo(std::move(*pSrcData));
     };
 
-    foeResult result = foeCreateResourceCreateInfo(
+    foeResultSet result = foeCreateResourceCreateInfo(
         FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO, foeDestroyArmatureCreateInfo,
         sizeof(foeArmatureCreateInfo), &armatureCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {

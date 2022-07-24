@@ -26,8 +26,8 @@ FOE_DEFINE_HANDLE_CASTS(resource_pool, ResourcePool, foeResourcePool)
 
 } // namespace
 
-extern "C" foeResult foeCreateResourcePool(foeResourceFns const *pResourceFns,
-                                           foeResourcePool *pResourcePool) {
+extern "C" foeResultSet foeCreateResourcePool(foeResourceFns const *pResourceFns,
+                                              foeResourcePool *pResourcePool) {
     ResourcePool *pNewResourcePool = (ResourcePool *)malloc(sizeof(ResourcePool));
     if (pNewResourcePool == NULL)
         return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
@@ -79,8 +79,8 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
 
     // Not found, add it
     foeResource newResource;
-    foeResult result = foeCreateResource(resourceID, resourceType, &pResourcePool->callbacks,
-                                         resourceSize, &newResource);
+    foeResultSet result = foeCreateResource(resourceID, resourceType, &pResourcePool->callbacks,
+                                            resourceSize, &newResource);
     if (result.value != FOE_RESOURCE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -113,7 +113,8 @@ extern "C" foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeReso
     return FOE_NULL_HANDLE;
 }
 
-extern "C" foeResult foeResourcePoolRemove(foeResourcePool resourcePool, foeResourceID resourceID) {
+extern "C" foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
+                                              foeResourceID resourceID) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
 
     std::unique_lock lock{pResourcePool->sync};

@@ -11,7 +11,7 @@
 #include "../vk_result.h"
 #include "type_defs.h"
 
-foeResult PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) {
+foeResultSet PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) {
     if (pPosition3dPool == nullptr) {
         return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
     }
@@ -25,7 +25,7 @@ void PositionDescriptorPool::deinitialize() { mpPosition3dPool = nullptr; }
 
 bool PositionDescriptorPool::initialized() const noexcept { return mpPosition3dPool != nullptr; }
 
-foeResult PositionDescriptorPool::initializeGraphics(foeGfxSession gfxSession) {
+foeResultSet PositionDescriptorPool::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
         return to_foeResult(FOE_BRINGUP_NOT_INITIALIZED);
 

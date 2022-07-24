@@ -14,11 +14,11 @@
 
 namespace {
 
-foeResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
-                            foeGfxVkRenderTargetSpec const &specification,
-                            VkSampleCountFlags samples,
-                            VkExtent2D extent,
-                            RenderTargetImageData &image) {
+foeResultSet createTargetImage(foeGfxVkSession const *pGfxVkSession,
+                               foeGfxVkRenderTargetSpec const &specification,
+                               VkSampleCountFlags samples,
+                               VkExtent2D extent,
+                               RenderTargetImageData &image) {
     RenderTargetImageData data{
         .latest = true,
     };
@@ -92,12 +92,12 @@ foeResult createTargetImage(foeGfxVkSession const *pGfxVkSession,
 
 } // namespace
 
-foeResult foeGfxVkCreateRenderTarget(foeGfxSession session,
-                                     foeGfxDelayedCaller delayedCaller,
-                                     foeGfxVkRenderTargetSpec const *pSpecifications,
-                                     uint32_t count,
-                                     VkSampleCountFlags samples,
-                                     foeGfxRenderTarget *pRenderTarget) {
+foeResultSet foeGfxVkCreateRenderTarget(foeGfxSession session,
+                                        foeGfxDelayedCaller delayedCaller,
+                                        foeGfxVkRenderTargetSpec const *pSpecifications,
+                                        uint32_t count,
+                                        VkSampleCountFlags samples,
+                                        foeGfxRenderTarget *pRenderTarget) {
     auto *pSession = session_from_handle(session);
 
     uint32_t imageCount = 0;
@@ -191,11 +191,11 @@ void destroy_VkFramebuffer(VkFramebuffer framebuffer, foeGfxSession session) {
 
 } // namespace
 
-extern "C" foeResult foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
-                                                   uint32_t maxBufferedFrames) {
+extern "C" foeResultSet foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
+                                                      uint32_t maxBufferedFrames) {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
     uint32_t const numImages = static_cast<uint32_t>(pRenderTarget->imageSpecifications.size());
-    foeResult result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 
     // Increment the indices, making sure to not go over the specified image counts for each type
     for (uint32_t i = 0; i < numImages; ++i) {

@@ -7,7 +7,7 @@
 
 #include <foe/error_code.h>
 
-foeResult foeBringupRegisterFunctionality();
+foeResultSet foeBringupRegisterFunctionality();
 
 void foeBringupDeregisterFunctionality();
 
