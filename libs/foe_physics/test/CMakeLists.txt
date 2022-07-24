@@ -21,4 +21,5 @@ target_code_coverage(
   OBJECTS
   foe_physics
   EXCLUDE
-  .*/test/.*)
+  .*/test/.*
+  ${BULLET_INCLUDE_DIRS})
