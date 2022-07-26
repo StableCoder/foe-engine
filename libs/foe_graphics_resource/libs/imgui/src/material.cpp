@@ -36,27 +36,27 @@ void imgui_foeMaterialCreateInfo(foeMaterialCreateInfo const *pCreateInfo) {
     ImGui::Text("Fragment Shader: %s", foeIdToString(pCreateInfo->fragmentShader).c_str());
     ImGui::Text("Image: %s", foeIdToString(pCreateInfo->image).c_str());
 
-    if (pCreateInfo->hasRasterizationSCI) {
+    if (pCreateInfo->pRasterizationSCI != nullptr) {
         if (ImGui::TreeNode("rasterizationSCI")) {
-            imgui_VkPipelineRasterizationStateCreateInfo(pCreateInfo->rasterizationSCI);
+            imgui_VkPipelineRasterizationStateCreateInfo(*pCreateInfo->pRasterizationSCI);
             ImGui::TreePop();
         }
     } else {
         ImGui::Text("rasterizationSCI: No Data");
     }
 
-    if (pCreateInfo->hasDepthStencilSCI) {
+    if (pCreateInfo->pDepthStencilSCI != nullptr) {
         if (ImGui::TreeNode("depthStencilSCI")) {
-            imgui_VkPipelineDepthStencilStateCreateInfo(pCreateInfo->depthStencilSCI);
+            imgui_VkPipelineDepthStencilStateCreateInfo(*pCreateInfo->pDepthStencilSCI);
             ImGui::TreePop();
         }
     } else {
         ImGui::Text("depthStencilSCI: No Data");
     }
 
-    if (pCreateInfo->hasColourBlendSCI) {
+    if (pCreateInfo->pColourBlendSCI != nullptr) {
         if (ImGui::TreeNode("colourBlendSCI")) {
-            imgui_VkPipelineColorBlendStateCreateInfo(pCreateInfo->colourBlendSCI);
+            imgui_VkPipelineColorBlendStateCreateInfo(*pCreateInfo->pColourBlendSCI);
             ImGui::TreePop();
         }
     } else {

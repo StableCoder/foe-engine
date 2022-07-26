@@ -7,12 +7,18 @@
 #include <vk_struct_cleanup.h>
 
 foeMaterialCreateInfo::~foeMaterialCreateInfo() {
-    if (hasColourBlendSCI)
-        cleanup_VkPipelineColorBlendStateCreateInfo(&colourBlendSCI);
-    if (hasDepthStencilSCI)
-        cleanup_VkPipelineDepthStencilStateCreateInfo(&depthStencilSCI);
-    if (hasRasterizationSCI)
-        cleanup_VkPipelineRasterizationStateCreateInfo(&rasterizationSCI);
+    if (pColourBlendSCI != nullptr) {
+        cleanup_VkPipelineColorBlendStateCreateInfo(pColourBlendSCI);
+        delete pColourBlendSCI;
+    }
+    if (pDepthStencilSCI != nullptr) {
+        cleanup_VkPipelineDepthStencilStateCreateInfo(pDepthStencilSCI);
+        delete pDepthStencilSCI;
+    }
+    if (pRasterizationSCI != nullptr) {
+        cleanup_VkPipelineRasterizationStateCreateInfo(pRasterizationSCI);
+        delete pRasterizationSCI;
+    }
 }
 
 void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {

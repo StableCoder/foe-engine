@@ -162,10 +162,8 @@ void foeMaterialLoader::gfxMaintenance() {
                     (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(it.createInfo);
 
                 it.data.pGfxFragDescriptor = mGfxFragmentDescriptorPool->get(
-                    (pMaterialCI->hasRasterizationSCI) ? &pMaterialCI->rasterizationSCI : nullptr,
-                    (pMaterialCI->hasDepthStencilSCI) ? &pMaterialCI->depthStencilSCI : nullptr,
-                    (pMaterialCI->hasColourBlendSCI) ? &pMaterialCI->colourBlendSCI : nullptr,
-                    fragShader);
+                    pMaterialCI->pRasterizationSCI, pMaterialCI->pDepthStencilSCI,
+                    pMaterialCI->pColourBlendSCI, fragShader);
             }
 
             VkResult vkResult = createDescriptorSet(&it.data);

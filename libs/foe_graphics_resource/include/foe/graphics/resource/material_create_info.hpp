@@ -17,12 +17,9 @@ struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo {
 
     foeId fragmentShader = FOE_INVALID_ID;
     foeId image = FOE_INVALID_ID;
-    bool hasRasterizationSCI;
-    VkPipelineRasterizationStateCreateInfo rasterizationSCI;
-    bool hasDepthStencilSCI;
-    VkPipelineDepthStencilStateCreateInfo depthStencilSCI;
-    bool hasColourBlendSCI;
-    VkPipelineColorBlendStateCreateInfo colourBlendSCI;
+    VkPipelineRasterizationStateCreateInfo *pRasterizationSCI;
+    VkPipelineDepthStencilStateCreateInfo *pDepthStencilSCI;
+    VkPipelineColorBlendStateCreateInfo *pColourBlendSCI;
     std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
 };
 

@@ -28,15 +28,25 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
                                       createInfo.fragmentShader);
         read |= yaml_read_id_optional("image", subNode, groupTranslator, createInfo.image);
 
-        createInfo.hasRasterizationSCI =
-            yaml_read_optional("rasterization", subNode, createInfo.rasterizationSCI);
-        createInfo.hasDepthStencilSCI =
-            yaml_read_optional("depth_stencil", subNode, createInfo.depthStencilSCI);
-        createInfo.hasColourBlendSCI =
-            yaml_read_optional("colour_blend", subNode, createInfo.colourBlendSCI);
+        VkPipelineRasterizationStateCreateInfo rasterizationSCI{};
+        if (yaml_read_optional("rasterization", subNode, rasterizationSCI)) {
+            createInfo.pRasterizationSCI =
+                new VkPipelineRasterizationStateCreateInfo{rasterizationSCI};
+        }
 
-        read = read | createInfo.hasRasterizationSCI | createInfo.hasDepthStencilSCI |
-               createInfo.hasColourBlendSCI;
+        VkPipelineDepthStencilStateCreateInfo depthStencilSCI{};
+        if (yaml_read_optional("depth_stencil", subNode, depthStencilSCI)) {
+            createInfo.pDepthStencilSCI =
+                new VkPipelineDepthStencilStateCreateInfo{depthStencilSCI};
+        }
+
+        VkPipelineColorBlendStateCreateInfo colourBlendSCI{};
+        if (yaml_read_optional("colour_blend", subNode, colourBlendSCI)) {
+            createInfo.pColourBlendSCI = new VkPipelineColorBlendStateCreateInfo{colourBlendSCI};
+        }
+
+        read |= createInfo.pRasterizationSCI != nullptr || createInfo.pDepthStencilSCI != nullptr ||
+                createInfo.pColourBlendSCI != nullptr;
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
@@ -65,14 +75,14 @@ void yaml_write_material_internal(std::string const &nodeName,
         }
 
         // Fragment Descriptor Items
-        if (data.hasRasterizationSCI)
-            yaml_write_required("rasterization", data.rasterizationSCI, writeNode);
+        if (data.pRasterizationSCI != nullptr)
+            yaml_write_required("rasterization", *data.pRasterizationSCI, writeNode);
 
-        if (data.hasDepthStencilSCI)
-            yaml_write_required("depth_stencil", data.depthStencilSCI, writeNode);
+        if (data.pDepthStencilSCI != nullptr)
+            yaml_write_required("depth_stencil", *data.pDepthStencilSCI, writeNode);
 
-        if (data.hasColourBlendSCI)
-            yaml_write_required("colour_blend", data.colourBlendSCI, writeNode);
+        if (data.pColourBlendSCI != nullptr)
+            yaml_write_required("colour_blend", *data.pColourBlendSCI, writeNode);
 
     } catch (foeYamlException const &e) {
         if (nodeName.empty())
