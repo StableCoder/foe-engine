@@ -29,15 +29,10 @@ struct foeGfxVkFragmentDescriptor {
 
     foeGfxShader mFragment = nullptr;
 
-    bool hasRasterizationSCI;
-    VkPipelineRasterizationStateCreateInfo mRasterizationSCI{};
-
-    bool hasDepthStencilSCI;
-    VkPipelineDepthStencilStateCreateInfo mDepthStencilSCI{};
-
-    bool hasColourBlendSCI;
-    std::unique_ptr<VkPipelineColorBlendAttachmentState[]> mColourBlendAttachments;
-    VkPipelineColorBlendStateCreateInfo mColourBlendSCI{};
+    VkPipelineRasterizationStateCreateInfo *pRasterizationSCI = nullptr;
+    VkPipelineDepthStencilStateCreateInfo *pDepthStencilSCI = nullptr;
+    VkPipelineColorBlendStateCreateInfo *pColourBlendSCI = nullptr;
+    VkPipelineColorBlendAttachmentState *pColourBlendAttachments = nullptr;
 };
 
 #endif // FOE_GRAPHICS_FRAGMENT_DESCRIPTOR_HPP

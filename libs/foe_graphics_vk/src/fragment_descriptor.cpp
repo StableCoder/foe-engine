@@ -12,39 +12,47 @@ foeGfxVkFragmentDescriptor::foeGfxVkFragmentDescriptor(
     VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
     foeGfxShader fragment) :
     mFragment{fragment},
-    hasRasterizationSCI{pRasterizationSCI != nullptr},
-    mRasterizationSCI{},
-    hasDepthStencilSCI{pDepthStencilSCI != nullptr},
-    mDepthStencilSCI{},
-    hasColourBlendSCI{pColourBlendSCI != nullptr},
-    mColourBlendAttachments{},
-    mColourBlendSCI{} {
-    if (hasRasterizationSCI)
-        mRasterizationSCI = *pRasterizationSCI;
+    pRasterizationSCI{},
+    pDepthStencilSCI{},
+    pColourBlendAttachments{},
+    pColourBlendSCI{} {
+    if (pRasterizationSCI)
+        this->pRasterizationSCI = new VkPipelineRasterizationStateCreateInfo{*pRasterizationSCI};
 
-    if (hasDepthStencilSCI)
-        mDepthStencilSCI = *pDepthStencilSCI;
+    if (pDepthStencilSCI)
+        this->pDepthStencilSCI = new VkPipelineDepthStencilStateCreateInfo{*pDepthStencilSCI};
 
-    if (hasColourBlendSCI) {
-        mColourBlendSCI = *pColourBlendSCI;
+    if (pColourBlendSCI) {
+        this->pColourBlendSCI = new VkPipelineColorBlendStateCreateInfo{*pColourBlendSCI};
 
-        mColourBlendAttachments.reset(
-            new VkPipelineColorBlendAttachmentState[pColourBlendSCI->attachmentCount]);
+        pColourBlendAttachments =
+            new VkPipelineColorBlendAttachmentState[pColourBlendSCI->attachmentCount];
 
         std::copy(pColourBlendSCI->pAttachments,
                   pColourBlendSCI->pAttachments + pColourBlendSCI->attachmentCount,
-                  mColourBlendAttachments.get());
-        mColourBlendSCI.pAttachments = mColourBlendAttachments.get();
+                  pColourBlendAttachments);
+        this->pColourBlendSCI->pAttachments = pColourBlendAttachments;
     }
 }
 
-foeGfxVkFragmentDescriptor::~foeGfxVkFragmentDescriptor() {}
+foeGfxVkFragmentDescriptor::~foeGfxVkFragmentDescriptor() {
+    if (pColourBlendAttachments)
+        delete[] pColourBlendAttachments;
+    if (pColourBlendSCI)
+        delete pColourBlendSCI;
+
+    if (pDepthStencilSCI)
+        delete pDepthStencilSCI;
+
+    if (pRasterizationSCI)
+        delete pRasterizationSCI;
+}
 
 auto foeGfxVkFragmentDescriptor::getBuiltinSetLayouts() const noexcept
     -> foeBuiltinDescriptorSetLayoutFlags {
     foeBuiltinDescriptorSetLayoutFlags flags = 0;
 
-    if (mFragment != nullptr)
+    if (mFragment)
         flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(mFragment);
 
     return flags;
@@ -52,6 +60,8 @@ auto foeGfxVkFragmentDescriptor::getBuiltinSetLayouts() const noexcept
 
 auto foeGfxVkFragmentDescriptor::getColourBlendSCI() noexcept
     -> VkPipelineColorBlendStateCreateInfo const * {
-    mColourBlendSCI.pAttachments = mColourBlendAttachments.get();
-    return hasColourBlendSCI ? &mColourBlendSCI : nullptr;
+    if (pColourBlendSCI)
+        pColourBlendSCI->pAttachments = pColourBlendAttachments;
+
+    return pColourBlendSCI;
 }

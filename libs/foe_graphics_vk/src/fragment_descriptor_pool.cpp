@@ -1,4 +1,4 @@
-// Copyright (C) 2020 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -94,24 +94,24 @@ auto foeGfxVkFragmentDescriptorPool::get(
         if (fragDescriptor->mFragment != fragment)
             continue;
 
-        if ((pRasterizationSCI == nullptr && fragDescriptor->hasRasterizationSCI) ||
-            (pRasterizationSCI != nullptr && !fragDescriptor->hasRasterizationSCI) ||
+        if ((pRasterizationSCI == nullptr && fragDescriptor->pRasterizationSCI != nullptr) ||
+            (pRasterizationSCI != nullptr && fragDescriptor->pRasterizationSCI == nullptr) ||
             (pRasterizationSCI != nullptr &&
              !compare_VkPipelineRasterizationStateCreateInfo(*pRasterizationSCI,
-                                                             fragDescriptor->mRasterizationSCI)))
+                                                             *fragDescriptor->pRasterizationSCI)))
             continue;
 
-        if ((pDepthStencilSCI == nullptr && fragDescriptor->hasDepthStencilSCI) ||
-            (pDepthStencilSCI != nullptr && !fragDescriptor->hasDepthStencilSCI) ||
+        if ((pDepthStencilSCI == nullptr && fragDescriptor->pDepthStencilSCI != nullptr) ||
+            (pDepthStencilSCI != nullptr && fragDescriptor->pDepthStencilSCI == nullptr) ||
             (pDepthStencilSCI != nullptr &&
              !compare_VkPipelineDepthStencilStateCreateInfo(*pDepthStencilSCI,
-                                                            fragDescriptor->mDepthStencilSCI)))
+                                                            *fragDescriptor->pDepthStencilSCI)))
             continue;
 
-        if ((pColourBlendSCI == nullptr && fragDescriptor->hasColourBlendSCI) ||
-            (pColourBlendSCI != nullptr && !fragDescriptor->hasColourBlendSCI) ||
+        if ((pColourBlendSCI == nullptr && fragDescriptor->pColourBlendSCI != nullptr) ||
+            (pColourBlendSCI != nullptr && fragDescriptor->pColourBlendSCI == nullptr) ||
             (pColourBlendSCI != nullptr && !compare_VkPipelineColorBlendStateCreateInfo(
-                                               *pColourBlendSCI, fragDescriptor->mColourBlendSCI)))
+                                               *pColourBlendSCI, *fragDescriptor->pColourBlendSCI)))
             continue;
 
         return fragDescriptor;

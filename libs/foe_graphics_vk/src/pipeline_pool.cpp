@@ -385,13 +385,9 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
             .pInputAssemblyState = &vertexDescriptor->mInputAssemblySCI,
             .pTessellationState = vertexDescriptor->getTessellationSCI(),
             .pViewportState = &viewportState,
-            .pRasterizationState = (fragmentDescriptor->hasRasterizationSCI)
-                                       ? &fragmentDescriptor->mRasterizationSCI
-                                       : nullptr,
+            .pRasterizationState = fragmentDescriptor->pRasterizationSCI,
             .pMultisampleState = &multisampleState,
-            .pDepthStencilState = (fragmentDescriptor->hasDepthStencilSCI)
-                                      ? &fragmentDescriptor->mDepthStencilSCI
-                                      : nullptr,
+            .pDepthStencilState = fragmentDescriptor->pDepthStencilSCI,
             .pColorBlendState = fragmentDescriptor->getColourBlendSCI(),
             .pDynamicState = &dynamicState,
             .layout = pipelineLayout,
