@@ -5,10 +5,9 @@
 #ifndef FOE_GRAPHICS_VERTEX_DESCRIPTOR_HPP
 #define FOE_GRAPHICS_VERTEX_DESCRIPTOR_HPP
 
+#include <foe/graphics/export.h>
 #include <foe/graphics/shader.h>
 #include <vulkan/vulkan.h>
-
-#include <vector>
 
 struct foeGfxVertexDescriptor {
     auto getBuiltinSetLayouts() const noexcept -> foeBuiltinDescriptorSetLayoutFlags {
@@ -30,13 +29,11 @@ struct foeGfxVertexDescriptor {
     }
 
     auto getVertexInputSCI() noexcept -> VkPipelineVertexInputStateCreateInfo const * {
-        mVertexInputSCI.vertexBindingDescriptionCount =
-            static_cast<uint32_t>(mVertexInputBindings.size());
-        mVertexInputSCI.pVertexBindingDescriptions = mVertexInputBindings.data();
+        mVertexInputSCI.vertexBindingDescriptionCount = vertexInputBindingCount;
+        mVertexInputSCI.pVertexBindingDescriptions = pVertexInputBindings;
 
-        mVertexInputSCI.vertexAttributeDescriptionCount =
-            static_cast<uint32_t>(mVertexInputAttributes.size());
-        mVertexInputSCI.pVertexAttributeDescriptions = mVertexInputAttributes.data();
+        mVertexInputSCI.vertexAttributeDescriptionCount = vertexInputAttributeCount;
+        mVertexInputSCI.pVertexAttributeDescriptions = pVertexInputAttributes;
 
         return &mVertexInputSCI;
     }
@@ -54,13 +51,17 @@ struct foeGfxVertexDescriptor {
     foeGfxShader mTessellationEvaluation{FOE_NULL_HANDLE};
     foeGfxShader mGeometry{FOE_NULL_HANDLE};
 
-    std::vector<VkVertexInputBindingDescription> mVertexInputBindings;
-    std::vector<VkVertexInputAttributeDescription> mVertexInputAttributes;
+    uint32_t vertexInputBindingCount{0};
+    VkVertexInputBindingDescription *pVertexInputBindings{nullptr};
+    uint32_t vertexInputAttributeCount{0};
+    VkVertexInputAttributeDescription *pVertexInputAttributes{nullptr};
     VkPipelineVertexInputStateCreateInfo mVertexInputSCI{};
 
     VkPipelineInputAssemblyStateCreateInfo mInputAssemblySCI{};
 
     VkPipelineTessellationStateCreateInfo mTessellationSCI{};
 };
+
+FOE_GFX_EXPORT void cleanup_foeGfxVertexDescriptor(foeGfxVertexDescriptor *pData);
 
 #endif // FOE_GRAPHICS_VERTEX_DESCRIPTOR_HPP

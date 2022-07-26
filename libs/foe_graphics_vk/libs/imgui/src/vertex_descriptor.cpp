@@ -15,15 +15,15 @@ void imgui_foeGfxVertexDescriptor(foeGfxVertexDescriptor const &data) {
     ImGui::Text("Geometry Shader: %p", data.mGeometry);
 
     if (ImGui::TreeNode("Vertex Input Bindings")) {
-        for (auto const &it : data.mVertexInputBindings) {
-            imgui_VkVertexInputBindingDescription(it);
+        for (uint32_t i = 0; i < data.vertexInputBindingCount; ++i) {
+            imgui_VkVertexInputBindingDescription(data.pVertexInputBindings[i]);
         }
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("Vertex Input Attributes")) {
-        for (auto const &it : data.mVertexInputAttributes) {
-            imgui_VkVertexInputAttributeDescription(it);
+        for (uint32_t i = 0; i < data.vertexInputAttributeCount; ++i) {
+            imgui_VkVertexInputAttributeDescription(data.pVertexInputAttributes[i]);
         }
         ImGui::TreePop();
     }

@@ -30,6 +30,7 @@ target_sources(
           upload_context_public.cpp
           upload_request_public.cpp
           upload_request.cpp
+          vertex_descriptor.cpp
           vk_result.c)
 
 add_subdirectory(render_graph/job)

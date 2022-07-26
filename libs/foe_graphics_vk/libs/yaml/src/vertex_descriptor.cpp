@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,9 +22,9 @@ bool yaml_write_gfx_vertex_descriptor(std::string const &nodeName,
 
             // Input Bindings
             YAML::Node bindingsNode;
-            for (auto &it : pVertexDescriptor->mVertexInputBindings) {
+            for (uint32_t i = 0; i < pVertexDescriptor->vertexInputBindingCount; ++i) {
                 YAML::Node node;
-                yaml_write_required("", it, node);
+                yaml_write_required("", pVertexDescriptor->pVertexInputBindings[i], node);
 
                 bindingsNode.push_back(node);
             }
@@ -32,9 +32,9 @@ bool yaml_write_gfx_vertex_descriptor(std::string const &nodeName,
 
             // Input Attributes
             YAML::Node attributesNode;
-            for (auto &it : pVertexDescriptor->mVertexInputAttributes) {
+            for (uint32_t i = 0; i < pVertexDescriptor->vertexInputAttributeCount; ++i) {
                 YAML::Node node;
-                yaml_write_required("", it, node);
+                yaml_write_required("", pVertexDescriptor->pVertexInputAttributes[i], node);
 
                 attributesNode.push_back(node);
             }

@@ -18,4 +18,5 @@ target_sources(
           vertex_descriptor_create_info.cpp
           vertex_descriptor_loader.cpp
           worst_resource_state.cpp
+          vertex_descriptor.cpp
           vk_result.c)

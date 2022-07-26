@@ -13,6 +13,7 @@
 #include "worst_resource_state.hpp"
 
 #include <array>
+#include <stdlib.h>
 
 foeResultSet foeVertexDescriptorLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE) {
@@ -111,8 +112,26 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(it.createInfo);
 
             it.data.vertexDescriptor.mVertexInputSCI = pCreateInfo->vertexInputSCI;
-            it.data.vertexDescriptor.mVertexInputBindings = pCreateInfo->inputBindings;
-            it.data.vertexDescriptor.mVertexInputAttributes = pCreateInfo->inputAttributes;
+
+            it.data.vertexDescriptor.vertexInputBindingCount = pCreateInfo->inputBindings.size();
+            it.data.vertexDescriptor.pVertexInputBindings =
+                (VkVertexInputBindingDescription *)malloc(
+                    it.data.vertexDescriptor.vertexInputBindingCount *
+                    sizeof(VkVertexInputBindingDescription));
+            memcpy(it.data.vertexDescriptor.pVertexInputBindings, pCreateInfo->inputBindings.data(),
+                   it.data.vertexDescriptor.vertexInputBindingCount *
+                       sizeof(VkVertexInputBindingDescription));
+
+            it.data.vertexDescriptor.vertexInputAttributeCount =
+                pCreateInfo->inputAttributes.size();
+            it.data.vertexDescriptor.pVertexInputAttributes =
+                (VkVertexInputAttributeDescription *)malloc(
+                    it.data.vertexDescriptor.vertexInputAttributeCount *
+                    sizeof(VkVertexInputAttributeDescription));
+            memcpy(it.data.vertexDescriptor.pVertexInputAttributes,
+                   pCreateInfo->inputAttributes.data(),
+                   it.data.vertexDescriptor.vertexInputAttributeCount *
+                       sizeof(VkVertexInputAttributeDescription));
 
             it.data.vertexDescriptor.mInputAssemblySCI = pCreateInfo->inputAssemblySCI;
             it.data.vertexDescriptor.mTessellationSCI = pCreateInfo->tessellationSCI;
@@ -120,7 +139,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
             // Everything looks good, lock the resource and update it
             auto moveFn = [](void *pSrc, void *pDst) {
                 auto *pSrcData = (foeVertexDescriptor *)pSrc;
-                new (pDst) foeVertexDescriptor(std::move(*pSrcData));
+                new (pDst) foeVertexDescriptor{*pSrcData};
             };
 
             it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
@@ -145,6 +164,8 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 foeResourceDecrementRefCount(it.data.geometryShader);
             }
 
+            cleanup_foeVertexDescriptor(&it.data);
+
             it.pPostLoadFn(
                 it.resource,
                 to_foeResult(
@@ -152,7 +173,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 nullptr, nullptr, nullptr, nullptr, nullptr);
         } else {
             // Sub-items are still at least loading
-            stillLoading.emplace_back(std::move(it));
+            stillLoading.emplace_back(it);
         }
     }
 
@@ -162,7 +183,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
 
         mLoadRequests.reserve(mLoadRequests.size() + stillLoading.size());
         for (auto &it : stillLoading) {
-            mLoadRequests.emplace_back(std::move(it));
+            mLoadRequests.emplace_back(it);
         }
 
         mLoadSync.unlock();
@@ -274,7 +295,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         .resource = resource,
         .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
-        .data = std::move(data),
+        .data = data,
     });
     mLoadSync.unlock();
 }
@@ -291,8 +312,7 @@ void foeVertexDescriptorLoader::unloadResource(void *pContext,
             auto *pSrcData = (foeVertexDescriptor *)pSrc;
             auto *pDstData = (foeVertexDescriptor *)pDst;
 
-            *pDstData = std::move(*pSrcData);
-            pSrcData->~foeVertexDescriptor();
+            *pDstData = *pSrcData;
         };
 
         foeVertexDescriptor data;
@@ -302,6 +322,8 @@ void foeVertexDescriptorLoader::unloadResource(void *pContext,
             // desired, so it didn't happen.
             return;
         }
+
+        cleanup_foeVertexDescriptor(&data);
 
         // Decrement the ref/use count of any sub-resources
         if (data.vertexShader != FOE_NULL_HANDLE) {
