@@ -13,14 +13,11 @@
 #include <vector>
 
 struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo {
-    ~foeMaterialCreateInfo();
-
     foeId fragmentShader = FOE_INVALID_ID;
     foeId image = FOE_INVALID_ID;
     VkPipelineRasterizationStateCreateInfo *pRasterizationSCI;
     VkPipelineDepthStencilStateCreateInfo *pDepthStencilSCI;
     VkPipelineColorBlendStateCreateInfo *pColourBlendSCI;
-    std::vector<VkPipelineColorBlendAttachmentState> colourBlendAttachments;
 };
 
 FOE_GFX_RES_EXPORT void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type,

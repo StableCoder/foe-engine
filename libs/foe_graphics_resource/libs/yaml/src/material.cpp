@@ -10,6 +10,8 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+#include <stdlib.h>
+
 namespace {
 
 bool yaml_read_material_definition_internal(std::string const &nodeName,
@@ -30,19 +32,23 @@ bool yaml_read_material_definition_internal(std::string const &nodeName,
 
         VkPipelineRasterizationStateCreateInfo rasterizationSCI{};
         if (yaml_read_optional("rasterization", subNode, rasterizationSCI)) {
-            createInfo.pRasterizationSCI =
-                new VkPipelineRasterizationStateCreateInfo{rasterizationSCI};
+            createInfo.pRasterizationSCI = (VkPipelineRasterizationStateCreateInfo *)malloc(
+                sizeof(VkPipelineRasterizationStateCreateInfo));
+            *createInfo.pRasterizationSCI = rasterizationSCI;
         }
 
         VkPipelineDepthStencilStateCreateInfo depthStencilSCI{};
         if (yaml_read_optional("depth_stencil", subNode, depthStencilSCI)) {
-            createInfo.pDepthStencilSCI =
-                new VkPipelineDepthStencilStateCreateInfo{depthStencilSCI};
+            createInfo.pDepthStencilSCI = (VkPipelineDepthStencilStateCreateInfo *)malloc(
+                sizeof(VkPipelineDepthStencilStateCreateInfo));
+            *createInfo.pDepthStencilSCI = depthStencilSCI;
         }
 
         VkPipelineColorBlendStateCreateInfo colourBlendSCI{};
         if (yaml_read_optional("colour_blend", subNode, colourBlendSCI)) {
-            createInfo.pColourBlendSCI = new VkPipelineColorBlendStateCreateInfo{colourBlendSCI};
+            createInfo.pColourBlendSCI = (VkPipelineColorBlendStateCreateInfo *)malloc(
+                sizeof(VkPipelineColorBlendStateCreateInfo));
+            *createInfo.pColourBlendSCI = colourBlendSCI;
         }
 
         read |= createInfo.pRasterizationSCI != nullptr || createInfo.pDepthStencilSCI != nullptr ||
