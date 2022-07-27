@@ -11,15 +11,14 @@
 
 struct AnimationImportInfo {
     std::string file;
-    uint32_t animationNameCount;
-    std::string *pAnimationNames;
+    std::string animationName;
 };
 
 struct foeArmatureCreateInfo {
     std::string fileName;
     std::string rootArmatureNode;
-    uint32_t animationSetCount;
-    AnimationImportInfo *pAnimationSets;
+    uint32_t animationCount;
+    AnimationImportInfo *pAnimations;
 };
 
 void cleanup_AnimationImportInfo(AnimationImportInfo *pData);

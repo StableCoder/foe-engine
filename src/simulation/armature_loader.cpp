@@ -107,9 +107,9 @@ bool processCreateInfo(
     }
 
     { // Animations
-        for (uint32_t i = 0; i < pCreateInfo->animationSetCount; ++i) {
-            auto const &it = pCreateInfo->pAnimationSets[i];
-            std::filesystem::path filePath = externalFileSearchFn(it.file);
+        for (uint32_t i = 0; i < pCreateInfo->animationCount; ++i) {
+            auto const &animation = pCreateInfo->pAnimations[i];
+            std::filesystem::path filePath = externalFileSearchFn(animation.file);
             auto modelLoader =
                 std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
             assert(modelLoader->loaded());
@@ -117,11 +117,9 @@ bool processCreateInfo(
             for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
                 auto animName = modelLoader->getAnimationName(i);
 
-                for (uint32_t j = 0; j < it.animationNameCount; ++j) {
-                    if (animName == it.pAnimationNames[j]) {
-                        data.animations.emplace_back(modelLoader->importAnimation(i));
-                        break;
-                    }
+                if (animName == animation.animationName) {
+                    data.animations.emplace_back(modelLoader->importAnimation(i));
+                    break;
                 }
             }
         }

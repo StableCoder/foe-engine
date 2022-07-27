@@ -38,20 +38,12 @@ void imgui_foeArmatureCreateInfo(foeArmatureCreateInfo const *pCreateInfo) {
     ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
     ImGui::Text("Root Node: %s", pCreateInfo->rootArmatureNode.c_str());
 
-    std::string animationsHeaderName =
-        "Animations: " + std::to_string(pCreateInfo->animationSetCount);
+    std::string animationsHeaderName = "Animations: " + std::to_string(pCreateInfo->animationCount);
     if (ImGui::TreeNode(animationsHeaderName.c_str())) {
-        for (uint32_t i = 0; i < pCreateInfo->animationSetCount; ++i) {
-            auto const &animation = pCreateInfo->pAnimationSets[i];
-            std::string fileNodeName = "File: " + animation.file;
-            if (ImGui::TreeNode(fileNodeName.c_str())) {
-                ImGui::Text("Animation Names:");
-                for (uint32_t j = 0; j < animation.animationNameCount; ++j) {
-                    ImGui::Text("- %s", animation.pAnimationNames[j].c_str());
-                }
-
-                ImGui::TreePop();
-            }
+        for (uint32_t i = 0; i < pCreateInfo->animationCount; ++i) {
+            auto const &animation = pCreateInfo->pAnimations[i];
+            ImGui::Text("File: %s", animation.file.c_str());
+            ImGui::Text("Animation Name: %s", animation.animationName.c_str());
         }
 
         ImGui::TreePop();

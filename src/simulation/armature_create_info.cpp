@@ -4,19 +4,16 @@
 
 #include "armature_create_info.hpp"
 
-void cleanup_AnimationImportInfo(AnimationImportInfo *pData) {
-    if (pData->pAnimationNames)
-        delete[] pData->pAnimationNames;
-}
+void cleanup_AnimationImportInfo(AnimationImportInfo *pData) {}
 
 void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
     auto *pCI = (foeArmatureCreateInfo *)pCreateInfo;
 
-    if (pCI->pAnimationSets) {
-        for (uint32_t i = 0; i < pCI->animationSetCount; ++i) {
-            cleanup_AnimationImportInfo(&pCI->pAnimationSets[i]);
+    if (pCI->pAnimations) {
+        for (uint32_t i = 0; i < pCI->animationCount; ++i) {
+            cleanup_AnimationImportInfo(&pCI->pAnimations[i]);
         }
-        delete[] pCI->pAnimationSets;
+        delete[] pCI->pAnimations;
     }
 
     pCI->~foeArmatureCreateInfo();
