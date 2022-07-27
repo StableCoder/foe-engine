@@ -4,17 +4,29 @@
 
 #include "armature_create_info.hpp"
 
-void cleanup_AnimationImportInfo(AnimationImportInfo *pData) {}
+#include <stdlib.h>
 
-void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeArmatureCreateInfo *)pCreateInfo;
+void cleanup_AnimationImportInfo(AnimationImportInfo *pData) {
+    if (pData->pName)
+        free((char *)pData->pName);
+    if (pData->pFile)
+        free((char *)pData->pFile);
+}
 
-    if (pCI->pAnimations) {
-        for (uint32_t i = 0; i < pCI->animationCount; ++i) {
-            cleanup_AnimationImportInfo(&pCI->pAnimations[i]);
+void cleanup_foeArmatureCreateInfo(foeArmatureCreateInfo *pData) {
+    if (pData->pAnimations) {
+        for (uint32_t i = 0; i < pData->animationCount; ++i) {
+            cleanup_AnimationImportInfo(&pData->pAnimations[i]);
         }
-        delete[] pCI->pAnimations;
+        free(pData->pAnimations);
     }
 
-    pCI->~foeArmatureCreateInfo();
+    if (pData->pRootArmatureNode)
+        free((char *)pData->pRootArmatureNode);
+    if (pData->pFile)
+        free((char *)pData->pFile);
+}
+
+void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
+    cleanup_foeArmatureCreateInfo((foeArmatureCreateInfo *)pCreateInfo);
 }

@@ -7,21 +7,23 @@
 
 #include <foe/resource/create_info.h>
 
-#include <string>
+#include <stdint.h>
 
 struct AnimationImportInfo {
-    std::string file;
-    std::string animationName;
+    char const *pFile;
+    char const *pName;
 };
 
 struct foeArmatureCreateInfo {
-    std::string fileName;
-    std::string rootArmatureNode;
+    char const *pFile;
+    char const *pRootArmatureNode;
     uint32_t animationCount;
     AnimationImportInfo *pAnimations;
 };
 
 void cleanup_AnimationImportInfo(AnimationImportInfo *pData);
+
+void cleanup_foeArmatureCreateInfo(foeArmatureCreateInfo *pData);
 
 void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
 

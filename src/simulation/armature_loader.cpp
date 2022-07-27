@@ -94,13 +94,13 @@ bool processCreateInfo(
     foeArmatureCreateInfo const *pCreateInfo,
     foeArmature &data) {
     { // Armature
-        std::filesystem::path filePath = externalFileSearchFn(pCreateInfo->fileName);
+        std::filesystem::path filePath = externalFileSearchFn(pCreateInfo->pFile);
         auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
         assert(modelLoader->loaded());
 
         auto tempArmature = modelLoader->importArmature();
         for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {
-            if (it->name == pCreateInfo->rootArmatureNode) {
+            if (it->name == std::string_view{pCreateInfo->pRootArmatureNode}) {
                 data.armature.assign(it, tempArmature.end());
             }
         }
@@ -109,7 +109,7 @@ bool processCreateInfo(
     { // Animations
         for (uint32_t i = 0; i < pCreateInfo->animationCount; ++i) {
             auto const &animation = pCreateInfo->pAnimations[i];
-            std::filesystem::path filePath = externalFileSearchFn(animation.file);
+            std::filesystem::path filePath = externalFileSearchFn(animation.pFile);
             auto modelLoader =
                 std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
             assert(modelLoader->loaded());
@@ -117,7 +117,7 @@ bool processCreateInfo(
             for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
                 auto animName = modelLoader->getAnimationName(i);
 
-                if (animName == animation.animationName) {
+                if (animName == std::string_view{animation.pName}) {
                     data.animations.emplace_back(modelLoader->importAnimation(i));
                     break;
                 }

@@ -35,15 +35,15 @@ void imgui_foeArmature(foeArmature const *pResource) {
 void imgui_foeArmatureCreateInfo(foeArmatureCreateInfo const *pCreateInfo) {
     ImGui::Text("foeArmatureCreateInfo");
 
-    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
-    ImGui::Text("Root Node: %s", pCreateInfo->rootArmatureNode.c_str());
+    ImGui::Text("File: %s", pCreateInfo->pFile);
+    ImGui::Text("Root Node: %s", pCreateInfo->pRootArmatureNode);
 
     std::string animationsHeaderName = "Animations: " + std::to_string(pCreateInfo->animationCount);
     if (ImGui::TreeNode(animationsHeaderName.c_str())) {
         for (uint32_t i = 0; i < pCreateInfo->animationCount; ++i) {
             auto const &animation = pCreateInfo->pAnimations[i];
-            ImGui::Text("File: %s", animation.file.c_str());
-            ImGui::Text("Animation Name: %s", animation.animationName.c_str());
+            ImGui::Text("File: %s", animation.pFile);
+            ImGui::Text("Animation Name: %s", animation.pName);
         }
 
         ImGui::TreePop();

@@ -10,6 +10,8 @@
 #include "../armature_create_info.hpp"
 #include "../type_defs.h"
 
+#include <string.h>
+
 namespace {
 
 bool yaml_read_armature_definition_internal(std::string const &nodeName,
@@ -23,22 +25,35 @@ bool yaml_read_armature_definition_internal(std::string const &nodeName,
 
     try {
         // Data
-        yaml_read_required("fileName", subNode, createInfo.fileName);
-        yaml_read_required("root_armature_node", subNode, createInfo.rootArmatureNode);
+        std::string tempStr;
+
+        yaml_read_required("fileName", subNode, tempStr);
+        createInfo.pFile = (char *)malloc(tempStr.size() + 1);
+        memcpy((char *)createInfo.pFile, tempStr.c_str(), tempStr.size() + 1);
+
+        yaml_read_required("root_armature_node", subNode, tempStr);
+        createInfo.pRootArmatureNode = (char *)malloc(tempStr.size() + 1);
+        memcpy((char *)createInfo.pRootArmatureNode, tempStr.c_str(), tempStr.size() + 1);
 
         if (auto animationsNode = subNode["animations"]; animationsNode) {
             createInfo.animationCount = animationsNode.size();
 
-            createInfo.pAnimations = new AnimationImportInfo[createInfo.animationCount];
+            createInfo.pAnimations = (AnimationImportInfo *)malloc(createInfo.animationCount *
+                                                                   sizeof(AnimationImportInfo));
 
             size_t animSetCount = 0;
 
             for (auto it = animationsNode.begin(); it != animationsNode.end(); ++it) {
                 AnimationImportInfo animation = {};
 
-                yaml_read_required("fileName", *it, animation.file);
+                std::string tempStr;
+                yaml_read_required("fileName", *it, tempStr);
+                animation.pFile = (char *)malloc(tempStr.size() + 1);
+                memcpy((void *)animation.pFile, tempStr.c_str(), tempStr.size() + 1);
 
-                yaml_read_required("animationName", *it, animation.animationName);
+                yaml_read_required("animationName", *it, tempStr);
+                animation.pName = (char *)malloc(tempStr.size() + 1);
+                memcpy((void *)animation.pName, tempStr.c_str(), tempStr.size() + 1);
 
                 createInfo.pAnimations[animSetCount] = animation;
                 ++animSetCount;
@@ -64,8 +79,8 @@ void yaml_write_armature_internal(std::string const &nodeName,
 
     try {
         // Armature Data
-        yaml_write_required("fileName", data.fileName, writeNode);
-        yaml_write_required("root_armature_node", data.rootArmatureNode, writeNode);
+        yaml_write_required("fileName", std::string{data.pFile}, writeNode);
+        yaml_write_required("root_armature_node", std::string{data.pRootArmatureNode}, writeNode);
 
         { // Animation Data
             YAML::Node animationsNode;
@@ -74,9 +89,8 @@ void yaml_write_armature_internal(std::string const &nodeName,
                 auto const &it = data.pAnimations[i];
                 YAML::Node animationNode;
 
-                yaml_write_required("", it.animationName, animationNode);
-
-                yaml_write_required("fileName", it.file, animationNode);
+                yaml_write_required("fileName", std::string{it.pFile}, animationNode);
+                yaml_write_required("animationName", std::string{it.pName}, animationNode);
 
                 animationsNode.push_back(animationNode);
             }
