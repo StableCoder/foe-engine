@@ -4,7 +4,11 @@
 
 #include <foe/graphics/resource/image_create_info.hpp>
 
+#include <stdlib.h>
+
 void foeDestroyImageCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
     auto *pCI = (foeImageCreateInfo *)pCreateInfo;
-    pCI->~foeImageCreateInfo();
+
+    if (pCI->pFile)
+        free((char *)pCI->pFile);
 }

@@ -21,8 +21,8 @@ void imgui_foeMesh(foeMesh const *pResource) {
 void imgui_foeMeshFileCreateInfo(foeMeshFileCreateInfo const *pCreateInfo) {
     ImGui::Text("foeMeshFileCreateInfo");
 
-    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
-    ImGui::Text("Mesh Name: %s", pCreateInfo->meshName.c_str());
+    ImGui::Text("File: %s", pCreateInfo->pFile);
+    ImGui::Text("Mesh Name: %s", pCreateInfo->pMesh);
     ImGui::Text("Post Processing Flags: %u", pCreateInfo->postProcessFlags);
 }
 

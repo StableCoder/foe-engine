@@ -10,6 +10,8 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+#include <string.h>
+
 namespace {
 
 bool yaml_read_shader_internal(std::string const &nodeName,
@@ -22,7 +24,10 @@ bool yaml_read_shader_internal(std::string const &nodeName,
     }
 
     try {
-        yaml_read_required("spirv_source", subNode, createInfo.shaderCodeFile);
+        std::string tempStr;
+        yaml_read_required("spirv_source", subNode, tempStr);
+        createInfo.pFile = (char *)malloc(tempStr.size() + 1);
+        memcpy((char *)createInfo.pFile, tempStr.c_str(), tempStr.size() + 1);
 
         yaml_read_gfx_shader("graphics_data", subNode, createInfo.gfxCreateInfo);
     } catch (foeYamlException const &e) {
@@ -38,7 +43,7 @@ bool yaml_write_shader_internal(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
-        yaml_write_required("spirv_source", data.shaderCodeFile, writeNode);
+        yaml_write_required("spirv_source", std::string{data.pFile}, writeNode);
 
         yaml_write_gfx_shader("graphics_data", data.gfxCreateInfo, writeNode);
     } catch (...) {

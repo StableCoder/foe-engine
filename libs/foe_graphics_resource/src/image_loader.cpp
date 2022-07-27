@@ -213,7 +213,7 @@ void foeImageLoader::load(foeResource resource,
 
     { // Import the data
       // Find the file path first
-        std::filesystem::path filePath = mExternalFileSearchFn(pImageCI->fileName);
+        std::filesystem::path filePath = mExternalFileSearchFn(pImageCI->pFile);
         // Determine the image format
         FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(filePath.string().c_str());
         if (imageFormat == FIF_UNKNOWN) {

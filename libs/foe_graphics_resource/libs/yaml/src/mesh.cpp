@@ -10,6 +10,8 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
+#include <string.h>
+
 namespace {
 
 bool yaml_read_mesh_file_definition_internal(std::string const &nodeName,
@@ -24,9 +26,15 @@ bool yaml_read_mesh_file_definition_internal(std::string const &nodeName,
     try {
         // Read the definition
         createInfo = {};
+        std::string tempStr;
 
-        yaml_read_required("file", subNode, createInfo.fileName);
-        yaml_read_required("mesh_name", subNode, createInfo.meshName);
+        yaml_read_required("file", subNode, tempStr);
+        createInfo.pFile = (char *)malloc(tempStr.size() + 1);
+        memcpy((char *)createInfo.pFile, tempStr.c_str(), tempStr.size() + 1);
+
+        yaml_read_required("mesh_name", subNode, tempStr);
+        createInfo.pMesh = (char *)malloc(tempStr.size() + 1);
+        memcpy((char *)createInfo.pMesh, tempStr.c_str(), tempStr.size() + 1);
 
         // Post process flags
         std::string temp;
@@ -99,8 +107,8 @@ void yaml_write_mesh_file_internal(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
-        yaml_write_required("file", data.fileName, writeNode);
-        yaml_write_required("mesh_name", data.meshName, writeNode);
+        yaml_write_required("file", std::string{data.pFile}, writeNode);
+        yaml_write_required("mesh_name", std::string{data.pMesh}, writeNode);
 
         std::string serialized;
         if (!foe_model_assimp_serialize(data.postProcessFlags, &serialized)) {

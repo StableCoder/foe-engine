@@ -165,7 +165,7 @@ void foeShaderLoader::load(foeResource resource,
     foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 
     { // Load Shader SPIR-V from external file
-        auto filePath = mExternalFileSearchFn(pShaderCI->shaderCodeFile);
+        auto filePath = mExternalFileSearchFn(pShaderCI->pFile);
         if (filePath.empty()) {
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_BINARY_FILE_NOT_FOUND);
             goto LOAD_FAILED;

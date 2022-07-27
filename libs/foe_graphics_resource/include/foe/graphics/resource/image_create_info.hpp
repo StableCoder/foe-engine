@@ -8,10 +8,8 @@
 #include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 
-#include <string>
-
 struct foeImageCreateInfo {
-    std::string fileName;
+    char const *pFile;
 };
 
 FOE_GFX_RES_EXPORT void foeDestroyImageCreateInfo(foeResourceCreateInfoType type,

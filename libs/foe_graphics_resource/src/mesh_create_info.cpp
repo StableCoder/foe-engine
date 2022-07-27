@@ -6,18 +6,19 @@
 
 #include <foe/graphics/resource/type_defs.h>
 
+#include <stdlib.h>
+
 void foeDestroyMeshCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
     if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
         foeMeshFileCreateInfo *pCI = (foeMeshFileCreateInfo *)pCreateInfo;
 
-        pCI->~foeMeshFileCreateInfo();
+        if (pCI->pMesh)
+            free((char *)pCI->pMesh);
+        if (pCI->pFile)
+            free((char *)pCI->pFile);
     } else if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
-        foeMeshCubeCreateInfo *pCI = (foeMeshCubeCreateInfo *)pCreateInfo;
-
-        pCI->~foeMeshCubeCreateInfo();
+        // Do nothing
     } else if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
-        foeMeshIcosphereCreateInfo *pCI = (foeMeshIcosphereCreateInfo *)pCreateInfo;
-
-        pCI->~foeMeshIcosphereCreateInfo();
+        // Do nothing
     }
 }

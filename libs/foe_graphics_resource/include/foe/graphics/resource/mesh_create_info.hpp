@@ -8,11 +8,9 @@
 #include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 
-#include <string>
-
 struct foeMeshFileCreateInfo {
-    std::string fileName;
-    std::string meshName;
+    char const *pFile;
+    char const *pMesh;
     unsigned int postProcessFlags;
 };
 

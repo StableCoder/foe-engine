@@ -9,10 +9,8 @@
 #include <foe/graphics/vk/shader.hpp>
 #include <foe/resource/create_info.h>
 
-#include <string>
-
 struct foeShaderCreateInfo {
-    std::string shaderCodeFile;
+    char const *pFile;
     foeGfxVkShaderCreateInfo gfxCreateInfo;
 };
 

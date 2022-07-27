@@ -13,5 +13,5 @@ void imgui_foeImage(foeImage const *pResource) { ImGui::Text("foeImage"); }
 void imgui_foeImageCreateInfo(foeImageCreateInfo const *pCreateInfo) {
     ImGui::Text("foeImageCreateInfo");
 
-    ImGui::Text("File: %s", pCreateInfo->fileName.c_str());
+    ImGui::Text("File: %s", pCreateInfo->pFile);
 }

@@ -4,10 +4,13 @@
 
 #include <foe/graphics/resource/shader_create_info.hpp>
 
+#include <stdlib.h>
+
 void foeDestroyShaderCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
     auto *pCI = (foeShaderCreateInfo *)pCreateInfo;
 
     foeGfxVkDestroyShaderCreateInfo(&pCI->gfxCreateInfo);
 
-    pCI->~foeShaderCreateInfo();
+    if (pCI->pFile)
+        free((char *)pCI->pFile);
 }

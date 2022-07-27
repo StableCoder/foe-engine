@@ -202,7 +202,7 @@ void foeMeshLoader::load(foeResource resource,
     if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
         foeMeshFileCreateInfo const *pCI =
             (foeMeshFileCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-        std::filesystem::path filePath = mExternalFileSearchFn(pCI->fileName);
+        std::filesystem::path filePath = mExternalFileSearchFn(pCI->pFile);
 
         auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(),
                                                                     pCI->postProcessFlags);
@@ -210,7 +210,7 @@ void foeMeshLoader::load(foeResource resource,
 
         unsigned int meshIndex{UINT32_MAX};
         for (unsigned int i = 0; i < modelLoader->getNumMeshes(); ++i) {
-            if (modelLoader->getMeshName(i) == pCI->meshName) {
+            if (modelLoader->getMeshName(i) == std::string_view{pCI->pMesh}) {
                 meshIndex = i;
                 break;
             }

@@ -9,7 +9,7 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include <memory>
+#include <string.h>
 
 namespace {
 
@@ -23,7 +23,11 @@ bool yaml_read_image_definition_internal(std::string const &nodeName,
     }
 
     try {
-        yaml_read_required("file", subNode, createInfo.fileName);
+        std::string tempStr;
+        yaml_read_required("file", subNode, tempStr);
+        createInfo.pFile = (char *)malloc(tempStr.size() + 1);
+        memcpy((char *)createInfo.pFile, tempStr.c_str(), tempStr.size() + 1);
+
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
@@ -42,7 +46,7 @@ void yaml_write_image_internal(std::string const &nodeName,
     YAML::Node writeNode;
 
     try {
-        yaml_write_required("file", data.fileName, writeNode);
+        yaml_write_required("file", std::string{data.pFile}, writeNode);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
