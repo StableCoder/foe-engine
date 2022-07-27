@@ -39,14 +39,15 @@ void imgui_foeArmatureCreateInfo(foeArmatureCreateInfo const *pCreateInfo) {
     ImGui::Text("Root Node: %s", pCreateInfo->rootArmatureNode.c_str());
 
     std::string animationsHeaderName =
-        "Animations: " + std::to_string(pCreateInfo->animations.size());
+        "Animations: " + std::to_string(pCreateInfo->animationSetCount);
     if (ImGui::TreeNode(animationsHeaderName.c_str())) {
-        for (auto const &animation : pCreateInfo->animations) {
+        for (uint32_t i = 0; i < pCreateInfo->animationSetCount; ++i) {
+            auto const &animation = pCreateInfo->pAnimationSets[i];
             std::string fileNodeName = "File: " + animation.file;
             if (ImGui::TreeNode(fileNodeName.c_str())) {
                 ImGui::Text("Animation Names:");
-                for (auto const &it : animation.animationNames) {
-                    ImGui::Text("- %s", it.c_str());
+                for (uint32_t j = 0; j < animation.animationNameCount; ++j) {
+                    ImGui::Text("- %s", animation.pAnimationNames[j].c_str());
                 }
 
                 ImGui::TreePop();

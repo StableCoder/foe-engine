@@ -8,18 +8,21 @@
 #include <foe/resource/create_info.h>
 
 #include <string>
-#include <vector>
 
 struct AnimationImportInfo {
     std::string file;
-    std::vector<std::string> animationNames;
+    uint32_t animationNameCount;
+    std::string *pAnimationNames;
 };
 
 struct foeArmatureCreateInfo {
     std::string fileName;
     std::string rootArmatureNode;
-    std::vector<AnimationImportInfo> animations;
+    uint32_t animationSetCount;
+    AnimationImportInfo *pAnimationSets;
 };
+
+void cleanup_AnimationImportInfo(AnimationImportInfo *pData);
 
 void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
 

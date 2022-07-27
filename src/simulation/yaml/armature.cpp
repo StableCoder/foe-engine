@@ -27,23 +27,35 @@ bool yaml_read_armature_definition_internal(std::string const &nodeName,
         yaml_read_required("root_armature_node", subNode, createInfo.rootArmatureNode);
 
         if (auto animationsNode = subNode["animations"]; animationsNode) {
+            createInfo.animationSetCount = animationsNode.size();
+
+            createInfo.pAnimationSets = new AnimationImportInfo[createInfo.animationSetCount];
+
+            size_t animSetCount = 0;
             for (auto it = animationsNode.begin(); it != animationsNode.end(); ++it) {
                 AnimationImportInfo animation;
 
                 yaml_read_required("fileName", *it, animation.file);
 
                 if (auto animationNamesNode = (*it)["animationNames"]; animationNamesNode) {
+                    animation.animationNameCount = animationNamesNode.size();
+
+                    animation.pAnimationNames = new std::string[animation.animationNameCount];
+
+                    size_t animNameCount = 0;
                     for (auto it = animationNamesNode.begin(); it != animationNamesNode.end();
                          ++it) {
                         std::string tempStr;
 
                         yaml_read_required("", *it, tempStr);
 
-                        animation.animationNames.push_back(std::move(tempStr));
+                        animation.pAnimationNames[animNameCount] = std::move(tempStr);
+                        ++animNameCount;
                     }
                 }
 
-                createInfo.animations.emplace_back(animation);
+                createInfo.pAnimationSets[animSetCount] = animation;
+                ++animSetCount;
             }
         } else {
             throw foeYamlException("animations - Required node not found");
@@ -72,9 +84,11 @@ void yaml_write_armature_internal(std::string const &nodeName,
         { // Animation Data
             YAML::Node animationsNode;
 
-            for (auto const &it : data.animations) {
+            for (uint32_t i = 0; i < data.animationSetCount; ++i) {
+                auto const &it = data.pAnimationSets[i];
                 YAML::Node animationListNode;
-                for (auto const &subIt : it.animationNames) {
+                for (uint32_t j = 0; j < it.animationNameCount; ++j) {
+                    auto const &subIt = it.pAnimationNames[j];
                     YAML::Node animationNode;
 
                     yaml_write_required("", subIt, animationNode);
