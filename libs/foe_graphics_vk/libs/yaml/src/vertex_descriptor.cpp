@@ -68,14 +68,15 @@ bool yaml_write_gfx_vertex_descriptor(std::string const &nodeName,
     return dataWritten;
 }
 
-bool yaml_read_gfx_vertex_descriptor(
-    std::string const &nodeName,
-    YAML::Node const &node,
-    VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
-    std::vector<VkVertexInputBindingDescription> &inputBindings,
-    std::vector<VkVertexInputAttributeDescription> &inputAttributes,
-    VkPipelineInputAssemblyStateCreateInfo &inputAssemblySCI,
-    VkPipelineTessellationStateCreateInfo &tessellationSCI) {
+bool yaml_read_gfx_vertex_descriptor(std::string const &nodeName,
+                                     YAML::Node const &node,
+                                     VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
+                                     uint32_t &inputBindingCount,
+                                     VkVertexInputBindingDescription *&pInputBindings,
+                                     uint32_t &inputAttributeCount,
+                                     VkVertexInputAttributeDescription *&pInputAttributes,
+                                     VkPipelineInputAssemblyStateCreateInfo &inputAssemblySCI,
+                                     VkPipelineTessellationStateCreateInfo &tessellationSCI) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
@@ -91,21 +92,33 @@ bool yaml_read_gfx_vertex_descriptor(
 
             // Input Bindings
             if (auto bindingsNode = vertexInputNode["input_bindings"]; bindingsNode) {
+                inputBindingCount = bindingsNode.size();
+                pInputBindings = (VkVertexInputBindingDescription *)calloc(
+                    inputBindingCount, sizeof(VkVertexInputBindingDescription));
+
+                size_t count = 0;
                 for (auto it = bindingsNode.begin(); it != bindingsNode.end(); ++it) {
                     VkVertexInputBindingDescription description;
                     yaml_read_required("", *it, description);
 
-                    inputBindings.emplace_back(description);
+                    pInputBindings[count] = description;
+                    ++count;
                 }
             }
 
             // Input Attributes
             if (auto attributesNode = vertexInputNode["input_attributes"]; attributesNode) {
+                inputAttributeCount = attributesNode.size();
+                pInputAttributes = (VkVertexInputAttributeDescription *)calloc(
+                    inputAttributeCount, sizeof(VkVertexInputAttributeDescription));
+
+                size_t count = 0;
                 for (auto it = attributesNode.begin(); it != attributesNode.end(); ++it) {
                     VkVertexInputAttributeDescription description;
                     yaml_read_required("", *it, description);
 
-                    inputAttributes.emplace_back(description);
+                    pInputAttributes[count] = description;
+                    ++count;
                 }
             }
         }

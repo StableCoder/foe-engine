@@ -40,8 +40,9 @@ bool yaml_read_vertex_descriptor_internal(std::string const &nodeName,
 
         // Graphics Data
         read |= yaml_read_gfx_vertex_descriptor(
-            "graphics_data", subNode, createInfo.vertexInputSCI, createInfo.inputBindings,
-            createInfo.inputAttributes, createInfo.inputAssemblySCI, createInfo.tessellationSCI);
+            "graphics_data", subNode, createInfo.vertexInputSCI, createInfo.inputBindingCount,
+            createInfo.pInputBindings, createInfo.inputAttributeCount, createInfo.pInputAttributes,
+            createInfo.inputAssemblySCI, createInfo.tessellationSCI);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;

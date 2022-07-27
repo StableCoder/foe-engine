@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,8 +20,10 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_gfx_vertex_descriptor(
     std::string const &nodeName,
     YAML::Node const &node,
     VkPipelineVertexInputStateCreateInfo &vertexInputSCI,
-    std::vector<VkVertexInputBindingDescription> &inputBindings,
-    std::vector<VkVertexInputAttributeDescription> &inputAttributes,
+    uint32_t &inputBindingCount,
+    VkVertexInputBindingDescription *&inputBindings,
+    uint32_t &inputAttributeCount,
+    VkVertexInputAttributeDescription *&inputAttributes,
     VkPipelineInputAssemblyStateCreateInfo &inputAssemblySCI,
     VkPipelineTessellationStateCreateInfo &tessellationSCI);
 

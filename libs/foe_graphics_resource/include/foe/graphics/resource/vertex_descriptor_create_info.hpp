@@ -10,16 +10,16 @@
 #include <foe/resource/create_info.h>
 #include <vulkan/vulkan.h>
 
-#include <vector>
-
 struct foeVertexDescriptorCreateInfo {
     foeId vertexShader;
     foeId tessellationControlShader;
     foeId tessellationEvaluationShader;
     foeId geometryShader;
     VkPipelineVertexInputStateCreateInfo vertexInputSCI;
-    std::vector<VkVertexInputBindingDescription> inputBindings;
-    std::vector<VkVertexInputAttributeDescription> inputAttributes;
+    uint32_t inputBindingCount;
+    VkVertexInputBindingDescription *pInputBindings;
+    uint32_t inputAttributeCount;
+    VkVertexInputAttributeDescription *pInputAttributes;
     VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
     VkPipelineTessellationStateCreateInfo tessellationSCI;
 };

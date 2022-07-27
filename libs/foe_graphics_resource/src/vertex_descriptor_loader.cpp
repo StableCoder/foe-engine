@@ -113,23 +113,21 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
 
             it.data.vertexDescriptor.mVertexInputSCI = pCreateInfo->vertexInputSCI;
 
-            it.data.vertexDescriptor.vertexInputBindingCount = pCreateInfo->inputBindings.size();
+            it.data.vertexDescriptor.vertexInputBindingCount = pCreateInfo->inputBindingCount;
             it.data.vertexDescriptor.pVertexInputBindings =
                 (VkVertexInputBindingDescription *)malloc(
                     it.data.vertexDescriptor.vertexInputBindingCount *
                     sizeof(VkVertexInputBindingDescription));
-            memcpy(it.data.vertexDescriptor.pVertexInputBindings, pCreateInfo->inputBindings.data(),
+            memcpy(it.data.vertexDescriptor.pVertexInputBindings, pCreateInfo->pInputBindings,
                    it.data.vertexDescriptor.vertexInputBindingCount *
                        sizeof(VkVertexInputBindingDescription));
 
-            it.data.vertexDescriptor.vertexInputAttributeCount =
-                pCreateInfo->inputAttributes.size();
+            it.data.vertexDescriptor.vertexInputAttributeCount = pCreateInfo->inputAttributeCount;
             it.data.vertexDescriptor.pVertexInputAttributes =
                 (VkVertexInputAttributeDescription *)malloc(
                     it.data.vertexDescriptor.vertexInputAttributeCount *
                     sizeof(VkVertexInputAttributeDescription));
-            memcpy(it.data.vertexDescriptor.pVertexInputAttributes,
-                   pCreateInfo->inputAttributes.data(),
+            memcpy(it.data.vertexDescriptor.pVertexInputAttributes, pCreateInfo->pInputAttributes,
                    it.data.vertexDescriptor.vertexInputAttributeCount *
                        sizeof(VkVertexInputAttributeDescription));
 
