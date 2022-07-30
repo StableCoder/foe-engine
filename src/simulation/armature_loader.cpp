@@ -97,7 +97,8 @@ bool processCreateInfo(
     { // Armature
         std::filesystem::path filePath = externalFileSearchFn(pCreateInfo->pFile);
         auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
-        assert(modelLoader->loaded());
+        if (!modelLoader->loaded())
+            return false;
 
         auto tempArmature = modelLoader->importArmature();
         for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {

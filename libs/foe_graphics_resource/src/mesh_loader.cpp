@@ -220,7 +220,10 @@ void foeMeshLoader::load(foeResource resource,
 
         auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(),
                                                                     pCI->postProcessFlags);
-        assert(modelLoader->loaded());
+        if (!modelLoader->loaded()) {
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_UPLOAD_FAILED);
+            goto LOAD_FAILED;
+        }
 
         unsigned int meshIndex{UINT32_MAX};
         for (unsigned int i = 0; i < modelLoader->getNumMeshes(); ++i) {
@@ -230,6 +233,7 @@ void foeMeshLoader::load(foeResource resource,
             }
         }
         if (meshIndex == UINT32_MAX) {
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_UPLOAD_FAILED);
             goto LOAD_FAILED;
         }
 
