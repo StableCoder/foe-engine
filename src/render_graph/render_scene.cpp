@@ -96,11 +96,13 @@ auto renderCall(foeId entity,
     }
 
     bool skip = false;
-    if (foeResourceGetState(vertexDescriptor) != foeResourceLoadState::Loaded) {
-        if (!foeResourceGetIsLoading(vertexDescriptor)) {
+    if (auto loadState = foeResourceGetState(vertexDescriptor);
+        loadState != foeResourceLoadState::Loaded) {
+        if (loadState == foeResourceLoadState::Unloaded &&
+            !foeResourceGetIsLoading(vertexDescriptor)) {
             FOE_LOG(foeBringup, Verbose,
-                    "While attempting to render {}, VertexDeescriptor resource {} was not loaded "
-                    "and wasn't being loaded, requesting load",
+                    "While attempting to render {}, VertexDeescriptor resource {} was unloaded and "
+                    "wasn't being loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(vertexDescriptor)));
             foeResourceLoad(vertexDescriptor, false);
         }
@@ -108,11 +110,11 @@ auto renderCall(foeId entity,
         skip = true;
     }
 
-    if (foeResourceGetState(material) != foeResourceLoadState::Loaded) {
-        if (!foeResourceGetIsLoading(material)) {
+    if (auto loadState = foeResourceGetState(material); loadState != foeResourceLoadState::Loaded) {
+        if (loadState == foeResourceLoadState::Unloaded && !foeResourceGetIsLoading(material)) {
             FOE_LOG(foeBringup, Verbose,
-                    "While attempting to render {}, Material resource {} was not loaded "
-                    "and wasn't being loaded, requesting load",
+                    "While attempting to render {}, Material resource {} was unloaded and wasn't "
+                    "being loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(material)));
             foeResourceLoad(material, false);
         }
@@ -120,11 +122,11 @@ auto renderCall(foeId entity,
         skip = true;
     }
 
-    if (foeResourceGetState(mesh) != foeResourceLoadState::Loaded) {
-        if (!foeResourceGetIsLoading(mesh)) {
+    if (auto loadState = foeResourceGetState(mesh); loadState != foeResourceLoadState::Loaded) {
+        if (loadState == foeResourceLoadState::Unloaded && !foeResourceGetIsLoading(mesh)) {
             FOE_LOG(foeBringup, Verbose,
-                    "While attempting to render {}, Mesh resource {} was not loaded "
-                    "and wasn't being loaded, requesting load",
+                    "While attempting to render {}, Mesh resource {} was unloaded and wasn't being "
+                    "loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(mesh)));
             foeResourceLoad(mesh, false);
         }

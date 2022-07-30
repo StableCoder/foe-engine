@@ -216,14 +216,14 @@ void foePhysicsSystem::addObject(foeEntityID entity,
                                                 sizeof(foeCollisionShape));
     }
 
-    if (auto collisionShapeState = foeResourceGetState(collisionShape);
-        collisionShapeState != foeResourceLoadState::Loaded) {
-        if (collisionShapeState == foeResourceLoadState::Failed) {
-            return;
+    if (auto loadState = foeResourceGetState(collisionShape);
+        loadState != foeResourceLoadState::Loaded) {
+        if (loadState == foeResourceLoadState::Unloaded &&
+            !foeResourceGetIsLoading(collisionShape)) {
+            foeResourceLoad(collisionShape, false);
+            mAwaitingLoadingResources.emplace_back(entity);
         }
 
-        foeResourceLoad(collisionShape, false);
-        mAwaitingLoadingResources.emplace_back(entity);
         return;
     } else if (foeResourceGetType(collisionShape) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
         FOE_LOG(foePhysics, Error,
