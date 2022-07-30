@@ -72,11 +72,11 @@ TEST_CASE("WSI-GLFW - Resizing Window") {
 
     // Wait for the window to be resized by the windowing system
     for (int i = 0; i < 25; ++i) {
-        foeWsiWindowProcessing(test);
-        foeWsiGlobalProcessing();
         if (foeWsiWindowResized(test)) {
             break;
         }
+        foeWsiWindowProcessing(test);
+        foeWsiGlobalProcessing();
         std::this_thread::sleep_for(10ms);
     }
 
