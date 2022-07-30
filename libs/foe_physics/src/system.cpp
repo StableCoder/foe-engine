@@ -4,6 +4,7 @@
 
 #include <foe/physics/system.hpp>
 
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/physics/component/rigid_body.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
@@ -12,6 +13,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "bt_glm_conversion.hpp"
+#include "log.hpp"
 #include "result.h"
 
 foePhysicsSystem::foePhysicsSystem() :
@@ -222,6 +224,12 @@ void foePhysicsSystem::addObject(foeEntityID entity,
 
         foeResourceLoad(collisionShape, false);
         mAwaitingLoadingResources.emplace_back(entity);
+        return;
+    } else if (foeResourceGetType(collisionShape) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+        FOE_LOG(foePhysics, Error,
+                "foePhysicsSystem - Failed to load {} rigid body because the given "
+                "collision shape {} is not a collision shape resource.",
+                foeIdToString(entity), foeIdToString(pRigidBody->collisionShape))
         return;
     }
 

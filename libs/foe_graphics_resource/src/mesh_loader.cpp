@@ -186,9 +186,23 @@ void foeMeshLoader::load(void *pLoader,
 void foeMeshLoader::load(foeResource resource,
                          foeResourceCreateInfo createInfo,
                          PFN_foeResourcePostLoad *pPostLoadFn) {
-    if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+    if (!canProcessCreateInfo(createInfo) ||
+        foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
+        foeGraphicsResourceResult result;
+        if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
+            result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE;
+            FOE_LOG(foeGraphicsResource, Error,
+                    "foeMeshLoader - Cannot load {} as it is an incompatible type: {}",
+                    foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+        } else {
+            result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO;
+            FOE_LOG(foeGraphicsResource, Error,
+                    "foeMeshLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
+                    foeIdToString(foeResourceGetID(resource)),
+                    foeResourceCreateInfoGetType(createInfo));
+        }
+
+        pPostLoadFn(resource, to_foeResult(result), nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 

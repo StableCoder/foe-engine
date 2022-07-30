@@ -4,6 +4,7 @@
 
 #include <foe/physics/resource/collision_shape_loader.hpp>
 
+#include <foe/ecs/id_to_string.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_create_info.hpp>
 #include <foe/physics/type_defs.h>
@@ -95,9 +96,24 @@ void foeCollisionShapeLoader::load(void *pLoader,
 void foeCollisionShapeLoader::load(foeResource resource,
                                    foeResourceCreateInfo createInfo,
                                    PFN_foeResourcePostLoad *pPostLoadFn) {
-    if (!canProcessCreateInfo(createInfo)) {
-        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
-                    nullptr, nullptr, nullptr, nullptr);
+    if (!canProcessCreateInfo(createInfo) ||
+        foeResourceGetType(resource) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+        foePhysicsResult result;
+        if (foeResourceGetType(resource) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+            result = FOE_PHYSICS_ERROR_INCOMPATIBLE_RESOURCE_TYPE;
+            FOE_LOG(foePhysics, Error,
+                    "foeCollisionShapeLoader - Cannot load {} as it is an incompatible type: {}",
+                    foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+        } else {
+            result = FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO;
+            FOE_LOG(foePhysics, Error,
+                    "foeCollisionShapeLoader - Cannot load {} as given CreateInfo is incompatible "
+                    "type: {}",
+                    foeIdToString(foeResourceGetID(resource)),
+                    foeResourceCreateInfoGetType(createInfo));
+        }
+
+        pPostLoadFn(resource, to_foeResult(result), nullptr, nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
