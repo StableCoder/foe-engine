@@ -11,7 +11,7 @@ char const *yaml_rigid_body_key() { return "rigid_body"; }
 
 auto yaml_read_rigid_body(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
     -> foeRigidBody {
-    foeRigidBody rigidBody;
+    foeRigidBody rigidBody = {};
 
     yaml_read_required("mass", node, rigidBody.mass);
     yaml_read_id_optional("collision_shape", node, groupTranslator, rigidBody.collisionShape);

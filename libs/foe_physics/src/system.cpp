@@ -157,7 +157,7 @@ void foePhysicsSystem::process(float timePassed) {
         auto *pData = mpRigidBodyPool->begin<1>();
 
         for (; pId != pEndId; ++pId, ++pData) {
-            if (pData->rigidBody == nullptr)
+            if (pData->pRigidBody == nullptr)
                 continue;
 
             auto posOffset = mpPosition3dPool->find(*pId);
@@ -165,7 +165,7 @@ void foePhysicsSystem::process(float timePassed) {
 
             foePosition3d *pPosition = mpPosition3dPool->begin<1>()[posOffset].get();
 
-            glm::mat4 transform = btToGlmMat4(pData->rigidBody->getWorldTransform());
+            glm::mat4 transform = btToGlmMat4(pData->pRigidBody->getWorldTransform());
             glm::vec3 scale;
             glm::quat rotation;
             glm::vec3 translation;
@@ -193,7 +193,7 @@ void foePhysicsSystem::addObject(foeEntityID entity,
     }
 
     // If already active
-    if (pRigidBody->rigidBody != nullptr)
+    if (pRigidBody->pRigidBody)
         return;
 
     // foePosition3d
@@ -242,9 +242,9 @@ void foePhysicsSystem::addObject(foeEntityID entity,
     rigidBodyCI.m_startWorldTransform =
         glmToBtTransform(pPosition->position, pPosition->orientation);
 
-    pRigidBody->rigidBody.reset(new btRigidBody{rigidBodyCI});
+    pRigidBody->pRigidBody = new btRigidBody{rigidBodyCI};
 
-    mpWorld->addRigidBody(pRigidBody->rigidBody.get());
+    mpWorld->addRigidBody(pRigidBody->pRigidBody);
 }
 
 void foePhysicsSystem::removeObject(foeEntityID entity, foeRigidBody *pRigidBody) {
@@ -259,9 +259,11 @@ void foePhysicsSystem::removeObject(foeEntityID entity, foeRigidBody *pRigidBody
     }
 
     // If inactive
-    if (pRigidBody->rigidBody == nullptr)
+    if (pRigidBody->pRigidBody == nullptr)
         return;
 
-    mpWorld->removeRigidBody(pRigidBody->rigidBody.get());
-    pRigidBody->rigidBody.reset();
+    mpWorld->removeRigidBody(pRigidBody->pRigidBody);
+
+    delete pRigidBody->pRigidBody;
+    pRigidBody->pRigidBody = nullptr;
 }

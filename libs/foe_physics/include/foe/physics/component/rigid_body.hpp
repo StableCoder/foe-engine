@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,10 +8,8 @@
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.h>
 
-#include <memory>
-
 struct foeRigidBody {
-    std::unique_ptr<btRigidBody> rigidBody;
+    btRigidBody *pRigidBody;
     float mass;
     foeResourceID collisionShape;
 };
