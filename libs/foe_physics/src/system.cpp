@@ -232,7 +232,7 @@ void foePhysicsSystem::addObject(foeEntityID entity,
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI{pRigidBody->mass, nullptr,
                                                          pCollisionShape->collisionShape.get()};
     rigidBodyCI.m_startWorldTransform =
-        glmToBtTransform(glm::vec3{0, 4, 0}, glm::quat{glm::vec3{0, 0, 0}});
+        glmToBtTransform(pPosition->position, pPosition->orientation);
 
     pRigidBody->rigidBody.reset(new btRigidBody{rigidBodyCI});
 
