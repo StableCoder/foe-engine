@@ -75,9 +75,9 @@ void yaml_read_collision_shape(YAML::Node const &node,
         new (pDst) foeCollisionShapeCreateInfo(std::move(*pSrcData));
     };
 
-    foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO, foeDestroyCollisionShapeCreateInfo,
-        sizeof(foeCollisionShapeCreateInfo), &ci, dataFn, &createInfo);
+    foeResultSet result =
+        foeCreateResourceCreateInfo(FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO, nullptr,
+                                    sizeof(foeCollisionShapeCreateInfo), &ci, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);

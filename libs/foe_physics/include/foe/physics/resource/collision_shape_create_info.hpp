@@ -13,7 +13,4 @@ struct foeCollisionShapeCreateInfo {
     glm::vec3 boxSize;
 };
 
-FOE_PHYSICS_EXPORT void foeDestroyCollisionShapeCreateInfo(foeResourceCreateInfoType type,
-                                                           void *pCreateInfo);
-
 #endif // FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_CREATE_INFO_HPP
