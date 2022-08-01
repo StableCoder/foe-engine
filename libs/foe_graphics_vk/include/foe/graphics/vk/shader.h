@@ -2,19 +2,23 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRPAHICS_VK_SHADER_HPP
-#define FOE_GRPAHICS_VK_SHADER_HPP
+#ifndef FOE_GRPAHICS_VK_SHADER_H
+#define FOE_GRPAHICS_VK_SHADER_H
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/shader.h>
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
-struct foeGfxVkShaderCreateInfo {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct foeGfxVkShaderCreateInfo {
     foeBuiltinDescriptorSetLayoutFlags builtinSetLayouts;
     VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI;
     VkPushConstantRange pushConstantRange;
-};
+} foeGfxVkShaderCreateInfo;
 
 FOE_GFX_EXPORT void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo);
 
@@ -24,9 +28,12 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkCreateShader(foeGfxSession session,
                                                  uint32_t const *pShaderCode,
                                                  foeGfxShader *pShader);
 
-FOE_GFX_EXPORT auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader)
-    -> VkDescriptorSetLayout;
+FOE_GFX_EXPORT VkDescriptorSetLayout foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader);
 
-FOE_GFX_EXPORT auto foeGfxVkGetShaderPushConstantRange(foeGfxShader shader) -> VkPushConstantRange;
+FOE_GFX_EXPORT VkPushConstantRange foeGfxVkGetShaderPushConstantRange(foeGfxShader shader);
 
-#endif // FOE_GRPAHICS_VK_SHADER_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRPAHICS_VK_SHADER_H

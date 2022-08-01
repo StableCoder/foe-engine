@@ -30,7 +30,6 @@
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/graphics/vk/shader.hpp>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>

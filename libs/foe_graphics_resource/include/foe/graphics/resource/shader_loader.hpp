@@ -8,7 +8,7 @@
 #include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/type_defs.h>
-#include <foe/graphics/vk/shader.hpp>
+#include <foe/graphics/vk/shader.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 

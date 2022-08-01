@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/graphics/shader.h>
-#include <foe/graphics/vk/shader.hpp>
+#include <foe/graphics/vk/shader.h>
 
 #include <vk_struct_cleanup.h>
 
@@ -22,15 +22,29 @@ void foeGfxVkDestroyShader(foeGfxVkSession *pSession, foeGfxVkShader *pShader) {
 
 } // namespace
 
-void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo) {
+extern "C" void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader) {
+    auto *pSession = session_from_handle(session);
+    auto *pShader = shader_from_handle(shader);
+
+    foeGfxVkDestroyShader(pSession, pShader);
+}
+
+extern "C" foeBuiltinDescriptorSetLayoutFlags foeGfxShaderGetBuiltinDescriptorSetLayouts(
+    foeGfxShader shader) {
+    auto *pShader = shader_from_handle(shader);
+
+    return pShader->builtinSetLayouts;
+}
+
+extern "C" void foeGfxVkDestroyShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo) {
     cleanup_VkDescriptorSetLayoutCreateInfo(&pCreateInfo->descriptorSetLayoutCI);
 }
 
-foeResultSet foeGfxVkCreateShader(foeGfxSession session,
-                                  foeGfxVkShaderCreateInfo const *pCreateInfo,
-                                  uint32_t shaderCodeSize,
-                                  uint32_t const *pShaderCode,
-                                  foeGfxShader *pShader) {
+extern "C" foeResultSet foeGfxVkCreateShader(foeGfxSession session,
+                                             foeGfxVkShaderCreateInfo const *pCreateInfo,
+                                             uint32_t shaderCodeSize,
+                                             uint32_t const *pShaderCode,
+                                             foeGfxShader *pShader) {
     auto *pSession = session_from_handle(session);
 
     VkResult vkResult = VK_SUCCESS;
@@ -66,27 +80,13 @@ CREATE_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-extern "C" void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader) {
-    auto *pSession = session_from_handle(session);
-    auto *pShader = shader_from_handle(shader);
-
-    foeGfxVkDestroyShader(pSession, pShader);
-}
-
-extern "C" foeBuiltinDescriptorSetLayoutFlags foeGfxShaderGetBuiltinDescriptorSetLayouts(
-    foeGfxShader shader) {
-    auto *pShader = shader_from_handle(shader);
-
-    return pShader->builtinSetLayouts;
-}
-
-auto foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader) -> VkDescriptorSetLayout {
+extern "C" VkDescriptorSetLayout foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader) {
     auto *pShader = shader_from_handle(shader);
 
     return pShader->descriptorSetLayout;
 }
 
-auto foeGfxVkGetShaderPushConstantRange(foeGfxShader shader) -> VkPushConstantRange {
+extern "C" VkPushConstantRange foeGfxVkGetShaderPushConstantRange(foeGfxShader shader) {
     auto *pShader = shader_from_handle(shader);
 
     return pShader->pushConstantRange;

@@ -6,7 +6,7 @@
 #define FOE_GRAPHICS_RESOURCE_SHADER_CREATE_INFO_HPP
 
 #include <foe/graphics/resource/export.h>
-#include <foe/graphics/vk/shader.hpp>
+#include <foe/graphics/vk/shader.h>
 #include <foe/resource/create_info.h>
 
 struct foeShaderCreateInfo {

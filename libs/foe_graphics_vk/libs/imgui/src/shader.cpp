@@ -6,7 +6,7 @@
 
 #include <foe/graphics/imgui/builtin_descriptor_sets.hpp>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
-#include <foe/graphics/vk/shader.hpp>
+#include <foe/graphics/vk/shader.h>
 #include <imgui.h>
 
 void imgui_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const &data) {

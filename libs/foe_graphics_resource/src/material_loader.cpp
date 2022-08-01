@@ -11,7 +11,7 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/session.hpp>
-#include <foe/graphics/vk/shader.hpp>
+#include <foe/graphics/vk/shader.h>
 
 #include "log.hpp"
 #include "result.h"
