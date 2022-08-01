@@ -12,7 +12,7 @@
 
 #include <vector>
 
-struct FOE_GFX_RES_EXPORT foeMaterialCreateInfo {
+struct foeMaterialCreateInfo {
     foeId fragmentShader = FOE_INVALID_ID;
     foeId image = FOE_INVALID_ID;
     VkPipelineRasterizationStateCreateInfo *pRasterizationSCI;
