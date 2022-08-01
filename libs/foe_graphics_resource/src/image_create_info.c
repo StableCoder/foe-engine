@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/resource/image_create_info.hpp>
+#include <foe/graphics/resource/image_create_info.h>
 
 #include <stdlib.h>
 
 void foeDestroyImageCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeImageCreateInfo *)pCreateInfo;
+    foeImageCreateInfo *pCI = (foeImageCreateInfo *)pCreateInfo;
 
     if (pCI->pFile)
-        free((char *)pCI->pFile);
+        free(pCI->pFile);
 }

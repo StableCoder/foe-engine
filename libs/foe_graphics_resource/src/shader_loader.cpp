@@ -5,7 +5,7 @@
 #include <foe/graphics/resource/shader_loader.hpp>
 
 #include <foe/ecs/id_to_string.hpp>
-#include <foe/graphics/resource/shader_create_info.hpp>
+#include <foe/graphics/resource/shader_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/shader.h>
 

@@ -7,7 +7,7 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
+#include <foe/graphics/resource/vertex_descriptor_create_info.h>
 
 #include "log.hpp"
 #include "result.h"

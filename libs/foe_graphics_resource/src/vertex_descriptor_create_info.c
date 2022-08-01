@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/resource/vertex_descriptor_create_info.hpp>
+#include <foe/graphics/resource/vertex_descriptor_create_info.h>
 
 #include <stdlib.h>
 
 void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    auto *pCI = (foeVertexDescriptorCreateInfo *)pCreateInfo;
+    foeVertexDescriptorCreateInfo *pCI = (foeVertexDescriptorCreateInfo *)pCreateInfo;
 
     if (pCI->pInputAttributes)
         free(pCI->pInputAttributes);

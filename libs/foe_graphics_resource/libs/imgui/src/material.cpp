@@ -6,7 +6,7 @@
 
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/material.hpp>
-#include <foe/graphics/resource/material_create_info.hpp>
+#include <foe/graphics/resource/material_create_info.h>
 #include <foe/graphics/vk/imgui/fragment_descriptor.hpp>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <imgui.h>

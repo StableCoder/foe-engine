@@ -2,25 +2,31 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_RESOURCE_MATERIAL_CREATE_INFO_HPP
-#define FOE_GRAPHICS_RESOURCE_MATERIAL_CREATE_INFO_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_MATERIAL_CREATE_INFO_H
+#define FOE_GRAPHICS_RESOURCE_MATERIAL_CREATE_INFO_H
 
 #include <foe/ecs/id.h>
 #include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 #include <vulkan/vulkan.h>
 
-#include <vector>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-struct foeMaterialCreateInfo {
-    foeId fragmentShader = FOE_INVALID_ID;
-    foeId image = FOE_INVALID_ID;
+typedef struct foeMaterialCreateInfo {
+    foeResourceID fragmentShader;
+    foeResourceID image;
     VkPipelineRasterizationStateCreateInfo *pRasterizationSCI;
     VkPipelineDepthStencilStateCreateInfo *pDepthStencilSCI;
     VkPipelineColorBlendStateCreateInfo *pColourBlendSCI;
-};
+} foeMaterialCreateInfo;
 
 FOE_GFX_RES_EXPORT void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type,
                                                      void *pCreateInfo);
 
-#endif // FOE_GRAPHICS_RESOURCE_MATERIAL_CREATE_INFO_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_RESOURCE_MATERIAL_CREATE_INFO_H

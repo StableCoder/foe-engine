@@ -4,7 +4,7 @@
 
 #include "image.hpp"
 
-#include <foe/graphics/resource/image_create_info.hpp>
+#include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>

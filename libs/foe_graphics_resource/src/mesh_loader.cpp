@@ -5,7 +5,7 @@
 #include <foe/graphics/resource/mesh_loader.hpp>
 
 #include <foe/ecs/id_to_string.hpp>
-#include <foe/graphics/resource/mesh_create_info.hpp>
+#include <foe/graphics/resource/mesh_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/mesh.hpp>
 #include <foe/graphics/vk/model.hpp>

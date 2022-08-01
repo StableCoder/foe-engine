@@ -2,17 +2,25 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_HPP
-#define FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_H
+#define FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_H
 
 #include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 
-struct foeImageCreateInfo {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct foeImageCreateInfo {
     char const *pFile;
-};
+} foeImageCreateInfo;
 
 FOE_GFX_RES_EXPORT void foeDestroyImageCreateInfo(foeResourceCreateInfoType type,
                                                   void *pCreateInfo);
 
-#endif // FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_H

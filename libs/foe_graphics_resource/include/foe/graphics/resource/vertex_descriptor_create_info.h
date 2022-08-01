@@ -2,15 +2,19 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_CREATE_INFO_HPP
-#define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_CREATE_INFO_HPP
+#ifndef FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_CREATE_INFO_H
+#define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_CREATE_INFO_H
 
 #include <foe/ecs/id.h>
 #include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 #include <vulkan/vulkan.h>
 
-struct foeVertexDescriptorCreateInfo {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct foeVertexDescriptorCreateInfo {
     foeId vertexShader;
     foeId tessellationControlShader;
     foeId tessellationEvaluationShader;
@@ -22,9 +26,13 @@ struct foeVertexDescriptorCreateInfo {
     VkVertexInputAttributeDescription *pInputAttributes;
     VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
     VkPipelineTessellationStateCreateInfo tessellationSCI;
-};
+} foeVertexDescriptorCreateInfo;
 
 FOE_GFX_RES_EXPORT void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type,
                                                              void *pCreateInfo);
 
-#endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_CREATE_INFO_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_CREATE_INFO_H
