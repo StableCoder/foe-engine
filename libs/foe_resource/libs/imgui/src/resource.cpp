@@ -17,11 +17,11 @@ extern "C" void imgui_foeResource(foeResource resource) {
 
     // State
     auto const state = foeResourceGetState(resource);
-    if (state == foeResourceLoadState::Unloaded)
+    if (state == FOE_RESOURCE_LOAD_STATE_UNLOADED)
         ImGui::Text("LoadState: unloaded");
-    else if (state == foeResourceLoadState::Loaded)
+    else if (state == FOE_RESOURCE_LOAD_STATE_LOADED)
         ImGui::Text("LoadState: loaded");
-    else if (state == foeResourceLoadState::Failed)
+    else if (state == FOE_RESOURCE_LOAD_STATE_FAILED)
         ImGui::Text("LoadState: failed");
 
     // Counts

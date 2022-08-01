@@ -36,7 +36,7 @@ void imgui_foeGraphicsResources(
         std::string resDataHeader = "Data: ";
         resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
         if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
                 imgui_foeImage((foeImage const *)foeResourceGetData(resource));
             }
         }
@@ -60,7 +60,7 @@ void imgui_foeGraphicsResources(
         std::string resDataHeader = "Data: ";
         resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
         if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
                 imgui_foeMaterial((foeMaterial const *)foeResourceGetData(resource));
             }
         }
@@ -84,7 +84,7 @@ void imgui_foeGraphicsResources(
         std::string resDataHeader = "Data: ";
         resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
         if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
                 imgui_foeMesh((foeMesh const *)foeResourceGetData(resource));
             }
         }
@@ -108,7 +108,7 @@ void imgui_foeGraphicsResources(
         std::string resDataHeader = "Data: ";
         resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
         if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
                 imgui_foeShader((foeShader const *)foeResourceGetData(resource));
             }
         }
@@ -132,7 +132,7 @@ void imgui_foeGraphicsResources(
         std::string resDataHeader = "Data: ";
         resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
         if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
                 imgui_foeVertexDescriptor(
                     (foeVertexDescriptor const *)foeResourceGetData(resource));
             }

@@ -238,8 +238,8 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
             }
         } while (armature == FOE_NULL_HANDLE);
 
-        if (foeResourceGetState(mesh) != foeResourceLoadState::Loaded ||
-            foeResourceGetState(armature) != foeResourceLoadState::Loaded ||
+        if (foeResourceGetState(mesh) != FOE_RESOURCE_LOAD_STATE_LOADED ||
+            foeResourceGetState(armature) != FOE_RESOURCE_LOAD_STATE_LOADED ||
             pArmatureState->armatureState.empty()) {
             continue;
         }

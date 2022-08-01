@@ -63,7 +63,7 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
 
     CHECK(foeResourceGetCreateInfo(resource) == FOE_NULL_HANDLE);
     CHECK_FALSE(foeResourceGetIsLoading(resource));
-    CHECK(foeResourceGetState(resource) == foeResourceLoadState::Unloaded);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
 
     foeDestroyResource(resource);
 }

@@ -89,7 +89,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
 
         auto subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
 
-        if (subResLoadState == foeResourceLoadState::Loaded) {
+        if (subResLoadState == FOE_RESOURCE_LOAD_STATE_LOADED) {
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
                 it.data.vertexDescriptor.mVertex =
                     ((foeShader const *)foeResourceGetData(it.data.vertexShader))->shader;
@@ -144,7 +144,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
             it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                            foeVertexDescriptorLoader::unloadResource);
 
-        } else if (subResLoadState == foeResourceLoadState::Failed) {
+        } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
             // At least one of the items failed to load
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
                 foeResourceDecrementUseCount(it.data.vertexShader);
@@ -245,7 +245,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         foeResourceIncrementRefCount(data.vertexShader);
         foeResourceIncrementUseCount(data.vertexShader);
 
-        if (foeResourceGetState(data.vertexShader) != foeResourceLoadState::Loaded &&
+        if (foeResourceGetState(data.vertexShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.vertexShader))
             foeResourceLoad(data.vertexShader, false);
     }
@@ -263,7 +263,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         foeResourceIncrementRefCount(data.tessellationControlShader);
         foeResourceIncrementUseCount(data.tessellationControlShader);
 
-        if (foeResourceGetState(data.tessellationControlShader) != foeResourceLoadState::Loaded &&
+        if (foeResourceGetState(data.tessellationControlShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.tessellationControlShader))
             foeResourceLoad(data.tessellationControlShader, false);
     }
@@ -282,7 +282,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         foeResourceIncrementUseCount(data.tessellationEvaluationShader);
 
         if (foeResourceGetState(data.tessellationEvaluationShader) !=
-                foeResourceLoadState::Loaded &&
+                FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.tessellationEvaluationShader))
             foeResourceLoad(data.tessellationEvaluationShader, false);
     }
@@ -299,7 +299,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         foeResourceIncrementRefCount(data.geometryShader);
         foeResourceIncrementUseCount(data.geometryShader);
 
-        if (foeResourceGetState(data.geometryShader) != foeResourceLoadState::Loaded &&
+        if (foeResourceGetState(data.geometryShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.geometryShader))
             foeResourceLoad(data.geometryShader, false);
     }

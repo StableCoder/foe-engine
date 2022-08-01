@@ -49,7 +49,7 @@ void imgui_foePhysicsResource(
         std::string resDataHeader = "Data: ";
         resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
         if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == foeResourceLoadState::Loaded) {
+            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
                 imgui_foeCollisionShape((foeCollisionShape const *)foeResourceGetData(resource));
             }
         }

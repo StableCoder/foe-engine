@@ -42,9 +42,9 @@ typedef void(PFN_foeResourcePostLoad)(
 );
 
 typedef enum foeResourceLoadState {
-    Unloaded = 0,
-    Loaded,
-    Failed,
+    FOE_RESOURCE_LOAD_STATE_UNLOADED = 0,
+    FOE_RESOURCE_LOAD_STATE_LOADED,
+    FOE_RESOURCE_LOAD_STATE_FAILED,
 } foeResourceLoadState;
 
 FOE_RES_EXPORT char const *foeResourceLoadStateToString(foeResourceLoadState state);

@@ -6,11 +6,11 @@
 
 extern "C" char const *foeResourceLoadStateToString(foeResourceLoadState state) {
     switch (state) {
-    case foeResourceLoadState::Unloaded:
+    case FOE_RESOURCE_LOAD_STATE_UNLOADED:
         return "Unloaded";
-    case foeResourceLoadState::Failed:
+    case FOE_RESOURCE_LOAD_STATE_FAILED:
         return "Failed";
-    case foeResourceLoadState::Loaded:
+    case FOE_RESOURCE_LOAD_STATE_LOADED:
         return "Loaded";
     }
 

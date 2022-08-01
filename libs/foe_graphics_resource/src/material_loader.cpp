@@ -152,7 +152,7 @@ void foeMaterialLoader::gfxMaintenance() {
 
         auto subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
 
-        if (subResLoadState == foeResourceLoadState::Loaded) {
+        if (subResLoadState == FOE_RESOURCE_LOAD_STATE_LOADED) {
             { // Using the sub-resources that are loaded, and definition data, create the resource
                 foeGfxShader fragShader =
                     (it.data.fragmentShader != FOE_NULL_HANDLE)
@@ -179,7 +179,7 @@ void foeMaterialLoader::gfxMaintenance() {
 
             it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
                            foeMaterialLoader::unloadResource);
-        } else if (subResLoadState == foeResourceLoadState::Failed) {
+        } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
         DESCRIPTOR_CREATE_FAILED:
             // One of them failed to load, we're not proceeding with this resource
             it.pPostLoadFn(
@@ -270,7 +270,7 @@ void foeMaterialLoader::load(foeResource resource,
         foeResourceIncrementRefCount(data.fragmentShader);
         foeResourceIncrementUseCount(data.fragmentShader);
 
-        if (foeResourceGetState(data.fragmentShader) != foeResourceLoadState::Loaded &&
+        if (foeResourceGetState(data.fragmentShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.fragmentShader))
             foeResourceLoad(data.fragmentShader, false);
     }
@@ -289,7 +289,7 @@ void foeMaterialLoader::load(foeResource resource,
         foeResourceIncrementRefCount(data.image);
         foeResourceIncrementUseCount(data.image);
 
-        if (foeResourceGetState(data.image) != foeResourceLoadState::Loaded &&
+        if (foeResourceGetState(data.image) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.image))
             foeResourceLoad(data.image, false);
     }

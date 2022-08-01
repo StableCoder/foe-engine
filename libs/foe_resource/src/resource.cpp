@@ -34,7 +34,7 @@ struct foeResourceImpl {
     // Load State
     std::atomic_uint iteration{0};
     std::atomic_bool isLoading{false};
-    std::atomic<foeResourceLoadState> state{foeResourceLoadState::Unloaded};
+    std::atomic<foeResourceLoadState> state{FOE_RESOURCE_LOAD_STATE_UNLOADED};
 
     foeResourceCreateInfo loadedCreateInfo{FOE_NULL_HANDLE};
     void *pUnloadContext{nullptr};
@@ -243,8 +243,8 @@ void postLoadFn(
         FOE_LOG(foeResourceCore, Error, "[{},{}] foeResource - Failed to load  with error: {}",
                 foeIdToString(pResource->id), pResource->type, buffer)
 
-        auto expected = foeResourceLoadState::Unloaded;
-        pResource->state.compare_exchange_strong(expected, foeResourceLoadState::Failed);
+        auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
+        pResource->state.compare_exchange_strong(expected, FOE_RESOURCE_LOAD_STATE_FAILED);
         pResource->isLoading = false;
     } else {
         // It loaded successfully and the data is ready to be moved now
@@ -264,7 +264,7 @@ void postLoadFn(
         pResource->pUnloadContext = pUnloadContext;
         pResource->pUnloadFn = pUnloadFn;
 
-        pResource->state = foeResourceLoadState::Loaded;
+        pResource->state = FOE_RESOURCE_LOAD_STATE_LOADED;
         pResource->sync.unlock();
     }
 
@@ -381,7 +381,7 @@ bool resourceUnloadCall(foeResource resource,
         pResource->loadedCreateInfo = FOE_NULL_HANDLE;
         pResource->pUnloadContext = nullptr;
         pResource->pUnloadFn = nullptr;
-        pResource->state = foeResourceLoadState::Unloaded;
+        pResource->state = FOE_RESOURCE_LOAD_STATE_UNLOADED;
 
         ++pResource->iteration;
     }

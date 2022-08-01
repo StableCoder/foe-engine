@@ -113,8 +113,8 @@ void foeArmatureSystem::process(float timePassed) {
         } while (armature == FOE_NULL_HANDLE);
 
         if (auto loadState = foeResourceGetState(armature);
-            loadState != foeResourceLoadState::Loaded) {
-            if (loadState == foeResourceLoadState::Unloaded && !foeResourceGetIsLoading(armature))
+            loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
+            if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED && !foeResourceGetIsLoading(armature))
                 foeResourceLoad(armature, false);
 
             continue;

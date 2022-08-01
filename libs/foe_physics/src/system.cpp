@@ -217,8 +217,8 @@ void foePhysicsSystem::addObject(foeEntityID entity,
     }
 
     if (auto loadState = foeResourceGetState(collisionShape);
-        loadState != foeResourceLoadState::Loaded) {
-        if (loadState == foeResourceLoadState::Unloaded &&
+        loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
+        if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
             !foeResourceGetIsLoading(collisionShape)) {
             foeResourceLoad(collisionShape, false);
             mAwaitingLoadingResources.emplace_back(entity);
