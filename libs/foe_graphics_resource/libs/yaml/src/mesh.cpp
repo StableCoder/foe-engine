@@ -228,7 +228,7 @@ void yaml_read_mesh_cube(YAML::Node const &node,
     };
 
     foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO, foeDestroyMeshCreateInfo,
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO, nullptr,
         sizeof(foeMeshCubeCreateInfo), &meshCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
@@ -265,7 +265,7 @@ void yaml_read_mesh_icosphere(YAML::Node const &node,
     };
 
     foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO, foeDestroyMeshCreateInfo,
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO, nullptr,
         sizeof(foeMeshIcosphereCreateInfo), &meshCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
