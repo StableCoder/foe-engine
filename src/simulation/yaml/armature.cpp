@@ -7,7 +7,7 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "../armature_create_info.hpp"
+#include "../armature_create_info.h"
 #include "../type_defs.h"
 
 #include <string.h>

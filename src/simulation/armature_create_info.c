@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "armature_create_info.hpp"
+#include "armature_create_info.h"
 
 #include <stdlib.h>
 

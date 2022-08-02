@@ -7,7 +7,7 @@ target_sources(
   PRIVATE ../log.cpp
           ../result.c
           ../vk_result.c
-          armature_create_info.cpp
+          armature_create_info.c
           armature_loader.cpp
           armature_system.cpp
           camera_system.cpp

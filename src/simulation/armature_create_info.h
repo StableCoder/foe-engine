@@ -2,27 +2,35 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef ARMATURE_CREATE_INFO_HPP
-#define ARMATURE_CREATE_INFO_HPP
+#ifndef ARMATURE_CREATE_INFO_H
+#define ARMATURE_CREATE_INFO_H
 
 #include <foe/resource/create_info.h>
 
 #include <stdint.h>
 
-struct AnimationImportInfo {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct AnimationImportInfo {
     char const *pFile;
     char const *pName;
-};
+} AnimationImportInfo;
 
-struct foeArmatureCreateInfo {
+typedef struct foeArmatureCreateInfo {
     char const *pFile;
     char const *pRootArmatureNode;
     uint32_t animationCount;
     AnimationImportInfo *pAnimations;
-};
+} foeArmatureCreateInfo;
 
 void foeCleanup_AnimationImportInfo(AnimationImportInfo *pData);
 
 void foeCleanup_foeArmatureCreateInfo(foeArmatureCreateInfo *pData);
 
-#endif // ARMATURE_CREATE_INFO_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // ARMATURE_CREATE_INFO_H

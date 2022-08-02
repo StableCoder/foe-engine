@@ -10,7 +10,7 @@
 #include "../log.hpp"
 #include "../result.h"
 #include "armature.hpp"
-#include "armature_create_info.hpp"
+#include "armature_create_info.h"
 #include "type_defs.h"
 
 foeResultSet foeArmatureLoader::initialize(

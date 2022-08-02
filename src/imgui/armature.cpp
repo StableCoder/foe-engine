@@ -7,7 +7,7 @@
 #include <imgui.h>
 
 #include "../simulation/armature.hpp"
-#include "../simulation/armature_create_info.hpp"
+#include "../simulation/armature_create_info.h"
 
 void imgui_foeArmature(foeArmature const *pResource) {
     ImGui::Text("foeArmature");
