@@ -36,7 +36,7 @@ extern "C" foeBuiltinDescriptorSetLayoutFlags foeGfxShaderGetBuiltinDescriptorSe
     return pShader->builtinSetLayouts;
 }
 
-extern "C" void foeClean_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo) {
+extern "C" void foeCleanup_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo) {
     cleanup_VkDescriptorSetLayoutCreateInfo(&pCreateInfo->descriptorSetLayoutCI);
 }
 

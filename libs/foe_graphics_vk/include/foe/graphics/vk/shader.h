@@ -20,7 +20,8 @@ typedef struct foeGfxVkShaderCreateInfo {
     VkPushConstantRange pushConstantRange;
 } foeGfxVkShaderCreateInfo;
 
-FOE_GFX_EXPORT void foeClean_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const *pCreateInfo);
+FOE_GFX_EXPORT void foeCleanup_foeGfxVkShaderCreateInfo(
+    foeGfxVkShaderCreateInfo const *pCreateInfo);
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkCreateShader(foeGfxSession session,
                                                  foeGfxVkShaderCreateInfo const *pCreateInfo,

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 void foeCleanup_foeShaderCreateInfo(foeShaderCreateInfo *pCreateInfo) {
-    foeClean_foeGfxVkShaderCreateInfo(&pCreateInfo->gfxCreateInfo);
+    foeCleanup_foeGfxVkShaderCreateInfo(&pCreateInfo->gfxCreateInfo);
 
     if (pCreateInfo->pFile) {
         free((char *)pCreateInfo->pFile);
