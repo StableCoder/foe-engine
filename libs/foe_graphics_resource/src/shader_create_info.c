@@ -6,11 +6,10 @@
 
 #include <stdlib.h>
 
-void foeDestroyShaderCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    foeShaderCreateInfo *pCI = (foeShaderCreateInfo *)pCreateInfo;
+void foeCleanup_foeShaderCreateInfo(foeShaderCreateInfo *pCreateInfo) {
+    foeGfxVkDestroyShaderCreateInfo(&pCreateInfo->gfxCreateInfo);
 
-    foeGfxVkDestroyShaderCreateInfo(&pCI->gfxCreateInfo);
-
-    if (pCI->pFile)
-        free(pCI->pFile);
+    if (pCreateInfo->pFile) {
+        free((char *)pCreateInfo->pFile);
+    }
 }

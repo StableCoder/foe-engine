@@ -6,11 +6,12 @@
 
 #include <stdlib.h>
 
-void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    foeVertexDescriptorCreateInfo *pCI = (foeVertexDescriptorCreateInfo *)pCreateInfo;
+void foeCleanup_foeVertexDescriptorCreateInfo(foeVertexDescriptorCreateInfo *pCreateInfo) {
+    if (pCreateInfo->pInputAttributes) {
+        free(pCreateInfo->pInputAttributes);
+    }
 
-    if (pCI->pInputAttributes)
-        free(pCI->pInputAttributes);
-    if (pCI->pInputBindings)
-        free(pCI->pInputBindings);
+    if (pCreateInfo->pInputBindings) {
+        free(pCreateInfo->pInputBindings);
+    }
 }

@@ -22,8 +22,7 @@ typedef struct foeMaterialCreateInfo {
     VkPipelineColorBlendStateCreateInfo *pColourBlendSCI;
 } foeMaterialCreateInfo;
 
-FOE_GFX_RES_EXPORT void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type,
-                                                     void *pCreateInfo);
+FOE_GFX_RES_EXPORT void foeCleanup_foeMaterialCreateInfo(foeMaterialCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

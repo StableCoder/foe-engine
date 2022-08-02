@@ -130,7 +130,8 @@ void yaml_read_armature(YAML::Node const &node,
     };
 
     foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO, foeDestroyArmatureCreateInfo,
+        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO,
+        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeArmatureCreateInfo,
         sizeof(foeArmatureCreateInfo), &armatureCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

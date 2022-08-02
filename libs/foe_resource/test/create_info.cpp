@@ -44,12 +44,12 @@ TEST_CASE("foeResourceCreateInfo - Check that given destroy function is called o
         auto *pSrcData = (TestStruct *)pSrc;
         new (pDst) TestStruct(std::move(*pSrcData));
     };
-    auto destroyFn = [](foeResourceCreateInfoType, void *pData) {
+    auto cleanupFn = [](void *pData) {
         auto *pTestStruct = (TestStruct *)pData;
         *pTestStruct->pBool = true;
     };
 
-    foeResultSet result = foeCreateResourceCreateInfo(0, destroyFn, sizeof(TestStruct), &testStruct,
+    foeResultSet result = foeCreateResourceCreateInfo(0, cleanupFn, sizeof(TestStruct), &testStruct,
                                                       testDataFn, &createInfo);
 
     CHECK(result.value == FOE_RESOURCE_SUCCESS);

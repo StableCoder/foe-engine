@@ -18,8 +18,7 @@ typedef struct foeShaderCreateInfo {
     foeGfxVkShaderCreateInfo gfxCreateInfo;
 } foeShaderCreateInfo;
 
-FOE_GFX_RES_EXPORT void foeDestroyShaderCreateInfo(foeResourceCreateInfoType type,
-                                                   void *pCreateInfo);
+FOE_GFX_RES_EXPORT void foeCleanup_foeShaderCreateInfo(foeShaderCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

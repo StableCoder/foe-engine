@@ -28,8 +28,8 @@ typedef struct foeVertexDescriptorCreateInfo {
     VkPipelineTessellationStateCreateInfo tessellationSCI;
 } foeVertexDescriptorCreateInfo;
 
-FOE_GFX_RES_EXPORT void foeDestroyVertexDescriptorCreateInfo(foeResourceCreateInfoType type,
-                                                             void *pCreateInfo);
+FOE_GFX_RES_EXPORT void foeCleanup_foeVertexDescriptorCreateInfo(
+    foeVertexDescriptorCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

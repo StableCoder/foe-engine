@@ -122,7 +122,8 @@ void yaml_read_material(YAML::Node const &node,
     };
 
     foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO, foeDestroyMaterialCreateInfo,
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO,
+        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeMaterialCreateInfo,
         sizeof(foeMaterialCreateInfo), &materialCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

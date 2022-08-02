@@ -6,9 +6,8 @@
 
 #include <stdlib.h>
 
-void foeDestroyImageCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    foeImageCreateInfo *pCI = (foeImageCreateInfo *)pCreateInfo;
-
-    if (pCI->pFile)
-        free(pCI->pFile);
+void foeCleanup_foeImageCreateInfo(foeImageCreateInfo *pCreateInfo) {
+    if (pCreateInfo->pFile) {
+        free((char *)pCreateInfo->pFile);
+    }
 }

@@ -16,8 +16,7 @@ typedef struct foeImageCreateInfo {
     char const *pFile;
 } foeImageCreateInfo;
 
-FOE_GFX_RES_EXPORT void foeDestroyImageCreateInfo(foeResourceCreateInfoType type,
-                                                  void *pCreateInfo);
+FOE_GFX_RES_EXPORT void foeCleanup_foeImageCreateInfo(foeImageCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

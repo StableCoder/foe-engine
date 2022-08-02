@@ -78,7 +78,8 @@ void yaml_read_shader(YAML::Node const &node,
     };
 
     foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO, foeDestroyShaderCreateInfo,
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO,
+        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeShaderCreateInfo,
         sizeof(foeShaderCreateInfo), &shaderCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

@@ -19,13 +19,14 @@ FOE_DEFINE_HANDLE(foeResourceCreateInfo)
 
 typedef int foeResourceCreateInfoType;
 
-FOE_RES_EXPORT foeResultSet
-foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
-                            void (*pDestroyFn)(foeResourceCreateInfoType, void *),
-                            size_t size,
-                            void *pData,
-                            void (*pDataFn)(void *, void *),
-                            foeResourceCreateInfo *pCreateInfo);
+typedef void (*PFN_foeResourceCreateInfoCleanup)(void *);
+
+FOE_RES_EXPORT foeResultSet foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
+                                                        PFN_foeResourceCreateInfoCleanup cleanupFn,
+                                                        size_t size,
+                                                        void *pData,
+                                                        void (*pDataFn)(void *, void *),
+                                                        foeResourceCreateInfo *pCreateInfo);
 
 FOE_RES_EXPORT void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo);
 

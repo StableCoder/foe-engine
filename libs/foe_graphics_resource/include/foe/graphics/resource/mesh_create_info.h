@@ -25,7 +25,7 @@ typedef struct foeMeshIcosphereCreateInfo {
     int recursion;
 } foeMeshIcosphereCreateInfo;
 
-FOE_GFX_RES_EXPORT void foeDestroyMeshCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
+FOE_GFX_RES_EXPORT void foeCleanup_foeMeshFileCreateInfo(foeMeshFileCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

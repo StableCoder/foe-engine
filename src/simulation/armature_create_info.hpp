@@ -21,10 +21,8 @@ struct foeArmatureCreateInfo {
     AnimationImportInfo *pAnimations;
 };
 
-void cleanup_AnimationImportInfo(AnimationImportInfo *pData);
+void foeCleanup_AnimationImportInfo(AnimationImportInfo *pData);
 
-void cleanup_foeArmatureCreateInfo(foeArmatureCreateInfo *pData);
-
-void foeDestroyArmatureCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo);
+void foeCleanup_foeArmatureCreateInfo(foeArmatureCreateInfo *pData);
 
 #endif // ARMATURE_CREATE_INFO_HPP

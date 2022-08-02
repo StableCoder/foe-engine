@@ -14,24 +14,23 @@ namespace {
 struct foeResourceCreateInfoImpl {
     foeResourceCreateInfoType type;
     std::atomic_int refCount{0};
-    void (*pDestroyFn)(foeResourceCreateInfoType, void *);
+    PFN_foeResourceCreateInfoCleanup cleanupFn;
 
     foeResourceCreateInfoImpl(foeResourceCreateInfoType type,
-                              void (*pDestroyFn)(foeResourceCreateInfoType, void *)) :
-        type{type}, pDestroyFn{pDestroyFn} {}
+                              PFN_foeResourceCreateInfoCleanup cleanupFn) :
+        type{type}, cleanupFn{cleanupFn} {}
 };
 
 FOE_DEFINE_HANDLE_CASTS(resource_create_info, foeResourceCreateInfoImpl, foeResourceCreateInfo)
 
 } // namespace
 
-extern "C" foeResultSet foeCreateResourceCreateInfo(
-    foeResourceCreateInfoType type,
-    void (*pDestroyFn)(foeResourceCreateInfoType type, void *),
-    size_t size,
-    void *pData,
-    void (*pDataFn)(void *, void *),
-    foeResourceCreateInfo *pCreateInfo) {
+extern "C" foeResultSet foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
+                                                    PFN_foeResourceCreateInfoCleanup cleanupFn,
+                                                    size_t size,
+                                                    void *pData,
+                                                    void (*pDataFn)(void *, void *),
+                                                    foeResourceCreateInfo *pCreateInfo) {
     if (pDataFn == nullptr)
         return to_foeResult(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED);
 
@@ -40,7 +39,7 @@ extern "C" foeResultSet foeCreateResourceCreateInfo(
     if (pNewCI == NULL)
         return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
 
-    new (pNewCI) foeResourceCreateInfoImpl(type, pDestroyFn);
+    new (pNewCI) foeResourceCreateInfoImpl(type, cleanupFn);
 
     pDataFn(pData, (void *)foeResourceCreateInfoGetData(resource_create_info_to_handle(pNewCI)));
 
@@ -65,9 +64,8 @@ extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {
                 (void *)pCreateInfo, pCreateInfo->type, refCount)
     }
 
-    if (pCreateInfo->pDestroyFn != nullptr) {
-        pCreateInfo->pDestroyFn(pCreateInfo->type,
-                                (void *)foeResourceCreateInfoGetData(createInfo));
+    if (pCreateInfo->cleanupFn != nullptr) {
+        pCreateInfo->cleanupFn((void *)foeResourceCreateInfoGetData(createInfo));
     }
 
     FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Destroyed",

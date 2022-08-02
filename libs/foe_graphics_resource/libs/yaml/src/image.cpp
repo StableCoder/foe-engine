@@ -79,9 +79,10 @@ void yaml_read_image(YAML::Node const &node,
         new (pDst) foeImageCreateInfo(std::move(*pSrcData));
     };
 
-    foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO, foeDestroyImageCreateInfo,
-        sizeof(foeImageCreateInfo), &imageCI, dataFn, &createInfo);
+    foeResultSet result =
+        foeCreateResourceCreateInfo(FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                                    (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeImageCreateInfo,
+                                    sizeof(foeImageCreateInfo), &imageCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);

@@ -192,7 +192,8 @@ void yaml_read_mesh_file(YAML::Node const &node,
     };
 
     foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO, foeDestroyMeshCreateInfo,
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO,
+        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeMeshFileCreateInfo,
         sizeof(foeMeshFileCreateInfo), &meshCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

@@ -8,19 +8,19 @@
 
 #include <stdlib.h>
 
-void foeDestroyMaterialCreateInfo(foeResourceCreateInfoType type, void *pCreateInfo) {
-    foeMaterialCreateInfo *pCI = (foeMaterialCreateInfo *)pCreateInfo;
+void foeCleanup_foeMaterialCreateInfo(foeMaterialCreateInfo *pCreateInfo) {
+    if (pCreateInfo->pColourBlendSCI) {
+        cleanup_VkPipelineColorBlendStateCreateInfo(pCreateInfo->pColourBlendSCI);
+        free(pCreateInfo->pColourBlendSCI);
+    }
 
-    if (pCI->pColourBlendSCI) {
-        cleanup_VkPipelineColorBlendStateCreateInfo(pCI->pColourBlendSCI);
-        free(pCI->pColourBlendSCI);
+    if (pCreateInfo->pDepthStencilSCI) {
+        cleanup_VkPipelineDepthStencilStateCreateInfo(pCreateInfo->pDepthStencilSCI);
+        free(pCreateInfo->pDepthStencilSCI);
     }
-    if (pCI->pDepthStencilSCI) {
-        cleanup_VkPipelineDepthStencilStateCreateInfo(pCI->pDepthStencilSCI);
-        free(pCI->pDepthStencilSCI);
-    }
-    if (pCI->pRasterizationSCI) {
-        cleanup_VkPipelineRasterizationStateCreateInfo(pCI->pRasterizationSCI);
-        free(pCI->pRasterizationSCI);
+
+    if (pCreateInfo->pRasterizationSCI) {
+        cleanup_VkPipelineRasterizationStateCreateInfo(pCreateInfo->pRasterizationSCI);
+        free(pCreateInfo->pRasterizationSCI);
     }
 }

@@ -117,8 +117,8 @@ void yaml_read_vertex_descriptor(YAML::Node const &node,
 
     foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO,
-        foeDestroyVertexDescriptorCreateInfo, sizeof(foeVertexDescriptorCreateInfo), &vdCI, dataFn,
-        &createInfo);
+        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeVertexDescriptorCreateInfo,
+        sizeof(foeVertexDescriptorCreateInfo), &vdCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
