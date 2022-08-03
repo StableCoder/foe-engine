@@ -315,8 +315,13 @@ void loadResourceTask(LoadTaskData *pContext) {
         }
     }
 
-    pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
-                                     resource_to_handle(pResource), postLoadFn);
+    if (pResource->createInfo != FOE_NULL_HANDLE) {
+        pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
+                                         resource_to_handle(pResource), postLoadFn);
+    } else {
+        postLoadFn(resource_to_handle(pResource), to_foeResult(FOE_RESOURCE_ERROR_NO_CREATE_INFO),
+                   nullptr, nullptr, nullptr, nullptr, nullptr);
+    }
 
     // Free the heap-allocated context data
     free(pContext);
