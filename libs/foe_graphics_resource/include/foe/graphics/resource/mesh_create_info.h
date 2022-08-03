@@ -19,6 +19,7 @@ typedef struct foeMeshFileCreateInfo {
 } foeMeshFileCreateInfo;
 
 typedef struct foeMeshCubeCreateInfo {
+    void *padding;
 } foeMeshCubeCreateInfo;
 
 typedef struct foeMeshIcosphereCreateInfo {
