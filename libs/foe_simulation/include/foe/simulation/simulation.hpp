@@ -248,4 +248,8 @@ FOE_SIM_EXPORT foeResultSet foeSimulationReleaseSystem(foeSimulation *pSimulatio
                                                        foeSimulationStructureType sType,
                                                        void **ppSystem);
 
+FOE_SIM_EXPORT foeResultSet foeSimulationGetResourceCreateInfo(foeSimulation const *pSimulation,
+                                                               foeResourceID resourceID,
+                                                               foeResourceCreateInfo *pResourceCI);
+
 #endif // FOE_SIMULATION_CORE_HPP

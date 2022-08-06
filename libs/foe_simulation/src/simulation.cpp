@@ -948,3 +948,17 @@ foeResultSet foeSimulationReleaseSystem(foeSimulation *pSimulation,
 
     return to_foeResult(FOE_SIMULATION_ERROR_TYPE_NOT_FOUND);
 }
+
+foeResultSet foeSimulationGetResourceCreateInfo(foeSimulation const *pSimulation,
+                                                foeResourceID resourceID,
+                                                foeResourceCreateInfo *pResourceCI) {
+    auto ci = getResourceCreateInfo((void *)pSimulation, resourceID);
+
+    if (ci == FOE_NULL_HANDLE) {
+        // @todo Replace with proper result code
+        std::abort();
+    }
+
+    *pResourceCI = ci;
+    return to_foeResult(FOE_SIMULATION_SUCCESS);
+}
