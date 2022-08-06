@@ -73,7 +73,7 @@ FOE_RES_EXPORT foeResourceLoadState foeResourceGetState(foeResource resource);
 
 FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
 
-FOE_RES_EXPORT void foeResourceImportCreateInfo(foeResource resource);
+FOE_RES_EXPORT void foeResourceLoadCreateInfo(foeResource resource);
 FOE_RES_EXPORT void foeResourceLoadData(foeResource resource);
 FOE_RES_EXPORT void foeResourceUnloadData(foeResource resource, bool immediate);
 

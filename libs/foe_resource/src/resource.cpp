@@ -207,7 +207,7 @@ void loadCreateInfoTask(foeResourceImpl *pResource) {
 
 } // namespace
 
-extern "C" void foeResourceImportCreateInfo(foeResource resource) {
+extern "C" void foeResourceLoadCreateInfo(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
 
     foeResourceIncrementRefCount(resource);

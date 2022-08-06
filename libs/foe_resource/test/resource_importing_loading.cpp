@@ -52,7 +52,7 @@ TEST_CASE("foeResource - Importing CreateInfo") {
     SECTION("Import synchronously") {
         gGlobalIterator = 0;
 
-        foeResourceImportCreateInfo(resource);
+        foeResourceLoadCreateInfo(resource);
 
         auto createInfo = foeResourceGetCreateInfo(resource);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
@@ -66,7 +66,7 @@ TEST_CASE("foeResource - Importing CreateInfo") {
                 CHECK(foeResourceCreateInfoDecrementRefCount(createInfo) == 1);
             }
 
-            foeResourceImportCreateInfo(resource);
+            foeResourceLoadCreateInfo(resource);
 
             auto createInfo2 = foeResourceGetCreateInfo(resource);
             REQUIRE(createInfo2 != FOE_NULL_HANDLE);
@@ -91,7 +91,7 @@ TEST_CASE("foeResource - Importing CreateInfo") {
         fns.scheduleAsyncTask = asyncRunFn;
 
         CHECK_FALSE(foeResourceGetIsLoading(resource));
-        foeResourceImportCreateInfo(resource);
+        foeResourceLoadCreateInfo(resource);
         CHECK_FALSE(foeResourceGetIsLoading(resource));
 
         auto createInfo = foeResourceGetCreateInfo(resource);
@@ -105,7 +105,7 @@ TEST_CASE("foeResource - Importing CreateInfo") {
                 CHECK(foeResourceCreateInfoDecrementRefCount(createInfo) == 1);
             }
 
-            foeResourceImportCreateInfo(resource);
+            foeResourceLoadCreateInfo(resource);
 
             auto createInfo2 = foeResourceGetCreateInfo(resource);
             REQUIRE(createInfo2 != FOE_NULL_HANDLE);
