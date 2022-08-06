@@ -160,7 +160,7 @@ extern "C" void foeResourcePoolUnloadAll(foeResourcePool resourcePool) {
     std::shared_lock lock{pResourcePool->sync};
 
     for (foeResource it : pResourcePool->resources) {
-        foeResourceUnload(it, false);
+        foeResourceUnloadData(it, false);
     }
 }
 
@@ -175,7 +175,7 @@ extern "C" uint32_t foeResourcePoolUnloadType(foeResourcePool resourcePool,
         if (foeResourceGetType(it) == resourceType &&
             (foeResourceGetIsLoading(it) ||
              foeResourceGetState(it) == FOE_RESOURCE_LOAD_STATE_LOADED)) {
-            foeResourceUnload(it, false);
+            foeResourceUnloadData(it, false);
             ++count;
         }
     }

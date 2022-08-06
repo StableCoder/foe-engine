@@ -247,7 +247,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
 
         if (foeResourceGetState(data.vertexShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.vertexShader))
-            foeResourceLoad(data.vertexShader, false);
+            foeResourceLoadData(data.vertexShader);
     }
     if (pCI->tessellationControlShader != FOE_INVALID_ID) {
         while (data.tessellationControlShader == FOE_NULL_HANDLE) {
@@ -265,7 +265,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
 
         if (foeResourceGetState(data.tessellationControlShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.tessellationControlShader))
-            foeResourceLoad(data.tessellationControlShader, false);
+            foeResourceLoadData(data.tessellationControlShader);
     }
     if (pCI->tessellationEvaluationShader != FOE_INVALID_ID) {
         while (data.tessellationEvaluationShader == FOE_NULL_HANDLE) {
@@ -284,7 +284,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         if (foeResourceGetState(data.tessellationEvaluationShader) !=
                 FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.tessellationEvaluationShader))
-            foeResourceLoad(data.tessellationEvaluationShader, false);
+            foeResourceLoadData(data.tessellationEvaluationShader);
     }
     if (pCI->geometryShader != FOE_INVALID_ID) {
         while (data.geometryShader == FOE_NULL_HANDLE) {
@@ -301,7 +301,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
 
         if (foeResourceGetState(data.geometryShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.geometryShader))
-            foeResourceLoad(data.geometryShader, false);
+            foeResourceLoadData(data.geometryShader);
     }
 
     // Send to the loading queue

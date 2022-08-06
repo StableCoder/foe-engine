@@ -104,7 +104,7 @@ auto renderCall(foeId entity,
                     "While attempting to render {}, VertexDeescriptor resource {} was unloaded and "
                     "wasn't being loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(vertexDescriptor)));
-            foeResourceLoad(vertexDescriptor, false);
+            foeResourceLoadData(vertexDescriptor);
         }
 
         skip = true;
@@ -117,7 +117,7 @@ auto renderCall(foeId entity,
                     "While attempting to render {}, Material resource {} was unloaded and wasn't "
                     "being loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(material)));
-            foeResourceLoad(material, false);
+            foeResourceLoadData(material);
         }
 
         skip = true;
@@ -129,7 +129,7 @@ auto renderCall(foeId entity,
                     "While attempting to render {}, Mesh resource {} was unloaded and wasn't being "
                     "loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(mesh)));
-            foeResourceLoad(mesh, false);
+            foeResourceLoadData(mesh);
         }
 
         skip = true;

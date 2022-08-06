@@ -74,8 +74,8 @@ FOE_RES_EXPORT foeResourceLoadState foeResourceGetState(foeResource resource);
 FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
 
 FOE_RES_EXPORT void foeResourceImportCreateInfo(foeResource resource);
-FOE_RES_EXPORT void foeResourceLoad(foeResource resource, bool refreshCreateInfo);
-FOE_RES_EXPORT void foeResourceUnload(foeResource resource, bool immediate);
+FOE_RES_EXPORT void foeResourceLoadData(foeResource resource);
+FOE_RES_EXPORT void foeResourceUnloadData(foeResource resource, bool immediate);
 
 // @warning The handle has already been pre-incremented before being returned. The used is
 // responsible for decrementing the reference count before disposing of it.

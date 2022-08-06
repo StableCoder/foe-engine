@@ -220,7 +220,7 @@ void foePhysicsSystem::addObject(foeEntityID entity,
         loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
         if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
             !foeResourceGetIsLoading(collisionShape)) {
-            foeResourceLoad(collisionShape, false);
+            foeResourceLoadData(collisionShape);
             mAwaitingLoadingResources.emplace_back(entity);
         }
 

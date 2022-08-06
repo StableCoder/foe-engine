@@ -90,7 +90,7 @@ extern "C" void foeDestroyResource(foeResource resource) {
                 foeIdToString(pResource->id), pResource->type, refCount)
     }
 
-    foeResourceUnload(resource, true);
+    foeResourceUnloadData(resource, true);
 
     // Clear createInfo
     if (pResource->createInfo != FOE_NULL_HANDLE) {
@@ -253,7 +253,7 @@ void postLoadFn(
         pResource->sync.lock();
 
         // Unload any previous data
-        foeResourceUnload(resource, true);
+        foeResourceUnloadData(resource, true);
 
         // Move the new data in
         pMoveDataFn(pSrc, (void *)foeResourceGetData(resource));
@@ -282,7 +282,6 @@ void postLoadFn(
 
 struct LoadTaskData {
     foeResourceImpl *pResource;
-    bool refreshCreateInfo;
 };
 
 void loadResourceTask(LoadTaskData *pContext) {
@@ -290,7 +289,7 @@ void loadResourceTask(LoadTaskData *pContext) {
 
     auto createInfo = foeResourceGetCreateInfo(resource_to_handle(pResource));
 
-    if (pContext->refreshCreateInfo || createInfo == FOE_NULL_HANDLE) {
+    if (createInfo == FOE_NULL_HANDLE) {
         foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
 
         if (createInfo != FOE_NULL_HANDLE)
@@ -329,7 +328,7 @@ void loadResourceTask(LoadTaskData *pContext) {
 
 } // namespace
 
-extern "C" void foeResourceLoad(foeResource resource, bool refreshCreateInfo) {
+extern "C" void foeResourceLoadData(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
 
     foeResourceIncrementRefCount(resource);
@@ -345,7 +344,6 @@ extern "C" void foeResourceLoad(foeResource resource, bool refreshCreateInfo) {
     LoadTaskData *pTaskContext = (LoadTaskData *)malloc(sizeof(LoadTaskData));
     *pTaskContext = {
         .pResource = pResource,
-        .refreshCreateInfo = refreshCreateInfo,
     };
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
@@ -406,7 +404,7 @@ bool resourceUnloadCall(foeResource resource,
 
 } // namespace
 
-extern "C" void foeResourceUnload(foeResource resource, bool immediate) {
+extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
     auto *pResource = resource_from_handle(resource);
 
     pResource->sync.lock();
