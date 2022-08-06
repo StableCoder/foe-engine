@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <mutex>
+#include <thread>
 
 #include "log.hpp"
 #include "result.h"
@@ -16,6 +17,13 @@
 struct foeResourceFns;
 
 namespace {
+
+enum ResourceLoadingFlagBits : uint8_t {
+    None = 0,
+    CreateInfo = 0x01,
+    Data = 0x02,
+};
+typedef uint8_t ResourceLoadingFlags;
 
 struct foeResourceImpl {
     foeResourceID id;
@@ -33,7 +41,7 @@ struct foeResourceImpl {
 
     // Load State
     std::atomic_uint iteration{0};
-    std::atomic_bool isLoading{false};
+    std::atomic<ResourceLoadingFlags> loading{ResourceLoadingFlagBits::None};
     std::atomic<foeResourceLoadState> state{FOE_RESOURCE_LOAD_STATE_UNLOADED};
 
     foeResourceCreateInfo loadedCreateInfo{FOE_NULL_HANDLE};
@@ -150,7 +158,7 @@ extern "C" int foeResourceDecrementUseCount(foeResource resource) {
 
 extern "C" bool foeResourceGetIsLoading(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
-    return pResource->isLoading;
+    return pResource->loading != ResourceLoadingFlagBits::None;
 }
 
 extern "C" foeResourceLoadState foeResourceGetState(foeResource resource) {
@@ -177,8 +185,14 @@ void loadCreateInfoTask(foeResourceImpl *pResource) {
         oldCreateInfo = pResource->createInfo;
     }
     pResource->createInfo = newCreateInfo;
-    pResource->isLoading = false;
     pResource->sync.unlock();
+
+    // Remove the loading/CI flag
+    ResourceLoadingFlags expected = pResource->loading;
+    ResourceLoadingFlags desired;
+    do {
+        desired = expected ^ ResourceLoadingFlagBits::CreateInfo;
+    } while (!pResource->loading.compare_exchange_weak(expected, desired));
 
     foeResourceDecrementRefCount(resource_to_handle(pResource));
 
@@ -198,26 +212,26 @@ extern "C" void foeResourceImportCreateInfo(foeResource resource) {
 
     foeResourceIncrementRefCount(resource);
 
-    bool expected = false;
-    if (!pResource->isLoading.compare_exchange_strong(expected, true)) {
-        FOE_LOG(foeResourceCore, Warning, "[{},{}] foeResource - Attempted to load in parrallel",
+    ResourceLoadingFlags expected = ResourceLoadingFlagBits::None;
+    if (!pResource->loading.compare_exchange_strong(expected,
+                                                    ResourceLoadingFlagBits::CreateInfo)) {
+        FOE_LOG(foeResourceCore, Warning,
+                "[{},{}] foeResource - Attempted to load CreateInfo in parrallel",
                 foeIdToString(pResource->id), pResource->type)
         foeResourceDecrementRefCount(resource);
         return;
     }
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
-        FOE_LOG(foeResourceCore, Verbose,
-                "[{},{}] foeResource - Importing CreateInfo asynchronously",
+        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Loading CreateInfo asynchronously",
                 foeIdToString(pResource->id), pResource->type)
 
         pResource->pResourceFns->scheduleAsyncTask(
             pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadCreateInfoTask,
             pResource);
     } else {
-        FOE_LOG(foeResourceCore, Verbose,
-                "[{},{}] foeResource - Importing CreateInfo synchronously", pResource->id,
-                pResource->type)
+        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Loading CreateInfo synchronously",
+                pResource->id, pResource->type)
 
         loadCreateInfoTask(pResource);
     }
@@ -238,6 +252,12 @@ void postLoadFn(
 
     if (loadResult.value != FOE_SUCCESS) {
         // Loading didn't go well
+        if (foeResourceCreateInfoDecrementRefCount(createInfo) == 0) {
+            // Since we're not going to be using it, decrement and maybe destroy if there's no more
+            // references
+            foeDestroyResourceCreateInfo(createInfo);
+        }
+
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         loadResult.toString(loadResult.value, buffer);
         FOE_LOG(foeResourceCore, Error, "[{},{}] foeResource - Failed to load  with error: {}",
@@ -245,11 +265,8 @@ void postLoadFn(
 
         auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
         pResource->state.compare_exchange_strong(expected, FOE_RESOURCE_LOAD_STATE_FAILED);
-        pResource->isLoading = false;
+        pResource->loading = ResourceLoadingFlagBits::None;
     } else {
-        // It loaded successfully and the data is ready to be moved now
-        foeResourceCreateInfoIncrementRefCount(createInfo);
-
         pResource->sync.lock();
 
         // Unload any previous data
@@ -268,7 +285,7 @@ void postLoadFn(
         pResource->sync.unlock();
     }
 
-    pResource->isLoading = false;
+    pResource->loading = ResourceLoadingFlagBits::None;
     foeResourceDecrementRefCount(resource);
 
     // If destroying old create info data, do it outside the critical area, could be expensive
@@ -282,36 +299,28 @@ void postLoadFn(
 
 struct LoadTaskData {
     foeResourceImpl *pResource;
+    ResourceLoadingFlags loadingFlags;
 };
 
 void loadResourceTask(LoadTaskData *pContext) {
-    auto const &pResource = pContext->pResource;
+    foeResourceImpl *pResource = pContext->pResource;
 
-    auto createInfo = foeResourceGetCreateInfo(resource_to_handle(pResource));
+    foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource_to_handle(pResource));
 
     if (createInfo == FOE_NULL_HANDLE) {
-        foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
-
-        if (createInfo != FOE_NULL_HANDLE)
-            foeResourceCreateInfoDecrementRefCount(createInfo);
-
-        createInfo = pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext,
-                                                        pResource->id);
-
-        pResource->sync.lock();
-        if (createInfo != FOE_NULL_HANDLE) {
-            oldCreateInfo = pResource->createInfo;
-        }
-        pResource->createInfo = createInfo;
-        pResource->sync.unlock();
-
-        // If destroying old create info data, do it outside the locked area, could be expensive
-        if (oldCreateInfo != FOE_NULL_HANDLE) {
-            auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-            if (refCount == 0) {
-                foeDestroyResourceCreateInfo(oldCreateInfo);
+        if (pContext->loadingFlags & ResourceLoadingFlagBits::CreateInfo) {
+            // We're responsible for loading flag bits
+            foeResourceIncrementRefCount(resource_to_handle(pResource));
+            loadCreateInfoTask(pResource);
+        } else {
+            // Another thread is loading it, keep yielding until it's done
+            // @todo Possibly look into re-queuing via async call instead?
+            while (pResource->loading.load() & ResourceLoadingFlagBits::CreateInfo) {
+                std::this_thread::yield();
             }
         }
+    } else {
+        foeResourceCreateInfoDecrementRefCount(createInfo);
     }
 
     if (pResource->createInfo != FOE_NULL_HANDLE) {
@@ -333,8 +342,12 @@ extern "C" void foeResourceLoadData(foeResource resource) {
 
     foeResourceIncrementRefCount(resource);
 
-    bool expected = false;
-    if (!pResource->isLoading.compare_exchange_strong(expected, true)) {
+    ResourceLoadingFlags expected = pResource->loading;
+    // Only want to start loading if the data isn't already slated to be loaded
+    if (expected & ResourceLoadingFlagBits::Data ||
+        !pResource->loading.compare_exchange_strong(expected,
+                                                    expected | ResourceLoadingFlagBits::CreateInfo |
+                                                        ResourceLoadingFlagBits::Data)) {
         FOE_LOG(foeResourceCore, Warning, "[{},{}] foeResource - Attempted to load in parrallel",
                 foeIdToString(pResource->id), pResource->type)
         foeResourceDecrementRefCount(resource);
@@ -342,8 +355,10 @@ extern "C" void foeResourceLoadData(foeResource resource) {
     }
 
     LoadTaskData *pTaskContext = (LoadTaskData *)malloc(sizeof(LoadTaskData));
+    expected ^= ResourceLoadingFlagBits::CreateInfo | ResourceLoadingFlagBits::Data;
     *pTaskContext = {
         .pResource = pResource,
+        .loadingFlags = expected,
     };
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
