@@ -232,6 +232,9 @@ foeResultSet exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::N
             }
 
             data.push_back(exportResource(resourceID, pResourceName, gResourceFns, pSimState));
+
+            if (pResourceName)
+                free(pResourceName);
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resourceID),
@@ -291,6 +294,9 @@ foeResultSet exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAM
             }
 
             data.push_back(exportComponents(entity, pName, gComponentFns, pSimState));
+
+            if (pName)
+                free(pName);
         }
     } catch (foeYamlException const &e) {
         FOE_LOG(foeImexYaml, Error, "Failed to export entity: {} - {}", foeIdToString(entity),
