@@ -86,7 +86,7 @@ foeResourceCreateInfo getResourceCreateInfo(void *pContext, foeResourceID resour
         return resourceCI;
     }
 
-    return pSimulation->groupData.getResourceDefinition(resourceID);
+    return pSimulation->groupData.getResourceCreateInfo(resourceID);
 }
 
 void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {

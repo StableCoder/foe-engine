@@ -44,7 +44,7 @@ class foeGroupData {
     FOE_SIM_EXPORT auto temporaryResourceIndexes() noexcept -> foeEcsIndexes;
 
     // Used for resource loaders
-    FOE_SIM_EXPORT foeResourceCreateInfo getResourceDefinition(foeId id);
+    FOE_SIM_EXPORT foeResourceCreateInfo getResourceCreateInfo(foeId id);
     // Used for resource loaders
     FOE_SIM_EXPORT std::filesystem::path findExternalFile(std::filesystem::path externalFilePath);
 

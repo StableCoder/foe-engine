@@ -534,14 +534,14 @@ TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
     }
 }
 
-TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
+TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
     DummyImporterData dummyImporter;
     foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);
 
     foeGroupData test;
 
     SECTION("No importers always fails") {
-        REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
+        REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) == nullptr);
     }
 
     SECTION("Persistent importer added") {
@@ -555,7 +555,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
 
             REQUIRE(test.setPersistentImporter(testImporter));
 
-            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) != nullptr);
+            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             dummyImporter = {
@@ -566,7 +566,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
 
             REQUIRE(test.setPersistentImporter(testImporter));
 
-            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
+            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) == nullptr);
         }
     }
 
@@ -589,7 +589,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
 
             REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
 
-            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) != nullptr);
+            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) != nullptr);
         }
         SECTION("Returning false") {
             foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
@@ -607,7 +607,7 @@ TEST_CASE("foeGroupData - getResourceDefinition", "[foe]") {
             };
 
             REQUIRE(test.addDynamicGroup(testEntityIndexes, testResourceIndexes, testImporter));
-            REQUIRE(test.getResourceDefinition(FOE_INVALID_ID) == nullptr);
+            REQUIRE(test.getResourceCreateInfo(FOE_INVALID_ID) == nullptr);
         }
     }
 }

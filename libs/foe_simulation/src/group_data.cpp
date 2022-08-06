@@ -285,7 +285,7 @@ auto foeGroupData::temporaryResourceIndexes() noexcept -> foeEcsIndexes {
     return mTemporaryResourceIndexes;
 }
 
-foeResourceCreateInfo foeGroupData::getResourceDefinition(foeId id) {
+foeResourceCreateInfo foeGroupData::getResourceCreateInfo(foeId id) {
     if (mPersistentImporter != nullptr) {
         foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
         foeResultSet result =
