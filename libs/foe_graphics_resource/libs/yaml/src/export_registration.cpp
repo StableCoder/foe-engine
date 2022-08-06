@@ -18,7 +18,6 @@
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/resource/pool.h>
-#include <foe/simulation/simulation.hpp>
 
 #include "image.hpp"
 #include "material.hpp"
@@ -29,104 +28,86 @@
 
 namespace {
 
-std::vector<foeKeyYamlPair> exportResource(foeResourceID resourceID,
-                                           foeSimulation const *pSimulation) {
+std::vector<foeKeyYamlPair> exportResource(foeResourceCreateInfo createInfo) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
-
-    if (resource == FOE_NULL_HANDLE)
+    if (createInfo == FOE_NULL_HANDLE)
         return keyDataPairs;
 
-    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
-        auto createInfo = foeResourceGetCreateInfo(resource);
-        if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO) {
-            auto const *pCreateInfo =
-                (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_CREATE_INFO) {
+        auto const *pCreateInfo =
+            (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_image_key(),
-                .data = yaml_write_image(*pCreateInfo),
-            });
-        }
+        keyDataPairs.emplace_back(foeKeyYamlPair{
+            .key = yaml_image_key(),
+            .data = yaml_write_image(*pCreateInfo),
+        });
     }
 
-    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
-        auto createInfo = foeResourceGetCreateInfo(resource);
-        if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO) {
-            auto const *pCreateInfo =
-                (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-            auto const *pMaterial = (foeMaterial const *)foeResourceGetData(resource);
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO) {
+        auto const *pCreateInfo =
+            (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_material_key(),
-                .data = yaml_write_material(*pCreateInfo),
-            });
-        }
+        keyDataPairs.emplace_back(foeKeyYamlPair{
+            .key = yaml_material_key(),
+            .data = yaml_write_material(*pCreateInfo),
+        });
     }
 
-    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
-        auto createInfo = foeResourceGetCreateInfo(resource);
-        if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
-            foeMeshFileCreateInfo const *pCreateInfo =
-                (foeMeshFileCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
+        foeMeshFileCreateInfo const *pCreateInfo =
+            (foeMeshFileCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_mesh_file_key(),
-                .data = yaml_write_mesh_file(*pCreateInfo),
-            });
-        }
-        if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
-            foeMeshCubeCreateInfo const *pCreateInfo =
-                (foeMeshCubeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_mesh_cube_key(),
-                .data = yaml_write_mesh_cube(*pCreateInfo),
-            });
-        }
-        if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
-            foeMeshIcosphereCreateInfo const *pCreateInfo =
-                (foeMeshIcosphereCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_mesh_icosphere_key(),
-                .data = yaml_write_mesh_icosphere(*pCreateInfo),
-            });
-        }
+        keyDataPairs.emplace_back(foeKeyYamlPair{
+            .key = yaml_mesh_file_key(),
+            .data = yaml_write_mesh_file(*pCreateInfo),
+        });
     }
 
-    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
-        auto createInfo = foeResourceGetCreateInfo(resource);
-        if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO) {
-            auto const *pCreateInfo =
-                (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
+        foeMeshCubeCreateInfo const *pCreateInfo =
+            (foeMeshCubeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_shader_key(),
-                .data = yaml_write_shader(*pCreateInfo),
-            });
-        }
+        keyDataPairs.emplace_back(foeKeyYamlPair{
+            .key = yaml_mesh_cube_key(),
+            .data = yaml_write_mesh_cube(*pCreateInfo),
+        });
+    }
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
+        foeMeshIcosphereCreateInfo const *pCreateInfo =
+            (foeMeshIcosphereCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
+        keyDataPairs.emplace_back(foeKeyYamlPair{
+            .key = yaml_mesh_icosphere_key(),
+            .data = yaml_write_mesh_icosphere(*pCreateInfo),
+        });
     }
 
-    if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
-        auto createInfo = foeResourceGetCreateInfo(resource);
-        if (foeResourceCreateInfoGetType(createInfo) ==
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO) {
-            auto const *pCreateInfo =
-                (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO) {
+        auto const *pCreateInfo =
+            (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
 
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_vertex_descriptor_key(),
-                .data = yaml_write_vertex_descriptor(*pCreateInfo),
-            });
-        }
+        keyDataPairs.emplace_back(foeKeyYamlPair{
+            .key = yaml_shader_key(),
+            .data = yaml_write_shader(*pCreateInfo),
+        });
+    }
+
+    if (foeResourceCreateInfoGetType(createInfo) ==
+        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO) {
+        auto const *pCreateInfo =
+            (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+
+        keyDataPairs.emplace_back(foeKeyYamlPair{
+            .key = yaml_vertex_descriptor_key(),
+            .data = yaml_write_vertex_descriptor(*pCreateInfo),
+        });
     }
 
     return keyDataPairs;

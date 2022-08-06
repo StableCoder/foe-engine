@@ -30,7 +30,7 @@ namespace {
 
 std::shared_mutex gSync;
 
-std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulation const *)> gResourceFns;
+std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceCreateInfo)> gResourceFns;
 std::vector<std::vector<foeKeyYamlPair> (*)(foeEntityID, foeSimulation const *)> gComponentFns;
 
 void emitYaml(std::filesystem::path emitPath, YAML::Node const &rootNode) {
@@ -79,8 +79,7 @@ std::string id_to_filename(foeId id, std::string const &editorName) {
 YAML::Node exportResource(
     foeResourceID resourceID,
     std::string const &name,
-    std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceID, foeSimulation const *)> const
-        &resourceFns,
+    std::vector<std::vector<foeKeyYamlPair> (*)(foeResourceCreateInfo)> const &resourceFns,
     foeSimulation const *pSimulation) {
     YAML::Node rootNode;
 
@@ -90,12 +89,34 @@ YAML::Node exportResource(
         yaml_write_required("editor_name", name, rootNode);
     }
 
+    // Get the CreateInfo for a resource
+    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
+    foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
+
+    if (resource != FOE_NULL_HANDLE) {
+        resourceCI = foeResourceGetCreateInfo(resource);
+    }
+
+    if (resourceCI == FOE_NULL_HANDLE) {
+        foeResultSet result =
+            foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &resourceCI);
+        if (result.value != FOE_SUCCESS)
+            // @todo Properly handle failure to find CreateInfo
+            std::abort();
+
+        foeResourceCreateInfoIncrementRefCount(resourceCI);
+    }
+
     for (auto const &fn : resourceFns) {
-        auto keyDataPairs = fn(resourceID, pSimulation);
+        auto keyDataPairs = fn(resourceCI);
 
         for (auto const &it : keyDataPairs) {
             rootNode[it.key] = it.data;
         }
+    }
+
+    if (foeResourceCreateInfoDecrementRefCount(resourceCI) == 0) {
+        foeDestroyResourceCreateInfo(resourceCI);
     }
 
     return rootNode;
@@ -531,7 +552,7 @@ EXPORT_FAILED:
 }
 
 foeResultSet foeImexYamlRegisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *)) {
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceCreateInfo)) {
     std::scoped_lock lock{gSync};
 
     for (auto const &it : gResourceFns) {
@@ -545,7 +566,7 @@ foeResultSet foeImexYamlRegisterResourceFn(
 }
 
 foeResultSet foeImexYamlDeregisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *)) {
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceCreateInfo)) {
     std::scoped_lock lock{gSync};
 
     auto searchIt = std::find(gResourceFns.begin(), gResourceFns.end(), pResourceFn);

@@ -7,6 +7,7 @@
 
 #include <foe/ecs/id.h>
 #include <foe/imex/yaml/export.h>
+#include <foe/resource/create_info.h>
 #include <foe/result.h>
 #include <yaml-cpp/yaml.h>
 
@@ -22,10 +23,10 @@ struct foeKeyYamlPair {
 };
 
 FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlRegisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *));
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceCreateInfo));
 
 FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlDeregisterResourceFn(
-    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceID, foeSimulation const *));
+    std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceCreateInfo));
 
 FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlRegisterComponentFn(
     std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *));
