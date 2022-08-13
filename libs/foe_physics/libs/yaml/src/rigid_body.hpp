@@ -6,7 +6,7 @@
 #define RIGID_BODY_HPP
 
 #include <foe/ecs/group_translator.h>
-#include <foe/physics/component/rigid_body.hpp>
+#include <foe/physics/component/rigid_body.h>
 #include <yaml-cpp/yaml.h>
 
 char const *yaml_rigid_body_key();

@@ -5,7 +5,7 @@
 #include <foe/physics/system.hpp>
 
 #include <foe/ecs/id_to_string.hpp>
-#include <foe/physics/component/rigid_body.hpp>
+#include <foe/physics/component/rigid_body.h>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/type_defs.h>

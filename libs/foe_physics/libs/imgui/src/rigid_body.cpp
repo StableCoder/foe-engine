@@ -5,7 +5,7 @@
 #include "rigid_body.hpp"
 
 #include <foe/ecs/id_to_string.hpp>
-#include <foe/physics/component/rigid_body.hpp>
+#include <foe/physics/component/rigid_body.h>
 #include <imgui.h>
 
 void imgui_foeRigidBody(foeRigidBody *pComponent) {

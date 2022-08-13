@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_PHYSICS_COMPONENT_RIGID_BODY_HPP
-#define FOE_PHYSICS_COMPONENT_RIGID_BODY_HPP
+#ifndef FOE_PHYSICS_COMPONENT_RIGID_BODY_H
+#define FOE_PHYSICS_COMPONENT_RIGID_BODY_H
 
-#include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.h>
+
+typedef class btRigidBody btRigidBody;
 
 struct foeRigidBody {
     btRigidBody *pRigidBody;
@@ -14,4 +15,4 @@ struct foeRigidBody {
     foeResourceID collisionShape;
 };
 
-#endif // FOE_PHYSICS_COMPONENT_RIGID_BODY_HPP
+#endif // FOE_PHYSICS_COMPONENT_RIGID_BODY_H

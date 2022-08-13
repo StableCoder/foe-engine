@@ -7,7 +7,7 @@
 
 #include <foe/data_pool.hpp>
 #include <foe/ecs/id.h>
-#include <foe/physics/component/rigid_body.hpp>
+#include <foe/physics/component/rigid_body.h>
 #include <foe/physics/type_defs.h>
 
 class foeRigidBodyPool : public foeDataPool<foeEntityID, foeRigidBody> {
