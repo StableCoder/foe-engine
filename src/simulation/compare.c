@@ -11,15 +11,17 @@
 bool compare_AnimationImportInfo(AnimationImportInfo const *pData1,
                                  AnimationImportInfo const *pData2) {
     // char const * - pFile[null-terminated]
-    if (pData1->pFile != pData2->pFile || pData1->pFile == NULL || pData2->pFile == NULL ||
-        strcmp(pData1->pFile, pData2->pFile) != 0) {
-        return false;
+    if (pData1->pFile != pData2->pFile) {
+        if (pData1->pFile == NULL || pData2->pFile == NULL ||
+            strcmp(pData1->pFile, pData2->pFile) != 0)
+            return false;
     }
 
     // char const * - pName[null-terminated]
-    if (pData1->pName != pData2->pName || pData1->pName == NULL || pData2->pName == NULL ||
-        strcmp(pData1->pName, pData2->pName) != 0) {
-        return false;
+    if (pData1->pName != pData2->pName) {
+        if (pData1->pName == NULL || pData2->pName == NULL ||
+            strcmp(pData1->pName, pData2->pName) != 0)
+            return false;
     }
 
     return true;
@@ -33,16 +35,17 @@ bool compare_foeArmatureCreateInfo(foeArmatureCreateInfo const *pData1,
     }
 
     // char const * - pFile[null-terminated]
-    if (pData1->pFile != pData2->pFile || pData1->pFile == NULL || pData2->pFile == NULL ||
-        strcmp(pData1->pFile, pData2->pFile) != 0) {
-        return false;
+    if (pData1->pFile != pData2->pFile) {
+        if (pData1->pFile == NULL || pData2->pFile == NULL ||
+            strcmp(pData1->pFile, pData2->pFile) != 0)
+            return false;
     }
 
     // char const * - pRootArmatureNode[null-terminated]
-    if (pData1->pRootArmatureNode != pData2->pRootArmatureNode ||
-        pData1->pRootArmatureNode == NULL || pData2->pRootArmatureNode == NULL ||
-        strcmp(pData1->pRootArmatureNode, pData2->pRootArmatureNode) != 0) {
-        return false;
+    if (pData1->pRootArmatureNode != pData2->pRootArmatureNode) {
+        if (pData1->pRootArmatureNode == NULL || pData2->pRootArmatureNode == NULL ||
+            strcmp(pData1->pRootArmatureNode, pData2->pRootArmatureNode) != 0)
+            return false;
     }
 
     // AnimationImportInfo* - pAnimations[animationCount]

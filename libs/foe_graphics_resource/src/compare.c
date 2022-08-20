@@ -17,9 +17,10 @@
 bool compare_foeImageCreateInfo(foeImageCreateInfo const *pData1,
                                 foeImageCreateInfo const *pData2) {
     // char const * - pFile[null-terminated]
-    if (pData1->pFile != pData2->pFile || pData1->pFile == NULL || pData2->pFile == NULL ||
-        strcmp(pData1->pFile, pData2->pFile) != 0) {
-        return false;
+    if (pData1->pFile != pData2->pFile) {
+        if (pData1->pFile == NULL || pData2->pFile == NULL ||
+            strcmp(pData1->pFile, pData2->pFile) != 0)
+            return false;
     }
 
     return true;
@@ -28,15 +29,17 @@ bool compare_foeImageCreateInfo(foeImageCreateInfo const *pData1,
 bool compare_foeMeshFileCreateInfo(foeMeshFileCreateInfo const *pData1,
                                    foeMeshFileCreateInfo const *pData2) {
     // char const * - pFile[null-terminated]
-    if (pData1->pFile != pData2->pFile || pData1->pFile == NULL || pData2->pFile == NULL ||
-        strcmp(pData1->pFile, pData2->pFile) != 0) {
-        return false;
+    if (pData1->pFile != pData2->pFile) {
+        if (pData1->pFile == NULL || pData2->pFile == NULL ||
+            strcmp(pData1->pFile, pData2->pFile) != 0)
+            return false;
     }
 
     // char const * - pMesh[null-terminated]
-    if (pData1->pMesh != pData2->pMesh || pData1->pMesh == NULL || pData2->pMesh == NULL ||
-        strcmp(pData1->pMesh, pData2->pMesh) != 0) {
-        return false;
+    if (pData1->pMesh != pData2->pMesh) {
+        if (pData1->pMesh == NULL || pData2->pMesh == NULL ||
+            strcmp(pData1->pMesh, pData2->pMesh) != 0)
+            return false;
     }
 
     // unsigned int - postProcessFlags
@@ -116,9 +119,10 @@ bool compare_foeMaterialCreateInfo(foeMaterialCreateInfo const *pData1,
 bool compare_foeShaderCreateInfo(foeShaderCreateInfo const *pData1,
                                  foeShaderCreateInfo const *pData2) {
     // char const * - pFile[null-terminated]
-    if (pData1->pFile != pData2->pFile || pData1->pFile == NULL || pData2->pFile == NULL ||
-        strcmp(pData1->pFile, pData2->pFile) != 0) {
-        return false;
+    if (pData1->pFile != pData2->pFile) {
+        if (pData1->pFile == NULL || pData2->pFile == NULL ||
+            strcmp(pData1->pFile, pData2->pFile) != 0)
+            return false;
     }
 
     // foeGfxVkShaderCreateInfo - gfxCreateInfo
