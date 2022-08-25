@@ -14,12 +14,9 @@ extern "C" {
 
 typedef enum foeWsiResult {
     FOE_WSI_SUCCESS = 0,
-    FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND,
-    FOE_WSI_ERROR_FAILED_TO_CREATE_WINDOW,
-    FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED,
-
-    // Need to have a negative enum value to prevent treatment as a flag
-    FOE_WSI_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+    FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND = -1,
+    FOE_WSI_ERROR_FAILED_TO_CREATE_WINDOW = -2,
+    FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED = -3,
 } foeWsiResult;
 
 FOE_WSI_EXPORT void foeWsiResultToString(foeWsiResult value,

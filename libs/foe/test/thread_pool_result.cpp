@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
-
 #include <foe/split_thread_pool.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
@@ -17,11 +16,11 @@ TEST_CASE("foeSplitThreadResult - Ensure error codes return correct values and s
 
     SECTION("Generic non-existant negative value") {
         foeSplitThreadResultToString((foeSplitThreadResult)FOE_RESULT_MIN_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_THREAD_POOL_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string_view{resultString} == "FOE_SPLIT_THREAD_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foeSplitThreadResultToString((foeSplitThreadResult)FOE_RESULT_MAX_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_THREAD_POOL_UNKNOWN_SUCCESS_2147483647");
+        CHECK(std::string_view{resultString} == "FOE_SPLIT_THREAD_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_THREAD_POOL_SUCCESS)

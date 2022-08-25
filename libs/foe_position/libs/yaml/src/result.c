@@ -20,7 +20,6 @@ void foePositionYamlResultToString(foePositionYamlResult value,
 
     switch (value) {
         RESULT_CASE(FOE_POSITION_YAML_SUCCESS)
-        // Position3D
         RESULT_CASE(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER)
         RESULT_CASE(FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER)
 

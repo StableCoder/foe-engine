@@ -40,16 +40,16 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
             renderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pColourTargetImageData == nullptr)
-        return to_foeResult(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE);
+        return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE);
     if (!pColourTargetImageData->isMutable)
-        return to_foeResult(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE);
+        return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE);
 
     // Get the render target's previous layout
     auto const *pColourTargetState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
         renderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
 
     if (pColourTargetState == nullptr)
-        return to_foeResult(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_MISSING_STATE);
+        return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_MISSING_STATE);
 
     // Job Data
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,

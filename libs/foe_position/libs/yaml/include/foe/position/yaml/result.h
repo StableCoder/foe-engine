@@ -14,12 +14,8 @@ extern "C" {
 
 typedef enum foePositionYamlResult {
     FOE_POSITION_YAML_SUCCESS = 0,
-    // Position3D Component
-    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER,
-    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER,
-
-    // Need to have a negative enum value to prevent treatment as a flag
-    FOE_POSITION_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_IMPORTER = -1,
+    FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER = -2,
 } foePositionYamlResult;
 
 FOE_POSITION_YAML_EXPORT void foePositionYamlResultToString(

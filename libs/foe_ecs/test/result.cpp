@@ -11,7 +11,7 @@
         CHECK(std::string_view{resultString} == #X);                                               \
     }
 
-TEST_CASE("Ensure error codes return correct values and strings") {
+TEST_CASE("foeEcsResult - Ensure error codes return correct values and strings") {
     char resultString[FOE_MAX_RESULT_STRING_SIZE];
 
     SECTION("Generic non-existant negative value") {

@@ -7,7 +7,6 @@
 // or the 'make autogenerate_code_foe_position_yaml' target.
 
 #include <catch.hpp>
-
 #include <foe/position/yaml/result.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \

@@ -29,6 +29,7 @@ target_sources(
           managed_memory.cpp
           memory_mapped_file.cpp
           plugin.cpp
+          result.cpp
           search_paths.cpp)
 
 target_link_libraries(test_foe PRIVATE catch foe)

@@ -23,10 +23,10 @@ void foeOpenXrVkResultToString(foeOpenXrVkResult value, char buffer[FOE_MAX_RESU
 
     default:
         if (value > 0) {
-            sprintf(buffer, "FOE_OPENXR_VK_UNKNOWN_SUCCESS_%i", value);
+            sprintf(buffer, "FOE_OPEN_XR_VK_UNKNOWN_SUCCESS_%i", value);
         } else {
             value = abs(value);
-            sprintf(buffer, "FOE_OPENXR_VK_UNKNOWN_ERROR_%i", value);
+            sprintf(buffer, "FOE_OPEN_XR_VK_UNKNOWN_ERROR_%i", value);
         }
     }
 

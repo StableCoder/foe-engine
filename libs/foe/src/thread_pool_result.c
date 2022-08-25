@@ -29,10 +29,10 @@ void foeSplitThreadResultToString(foeSplitThreadResult value,
 
     default:
         if (value > 0) {
-            sprintf(buffer, "FOE_THREAD_POOL_UNKNOWN_SUCCESS_%i", value);
+            sprintf(buffer, "FOE_SPLIT_THREAD_UNKNOWN_SUCCESS_%i", value);
         } else {
             value = abs(value);
-            sprintf(buffer, "FOE_THREAD_POOL_UNKNOWN_ERROR_%i", value);
+            sprintf(buffer, "FOE_SPLIT_THREAD_UNKNOWN_ERROR_%i", value);
         }
     }
 

@@ -14,10 +14,10 @@ extern "C" {
 
 typedef enum foeOpenXrResult {
     FOE_OPENXR_SUCCESS = 0,
-    FOE_OPENXR_INCOMPLETE,
+    FOE_OPENXR_INCOMPLETE = 1,
 
     // Need to have a negative enum value to prevent treatment as a flag
-    FOE_OPENXR_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+    FOE_OPENXR_RESULT_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
 } foeOpenXrResult;
 
 FOE_XR_EXPORT void foeOpenXrResultToString(foeOpenXrResult value,

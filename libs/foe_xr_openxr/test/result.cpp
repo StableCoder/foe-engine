@@ -7,21 +7,20 @@
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
-        char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
-        foeOpenXrResultToString(X, buffer);                                                        \
-        CHECK(std::string_view{buffer} == #X);                                                     \
+        foeOpenXrResultToString(X, resultString);                                                  \
+        CHECK(std::string_view{resultString} == #X);                                               \
     }
 
-TEST_CASE("Ensure error codes return correct values and strings") {
+TEST_CASE("foeOpenXrResult - Ensure error codes return correct values and strings") {
     char resultString[FOE_MAX_RESULT_STRING_SIZE];
 
     SECTION("Generic non-existant negative value") {
         foeOpenXrResultToString((foeOpenXrResult)FOE_RESULT_MIN_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_OPENXR_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string_view{resultString} == "FOE_OPEN_XR_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foeOpenXrResultToString((foeOpenXrResult)FOE_RESULT_MAX_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_OPENXR_UNKNOWN_SUCCESS_2147483647");
+        CHECK(std::string_view{resultString} == "FOE_OPEN_XR_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_OPENXR_SUCCESS)
