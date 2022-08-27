@@ -21,3 +21,8 @@ target_include_directories(foe_position_yaml
 target_link_libraries(foe_position_yaml PUBLIC foe_imex_yaml foe_position)
 
 target_code_coverage(foe_position_yaml)
+
+# Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()

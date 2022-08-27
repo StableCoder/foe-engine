@@ -24,3 +24,8 @@ target_link_libraries(
                                     foe_graphics_vk_yaml foe_imex_yaml)
 
 target_code_coverage(foe_graphics_resource_yaml)
+
+# Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()

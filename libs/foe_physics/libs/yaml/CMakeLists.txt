@@ -22,3 +22,8 @@ target_link_libraries(foe_physics_yaml PUBLIC foe_ecs_yaml foe_physics foe_yaml
                                               foe_imex_yaml)
 
 target_code_coverage(foe_physics_yaml)
+
+# Auxiliary Targets
+if(BUILD_TESTS)
+  add_subdirectory(test)
+endif()
