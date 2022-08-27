@@ -21,8 +21,8 @@ target_include_directories(
                               ../../src)
 
 target_link_libraries(
-  foe_graphics_vk_yaml PUBLIC foe_graphics_yaml foe_graphics_vk foe_yaml
-                              vk_struct_cleanup vk_value_serialization)
+  foe_graphics_vk_yaml PUBLIC foe_ecs foe_graphics_yaml foe_graphics_vk
+                              foe_yaml vk_struct_cleanup vk_value_serialization)
 
 target_code_coverage(foe_graphics_vk_yaml)
 

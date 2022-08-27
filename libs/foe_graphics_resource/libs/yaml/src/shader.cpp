@@ -7,61 +7,8 @@
 #include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/shader_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/vk/yaml/shader.hpp>
+#include <foe/graphics/resource/yaml/structs.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
-
-#include <string.h>
-
-namespace {
-
-bool yaml_read_shader_internal(std::string const &nodeName,
-                               YAML::Node const &node,
-                               foeEcsGroupTranslator groupTranslator,
-                               foeShaderCreateInfo &createInfo) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    try {
-        std::string tempStr;
-        yaml_read_required("spirv_source", subNode, tempStr);
-        createInfo.pFile = (char *)malloc(tempStr.size() + 1);
-        memcpy((char *)createInfo.pFile, tempStr.c_str(), tempStr.size() + 1);
-
-        yaml_read_gfx_shader("graphics_data", subNode, createInfo.gfxCreateInfo);
-    } catch (foeYamlException const &e) {
-        throw foeYamlException(nodeName + "::" + e.what());
-    }
-
-    return true;
-}
-
-bool yaml_write_shader_internal(std::string const &nodeName,
-                                foeShaderCreateInfo const &data,
-                                YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        yaml_write_required("spirv_source", std::string{data.pFile}, writeNode);
-
-        yaml_write_gfx_shader("graphics_data", data.gfxCreateInfo, writeNode);
-    } catch (...) {
-        throw foeYamlException(nodeName +
-                               " - Failed to serialize 'foeFragmentDescriptor' definition");
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-
-    return true;
-}
-
-} // namespace
 
 char const *yaml_shader_key() { return "shader_v1"; }
 
@@ -71,7 +18,7 @@ void yaml_read_shader(YAML::Node const &node,
     foeShaderCreateInfo shaderCI;
     foeResourceCreateInfo createInfo;
 
-    yaml_read_shader_internal(yaml_shader_key(), node, groupTranslator, shaderCI);
+    yaml_read_foeShaderCreateInfo(yaml_shader_key(), node, shaderCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeShaderCreateInfo *)pSrc;
@@ -95,7 +42,7 @@ void yaml_read_shader(YAML::Node const &node,
 auto yaml_write_shader(foeShaderCreateInfo const &data) -> YAML::Node {
     YAML::Node definition;
 
-    yaml_write_shader_internal("", data, definition);
+    yaml_write_foeShaderCreateInfo("", data, definition);
 
     return definition;
 }

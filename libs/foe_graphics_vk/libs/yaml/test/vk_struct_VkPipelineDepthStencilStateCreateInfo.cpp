@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
+#include <foe/graphics/vk/yaml/vk_structs.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
 #include <vk_struct_compare.h>
 #include <yaml-cpp/emitter.h>
 
@@ -31,7 +31,7 @@ constexpr VkPipelineDepthStencilStateCreateInfo cFilledData{
 
 } // namespace
 
-TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
+TEST_CASE("yaml_read - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
     SECTION("Exists as empty node and is successful") {
         std::string testStr = R"(test_struct: ~)";
         YAML::Node testNode;
@@ -39,7 +39,7 @@ TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][y
 
         REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
 
-        REQUIRE_NOTHROW(yaml_read_required("test_struct", testNode, data));
+        REQUIRE(yaml_read_VkPipelineDepthStencilStateCreateInfo("test_struct", testNode, data));
 
         VkPipelineDepthStencilStateCreateInfo cmpData{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
@@ -49,117 +49,40 @@ TEST_CASE("yaml_read_required - VkPipelineDepthStencilStateCreateInfo", "[foe][y
 
     SECTION("Exists as node with data and is successful") {
         std::string testStr = R"(test_struct:
-  depthCompareOp: GREATER
+  depth_compare_op: GREATER
   front:
-    failOp: INVERT
-    writeMask: 12
+    fail_op: INVERT
+    write_mask: 12
   back:
-    failOp: REPLACE
-    writeMask: 10
-  maxDepthBounds: 1024.5)";
+    fail_op: REPLACE
+    write_mask: 10
+  max_depth_bounds: 1024.5)";
         YAML::Node testNode;
         VkPipelineDepthStencilStateCreateInfo data{};
 
         REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
 
-        REQUIRE_NOTHROW(yaml_read_required("test_struct", testNode, data));
-
-        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(&data, &cFilledData));
-    }
-
-    SECTION("Node doesn't exist and it throws an appropriate exception") {
-        YAML::Node testNode;
-        VkPipelineDepthStencilStateCreateInfo data;
-
-        REQUIRE_NOTHROW(testNode = YAML::Load(R"(test_struct_adsdads: ~)"));
-
-        REQUIRE_THROWS_MATCHES(yaml_read_required("test_struct", testNode, data), foeYamlException,
-                               Catch::Matchers::Contains(" - Required node not found"));
-    }
-}
-
-TEST_CASE("yaml_read_optional - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
-    SECTION("Exists as empty node and is successful") {
-        std::string testStr = R"(test_struct: ~)";
-        YAML::Node testNode;
-        VkPipelineDepthStencilStateCreateInfo data{};
-
-        REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
-
-        REQUIRE_NOTHROW(yaml_read_optional("test_struct", testNode, data));
-
-        VkPipelineDepthStencilStateCreateInfo cmpData{};
-        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(&data, &cmpData));
-    }
-
-    SECTION("Exists as node with data and is successful") {
-        std::string testStr = R"(test_struct:
-  depthCompareOp: GREATER
-  front:
-    failOp: INVERT
-    writeMask: 12
-  back:
-    failOp: REPLACE
-    writeMask: 10
-  maxDepthBounds: 1024.5)";
-        YAML::Node testNode;
-        VkPipelineDepthStencilStateCreateInfo data{};
-
-        REQUIRE_NOTHROW(testNode = YAML::Load(testStr));
-
-        REQUIRE_NOTHROW(yaml_read_optional("test_struct", testNode, data));
-
-        REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(&data, &cFilledData));
-    }
-
-    SECTION("Node doesn't exist and it doesn't throw an exception") {
-        YAML::Node testNode;
-        VkPipelineDepthStencilStateCreateInfo data{cFilledData};
-
-        REQUIRE_NOTHROW(testNode = YAML::Load(R"(test_struct_adsdads: ~)"));
-
-        REQUIRE_NOTHROW(yaml_read_optional("test_struct", testNode, data));
+        REQUIRE_NOTHROW(
+            yaml_read_VkPipelineDepthStencilStateCreateInfo("test_struct", testNode, data));
 
         REQUIRE(compare_VkPipelineDepthStencilStateCreateInfo(&data, &cFilledData));
     }
 }
 
-TEST_CASE("yaml_write_required - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
+TEST_CASE("yaml_write - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
     YAML::Node dataNode;
 
     SECTION("Zero-filled struct") {
         VkPipelineDepthStencilStateCreateInfo data{};
 
-        REQUIRE_NOTHROW(yaml_write_required("test_struct", data, dataNode));
+        REQUIRE_NOTHROW(
+            yaml_write_VkPipelineDepthStencilStateCreateInfo("test_struct", data, dataNode));
 
         YAML::Emitter emitter;
         emitter << dataNode;
 
         REQUIRE(std::string{emitter.c_str()} == R"(test_struct:
-  flags: ""
-  depthTestEnable: 0
-  depthWriteEnable: 0
-  depthCompareOp: NEVER
-  depthBoundsTestEnable: 0
-  stencilTestEnable: 0
-  front:
-    failOp: KEEP
-    passOp: KEEP
-    depthFailOp: KEEP
-    compareOp: NEVER
-    compareMask: 0
-    writeMask: 0
-    reference: 0
-  back:
-    failOp: KEEP
-    passOp: KEEP
-    depthFailOp: KEEP
-    compareOp: NEVER
-    compareMask: 0
-    writeMask: 0
-    reference: 0
-  minDepthBounds: 0
-  maxDepthBounds: 0)");
+  depth_compare_op: NEVER)");
     }
 
     SECTION("Filled-in sType and pNext isn't written out") {
@@ -168,36 +91,14 @@ TEST_CASE("yaml_write_required - VkPipelineDepthStencilStateCreateInfo", "[foe][
             .pNext = &data,
         };
 
-        REQUIRE_NOTHROW(yaml_write_required("test_struct", data, dataNode));
+        REQUIRE_NOTHROW(
+            yaml_write_VkPipelineDepthStencilStateCreateInfo("test_struct", data, dataNode));
 
         YAML::Emitter emitter;
         emitter << dataNode;
 
         REQUIRE(std::string{emitter.c_str()} == R"(test_struct:
-  flags: ""
-  depthTestEnable: 0
-  depthWriteEnable: 0
-  depthCompareOp: NEVER
-  depthBoundsTestEnable: 0
-  stencilTestEnable: 0
-  front:
-    failOp: KEEP
-    passOp: KEEP
-    depthFailOp: KEEP
-    compareOp: NEVER
-    compareMask: 0
-    writeMask: 0
-    reference: 0
-  back:
-    failOp: KEEP
-    passOp: KEEP
-    depthFailOp: KEEP
-    compareOp: NEVER
-    compareMask: 0
-    writeMask: 0
-    reference: 0
-  minDepthBounds: 0
-  maxDepthBounds: 0)");
+  depth_compare_op: NEVER)");
     }
 
     SECTION("Custom data written out") {
@@ -214,86 +115,26 @@ TEST_CASE("yaml_write_required - VkPipelineDepthStencilStateCreateInfo", "[foe][
                                                        },
                                                    .maxDepthBounds = 1024.5f};
 
-        REQUIRE_NOTHROW(yaml_write_required("test_struct", data, dataNode));
+        REQUIRE_NOTHROW(
+            yaml_write_VkPipelineDepthStencilStateCreateInfo("test_struct", data, dataNode));
 
         YAML::Emitter emitter;
         emitter << dataNode;
 
         REQUIRE(std::string{emitter.c_str()} == R"(test_struct:
-  flags: ""
-  depthTestEnable: 0
-  depthWriteEnable: 0
-  depthCompareOp: GREATER
-  depthBoundsTestEnable: 0
-  stencilTestEnable: 0
+  depth_compare_op: GREATER
   front:
-    failOp: INVERT
-    passOp: KEEP
-    depthFailOp: KEEP
-    compareOp: NEVER
-    compareMask: 0
-    writeMask: 12
-    reference: 0
+    fail_op: INVERT
+    pass_op: KEEP
+    depth_fail_op: KEEP
+    compare_op: NEVER
+    write_mask: 12
   back:
-    failOp: REPLACE
-    passOp: KEEP
-    depthFailOp: KEEP
-    compareOp: NEVER
-    compareMask: 0
-    writeMask: 10
-    reference: 0
-  minDepthBounds: 0
-  maxDepthBounds: 1024.5)");
-    }
-}
-
-TEST_CASE("yaml_write_optional - VkPipelineDepthStencilStateCreateInfo", "[foe][yaml][vulkan]") {
-    YAML::Node dataNode;
-
-    SECTION("Zero-filled struct") {
-        VkPipelineDepthStencilStateCreateInfo data{};
-
-        REQUIRE_FALSE(yaml_write_optional("test_struct", VkPipelineDepthStencilStateCreateInfo{},
-                                          data, dataNode));
-
-        YAML::Emitter emitter;
-        emitter << dataNode;
-
-        REQUIRE(std::string{emitter.c_str()} == R"()");
-    }
-
-    SECTION("Filled-in sType and pNext isn't written out") {
-        VkPipelineDepthStencilStateCreateInfo data{
-            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-            .pNext = &data,
-        };
-
-        REQUIRE_FALSE(yaml_write_optional("test_struct", VkPipelineDepthStencilStateCreateInfo{},
-                                          data, dataNode));
-
-        YAML::Emitter emitter;
-        emitter << dataNode;
-
-        REQUIRE(std::string{emitter.c_str()} == R"()");
-    }
-
-    SECTION("Custom data written out") {
-        VkPipelineDepthStencilStateCreateInfo data{cFilledData};
-
-        REQUIRE(yaml_write_optional("test_struct", VkPipelineDepthStencilStateCreateInfo{}, data,
-                                    dataNode));
-
-        YAML::Emitter emitter;
-        emitter << dataNode;
-
-        REQUIRE(std::string{emitter.c_str()} == R"(test_struct:
-  depthCompareOp: GREATER
-  front:
-    failOp: INVERT
-    writeMask: 12
-  back:
-    failOp: REPLACE
-    writeMask: 10
-  maxDepthBounds: 1024.5)");
+    fail_op: REPLACE
+    pass_op: KEEP
+    depth_fail_op: KEEP
+    compare_op: NEVER
+    write_mask: 10
+  max_depth_bounds: 1024.5)");
     }
 }

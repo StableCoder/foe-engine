@@ -1,6 +1,7 @@
-tools/*.cpp
+data/fuzzed_test_data/
 fuzz_build/
 fuzz_corpus/
 fuzz_output/
+tools/*.cpp
 Vulkan-Docs/
 .gen_cache.xml

@@ -29,11 +29,13 @@ struct foeGfxVertexDescriptor {
     }
 
     auto getVertexInputSCI() noexcept -> VkPipelineVertexInputStateCreateInfo const * {
-        mVertexInputSCI.vertexBindingDescriptionCount = vertexInputBindingCount;
-        mVertexInputSCI.pVertexBindingDescriptions = pVertexInputBindings;
-
-        mVertexInputSCI.vertexAttributeDescriptionCount = vertexInputAttributeCount;
-        mVertexInputSCI.pVertexAttributeDescriptions = pVertexInputAttributes;
+        mVertexInputSCI = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+            .vertexBindingDescriptionCount = vertexInputBindingCount,
+            .pVertexBindingDescriptions = pVertexInputBindings,
+            .vertexAttributeDescriptionCount = vertexInputAttributeCount,
+            .pVertexAttributeDescriptions = pVertexInputAttributes,
+        };
 
         return &mVertexInputSCI;
     }

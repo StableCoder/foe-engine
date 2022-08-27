@@ -12,8 +12,7 @@
 #include <foe/imex/importer.h>
 #include <foe/simulation/simulation.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
-#include <yaml-cpp/yaml.h>
+#include <foe/yaml/pod.hpp>
 
 #include "common.hpp"
 #include "log.hpp"
@@ -83,10 +82,14 @@ YAML::Node exportResource(
     foeSimulation const *pSimulation) {
     YAML::Node rootNode;
 
-    yaml_write_id("", resourceID, rootNode);
+    if (resourceID == FOE_INVALID_ID) {
+        FOE_LOG(foeImexYaml, Error, "Attempted to export resource with invalid ID");
+        std::abort();
+    }
+    yaml_write_foeResourceID("", resourceID, rootNode);
 
     if (!name.empty()) {
-        yaml_write_required("editor_name", name, rootNode);
+        yaml_write_string("editor_name", name, rootNode);
     }
 
     // Get the CreateInfo for a resource
@@ -128,10 +131,14 @@ YAML::Node exportComponents(
     foeSimulation const *pSimulation) {
     YAML::Node rootNode;
 
-    yaml_write_id("", entity, rootNode);
+    if (entity == FOE_INVALID_ID) {
+        FOE_LOG(foeImexYaml, Error, "Attempted to export entity with invalid ID");
+        std::abort();
+    }
+    yaml_write_foeEntityID("", entity, rootNode);
 
     if (pName) {
-        yaml_write_required("editor_name", std::string{pName}, rootNode);
+        yaml_write_string("editor_name", std::string{pName}, rootNode);
     }
 
     for (auto const &fn : componentFns) {
@@ -456,10 +463,13 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
         // Loop through the yaml list, emitting data
         for (auto const &it : resourceData) {
             std::string name;
-            yaml_read_optional("editor_name", it, name);
+            yaml_read_string("editor_name", it, name);
 
             foeResourceID resourceID;
-            yaml_read_id_required("", it, nullptr, resourceID);
+            if (!yaml_read_foeResourceID("", it, nullptr, resourceID)) {
+                FOE_LOG(foeImexYaml, Error, "Failed to read top-level foeResourceID")
+                std::abort();
+            }
 
             emitYaml(dirPath / std::string{id_to_filename(resourceID, name) + ".yml"}, it);
         }
@@ -512,10 +522,13 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
         // Loop through the yaml list, emitting data
         for (auto const &it : entityData) {
             std::string name;
-            yaml_read_optional("editor_name", it, name);
+            yaml_read_string("editor_name", it, name);
 
             foeEntityID entityID;
-            yaml_read_id_required("", it, nullptr, entityID);
+            if (!yaml_read_foeEntityID("", it, nullptr, entityID)) {
+                FOE_LOG(foeImexYaml, Error, "Failed to read top-level foeEntityID");
+                std::abort();
+            }
 
             emitYaml(dirPath / std::string{id_to_filename(entityID, name) + ".yml"}, it);
         }

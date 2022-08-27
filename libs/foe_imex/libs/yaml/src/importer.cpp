@@ -11,7 +11,7 @@
 #include <foe/imex/type_defs.h>
 #include <foe/memory_mapped_file.h>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
+#include <foe/yaml/pod.hpp>
 
 #include "common.hpp"
 #include "import_functionality.hpp"
@@ -148,8 +148,8 @@ foeResultSet getDependencies(foeImexImporter importer,
         for (auto it = dependenciesNode.begin(); it != dependenciesNode.end(); ++it) {
             DependencyNode data;
 
-            yaml_read_required("name", *it, data.name);
-            yaml_read_required("group_id", *it, data.groupValue);
+            yaml_read_string("name", *it, data.name);
+            yaml_read_uint32_t("group_id", *it, data.groupValue);
 
             namesLength += data.name.size() + 1;
             dependencies.emplace_back(data);
@@ -257,11 +257,16 @@ foeResultSet importStateData(foeImexImporter importer,
 
         try {
             foeId entity;
-            yaml_read_id_required("", entityNode, pImporter->mGroupTranslator, entity);
+            if (!yaml_read_foeEntityID("", entityNode, pImporter->mGroupTranslator, entity)) {
+                FOE_LOG(foeImexYaml, Error,
+                        "Failed to read foeEntityID for entity data in file: {}",
+                        dirIt.path().string())
+                std::abort();
+            }
 
             if (nameMap != FOE_NULL_HANDLE) {
                 std::string editorName;
-                yaml_read_optional("editor_name", entityNode, editorName);
+                yaml_read_string("editor_name", entityNode, editorName);
 
                 if (!editorName.empty()) {
                     foeEcsNameMapAdd(nameMap, entity, editorName.c_str());
@@ -325,12 +330,16 @@ foeResultSet importResourceDefinitions(foeImexImporter importer,
 
         try {
             // ID
-            yaml_read_id_required("", node, pImporter->mGroupTranslator, resource);
-
+            if (!yaml_read_foeResourceID("", node, pImporter->mGroupTranslator, resource)) {
+                FOE_LOG(foeImexYaml, Error,
+                        "Failed to read foeResourceID for resource data in file: {}",
+                        dirIt.path().string())
+                std::abort();
+            }
             // Editor Name
             if (nameMap != FOE_NULL_HANDLE) {
                 std::string editorName;
-                yaml_read_optional("editor_name", node, editorName);
+                yaml_read_string("editor_name", node, editorName);
 
                 if (!editorName.empty()) {
                     foeEcsNameMapAdd(nameMap, resource, editorName.c_str());
@@ -431,14 +440,17 @@ OPENED_YAML_FILE:
     try {
         // ID
         foeResourceID readID;
-        yaml_read_id_required("", rootNode, nullptr, readID);
+        if (!yaml_read_foeResourceID("", rootNode, nullptr, readID)) {
+            FOE_LOG(foeImexYaml, Error, "Failed to read top-level foeResourceID from file")
+            std::abort();
+        }
 
         if (readID != foeIdCreate(foeIdPersistentGroup, resourceIndexID))
             std::abort();
 
         // Editor Name
         std::string editorName;
-        yaml_read_optional("editor_name", rootNode, editorName);
+        yaml_read_string("editor_name", rootNode, editorName);
 
         if (pName == NULL) {
             // If no return buffer provided, just return length of found name
@@ -602,7 +614,7 @@ foeResultSet foeCreateYamlImporter(foeIdGroup group,
 
     // If here, then we're clear to create the importer
     foeYamlImporter *pNewImporter = new (std::nothrow) foeYamlImporter{
-        .sType = NULL,
+        .sType = FOE_NULL_HANDLE,
         .pNext = &cImporterCalls,
         .mRootDir = pRootDir,
         .mGroup = group,

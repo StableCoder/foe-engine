@@ -7,44 +7,24 @@
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
+#include <foe/yaml/pod.hpp>
 
-void yaml_read_id_required(std::string const &nodeName,
-                           YAML::Node const &node,
-                           foeEcsGroupTranslator groupTranslator,
-                           foeId &id) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        throw foeYamlException(nodeName + " - Required node to parse foeId not found");
-    }
+namespace {
 
-    try {
-        if (!yaml_read_id_optional("", subNode, groupTranslator, id)) {
-            throw foeYamlException("index_id - Could not find required node to parse foeId");
-        }
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException(nodeName + "::" + e.whatStr());
-        }
-    }
-}
-
-bool yaml_read_id_optional(std::string const &nodeName,
-                           YAML::Node const &node,
-                           foeEcsGroupTranslator groupTranslator,
-                           foeId &id) {
+bool yaml_read_id(std::string const &nodeName,
+                  YAML::Node const &node,
+                  foeEcsGroupTranslator groupTranslator,
+                  foeId &id) {
     YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
     if (!subNode) {
         return false;
     }
 
     try {
-        // Group
+        // Group (Optional)
         foeIdGroup group;
         foeIdGroupValue groupValue = foeIdPersistentGroupValue;
-        yaml_read_optional("group_id", subNode, groupValue);
+        yaml_read_uint32_t("group_id", subNode, groupValue);
         if (groupTranslator != FOE_NULL_HANDLE) {
             foeResultSet result =
                 foeEcsGetTranslatedGroup(groupTranslator, foeIdValueToGroup(groupValue), &group);
@@ -61,8 +41,15 @@ bool yaml_read_id_optional(std::string const &nodeName,
 
         // Index
         foeIdIndex index;
-        if (!yaml_read_optional("index_id", subNode, index))
-            return false;
+        if (!yaml_read_uint32_t("index_id", subNode, index)) {
+            if (nodeName.empty()) {
+                throw foeYamlException{
+                    "index_id - Could not find required node to parse foe Index ID"};
+            } else {
+                throw foeYamlException{
+                    nodeName + "::index_id - Could not find required node to parse foe Index ID"};
+            }
+        }
 
         id = foeIdCreate(group, index);
     } catch (foeYamlException const &e) {
@@ -85,10 +72,10 @@ void yaml_write_id(std::string const &nodeName, foeId data, YAML::Node &node) {
     }
 
     try {
-        yaml_write_optional("group_id", foeIdGroupToString(foeIdPersistentGroup),
-                            foeIdGroupToString(foeIdGetGroup(data)), *pWriteNode);
+        if (foeIdGetGroup(data) != foeIdPersistentGroup)
+            yaml_write_string("group_id", foeIdGroupToString(foeIdGetGroup(data)), *pWriteNode);
 
-        yaml_write_required("index_id", foeIdIndexToString(foeIdIndexToValue(data)), *pWriteNode);
+        yaml_write_string("index_id", foeIdIndexToString(foeIdIndexToValue(data)), *pWriteNode);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
@@ -100,4 +87,28 @@ void yaml_write_id(std::string const &nodeName, foeId data, YAML::Node &node) {
     if (!nodeName.empty()) {
         node[nodeName] = newNode;
     }
+}
+
+} // namespace
+
+bool yaml_read_foeResourceID(std::string const &nodeName,
+                             YAML::Node const &node,
+                             foeEcsGroupTranslator groupTranslator,
+                             foeResourceID &id) {
+    return yaml_read_id(nodeName, node, groupTranslator, id);
+}
+
+bool yaml_read_foeEntityID(std::string const &nodeName,
+                           YAML::Node const &node,
+                           foeEcsGroupTranslator groupTranslator,
+                           foeId &id) {
+    return yaml_read_id(nodeName, node, groupTranslator, id);
+}
+
+void yaml_write_foeResourceID(std::string const &nodeName, foeResourceID id, YAML::Node &node) {
+    yaml_write_id(nodeName, id, node);
+}
+
+void yaml_write_foeEntityID(std::string const &nodeName, foeId id, YAML::Node &node) {
+    yaml_write_id(nodeName, id, node);
 }

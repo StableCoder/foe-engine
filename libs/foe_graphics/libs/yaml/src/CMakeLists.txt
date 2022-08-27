@@ -2,4 +2,4 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe_graphics_yaml PRIVATE builtin_descriptor_sets.cpp)
+target_sources(foe_graphics_yaml PRIVATE enums.cpp)

@@ -7,52 +7,10 @@
 #include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/mesh_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/model/assimp/flags.hpp>
+#include <foe/graphics/resource/yaml/structs.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
-
-#include <string.h>
 
 namespace {
-
-bool yaml_read_mesh_file_definition_internal(std::string const &nodeName,
-                                             YAML::Node const &node,
-                                             foeEcsGroupTranslator groupTranslator,
-                                             foeMeshFileCreateInfo &createInfo) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    try {
-        // Read the definition
-        createInfo = {};
-        std::string tempStr;
-
-        yaml_read_required("file", subNode, tempStr);
-        createInfo.pFile = (char *)malloc(tempStr.size() + 1);
-        memcpy((char *)createInfo.pFile, tempStr.c_str(), tempStr.size() + 1);
-
-        yaml_read_required("mesh_name", subNode, tempStr);
-        createInfo.pMesh = (char *)malloc(tempStr.size() + 1);
-        memcpy((char *)createInfo.pMesh, tempStr.c_str(), tempStr.size() + 1);
-
-        // Post process flags
-        std::string temp;
-        yaml_read_optional("post_process", subNode, temp);
-        if (!foe_model_assimp_parse(temp, &createInfo.postProcessFlags)) {
-            throw foeYamlException{"post_process - Failed to parse post-processing flags"};
-        }
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException{nodeName + "::" + e.what()};
-        }
-    }
-
-    return true;
-}
 
 bool yaml_read_mesh_cube_definition_internal(std::string const &nodeName,
                                              YAML::Node const &node,
@@ -77,60 +35,6 @@ bool yaml_read_mesh_cube_definition_internal(std::string const &nodeName,
     return true;
 }
 
-bool yaml_read_mesh_icosphere_definition_internal(std::string const &nodeName,
-                                                  YAML::Node const &node,
-                                                  foeEcsGroupTranslator groupTranslator,
-                                                  foeMeshIcosphereCreateInfo &createInfo) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    try {
-        // Read the definition
-        createInfo = {};
-
-        yaml_read_required("recursion", subNode, createInfo.recursion);
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException{nodeName + "::" + e.what()};
-        }
-    }
-
-    return true;
-}
-
-void yaml_write_mesh_file_internal(std::string const &nodeName,
-                                   foeMeshFileCreateInfo const &data,
-                                   YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        yaml_write_required("file", std::string{data.pFile}, writeNode);
-        yaml_write_required("mesh_name", std::string{data.pMesh}, writeNode);
-
-        std::string serialized;
-        if (!foe_model_assimp_serialize(data.postProcessFlags, &serialized)) {
-            throw foeYamlException{"post_process - Failed to serialize post-processing flags"};
-        }
-        yaml_write_optional("post_process", std::string{}, serialized, writeNode);
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException{nodeName + "::" + e.whatStr()};
-        }
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
 void yaml_write_mesh_cube_internal(std::string const &nodeName,
                                    foeMeshCubeCreateInfo const &data,
                                    YAML::Node &node) {
@@ -138,28 +42,6 @@ void yaml_write_mesh_cube_internal(std::string const &nodeName,
 
     try {
         writeNode = YAML::Node{};
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException{nodeName + "::" + e.whatStr()};
-        }
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-void yaml_write_mesh_icosphere_internal(std::string const &nodeName,
-                                        foeMeshIcosphereCreateInfo const &data,
-                                        YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        yaml_write_required("recusrion", data.recursion, writeNode);
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw e;
@@ -185,7 +67,7 @@ void yaml_read_mesh_file(YAML::Node const &node,
     foeMeshFileCreateInfo meshCI{};
     foeResourceCreateInfo createInfo;
 
-    yaml_read_mesh_file_definition_internal(yaml_mesh_file_key(), node, groupTranslator, meshCI);
+    yaml_read_foeMeshFileCreateInfo(yaml_mesh_file_key(), node, meshCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeMeshFileCreateInfo *)pSrc;
@@ -209,7 +91,7 @@ void yaml_read_mesh_file(YAML::Node const &node,
 auto yaml_write_mesh_file(foeMeshFileCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_mesh_file_internal("", data, outNode);
+    yaml_write_foeMeshFileCreateInfo("", data, outNode);
 
     return outNode;
 }
@@ -258,8 +140,7 @@ void yaml_read_mesh_icosphere(YAML::Node const &node,
     foeMeshIcosphereCreateInfo meshCI{};
     foeResourceCreateInfo createInfo;
 
-    yaml_read_mesh_icosphere_definition_internal(yaml_mesh_icosphere_key(), node, groupTranslator,
-                                                 meshCI);
+    yaml_read_foeMeshIcosphereCreateInfo(yaml_mesh_icosphere_key(), node, meshCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeMeshIcosphereCreateInfo *)pSrc;
@@ -282,7 +163,7 @@ void yaml_read_mesh_icosphere(YAML::Node const &node,
 auto yaml_write_mesh_icosphere(foeMeshIcosphereCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_mesh_icosphere_internal("", data, outNode);
+    yaml_write_foeMeshIcosphereCreateInfo("", data, outNode);
 
     return outNode;
 }

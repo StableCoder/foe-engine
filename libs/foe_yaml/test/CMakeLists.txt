@@ -11,7 +11,7 @@ add_executable(test_foe_yaml)
 
 # Definition
 target_sources(test_foe_yaml PRIVATE exception.cpp pod_bool_parsing.cpp
-                                     pod_int16_parsing.cpp)
+                                     pod_int16_parsing.cpp string_parsing.cpp)
 
 target_link_libraries(test_foe_yaml PRIVATE catch foe_yaml)
 
@@ -28,7 +28,7 @@ target_code_coverage(
   AUTO
   ALL
   OBJECTS
-  foe_wsi
+  foe_yaml
   EXCLUDE
   ${CMAKE_CURRENT_SOURCE_DIR}/.*
   ${CMAKE_SOURCE_DIR}/external/.*)

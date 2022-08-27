@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
+#include <foe/graphics/vk/cleanup.h>
 #include <foe/graphics/vk/shader.h>
 
 #include "create_test_session.hpp"
@@ -48,7 +49,7 @@ TEST_CASE("foeGfxShader(Vulkan)") {
             REQUIRE(result.value == FOE_SUCCESS);
             REQUIRE(shader != FOE_NULL_HANDLE);
 
-            foeCleanup_foeGfxVkShaderCreateInfo(&ci);
+            cleanup_foeGfxVkShaderCreateInfo(&ci);
 
             foeGfxDestroyShader(session, shader);
         }
@@ -61,7 +62,7 @@ TEST_CASE("foeGfxShader(Vulkan)") {
             REQUIRE(result.value == FOE_SUCCESS);
             REQUIRE(shader != FOE_NULL_HANDLE);
 
-            foeCleanup_foeGfxVkShaderCreateInfo(&ci);
+            cleanup_foeGfxVkShaderCreateInfo(&ci);
 
             foeGfxDestroyShader(session, shader);
         }

@@ -1,40 +1,36 @@
+// Copyright (C) 2020-2022 George Cave.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#include <foe/graphics/vk/yaml/vk_structs.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
 #include <vulkan/vulkan.h>
 
 #include <iostream>
 #include <string_view>
 
+typedef bool (*PFN_yamlRead)(std::string const &, YAML::Node const &, void *);
+
 #define SORT_MACRO(X)                                                                              \
     if (std::string_view{argv[1]} == #X) {                                                         \
-        sortType<X>(yamlData, testSet);                                                            \
+        sortType<X>(yamlData, testSet, (PFN_yamlRead)yaml_read_##X);                               \
     }
 
 template <typename T>
-void sortType(YAML::Node const &yamlData, std::string &testSet) {
+void sortType(YAML::Node const &yamlData, std::string &testSet, PFN_yamlRead readFn) {
     T data;
     try {
-        if (yaml_read_optional("", yamlData, data))
+        if (readFn("", yamlData, &data))
             testSet += '0';
         else
             testSet += '1';
     } catch (...) {
     }
     try {
-        if (yaml_read_optional("subNode", yamlData, data))
+        if (readFn("subNode", yamlData, &data))
             testSet += '2';
         else
             testSet += '3';
-    } catch (...) {
-    }
-    try {
-        yaml_read_required("", yamlData, data);
-        testSet += '4';
-    } catch (...) {
-    }
-    try {
-        yaml_read_required("subNode", yamlData, data);
-        testSet += '5';
     } catch (...) {
     }
 }

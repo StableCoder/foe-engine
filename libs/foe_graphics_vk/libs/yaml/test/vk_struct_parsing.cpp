@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
+#include <foe/graphics/vk/yaml/vk_structs.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
 #include <vk_struct_compare.h>
-#include <vulkan/vulkan.h>
+#include <yaml-cpp/yaml.h>
 
 #include <yaml-cpp/emitter.h>
 
@@ -15,8 +15,12 @@
 
 namespace {
 
+typedef bool (*PFN_yamlRead)(std::string const &, YAML::Node const &, void *);
+
 template <typename T>
-void runTest(std::filesystem::path path, bool (*pCompareFn)(T const *, T const *)) {
+void runTest(std::filesystem::path path,
+             bool (*pCompareFn)(T const *, T const *),
+             PFN_yamlRead pReadFn) {
     T data;
 
     if (!std::filesystem::exists(path))
@@ -30,33 +34,21 @@ void runTest(std::filesystem::path path, bool (*pCompareFn)(T const *, T const *
         setStr = setStr.substr(setStr.find_last_of('-'));
         setStr = setStr.substr(1, setStr.find_last_of('.') - 1);
 
-        // Optional Case
+        // Same-Node Case
         if (setStr.find('0') != std::string::npos)
-            CHECK(yaml_read_optional("", yamlData, data));
+            CHECK(pReadFn("", yamlData, &data));
         else if (setStr.find('1') != std::string::npos)
-            CHECK_FALSE(yaml_read_optional("", yamlData, data));
+            CHECK_FALSE(pReadFn("", yamlData, &data));
         else
-            CHECK_THROWS(yaml_read_optional("", yamlData, data));
+            CHECK_THROWS(pReadFn("", yamlData, &data));
 
-        // Optional Sub Case
+        // Sub-Node Case
         if (setStr.find('2') != std::string::npos)
-            CHECK(yaml_read_optional("subNode", yamlData, data));
+            CHECK(pReadFn("subNode", yamlData, &data));
         else if (setStr.find('3') != std::string::npos)
-            CHECK_FALSE(yaml_read_optional("subNode", yamlData, data));
+            CHECK_FALSE(pReadFn("subNode", yamlData, &data));
         else
-            CHECK_THROWS(yaml_read_optional("subNode", yamlData, data));
-
-        // Required Case
-        if (setStr.find('4') != std::string::npos)
-            CHECK_NOTHROW(yaml_read_required("", yamlData, data));
-        else
-            CHECK_THROWS(yaml_read_required("", yamlData, data));
-
-        // Required Sub Case
-        if (setStr.find('5') != std::string::npos)
-            CHECK_NOTHROW(yaml_read_required("subNode", yamlData, data));
-        else
-            CHECK_THROWS(yaml_read_required("subNode", yamlData, data));
+            CHECK_THROWS(pReadFn("subNode", yamlData, &data));
     }
 }
 
@@ -65,7 +57,7 @@ void runTest(std::filesystem::path path, bool (*pCompareFn)(T const *, T const *
 #define FUZZ_TEST_MACRO(X, Y)                                                                      \
     std::filesystem::path inputDir{X};                                                             \
     inputDir /= #Y;                                                                                \
-    runTest<Y>(inputDir, compare_##Y);
+    runTest<Y>(inputDir, compare_##Y, (PFN_yamlRead)yaml_read_##Y);
 
 TEST_CASE("VkPushConstantRange fuzzed input") {
     FUZZ_TEST_MACRO(FUZZED_TEST_DATA_DIR, VkPushConstantRange);

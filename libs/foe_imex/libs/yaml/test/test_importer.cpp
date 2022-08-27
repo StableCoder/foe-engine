@@ -20,7 +20,7 @@ bool importIdComponent(YAML::Node const &node,
         try {
             foeId readID;
 
-            yaml_read_id_required("", dataNode, groupTranslator, readID);
+            yaml_read_foeEntityID("", dataNode, groupTranslator, readID);
 
             return true;
         } catch (foeYamlException const &e) {

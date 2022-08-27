@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,8 +7,7 @@
 #include <CLI/CLI11.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
-#include <yaml-cpp/yaml.h>
+#include <foe/yaml/pod.hpp>
 
 #include "log.hpp"
 
@@ -80,11 +79,11 @@ bool parseEngineConfigFile(Settings *pOptions,
         // Window
         if (auto windowNode = config["window"]; windowNode) {
             try {
-                yaml_read_optional("have_window", windowNode, pOptions->window.enableWSI);
-                yaml_read_optional("implementation", windowNode, pOptions->window.implementation);
-                yaml_read_optional("width", windowNode, pOptions->window.width);
-                yaml_read_optional("height", windowNode, pOptions->window.height);
-                yaml_read_optional("vsync", windowNode, pOptions->window.vsync);
+                yaml_read_bool("have_window", windowNode, pOptions->window.enableWSI);
+                yaml_read_string("implementation", windowNode, pOptions->window.implementation);
+                yaml_read_uint32_t("width", windowNode, pOptions->window.width);
+                yaml_read_uint32_t("height", windowNode, pOptions->window.height);
+                yaml_read_bool("vsync", windowNode, pOptions->window.vsync);
             } catch (foeYamlException const &e) {
                 throw foeYamlException{"window::" + e.whatStr()};
             }
@@ -93,12 +92,12 @@ bool parseEngineConfigFile(Settings *pOptions,
         // Graphics
         if (auto graphicsNode = config["graphics"]; graphicsNode) {
             try {
-                yaml_read_optional("gpu", graphicsNode, pOptions->graphics.gpu);
-                yaml_read_optional("max_frame_buffering", graphicsNode,
+                yaml_read_uint32_t("gpu", graphicsNode, pOptions->graphics.gpu);
+                yaml_read_uint32_t("max_frame_buffering", graphicsNode,
                                    pOptions->graphics.maxFrameBuffering);
-                yaml_read_optional("msaa", graphicsNode, pOptions->graphics.msaa);
-                yaml_read_optional("validation", graphicsNode, pOptions->graphics.validation);
-                yaml_read_optional("debug_logging", graphicsNode, pOptions->graphics.debugLogging);
+                yaml_read_uint32_t("msaa", graphicsNode, pOptions->graphics.msaa);
+                yaml_read_bool("validation", graphicsNode, pOptions->graphics.validation);
+                yaml_read_bool("debug_logging", graphicsNode, pOptions->graphics.debugLogging);
             } catch (foeYamlException const &e) {
                 throw foeYamlException{"graphics::" + e.whatStr()};
             }
@@ -107,10 +106,10 @@ bool parseEngineConfigFile(Settings *pOptions,
         // Xr
         if (auto xrNode = config["xr"]; xrNode) {
             try {
-                yaml_read_optional("enable", xrNode, pOptions->xr.enableXr);
-                yaml_read_optional("force", xrNode, pOptions->xr.forceXr);
-                yaml_read_optional("validation", xrNode, pOptions->xr.validation);
-                yaml_read_optional("debug_logging", xrNode, pOptions->xr.debugLogging);
+                yaml_read_bool("enable", xrNode, pOptions->xr.enableXr);
+                yaml_read_bool("force", xrNode, pOptions->xr.forceXr);
+                yaml_read_bool("validation", xrNode, pOptions->xr.validation);
+                yaml_read_bool("debug_logging", xrNode, pOptions->xr.debugLogging);
             } catch (foeYamlException const &e) {
                 throw foeYamlException{"xr::" + e.whatStr()};
             }
@@ -121,7 +120,7 @@ bool parseEngineConfigFile(Settings *pOptions,
             try {
                 for (auto it = searchPathsNode.begin(); it != searchPathsNode.end(); ++it) {
                     std::string newPath;
-                    yaml_read_required("", *it, newPath);
+                    yaml_read_string("", *it, newPath);
 
                     auto writer = searchPaths.getWriter();
                     writer.searchPaths()->emplace_back(std::move(newPath));
@@ -147,12 +146,18 @@ void emitSettingsYaml(Settings const *pOptions, YAML::Node *pNode) {
             bool writeNode{false};
             YAML::Node windowNode;
 
-            writeNode |= yaml_write_optional("width", defaultOptions.window.width,
-                                             pOptions->window.width, windowNode);
-            writeNode |= yaml_write_optional("height", defaultOptions.window.height,
-                                             pOptions->window.height, windowNode);
-            writeNode |= yaml_write_optional("vsync", defaultOptions.window.vsync,
-                                             pOptions->window.vsync, windowNode);
+            if (defaultOptions.window.width != pOptions->window.width) {
+                yaml_write_uint32_t("width", pOptions->window.width, windowNode);
+                writeNode = true;
+            }
+            if (defaultOptions.window.height != pOptions->window.height) {
+                yaml_write_uint32_t("height", pOptions->window.height, windowNode);
+                writeNode = true;
+            }
+            if (defaultOptions.window.vsync != pOptions->window.vsync) {
+                yaml_write_bool("vsync", pOptions->window.vsync, windowNode);
+                writeNode = true;
+            }
 
             if (writeNode) {
                 (*pNode)["window"] = windowNode;
@@ -163,13 +168,19 @@ void emitSettingsYaml(Settings const *pOptions, YAML::Node *pNode) {
             bool writeNode{false};
             YAML::Node graphicsNode;
 
-            writeNode |= yaml_write_optional("gpu", defaultOptions.graphics.gpu,
-                                             pOptions->graphics.gpu, graphicsNode);
-            writeNode |= yaml_write_optional("max_frame_buffering",
-                                             defaultOptions.graphics.maxFrameBuffering,
-                                             pOptions->graphics.maxFrameBuffering, graphicsNode);
-            writeNode |= yaml_write_optional("msaa", defaultOptions.graphics.msaa,
-                                             pOptions->graphics.msaa, graphicsNode);
+            if (defaultOptions.graphics.gpu != pOptions->graphics.gpu) {
+                yaml_write_uint32_t("gpu", pOptions->graphics.gpu, graphicsNode);
+                writeNode = true;
+            }
+            if (defaultOptions.graphics.maxFrameBuffering != pOptions->graphics.maxFrameBuffering) {
+                yaml_write_uint32_t("max_frame_buffering", pOptions->graphics.maxFrameBuffering,
+                                    graphicsNode);
+                writeNode = true;
+            }
+            if (defaultOptions.graphics.msaa != pOptions->graphics.msaa) {
+                yaml_write_uint32_t("msaa", pOptions->graphics.msaa, graphicsNode);
+                writeNode = true;
+            }
 
             if (writeNode) {
                 (*pNode)["graphics"] = graphicsNode;

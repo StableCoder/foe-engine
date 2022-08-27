@@ -11,4 +11,5 @@ target_sources(
           mesh.cpp
           result.c
           shader.cpp
+          structs.cpp
           vertex_descriptor.cpp)

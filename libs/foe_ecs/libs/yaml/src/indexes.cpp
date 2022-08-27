@@ -5,7 +5,7 @@
 #include <foe/ecs/yaml/indexes.hpp>
 
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
+#include <foe/yaml/pod.hpp>
 
 void yaml_read_indexes(std::string const &nodeName, YAML::Node const &node, foeEcsIndexes indexes) {
     YAML::Node const &readNode = (nodeName.empty()) ? node : node[nodeName];
@@ -18,7 +18,10 @@ void yaml_read_indexes(std::string const &nodeName, YAML::Node const &node, foeE
 
     // Next Free Index
     try {
-        yaml_read_required("next_free_index", readNode, nextNewIndex);
+        if (!yaml_read_uint32_t("next_free_index", readNode, nextNewIndex)) {
+            throw foeYamlException{
+                "next_free_index - Required node not found to parse as 'uint32_t'"};
+        }
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {
             throw foeYamlException{e.whatStr()};
@@ -34,7 +37,7 @@ void yaml_read_indexes(std::string const &nodeName, YAML::Node const &node, foeE
 
             for (auto it = recycledNode.begin(); it != recycledNode.end(); ++it) {
                 foeIdIndex readIndex;
-                yaml_read_required("", *it, readIndex);
+                yaml_read_uint32_t("", *it, readIndex);
                 recycledIndices.emplace_back(readIndex);
             }
         } else {
@@ -79,7 +82,7 @@ void yaml_write_indexes(std::string const &nodeName, foeEcsIndexes indexes, YAML
 
     try {
         // Next Free Index
-        yaml_write_required("next_free_index", nextNewIndex, *pWriteNode);
+        yaml_write_uint32_t("next_free_index", nextNewIndex, *pWriteNode);
 
         // Recycled Indices
         YAML::Node recycledNode;

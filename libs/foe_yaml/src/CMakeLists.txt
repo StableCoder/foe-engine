@@ -2,5 +2,4 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe_yaml PRIVATE exception.cpp glm_vec_parsing.cpp
-                                pod_parsing.cpp)
+target_sources(foe_yaml PRIVATE exception.cpp glm.cpp pod.cpp)

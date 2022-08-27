@@ -1,5 +1,9 @@
+// Copyright (C) 2020-2022 George Cave.
+//
+// SPDX-License-Identifier: Apache-2.0
+
+#include <foe/graphics/vk/yaml/vk_structs.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
 #include <vulkan/vulkan.h>
 
 #include <string_view>
@@ -12,19 +16,19 @@
         continue;                                                                                  \
     }                                                                                              \
     try {                                                                                          \
-        yaml_read_optional("", yamlData, data);                                                    \
+        yaml_read_##X("", yamlData, data);                                                         \
     } catch (...) {                                                                                \
     }                                                                                              \
     try {                                                                                          \
-        yaml_read_optional("subNode", yamlData, data);                                             \
+        yaml_read_##X("subNode", yamlData, data);                                                  \
     } catch (...) {                                                                                \
     }                                                                                              \
     try {                                                                                          \
-        yaml_read_required("", yamlData, data);                                                    \
+        yaml_read_##X("", yamlData, data);                                                         \
     } catch (...) {                                                                                \
     }                                                                                              \
     try {                                                                                          \
-        yaml_read_required("subNode", yamlData, data);                                             \
+        yaml_read_##X("subNode", yamlData, data);                                                  \
     } catch (...) {                                                                                \
     }
 

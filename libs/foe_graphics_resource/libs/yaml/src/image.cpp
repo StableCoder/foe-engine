@@ -7,63 +7,8 @@
 #include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
+#include <foe/graphics/resource/yaml/structs.hpp>
 #include <foe/yaml/exception.hpp>
-#include <foe/yaml/parsing.hpp>
-
-#include <string.h>
-
-namespace {
-
-bool yaml_read_image_definition_internal(std::string const &nodeName,
-                                         YAML::Node const &node,
-                                         foeEcsGroupTranslator groupTranslator,
-                                         foeImageCreateInfo &createInfo) {
-    YAML::Node const &subNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!subNode) {
-        return false;
-    }
-
-    try {
-        std::string tempStr;
-        yaml_read_required("file", subNode, tempStr);
-        createInfo.pFile = (char *)malloc(tempStr.size() + 1);
-        memcpy((char *)createInfo.pFile, tempStr.c_str(), tempStr.size() + 1);
-
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException(nodeName + "::" + e.what());
-        }
-    }
-
-    return true;
-}
-
-void yaml_write_image_internal(std::string const &nodeName,
-                               foeImageCreateInfo const &data,
-                               YAML::Node &node) {
-
-    YAML::Node writeNode;
-
-    try {
-        yaml_write_required("file", std::string{data.pFile}, writeNode);
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException{nodeName + "::" + e.whatStr()};
-        }
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-} // namespace
 
 char const *yaml_image_key() { return "image_v1"; }
 
@@ -73,7 +18,7 @@ void yaml_read_image(YAML::Node const &node,
     foeImageCreateInfo imageCI{};
     foeResourceCreateInfo createInfo;
 
-    yaml_read_image_definition_internal(yaml_image_key(), node, groupTranslator, imageCI);
+    yaml_read_foeImageCreateInfo(yaml_image_key(), node, imageCI);
 
     auto dataFn = [](void *pSrc, void *pDst) {
         auto *pSrcData = (foeImageCreateInfo *)pSrc;
@@ -97,7 +42,7 @@ void yaml_read_image(YAML::Node const &node,
 auto yaml_write_image(foeImageCreateInfo const &data) -> YAML::Node {
     YAML::Node outNode;
 
-    yaml_write_image_internal("", data, outNode);
+    yaml_write_foeImageCreateInfo("", data, outNode);
 
     return outNode;
 }

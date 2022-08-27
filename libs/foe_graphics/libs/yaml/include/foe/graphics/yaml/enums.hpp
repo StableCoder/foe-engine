@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_YAML_BUILTIN_DESCRIPTOR_SETS_HPP
-#define FOE_GRAPHICS_YAML_BUILTIN_DESCRIPTOR_SETS_HPP
+#ifndef FOE_GRAPHICS_YAML_ENUMS_HPP
+#define FOE_GRAPHICS_YAML_ENUMS_HPP
 
 #include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/yaml/export.h>
@@ -19,7 +19,7 @@
  * @return True if the node was found/parsed, false if the node could not be found.
  * @exception Throws foeYamlException on any parsing issue or any exception is caught.
  */
-FOE_GFX_YAML_EXPORT bool yaml_read_builtin_descriptor_set_layouts(
+FOE_GFX_YAML_EXPORT bool yaml_read_foeBuiltinDescriptorSetLayoutFlags(
     std::string const &nodeName, YAML::Node const &node, foeBuiltinDescriptorSetLayoutFlags &data);
 
 /** @brief Encodes the given data object to Yaml
@@ -28,7 +28,7 @@ FOE_GFX_YAML_EXPORT bool yaml_read_builtin_descriptor_set_layouts(
  * @param node [out] Yaml node to operate on
  * @exception Throws foeYamlException if there's any exception during writing
  */
-FOE_GFX_YAML_EXPORT void yaml_write_builtin_descriptor_set_layouts(
+FOE_GFX_YAML_EXPORT void yaml_write_foeBuiltinDescriptorSetLayoutFlags(
     std::string const &nodeName, foeBuiltinDescriptorSetLayoutFlags const &data, YAML::Node &node);
 
-#endif // FOE_GRAPHICS_YAML_BUILTIN_DESCRIPTOR_SETS_HPP
+#endif // FOE_GRAPHICS_YAML_ENUMS_HPP

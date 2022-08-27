@@ -4,8 +4,7 @@
 
 #include "rigid_body.hpp"
 
-#include <foe/ecs/yaml/id.hpp>
-#include <foe/yaml/parsing.hpp>
+#include <foe/physics/yaml/structs.hpp>
 
 char const *yaml_rigid_body_key() { return "rigid_body"; }
 
@@ -13,8 +12,7 @@ auto yaml_read_rigid_body(YAML::Node const &node, foeEcsGroupTranslator groupTra
     -> foeRigidBody {
     foeRigidBody rigidBody = {};
 
-    yaml_read_required("mass", node, rigidBody.mass);
-    yaml_read_id_optional("collision_shape", node, groupTranslator, rigidBody.collisionShape);
+    yaml_read_foeRigidBody("", node, groupTranslator, rigidBody);
 
     return rigidBody;
 }
@@ -22,8 +20,7 @@ auto yaml_read_rigid_body(YAML::Node const &node, foeEcsGroupTranslator groupTra
 auto yaml_write_rigid_body(foeRigidBody const &data) -> YAML::Node {
     YAML::Node writeNode;
 
-    yaml_write_required("mass", data.mass, writeNode);
-    yaml_write_id("collision_shape", data.collisionShape, writeNode);
+    yaml_write_foeRigidBody("", data, writeNode);
 
     return writeNode;
 }

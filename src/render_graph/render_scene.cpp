@@ -100,7 +100,7 @@ auto renderCall(foeId entity,
         if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
             !foeResourceGetIsLoading(vertexDescriptor)) {
             FOE_LOG(foeBringup, Verbose,
-                    "While attempting to render {}, VertexDeescriptor resource {} was unloaded and "
+                    "While attempting to render {}, VertexDescriptor resource {} was unloaded and "
                     "wasn't being loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(vertexDescriptor)));
             foeResourceLoadData(vertexDescriptor);

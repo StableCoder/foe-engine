@@ -2,5 +2,5 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe_graphics_vk_yaml PRIVATE shader.cpp vertex_descriptor.cpp
-                                            vk_enum.cpp vk_struct.cpp)
+target_sources(foe_graphics_vk_yaml PRIVATE structs.cpp vk_enums.cpp vk_pod.cpp
+                                            vk_structs.cpp)
