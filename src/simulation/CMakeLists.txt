@@ -11,6 +11,7 @@ target_sources(
           armature_system.cpp
           camera_system.cpp
           cleanup.c
+          compare.c
           position_descriptor_pool.cpp
           registration.cpp
           vk_animation.cpp)

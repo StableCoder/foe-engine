@@ -5,6 +5,7 @@
 target_sources(
   foe_graphics_resource
   PRIVATE cleanup.c
+          compare.c
           image_loader.cpp
           log.cpp
           material_loader.cpp

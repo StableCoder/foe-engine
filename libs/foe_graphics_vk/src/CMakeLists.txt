@@ -7,6 +7,7 @@ target_sources(
   PRIVATE backend.c
           builtin_descriptor_sets.cpp
           cleanup.c
+          compare.c
           debug_callback.cpp
           descriptor_set_layout_pool.cpp
           error_colour_image.cpp
