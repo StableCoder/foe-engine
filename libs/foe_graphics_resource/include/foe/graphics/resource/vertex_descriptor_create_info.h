@@ -6,7 +6,6 @@
 #define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_CREATE_INFO_H
 
 #include <foe/ecs/id.h>
-#include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 #include <vulkan/vulkan.h>
 
@@ -27,9 +26,6 @@ typedef struct foeVertexDescriptorCreateInfo {
     VkPipelineInputAssemblyStateCreateInfo inputAssemblySCI;
     VkPipelineTessellationStateCreateInfo tessellationSCI;
 } foeVertexDescriptorCreateInfo;
-
-FOE_GFX_RES_EXPORT void foeCleanup_foeVertexDescriptorCreateInfo(
-    foeVertexDescriptorCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

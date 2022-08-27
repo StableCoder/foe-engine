@@ -4,6 +4,7 @@
 
 #include "shader.hpp"
 
+#include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/shader_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/yaml/shader.hpp>
@@ -77,10 +78,10 @@ void yaml_read_shader(YAML::Node const &node,
         new (pDst) foeShaderCreateInfo(std::move(*pSrcData));
     };
 
-    foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO,
-        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeShaderCreateInfo,
-        sizeof(foeShaderCreateInfo), &shaderCI, dataFn, &createInfo);
+    foeResultSet result =
+        foeCreateResourceCreateInfo(FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_CREATE_INFO,
+                                    (PFN_foeResourceCreateInfoCleanup)cleanup_foeShaderCreateInfo,
+                                    sizeof(foeShaderCreateInfo), &shaderCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);

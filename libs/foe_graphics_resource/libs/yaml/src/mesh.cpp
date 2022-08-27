@@ -4,6 +4,7 @@
 
 #include "mesh.hpp"
 
+#include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/mesh_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/model/assimp/flags.hpp>
@@ -191,10 +192,10 @@ void yaml_read_mesh_file(YAML::Node const &node,
         new (pDst) foeMeshFileCreateInfo(std::move(*pSrcData));
     };
 
-    foeResultSet result = foeCreateResourceCreateInfo(
-        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO,
-        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeMeshFileCreateInfo,
-        sizeof(foeMeshFileCreateInfo), &meshCI, dataFn, &createInfo);
+    foeResultSet result =
+        foeCreateResourceCreateInfo(FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO,
+                                    (PFN_foeResourceCreateInfoCleanup)cleanup_foeMeshFileCreateInfo,
+                                    sizeof(foeMeshFileCreateInfo), &meshCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);

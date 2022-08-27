@@ -5,6 +5,7 @@
 #include "vertex_descriptor.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_create_info.h>
@@ -117,7 +118,7 @@ void yaml_read_vertex_descriptor(YAML::Node const &node,
 
     foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_CREATE_INFO,
-        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeVertexDescriptorCreateInfo,
+        (PFN_foeResourceCreateInfoCleanup)cleanup_foeVertexDescriptorCreateInfo,
         sizeof(foeVertexDescriptorCreateInfo), &vdCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

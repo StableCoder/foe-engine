@@ -6,7 +6,6 @@
 #define FOE_GRAPHICS_RESOURCE_MATERIAL_CREATE_INFO_H
 
 #include <foe/ecs/id.h>
-#include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 #include <vulkan/vulkan.h>
 
@@ -21,8 +20,6 @@ typedef struct foeMaterialCreateInfo {
     VkPipelineDepthStencilStateCreateInfo *pDepthStencilSCI;
     VkPipelineColorBlendStateCreateInfo *pColourBlendSCI;
 } foeMaterialCreateInfo;
-
-FOE_GFX_RES_EXPORT void foeCleanup_foeMaterialCreateInfo(foeMaterialCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

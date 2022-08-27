@@ -5,6 +5,7 @@
 #include "material.hpp"
 
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/material_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/yaml/exception.hpp>
@@ -123,7 +124,7 @@ void yaml_read_material(YAML::Node const &node,
 
     foeResultSet result = foeCreateResourceCreateInfo(
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_CREATE_INFO,
-        (PFN_foeResourceCreateInfoCleanup)foeCleanup_foeMaterialCreateInfo,
+        (PFN_foeResourceCreateInfoCleanup)cleanup_foeMaterialCreateInfo,
         sizeof(foeMaterialCreateInfo), &materialCI, dataFn, &createInfo);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

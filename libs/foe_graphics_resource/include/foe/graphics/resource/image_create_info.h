@@ -5,7 +5,6 @@
 #ifndef FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_H
 #define FOE_GRAPHICS_RESOURCE_IMAGE_CREATE_INFO_H
 
-#include <foe/graphics/resource/export.h>
 #include <foe/resource/create_info.h>
 
 #ifdef __cplusplus
@@ -15,8 +14,6 @@ extern "C" {
 typedef struct foeImageCreateInfo {
     char const *pFile;
 } foeImageCreateInfo;
-
-FOE_GFX_RES_EXPORT void foeCleanup_foeImageCreateInfo(foeImageCreateInfo *pCreateInfo);
 
 #ifdef __cplusplus
 }

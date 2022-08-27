@@ -25,10 +25,6 @@ typedef struct foeArmatureCreateInfo {
     AnimationImportInfo *pAnimations;
 } foeArmatureCreateInfo;
 
-void foeCleanup_AnimationImportInfo(AnimationImportInfo *pData);
-
-void foeCleanup_foeArmatureCreateInfo(foeArmatureCreateInfo *pData);
-
 #ifdef __cplusplus
 }
 #endif
