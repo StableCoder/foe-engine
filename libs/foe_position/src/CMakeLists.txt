@@ -2,4 +2,5 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe_position PRIVATE compare.cpp log.cpp registration.cpp result.c)
+target_sources(foe_position PRIVATE binary.cpp compare.cpp log.cpp
+                                    registration.cpp result.c)

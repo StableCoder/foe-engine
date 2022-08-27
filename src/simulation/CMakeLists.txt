@@ -9,6 +9,7 @@ target_sources(
           ../vk_result.c
           armature_loader.cpp
           armature_system.cpp
+          binary.cpp
           camera_system.cpp
           cleanup.c
           compare.c

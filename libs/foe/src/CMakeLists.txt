@@ -4,7 +4,8 @@
 
 target_sources(
   foe
-  PRIVATE command_string_runner.cpp
+  PRIVATE binary_result.c
+          command_string_runner.cpp
           delimited_string.c
           developer_console.cpp
           filesystem.cpp

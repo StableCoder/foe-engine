@@ -5,6 +5,7 @@
 target_sources(
   foe_graphics_vk
   PRIVATE backend.c
+          binary.c
           builtin_descriptor_sets.cpp
           cleanup.c
           compare.c
@@ -35,6 +36,7 @@ target_sources(
           upload_request_public.cpp
           upload_request.cpp
           vertex_descriptor.cpp
+          vk_binary.c
           vk_result.c)
 
 add_subdirectory(render_graph/job)
