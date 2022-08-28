@@ -40,7 +40,7 @@ CMake Files:
     - ninja cmake-format
     - git diff --exit-code
 
-Shell Script Files:
+Shell Files:
   stage: Formatting
   image: docker.io/stabletec/build-foe:arch
   allow_failure: true
@@ -50,6 +50,18 @@ Shell Script Files:
   - amd64
   script:
     - for FILE in $(find . | grep -e "\.sh$"); do echo ">> For File - $FILE"; shfmt $FILE > $FILE.tmp; mv $FILE.tmp $FILE; done
+    - git diff --exit-code
+
+Python Files:
+  stage: Formatting
+  image: docker.io/stabletec/build-foe:arch
+  allow_failure: true
+  tags:
+  - container
+  - linux
+  - amd64
+  script:
+    - for FILE in $(find . | grep -e "\.py$"); do echo ">> For File - $FILE"; autopep8 -i $FILE; done
     - git diff --exit-code
 
 # Platform Stage Templates
