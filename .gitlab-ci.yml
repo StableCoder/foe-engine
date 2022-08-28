@@ -49,7 +49,8 @@ Shell Files:
   - linux
   - amd64
   script:
-    - for FILE in $(find . | grep -e "\.sh$"); do echo ">> For File - $FILE"; shfmt $FILE > $FILE.tmp; mv $FILE.tmp $FILE; done
+    - for FILE in $(find . | grep -e "\.sh$"); do echo ">> For File - $FILE"; shfmt -i 4 $FILE > $FILE.tmp; mv $FILE.tmp $FILE; chmod +x $FILE; done
+    - git submodule foreach --recursive git reset --hard
     - git diff --exit-code
 
 Python Files:
@@ -62,6 +63,7 @@ Python Files:
   - amd64
   script:
     - for FILE in $(find . | grep -e "\.py$"); do echo ">> For File - $FILE"; autopep8 -i $FILE; done
+    - git submodule foreach --recursive git reset --hard
     - git diff --exit-code
 
 # Platform Stage Templates
