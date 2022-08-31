@@ -13,9 +13,9 @@
 
 #include <memory>
 
-class foeCameraPool : public foeDataPool<foeEntityID, std::unique_ptr<Camera>> {
+class foeCameraPool : public foeDataPool<foeEntityID, std::unique_ptr<foeCamera>> {
   public:
-    void maintenance() { foeDataPool<foeEntityID, std::unique_ptr<Camera>>::maintenance(); }
+    void maintenance() { foeDataPool<foeEntityID, std::unique_ptr<foeCamera>>::maintenance(); }
 };
 
 #endif // CAMERA_POOL_HPP

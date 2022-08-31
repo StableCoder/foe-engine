@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,15 +23,19 @@ struct foeCameraBase {
     VkDescriptorSet descriptor{VK_NULL_HANDLE};
 };
 
-struct Camera : public foeCameraBase {
+struct foeCamera {
     // Projection Data
     float viewX, viewY;
     float fieldOfViewY;
     float nearZ, farZ;
 
-    glm::mat4 projectionMatrix() const noexcept override {
-        return glm::perspectiveFov(glm::radians(fieldOfViewY), viewX, viewY, nearZ, farZ);
-    }
+    // Graphics Data
+    VkDescriptorSet descriptor{VK_NULL_HANDLE};
 };
+
+inline glm::mat4 foeCameraProjectionMatrix(foeCamera const *pCamera) {
+    return glm::perspectiveFov(glm::radians(pCamera->fieldOfViewY), pCamera->viewX, pCamera->viewY,
+                               pCamera->nearZ, pCamera->farZ);
+}
 
 #endif // CAMERA_HPP

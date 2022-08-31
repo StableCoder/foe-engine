@@ -60,7 +60,7 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation c
         }
     }
 
-    // Camera
+    // foeCamera
     auto *pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
     if (pCameraPool) {

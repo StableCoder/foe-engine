@@ -102,7 +102,7 @@ bool importCamera(YAML::Node const &node,
             return false;
 
         try {
-            std::unique_ptr<Camera> pData(new Camera);
+            std::unique_ptr<foeCamera> pData(new foeCamera);
             *pData = yaml_read_Camera(dataNode);
 
             pPool->insert(entity, std::move(pData));

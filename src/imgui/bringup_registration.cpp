@@ -34,14 +34,14 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimula
         }
     }
 
-    // Camera
+    // foeCamera
     if (auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
         pPool) {
         auto offset = pPool->find(entity);
         if (offset != pPool->size()) {
             auto *pComponent = pPool->begin<1>() + offset;
-            auto *pCamera = dynamic_cast<Camera *>(pComponent->get());
+            auto *pCamera = pComponent->get();
 
             if (pCamera)
                 imgui_Camera(pCamera);

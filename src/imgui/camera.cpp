@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,9 +8,9 @@
 
 #include "../simulation/camera.hpp"
 
-void imgui_Camera(Camera *pCamera) {
+void imgui_Camera(foeCamera *pCamera) {
     ImGui::Separator();
-    ImGui::Text("Camera");
+    ImGui::Text("foeCamera");
 
     ImGui::Text("View: %.1f x %.1f", pCamera->viewX, pCamera->viewY);
 

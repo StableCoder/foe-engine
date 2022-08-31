@@ -168,7 +168,7 @@ VkResult foeCameraSystem::processCameras(uint32_t frameIndex) {
         VkDescriptorSet set;
         glm::mat4 *pMatrix = reinterpret_cast<glm::mat4 *>(pBufferData);
 
-        *pMatrix = (*pCameraData)->projectionMatrix() * viewMatrix(*pPosition->get());
+        *pMatrix = foeCameraProjectionMatrix(pCameraData->get()) * viewMatrix(*pPosition->get());
 
         { // Descriptor Set
             VkDescriptorSetAllocateInfo setAI{

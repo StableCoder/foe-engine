@@ -13,8 +13,8 @@
 
 inline char const *yaml_camera_key() { return "camera"; }
 
-inline auto yaml_read_Camera(YAML::Node const &node) -> Camera {
-    Camera data;
+inline auto yaml_read_Camera(YAML::Node const &node) -> foeCamera {
+    foeCamera data;
 
     yaml_read_required("fov_y", node, data.fieldOfViewY);
     yaml_read_required("near_z", node, data.nearZ);
@@ -23,7 +23,7 @@ inline auto yaml_read_Camera(YAML::Node const &node) -> Camera {
     return data;
 }
 
-inline auto yaml_write_Camera(Camera const &data) -> YAML::Node {
+inline auto yaml_write_Camera(foeCamera const &data) -> YAML::Node {
     YAML::Node outNode;
 
     if (data.fieldOfViewY != FOE_INVALID_ID) {
