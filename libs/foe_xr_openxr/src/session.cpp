@@ -82,7 +82,7 @@ foeResultSet foeOpenXrSession::beginSession() {
     };
     XrResult xrResult = xrBeginSession(session, &sessionBI);
 
-    if (xrResult != XR_SUCCESS) {
+    if (xrResult == XR_SUCCESS) {
         // We've got everything readied and are beginning the active state, so to sycnhronize it
         // will start calling upon the wait/begin/end frame functions
         active = true;
