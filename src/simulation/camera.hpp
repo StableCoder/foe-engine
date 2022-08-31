@@ -5,23 +5,9 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
-#include <foe/position/component/3d.hpp>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
-
-#include <array>
-#include <vector>
-
-class CameraDescriptorPool;
-struct foeCameraBase {
-    virtual ~foeCameraBase() = default;
-
-    virtual glm::mat4 projectionMatrix() const noexcept = 0;
-
-    // Graphics Data
-    VkDescriptorSet descriptor{VK_NULL_HANDLE};
-};
 
 struct foeCamera {
     // Projection Data
