@@ -9,7 +9,7 @@ project(foe_position)
 find_package(glm REQUIRED)
 
 # Declaration
-add_library(foe_position)
+add_library(foe_position SHARED)
 
 # Definition
 add_subdirectory(src)
