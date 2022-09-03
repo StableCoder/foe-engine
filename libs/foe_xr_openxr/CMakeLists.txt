@@ -43,6 +43,7 @@ endif()
 
 # Auxiliary Targets
 add_subdirectory(libs/vulkan)
+
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()

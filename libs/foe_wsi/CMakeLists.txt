@@ -21,7 +21,9 @@ target_include_directories(foe_wsi INTERFACE include ${glfw_INCLUDE_DIR})
 target_link_libraries(foe_wsi INTERFACE foe Vulkan::Vulkan)
 
 # Auxiliary Targets
-add_subdirectory(libs)
+add_subdirectory(libs/imgui)
+add_subdirectory(libs/loader)
+
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
