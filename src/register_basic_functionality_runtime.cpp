@@ -26,7 +26,8 @@ struct ImExPlugin {
     foePlugin plugin;
 };
 
-std::array<ImExPlugin, 5> pluginList{
+std::array<ImExPlugin, 10> pluginList{
+    // Yaml
     ImExPlugin{
         .path = IMEX_YAML_PLUGIN,
         .initFn = {"foeImexYamlRegisterExporter", "foeImexYamlRegisterImporter"},
@@ -53,6 +54,56 @@ std::array<ImExPlugin, 5> pluginList{
         .path = BRINGUP_YAML_PLUGIN,
         .initFn = {"foeBringupYamlRegisterExporters", "foeBringupYamlRegisterImporters"},
         .deinitFn = {"foeBringupYamlDeregisterImporters", "foeBringupYamlDeregisterExporters"},
+    },
+    // Binary
+    ImExPlugin{
+        .path = IMEX_BINARY_PLUGIN,
+        .initFn = {"foeImexBinaryRegisterExporter" /*, "foeImexBinaryRegisterImporter"*/},
+        .deinitFn = {/*"foeImexBinaryDeregisterImporter",*/ "foeImexBinaryDeregisterExporter"},
+    },
+    ImExPlugin{
+        .path = GRAPHICS_RESOURCE_BINARY_PLUGIN,
+        .initFn =
+            {
+                "foeGraphicsResourceBinaryRegisterExporters",
+                //"foeGraphicsResourceBinaryRegisterImporters"
+            },
+        .deinitFn =
+            {//"foeGraphicsResourceBinaryDeregisterImporters",
+             "foeGraphicsResourceBinaryDeregisterExporters"},
+    },
+    ImExPlugin{
+        .path = PHYSICS_BINARY_PLUGIN,
+        .initFn =
+            {
+                "foePhysicsBinaryRegisterExporters",
+                //"foePhysicsBinaryRegisterImporters"
+            },
+        .deinitFn =
+            {//"foePhysicsBinaryDeregisterImporters",
+             "foePhysicsBinaryDeregisterExporters"},
+    },
+    ImExPlugin{
+        .path = POSITION_BINARY_PLUGIN,
+        .initFn =
+            {
+                "foePositionBinaryRegisterExporters",
+                //"foePositionBinaryRegisterImporters"
+            },
+        .deinitFn =
+            {//"foePositionBinaryDeregisterImporters",
+             "foePositionBinaryDeregisterExporters"},
+    },
+    ImExPlugin{
+        .path = BRINGUP_BINARY_PLUGIN,
+        .initFn =
+            {
+                "foeBringupBinaryRegisterExporters",
+                //"foeBringupBinaryRegisterImporters"
+            },
+        .deinitFn =
+            {//"foeBringupBinaryDeregisterImporters",
+             "foeBringupBinaryDeregisterExporters"},
     },
 };
 

@@ -17,4 +17,5 @@ target_sources(
           registration.cpp
           vk_animation.cpp)
 
+add_subdirectory(binary)
 add_subdirectory(yaml)

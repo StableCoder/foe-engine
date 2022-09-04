@@ -145,6 +145,7 @@ add_library(foe_bringup_lib)
 add_library(foe_bringup_imgui)
 add_library(foe_bringup_lib_eh)
 add_library(foe_bringup_shared SHARED)
+add_library(foe_bringup_binary SHARED)
 add_library(foe_bringup_yaml SHARED)
 
 # Sources
@@ -170,7 +171,13 @@ if(LINKTIME_PLUGINS)
            foe_graphics_resource_yaml
            foe_imex_yaml
            foe_physics_yaml
-           foe_position_yaml)
+           foe_position_yaml
+           # Binary Plugin
+           foe_imex_binary
+           foe_physics_binary
+           foe_position_binary
+           foe_graphics_resource_binary
+           foe_bringup_binary)
 else()
   target_link_libraries(
     foe_bringup_lib PUBLIC foe_bringup_shared foe_graphics_resource foe_physics
@@ -188,7 +195,13 @@ else()
       GRAPHICS_RESOURCE_YAML_PLUGIN="$<TARGET_FILE:foe_graphics_resource_yaml>"
       IMEX_YAML_PLUGIN="$<TARGET_FILE:foe_imex_yaml>"
       PHYSICS_YAML_PLUGIN="$<TARGET_FILE:foe_physics_yaml>"
-      POSITION_YAML_PLUGIN="$<TARGET_FILE:foe_position_yaml>")
+      POSITION_YAML_PLUGIN="$<TARGET_FILE:foe_position_yaml>"
+      # Binary Plugin
+      IMEX_BINARY_PLUGIN="$<TARGET_FILE:foe_imex_binary>"
+      PHYSICS_BINARY_PLUGIN="$<TARGET_FILE:foe_physics_binary>"
+      POSITION_BINARY_PLUGIN="$<TARGET_FILE:foe_position_binary>"
+      GRAPHICS_RESOURCE_BINARY_PLUGIN="$<TARGET_FILE:foe_graphics_resource_binary>"
+      BRINGUP_BINARY_PLUGIN="$<TARGET_FILE:foe_bringup_binary>")
 endif()
 
 if(MSVC)
@@ -268,6 +281,12 @@ target_include_directories(foe_bringup_shared
 target_link_libraries(
   foe_bringup_shared PRIVATE foe_model foe_model_assimp foe_resource
                              foe_simulation foe_position foe_graphics_resource)
+
+# Binary Definition
+target_include_directories(foe_bringup_binary
+                           PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
+target_link_libraries(foe_bringup_binary PRIVATE foe_bringup_shared
+                                                 foe_imex_binary)
 
 # Yaml Definition
 target_include_directories(foe_bringup_yaml
