@@ -224,6 +224,7 @@ foeResultSet exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::N
                                      &count, unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
+    std::sort(unusedIndices.begin(), unusedIndices.end());
 
     foeResourceID resourceID;
     auto unused = unusedIndices.begin();
@@ -232,8 +233,10 @@ foeResultSet exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::N
         for (foeIdIndex idx = foeIdIndexMinValue; idx < maxIndices; ++idx) {
             // Check if unused, then skip if it is
             if (unused != unusedIndices.end()) {
-                if (idx == *unused)
+                if (idx == *unused) {
+                    ++unused;
                     continue;
+                }
             }
 
             resourceID = foeIdCreate(group, idx);
@@ -286,6 +289,7 @@ foeResultSet exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAM
                                      unusedIndices.data());
         unusedIndices.resize(count);
     } while (result.value != FOE_SUCCESS);
+    std::sort(unusedIndices.begin(), unusedIndices.end());
 
     foeEntityID entity;
     auto unused = unusedIndices.begin();
@@ -294,8 +298,10 @@ foeResultSet exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAM
         for (foeIdIndex idx = foeIdIndexMinValue; idx < maxIndices; ++idx) {
             // Check if unused, then skip if it is
             if (unused != unusedIndices.end()) {
-                if (idx == *unused)
+                if (idx == *unused) {
+                    ++unused;
                     continue;
+                }
             }
 
             entity = foeIdCreate(group, idx);
