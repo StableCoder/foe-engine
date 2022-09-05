@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "register_basic_functionality.hpp"
+#include "register_basic_functionality.h"
 
 #include <foe/plugin.h>
 
@@ -24,12 +24,10 @@
 #include "simulation/yaml/export_registration.hpp"
 #include "simulation/yaml/import_registration.hpp"
 
-#include <array>
-#include <string>
+typedef foeResultSet (*PFN_PluginInitCall)();
+typedef void (*PFN_PluginDeinitCall)();
 
-namespace {
-
-std::array<foeResultSet (*)(), 14> pluginInitCalls = {
+PFN_PluginInitCall pluginInitCalls[] = {
     // Core
     foePhysicsRegisterFunctionality,
     foePositionRegisterFunctionality,
@@ -48,7 +46,7 @@ std::array<foeResultSet (*)(), 14> pluginInitCalls = {
     foeBringupYamlRegisterImporters,
 };
 
-std::array<void (*)(), 14> pluginDeinitCalls = {
+PFN_PluginDeinitCall pluginDeinitCalls[] = {
     // Yaml
     foeImexYamlDeregisterImporter,
     foeImexYamlDeregisterExporter,
@@ -67,13 +65,11 @@ std::array<void (*)(), 14> pluginDeinitCalls = {
     foePositionDeregisterFunctionality,
 };
 
-} // namespace
-
-foeResultSet registerBasicFunctionality() noexcept {
+extern "C" foeResultSet registerBasicFunctionality() {
     foeResultSet result = to_foeResult(FOE_BRINGUP_SUCCESS);
 
     // Plugins
-    for (auto &it : pluginInitCalls) {
+    for (auto const it : pluginInitCalls) {
         result = it();
         if (result.value != FOE_SUCCESS)
             break;
@@ -82,9 +78,9 @@ foeResultSet registerBasicFunctionality() noexcept {
     return result;
 }
 
-void deregisterBasicFunctionality() noexcept {
+extern "C" void deregisterBasicFunctionality() {
     // Plugins
-    for (auto &it : pluginDeinitCalls) {
+    for (auto const it : pluginDeinitCalls) {
         it();
     }
 }

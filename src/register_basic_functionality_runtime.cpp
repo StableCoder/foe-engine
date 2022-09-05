@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "register_basic_functionality.hpp"
+#include "register_basic_functionality.h"
 
 #include <foe/plugin.h>
 
@@ -89,7 +89,7 @@ void deinitItem(ImExPlugin &plugin) {
 
 } // namespace
 
-foeResultSet registerBasicFunctionality() noexcept {
+extern "C" foeResultSet registerBasicFunctionality() {
     foeResultSet result;
 
     // Core
@@ -119,7 +119,7 @@ foeResultSet registerBasicFunctionality() noexcept {
     return result;
 }
 
-void deregisterBasicFunctionality() noexcept {
+extern "C" void deregisterBasicFunctionality() {
     // Plugins
     for (auto &it : pluginList) {
         deinitItem(it);

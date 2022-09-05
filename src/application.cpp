@@ -45,7 +45,7 @@
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
-#include "register_basic_functionality.hpp"
+#include "register_basic_functionality.h"
 #include "simulation/armature.hpp"
 #include "simulation/armature_system.hpp"
 #include "simulation/camera_pool.hpp"
