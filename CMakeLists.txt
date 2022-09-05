@@ -143,33 +143,44 @@ add_library(foe_bringup_yaml SHARED)
 add_subdirectory(src)
 
 # Engine Definition
-target_link_libraries(
-  foe_bringup_lib
-  PUBLIC foe
-         foe_ecs
-         foe_bringup_shared
-         foe_bringup_lib_eh
-         foe_graphics_resource
-         foe_graphics_vk
-         foe_imex
-         foe_physics
-         foe_position)
+target_link_libraries(foe_bringup_lib PUBLIC foe foe_ecs foe_bringup_lib_eh
+                                             foe_imex)
 
 target_include_directories(foe_bringup_lib
                            PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
 
 if(LINKTIME_PLUGINS)
   target_link_libraries(
-    foe_bringup_lib PRIVATE foe_imex_yaml foe_physics_yaml foe_position_yaml
-                            foe_graphics_resource_yaml foe_bringup_yaml)
+    foe_bringup_lib
+    PUBLIC # Regular Plugins
+           foe_bringup_shared
+           foe_graphics_resource
+           foe_physics
+           foe_position
+           # Yaml Plugins
+           foe_bringup_yaml
+           foe_graphics_resource_yaml
+           foe_imex_yaml
+           foe_physics_yaml
+           foe_position_yaml)
 else()
+  target_link_libraries(
+    foe_bringup_lib PUBLIC foe_bringup_shared foe_graphics_resource foe_physics
+                           foe_position)
   target_compile_definitions(
     foe_bringup_lib
-    PRIVATE IMEX_YAML_LIB="$<TARGET_FILE:foe_imex_yaml>"
-            PHYSICS_LIB="$<TARGET_FILE:foe_physics_yaml>"
-            POSITION_LIB="$<TARGET_FILE:foe_position_yaml>"
-            GRAPHICS_RESOURCE_LIB="$<TARGET_FILE:foe_graphics_resource_yaml>"
-            BRINGUP_YAML="$<TARGET_FILE:foe_bringup_yaml>")
+    PRIVATE
+      # Regular Plugins
+      BRINGUP_PLUGIN="$<TARGET_FILE:foe_bringup_shared>"
+      GRAPHICS_RESOURCE_PLUGIN="$<TARGET_FILE:foe_graphics_resource>"
+      PHYSICS_PLUGIN="$<TARGET_FILE:foe_physics>"
+      POSITION_PLUGIN="$<TARGET_FILE:foe_position>"
+      # Yaml Plugins
+      BRINGUP_YAML_PLUGIN="$<TARGET_FILE:foe_bringup_yaml>"
+      GRAPHICS_RESOURCE_YAML_PLUGIN="$<TARGET_FILE:foe_graphics_resource_yaml>"
+      IMEX_YAML_PLUGIN="$<TARGET_FILE:foe_imex_yaml>"
+      PHYSICS_YAML_PLUGIN="$<TARGET_FILE:foe_physics_yaml>"
+      POSITION_YAML_PLUGIN="$<TARGET_FILE:foe_position_yaml>")
 endif()
 
 if(MSVC)

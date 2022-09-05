@@ -28,29 +28,29 @@ struct ImExPlugin {
 
 std::array<ImExPlugin, 5> pluginList{
     ImExPlugin{
-        .path = IMEX_YAML_LIB,
+        .path = IMEX_YAML_PLUGIN,
         .initFn = {"foeImexYamlRegisterExporter", "foeImexYamlRegisterImporter"},
         .deinitFn = {"foeImexYamlDeregisterImporter", "foeImexYamlDeregisterExporter"},
     },
     ImExPlugin{
-        .path = PHYSICS_LIB,
+        .path = PHYSICS_YAML_PLUGIN,
         .initFn = {"foePhysicsYamlRegisterExporters", "foePhysicsYamlRegisterImporters"},
         .deinitFn = {"foePhysicsYamlDeregisterImporters", "foePhysicsYamlDeregisterExporters"},
     },
     ImExPlugin{
-        .path = POSITION_LIB,
+        .path = POSITION_YAML_PLUGIN,
         .initFn = {"foePositionYamlRegisterExporters", "foePositionYamlRegisterImporters"},
         .deinitFn = {"foePositionYamlDeregisterImporters", "foePositionYamlDeregisterExporters"},
     },
     ImExPlugin{
-        .path = GRAPHICS_RESOURCE_LIB,
+        .path = GRAPHICS_RESOURCE_YAML_PLUGIN,
         .initFn = {"foeGraphicsResourceYamlRegisterExporters",
                    "foeGraphicsResourceYamlRegisterImporters"},
         .deinitFn = {"foeGraphicsResourceYamlDeregisterImporters",
                      "foeGraphicsResourceYamlDeregisterExporters"},
     },
     ImExPlugin{
-        .path = BRINGUP_YAML,
+        .path = BRINGUP_YAML_PLUGIN,
         .initFn = {"foeBringupYamlRegisterExporters", "foeBringupYamlRegisterImporters"},
         .deinitFn = {"foeBringupYamlDeregisterImporters", "foeBringupYamlDeregisterExporters"},
     },
