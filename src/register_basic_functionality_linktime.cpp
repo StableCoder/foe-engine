@@ -29,7 +29,13 @@
 
 namespace {
 
-std::array<foeResultSet (*)(), 10> pluginInitCalls = {
+std::array<foeResultSet (*)(), 14> pluginInitCalls = {
+    // Core
+    foePhysicsRegisterFunctionality,
+    foePositionRegisterFunctionality,
+    foeGraphicsResourceRegisterFunctionality,
+    foeBringupRegisterFunctionality,
+    // Yaml
     foeImexYamlRegisterExporter,
     foeImexYamlRegisterImporter,
     foePhysicsYamlRegisterExporters,
@@ -42,7 +48,8 @@ std::array<foeResultSet (*)(), 10> pluginInitCalls = {
     foeBringupYamlRegisterImporters,
 };
 
-std::array<void (*)(), 10> pluginDeinitCalls = {
+std::array<void (*)(), 14> pluginDeinitCalls = {
+    // Yaml
     foeImexYamlDeregisterImporter,
     foeImexYamlDeregisterExporter,
     foePhysicsYamlDeregisterImporters,
@@ -53,29 +60,17 @@ std::array<void (*)(), 10> pluginDeinitCalls = {
     foeGraphicsResourceYamlDeregisterExporters,
     foeBringupYamlDeregisterImporters,
     foeBringupYamlDeregisterExporters,
+    // Core
+    foeBringupDeregisterFunctionality,
+    foeGraphicsResourceDeregisterFunctionality,
+    foePhysicsDeregisterFunctionality,
+    foePositionDeregisterFunctionality,
 };
 
 } // namespace
 
 foeResultSet registerBasicFunctionality() noexcept {
-    foeResultSet result;
-
-    // Core
-    result = foePhysicsRegisterFunctionality();
-    if (result.value != FOE_SUCCESS)
-        return result;
-
-    result = foePositionRegisterFunctionality();
-    if (result.value != FOE_SUCCESS)
-        return result;
-
-    result = foeGraphicsResourceRegisterFunctionality();
-    if (result.value != FOE_SUCCESS)
-        return result;
-
-    result = foeBringupRegisterFunctionality();
-    if (result.value != FOE_SUCCESS)
-        return result;
+    foeResultSet result = to_foeResult(FOE_BRINGUP_SUCCESS);
 
     // Plugins
     for (auto &it : pluginInitCalls) {
@@ -92,10 +87,4 @@ void deregisterBasicFunctionality() noexcept {
     for (auto &it : pluginDeinitCalls) {
         it();
     }
-
-    // Core
-    foeBringupDeregisterFunctionality();
-    foeGraphicsResourceDeregisterFunctionality();
-    foePhysicsDeregisterFunctionality();
-    foePositionDeregisterFunctionality();
 }
