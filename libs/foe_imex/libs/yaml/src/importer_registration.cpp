@@ -15,6 +15,6 @@ extern "C" foeResultSet foeImexYamlRegisterImporter() {
     return foeImexRegisterImporter(&foeCreateYamlImporter);
 }
 
-extern "C" foeResultSet foeImexYamlDeregisterImporter() {
-    return foeImexDeregisterImporter(&foeCreateYamlImporter);
+extern "C" void foeImexYamlDeregisterImporter() {
+    foeImexDeregisterImporter(&foeCreateYamlImporter);
 }

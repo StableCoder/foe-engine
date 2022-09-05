@@ -17,6 +17,8 @@ option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_VULKAN_RUNTIME_TESTS
        "Build tests that require an available Vulkan runtime" OFF)
+option(LINKTIME_PLUGINS "Link the plugins in rather than loading at runtime"
+       OFF)
 option(EDITOR_MODE "Build with the editor UI capability" OFF)
 cmake_dependent_option(
   IMGUI_DEMO "Build with the ImGui demo in the bringup app" OFF EDITOR_MODE OFF)
@@ -155,13 +157,20 @@ target_link_libraries(
 
 target_include_directories(foe_bringup_lib
                            PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
-target_compile_definitions(
-  foe_bringup_lib
-  PRIVATE IMEX_YAML_LIB="$<TARGET_FILE:foe_imex_yaml>"
-          PHYSICS_LIB="$<TARGET_FILE:foe_physics_yaml>"
-          POSITION_LIB="$<TARGET_FILE:foe_position_yaml>"
-          GRAPHICS_RESOURCE_LIB="$<TARGET_FILE:foe_graphics_resource_yaml>"
-          ENGINE_YAML="$<TARGET_FILE:foe_bringup_yaml>")
+
+if(LINKTIME_PLUGINS)
+  target_link_libraries(
+    foe_bringup_lib PRIVATE foe_imex_yaml foe_physics_yaml foe_position_yaml
+                            foe_graphics_resource_yaml foe_bringup_yaml)
+else()
+  target_compile_definitions(
+    foe_bringup_lib
+    PRIVATE IMEX_YAML_LIB="$<TARGET_FILE:foe_imex_yaml>"
+            PHYSICS_LIB="$<TARGET_FILE:foe_physics_yaml>"
+            POSITION_LIB="$<TARGET_FILE:foe_position_yaml>"
+            GRAPHICS_RESOURCE_LIB="$<TARGET_FILE:foe_graphics_resource_yaml>"
+            ENGINE_YAML="$<TARGET_FILE:foe_bringup_yaml>")
+endif()
 
 if(MSVC)
   target_compile_options(foe_bringup_lib PRIVATE /EHsc)
