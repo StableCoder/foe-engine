@@ -169,7 +169,7 @@ else()
             PHYSICS_LIB="$<TARGET_FILE:foe_physics_yaml>"
             POSITION_LIB="$<TARGET_FILE:foe_position_yaml>"
             GRAPHICS_RESOURCE_LIB="$<TARGET_FILE:foe_graphics_resource_yaml>"
-            ENGINE_YAML="$<TARGET_FILE:foe_bringup_yaml>")
+            BRINGUP_YAML="$<TARGET_FILE:foe_bringup_yaml>")
 endif()
 
 if(MSVC)

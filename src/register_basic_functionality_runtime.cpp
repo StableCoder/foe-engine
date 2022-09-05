@@ -50,7 +50,7 @@ std::array<ImExPlugin, 5> pluginList{
                      "foeGraphicsResourceYamlDeregisterExporters"},
     },
     ImExPlugin{
-        .path = ENGINE_YAML,
+        .path = BRINGUP_YAML,
         .initFn = {"foeBringupYamlRegisterExporters", "foeBringupYamlRegisterImporters"},
         .deinitFn = {"foeBringupYamlDeregisterImporters", "foeBringupYamlDeregisterExporters"},
     },
