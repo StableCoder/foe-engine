@@ -74,6 +74,8 @@ Python Files:
     - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
+    - cmake . -B build -D LINKTIME_PLUGINS=ON
+    - ninja -C build
 
 .platform_macos_template: &platform_macos_template
   stage: macOS Builds
@@ -83,6 +85,8 @@ Python Files:
     - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
+    - cmake . -B build -D LINKTIME_PLUGINS=ON
+    - ninja -C build
 
 .platform_windows_template: &platform_windows_template
   stage: Windows Builds
@@ -98,6 +102,8 @@ Python Files:
     - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
     - ninja -C build
     - ninja -C build test
+    - cmake . -B build -D LINKTIME_PLUGINS=ON
+    - ninja -C build
 
 # Arch
 
