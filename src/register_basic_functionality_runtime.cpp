@@ -12,7 +12,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "result.h"
-#include "simulation/registration.hpp"
+#include "simulation/registration.h"
 
 #include <array>
 #include <string>

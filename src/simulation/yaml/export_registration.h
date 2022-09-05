@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef SIMULATION_YAML_EXPORT_REGISTRATION_HPP
-#define SIMULATION_YAML_EXPORT_REGISTRATION_HPP
+#ifndef SIMULATION_YAML_EXPORT_REGISTRATION_H
+#define SIMULATION_YAML_EXPORT_REGISTRATION_H
 
 #include <foe/result.h>
 
@@ -19,4 +19,4 @@ void foeBringupYamlDeregisterExporters();
 }
 #endif
 
-#endif // SIMULATION_YAML_EXPORT_REGISTRATION_HPP
+#endif // SIMULATION_YAML_EXPORT_REGISTRATION_H

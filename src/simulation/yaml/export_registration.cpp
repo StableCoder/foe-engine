@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "export_registration.hpp"
+#include "export_registration.h"
 
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>

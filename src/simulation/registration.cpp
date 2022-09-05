@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "registration.hpp"
+#include "registration.h"
 
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>

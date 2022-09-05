@@ -20,9 +20,9 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "result.h"
-#include "simulation/registration.hpp"
-#include "simulation/yaml/export_registration.hpp"
-#include "simulation/yaml/import_registration.hpp"
+#include "simulation/registration.h"
+#include "simulation/yaml/export_registration.h"
+#include "simulation/yaml/import_registration.h"
 
 typedef foeResultSet (*PFN_PluginInitCall)();
 typedef void (*PFN_PluginDeinitCall)();
