@@ -21,7 +21,7 @@ Source Files:
     - linux
     - amd64
   script:
-    - cmake . -B build -GNinja
+    - cmake . -B build -G Ninja
     - ninja -C build format
     - git diff --exit-code
 
@@ -34,7 +34,7 @@ CMake Files:
     - linux
     - amd64
   script:
-    - cmake . -B build -GNinja
+    - cmake . -B build -G Ninja
     - ninja -C build cmake-format
     - git diff --exit-code
 
@@ -71,7 +71,7 @@ Python Files:
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -GNinja -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
 
@@ -80,7 +80,7 @@ Python Files:
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -GNinja -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
 
@@ -95,7 +95,7 @@ Python Files:
   dependencies: []
   retry: 2
   script:
-    - cmake . -B build -GNinja -DBUILD_TESTS=ON -DBUILD_EXTRAS=ON -DCMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
     - ninja -C build
     - ninja -C build test
 
@@ -129,7 +129,7 @@ Arch/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 Arch/Clang Static:
@@ -160,7 +160,7 @@ Arch/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 # Debian
@@ -178,7 +178,7 @@ Debian/GCC Static:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
   <<: *linux_template
 
 Debian/GCC Shared:
@@ -194,7 +194,7 @@ Debian/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
   <<: *linux_template
 
 Debian/Clang Static:
@@ -210,7 +210,7 @@ Debian/Clang Static:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
   <<: *linux_template
 
 Debian/Clang Shared:
@@ -226,7 +226,7 @@ Debian/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
   <<: *linux_template
 
 # Fedora
@@ -259,7 +259,7 @@ Fedora/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 Fedora/Clang Static:
@@ -290,7 +290,7 @@ Fedora/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 # Ubuntu
@@ -308,7 +308,7 @@ Ubuntu/GCC Static:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
   <<: *linux_template
 
 Ubuntu/GCC Shared:
@@ -324,7 +324,7 @@ Ubuntu/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
   <<: *linux_template
 
 Ubuntu/Clang Static:
@@ -340,7 +340,7 @@ Ubuntu/Clang Static:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
   <<: *linux_template
 
 Ubuntu/Clang Shared:
@@ -356,7 +356,7 @@ Ubuntu/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON -DXR_SUPPORT=OFF
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
   <<: *linux_template
 
 # macOS
@@ -385,7 +385,7 @@ macOS/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_macos_template
 
 # Windows
@@ -404,7 +404,7 @@ Windows/MSVC Shared:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
   variables:
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
 Windows/Clang-cl Static:
@@ -425,7 +425,7 @@ Windows/Clang-cl Shared:
   variables:
     CC: clang-cl
     CXX: clang-cl
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
 Windows/Clang Static:
@@ -446,7 +446,7 @@ Windows/Clang Shared:
   variables:
     CC: clang
     CXX: clang
-    CMAKE_OPTIONS: -DBUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
 # Analysis Stage Templates
@@ -460,7 +460,7 @@ Windows/Clang Shared:
     - amd64
   dependencies: []
   script:
-    - cmake . -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON -DBUILD_WINDOW_TESTS=OFF -DNO_VULKAN_RENDERER=ON ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=ON -D BUILD_EXAMPLES=ON -D BUILD_WINDOW_TESTS=OFF -D NO_VULKAN_RENDERER=ON ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
 
@@ -478,7 +478,7 @@ Static Analysis:
     CC: clang
     CXX: clang++
   script:
-    - cmake . -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON -DCLANG_TIDY=ON -DCPPCHECK=ON
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_EXAMPLES=ON -D CLANG_TIDY=ON -D CPPCHECK=ON
     - ninja -C build
 
 Code Coverage:
@@ -493,7 +493,7 @@ Code Coverage:
     CC: clang
     CXX: clang++
   script:
-    - cmake . -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DCODE_COVERAGE=ON -DBUILD_TESTS=ON -DBUILD_WINDOW_TESTS=OFF -DNO_VULKAN_RENDERER=ON
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D CODE_COVERAGE=ON -D BUILD_TESTS=ON -D BUILD_WINDOW_TESTS=OFF -D NO_VULKAN_RENDERER=ON
     - ninja -C build
     - ninja -C build ccov
     - ninja -C build ccov-all
@@ -509,26 +509,26 @@ ThreadSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Thread
+    CMAKE_OPTIONS: -D USE_SANITIZER=Thread
   <<: *analysis_template
 
 AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Address
+    CMAKE_OPTIONS: -D USE_SANITIZER=Address
   <<: *analysis_template
 
 LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Leak
+    CMAKE_OPTIONS: -D USE_SANITIZER=Leak
   <<: *analysis_template
 
 UndefinedSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -DUSE_SANITIZER=Undefined
+    CMAKE_OPTIONS: -D USE_SANITIZER=Undefined
   <<: *analysis_template
