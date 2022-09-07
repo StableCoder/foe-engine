@@ -106,6 +106,7 @@ include(sanitizers)
 
 if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 endif()
 if(BUILD_TESTS)
   enable_testing()
