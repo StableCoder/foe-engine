@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,10 +11,13 @@
 #include "assimp_mesh_loader.hpp"
 #include "assimp_scene_loader.hpp"
 
-foeModelAssimpImporter::foeModelAssimpImporter(std::string_view filePath,
+foeModelAssimpImporter::foeModelAssimpImporter(void *pMemory,
+                                               uint32_t memorySize,
+                                               std::string_view filePath,
                                                unsigned int postProcessFlags) :
     mpScene{nullptr} {
-    mpScene = aiImportFile(std::string{filePath}.c_str(), postProcessFlags);
+    mpScene = aiImportFileFromMemory((char const *)pMemory, memorySize, postProcessFlags,
+                                     std::string{filePath}.c_str());
 }
 
 foeModelAssimpImporter::~foeModelAssimpImporter() {

@@ -9,6 +9,7 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/shader.h>
+#include <foe/managed_memory.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
@@ -22,7 +23,7 @@ class FOE_GFX_RES_EXPORT foeShaderLoader {
   public:
     foeResultSet initialize(
         foeResourcePool resourcePool,
-        std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn);
+        std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -50,7 +51,7 @@ class FOE_GFX_RES_EXPORT foeShaderLoader {
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
-    std::function<std::filesystem::path(std::filesystem::path)> mExternalFileSearchFn;
+    std::function<foeResultSet(char const *, foeManagedMemory *)> mExternalFileSearchFn;
 
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 

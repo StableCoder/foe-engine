@@ -38,7 +38,7 @@ struct foeComponentPoolBase;
 struct foeSystemBase;
 
 struct foeSimulationInitInfo {
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn;
+    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn;
 };
 
 struct foeSimulationLoaderData {

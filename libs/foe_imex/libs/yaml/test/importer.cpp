@@ -232,25 +232,21 @@ TEST_CASE("foeYamlImporter - Function Tests") {
         foeResultSet result;
 
         SECTION("Existing file") {
+            foeManagedMemory managedMemory = FOE_NULL_HANDLE;
             result = foeImexImporterFindExternalFile(testImporter, "findable_external_file",
-                                                     &pathLength, NULL);
+                                                     &managedMemory);
             CHECK(result.value == FOE_IMEX_SUCCESS);
-            CHECK(pathLength != UINT32_MAX);
+            CHECK(managedMemory != FOE_NULL_HANDLE);
 
-            std::string path;
-            path.resize(pathLength);
-            result = foeImexImporterFindExternalFile(testImporter, "findable_external_file",
-                                                     &pathLength, path.data());
-            CHECK(result.value == FOE_IMEX_SUCCESS);
-            CHECK(pathLength == path.size());
-            CHECK(path.find("findable_external_file") != std::string::npos);
+            foeManagedMemoryDecrementUse(managedMemory);
         }
 
         SECTION("Non-existing file") {
-            result = foeImexImporterFindExternalFile(testImporter, "non-existing-file", &pathLength,
-                                                     NULL);
+            foeManagedMemory managedMemory = FOE_NULL_HANDLE;
+            result =
+                foeImexImporterFindExternalFile(testImporter, "non-existing-file", &managedMemory);
             CHECK(result.value != FOE_SUCCESS);
-            CHECK(pathLength == UINT32_MAX);
+            CHECK(managedMemory == FOE_NULL_HANDLE);
         }
     }
 

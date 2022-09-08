@@ -11,6 +11,7 @@
 #include <foe/ecs/name_map.h>
 #include <foe/handle.h>
 #include <foe/imex/export.h>
+#include <foe/managed_memory.h>
 #include <foe/resource/create_info.h>
 #include <foe/result.h>
 #include <foe/type_defs.h>
@@ -43,7 +44,7 @@ typedef struct foeImexImporterCalls {
                                               struct foeSimulation const *);
     foeResultSet (*getResourceEditorName)(foeImexImporter, foeResourceID, uint32_t *, char *);
     foeResultSet (*getResourceCreateInfo)(foeImexImporter, foeResourceID, foeResourceCreateInfo *);
-    foeResultSet (*findExternalFile)(foeImexImporter, char const *, uint32_t *, char *);
+    foeResultSet (*findExternalFile)(foeImexImporter, char const *, foeManagedMemory *);
 } foeImexImporterCalls;
 
 FOE_IMEX_EXPORT void foeDestroyImporter(foeImexImporter importer);
@@ -88,8 +89,7 @@ FOE_IMEX_EXPORT foeResultSet foeImexImporterGetResourceCreateInfo(
 
 FOE_IMEX_EXPORT foeResultSet foeImexImporterFindExternalFile(foeImexImporter importer,
                                                              char const *pExternalFilePath,
-                                                             uint32_t *pPathLength,
-                                                             char *pPath);
+                                                             foeManagedMemory *pManagedMemory);
 
 typedef foeResultSet (*PFN_foeImexCreateImporter)(foeIdGroup, char const *, foeImexImporter *);
 

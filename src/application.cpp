@@ -284,8 +284,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     { // Initialize simulation
         foeSimulationInitInfo simInitInfo{
-            .externalFileSearchFn = std::bind(&foeGroupData::findExternalFile,
-                                              &pSimulationSet->groupData, std::placeholders::_1),
+            .externalFileSearchFn =
+                std::bind(&foeGroupData::findExternalFile, &pSimulationSet->groupData,
+                          std::placeholders::_1, std::placeholders::_2),
         };
         foeInitializeSimulation(pSimulationSet, &simInitInfo);
 

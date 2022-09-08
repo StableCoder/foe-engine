@@ -12,35 +12,9 @@
 #include "log.hpp"
 #include "result.h"
 
-#include <fstream>
-
-namespace {
-
-auto loadShaderDataFromFile(std::filesystem::path const &shaderPath) -> std::vector<std::byte> {
-    std::vector<std::byte> shaderData;
-
-    // Open file
-    std::ifstream file(shaderPath, std::ifstream::binary | std::ifstream::in | std::ifstream::ate);
-    if (!file.is_open())
-        return shaderData;
-
-    auto size = file.tellg();
-    if (size % 4 != 0) // Must be multiple of 4
-        return shaderData;
-
-    file.seekg(0);
-
-    shaderData.resize(size);
-    file.read(reinterpret_cast<char *>(shaderData.data()), size);
-
-    return shaderData;
-}
-
-} // namespace
-
 foeResultSet foeShaderLoader::initialize(
     foeResourcePool resourcePool,
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
+    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_INITIALIZATION_FAILED);
 
@@ -179,20 +153,24 @@ void foeShaderLoader::load(foeResource resource,
     foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
 
     { // Load Shader SPIR-V from external file
-        auto filePath = mExternalFileSearchFn(pShaderCI->pFile);
-        if (filePath.empty()) {
+        foeManagedMemory managedMemory = FOE_NULL_HANDLE;
+        result = mExternalFileSearchFn(pShaderCI->pFile, &managedMemory);
+        if (result.value != FOE_SUCCESS) {
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_BINARY_FILE_NOT_FOUND);
             goto LOAD_FAILED;
         }
 
-        auto shaderCode = loadShaderDataFromFile(filePath);
+        uint32_t *pCode;
+        uint32_t codeSize;
+        foeManagedMemoryGetData(managedMemory, (void **)&pCode, &codeSize);
 
-        result = foeGfxVkCreateShader(
-            mGfxSession, &pShaderCI->gfxCreateInfo, static_cast<uint32_t>(shaderCode.size()),
-            reinterpret_cast<uint32_t *>(shaderCode.data()), &data.shader);
+        result = foeGfxVkCreateShader(mGfxSession, &pShaderCI->gfxCreateInfo, codeSize, pCode,
+                                      &data.shader);
         if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }
+
+        foeManagedMemoryDecrementUse(managedMemory);
     }
 
 LOAD_FAILED:

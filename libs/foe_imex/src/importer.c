@@ -197,14 +197,13 @@ foeResultSet foeImexImporterGetResourceCreateInfo(foeImexImporter importer,
 
 foeResultSet foeImexImporterFindExternalFile(foeImexImporter importer,
                                              char const *pExternalFilePath,
-                                             uint32_t *pPathLength,
-                                             char *pPath) {
+                                             foeManagedMemory *pManagedMemory) {
     foeImexImporterCalls const *pBaseFns =
         findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
 
     if (pBaseFns != NULL) {
         if (pBaseFns->findExternalFile != NULL) {
-            return pBaseFns->findExternalFile(importer, pExternalFilePath, pPathLength, pPath);
+            return pBaseFns->findExternalFile(importer, pExternalFilePath, pManagedMemory);
         } else {
             return to_foeResult(FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
         }

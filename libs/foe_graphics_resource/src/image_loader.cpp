@@ -18,7 +18,7 @@
 
 foeResultSet foeImageLoader::initialize(
     foeResourcePool resourcePool,
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
+    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED);
 
@@ -226,24 +226,29 @@ void foeImageLoader::load(foeResource resource,
     foeImage imgData{};
 
     { // Import the data
-      // Find the file path first
-        std::filesystem::path filePath = mExternalFileSearchFn(pImageCI->pFile);
+        foeManagedMemory managedMemory = FOE_NULL_HANDLE;
+        result = mExternalFileSearchFn(pImageCI->pFile, &managedMemory);
+        if (result.value != FOE_SUCCESS)
+            goto LOADING_FAILED;
+
         // Determine the image format
-        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileType(filePath.string().c_str());
+        FIMEMORY *fiMemory;
+        foeManagedMemoryGetData(managedMemory, (void **)&fiMemory, nullptr);
+        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileTypeFromMemory(fiMemory);
         if (imageFormat == FIF_UNKNOWN) {
-            FreeImage_GetFIFFromFilename(filePath.string().c_str());
+            FreeImage_GetFIFFromFilename(pImageCI->pFile);
         }
         if (imageFormat == FIF_UNKNOWN) {
             FOE_LOG(foeGraphicsResource, Error, "Could not determine image format for: {}",
-                    filePath.string())
+                    pImageCI->pFile)
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_FORMAT_UNKNOWN);
             goto LOADING_FAILED;
         }
 
         // Load the image into memory
-        auto *bitmap = FreeImage_Load(imageFormat, filePath.string().c_str(), 0);
+        auto *bitmap = FreeImage_LoadFromMemory(imageFormat, fiMemory, 0);
         if (bitmap == nullptr) {
-            FOE_LOG(foeGraphicsResource, Error, "Failed to load image: {}", filePath.string())
+            FOE_LOG(foeGraphicsResource, Error, "Failed to load image: {}", pImageCI->pFile)
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_LOAD_FAILURE);
             goto LOADING_FAILED;
         }
@@ -285,6 +290,7 @@ void foeImageLoader::load(foeResource resource,
         }
 
         FreeImage_Unload(bitmap);
+        foeManagedMemoryDecrementUse(managedMemory);
 
         // Create the resources
         { // Staging Buffer

@@ -41,7 +41,7 @@ TEST_CASE("foeImexImporter - When importer calls struct not available") {
     CHECK(foeImexImporterGetResourceCreateInfo(emptyImporter, FOE_INVALID_ID, nullptr).value ==
           FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 
-    CHECK(foeImexImporterFindExternalFile(emptyImporter, nullptr, nullptr, nullptr).value ==
+    CHECK(foeImexImporterFindExternalFile(emptyImporter, nullptr, nullptr).value ==
           FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
@@ -80,6 +80,6 @@ TEST_CASE("foeImexImporter - When importer calls struct available but no functio
     CHECK(foeImexImporterGetResourceCreateInfo(emptyImporter, FOE_INVALID_ID, nullptr).value ==
           FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
 
-    CHECK(foeImexImporterFindExternalFile(emptyImporter, nullptr, nullptr, nullptr).value ==
+    CHECK(foeImexImporterFindExternalFile(emptyImporter, nullptr, nullptr).value ==
           FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
 }

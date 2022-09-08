@@ -46,7 +46,8 @@ class foeGroupData {
     // Used for resource loaders
     FOE_SIM_EXPORT foeResourceCreateInfo getResourceCreateInfo(foeId id);
     // Used for resource loaders
-    FOE_SIM_EXPORT std::filesystem::path findExternalFile(std::filesystem::path externalFilePath);
+    FOE_SIM_EXPORT foeResultSet findExternalFile(char const *pFilePath,
+                                                 foeManagedMemory *pManagedMemory);
 
   private:
     struct CombinedGroup {

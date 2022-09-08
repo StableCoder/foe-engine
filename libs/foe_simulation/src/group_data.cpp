@@ -5,6 +5,7 @@
 #include <foe/simulation/group_data.hpp>
 
 #include "log.hpp"
+#include "result.h"
 
 foeGroupData::CombinedGroup::~CombinedGroup() {
     if (importer != FOE_NULL_HANDLE)
@@ -309,20 +310,13 @@ foeResourceCreateInfo foeGroupData::getResourceCreateInfo(foeId id) {
     return FOE_NULL_HANDLE;
 }
 
-std::filesystem::path foeGroupData::findExternalFile(std::filesystem::path externalFilePath) {
+foeResultSet foeGroupData::findExternalFile(char const *pFilePath,
+                                            foeManagedMemory *pManagedMemory) {
     if (mPersistentImporter != nullptr) {
-        uint32_t pathLength;
-        foeResultSet result = foeImexImporterFindExternalFile(
-            mPersistentImporter, externalFilePath.string().c_str(), &pathLength, NULL);
+        foeResultSet result =
+            foeImexImporterFindExternalFile(mPersistentImporter, pFilePath, pManagedMemory);
         if (result.value == FOE_SUCCESS) {
-            std::string path;
-            do {
-                path.resize(pathLength);
-                result = foeImexImporterFindExternalFile(mPersistentImporter,
-                                                         externalFilePath.string().c_str(),
-                                                         &pathLength, path.data());
-            } while (result.value != FOE_SUCCESS);
-            return path;
+            return result;
         }
     }
 
@@ -330,19 +324,12 @@ std::filesystem::path foeGroupData::findExternalFile(std::filesystem::path exter
         if (it->importer == FOE_NULL_HANDLE)
             continue;
 
-        uint32_t pathLength;
-        foeResultSet result = foeImexImporterFindExternalFile(
-            it->importer, externalFilePath.string().c_str(), &pathLength, NULL);
+        foeResultSet result =
+            foeImexImporterFindExternalFile(it->importer, pFilePath, pManagedMemory);
         if (result.value == FOE_SUCCESS) {
-            std::string path;
-            do {
-                path.resize(pathLength);
-                result = foeImexImporterFindExternalFile(
-                    it->importer, externalFilePath.string().c_str(), &pathLength, path.data());
-            } while (result.value != FOE_SUCCESS);
-            return path;
+            return result;
         }
     }
 
-    return {};
+    return to_foeResult(FOE_SIMULATION_ERROR_CONTENT_NOT_FOUND);
 }

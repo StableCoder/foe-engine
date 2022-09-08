@@ -15,7 +15,7 @@
 
 foeResultSet foeArmatureLoader::initialize(
     foeResourcePool resourcePool,
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
+    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return to_foeResult(FOE_BRINGUP_ERROR_LOADER_INITIALIZATION_FAILED);
 
@@ -91,14 +91,26 @@ bool foeArmatureLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
 namespace {
 
 bool processCreateInfo(
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn,
+    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn,
     foeArmatureCreateInfo const *pCreateInfo,
     foeArmature &data) {
     { // Armature
-        std::filesystem::path filePath = externalFileSearchFn(pCreateInfo->pFile);
-        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
-        if (!modelLoader->loaded())
+        foeManagedMemory managedMemory = FOE_NULL_HANDLE;
+        foeResultSet result = externalFileSearchFn(pCreateInfo->pFile, &managedMemory);
+        if (result.value != FOE_SUCCESS) {
+            std::abort();
+        }
+
+        void *pData;
+        uint32_t dataSize;
+        foeManagedMemoryGetData(managedMemory, &pData, &dataSize);
+
+        auto modelLoader =
+            std::make_unique<foeModelAssimpImporter>(pData, dataSize, pCreateInfo->pFile, 0);
+        if (!modelLoader->loaded()) {
+            foeManagedMemoryDecrementUse(managedMemory);
             return false;
+        }
 
         auto tempArmature = modelLoader->importArmature();
         for (auto it = tempArmature.begin(); it != tempArmature.end(); ++it) {
@@ -106,14 +118,26 @@ bool processCreateInfo(
                 data.armature.assign(it, tempArmature.end());
             }
         }
+
+        modelLoader.reset();
+        foeManagedMemoryDecrementUse(managedMemory);
     }
 
     { // Animations
         for (uint32_t i = 0; i < pCreateInfo->animationCount; ++i) {
             auto const &animation = pCreateInfo->pAnimations[i];
-            std::filesystem::path filePath = externalFileSearchFn(animation.pFile);
+            foeManagedMemory managedMemory = FOE_NULL_HANDLE;
+            foeResultSet result = externalFileSearchFn(animation.pFile, &managedMemory);
+            if (result.value != FOE_SUCCESS) {
+                std::abort();
+            }
+
+            void *pData;
+            uint32_t dataSize;
+            foeManagedMemoryGetData(managedMemory, &pData, &dataSize);
+
             auto modelLoader =
-                std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(), 0);
+                std::make_unique<foeModelAssimpImporter>(pData, dataSize, animation.pFile, 0);
             assert(modelLoader->loaded());
 
             for (uint32_t i = 0; i < modelLoader->getNumAnimations(); ++i) {
@@ -124,6 +148,9 @@ bool processCreateInfo(
                     break;
                 }
             }
+
+            modelLoader.reset();
+            foeManagedMemoryDecrementUse(managedMemory);
         }
     }
 

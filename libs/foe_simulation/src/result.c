@@ -20,6 +20,7 @@ void foeSimulationResultToString(foeSimulationResult value,
 
     switch (value) {
         RESULT_CASE(FOE_SIMULATION_SUCCESS)
+        RESULT_CASE(FOE_SIMULATION_ERROR_CONTENT_NOT_FOUND)
         RESULT_CASE(FOE_SIMULATION_ERROR_NOT_REGISTERED)
         // Functionality Registration
         RESULT_CASE(FOE_SIMULATION_ERROR_ID_INVALID)

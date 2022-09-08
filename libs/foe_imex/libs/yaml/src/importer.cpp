@@ -9,6 +9,7 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/indexes.hpp>
 #include <foe/imex/type_defs.h>
+#include <foe/memory_mapped_file.h>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
@@ -527,35 +528,12 @@ GOT_RESOURCE_NODE:
 
 foeResultSet findExternalFile(foeImexImporter importer,
                               char const *pExternalFilePath,
-                              uint32_t *pPathLength,
-                              char *pPath) {
+                              foeManagedMemory *pManagedMemory) {
     foeYamlImporter *pImporter = importer_from_handle(importer);
 
-    std::filesystem::path test;
-    test = pImporter->mRootDir / externalDirectoryPath / pExternalFilePath;
-    if (std::filesystem::exists(pImporter->mRootDir / externalDirectoryPath / pExternalFilePath)) {
-        foeResultSet result = to_foeResult(FOE_IMEX_YAML_SUCCESS);
-        std::string path{
-            std::filesystem::path{pImporter->mRootDir / externalDirectoryPath / pExternalFilePath}
-                .string()};
-
-        if (pPath == NULL) {
-            // If no return buffer provided, just return length of found path
-            *pPathLength = path.size();
-            return result;
-        }
-
-        if (*pPathLength < path.size()) {
-            // Not enough space for the full path, copy what we can to the return buffer
-            memcpy(pPath, path.data(), *pPathLength);
-            result = imex_to_foeResult(FOE_IMEX_ERROR_INCOMPLETE);
-        } else {
-            // Copy the full path, adjust the returned number of bytes
-            memcpy(pPath, path.data(), path.size());
-            *pPathLength = path.size();
-        }
-
-        return result;
+    std::filesystem::path path = pImporter->mRootDir / externalDirectoryPath / pExternalFilePath;
+    if (std::filesystem::exists(path)) {
+        return foeCreateMemoryMappedFile(path.string().c_str(), pManagedMemory);
     } else {
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_OPEN_FILE);
     }

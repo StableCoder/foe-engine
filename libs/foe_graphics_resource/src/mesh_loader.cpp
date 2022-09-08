@@ -20,7 +20,7 @@
 
 foeResultSet foeMeshLoader::initialize(
     foeResourcePool resourcePool,
-    std::function<std::filesystem::path(std::filesystem::path)> externalFileSearchFn) {
+    std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_LOADER_INITIALIZATION_FAILED);
 
@@ -212,13 +212,20 @@ void foeMeshLoader::load(foeResource resource,
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
     foeMesh data{};
+    foeManagedMemory managedMemory = FOE_NULL_HANDLE;
 
     if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
         foeMeshFileCreateInfo const *pCI =
             (foeMeshFileCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-        std::filesystem::path filePath = mExternalFileSearchFn(pCI->pFile);
+        result = mExternalFileSearchFn(pCI->pFile, &managedMemory);
+        if (result.value != FOE_SUCCESS)
+            goto LOAD_FAILED;
 
-        auto modelLoader = std::make_unique<foeModelAssimpImporter>(filePath.string().c_str(),
+        void *pData;
+        uint32_t dataSize;
+        foeManagedMemoryGetData(managedMemory, &pData, &dataSize);
+
+        auto modelLoader = std::make_unique<foeModelAssimpImporter>(pData, dataSize, pCI->pFile,
                                                                     pCI->postProcessFlags);
         if (!modelLoader->loaded()) {
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_UPLOAD_FAILED);
@@ -481,6 +488,9 @@ void foeMeshLoader::load(foeResource resource,
     }
 
 LOAD_FAILED:
+    if (managedMemory != FOE_NULL_HANDLE)
+        foeManagedMemoryDecrementUse(managedMemory);
+
     if (result.value != FOE_SUCCESS) {
         // Failed at some point
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
