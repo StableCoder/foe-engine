@@ -19,5 +19,11 @@ target_sources(
           thread_pool_result.c
           thread_pool.cpp)
 
+if(WIN32)
+  target_sources(foe PRIVATE memory_mapped_file_win32.cpp)
+else()
+  target_sources(foe PRIVATE memory_mapped_file_posix.c)
+endif()
+
 add_subdirectory(chrono)
 add_subdirectory(log)

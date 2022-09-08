@@ -26,6 +26,7 @@ target_sources(
           data_pool_multi.cpp
           delimited_string.cpp
           filesystem.cpp
+          memory_mapped_file.cpp
           plugin.cpp
           search_paths.cpp)
 
