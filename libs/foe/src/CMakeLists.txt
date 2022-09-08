@@ -9,7 +9,9 @@ target_sources(
           developer_console.cpp
           filesystem.cpp
           log.cpp
+          managed_memory.cpp
           plugin.cpp
+          result.c
           search_paths_reader.cpp
           search_paths_writer.cpp
           search_paths.cpp

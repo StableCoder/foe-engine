@@ -29,6 +29,18 @@ typedef struct foeResultSet {
     PFN_foeResultToString toString;
 } foeResultSet;
 
+typedef enum foeResult {
+    FOE_ERROR_OUT_OF_MEMORY = -10000,
+    FOE_ERROR_FAILED_TO_OPEN_FILE,
+    FOE_ERROR_FAILED_TO_STAT_FILE,
+    FOE_ERROR_ATTEMPTED_TO_MAP_ZERO_SIZED_FILE,
+    FOE_ERROR_FAILED_TO_MAP_FILE,
+    FOE_ERROR_FAILED_TO_UNMAP_FILE,
+    FOE_ERROR_FAILED_TO_CLOSE_FILE,
+} foeResult;
+
+void foeResultToString(foeResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+
 #ifdef __cplusplus
 }
 #endif
