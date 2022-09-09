@@ -43,7 +43,8 @@ target_code_coverage(
   OBJECTS
   foe
   EXCLUDE
-  .*/test/.*)
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*)
 
 # Thread Pool Definition
 target_sources(test_foe_thread_pool PRIVATE thread_pool_result.cpp
@@ -58,7 +59,8 @@ target_code_coverage(
   OBJECTS
   foe
   EXCLUDE
-  .*/test/.*)
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*)
 
 # Split Thread Pool Definition
 target_sources(test_foe_split_thread_pool PRIVATE split_thread_pool.cpp)
@@ -72,7 +74,8 @@ target_code_coverage(
   OBJECTS
   foe
   EXCLUDE
-  .*/test/.*)
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*)
 
 # Directories
 add_subdirectory(chrono)

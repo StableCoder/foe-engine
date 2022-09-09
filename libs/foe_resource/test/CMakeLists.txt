@@ -24,4 +24,5 @@ target_code_coverage(
   OBJECTS
   foe_resource
   EXCLUDE
-  .*/test/.*)
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*)

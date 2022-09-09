@@ -20,7 +20,7 @@ target_code_coverage(
   AUTO
   ALL
   EXCLUDE
-  .*/external/.*
-  .*/test/.*
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*
   OBJECTS
   foe_model_assimp)

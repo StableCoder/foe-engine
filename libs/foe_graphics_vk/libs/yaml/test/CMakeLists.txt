@@ -41,7 +41,8 @@ target_code_coverage(
   OBJECTS
   foe_graphics_vk_yaml
   EXCLUDE
-  .*/test/.*)
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*)
 
 # Auxiliary Targets
 if(AFL)

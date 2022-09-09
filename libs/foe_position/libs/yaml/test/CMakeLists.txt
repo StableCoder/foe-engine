@@ -22,5 +22,6 @@ target_code_coverage(
   OBJECTS
   foe_position_yaml
   EXCLUDE
-  .*/test/.*
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*
   ${BULLET_INCLUDE_DIRS})

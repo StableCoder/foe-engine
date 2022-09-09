@@ -124,8 +124,15 @@ add_subdirectory(libs)
 # Engine Entrypoint
 add_executable(foe_bringup)
 target_link_libraries(foe_bringup PRIVATE foe_bringup_lib)
-target_code_coverage(foe_bringup OBJECTS foe_bringup_lib ARGS --config
-                     ${CMAKE_CURRENT_SOURCE_DIR}/foe-settings.yml)
+target_code_coverage(
+  foe_bringup
+  OBJECTS
+  foe_bringup_lib
+  EXCLUDE
+  ${CMAKE_SOURCE_DIR}/external/.*
+  ARGS
+  --config
+  ${CMAKE_CURRENT_SOURCE_DIR}/foe-settings.yml)
 
 # Engine Library
 set(CMAKE_C_VISIBILITY_PRESET default)

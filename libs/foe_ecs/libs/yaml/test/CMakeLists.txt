@@ -30,7 +30,7 @@ target_code_coverage(
   EXCLUDE
   /usr/*
   .*.test..*
-  .*/test/.*
-  .*/tests/.*
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*
   OBJECTS
   foe_ecs_yaml)

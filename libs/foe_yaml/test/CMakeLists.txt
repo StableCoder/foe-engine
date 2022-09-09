@@ -30,4 +30,5 @@ target_code_coverage(
   OBJECTS
   foe_wsi
   EXCLUDE
-  .*/test/.*)
+  ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*)

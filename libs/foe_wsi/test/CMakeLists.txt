@@ -12,4 +12,6 @@ add_executable(test_foe_wsi keyboard.cpp mouse.cpp)
 # Definition
 target_link_libraries(test_foe_wsi PRIVATE catch foe_wsi)
 
-target_code_coverage(test_foe_wsi AUTO ALL EXCLUDE .*/test/.*)
+target_code_coverage(
+  test_foe_wsi AUTO ALL EXCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/.*
+  ${CMAKE_SOURCE_DIR}/external/.*)
