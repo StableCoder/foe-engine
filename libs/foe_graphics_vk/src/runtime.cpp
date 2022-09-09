@@ -159,7 +159,7 @@ extern "C" uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime) {
     return pRuntime->apiVersion;
 }
 
-extern "C" VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime) {
+extern "C" VkInstance foeGfxVkGetRuntimeInstance(foeGfxRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
     return pRuntime->instance;
 }

@@ -222,8 +222,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         }
 
         for (auto &it : windowData) {
-            result =
-                foeWsiWindowGetVkSurface(it.window, foeGfxVkGetInstance(gfxRuntime), &it.surface);
+            result = foeWsiWindowGetVkSurface(it.window, foeGfxVkGetRuntimeInstance(gfxRuntime),
+                                              &it.surface);
             if (result.value != FOE_SUCCESS)
                 ERRC_END_PROGRAM_TUPLE
         }
@@ -364,7 +364,7 @@ void Application::deinitialize() {
             it.swapchain.destroy(foeGfxVkGetDevice(gfxSession));
 
         if (it.surface != VK_NULL_HANDLE)
-            vkDestroySurfaceKHR(foeGfxVkGetInstance(gfxRuntime), it.surface, nullptr);
+            vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), it.surface, nullptr);
         it.surface = VK_NULL_HANDLE;
 
         if (it.window != FOE_NULL_HANDLE)

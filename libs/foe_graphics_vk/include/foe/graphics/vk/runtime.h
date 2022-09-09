@@ -94,7 +94,7 @@ FOE_GFX_EXPORT uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime);
  * @param runtime is the handle to the Vukan-based graphics runtime
  * @return The VkInstance handle
  */
-FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxRuntime runtime);
+FOE_GFX_EXPORT VkInstance foeGfxVkGetRuntimeInstance(foeGfxRuntime runtime);
 
 #ifdef __cplusplus
 }

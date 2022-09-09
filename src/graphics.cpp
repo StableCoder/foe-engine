@@ -204,9 +204,9 @@ foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
                               bool forceXr,
                               foeGfxSession *pGfxSession) {
     // Determine the physical device
-    VkPhysicalDevice vkPhysicalDevice =
-        determineVkPhysicalDevice(foeGfxVkGetInstance(gfxRuntime), xrRuntime, windowSurfaces.size(),
-                                  windowSurfaces.data(), explicitGpu, forceXr);
+    VkPhysicalDevice vkPhysicalDevice = determineVkPhysicalDevice(
+        foeGfxVkGetRuntimeInstance(gfxRuntime), xrRuntime, windowSurfaces.size(),
+        windowSurfaces.data(), explicitGpu, forceXr);
     if (vkPhysicalDevice == VK_NULL_HANDLE)
         return to_foeResult(FOE_BRINGUP_ERROR_NO_PHYSICAL_DEVICE_MEETS_REQUIREMENTS);
 
