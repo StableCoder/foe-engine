@@ -98,7 +98,7 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession ses
  * structs can be chained as desired.
  */
 FOE_GFX_EXPORT void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,
-                                                     VkPhysicalDeviceFeatures const *pBasicFeatures,
+                                                     VkPhysicalDeviceFeatures *pBasicFeatures,
                                                      void *pFeatures);
 
 FOE_GFX_EXPORT VkInstance foeGfxVkGetInstance(foeGfxSession session);
