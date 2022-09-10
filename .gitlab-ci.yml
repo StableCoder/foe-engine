@@ -120,6 +120,7 @@ Arch/GCC Static:
   variables:
     CC: gcc
     CXX: g++
+    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON
   <<: *linux_template
 
 Arch/GCC Shared:
@@ -135,7 +136,7 @@ Arch/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 Arch/Clang Static:
@@ -151,6 +152,7 @@ Arch/Clang Static:
   variables:
     CC: clang
     CXX: clang++
+    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON
   <<: *linux_template
 
 Arch/Clang Shared:
@@ -166,7 +168,7 @@ Arch/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 # Debian
@@ -466,7 +468,7 @@ Windows/Clang Shared:
     - amd64
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=ON -D BUILD_EXAMPLES=ON -D BUILD_WINDOW_TESTS=OFF -D NO_VULKAN_RENDERER=ON ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_TESTS=ON -D BUILD_WINDOW_TESTS=OFF ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
 
@@ -484,7 +486,7 @@ Static Analysis:
     CC: clang
     CXX: clang++
   script:
-    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_EXAMPLES=ON -D CLANG_TIDY=ON -D CPPCHECK=ON
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_EXAMPLES=ON -D CLANG_TIDY=ON -D CPPCHECK=ON
     - ninja -C build
 
 Code Coverage:
@@ -499,7 +501,7 @@ Code Coverage:
     CC: clang
     CXX: clang++
   script:
-    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D CODE_COVERAGE=ON -D BUILD_TESTS=ON -D BUILD_WINDOW_TESTS=OFF -D NO_VULKAN_RENDERER=ON
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D CODE_COVERAGE=ON -D BUILD_TESTS=ON -D BUILD_WINDOW_TESTS=OFF -D NO_VULKAN_RENDERER=ON
     - ninja -C build
     - ninja -C build ccov
     - ninja -C build ccov-all
@@ -522,14 +524,14 @@ AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Address
+    CMAKE_OPTIONS: -D USE_SANITIZER=Address -D BUILD_VULKAN_RUNTIME_TESTS=OFF
   <<: *analysis_template
 
 LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Leak
+    CMAKE_OPTIONS: -D USE_SANITIZER=Leak -D BUILD_VULKAN_RUNTIME_TESTS=OFF
   <<: *analysis_template
 
 UndefinedSanitizer:
