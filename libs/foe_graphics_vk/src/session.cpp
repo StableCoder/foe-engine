@@ -472,7 +472,7 @@ foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
 #ifdef VK_KHR_get_physical_device_properties2
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2) {
             mergeFeatureSet_VkPhysicalDeviceFeatures(
-                static_cast<VkPhysicalDeviceFeatures const *>(pFeatures),
+                &((VkPhysicalDeviceFeatures2 const *)pFeatures)->features,
                 &pNewSession->features_1_0);
             processed = true;
         }
