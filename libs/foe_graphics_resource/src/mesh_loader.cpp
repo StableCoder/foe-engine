@@ -7,7 +7,7 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/mesh_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/vk/mesh.hpp>
+#include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/model.hpp>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/model/assimp/importer.hpp>
@@ -292,8 +292,12 @@ void foeMeshLoader::load(foeResource resource,
         if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }
-        auto [vertexBuffer, vertexAlloc] = foeGfxVkGetMeshVertexData(data.gfxData);
-        auto [indexBuffer, indexAlloc] = foeGfxVkGetMeshIndexData(data.gfxData);
+
+        VkBuffer vertexBuffer = VK_NULL_HANDLE, indexBuffer = VK_NULL_HANDLE;
+        VmaAllocation vertexAlloc = VK_NULL_HANDLE, indexAlloc = VK_NULL_HANDLE;
+
+        foeGfxVkGetMeshVertexData(data.gfxData, &vertexBuffer, &vertexAlloc);
+        foeGfxVkGetMeshIndexData(data.gfxData, &indexBuffer, &indexAlloc);
 
         if (!hostVisible) {
             result = foeGfxCreateUploadBuffer(mGfxUploadContext,
@@ -370,8 +374,11 @@ void foeMeshLoader::load(foeResource resource,
             goto LOAD_FAILED;
         }
 
-        auto [vertexBuffer, vertexAlloc] = foeGfxVkGetMeshVertexData(data.gfxData);
-        auto [indexBuffer, indexAlloc] = foeGfxVkGetMeshIndexData(data.gfxData);
+        VkBuffer vertexBuffer = VK_NULL_HANDLE, indexBuffer = VK_NULL_HANDLE;
+        VmaAllocation vertexAlloc = VK_NULL_HANDLE, indexAlloc = VK_NULL_HANDLE;
+
+        foeGfxVkGetMeshVertexData(data.gfxData, &vertexBuffer, &vertexAlloc);
+        foeGfxVkGetMeshIndexData(data.gfxData, &indexBuffer, &indexAlloc);
 
         if (!hostVisible) {
             result = foeGfxCreateUploadBuffer(mGfxUploadContext, vertexDataSize + indexDataSize,
@@ -445,8 +452,11 @@ void foeMeshLoader::load(foeResource resource,
             goto LOAD_FAILED;
         }
 
-        auto [vertexBuffer, vertexAlloc] = foeGfxVkGetMeshVertexData(data.gfxData);
-        auto [indexBuffer, indexAlloc] = foeGfxVkGetMeshIndexData(data.gfxData);
+        VkBuffer vertexBuffer = VK_NULL_HANDLE, indexBuffer = VK_NULL_HANDLE;
+        VmaAllocation vertexAlloc = VK_NULL_HANDLE, indexAlloc = VK_NULL_HANDLE;
+
+        foeGfxVkGetMeshVertexData(data.gfxData, &vertexBuffer, &vertexAlloc);
+        foeGfxVkGetMeshIndexData(data.gfxData, &indexBuffer, &indexAlloc);
 
         if (!hostVisible) {
             result = foeGfxCreateUploadBuffer(mGfxUploadContext, vertexDataSize + indexDataSize,

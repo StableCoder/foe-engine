@@ -9,7 +9,7 @@
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/format.hpp>
-#include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/session.hpp>
 
 #include "log.hpp"
@@ -266,16 +266,16 @@ void foeImageLoader::load(foeResource resource,
             .height = FreeImage_GetHeight(bitmap),
             .depth = 1,
         };
-        auto mipLevels = maxMipmapCount(extent);
+        auto mipLevels = foeGfxVkMipmapCount(extent);
         auto bpp = foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
-        size_t totalDataSize = pixelCount(extent, mipLevels) * bpp;
+        size_t totalDataSize = foeGfxVkExtentPixelCount(extent, mipLevels) * bpp;
 
         std::unique_ptr<uint8_t[]> pelData(new uint8_t[totalDataSize]);
         std::vector<uint8_t *> mipmapOffsetPtrs;
 
         auto *pPelData = pelData.get();
         for (uint32_t m = 0; m < mipLevels; ++m) {
-            auto mipExtent = mipmapExtent(extent, m);
+            auto mipExtent = foeGfxVkMipmapExtent(extent, m);
             auto mipDataSize = bpp * mipExtent.width * mipExtent.height * mipExtent.depth;
 
             mipmapOffsetPtrs.emplace_back(pPelData);
@@ -384,7 +384,7 @@ void foeImageLoader::load(foeResource resource,
                     goto LOADING_FAILED;
 
                 for (uint32_t i = 0; i < mipLevels; ++i) {
-                    auto mipExtent = mipmapExtent(extent, i);
+                    auto mipExtent = foeGfxVkMipmapExtent(extent, i);
 
                     copyRegions[i] = VkBufferImageCopy{
                         .bufferOffset = offset,
@@ -416,7 +416,7 @@ void foeImageLoader::load(foeResource resource,
                     .layerCount = 1,
                 };
 
-                result = recordImageUploadCommands(
+                result = foeGfxVkRecordImageUploadBufferUploadCommands(
                     mGfxUploadContext, &subresourceRange, static_cast<uint32_t>(copyRegions.size()),
                     copyRegions.data(), gfxUploadBuffer, imgData.image, VK_ACCESS_SHADER_READ_BIT,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &gfxUploadRequest);

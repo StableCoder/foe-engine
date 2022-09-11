@@ -8,7 +8,7 @@
 #include <vk_struct_cleanup.h>
 
 #include "session.hpp"
-#include "shader.hpp"
+#include "shader.h"
 #include "vk_result.h"
 
 namespace {

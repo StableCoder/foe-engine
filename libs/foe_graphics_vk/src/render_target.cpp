@@ -4,7 +4,7 @@
 
 #include "render_target.hpp"
 
-#include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/session.hpp>
 
 #include "log.hpp"
@@ -64,7 +64,7 @@ foeResultSet createTargetImage(foeGfxVkSession const *pGfxVkSession,
                            VK_COMPONENT_SWIZZLE_A},
             .subresourceRange =
                 VkImageSubresourceRange{
-                    .aspectMask = formatAspects(specification.format),
+                    .aspectMask = foeGfxVkFormatAspects(specification.format),
                     .baseMipLevel = 0,
                     .levelCount = 1,
                     .baseArrayLayer = 0,

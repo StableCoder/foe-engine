@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/image.h>
 
 #include <foe/graphics/vk/queue_family.hpp>
 
@@ -13,7 +13,7 @@
 
 #include <cmath>
 
-uint32_t maxMipmapCount(VkExtent3D extent) noexcept {
+extern "C" uint32_t foeGfxVkMipmapCount(VkExtent3D extent) {
     if (extent.width == 0U || extent.height == 0U || extent.depth == 0U) {
         return 0;
     }
@@ -30,7 +30,7 @@ uint32_t maxMipmapCount(VkExtent3D extent) noexcept {
     return levels;
 }
 
-VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noexcept {
+extern "C" VkExtent3D foeGfxVkMipmapExtent(VkExtent3D extent, uint32_t mipLevel) {
     uint32_t divisor = 1U << mipLevel;
 
     return VkExtent3D{std::max(1U, static_cast<uint32_t>(std::floor(extent.width / divisor))),
@@ -38,42 +38,44 @@ VkExtent3D mipmapExtent(VkExtent3D extent, uint32_t mipLevel) noexcept {
                       std::max(1U, static_cast<uint32_t>(std::floor(extent.depth / divisor)))};
 }
 
-VkDeviceSize pixelCount(VkExtent3D extent, uint32_t mipLevels) noexcept {
+extern "C" VkDeviceSize foeGfxVkExtentPixelCount(VkExtent3D extent, uint32_t mipLevels) {
     VkDeviceSize pelCount = extent.width * extent.height * extent.depth;
 
     for (uint32_t i = 1; i < mipLevels; ++i) {
-        VkExtent3D mipExtent = mipmapExtent(extent, i);
+        VkExtent3D mipExtent = foeGfxVkMipmapExtent(extent, i);
         pelCount += mipExtent.width * mipExtent.height * mipExtent.depth;
     }
 
     return pelCount;
 }
 
-foeResultSet recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                       VkImageSubresourceRange const *pSubresourceRange,
-                                       uint32_t copyRegionCount,
-                                       VkBufferImageCopy const *pCopyRegions,
-                                       foeGfxUploadBuffer srcBuffer,
-                                       VkImage dstImage,
-                                       VkAccessFlags dstAccessFlags,
-                                       VkImageLayout dstImageLayout,
-                                       foeGfxUploadRequest *pUploadRequst) {
+extern "C" foeResultSet foeGfxVkRecordImageUploadBufferUploadCommands(
+    foeGfxUploadContext uploadContext,
+    VkImageSubresourceRange const *pSubresourceRange,
+    uint32_t copyRegionCount,
+    VkBufferImageCopy const *pCopyRegions,
+    foeGfxUploadBuffer srcBuffer,
+    VkImage dstImage,
+    VkAccessFlags dstAccessFlags,
+    VkImageLayout dstImageLayout,
+    foeGfxUploadRequest *pUploadRequst) {
     auto *pSrcBuffer = upload_buffer_from_handle(srcBuffer);
 
-    return recordImageUploadCommands(uploadContext, pSubresourceRange, copyRegionCount,
-                                     pCopyRegions, pSrcBuffer->buffer, dstImage, dstAccessFlags,
-                                     dstImageLayout, pUploadRequst);
+    return foeGfxVkRecordImageBufferUploadCommands(
+        uploadContext, pSubresourceRange, copyRegionCount, pCopyRegions, pSrcBuffer->buffer,
+        dstImage, dstAccessFlags, dstImageLayout, pUploadRequst);
 }
 
-foeResultSet recordImageUploadCommands(foeGfxUploadContext uploadContext,
-                                       VkImageSubresourceRange const *pSubresourceRange,
-                                       uint32_t copyRegionCount,
-                                       VkBufferImageCopy const *pCopyRegions,
-                                       VkBuffer srcBuffer,
-                                       VkImage dstImage,
-                                       VkAccessFlags dstAccessFlags,
-                                       VkImageLayout dstImageLayout,
-                                       foeGfxUploadRequest *pUploadRequst) {
+extern "C" foeResultSet foeGfxVkRecordImageBufferUploadCommands(
+    foeGfxUploadContext uploadContext,
+    VkImageSubresourceRange const *pSubresourceRange,
+    uint32_t copyRegionCount,
+    VkBufferImageCopy const *pCopyRegions,
+    VkBuffer srcBuffer,
+    VkImage dstImage,
+    VkAccessFlags dstAccessFlags,
+    VkImageLayout dstImageLayout,
+    foeGfxUploadRequest *pUploadRequst) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkResult vkResult;
@@ -187,7 +189,7 @@ RECORDING_FAILED:
     return vk_to_foeResult(vkResult);
 }
 
-VkImageAspectFlags formatAspects(VkFormat format) noexcept {
+extern "C" VkImageAspectFlags foeGfxVkFormatAspects(VkFormat format) {
     switch (format) {
     case VK_FORMAT_D16_UNORM:
     case VK_FORMAT_D32_SFLOAT:

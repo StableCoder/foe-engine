@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/error_images.hpp>
+#include <foe/graphics/vk/error_images.h>
 
 #include <foe/graphics/vk/format.hpp>
-#include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/image.h>
 
 #include "result.h"
 #include "upload_context.hpp"
@@ -78,14 +78,14 @@ void fillErrorStencilData(uint32_t extent, uint32_t numCheckSquare, uint8_t *pDa
 
 } // namespace
 
-foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
-                                             uint32_t numMipLevels,
-                                             uint32_t numCheckSquares,
-                                             VmaAllocation *pAlloc,
-                                             VkImage *pImage,
-                                             VkImageView *pImageDepthView,
-                                             VkImageView *pImageStencilView,
-                                             VkSampler *pSampler) {
+extern "C" foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
+                                                        uint32_t numMipLevels,
+                                                        uint32_t numCheckSquares,
+                                                        VmaAllocation *pAlloc,
+                                                        VkImage *pImage,
+                                                        VkImageView *pImageDepthView,
+                                                        VkImageView *pImageStencilView,
+                                                        VkSampler *pSampler) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
@@ -107,7 +107,7 @@ foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
     VkSampler sampler{VK_NULL_HANDLE};
 
     { // Staging Buffer
-        VkDeviceSize dataByteSize = pixelCount(extent, numMipLevels);
+        VkDeviceSize dataByteSize = foeGfxVkExtentPixelCount(extent, numMipLevels);
         dataByteSize *=
             foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
 
@@ -168,7 +168,7 @@ foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
         }
 
         for (uint32_t i = 0; i < numMipLevels; ++i) {
-            auto const mipExtent = mipmapExtent(extent, i);
+            auto const mipExtent = foeGfxVkMipmapExtent(extent, i);
 
             // Depth
             fillErrorDepthData(mipExtent.width, numCheckSquares,
@@ -218,10 +218,10 @@ foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
             .layerCount = 1,
         };
 
-        recordImageUploadCommands(uploadContext, &subresourceRange,
-                                  static_cast<uint32_t>(copyRegions.size()), copyRegions.data(),
-                                  stagingBuffer, image, VK_ACCESS_SHADER_READ_BIT,
-                                  VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadRequest);
+        foeGfxVkRecordImageBufferUploadCommands(
+            uploadContext, &subresourceRange, static_cast<uint32_t>(copyRegions.size()),
+            copyRegions.data(), stagingBuffer, image, VK_ACCESS_SHADER_READ_BIT,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, &uploadRequest);
         if (vkResult != VK_SUCCESS) {
             goto SUBMIT_FAILED;
         }

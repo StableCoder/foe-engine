@@ -2,14 +2,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_ERROR_COLOUR_IMAGE_HPP
-#define FOE_GRAPHICS_ERROR_COLOUR_IMAGE_HPP
+#ifndef FOE_GRAPHICS_ERROR_COLOUR_IMAGE_H
+#define FOE_GRAPHICS_ERROR_COLOUR_IMAGE_H
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/result.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_GFX_EXPORT foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
                                                       VkFormat format,
@@ -29,4 +33,8 @@ FOE_GFX_EXPORT foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext 
                                                             VkImageView *pImageStencilView,
                                                             VkSampler *pSampler);
 
-#endif // FOE_GRAPHICS_ERROR_COLOUR_IMAGE_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_ERROR_COLOUR_IMAGE_H

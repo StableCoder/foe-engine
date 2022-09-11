@@ -16,7 +16,7 @@
 #include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
-#include <foe/graphics/vk/mesh.hpp>
+#include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/render_graph.hpp>

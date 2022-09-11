@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
 
-#include "shader.hpp"
+#include "shader.h"
 
 bool yaml_write_gfx_shader(std::string const &nodeName,
                            foeGfxVkShaderCreateInfo const &data,

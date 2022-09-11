@@ -1,8 +1,8 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "debug_callback.hpp"
+#include "debug_callback.h"
 
 #include "log.hpp"
 
@@ -35,7 +35,8 @@ VkBool32 vulkanMessageCallbacks(VkDebugReportFlagsEXT flags,
 
 } // namespace
 
-VkResult foeVkCreateDebugCallback(VkInstance instance, VkDebugReportCallbackEXT *pDebugCallback) {
+extern "C" VkResult foeVkCreateDebugCallback(VkInstance instance,
+                                             VkDebugReportCallbackEXT *pDebugCallback) {
     VkDebugReportCallbackCreateInfoEXT debugCallbackCI{
         .sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
         .flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
@@ -52,7 +53,8 @@ VkResult foeVkCreateDebugCallback(VkInstance instance, VkDebugReportCallbackEXT 
     return fpCreateDebugReportCallbackEXT(instance, &debugCallbackCI, nullptr, pDebugCallback);
 }
 
-VkResult foeVkDestroyDebugCallback(VkInstance instance, VkDebugReportCallbackEXT debugCallback) {
+extern "C" VkResult foeVkDestroyDebugCallback(VkInstance instance,
+                                              VkDebugReportCallbackEXT debugCallback) {
     auto fpDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
         vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
     if (fpDestroyDebugReportCallbackEXT == nullptr) {

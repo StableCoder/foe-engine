@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/error_images.hpp>
+#include <foe/graphics/vk/error_images.h>
 
 #include <foe/graphics/vk/format.hpp>
-#include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/image.h>
 
 #include "result.h"
 #include "upload_context.hpp"
@@ -58,14 +58,14 @@ void fillErrorImageData(VkFormat format, uint32_t extent, uint32_t numCheckSquar
 
 } // namespace
 
-foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
-                                       VkFormat format,
-                                       uint32_t numMipLevels,
-                                       uint32_t numCheckSquares,
-                                       VmaAllocation *pAlloc,
-                                       VkImage *pImage,
-                                       VkImageView *pImageView,
-                                       VkSampler *pSampler) {
+extern "C" foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
+                                                  VkFormat format,
+                                                  uint32_t numMipLevels,
+                                                  uint32_t numCheckSquares,
+                                                  VmaAllocation *pAlloc,
+                                                  VkImage *pImage,
+                                                  VkImageView *pImageView,
+                                                  VkSampler *pSampler) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
@@ -85,7 +85,7 @@ foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
     VkSampler sampler{VK_NULL_HANDLE};
 
     { // Staging Buffer
-        VkDeviceSize dataByteSize = pixelCount(extent, numMipLevels);
+        VkDeviceSize dataByteSize = foeGfxVkExtentPixelCount(extent, numMipLevels);
         dataByteSize *= foeGfxVkBytesPerPixel(format, VK_IMAGE_ASPECT_COLOR_BIT);
 
         VkBufferCreateInfo bufferCI{
@@ -142,7 +142,7 @@ foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
         }
 
         for (uint32_t i = 0; i < numMipLevels; ++i) {
-            auto const mipExtent = mipmapExtent(extent, i);
+            auto const mipExtent = foeGfxVkMipmapExtent(extent, i);
 
             fillErrorImageData(format, mipExtent.width, numCheckSquares, pData + offset);
 
@@ -173,7 +173,7 @@ foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
             .layerCount = 1,
         };
 
-        result = recordImageUploadCommands(
+        result = foeGfxVkRecordImageBufferUploadCommands(
             uploadContext, &subresourceRange, static_cast<uint32_t>(copyRegions.size()),
             copyRegions.data(), stagingBuffer, image, VK_ACCESS_SHADER_READ_BIT,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);

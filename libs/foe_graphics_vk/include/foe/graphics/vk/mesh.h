@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_VK_MESH_HPP
-#define FOE_GRAPHICS_VK_MESH_HPP
+#ifndef FOE_GRAPHICS_VK_MESH_H
+#define FOE_GRAPHICS_VK_MESH_H
 
 #include <foe/graphics/mesh.h>
 #include <foe/result.h>
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #ifdef __cplusplus
@@ -26,15 +27,15 @@ FOE_GFX_EXPORT void foeGfxVkBindMesh(foeGfxMesh mesh,
                                      VkCommandBuffer commandBuffer,
                                      bool bindBoneData);
 
+FOE_GFX_EXPORT void foeGfxVkGetMeshVertexData(foeGfxMesh mesh,
+                                              VkBuffer *pBuffer,
+                                              VmaAllocation *pAllocation);
+FOE_GFX_EXPORT void foeGfxVkGetMeshIndexData(foeGfxMesh mesh,
+                                             VkBuffer *pBuffer,
+                                             VmaAllocation *pAllocation);
+
 #ifdef __cplusplus
 }
 #endif
 
-// TEMP
-#include <tuple>
-#include <vk_mem_alloc.h>
-
-FOE_GFX_EXPORT std::tuple<VkBuffer, VmaAllocation> foeGfxVkGetMeshVertexData(foeGfxMesh mesh);
-FOE_GFX_EXPORT std::tuple<VkBuffer, VmaAllocation> foeGfxVkGetMeshIndexData(foeGfxMesh mesh);
-
-#endif // FOE_GRAPHICS_VK_MESH_HPP
+#endif // FOE_GRAPHICS_VK_MESH_H

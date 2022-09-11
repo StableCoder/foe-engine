@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/upload_request.h>
-#include <foe/graphics/vk/image.hpp>
+#include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
@@ -176,7 +176,7 @@ foeResultSet foeImGuiRenderer::initialize(foeGfxSession session,
             .imageExtent = fontExtent,
         };
 
-        result = recordImageUploadCommands(
+        result = foeGfxVkRecordImageBufferUploadCommands(
             uploadContext, &subresourceRange, 1, &imgCopy, stagingBuffer, mFontImage,
             VK_ACCESS_SHADER_READ_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &uploadRequest);
         if (result.value != FOE_SUCCESS) {

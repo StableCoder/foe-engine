@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/mesh.hpp>
+#include <foe/graphics/vk/mesh.h>
 
-#include "mesh.hpp"
+#include "mesh.h"
 #include "session.hpp"
 #include "vk_result.h"
 
@@ -130,14 +130,20 @@ extern "C" void foeGfxDestroyMesh(foeGfxSession session, foeGfxMesh mesh) {
     foeGfxVkDestroyMesh(session, pMesh);
 }
 
-std::tuple<VkBuffer, VmaAllocation> foeGfxVkGetMeshVertexData(foeGfxMesh mesh) {
+extern "C" void foeGfxVkGetMeshVertexData(foeGfxMesh mesh,
+                                          VkBuffer *pBuffer,
+                                          VmaAllocation *pAllocation) {
     auto *pMesh = mesh_from_handle(mesh);
 
-    return std::make_tuple(pMesh->vertexBuffer, pMesh->vertexAlloc);
+    *pBuffer = pMesh->vertexBuffer;
+    *pAllocation = pMesh->vertexAlloc;
 }
 
-std::tuple<VkBuffer, VmaAllocation> foeGfxVkGetMeshIndexData(foeGfxMesh mesh) {
+extern "C" void foeGfxVkGetMeshIndexData(foeGfxMesh mesh,
+                                         VkBuffer *pBuffer,
+                                         VmaAllocation *pAllocation) {
     auto *pMesh = mesh_from_handle(mesh);
 
-    return std::make_tuple(pMesh->indexBuffer, pMesh->indexAlloc);
+    *pBuffer = pMesh->indexBuffer;
+    *pAllocation = pMesh->indexAlloc;
 }

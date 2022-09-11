@@ -13,7 +13,7 @@
 #include "log.hpp"
 #include "result.h"
 #include "session.hpp"
-#include "shader.hpp"
+#include "shader.h"
 #include "vk_result.h"
 
 foeResultSet foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {

@@ -7,7 +7,7 @@
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
 
-#include "debug_callback.hpp"
+#include "debug_callback.h"
 #include "log.hpp"
 #include "result.h"
 #include "runtime.h"
