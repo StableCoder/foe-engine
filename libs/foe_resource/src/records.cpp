@@ -56,16 +56,12 @@ extern "C" void foeResourceDestroyRecords(foeResourceRecords resourceRecords) {
     for (auto const &resource : pRecords->records) {
         // Saved
         for (auto const &record : resource.savedRecords) {
-            int count = foeResourceCreateInfoDecrementRefCount(record.createInfo);
-            if (count == 0)
-                foeDestroyResourceCreateInfo(record.createInfo);
+            foeResourceCreateInfoDecrementRefCount(record.createInfo);
         }
 
         // Session
         for (auto record : resource.sessionRecords) {
-            int count = foeResourceCreateInfoDecrementRefCount(record);
-            if (count == 0)
-                foeDestroyResourceCreateInfo(record);
+            foeResourceCreateInfoDecrementRefCount(record);
         }
     }
 
@@ -161,9 +157,7 @@ extern "C" foeResultSet foeResourceAddSessionRecord(foeResourceRecords resourceR
     foeResourceCreateInfoIncrementRefCount(createInfo);
 
     for (auto i = record->currentSessionRecord; i < record->sessionRecords.size(); ++i) {
-        int count = foeResourceCreateInfoDecrementRefCount(record->sessionRecords[i]);
-        if (count == 0)
-            foeDestroyResourceCreateInfo(record->sessionRecords[i]);
+        foeResourceCreateInfoDecrementRefCount(record->sessionRecords[i]);
     }
 
     record->sessionRecords.erase(record->sessionRecords.begin() + record->currentSessionRecord,
@@ -242,8 +236,7 @@ extern "C" foeResultSet foeResourceRecordsGetCreateInfo(foeResourceRecords resou
         *pCreateInfo = record->sessionRecords[record->currentSessionRecord - 1];
     }
 
-    // @TODO Re-add auto-increment
-    // foeResourceCreateInfoIncrementRefCount(*pCreateInfo);
+    foeResourceCreateInfoIncrementRefCount(*pCreateInfo);
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
@@ -288,9 +281,7 @@ extern "C" void foeResourceRecordsUpdatedSavedRecords(foeResourceRecords resourc
         if (!resource.savedRecords.empty()) {
             auto lastSaved = resource.savedRecords.end() - 1;
             if (lastSaved->sourceGroup == foeIdPersistentGroup) {
-                int count = foeResourceCreateInfoDecrementRefCount(lastSaved->createInfo);
-                if (count == 0)
-                    foeDestroyResourceCreateInfo(lastSaved->createInfo);
+                foeResourceCreateInfoDecrementRefCount(lastSaved->createInfo);
 
                 resource.savedRecords.erase(lastSaved);
             }

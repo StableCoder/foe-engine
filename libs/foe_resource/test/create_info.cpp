@@ -52,11 +52,12 @@ TEST_CASE("foeResourceCreateInfo - Check that given destroy function is called o
     foeResultSet result = foeCreateResourceCreateInfo(0, cleanupFn, sizeof(TestStruct), &testStruct,
                                                       testDataFn, &createInfo);
 
-    CHECK(result.value == FOE_RESOURCE_SUCCESS);
+    REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
+    CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
     CHECK(!destroyCalled);
-    foeDestroyResourceCreateInfo(createInfo);
+    foeResourceCreateInfoDecrementRefCount(createInfo);
     CHECK(destroyCalled);
 }
 
@@ -70,6 +71,7 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
+        CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
         CHECK(foeResourceCreateInfoGetType(createInfo) == 0);
     }
@@ -79,6 +81,7 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
+        CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
         CHECK(foeResourceCreateInfoGetType(createInfo) == 1);
     }
@@ -88,11 +91,12 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
+        CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
         CHECK(foeResourceCreateInfoGetType(createInfo) == UINT32_MAX);
     }
 
-    foeDestroyResourceCreateInfo(createInfo);
+    foeResourceCreateInfoDecrementRefCount(createInfo);
 }
 
 TEST_CASE("foeResourceCreateInfo - Incrementing/Decrementing reference count") {
@@ -104,11 +108,9 @@ TEST_CASE("foeResourceCreateInfo - Incrementing/Decrementing reference count") {
 
     CHECK(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
+    CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
     SECTION("Single-threaded") {
-        CHECK(foeResourceCreateInfoIncrementRefCount(createInfo) == 1);
-        CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
-
         for (int i = 1; i < 100; ++i) {
             CHECK(foeResourceCreateInfoIncrementRefCount(createInfo) == i + 1);
             CHECK(foeResourceCreateInfoGetRefCount(createInfo) == i + 1);
@@ -144,7 +146,7 @@ TEST_CASE("foeResourceCreateInfo - Incrementing/Decrementing reference count") {
             threads[i].join();
         }
 
-        CHECK(foeResourceCreateInfoGetRefCount(createInfo) == cNumThreads * cNumCount);
+        CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1 + cNumThreads * cNumCount);
 
         for (size_t i = 0; i < cNumThreads; ++i) {
             threads[i] = std::thread(decrementFn);
@@ -153,10 +155,8 @@ TEST_CASE("foeResourceCreateInfo - Incrementing/Decrementing reference count") {
             threads[i].join();
         }
 
-        CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 0);
+        CHECK(foeResourceCreateInfoDecrementRefCount(createInfo) == 0);
     }
-
-    foeDestroyResourceCreateInfo(createInfo);
 }
 
 TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
@@ -171,8 +171,9 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
 
     CHECK(result.value == FOE_RESOURCE_SUCCESS);
     CHECK(createInfo != FOE_NULL_HANDLE);
+    CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
-    foeDestroyResourceCreateInfo(createInfo);
+    foeResourceCreateInfoDecrementRefCount(createInfo);
     foeLogger::instance()->deregisterSink(&testSink);
 
     REQUIRE(testSink.logMessages.size() == 3);
@@ -188,39 +189,4 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
     CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
     CHECK(testSink.logMessages[2].msg.starts_with("["));
     CHECK(testSink.logMessages[2].msg.ends_with(",0] foeResourceCreateInfo - Destroyed"));
-}
-
-TEST_CASE("foeResourceCreateInfo - Warning logged when destroyed with non-zero reference count") {
-    TestLogSink testSink;
-    foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
-    auto dummyData = [](void *, void *) {};
-
-    foeResultSet result =
-        foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
-
-    CHECK(result.value == FOE_RESOURCE_SUCCESS);
-    CHECK(createInfo != FOE_NULL_HANDLE);
-
-    foeResourceCreateInfoIncrementRefCount(createInfo);
-    foeResourceCreateInfoIncrementRefCount(createInfo);
-    foeResourceCreateInfoIncrementRefCount(createInfo);
-
-    foeLogger::instance()->registerSink(&testSink);
-
-    foeDestroyResourceCreateInfo(createInfo);
-
-    foeLogger::instance()->deregisterSink(&testSink);
-
-    CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[0].msg.starts_with("["));
-    CHECK(testSink.logMessages[0].msg.ends_with("0] foeResourceCreateInfo - Destroying"));
-
-    CHECK(testSink.logMessages[1].level == foeLogLevel::Warning);
-    CHECK(testSink.logMessages[1].msg.starts_with("["));
-    CHECK(testSink.logMessages[1].msg.ends_with(
-        "0] foeResourceCreateInfo - Destroying with a non-zero reference count of: 3"));
-
-    CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
-    CHECK(testSink.logMessages[2].msg.starts_with("["));
-    CHECK(testSink.logMessages[2].msg.ends_with("0] foeResourceCreateInfo - Destroyed"));
 }

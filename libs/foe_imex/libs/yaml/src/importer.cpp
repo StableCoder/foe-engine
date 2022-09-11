@@ -361,7 +361,7 @@ foeResultSet importResourceDefinitions(foeImexImporter importer,
                         }
                     }
 
-                    foeDestroyResourceCreateInfo(createInfo);
+                    foeResourceCreateInfoDecrementRefCount(createInfo);
                     processed = true;
                     break;
                 } else {

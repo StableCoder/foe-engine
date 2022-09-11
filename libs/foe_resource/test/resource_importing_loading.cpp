@@ -32,6 +32,7 @@ foeResourceCreateInfo genCreateInfoFn(void *, foeResourceID) {
                                                       nullptr, dataFn, &createInfo);
     REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(createInfo != FOE_NULL_HANDLE);
+    REQUIRE(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
     return createInfo;
 }
@@ -80,7 +81,6 @@ TEST_CASE("foeResource - Importing CreateInfo") {
 
             SECTION("Decrementing after re-import leads to an orphaned createInfo instead") {
                 CHECK(foeResourceCreateInfoDecrementRefCount(createInfo) == 0);
-                foeDestroyResourceCreateInfo(createInfo);
             }
         }
     }
@@ -119,7 +119,6 @@ TEST_CASE("foeResource - Importing CreateInfo") {
 
             SECTION("Decrementing after re-import leads to an orphaned createInfo instead") {
                 CHECK(foeResourceCreateInfoDecrementRefCount(createInfo) == 0);
-                foeDestroyResourceCreateInfo(createInfo);
             }
         }
     }

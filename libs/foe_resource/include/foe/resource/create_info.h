@@ -28,8 +28,6 @@ FOE_RES_EXPORT foeResultSet foeCreateResourceCreateInfo(foeResourceCreateInfoTyp
                                                         void (*pDataFn)(void *, void *),
                                                         foeResourceCreateInfo *pCreateInfo);
 
-FOE_RES_EXPORT void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo);
-
 FOE_RES_EXPORT foeResourceCreateInfoType
 foeResourceCreateInfoGetType(foeResourceCreateInfo createInfo);
 

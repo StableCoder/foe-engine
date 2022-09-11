@@ -13,12 +13,12 @@ namespace {
 
 struct foeResourceCreateInfoImpl {
     foeResourceCreateInfoType type;
-    std::atomic_int refCount{0};
+    std::atomic_int refCount;
     PFN_foeResourceCreateInfoCleanup cleanupFn;
 
     foeResourceCreateInfoImpl(foeResourceCreateInfoType type,
                               PFN_foeResourceCreateInfoCleanup cleanupFn) :
-        type{type}, cleanupFn{cleanupFn} {}
+        type{type}, refCount{1}, cleanupFn{cleanupFn} {}
 };
 
 FOE_DEFINE_HANDLE_CASTS(resource_create_info, foeResourceCreateInfoImpl, foeResourceCreateInfo)
@@ -51,31 +51,6 @@ extern "C" foeResultSet foeCreateResourceCreateInfo(foeResourceCreateInfoType ty
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" void foeDestroyResourceCreateInfo(foeResourceCreateInfo createInfo) {
-    auto *pCreateInfo = resource_create_info_from_handle(createInfo);
-
-    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Destroying",
-            (void *)pCreateInfo, pCreateInfo->type)
-
-    int refCount = pCreateInfo->refCount;
-    if (refCount != 0) {
-        FOE_LOG(foeResourceCore, Warning,
-                "[{},{}] foeResourceCreateInfo - Destroying with a non-zero reference count of: {}",
-                (void *)pCreateInfo, pCreateInfo->type, refCount)
-    }
-
-    if (pCreateInfo->cleanupFn != nullptr) {
-        pCreateInfo->cleanupFn((void *)foeResourceCreateInfoGetData(createInfo));
-    }
-
-    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Destroyed",
-            (void *)pCreateInfo, pCreateInfo->type)
-
-    pCreateInfo->~foeResourceCreateInfoImpl();
-
-    free(pCreateInfo);
-}
-
 extern "C" foeResourceCreateInfoType foeResourceCreateInfoGetType(
     foeResourceCreateInfo createInfo) {
     auto *pCreateInfo = resource_create_info_from_handle(createInfo);
@@ -94,7 +69,25 @@ extern "C" int foeResourceCreateInfoIncrementRefCount(foeResourceCreateInfo crea
 
 extern "C" int foeResourceCreateInfoDecrementRefCount(foeResourceCreateInfo createInfo) {
     auto *pCreateInfo = resource_create_info_from_handle(createInfo);
-    return --pCreateInfo->refCount;
+    int refCount = --pCreateInfo->refCount;
+
+    if (refCount == 0) {
+        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Destroying",
+                (void *)pCreateInfo, pCreateInfo->type)
+
+        if (pCreateInfo->cleanupFn != nullptr) {
+            pCreateInfo->cleanupFn((void *)foeResourceCreateInfoGetData(createInfo));
+        }
+
+        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResourceCreateInfo - Destroyed",
+                (void *)pCreateInfo, pCreateInfo->type)
+
+        pCreateInfo->~foeResourceCreateInfoImpl();
+
+        free(pCreateInfo);
+    }
+
+    return refCount;
 }
 
 extern "C" void const *foeResourceCreateInfoGetData(foeResourceCreateInfo createInfo) {

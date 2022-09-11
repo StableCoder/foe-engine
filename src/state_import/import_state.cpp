@@ -435,6 +435,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
                             foeResourceAddSavedRecord(pCallContext->records,
                                                       foeIdValueToGroup(pCallContext->groupValue),
                                                       id, resourceCI);
+                            foeResourceCreateInfoDecrementRefCount(resourceCI);
                         }
                     },
                     &callContext);
@@ -482,6 +483,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
                         foeResourceAddSavedRecord(pCallContext->records,
                                                   foeIdValueToGroup(foeIdPersistentGroupValue), id,
                                                   resourceCI);
+                        foeResourceCreateInfoDecrementRefCount(resourceCI);
                     }
                 },
                 &callContext);

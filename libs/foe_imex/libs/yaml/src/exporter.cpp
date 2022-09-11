@@ -115,9 +115,7 @@ YAML::Node exportResource(
         }
     }
 
-    if (foeResourceCreateInfoDecrementRefCount(resourceCI) == 0) {
-        foeDestroyResourceCreateInfo(resourceCI);
-    }
+    foeResourceCreateInfoDecrementRefCount(resourceCI);
 
     return rootNode;
 }

@@ -102,10 +102,7 @@ extern "C" void foeDestroyResource(foeResource resource) {
 
     // Clear createInfo
     if (pResource->createInfo != FOE_NULL_HANDLE) {
-        auto count = foeResourceCreateInfoDecrementRefCount(pResource->createInfo);
-        if (count == 0) {
-            foeDestroyResourceCreateInfo(pResource->createInfo);
-        }
+        foeResourceCreateInfoDecrementRefCount(pResource->createInfo);
     }
 
     FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Destroyed",
@@ -178,8 +175,6 @@ void loadCreateInfoTask(foeResourceImpl *pResource) {
         pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext, pResource->id);
     foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
 
-    foeResourceCreateInfoIncrementRefCount(newCreateInfo);
-
     pResource->sync.lock();
     if (newCreateInfo != FOE_NULL_HANDLE) {
         oldCreateInfo = pResource->createInfo;
@@ -198,10 +193,7 @@ void loadCreateInfoTask(foeResourceImpl *pResource) {
 
     // If destroying old create info data, do it outside the locked area, could be expensive
     if (oldCreateInfo != FOE_NULL_HANDLE) {
-        auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-        if (refCount == 0) {
-            foeDestroyResourceCreateInfo(oldCreateInfo);
-        }
+        foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
     }
 }
 
@@ -252,11 +244,9 @@ void postLoadFn(
 
     if (loadResult.value != FOE_SUCCESS) {
         // Loading didn't go well
-        if (foeResourceCreateInfoDecrementRefCount(createInfo) == 0) {
-            // Since we're not going to be using it, decrement and maybe destroy if there's no more
-            // references
-            foeDestroyResourceCreateInfo(createInfo);
-        }
+
+        // Since we're not going to be using it, decrement which may destroy it
+        foeResourceCreateInfoDecrementRefCount(createInfo);
 
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         loadResult.toString(loadResult.value, buffer);
@@ -290,10 +280,7 @@ void postLoadFn(
 
     // If destroying old create info data, do it outside the critical area, could be expensive
     if (oldCreateInfo != FOE_NULL_HANDLE) {
-        auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-        if (refCount == 0) {
-            foeDestroyResourceCreateInfo(oldCreateInfo);
-        }
+        foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
     }
 }
 
@@ -409,9 +396,7 @@ bool resourceUnloadCall(foeResource resource,
     // To prevent issues due to maybe slower destruction of ResourceCreateInfo,
     // decrement/destroy it outside the sync-locked portion
     if (oldCreateInfo != FOE_NULL_HANDLE) {
-        auto refCount = foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-        if (refCount == 0)
-            foeDestroyResourceCreateInfo(oldCreateInfo);
+        foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
     }
 
     return retVal;
