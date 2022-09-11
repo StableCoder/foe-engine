@@ -14,9 +14,9 @@ target_sources(test_foe_wsi_glfw3 PRIVATE result.cpp)
 
 if(BUILD_WINDOW_TESTS)
   target_sources(test_foe_wsi_glfw3 PRIVATE window.cpp)
-endif()
-if(BUILD_VULKAN_RUNTIME_TESTS)
-  target_sources(test_foe_wsi_glfw3 PRIVATE vulkan.cpp)
+  if(BUILD_VULKAN_RUNTIME_TESTS)
+    target_sources(test_foe_wsi_glfw3 PRIVATE vulkan.cpp)
+  endif()
 endif()
 
 target_include_directories(test_foe_wsi_glfw3
