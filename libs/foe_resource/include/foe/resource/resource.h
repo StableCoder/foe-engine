@@ -55,8 +55,6 @@ FOE_RES_EXPORT foeResultSet foeCreateResource(foeResourceID id,
                                               size_t size,
                                               foeResource *pResource);
 
-FOE_RES_EXPORT void foeDestroyResource(foeResource resource);
-
 FOE_RES_EXPORT foeResourceID foeResourceGetID(foeResource resource);
 FOE_RES_EXPORT foeResourceType foeResourceGetType(foeResource resource);
 

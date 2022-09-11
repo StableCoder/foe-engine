@@ -47,6 +47,7 @@ TEST_CASE("foeResource - Importing CreateInfo") {
     foeResultSet result = foeCreateResource(0, cResourceType, &fns, sizeof(TestData), &resource);
     REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);
+    REQUIRE(foeResourceGetRefCount(resource) == 1);
 
     CHECK(foeResourceGetCreateInfo(resource) == FOE_NULL_HANDLE);
 
@@ -123,5 +124,5 @@ TEST_CASE("foeResource - Importing CreateInfo") {
         }
     }
 
-    foeDestroyResource(resource);
+    CHECK(foeResourceDecrementRefCount(resource) == 0);
 }

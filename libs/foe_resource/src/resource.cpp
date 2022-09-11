@@ -33,7 +33,7 @@ struct foeResourceImpl {
 
     std::recursive_mutex sync;
 
-    std::atomic_int refCount{0};
+    std::atomic_int refCount{1};
     std::atomic_int useCount{0};
 
     // Create Info State
@@ -78,41 +78,6 @@ extern "C" foeResultSet foeCreateResource(foeResourceID id,
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" void foeDestroyResource(foeResource resource) {
-    auto *pResource = resource_from_handle(resource);
-
-    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Destroying",
-            foeIdToString(pResource->id), pResource->type)
-
-    int useCount = pResource->useCount;
-    if (useCount != 0) {
-        FOE_LOG(foeResourceCore, Warning,
-                "[{},{}] foeResource - Destroying with a non-zero use count of: {}",
-                foeIdToString(pResource->id), pResource->type, useCount)
-    }
-
-    int refCount = pResource->refCount;
-    if (refCount != 0) {
-        FOE_LOG(foeResourceCore, Warning,
-                "[{},{}] foeResource - Destroying with a non-zero reference count of: {}",
-                foeIdToString(pResource->id), pResource->type, refCount)
-    }
-
-    foeResourceUnloadData(resource, true);
-
-    // Clear createInfo
-    if (pResource->createInfo != FOE_NULL_HANDLE) {
-        foeResourceCreateInfoDecrementRefCount(pResource->createInfo);
-    }
-
-    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Destroyed",
-            foeIdToString(pResource->id), pResource->type)
-
-    pResource->~foeResourceImpl();
-
-    free(pResource);
-}
-
 extern "C" foeResourceID foeResourceGetID(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
     return pResource->id;
@@ -135,7 +100,35 @@ extern "C" int foeResourceIncrementRefCount(foeResource resource) {
 
 extern "C" int foeResourceDecrementRefCount(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
-    return --pResource->refCount;
+    int refCount = --pResource->refCount;
+
+    if (refCount == 0) {
+        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Destroying",
+                foeIdToString(pResource->id), pResource->type)
+
+        int useCount = pResource->useCount;
+        if (useCount != 0) {
+            FOE_LOG(foeResourceCore, Warning,
+                    "[{},{}] foeResource - Destroying with a non-zero use count of: {}",
+                    foeIdToString(pResource->id), pResource->type, useCount)
+        }
+
+        foeResourceUnloadData(resource, true);
+
+        // Clear createInfo
+        if (pResource->createInfo != FOE_NULL_HANDLE) {
+            foeResourceCreateInfoDecrementRefCount(pResource->createInfo);
+        }
+
+        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Destroyed",
+                foeIdToString(pResource->id), pResource->type)
+
+        pResource->~foeResourceImpl();
+
+        free(pResource);
+    }
+
+    return refCount;
 }
 
 extern "C" int foeResourceGetUseCount(foeResource resource) {

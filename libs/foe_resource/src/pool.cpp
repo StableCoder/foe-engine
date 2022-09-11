@@ -47,9 +47,7 @@ extern "C" void foeDestroyResourcePool(foeResourcePool resourcePool) {
     for (auto const resource : pResourcePool->resources) {
         int refCount = foeResourceDecrementRefCount(resource);
 
-        if (refCount == 0) {
-            foeDestroyResource(resource);
-        } else {
+        if (refCount != 0) {
             FOE_LOG(foeResourceCore, Warning,
                     "[{}] foeResourcePool - While destroying, found foeResource [{},{}] that "
                     "still has external references and thus skipped immediate destruction",
@@ -91,10 +89,7 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
         return FOE_NULL_HANDLE;
     }
 
-    foeResourceIncrementRefCount(newResource);
-
     pResourcePool->resources.emplace_back(newResource);
-
     return newResource;
 }
 
@@ -132,9 +127,7 @@ extern "C" foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
         return to_foeResult(FOE_RESOURCE_ERROR_NOT_FOUND);
 
     int refCount = foeResourceDecrementRefCount(resource);
-    if (refCount == 0) {
-        foeDestroyResource(resource);
-    } else {
+    if (refCount != 0) {
         FOE_LOG(foeResourceCore, Warning,
                 "[{}] foeResourcePool - While removing foeResource [{},{}], it still has "
                 "external references and thus skipped immediate destruction",

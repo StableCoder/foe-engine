@@ -43,6 +43,7 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
         REQUIRE(resource != FOE_NULL_HANDLE);
         CHECK(foeResourceGetID(resource) == 0);
         CHECK(foeResourceGetType(resource) == 0);
+        REQUIRE(foeResourceGetRefCount(resource) == 1);
     }
     SECTION("Type: 1 / ID: 1") {
         foeResultSet result = foeCreateResource(1, 1, &fns, 0, &resource);
@@ -51,6 +52,7 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
         REQUIRE(resource != FOE_NULL_HANDLE);
         CHECK(foeResourceGetID(resource) == 1);
         CHECK(foeResourceGetType(resource) == 1);
+        REQUIRE(foeResourceGetRefCount(resource) == 1);
     }
     SECTION("Type: UINT32_MAX / ID: UINT32_MAX") {
         foeResultSet result = foeCreateResource(UINT32_MAX, UINT32_MAX, &fns, 0, &resource);
@@ -59,13 +61,14 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
         REQUIRE(resource != FOE_NULL_HANDLE);
         CHECK(foeResourceGetID(resource) == UINT32_MAX);
         CHECK(foeResourceGetType(resource) == UINT32_MAX);
+        REQUIRE(foeResourceGetRefCount(resource) == 1);
     }
 
     CHECK(foeResourceGetCreateInfo(resource) == FOE_NULL_HANDLE);
     CHECK_FALSE(foeResourceGetIsLoading(resource));
     CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
 
-    foeDestroyResource(resource);
+    CHECK(foeResourceDecrementRefCount(resource) == 0);
 }
 
 TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
@@ -74,14 +77,12 @@ TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
 
     foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
 
-    CHECK(result.value == FOE_RESOURCE_SUCCESS);
+    REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);
+    REQUIRE(foeResourceGetRefCount(resource) == 1);
 
     SECTION("Single-threaded") {
         SECTION("Reference count") {
-            CHECK(foeResourceIncrementRefCount(resource) == 1);
-            CHECK(foeResourceGetRefCount(resource) == 1);
-
             for (int i = 1; i < 100; ++i) {
                 CHECK(foeResourceIncrementRefCount(resource) == i + 1);
                 CHECK(foeResourceGetRefCount(resource) == i + 1);
@@ -93,8 +94,6 @@ TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
                 CHECK(foeResourceDecrementRefCount(resource) == 99 - i);
                 CHECK(foeResourceGetRefCount(resource) == 99 - i);
             }
-
-            CHECK(foeResourceDecrementRefCount(resource) == 0);
         }
         SECTION("Use count") {
             CHECK(foeResourceIncrementUseCount(resource) == 1);
@@ -137,7 +136,7 @@ TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
                 threads[i].join();
             }
 
-            CHECK(foeResourceGetRefCount(resource) == cNumThreads * cNumCount);
+            CHECK(foeResourceGetRefCount(resource) == 1 + cNumThreads * cNumCount);
 
             for (size_t i = 0; i < cNumThreads; ++i) {
                 threads[i] = std::thread(decrementFn);
@@ -145,8 +144,6 @@ TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
             for (size_t i = 0; i < cNumThreads; ++i) {
                 threads[i].join();
             }
-
-            CHECK(foeResourceGetRefCount(resource) == 0);
         }
         SECTION("Use count") {
             std::thread threads[cNumThreads];
@@ -181,7 +178,7 @@ TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
         }
     }
 
-    foeDestroyResource(resource);
+    CHECK(foeResourceDecrementRefCount(resource) == 0);
 }
 
 TEST_CASE("foeResource - Regular lifetime logs (no import/loading)") {
@@ -193,10 +190,11 @@ TEST_CASE("foeResource - Regular lifetime logs (no import/loading)") {
 
     foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
 
-    CHECK(result.value == FOE_RESOURCE_SUCCESS);
-    CHECK(resource != FOE_NULL_HANDLE);
+    REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
+    REQUIRE(resource != FOE_NULL_HANDLE);
+    REQUIRE(foeResourceGetRefCount(resource) == 1);
 
-    foeDestroyResource(resource);
+    REQUIRE(foeResourceDecrementRefCount(resource) == 0);
 
     foeLogger::instance()->deregisterSink(&testSink);
 
@@ -220,35 +218,17 @@ TEST_CASE("foeResource - Warning logged when destroyed with non-zero reference o
 
     foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
 
-    CHECK(result.value == FOE_RESOURCE_SUCCESS);
-    CHECK(resource != FOE_NULL_HANDLE);
+    REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
+    REQUIRE(resource != FOE_NULL_HANDLE);
+    REQUIRE(foeResourceGetRefCount(resource) == 1);
 
-    SECTION("Reference Count") {
-        foeResourceIncrementRefCount(resource);
-
-        foeLogger::instance()->registerSink(&testSink);
-
-        foeDestroyResource(resource);
-
-        foeLogger::instance()->deregisterSink(&testSink);
-
-        CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
-        CHECK(testSink.logMessages[0].msg == "[0x00000000,0] foeResource - Destroying");
-
-        CHECK(testSink.logMessages[1].level == foeLogLevel::Warning);
-        CHECK(testSink.logMessages[1].msg ==
-              "[0x00000000,0] foeResource - Destroying with a non-zero reference count of: 1");
-
-        CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
-        CHECK(testSink.logMessages[2].msg == "[0x00000000,0] foeResource - Destroyed");
-    }
     SECTION("Use Count") {
         foeResourceIncrementUseCount(resource);
         foeResourceIncrementUseCount(resource);
 
         foeLogger::instance()->registerSink(&testSink);
 
-        foeDestroyResource(resource);
+        REQUIRE(foeResourceDecrementRefCount(resource) == 0);
 
         foeLogger::instance()->deregisterSink(&testSink);
 
