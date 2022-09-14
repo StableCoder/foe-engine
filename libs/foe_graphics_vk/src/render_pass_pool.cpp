@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/render_pass_pool.hpp>
 
-#include <foe/graphics/vk/format.hpp>
+#include <foe/graphics/vk/format.h>
 
 #include <array>
 #include <mutex>

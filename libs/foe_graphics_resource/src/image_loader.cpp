@@ -8,7 +8,7 @@
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/vk/format.hpp>
+#include <foe/graphics/vk/format.h>
 #include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/session.hpp>
 

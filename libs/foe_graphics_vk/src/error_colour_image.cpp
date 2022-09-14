@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/error_images.h>
 
-#include <foe/graphics/vk/format.hpp>
+#include <foe/graphics/vk/format.h>
 #include <foe/graphics/vk/image.h>
 
 #include "result.h"

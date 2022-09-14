@@ -1,16 +1,10 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_VK_FORMAT_HPP
-#define FOE_GRAPHICS_VK_FORMAT_HPP
+#include <foe/graphics/vk/format.h>
 
-#include <vulkan/vulkan.h>
-
-#include <cstdlib>
-
-/// Returns if the given format is a depth compatible format
-constexpr bool foeGfxVkIsDepthFormat(VkFormat format) noexcept {
+bool foeGfxVkIsDepthFormat(VkFormat format) {
     switch (format) {
     case VK_FORMAT_D16_UNORM:
     case VK_FORMAT_D32_SFLOAT:
@@ -23,8 +17,7 @@ constexpr bool foeGfxVkIsDepthFormat(VkFormat format) noexcept {
     }
 }
 
-/// Returns if the given format is a depth-stencil compatible format
-constexpr bool foeGfxVkIsDepthStencilFormat(VkFormat format) noexcept {
+bool foeGfxVkIsDepthStencilFormat(VkFormat format) {
     switch (format) {
     case VK_FORMAT_D16_UNORM_S8_UINT:
     case VK_FORMAT_D24_UNORM_S8_UINT:
@@ -35,12 +28,7 @@ constexpr bool foeGfxVkIsDepthStencilFormat(VkFormat format) noexcept {
     }
 }
 
-/** @brief Returns the number of bytes required to store each pixel
- * @param format Format type
- * @param aspects Aspects of the image to get the storage requirement for
- * @return Size in bytes per pixel required for storage.
- */
-constexpr VkDeviceSize foeGfxVkBytesPerPixel(VkFormat format, VkImageAspectFlags aspects) noexcept {
+VkDeviceSize foeGfxVkBytesPerPixel(VkFormat format, VkImageAspectFlags aspects) {
     VkDeviceSize bpp = 0;
 
     if ((aspects & VK_IMAGE_ASPECT_COLOR_BIT) == VK_IMAGE_ASPECT_COLOR_BIT) {
@@ -59,8 +47,7 @@ constexpr VkDeviceSize foeGfxVkBytesPerPixel(VkFormat format, VkImageAspectFlags
             bpp += 1;
             break;
 
-        default:
-            std::abort();
+        default:;
         }
     }
 
@@ -79,8 +66,7 @@ constexpr VkDeviceSize foeGfxVkBytesPerPixel(VkFormat format, VkImageAspectFlags
         case VK_FORMAT_D16_UNORM:
             bpp += 2;
 
-        default:
-            std::abort();
+        default:;
         }
     }
 
@@ -92,12 +78,9 @@ constexpr VkDeviceSize foeGfxVkBytesPerPixel(VkFormat format, VkImageAspectFlags
             bpp += 1;
             break;
 
-        default:
-            std::abort();
+        default:;
         }
     }
 
     return bpp;
 }
-
-#endif // FOE_GRAPHICS_VK_FORMAT_HPP
