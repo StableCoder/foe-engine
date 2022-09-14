@@ -24,6 +24,7 @@ target_sources(
           render_target.cpp
           runtime.cpp
           result.c
+          sample_count.c
           session.cpp
           shader_public.cpp
           swapchain.cpp

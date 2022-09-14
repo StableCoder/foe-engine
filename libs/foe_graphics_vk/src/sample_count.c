@@ -1,17 +1,10 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_VK_SAMPLE_COUNT_HPP
-#define FOE_GRAPHICS_VK_SAMPLE_COUNT_HPP
+#include <foe/graphics/vk/sample_count.h>
 
-#include <vulkan/vulkan.h>
-
-/** @brief Matches the given integer to an appropriate flag
- * @param sampleCount Count to try to match
- * @return The appropriate flag to match the parameter. If there is no match to map, returns 0.
- */
-constexpr auto foeGfxVkGetSampleCountFlags(int sampleCount) -> VkSampleCountFlags {
+VkSampleCountFlags foeGfxVkGetSampleCountFlags(int sampleCount) {
     switch (sampleCount) {
     case 1:
         return VK_SAMPLE_COUNT_1_BIT;
@@ -35,15 +28,11 @@ constexpr auto foeGfxVkGetSampleCountFlags(int sampleCount) -> VkSampleCountFlag
         return VK_SAMPLE_COUNT_64_BIT;
 
     default:
-        return static_cast<VkSampleCountFlags>(0);
+        return (VkSampleCountFlags)0;
     }
 }
 
-/** @brief Converts the given flag to an integer value
- * @param flags Flag to convert
- * @return The appropriate sample count as a number. 0 if it's not a valid flag value.
- */
-constexpr int foeGfxVkGetSampleCount(VkSampleCountFlags flags) {
+int foeGfxVkGetSampleCount(VkSampleCountFlags flags) {
     switch (flags) {
     case VK_SAMPLE_COUNT_1_BIT:
         return 1;
@@ -70,5 +59,3 @@ constexpr int foeGfxVkGetSampleCount(VkSampleCountFlags flags) {
         return 0;
     }
 }
-
-#endif // FOE_GRAPHICS_VK_SAMPLE_COUNT_HPP
