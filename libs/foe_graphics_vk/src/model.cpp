@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/model.hpp>
 
-#include <foe/graphics/vk/queue_family.hpp>
+#include <foe/graphics/vk/queue_family.h>
 
 #include "result.h"
 #include "upload_buffer.hpp"
@@ -148,11 +148,11 @@ foeResultSet recordModelUploadCommands(foeGfxUploadContext uploadContext,
 
         // Transition to final states for use
         auto srcQueueFamily = (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pUploadContext->srcQueueFamily->family
+                                  ? pUploadContext->pSrcQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         auto dstQueueFamily = (uploadRequest->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pUploadContext->dstQueueFamily->family
+                                  ? pUploadContext->pDstQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         std::array<VkBufferMemoryBarrier, 2> transitionBarriers{

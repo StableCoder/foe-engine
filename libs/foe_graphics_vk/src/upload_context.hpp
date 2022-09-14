@@ -8,9 +8,10 @@
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/upload_context.h>
-#include <foe/graphics/vk/queue_family.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
+
+#include "queue_family.hpp"
 
 #include <mutex>
 
@@ -18,10 +19,10 @@ struct foeGfxVkUploadContext {
     VkDevice device;
     VmaAllocator allocator;
 
-    foeGfxVkQueueFamily *srcQueueFamily;
+    QueueFamily *pSrcQueueFamily;
     VkCommandPool srcCommandPool;
 
-    foeGfxVkQueueFamily *dstQueueFamily;
+    QueueFamily *pDstQueueFamily;
     VkCommandPool dstCommandPool;
 };
 

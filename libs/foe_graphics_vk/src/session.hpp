@@ -9,15 +9,15 @@
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.hpp>
-#include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-#include <mutex>
-
 #include "builtin_descriptor_sets.hpp"
 #include "descriptor_set_layout_pool.hpp"
+#include "queue_family.hpp"
+
+#include <mutex>
 
 struct foeGfxVkSession {
     // From the Runtime
@@ -28,7 +28,7 @@ struct foeGfxVkSession {
     VmaAllocator allocator{VK_NULL_HANDLE};
 
     uint32_t numQueueFamilies{0};
-    foeGfxVkQueueFamily pQueueFamilies[MaxQueueFamilies];
+    QueueFamily queueFamilies[MaxQueueFamilies];
 
     /// Length in bytes of pLayerNames
     uint32_t layerNamesLength{0};

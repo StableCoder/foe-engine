@@ -9,6 +9,7 @@
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
+#include <foe/graphics/vk/queue_family.h>
 #include <foe/result.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -108,8 +109,7 @@ FOE_GFX_EXPORT VmaAllocator foeGfxVkGetAllocator(foeGfxSession session);
 
 FOE_GFX_EXPORT uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags);
 
-#include <foe/graphics/vk/queue_family.hpp>
-FOE_GFX_EXPORT foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session);
+FOE_GFX_EXPORT foeGfxVkQueueFamily getFirstQueue(foeGfxSession session);
 
 FOE_GFX_EXPORT auto foeGfxVkGetDummySet(foeGfxSession session) -> VkDescriptorSet;
 

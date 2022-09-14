@@ -2,11 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/queue_family.hpp>
+#include <foe/graphics/vk/queue_family.h>
 
-#include <foe/graphics/type_defs.h>
+#include "queue_family.hpp"
 
-VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily *pQueueFamily) {
+extern "C" VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily queueFamily) {
+    QueueFamily *pQueueFamily = queue_family_from_handle(queueFamily);
+
     for (uint32_t i = 0; i < pQueueFamily->numQueues; ++i) {
         if (pQueueFamily->sync[i].try_lock()) {
             return pQueueFamily->queue[i];
@@ -16,17 +18,19 @@ VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily *pQueueFamily) {
     return VK_NULL_HANDLE;
 }
 
-VkQueue foeGfxGetQueue(foeGfxVkQueueFamily *pQueueFamily) {
-    VkQueue queue = foeGfxTryGetQueue(pQueueFamily);
+extern "C" VkQueue foeGfxGetQueue(foeGfxVkQueueFamily queueFamily) {
+    VkQueue queue = foeGfxTryGetQueue(queueFamily);
 
     while (queue == VK_NULL_HANDLE) {
-        queue = foeGfxTryGetQueue(pQueueFamily);
+        queue = foeGfxTryGetQueue(queueFamily);
     }
 
     return queue;
 }
 
-void foeGfxReleaseQueue(foeGfxVkQueueFamily *pQueueFamily, VkQueue queue) {
+extern "C" void foeGfxReleaseQueue(foeGfxVkQueueFamily queueFamily, VkQueue queue) {
+    QueueFamily *pQueueFamily = queue_family_from_handle(queueFamily);
+
     for (uint32_t i = 0; i < pQueueFamily->numQueues; ++i) {
         if (pQueueFamily->queue[i] == queue) {
             pQueueFamily->sync[i].unlock();

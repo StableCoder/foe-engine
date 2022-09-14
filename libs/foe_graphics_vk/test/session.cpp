@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch.hpp>
+#include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.hpp>

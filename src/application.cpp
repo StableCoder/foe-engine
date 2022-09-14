@@ -18,7 +18,6 @@
 #include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/pipeline_pool.hpp>
-#include <foe/graphics/vk/queue_family.hpp>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/graphics/vk/render_graph/job/blit_image.hpp>
 #include <foe/graphics/vk/render_graph/job/export_image.hpp>

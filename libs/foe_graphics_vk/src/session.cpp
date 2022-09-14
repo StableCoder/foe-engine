@@ -8,6 +8,7 @@
 #include <foe/graphics/vk/runtime.h>
 
 #include "log.hpp"
+#include "queue_family.hpp"
 #include "result.h"
 #include "runtime.h"
 #include "session.hpp"
@@ -40,7 +41,7 @@ void createQueueFamily(VkDevice device,
                        VkQueueFlags flags,
                        uint32_t family,
                        uint32_t numQueues,
-                       foeGfxVkQueueFamily *pQueueFamily) {
+                       QueueFamily *pQueueFamily) {
     if (numQueues >= MaxQueuesPerFamily) {
         FOE_LOG(foeVkGraphics, Fatal,
                 "There are {} Vulkan queue families, when the maximum compiled support is {}",
@@ -582,7 +583,7 @@ foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     // Retrieve the queues
     for (uint32_t i = 0; i < pNewSession->numQueueFamilies; ++i) {
         createQueueFamily(pNewSession->device, queueFamilyProperties[i].queueFlags, i,
-                          queueFamilyProperties[i].queueCount, &pNewSession->pQueueFamilies[i]);
+                          queueFamilyProperties[i].queueCount, &pNewSession->queueFamilies[i]);
     }
 
     { // Allocator
@@ -694,14 +695,14 @@ uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
     std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;
 
     for (uint32_t i = 0; i < MaxQueueFamilies; ++i) {
-        if (pSession->pQueueFamilies[i].numQueues == 0)
+        if (pSession->queueFamilies[i].numQueues == 0)
             continue;
 
-        if (pSession->pQueueFamilies[i].flags == flags) {
+        if (pSession->queueFamilies[i].flags == flags) {
             return i;
         }
-        if ((pSession->pQueueFamilies[i].flags & flags) == flags) {
-            compatibleQueueFamilies.emplace_back(i, popcount(pSession->pQueueFamilies[i].flags));
+        if ((pSession->queueFamilies[i].flags & flags) == flags) {
+            compatibleQueueFamilies.emplace_back(i, popcount(pSession->queueFamilies[i].flags));
         }
     }
 
@@ -743,9 +744,9 @@ VmaAllocator foeGfxVkGetAllocator(foeGfxSession session) {
     return pSession->allocator;
 }
 
-foeGfxVkQueueFamily *getFirstQueue(foeGfxSession session) {
+foeGfxVkQueueFamily getFirstQueue(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
-    return &pSession->pQueueFamilies[0];
+    return queue_family_to_handle(&pSession->queueFamilies[0]);
 }
 
 extern "C" void foeGfxDestroySession(foeGfxSession session) {

@@ -36,10 +36,10 @@ extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
     *pNewContext = {
         .device = pSession->device,
         .allocator = pSession->allocator,
-        .srcQueueFamily = (transferQueue == graphicsQueue)
-                              ? VK_NULL_HANDLE
-                              : &pSession->pQueueFamilies[transferQueue],
-        .dstQueueFamily = &pSession->pQueueFamilies[graphicsQueue],
+        .pSrcQueueFamily = (transferQueue == graphicsQueue)
+                               ? VK_NULL_HANDLE
+                               : &pSession->queueFamilies[transferQueue],
+        .pDstQueueFamily = &pSession->queueFamilies[graphicsQueue],
     };
 
     VkCommandPoolCreateInfo cmdPoolCI{
@@ -47,7 +47,7 @@ extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
         .flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
     };
 
-    if (pNewContext->srcQueueFamily != nullptr) {
+    if (pNewContext->pSrcQueueFamily != nullptr) {
         cmdPoolCI.queueFamilyIndex = transferQueue;
 
         vkResult = vkCreateCommandPool(pNewContext->device, &cmdPoolCI, nullptr,
@@ -56,7 +56,7 @@ extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
             goto CREATE_FAILED;
     }
 
-    if (pNewContext->dstQueueFamily != nullptr) {
+    if (pNewContext->pDstQueueFamily != nullptr) {
         cmdPoolCI.queueFamilyIndex = graphicsQueue;
 
         vkResult = vkCreateCommandPool(pNewContext->device, &cmdPoolCI, nullptr,

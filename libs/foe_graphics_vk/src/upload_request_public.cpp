@@ -5,9 +5,8 @@
 #include <foe/graphics/upload_request.h>
 
 #include <foe/graphics/upload_context.h>
-#include <foe/graphics/vk/queue_family.hpp>
+#include <foe/graphics/vk/queue_family.h>
 
-#include "session.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
 #include "vk_result.h"
@@ -105,9 +104,9 @@ extern "C" foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadCo
             .pSignalSemaphores = &pUploadRequest->copyComplete,
         };
 
-        auto queue = foeGfxGetQueue(pUploadContext->srcQueueFamily);
+        auto queue = foeGfxGetQueue(queue_family_to_handle(pUploadContext->pSrcQueueFamily));
         vkResult = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->srcFence);
-        foeGfxReleaseQueue(pUploadContext->srcQueueFamily, queue);
+        foeGfxReleaseQueue(queue_family_to_handle(pUploadContext->pSrcQueueFamily), queue);
         if (vkResult != VK_SUCCESS) {
             return vk_to_foeResult(vkResult);
         }
@@ -125,9 +124,9 @@ extern "C" foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadCo
         .pCommandBuffers = &pUploadRequest->dstCmdBuffer,
     };
 
-    auto queue = foeGfxGetQueue(pUploadContext->dstQueueFamily);
+    auto queue = foeGfxGetQueue(queue_family_to_handle(pUploadContext->pDstQueueFamily));
     vkResult = vkQueueSubmit(queue, 1, &submitInfo, pUploadRequest->dstFence);
-    foeGfxReleaseQueue(pUploadContext->dstQueueFamily, queue);
+    foeGfxReleaseQueue(queue_family_to_handle(pUploadContext->pDstQueueFamily), queue);
     if (vkResult == VK_SUCCESS) {
         pUploadRequest->dstSubmitted = true;
     }

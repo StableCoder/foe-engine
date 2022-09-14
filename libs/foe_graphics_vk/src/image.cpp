@@ -4,8 +4,7 @@
 
 #include <foe/graphics/vk/image.h>
 
-#include <foe/graphics/vk/queue_family.hpp>
-
+#include "queue_family.hpp"
 #include "upload_buffer.hpp"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
@@ -135,11 +134,11 @@ extern "C" foeResultSet foeGfxVkRecordImageBufferUploadCommands(
 
     { // Change destination image for shader read only optimal
         auto srcQueueFamily = (uploadData->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pUploadContext->srcQueueFamily->family
+                                  ? pUploadContext->pSrcQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         auto dstQueueFamily = (uploadData->srcCmdBuffer != VK_NULL_HANDLE)
-                                  ? pUploadContext->dstQueueFamily->family
+                                  ? pUploadContext->pDstQueueFamily->family
                                   : VK_QUEUE_FAMILY_IGNORED;
 
         VkImageMemoryBarrier imgMemBarrier{
