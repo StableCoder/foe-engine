@@ -8,7 +8,7 @@
 #include <foe/graphics/resource/mesh_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/mesh.h>
-#include <foe/graphics/vk/model.hpp>
+#include <foe/graphics/vk/model.h>
 #include <foe/graphics/vk/session.hpp>
 #include <foe/model/assimp/importer.hpp>
 #include <foe/model/cube.hpp>
@@ -312,9 +312,9 @@ void foeMeshLoader::load(foeResource resource,
         void *pVertexData;
         void *pIndexData;
 
-        result = mapModelBuffers(foeGfxVkGetAllocator(mGfxSession),
-                                 vertexDataSize + vertexWeightDataSize, vertexAlloc, indexAlloc,
-                                 mGfxUploadContext, uploadBuffer, &pVertexData, &pIndexData);
+        result = foeGfxVkMapModelBuffers(
+            foeGfxVkGetAllocator(mGfxSession), vertexDataSize + vertexWeightDataSize, vertexAlloc,
+            indexAlloc, mGfxUploadContext, uploadBuffer, &pVertexData, &pIndexData);
         if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }
@@ -326,10 +326,10 @@ void foeMeshLoader::load(foeResource resource,
         }
         memcpy(pIndexData, indexData.data(), indexData.size() * sizeof(uint32_t));
 
-        unmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
-                          mGfxUploadContext, uploadBuffer);
+        foeGfxVkUnmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
+                                  mGfxUploadContext, uploadBuffer);
 
-        result = recordModelUploadCommands(
+        result = foeGfxVkRecordModelUploadCommands(
             mGfxUploadContext, vertexBuffer, vertexDataSize + vertexWeightDataSize, indexBuffer,
             indexData.size() * sizeof(uint32_t), uploadBuffer, &uploadRequest);
         if (result.value != FOE_SUCCESS) {
@@ -391,21 +391,21 @@ void foeMeshLoader::load(foeResource resource,
         void *pVertexData;
         void *pIndexData;
 
-        result =
-            mapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexDataSize, vertexAlloc,
-                            indexAlloc, mGfxUploadContext, uploadBuffer, &pVertexData, &pIndexData);
+        result = foeGfxVkMapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexDataSize,
+                                         vertexAlloc, indexAlloc, mGfxUploadContext, uploadBuffer,
+                                         &pVertexData, &pIndexData);
         if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }
         memcpy(pVertexData, vertexData.data(), vertexDataSize);
         memcpy(pIndexData, indexData.data(), indexDataSize);
 
-        unmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
-                          mGfxUploadContext, uploadBuffer);
+        foeGfxVkUnmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
+                                  mGfxUploadContext, uploadBuffer);
 
-        result =
-            recordModelUploadCommands(mGfxUploadContext, vertexBuffer, vertexDataSize, indexBuffer,
-                                      indexDataSize, uploadBuffer, &uploadRequest);
+        result = foeGfxVkRecordModelUploadCommands(mGfxUploadContext, vertexBuffer, vertexDataSize,
+                                                   indexBuffer, indexDataSize, uploadBuffer,
+                                                   &uploadRequest);
         if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }
@@ -469,21 +469,21 @@ void foeMeshLoader::load(foeResource resource,
         void *pVertexData;
         void *pIndexData;
 
-        result =
-            mapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexDataSize, vertexAlloc,
-                            indexAlloc, mGfxUploadContext, uploadBuffer, &pVertexData, &pIndexData);
+        result = foeGfxVkMapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexDataSize,
+                                         vertexAlloc, indexAlloc, mGfxUploadContext, uploadBuffer,
+                                         &pVertexData, &pIndexData);
         if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }
         memcpy(pVertexData, vertexData.data(), vertexDataSize);
         memcpy(pIndexData, indexData.data(), indexDataSize);
 
-        unmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
-                          mGfxUploadContext, uploadBuffer);
+        foeGfxVkUnmapModelBuffers(foeGfxVkGetAllocator(mGfxSession), vertexAlloc, indexAlloc,
+                                  mGfxUploadContext, uploadBuffer);
 
-        result =
-            recordModelUploadCommands(mGfxUploadContext, vertexBuffer, vertexDataSize, indexBuffer,
-                                      indexDataSize, uploadBuffer, &uploadRequest);
+        result = foeGfxVkRecordModelUploadCommands(mGfxUploadContext, vertexBuffer, vertexDataSize,
+                                                   indexBuffer, indexDataSize, uploadBuffer,
+                                                   &uploadRequest);
         if (result.value != FOE_SUCCESS) {
             goto LOAD_FAILED;
         }

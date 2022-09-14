@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/model.hpp>
+#include <foe/graphics/vk/model.h>
 
 #include <foe/graphics/vk/queue_family.h>
 
@@ -14,14 +14,14 @@
 
 #include <array>
 
-foeResultSet mapModelBuffers(VmaAllocator allocator,
-                             VkDeviceSize vertexDataSize,
-                             VmaAllocation vertexAlloc,
-                             VmaAllocation indexAlloc,
-                             foeGfxUploadContext uploadContext,
-                             foeGfxUploadBuffer uploadBuffer,
-                             void **ppVertexData,
-                             void **ppIndexData) {
+extern "C" foeResultSet foeGfxVkMapModelBuffers(VmaAllocator allocator,
+                                                VkDeviceSize vertexDataSize,
+                                                VmaAllocation vertexAlloc,
+                                                VmaAllocation indexAlloc,
+                                                foeGfxUploadContext uploadContext,
+                                                foeGfxUploadBuffer uploadBuffer,
+                                                void **ppVertexData,
+                                                void **ppIndexData) {
     if (uploadBuffer != FOE_NULL_HANDLE) {
         foeResultSet result = foeGfxMapUploadBuffer(uploadContext, uploadBuffer, ppVertexData);
         if (result.value != FOE_SUCCESS) {
@@ -44,11 +44,11 @@ foeResultSet mapModelBuffers(VmaAllocator allocator,
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
-void unmapModelBuffers(VmaAllocator allocator,
-                       VmaAllocation vertexAlloc,
-                       VmaAllocation indexAlloc,
-                       foeGfxUploadContext uploadContext,
-                       foeGfxUploadBuffer uploadBuffer) {
+extern "C" void foeGfxVkUnmapModelBuffers(VmaAllocator allocator,
+                                          VmaAllocation vertexAlloc,
+                                          VmaAllocation indexAlloc,
+                                          foeGfxUploadContext uploadContext,
+                                          foeGfxUploadBuffer uploadBuffer) {
     if (uploadBuffer != FOE_NULL_HANDLE) {
         foeGfxUnmapUploadBuffer(uploadContext, uploadBuffer);
     } else {
@@ -57,13 +57,13 @@ void unmapModelBuffers(VmaAllocator allocator,
     }
 }
 
-foeResultSet recordModelUploadCommands(foeGfxUploadContext uploadContext,
-                                       VkBuffer vertexBuffer,
-                                       VkDeviceSize vertexDataSize,
-                                       VkBuffer indexBuffer,
-                                       VkDeviceSize indexDataSize,
-                                       foeGfxUploadBuffer uploadBuffer,
-                                       foeGfxUploadRequest *pUploadRequest) {
+extern "C" foeResultSet foeGfxVkRecordModelUploadCommands(foeGfxUploadContext uploadContext,
+                                                          VkBuffer vertexBuffer,
+                                                          VkDeviceSize vertexDataSize,
+                                                          VkBuffer indexBuffer,
+                                                          VkDeviceSize indexDataSize,
+                                                          foeGfxUploadBuffer uploadBuffer,
+                                                          foeGfxUploadRequest *pUploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
     VkResult vkResult;
