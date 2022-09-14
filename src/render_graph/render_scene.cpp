@@ -13,7 +13,7 @@
 #include <foe/graphics/vk/pipeline_pool.hpp>
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
@@ -21,7 +21,6 @@
 
 #include "../log.hpp"
 #include "../result.h"
-#include "../simulation/camera_pool.hpp"
 #include "../simulation/render_state_pool.hpp"
 #include "../vk_result.h"
 

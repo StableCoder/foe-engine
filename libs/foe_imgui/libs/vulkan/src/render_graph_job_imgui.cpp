@@ -6,7 +6,7 @@
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/imgui/state.hpp>
 #include <foe/imgui/vk/renderer.hpp>
 

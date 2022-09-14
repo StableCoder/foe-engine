@@ -11,6 +11,7 @@
 #include <vulkan/vulkan.h>
 
 #include <string_view>
+#include <vector>
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                          std::string_view name,

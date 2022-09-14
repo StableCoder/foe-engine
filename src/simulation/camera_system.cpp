@@ -4,14 +4,13 @@
 
 #include "camera_system.hpp"
 
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/position/component/3d_pool.hpp>
 
 #include "../result.h"
 #include "../vk_result.h"
 #include "camera.hpp"
 #include "camera_pool.hpp"
-#include "type_defs.h"
 
 namespace {
 

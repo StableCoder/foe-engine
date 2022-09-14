@@ -5,9 +5,8 @@
 #include <foe/graphics/vk/render_graph/job/import_image.hpp>
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 
-#include "../../result.h"
 #include "../../vk_result.h"
 
 foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,

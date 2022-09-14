@@ -6,7 +6,7 @@
 
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <glm/glm.hpp>
 
 #include "../result.h"

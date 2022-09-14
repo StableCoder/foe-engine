@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/render_graph.hpp>
 
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 
 #include <memory>
 #include <queue>

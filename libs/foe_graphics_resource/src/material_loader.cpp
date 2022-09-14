@@ -10,7 +10,7 @@
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/graphics/vk/shader.h>
 
 #include "log.hpp"

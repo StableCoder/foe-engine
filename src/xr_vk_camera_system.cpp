@@ -4,7 +4,7 @@
 
 #include "xr_vk_camera_system.hpp"
 
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <glm/glm.hpp>
 
 #include "vk_result.h"

@@ -4,7 +4,7 @@
 
 #include "position_descriptor_pool.hpp"
 
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/position/component/3d_pool.hpp>
 
 #include "../result.h"

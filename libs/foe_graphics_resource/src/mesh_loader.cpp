@@ -9,7 +9,7 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/model.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/model/assimp/importer.hpp>
 #include <foe/model/cube.hpp>
 #include <foe/model/ico_sphere.hpp>

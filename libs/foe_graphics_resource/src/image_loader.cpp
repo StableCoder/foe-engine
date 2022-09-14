@@ -10,7 +10,7 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/vk/format.h>
 #include <foe/graphics/vk/image.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 
 #include "log.hpp"
 #include "result.h"

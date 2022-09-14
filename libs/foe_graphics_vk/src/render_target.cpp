@@ -5,7 +5,7 @@
 #include "render_target.hpp"
 
 #include <foe/graphics/vk/image.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 
 #include "log.hpp"
 #include "result.h"

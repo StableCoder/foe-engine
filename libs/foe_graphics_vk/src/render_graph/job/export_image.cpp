@@ -5,7 +5,7 @@
 #include <foe/graphics/vk/render_graph/job/export_image.hpp>
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 
 #include "../../result.h"
 #include "../../vk_result.h"

@@ -5,7 +5,7 @@
 #include "xr.hpp"
 
 #include <foe/graphics/backend.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/xr/openxr/runtime.hpp>
 #include <foe/xr/openxr/vk/vulkan.hpp>
 

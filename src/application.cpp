@@ -28,7 +28,7 @@
 #include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>
@@ -45,12 +45,10 @@
 #include "log.hpp"
 #include "logging.hpp"
 #include "register_basic_functionality.h"
-#include "simulation/armature.hpp"
 #include "simulation/armature_system.hpp"
 #include "simulation/camera_pool.hpp"
 #include "simulation/camera_system.hpp"
 #include "simulation/position_descriptor_pool.hpp"
-#include "simulation/render_state_pool.hpp"
 #include "simulation/vk_animation.hpp"
 
 #include "render_graph/render_scene.hpp"

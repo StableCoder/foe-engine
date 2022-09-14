@@ -4,7 +4,7 @@
 
 #include <foe/graphics/upload_context.h>
 
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 
 #include "session.hpp"
 #include "upload_context.hpp"

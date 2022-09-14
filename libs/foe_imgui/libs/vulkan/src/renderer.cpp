@@ -8,7 +8,7 @@
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/upload_request.h>
 #include <foe/graphics/vk/image.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
 #include <imgui.h>

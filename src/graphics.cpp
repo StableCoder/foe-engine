@@ -5,12 +5,11 @@
 #include "graphics.hpp"
 
 #include <foe/graphics/vk/runtime.h>
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 #include <foe/wsi/vulkan.h>
 
 #include "log.hpp"
 #include "result.h"
-#include "vk_result.h"
 
 #include <memory>
 

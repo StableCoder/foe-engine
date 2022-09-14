@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_VK_SESSION_HPP
-#define FOE_GRAPHICS_VK_SESSION_HPP
+#ifndef FOE_GRAPHICS_VK_SESSION_H
+#define FOE_GRAPHICS_VK_SESSION_H
 
 #include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/export.h>
@@ -14,8 +14,9 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-#include <string>
-#include <vector>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 class foeGfxVkRenderPassPool;
 class foeGfxVkFragmentDescriptorPool;
@@ -111,23 +112,26 @@ FOE_GFX_EXPORT uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags
 
 FOE_GFX_EXPORT foeGfxVkQueueFamily getFirstQueue(foeGfxSession session);
 
-FOE_GFX_EXPORT auto foeGfxVkGetDummySet(foeGfxSession session) -> VkDescriptorSet;
+FOE_GFX_EXPORT VkDescriptorSet foeGfxVkGetDummySet(foeGfxSession session);
 
-FOE_GFX_EXPORT auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
-                                             foeBuiltinDescriptorSetLayoutFlags builtinLayout)
-    -> VkDescriptorSetLayout;
+FOE_GFX_EXPORT VkDescriptorSetLayout
+foeGfxVkGetBuiltinLayout(foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout);
 
-FOE_GFX_EXPORT auto foeGfxVkGetBuiltinSetLayoutIndex(
-    foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout) -> uint32_t;
+FOE_GFX_EXPORT uint32_t foeGfxVkGetBuiltinSetLayoutIndex(
+    foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout);
 
-FOE_GFX_EXPORT auto foeGfxVkGetRenderPassPool(foeGfxSession session) -> foeGfxVkRenderPassPool *;
+FOE_GFX_EXPORT foeGfxVkRenderPassPool *foeGfxVkGetRenderPassPool(foeGfxSession session);
 
-FOE_GFX_EXPORT auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session)
-    -> foeGfxVkFragmentDescriptorPool *;
+FOE_GFX_EXPORT foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(
+    foeGfxSession session);
 
-FOE_GFX_EXPORT auto foeGfxVkGetPipelinePool(foeGfxSession session) -> foeGfxVkPipelinePool *;
+FOE_GFX_EXPORT foeGfxVkPipelinePool *foeGfxVkGetPipelinePool(foeGfxSession session);
 
-FOE_GFX_EXPORT auto foeGfxVkGetSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags;
-FOE_GFX_EXPORT auto foeGfxVkGetMaxSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags;
+FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session);
+FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetMaxSupportedMSAA(foeGfxSession session);
 
-#endif // FOE_GRAPHICS_VK_SESSION_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_GRAPHICS_VK_SESSION_H

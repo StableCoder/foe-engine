@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/session.hpp>
+#include <foe/graphics/vk/session.h>
 
 #include <foe/delimited_string.h>
 #include <foe/graphics/vk/runtime.h>
@@ -380,15 +380,15 @@ void mergeFeatureSet_VkPhysicalDeviceVulkan13Features(VkPhysicalDeviceVulkan13Fe
 
 } // namespace
 
-foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
-                                   VkPhysicalDevice vkPhysicalDevice,
-                                   uint32_t layerCount,
-                                   char const *const *ppLayerNames,
-                                   uint32_t extensionCount,
-                                   char const *const *ppExtensionNames,
-                                   VkPhysicalDeviceFeatures const *pBasicFeatures,
-                                   void const *pFeatures,
-                                   foeGfxSession *pSession) {
+extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
+                                              VkPhysicalDevice vkPhysicalDevice,
+                                              uint32_t layerCount,
+                                              char const *const *ppLayerNames,
+                                              uint32_t extensionCount,
+                                              char const *const *ppExtensionNames,
+                                              VkPhysicalDeviceFeatures const *pBasicFeatures,
+                                              void const *pFeatures,
+                                              foeGfxSession *pSession) {
     auto *pNewSession = new foeGfxVkSession;
     auto sessionHandle = session_to_handle(pNewSession);
 
@@ -629,9 +629,9 @@ CREATE_FAILED:
     return result;
 }
 
-foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
-                                            uint32_t *pLayerNamesLength,
-                                            char *pLayerNames) {
+extern "C" foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
+                                                       uint32_t *pLayerNamesLength,
+                                                       char *pLayerNames) {
     auto *pSession = session_from_handle(session);
 
     return foeCopyDelimitedString(pSession->layerNamesLength, pSession->pLayerNames,
@@ -640,9 +640,9 @@ foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
                : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
-foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
-                                                uint32_t *pExtensionNamesLength,
-                                                char *pExtensionNames) {
+extern "C" foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
+                                                           uint32_t *pExtensionNamesLength,
+                                                           char *pExtensionNames) {
     auto *pSession = session_from_handle(session);
 
     return foeCopyDelimitedString(pSession->extensionNamesLength, pSession->pExtensionNames,
@@ -651,9 +651,9 @@ foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession session,
                : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
 }
 
-void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,
-                                      VkPhysicalDeviceFeatures *pBasicFeatures,
-                                      void *pFeatures) {
+extern "C" void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,
+                                                 VkPhysicalDeviceFeatures *pBasicFeatures,
+                                                 void *pFeatures) {
     auto *pSession = session_from_handle(session);
 
     if (pBasicFeatures != nullptr) {
@@ -690,7 +690,7 @@ void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,
     }
 }
 
-uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
+extern "C" uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
     auto *pSession = session_from_handle(session);
     std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;
 
@@ -724,27 +724,27 @@ uint32_t foeGfxVkGetBestQueue(foeGfxSession session, VkQueueFlags flags) {
     return compatibleQueueFamilies[leastFlagsIndex].first;
 }
 
-VkInstance foeGfxVkGetInstance(foeGfxSession session) {
+extern "C" VkInstance foeGfxVkGetInstance(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     return pSession->instance;
 }
 
-VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session) {
+extern "C" VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     return pSession->physicalDevice;
 }
 
-VkDevice foeGfxVkGetDevice(foeGfxSession session) {
+extern "C" VkDevice foeGfxVkGetDevice(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     return pSession->device;
 }
 
-VmaAllocator foeGfxVkGetAllocator(foeGfxSession session) {
+extern "C" VmaAllocator foeGfxVkGetAllocator(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     return pSession->allocator;
 }
 
-foeGfxVkQueueFamily getFirstQueue(foeGfxSession session) {
+extern "C" foeGfxVkQueueFamily getFirstQueue(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
     return queue_family_to_handle(&pSession->queueFamilies[0]);
 }
@@ -759,47 +759,46 @@ extern "C" void foeGfxWaitIdle(foeGfxSession session) {
     vkDeviceWaitIdle(pSession->device);
 }
 
-auto foeGfxVkGetDummySet(foeGfxSession session) -> VkDescriptorSet {
+extern "C" VkDescriptorSet foeGfxVkGetDummySet(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
 
     return pSession->builtinDescriptorSets.getDummySet();
 }
 
-auto foeGfxVkGetBuiltinLayout(foeGfxSession session,
-                              foeBuiltinDescriptorSetLayoutFlags builtinLayout)
-    -> VkDescriptorSetLayout {
+extern "C" VkDescriptorSetLayout foeGfxVkGetBuiltinLayout(
+    foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout) {
     auto *pSession = session_from_handle(session);
 
     return pSession->builtinDescriptorSets.getBuiltinLayout(builtinLayout);
 }
 
-auto foeGfxVkGetBuiltinSetLayoutIndex(foeGfxSession session,
-                                      foeBuiltinDescriptorSetLayoutFlags builtinLayout)
-    -> uint32_t {
+extern "C" uint32_t foeGfxVkGetBuiltinSetLayoutIndex(
+    foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout) {
     auto *pSession = session_from_handle(session);
 
     return pSession->builtinDescriptorSets.getBuiltinSetLayoutIndex(builtinLayout);
 }
 
-auto foeGfxVkGetRenderPassPool(foeGfxSession session) -> foeGfxVkRenderPassPool * {
+extern "C" foeGfxVkRenderPassPool *foeGfxVkGetRenderPassPool(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
 
     return &pSession->renderPassPool;
 }
 
-auto foeGfxVkGetFragmentDescriptorPool(foeGfxSession session) -> foeGfxVkFragmentDescriptorPool * {
+extern "C" foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(
+    foeGfxSession session) {
     auto *pSession = session_from_handle(session);
 
     return &pSession->fragmentDescriptorPool;
 }
 
-auto foeGfxVkGetPipelinePool(foeGfxSession session) -> foeGfxVkPipelinePool * {
+extern "C" foeGfxVkPipelinePool *foeGfxVkGetPipelinePool(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
 
     return &pSession->pipelinePool;
 }
 
-auto foeGfxVkGetSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags {
+extern "C" VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
 
     VkPhysicalDeviceProperties properties;
@@ -809,7 +808,7 @@ auto foeGfxVkGetSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags {
            properties.limits.framebufferDepthSampleCounts;
 }
 
-auto foeGfxVkGetMaxSupportedMSAA(foeGfxSession session) -> VkSampleCountFlags {
+extern "C" VkSampleCountFlags foeGfxVkGetMaxSupportedMSAA(foeGfxSession session) {
     VkSampleCountFlags counts = foeGfxVkGetSupportedMSAA(session);
 
     if (counts & VK_SAMPLE_COUNT_64_BIT)
