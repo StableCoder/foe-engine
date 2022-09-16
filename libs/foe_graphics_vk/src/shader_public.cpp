@@ -7,6 +7,7 @@
 
 #include <vk_struct_cleanup.h>
 
+#include "result.h"
 #include "session.hpp"
 #include "shader.h"
 #include "vk_result.h"
@@ -45,6 +46,9 @@ extern "C" foeResultSet foeGfxVkCreateShader(foeGfxSession session,
                                              uint32_t shaderCodeSize,
                                              uint32_t const *pShaderCode,
                                              foeGfxShader *pShader) {
+    if (shaderCodeSize == 0 || pShaderCode == NULL)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_NO_PROVIDED_SHADER_CODE);
+
     auto *pSession = session_from_handle(session);
 
     VkResult vkResult = VK_SUCCESS;
