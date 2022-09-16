@@ -10,7 +10,7 @@
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/vk/mesh.h>
-#include <foe/graphics/vk/pipeline_pool.hpp>
+#include <foe/graphics/vk/pipeline_pool.h>
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <foe/graphics/vk/session.h>
@@ -148,10 +148,13 @@ auto renderCall(foeId entity,
     uint32_t descriptorSetLayoutCount;
     VkPipeline pipeline;
 
-    foeGfxVkGetPipelinePool(gfxSession)
-        ->getPipeline(const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
-                      pMaterial->pGfxFragDescriptor, renderPass, 0, samples, &layout,
-                      &descriptorSetLayoutCount, &pipeline);
+    auto pipelinePool = foeGfxVkGetPipelinePool(gfxSession);
+    auto result = foeGfxVkGetPipeline(pipelinePool,
+                                      const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
+                                      pMaterial->pGfxFragDescriptor, renderPass, 0, samples,
+                                      &layout, &descriptorSetLayoutCount, &pipeline);
+    if (result.value != FOE_SUCCESS)
+        std::abort();
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1,
                             &cameraDescriptor, 0, nullptr);

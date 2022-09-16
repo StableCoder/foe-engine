@@ -20,7 +20,6 @@ extern "C" {
 
 class foeGfxVkRenderPassPool;
 class foeGfxVkFragmentDescriptorPool;
-class foeGfxVkPipelinePool;
 
 /** @brief Creates a graphics session using the Vulkan API
  * @param runtime is a handle to the graphics runtime to be created on
@@ -124,8 +123,6 @@ FOE_GFX_EXPORT foeGfxVkRenderPassPool *foeGfxVkGetRenderPassPool(foeGfxSession s
 
 FOE_GFX_EXPORT foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(
     foeGfxSession session);
-
-FOE_GFX_EXPORT foeGfxVkPipelinePool *foeGfxVkGetPipelinePool(foeGfxSession session);
 
 FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session);
 FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetMaxSupportedMSAA(foeGfxSession session);

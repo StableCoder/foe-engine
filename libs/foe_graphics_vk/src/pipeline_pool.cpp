@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/pipeline_pool.hpp>
+#include <foe/graphics/vk/pipeline_pool.h>
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 #include <foe/graphics/vk/vertex_descriptor.hpp>
 
 #include <array>
+#include <vector>
 
 #include "builtin_descriptor_sets.hpp"
 #include "log.hpp"
@@ -16,33 +17,69 @@
 #include "shader.h"
 #include "vk_result.h"
 
-foeResultSet foeGfxVkPipelinePool::initialize(foeGfxSession session) noexcept {
-    if (initialized())
-        return vk_to_foeResult(VK_ERROR_INITIALIZATION_FAILED);
+namespace {
 
+// Counts upto 64, powers of 2.
+constexpr size_t cMaxSampleOptions = 7;
+
+struct PipelineSet {
+    // Key
+    foeGfxVertexDescriptor *vertexDescriptor;
+    foeGfxVkFragmentDescriptor *fragmentDescriptor;
+
+    VkRenderPass renderPass;
+    uint32_t subpass;
+
+    // Locally Managed
+    VkPipelineLayout layout;
+    uint32_t descriptorSetLayoutCount;
+    std::array<VkPipeline, cMaxSampleOptions> pipelines;
+};
+
+struct PipelinePool {
+    VkDevice device;
+    foeGfxVkBuiltinDescriptorSets *builtinDescriptorSets;
+
+    std::vector<PipelineSet> pipelines;
+};
+
+FOE_DEFINE_HANDLE_CASTS(pipeline_pool, PipelinePool, foeGfxVkPipelinePool)
+
+} // namespace
+
+extern "C" foeResultSet foeGfxVkCreatePipelinePool(foeGfxSession session,
+                                                   foeGfxVkPipelinePool *pPipelinePool) {
     auto *pSession = session_from_handle(session);
 
-    mDevice = pSession->device;
-    mBuiltinDescriptorSets = &pSession->builtinDescriptorSets;
+    PipelinePool *pNew = (PipelinePool *)malloc(sizeof(PipelinePool));
+    if (pPipelinePool == NULL)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+
+    new (pNew) PipelinePool{
+        .device = pSession->device,
+        .builtinDescriptorSets = &pSession->builtinDescriptorSets,
+    };
+
+    *pPipelinePool = pipeline_pool_to_handle(pNew);
 
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
-void foeGfxVkPipelinePool::deinitialize() noexcept {
-    for (auto &it : mPipelines) {
+extern "C" void foeGfxVkDestroyPipelinePool(foeGfxVkPipelinePool pipelinePool) {
+    auto *pPipelinePool = pipeline_pool_from_handle(pipelinePool);
+
+    for (auto &it : pPipelinePool->pipelines) {
         for (auto pipeline : it.pipelines) {
             if (pipeline != VK_NULL_HANDLE)
-                vkDestroyPipeline(mDevice, pipeline, nullptr);
+                vkDestroyPipeline(pPipelinePool->device, pipeline, nullptr);
         }
         if (it.layout != VK_NULL_HANDLE)
-            vkDestroyPipelineLayout(mDevice, it.layout, nullptr);
+            vkDestroyPipelineLayout(pPipelinePool->device, it.layout, nullptr);
     }
 
-    mBuiltinDescriptorSets = nullptr;
-    mDevice = VK_NULL_HANDLE;
+    pPipelinePool->~PipelinePool();
+    free(pPipelinePool);
 }
-
-bool foeGfxVkPipelinePool::initialized() const noexcept { return mDevice != VK_NULL_HANDLE; }
 
 namespace {
 
@@ -69,77 +106,15 @@ size_t sampleCountIndex(VkSampleCountFlags samples) {
     }
 }
 
-} // namespace
-
-foeResultSet foeGfxVkPipelinePool::getPipeline(foeGfxVertexDescriptor *vertexDescriptor,
-                                               foeGfxVkFragmentDescriptor *fragmentDescriptor,
-                                               VkRenderPass renderPass,
-                                               uint32_t subpass,
-                                               VkSampleCountFlags samples,
-                                               VkPipelineLayout *pPipelineLayout,
-                                               uint32_t *pDescriptorSetLayoutCount,
-                                               VkPipeline *pPipeline) {
-    auto sampleIndex = sampleCountIndex(samples);
-    PipelineSet *pPipelineSet{nullptr};
-
-    // Try to retrieve an already-created pipeline
-    for (auto &pipeline : mPipelines) {
-        if (pipeline.vertexDescriptor == vertexDescriptor &&
-            pipeline.fragmentDescriptor == fragmentDescriptor &&
-            pipeline.renderPass == renderPass && pipeline.subpass == subpass) {
-            if (pipeline.pipelines[sampleIndex] != VK_NULL_HANDLE) {
-                // If the pipeline exists for the specified sample count, use it
-                *pPipelineLayout = pipeline.layout;
-                *pDescriptorSetLayoutCount = pipeline.descriptorSetLayoutCount;
-                *pPipeline = pipeline.pipelines[sampleIndex];
-
-                return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
-            } else {
-                // Otherwise, we'll be creating just a new pipeline for it
-                pPipelineSet = &pipeline;
-                break;
-            }
-        }
-    }
-
-    // Generate a new pipeline
-    FOE_LOG(foeVkGraphics, Verbose, "Generating a new Graphics Pipeline")
-
-    VkResult vkResult =
-        createPipeline(vertexDescriptor, fragmentDescriptor, renderPass, subpass, samples,
-                       pPipelineLayout, pDescriptorSetLayoutCount, pPipeline);
-    if (vkResult == VK_SUCCESS) {
-        if (pPipelineSet != nullptr) {
-            // Already have the set available, just need the specific sample count variant
-            pPipelineSet->pipelines[sampleIndex] = *pPipeline;
-        } else {
-            // No pipeline like it yet, create new.
-            PipelineSet newEntry{
-                .vertexDescriptor = vertexDescriptor,
-                .fragmentDescriptor = fragmentDescriptor,
-                .renderPass = renderPass,
-                .subpass = subpass,
-                .layout = *pPipelineLayout,
-                .descriptorSetLayoutCount = *pDescriptorSetLayoutCount,
-            };
-            // Make sure the pipeline goes to the specific sample count entry
-            newEntry.pipelines[sampleIndex] = *pPipeline;
-
-            mPipelines.emplace_back(newEntry);
-        }
-    }
-
-    return vk_to_foeResult(vkResult);
-}
-
-VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDescriptor,
-                                              foeGfxVkFragmentDescriptor *fragmentDescriptor,
-                                              VkRenderPass renderPass,
-                                              uint32_t subpass,
-                                              VkSampleCountFlags samples,
-                                              VkPipelineLayout *pPipelineLayout,
-                                              uint32_t *pDescriptorSetLayoutCount,
-                                              VkPipeline *pPipeline) const noexcept {
+VkResult createPipeline(PipelinePool const *pPipelinePool,
+                        foeGfxVertexDescriptor *vertexDescriptor,
+                        foeGfxVkFragmentDescriptor *fragmentDescriptor,
+                        VkRenderPass renderPass,
+                        uint32_t subpass,
+                        VkSampleCountFlags samples,
+                        VkPipelineLayout *pPipelineLayout,
+                        uint32_t *pDescriptorSetLayoutCount,
+                        VkPipeline *pPipeline) noexcept {
     VkResult vkResult{VK_SUCCESS};
     VkPipelineLayout pipelineLayout{VK_NULL_HANDLE};
     uint32_t descriptorSetLayoutCount{0};
@@ -158,12 +133,13 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
                 foeBuiltinDescriptorSetLayoutFlags j = 1U << i;
                 if ((j & builtinLayouts) != 0) {
                     // Used builtin layout
-                    auto idx = mBuiltinDescriptorSets->getBuiltinSetLayoutIndex(j);
+                    auto idx = pPipelinePool->builtinDescriptorSets->getBuiltinSetLayoutIndex(j);
                     if (descriptorSetLayouts.size() <= idx) {
                         descriptorSetLayouts.resize(j + 1);
                     }
 
-                    descriptorSetLayouts[idx] = mBuiltinDescriptorSets->getBuiltinLayout(j);
+                    descriptorSetLayouts[idx] =
+                        pPipelinePool->builtinDescriptorSets->getBuiltinLayout(j);
                 }
             }
         }
@@ -265,7 +241,7 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
         }
 
         // Fill in dummy layouts
-        auto dummyLayout = mBuiltinDescriptorSets->getDummyLayout();
+        auto dummyLayout = pPipelinePool->builtinDescriptorSets->getDummyLayout();
         for (auto &it : descriptorSetLayouts) {
             if (it == VK_NULL_HANDLE)
                 it = dummyLayout;
@@ -281,7 +257,8 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
         };
 
         descriptorSetLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-        vkResult = vkCreatePipelineLayout(mDevice, &pipelineLayoutCI, nullptr, &pipelineLayout);
+        vkResult = vkCreatePipelineLayout(pPipelinePool->device, &pipelineLayoutCI, nullptr,
+                                          &pipelineLayout);
         if (vkResult != VK_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             VkResultToString(vkResult, buffer);
@@ -395,8 +372,8 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
             .subpass = subpass,
         };
 
-        vkResult =
-            vkCreateGraphicsPipelines(mDevice, VK_NULL_HANDLE, 1, &pipelineCI, nullptr, &pipeline);
+        vkResult = vkCreateGraphicsPipelines(pPipelinePool->device, VK_NULL_HANDLE, 1, &pipelineCI,
+                                             nullptr, &pipeline);
         if (vkResult != VK_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             VkResultToString(vkResult, buffer);
@@ -407,10 +384,10 @@ VkResult foeGfxVkPipelinePool::createPipeline(foeGfxVertexDescriptor *vertexDesc
 CREATE_FAILED:
     if (vkResult != VK_SUCCESS) {
         if (pipeline != VK_NULL_HANDLE)
-            vkDestroyPipeline(mDevice, pipeline, nullptr);
+            vkDestroyPipeline(pPipelinePool->device, pipeline, nullptr);
 
         if (pipelineLayout != VK_NULL_HANDLE)
-            vkDestroyPipelineLayout(mDevice, pipelineLayout, nullptr);
+            vkDestroyPipelineLayout(pPipelinePool->device, pipelineLayout, nullptr);
     } else {
         *pPipelineLayout = pipelineLayout;
         *pDescriptorSetLayoutCount = descriptorSetLayoutCount;
@@ -418,4 +395,76 @@ CREATE_FAILED:
     }
 
     return vkResult;
+}
+
+} // namespace
+
+extern "C" foeResultSet foeGfxVkGetPipeline(foeGfxVkPipelinePool pipelinePool,
+                                            foeGfxVertexDescriptor *vertexDescriptor,
+                                            foeGfxVkFragmentDescriptor *fragmentDescriptor,
+                                            VkRenderPass renderPass,
+                                            uint32_t subpass,
+                                            VkSampleCountFlags samples,
+                                            VkPipelineLayout *pPipelineLayout,
+                                            uint32_t *pDescriptorSetLayoutCount,
+                                            VkPipeline *pPipeline) {
+    auto *pPipelinePool = pipeline_pool_from_handle(pipelinePool);
+
+    auto sampleIndex = sampleCountIndex(samples);
+    PipelineSet *pPipelineSet{nullptr};
+
+    // Try to retrieve an already-created pipeline
+    for (auto &pipeline : pPipelinePool->pipelines) {
+        if (pipeline.vertexDescriptor == vertexDescriptor &&
+            pipeline.fragmentDescriptor == fragmentDescriptor &&
+            pipeline.renderPass == renderPass && pipeline.subpass == subpass) {
+            if (pipeline.pipelines[sampleIndex] != VK_NULL_HANDLE) {
+                // If the pipeline exists for the specified sample count, use it
+                *pPipelineLayout = pipeline.layout;
+                *pDescriptorSetLayoutCount = pipeline.descriptorSetLayoutCount;
+                *pPipeline = pipeline.pipelines[sampleIndex];
+
+                return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+            } else {
+                // Otherwise, we'll be creating just a new pipeline for it
+                pPipelineSet = &pipeline;
+                break;
+            }
+        }
+    }
+
+    // Generate a new pipeline
+    FOE_LOG(foeVkGraphics, Verbose, "Generating a new Graphics Pipeline")
+
+    VkResult vkResult =
+        createPipeline(pPipelinePool, vertexDescriptor, fragmentDescriptor, renderPass, subpass,
+                       samples, pPipelineLayout, pDescriptorSetLayoutCount, pPipeline);
+    if (vkResult == VK_SUCCESS) {
+        if (pPipelineSet != nullptr) {
+            // Already have the set available, just need the specific sample count variant
+            pPipelineSet->pipelines[sampleIndex] = *pPipeline;
+        } else {
+            // No pipeline like it yet, create new.
+            PipelineSet newEntry{
+                .vertexDescriptor = vertexDescriptor,
+                .fragmentDescriptor = fragmentDescriptor,
+                .renderPass = renderPass,
+                .subpass = subpass,
+                .layout = *pPipelineLayout,
+                .descriptorSetLayoutCount = *pDescriptorSetLayoutCount,
+            };
+            // Make sure the pipeline goes to the specific sample count entry
+            newEntry.pipelines[sampleIndex] = *pPipeline;
+
+            pPipelinePool->pipelines.emplace_back(newEntry);
+        }
+    }
+
+    return vk_to_foeResult(vkResult);
+}
+
+extern "C" foeGfxVkPipelinePool foeGfxVkGetPipelinePool(foeGfxSession session) {
+    auto *pSession = session_from_handle(session);
+
+    return pSession->pipelinePool;
 }

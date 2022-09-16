@@ -131,7 +131,6 @@ TEST_CASE("foeGfxSession(Vulkan)") {
     // Graphics Pools exist and are returned
     CHECK(foeGfxVkGetRenderPassPool(session) != nullptr);
     CHECK(foeGfxVkGetFragmentDescriptorPool(session) != nullptr);
-    CHECK(foeGfxVkGetPipelinePool(session) != nullptr);
 
     // Wait for idle
     foeGfxWaitIdle(session);

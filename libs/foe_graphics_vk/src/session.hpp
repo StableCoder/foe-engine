@@ -8,7 +8,7 @@
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
-#include <foe/graphics/vk/pipeline_pool.hpp>
+#include <foe/graphics/vk/pipeline_pool.h>
 #include <foe/graphics/vk/render_pass_pool.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -59,7 +59,7 @@ struct foeGfxVkSession {
 
     foeGfxVkRenderPassPool renderPassPool;
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
-    foeGfxVkPipelinePool pipelinePool;
+    foeGfxVkPipelinePool pipelinePool{FOE_NULL_HANDLE};
 };
 
 FOE_DEFINE_HANDLE_CASTS(session, foeGfxVkSession, foeGfxSession)

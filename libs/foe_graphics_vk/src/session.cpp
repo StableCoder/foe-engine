@@ -60,7 +60,8 @@ void createQueueFamily(VkDevice device,
 
 void foeGfxVkDestroySession(foeGfxVkSession *pSession) {
     // Internal Pools
-    pSession->pipelinePool.deinitialize();
+    if (pSession->pipelinePool)
+        foeGfxVkDestroyPipelinePool(pSession->pipelinePool);
     pSession->builtinDescriptorSets.deinitialize(pSession->device);
     pSession->descriptorSetLayoutPool.deinitialize();
     pSession->renderPassPool.deinitialize();
@@ -612,7 +613,7 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
-    result = pNewSession->pipelinePool.initialize(sessionHandle);
+    result = foeGfxVkCreatePipelinePool(sessionHandle, &pNewSession->pipelinePool);
     if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
@@ -790,12 +791,6 @@ extern "C" foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(
     auto *pSession = session_from_handle(session);
 
     return &pSession->fragmentDescriptorPool;
-}
-
-extern "C" foeGfxVkPipelinePool *foeGfxVkGetPipelinePool(foeGfxSession session) {
-    auto *pSession = session_from_handle(session);
-
-    return &pSession->pipelinePool;
 }
 
 extern "C" VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session) {
