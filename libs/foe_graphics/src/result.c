@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/xr/openxr/vk/result.h>
+#include <foe/graphics/result.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -14,19 +14,19 @@
         pResultStr = #X;                                                                           \
         break;
 
-void foeOpenXrVkResultToString(foeOpenXrVkResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
+void foeGraphicsResultToString(foeGraphicsResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
     char const *pResultStr = NULL;
 
     switch (value) {
-        RESULT_CASE(FOE_OPENXR_VK_SUCCESS)
-        RESULT_CASE(FOE_OPENXR_VK_ERROR_OUT_OF_MEMORY)
+        RESULT_CASE(FOE_GRAPHICS_SUCCESS)
+        RESULT_CASE(FOE_GRAPHICS_ERROR_OUT_OF_MEMORY)
 
     default:
         if (value > 0) {
-            sprintf(buffer, "FOE_OPENXR_VK_UNKNOWN_SUCCESS_%i", value);
+            sprintf(buffer, "FOE_GRAPHICS_UNKNOWN_SUCCESS_%i", value);
         } else {
             value = abs(value);
-            sprintf(buffer, "FOE_OPENXR_VK_UNKNOWN_ERROR_%i", value);
+            sprintf(buffer, "FOE_GRAPHICS_UNKNOWN_ERROR_%i", value);
         }
     }
 

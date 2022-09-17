@@ -10,6 +10,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "log.hpp"
+#include "result.h"
 
 namespace {
 
@@ -22,9 +23,14 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
-            .pComponentPool = new foePosition3dPool,
+            .pComponentPool = new (std::nothrow) foePosition3dPool,
             .pMaintenanceFn = [](void *pData) { ((foePosition3dPool *)pData)->maintenance(); },
         };
+        if (createInfo.pComponentPool == nullptr) {
+            result = to_foeResult(FOE_POSITION_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foePosition3dPool *)createInfo.pComponentPool;

@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 target_sources(foe_graphics PRIVATE builtin_descriptor_sets.c
-                                    delayed_caller.cpp log.cpp)
+                                    delayed_caller.cpp log.cpp result.c)

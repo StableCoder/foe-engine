@@ -28,11 +28,9 @@ FOE_DEFINE_HANDLE_CASTS(name_map, NameMap, foeEcsNameMap)
 } // namespace
 
 extern "C" foeResultSet foeEcsCreateNameMap(foeEcsNameMap *pNameMap) {
-    NameMap *pNewNameMap = (NameMap *)malloc(sizeof(NameMap));
+    NameMap *pNewNameMap = new (std::nothrow) NameMap;
     if (pNewNameMap == nullptr)
         return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
-
-    new (pNewNameMap) NameMap;
 
     *pNameMap = name_map_to_handle(pNewNameMap);
 
@@ -42,8 +40,7 @@ extern "C" foeResultSet foeEcsCreateNameMap(foeEcsNameMap *pNameMap) {
 extern "C" void foeEcsDestroyNameMap(foeEcsNameMap nameMap) {
     NameMap *pNameMap = name_map_from_handle(nameMap);
 
-    pNameMap->~NameMap();
-    free(pNameMap);
+    delete pNameMap;
 }
 
 extern "C" foeResultSet foeEcsNameMapFindID(foeEcsNameMap nameMap, char const *pName, foeId *pID) {

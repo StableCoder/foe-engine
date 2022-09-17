@@ -177,7 +177,7 @@ foeResultSet foeCreateThreadPool(uint32_t syncThreads,
         return to_foeResult(FOE_THREAD_POOL_ERROR_ZERO_ASYNC_THREADS);
 
     foeSplitThreadResult result = FOE_THREAD_POOL_SUCCESS;
-    SplitThreadPoolImpl *pNewPool = new SplitThreadPoolImpl{
+    SplitThreadPoolImpl *pNewPool = new (std::nothrow) SplitThreadPoolImpl{
         .syncTasks =
             {
                 .threadCount = syncThreads,
@@ -187,6 +187,8 @@ foeResultSet foeCreateThreadPool(uint32_t syncThreads,
                 .threadCount = asyncThreads,
             },
     };
+    if (pNewPool == nullptr)
+        return to_foeResult(FOE_THREAD_POOL_ERROR_OUT_OF_MEMORY);
 
     pNewPool->threads =
         static_cast<std::thread *>(malloc(sizeof(std::thread) * (syncThreads + asyncThreads)));

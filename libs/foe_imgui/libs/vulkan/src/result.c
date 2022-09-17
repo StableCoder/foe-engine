@@ -19,6 +19,7 @@ void foeImGuiVkResultToString(foeImGuiVkResult value, char buffer[FOE_MAX_RESULT
 
     switch (value) {
         RESULT_CASE(FOE_IMGUI_VK_SUCCESS)
+        RESULT_CASE(FOE_IMGUI_VK_ERROR_OUT_OF_MEMORY)
         // RenderGraph - UI Job
         RESULT_CASE(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE)
         RESULT_CASE(FOE_IMGUI_VK_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE)

@@ -98,9 +98,7 @@ void destroy(foeImexImporter importer) {
     if (pImporter->mGroupTranslator != FOE_NULL_HANDLE)
         foeEcsDestroyGroupTranslator(pImporter->mGroupTranslator);
 
-    pImporter->~foeYamlImporter();
-
-    free(pImporter);
+    delete pImporter;
 }
 
 foeResultSet getGroupID(foeImexImporter importer, foeIdGroup *pGroupID) {
@@ -603,18 +601,15 @@ foeResultSet foeCreateYamlImporter(foeIdGroup group,
         return to_foeResult(FOE_IMEX_YAML_ERROR_EXTERNAL_DIRECTORY_NOT_DIRECTORY);
 
     // If here, then we're clear to create the importer
-    foeYamlImporter *pNewImporter = (foeYamlImporter *)malloc(sizeof(foeYamlImporter));
-    if (pNewImporter == NULL)
-        return to_foeResult(FOE_IMEX_YAML_ERROR_OUT_OF_MEMORY);
-
-    new (pNewImporter) foeYamlImporter;
-    *pNewImporter = foeYamlImporter{
+    foeYamlImporter *pNewImporter = new (std::nothrow) foeYamlImporter{
         .sType = NULL,
         .pNext = &cImporterCalls,
         .mRootDir = pRootDir,
         .mGroup = group,
+        .mName = std::filesystem::path{pRootDir}.stem().string(),
     };
-    pNewImporter->mName = pNewImporter->mRootDir.stem().string(),
+    if (pNewImporter == NULL)
+        return to_foeResult(FOE_IMEX_YAML_ERROR_OUT_OF_MEMORY);
 
     *pImporter = importer_to_handle(pNewImporter);
 

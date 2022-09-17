@@ -102,7 +102,10 @@ bool importCamera(YAML::Node const &node,
             return false;
 
         try {
-            std::unique_ptr<foeCamera> pData(new foeCamera);
+            std::unique_ptr<foeCamera> pData(new (std::nothrow) foeCamera);
+            if (pData == nullptr)
+                throw foeYamlException{" Failed to allocate foeCamera - Out of Memory"};
+
             *pData = yaml_read_Camera(dataNode);
 
             pPool->insert(entity, std::move(pData));

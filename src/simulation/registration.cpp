@@ -13,7 +13,6 @@
 
 #include "../log.hpp"
 #include "../result.h"
-#include "armature.hpp"
 #include "armature_loader.hpp"
 #include "armature_state_pool.hpp"
 #include "armature_system.hpp"
@@ -286,7 +285,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         // Couldn't incement it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_LOADER,
-            .pLoader = new foeArmatureLoader,
+            .pLoader = new (std::nothrow) foeArmatureLoader,
             .pCanProcessCreateInfoFn = foeArmatureLoader::canProcessCreateInfo,
             .pLoadFn = foeArmatureLoader::load,
             .pMaintenanceFn =
@@ -294,6 +293,11 @@ foeResultSet create(foeSimulation *pSimulation) {
                     reinterpret_cast<foeArmatureLoader *>(pLoader)->maintenance();
                 },
         };
+        if (loaderCI.pLoader == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
         if (result.value != FOE_SUCCESS) {
             delete (foeArmatureLoader *)loaderCI.pLoader;
@@ -317,9 +321,14 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
-            .pComponentPool = new foeArmatureStatePool,
+            .pComponentPool = new (std::nothrow) foeArmatureStatePool,
             .pMaintenanceFn = [](void *pData) { ((foeArmatureStatePool *)pData)->maintenance(); },
         };
+        if (createInfo.pComponentPool == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeArmatureStatePool *)createInfo.pComponentPool;
@@ -342,9 +351,14 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL,
-            .pComponentPool = new foeCameraPool,
+            .pComponentPool = new (std::nothrow) foeCameraPool,
             .pMaintenanceFn = [](void *pData) { ((foeCameraPool *)pData)->maintenance(); },
         };
+        if (createInfo.pComponentPool == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeCameraPool *)createInfo.pComponentPool;
@@ -367,9 +381,14 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
-            .pComponentPool = new foeRenderStatePool,
+            .pComponentPool = new (std::nothrow) foeRenderStatePool,
             .pMaintenanceFn = [](void *pData) { ((foeRenderStatePool *)pData)->maintenance(); },
         };
+        if (createInfo.pComponentPool == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeRenderStatePool *)createInfo.pComponentPool;
@@ -393,8 +412,13 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
-            .pSystem = new foeArmatureSystem,
+            .pSystem = new (std::nothrow) foeArmatureSystem,
         };
+        if (createInfo.pSystem == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertSystem(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeArmatureSystem *)createInfo.pSystem;
@@ -417,8 +441,13 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM,
-            .pSystem = new foeCameraSystem,
+            .pSystem = new (std::nothrow) foeCameraSystem,
         };
+        if (createInfo.pSystem == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertSystem(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeCameraSystem *)createInfo.pSystem;
@@ -441,8 +470,13 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL,
-            .pSystem = new PositionDescriptorPool,
+            .pSystem = new (std::nothrow) PositionDescriptorPool,
         };
+        if (createInfo.pSystem == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertSystem(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (PositionDescriptorPool *)createInfo.pSystem;
@@ -465,8 +499,13 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL,
-            .pSystem = new VkAnimationPool,
+            .pSystem = new (std::nothrow) VkAnimationPool,
         };
+        if (createInfo.pSystem == nullptr) {
+            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertSystem(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (VkAnimationPool *)createInfo.pSystem;

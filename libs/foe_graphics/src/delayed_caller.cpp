@@ -5,9 +5,11 @@
 #include <foe/graphics/delayed_caller.h>
 
 #include "log.hpp"
+#include "result.h"
 
 #include <atomic>
 #include <mutex>
+#include <new>
 #include <vector>
 
 namespace {
@@ -33,12 +35,15 @@ FOE_DEFINE_HANDLE_CASTS(delayed_destructor, foeGfxDelayedCallerImpl, foeGfxDelay
 extern "C" foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
                                                   uint32_t initialDelay,
                                                   foeGfxDelayedCaller *pDelayedCaller) {
-    auto *pNewDelayedDestructor = new foeGfxDelayedCallerImpl{
+    auto *pNewDelayedDestructor = new (std::nothrow) foeGfxDelayedCallerImpl{
         .session = session,
         .currentDelay = initialDelay,
         .callLists =
             std::vector<std::vector<DelayedCall>>{initialDelay, std::vector<DelayedCall>{}},
     };
+    if (pNewDelayedDestructor == nullptr)
+        return to_foeResult(FOE_GRAPHICS_ERROR_OUT_OF_MEMORY);
+
     pNewDelayedDestructor->currentList = pNewDelayedDestructor->callLists.begin();
 
     *pDelayedCaller = delayed_destructor_to_handle(pNewDelayedDestructor);
@@ -46,7 +51,7 @@ extern "C" foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
     FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedCaller - Created using foeGfxSession {}",
             static_cast<void *>(pNewDelayedDestructor), (void *)session);
 
-    return foeResultSet{.value = FOE_SUCCESS, .toString = NULL};
+    return to_foeResult(FOE_GRAPHICS_SUCCESS);
 }
 
 extern "C" void foeGfxDestroyDelayedCaller(foeGfxDelayedCaller delayedCaller) {

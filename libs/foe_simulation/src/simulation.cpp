@@ -283,7 +283,10 @@ foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationS
     foeResultSet result;
     std::scoped_lock lock{mSync};
 
-    std::unique_ptr<foeSimulation> newSimState{new foeSimulation};
+    std::unique_ptr<foeSimulation> newSimState{new (std::nothrow) foeSimulation};
+    if (newSimState == nullptr)
+        return to_foeResult(FOE_SIMULATION_ERROR_OUT_OF_MEMORY);
+
     newSimState->gfxSession = FOE_NULL_HANDLE;
     newSimState->resourceRecords = FOE_NULL_HANDLE;
     newSimState->resourcePool = FOE_NULL_HANDLE;

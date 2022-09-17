@@ -434,21 +434,26 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Resource Management
-    auto *pNewColourState = new foeGfxVkGraphImageState;
-    *pNewColourState = foeGfxVkGraphImageState{
+    auto *pNewColourState = new (std::nothrow) foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = finalColourLayout,
     };
-    auto *pNewDepthState = new foeGfxVkGraphImageState;
-    *pNewDepthState = foeGfxVkGraphImageState{
+    auto *pNewDepthState = new (std::nothrow) foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = finalDepthLayout,
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
-        delete pNewColourState;
-        delete pNewDepthState;
+        if (pNewColourState)
+            delete pNewColourState;
+        if (pNewDepthState)
+            delete pNewDepthState;
     };
+
+    if (pNewColourState == nullptr || pNewDepthState == nullptr) {
+        freeDataFn();
+        return to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+    }
 
     // Add job to graph
     std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{colourRenderTarget,

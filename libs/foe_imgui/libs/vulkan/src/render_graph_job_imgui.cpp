@@ -217,11 +217,12 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Resource Management
-    auto *pFinalImageState = new foeGfxVkGraphImageState;
-    *pFinalImageState = foeGfxVkGraphImageState{
+    auto *pFinalImageState = new (std::nothrow) foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = finalLayout,
     };
+    if (pFinalImageState == nullptr)
+        return to_foeResult(FOE_IMGUI_VK_ERROR_OUT_OF_MEMORY);
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pFinalImageState; };
 

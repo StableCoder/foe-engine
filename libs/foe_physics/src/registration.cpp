@@ -137,7 +137,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         // Couldn't incement it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER,
-            .pLoader = new foeCollisionShapeLoader,
+            .pLoader = new (std::nothrow) foeCollisionShapeLoader,
             .pCanProcessCreateInfoFn = foeCollisionShapeLoader::canProcessCreateInfo,
             .pLoadFn = foeCollisionShapeLoader::load,
             .pMaintenanceFn =
@@ -145,6 +145,9 @@ foeResultSet create(foeSimulation *pSimulation) {
                     reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->maintenance();
                 },
         };
+        if (loaderCI.pLoader == nullptr)
+            return to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+
         result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
         if (result.value != FOE_SUCCESS) {
             delete (foeCollisionShapeLoader *)loaderCI.pLoader;
@@ -168,9 +171,14 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
-            .pComponentPool = new foeRigidBodyPool,
+            .pComponentPool = new (std::nothrow) foeRigidBodyPool,
             .pMaintenanceFn = [](void *pData) { ((foeRigidBodyPool *)pData)->maintenance(); },
         };
+        if (createInfo.pComponentPool == nullptr) {
+            result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foeRigidBodyPool *)createInfo.pComponentPool;
@@ -194,8 +202,13 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
-            .pSystem = new foePhysicsSystem,
+            .pSystem = new (std::nothrow) foePhysicsSystem,
         };
+        if (createInfo.pSystem == nullptr) {
+            result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+            goto CREATE_FAILED;
+        }
+
         result = foeSimulationInsertSystem(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
             delete (foePhysicsSystem *)createInfo.pSystem;

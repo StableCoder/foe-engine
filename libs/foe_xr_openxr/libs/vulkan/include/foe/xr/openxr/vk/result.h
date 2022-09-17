@@ -15,8 +15,7 @@ extern "C" {
 typedef enum foeOpenXrVkResult {
     FOE_OPENXR_VK_SUCCESS = 0,
 
-    // Need to have a negative enum value to prevent treatment as a flag
-    FOE_OPENXR_VK_ERROR_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
+    FOE_OPENXR_VK_ERROR_OUT_OF_MEMORY = -1,
 } foeOpenXrVkResult;
 
 FOE_XR_EXPORT void foeOpenXrVkResultToString(foeOpenXrVkResult value,

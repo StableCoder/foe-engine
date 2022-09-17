@@ -34,11 +34,9 @@ extern "C" foeResultSet foeEcsCreateIndexes(foeIdGroup groupID, foeEcsIndexes *p
         return to_foeResult(FOE_ECS_ERROR_NOT_GROUP_ID);
     }
 
-    Indexes *pNewIndexes = (Indexes *)malloc(sizeof(Indexes));
+    Indexes *pNewIndexes = new (std::nothrow) Indexes;
     if (pNewIndexes == nullptr)
         return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
-
-    new (pNewIndexes) Indexes;
 
     pNewIndexes->groupID = groupID;
     pNewIndexes->nextNewIndex = foeIdIndexMinValue;
@@ -51,8 +49,7 @@ extern "C" foeResultSet foeEcsCreateIndexes(foeIdGroup groupID, foeEcsIndexes *p
 extern "C" void foeEcsDestroyIndexes(foeEcsIndexes indexes) {
     Indexes *pIndexes = indexes_from_handle(indexes);
 
-    pIndexes->~Indexes();
-    free(pIndexes);
+    delete pIndexes;
 }
 
 extern "C" foeIdGroup foeEcsIndexesGetGroupID(foeEcsIndexes indexes) {

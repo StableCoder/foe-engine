@@ -134,15 +134,13 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     };
 
     // Resource management
-    auto *pSwapchain = new foeOpenXrRenderGraphSwapchainResource;
-    *pSwapchain = foeOpenXrRenderGraphSwapchainResource{
+    auto *pSwapchain = new (std::nothrow) foeOpenXrRenderGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
         .pNext = nullptr,
         .swapchain = swapchain,
     };
 
-    auto *pImage = new foeGfxVkGraphImageResource;
-    *pImage = foeGfxVkGraphImageResource{
+    auto *pImage = new (std::nothrow) foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = pSwapchain,
         .image = image,
@@ -152,17 +150,24 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
         .isMutable = true,
     };
 
-    auto *pImageState = new foeGfxVkGraphImageState;
-    *pImageState = foeGfxVkGraphImageState{
+    auto *pImageState = new (std::nothrow) foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = layout,
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
-        delete pSwapchain;
-        delete pImage;
-        delete pImageState;
+        if (pSwapchain)
+            delete pSwapchain;
+        if (pImage)
+            delete pImage;
+        if (pImageState)
+            delete pImageState;
     };
+
+    if (pSwapchain == nullptr || pImage == nullptr || pImageState == nullptr) {
+        freeDataFn();
+        return to_foeResult(FOE_OPENXR_VK_ERROR_OUT_OF_MEMORY);
+    }
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
