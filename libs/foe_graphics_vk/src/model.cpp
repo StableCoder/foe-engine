@@ -71,11 +71,12 @@ extern "C" foeResultSet foeGfxVkRecordModelUploadCommands(foeGfxUploadContext up
 
     if (uploadBuffer != FOE_NULL_HANDLE) {
         // Need both queues for a tranfer
-        vkResult = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
-                                            pUploadContext->dstCommandPool, &uploadRequest);
+        vkResult =
+            foeGfxVkCreateUploadRequest(pUploadContext->device, pUploadContext->srcCommandPool,
+                                        pUploadContext->dstCommandPool, &uploadRequest);
     } else {
-        vkResult = foeGfxVkCreateUploadData(pUploadContext->device, VK_NULL_HANDLE,
-                                            pUploadContext->dstCommandPool, &uploadRequest);
+        vkResult = foeGfxVkCreateUploadRequest(pUploadContext->device, VK_NULL_HANDLE,
+                                               pUploadContext->dstCommandPool, &uploadRequest);
     }
     if (vkResult != VK_SUCCESS) {
         goto RECORDING_FAILED;

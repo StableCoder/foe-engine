@@ -15,7 +15,7 @@ target_sources(test_foe_graphics_vk PRIVATE c_header_compatibility.c result.cpp
 
 if(BUILD_VULKAN_RUNTIME_TESTS)
   target_sources(test_foe_graphics_vk PRIVATE runtime.cpp session.cpp
-                                              shader.cpp)
+                                              shader.cpp upload.cpp)
 endif()
 
 target_link_libraries(test_foe_graphics_vk PRIVATE catch foe_graphics_vk)

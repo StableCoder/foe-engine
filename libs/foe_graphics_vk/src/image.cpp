@@ -80,8 +80,8 @@ extern "C" foeResultSet foeGfxVkRecordImageBufferUploadCommands(
     VkResult vkResult;
     foeGfxVkUploadRequest *uploadData{nullptr};
 
-    vkResult = foeGfxVkCreateUploadData(pUploadContext->device, pUploadContext->srcCommandPool,
-                                        pUploadContext->dstCommandPool, &uploadData);
+    vkResult = foeGfxVkCreateUploadRequest(pUploadContext->device, pUploadContext->srcCommandPool,
+                                           pUploadContext->dstCommandPool, &uploadData);
     if (vkResult != VK_SUCCESS) {
         return vk_to_foeResult(vkResult);
     }

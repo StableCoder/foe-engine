@@ -1,16 +1,16 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "upload_request.hpp"
 
-VkResult foeGfxVkCreateUploadData(VkDevice device,
-                                  VkCommandPool srcCommandPool,
-                                  VkCommandPool dstCommandPool,
-                                  foeGfxVkUploadRequest **pUploadData) {
+VkResult foeGfxVkCreateUploadRequest(VkDevice device,
+                                     VkCommandPool srcCommandPool,
+                                     VkCommandPool dstCommandPool,
+                                     foeGfxVkUploadRequest **pUploadRequest) {
     VkResult res;
-    auto uploadData = new foeGfxVkUploadRequest;
-    *uploadData = {
+    auto uploadRequest = new foeGfxVkUploadRequest;
+    *uploadRequest = {
         .device = device,
         .srcCmdPool = srcCommandPool,
         .dstCmdPool = dstCommandPool,
@@ -18,7 +18,7 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
 
     VkCommandBufferAllocateInfo bufferAI{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = uploadData->dstCmdPool,
+        .commandPool = uploadRequest->dstCmdPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
     };
@@ -28,26 +28,26 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
     };
 
     // Destination
-    res = vkAllocateCommandBuffers(device, &bufferAI, &uploadData->dstCmdBuffer);
+    res = vkAllocateCommandBuffers(device, &bufferAI, &uploadRequest->dstCmdBuffer);
     if (res != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
-    res = vkCreateFence(device, &fenceCI, nullptr, &uploadData->dstFence);
+    res = vkCreateFence(device, &fenceCI, nullptr, &uploadRequest->dstFence);
     if (res != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
     // Source
-    if (uploadData->srcCmdPool != VK_NULL_HANDLE) {
-        bufferAI.commandPool = uploadData->srcCmdPool;
+    if (uploadRequest->srcCmdPool != VK_NULL_HANDLE) {
+        bufferAI.commandPool = uploadRequest->srcCmdPool;
 
-        res = vkAllocateCommandBuffers(device, &bufferAI, &uploadData->srcCmdBuffer);
+        res = vkAllocateCommandBuffers(device, &bufferAI, &uploadRequest->srcCmdBuffer);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
-        res = vkCreateFence(device, &fenceCI, nullptr, &uploadData->srcFence);
+        res = vkCreateFence(device, &fenceCI, nullptr, &uploadRequest->srcFence);
         if (res != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
@@ -57,7 +57,7 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
                 .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             };
 
-            res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &uploadData->copyComplete);
+            res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &uploadRequest->copyComplete);
             if (res != VK_SUCCESS) {
                 goto CREATE_FAILED;
             }
@@ -66,9 +66,9 @@ VkResult foeGfxVkCreateUploadData(VkDevice device,
 
 CREATE_FAILED:
     if (res == VK_SUCCESS) {
-        *pUploadData = uploadData;
+        *pUploadRequest = uploadRequest;
     } else {
-        foeGfxVkDestroyUploadRequest(device, uploadData);
+        foeGfxVkDestroyUploadRequest(device, uploadRequest);
     }
 
     return res;
