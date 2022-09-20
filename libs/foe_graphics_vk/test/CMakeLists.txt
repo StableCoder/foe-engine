@@ -10,8 +10,8 @@ add_test(NAME FoE-Graphics-VK-Test COMMAND test_foe_graphics_vk)
 add_executable(test_foe_graphics_vk)
 
 # Definition
-target_sources(test_foe_graphics_vk PRIVATE c_header_compatibility.c result.cpp
-                                            sample_count.cpp)
+target_sources(test_foe_graphics_vk PRIVATE c_header_compatibility.c format.cpp
+                                            result.cpp sample_count.cpp)
 
 if(BUILD_VULKAN_RUNTIME_TESTS)
   target_sources(test_foe_graphics_vk PRIVATE runtime.cpp session.cpp
