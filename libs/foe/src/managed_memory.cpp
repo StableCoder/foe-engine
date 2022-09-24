@@ -80,7 +80,8 @@ extern "C" uint32_t foeManagedMemoryDecrementUse(foeManagedMemory managedMemory)
 
     uint32_t count = --pManagedMemory->useCount;
     if (count == 0) {
-        pManagedMemory->cleanupFn(foeResourceCreateInfoGetData(pManagedMemory));
+        if (pManagedMemory->cleanupFn)
+            pManagedMemory->cleanupFn(foeResourceCreateInfoGetData(pManagedMemory));
 
         pManagedMemory->~ManagedMemory();
         free(pManagedMemory);
