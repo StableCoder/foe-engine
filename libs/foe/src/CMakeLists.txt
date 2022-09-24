@@ -9,6 +9,7 @@ target_sources(
           developer_console.cpp
           filesystem.cpp
           log.cpp
+          managed_memory_subset.c
           managed_memory.cpp
           plugin.cpp
           result.c

@@ -27,6 +27,11 @@ FOE_EXPORT foeResultSet foeCreateManagedMemory(void *pData,
                                                size_t metadataSize,
                                                foeManagedMemory *pManagedMemory);
 
+FOE_EXPORT foeResultSet foeCreateManagedMemorySubset(foeManagedMemory parentMemory,
+                                                     size_t dataOffset,
+                                                     size_t dataSize,
+                                                     foeManagedMemory *pManagedMemory);
+
 FOE_EXPORT void foeManagedMemoryGetData(foeManagedMemory managedMemory,
                                         void **ppData,
                                         uint32_t *pDataSize);

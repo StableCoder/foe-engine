@@ -37,6 +37,7 @@ typedef enum foeResult {
     FOE_ERROR_FAILED_TO_MAP_FILE,
     FOE_ERROR_FAILED_TO_UNMAP_FILE,
     FOE_ERROR_FAILED_TO_CLOSE_FILE,
+    FOE_ERROR_MEMORY_SUBSET_OVERRUNS_PARENT,
 } foeResult;
 
 void foeResultToString(foeResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);

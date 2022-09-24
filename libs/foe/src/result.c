@@ -26,6 +26,7 @@ void foeResultToString(foeResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE])
         RESULT_CASE(FOE_ERROR_FAILED_TO_MAP_FILE)
         RESULT_CASE(FOE_ERROR_FAILED_TO_UNMAP_FILE)
         RESULT_CASE(FOE_ERROR_FAILED_TO_CLOSE_FILE)
+        RESULT_CASE(FOE_ERROR_MEMORY_SUBSET_OVERRUNS_PARENT)
 
     default:
         if (value > 0) {
