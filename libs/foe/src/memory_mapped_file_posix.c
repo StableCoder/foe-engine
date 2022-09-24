@@ -18,8 +18,8 @@ typedef struct MemoryMappedFile {
     long dataSize;
 } MemoryMappedFile;
 
-static void cleanup_MemoryMappedFile(void *pMemoryMappedData) {
-    MemoryMappedFile *pMemoryMappedFile = pMemoryMappedData;
+static void cleanup_MemoryMappedFile(void *pData, uint32_t dataSize, void *pMetadata) {
+    MemoryMappedFile *pMemoryMappedFile = pMetadata;
     int posixRetVal;
 
     if (pMemoryMappedFile->pData && pMemoryMappedFile->pData != (void *)-1) {
@@ -71,7 +71,7 @@ foeResultSet foeCreateMemoryMappedFile(char const *pFilePath, foeManagedMemory *
 
 CREATE_FAILED:
     if (result.value != FOE_SUCCESS)
-        cleanup_MemoryMappedFile(&mappedFileData);
+        cleanup_MemoryMappedFile(NULL, 0, &mappedFileData);
 
     return result;
 }

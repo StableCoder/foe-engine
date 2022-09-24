@@ -15,8 +15,8 @@ struct MemoryMappedFile {
     void *pData;
 };
 
-void cleanup_MemoryMappedFile(void *pMemoryMappedData) {
-    MemoryMappedFile *pMemoryMappedFile = (MemoryMappedFile *)pMemoryMappedData;
+void cleanup_MemoryMappedFile(void *pData, uint32_t dataSize, void *pMetadata) {
+    MemoryMappedFile *pMemoryMappedFile = (MemoryMappedFile *)pMetadata;
     BOOL success;
 
     if (pMemoryMappedFile->pData) {
@@ -79,7 +79,7 @@ foeResultSet foeCreateMemoryMappedFile(char const *pFilePath, foeManagedMemory *
 
 CREATE_FAILED:
     if (result.value != FOE_SUCCESS)
-        cleanup_MemoryMappedFile(&mappedFileData);
+        cleanup_MemoryMappedFile(NULL, 0, &mappedFileData);
 
     return result;
 }

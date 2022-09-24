@@ -27,7 +27,7 @@ struct ManagedMemory {
 
 FOE_DEFINE_HANDLE_CASTS(managed_memory, ManagedMemory, foeManagedMemory)
 
-void *foeResourceCreateInfoGetData(ManagedMemory const *pManagedMemory) {
+void *foeResourceCreateInfoGetMetadata(ManagedMemory const *pManagedMemory) {
     return (char *)pManagedMemory + sizeof(ManagedMemory);
 }
 
@@ -46,7 +46,7 @@ extern "C" foeResultSet foeCreateManagedMemory(void *pData,
 
     new (pNewManagedMemory) ManagedMemory(pData, dataSize, cleanupFn);
 
-    memcpy(foeResourceCreateInfoGetData(pNewManagedMemory), pMetadata, metadataSize);
+    memcpy(foeResourceCreateInfoGetMetadata(pNewManagedMemory), pMetadata, metadataSize);
 
     *pManagedMemory = managed_memory_to_handle(pNewManagedMemory);
 
@@ -81,7 +81,8 @@ extern "C" uint32_t foeManagedMemoryDecrementUse(foeManagedMemory managedMemory)
     uint32_t count = --pManagedMemory->useCount;
     if (count == 0) {
         if (pManagedMemory->cleanupFn)
-            pManagedMemory->cleanupFn(foeResourceCreateInfoGetData(pManagedMemory));
+            pManagedMemory->cleanupFn(pManagedMemory->pData, pManagedMemory->dataSize,
+                                      foeResourceCreateInfoGetMetadata(pManagedMemory));
 
         pManagedMemory->~ManagedMemory();
         free(pManagedMemory);

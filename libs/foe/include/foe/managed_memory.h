@@ -18,7 +18,7 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeManagedMemory)
 
-typedef void (*PFN_foeManagedMemoryCleanup)(void *);
+typedef void (*PFN_foeManagedMemoryCleanup)(void *pData, uint32_t dataSize, void *pMetadata);
 
 FOE_EXPORT foeResultSet foeCreateManagedMemory(void *pData,
                                                size_t dataSize,
