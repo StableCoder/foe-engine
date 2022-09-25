@@ -333,7 +333,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
                     uint32_t nameLength;
                     foeResultSet result = foeImexImporterGetResourceEditorName(
                         pCallContext->importer, foeIdGetIndex(id), &nameLength, NULL);
-                    if (result.value == FOE_SUCCESS) {
+                    if (result.value == FOE_SUCCESS && nameLength > 0) {
                         std::string editorName;
                         do {
                             editorName.resize(nameLength);
@@ -372,7 +372,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
                 uint32_t nameLength;
                 foeResultSet result = foeImexImporterGetResourceEditorName(
                     pCallContext->importer, foeIdGetIndex(id), &nameLength, NULL);
-                if (result.value == FOE_SUCCESS) {
+                if (result.value == FOE_SUCCESS && nameLength > 0) {
                     std::string editorName;
                     do {
                         editorName.resize(nameLength);
