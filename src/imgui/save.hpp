@@ -7,6 +7,8 @@
 
 #include <foe/imex/exporters.h>
 
+#include <memory>
+
 struct ImGuiContext;
 class foeImGuiState;
 struct foeSimulation;
@@ -27,7 +29,10 @@ class foeImGuiSave {
 
     foeSimulation *mpSimulationState{nullptr};
 
-    foeExporter mSelectedExporter{};
+    uint32_t mNumExporters{0};
+    uint32_t mSelectedExporter{0};
+    bool mValidExporter{false};
+    std::unique_ptr<foeExporter[]> mpExporters;
 
     bool mChooseExporterDialog{false};
     bool mSaveFileDialog{false};

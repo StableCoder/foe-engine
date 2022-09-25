@@ -67,32 +67,33 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
     if (pData->mChooseExporterDialog) {
         pData->mChooseExporterDialog = false;
         ImGui::OpenPopup("ChooseExporterModal");
+
+        // Get exporters
+        pData->mValidExporter = false;
+        foeImexGetExporters(&pData->mNumExporters, nullptr);
+        pData->mpExporters.reset(new foeExporter[pData->mNumExporters]);
+        foeImexGetExporters(&pData->mNumExporters, pData->mpExporters.get());
     }
 
     if (ImGui::BeginPopupModal("ChooseExporterModal", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Text("Choose available exporter:\n\n");
 
-        // Get number of available exporters
-        bool validExporter{false};
-        uint32_t numExporters;
-        foeImexGetExporters(&numExporters, nullptr);
-        std::unique_ptr<foeExporter[]> pExporters{new foeExporter[numExporters]};
-        foeImexGetExporters(&numExporters, pExporters.get());
-
-        for (uint32_t i = 0; i < numExporters; ++i) {
-            if (foeCompareExporters(&(pData->mSelectedExporter), &pExporters[i]))
-                validExporter = true;
+        for (uint32_t i = 0; i < pData->mNumExporters; ++i) {
+            if (foeCompareExporters(&(pData->mpExporters[pData->mSelectedExporter]),
+                                    &pData->mpExporters[i]))
+                pData->mValidExporter = true;
             if (ImGui::RadioButton(
-                    pExporters[i].pName,
-                    foeCompareExporters(&(pData->mSelectedExporter), &pExporters[i]))) {
-                pData->mSelectedExporter = pExporters[i];
-                validExporter = true;
+                    pData->mpExporters[i].pName,
+                    foeCompareExporters(&(pData->mpExporters[pData->mSelectedExporter]),
+                                        &pData->mpExporters[i]))) {
+                pData->mSelectedExporter = i;
+                pData->mValidExporter = true;
             }
         }
 
         ImGui::Separator();
 
-        if (validExporter) {
+        if (pData->mValidExporter) {
             if (ImGui::Button("Use", ImVec2(120, 0))) {
                 pData->mSaveFileDialog = true;
                 ImGui::CloseCurrentPopup();
@@ -102,6 +103,7 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
         ImGui::SetItemDefaultFocus();
         if (ImGui::Button("Cancel", ImVec2(120, 0))) {
             ImGui::CloseCurrentPopup();
+            pData->mpExporters.reset();
         }
 
         ImGui::EndPopup();
@@ -120,15 +122,8 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
             std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
             std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-            uint32_t numExporters{1};
-            std::unique_ptr<foeExporter[]> pExporters{new foeExporter[numExporters]};
-            foeImexGetExporters(&numExporters, pExporters.get());
-
-            if (numExporters == 0) {
-                // Need to deal with case of having no available exporters
-                std::abort();
-            }
-            pExporters[0].pExportFn(filePathName.data(), pData->mpSimulationState);
+            pData->mpExporters[pData->mSelectedExporter].pExportFn(filePathName.data(),
+                                                                   pData->mpSimulationState);
 
             // action
             ImGui::CloseCurrentPopup();
