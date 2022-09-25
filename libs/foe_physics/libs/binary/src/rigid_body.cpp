@@ -10,9 +10,9 @@
 
 #include "result.h"
 
-foeResultSet export_foeRigidBody(foeEntityID entity,
-                                 foeSimulation const *pSimulation,
-                                 foeImexBinarySet *pBinarySets) {
+extern "C" foeResultSet export_foeRigidBody(foeEntityID entity,
+                                            foeSimulation const *pSimulation,
+                                            foeImexBinarySet *pBinarySets) {
     foeResultSet result = to_foeResult(FOE_PHYSICS_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
@@ -43,6 +43,25 @@ EXPORT_FAILED:
         free(set.pData);
     if (result.value == FOE_SUCCESS)
         *pBinarySets = set;
+
+    return result;
+}
+
+extern "C" foeResultSet import_foeRigidBody(void const *pReadBuffer,
+                                            uint32_t *pReadSize,
+                                            foeEcsGroupTranslator groupTranslator,
+                                            foeEntityID entity,
+                                            foeSimulation const *pSimulation) {
+    auto *pComponentPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+        pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
+    if (pComponentPool == nullptr)
+        return to_foeResult(FOE_PHYSICS_BINARY_ERROR_RIGID_BODY_POOL_NOT_FOUND);
+
+    foeRigidBody componentData;
+    foeResultSet result =
+        binary_read_foeRigidBody(pReadBuffer, pReadSize, groupTranslator, &componentData);
+    if (result.value == FOE_SUCCESS)
+        pComponentPool->insert(entity, std::move(componentData));
 
     return result;
 }

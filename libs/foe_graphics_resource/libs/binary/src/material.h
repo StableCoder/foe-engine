@@ -6,6 +6,7 @@
 #define MATERIAL_H
 
 #include <foe/imex/binary/exporter.h>
+#include <foe/imex/binary/importer.h>
 #include <foe/result.h>
 
 #ifdef __cplusplus
@@ -15,6 +16,15 @@ extern "C" {
 foeResultSet export_foeMaterialCreateInfo(foeResourceCreateInfo createInfo,
                                           foeImexBinarySet *pBinarySet,
                                           foeImexBinaryFiles *pFiles);
+
+foeResultSet import_foeMaterialCreateInfo(void const *pReadBuffer,
+                                          uint32_t *pReadSize,
+                                          foeEcsGroupTranslator groupTranslator,
+                                          foeResourceCreateInfo *pResourceCI);
+
+foeResultSet create_foeMaterialCreateInfo(foeResourceID resource,
+                                          foeResourceCreateInfo resourceCI,
+                                          foeSimulation const *pSimulation);
 
 #ifdef __cplusplus
 }

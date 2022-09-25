@@ -2,5 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe_position_binary PRIVATE export_registration.c
-                                           position_3d.cpp result.c)
+target_sources(
+  foe_position_binary PRIVATE export_registration.c import_registration.c
+                              position_3d.cpp result.c)

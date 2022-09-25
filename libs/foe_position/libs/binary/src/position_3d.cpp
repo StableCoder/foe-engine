@@ -10,9 +10,9 @@
 
 #include "result.h"
 
-foeResultSet export_foePosition3D(foeEntityID entity,
-                                  foeSimulation const *pSimulation,
-                                  foeImexBinarySet *pBinarySets) {
+extern "C" foeResultSet export_foePosition3D(foeEntityID entity,
+                                             foeSimulation const *pSimulation,
+                                             foeImexBinarySet *pBinarySets) {
     foeResultSet result = to_foeResult(FOE_POSITION_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
@@ -42,6 +42,24 @@ EXPORT_FAILED:
         free(set.pData);
     if (result.value == FOE_SUCCESS)
         *pBinarySets = set;
+
+    return result;
+}
+
+extern "C" foeResultSet import_foePosition3D(void const *pReadBuffer,
+                                             uint32_t *pReadSize,
+                                             foeEcsGroupTranslator groupTranslator,
+                                             foeEntityID entity,
+                                             foeSimulation const *pSimulation) {
+    auto *pComponentPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+        pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+    if (pComponentPool == nullptr)
+        return to_foeResult(FOE_POSITION_BINARY_ERROR_POSITION_3D_POOL_NOT_FOUND);
+
+    std::unique_ptr<foePosition3d> pComponentData(new foePosition3d);
+    foeResultSet result = binary_read_foePosition3d(pReadBuffer, pReadSize, pComponentData.get());
+    if (result.value == FOE_SUCCESS)
+        pComponentPool->insert(entity, std::move(pComponentData));
 
     return result;
 }

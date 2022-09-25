@@ -7,17 +7,21 @@
 #include <foe/plugin.h>
 
 #include <foe/graphics/resource/binary/export_registration.h>
+#include <foe/graphics/resource/binary/import_registration.h>
 #include <foe/graphics/resource/registration.h>
 #include <foe/graphics/resource/yaml/export_registration.h>
 #include <foe/graphics/resource/yaml/import_registration.h>
 #include <foe/imex/binary/exporter.h>
+#include <foe/imex/binary/importer.h>
 #include <foe/imex/yaml/exporter_registration.h>
 #include <foe/imex/yaml/importer_registration.h>
 #include <foe/physics/binary/export_registration.h>
+#include <foe/physics/binary/import_registration.h>
 #include <foe/physics/registration.h>
 #include <foe/physics/yaml/export_registration.h>
 #include <foe/physics/yaml/import_registration.h>
 #include <foe/position/binary/export_registration.h>
+#include <foe/position/binary/import_registration.h>
 #include <foe/position/registration.h>
 #include <foe/position/yaml/export_registration.h>
 #include <foe/position/yaml/import_registration.h>
@@ -25,6 +29,7 @@
 
 #include "result.h"
 #include "simulation/binary/export_registration.h"
+#include "simulation/binary/import_registration.h"
 #include "simulation/registration.h"
 #include "simulation/yaml/export_registration.h"
 #include "simulation/yaml/import_registration.h"
@@ -53,18 +58,28 @@ PFN_PluginInitCall pluginInitCalls[] = {
     foeBringupYamlRegisterImporters,
     // Binary Plugins
     foeImexBinaryRegisterExporter,
+    foeImexBinaryRegisterImporter,
     foePhysicsBinaryRegisterExporters,
+    foePhysicsBinaryRegisterImporters,
     foePositionBinaryRegisterExporters,
+    foePositionBinaryRegisterImporters,
     foeGraphicsResourceBinaryRegisterExporters,
+    foeGraphicsResourceBinaryRegisterImporters,
     foeBringupBinaryRegisterExporters,
+    foeBringupBinaryRegisterImporters,
 };
 
 PFN_PluginDeinitCall pluginDeinitCalls[] = {
     // Binary Plugins
+    foeImexBinaryDeregisterImporter,
     foeImexBinaryDeregisterExporter,
+    foePhysicsBinaryDeregisterImporters,
     foePhysicsBinaryDeregisterExporters,
+    foePositionBinaryDeregisterImporters,
     foePositionBinaryDeregisterExporters,
+    foeGraphicsResourceBinaryDeregisterImporters,
     foeGraphicsResourceBinaryDeregisterExporters,
+    foeBringupBinaryDeregisterImporters,
     foeBringupBinaryDeregisterExporters,
     // Yaml Plugins
     foeImexYamlDeregisterImporter,

@@ -58,52 +58,31 @@ std::array<ImExPlugin, 10> pluginList{
     // Binary
     ImExPlugin{
         .path = IMEX_BINARY_PLUGIN,
-        .initFn = {"foeImexBinaryRegisterExporter" /*, "foeImexBinaryRegisterImporter"*/},
-        .deinitFn = {/*"foeImexBinaryDeregisterImporter",*/ "foeImexBinaryDeregisterExporter"},
+        .initFn = {"foeImexBinaryRegisterExporter", "foeImexBinaryRegisterImporter"},
+        .deinitFn = {"foeImexBinaryDeregisterImporter", "foeImexBinaryDeregisterExporter"},
     },
     ImExPlugin{
         .path = GRAPHICS_RESOURCE_BINARY_PLUGIN,
-        .initFn =
-            {
-                "foeGraphicsResourceBinaryRegisterExporters",
-                //"foeGraphicsResourceBinaryRegisterImporters"
-            },
-        .deinitFn =
-            {//"foeGraphicsResourceBinaryDeregisterImporters",
-             "foeGraphicsResourceBinaryDeregisterExporters"},
+        .initFn = {"foeGraphicsResourceBinaryRegisterExporters",
+                   "foeGraphicsResourceBinaryRegisterImporters"},
+        .deinitFn = {"foeGraphicsResourceBinaryDeregisterImporters",
+                     "foeGraphicsResourceBinaryDeregisterExporters"},
     },
     ImExPlugin{
         .path = PHYSICS_BINARY_PLUGIN,
-        .initFn =
-            {
-                "foePhysicsBinaryRegisterExporters",
-                //"foePhysicsBinaryRegisterImporters"
-            },
-        .deinitFn =
-            {//"foePhysicsBinaryDeregisterImporters",
-             "foePhysicsBinaryDeregisterExporters"},
+        .initFn = {"foePhysicsBinaryRegisterExporters", "foePhysicsBinaryRegisterImporters"},
+        .deinitFn = {"foePhysicsBinaryDeregisterImporters", "foePhysicsBinaryDeregisterExporters"},
     },
     ImExPlugin{
         .path = POSITION_BINARY_PLUGIN,
-        .initFn =
-            {
-                "foePositionBinaryRegisterExporters",
-                //"foePositionBinaryRegisterImporters"
-            },
-        .deinitFn =
-            {//"foePositionBinaryDeregisterImporters",
-             "foePositionBinaryDeregisterExporters"},
+        .initFn = {"foePositionBinaryRegisterExporters", "foePositionBinaryRegisterImporters"},
+        .deinitFn = {"foePositionBinaryDeregisterImporters",
+                     "foePositionBinaryDeregisterExporters"},
     },
     ImExPlugin{
         .path = BRINGUP_BINARY_PLUGIN,
-        .initFn =
-            {
-                "foeBringupBinaryRegisterExporters",
-                //"foeBringupBinaryRegisterImporters"
-            },
-        .deinitFn =
-            {//"foeBringupBinaryDeregisterImporters",
-             "foeBringupBinaryDeregisterExporters"},
+        .initFn = {"foeBringupBinaryRegisterExporters", "foeBringupBinaryRegisterImporters"},
+        .deinitFn = {"foeBringupBinaryDeregisterImporters", "foeBringupBinaryDeregisterExporters"},
     },
 };
 

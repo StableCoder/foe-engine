@@ -95,10 +95,14 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 void destroy(foeImexImporter importer) {
     foeYamlImporter *pImporter = importer_from_handle(importer);
 
+    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Destroying ({})", (void *)pImporter,
+            pImporter->mName.c_str());
+
     if (pImporter->mGroupTranslator != FOE_NULL_HANDLE)
         foeEcsDestroyGroupTranslator(pImporter->mGroupTranslator);
 
     delete pImporter;
+    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Destroyed", (void *)pImporter);
 }
 
 foeResultSet getGroupID(foeImexImporter importer, foeIdGroup *pGroupID) {
@@ -625,7 +629,7 @@ foeResultSet foeCreateYamlImporter(foeIdGroup group,
 
     *pImporter = importer_to_handle(pNewImporter);
 
-    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Created ()", (void *)pNewImporter,
+    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Created ({})", (void *)pNewImporter,
             pNewImporter->mName.c_str())
 
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);

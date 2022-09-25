@@ -6,6 +6,7 @@
 #define COLLISION_SHAPE_CREATE_INFO_H
 
 #include <foe/imex/binary/exporter.h>
+#include <foe/imex/binary/importer.h>
 #include <foe/result.h>
 
 #ifdef __cplusplus
@@ -15,6 +16,15 @@ extern "C" {
 foeResultSet export_foeCollisionShapeCreateInfo(foeResourceCreateInfo createInfo,
                                                 foeImexBinarySet *pBinarySet,
                                                 foeImexBinaryFiles *pFiles);
+
+foeResultSet import_foeCollisionShapeCreateInfo(void const *pReadBuffer,
+                                                uint32_t *pReadSize,
+                                                foeEcsGroupTranslator groupTranslator,
+                                                foeResourceCreateInfo *pResourceCI);
+
+foeResultSet create_foeCollisionShapeCreateInfo(foeResourceID resource,
+                                                foeResourceCreateInfo resourceCI,
+                                                foeSimulation const *pSimulation);
 
 #ifdef __cplusplus
 }

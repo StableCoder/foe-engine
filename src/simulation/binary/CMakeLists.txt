@@ -4,7 +4,13 @@
 
 target_sources(
   foe_bringup_binary
-  PRIVATE armature_create_info.c armature_state.cpp camera.cpp
-          export_registration.c render_state.cpp result.c)
+  PRIVATE armature_create_info.c
+          armature_create_info.cpp
+          armature_state.cpp
+          camera.cpp
+          export_registration.c
+          import_registration.c
+          render_state.cpp
+          result.c)
 
 target_link_libraries(foe_bringup_binary PRIVATE foe_model foe_position)

@@ -3,4 +3,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/graphics/resource/binary/export_registration.h>
+#include <foe/graphics/resource/binary/import_registration.h>
 #include <foe/graphics/resource/binary/result.h>

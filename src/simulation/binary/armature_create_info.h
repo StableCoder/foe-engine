@@ -6,6 +6,7 @@
 #define SIMULATION_BINARY_ARMATURE_CREATE_INFO_H
 
 #include <foe/imex/binary/exporter.h>
+#include <foe/imex/binary/importer.h>
 #include <foe/result.h>
 
 #ifdef __cplusplus
@@ -15,6 +16,15 @@ extern "C" {
 foeResultSet export_foeArmatureCreateInfo(foeResourceCreateInfo createInfo,
                                           foeImexBinarySet *pBinarySet,
                                           foeImexBinaryFiles *pFiles);
+
+foeResultSet import_foeArmatureCreateInfo(void const *pReadBuffer,
+                                          uint32_t *pReadSize,
+                                          foeEcsGroupTranslator groupTranslator,
+                                          foeResourceCreateInfo *pResourceCI);
+
+foeResultSet create_foeArmatureCreateInfo(foeResourceID resource,
+                                          foeResourceCreateInfo resourceCI,
+                                          foeSimulation const *pSimulation);
 
 #ifdef __cplusplus
 }

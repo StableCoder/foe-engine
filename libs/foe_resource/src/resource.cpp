@@ -239,7 +239,8 @@ void postLoadFn(
         // Loading didn't go well
 
         // Since we're not going to be using it, decrement which may destroy it
-        foeResourceCreateInfoDecrementRefCount(createInfo);
+        if (createInfo != FOE_NULL_HANDLE)
+            foeResourceCreateInfoDecrementRefCount(createInfo);
 
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         loadResult.toString(loadResult.value, buffer);

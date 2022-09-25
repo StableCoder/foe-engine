@@ -46,3 +46,22 @@ COMPONENT_EXPORT_FAILED:
 
     return result;
 }
+
+extern "C" foeResultSet import_foeArmatureState(void const *pReadBuffer,
+                                                uint32_t *pReadSize,
+                                                foeEcsGroupTranslator groupTranslator,
+                                                foeEntityID entity,
+                                                foeSimulation const *pSimulation) {
+    auto *pComponentPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+    if (pComponentPool == nullptr)
+        return to_foeResult(FOE_BRINGUP_BINARY_ERROR_ARMATURE_STATE_POOL_NOT_FOUND);
+
+    foeArmatureState componentData;
+    foeResultSet result =
+        binary_read_foeArmatureState(pReadBuffer, pReadSize, groupTranslator, &componentData);
+    if (result.value == FOE_SUCCESS)
+        pComponentPool->insert(entity, std::move(componentData));
+
+    return result;
+}
