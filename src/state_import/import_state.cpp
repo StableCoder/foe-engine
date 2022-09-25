@@ -509,6 +509,12 @@ foeResultSet importState(std::string_view topLevelDataSet,
     if (result.value != FOE_SUCCESS)
         return result;
 
+    for (auto &it : pSimulationSet->componentPools) {
+        if (it.pMaintenanceFn) {
+            it.pMaintenanceFn(it.pComponentPool);
+        }
+    }
+
     // Successfully returning
     *ppSimulationSet = pSimulationSet.release();
     return to_foeResult(FOE_STATE_IMPORT_SUCCESS);
