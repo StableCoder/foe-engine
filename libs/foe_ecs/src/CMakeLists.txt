@@ -2,5 +2,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe_ecs PRIVATE group_translator.cpp id_to_string.cpp
-                               indexes.cpp log.cpp name_map.cpp result.c)
+target_sources(
+  foe_ecs
+  PRIVATE binary.c
+          group_translator.cpp
+          id_to_string.cpp
+          indexes.cpp
+          log.cpp
+          name_map.cpp
+          result.c)
