@@ -13,6 +13,7 @@
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/result.h>
+#include <foe/search_paths.hpp>
 #include <foe/split_thread_pool.h>
 #include <foe/xr/runtime.h>
 
@@ -69,6 +70,7 @@ struct Application {
     Settings settings;
 
     foeSplitThreadPool threadPool{FOE_NULL_HANDLE};
+    foeSearchPaths searchPaths;
 
     // Groups/Entities
     foeId cameraID = FOE_INVALID_ID;

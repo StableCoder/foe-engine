@@ -34,7 +34,6 @@
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/resource/pool.h>
-#include <foe/search_paths.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
@@ -116,8 +115,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         FOE_LOG(General, Fatal, "Error registering basic functionality: {}", buffer)
         return std::make_tuple(false, result.value);
     }
-
-    foeSearchPaths searchPaths;
 
     auto [continueRun, retVal] = loadSettings(argc, argv, settings, searchPaths);
     if (!continueRun) {
