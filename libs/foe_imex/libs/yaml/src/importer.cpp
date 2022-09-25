@@ -305,105 +305,6 @@ foeResultSet importStateData(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }
 
-foeResultSet importResourceDefinitions(foeImexImporter importer,
-                                       foeEcsNameMap nameMap,
-                                       foeSimulation const *pSimulation) {
-    foeYamlImporter *pImporter = importer_from_handle(importer);
-
-    if (!std::filesystem::exists(pImporter->mRootDir / resourceDirectoryPath))
-        return to_foeResult(FOE_IMEX_YAML_ERROR_RESOURCE_DIRECTORY_NOT_EXIST);
-
-    for (auto &dirIt : std::filesystem::recursive_directory_iterator{pImporter->mRootDir /
-                                                                     resourceDirectoryPath}) {
-        if (std::filesystem::is_directory(dirIt))
-            continue;
-
-        if (!std::filesystem::is_regular_file(dirIt)) {
-            FOE_LOG(foeImexYaml, Warning,
-                    "Resource file '{}' not a directory or regular file! Possible corruption!",
-                    dirIt.path().string())
-            return to_foeResult(FOE_IMEX_YAML_ERROR_RESOURCE_FILE_NOT_FILE);
-        }
-
-        // Is a regular file continue...
-        YAML::Node node;
-        if (!openYamlFile(dirIt, node))
-            return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_OPEN_RESOURCE_FILE);
-
-        foeId resource;
-
-        try {
-            // ID
-            if (!yaml_read_foeResourceID("", node, pImporter->mGroupTranslator, resource)) {
-                FOE_LOG(foeImexYaml, Error,
-                        "Failed to read foeResourceID for resource data in file: {}",
-                        dirIt.path().string())
-                std::abort();
-            }
-            // Editor Name
-            if (nameMap != FOE_NULL_HANDLE) {
-                std::string editorName;
-                yaml_read_string("editor_name", node, editorName);
-
-                if (!editorName.empty()) {
-                    foeEcsNameMapAdd(nameMap, resource, editorName.c_str());
-                }
-            }
-
-            // Resource Type
-            bool processed = false;
-            auto lock = sharedLockImportFunctionality();
-            auto const &resourceFnMap = getResourceFns();
-            for (auto const &it : node) {
-                std::string key = it.first.as<std::string>();
-                if (key == "index_id" || key == "group_id" || key == "editor_name")
-                    continue;
-
-                auto searchIt = resourceFnMap.find(key);
-                if (searchIt != resourceFnMap.end()) {
-                    foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
-                    searchIt->second.pImport(node, pImporter->mGroupTranslator, &createInfo);
-
-                    if (searchIt->second.pCreate != nullptr) {
-                        foeResultSet result =
-                            searchIt->second.pCreate(resource, createInfo, pSimulation);
-                        if (result.value != FOE_SUCCESS) {
-                            return result;
-                        }
-                    }
-
-                    foeResourceCreateInfoDecrementRefCount(createInfo);
-                    processed = true;
-                    break;
-                } else {
-                    FOE_LOG(foeImexYaml, Error,
-                            "Failed to find importer for '{}' resource key for {} resource ({})",
-                            key, foeIdToString(resource), dirIt.path().string())
-                    return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_FIND_RESOURCE_IMPORTER);
-                }
-            }
-
-            if (!processed) {
-                FOE_LOG(foeImexYaml, Error, "Failed to generate resource for {} resource ({})",
-                        foeIdToString(resource), dirIt.path().string())
-                return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_IMPORT_RESOURCE);
-            }
-        } catch (foeYamlException const &e) {
-            FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
-            return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_IMPORT_RESOURCE);
-        } catch (std::exception const &e) {
-            FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
-            return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_IMPORT_RESOURCE);
-        } catch (...) {
-            FOE_LOG(foeImexYaml, Error,
-                    "Failed to import resource definition with unknown exception");
-            return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_IMPORT_RESOURCE);
-        }
-    }
-
-    return to_foeResult(FOE_IMEX_YAML_SUCCESS);
-}
-
 foeResultSet getResourceEditorName(foeImexImporter importer,
                                    foeIdIndex resourceIndexID,
                                    uint32_t *pNameLength,
@@ -565,7 +466,6 @@ foeImexImporterCalls cImporterCalls{
     .getGroupEntityIndexData = getGroupEntityIndexData,
     .getGroupResourceIndexData = getGroupResourceIndexData,
     .importStateData = importStateData,
-    .importResourceDefinitions = importResourceDefinitions,
     .getResourceEditorName = getResourceEditorName,
     .getResourceCreateInfo = getResourceCreateInfo,
     .findExternalFile = findExternalFile,

@@ -143,23 +143,6 @@ foeResultSet foeImexImporterGetStateData(foeImexImporter importer,
     return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 }
 
-foeResultSet foeImexImporterGetResourceDefinitions(foeImexImporter importer,
-                                                   foeEcsNameMap resourceNameMap,
-                                                   struct foeSimulation const *pSimulation) {
-    foeImexImporterCalls const *pBaseFns =
-        findStruct(importer_from_handle(importer), FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS);
-
-    if (pBaseFns != NULL) {
-        if (pBaseFns->importResourceDefinitions != NULL) {
-            return pBaseFns->importResourceDefinitions(importer, resourceNameMap, pSimulation);
-        } else {
-            return to_foeResult(FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
-        }
-    }
-
-    return to_foeResult(FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
-}
-
 foeResultSet foeImexImporterGetResourceEditorName(foeImexImporter importer,
                                                   foeResourceID resourceID,
                                                   uint32_t *pNameLength,

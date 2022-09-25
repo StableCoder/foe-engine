@@ -39,9 +39,6 @@ typedef struct foeImexImporterCalls {
     foeResultSet (*getGroupResourceIndexData)(foeImexImporter, foeEcsIndexes);
     foeResultSet (*importStateData)(foeImexImporter, foeEcsNameMap, struct foeSimulation const *);
 
-    foeResultSet (*importResourceDefinitions)(foeImexImporter,
-                                              foeEcsNameMap,
-                                              struct foeSimulation const *);
     foeResultSet (*getResourceEditorName)(foeImexImporter, foeResourceID, uint32_t *, char *);
     foeResultSet (*getResourceCreateInfo)(foeImexImporter, foeResourceID, foeResourceCreateInfo *);
     foeResultSet (*findExternalFile)(foeImexImporter, char const *, foeManagedMemory *);
@@ -73,11 +70,6 @@ FOE_IMEX_EXPORT foeResultSet foeImexImporterGetGroupResourceIndexData(foeImexImp
 FOE_IMEX_EXPORT foeResultSet foeImexImporterGetStateData(foeImexImporter importer,
                                                          foeEcsNameMap entityNameMap,
                                                          struct foeSimulation const *pSimulation);
-
-FOE_IMEX_EXPORT foeResultSet
-foeImexImporterGetResourceDefinitions(foeImexImporter importer,
-                                      foeEcsNameMap resourceNameMap,
-                                      struct foeSimulation const *pSimulation);
 
 FOE_IMEX_EXPORT foeResultSet foeImexImporterGetResourceEditorName(foeImexImporter importer,
                                                                   foeResourceID resourceID,

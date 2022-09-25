@@ -32,9 +32,6 @@ TEST_CASE("foeImexImporter - When importer calls struct not available") {
     CHECK(foeImexImporterGetStateData(emptyImporter, FOE_NULL_HANDLE, nullptr).value ==
           FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 
-    CHECK(foeImexImporterGetResourceDefinitions(emptyImporter, FOE_NULL_HANDLE, nullptr).value ==
-          FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
-
     CHECK(foeImexImporterGetResourceEditorName(emptyImporter, FOE_INVALID_ID, nullptr, nullptr)
               .value == FOE_IMEX_ERROR_STRUCTURE_NOT_FOUND);
 
@@ -69,9 +66,6 @@ TEST_CASE("foeImexImporter - When importer calls struct available but no functio
           FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
 
     CHECK(foeImexImporterGetStateData(emptyImporter, FOE_NULL_HANDLE, nullptr).value ==
-          FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
-
-    CHECK(foeImexImporterGetResourceDefinitions(emptyImporter, FOE_NULL_HANDLE, nullptr).value ==
           FOE_IMEX_ERROR_FUNCTION_NOT_DEFINED);
 
     CHECK(foeImexImporterGetResourceEditorName(emptyImporter, FOE_INVALID_ID, nullptr, nullptr)
