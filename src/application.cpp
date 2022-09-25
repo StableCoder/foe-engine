@@ -28,6 +28,7 @@
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.h>
 #include <foe/graphics/vk/session.h>
+#include <foe/imex/exporters.h>
 #include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>
@@ -849,10 +850,36 @@ int Application::mainloop() {
 
         // Timed test items
         static auto nextFireTime =
-            programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(10);
+            programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(1);
         if (programClock.currentTime<std::chrono::seconds>() > nextFireTime) {
             nextFireTime =
-                programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(10);
+                programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(6);
+
+            if constexpr (false) {
+                // Import the desired content
+                foeSimulation *tempSimulation = nullptr;
+                result = importState("theDataA", &searchPaths, &tempSimulation);
+                if (result.value != FOE_SUCCESS)
+                    std::abort();
+
+                for (auto &it : tempSimulation->componentPools) {
+                    if (it.pMaintenanceFn) {
+                        it.pMaintenanceFn(it.pComponentPool);
+                    }
+                }
+
+                // Export the content
+                uint32_t numExporters;
+                foeImexGetExporters(&numExporters, nullptr);
+                std::unique_ptr<foeExporter[]> exporters(new foeExporter[numExporters]);
+                foeImexGetExporters(&numExporters, exporters.get());
+
+                result = exporters[1].pExportFn("test-save", tempSimulation);
+                if (result.value != FOE_SUCCESS)
+                    std::abort();
+
+                foeDestroySimulation(tempSimulation);
+            }
 
 #ifdef FOE_XR_SUPPORT
             if constexpr (false) {
