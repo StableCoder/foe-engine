@@ -70,13 +70,13 @@ typedef foeId foeEntityID;
 /// Shifted enum representing the 'Temporary' ID group
 #define foeIdTemporaryGroup (foeIdTemporaryGroupValue << foeIdGroupBitShift)
 
-inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdGroupBits); }
+static inline foeIdGroup foeIdGetGroup(foeId id) { return (id & foeIdGroupBits); }
 
-inline foeIdGroup foeIdValueToGroup(foeIdGroupValue groupValue) {
+static inline foeIdGroup foeIdValueToGroup(foeIdGroupValue groupValue) {
     return (foeIdGroup)groupValue << foeIdGroupBitShift;
 }
 
-inline foeIdGroupValue foeIdGroupToValue(foeId id) {
+static inline foeIdGroupValue foeIdGroupToValue(foeId id) {
     return foeIdGetGroup(id) >> foeIdGroupBitShift;
 }
 
@@ -95,9 +95,9 @@ inline foeIdGroupValue foeIdGroupToValue(foeId id) {
 /// Maximum IdIndex
 #define foeIdIndexMax (foeIdIndexMaxValue << foeIdIndexBitShift)
 
-inline foeIdIndex foeIdGetIndex(foeId id) { return (id & foeIdIndexBits); }
+static inline foeIdIndex foeIdGetIndex(foeId id) { return (id & foeIdIndexBits); }
 
-inline foeIdIndex foeIdValueToIndex(foeIdIndexValue indexValue) {
+static inline foeIdIndex foeIdValueToIndex(foeIdIndexValue indexValue) {
     return (foeIdIndex)indexValue << foeIdIndexBitShift;
 }
 
