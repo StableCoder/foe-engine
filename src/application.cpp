@@ -847,22 +847,29 @@ int Application::mainloop() {
         simulationClock.update(programClock.currentTime<std::chrono::nanoseconds>());
         double timeElapsedInSec = simulationClock.elapsed().count() * 0.000000001f;
 
-#ifdef FOE_XR_SUPPORT
-        /*
+        // Timed test items
         static auto nextFireTime =
             programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(10);
         if (programClock.currentTime<std::chrono::seconds>() > nextFireTime) {
             nextFireTime =
                 programClock.currentTime<std::chrono::seconds>() + std::chrono::seconds(10);
 
-            if (xrSession.session == XR_NULL_HANDLE) {
-                foeScheduleAsyncTask(threadPool, [&]() { startXR(false); });
-            } else {
-                foeScheduleAsyncTask(threadPool, [&]() { stopXR(false); });
+#ifdef FOE_XR_SUPPORT
+            if constexpr (false) {
+                if (xrSession.session == XR_NULL_HANDLE) {
+                    foeScheduleAsyncTask(
+                        threadPool,
+                        [](void *pApplication) { ((Application *)pApplication)->startXR(false); },
+                        this);
+                } else {
+                    foeScheduleAsyncTask(
+                        threadPool,
+                        [](void *pApplication) { ((Application *)pApplication)->stopXR(false); },
+                        this);
+                }
             }
+#endif // FOE_XR_SUPPORT
         }
-        */
-#endif
 
         // Component Pool Maintenance
         for (auto &it : pSimulationSet->componentPools) {
