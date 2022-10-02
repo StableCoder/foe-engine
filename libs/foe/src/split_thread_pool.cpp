@@ -4,6 +4,8 @@
 
 #include <foe/split_thread_pool.h>
 
+#include "result.h"
+
 #include <atomic>
 #include <condition_variable>
 #include <queue>
@@ -33,15 +35,6 @@ struct TaskGroupData {
     /// Number of tasks running/processing
     std::atomic_uint runningCount;
 };
-
-inline foeResultSet to_foeResult(foeSplitThreadResult value) {
-    foeResultSet result = {
-        .value = value,
-        .toString = (PFN_foeResultToString)foeSplitThreadResultToString,
-    };
-
-    return result;
-}
 
 void scheduleTask(TaskGroupData &taskGroup, PFN_foeTask task, void *pTaskContext) {
     taskGroup.sync.lock();
@@ -172,11 +165,10 @@ foeResultSet foeCreateThreadPool(uint32_t syncThreads,
                                  uint32_t asyncThreads,
                                  foeSplitThreadPool *pPool) {
     if (syncThreads == 0)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_ZERO_SYNC_THREADS);
+        return to_foeResult(FOE_ERROR_ZERO_SYNC_THREADS);
     if (asyncThreads == 0)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_ZERO_ASYNC_THREADS);
+        return to_foeResult(FOE_ERROR_ZERO_ASYNC_THREADS);
 
-    foeSplitThreadResult result = FOE_THREAD_POOL_SUCCESS;
     SplitThreadPoolImpl *pNewPool = new (std::nothrow) SplitThreadPoolImpl{
         .syncTasks =
             {
@@ -188,23 +180,25 @@ foeResultSet foeCreateThreadPool(uint32_t syncThreads,
             },
     };
     if (pNewPool == nullptr)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_OUT_OF_MEMORY);
+        return to_foeResult(FOE_ERROR_OUT_OF_MEMORY);
+
+    foeResultSet result = to_foeResult(FOE_SUCCESS);
 
     pNewPool->threads =
         static_cast<std::thread *>(malloc(sizeof(std::thread) * (syncThreads + asyncThreads)));
     if (pNewPool->threads == nullptr) {
-        result = FOE_THREAD_POOL_ERROR_ALLOCATION_FAILED;
+        result = to_foeResult(FOE_ERROR_OUT_OF_MEMORY);
         goto CREATE_FAILED;
     }
 
 CREATE_FAILED:
-    if (result != FOE_THREAD_POOL_SUCCESS) {
+    if (result.value != FOE_SUCCESS) {
         delete pNewPool;
     } else {
         *pPool = split_thread_pool_to_handle(pNewPool);
     }
 
-    return to_foeResult(result);
+    return result;
 }
 
 void foeDestroyThreadPool(foeSplitThreadPool pool) {
@@ -222,7 +216,7 @@ foeResultSet foeStartThreadPool(foeSplitThreadPool pool) {
     // Check not already running
     bool expected = false;
     if (!pPool->started.compare_exchange_strong(expected, true))
-        return to_foeResult(FOE_THREAD_POOL_ERROR_ALREADY_STARTED);
+        return to_foeResult(FOE_ERROR_ALREADY_STARTED);
 
     // Start sync threads
     for (uint32_t i = 0; i < pPool->syncTasks.threadCount; ++i) {
@@ -236,7 +230,7 @@ foeResultSet foeStartThreadPool(foeSplitThreadPool pool) {
         new (pPool->threads + pPool->syncTasks.threadCount + i) std::thread(asyncTaskRunner, pPool);
     }
 
-    return to_foeResult(FOE_THREAD_POOL_SUCCESS);
+    return to_foeResult(FOE_SUCCESS);
 }
 
 foeResultSet foeStopThreadPool(foeSplitThreadPool pool) {
@@ -244,7 +238,7 @@ foeResultSet foeStopThreadPool(foeSplitThreadPool pool) {
 
     bool expected = true;
     if (!pPool->started.compare_exchange_strong(expected, true))
-        return to_foeResult(FOE_THREAD_POOL_ERROR_NOT_STARTED);
+        return to_foeResult(FOE_ERROR_NOT_STARTED);
 
     pPool->terminate = true;
 
@@ -262,7 +256,7 @@ foeResultSet foeStopThreadPool(foeSplitThreadPool pool) {
     pPool->terminate = false;
     pPool->started = false;
 
-    return to_foeResult(FOE_THREAD_POOL_SUCCESS);
+    return to_foeResult(FOE_SUCCESS);
 }
 
 uint32_t foeNumSyncThreads(foeSplitThreadPool pool) {
@@ -305,58 +299,58 @@ foeResultSet foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_NOT_STARTED);
+        return to_foeResult(FOE_ERROR_NOT_STARTED);
 
     scheduleTask(pPool->syncTasks, task, pTaskContext);
     pPool->asyncTasks.available.notify_one();
 
-    return to_foeResult(FOE_THREAD_POOL_SUCCESS);
+    return to_foeResult(FOE_SUCCESS);
 }
 
 foeResultSet foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_NOT_STARTED);
+        return to_foeResult(FOE_ERROR_NOT_STARTED);
 
     scheduleTask(pPool->asyncTasks, task, pTaskContext);
 
-    return to_foeResult(FOE_THREAD_POOL_SUCCESS);
+    return to_foeResult(FOE_SUCCESS);
 }
 
 foeResultSet foeWaitSyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_NOT_STARTED);
+        return to_foeResult(FOE_ERROR_NOT_STARTED);
 
     while (pPool->syncTasks.queuedCount > 0 || pPool->syncTasks.runningCount > 0)
         std::this_thread::yield();
 
-    return to_foeResult(FOE_THREAD_POOL_SUCCESS);
+    return to_foeResult(FOE_SUCCESS);
 }
 
 foeResultSet foeWaitAsyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_NOT_STARTED);
+        return to_foeResult(FOE_ERROR_NOT_STARTED);
 
     while (pPool->asyncTasks.queuedCount > 0 || pPool->asyncTasks.runningCount > 0)
         std::this_thread::yield();
 
-    return to_foeResult(FOE_THREAD_POOL_SUCCESS);
+    return to_foeResult(FOE_SUCCESS);
 }
 
 foeResultSet foeWaitAllThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     if (!pPool->started)
-        return to_foeResult(FOE_THREAD_POOL_ERROR_NOT_STARTED);
+        return to_foeResult(FOE_ERROR_NOT_STARTED);
 
     while (pPool->syncTasks.queuedCount > 0 || pPool->syncTasks.runningCount > 0 ||
            pPool->asyncTasks.queuedCount > 0 || pPool->asyncTasks.runningCount > 0)
         std::this_thread::yield();
 
-    return to_foeResult(FOE_THREAD_POOL_SUCCESS);
+    return to_foeResult(FOE_SUCCESS);
 }

@@ -18,7 +18,6 @@ target_sources(
           search_paths_writer.cpp
           search_paths.cpp
           split_thread_pool.cpp
-          thread_pool_result.c
           thread_pool.cpp)
 
 if(WIN32)
