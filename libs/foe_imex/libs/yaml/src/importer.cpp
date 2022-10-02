@@ -9,6 +9,7 @@
 #include <foe/ecs/yaml/id.hpp>
 #include <foe/ecs/yaml/indexes.hpp>
 #include <foe/imex/type_defs.h>
+#include <foe/imex/yaml/type_defs.h>
 #include <foe/memory_mapped_file.h>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/pod.hpp>
@@ -518,7 +519,7 @@ foeResultSet foeCreateYamlImporter(foeIdGroup group,
 
     // If here, then we're clear to create the importer
     foeYamlImporter *pNewImporter = new (std::nothrow) foeYamlImporter{
-        .sType = FOE_NULL_HANDLE,
+        .sType = FOE_IMEX_YAML_STRUCTURE_TYPE_IMPORTER,
         .pNext = &cImporterCalls,
         .mRootDir = pRootDir,
         .mGroup = group,

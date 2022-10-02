@@ -5,6 +5,7 @@
 #include <foe/imex/binary/importer.h>
 
 #include <foe/ecs/binary.h>
+#include <foe/imex/binary/type_defs.h>
 #include <foe/imex/type_defs.h>
 #include <foe/memory_mapped_file.h>
 
@@ -532,7 +533,7 @@ extern "C" foeResultSet foeCreateBinaryImporter(foeIdGroup group,
 
     new (pNewImporter) foeBinaryImporter;
     *pNewImporter = foeBinaryImporter{
-        .sType = FOE_NULL_HANDLE,
+        .sType = FOE_IMEX_BINARY_STRUCTURE_TYPE_IMPORTER,
         .pNext = &cImporterCalls,
         .path = path,
         .name = path.stem().string(),
