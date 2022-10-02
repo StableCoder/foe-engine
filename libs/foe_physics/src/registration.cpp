@@ -371,7 +371,7 @@ size_t deinitialize(foeSimulation *pSimulation) {
 
 } // namespace
 
-int foePhysicsFunctionalityID() { return FOE_PHYSICS_FUNCTIONALITY_ID; }
+int foePhysicsFunctionalityID() { return FOE_PHYSICS_LIBRARY_ID; }
 
 extern "C" foeResultSet foePhysicsRegisterFunctionality() {
     FOE_LOG(foePhysics, Verbose,

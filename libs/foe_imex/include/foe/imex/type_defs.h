@@ -5,10 +5,8 @@
 #ifndef FOE_IMEX_TYPE_DEFS_H
 #define FOE_IMEX_TYPE_DEFS_H
 
-#include <foe/type_defs.h>
-
 typedef enum foeImexStructureType {
-    FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS = FOE_PLUGIN_ID(1),
+    FOE_IMEX_STRUCTURE_TYPE_IMPORTER_CALLS = 1000002000,
 } foeImexStructureType;
 
 #endif // FOE_IMEX_TYPE_DEFS_H

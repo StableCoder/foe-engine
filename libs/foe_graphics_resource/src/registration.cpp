@@ -652,7 +652,7 @@ size_t deinitializeGraphics(foeSimulation *pSimulation) {
 
 } // namespace
 
-int foeGraphicsResourceFunctionalityID() { return FOE_GRAPHICS_RESOURCE_FUNCTIONALITY_ID; }
+int foeGraphicsResourceFunctionalityID() { return FOE_GRAPHICS_RESOURCE_LIBRARY_ID; }
 
 extern "C" foeResultSet foeGraphicsResourceRegisterFunctionality() {
     FOE_LOG(foeGraphicsResource, Verbose,

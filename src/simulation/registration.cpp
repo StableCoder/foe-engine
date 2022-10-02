@@ -988,7 +988,7 @@ foeResultSet foeBringupRegisterFunctionality() {
             "foeBringupRegisterFunctionality - Starting to register functionality")
 
     foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
-        .id = FOE_BRINGUP_APP_FUNCTIONALITY_ID,
+        .id = 0,
         .pCreateFn = create,
         .pDestroyFn = destroy,
         .pInitializeFn = initialize,
@@ -1014,7 +1014,7 @@ void foeBringupDeregisterFunctionality() {
     FOE_LOG(foeBringup, Verbose,
             "foeBringupDeregisterFunctionality - Starting to deregister functionality")
 
-    foeDeregisterFunctionality(FOE_BRINGUP_APP_FUNCTIONALITY_ID);
+    foeDeregisterFunctionality(0);
 
     FOE_LOG(foeBringup, Verbose,
             "foeBringupDeregisterFunctionality - Completed deregistering functionality")

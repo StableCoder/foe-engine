@@ -88,7 +88,7 @@ size_t destroy(foeSimulation *pSimulation) {
 
 } // namespace
 
-int foePositionFunctionalityID() { return FOE_POSITION_FUNCTIONALITY_ID; }
+int foePositionFunctionalityID() { return FOE_POSITION_LIBRARY_ID; }
 
 extern "C" foeResultSet foePositionRegisterFunctionality() {
     FOE_LOG(foePosition, Verbose,

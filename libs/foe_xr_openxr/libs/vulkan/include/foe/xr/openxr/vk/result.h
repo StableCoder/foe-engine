@@ -14,8 +14,7 @@ extern "C" {
 
 typedef enum foeOpenXrVkResult {
     FOE_OPENXR_VK_SUCCESS = 0,
-
-    FOE_OPENXR_VK_ERROR_OUT_OF_MEMORY = -1,
+    FOE_OPENXR_VK_ERROR_OUT_OF_MEMORY = -1000013001,
 } foeOpenXrVkResult;
 
 FOE_XR_EXPORT void foeOpenXrVkResultToString(foeOpenXrVkResult value,

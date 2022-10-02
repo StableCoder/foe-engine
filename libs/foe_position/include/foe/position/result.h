@@ -14,7 +14,7 @@ extern "C" {
 
 typedef enum foePositionResult {
     FOE_POSITION_SUCCESS = 0,
-    FOE_POSITION_ERROR_OUT_OF_MEMORY = -1,
+    FOE_POSITION_ERROR_OUT_OF_MEMORY = -1000015001,
 } foePositionResult;
 
 FOE_POSITION_EXPORT void foePositionResultToString(foePositionResult value,

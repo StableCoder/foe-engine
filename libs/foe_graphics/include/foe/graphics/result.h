@@ -14,7 +14,7 @@ extern "C" {
 
 typedef enum foeGraphicsResult {
     FOE_GRAPHICS_SUCCESS = 0,
-    FOE_GRAPHICS_ERROR_OUT_OF_MEMORY = -1,
+    FOE_GRAPHICS_ERROR_OUT_OF_MEMORY = -1000008001,
 } foeGraphicsResult;
 
 FOE_GFX_EXPORT void foeGraphicsResultToString(foeGraphicsResult value,
