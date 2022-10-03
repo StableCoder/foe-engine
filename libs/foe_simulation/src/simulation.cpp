@@ -110,7 +110,7 @@ void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad 
 foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functionality) {
     std::scoped_lock lock{mSync};
 
-    if (functionality.id < 1000000000 || functionality.id % 1000 != 0) {
+    if (functionality.id != 0 && (functionality.id < 1000000000 || functionality.id % 1000 != 0)) {
         FOE_LOG(SimulationState, Warning,
                 "foeRegisterFunctionality - Attempted to register functionality with invalid ID");
         return to_foeResult(FOE_SIMULATION_ERROR_ID_INVALID);
