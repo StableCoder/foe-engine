@@ -2,13 +2,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_XR_OPENXR_RUNTIME_HPP
-#define FOE_XR_OPENXR_RUNTIME_HPP
+#ifndef FOE_XR_OPENXR_RUNTIME_H
+#define FOE_XR_OPENXR_RUNTIME_H
 
 #include <foe/result.h>
 #include <foe/xr/export.h>
 #include <foe/xr/runtime.h>
 #include <openxr/openxr.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 FOE_XR_EXPORT foeResultSet foeOpenXrCreateRuntime(char const *appName,
                                                   uint32_t appVersion,
@@ -70,8 +74,10 @@ FOE_XR_EXPORT foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime);
 
 FOE_XR_EXPORT foeResultSet foeXrProcessEvents(foeXrRuntime runtime);
 
-#include <openxr/openxr.h>
-
 FOE_XR_EXPORT XrInstance foeOpenXrGetInstance(foeXrRuntime runtime);
 
-#endif // FOE_XR_OPENXR_RUNTIME_HPP
+#ifdef __cplusplus
+}
+#endif
+
+#endif // FOE_XR_OPENXR_RUNTIME_H

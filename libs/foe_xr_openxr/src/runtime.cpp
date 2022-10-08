@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/xr/openxr/runtime.hpp>
+#include <foe/xr/openxr/runtime.h>
 
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>

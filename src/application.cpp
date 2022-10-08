@@ -54,7 +54,7 @@
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/core.hpp>
-#include <foe/xr/openxr/runtime.hpp>
+#include <foe/xr/openxr/runtime.h>
 #include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
 
 #include "xr.hpp"
