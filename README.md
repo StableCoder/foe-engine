@@ -1,7 +1,6 @@
 # FoE-Engine<!-- omit in toc -->
 
 [![pipeline status](https://git.stabletec.com/foe/engine/badges/main/pipeline.svg)](https://git.stabletec.com/foe/engine/commits/main)
-[![coverage report](https://git.stabletec.com/foe/engine/badges/main/coverage.svg)](https://git.stabletec.com/foe/engine/commits/main)
 [![license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://git.stabletec.com/foe/engine/blob/main/LICENSE)
 
 - [External Libraries](#external-libraries)
