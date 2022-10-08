@@ -7,12 +7,13 @@
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
 #include <foe/xr/openxr/core.hpp>
-#include <foe/xr/openxr/session.hpp>
+#include <foe/xr/openxr/session.h>
 
 #include "debug_utils.hpp"
 #include "log.hpp"
 #include "result.h"
 #include "runtime.hpp"
+#include "session.h"
 #include "xr_result.h"
 
 foeResultSet foeOpenXrCreateRuntime(char const *appName,

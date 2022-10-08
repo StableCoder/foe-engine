@@ -27,7 +27,7 @@
 #include <tuple>
 
 #ifdef FOE_XR_SUPPORT
-#include <foe/xr/openxr/session.hpp>
+#include <foe/xr/openxr/session.h>
 #include <foe/xr/openxr/vk/vulkan.hpp>
 
 #include "xr_camera.hpp"
@@ -84,7 +84,7 @@ struct Application {
     // XR
     foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
 #ifdef FOE_XR_SUPPORT
-    foeOpenXrSession xrSession{};
+    foeXrSession xrSession{FOE_NULL_HANDLE};
     VkRenderPass xrRenderPass;
     XrFrameState xrFrameState;
     std::vector<foeXrVkSessionView> xrViews;

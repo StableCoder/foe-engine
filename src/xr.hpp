@@ -7,13 +7,13 @@
 
 #include <foe/graphics/session.h>
 #include <foe/result.h>
-#include <foe/xr/openxr/session.hpp>
+#include <foe/xr/openxr/session.h>
 #include <foe/xr/runtime.h>
 
 foeResultSet createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime);
 
 foeResultSet createXrSession(foeXrRuntime runtime,
                              foeGfxSession gfxSession,
-                             foeOpenXrSession *pSession);
+                             foeXrSession *pSession);
 
 #endif // XR_HPP

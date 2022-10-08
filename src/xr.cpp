@@ -29,7 +29,7 @@ foeResultSet createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
 
 foeResultSet createXrSession(foeXrRuntime runtime,
                              foeGfxSession gfxSession,
-                             foeOpenXrSession *pSession) {
+                             foeXrSession *pSession) {
     foeResultSet result;
     XrSystemId xrSystemId{};
 
@@ -91,5 +91,5 @@ foeResultSet createXrSession(foeXrRuntime runtime,
         .queueIndex = 0,
     };
 
-    return pSession->createSession(runtime, xrSystemId, xrViewConfigTypes[0], &gfxBinding);
+    return foeOpenXrCreateSession(runtime, xrSystemId, xrViewConfigTypes[0], &gfxBinding, pSession);
 }

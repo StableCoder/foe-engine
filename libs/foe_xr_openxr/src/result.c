@@ -20,6 +20,7 @@ void foeOpenXrResultToString(foeOpenXrResult value, char buffer[FOE_MAX_RESULT_S
     switch (value) {
         RESULT_CASE(FOE_OPENXR_SUCCESS)
         RESULT_CASE(FOE_OPENXR_INCOMPLETE)
+        RESULT_CASE(FOE_OPENXR_ERROR_OUT_OF_MEMORY)
 
     default:
         if (value > 0) {

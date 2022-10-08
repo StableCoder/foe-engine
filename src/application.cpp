@@ -40,6 +40,7 @@
 #include <foe/wsi/mouse.hpp>
 #include <foe/wsi/vulkan.h>
 
+#include "foe/handle.h"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
@@ -304,7 +305,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
         // If the user specified to force an XR session and couldn't find/create the session, fail
         // out
-        if (settings.xr.forceXr && xrSession.session == XR_NULL_HANDLE) {
+        if (settings.xr.forceXr && xrSession == FOE_NULL_HANDLE) {
             FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
             return std::make_tuple(false, 1);
         }
@@ -480,7 +481,7 @@ foeResultSet Application::startXR(bool localPoll) {
         // OpenXR Session Begin
 
         // Wait for the session to be ready
-        while (xrSession.state != XR_SESSION_STATE_READY) {
+        while (foeOpenXrGetSessionState(xrSession) != XR_SESSION_STATE_READY) {
             if (localPoll) {
                 result = foeXrProcessEvents(xrRuntime);
                 if (result.value != FOE_SUCCESS) {
@@ -498,9 +499,9 @@ foeResultSet Application::startXR(bool localPoll) {
 
         // Session Views
         uint32_t viewConfigViewCount;
-        result = xr_to_foeResult(
-            xrEnumerateViewConfigurationViews(foeOpenXrGetInstance(xrRuntime), xrSession.systemId,
-                                              xrSession.type, 0, &viewConfigViewCount, nullptr));
+        result = xr_to_foeResult(xrEnumerateViewConfigurationViews(
+            foeOpenXrGetInstance(xrRuntime), foeOpenXrGetSystemId(xrSession),
+            foeOpenXrGetViewConfigurationType(xrSession), 0, &viewConfigViewCount, nullptr));
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -514,8 +515,9 @@ foeResultSet Application::startXR(bool localPoll) {
         viewConfigs.resize(viewConfigViewCount);
 
         result = xr_to_foeResult(xrEnumerateViewConfigurationViews(
-            foeOpenXrGetInstance(xrRuntime), xrSession.systemId, xrSession.type, viewConfigs.size(),
-            &viewConfigViewCount, viewConfigs.data()));
+            foeOpenXrGetInstance(xrRuntime), foeOpenXrGetSystemId(xrSession),
+            foeOpenXrGetViewConfigurationType(xrSession), viewConfigs.size(), &viewConfigViewCount,
+            viewConfigs.data()));
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -531,7 +533,8 @@ foeResultSet Application::startXR(bool localPoll) {
 
         // OpenXR Swapchains
         std::vector<int64_t> swapchainFormats;
-        result = foeOpenXrEnumerateSwapchainFormats(xrSession.session, swapchainFormats);
+        result =
+            foeOpenXrEnumerateSwapchainFormats(foeOpenXrGetSession(xrSession), swapchainFormats);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -631,7 +634,7 @@ foeResultSet Application::startXR(bool localPoll) {
             };
 
             result = xr_to_foeResult(
-                xrCreateSwapchain(xrSession.session, &swapchainCI, &view.swapchain));
+                xrCreateSwapchain(foeOpenXrGetSession(xrSession), &swapchainCI, &view.swapchain));
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -726,7 +729,7 @@ foeResultSet Application::startXR(bool localPoll) {
             goto START_XR_FAILED;
         }
 
-        result = xrSession.beginSession();
+        result = foeOpenXrBeginSession(xrSession);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -736,7 +739,8 @@ foeResultSet Application::startXR(bool localPoll) {
             goto START_XR_FAILED;
         }
 
-        FOE_LOG(General, Info, "Started new XR session {}", static_cast<void *>(xrSession.session));
+        FOE_LOG(General, Info, "Started new XR session {}",
+                static_cast<void *>(foeOpenXrGetSession(xrSession)));
     }
 
 START_XR_FAILED:
@@ -752,10 +756,10 @@ foeResultSet Application::stopXR(bool localPoll) {
     foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
 
 #ifdef FOE_XR_SUPPORT
-    if (xrSession.session != XR_NULL_HANDLE) {
-        xrSession.requestExitSession();
+    if (xrSession != FOE_NULL_HANDLE) {
+        foeOpenXrRequestExitSession(xrSession);
 
-        while (xrSession.state != XR_SESSION_STATE_STOPPING) {
+        while (foeOpenXrGetSessionState(xrSession) != XR_SESSION_STATE_STOPPING) {
             if (localPoll) {
                 result = foeXrProcessEvents(xrRuntime);
                 if (result.value != FOE_SUCCESS) {
@@ -770,9 +774,9 @@ foeResultSet Application::stopXR(bool localPoll) {
             }
         }
 
-        xrSession.endSession();
+        foeOpenXrEndSession(xrSession);
 
-        while (xrSession.state != XR_SESSION_STATE_IDLE) {
+        while (foeOpenXrGetSessionState(xrSession) != XR_SESSION_STATE_IDLE) {
             if (localPoll) {
                 result = foeXrProcessEvents(xrRuntime);
                 if (result.value != FOE_SUCCESS) {
@@ -802,7 +806,7 @@ foeResultSet Application::stopXR(bool localPoll) {
             }
         }
 
-        while (xrSession.state != XR_SESSION_STATE_EXITING) {
+        while (foeOpenXrGetSessionState(xrSession) != XR_SESSION_STATE_EXITING) {
             if (localPoll) {
                 result = foeXrProcessEvents(xrRuntime);
                 if (result.value != FOE_SUCCESS) {
@@ -817,7 +821,7 @@ foeResultSet Application::stopXR(bool localPoll) {
             }
         }
 
-        xrSession.destroySession();
+        foeXrDestroySession(xrSession);
     }
 
 #endif // FOE_XR_SUPPORT
@@ -883,7 +887,7 @@ int Application::mainloop() {
 
 #ifdef FOE_XR_SUPPORT
             if constexpr (false) {
-                if (xrSession.session == XR_NULL_HANDLE) {
+                if (xrSession == FOE_NULL_HANDLE) {
                     foeScheduleAsyncTask(
                         threadPool,
                         [](void *pApplication) { ((Application *)pApplication)->startXR(false); },
@@ -992,13 +996,13 @@ int Application::mainloop() {
 #ifdef FOE_XR_SUPPORT
             // Lock rendering to OpenXR framerate, which overrides regular rendering
             bool xrAcquiredFrame = false;
-            if (xrSession.session != XR_NULL_HANDLE && xrSession.active) {
+            if (xrSession != FOE_NULL_HANDLE && foeOpenXrGetSessionActive(xrSession)) {
                 xrAcquiredFrame = true;
 
                 XrFrameWaitInfo frameWaitInfo{.type = XR_TYPE_FRAME_WAIT_INFO};
                 xrFrameState = XrFrameState{.type = XR_TYPE_FRAME_STATE};
-                result =
-                    xr_to_foeResult(xrWaitFrame(xrSession.session, &frameWaitInfo, &xrFrameState));
+                result = xr_to_foeResult(
+                    xrWaitFrame(foeOpenXrGetSession(xrSession), &frameWaitInfo, &xrFrameState));
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
@@ -1079,7 +1083,8 @@ int Application::mainloop() {
             // OpenXR Render Section
             if (xrAcquiredFrame) {
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
-                result = xr_to_foeResult(xrBeginFrame(xrSession.session, &frameBeginInfo));
+                result =
+                    xr_to_foeResult(xrBeginFrame(foeOpenXrGetSession(xrSession), &frameBeginInfo));
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
@@ -1093,16 +1098,16 @@ int Application::mainloop() {
                 if (xrFrameState.shouldRender) {
                     XrViewLocateInfo viewLocateInfo{
                         .type = XR_TYPE_VIEW_LOCATE_INFO,
-                        .viewConfigurationType = xrSession.type,
+                        .viewConfigurationType = foeOpenXrGetViewConfigurationType(xrSession),
                         .displayTime = xrFrameState.predictedDisplayTime,
-                        .space = xrSession.space,
+                        .space = foeOpenXrGetSpace(xrSession),
                     };
                     XrViewState viewState{.type = XR_TYPE_VIEW_STATE};
                     std::vector<XrView> views{xrViews.size(), XrView{.type = XR_TYPE_VIEW}};
                     uint32_t viewCountOutput;
-                    result = xr_to_foeResult(xrLocateViews(xrSession.session, &viewLocateInfo,
-                                                           &viewState, views.size(),
-                                                           &viewCountOutput, views.data()));
+                    result = xr_to_foeResult(
+                        xrLocateViews(foeOpenXrGetSession(xrSession), &viewLocateInfo, &viewState,
+                                      views.size(), &viewCountOutput, views.data()));
                     if (result.value != FOE_SUCCESS) {
                         ERRC_END_PROGRAM
                     }
@@ -1276,7 +1281,7 @@ int Application::mainloop() {
                     layerProj = XrCompositionLayerProjection{
                         .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION,
                         .layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT,
-                        .space = xrSession.space,
+                        .space = foeOpenXrGetSpace(xrSession),
                         .viewCount = static_cast<uint32_t>(projectionViews.size()),
                         .views = projectionViews.data(),
                     };
@@ -1291,7 +1296,7 @@ int Application::mainloop() {
                     .layerCount = static_cast<uint32_t>(layers.size()),
                     .layers = layers.data(),
                 };
-                result = xr_to_foeResult(xrEndFrame(xrSession.session, &endFrameInfo));
+                result = xr_to_foeResult(xrEndFrame(foeOpenXrGetSession(xrSession), &endFrameInfo));
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
