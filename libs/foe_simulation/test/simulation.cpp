@@ -29,13 +29,6 @@ TEST_CASE("Core - De/Registering Functionality", "[foe][simulation]") {
 
     SECTION("Registering functionality with a invalid IDs fails") {
         REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
-                                             .id = 0,
-                                             .pCreateFn = pCreateFn,
-                                             .pDestroyFn = pDestroyFn,
-                                         })
-                    .value == FOE_SIMULATION_ERROR_ID_INVALID);
-
-        REQUIRE(foeRegisterFunctionality(foeSimulationFunctionalty{
                                              .id = -1,
                                              .pCreateFn = pCreateFn,
                                              .pDestroyFn = pDestroyFn,
