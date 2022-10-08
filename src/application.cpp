@@ -1093,6 +1093,7 @@ int Application::mainloop() {
                 if (xrFrameState.shouldRender) {
                     XrViewLocateInfo viewLocateInfo{
                         .type = XR_TYPE_VIEW_LOCATE_INFO,
+                        .viewConfigurationType = xrSession.type,
                         .displayTime = xrFrameState.predictedDisplayTime,
                         .space = xrSession.space,
                     };
