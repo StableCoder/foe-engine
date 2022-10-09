@@ -240,7 +240,11 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Resource Management
-    auto *pFinalImageStates = new foeGfxVkGraphImageState[2];
+    auto *pFinalImageStates = new (std::nothrow) foeGfxVkGraphImageState[2];
+    if (pFinalImageStates == nullptr) {
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+    }
+
     pFinalImageStates[0] = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = srcFinalLayout,

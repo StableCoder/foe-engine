@@ -7,6 +7,7 @@
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.h>
 
+#include "../../result.h"
 #include "../../vk_result.h"
 
 foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
@@ -46,8 +47,7 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     // Resource management
-    auto *pImportedImage = new foeGfxVkGraphImageResource;
-    *pImportedImage = foeGfxVkGraphImageResource{
+    auto *pImportedImage = new (std::nothrow) foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = nullptr,
         .name = pResourceName,
@@ -57,12 +57,17 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .extent = extent,
         .isMutable = isMutable,
     };
+    if (pImportedImage == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
-    auto *pImageState = new foeGfxVkGraphImageState;
-    *pImageState = foeGfxVkGraphImageState{
+    auto *pImageState = new (std::nothrow) foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = layout,
     };
+    if (pImageState == nullptr) {
+        delete pImportedImage;
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+    }
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
         delete pImportedImage;
