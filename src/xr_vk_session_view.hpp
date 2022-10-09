@@ -5,7 +5,7 @@
 #ifndef XR_VK_SESSION_VIEW_HPP
 #define XR_VK_SESSION_VIEW_HPP
 
-#include <foe/xr/openxr/vk/vulkan.hpp>
+#include <foe/xr/openxr/vk/vulkan.h>
 #include <vulkan/vulkan.h>
 
 #include "xr_camera.hpp"

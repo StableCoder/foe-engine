@@ -6,7 +6,6 @@
 
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
-#include <foe/xr/openxr/core.hpp>
 #include <foe/xr/openxr/session.h>
 
 #include "debug_utils.hpp"

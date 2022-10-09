@@ -2,34 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/xr/openxr/vk/vulkan.hpp>
+#include <foe/xr/openxr/vk/vulkan.h>
 
-#include <memory>
+#include <vector>
 
 #include "xr_result.h"
 
 namespace {
-
-std::vector<std::string> splitString(char const *buffer, uint32_t length) {
-    std::vector<std::string> tokens;
-
-    char const *beg = buffer;
-    char const *end = buffer + 1;
-    while (*end != '\0' && end != beg + length) {
-        if (*end == ' ') {
-            tokens.emplace_back(std::string{beg, end});
-            beg = end;
-            ++beg;
-        }
-        ++end;
-    }
-
-    if (beg != end) {
-        tokens.emplace_back(std::string{beg, end});
-    }
-
-    return tokens;
-}
 
 std::vector<XrSystemId> getAllSystemIds(XrInstance instance) {
     std::vector<XrSystemId> systemIds;
@@ -56,8 +35,9 @@ std::vector<XrSystemId> getAllSystemIds(XrInstance instance) {
 
 } // namespace
 
-foeResultSet foeXrGetVulkanInstanceExtensions(XrInstance instance,
-                                              std::vector<std::string> &extensions) {
+extern "C" foeResultSet foeXrGetVulkanInstanceExtensions(XrInstance instance,
+                                                         uint32_t *pExtensionsLength,
+                                                         char *pExtensions) {
     PFN_xrGetVulkanInstanceExtensionsKHR GetVulkanInstanceExtensions{nullptr};
     XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanInstanceExtensionsKHR",
                                               (PFN_xrVoidFunction *)&GetVulkanInstanceExtensions);
@@ -66,30 +46,40 @@ foeResultSet foeXrGetVulkanInstanceExtensions(XrInstance instance,
     }
 
     // Iterate through all systems available annd add their required extensions
+    uint32_t totalBufferCapacity = 0;
     auto systemIds = getAllSystemIds(instance);
     for (auto id : systemIds) {
-        uint32_t bufferCapacity;
-        xrResult = GetVulkanInstanceExtensions(instance, id, 0, &bufferCapacity, nullptr);
+        uint32_t bufferSize;
+        xrResult = GetVulkanInstanceExtensions(instance, id, 0, &bufferSize, nullptr);
         if (xrResult != XR_SUCCESS) {
             return xr_to_foeResult(xrResult);
         }
 
-        std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
-        xrResult = GetVulkanInstanceExtensions(instance, id, bufferCapacity, &bufferCapacity,
-                                               buffer.get());
-        if (xrResult != XR_SUCCESS) {
-            return xr_to_foeResult(xrResult);
+        if (pExtensions == nullptr) {
+            totalBufferCapacity += bufferSize;
+            continue;
         }
 
-        auto newExtensions = splitString(buffer.get(), bufferCapacity);
-        extensions.insert(extensions.end(), newExtensions.begin(), newExtensions.end());
+        if (bufferSize < (*pExtensionsLength - totalBufferCapacity))
+            bufferSize = (*pExtensionsLength - totalBufferCapacity);
+
+        xrResult = GetVulkanInstanceExtensions(instance, id, bufferSize, &bufferSize, pExtensions);
+        totalBufferCapacity += bufferSize;
+        if (xrResult != XR_SUCCESS) {
+            break;
+        }
+
+        pExtensions += bufferSize;
     }
+
+    *pExtensionsLength = totalBufferCapacity;
 
     return xr_to_foeResult(xrResult);
 }
 
-foeResultSet foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                            std::vector<std::string> &extensions) {
+extern "C" foeResultSet foeXrGetVulkanDeviceExtensions(XrInstance instance,
+                                                       uint32_t *pExtensionsLength,
+                                                       char *pExtensions) {
     PFN_xrGetVulkanDeviceExtensionsKHR GetVulkanDeviceExtensions{nullptr};
     XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanDeviceExtensionsKHR",
                                               (PFN_xrVoidFunction *)&GetVulkanDeviceExtensions);
@@ -98,32 +88,41 @@ foeResultSet foeXrGetVulkanDeviceExtensions(XrInstance instance,
     }
 
     // Iterate through all systems available annd add their required extensions
+    uint32_t totalBufferCapacity = 0;
     auto systemIds = getAllSystemIds(instance);
     for (auto id : systemIds) {
-        uint32_t bufferCapacity;
-        xrResult = GetVulkanDeviceExtensions(instance, id, 0, &bufferCapacity, nullptr);
+        uint32_t bufferSize;
+        xrResult = GetVulkanDeviceExtensions(instance, id, 0, &bufferSize, nullptr);
         if (xrResult != XR_SUCCESS) {
             return xr_to_foeResult(xrResult);
         }
 
-        std::unique_ptr<char[]> buffer{new char[bufferCapacity]};
-        xrResult =
-            GetVulkanDeviceExtensions(instance, id, bufferCapacity, &bufferCapacity, buffer.get());
-        if (xrResult != XR_SUCCESS) {
-            return xr_to_foeResult(xrResult);
+        if (pExtensions == nullptr) {
+            totalBufferCapacity += bufferSize;
+            continue;
         }
 
-        auto newExtensions = splitString(buffer.get(), bufferCapacity);
-        extensions.insert(extensions.end(), newExtensions.begin(), newExtensions.end());
+        if (bufferSize < (*pExtensionsLength - totalBufferCapacity))
+            bufferSize = (*pExtensionsLength - totalBufferCapacity);
+
+        xrResult = GetVulkanDeviceExtensions(instance, id, bufferSize, &bufferSize, pExtensions);
+        totalBufferCapacity += bufferSize;
+        if (xrResult != XR_SUCCESS) {
+            break;
+        }
+
+        pExtensions += bufferSize;
     }
+
+    *pExtensionsLength = totalBufferCapacity;
 
     return xr_to_foeResult(xrResult);
 }
 
-foeResultSet foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                          XrSystemId systemId,
-                                          VkInstance vkInstance,
-                                          VkPhysicalDevice *vkPhysicalDevice) {
+extern "C" foeResultSet foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                                     XrSystemId systemId,
+                                                     VkInstance vkInstance,
+                                                     VkPhysicalDevice *vkPhysicalDevice) {
     PFN_xrGetVulkanGraphicsDeviceKHR GetVulkanGraphicsDevice{nullptr};
     XrResult xrResult = xrGetInstanceProcAddr(instance, "xrGetVulkanGraphicsDeviceKHR",
                                               (PFN_xrVoidFunction *)&GetVulkanGraphicsDevice);
@@ -136,7 +135,7 @@ foeResultSet foeXrGetVulkanGraphicsDevice(XrInstance instance,
     return xr_to_foeResult(xrResult);
 }
 
-foeResultSet foeXrGetVulkanGraphicsRequirements(
+extern "C" foeResultSet foeXrGetVulkanGraphicsRequirements(
     XrInstance instance,
     XrSystemId systemId,
     XrGraphicsRequirementsVulkanKHR *graphicsRequirements) {
@@ -154,18 +153,15 @@ foeResultSet foeXrGetVulkanGraphicsRequirements(
     return xr_to_foeResult(xrResult);
 }
 
-foeResultSet foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
-                                                 std::vector<XrSwapchainImageVulkanKHR> &images) {
+extern "C" foeResultSet foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
+                                                            uint32_t *pImageCount,
+                                                            XrSwapchainImageVulkanKHR *pImages) {
     uint32_t imageCount;
-    XrResult xrResult = xrEnumerateSwapchainImages(xrSwapchain, 0, &imageCount, nullptr);
-    if (xrResult != XR_SUCCESS) {
-        return xr_to_foeResult(xrResult);
-    }
-
-    images.resize(imageCount);
-    xrResult =
-        xrEnumerateSwapchainImages(xrSwapchain, static_cast<uint32_t>(images.size()), &imageCount,
-                                   reinterpret_cast<XrSwapchainImageBaseHeader *>(images.data()));
-
+    XrResult xrResult;
+    if (pImages == NULL)
+        xrResult = xrEnumerateSwapchainImages(xrSwapchain, 0, pImageCount, NULL);
+    else
+        xrResult = xrEnumerateSwapchainImages(xrSwapchain, *pImageCount, pImageCount,
+                                              (XrSwapchainImageBaseHeader *)pImages);
     return xr_to_foeResult(xrResult);
 }

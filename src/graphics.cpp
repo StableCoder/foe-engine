@@ -4,6 +4,7 @@
 
 #include "graphics.hpp"
 
+#include <foe/delimited_string.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/wsi/vulkan.h>
@@ -15,7 +16,7 @@
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/runtime.h>
-#include <foe/xr/openxr/vk/vulkan.hpp>
+#include <foe/xr/openxr/vk/vulkan.h>
 #endif
 
 foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
@@ -42,15 +43,26 @@ foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
 #ifdef FOE_XR_SUPPORT
     // OpenXR
     if (xrRuntime != FOE_NULL_HANDLE) {
-        std::vector<std::string> xrExtensions;
-
-        foeResultSet result =
-            foeXrGetVulkanInstanceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
-        if (result.value != FOE_SUCCESS) {
+        uint32_t extensionsLength;
+        foeResultSet result = foeXrGetVulkanInstanceExtensions(foeOpenXrGetInstance(xrRuntime),
+                                                               &extensionsLength, nullptr);
+        if (result.value != FOE_SUCCESS)
             return result;
-        }
 
-        extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        std::unique_ptr<char[]> extensionsStr{new char[extensionsLength]};
+
+        result = foeXrGetVulkanInstanceExtensions(foeOpenXrGetInstance(xrRuntime),
+                                                  &extensionsLength, extensionsStr.get());
+        if (result.value != FOE_SUCCESS)
+            return result;
+
+        uint32_t strLength;
+        char const *pStr;
+        for (uint32_t i = 0; foeIndexedDelimitedString(extensionsLength, extensionsStr.get(), i,
+                                                       ' ', &strLength, &pStr);
+             ++i) {
+            extensions.emplace_back(pStr, strLength);
+        }
 
         // Add another that's missing??
         extensions.emplace_back("VK_KHR_external_fence_capabilities");
@@ -220,12 +232,25 @@ foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
 #ifdef FOE_XR_SUPPORT
     // OpenXR
     if (xrRuntime != FOE_NULL_HANDLE) {
-        std::vector<std::string> xrExtensions;
+        uint32_t extensionsLength;
+        foeResultSet result = foeXrGetVulkanDeviceExtensions(foeOpenXrGetInstance(xrRuntime),
+                                                             &extensionsLength, nullptr);
+        if (result.value != FOE_SUCCESS)
+            return result;
 
-        foeResultSet result =
-            foeXrGetVulkanDeviceExtensions(foeOpenXrGetInstance(xrRuntime), xrExtensions);
-        if (result.value == FOE_SUCCESS) {
-            extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+        std::unique_ptr<char[]> extensionsStr{new char[extensionsLength]};
+
+        result = foeXrGetVulkanDeviceExtensions(foeOpenXrGetInstance(xrRuntime), &extensionsLength,
+                                                extensionsStr.get());
+        if (result.value != FOE_SUCCESS)
+            return result;
+
+        uint32_t strLength;
+        char const *pStr;
+        for (uint32_t i = 0; foeIndexedDelimitedString(extensionsLength, extensionsStr.get(), i,
+                                                       ' ', &strLength, &pStr);
+             ++i) {
+            extensions.emplace_back(pStr, strLength);
         }
     }
 #endif

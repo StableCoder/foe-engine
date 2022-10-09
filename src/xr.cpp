@@ -7,11 +7,13 @@
 #include <foe/graphics/backend.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/xr/openxr/runtime.h>
-#include <foe/xr/openxr/vk/vulkan.hpp>
+#include <foe/xr/openxr/vk/vulkan.h>
 
 #include "xr_result.h"
 
+#include <cstdlib>
 #include <cstring>
+#include <vector>
 
 foeResultSet createXrRuntime(bool debugLogging, foeXrRuntime *pRuntime) {
     std::vector<char const *> layers;

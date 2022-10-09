@@ -54,7 +54,6 @@
 #include "render_graph/render_scene.hpp"
 
 #ifdef FOE_XR_SUPPORT
-#include <foe/xr/openxr/core.hpp>
 #include <foe/xr/openxr/runtime.h>
 #include <foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp>
 
@@ -532,9 +531,9 @@ foeResultSet Application::startXR(bool localPoll) {
         }
 
         // OpenXR Swapchains
+        uint32_t formatCount;
         std::vector<int64_t> swapchainFormats;
-        result =
-            foeOpenXrEnumerateSwapchainFormats(foeOpenXrGetSession(xrSession), swapchainFormats);
+        result = foeOpenXrEnumerateSwapchainFormats(xrSession, &formatCount, nullptr);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -543,6 +542,19 @@ foeResultSet Application::startXR(bool localPoll) {
 
             goto START_XR_FAILED;
         }
+
+        swapchainFormats.resize(formatCount);
+        result =
+            foeOpenXrEnumerateSwapchainFormats(xrSession, &formatCount, swapchainFormats.data());
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                    buffer);
+
+            goto START_XR_FAILED;
+        }
+
         for (auto &it : xrViews) {
             it.format = static_cast<VkFormat>(swapchainFormats[0]);
         }
@@ -645,7 +657,20 @@ foeResultSet Application::startXR(bool localPoll) {
             }
 
             // Images
-            result = foeOpenXrEnumerateSwapchainVkImages(view.swapchain, view.images);
+            uint32_t imageCount = view.images.size();
+            result = foeOpenXrEnumerateSwapchainVkImages(view.swapchain, &imageCount, nullptr);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
+                        buffer);
+
+                goto START_XR_FAILED;
+            }
+
+            view.images.resize(imageCount);
+            result = foeOpenXrEnumerateSwapchainVkImages(view.swapchain, &imageCount,
+                                                         view.images.data());
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);

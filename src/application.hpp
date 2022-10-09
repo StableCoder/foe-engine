@@ -28,7 +28,7 @@
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/session.h>
-#include <foe/xr/openxr/vk/vulkan.hpp>
+#include <foe/xr/openxr/vk/vulkan.h>
 
 #include "xr_camera.hpp"
 #include "xr_vk_camera_system.hpp"

@@ -4,12 +4,29 @@
 
 #include <foe/xr/openxr/session.h>
 
-#include <foe/xr/openxr/core.hpp>
-
 #include "result.h"
 #include "runtime.hpp"
 #include "session.h"
 #include "xr_result.h"
+
+namespace {
+
+foeResultSet foeOpenXrEnumerateReferenceSpaces(XrSession xrSession,
+                                               std::vector<XrReferenceSpaceType> &spaces) {
+    uint32_t spaceCount;
+    XrResult xrResult = xrEnumerateReferenceSpaces(xrSession, 0, &spaceCount, nullptr);
+    if (xrResult != XR_SUCCESS) {
+        return xr_to_foeResult(xrResult);
+    }
+
+    spaces.resize(spaceCount);
+    xrResult = xrEnumerateReferenceSpaces(xrSession, static_cast<uint32_t>(spaces.size()),
+                                          &spaceCount, spaces.data());
+
+    return xr_to_foeResult(xrResult);
+}
+
+} // namespace
 
 extern "C" foeResultSet foeOpenXrCreateSession(foeXrRuntime runtime,
                                                XrSystemId systemId,
@@ -156,4 +173,18 @@ extern "C" XrSpace foeOpenXrGetSpace(foeXrSession session) {
     foeOpenXrSession *pSession = session_from_handle(session);
 
     return pSession->space;
+}
+
+extern "C" foeResultSet foeOpenXrEnumerateSwapchainFormats(foeXrSession session,
+                                                           uint32_t *pFormatCount,
+                                                           int64_t *pFormats) {
+    foeOpenXrSession *pSession = session_from_handle(session);
+
+    XrResult xrResult;
+    if (pFormats == NULL)
+        xrResult = xrEnumerateSwapchainFormats(pSession->session, 0, pFormatCount, NULL);
+    else
+        xrResult =
+            xrEnumerateSwapchainFormats(pSession->session, *pFormatCount, pFormatCount, pFormats);
+    return xr_to_foeResult(xrResult);
 }

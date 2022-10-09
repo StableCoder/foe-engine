@@ -34,6 +34,10 @@ FOE_XR_EXPORT XrSessionState foeOpenXrGetSessionState(foeXrSession session);
 FOE_XR_EXPORT bool foeOpenXrGetSessionActive(foeXrSession session);
 FOE_XR_EXPORT XrSpace foeOpenXrGetSpace(foeXrSession session);
 
+FOE_XR_EXPORT foeResultSet foeOpenXrEnumerateSwapchainFormats(foeXrSession session,
+                                                              uint32_t *pFormatCount,
+                                                              int64_t *pFormats);
+
 #ifdef __cplusplus
 }
 #endif
