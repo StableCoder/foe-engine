@@ -350,16 +350,20 @@ TEST_CASE("CombinedString - Getting an indexed string from a zero-length combine
           "[foe][CombinedString]") {
     char const *srcString = "";
     size_t srcLen = 0;
+
+    uint32_t strLen = UINT32_MAX;
     char const *pStr = nullptr;
 
     SECTION("Index 0") {
-        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 0, &pStr));
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', &strLen, &pStr));
 
+        CHECK(strLen == UINT32_MAX);
         CHECK(pStr == nullptr);
     }
     SECTION("Index 1") {
-        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 1, &pStr));
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', &strLen, &pStr));
 
+        CHECK(strLen == UINT32_MAX);
         CHECK(pStr == nullptr);
     }
 }
@@ -368,17 +372,30 @@ TEST_CASE("CombinedString - Getting an indexed string from a single combined str
           "[foe][CombinedString]") {
     char const *srcString = "abcd";
     size_t srcLen = 4;
+
+    uint32_t strLength = UINT32_MAX;
     char const *pStr = nullptr;
 
     SECTION("Index 0") {
-        CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, &pStr));
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', nullptr, &pStr));
 
+        CHECK(pStr == srcString);
+        CHECK(std::string_view{pStr} == std::string_view{pStr});
+
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', &strLength, &pStr));
+
+        CHECK(strLength == srcLen);
         CHECK(pStr == srcString);
         CHECK(std::string_view{pStr} == std::string_view{pStr});
     }
     SECTION("Index 1") {
-        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 1, &pStr));
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', nullptr, &pStr));
 
+        CHECK(pStr == nullptr);
+
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', &strLength, &pStr));
+
+        CHECK(strLength == UINT32_MAX);
         CHECK(pStr == nullptr);
     }
 }
@@ -387,23 +404,75 @@ TEST_CASE("CombinedString - Getting an indexed string from a combined multi-stri
           "[foe][CombinedString]") {
     char const *srcString = "abcd\0efgh";
     size_t srcLen = 9;
+    uint32_t strLength = UINT32_MAX;
     char const *pStr = nullptr;
 
     SECTION("Index 0") {
-        CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, &pStr));
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', nullptr, &pStr));
 
+        CHECK(pStr == srcString);
+        CHECK(std::string_view{pStr} == std::string_view{"abcd"});
+
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', &strLength, &pStr));
+
+        CHECK(strLength == 4);
         CHECK(pStr == srcString);
         CHECK(std::string_view{pStr} == std::string_view{"abcd"});
     }
     SECTION("Index 1") {
-        CHECK(foeIndexedDelimitedString(srcLen, srcString, 1, &pStr));
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', nullptr, &pStr));
 
+        CHECK(pStr == srcString + 5);
+        CHECK(std::string_view{pStr} == std::string_view{"efgh"});
+
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', &strLength, &pStr));
+
+        CHECK(strLength == 4);
         CHECK(pStr == srcString + 5);
         CHECK(std::string_view{pStr} == std::string_view{"efgh"});
     }
     SECTION("Index 2") {
-        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 2, &pStr));
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 2, '\0', nullptr, &pStr));
 
+        CHECK(pStr == nullptr);
+
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 2, '\0', &strLength, &pStr));
+
+        CHECK(strLength == UINT32_MAX);
+        CHECK(pStr == nullptr);
+    }
+}
+
+TEST_CASE(
+    "CombinedString - Getting an indexed string from a combined multi-string (space delimited)",
+    "[foe][CombinedString]") {
+    char const *srcString = "abcd efgh";
+    size_t srcLen = 9;
+    uint32_t strLength = UINT32_MAX;
+    char const *pStr = nullptr;
+
+    SECTION("Index 0") {
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, ' ', &strLength, &pStr));
+
+        CHECK(strLength == 4);
+        CHECK(pStr == srcString);
+        CHECK(std::string_view{pStr, strLength} == std::string_view{"abcd"});
+    }
+    SECTION("Index 1") {
+        CHECK(foeIndexedDelimitedString(srcLen, srcString, 1, ' ', &strLength, &pStr));
+
+        CHECK(strLength == 4);
+        CHECK(pStr == srcString + 5);
+        CHECK(std::string_view{pStr, strLength} == std::string_view{"efgh"});
+    }
+    SECTION("Index 2") {
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 2, ' ', nullptr, &pStr));
+
+        CHECK(pStr == nullptr);
+
+        CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 2, ' ', &strLength, &pStr));
+
+        CHECK(strLength == UINT32_MAX);
         CHECK(pStr == nullptr);
     }
 }

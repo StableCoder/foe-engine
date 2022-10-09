@@ -92,6 +92,8 @@ bool foeCopyDelimitedString(uint32_t srcLength,
 bool foeIndexedDelimitedString(uint32_t srcLength,
                                char const *pSrc,
                                uint32_t index,
+                               char delimiter,
+                               uint32_t *pStrLength,
                                char const **ppStr) {
     // If there's no input, there's nothing to cut
     if (srcLength == 0)
@@ -102,7 +104,7 @@ bool foeIndexedDelimitedString(uint32_t srcLength,
 
     // Go through the string, finding the delimit points of the strings
     while (pSrc != pEnd && curIndex != index) {
-        if (*pSrc == '\0') {
+        if (*pSrc == delimiter) {
             curIndex++;
         }
         ++pSrc;
@@ -114,6 +116,16 @@ bool foeIndexedDelimitedString(uint32_t srcLength,
 
     // Output the indexed cut string start
     *ppStr = pSrc;
+
+    // If string length isn't desired (typically for NUL-delimited strings), exit early
+    if (pStrLength == NULL)
+        return true;
+
+    while (pSrc != pEnd && *pSrc != delimiter) {
+        ++pSrc;
+    }
+
+    *pStrLength = pSrc - *ppStr;
 
     return true;
 }

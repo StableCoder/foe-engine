@@ -68,6 +68,8 @@ FOE_EXPORT bool foeCopyDelimitedString(uint32_t srcLength,
 FOE_EXPORT bool foeIndexedDelimitedString(uint32_t srcLength,
                                           char const *pSrc,
                                           uint32_t index,
+                                          char delimiter,
+                                          uint32_t *pStrLength,
                                           char const **ppStr);
 
 #ifdef __cplusplus

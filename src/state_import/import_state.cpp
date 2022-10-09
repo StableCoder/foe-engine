@@ -122,7 +122,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
 
     for (uint32_t i = 0; i < dependencyCount; ++i) {
         char const *pStr = nullptr;
-        foeIndexedDelimitedString(namesLength, nameArray.data(), i, &pStr);
+        foeIndexedDelimitedString(namesLength, nameArray.data(), i, '\0', nullptr, &pStr);
         dependencyNames.emplace_back(pStr);
     }
 
@@ -174,7 +174,7 @@ foeResultSet importState(std::string_view topLevelDataSet,
             for (uint32_t i = 0; i < transitiveCount; ++i) {
                 char const *pStr;
                 foeIndexedDelimitedString(transitiveNameArray.size(), transitiveNameArray.data(), i,
-                                          &pStr);
+                                          '\0', nullptr, &pStr);
                 transitiveNames.emplace_back(pStr);
             }
 
@@ -224,7 +224,8 @@ foeResultSet importState(std::string_view topLevelDataSet,
 
             for (uint32_t i = 0; i < srcDependencyCount; ++i) {
                 char const *pStr;
-                foeIndexedDelimitedString(srcNameArray.size(), srcNameArray.data(), i, &pStr);
+                foeIndexedDelimitedString(srcNameArray.size(), srcNameArray.data(), i, '\0',
+                                          nullptr, &pStr);
                 srcNames.emplace_back(pStr);
             }
 
