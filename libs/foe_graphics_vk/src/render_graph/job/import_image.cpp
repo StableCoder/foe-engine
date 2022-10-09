@@ -10,9 +10,9 @@
 #include "../../vk_result.h"
 
 foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                          std::string_view name,
+                                          char const *pJobName,
                                           VkFence fence,
-                                          std::string_view imageName,
+                                          char const *pResourceName,
                                           VkImage image,
                                           VkImageView view,
                                           VkFormat format,
@@ -50,7 +50,7 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     *pImportedImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = nullptr,
-        .name = std::string{imageName},
+        .name = pResourceName,
         .image = image,
         .view = view,
         .format = format,
@@ -72,8 +72,9 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn,
-                                                    name, false, std::move(jobFn), &renderGraphJob);
+    foeResultSet result =
+        foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, pJobName, false,
+                                  std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
     } else {

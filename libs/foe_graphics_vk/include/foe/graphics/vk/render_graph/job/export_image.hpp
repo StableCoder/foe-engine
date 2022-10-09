@@ -10,11 +10,10 @@
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
-#include <string_view>
 #include <vector>
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                         std::string_view name,
+                                                         char const *pJobName,
                                                          VkFence fence,
                                                          foeGfxVkRenderGraphResource resource,
                                                          VkImageLayout requiredLayout,

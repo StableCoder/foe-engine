@@ -10,13 +10,11 @@
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
-#include <string_view>
-
 FOE_GFX_EXPORT foeResultSet
 foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                      std::string_view name,
+                                      char const *pJobName,
                                       VkFence fence,
-                                      std::string_view resourceName,
+                                      char const *pResourceName,
                                       VkSwapchainKHR swapchain,
                                       uint32_t index,
                                       VkImage image,
@@ -30,7 +28,7 @@ foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
 /// Assumes the image is in VK_IMAGE_LAYOUT_PRESENT_SRC_KHR layout
 FOE_GFX_EXPORT foeResultSet
 foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                       std::string_view name,
+                                       char const *pJobName,
                                        VkFence fence,
                                        foeGfxVkRenderGraphResource swapchainResource);
 

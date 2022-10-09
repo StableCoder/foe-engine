@@ -13,7 +13,7 @@ class foeImGuiRenderer;
 class foeImGuiState;
 
 FOE_IMGUI_VK_EXPORT foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                                                       std::string_view name,
+                                                       char const *pJobName,
                                                        VkFence fence,
                                                        foeGfxVkRenderGraphResource renderTarget,
                                                        VkImageLayout finalLayout,

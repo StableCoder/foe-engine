@@ -11,7 +11,7 @@
 #include "../../vk_result.h"
 
 foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                          std::string_view name,
+                                          char const *pJobName,
                                           VkFence fence,
                                           foeGfxVkRenderGraphResource resource,
                                           VkImageLayout requiredLayout,
@@ -60,6 +60,6 @@ foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     bool const readOnly = true;
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &resource, &readOnly, nullptr, name, true,
+    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &resource, &readOnly, nullptr, pJobName, true,
                                      std::move(jobFn), &renderGraphJob);
 }

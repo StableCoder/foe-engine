@@ -11,13 +11,11 @@
 #include <openxr/openxr.h>
 #include <vulkan/vulkan.h>
 
-#include <string_view>
-
 FOE_OPENXR_VK_EXPORT foeResultSet
 foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                         std::string_view name,
+                                         char const *pJobName,
                                          VkFence fence,
-                                         std::string_view resourceName,
+                                         char const *pResourceName,
                                          XrSwapchain swapchain,
                                          VkImage image,
                                          VkImageView view,

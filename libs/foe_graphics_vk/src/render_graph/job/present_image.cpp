@@ -21,9 +21,9 @@ struct foeGfxVkGraphSwapchainResource {
 };
 
 foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                   std::string_view name,
+                                                   char const *pJobName,
                                                    VkFence fence,
-                                                   std::string_view resourceName,
+                                                   char const *pResourceName,
                                                    VkSwapchainKHR swapchain,
                                                    uint32_t index,
                                                    VkImage image,
@@ -69,6 +69,7 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     *pImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = pSwapchainImage,
+        .name = pResourceName,
         .image = image,
         .view = view,
         .format = format,
@@ -92,7 +93,7 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     foeGfxVkRenderGraphJob renderGraphJob;
 
     foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn,
-                                                    name, false, jobFn, &renderGraphJob);
+                                                    pJobName, false, jobFn, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
 
@@ -118,7 +119,7 @@ void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
 } // namespace
 
 foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                    std::string_view name,
+                                                    char const *pJobName,
                                                     VkFence fence,
                                                     foeGfxVkRenderGraphResource swapchainResource) {
     // Check that the given resource is the correct type
@@ -220,5 +221,5 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
     foeGfxVkRenderGraphJob renderGraphJob;
 
     return foeGfxVkRenderGraphAddJob(renderGraph, 1, &swapchainResource, &resourceReadOnly, nullptr,
-                                     name, true, std::move(jobFn), &renderGraphJob);
+                                     pJobName, true, std::move(jobFn), &renderGraphJob);
 }

@@ -10,15 +10,13 @@
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
-#include <string_view>
-
 struct ResolveJobUsedResources {
     foeGfxVkRenderGraphResource srcImage;
     foeGfxVkRenderGraphResource dstImage;
 };
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                          std::string_view name,
+                                                          char const *pJobName,
                                                           VkFence fence,
                                                           foeGfxVkRenderGraphResource srcImage,
                                                           VkImageLayout srcFinalLayout,

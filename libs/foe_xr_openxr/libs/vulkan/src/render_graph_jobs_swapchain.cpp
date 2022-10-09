@@ -27,9 +27,9 @@ void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
 } // namespace
 
 foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                      std::string_view name,
+                                                      char const *pJobName,
                                                       VkFence fence,
-                                                      std::string_view resourceName,
+                                                      char const *pResourceName,
                                                       XrSwapchain swapchain,
                                                       VkImage image,
                                                       VkImageView view,
@@ -143,6 +143,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     auto *pImage = new (std::nothrow) foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = pSwapchain,
+        .name = pResourceName,
         .image = image,
         .view = view,
         .format = format,
@@ -172,8 +173,9 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn,
-                                                    name, true, std::move(jobFn), &renderGraphJob);
+    foeResultSet result =
+        foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, pJobName, true,
+                                  std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         // If we couldn't add it to the render graph, delete all heap data now
         freeDataFn();

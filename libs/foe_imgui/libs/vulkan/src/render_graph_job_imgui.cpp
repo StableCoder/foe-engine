@@ -26,7 +26,7 @@ void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
 } // namespace
 
 foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                                   std::string_view name,
+                                   char const *pJobName,
                                    VkFence fence,
                                    foeGfxVkRenderGraphResource renderTarget,
                                    VkImageLayout finalLayout,
@@ -232,7 +232,7 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
 
     foeResultSet result =
         foeGfxVkRenderGraphAddJob(renderGraph, 1, &renderTarget, &resourcesInReadOnly, freeDataFn,
-                                  name, false, std::move(jobFn), &renderGraphJob);
+                                  pJobName, false, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
     } else {

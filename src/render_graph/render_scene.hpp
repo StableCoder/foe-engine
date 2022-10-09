@@ -17,7 +17,7 @@ struct RenderSceneOutputResources {
 };
 
 foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
-                            std::string_view name,
+                            char const *pJobName,
                             VkFence fence,
                             foeGfxVkRenderGraphResource colourRenderTarget,
                             VkImageLayout finalColourLayout,

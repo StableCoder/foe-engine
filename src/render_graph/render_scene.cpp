@@ -209,7 +209,7 @@ void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
 } // namespace
 
 foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
-                            std::string_view name,
+                            char const *pJobName,
                             VkFence fence,
                             foeGfxVkRenderGraphResource colourRenderTarget,
                             VkImageLayout finalColourLayout,
@@ -465,7 +465,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
     foeResultSet result =
         foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
-                                  freeDataFn, name, false, std::move(jobFn), &renderGraphJob);
+                                  freeDataFn, pJobName, false, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS)
         return result;
 
