@@ -16,13 +16,13 @@ TEST_CASE("CombinedString - Combining no string", "[foe][CombinedString]") {
     REQUIRE(dstArr[0] == '\0');
 
     SECTION("No destination buffer") {
-        CHECK(foeCreateDelimitedString(0, nullptr, &dstLen, nullptr));
+        CHECK(foeCreateDelimitedString(0, nullptr, '\0', &dstLen, nullptr));
 
         CHECK(dstLen == 0);
     }
     SECTION("With destination buffer") {
         dstArr[0] = 'a';
-        CHECK(foeCreateDelimitedString(0, nullptr, &dstLen, dstArr));
+        CHECK(foeCreateDelimitedString(0, nullptr, '\0', &dstLen, dstArr));
 
         CHECK(dstLen == 0);
         CHECK(dstArr[0] == 'a');
@@ -38,13 +38,15 @@ TEST_CASE("CombinedString - Combining a single given string", "[foe][CombinedStr
         std::vector<char const *> srcStrings{""};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 0);
         }
         SECTION("Destination buffer") {
             dstArr[0] = 'a';
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           dstArr));
 
             CHECK(dstLen == 0);
             CHECK(dstArr[0] == 'a');
@@ -55,12 +57,14 @@ TEST_CASE("CombinedString - Combining a single given string", "[foe][CombinedStr
         std::vector<char const *> srcStrings{"abcd"};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 5);
         }
         SECTION("Destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           dstArr));
 
             CHECK(dstLen == 5);
             CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});
@@ -71,12 +75,14 @@ TEST_CASE("CombinedString - Combining a single given string", "[foe][CombinedStr
         std::vector<char const *> srcStrings{"abcdefg"};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 8);
         }
         SECTION("Destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           dstArr));
 
             CHECK(dstLen == 8);
             CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});
@@ -87,14 +93,15 @@ TEST_CASE("CombinedString - Combining a single given string", "[foe][CombinedStr
         std::vector<char const *> srcStrings{"abcdefgh"};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 9);
         }
         SECTION("Destination buffer") {
             dstArr[0] = 'a';
-            CHECK_FALSE(
-                foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK_FALSE(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0',
+                                                 &dstLen, dstArr));
 
             CHECK(dstLen == 0);
             CHECK(dstArr[0] == 'a');
@@ -105,14 +112,15 @@ TEST_CASE("CombinedString - Combining a single given string", "[foe][CombinedStr
         std::vector<char const *> srcStrings{"abcdefghijklmnopqrstuvwxyz"};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 27);
         }
         SECTION("Destination buffer") {
             dstArr[0] = 'a';
-            CHECK_FALSE(
-                foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK_FALSE(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0',
+                                                 &dstLen, dstArr));
 
             CHECK(dstLen == 0);
             CHECK(dstArr[0] == 'a');
@@ -129,13 +137,15 @@ TEST_CASE("CombinedString - Combining a multiple given strings", "[foe][Combined
         std::vector<char const *> srcStrings{"", ""};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 0);
         }
         SECTION("Destination buffer") {
             dstArr[0] = 'a';
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           dstArr));
 
             CHECK(dstLen == 0);
             CHECK(dstArr[0] == 'a');
@@ -146,12 +156,14 @@ TEST_CASE("CombinedString - Combining a multiple given strings", "[foe][Combined
         std::vector<char const *> srcStrings{"", "a", "", "c", ""};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 4);
         }
         SECTION("Destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           dstArr));
 
             CHECK(dstLen == 4);
             CHECK(std::string_view{dstArr} == std::string_view{srcStrings[1]});
@@ -163,12 +175,14 @@ TEST_CASE("CombinedString - Combining a multiple given strings", "[foe][Combined
         std::vector<char const *> srcStrings{"abc", "def"};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 8);
         }
         SECTION("Destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           dstArr));
 
             CHECK(dstLen == 8);
             CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});
@@ -180,13 +194,14 @@ TEST_CASE("CombinedString - Combining a multiple given strings", "[foe][Combined
         std::vector<char const *> srcStrings{"abcd", "efgh"};
 
         SECTION("No destination buffer") {
-            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, nullptr));
+            CHECK(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0', &dstLen,
+                                           nullptr));
 
             CHECK(dstLen == 10);
         }
         SECTION("Destination buffer") {
-            CHECK_FALSE(
-                foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), &dstLen, dstArr));
+            CHECK_FALSE(foeCreateDelimitedString(srcStrings.size(), srcStrings.data(), '\0',
+                                                 &dstLen, dstArr));
 
             CHECK(dstLen == 5);
             CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});

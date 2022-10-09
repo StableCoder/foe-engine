@@ -566,18 +566,19 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     }
 
     // Add layer/extension/feature state to session struct for future queries
-    foeCreateDelimitedString(layers.size(), layers.data(), &pNewSession->layerNamesLength, nullptr);
+    foeCreateDelimitedString(layers.size(), layers.data(), '\0', &pNewSession->layerNamesLength,
+                             nullptr);
     if (pNewSession->layerNamesLength != 0) {
         pNewSession->pLayerNames = new char[pNewSession->layerNamesLength];
-        foeCreateDelimitedString(layers.size(), layers.data(), &pNewSession->layerNamesLength,
+        foeCreateDelimitedString(layers.size(), layers.data(), '\0', &pNewSession->layerNamesLength,
                                  pNewSession->pLayerNames);
     }
 
-    foeCreateDelimitedString(extensions.size(), extensions.data(),
+    foeCreateDelimitedString(extensions.size(), extensions.data(), '\0',
                              &pNewSession->extensionNamesLength, nullptr);
     if (pNewSession->extensionNamesLength != 0) {
         pNewSession->pExtensionNames = new char[pNewSession->extensionNamesLength];
-        foeCreateDelimitedString(extensions.size(), extensions.data(),
+        foeCreateDelimitedString(extensions.size(), extensions.data(), '\0',
                                  &pNewSession->extensionNamesLength, pNewSession->pExtensionNames);
     }
 

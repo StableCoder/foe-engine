@@ -71,18 +71,19 @@ foeResultSet foeOpenXrCreateRuntime(char const *appName,
         goto CREATE_FAILED;
 
     // Add layer/extension state to runtime struct for future queries
-    foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layerNamesLength, nullptr);
+    foeCreateDelimitedString(layers.size(), layers.data(), '\0', &pNewRuntime->layerNamesLength,
+                             nullptr);
     if (pNewRuntime->layerNamesLength != 0) {
         pNewRuntime->pLayerNames = new char[pNewRuntime->layerNamesLength];
-        foeCreateDelimitedString(layers.size(), layers.data(), &pNewRuntime->layerNamesLength,
+        foeCreateDelimitedString(layers.size(), layers.data(), '\0', &pNewRuntime->layerNamesLength,
                                  pNewRuntime->pLayerNames);
     }
 
-    foeCreateDelimitedString(extensions.size(), extensions.data(),
+    foeCreateDelimitedString(extensions.size(), extensions.data(), '\0',
                              &pNewRuntime->extensionNamesLength, nullptr);
     if (pNewRuntime->extensionNamesLength != 0) {
         pNewRuntime->pExtensionNames = new char[pNewRuntime->extensionNamesLength];
-        foeCreateDelimitedString(extensions.size(), extensions.data(),
+        foeCreateDelimitedString(extensions.size(), extensions.data(), '\0',
                                  &pNewRuntime->extensionNamesLength, pNewRuntime->pExtensionNames);
     }
 

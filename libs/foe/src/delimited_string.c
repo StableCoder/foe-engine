@@ -8,10 +8,8 @@
 #include <stdint.h>
 #include <string.h>
 
-bool foeCreateDelimitedString(uint32_t srcCount,
-                              char const *const *ppSrc,
-                              uint32_t *pDstLength,
-                              char *pDst) {
+bool foeCreateDelimitedString(
+    uint32_t srcCount, char const *const *ppSrc, char delimiter, uint32_t *pDstLength, char *pDst) {
     size_t totalLength = 0;
     for (size_t i = 0; i < srcCount; ++i) {
         // Length of the string plus space for the null character
@@ -41,9 +39,15 @@ bool foeCreateDelimitedString(uint32_t srcCount,
             // There's enough space, copy the string
             memcpy(pDst, ppSrc[i], len);
             pDst += len;
-            *pDst = '\0';
+            *pDst = delimiter;
             ++pDst;
             usedLength += len + 1;
+        }
+
+        if (usedLength > 0) {
+            // End of string is still always NUL character
+            --pDst;
+            *pDst = '\0';
         }
     }
 

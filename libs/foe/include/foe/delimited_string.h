@@ -29,10 +29,8 @@ extern "C" {
  *
  * If the total length of the strings is zero, then no buffer is created and ppDst is not modified.
  */
-FOE_EXPORT bool foeCreateDelimitedString(uint32_t srcCount,
-                                         char const *const *ppSrc,
-                                         uint32_t *pDstLength,
-                                         char *pDst);
+FOE_EXPORT bool foeCreateDelimitedString(
+    uint32_t srcCount, char const *const *ppSrc, char delimiter, uint32_t *pDstLength, char *pDst);
 
 /** @brief Returns data in the given destination if possible, or returns the buffer size required.
  * @param srcLength is the total length of the original delimited string
