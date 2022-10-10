@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/resource/image_loader.hpp>
+#include "image_loader.hpp"
 
 #include <FreeImage.h>
 #include <foe/ecs/id_to_string.hpp>

@@ -2,32 +2,23 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_RESOURCE_MESH_LOADER_HPP
-#define FOE_GRAPHICS_RESOURCE_MESH_LOADER_HPP
+#ifndef MATERIAL_LOADER_HPP
+#define MATERIAL_LOADER_HPP
 
-#include <foe/graphics/resource/export.h>
-#include <foe/graphics/resource/mesh.hpp>
+#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
+
+#include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
-#include <foe/graphics/upload_buffer.h>
-#include <foe/graphics/upload_context.h>
-#include <foe/graphics/upload_request.h>
-#include <foe/managed_memory.h>
 #include <foe/resource/pool.h>
-#include <foe/resource/resource.h>
-#include <foe/result.h>
+#include <vulkan/vulkan.h>
 
 #include <array>
-#include <filesystem>
-#include <functional>
-#include <mutex>
 #include <vector>
 
-class FOE_GFX_RES_EXPORT foeMeshLoader {
+class foeMaterialLoader {
   public:
-    foeResultSet initialize(
-        foeResourcePool resourcePool,
-        std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn);
+    foeResultSet initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -44,6 +35,8 @@ class FOE_GFX_RES_EXPORT foeMeshLoader {
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
+    VkResult createDescriptorSet(foeMaterial *pMaterialData);
+
     static void unloadResource(void *pContext,
                                foeResource resource,
                                uint32_t resourceIteration,
@@ -55,20 +48,17 @@ class FOE_GFX_RES_EXPORT foeMeshLoader {
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
-    std::function<foeResultSet(char const *, foeManagedMemory *)> mExternalFileSearchFn;
-
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
-    foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
+    foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
+
+    VkDescriptorPool mDescriptorPool{VK_NULL_HANDLE};
 
     struct LoadData {
         foeResource resource;
         foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
-        foeMesh data;
-
-        foeGfxUploadRequest uploadRequest;
-        foeGfxUploadBuffer uploadBuffer;
+        foeMaterial data;
     };
 
     std::mutex mLoadSync;
@@ -85,7 +75,7 @@ class FOE_GFX_RES_EXPORT foeMeshLoader {
 
     std::mutex mDestroySync;
     size_t mDataDestroyIndex{0};
-    std::array<std::vector<foeMesh>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
+    std::array<std::vector<foeMaterial>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };
 
-#endif // FOE_GRAPHICS_RESOURCE_MESH_LOADER_HPP
+#endif // MATERIAL_LOADER_HPP

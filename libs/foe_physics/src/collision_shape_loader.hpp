@@ -2,32 +2,26 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRPAHICS_RESOURCE_MATERIAL_LOADER_HPP
-#define FOE_GRPAHICS_RESOURCE_MATERIAL_LOADER_HPP
+#ifndef COLLISION_SHAPE_LOADER_HPP
+#define COLLISION_SHAPE_LOADER_HPP
 
-#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
-
-#include <foe/graphics/resource/export.h>
-#include <foe/graphics/resource/material.hpp>
-#include <foe/graphics/session.h>
-#include <foe/graphics/type_defs.h>
+#include <foe/ecs/id.h>
+#include <foe/physics/resource/collision_shape.hpp>
 #include <foe/resource/pool.h>
-#include <vulkan/vulkan.h>
+#include <foe/resource/resource.h>
 
-#include <array>
+#include <mutex>
 #include <vector>
 
-class FOE_GFX_RES_EXPORT foeMaterialLoader {
+class foeCollisionShapeLoader {
   public:
+    ~foeCollisionShapeLoader();
+
     foeResultSet initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
 
-    foeResultSet initializeGraphics(foeGfxSession gfxSession);
-    void deinitializeGraphics();
-    bool initializedGraphics() const noexcept;
-
-    void gfxMaintenance();
+    void maintenance();
 
     static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
@@ -36,8 +30,6 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
                      PFN_foeResourcePostLoad *pPostLoadFn);
 
   private:
-    VkResult createDescriptorSet(foeMaterial *pMaterialData);
-
     static void unloadResource(void *pContext,
                                foeResource resource,
                                uint32_t resourceIteration,
@@ -49,17 +41,12 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
-    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
-
-    foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
-
-    VkDescriptorPool mDescriptorPool{VK_NULL_HANDLE};
 
     struct LoadData {
         foeResource resource;
         foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
-        foeMaterial data;
+        foeCollisionShape data;
     };
 
     std::mutex mLoadSync;
@@ -73,10 +60,6 @@ class FOE_GFX_RES_EXPORT foeMaterialLoader {
 
     std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
-
-    std::mutex mDestroySync;
-    size_t mDataDestroyIndex{0};
-    std::array<std::vector<foeMaterial>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };
 
-#endif // FOE_GRPAHICS_RESOURCE_MATERIAL_LOADER_HPP
+#endif // COLLISION_SHAPE_LOADER_HPP

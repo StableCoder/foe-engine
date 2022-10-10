@@ -4,17 +4,18 @@
 
 #include <foe/graphics/resource/registration.h>
 
-#include <foe/graphics/resource/image_loader.hpp>
-#include <foe/graphics/resource/material_loader.hpp>
-#include <foe/graphics/resource/mesh_loader.hpp>
-#include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource_fns.h>
 #include <foe/simulation/group_data.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
+
+#include "image_loader.hpp"
+#include "material_loader.hpp"
+#include "mesh_loader.hpp"
+#include "shader_loader.hpp"
+#include "vertex_descriptor_loader.hpp"
 
 #include "log.hpp"
 #include "result.h"

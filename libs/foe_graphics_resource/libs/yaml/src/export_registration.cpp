@@ -5,16 +5,11 @@
 #include <foe/graphics/resource/yaml/export_registration.h>
 
 #include <foe/graphics/resource/image.hpp>
-#include <foe/graphics/resource/image_loader.hpp>
 #include <foe/graphics/resource/material.hpp>
-#include <foe/graphics/resource/material_loader.hpp>
 #include <foe/graphics/resource/mesh.hpp>
-#include <foe/graphics/resource/mesh_loader.hpp>
 #include <foe/graphics/resource/shader.hpp>
-#include <foe/graphics/resource/shader_loader.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
-#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
 #include <foe/resource/pool.h>

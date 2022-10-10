@@ -7,7 +7,6 @@
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/type_defs.h>
 #include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>

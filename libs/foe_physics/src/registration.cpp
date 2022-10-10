@@ -6,7 +6,6 @@
 
 #include <foe/physics/component/rigid_body_pool.hpp>
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
@@ -14,6 +13,8 @@
 #include <foe/resource/resource_fns.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
+
+#include "collision_shape_loader.hpp"
 
 #include "log.hpp"
 #include "result.h"

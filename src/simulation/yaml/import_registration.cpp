@@ -10,7 +10,6 @@
 #include <foe/yaml/exception.hpp>
 
 #include "../armature.hpp"
-#include "../armature_loader.hpp"
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.hpp"
 #include "../camera_imex.hpp"

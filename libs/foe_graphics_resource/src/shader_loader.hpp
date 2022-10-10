@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_RESOURCE_SHADER_LOADER_HPP
-#define FOE_GRAPHICS_RESOURCE_SHADER_LOADER_HPP
+#ifndef SHADER_LOADER_HPP
+#define SHADER_LOADER_HPP
 
-#include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/shader.h>
@@ -19,7 +18,7 @@
 #include <mutex>
 #include <vector>
 
-class FOE_GFX_RES_EXPORT foeShaderLoader {
+class foeShaderLoader {
   public:
     foeResultSet initialize(
         foeResourcePool resourcePool,
@@ -79,4 +78,4 @@ class FOE_GFX_RES_EXPORT foeShaderLoader {
     std::array<std::vector<foeShader>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };
 
-#endif // FOE_GRAPHICS_RESOURCE_SHADER_LOADER_HPP
+#endif // SHADER_LOADER_HPP

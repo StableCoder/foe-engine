@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/resource/shader_loader.hpp>
+#include "shader_loader.hpp"
 
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/shader_create_info.h>

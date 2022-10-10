@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef ARMATURE_HPP
-#define ARMATURE_HPP
+#ifndef YAML_ARMATURE_HPP
+#define YAML_ARMATURE_HPP
 
 #include <foe/ecs/group_translator.h>
 #include <foe/resource/create_info.h>
@@ -19,4 +19,4 @@ void yaml_read_armature(YAML::Node const &node,
 
 auto yaml_write_armature(foeArmatureCreateInfo const &data) -> YAML::Node;
 
-#endif // ARMATURE_HPP
+#endif // YAML_ARMATURE_HPP

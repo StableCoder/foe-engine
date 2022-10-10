@@ -2,27 +2,38 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_LOADER_HPP
-#define FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_LOADER_HPP
+#ifndef IMAGE_LOADER_HPP
+#define IMAGE_LOADER_HPP
 
-#include <foe/ecs/id.h>
-#include <foe/physics/export.h>
-#include <foe/physics/resource/collision_shape.hpp>
+#include <foe/graphics/resource/image.hpp>
+#include <foe/graphics/session.h>
+#include <foe/graphics/type_defs.h>
+#include <foe/graphics/upload_buffer.h>
+#include <foe/graphics/upload_context.h>
+#include <foe/graphics/upload_request.h>
+#include <foe/managed_memory.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
+#include <array>
+#include <filesystem>
+#include <functional>
 #include <mutex>
 #include <vector>
 
-class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
+class foeImageLoader {
   public:
-    ~foeCollisionShapeLoader();
-
-    foeResultSet initialize(foeResourcePool resourcePool);
+    foeResultSet initialize(
+        foeResourcePool resourcePool,
+        std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn);
     void deinitialize();
     bool initialized() const noexcept;
 
-    void maintenance();
+    foeResultSet initializeGraphics(foeGfxSession gfxSession);
+    void deinitializeGraphics();
+    bool initializedGraphics() const noexcept;
+
+    void gfxMaintenance();
 
     static bool canProcessCreateInfo(foeResourceCreateInfo createInfo);
     static void load(void *pLoader,
@@ -42,12 +53,20 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
               PFN_foeResourcePostLoad *pPostLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
+    std::function<foeResultSet(char const *, foeManagedMemory *)> mExternalFileSearchFn;
+
+    foeGfxSession mGfxSession{FOE_NULL_HANDLE};
+
+    foeGfxUploadContext mGfxUploadContext{FOE_NULL_HANDLE};
 
     struct LoadData {
         foeResource resource;
         foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
-        foeCollisionShape data;
+        foeImage data;
+
+        foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
+        foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
     };
 
     std::mutex mLoadSync;
@@ -61,6 +80,10 @@ class FOE_PHYSICS_EXPORT foeCollisionShapeLoader {
 
     std::mutex mUnloadSync;
     std::vector<UnloadData> mUnloadRequests;
+
+    std::mutex mDestroySync;
+    size_t mDataDestroyIndex{0};
+    std::array<std::vector<foeImage>, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1> mDataDestroyLists{};
 };
 
-#endif // FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_LOADER_HPP
+#endif // IMAGE_LOADER_HPP

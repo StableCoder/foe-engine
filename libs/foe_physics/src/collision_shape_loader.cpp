@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/physics/resource/collision_shape_loader.hpp>
+#include "collision_shape_loader.hpp"
 
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/physics/resource/collision_shape.hpp>

@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_LOADER_HPP
-#define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_LOADER_HPP
+#ifndef VERTEX_DESCRIPTOR_LOADER_HPP
+#define VERTEX_DESCRIPTOR_LOADER_HPP
 
-#include <foe/graphics/resource/export.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/type_defs.h>
 #include <foe/resource/pool.h>
@@ -14,7 +13,7 @@
 #include <mutex>
 #include <vector>
 
-class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
+class foeVertexDescriptorLoader {
   public:
     foeResultSet initialize(foeResourcePool resourcePool);
     void deinitialize();
@@ -61,4 +60,4 @@ class FOE_GFX_RES_EXPORT foeVertexDescriptorLoader {
     std::vector<UnloadData> mUnloadRequests;
 };
 
-#endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_LOADER_HPP
+#endif // VERTEX_DESCRIPTOR_LOADER_HPP
