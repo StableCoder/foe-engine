@@ -7,16 +7,6 @@
 #include <GLFW/glfw3.h>
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
-#include <foe/ecs/name_map.h>
-#include <foe/graphics/resource/image_loader.hpp>
-#include <foe/graphics/resource/material.hpp>
-#include <foe/graphics/resource/material_loader.hpp>
-#include <foe/graphics/resource/mesh.hpp>
-#include <foe/graphics/resource/mesh_loader.hpp>
-#include <foe/graphics/resource/shader_loader.hpp>
-#include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/resource/vertex_descriptor_loader.hpp>
-#include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/graphics/vk/render_graph/job/blit_image.hpp>
 #include <foe/graphics/vk/render_graph/job/export_image.hpp>
@@ -29,29 +19,25 @@
 #include <foe/graphics/vk/sample_count.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/imex/exporters.h>
-#include <foe/physics/resource/collision_shape_loader.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
-#include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi/keyboard.hpp>
 #include <foe/wsi/mouse.hpp>
 #include <foe/wsi/vulkan.h>
 
-#include "foe/handle.h"
 #include "graphics.hpp"
 #include "log.hpp"
 #include "logging.hpp"
 #include "register_basic_functionality.h"
+#include "render_graph/render_scene.hpp"
 #include "simulation/armature_system.hpp"
 #include "simulation/camera_pool.hpp"
 #include "simulation/camera_system.hpp"
 #include "simulation/position_descriptor_pool.hpp"
 #include "simulation/vk_animation.hpp"
-
-#include "render_graph/render_scene.hpp"
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/runtime.h>

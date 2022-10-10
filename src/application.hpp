@@ -22,15 +22,12 @@
 #include "window.hpp"
 
 #include <array>
-#include <map>
 #include <memory>
-#include <tuple>
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/session.h>
 #include <foe/xr/openxr/vk/vulkan.h>
 
-#include "xr_camera.hpp"
 #include "xr_vk_camera_system.hpp"
 #include "xr_vk_session_view.hpp"
 #endif
