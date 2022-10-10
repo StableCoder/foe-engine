@@ -153,7 +153,7 @@ foeResultSet getDependencies(foeImexImporter importer,
         pData += sizeof(uint32_t);
         bytesLeft -= sizeof(uint32_t);
 
-        size_t copyLength = strLen;
+        long copyLength = strLen;
         if (pEndName - pNames < copyLength) {
             copyLength = pEndName - pNames;
         }
@@ -398,6 +398,8 @@ foeResultSet getResourceCreateInfo(foeImexImporter importer,
         uint32_t readBuffer = 8;
         auto result = binary_read_foeResourceID(pData, &readBuffer, pImporter->groupTranslator,
                                                 &fileResourceID);
+        if (result.value != FOE_SUCCESS)
+            return result;
         pData += readBuffer;
 
         if (fileResourceID == resource) {

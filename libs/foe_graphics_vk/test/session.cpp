@@ -50,8 +50,6 @@ TEST_CASE("foeGfxSession(Vulkan)") {
         CHECK(strLen == 0);
     }
     SECTION("With an extension") {
-        char layer[] = "";
-        char *ppLayers = layer;
         char extension[] = "VK_KHR_synchronization2";
         char *ppExtensions = extension;
 
@@ -328,7 +326,6 @@ TEST_CASE(
     foeResultSet result;
     foeGfxRuntime runtime = FOE_NULL_HANDLE;
     foeGfxSession session = FOE_NULL_HANDLE;
-    uint32_t vkApiVersion;
     uint32_t physicalDeviceCount = 1;
     VkPhysicalDevice vkPhysicalDevice = FOE_NULL_HANDLE;
 

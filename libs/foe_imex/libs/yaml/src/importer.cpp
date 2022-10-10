@@ -179,7 +179,7 @@ foeResultSet getDependencies(foeImexImporter importer,
         for (uint32_t i = 0; i < processedCount; ++i) {
             pDependencyGroups[i] = foeIdValueToGroup(dependencies[i].groupValue);
 
-            size_t copyLength = dependencies[i].name.size() + 1;
+            long copyLength = dependencies[i].name.size() + 1;
             if (pEndName - pNames < copyLength) {
                 copyLength = pEndName - pNames;
             }

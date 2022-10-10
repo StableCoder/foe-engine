@@ -353,7 +353,6 @@ foeResultSet importState(std::string_view topLevelDataSet,
         foeImexImporter groupImporter = pSimulationSet->groupData.persistentImporter();
 
         // Go through all the indexes for the group, set any available editor names
-        foeIdIndex nextFreshIndex;
         std::vector<foeIdIndex> recycledIndexes;
 
         struct CallContext {

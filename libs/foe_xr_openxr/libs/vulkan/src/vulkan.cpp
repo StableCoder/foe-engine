@@ -156,7 +156,6 @@ extern "C" foeResultSet foeXrGetVulkanGraphicsRequirements(
 extern "C" foeResultSet foeOpenXrEnumerateSwapchainVkImages(XrSwapchain xrSwapchain,
                                                             uint32_t *pImageCount,
                                                             XrSwapchainImageVulkanKHR *pImages) {
-    uint32_t imageCount;
     XrResult xrResult;
     if (pImages == NULL)
         xrResult = xrEnumerateSwapchainImages(xrSwapchain, 0, pImageCount, NULL);

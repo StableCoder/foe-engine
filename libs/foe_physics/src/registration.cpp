@@ -127,7 +127,6 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
 foeResultSet create(foeSimulation *pSimulation) {
     foeResultSet result;
-    size_t count;
     TypeSelection selection = {};
 
     // Loaders

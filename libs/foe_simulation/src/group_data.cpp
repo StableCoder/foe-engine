@@ -137,6 +137,8 @@ bool foeGroupData::setPersistentImporter(foeImexImporter importer) {
 
     foeIdGroup group;
     foeResultSet result = foeImexImporterGetGroupID(importer, &group);
+    if (result.value != FOE_SUCCESS)
+        return false;
 
     if (group != foeIdPersistentGroup) {
         FOE_LOG(

@@ -17,8 +17,6 @@ TEST_CASE() {
     foeGfxSession session = FOE_NULL_HANDLE;
     foeGfxUploadContext uploadContext = FOE_NULL_HANDLE;
     foeGfxUploadBuffer uploadBuffer = FOE_NULL_HANDLE;
-    foeGfxUploadRequestStatus uploadRequestStatus = FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE;
-    foeGfxUploadRequest uploadRequest = FOE_NULL_HANDLE;
 
     result = createTestSession(&runtime, &session);
     REQUIRE(result.value == FOE_SUCCESS);

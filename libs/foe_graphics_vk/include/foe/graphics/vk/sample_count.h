@@ -16,13 +16,13 @@ extern "C" {
  * @param sampleCount Count to try to match
  * @return The appropriate flag to match the parameter. If there is no match to map, returns 0.
  */
-FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetSampleCountFlags(int sampleCount);
+FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetSampleCountFlags(uint32_t sampleCount);
 
 /** @brief Converts the given flag to an integer value
  * @param flags Flag to convert
  * @return The appropriate sample count as a number. 0 if it's not a valid flag value.
  */
-FOE_GFX_EXPORT int foeGfxVkGetSampleCount(VkSampleCountFlags flags);
+FOE_GFX_EXPORT uint32_t foeGfxVkGetSampleCount(VkSampleCountFlags flags);
 
 #ifdef __cplusplus
 }

@@ -228,7 +228,6 @@ TEST_CASE("foeYamlImporter - Function Tests") {
     }
 
     SECTION("Finding external data file (foeImexImporterFindExternalFile)") {
-        uint32_t pathLength = UINT32_MAX;
         foeResultSet result;
 
         SECTION("Existing file") {

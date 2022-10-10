@@ -236,7 +236,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
         // Make sure the MSAA setting is valid
         globalMSAA = foeGfxVkGetMaxSupportedMSAA(gfxSession);
-        int maxSupportedCount = foeGfxVkGetSampleCount(globalMSAA);
+        uint32_t maxSupportedCount = foeGfxVkGetSampleCount(globalMSAA);
 
         if (settings.graphics.msaa > maxSupportedCount) {
             settings.graphics.msaa = maxSupportedCount;

@@ -91,5 +91,5 @@ foeResultSet binary_read_foeEntityID(void const *pReadBuffer,
 foeResultSet binary_write_foeEntityID(foeEntityID const entityID,
                                       uint32_t *pWriteSize,
                                       void *pWriteBuffer) {
-    return binary_write_foeEntityID(entityID, pWriteSize, pWriteBuffer);
+    return binary_write_foeResourceID(entityID, pWriteSize, pWriteBuffer);
 }

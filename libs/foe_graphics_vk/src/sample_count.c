@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/sample_count.h>
 
-VkSampleCountFlags foeGfxVkGetSampleCountFlags(int sampleCount) {
+VkSampleCountFlags foeGfxVkGetSampleCountFlags(uint32_t sampleCount) {
     switch (sampleCount) {
     case 1:
         return VK_SAMPLE_COUNT_1_BIT;
@@ -32,7 +32,7 @@ VkSampleCountFlags foeGfxVkGetSampleCountFlags(int sampleCount) {
     }
 }
 
-int foeGfxVkGetSampleCount(VkSampleCountFlags flags) {
+uint32_t foeGfxVkGetSampleCount(VkSampleCountFlags flags) {
     switch (flags) {
     case VK_SAMPLE_COUNT_1_BIT:
         return 1;

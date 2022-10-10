@@ -14,8 +14,8 @@ foeGfxVkFragmentDescriptor::foeGfxVkFragmentDescriptor(
     mFragment{fragment},
     pRasterizationSCI{},
     pDepthStencilSCI{},
-    pColourBlendAttachments{},
-    pColourBlendSCI{} {
+    pColourBlendSCI{},
+    pColourBlendAttachments{} {
     if (pRasterizationSCI)
         this->pRasterizationSCI = new VkPipelineRasterizationStateCreateInfo{*pRasterizationSCI};
 

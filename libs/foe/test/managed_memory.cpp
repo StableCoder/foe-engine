@@ -6,14 +6,14 @@
 #include <foe/managed_memory.h>
 #include <foe/result.h>
 
-constexpr size_t cDataCount = 2048;
+constexpr uint16_t cDataCount = 2048;
 
 TEST_CASE("ManagedMemory - No metadata/cleanup") {
     foeManagedMemory managedMemory = FOE_NULL_HANDLE;
     foeResultSet result;
 
     uint16_t buffer[cDataCount];
-    for (int i = 0; i < cDataCount; ++i) {
+    for (uint16_t i = 0; i < cDataCount; ++i) {
         buffer[i] = i;
     }
 
