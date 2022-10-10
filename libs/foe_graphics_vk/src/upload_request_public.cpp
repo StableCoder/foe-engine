@@ -7,6 +7,7 @@
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/vk/queue_family.h>
 
+#include "result.h"
 #include "upload_context.hpp"
 #include "upload_request.hpp"
 #include "vk_result.h"
@@ -23,12 +24,12 @@ extern "C" foeResultSet foeGfxVkCreateUploadData(VkDevice device,
                                                  VkCommandPool srcCommandPool,
                                                  VkCommandPool dstCommandPool,
                                                  foeGfxUploadRequest *pUploadRequest) {
-    VkResult vkResult;
-    auto *pNewRequest = new foeGfxVkUploadRequest;
-    *pNewRequest = {
+    auto *pNewRequest = new (std::nothrow) foeGfxVkUploadRequest{
         .srcCmdPool = srcCommandPool,
         .dstCmdPool = dstCommandPool,
     };
+    if (pNewRequest == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
     VkCommandBufferAllocateInfo bufferAI{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -42,7 +43,7 @@ extern "C" foeResultSet foeGfxVkCreateUploadData(VkDevice device,
     };
 
     // Destination
-    vkResult = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->dstCmdBuffer);
+    VkResult vkResult = vkAllocateCommandBuffers(device, &bufferAI, &pNewRequest->dstCmdBuffer);
     if (vkResult != VK_SUCCESS) {
         goto CREATE_FAILED;
     }

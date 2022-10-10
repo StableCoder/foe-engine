@@ -7,6 +7,7 @@
 #include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/session.h>
 
+#include "result.h"
 #include "vk_result.h"
 
 #include <memory>
@@ -99,7 +100,10 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
 
         // If the old swapchain exists, we need to destroy it
         if (pWindow->swapchain) {
-            foeGfxVkSwapchain *pOldSwapchain = new foeGfxVkSwapchain{std::move(pWindow->swapchain)};
+            foeGfxVkSwapchain *pOldSwapchain =
+                new (std::nothrow) foeGfxVkSwapchain{std::move(pWindow->swapchain)};
+            if (pOldSwapchain == nullptr)
+                return to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
 
             foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
                                         (PFN_foeGfxDelayedCall)destroy_foeGfxVkSwapchain,

@@ -6,6 +6,7 @@
 
 #include <foe/graphics/vk/session.h>
 
+#include "result.h"
 #include "session.hpp"
 #include "upload_context.hpp"
 #include "vk_result.h"
@@ -28,12 +29,11 @@ extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
                                                   foeGfxUploadContext *pUploadContext) {
     auto *pSession = session_from_handle(session);
     VkResult vkResult = VK_SUCCESS;
-    auto *pNewContext = new foeGfxVkUploadContext;
 
     auto transferQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_TRANSFER_BIT);
     auto graphicsQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_GRAPHICS_BIT);
 
-    *pNewContext = {
+    auto *pNewContext = new (std::nothrow) foeGfxVkUploadContext{
         .device = pSession->device,
         .allocator = pSession->allocator,
         .pSrcQueueFamily = (transferQueue == graphicsQueue)
@@ -41,6 +41,8 @@ extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
                                : &pSession->queueFamilies[transferQueue],
         .pDstQueueFamily = &pSession->queueFamilies[graphicsQueue],
     };
+    if (pNewContext == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
     VkCommandPoolCreateInfo cmdPoolCI{
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,

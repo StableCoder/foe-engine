@@ -41,8 +41,10 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
                                               bool validation,
                                               bool debugLogging,
                                               foeGfxRuntime *pRuntime) {
-    auto *pNewRuntime = new foeGfxVkRuntime;
-    *pNewRuntime = {};
+    auto *pNewRuntime = new (std::nothrow) foeGfxVkRuntime{};
+    if (pNewRuntime == nullptr) {
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+    }
 
     VkApplicationInfo appinfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,

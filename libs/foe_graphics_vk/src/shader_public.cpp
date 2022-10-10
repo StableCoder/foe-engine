@@ -48,17 +48,18 @@ extern "C" foeResultSet foeGfxVkCreateShader(foeGfxSession session,
     auto *pSession = session_from_handle(session);
 
     VkResult vkResult = VK_SUCCESS;
-    auto *pNew = new foeGfxVkShader;
 
     // Get the DescriptorSetLayout directly from the gfxSession
     VkDescriptorSetLayout layout =
         pSession->descriptorSetLayoutPool.get(&pCreateInfo->descriptorSetLayoutCI);
 
-    *pNew = foeGfxVkShader{
+    auto *pNewShader = new (std::nothrow) foeGfxVkShader{
         .builtinSetLayouts = pCreateInfo->builtinSetLayouts,
         .descriptorSetLayout = layout,
         .pushConstantRange = pCreateInfo->pushConstantRange,
     };
+    if (pNewShader == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
     VkShaderModuleCreateInfo shaderCI{
         .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -66,15 +67,15 @@ extern "C" foeResultSet foeGfxVkCreateShader(foeGfxSession session,
         .pCode = pShaderCode,
     };
 
-    vkResult = vkCreateShaderModule(pSession->device, &shaderCI, nullptr, &pNew->module);
+    vkResult = vkCreateShaderModule(pSession->device, &shaderCI, nullptr, &pNewShader->module);
     if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
 CREATE_FAILED:
     if (vkResult == VK_SUCCESS) {
-        *pShader = shader_to_handle(pNew);
+        *pShader = shader_to_handle(pNewShader);
     } else {
-        foeGfxVkDestroyShader(pSession, pNew);
+        foeGfxVkDestroyShader(pSession, pNewShader);
     }
 
     return vk_to_foeResult(vkResult);

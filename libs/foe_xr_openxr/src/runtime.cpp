@@ -24,12 +24,15 @@ foeResultSet foeOpenXrCreateRuntime(char const *appName,
                                     bool validation,
                                     bool debugLogging,
                                     foeXrRuntime *pRuntime) {
-    auto *pNewRuntime = new foeOpenXrRuntime;
     XrResult xrRes{XR_SUCCESS};
 
-    // Application Info
-    pNewRuntime->apiVersion = XR_MAKE_VERSION(1, 0, 12);
+    auto *pNewRuntime = new (std::nothrow) foeOpenXrRuntime{
+        .apiVersion = XR_MAKE_VERSION(1, 0, 12),
+    };
+    if (pNewRuntime == nullptr)
+        return to_foeResult(FOE_OPENXR_ERROR_OUT_OF_MEMORY);
 
+    // Application Info
     XrApplicationInfo appInfo{
         .applicationVersion = appVersion,
         .engineVersion = FOE_ENGINE_VERSION,

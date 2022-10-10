@@ -5,6 +5,7 @@
 #include <foe/graphics/vk/mesh.h>
 
 #include "mesh.h"
+#include "result.h"
 #include "session.hpp"
 #include "vk_result.h"
 
@@ -36,12 +37,13 @@ extern "C" foeResultSet foeGfxVkCreateMesh(foeGfxSession session,
     VkResult vkResult = VK_SUCCESS;
 
     bool bothHostVisible = true;
-    auto *pNewMesh = new foeGfxVkMesh;
-    *pNewMesh = foeGfxVkMesh{
+    auto *pNewMesh = new (std::nothrow) foeGfxVkMesh{
         .numIndices = numIndices,
         .indexType = indexType,
         .boneDataOffset = boneDataOffset,
     };
+    if (pNewMesh == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
     { // Vertex Buffer
         VkBufferCreateInfo bufferCI{

@@ -26,10 +26,10 @@ struct foeGfxVkUploadRequest {
 
 FOE_DEFINE_HANDLE_CASTS(upload_request, foeGfxVkUploadRequest, foeGfxUploadRequest)
 
-VkResult foeGfxVkCreateUploadRequest(VkDevice device,
-                                     VkCommandPool srcCommandPool,
-                                     VkCommandPool dstCommandPool,
-                                     foeGfxVkUploadRequest **pUploadRequest);
+foeResultSet foeGfxVkCreateUploadRequest(VkDevice device,
+                                         VkCommandPool srcCommandPool,
+                                         VkCommandPool dstCommandPool,
+                                         foeGfxVkUploadRequest **pUploadRequest);
 
 void foeGfxVkDestroyUploadRequest(VkDevice device, foeGfxVkUploadRequest *pUploadRequest);
 

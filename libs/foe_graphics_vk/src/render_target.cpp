@@ -115,7 +115,7 @@ foeResultSet foeGfxVkCreateRenderTarget(foeGfxSession session,
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS);
     }
 
-    auto *pNewRenderTarget = new foeGfxVkRenderTarget{
+    auto *pNewRenderTarget = new (std::nothrow) foeGfxVkRenderTarget{
         .pSession = pSession,
         .delayedCaller = delayedCaller,
         .imageSpecifications =
@@ -125,6 +125,9 @@ foeResultSet foeGfxVkCreateRenderTarget(foeGfxSession session,
         .images = std::vector<RenderTargetImageData>{imageCount, RenderTargetImageData{}},
         .indices = std::vector<uint8_t>(count, static_cast<uint8_t>(0)),
     };
+    if (pNewRenderTarget == nullptr) {
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+    }
 
     *pRenderTarget = render_target_to_handle(pNewRenderTarget);
 

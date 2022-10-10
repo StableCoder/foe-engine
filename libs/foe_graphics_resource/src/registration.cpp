@@ -118,7 +118,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE_LOADER,
-            .pLoader = new foeImageLoader,
+            .pLoader = new (std::nothrow) foeImageLoader,
             .pCanProcessCreateInfoFn = foeImageLoader::canProcessCreateInfo,
             .pLoadFn = foeImageLoader::load,
             .pGfxMaintenanceFn =
@@ -126,7 +126,12 @@ foeResultSet create(foeSimulation *pSimulation) {
                     reinterpret_cast<foeImageLoader *>(pLoader)->gfxMaintenance();
                 },
         };
-        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+
+        if (loaderCI.pLoader != nullptr)
+            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        else
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
+
         if (result.value != FOE_SUCCESS) {
             delete (foeImageLoader *)loaderCI.pLoader;
 
@@ -149,7 +154,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL_LOADER,
-            .pLoader = new foeMaterialLoader,
+            .pLoader = new (std::nothrow) foeMaterialLoader,
             .pCanProcessCreateInfoFn = foeMaterialLoader::canProcessCreateInfo,
             .pLoadFn = foeMaterialLoader::load,
             .pGfxMaintenanceFn =
@@ -157,7 +162,12 @@ foeResultSet create(foeSimulation *pSimulation) {
                     reinterpret_cast<foeMaterialLoader *>(pLoader)->gfxMaintenance();
                 },
         };
-        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+
+        if (loaderCI.pLoader != nullptr)
+            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        else
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
+
         if (result.value != FOE_SUCCESS) {
             delete (foeMaterialLoader *)loaderCI.pLoader;
 
@@ -180,7 +190,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER,
-            .pLoader = new foeShaderLoader,
+            .pLoader = new (std::nothrow) foeShaderLoader,
             .pCanProcessCreateInfoFn = foeShaderLoader::canProcessCreateInfo,
             .pLoadFn = foeShaderLoader::load,
             .pGfxMaintenanceFn =
@@ -188,7 +198,12 @@ foeResultSet create(foeSimulation *pSimulation) {
                     reinterpret_cast<foeShaderLoader *>(pLoader)->gfxMaintenance();
                 },
         };
-        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+
+        if (loaderCI.pLoader != nullptr)
+            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        else
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
+
         if (result.value != FOE_SUCCESS) {
             delete (foeShaderLoader *)loaderCI.pLoader;
 
@@ -211,7 +226,7 @@ foeResultSet create(foeSimulation *pSimulation) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
-            .pLoader = new foeVertexDescriptorLoader,
+            .pLoader = new (std::nothrow) foeVertexDescriptorLoader,
             .pCanProcessCreateInfoFn = foeVertexDescriptorLoader::canProcessCreateInfo,
             .pLoadFn = foeVertexDescriptorLoader::load,
             .pGfxMaintenanceFn =
@@ -219,7 +234,12 @@ foeResultSet create(foeSimulation *pSimulation) {
                     reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->gfxMaintenance();
                 },
         };
-        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+
+        if (loaderCI.pLoader != nullptr)
+            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        else
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
+
         if (result.value != FOE_SUCCESS) {
             delete (foeVertexDescriptorLoader *)loaderCI.pLoader;
 
@@ -243,13 +263,18 @@ foeResultSet create(foeSimulation *pSimulation) {
         // Couldn't increment it, doesn't exist yet
         foeSimulationLoaderData loaderCI{
             .sType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER,
-            .pLoader = new foeMeshLoader,
+            .pLoader = new (std::nothrow) foeMeshLoader,
             .pCanProcessCreateInfoFn = foeMeshLoader::canProcessCreateInfo,
             .pLoadFn = foeMeshLoader::load,
             .pGfxMaintenanceFn =
                 [](void *pLoader) { reinterpret_cast<foeMeshLoader *>(pLoader)->gfxMaintenance(); },
         };
-        result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+
+        if (loaderCI.pLoader != nullptr)
+            result = foeSimulationInsertResourceLoader(pSimulation, &loaderCI);
+        else
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_OUT_OF_MEMORY);
+
         if (result.value != FOE_SUCCESS) {
             delete (foeMeshLoader *)loaderCI.pLoader;
 

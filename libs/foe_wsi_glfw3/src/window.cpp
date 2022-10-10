@@ -67,7 +67,6 @@ foeResultSet foeWsiCreateWindowErrC(
     if (!glfwInit()) {
         return to_foeResult(FOE_WSI_ERROR_FAILED_TO_INITIALIZE_BACKEND);
     }
-    foeResultSet result = to_foeResult(FOE_WSI_SUCCESS);
 
     // Since this is exclusively a Vulkan platform, don't initialize OpenGL context
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -77,9 +76,15 @@ foeResultSet foeWsiCreateWindowErrC(
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
     }
 
-    foeWsiWindowGLFW *pNewWindow = new foeWsiWindowGLFW{
+    // Attempt allocation
+    foeWsiWindowGLFW *pNewWindow = new (std::nothrow) foeWsiWindowGLFW{
         .title = pTitle,
     };
+    if (pNewWindow == nullptr)
+        return to_foeResult(FOE_WSI_ERROR_OUT_OF_MEMORY);
+
+    // Setup window
+    foeResultSet result = to_foeResult(FOE_WSI_SUCCESS);
 
     pNewWindow->pWindow = glfwCreateWindow(width, height, pTitle, nullptr, nullptr);
     if (pNewWindow->pWindow == nullptr) {

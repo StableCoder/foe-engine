@@ -390,14 +390,16 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
                                               VkPhysicalDeviceFeatures const *pBasicFeatures,
                                               void const *pFeatures,
                                               foeGfxSession *pSession) {
-    auto *pNewSession = new foeGfxVkSession;
-    auto sessionHandle = session_to_handle(pNewSession);
 
     foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
     VkResult vkResult = VK_SUCCESS;
 
-    pNewSession->instance = reinterpret_cast<foeGfxVkRuntime *>(runtime)->instance;
-    pNewSession->physicalDevice = vkPhysicalDevice;
+    auto *pNewSession = new (std::nothrow) foeGfxVkSession{
+        .instance = reinterpret_cast<foeGfxVkRuntime *>(runtime)->instance,
+        .physicalDevice = vkPhysicalDevice,
+    };
+    if (pNewSession == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
     // Queues
     vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &pNewSession->numQueueFamilies,
@@ -601,7 +603,7 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     }
 
     // Internal pools
-    result = pNewSession->renderPassPool.initialize(sessionHandle);
+    result = pNewSession->renderPassPool.initialize(session_to_handle(pNewSession));
     if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
@@ -614,7 +616,7 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     if (vkResult != VK_SUCCESS)
         goto CREATE_FAILED;
 
-    result = foeGfxVkCreatePipelinePool(sessionHandle, &pNewSession->pipelinePool);
+    result = foeGfxVkCreatePipelinePool(session_to_handle(pNewSession), &pNewSession->pipelinePool);
     if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
@@ -625,7 +627,7 @@ CREATE_FAILED:
     if (result.value != FOE_SUCCESS) {
         foeGfxVkDestroySession(pNewSession);
     } else {
-        *pSession = sessionHandle;
+        *pSession = session_to_handle(pNewSession);
     }
 
     return result;

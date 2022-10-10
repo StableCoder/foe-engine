@@ -4,6 +4,7 @@
 
 #include <foe/graphics/upload_buffer.h>
 
+#include "result.h"
 #include "upload_buffer.hpp"
 #include "upload_context.hpp"
 #include "vk_result.h"
@@ -53,12 +54,16 @@ ALLOCATION_FAILED:
         }
     } else {
         // On success, create and return the buffer data
-        auto *pNew = new foeGfxVkUploadBuffer;
-        *pNew = {
+        auto *pNewUploadBuffer = new (std::nothrow) foeGfxVkUploadBuffer{
             .buffer = stagingBuffer,
             .alloc = stagingAlloc,
         };
-        *pUploadBuffer = upload_buffer_to_handle(pNew);
+        if (pNewUploadBuffer == nullptr) {
+            vmaDestroyBuffer(pUploadContext->allocator, stagingBuffer, stagingAlloc);
+            return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+        }
+
+        *pUploadBuffer = upload_buffer_to_handle(pNewUploadBuffer);
     }
 
     return vk_to_foeResult(vkRes);

@@ -4,21 +4,27 @@
 
 #include "upload_request.hpp"
 
-VkResult foeGfxVkCreateUploadRequest(VkDevice device,
-                                     VkCommandPool srcCommandPool,
-                                     VkCommandPool dstCommandPool,
-                                     foeGfxVkUploadRequest **pUploadRequest) {
-    VkResult res;
-    auto uploadRequest = new foeGfxVkUploadRequest;
-    *uploadRequest = {
+#include "result.h"
+#include "vk_result.h"
+
+#include <new>
+
+foeResultSet foeGfxVkCreateUploadRequest(VkDevice device,
+                                         VkCommandPool srcCommandPool,
+                                         VkCommandPool dstCommandPool,
+                                         foeGfxVkUploadRequest **pUploadRequest) {
+
+    auto *pNewUploadRequest = new (std::nothrow) foeGfxVkUploadRequest{
         .device = device,
         .srcCmdPool = srcCommandPool,
         .dstCmdPool = dstCommandPool,
     };
+    if (pNewUploadRequest == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
     VkCommandBufferAllocateInfo bufferAI{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .commandPool = uploadRequest->dstCmdPool,
+        .commandPool = pNewUploadRequest->dstCmdPool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
         .commandBufferCount = 1,
     };
@@ -28,27 +34,28 @@ VkResult foeGfxVkCreateUploadRequest(VkDevice device,
     };
 
     // Destination
-    res = vkAllocateCommandBuffers(device, &bufferAI, &uploadRequest->dstCmdBuffer);
-    if (res != VK_SUCCESS) {
+    VkResult vkResult =
+        vkAllocateCommandBuffers(device, &bufferAI, &pNewUploadRequest->dstCmdBuffer);
+    if (vkResult != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
-    res = vkCreateFence(device, &fenceCI, nullptr, &uploadRequest->dstFence);
-    if (res != VK_SUCCESS) {
+    vkResult = vkCreateFence(device, &fenceCI, nullptr, &pNewUploadRequest->dstFence);
+    if (vkResult != VK_SUCCESS) {
         goto CREATE_FAILED;
     }
 
     // Source
-    if (uploadRequest->srcCmdPool != VK_NULL_HANDLE) {
-        bufferAI.commandPool = uploadRequest->srcCmdPool;
+    if (pNewUploadRequest->srcCmdPool != VK_NULL_HANDLE) {
+        bufferAI.commandPool = pNewUploadRequest->srcCmdPool;
 
-        res = vkAllocateCommandBuffers(device, &bufferAI, &uploadRequest->srcCmdBuffer);
-        if (res != VK_SUCCESS) {
+        vkResult = vkAllocateCommandBuffers(device, &bufferAI, &pNewUploadRequest->srcCmdBuffer);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
-        res = vkCreateFence(device, &fenceCI, nullptr, &uploadRequest->srcFence);
-        if (res != VK_SUCCESS) {
+        vkResult = vkCreateFence(device, &fenceCI, nullptr, &pNewUploadRequest->srcFence);
+        if (vkResult != VK_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -57,21 +64,22 @@ VkResult foeGfxVkCreateUploadRequest(VkDevice device,
                 .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             };
 
-            res = vkCreateSemaphore(device, &semaphoreCI, nullptr, &uploadRequest->copyComplete);
-            if (res != VK_SUCCESS) {
+            vkResult =
+                vkCreateSemaphore(device, &semaphoreCI, nullptr, &pNewUploadRequest->copyComplete);
+            if (vkResult != VK_SUCCESS) {
                 goto CREATE_FAILED;
             }
         }
     }
 
 CREATE_FAILED:
-    if (res == VK_SUCCESS) {
-        *pUploadRequest = uploadRequest;
+    if (vkResult == VK_SUCCESS) {
+        *pUploadRequest = pNewUploadRequest;
     } else {
-        foeGfxVkDestroyUploadRequest(device, uploadRequest);
+        foeGfxVkDestroyUploadRequest(device, pNewUploadRequest);
     }
 
-    return res;
+    return vk_to_foeResult(vkResult);
 }
 
 void foeGfxVkDestroyUploadRequest(VkDevice device, foeGfxVkUploadRequest *pUploadRequest) {
