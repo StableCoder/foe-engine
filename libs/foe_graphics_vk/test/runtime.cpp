@@ -25,12 +25,17 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
         strLen = UINT32_MAX;
         result = foeGfxVkEnumerateRuntimeLayers(runtime, &strLen, nullptr);
         CHECK(result.value == FOE_SUCCESS);
-        CHECK(strLen == 0);
 
         strLen = UINT32_MAX;
         result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, nullptr);
         CHECK(result.value == FOE_SUCCESS);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+        // macOS has some base required extensions after Vulkan 216
+        CHECK(strLen == strlen(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) +
+                            strlen(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) + 2);
+#else
         CHECK(strLen == 0);
+#endif
     }
     SECTION("Validation Layer and Debugging Extension enabled") {
         result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, true, true,
@@ -68,20 +73,37 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
         strLen = UINT32_MAX;
         result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, nullptr);
         CHECK(result.value == FOE_SUCCESS);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+        CHECK(strLen == 20 + (strlen(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) +
+                              strlen(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) + 2));
+#else
         CHECK(strLen == 20);
+#endif
 
         SECTION("Enumerating Extensions") {
             SECTION("Oversized buffer provided") {
                 strLen = sizeof(strBuffer);
                 result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+                CHECK(strLen ==
+                      20 + (strlen(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) +
+                            strlen(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) + 2));
+#else
                 CHECK(strLen == 20);
+#endif
                 CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+                CHECK(strLen ==
+                      20 + (strlen(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) +
+                            strlen(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) + 2));
+#else
                 CHECK(strLen == 20);
+#endif
                 CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Undersized buffer provided") {
@@ -134,20 +156,37 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
         strLen = UINT32_MAX;
         result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, nullptr);
         CHECK(result.value == FOE_SUCCESS);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+        CHECK(strLen == 20 + (strlen(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) +
+                              strlen(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) + 2));
+#else
         CHECK(strLen == 20);
+#endif
 
         SECTION("Enumerating Extensions") {
             SECTION("Oversized buffer provided") {
                 strLen = sizeof(strBuffer);
                 result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+                CHECK(strLen ==
+                      20 + (strlen(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) +
+                            strlen(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) + 2));
+#else
                 CHECK(strLen == 20);
+#endif
                 CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+                CHECK(strLen ==
+                      20 + (strlen(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) +
+                            strlen(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) + 2));
+#else
                 CHECK(strLen == 20);
+#endif
                 CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Undersized buffer provided") {
