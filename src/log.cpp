@@ -4,6 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(General, FOE_LOG_LEVEL_ALL)
-
 FOE_DEFINE_LOG_CATEGORY(foeBringup, FOE_LOG_LEVEL_ALL)

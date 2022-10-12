@@ -4,6 +4,4 @@
 
 #include <foe/log.h>
 
-FOE_DECLARE_LOG_CATEGORY(General)
-
 FOE_DECLARE_LOG_CATEGORY(foeBringup)

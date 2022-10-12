@@ -147,13 +147,13 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
             // It exists, spit out warning if it doesn't support OpenXR or windowing
             if (xrPhysicalDevice != VK_NULL_HANDLE &&
                 xrPhysicalDevice != physDevices[explicitGpu]) {
-                FOE_LOG(General, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
                         "Explicit Physical GPU specified, OpenXR is possible but not supported on "
                         "this GPU: {}",
                         explicitGpu < physicalDeviceCount)
             }
             if (supportsWindow[explicitGpu] == VK_FALSE) {
-                FOE_LOG(General, FOE_LOG_LEVEL_WARNING,
+                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
                         "Explicit Physical GPU specified, Windowing is not supported on this "
                         "GPU: {}",
                         explicitGpu < physicalDeviceCount)
@@ -162,7 +162,7 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
             return physDevices[explicitGpu];
         } else {
             // Invalid device index given
-            FOE_LOG(General, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
                     "Explicit Physical GPU specified, but could not be found: {}", explicitGpu);
         }
     }
@@ -174,17 +174,17 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
         }
     }
 
-    FOE_LOG(General, FOE_LOG_LEVEL_VERBOSE,
+    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
             "Failed to find device that supported both XR and windowing")
 
     // Second, try a XR-only device (if specified)
     if (forceXr) {
         if (xrPhysicalDevice != VK_NULL_HANDLE) {
-            FOE_LOG(General, FOE_LOG_LEVEL_INFO,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO,
                     "Using a VkPhysicalDevice that *only* supports XR");
             return xrPhysicalDevice;
         } else {
-            FOE_LOG(General, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
                     "Attempted to use XR, however no physical device supports it currently");
         }
     }
@@ -192,19 +192,19 @@ auto determineVkPhysicalDevice(VkInstance vkInstance,
     // Thirdly, try a Window-only capable device
     for (uint32_t i = 0; i < physicalDeviceCount; ++i) {
         if (supportsWindow[i] == VK_TRUE) {
-            FOE_LOG(General, FOE_LOG_LEVEL_INFO,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO,
                     "Using VkPhysicalDevice that only supports windowing")
             return physDevices[i];
         }
     }
 
     if (surfaceCount == 0) {
-        FOE_LOG(General, FOE_LOG_LEVEL_INFO,
+        FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO,
                 "Using VkPhysicalDevice that doesn't necessarily support XR or Windowing");
         return physDevices[0];
     }
 
-    FOE_LOG(General, FOE_LOG_LEVEL_ERROR,
+    FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
             "Failed to find physical device that fit any requirements");
     return VK_NULL_HANDLE;
 }
