@@ -7,6 +7,6 @@
 
 #include <foe/log.hpp>
 
-FOE_DECLARE_LOG_CATEGORY(Model, All, All)
+FOE_DECLARE_LOG_CATEGORY(Model)
 
 #endif // MODEL_LOG_HPP

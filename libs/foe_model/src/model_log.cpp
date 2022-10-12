@@ -4,4 +4,4 @@
 
 #include "model_log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(Model)
+FOE_DEFINE_LOG_CATEGORY(Model, All)

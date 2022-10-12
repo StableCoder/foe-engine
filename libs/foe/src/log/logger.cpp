@@ -11,14 +11,11 @@ foeLogger *foeLogger::instance() {
     return &gLogger;
 }
 
-void foeLogger::log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
-    if (level > pCategory->maxLevel())
-        return;
-
+void foeLogger::log(char const *pCategoryName, foeLogLevel level, std::string_view message) {
     std::scoped_lock lock{mSync};
 
     for (auto *it : mSinks) {
-        it->log(pCategory, level, message);
+        it->log(pCategoryName, level, message);
     }
 
     [[unlikely]] if (level == foeLogLevel::Fatal) {

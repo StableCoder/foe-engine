@@ -8,7 +8,7 @@
 namespace {
 struct TestSink : public foeLogSink {
   public:
-    void log(foeLogCategory *, foeLogLevel level, std::string_view) { lastLogLevel = level; }
+    void log(char const *, foeLogLevel level, std::string_view) { lastLogLevel = level; }
     void exception() {}
 
     foeLogLevel lastLogLevel;

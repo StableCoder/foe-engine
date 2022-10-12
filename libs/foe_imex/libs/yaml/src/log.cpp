@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(foeImexYaml)
+FOE_DEFINE_LOG_CATEGORY(foeImexYaml, All)

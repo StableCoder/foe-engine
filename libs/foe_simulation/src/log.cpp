@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(SimulationState)
+FOE_DEFINE_LOG_CATEGORY(SimulationState, All)

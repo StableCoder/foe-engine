@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(foeGraphics)
+FOE_DEFINE_LOG_CATEGORY(foeGraphics, All)

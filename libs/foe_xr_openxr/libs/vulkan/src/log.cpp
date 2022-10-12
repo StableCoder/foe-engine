@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(foeOpenXrVk)
+FOE_DEFINE_LOG_CATEGORY(foeOpenXrVk, All)

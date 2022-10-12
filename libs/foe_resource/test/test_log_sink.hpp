@@ -8,7 +8,7 @@
 #include <foe/log.hpp>
 
 struct TestLogSink : public foeLogSink {
-    void log(foeLogCategory *, foeLogLevel level, std::string_view msg) {
+    void log(char const *, foeLogLevel level, std::string_view msg) {
         logMessages.emplace_back(LogEntry{
             .level = level,
             .msg = std::string{msg},

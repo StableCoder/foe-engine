@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(foeOpenXr)
+FOE_DEFINE_LOG_CATEGORY(foeOpenXr, All)

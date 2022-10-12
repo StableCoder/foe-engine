@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(foePhysics)
+FOE_DEFINE_LOG_CATEGORY(foePhysics, All)

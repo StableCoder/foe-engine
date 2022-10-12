@@ -11,9 +11,8 @@
 namespace {
 
 class StdOutSink : public foeLogSink {
-    void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) {
-        std::cout << std::to_string(level) << " : " << pCategory->name() << " : " << message
-                  << "\n";
+    void log(char const *pCategoryName, foeLogLevel level, std::string_view message) {
+        std::cout << std::to_string(level) << " : " << pCategoryName << " : " << message << "\n";
     }
 
     void exception() { std::cout << std::flush; }

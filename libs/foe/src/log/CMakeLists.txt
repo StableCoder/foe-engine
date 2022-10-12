@@ -2,4 +2,4 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-target_sources(foe PRIVATE category.cpp level.cpp logger.cpp)
+target_sources(foe PRIVATE level.cpp logger.cpp)

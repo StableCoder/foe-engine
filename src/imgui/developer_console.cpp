@@ -5,7 +5,6 @@
 #include "developer_console.hpp"
 
 #include <foe/imgui/state.hpp>
-#include <foe/log/category.hpp>
 #include <imgui.h>
 
 #include <array>
@@ -31,13 +30,13 @@ void foeImGuiDeveloperConsole::deregisterUI(foeImGuiState *pState) {
                      renderMenus.size());
 }
 
-void foeImGuiDeveloperConsole::log(foeLogCategory *pCategory,
+void foeImGuiDeveloperConsole::log(char const *pCategoryName,
                                    foeLogLevel level,
                                    std::string_view message) {
     std::scoped_lock lock{mSync};
 
     mEntries.emplace_back(Entry{
-        .category = std::string{pCategory->name()},
+        .category = pCategoryName,
         .level = level,
         .message = std::string{message},
     });

@@ -7,6 +7,6 @@
 
 #include <foe/log.hpp>
 
-FOE_DECLARE_LOG_CATEGORY(foeGraphicsResource, All, All)
+FOE_DECLARE_LOG_CATEGORY(foeGraphicsResource)
 
 #endif // LOG_HPP

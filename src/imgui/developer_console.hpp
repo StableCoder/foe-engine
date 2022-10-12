@@ -5,7 +5,6 @@
 #ifndef IMGUI_DEVELOPER_CONSOLE_HPP
 #define IMGUI_DEVELOPER_CONSOLE_HPP
 
-#include <foe/log/category.hpp>
 #include <foe/log/sink.hpp>
 
 #include <mutex>
@@ -20,7 +19,7 @@ class foeImGuiDeveloperConsole : public foeLogSink {
     bool registerUI(foeImGuiState *pState);
     void deregisterUI(foeImGuiState *pState);
 
-    void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message) final;
+    void log(char const *pCategoryName, foeLogLevel level, std::string_view message) final;
     void exception() final;
 
     size_t maxEntries() const noexcept;

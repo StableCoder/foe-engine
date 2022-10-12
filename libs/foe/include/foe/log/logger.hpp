@@ -1,4 +1,4 @@
-// Copyright (C) 2020 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,6 @@
 #define FOE_LOG_LOGGER_HPP
 
 #include <fmt/core.h>
-#include <foe/log/category.hpp>
 #include <foe/log/level.hpp>
 #include <foe/log/sink.hpp>
 
@@ -18,14 +17,14 @@ class foeLogger {
   public:
     FOE_EXPORT static foeLogger *instance();
 
-    FOE_EXPORT void log(foeLogCategory *pCategory, foeLogLevel level, std::string_view message);
+    FOE_EXPORT void log(char const *pCategoryName, foeLogLevel level, std::string_view message);
 
     template <typename... Args>
-    inline void log(foeLogCategory *pCategory,
+    inline void log(char const *pCategoryName,
                     foeLogLevel level,
                     fmt::format_string<Args...> message,
                     Args &&...args) {
-        log(pCategory, level, fmt::format(message, std::forward<Args>(args)...));
+        log(pCategoryName, level, fmt::format(message, std::forward<Args>(args)...));
     }
 
     FOE_EXPORT bool registerSink(foeLogSink *pSink);

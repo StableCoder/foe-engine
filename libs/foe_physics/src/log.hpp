@@ -7,6 +7,6 @@
 
 #include <foe/log.hpp>
 
-FOE_DECLARE_LOG_CATEGORY(foePhysics, All, All)
+FOE_DECLARE_LOG_CATEGORY(foePhysics)
 
 #endif // LOG_HPP
