@@ -62,7 +62,7 @@ auto foeGfxVkDescriptorSetLayoutPool::get(
             return it.layout;
     }
 
-    FOE_LOG(foeVkGraphics, Verbose, "Creating a new DescriptorSetLayout");
+    FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "Creating a new DescriptorSetLayout");
 
     VkDescriptorSetLayout newLayout;
     VkResult vkResult =
@@ -70,7 +70,8 @@ auto foeGfxVkDescriptorSetLayoutPool::get(
     if (vkResult != VK_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         VkResultToString(vkResult, buffer);
-        FOE_LOG(foeVkGraphics, Error, "vkCreateDescriptorSetLayout failed with error: {}", buffer);
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
+                "vkCreateDescriptorSetLayout failed with error: {}", buffer);
 
         return VK_NULL_HANDLE;
     }

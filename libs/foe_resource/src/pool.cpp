@@ -46,7 +46,7 @@ extern "C" void foeDestroyResourcePool(foeResourcePool resourcePool) {
         int refCount = foeResourceDecrementRefCount(resource);
 
         if (refCount != 0) {
-            FOE_LOG(foeResourceCore, Warning,
+            FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_WARNING,
                     "[{}] foeResourcePool - While destroying, found foeResource [{},{}] that "
                     "still has external references and thus skipped immediate destruction",
                     (void *)pResourcePool, foeIdToString(foeResourceGetID(resource)),
@@ -79,7 +79,7 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
     if (result.value != FOE_RESOURCE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeResourceCore, Error,
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_ERROR,
                 "[{}] foeResourcePool - Error while creating a new resource [{}]: {}",
                 (void *)pResourcePool, foeIdToString(resourceID), buffer)
 
@@ -125,7 +125,7 @@ extern "C" foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
 
     int refCount = foeResourceDecrementRefCount(resource);
     if (refCount != 0) {
-        FOE_LOG(foeResourceCore, Warning,
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_WARNING,
                 "[{}] foeResourcePool - While removing foeResource [{},{}], it still has "
                 "external references and thus skipped immediate destruction",
                 (void *)pResourcePool, foeIdToString(foeResourceGetID(resource)),

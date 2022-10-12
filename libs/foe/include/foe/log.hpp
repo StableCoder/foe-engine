@@ -10,10 +10,9 @@
 
 /// Logs a compile-time message to the global logger with the given parameters
 #define FOE_LOG(CATEGORY, LOG_LEVEL, MESSAGE, ...)                                                 \
-    if (static_cast<int>(foeLogLevel::LOG_LEVEL) <=                                                \
-        static_cast<int>(CATEGORY##LogCategoryGetLogLevel())) {                                    \
-        foeLogger::instance()->log(CATEGORY##LogCategoryGetName(), foeLogLevel::LOG_LEVEL,         \
-                                   MESSAGE, ##__VA_ARGS__);                                        \
+    if (static_cast<int>(LOG_LEVEL) <= static_cast<int>(CATEGORY##LogCategoryGetLogLevel())) {     \
+        foeLogger::instance()->log(CATEGORY##LogCategoryGetName(), LOG_LEVEL, MESSAGE,             \
+                                   ##__VA_ARGS__);                                                 \
     }
 
 /** Declares a log category for static or scoped environments
@@ -49,7 +48,7 @@
  */
 #define FOE_DEFINE_LOG_CATEGORY(CATEGORY, RUNTIME_DEFAULT_LEVEL)                                   \
                                                                                                    \
-    static foeLogLevel g_##CATEGORY##_log_level = foeLogLevel::RUNTIME_DEFAULT_LEVEL;              \
+    static foeLogLevel g_##CATEGORY##_log_level = RUNTIME_DEFAULT_LEVEL;                           \
                                                                                                    \
     char const *CATEGORY##LogCategoryGetName() { return #CATEGORY; }                               \
                                                                                                    \

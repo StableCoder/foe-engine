@@ -235,13 +235,13 @@ void foeMaterialLoader::load(foeResource resource,
         foeGraphicsResourceResult result;
         if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
             result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE;
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "foeMaterialLoader - Cannot load {} as it is an incompatible type: {}",
                     foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
         } else {
             result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO;
             FOE_LOG(
-                foeGraphicsResource, Error,
+                foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeMaterialLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));

@@ -140,7 +140,7 @@ foeResultSet exportResource(foeResourceID resourceID,
                             std::vector<foeImexBinarySet> *pBinarySets,
                             std::vector<foeImexBinaryFiles> *pFiles) {
     if (resourceID == FOE_INVALID_ID) {
-        FOE_LOG(foeImexBinary, Error, "Attempted to export resource with invalid ID");
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR, "Attempted to export resource with invalid ID");
         std::abort();
     }
 
@@ -196,7 +196,7 @@ foeResultSet exportResource(foeResourceID resourceID,
             // A proper error occurred
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             resultSet.toString(resultSet.value, buffer);
-            FOE_LOG(foeImexBinary, Error,
+            FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                     "Failed to export resource {} create info {} with error: {}", resourceID,
                     foeResourceCreateInfoGetType(resourceCI), buffer);
             found = false;
@@ -208,7 +208,8 @@ EXPORT_RESOURCE_FAILED:
     if (resourceCI)
         foeResourceCreateInfoDecrementRefCount(resourceCI);
     if (!found) {
-        FOE_LOG(foeImexBinary, Error, "Failed to find exporter for resource {} create info type {}",
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
+                "Failed to find exporter for resource {} create info type {}",
                 foeIdToString(resourceID), foeResourceCreateInfoGetType(resourceCI))
         return to_foeResult(FOE_IMEX_BINARY_ERROR_FAILED_TO_EXPORT_RESOURCE);
     } else {
@@ -432,11 +433,12 @@ extern "C" foeResultSet foeImexBinaryExport(char const *pExportPath, foeSimulati
     std::error_code errC;
     std::filesystem::path destinationPath{pExportPath};
 
-    FOE_LOG(foeImexBinary, Verbose, "Starting process to export data out to file {}", pExportPath);
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_VERBOSE, "Starting process to export data out to file {}",
+            pExportPath);
 
     if (std::filesystem::exists(destinationPath) &&
         !std::filesystem::is_regular_file(destinationPath)) {
-        FOE_LOG(foeImexBinary, Error,
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Attempted to export data as a binary file to an occupied non-file location '{}', "
                 "unsupported",
                 destinationPath.string());
@@ -828,7 +830,8 @@ EXPORT_WRITE_FAILED:
         free(pDependencyData);
 
     if (resultSet.value == FOE_SUCCESS)
-        FOE_LOG(foeImexBinary, Verbose, "Successfully exported data to file {}", pExportPath);
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_VERBOSE, "Successfully exported data to file {}",
+                pExportPath);
 
     return resultSet;
 }

@@ -203,12 +203,12 @@ void foeImageLoader::load(foeResource resource,
         foeGraphicsResourceResult result;
         if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
             result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE;
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "foeImageLoader - Cannot load {} as it is an incompatible type: {}",
                     foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
         } else {
             result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO;
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "foeImageLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                     foeIdToString(foeResourceGetID(resource)),
                     foeResourceCreateInfoGetType(createInfo));
@@ -239,8 +239,8 @@ void foeImageLoader::load(foeResource resource,
             FreeImage_GetFIFFromFilename(pImageCI->pFile);
         }
         if (imageFormat == FIF_UNKNOWN) {
-            FOE_LOG(foeGraphicsResource, Error, "Could not determine image format for: {}",
-                    pImageCI->pFile)
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
+                    "Could not determine image format for: {}", pImageCI->pFile)
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_FORMAT_UNKNOWN);
             goto LOADING_FAILED;
         }
@@ -248,7 +248,8 @@ void foeImageLoader::load(foeResource resource,
         // Load the image into memory
         auto *bitmap = FreeImage_LoadFromMemory(imageFormat, fiMemory, 0);
         if (bitmap == nullptr) {
-            FOE_LOG(foeGraphicsResource, Error, "Failed to load image: {}", pImageCI->pFile)
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR, "Failed to load image: {}",
+                    pImageCI->pFile)
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_LOAD_FAILURE);
             goto LOADING_FAILED;
         }
@@ -441,7 +442,8 @@ LOADING_FAILED:
         // Failed at some point, clear all relevant data
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error, "Failed to load foeImage {} with error {}",
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
+                "Failed to load foeImage {} with error {}",
                 foeIdToString(foeResourceGetID(resource)), buffer)
 
         // Run the post-load function with the error

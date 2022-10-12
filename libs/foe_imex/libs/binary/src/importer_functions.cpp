@@ -41,14 +41,14 @@ extern "C" foeResultSet foeImexBinaryRegisterResourceImportFns(
 
     auto searchIt = gResourceFns.find(pBinaryKey);
     if (searchIt != gResourceFns.end()) {
-        FOE_LOG(foeImexBinary, Error,
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Could not register binary resource import/create functions for the binary key "
                 "'{}' as it is already registered",
                 pBinaryKey);
         return to_foeResult(FOE_IMEX_BINARY_ERROR_KEY_ALREADY_REGISTERED);
     }
 
-    FOE_LOG(foeImexBinary, Info,
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_INFO,
             "Registering binary resource importe/create functions for the binary key '{}'",
             pBinaryKey);
     gResourceFns[pBinaryKey] = BinaryResourceFns{
@@ -67,7 +67,7 @@ extern "C" foeResultSet foeImexBinaryDeregisterResourceImportFns(
 
     auto searchIt = gResourceFns.find(pBinaryKey);
     if (searchIt == gResourceFns.end()) {
-        FOE_LOG(foeImexBinary, Error,
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Could not deregister binary resource import/create functions for the binary key "
                 "'{}' as it is not currently registered",
                 pBinaryKey);
@@ -75,15 +75,15 @@ extern "C" foeResultSet foeImexBinaryDeregisterResourceImportFns(
     }
 
     if (searchIt->second.importFn != importFn || searchIt->second.createFn != createFn) {
-        FOE_LOG(foeImexBinary, Error,
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Could not deregister binary resource import/create functions for the binary key "
                 "'{}' as the functions do not match",
                 pBinaryKey);
         return to_foeResult(FOE_IMEX_BINARY_ERROR_KEY_FUNCTIONS_NON_MATCHING);
     }
 
-    FOE_LOG(foeImexBinary, Info, "Deregistering binary resource import/create functions for '{}'",
-            pBinaryKey);
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_INFO,
+            "Deregistering binary resource import/create functions for '{}'", pBinaryKey);
     gResourceFns.erase(searchIt);
     return to_foeResult(FOE_IMEX_BINARY_SUCCESS);
 }
@@ -94,14 +94,14 @@ extern "C" foeResultSet foeImexBinaryRegisterComponentImportFn(
 
     auto searchIt = gComponentFns.find(pBinaryKey);
     if (searchIt != gComponentFns.end()) {
-        FOE_LOG(foeImexBinary, Error,
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Could not register binary component import function for the binary key '{}' as it "
                 "is already registered",
                 pBinaryKey);
         return to_foeResult(FOE_IMEX_BINARY_ERROR_KEY_ALREADY_REGISTERED);
     }
 
-    FOE_LOG(foeImexBinary, Info,
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_INFO,
             "Registering binary component import function for the binary key '{}'", pBinaryKey);
     gComponentFns[pBinaryKey] = importFn;
 
@@ -114,7 +114,7 @@ extern "C" foeResultSet foeImexBinaryDeregisterComponentImportFn(
 
     auto searchIt = gComponentFns.find(pBinaryKey);
     if (searchIt == gComponentFns.end()) {
-        FOE_LOG(foeImexBinary, Error,
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Could not deregister binary component import function for the binary key "
                 "'{}' as it is not currently registered",
                 pBinaryKey);
@@ -122,15 +122,15 @@ extern "C" foeResultSet foeImexBinaryDeregisterComponentImportFn(
     }
 
     if (searchIt->second != importFn) {
-        FOE_LOG(foeImexBinary, Error,
+        FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Could not deregister binary resource import function for the binary key "
                 "'{}' as the function does not match",
                 pBinaryKey);
         return to_foeResult(FOE_IMEX_BINARY_ERROR_KEY_FUNCTIONS_NON_MATCHING);
     }
 
-    FOE_LOG(foeImexBinary, Info, "Deregistering binary component import function for '{}'",
-            pBinaryKey);
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_INFO,
+            "Deregistering binary component import function for '{}'", pBinaryKey);
     gComponentFns.erase(searchIt);
     return to_foeResult(FOE_IMEX_BINARY_SUCCESS);
 }

@@ -40,12 +40,12 @@ bool foeImexYamlRegisterResourceFns(std::string_view key,
 
     auto searchIt = gResourceFns.find(localKey);
     if (searchIt != gResourceFns.end()) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Could not add Yaml Import function for {}, as it already exists", key);
         return false;
     }
 
-    FOE_LOG(foeImexYaml, Info, "Adding Yaml Import function for {}", key);
+    FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO, "Adding Yaml Import function for {}", key);
     gResourceFns[localKey] = foeImexYamlResourceFns{
         .pImport = pImportFn,
         .pCreate = pCreateFn,
@@ -61,12 +61,12 @@ bool foeImexYamlDeregisterResourceFns(std::string_view key,
 
     auto searchIt = gResourceFns.find(std::string{key});
     if (searchIt == gResourceFns.end()) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Could not remove Yaml Import function for {}, as it isn't added", key);
         return false;
     }
     if (searchIt->second.pImport != pImportFn || searchIt->second.pCreate != pCreateFn) {
-        FOE_LOG(foeImexYaml, Warning,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_WARNING,
                 "Attempted to remove Yaml Import function for {}, but the provided "
                 "function pointers are not the same as was added",
                 key);
@@ -84,12 +84,12 @@ bool foeImexYamlRegisterComponentFn(std::string_view key, PFN_foeImexYamlCompone
 
     auto searchIt = gComponentFns.find(localKey);
     if (searchIt != gComponentFns.end()) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Could not add Yaml Import function for {}, as it already exists", key);
         return false;
     }
 
-    FOE_LOG(foeImexYaml, Info, "Adding Yaml Import function for {}", key);
+    FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO, "Adding Yaml Import function for {}", key);
     gComponentFns[localKey] = pImportFn;
 
     return true;
@@ -100,12 +100,12 @@ bool foeImexYamlDeregisterComponentFn(std::string_view key, PFN_foeImexYamlCompo
 
     auto searchIt = gComponentFns.find(std::string{key});
     if (searchIt == gComponentFns.end()) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Could not remove Yaml Import function for {}, as it isn't added", key);
         return false;
     }
     if (searchIt->second != pImportFn) {
-        FOE_LOG(foeImexYaml, Warning,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_WARNING,
                 "Attempted to remove Yaml Import function for {}, but the provided "
                 "function pointers are not the same as was added",
                 key);

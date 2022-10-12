@@ -81,7 +81,8 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
             if (xrResult != XR_SUCCESS && xrResult != XR_SESSION_LOSS_PENDING) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 XrResultToString(xrResult, buffer);
-                FOE_LOG(foeOpenXrVk, Error, "xrWaitSwapchainImage failed: {}", buffer);
+                FOE_LOG(foeOpenXrVk, FOE_LOG_LEVEL_ERROR, "xrWaitSwapchainImage failed: {}",
+                        buffer);
             } else {
                 VkSemaphoreSignalInfo signalInfo{
                     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,
@@ -101,7 +102,8 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
             if (xrResult != XR_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 XrResultToString(xrResult, buffer);
-                FOE_LOG(foeOpenXrVk, Fatal, "xrReleaseSwapchainImage error: {}", buffer)
+                FOE_LOG(foeOpenXrVk, FOE_LOG_LEVEL_FATAL, "xrReleaseSwapchainImage error: {}",
+                        buffer)
             }
         });
 

@@ -99,7 +99,7 @@ auto renderCall(foeId entity,
         loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
         if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
             !foeResourceGetIsLoading(vertexDescriptor)) {
-            FOE_LOG(foeBringup, Verbose,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
                     "While attempting to render {}, VertexDescriptor resource {} was unloaded and "
                     "wasn't being loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(vertexDescriptor)));
@@ -112,7 +112,7 @@ auto renderCall(foeId entity,
     if (auto loadState = foeResourceGetState(material);
         loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
         if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED && !foeResourceGetIsLoading(material)) {
-            FOE_LOG(foeBringup, Verbose,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
                     "While attempting to render {}, Material resource {} was unloaded and wasn't "
                     "being loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(material)));
@@ -124,7 +124,7 @@ auto renderCall(foeId entity,
 
     if (auto loadState = foeResourceGetState(mesh); loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
         if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED && !foeResourceGetIsLoading(mesh)) {
-            FOE_LOG(foeBringup, Verbose,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
                     "While attempting to render {}, Mesh resource {} was unloaded and wasn't being "
                     "loaded, requesting load",
                     foeIdToString(entity), foeIdToString(foeResourceGetID(mesh)));

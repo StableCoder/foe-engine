@@ -81,10 +81,10 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
     try {
         rootNode = YAML::LoadFile(path.string());
     } catch (YAML::ParserException const &e) {
-        FOE_LOG(foeImexYaml, Fatal, "Failed to load Yaml file: {}", e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_FATAL, "Failed to load Yaml file: {}", e.what());
         return false;
     } catch (YAML::BadFile const &e) {
-        FOE_LOG(foeImexYaml, Fatal, "YAML::LoadFile failed: {}", e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_FATAL, "YAML::LoadFile failed: {}", e.what());
         return false;
     }
 
@@ -96,14 +96,15 @@ bool openYamlFile(std::filesystem::path path, YAML::Node &rootNode) {
 void destroy(foeImexImporter importer) {
     foeYamlImporter *pImporter = importer_from_handle(importer);
 
-    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Destroying ({})", (void *)pImporter,
-            pImporter->mName.c_str());
+    FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_VERBOSE, "[{}] foeYamlImporter - Destroying ({})",
+            (void *)pImporter, pImporter->mName.c_str());
 
     if (pImporter->mGroupTranslator != FOE_NULL_HANDLE)
         foeEcsDestroyGroupTranslator(pImporter->mGroupTranslator);
 
     delete pImporter;
-    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Destroyed", (void *)pImporter);
+    FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_VERBOSE, "[{}] foeYamlImporter - Destroyed",
+            (void *)pImporter);
 }
 
 foeResultSet getGroupID(foeImexImporter importer, foeIdGroup *pGroupID) {
@@ -160,7 +161,7 @@ foeResultSet getDependencies(foeImexImporter importer,
             dependencies.emplace_back(data);
         }
     } catch (YAML::Exception const &e) {
-        FOE_LOG(foeImexYaml, Error, "{}", e.what())
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "{}", e.what())
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DEPENDENCIES);
     }
 
@@ -211,8 +212,8 @@ foeResultSet getGroupIndexData(std::filesystem::path path, foeEcsIndexes indexes
     try {
         yaml_read_indexes("", node, indexes);
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to parse Group State Index Data from Yaml file: {}",
-                e.what())
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
+                "Failed to parse Group State Index Data from Yaml file: {}", e.what())
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DATA);
     }
 
@@ -243,12 +244,12 @@ foeResultSet importStateData(foeImexImporter importer,
 
     for (auto &dirIt :
          std::filesystem::recursive_directory_iterator{pImporter->mRootDir / entityDirectoryPath}) {
-        FOE_LOG(foeImexYaml, Info, "Visiting: {}", dirIt.path().string())
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO, "Visiting: {}", dirIt.path().string())
         if (std::filesystem::is_directory(dirIt))
             continue;
 
         if (!std::filesystem::is_regular_file(dirIt)) {
-            FOE_LOG(foeImexYaml, Warning,
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_WARNING,
                     "State data directory entry '{}' not a directory or regular file! Possible "
                     "corruption!",
                     dirIt.path().string())
@@ -263,7 +264,7 @@ foeResultSet importStateData(foeImexImporter importer,
         try {
             foeId entity;
             if (!yaml_read_foeEntityID("", entityNode, pImporter->mGroupTranslator, entity)) {
-                FOE_LOG(foeImexYaml, Error,
+                FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                         "Failed to read foeEntityID for entity data in file: {}",
                         dirIt.path().string())
                 std::abort();
@@ -289,16 +290,17 @@ foeResultSet importStateData(foeImexImporter importer,
                 if (searchIt != componentFnMap.end()) {
                     searchIt->second(entityNode, pImporter->mGroupTranslator, entity, pSimulation);
                 } else {
-                    FOE_LOG(foeImexYaml, Error,
+                    FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                             "Failed to find importer for '{}' component key for {} entity ({})",
                             key, foeIdToString(entity), dirIt.path().string())
                     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_FIND_COMPONENT_IMPORTER);
                 }
             }
 
-            FOE_LOG(foeImexYaml, Info, "Parsed entity {}", foeIdToString(entity))
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO, "Parsed entity {}", foeIdToString(entity))
         } catch (foeYamlException const &e) {
-            FOE_LOG(foeImexYaml, Error, "Failed to parse entity state data: {}", e.what())
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to parse entity state data: {}",
+                    e.what())
             return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_IMPORT_COMPONENT);
         }
     }
@@ -347,7 +349,8 @@ OPENED_YAML_FILE:
         // ID
         foeResourceID readID;
         if (!yaml_read_foeResourceID("", rootNode, nullptr, readID)) {
-            FOE_LOG(foeImexYaml, Error, "Failed to read top-level foeResourceID from file")
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
+                    "Failed to read top-level foeResourceID from file")
             std::abort();
         }
 
@@ -375,11 +378,14 @@ OPENED_YAML_FILE:
         *pNameLength = editorName.size();
         return imex_to_foeResult(FOE_IMEX_SUCCESS);
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to import resource definition: {}",
+                e.what());
     } catch (std::exception const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to import resource definition: {}",
+                e.what());
     } catch (...) {
-        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition with unknown exception");
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
+                "Failed to import resource definition with unknown exception");
     }
 
     return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DATA);
@@ -428,14 +434,17 @@ GOT_RESOURCE_NODE:
             }
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to import resource definition: {}",
+                e.what());
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DATA);
         ;
     } catch (std::exception const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition: {}", e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to import resource definition: {}",
+                e.what());
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DATA);
     } catch (...) {
-        FOE_LOG(foeImexYaml, Error, "Failed to import resource definition with unknown exception");
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
+                "Failed to import resource definition with unknown exception");
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_READ_DATA);
     }
 
@@ -530,8 +539,8 @@ foeResultSet foeCreateYamlImporter(foeIdGroup group,
 
     *pImporter = importer_to_handle(pNewImporter);
 
-    FOE_LOG(foeImexYaml, Verbose, "[{}] foeYamlImporter - Created ({})", (void *)pNewImporter,
-            pNewImporter->mName.c_str())
+    FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_VERBOSE, "[{}] foeYamlImporter - Created ({})",
+            (void *)pNewImporter, pNewImporter->mName.c_str())
 
     return to_foeResult(FOE_IMEX_YAML_SUCCESS);
 }

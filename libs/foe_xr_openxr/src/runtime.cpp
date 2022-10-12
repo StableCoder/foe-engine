@@ -52,11 +52,12 @@ foeResultSet foeOpenXrCreateRuntime(char const *appName,
 
     if (validation) {
         layers.emplace_back("XR_APILAYER_LUNARG_core_validation");
-        FOE_LOG(foeOpenXr, Verbose, "Adding validation layers to new XrInstance");
+        FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_VERBOSE, "Adding validation layers to new XrInstance");
     }
     if (debugLogging) {
         extensions.emplace_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        FOE_LOG(foeOpenXr, Verbose, "Adding debug report extension to new XrInstance");
+        FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_VERBOSE,
+                "Adding debug report extension to new XrInstance");
     }
 
     // Create Instance
@@ -97,7 +98,7 @@ foeResultSet foeOpenXrCreateRuntime(char const *appName,
         if (xrRes != XR_SUCCESS)
             goto CREATE_FAILED;
 
-        FOE_LOG(foeOpenXr, Verbose, "Added debug logging to new XrInstance");
+        FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_VERBOSE, "Added debug logging to new XrInstance");
     }
 
 CREATE_FAILED:
@@ -179,7 +180,7 @@ foeResultSet foeXrProcessEvents(foeXrRuntime runtime) {
         }
 
         default:
-            FOE_LOG(foeOpenXr, Warning, "Unprocessed XR event!!!");
+            FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_WARNING, "Unprocessed XR event!!!");
             break;
         }
     }

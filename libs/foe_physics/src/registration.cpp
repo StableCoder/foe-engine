@@ -42,7 +42,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Warning,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foePhysicsSystem that doesn't exist: {}",
                     buffer);
 
@@ -54,8 +54,8 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foePhysics, Warning, "Could not release foePhysicsSystem to destroy: {}",
-                        buffer);
+                FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
+                        "Could not release foePhysicsSystem to destroy: {}", buffer);
 
                 ++errors;
             } else {
@@ -71,7 +71,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Warning,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foeRigidBodyPool that doesn't exist: {}",
                     buffer);
 
@@ -83,8 +83,8 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foePhysics, Warning, "Could not release foeRigidBodyPool to destroy: {}",
-                        buffer);
+                FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
+                        "Could not release foeRigidBodyPool to destroy: {}", buffer);
 
                 ++errors;
             } else {
@@ -101,7 +101,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             // Trying to destroy something that doesn't exist? Not optimal
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Warning,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
                     "Attempted to decrement/destroy foeCollisionShapeLoader that doesn't exist: {}",
                     buffer);
 
@@ -113,7 +113,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foePhysics, Warning,
+                FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
                         "Could not release foeCollisionShapeLoader to destroy: {}", buffer);
 
                 ++errors;
@@ -154,7 +154,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Error,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeCollisionShapeLoader on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -185,7 +185,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Error,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeRigidBodyPool on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -215,7 +215,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Error,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foePhysicsSystem on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
@@ -230,8 +230,8 @@ CREATE_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = destroySelection(pSimulation, &selection);
         if (errors > 0)
-            FOE_LOG(foePhysics, Warning, "Encountered {} issues destroying after failed creation.",
-                    errors);
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
+                    "Encountered {} issues destroying after failed creation.", errors);
     }
 
     return result;
@@ -252,7 +252,7 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(
-                foePhysics, Warning,
+                foePhysics, FOE_LOG_LEVEL_WARNING,
                 "Failed to decrement foePhysicsSystem initialization count on Simulation {}: {}",
                 (void *)pSimulation, buffer);
             ++errors;
@@ -270,7 +270,7 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Warning,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
                     "Failed to decrement foeCollisionShapeLoader initialization count on "
                     "Simulation {}: {}",
                     (void *)pSimulation, buffer);
@@ -296,7 +296,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foePhysics, Error,
+        FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeArmatureLoader initialization count on Simulation {}: {}",
                 (void *)pSimulation, buffer);
         goto INITIALIZATION_FAILED;
@@ -310,7 +310,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Error,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeArmatureLoader on Simulation {}: {}",
                     (void *)pSimulation, buffer);
             goto INITIALIZATION_FAILED;
@@ -323,7 +323,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foePhysics, Error,
+        FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foePhysicsSystem initialization count on Simulation {}: {}",
                 (void *)pSimulation, buffer);
 
@@ -347,7 +347,8 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePhysics, Error, "Failed to initialize foePhysicsSystem on Simulation {}: {}",
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
+                    "Failed to initialize foePhysicsSystem on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
             goto INITIALIZATION_FAILED;
@@ -358,7 +359,7 @@ INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeSelection(pSimulation, &selection);
         if (errors > 0)
-            FOE_LOG(foePhysics, Warning,
+            FOE_LOG(foePhysics, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues deinitializing after failed initialization", errors);
     }
 
@@ -374,7 +375,7 @@ size_t deinitialize(foeSimulation *pSimulation) {
 int foePhysicsFunctionalityID() { return FOE_PHYSICS_LIBRARY_ID; }
 
 extern "C" foeResultSet foePhysicsRegisterFunctionality() {
-    FOE_LOG(foePhysics, Verbose,
+    FOE_LOG(foePhysics, FOE_LOG_LEVEL_VERBOSE,
             "foePhysicsRegisterFunctionality - Starting to register functionality")
 
     foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
@@ -388,10 +389,10 @@ extern "C" foeResultSet foePhysicsRegisterFunctionality() {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foePhysics, Error,
+        FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foePhysicsRegisterFunctionality - Failed registering functionality: {}", buffer)
     } else {
-        FOE_LOG(foePhysics, Verbose,
+        FOE_LOG(foePhysics, FOE_LOG_LEVEL_VERBOSE,
                 "foePhysicsRegisterFunctionality - Completed registering functionality")
     }
 
@@ -399,11 +400,11 @@ extern "C" foeResultSet foePhysicsRegisterFunctionality() {
 }
 
 extern "C" void foePhysicsDeregisterFunctionality() {
-    FOE_LOG(foePhysics, Verbose,
+    FOE_LOG(foePhysics, FOE_LOG_LEVEL_VERBOSE,
             "foePhysicsDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foePhysicsFunctionalityID());
 
-    FOE_LOG(foePhysics, Verbose,
+    FOE_LOG(foePhysics, FOE_LOG_LEVEL_VERBOSE,
             "foePhysicsDeregisterFunctionality - Completed deregistering functionality")
 }

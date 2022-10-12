@@ -6,16 +6,30 @@
 #define FOE_LOG_LOGGER_HPP
 
 #include <fmt/core.h>
-#include <foe/log/level.hpp>
+#include <foe/export.h>
 
 #include <mutex>
+#include <string>
 #include <vector>
+
+enum foeLogLevel {
+    FOE_LOG_LEVEL_FATAL = 0,
+    FOE_LOG_LEVEL_ERROR,
+    FOE_LOG_LEVEL_WARNING,
+    FOE_LOG_LEVEL_INFO,
+    FOE_LOG_LEVEL_VERBOSE,
+    FOE_LOG_LEVEL_ALL = FOE_LOG_LEVEL_VERBOSE,
+};
 
 typedef void (*PFN_foeLogMessage)(void *pContext,
                                   char const *pCategoryName,
                                   foeLogLevel level,
                                   char const *pMessage);
 typedef void (*PFN_foeLogException)(void *pContext);
+
+namespace std {
+FOE_EXPORT std::string to_string(foeLogLevel logLevel);
+}
 
 class foeLogger {
   public:

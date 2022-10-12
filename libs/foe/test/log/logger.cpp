@@ -14,6 +14,16 @@ void exception(void *) {}
 
 } // namespace
 
+TEST_CASE("foeLogLevel - to_string checks", "[foe][log]") {
+    CHECK(std::to_string(FOE_LOG_LEVEL_FATAL) == "Fatal");
+    CHECK(std::to_string(FOE_LOG_LEVEL_ERROR) == "Error");
+    CHECK(std::to_string(FOE_LOG_LEVEL_WARNING) == "Warning");
+    CHECK(std::to_string(FOE_LOG_LEVEL_INFO) == "Info");
+    CHECK(std::to_string(FOE_LOG_LEVEL_VERBOSE) == "Verbose");
+
+    CHECK(std::to_string(static_cast<foeLogLevel>(999999)) == "Unknown");
+}
+
 TEST_CASE("foeLogger - Cannot register the same sink multiple times") {
     CHECK(foeLogger::instance()->registerSink(nullptr, log, exception));
     CHECK_FALSE(foeLogger::instance()->registerSink(nullptr, log, exception));

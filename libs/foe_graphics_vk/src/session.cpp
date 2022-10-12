@@ -43,7 +43,7 @@ void createQueueFamily(VkDevice device,
                        uint32_t numQueues,
                        QueueFamily *pQueueFamily) {
     if (numQueues >= MaxQueuesPerFamily) {
-        FOE_LOG(foeVkGraphics, Fatal,
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_FATAL,
                 "There are {} Vulkan queue families, when the maximum compiled support is {}",
                 numQueues, MaxQueuesPerFamily)
         std::abort();

@@ -74,7 +74,7 @@ extern "C" foeResultSet foeImexDeregisterExporter(foeExporter exporter) {
         }
     }
 
-    FOE_LOG(foeImex, Error,
+    FOE_LOG(foeImex, FOE_LOG_LEVEL_ERROR,
             "foeDeregisterExporter - Attempted to deregister exporter that was not registered");
     return to_foeResult(FOE_IMEX_ERROR_EXPORTER_NOT_REGISTERED);
 
@@ -114,7 +114,7 @@ extern "C" foeResultSet foeRegisterExportFunctionality(
     for (auto const &it : gExporterRegistrar.functionality) {
         if (it.onRegister == functionality->onRegister &&
             it.onDeregister == functionality->onDeregister) {
-            FOE_LOG(foeImex, Warning,
+            FOE_LOG(foeImex, FOE_LOG_LEVEL_WARNING,
                     "foeRegisterExportFunctionality - Attempted to re-register functionality");
             return to_foeResult(FOE_IMEX_ERROR_FUNCTIONALITY_ALREADY_REGISTERED);
         }
@@ -154,7 +154,7 @@ extern "C" void foeDeregisterExportFunctionality(foeExportFunctionality const *f
         }
     }
 
-    FOE_LOG(foeImex, Warning,
+    FOE_LOG(foeImex, FOE_LOG_LEVEL_WARNING,
             "foeDeregisterExportFunctionality - Attempted to deregister functionality that was "
             "never registered");
     return;

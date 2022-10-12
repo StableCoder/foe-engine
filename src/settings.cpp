@@ -63,7 +63,7 @@ bool parseEngineConfigFile(Settings *pOptions,
                            foeSearchPaths &searchPaths,
                            std::string_view configFilePath) {
     if (configFilePath.empty()) {
-        FOE_LOG(General, Info, "Config file not found: {}", configFilePath);
+        FOE_LOG(General, FOE_LOG_LEVEL_INFO, "Config file not found: {}", configFilePath);
         return true;
     }
 
@@ -71,7 +71,7 @@ bool parseEngineConfigFile(Settings *pOptions,
     try {
         config = YAML::LoadFile(std::string{configFilePath});
     } catch (YAML::ParserException &e) {
-        FOE_LOG(General, Fatal, "Failed to load config file: {}", e.what());
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "Failed to load config file: {}", e.what());
         return false;
     }
 
@@ -131,7 +131,7 @@ bool parseEngineConfigFile(Settings *pOptions,
         }
 
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Fatal, "Failure parsing config file: {}", e.what());
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "Failure parsing config file: {}", e.what());
         return false;
     }
 
@@ -187,7 +187,7 @@ void emitSettingsYaml(Settings const *pOptions, YAML::Node *pNode) {
             }
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(General, Fatal, "Failed to write Yaml engine options: {}", e.what());
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "Failed to write Yaml engine options: {}", e.what());
     }
 }
 

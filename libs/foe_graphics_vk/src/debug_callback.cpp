@@ -17,17 +17,21 @@ VkBool32 vulkanMessageCallbacks(VkDebugReportFlagsEXT flags,
                                 const char *pMessage,
                                 void * /*pUserData*/) {
     if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, Error, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR, "[{}] Code {} : {}", pLayerPrefix, messageCode,
+                pMessage)
     }
     if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0 ||
         (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, Warning, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_WARNING, "[{}] Code {} : {}", pLayerPrefix,
+                messageCode, pMessage)
     }
     if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, Info, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_INFO, "[{}] Code {} : {}", pLayerPrefix, messageCode,
+                pMessage)
     }
     if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, Verbose, "[{}] Code {} : {}", pLayerPrefix, messageCode, pMessage)
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "[{}] Code {} : {}", pLayerPrefix,
+                messageCode, pMessage)
     }
 
     return VK_FALSE;

@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(foeImex, All)
+FOE_DEFINE_LOG_CATEGORY(foeImex, FOE_LOG_LEVEL_ALL)

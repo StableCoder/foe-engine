@@ -190,7 +190,8 @@ auto foeGfxVkRenderPassPool::generateRenderPass(
             VkRenderPass renderPass{VK_NULL_HANDLE};
             VkResult res = createRenderPass(attachments, &renderPass);
             if (res != VK_SUCCESS) {
-                FOE_LOG(foeVkGraphics, Error, "Could not create a requested RenderPass")
+                FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
+                        "Could not create a requested RenderPass")
                 return VK_NULL_HANDLE;
             }
 
@@ -207,7 +208,7 @@ auto foeGfxVkRenderPassPool::generateRenderPass(
     VkRenderPass renderPass{VK_NULL_HANDLE};
     VkResult res = createRenderPass(attachments, &renderPass);
     if (res != VK_SUCCESS) {
-        FOE_LOG(foeVkGraphics, Error, "Could not create a requested RenderPass")
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR, "Could not create a requested RenderPass")
         return VK_NULL_HANDLE;
     }
 
@@ -245,7 +246,7 @@ auto foeGfxVkRenderPassPool::createRenderPass(
 
         if (foeGfxVkIsDepthFormat(attachment.format)) {
             if (depthStencilReference.attachment != cInvalidAttachment) {
-                FOE_LOG(foeVkGraphics, Error,
+                FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
                         "Two depth/stencil attachments requested on a Render Pass")
                 return VK_ERROR_INITIALIZATION_FAILED;
             }

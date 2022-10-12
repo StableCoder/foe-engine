@@ -191,12 +191,12 @@ void foeMeshLoader::load(foeResource resource,
         foeGraphicsResourceResult result;
         if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
             result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE;
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "foeMeshLoader - Cannot load {} as it is an incompatible type: {}",
                     foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
         } else {
             result = FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO;
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "foeMeshLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                     foeIdToString(foeResourceGetID(resource)),
                     foeResourceCreateInfoGetType(createInfo));
@@ -505,7 +505,8 @@ LOAD_FAILED:
         // Failed at some point
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error, "Failed to load foeMesh {} with error: {}",
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
+                "Failed to load foeMesh {} with error: {}",
                 foeIdToString(foeResourceGetID(resource)), buffer)
         pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
 

@@ -6,6 +6,28 @@
 
 #include <iostream>
 
+namespace std {
+
+std::string to_string(foeLogLevel logLevel) {
+    switch (logLevel) {
+    case FOE_LOG_LEVEL_FATAL:
+        return "Fatal";
+    case FOE_LOG_LEVEL_ERROR:
+        return "Error";
+    case FOE_LOG_LEVEL_WARNING:
+        return "Warning";
+    case FOE_LOG_LEVEL_INFO:
+        return "Info";
+    case FOE_LOG_LEVEL_VERBOSE:
+        return "Verbose";
+
+    default:
+        return "Unknown";
+    }
+}
+
+} // namespace std
+
 foeLogger *foeLogger::instance() {
     static foeLogger gLogger;
     return &gLogger;
@@ -19,7 +41,7 @@ void foeLogger::log(char const *pCategoryName, foeLogLevel level, char const *pM
             it.logMessage(it.pContext, pCategoryName, level, pMessage);
     }
 
-    [[unlikely]] if (level == foeLogLevel::Fatal) {
+    [[unlikely]] if (level == FOE_LOG_LEVEL_FATAL) {
         for (auto const &it : mSinks) {
             if (it.logException)
                 it.logException(it.pContext);

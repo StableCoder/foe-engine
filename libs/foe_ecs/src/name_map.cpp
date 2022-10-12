@@ -86,12 +86,12 @@ extern "C" foeResultSet foeEcsNameMapFindName(foeEcsNameMap nameMap,
 
 extern "C" foeResultSet foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char const *pName) {
     if (id == FOE_INVALID_ID) {
-        FOE_LOG(foeECS, Warning, "Attempted to add an invalid ID with an editor name of '{}'",
-                pName)
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_WARNING,
+                "Attempted to add an invalid ID with an editor name of '{}'", pName)
         return to_foeResult(FOE_ECS_ERROR_INVALID_ID);
     }
     if (strlen(pName) == 0) {
-        FOE_LOG(foeECS, Warning, "Attempted to add ID {} with a blank editor name",
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_WARNING, "Attempted to add ID {} with a blank editor name",
                 foeIdToString(id))
         return to_foeResult(FOE_ECS_ERROR_EMPTY_NAME);
     }
@@ -100,12 +100,12 @@ extern "C" foeResultSet foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char c
     std::unique_lock lock{pNameMap->sync};
 
     if (pNameMap->idToEditor.find(id) != pNameMap->idToEditor.end()) {
-        FOE_LOG(foeECS, Warning, "Attempted to add ID {} that already has an editor name",
-                foeIdToString(id))
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_WARNING,
+                "Attempted to add ID {} that already has an editor name", foeIdToString(id))
         return to_foeResult(FOE_ECS_ERROR_ID_ALREADY_EXISTS);
     }
     if (pNameMap->editorToId.find(pName) != pNameMap->editorToId.end()) {
-        FOE_LOG(foeECS, Warning,
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_WARNING,
                 "Attempted to add ID {} that with editor name {} that is already used by ID {}",
                 foeIdToString(id), pName, foeIdToString(pNameMap->editorToId.find(pName)->second))
         return to_foeResult(FOE_ECS_ERROR_NAME_ALREADY_EXISTS);
@@ -119,7 +119,7 @@ extern "C" foeResultSet foeEcsNameMapAdd(foeEcsNameMap nameMap, foeId id, char c
 
 extern "C" foeResultSet foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, char const *pName) {
     if (strlen(pName) == 0) {
-        FOE_LOG(foeECS, Warning, "Attempted to update ID {} with a blank editor name",
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_WARNING, "Attempted to update ID {} with a blank editor name",
                 foeIdToString(id))
         return to_foeResult(FOE_ECS_ERROR_EMPTY_NAME);
     }
@@ -129,7 +129,7 @@ extern "C" foeResultSet foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, cha
 
     // Make sure editor name not already in use
     if (pNameMap->editorToId.find(pName) != pNameMap->editorToId.end()) {
-        FOE_LOG(foeECS, Warning,
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_WARNING,
                 "Attempted to update ID {} with editor name '{}' already used by ID {}",
                 foeIdToString(id), pName, foeIdToString(pNameMap->editorToId.find(pName)->second))
         return to_foeResult(FOE_ECS_ERROR_NAME_ALREADY_EXISTS);
@@ -137,8 +137,8 @@ extern "C" foeResultSet foeEcsNameMapUpdate(foeEcsNameMap nameMap, foeId id, cha
 
     auto searchIt = pNameMap->idToEditor.find(id);
     if (searchIt == pNameMap->idToEditor.end()) {
-        FOE_LOG(foeECS, Info, "Attempted to update ID {} that did not have an editorName",
-                foeIdToString(id))
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_INFO,
+                "Attempted to update ID {} that did not have an editorName", foeIdToString(id))
         return to_foeResult(FOE_ECS_ERROR_NO_MATCH);
     }
 
@@ -156,8 +156,8 @@ extern "C" foeResultSet foeEcsNameMapRemove(foeEcsNameMap nameMap, foeId id) {
 
     auto searchIt = pNameMap->idToEditor.find(id);
     if (searchIt == pNameMap->idToEditor.end()) {
-        FOE_LOG(foeECS, Info, "Attempted to remove ID {} that did not have an editorName",
-                foeIdToString(id))
+        FOE_LOG(foeECS, FOE_LOG_LEVEL_INFO,
+                "Attempted to remove ID {} that did not have an editorName", foeIdToString(id))
         return to_foeResult(FOE_ECS_NO_MATCH);
     }
 

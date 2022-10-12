@@ -235,7 +235,8 @@ extern "C" foeResultSet foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderT
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(foeVkGraphics, Error, "Failed to create RenderTarget Image: {}", buffer);
+                FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
+                        "Failed to create RenderTarget Image: {}", buffer);
 
                 return result;
             }
@@ -274,7 +275,8 @@ extern "C" foeResultSet foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderT
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeVkGraphics, Error, "Failed to create RenderTarget Framebuffer: {}", buffer);
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR, "Failed to create RenderTarget Framebuffer: {}",
+                buffer);
 
         return result;
     }

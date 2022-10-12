@@ -101,7 +101,8 @@ size_t sampleCountIndex(VkSampleCountFlags samples) {
         return 6;
 
     default:
-        FOE_LOG(foeVkGraphics, Warning, "Failed to determine given sample count, defaulting to 1")
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_WARNING,
+                "Failed to determine given sample count, defaulting to 1")
         return 0;
     }
 }
@@ -262,8 +263,8 @@ VkResult createPipeline(PipelinePool const *pPipelinePool,
         if (vkResult != VK_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             VkResultToString(vkResult, buffer);
-            FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipelineLayout with error: {}",
-                    buffer)
+            FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
+                    "Failed to generate VkPipelineLayout with error: {}", buffer)
 
             goto CREATE_FAILED;
         }
@@ -377,7 +378,8 @@ VkResult createPipeline(PipelinePool const *pPipelinePool,
         if (vkResult != VK_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             VkResultToString(vkResult, buffer);
-            FOE_LOG(foeVkGraphics, Error, "Failed to generate VkPipeline with error: {}", buffer)
+            FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
+                    "Failed to generate VkPipeline with error: {}", buffer)
         }
     }
 
@@ -434,7 +436,7 @@ extern "C" foeResultSet foeGfxVkGetPipeline(foeGfxVkPipelinePool pipelinePool,
     }
 
     // Generate a new pipeline
-    FOE_LOG(foeVkGraphics, Verbose, "Generating a new Graphics Pipeline")
+    FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "Generating a new Graphics Pipeline")
 
     VkResult vkResult =
         createPipeline(pPipelinePool, vertexDescriptor, fragmentDescriptor, renderPass, subpass,

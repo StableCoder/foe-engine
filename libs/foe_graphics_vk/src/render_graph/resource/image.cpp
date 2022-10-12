@@ -51,7 +51,7 @@ VkAccessFlags foeGfxVkDetermineAccessFlags(VkImageLayout imageLayout) {
     default: {
         std::string serializedValue;
         vk_serialize("VkImageLayout", imageLayout, &serializedValue);
-        FOE_LOG(foeVkGraphics, Fatal,
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_FATAL,
                 "Attempted to get VkAccessFlags for unsupported VkImageLayout: {}",
                 serializedValue);
         return 0;

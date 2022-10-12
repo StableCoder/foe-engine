@@ -48,7 +48,8 @@ extern "C" foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
 
     *pDelayedCaller = delayed_destructor_to_handle(pNewDelayedDestructor);
 
-    FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedCaller - Created using foeGfxSession {}",
+    FOE_LOG(foeGraphics, FOE_LOG_LEVEL_VERBOSE,
+            "[{}] foeGfxDelayedCaller - Created using foeGfxSession {}",
             static_cast<void *>(pNewDelayedDestructor), (void *)session);
 
     return to_foeResult(FOE_GRAPHICS_SUCCESS);
@@ -57,7 +58,7 @@ extern "C" foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
 extern "C" void foeGfxDestroyDelayedCaller(foeGfxDelayedCaller delayedCaller) {
     auto *pDelayedCaller = delayed_destructor_from_handle(delayedCaller);
 
-    FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedCaller - Destroying",
+    FOE_LOG(foeGraphics, FOE_LOG_LEVEL_VERBOSE, "[{}] foeGfxDelayedCaller - Destroying",
             static_cast<void *>(delayedCaller));
 
     // Go through all of the remaining call lists rapidly, then destroy
@@ -77,7 +78,7 @@ extern "C" void foeGfxDestroyDelayedCaller(foeGfxDelayedCaller delayedCaller) {
 
     delete pDelayedCaller;
 
-    FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedCaller - Destroyed",
+    FOE_LOG(foeGraphics, FOE_LOG_LEVEL_VERBOSE, "[{}] foeGfxDelayedCaller - Destroyed",
             static_cast<void *>(delayedCaller));
 }
 
@@ -123,7 +124,8 @@ extern "C" void foeGfxAddDelayedCall(foeGfxDelayedCaller delayedCaller,
     if (numDelayed > pDelayedCaller->callLists.size()) {
         // Need to enlarge the number of function lists to accomodate a delayed call for further
         // into the future than currently supported
-        FOE_LOG(foeGraphics, Verbose, "[{}] foeGfxDelayedCaller - Expanding delay from {} to {}",
+        FOE_LOG(foeGraphics, FOE_LOG_LEVEL_VERBOSE,
+                "[{}] foeGfxDelayedCaller - Expanding delay from {} to {}",
                 static_cast<void *>(delayedCaller), pDelayedCaller->callLists.size(), numDelayed);
 
         pDelayedCaller->currentList = pDelayedCaller->callLists.end() - 1;

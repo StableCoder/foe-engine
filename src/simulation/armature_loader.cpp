@@ -174,13 +174,13 @@ void foeArmatureLoader::load(foeResource resource,
         foeBringupResult result;
         if (foeResourceGetType(resource) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
             result = FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE;
-            FOE_LOG(foeBringup, Error,
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
                     "foeArmatureLoader - Cannot load {} as it is an incompatible type: {}",
                     foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
         } else {
             result = FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO;
             FOE_LOG(
-                foeBringup, Error,
+                foeBringup, FOE_LOG_LEVEL_ERROR,
                 "foeArmatureLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));

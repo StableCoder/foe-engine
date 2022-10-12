@@ -71,8 +71,8 @@ std::map<uint32_t, std::string_view> getKeyMap(std::byte const *pData, uint32_t 
 void destroy(foeImexImporter importer) {
     foeBinaryImporter *pImporter = importer_from_handle(importer);
 
-    FOE_LOG(foeImexBinary, Verbose, "[{}] foeBinaryImporter - Destroying ({})", (void *)pImporter,
-            pImporter->name.c_str());
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_VERBOSE, "[{}] foeBinaryImporter - Destroying ({})",
+            (void *)pImporter, pImporter->name.c_str());
 
     foeManagedMemoryDecrementUse(pImporter->memoryMappedFile);
 
@@ -81,7 +81,8 @@ void destroy(foeImexImporter importer) {
 
     pImporter->~foeBinaryImporter();
 
-    FOE_LOG(foeImexBinary, Verbose, "[{}] foeBinaryImporter - Destroyed", (void *)pImporter);
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_VERBOSE, "[{}] foeBinaryImporter - Destroyed",
+            (void *)pImporter);
     free(pImporter);
 }
 
@@ -549,7 +550,7 @@ extern "C" foeResultSet foeCreateBinaryImporter(foeIdGroup group,
 
     *pImporter = importer_to_handle(pNewImporter);
 
-    FOE_LOG(foeImexBinary, Verbose, "[{}] foeBinaryImporter - Created ({})", (void *)pNewImporter,
-            pNewImporter->name.c_str());
+    FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_VERBOSE, "[{}] foeBinaryImporter - Created ({})",
+            (void *)pNewImporter, pNewImporter->name.c_str());
     return to_foeResult(FOE_IMEX_BINARY_SUCCESS);
 }

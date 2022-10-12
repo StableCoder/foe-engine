@@ -66,11 +66,12 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
 
     if (validation) {
         layers.emplace_back("VK_LAYER_KHRONOS_validation");
-        FOE_LOG(foeVkGraphics, Verbose, "Adding validation layers to new VkInstance");
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "Adding validation layers to new VkInstance");
     }
     if (debugLogging) {
         extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-        FOE_LOG(foeVkGraphics, Verbose, "Adding debug report extension to new VkInstance");
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE,
+                "Adding debug report extension to new VkInstance");
     }
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
@@ -121,7 +122,7 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
         if (vkResult != VK_SUCCESS)
             goto CREATE_FAILED;
 
-        FOE_LOG(foeVkGraphics, Verbose, "Added debug logging to new VkInstance");
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "Added debug logging to new VkInstance");
     }
 
 CREATE_FAILED:

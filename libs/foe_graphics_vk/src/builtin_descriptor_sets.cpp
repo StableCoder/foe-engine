@@ -26,7 +26,7 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
 
         mBuiltinLayouts[0] = pDescriptorSetLayoutPool->get(&layoutCI);
         if (mBuiltinLayouts[0] == VK_NULL_HANDLE) {
-            FOE_LOG(foeVkGraphics, Error,
+            FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
                     "Failed to create the builtin descriptor set layout: ProjectionViewMatrix");
             return VK_ERROR_INITIALIZATION_FAILED;
         }
@@ -48,7 +48,7 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
 
         mBuiltinLayouts[1] = pDescriptorSetLayoutPool->get(&layoutCI);
         if (mBuiltinLayouts[1] == VK_NULL_HANDLE) {
-            FOE_LOG(foeVkGraphics, Error,
+            FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
                     "Failed to create the builtin descriptor set layout: ModelMatrix");
             return VK_ERROR_INITIALIZATION_FAILED;
         }
@@ -79,7 +79,7 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
         mBuiltinLayouts[2] = pDescriptorSetLayoutPool->get(&layoutCI);
         if (mBuiltinLayouts[2] == VK_NULL_HANDLE) {
             FOE_LOG(
-                foeVkGraphics, Error,
+                foeVkGraphics, FOE_LOG_LEVEL_ERROR,
                 "Failed to create the builtin descriptor set layout: ModelAndBoneStateMatrices");
             return VK_ERROR_INITIALIZATION_FAILED;
         }
@@ -102,7 +102,7 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
         if (vkResult != VK_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             VkResultToString(vkResult, buffer);
-            FOE_LOG(foeVkGraphics, Error,
+            FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
                     "Failed to create foeGfxVkBuiltinDescriptorSets descriptor pool with error: {}",
                     buffer);
 
@@ -118,7 +118,8 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
 
         mDummyLayout = pDescriptorSetLayoutPool->get(&layoutCI);
         if (mDummyLayout == VK_NULL_HANDLE) {
-            FOE_LOG(foeVkGraphics, Error, "Failed to create builtin descriptor set layout: Dummy");
+            FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
+                    "Failed to create builtin descriptor set layout: Dummy");
             return VK_ERROR_INITIALIZATION_FAILED;
         }
 
@@ -134,7 +135,7 @@ auto foeGfxVkBuiltinDescriptorSets::initialize(
         if (vkResult != VK_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             VkResultToString(vkResult, buffer);
-            FOE_LOG(foeVkGraphics, Error,
+            FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
                     "Failed to allocate builtin descriptor set 'Dummy' with error: {}", buffer);
 
             return vkResult;
@@ -181,7 +182,7 @@ auto foeGfxVkBuiltinDescriptorSets::getBuiltinSetLayoutIndex(
     case FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_BONE_STATE_MATRICES:
         return ModelAndBoneStateMatrices;
     default:
-        FOE_LOG(foeVkGraphics, Warning,
+        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_WARNING,
                 "Attempted to access unknown builtin descriptor set layout in "
                 "getBuiltinSetLayoutIndex: {}",
                 builtinLayout);

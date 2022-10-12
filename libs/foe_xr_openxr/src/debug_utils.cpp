@@ -41,16 +41,20 @@ XrBool32 openxrMessengerCallback(XrDebugUtilsMessageSeverityFlagsEXT messageSeve
                                  const XrDebugUtilsMessengerCallbackDataEXT *callbackData,
                                  void * /*userData*/) {
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) != 0) {
-        FOE_LOG(foeOpenXr, Error, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_ERROR, "[{}] : {}", to_string(messageTypes),
+                callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) != 0) {
-        FOE_LOG(foeOpenXr, Warning, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_WARNING, "[{}] : {}", to_string(messageTypes),
+                callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) != 0) {
-        FOE_LOG(foeOpenXr, Info, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_INFO, "[{}] : {}", to_string(messageTypes),
+                callbackData->message)
     }
     if ((messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) != 0) {
-        FOE_LOG(foeOpenXr, Verbose, "[{}] : {}", to_string(messageTypes), callbackData->message)
+        FOE_LOG(foeOpenXr, FOE_LOG_LEVEL_VERBOSE, "[{}] : {}", to_string(messageTypes),
+                callbackData->message)
     }
 
     return XR_FALSE;

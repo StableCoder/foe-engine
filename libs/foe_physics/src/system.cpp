@@ -226,7 +226,7 @@ void foePhysicsSystem::addObject(foeEntityID entity,
 
         return;
     } else if (foeResourceGetType(collisionShape) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
-        FOE_LOG(foePhysics, Error,
+        FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foePhysicsSystem - Failed to load {} rigid body because the given "
                 "collision shape {} is not a collision shape resource.",
                 foeIdToString(entity), foeIdToString(pRigidBody->collisionShape))

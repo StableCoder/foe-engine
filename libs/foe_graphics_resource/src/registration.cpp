@@ -42,7 +42,7 @@ foeResultSet destroyItem(foeSimulation *pSimulation,
         // Trying to destroy something that doesn't exist? Not optimal
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Warning,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                 "Attempted to decrement/destroy {} that doesn't exist - {}", pTypeName, buffer);
 
         return result;
@@ -52,8 +52,8 @@ foeResultSet destroyItem(foeSimulation *pSimulation,
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Warning, "Could not release {} to destroy - {}", pTypeName,
-                    buffer);
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
+                    "Could not release {} to destroy - {}", pTypeName, buffer);
 
             return result;
         } else {
@@ -138,7 +138,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeImageLoader on Simulation {} due to {}",
                     (void *)pSimulation, buffer);
 
@@ -174,7 +174,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeMaterialLoader on Simulation {} due to {}",
                     (void *)pSimulation, buffer);
 
@@ -210,7 +210,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeShaderLoader on Simulation {} due to {}",
                     (void *)pSimulation, buffer);
 
@@ -246,7 +246,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeVertexDescriptorLoader on Simulation {} "
                     "due to {}",
                     (void *)pSimulation, buffer);
@@ -281,7 +281,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "onCreate - Failed to create foeMeshLoader on Simulation {} due to {}",
                     (void *)pSimulation, buffer);
 
@@ -296,7 +296,7 @@ CREATE_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = destroySelection(pSimulation, &selection);
         if (errors > 0)
-            FOE_LOG(foeGraphicsResource, Warning,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues destroying after failed creation", errors);
     }
 
@@ -315,7 +315,7 @@ foeResultSet deinitializeItem(foeSimulation *pSimulation,
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Warning,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                 "Failed to decrement {} initialization count on Simulation {} "
                 "with error {}",
                 pTypeName, (void *)pSimulation, buffer);
@@ -384,7 +384,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeImageLoader init count due to error: {}", buffer);
 
         goto INITIALIZATION_FAILED;
@@ -398,7 +398,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeImageLoader with error: {}", buffer);
 
             goto INITIALIZATION_FAILED;
@@ -410,7 +410,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeMaterialLoader init count due to error: {}", buffer);
 
         goto INITIALIZATION_FAILED;
@@ -424,7 +424,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeMaterialLoader with error: {}", buffer);
 
             goto INITIALIZATION_FAILED;
@@ -436,7 +436,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeShaderLoader initialization count on Simulation {} with "
                 "error {}",
                 (void *)pSimulation, buffer);
@@ -452,7 +452,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeShaderLoader on Simulation {} with error {}",
                     (void *)pSimulation, buffer);
 
@@ -465,7 +465,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeVertexDescriptorLoader initialization count on Simulation "
                 "{} with error {}",
                 (void *)pSimulation, buffer);
@@ -481,7 +481,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeVertexDescriptorLoader on Simulation {} with error {}",
                     (void *)pSimulation, buffer);
 
@@ -494,7 +494,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment foeMeshLoader initialization count on Simulation {} with "
                 "error {}",
                 (void *)pSimulation, buffer);
@@ -510,7 +510,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed to initialize foeMeshLoader on Simulation {} with error {}",
                     (void *)pSimulation, buffer);
 
@@ -522,7 +522,7 @@ INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeSelection(pSimulation, &selection);
         if (errors > 0)
-            FOE_LOG(foeGraphicsResource, Warning,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues while deinitializing after failed initialization",
                     errors);
     }
@@ -544,7 +544,7 @@ foeResultSet deinitializeGraphicsItem(foeSimulation *pSimulation,
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Warning,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                 "Failed to decrement {} graphics initialization count on Simulation {} with "
                 "error {}",
                 pTypeName, (void *)pSimulation, buffer);
@@ -605,7 +605,7 @@ foeResultSet initializeGraphicsItem(foeSimulation *pSimulation,
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to increment graphics initialization for {} count on Simulation {} with "
                 "error {}",
                 pTypeName, (void *)pSimulation, buffer);
@@ -617,7 +617,7 @@ foeResultSet initializeGraphicsItem(foeSimulation *pSimulation,
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foeGraphicsResource, Error,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                     "Failed graphics initialization for {} on Simulation {} with error {}",
                     pTypeName, (void *)pSimulation, buffer);
 
@@ -664,7 +664,7 @@ INITIALIZATION_FAILED:
     if (result.value != FOE_SUCCESS) {
         size_t errors = deinitializeGraphicsSelection(pSimulation, &selection);
         if (errors > 0)
-            FOE_LOG(foeGraphicsResource, Warning,
+            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_WARNING,
                     "Encountered {} issues deinitializing graphics after failed initialization",
                     errors);
     }
@@ -681,7 +681,7 @@ size_t deinitializeGraphics(foeSimulation *pSimulation) {
 int foeGraphicsResourceFunctionalityID() { return FOE_GRAPHICS_RESOURCE_LIBRARY_ID; }
 
 extern "C" foeResultSet foeGraphicsResourceRegisterFunctionality() {
-    FOE_LOG(foeGraphicsResource, Verbose,
+    FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_VERBOSE,
             "foeGraphicsResourceRegisterFunctionality - Starting to register functionality")
 
     foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
@@ -697,11 +697,11 @@ extern "C" foeResultSet foeGraphicsResourceRegisterFunctionality() {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foeGraphicsResource, Error,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeGraphicsResourceRegisterFunctionality - Failed registering functionality: {}",
                 buffer)
     } else {
-        FOE_LOG(foeGraphicsResource, Verbose,
+        FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_VERBOSE,
                 "foeGraphicsResourceRegisterFunctionality - Completed registering functionality")
     }
 
@@ -709,11 +709,11 @@ extern "C" foeResultSet foeGraphicsResourceRegisterFunctionality() {
 }
 
 extern "C" void foeGraphicsResourceDeregisterFunctionality() {
-    FOE_LOG(foeGraphicsResource, Verbose,
+    FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_VERBOSE,
             "foeGraphicsResourceDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foeGraphicsResourceFunctionalityID());
 
-    FOE_LOG(foeGraphicsResource, Verbose,
+    FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_VERBOSE,
             "foeGraphicsResourceDeregisterFunctionality - Completed deregistering functionality")
 }

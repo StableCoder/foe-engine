@@ -178,15 +178,15 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
 
     REQUIRE(testSink.logMessages.size() == 3);
 
-    CHECK(testSink.logMessages[0].level == foeLogLevel::Verbose);
+    CHECK(testSink.logMessages[0].level == FOE_LOG_LEVEL_VERBOSE);
     CHECK(testSink.logMessages[0].msg.starts_with("["));
     CHECK(testSink.logMessages[0].msg.ends_with(",0] foeResourceCreateInfo - Created"));
 
-    CHECK(testSink.logMessages[1].level == foeLogLevel::Verbose);
+    CHECK(testSink.logMessages[1].level == FOE_LOG_LEVEL_VERBOSE);
     CHECK(testSink.logMessages[1].msg.starts_with("["));
     CHECK(testSink.logMessages[1].msg.ends_with(",0] foeResourceCreateInfo - Destroying"));
 
-    CHECK(testSink.logMessages[2].level == foeLogLevel::Verbose);
+    CHECK(testSink.logMessages[2].level == FOE_LOG_LEVEL_VERBOSE);
     CHECK(testSink.logMessages[2].msg.starts_with("["));
     CHECK(testSink.logMessages[2].msg.ends_with(",0] foeResourceCreateInfo - Destroyed"));
 }

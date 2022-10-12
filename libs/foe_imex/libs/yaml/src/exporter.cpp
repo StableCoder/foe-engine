@@ -83,7 +83,7 @@ YAML::Node exportResource(
     YAML::Node rootNode;
 
     if (resourceID == FOE_INVALID_ID) {
-        FOE_LOG(foeImexYaml, Error, "Attempted to export resource with invalid ID");
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Attempted to export resource with invalid ID");
         std::abort();
     }
     yaml_write_foeResourceID("", resourceID, rootNode);
@@ -132,7 +132,7 @@ YAML::Node exportComponents(
     YAML::Node rootNode;
 
     if (entity == FOE_INVALID_ID) {
-        FOE_LOG(foeImexYaml, Error, "Attempted to export entity with invalid ID");
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Attempted to export entity with invalid ID");
         std::abort();
     }
     yaml_write_foeEntityID("", entity, rootNode);
@@ -176,8 +176,8 @@ foeResultSet exportDependencies(foeSimulation *pSimState, YAML::Node &data) {
             data.push_back(node);
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to write general dependencies node with exception: {}",
-                e.what())
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
+                "Failed to write general dependencies node with exception: {}", e.what())
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_DEPENDENCIES);
     }
 
@@ -188,7 +188,8 @@ bool exportIndexDataToFile(foeEcsIndexes indexes, YAML::Node &data) {
     try {
         yaml_write_indexes("", indexes, data);
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to write index data node with exception: {}", e.what())
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
+                "Failed to write index data node with exception: {}", e.what())
         return false;
     }
 
@@ -266,8 +267,8 @@ foeResultSet exportResources(foeIdGroup group, foeSimulation *pSimState, YAML::N
                 free(pResourceName);
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to export resource: {} - {}", foeIdToString(resourceID),
-                e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to export resource: {} - {}",
+                foeIdToString(resourceID), e.what());
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_RESOURCE_DATA);
     }
 
@@ -331,8 +332,8 @@ foeResultSet exportComponentData(foeIdGroup group, foeSimulation *pSimState, YAM
                 free(pName);
         }
     } catch (foeYamlException const &e) {
-        FOE_LOG(foeImexYaml, Error, "Failed to export entity: {} - {}", foeIdToString(entity),
-                e.what());
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to export entity: {} - {}",
+                foeIdToString(entity), e.what());
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_DATA);
     }
 
@@ -362,7 +363,7 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
 
     if (std::filesystem::exists(destinationPath) &&
         !std::filesystem::is_directory(destinationPath)) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Attempted to export state data to a non-directory location '{}', unsupported",
                 destinationPath.string())
         return to_foeResult(FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY);
@@ -379,17 +380,17 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
 
     bool created = std::filesystem::create_directories(tempPath, errC);
     if (errC) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Failed to create temporary directory '{}' to export Yaml state, with error: {}",
                 tempPath.string(), errC.message())
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION);
     } else if (!created) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Failed to create temporary directory '{}' to export Yaml state, no error given",
                 tempPath.string())
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION);
     } else {
-        FOE_LOG(foeImexYaml, Info,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO,
                 "Created new temporary directory at '{}' to export state as Yaml",
                 tempPath.string())
     }
@@ -434,13 +435,13 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
         if (std::filesystem::exists(dirPath)) {
             // Determine if it's a file or a directory
             if (std::filesystem::is_regular_file(dirPath)) {
-                FOE_LOG(foeImexYaml, Error,
+                FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                         "Attempted to export state data as a single Yaml file '{}', unsupported",
                         dirPath.string())
                 result = to_foeResult(FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY);
                 goto EXPORT_FAILED;
             } else if (std::filesystem::is_directory(dirPath)) {
-                FOE_LOG(foeImexYaml, Info,
+                FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO,
                         "Attempting to export state via Yaml to an existing  directory at '{}'",
                         dirPath.string())
                 std::filesystem::remove_all(dirPath);
@@ -450,20 +451,20 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
         // Create the resource sub-directory
         bool created = std::filesystem::create_directories(dirPath, errC);
         if (errC) {
-            FOE_LOG(foeImexYaml, Error,
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                     "Failed to create directory '{}' to export Yaml state, with error: {}",
                     dirPath.string(), errC.message())
             result = to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION);
             goto EXPORT_FAILED;
         } else if (!created) {
-            FOE_LOG(foeImexYaml, Error,
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                     "Failed to create directory '{}' to export Yaml state, no error given",
                     dirPath.string())
             result = to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION);
             goto EXPORT_FAILED;
         } else {
-            FOE_LOG(foeImexYaml, Info, "Created new directory at '{}' to export state as Yaml",
-                    dirPath.string())
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO,
+                    "Created new directory at '{}' to export state as Yaml", dirPath.string())
         }
 
         // Loop through the yaml list, emitting data
@@ -473,7 +474,7 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
 
             foeResourceID resourceID;
             if (!yaml_read_foeResourceID("", it, nullptr, resourceID)) {
-                FOE_LOG(foeImexYaml, Error, "Failed to read top-level foeResourceID")
+                FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to read top-level foeResourceID")
                 std::abort();
             }
 
@@ -493,13 +494,13 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
         if (std::filesystem::exists(dirPath)) {
             // Determine if it's a file or a directory
             if (std::filesystem::is_regular_file(dirPath)) {
-                FOE_LOG(foeImexYaml, Error,
+                FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                         "Attempted to export state data as a single Yaml file '{}', unsupported",
                         dirPath.string())
                 result = to_foeResult(FOE_IMEX_YAML_ERROR_DESTINATION_NOT_DIRECTORY);
                 goto EXPORT_FAILED;
             } else if (std::filesystem::is_directory(dirPath)) {
-                FOE_LOG(foeImexYaml, Info,
+                FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO,
                         "Attempting to export state via Yaml to an existing  directory at '{}'",
                         dirPath.string())
                 std::filesystem::remove_all(dirPath);
@@ -509,20 +510,20 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
         // Create the resource sub-directory
         bool created = std::filesystem::create_directories(dirPath, errC);
         if (errC) {
-            FOE_LOG(foeImexYaml, Error,
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                     "Failed to create directory '{}' to export Yaml state, with error: {}",
                     dirPath.string(), errC.message())
             result = to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION);
             goto EXPORT_FAILED;
         } else if (!created) {
-            FOE_LOG(foeImexYaml, Error,
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                     "Failed to create directory '{}' to export Yaml state, no error given",
                     dirPath.string())
             result = to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION);
             goto EXPORT_FAILED;
         } else {
-            FOE_LOG(foeImexYaml, Info, "Created new directory at '{}' to export state as Yaml",
-                    dirPath.string())
+            FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO,
+                    "Created new directory at '{}' to export state as Yaml", dirPath.string())
         }
 
         // Loop through the yaml list, emitting data
@@ -532,7 +533,7 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
 
             foeEntityID entityID;
             if (!yaml_read_foeEntityID("", it, nullptr, entityID)) {
-                FOE_LOG(foeImexYaml, Error, "Failed to read top-level foeEntityID");
+                FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR, "Failed to read top-level foeEntityID");
                 std::abort();
             }
 
@@ -542,7 +543,7 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
 
     // Check if it exists already, if so then clear it.
     if (std::filesystem::exists(destinationPath)) {
-        FOE_LOG(foeImexYaml, Info, "Removing previous data at location: '{}'",
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO, "Removing previous data at location: '{}'",
                 destinationPath.string())
         std::filesystem::remove_all(destinationPath);
     }
@@ -551,12 +552,12 @@ foeResultSet foeImexYamlExport(char const *pExportPath, foeSimulation *pSimState
     std::filesystem::copy(tempPath, destinationPath, std::filesystem::copy_options::recursive,
                           errC);
     if (errC) {
-        FOE_LOG(foeImexYaml, Error,
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_ERROR,
                 "Failed to copy temp export directory '{}' to '{}' with error: {}",
                 tempPath.string(), destinationPath.string(), errC.message())
         return to_foeResult(FOE_IMEX_YAML_ERROR_FAILED_TO_PERFORM_FILESYSTEM_OPERATION);
     } else {
-        FOE_LOG(foeImexYaml, Info, "Successfully exported state as Yaml to '{}'",
+        FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO, "Successfully exported state as Yaml to '{}'",
                 destinationPath.string())
         // Delete the temp dir
         std::filesystem::remove_all(tempPath);

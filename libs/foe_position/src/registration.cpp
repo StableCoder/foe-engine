@@ -37,7 +37,7 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePosition, Error,
+            FOE_LOG(foePosition, FOE_LOG_LEVEL_ERROR,
                     "create - Failed to create foePosition3dPool on Simulation {} due to {}",
                     (void *)pSimulation, buffer);
 
@@ -63,7 +63,7 @@ size_t destroy(foeSimulation *pSimulation) {
         // Trying to destroy something that doesn't exist? Not optimal
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foePosition, Warning,
+        FOE_LOG(foePosition, FOE_LOG_LEVEL_WARNING,
                 "Attempted to decrement/destroy foePosition3dPool that doesn't exist - {}", buffer);
 
         ++errors;
@@ -74,8 +74,8 @@ size_t destroy(foeSimulation *pSimulation) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(foePosition, Warning, "Could not release foePosition3dPool to destroy - {}",
-                    buffer);
+            FOE_LOG(foePosition, FOE_LOG_LEVEL_WARNING,
+                    "Could not release foePosition3dPool to destroy - {}", buffer);
 
             ++errors;
         } else {
@@ -91,7 +91,7 @@ size_t destroy(foeSimulation *pSimulation) {
 int foePositionFunctionalityID() { return FOE_POSITION_LIBRARY_ID; }
 
 extern "C" foeResultSet foePositionRegisterFunctionality() {
-    FOE_LOG(foePosition, Verbose,
+    FOE_LOG(foePosition, FOE_LOG_LEVEL_VERBOSE,
             "foePositionRegisterFunctionality - Starting to register functionality")
 
     foeResultSet result = foeRegisterFunctionality(foeSimulationFunctionalty{
@@ -103,10 +103,10 @@ extern "C" foeResultSet foePositionRegisterFunctionality() {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(foePosition, Error,
+        FOE_LOG(foePosition, FOE_LOG_LEVEL_ERROR,
                 "foePositionRegisterFunctionality - Failed registering functionality: {}", buffer)
     } else {
-        FOE_LOG(foePosition, Verbose,
+        FOE_LOG(foePosition, FOE_LOG_LEVEL_VERBOSE,
                 "foePositionRegisterFunctionality - Completed registering functionality")
     }
 
@@ -114,11 +114,11 @@ extern "C" foeResultSet foePositionRegisterFunctionality() {
 }
 
 extern "C" void foePositionDeregisterFunctionality() {
-    FOE_LOG(foePosition, Verbose,
+    FOE_LOG(foePosition, FOE_LOG_LEVEL_VERBOSE,
             "foePositionDeregisterFunctionality - Starting to deregister functionality")
 
     foeDeregisterFunctionality(foePositionFunctionalityID());
 
-    FOE_LOG(foePosition, Verbose,
+    FOE_LOG(foePosition, FOE_LOG_LEVEL_VERBOSE,
             "foePositionDeregisterFunctionality - Completed deregistering functionality")
 }

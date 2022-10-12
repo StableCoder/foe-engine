@@ -72,8 +72,8 @@ extern "C" foeResultSet foeCreateResource(foeResourceID id,
 
     *pResource = resource_to_handle(pNewResource);
 
-    FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Created @ {}", foeIdToString(id), type,
-            (void *)pNewResource)
+    FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Created @ {}",
+            foeIdToString(id), type, (void *)pNewResource)
 
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
@@ -103,12 +103,12 @@ extern "C" int foeResourceDecrementRefCount(foeResource resource) {
     int refCount = --pResource->refCount;
 
     if (refCount == 0) {
-        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Destroying",
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Destroying",
                 foeIdToString(pResource->id), pResource->type)
 
         int useCount = pResource->useCount;
         if (useCount != 0) {
-            FOE_LOG(foeResourceCore, Warning,
+            FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_WARNING,
                     "[{},{}] foeResource - Destroying with a non-zero use count of: {}",
                     foeIdToString(pResource->id), pResource->type, useCount)
         }
@@ -120,7 +120,7 @@ extern "C" int foeResourceDecrementRefCount(foeResource resource) {
             foeResourceCreateInfoDecrementRefCount(pResource->createInfo);
         }
 
-        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Destroyed",
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Destroyed",
                 foeIdToString(pResource->id), pResource->type)
 
         pResource->~foeResourceImpl();
@@ -200,7 +200,7 @@ extern "C" void foeResourceLoadCreateInfo(foeResource resource) {
     ResourceLoadingFlags expected = ResourceLoadingFlagBits::None;
     if (!pResource->loading.compare_exchange_strong(expected,
                                                     ResourceLoadingFlagBits::CreateInfo)) {
-        FOE_LOG(foeResourceCore, Warning,
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_WARNING,
                 "[{},{}] foeResource - Attempted to load CreateInfo in parrallel",
                 foeIdToString(pResource->id), pResource->type)
         foeResourceDecrementRefCount(resource);
@@ -208,15 +208,17 @@ extern "C" void foeResourceLoadCreateInfo(foeResource resource) {
     }
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
-        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Loading CreateInfo asynchronously",
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE,
+                "[{},{}] foeResource - Loading CreateInfo asynchronously",
                 foeIdToString(pResource->id), pResource->type)
 
         pResource->pResourceFns->scheduleAsyncTask(
             pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadCreateInfoTask,
             pResource);
     } else {
-        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Loading CreateInfo synchronously",
-                pResource->id, pResource->type)
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE,
+                "[{},{}] foeResource - Loading CreateInfo synchronously", pResource->id,
+                pResource->type)
 
         loadCreateInfoTask(pResource);
     }
@@ -244,7 +246,8 @@ void postLoadFn(
 
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         loadResult.toString(loadResult.value, buffer);
-        FOE_LOG(foeResourceCore, Error, "[{},{}] foeResource - Failed to load  with error: {}",
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_ERROR,
+                "[{},{}] foeResource - Failed to load  with error: {}",
                 foeIdToString(pResource->id), pResource->type, buffer)
 
         auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
@@ -329,7 +332,8 @@ extern "C" void foeResourceLoadData(foeResource resource) {
         !pResource->loading.compare_exchange_strong(expected,
                                                     expected | ResourceLoadingFlagBits::CreateInfo |
                                                         ResourceLoadingFlagBits::Data)) {
-        FOE_LOG(foeResourceCore, Warning, "[{},{}] foeResource - Attempted to load in parrallel",
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_WARNING,
+                "[{},{}] foeResource - Attempted to load in parrallel",
                 foeIdToString(pResource->id), pResource->type)
         foeResourceDecrementRefCount(resource);
         return;
@@ -343,7 +347,7 @@ extern "C" void foeResourceLoadData(foeResource resource) {
     };
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
-        FOE_LOG(foeResourceCore, Verbose,
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE,
                 "[{},{}] foeResource - Importing CreateInfo asynchronously",
                 foeIdToString(pResource->id), pResource->type)
 
@@ -351,8 +355,9 @@ extern "C" void foeResourceLoadData(foeResource resource) {
             pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadResourceTask,
             pTaskContext);
     } else {
-        FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Loading synchronously",
-                foeIdToString(pResource->id), pResource->type)
+        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE,
+                "[{},{}] foeResource - Loading synchronously", foeIdToString(pResource->id),
+                pResource->type)
 
         loadResourceTask(pTaskContext);
     }
@@ -405,17 +410,19 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
 
     if (pResource->pUnloadFn != nullptr) {
         if (int uses = pResource->useCount; uses > 0) {
-            FOE_LOG(foeResourceCore, Warning,
+            FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_WARNING,
                     "[{},{}] foeResource - Unloading while still actively used {} times",
                     foeIdToString(pResource->id), pResource->type, uses)
         }
 
         if (immediate) {
-            FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Unloading immediately",
-                    foeIdToString(pResource->id), pResource->type)
+            FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE,
+                    "[{},{}] foeResource - Unloading immediately", foeIdToString(pResource->id),
+                    pResource->type)
         } else {
-            FOE_LOG(foeResourceCore, Verbose, "[{},{}] foeResource - Unloading normally",
-                    foeIdToString(pResource->id), pResource->type)
+            FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE,
+                    "[{},{}] foeResource - Unloading normally", foeIdToString(pResource->id),
+                    pResource->type)
         }
 
         pResource->pUnloadFn(pResource->pUnloadContext, resource, pResource->iteration,

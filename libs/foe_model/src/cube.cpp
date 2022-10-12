@@ -97,7 +97,7 @@ void cubeVertexDataTemplate(uint32_t componentCount,
                 break;
 
             case foeVertexComponent::Colour:
-                FOE_LOG(Model, Fatal,
+                FOE_LOG(Model, FOE_LOG_LEVEL_FATAL,
                         "Tried to generate cube vertex data with an unsupported colour component");
                 std::abort();
             }

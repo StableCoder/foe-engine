@@ -63,8 +63,8 @@
     {                                                                                              \
         char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
         result.toString(result.value, buffer);                                                     \
-        FOE_LOG(General, Fatal, "End called from {}:{} with error: {}", __FILE__, __LINE__,        \
-                buffer);                                                                           \
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error: {}", __FILE__,    \
+                __LINE__, buffer);                                                                 \
         return std::make_tuple(false, result.value);                                               \
     }
 
@@ -72,20 +72,20 @@
     {                                                                                              \
         char buffer[FOE_MAX_RESULT_STRING_SIZE];                                                   \
         result.toString(result.value, buffer);                                                     \
-        FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,         \
-                buffer);                                                                           \
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,     \
+                __LINE__, buffer);                                                                 \
         return result.value;                                                                       \
     }
 
 #define END_PROGRAM_TUPLE                                                                          \
     {                                                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{}", __FILE__, __LINE__);                      \
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{}", __FILE__, __LINE__);        \
         return std::make_tuple(false, 1);                                                          \
     }
 
 #define END_PROGRAM                                                                                \
     {                                                                                              \
-        FOE_LOG(General, Fatal, "End called from {}:{}", __FILE__, __LINE__);                      \
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{}", __FILE__, __LINE__);        \
         return 1;                                                                                  \
     }
 
@@ -99,7 +99,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(General, Fatal, "Error registering basic functionality: {}", buffer)
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "Error registering basic functionality: {}", buffer)
         return std::make_tuple(false, result.value);
     }
 
@@ -120,7 +120,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
-        FOE_LOG(General, Fatal, "Error importing '{}' state with error: {}", "persistent", buffer)
+        FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "Error importing '{}' state with error: {}",
+                "persistent", buffer)
 
         return std::make_tuple(false, result.value);
     }
@@ -291,7 +292,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         // If the user specified to force an XR session and couldn't find/create the session, fail
         // out
         if (settings.xr.forceXr && xrSession == FOE_NULL_HANDLE) {
-            FOE_LOG(General, Fatal, "XR support enabled but no HMD session was detected/started.")
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL,
+                    "XR support enabled but no HMD session was detected/started.")
             return std::make_tuple(false, 1);
         }
     }
@@ -449,7 +451,8 @@ foeResultSet Application::startXR(bool localPoll) {
     foeResultSet result{.value = FOE_SUCCESS, .toString = NULL};
 
     if (xrRuntime == FOE_NULL_HANDLE) {
-        FOE_LOG(General, Error, "Tried to start an XR session, but no XR runtime has been started");
+        FOE_LOG(General, FOE_LOG_LEVEL_ERROR,
+                "Tried to start an XR session, but no XR runtime has been started");
     }
 #ifdef FOE_XR_SUPPORT
     else {
@@ -457,8 +460,8 @@ foeResultSet Application::startXR(bool localPoll) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    buffer);
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,
+                    __LINE__, buffer);
 
             goto START_XR_FAILED;
         }
@@ -472,8 +475,8 @@ foeResultSet Application::startXR(bool localPoll) {
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, buffer);
+                    FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                            __FILE__, __LINE__, buffer);
 
                     goto START_XR_FAILED;
                 }
@@ -490,8 +493,8 @@ foeResultSet Application::startXR(bool localPoll) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    buffer);
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,
+                    __LINE__, buffer);
 
             goto START_XR_FAILED;
         }
@@ -506,8 +509,8 @@ foeResultSet Application::startXR(bool localPoll) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    buffer);
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,
+                    __LINE__, buffer);
 
             goto START_XR_FAILED;
         }
@@ -523,8 +526,8 @@ foeResultSet Application::startXR(bool localPoll) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    buffer);
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,
+                    __LINE__, buffer);
 
             goto START_XR_FAILED;
         }
@@ -535,8 +538,8 @@ foeResultSet Application::startXR(bool localPoll) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    buffer);
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,
+                    __LINE__, buffer);
 
             goto START_XR_FAILED;
         }
@@ -601,8 +604,8 @@ foeResultSet Application::startXR(bool localPoll) {
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                        buffer);
+                FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                        __FILE__, __LINE__, buffer);
 
                 goto START_XR_FAILED;
             }
@@ -636,8 +639,8 @@ foeResultSet Application::startXR(bool localPoll) {
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                        buffer);
+                FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                        __FILE__, __LINE__, buffer);
 
                 goto START_XR_FAILED;
             }
@@ -648,8 +651,8 @@ foeResultSet Application::startXR(bool localPoll) {
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                        buffer);
+                FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                        __FILE__, __LINE__, buffer);
 
                 goto START_XR_FAILED;
             }
@@ -660,8 +663,8 @@ foeResultSet Application::startXR(bool localPoll) {
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
-                FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                        buffer);
+                FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                        __FILE__, __LINE__, buffer);
 
                 goto START_XR_FAILED;
             }
@@ -693,8 +696,8 @@ foeResultSet Application::startXR(bool localPoll) {
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, buffer);
+                    FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                            __FILE__, __LINE__, buffer);
 
                     goto START_XR_FAILED;
                 }
@@ -720,8 +723,8 @@ foeResultSet Application::startXR(bool localPoll) {
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, buffer);
+                    FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                            __FILE__, __LINE__, buffer);
 
                     goto START_XR_FAILED;
                 }
@@ -734,8 +737,8 @@ foeResultSet Application::startXR(bool localPoll) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    buffer);
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,
+                    __LINE__, buffer);
 
             goto START_XR_FAILED;
         }
@@ -744,13 +747,13 @@ foeResultSet Application::startXR(bool localPoll) {
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__, __LINE__,
-                    buffer);
+            FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}", __FILE__,
+                    __LINE__, buffer);
 
             goto START_XR_FAILED;
         }
 
-        FOE_LOG(General, Info, "Started new XR session {}",
+        FOE_LOG(General, FOE_LOG_LEVEL_INFO, "Started new XR session {}",
                 static_cast<void *>(foeOpenXrGetSession(xrSession)));
     }
 
@@ -776,8 +779,8 @@ foeResultSet Application::stopXR(bool localPoll) {
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, buffer);
+                    FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                            __FILE__, __LINE__, buffer);
                 }
                 return result;
             } else {
@@ -793,8 +796,8 @@ foeResultSet Application::stopXR(bool localPoll) {
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, buffer);
+                    FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                            __FILE__, __LINE__, buffer);
                     return result;
                 }
             } else {
@@ -823,8 +826,8 @@ foeResultSet Application::stopXR(bool localPoll) {
                 if (result.value != FOE_SUCCESS) {
                     char buffer[FOE_MAX_RESULT_STRING_SIZE];
                     result.toString(result.value, buffer);
-                    FOE_LOG(General, Fatal, "End called from {}:{} with error {}", __FILE__,
-                            __LINE__, buffer);
+                    FOE_LOG(General, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                            __FILE__, __LINE__, buffer);
                     return result;
                 }
             } else {
@@ -852,7 +855,7 @@ int Application::mainloop() {
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
-    FOE_LOG(General, Info, "Entering main loop")
+    FOE_LOG(General, FOE_LOG_LEVEL_INFO, "Entering main loop")
     while (!foeWsiWindowGetShouldClose(windowData[0].window)
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
@@ -1450,7 +1453,7 @@ int Application::mainloop() {
 
         foeWaitSyncThreads(threadPool);
     }
-    FOE_LOG(General, Info, "Exiting main loop")
+    FOE_LOG(General, FOE_LOG_LEVEL_INFO, "Exiting main loop")
 
     return 0;
 }

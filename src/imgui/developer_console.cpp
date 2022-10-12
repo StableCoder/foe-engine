@@ -117,7 +117,7 @@ void foeImGuiDeveloperConsole::customUI() {
         std::scoped_lock lock{mSync};
         mEntries.emplace_back(Entry{
             .category = "ConsoleInput",
-            .level = foeLogLevel::Info,
+            .level = FOE_LOG_LEVEL_INFO,
             .message = mBuffer,
         });
     }
