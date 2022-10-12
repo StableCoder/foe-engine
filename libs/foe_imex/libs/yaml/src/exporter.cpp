@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <mutex>
 #include <random>
 #include <shared_mutex>
 #include <string_view>

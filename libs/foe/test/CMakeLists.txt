@@ -25,6 +25,7 @@ target_sources(
           data_pool_multi.cpp
           delimited_string.cpp
           filesystem.cpp
+          logger.cpp
           managed_memory.cpp
           memory_mapped_file.cpp
           plugin.cpp
@@ -79,6 +80,5 @@ target_code_coverage(
 
 # Directories
 add_subdirectory(chrono)
-add_subdirectory(log)
 add_subdirectory(storage)
 add_subdirectory(test_plugin_so)

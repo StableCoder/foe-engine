@@ -60,12 +60,12 @@ void foeImGuiDeveloperConsole::maxEntries(size_t numEntries) noexcept {
     }
 }
 
-void foeImGuiDeveloperConsole::registerWithLogger(foeLogger *pLogger) {
-    pLogger->registerSink(this, foeImGuiDeveloperConsole::log, nullptr);
+void foeImGuiDeveloperConsole::registerWithLogger() {
+    foeLogRegisterSink(this, foeImGuiDeveloperConsole::log, nullptr);
 }
 
-void foeImGuiDeveloperConsole::deregisterFromLogger(foeLogger *pLogger) {
-    pLogger->deregisterSink(this, foeImGuiDeveloperConsole::log, nullptr);
+void foeImGuiDeveloperConsole::deregisterFromLogger() {
+    foeLogDeregisterSink(this, foeImGuiDeveloperConsole::log, nullptr);
 }
 
 bool foeImGuiDeveloperConsole::renderMenuElements(ImGuiContext *pImGuiContext,
@@ -149,7 +149,7 @@ void foeImGuiDeveloperConsole::customUI() {
             // Level
             ImGui::TableNextColumn();
 
-            ImGui::Text("%s", std::to_string(entry.level).data());
+            ImGui::Text("%s", foeLogLevel_to_string(entry.level));
 
             // Message
             ImGui::TableNextColumn();

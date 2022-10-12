@@ -2,17 +2,19 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_LOG_HPP
-#define FOE_LOG_HPP
+#ifndef FOE_LOG_H
+#define FOE_LOG_H
 
 #include <foe/export.h>
-#include <foe/log/logger.hpp>
+
+#ifdef __cplusplus
+#include <fmt/core.h>
+#endif
 
 /// Logs a compile-time message to the global logger with the given parameters
 #define FOE_LOG(CATEGORY, LOG_LEVEL, MESSAGE, ...)                                                 \
     if (static_cast<int>(LOG_LEVEL) <= static_cast<int>(CATEGORY##LogCategoryGetLogLevel())) {     \
-        foeLogger::instance()->log(CATEGORY##LogCategoryGetName(), LOG_LEVEL, MESSAGE,             \
-                                   ##__VA_ARGS__);                                                 \
+        foeLogMessage(CATEGORY##LogCategoryGetName(), LOG_LEVEL, MESSAGE, ##__VA_ARGS__);          \
     }
 
 /** Declares a log category for static or scoped environments
@@ -58,4 +60,47 @@
         g_##CATEGORY##_log_level = logLevel;                                                       \
     }
 
-#endif // FOE_LOG_HPP
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum foeLogLevel {
+    FOE_LOG_LEVEL_FATAL = 0,
+    FOE_LOG_LEVEL_ERROR,
+    FOE_LOG_LEVEL_WARNING,
+    FOE_LOG_LEVEL_INFO,
+    FOE_LOG_LEVEL_VERBOSE,
+    FOE_LOG_LEVEL_ALL = FOE_LOG_LEVEL_VERBOSE,
+};
+
+typedef void (*PFN_foeLogMessage)(void *pContext,
+                                  char const *pCategoryName,
+                                  foeLogLevel level,
+                                  char const *pMessage);
+typedef void (*PFN_foeLogException)(void *pContext);
+
+FOE_EXPORT char const *foeLogLevel_to_string(foeLogLevel logLevel);
+
+FOE_EXPORT void foeLogMessage(char const *pCategoryName, foeLogLevel level, char const *pMessage);
+
+FOE_EXPORT bool foeLogRegisterSink(void *pContext,
+                                   PFN_foeLogMessage logMessage,
+                                   PFN_foeLogException logException);
+
+FOE_EXPORT bool foeLogDeregisterSink(void *pContext,
+                                     PFN_foeLogMessage logMessage,
+                                     PFN_foeLogException logException);
+
+#ifdef __cplusplus
+}
+
+template <typename... Args>
+inline void foeLogMessage(char const *pCategoryName,
+                          foeLogLevel level,
+                          fmt::format_string<Args...> message,
+                          Args &&...args) {
+    foeLogMessage(pCategoryName, level, fmt::format(message, std::forward<Args>(args)...).c_str());
+}
+#endif
+
+#endif // FOE_LOG_H

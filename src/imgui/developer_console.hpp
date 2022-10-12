@@ -5,7 +5,7 @@
 #ifndef IMGUI_DEVELOPER_CONSOLE_HPP
 #define IMGUI_DEVELOPER_CONSOLE_HPP
 
-#include <foe/log/logger.hpp>
+#include <foe/log.h>
 
 #include <mutex>
 #include <queue>
@@ -22,8 +22,8 @@ class foeImGuiDeveloperConsole {
     size_t maxEntries() const noexcept;
     void maxEntries(size_t numEntries) noexcept;
 
-    void registerWithLogger(foeLogger *pLogger);
-    void deregisterFromLogger(foeLogger *pLogger);
+    void registerWithLogger();
+    void deregisterFromLogger();
 
   private:
     static bool renderMenuElements(ImGuiContext *pImGuiContext, void *pUserData, char const *pMenu);

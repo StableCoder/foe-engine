@@ -5,7 +5,7 @@
 #ifndef TEST_LOG_SINK_HPP
 #define TEST_LOG_SINK_HPP
 
-#include <foe/log.hpp>
+#include <foe/log.h>
 
 struct TestLogSink {
     static void log(void *pContext, char const *, foeLogLevel level, char const *msg) {

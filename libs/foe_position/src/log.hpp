@@ -2,6 +2,6 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/log.hpp>
+#include <foe/log.h>
 
 FOE_DECLARE_LOG_CATEGORY(foePosition)

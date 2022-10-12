@@ -13,6 +13,8 @@
 #include "runtime.h"
 #include "vk_result.h"
 
+#include <vector>
+
 namespace {
 
 void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {

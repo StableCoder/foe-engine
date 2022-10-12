@@ -5,7 +5,7 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-#include <foe/log.hpp>
+#include <foe/log.h>
 
 FOE_DECLARE_LOG_CATEGORY(foeOpenXr)
 

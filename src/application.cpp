@@ -136,7 +136,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (result.value != FOE_SUCCESS)
         ERRC_END_PROGRAM_TUPLE
 
-    devConsole.registerWithLogger(foeLogger::instance());
+    devConsole.registerWithLogger();
 
     imguiState.setImGuiContext(pImGuiContext);
     imguiRenderer.setImGuiContext(pImGuiContext);
@@ -388,7 +388,7 @@ void Application::deinitialize() {
     deregisterBasicFunctionality();
 
 #ifdef EDITOR_MODE
-    devConsole.deregisterFromLogger(foeLogger::instance());
+    devConsole.deregisterFromLogger();
 #endif
 
     // Output configuration settings to a YAML configuration file

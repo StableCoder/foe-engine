@@ -164,7 +164,7 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
     foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
     auto dummyData = [](void *, void *) {};
 
-    foeLogger::instance()->registerSink(&testSink, TestLogSink::log, nullptr);
+    foeLogRegisterSink(&testSink, TestLogSink::log, nullptr);
 
     foeResultSet result =
         foeCreateResourceCreateInfo(0, nullptr, 0, nullptr, dummyData, &createInfo);
@@ -174,7 +174,7 @@ TEST_CASE("foeResourceCreateInfo - Regular lifetime logs") {
     CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
     foeResourceCreateInfoDecrementRefCount(createInfo);
-    foeLogger::instance()->deregisterSink(&testSink, TestLogSink::log, nullptr);
+    foeLogDeregisterSink(&testSink, TestLogSink::log, nullptr);
 
     REQUIRE(testSink.logMessages.size() == 3);
 

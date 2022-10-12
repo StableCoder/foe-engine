@@ -8,6 +8,7 @@ target_sources(
           delimited_string.c
           filesystem.cpp
           log.cpp
+          logger.cpp
           managed_memory_subset.c
           managed_memory.cpp
           plugin.cpp
@@ -25,4 +26,3 @@ else()
 endif()
 
 add_subdirectory(chrono)
-add_subdirectory(log)

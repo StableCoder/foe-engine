@@ -186,7 +186,7 @@ TEST_CASE("foeResource - Regular lifetime logs (no import/loading)") {
     foeResourceFns fns{};
     foeResource resource{FOE_NULL_HANDLE};
 
-    foeLogger::instance()->registerSink(&testSink, TestLogSink::log, nullptr);
+    foeLogRegisterSink(&testSink, TestLogSink::log, nullptr);
 
     foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
 
@@ -196,7 +196,7 @@ TEST_CASE("foeResource - Regular lifetime logs (no import/loading)") {
 
     REQUIRE(foeResourceDecrementRefCount(resource) == 0);
 
-    foeLogger::instance()->deregisterSink(&testSink, TestLogSink::log, nullptr);
+    foeLogDeregisterSink(&testSink, TestLogSink::log, nullptr);
 
     CHECK(testSink.logMessages[0].level == FOE_LOG_LEVEL_VERBOSE);
     CHECK(testSink.logMessages[0].msg.starts_with("["));
@@ -226,11 +226,11 @@ TEST_CASE("foeResource - Warning logged when destroyed with non-zero reference o
         foeResourceIncrementUseCount(resource);
         foeResourceIncrementUseCount(resource);
 
-        foeLogger::instance()->registerSink(&testSink, TestLogSink::log, nullptr);
+        foeLogRegisterSink(&testSink, TestLogSink::log, nullptr);
 
         REQUIRE(foeResourceDecrementRefCount(resource) == 0);
 
-        foeLogger::instance()->deregisterSink(&testSink, TestLogSink::log, nullptr);
+        foeLogDeregisterSink(&testSink, TestLogSink::log, nullptr);
 
         CHECK(testSink.logMessages[0].level == FOE_LOG_LEVEL_VERBOSE);
         CHECK(testSink.logMessages[0].msg == "[0x00000000,0] foeResource - Destroying");

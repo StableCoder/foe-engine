@@ -8,6 +8,7 @@
 #include "log.hpp"
 
 #include <map>
+#include <mutex>
 #include <shared_mutex>
 #include <string>
 

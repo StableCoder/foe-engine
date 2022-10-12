@@ -12,6 +12,7 @@
 #include <cmath>
 #include <map>
 #include <tuple>
+#include <vector>
 
 namespace {
 
