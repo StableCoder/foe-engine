@@ -20,7 +20,6 @@ target_sources(
   test_foe
   PRIVATE algorithm.cpp
           c_header_compatibility.c
-          command_string_runner.cpp
           data_pool_custom.cpp
           data_pool_int.cpp
           data_pool_multi.cpp

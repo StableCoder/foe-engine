@@ -5,9 +5,7 @@
 target_sources(
   foe
   PRIVATE binary_result.c
-          command_string_runner.cpp
           delimited_string.c
-          developer_console.cpp
           filesystem.cpp
           log.cpp
           managed_memory_subset.c

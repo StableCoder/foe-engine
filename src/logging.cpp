@@ -4,7 +4,6 @@
 
 #include "logging.hpp"
 
-#include <foe/developer_console.hpp>
 #include <foe/log.hpp>
 
 #include <iostream>

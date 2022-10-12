@@ -1,10 +1,11 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "developer_console.hpp"
 
 #include <foe/imgui/state.hpp>
+#include <foe/log/category.hpp>
 #include <imgui.h>
 
 #include <array>
@@ -28,6 +29,35 @@ void foeImGuiDeveloperConsole::deregisterUI(foeImGuiState *pState) {
     pState->removeUI(this, foeImGuiDeveloperConsole::renderMenuElements,
                      foeImGuiDeveloperConsole::renderCustomUI, renderMenus.data(),
                      renderMenus.size());
+}
+
+void foeImGuiDeveloperConsole::log(foeLogCategory *pCategory,
+                                   foeLogLevel level,
+                                   std::string_view message) {
+    std::scoped_lock lock{mSync};
+
+    mEntries.emplace_back(Entry{
+        .category = std::string{pCategory->name()},
+        .level = level,
+        .message = std::string{message},
+    });
+
+    if (mEntries.size() > mMaxEntries) {
+        mEntries.pop_front();
+    }
+}
+
+void foeImGuiDeveloperConsole::exception() {}
+
+size_t foeImGuiDeveloperConsole::maxEntries() const noexcept { return mMaxEntries; }
+
+void foeImGuiDeveloperConsole::maxEntries(size_t numEntries) noexcept {
+    std::scoped_lock lock{mSync};
+
+    mMaxEntries = numEntries;
+    while (mEntries.size() > mMaxEntries) {
+        mEntries.pop_front();
+    }
 }
 
 bool foeImGuiDeveloperConsole::renderMenuElements(ImGuiContext *pImGuiContext,
@@ -76,7 +106,12 @@ void foeImGuiDeveloperConsole::customUI() {
         mBuffer.resize(512);
     if (ImGui::InputText("", mBuffer.data(), mBuffer.size(),
                          ImGuiInputTextFlags_EnterReturnsTrue)) {
-        runCommand(mBuffer);
+        std::scoped_lock lock{mSync};
+        mEntries.emplace_back(Entry{
+            .category = "ConsoleInput",
+            .level = foeLogLevel::Info,
+            .message = mBuffer,
+        });
     }
 
     ImGui::BeginTable("DeveloperConsoleOutputTable", 3, ImGuiTableFlags_Resizable);
@@ -101,8 +136,7 @@ void foeImGuiDeveloperConsole::customUI() {
             // Category
             ImGui::TableNextColumn();
 
-            std::string category{entry.pCategory->name()};
-            ImGui::Text("%s", category.data());
+            ImGui::Text("%s", entry.category.c_str());
 
             // Level
             ImGui::TableNextColumn();
