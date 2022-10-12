@@ -1,4 +1,4 @@
-// Copyright (C) 2020 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,38 +11,52 @@ foeLogger *foeLogger::instance() {
     return &gLogger;
 }
 
-void foeLogger::log(char const *pCategoryName, foeLogLevel level, std::string_view message) {
+void foeLogger::log(char const *pCategoryName, foeLogLevel level, char const *pMessage) {
     std::scoped_lock lock{mSync};
 
-    for (auto *it : mSinks) {
-        it->log(pCategoryName, level, message);
+    for (auto const &it : mSinks) {
+        if (it.logMessage)
+            it.logMessage(it.pContext, pCategoryName, level, pMessage);
     }
 
     [[unlikely]] if (level == foeLogLevel::Fatal) {
-        for (auto *it : mSinks) {
-            it->exception();
+        for (auto const &it : mSinks) {
+            if (it.logException)
+                it.logException(it.pContext);
         }
     }
 }
 
-bool foeLogger::registerSink(foeLogSink *pSink) {
+bool foeLogger::registerSink(void *pContext,
+                             PFN_foeLogMessage logMessage,
+                             PFN_foeLogException logException) {
     std::scoped_lock lock{mSync};
 
     for (auto it = mSinks.begin(); it != mSinks.end(); ++it) {
-        if (*it == pSink) {
+        if ((pContext != nullptr && it->pContext == pContext) ||
+            (pContext == nullptr && it->logMessage == logMessage &&
+             it->logException == logException)) {
             return false;
         }
     }
 
-    mSinks.emplace_back(pSink);
+    mSinks.emplace_back(SinkSet{
+        .pContext = pContext,
+        .logMessage = logMessage,
+        .logException = logException,
+    });
     return true;
 }
 
-bool foeLogger::deregisterSink(foeLogSink *pSink) {
+bool foeLogger::deregisterSink(void *pContext,
+                               PFN_foeLogMessage logMessage,
+                               PFN_foeLogException logException) {
     std::scoped_lock lock{mSync};
 
     for (auto it = mSinks.begin(); it != mSinks.end(); ++it) {
-        if (*it == pSink) {
+        if ((pContext != nullptr && it->pContext == pContext) ||
+            (pContext == nullptr && it->logMessage == logMessage &&
+             it->logException == logException)) {
             mSinks.erase(it);
             return true;
         }

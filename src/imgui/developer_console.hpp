@@ -5,7 +5,7 @@
 #ifndef IMGUI_DEVELOPER_CONSOLE_HPP
 #define IMGUI_DEVELOPER_CONSOLE_HPP
 
-#include <foe/log/sink.hpp>
+#include <foe/log/logger.hpp>
 
 #include <mutex>
 #include <queue>
@@ -14,20 +14,25 @@
 class foeImGuiState;
 struct ImGuiContext;
 
-class foeImGuiDeveloperConsole : public foeLogSink {
+class foeImGuiDeveloperConsole {
   public:
     bool registerUI(foeImGuiState *pState);
     void deregisterUI(foeImGuiState *pState);
 
-    void log(char const *pCategoryName, foeLogLevel level, std::string_view message) final;
-    void exception() final;
-
     size_t maxEntries() const noexcept;
     void maxEntries(size_t numEntries) noexcept;
+
+    void registerWithLogger(foeLogger *pLogger);
+    void deregisterFromLogger(foeLogger *pLogger);
 
   private:
     static bool renderMenuElements(ImGuiContext *pImGuiContext, void *pUserData, char const *pMenu);
     static void renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData);
+
+    static void log(void *pDevConsole,
+                    char const *pCategoryName,
+                    foeLogLevel level,
+                    char const *pMessage);
 
     bool viewMainMenu();
     void customUI();

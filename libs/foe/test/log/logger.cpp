@@ -1,4 +1,4 @@
-// Copyright (C) 2020 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,42 +6,35 @@
 #include <foe/log.hpp>
 
 namespace {
-struct TestSink : public foeLogSink {
-  public:
-    void log(char const *, foeLogLevel level, std::string_view) { lastLogLevel = level; }
-    void exception() {}
 
-    foeLogLevel lastLogLevel;
-};
+foeLogLevel lastLogLevel;
+
+void log(void *, char const *, foeLogLevel level, char const *) { lastLogLevel = level; }
+void exception(void *) {}
+
 } // namespace
 
 TEST_CASE("foeLogger - Cannot register the same sink multiple times") {
-    TestSink testSink;
+    CHECK(foeLogger::instance()->registerSink(nullptr, log, exception));
+    CHECK_FALSE(foeLogger::instance()->registerSink(nullptr, log, exception));
 
-    CHECK(foeLogger::instance()->registerSink(&testSink));
-    CHECK_FALSE(foeLogger::instance()->registerSink(&testSink));
-
-    REQUIRE(foeLogger::instance()->deregisterSink(&testSink));
+    REQUIRE(foeLogger::instance()->deregisterSink(nullptr, log, exception));
 }
 
 TEST_CASE("foeLogger - Cannot deregister sink that was not registered") {
-    TestSink testSink;
-
-    CHECK_FALSE(foeLogger::instance()->deregisterSink(&testSink));
+    CHECK_FALSE(foeLogger::instance()->deregisterSink(nullptr, log, exception));
 }
 
 TEST_CASE("foeLogger - Can deregister is different orders than registered") {
-    TestSink testSink, testSink2;
-
-    CHECK(foeLogger::instance()->registerSink(&testSink));
-    CHECK(foeLogger::instance()->registerSink(&testSink2));
+    CHECK(foeLogger::instance()->registerSink(nullptr, log, exception));
+    CHECK(foeLogger::instance()->registerSink(&lastLogLevel, log, exception));
 
     SECTION("Same order") {
-        REQUIRE(foeLogger::instance()->deregisterSink(&testSink));
-        REQUIRE(foeLogger::instance()->deregisterSink(&testSink2));
+        REQUIRE(foeLogger::instance()->deregisterSink(nullptr, log, exception));
+        REQUIRE(foeLogger::instance()->deregisterSink(&lastLogLevel, log, exception));
     }
     SECTION("Reverse order") {
-        REQUIRE(foeLogger::instance()->deregisterSink(&testSink2));
-        REQUIRE(foeLogger::instance()->deregisterSink(&testSink));
+        REQUIRE(foeLogger::instance()->deregisterSink(&lastLogLevel, log, exception));
+        REQUIRE(foeLogger::instance()->deregisterSink(nullptr, log, exception));
     }
 }

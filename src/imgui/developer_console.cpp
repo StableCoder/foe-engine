@@ -30,23 +30,24 @@ void foeImGuiDeveloperConsole::deregisterUI(foeImGuiState *pState) {
                      renderMenus.size());
 }
 
-void foeImGuiDeveloperConsole::log(char const *pCategoryName,
+void foeImGuiDeveloperConsole::log(void *pContext,
+                                   char const *pCategoryName,
                                    foeLogLevel level,
-                                   std::string_view message) {
-    std::scoped_lock lock{mSync};
+                                   char const *pMessage) {
+    foeImGuiDeveloperConsole *pDevConsole = (foeImGuiDeveloperConsole *)pContext;
 
-    mEntries.emplace_back(Entry{
+    std::scoped_lock lock{pDevConsole->mSync};
+
+    pDevConsole->mEntries.emplace_back(Entry{
         .category = pCategoryName,
         .level = level,
-        .message = std::string{message},
+        .message = pMessage,
     });
 
-    if (mEntries.size() > mMaxEntries) {
-        mEntries.pop_front();
+    if (pDevConsole->mEntries.size() > pDevConsole->mMaxEntries) {
+        pDevConsole->mEntries.pop_front();
     }
 }
-
-void foeImGuiDeveloperConsole::exception() {}
 
 size_t foeImGuiDeveloperConsole::maxEntries() const noexcept { return mMaxEntries; }
 
@@ -57,6 +58,14 @@ void foeImGuiDeveloperConsole::maxEntries(size_t numEntries) noexcept {
     while (mEntries.size() > mMaxEntries) {
         mEntries.pop_front();
     }
+}
+
+void foeImGuiDeveloperConsole::registerWithLogger(foeLogger *pLogger) {
+    pLogger->registerSink(this, foeImGuiDeveloperConsole::log, nullptr);
+}
+
+void foeImGuiDeveloperConsole::deregisterFromLogger(foeLogger *pLogger) {
+    pLogger->deregisterSink(this, foeImGuiDeveloperConsole::log, nullptr);
 }
 
 bool foeImGuiDeveloperConsole::renderMenuElements(ImGuiContext *pImGuiContext,

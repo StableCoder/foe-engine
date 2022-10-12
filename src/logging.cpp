@@ -10,16 +10,12 @@
 
 namespace {
 
-class StdOutSink : public foeLogSink {
-    void log(char const *pCategoryName, foeLogLevel level, std::string_view message) {
-        std::cout << std::to_string(level) << " : " << pCategoryName << " : " << message << "\n";
-    }
+void log(void *, char const *pCategoryName, foeLogLevel level, char const *pMessage) {
+    std::cout << std::to_string(level) << " : " << pCategoryName << " : " << pMessage << "\n";
+}
 
-    void exception() { std::cout << std::flush; }
-};
-
-StdOutSink stdoutSink;
+void exception(void *) { std::cout << std::flush; }
 
 } // namespace
 
-void initializeLogging() { foeLogger::instance()->registerSink(&stdoutSink); }
+void initializeLogging() { foeLogger::instance()->registerSink(nullptr, log, exception); }

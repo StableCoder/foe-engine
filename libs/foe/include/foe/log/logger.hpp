@@ -7,35 +7,49 @@
 
 #include <fmt/core.h>
 #include <foe/log/level.hpp>
-#include <foe/log/sink.hpp>
 
 #include <mutex>
-#include <string_view>
 #include <vector>
+
+typedef void (*PFN_foeLogMessage)(void *pContext,
+                                  char const *pCategoryName,
+                                  foeLogLevel level,
+                                  char const *pMessage);
+typedef void (*PFN_foeLogException)(void *pContext);
 
 class foeLogger {
   public:
     FOE_EXPORT static foeLogger *instance();
 
-    FOE_EXPORT void log(char const *pCategoryName, foeLogLevel level, std::string_view message);
+    FOE_EXPORT void log(char const *pCategoryName, foeLogLevel level, char const *pMessage);
 
     template <typename... Args>
     inline void log(char const *pCategoryName,
                     foeLogLevel level,
                     fmt::format_string<Args...> message,
                     Args &&...args) {
-        log(pCategoryName, level, fmt::format(message, std::forward<Args>(args)...));
+        log(pCategoryName, level, fmt::format(message, std::forward<Args>(args)...).c_str());
     }
 
-    FOE_EXPORT bool registerSink(foeLogSink *pSink);
+    FOE_EXPORT bool registerSink(void *pContext,
+                                 PFN_foeLogMessage logMessage,
+                                 PFN_foeLogException logException);
 
-    FOE_EXPORT bool deregisterSink(foeLogSink *pSink);
+    FOE_EXPORT bool deregisterSink(void *pContext,
+                                   PFN_foeLogMessage logMessage,
+                                   PFN_foeLogException logException);
 
   private:
     foeLogger();
 
     std::mutex mSync;
-    std::vector<foeLogSink *> mSinks;
+
+    struct SinkSet {
+        void *pContext;
+        PFN_foeLogMessage logMessage;
+        PFN_foeLogException logException;
+    };
+    std::vector<SinkSet> mSinks;
 };
 
 #endif // FOE_LOG_LOGGER_HPP

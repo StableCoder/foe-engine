@@ -7,14 +7,15 @@
 
 #include <foe/log.hpp>
 
-struct TestLogSink : public foeLogSink {
-    void log(char const *, foeLogLevel level, std::string_view msg) {
-        logMessages.emplace_back(LogEntry{
+struct TestLogSink {
+    static void log(void *pContext, char const *, foeLogLevel level, char const *msg) {
+        TestLogSink *pSink = (TestLogSink *)pContext;
+
+        pSink->logMessages.emplace_back(LogEntry{
             .level = level,
-            .msg = std::string{msg},
+            .msg = msg,
         });
     }
-    void exception() {}
 
     struct LogEntry {
         foeLogLevel level;

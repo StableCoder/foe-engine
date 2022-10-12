@@ -9,7 +9,7 @@
 
 #include <string>
 
-enum class foeLogLevel {
+enum foeLogLevel {
     Fatal = 0,
     Error,
     Warning,
