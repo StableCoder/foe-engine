@@ -45,7 +45,7 @@ extern "C" foeResultSet foeCreateResourceCreateInfo(foeResourceCreateInfoType ty
 
     *pCreateInfo = resource_create_info_to_handle(pNewCI);
 
-    FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResourceCreateInfo - Created",
+    FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResourceCreateInfo - Created",
             (void *)pNewCI, type)
 
     return to_foeResult(FOE_RESOURCE_SUCCESS);
@@ -72,15 +72,14 @@ extern "C" int foeResourceCreateInfoDecrementRefCount(foeResourceCreateInfo crea
     int refCount = --pCreateInfo->refCount;
 
     if (refCount == 0) {
-        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE,
-                "[{},{}] foeResourceCreateInfo - Destroying", (void *)pCreateInfo,
-                pCreateInfo->type)
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResourceCreateInfo - Destroying",
+                (void *)pCreateInfo, pCreateInfo->type)
 
         if (pCreateInfo->cleanupFn != nullptr) {
             pCreateInfo->cleanupFn((void *)foeResourceCreateInfoGetData(createInfo));
         }
 
-        FOE_LOG(foeResourceCore, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResourceCreateInfo - Destroyed",
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResourceCreateInfo - Destroyed",
                 (void *)pCreateInfo, pCreateInfo->type)
 
         pCreateInfo->~foeResourceCreateInfoImpl();

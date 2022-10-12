@@ -4,4 +4,4 @@
 
 #include "log.hpp"
 
-FOE_DEFINE_LOG_CATEGORY(foeResourceCore, FOE_LOG_LEVEL_ALL)
+FOE_DEFINE_LOG_CATEGORY(foeResource, FOE_LOG_LEVEL_ALL)
