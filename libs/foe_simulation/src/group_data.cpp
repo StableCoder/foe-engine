@@ -47,7 +47,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     // Make sure both items are valid pointers
     if (entityIndexes == FOE_NULL_HANDLE || resourceIndexes == FOE_NULL_HANDLE ||
         importer == FOE_NULL_HANDLE) {
-        FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                 "foeGroupData::addDynamicGroup - Either the given indexes or importer are nullptr");
         return false;
     }
@@ -60,7 +60,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
 
     // Check against blank name for the importer
     if (std::string_view{pGroupName}.empty()) {
-        FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                 "foeGroupData::addDynamicGroup - Importer had a blank group name");
         return false;
     }
@@ -74,7 +74,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     // Check both have the same ID Group
     if (foeEcsIndexesGetGroupID(entityIndexes) != groupID ||
         foeEcsIndexesGetGroupID(resourceIndexes) != groupID) {
-        FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                 "foeGroupData::addDynamicGroup - ID Groups don't match between the indexes and "
                 "importer");
         return false;
@@ -83,7 +83,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     // Must be within the dynamic groups valid range
     auto groupValue = foeIdGroupToValue(foeEcsIndexesGetGroupID(entityIndexes));
     if (groupValue >= foeIdNumDynamicGroups) {
-        FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                 "foeGroupData::addDynamicGroup - ID Group is not within the valid dynamic group "
                 "value range");
         return false;
@@ -91,7 +91,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
 
     // Check that the group isn't already used
     if (mDynamicGroups[groupValue].entityIndexes != FOE_NULL_HANDLE) {
-        FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                 "foeGroupData::addDynamicGroup - Attempted to add ID group that is already used")
         return false;
     }
@@ -99,7 +99,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
     // Check against duplicate names
     if (strcmp(pGroupName, cPersistentName.data()) == 0 ||
         strcmp(pGroupName, cTemporaryName.data()) == 0) {
-        FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                 "foeGroupData::addDynamicGroup - Importer group name is a reserved name, either "
                 "'Persistent' or 'Temporary'");
         return false;
@@ -116,7 +116,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
         }
 
         if (strcmp(pDynamicGroupName, pGroupName) == 0) {
-            FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+            FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                     "foeGroupData::addDynamicGroup - Importer group name already exists");
             return false;
         }
@@ -130,7 +130,7 @@ bool foeGroupData::addDynamicGroup(foeEcsIndexes entityIndexes,
 
 bool foeGroupData::setPersistentImporter(foeImexImporter importer) {
     if (importer == FOE_NULL_HANDLE) {
-        FOE_LOG(SimulationState, FOE_LOG_LEVEL_ERROR,
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
                 "foeGroupData::setPersistentImporter - Importer group not given (nullptr)");
         return false;
     }
@@ -142,7 +142,7 @@ bool foeGroupData::setPersistentImporter(foeImexImporter importer) {
 
     if (group != foeIdPersistentGroup) {
         FOE_LOG(
-            SimulationState, FOE_LOG_LEVEL_ERROR,
+            foeSimulation, FOE_LOG_LEVEL_ERROR,
             "foeGroupData::setPersistentImporter - Importer group given not foeIdPersistentGroup");
         return false;
     }
