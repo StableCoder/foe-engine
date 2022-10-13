@@ -14,15 +14,15 @@ class foeLogger {
   public:
     foeLogger() = default;
 
-    FOE_EXPORT void log(char const *pCategoryName, foeLogLevel level, char const *pMessage);
+    void log(char const *pCategoryName, foeLogLevel level, char const *pMessage);
 
-    FOE_EXPORT bool registerSink(void *pContext,
-                                 PFN_foeLogMessage logMessage,
-                                 PFN_foeLogException logException);
+    bool registerSink(void *pContext,
+                      PFN_foeLogMessage logMessage,
+                      PFN_foeLogException logException);
 
-    FOE_EXPORT bool deregisterSink(void *pContext,
-                                   PFN_foeLogMessage logMessage,
-                                   PFN_foeLogException logException);
+    bool deregisterSink(void *pContext,
+                        PFN_foeLogMessage logMessage,
+                        PFN_foeLogException logException);
 
   private:
     std::mutex mSync;
