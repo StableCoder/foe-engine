@@ -694,6 +694,12 @@ extern "C" void foeGfxVkEnumerateSessionFeatures(foeGfxSession session,
     }
 }
 
+extern "C" uint32_t foeGfxVkGetNumQueueFamilies(foeGfxSession session) {
+    auto *pSession = session_from_handle(session);
+
+    return pSession->numQueueFamilies;
+}
+
 extern "C" uint32_t foeGfxVkGetBestQueueFamily(foeGfxSession session, VkQueueFlags flags) {
     auto *pSession = session_from_handle(session);
     std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;

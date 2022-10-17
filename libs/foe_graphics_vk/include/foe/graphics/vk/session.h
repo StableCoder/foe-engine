@@ -107,6 +107,8 @@ FOE_GFX_EXPORT VkPhysicalDevice foeGfxVkGetPhysicalDevice(foeGfxSession session)
 FOE_GFX_EXPORT VkDevice foeGfxVkGetDevice(foeGfxSession session);
 FOE_GFX_EXPORT VmaAllocator foeGfxVkGetAllocator(foeGfxSession session);
 
+FOE_GFX_EXPORT uint32_t foeGfxVkGetNumQueueFamilies(foeGfxSession session);
+
 FOE_GFX_EXPORT uint32_t foeGfxVkGetBestQueueFamily(foeGfxSession session, VkQueueFlags flags);
 
 FOE_GFX_EXPORT foeGfxVkQueueFamily getFirstQueue(foeGfxSession session);
