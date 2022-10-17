@@ -8,7 +8,7 @@
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
 #include <foe/graphics/vk/render_graph.hpp>
-#include <foe/graphics/vk/render_graph/job/blit_image.hpp>
+#include <foe/graphics/vk/render_graph/job/copy_image.hpp>
 #include <foe/graphics/vk/render_graph/job/export_image.hpp>
 #include <foe/graphics/vk/render_graph/job/import_image.hpp>
 #include <foe/graphics/vk/render_graph/job/present_image.hpp>
@@ -1260,9 +1260,9 @@ int Application::mainloop() {
                             xrSwapchainImageResource = resources.dstImage;
                         } else {
                             // Copy
-                            BlitJobUsedResources resources;
-                            result = foeGfxVkBlitImageRenderJob(
-                                renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                            CopyJobUsedResources resources;
+                            result = foeGfxVkCopyImageRenderJob(
+                                renderGraph, "copyRenderedImageToBackbuffer", VK_NULL_HANDLE,
                                 renderTargetColourImageResource,
                                 VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &resources);
@@ -1404,9 +1404,9 @@ int Application::mainloop() {
                 presentImageResource = resources.dstImage;
             } else {
                 // Copy
-                BlitJobUsedResources resources;
-                result = foeGfxVkBlitImageRenderJob(
-                    renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                CopyJobUsedResources resources;
+                result = foeGfxVkCopyImageRenderJob(
+                    renderGraph, "copyRenderedImageToBackbuffer", VK_NULL_HANDLE,
                     renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
                 if (result.value != FOE_SUCCESS) {

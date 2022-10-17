@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/render_graph/job/blit_image.hpp>
+#include <foe/graphics/vk/render_graph/job/copy_image.hpp>
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.h>
@@ -21,15 +21,14 @@ void cleanupOldCommandPool(VkCommandPool commandPool, foeGfxSession session) {
 
 } // namespace
 
-foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
+foeResultSet foeGfxVkCopyImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                         char const *pJobName,
                                         VkFence fence,
                                         foeGfxVkRenderGraphResource srcImage,
                                         VkImageLayout srcFinalLayout,
                                         foeGfxVkRenderGraphResource dstImage,
                                         VkImageLayout dstFinalLayout,
-                                        VkFilter filter,
-                                        BlitJobUsedResources *pResourcesOut) {
+                                        CopyJobUsedResources *pResourcesOut) {
     // Check that resources are correct types
     auto const *pSrcImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
         srcImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
@@ -146,8 +145,8 @@ foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr,
                              numBarriers, imgMemBarrier);
 
-        // Blit Command
-        VkImageBlit imageBlit{
+        // Copy Command
+        VkImageCopy imageCopy{
             .srcSubresource =
                 VkImageSubresourceLayers{
                     .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -155,11 +154,7 @@ foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                     .baseArrayLayer = 0,
                     .layerCount = 1,
                 },
-            .srcOffsets = {{},
-                           VkOffset3D{
-                               .x = (int32_t)pSrcImageData->extent.width,
-                               .y = (int32_t)pSrcImageData->extent.height,
-                           }},
+            .srcOffset = {},
             .dstSubresource =
                 VkImageSubresourceLayers{
                     .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -167,16 +162,17 @@ foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                     .baseArrayLayer = 0,
                     .layerCount = 1,
                 },
-            .dstOffsets = {{},
-                           VkOffset3D{
-                               .x = (int32_t)pDstImageData->extent.width,
-                               .y = (int32_t)pDstImageData->extent.height,
-                           }},
+            .dstOffset = {},
+            .extent =
+                {
+                    .width = pSrcImageData->extent.width,
+                    .height = pSrcImageData->extent.height,
+                    .depth = 1,
+                },
         };
 
-        vkCmdBlitImage(commandBuffer, pSrcImageData->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                       pDstImageData->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageBlit,
-                       filter);
+        vkCmdCopyImage(commandBuffer, pSrcImageData->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                       pDstImageData->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
 
         // Transition images layout/masks of outgoing
         numBarriers = 0;
@@ -270,7 +266,7 @@ foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
     } else {
 
         // Outgoing resources
-        *pResourcesOut = BlitJobUsedResources{
+        *pResourcesOut = CopyJobUsedResources{
             .srcImage =
                 {
                     .provider = renderGraphJob,
