@@ -100,19 +100,19 @@ TEST_CASE("foeGfxSession(Vulkan)") {
     // Check that real queues are returned
     CHECK(getFirstQueue(session) != nullptr);
 
-    CHECK(foeGfxVkGetBestQueue(session, VK_QUEUE_GRAPHICS_BIT) < MaxQueuesPerFamily);
-    CHECK(foeGfxVkGetBestQueue(session, VK_QUEUE_COMPUTE_BIT) < MaxQueuesPerFamily);
-    CHECK(foeGfxVkGetBestQueue(session, VK_QUEUE_TRANSFER_BIT) < MaxQueuesPerFamily);
+    CHECK(foeGfxVkGetBestQueueFamily(session, VK_QUEUE_GRAPHICS_BIT) < MaxQueuesPerFamily);
+    CHECK(foeGfxVkGetBestQueueFamily(session, VK_QUEUE_COMPUTE_BIT) < MaxQueuesPerFamily);
+    CHECK(foeGfxVkGetBestQueueFamily(session, VK_QUEUE_TRANSFER_BIT) < MaxQueuesPerFamily);
 
-    CHECK(foeGfxVkGetBestQueue(session, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT) <
+    CHECK(foeGfxVkGetBestQueueFamily(session, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT) <
           MaxQueuesPerFamily);
-    CHECK(foeGfxVkGetBestQueue(session, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT) <
+    CHECK(foeGfxVkGetBestQueueFamily(session, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT) <
           MaxQueuesPerFamily);
-    CHECK(foeGfxVkGetBestQueue(session, VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT) <
+    CHECK(foeGfxVkGetBestQueueFamily(session, VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT) <
           MaxQueuesPerFamily);
 
-    CHECK(foeGfxVkGetBestQueue(session, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT |
-                                            VK_QUEUE_TRANSFER_BIT) < MaxQueuesPerFamily);
+    CHECK(foeGfxVkGetBestQueueFamily(session, VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT |
+                                                  VK_QUEUE_TRANSFER_BIT) < MaxQueuesPerFamily);
 
     // Builtin descriptor sets
     CHECK(foeGfxVkGetDummySet(session) != VK_NULL_HANDLE);

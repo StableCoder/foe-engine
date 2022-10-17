@@ -30,8 +30,8 @@ extern "C" foeResultSet foeGfxCreateUploadContext(foeGfxSession session,
     auto *pSession = session_from_handle(session);
     VkResult vkResult = VK_SUCCESS;
 
-    auto transferQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_TRANSFER_BIT);
-    auto graphicsQueue = foeGfxVkGetBestQueue(session, VK_QUEUE_GRAPHICS_BIT);
+    auto transferQueue = foeGfxVkGetBestQueueFamily(session, VK_QUEUE_TRANSFER_BIT);
+    auto graphicsQueue = foeGfxVkGetBestQueueFamily(session, VK_QUEUE_GRAPHICS_BIT);
 
     auto *pNewContext = new (std::nothrow) foeGfxVkUploadContext{
         .device = pSession->device,
