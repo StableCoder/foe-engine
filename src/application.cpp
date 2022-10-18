@@ -4,10 +4,12 @@
 
 #include "application.hpp"
 
+#include <FreeImage.h>
 #include <GLFW/glfw3.h>
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
 #include <foe/graphics/vk/render_graph.hpp>
+#include <foe/graphics/vk/render_graph/job/blit_image.hpp>
 #include <foe/graphics/vk/render_graph/job/copy_image.hpp>
 #include <foe/graphics/vk/render_graph/job/export_image.hpp>
 #include <foe/graphics/vk/render_graph/job/import_image.hpp>
@@ -92,6 +94,8 @@
 #include "state_import/import_state.hpp"
 
 auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
+    FreeImage_Initialise();
+
     foeResultSet result;
 
     initializeLogging();
@@ -390,6 +394,8 @@ void Application::deinitialize() {
 
     // Output configuration settings to a YAML configuration file
     // saveSettings(settings);
+
+    FreeImage_DeInitialise();
 }
 
 namespace {
@@ -849,6 +855,7 @@ void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
 } // namespace
 
 int Application::mainloop() {
+    uint64_t frame = 0;
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
     foeResultSet result;
@@ -1487,6 +1494,132 @@ int Application::mainloop() {
                 presentImageResource = resources.dstImage;
             }
 
+            static struct {
+                VmaAllocation alloc;
+                VkImage image;
+                VkFormat format;
+
+                VkExtent3D extent;
+                VkFence fence;
+                bool saved;
+            } cpuImage = {};
+
+            if (frame == 100) {
+                auto extent = window->swapchain.extent();
+
+                // Create Fence
+                VkFenceCreateInfo fenceCI{
+                    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                };
+
+                VkResult vkRes = vkCreateFence(foeGfxVkGetDevice(gfxSession), &fenceCI, nullptr,
+                                               &cpuImage.fence);
+                if (vkRes != VK_SUCCESS) {
+                    std::abort();
+                }
+
+                // Create Image
+                cpuImage.format = VK_FORMAT_B8G8R8A8_UNORM;
+                cpuImage.extent = VkExtent3D{
+                    .width = extent.width,
+                    .height = extent.height,
+                    .depth = 1U,
+                };
+
+                VkImageCreateInfo imageCI{
+                    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                    .imageType = VK_IMAGE_TYPE_2D,
+                    .format = cpuImage.format,
+                    .extent = cpuImage.extent,
+                    .mipLevels = 1U,
+                    .arrayLayers = 1U,
+                    .samples = VK_SAMPLE_COUNT_1_BIT,
+                    .tiling = VK_IMAGE_TILING_LINEAR,
+                    .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                };
+
+                VmaAllocationCreateInfo allocCI{
+                    .usage = VMA_MEMORY_USAGE_CPU_ONLY,
+                };
+
+                vkRes = vmaCreateImage(foeGfxVkGetAllocator(gfxSession), &imageCI, &allocCI,
+                                       &cpuImage.image, &cpuImage.alloc, nullptr);
+                if (vkRes != VK_SUCCESS) {
+                    std::abort();
+                }
+
+                foeGfxVkRenderGraphResource cpuCopiedImage;
+                result = foeGfxVkImportImageRenderJob(
+                    renderGraph, "importCpuImage", VK_NULL_HANDLE, "cpuImage", cpuImage.image,
+                    VK_NULL_HANDLE, cpuImage.format, extent, VK_IMAGE_LAYOUT_UNDEFINED, true, {},
+                    &cpuCopiedImage);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
+                    VK_SAMPLE_COUNT_1_BIT) {
+                    // Resolve
+                    ResolveJobUsedResources resources;
+                    result = foeGfxVkResolveImageRenderJob(
+                        renderGraph, "resolveRenderedImageToCpuImage", VK_NULL_HANDLE,
+                        renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                        cpuCopiedImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &resources);
+                    if (result.value != FOE_SUCCESS) {
+                        ERRC_END_PROGRAM
+                    }
+                    cpuCopiedImage = resources.dstImage;
+                } else {
+                    // Copy
+                    BlitJobUsedResources resources;
+                    result = foeGfxVkBlitImageRenderJob(
+                        renderGraph, "blitRenderedImageToCpuImage", VK_NULL_HANDLE,
+                        renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                        cpuCopiedImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_FILTER_NEAREST,
+                        &resources);
+                    if (result.value != FOE_SUCCESS) {
+                        ERRC_END_PROGRAM
+                    }
+                    cpuCopiedImage = resources.dstImage;
+                }
+
+                foeGfxVkExportImageRenderJob(renderGraph, "exportCpuImage", cpuImage.fence,
+                                             cpuCopiedImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                             {});
+            }
+
+            if (cpuImage.fence != VK_NULL_HANDLE && !cpuImage.saved) {
+                VkResult vkRes = vkGetFenceStatus(foeGfxVkGetDevice(gfxSession), cpuImage.fence);
+                if (vkRes == VK_SUCCESS) {
+                    cpuImage.saved = true;
+
+                    FIBITMAP *pBitmap =
+                        FreeImage_Allocate(cpuImage.extent.width, cpuImage.extent.height, 32);
+
+                    auto *pBitmapData = (void *)FreeImage_GetBits(pBitmap);
+                    void *pData = nullptr;
+                    VkResult vkRes =
+                        vmaMapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc, &pData);
+                    if (vkRes != VK_SUCCESS) {
+                        std::abort();
+                    }
+
+                    memcpy(pBitmapData, pData, cpuImage.extent.width * cpuImage.extent.height * 4);
+                    vmaUnmapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc);
+
+                    FreeImage_Save(FIF_PNG, pBitmap, "test.png");
+
+                    FreeImage_Unload(pBitmap);
+
+                    vkDestroyFence(foeGfxVkGetDevice(gfxSession), cpuImage.fence, nullptr);
+
+                    vmaDestroyImage(foeGfxVkGetAllocator(gfxSession), cpuImage.image,
+                                    cpuImage.alloc);
+
+                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "SAVED IMAGE");
+                }
+            }
+
 #ifdef EDITOR_MODE
             result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
                                            presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
@@ -1519,6 +1652,7 @@ int Application::mainloop() {
             // Set frame index data
             lastFrameIndex = frameIndex;
             frameIndex = -1;
+            ++frame;
         }
     SKIP_FRAME_RENDER:;
 
