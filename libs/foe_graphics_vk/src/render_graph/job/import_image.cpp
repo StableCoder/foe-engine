@@ -22,30 +22,6 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                           bool isMutable,
                                           std::vector<VkSemaphore> waitSemaphores,
                                           foeGfxVkRenderGraphResource *pResourcesOut) {
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
-                     std::vector<VkSemaphore> const &,
-                     std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
-        auto realWaitSemaphores = waitSemaphores;
-        std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
-                                                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-        VkSubmitInfo submitInfo{
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
-            .pWaitSemaphores = waitSemaphores.data(),
-            .pWaitDstStageMask = waitMasks.data(),
-            .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
-            .pSignalSemaphores = signalSemaphores.data(),
-        };
-
-        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        VkResult vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
-        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-
-        return vk_to_foeResult(vkResult);
-    };
-
     // Resource management
     auto *pImportedImage = new (std::nothrow) foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
@@ -77,9 +53,16 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResultSet result =
-        foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, pJobName, false,
-                                  std::move(jobFn), &renderGraphJob);
+    foeGfxVkRenderGraphJobInfo jobInfo{
+        .freeDataFn = freeDataFn,
+        .name = pJobName,
+        .required = false,
+        .waitSemaphoreCount = (uint32_t)waitSemaphores.size(),
+        .pWaitSemaphores = waitSemaphores.data(),
+        .fence = fence,
+    };
+
+    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
     } else {

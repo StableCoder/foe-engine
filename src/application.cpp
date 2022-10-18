@@ -840,6 +840,14 @@ foeResultSet Application::stopXR(bool localPoll) {
     return result;
 }
 
+namespace {
+
+void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
+    vkDestroySemaphore(foeGfxVkGetDevice(session), semaphore, nullptr);
+}
+
+} // namespace
+
 int Application::mainloop() {
     foeEasyProgramClock programClock;
     foeDilatedLongClock simulationClock{std::chrono::nanoseconds{0}};
@@ -1212,11 +1220,38 @@ int Application::mainloop() {
                             ERRC_END_PROGRAM
                         }
 
+                        // Create the timeline semaphore
+                        VkSemaphoreTypeCreateInfo timelineCI{
+                            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
+                            .pNext = nullptr,
+                            .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
+                            .initialValue = 0,
+                        };
+
+                        VkSemaphoreCreateInfo semaphoreCI{
+                            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+                            .pNext = &timelineCI,
+                            .flags = 0,
+                        };
+
+                        VkSemaphore timelineSemaphore;
+                        VkResult vkResult =
+                            vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
+                                              &timelineSemaphore);
+                        if (vkResult != VK_SUCCESS) {
+                            result = vk_to_foeResult(vkResult);
+                            ERRC_END_PROGRAM
+                        }
+
+                        foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                                    (PFN_foeGfxDelayedCall)destroy_VkSemaphore,
+                                                    (void *)timelineSemaphore);
+
                         foeGfxVkRenderGraphResource xrSwapchainImageResource;
                         result = foeOpenXrVkImportSwapchainImageRenderJob(
                             renderGraph, "importXrViewSwapchainImage", VK_NULL_HANDLE,
-                            "importXrViewSwapchainImage", it.swapchain, it.images[newIndex].image,
-                            it.imageViews[newIndex], it.format,
+                            "importXrViewSwapchainImage", timelineSemaphore, it.swapchain,
+                            it.images[newIndex].image, it.imageViews[newIndex], it.format,
                             VkExtent2D{
                                 .width = it.viewConfig.recommendedImageRectWidth,
                                 .height = it.viewConfig.recommendedImageRectHeight,
@@ -1283,7 +1318,46 @@ int Application::mainloop() {
                             ERRC_END_PROGRAM
                         }
 
-                        foeGfxVkExecuteRenderGraphCpuJobs(renderGraph);
+                        { // Wait for XR swapchain
+                            XrSwapchainImageWaitInfo waitInfo{
+                                .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
+                                .timeout = 10000, // In nanoseconds (0.01 ms)
+                            };
+
+                            XrResult xrResult{XR_TIMEOUT_EXPIRED};
+
+                            do {
+                                xrResult = xrWaitSwapchainImage(it.swapchain, &waitInfo);
+                            } while (xrResult == XR_TIMEOUT_EXPIRED);
+
+                            if (xrResult != XR_SUCCESS && xrResult != XR_SESSION_LOSS_PENDING) {
+                                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                                XrResultToString(xrResult, buffer);
+                                FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+                                        "xrWaitSwapchainImage failed: {}", buffer);
+                            } else {
+                                VkSemaphoreSignalInfo signalInfo{
+                                    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,
+                                    .pNext = nullptr,
+                                    .semaphore = timelineSemaphore,
+                                    .value = 1,
+                                };
+
+                                vkSignalSemaphore(foeGfxVkGetDevice(gfxSession), &signalInfo);
+                            }
+
+                            XrSwapchainImageReleaseInfo releaseInfo{
+                                .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
+                            };
+
+                            xrResult = xrReleaseSwapchainImage(it.swapchain, &releaseInfo);
+                            if (xrResult != XR_SUCCESS) {
+                                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                                XrResultToString(xrResult, buffer);
+                                FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL,
+                                        "xrReleaseSwapchainImage error: {}", buffer)
+                            }
+                        }
 
                         foeGfxVkDestroyRenderGraph(renderGraph);
                     }

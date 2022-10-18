@@ -18,18 +18,11 @@ struct foeOpenXrRenderGraphSwapchainResource {
     XrSwapchain swapchain;
 };
 
-namespace {
-
-void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
-    vkDestroySemaphore(foeGfxVkGetDevice(session), semaphore, nullptr);
-}
-
-} // namespace
-
 foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                                       char const *pJobName,
                                                       VkFence fence,
                                                       char const *pResourceName,
+                                                      VkSemaphore semaphore,
                                                       XrSwapchain swapchain,
                                                       VkImage image,
                                                       VkImageView view,
@@ -37,105 +30,16 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
                                                       VkExtent2D extent,
                                                       VkImageLayout layout,
                                                       foeGfxVkRenderGraphResource *pResourcesOut) {
-    // Add the job that waits on the timeline semaphore and signals any dependent jobs to start
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
-                     std::vector<VkSemaphore> const &,
-                     std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
-        // Create the timeline semaphore
-        VkSemaphoreTypeCreateInfo timelineCI{
-            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO,
-            .pNext = nullptr,
-            .semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE,
-            .initialValue = 0,
-        };
+    // Resource management
+    uint64_t *pWaitValue = new uint64_t;
+    *pWaitValue = 1U;
 
-        VkSemaphoreCreateInfo semaphoreCI{
-            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-            .pNext = &timelineCI,
-            .flags = 0,
-        };
-
-        VkSemaphore timelineSemaphore;
-        VkResult vkResult = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
-                                              &timelineSemaphore);
-        if (vkResult != VK_SUCCESS)
-            return vk_to_foeResult(vkResult);
-
-        foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
-                                    (PFN_foeGfxDelayedCall)destroy_VkSemaphore,
-                                    (void *)timelineSemaphore);
-
-        addCpuFnFn([=]() {
-            XrSwapchainImageWaitInfo waitInfo{
-                .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
-                .timeout = 10000, // In nanoseconds (0.01 ms)
-            };
-
-            XrResult xrResult{XR_TIMEOUT_EXPIRED};
-
-            do {
-                xrResult = xrWaitSwapchainImage(swapchain, &waitInfo);
-            } while (xrResult == XR_TIMEOUT_EXPIRED);
-
-            if (xrResult != XR_SUCCESS && xrResult != XR_SESSION_LOSS_PENDING) {
-                char buffer[FOE_MAX_RESULT_STRING_SIZE];
-                XrResultToString(xrResult, buffer);
-                FOE_LOG(foeOpenXrVk, FOE_LOG_LEVEL_ERROR, "xrWaitSwapchainImage failed: {}",
-                        buffer);
-            } else {
-                VkSemaphoreSignalInfo signalInfo{
-                    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,
-                    .pNext = nullptr,
-                    .semaphore = timelineSemaphore,
-                    .value = 1,
-                };
-
-                vkSignalSemaphore(foeGfxVkGetDevice(gfxSession), &signalInfo);
-            }
-
-            XrSwapchainImageReleaseInfo releaseInfo{
-                .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO,
-            };
-
-            xrResult = xrReleaseSwapchainImage(swapchain, &releaseInfo);
-            if (xrResult != XR_SUCCESS) {
-                char buffer[FOE_MAX_RESULT_STRING_SIZE];
-                XrResultToString(xrResult, buffer);
-                FOE_LOG(foeOpenXrVk, FOE_LOG_LEVEL_FATAL, "xrReleaseSwapchainImage error: {}",
-                        buffer)
-            }
-        });
-
-        // Submit
-        const uint64_t waitValue = 1;
-        VkTimelineSemaphoreSubmitInfo timelineSI{
-            .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
-            .waitSemaphoreValueCount = 1,
-            .pWaitSemaphoreValues = &waitValue,
-        };
-
-        VkPipelineStageFlags waitMask{VK_PIPELINE_STAGE_ALL_COMMANDS_BIT};
-        VkSemaphore waitSemaphores{timelineSemaphore};
-
-        VkSubmitInfo submitInfo{
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .pNext = &timelineSI,
-            .waitSemaphoreCount = 1,
-            .pWaitSemaphores = &waitSemaphores,
-            .pWaitDstStageMask = &waitMask,
-            .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
-            .pSignalSemaphores = signalSemaphores.data(),
-        };
-
-        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
-        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-
-        return vk_to_foeResult(vkResult);
+    VkTimelineSemaphoreSubmitInfo *pTimelineSI = new (std::nothrow) VkTimelineSemaphoreSubmitInfo{
+        .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+        .waitSemaphoreValueCount = 1,
+        .pWaitSemaphoreValues = pWaitValue,
     };
 
-    // Resource management
     auto *pSwapchain = new (std::nothrow) foeOpenXrRenderGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
         .pNext = nullptr,
@@ -159,6 +63,10 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        if (pWaitValue)
+            delete pWaitValue;
+        if (pTimelineSI)
+            delete pTimelineSI;
         if (pSwapchain)
             delete pSwapchain;
         if (pImage)
@@ -175,9 +83,17 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResultSet result =
-        foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn, pJobName, true,
-                                  std::move(jobFn), &renderGraphJob);
+    foeGfxVkRenderGraphJobInfo jobInfo{
+        .freeDataFn = freeDataFn,
+        .name = pJobName,
+        .required = true,
+        .pExtraSubmitInfo = pTimelineSI,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &semaphore,
+        .fence = fence,
+    };
+
+    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         // If we couldn't add it to the render graph, delete all heap data now
         freeDataFn();

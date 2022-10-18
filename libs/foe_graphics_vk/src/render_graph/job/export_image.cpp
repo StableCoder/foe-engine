@@ -32,34 +32,20 @@ foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     if (pImageState->layout != requiredLayout)
         std::abort();
 
-    // Proceed with job creation
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
-                     std::vector<VkSemaphore> const &waitSemaphores,
-                     std::vector<VkSemaphore> const &,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
-        std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
-                                                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-        VkSubmitInfo submitInfo{
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
-            .pWaitSemaphores = waitSemaphores.data(),
-            .pWaitDstStageMask = waitMasks.data(),
-            .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
-            .pSignalSemaphores = signalSemaphores.data(),
-        };
-
-        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        VkResult vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
-        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-
-        return vk_to_foeResult(vkResult);
-    };
-
     // Add job to graph
     bool const readOnly = true;
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &resource, &readOnly, nullptr, pJobName, true,
-                                     std::move(jobFn), &renderGraphJob);
+    foeGfxVkRenderGraphJobInfo jobInfo{
+        .resourceCount = 1,
+        .pResourcesIn = &resource,
+        .pResourcesInReadOnly = &readOnly,
+        .name = pJobName,
+        .required = true,
+        .signalSemaphoreCount = (uint32_t)signalSemaphores.size(),
+        .pSignalSemaphores = signalSemaphores.data(),
+        .fence = fence,
+    };
+
+    return foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
 }

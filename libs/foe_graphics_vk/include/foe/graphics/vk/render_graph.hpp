@@ -45,25 +45,35 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRend
 
 FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
 
+struct foeGfxVkRenderGraphJobInfo {
+    uint32_t resourceCount;
+    foeGfxVkRenderGraphResource const *pResourcesIn;
+    bool const *pResourcesInReadOnly;
+    foeGfxVkRenderGraphFn freeDataFn;
+    std::string_view name;
+    bool required;
+    VkQueueFlags queueFlags;
+    void *pExtraSubmitInfo;
+    uint32_t waitSemaphoreCount;
+    VkSemaphore *pWaitSemaphores;
+    uint32_t signalSemaphoreCount;
+    VkSemaphore *pSignalSemaphores;
+    VkFence fence;
+};
+
 FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraph renderGraph,
-    uint32_t resourcesCount,
-    foeGfxVkRenderGraphResource const *pResourcesIn,
-    bool const *pResourcesInReadOnly,
-    foeGfxVkRenderGraphFn freeDataFn,
-    std::string_view name,
-    bool required,
+    foeGfxVkRenderGraphJobInfo *pJobInfo,
     std::function<foeResultSet(foeGfxSession,
                                foeGfxDelayedCaller,
                                std::vector<VkSemaphore> const &,
-                               std::vector<VkSemaphore> const &,
-                               std::function<void(std::function<void()>)>)> &&jobFn,
+                               std::vector<VkSemaphore> const &)> &&customJob,
+    std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
+        &&fillCommandBufferFn,
     foeGfxVkRenderGraphJob *pJob);
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                                                        foeGfxSession gfxSession,
                                                        foeGfxDelayedCaller gfxDelayedDestructor);
-
-FOE_GFX_EXPORT void foeGfxVkExecuteRenderGraphCpuJobs(foeGfxVkRenderGraph renderGraph);
 
 #endif // FOE_GRAPHICS_VK_RENDER_GRAPH_HPP

@@ -33,29 +33,6 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
                                                    VkImageLayout initialLayout,
                                                    VkSemaphore waitSemaphore,
                                                    foeGfxVkRenderGraphResource *pResourcesOut) {
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
-                     std::vector<VkSemaphore> const &,
-                     std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
-        VkPipelineStageFlags waitMask{VK_PIPELINE_STAGE_ALL_COMMANDS_BIT};
-        VkSemaphore waitSemaphores{waitSemaphore};
-
-        VkSubmitInfo submitInfo{
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .waitSemaphoreCount = 1,
-            .pWaitSemaphores = &waitSemaphores,
-            .pWaitDstStageMask = &waitMask,
-            .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
-            .pSignalSemaphores = signalSemaphores.data(),
-        };
-
-        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        VkResult vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
-        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-
-        return vk_to_foeResult(vkResult);
-    };
-
     // Resource management
     auto *pSwapchainImage = new (std::nothrow) foeGfxVkGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
@@ -100,8 +77,16 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, 0, nullptr, nullptr, freeDataFn,
-                                                    pJobName, false, jobFn, &renderGraphJob);
+    foeGfxVkRenderGraphJobInfo jobInfo{
+        .freeDataFn = freeDataFn,
+        .name = pJobName,
+        .required = false,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &waitSemaphore,
+        .fence = fence,
+    };
+
+    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
 
@@ -150,8 +135,7 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
 
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      std::vector<VkSemaphore> const &waitSemaphores,
-                     std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
+                     std::vector<VkSemaphore> const &signalSemaphores) -> foeResultSet {
         VkResult vkResult;
 
         // If we have a fence, then we need to signal it
@@ -228,6 +212,14 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
     bool const resourceReadOnly = false;
     foeGfxVkRenderGraphJob renderGraphJob;
 
-    return foeGfxVkRenderGraphAddJob(renderGraph, 1, &swapchainResource, &resourceReadOnly, nullptr,
-                                     pJobName, true, std::move(jobFn), &renderGraphJob);
+    foeGfxVkRenderGraphJobInfo jobInfo{
+        .resourceCount = 1,
+        .pResourcesIn = &swapchainResource,
+        .pResourcesInReadOnly = &resourceReadOnly,
+        .name = pJobName,
+        .required = true,
+        .fence = fence,
+    };
+
+    return foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, std::move(jobFn), {}, &renderGraphJob);
 }

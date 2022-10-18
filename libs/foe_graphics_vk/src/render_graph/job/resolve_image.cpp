@@ -13,14 +13,6 @@
 #include <array>
 #include <vector>
 
-namespace {
-
-void destroy_VkCommandPool(VkCommandPool commandPool, foeGfxSession session) {
-    vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
-}
-
-} // namespace
-
 foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                            char const *pJobName,
                                            VkFence fence,
@@ -54,54 +46,8 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_DESTINATION_NO_STATE);
 
     // Proceed with the job
-    auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
-                     std::vector<VkSemaphore> const &waitSemaphores,
-                     std::vector<VkSemaphore> const &signalSemaphores,
-                     std::function<void(std::function<void()>)> addCpuFnFn) -> foeResultSet {
-        VkResult vkResult;
-
-        VkCommandPool commandPool;
-        VkCommandBuffer commandBuffer;
-
-        { // Create CommandPool
-            VkCommandPoolCreateInfo poolCI{
-                .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                .queueFamilyIndex = 0,
-            };
-            vkResult =
-                vkCreateCommandPool(foeGfxVkGetDevice(gfxSession), &poolCI, nullptr, &commandPool);
-            if (vkResult != VK_SUCCESS)
-                return vk_to_foeResult(vkResult);
-
-            foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
-                                        (PFN_foeGfxDelayedCall)destroy_VkCommandPool,
-                                        (void *)commandPool);
-        }
-
-        { // Create CommandBuffer
-            VkCommandBufferAllocateInfo commandBufferAI{
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-                .commandPool = commandPool,
-                .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-                .commandBufferCount = 1,
-            };
-
-            vkResult = vkAllocateCommandBuffers(foeGfxVkGetDevice(gfxSession), &commandBufferAI,
-                                                &commandBuffer);
-            if (vkResult != VK_SUCCESS)
-                return vk_to_foeResult(vkResult);
-        }
-
-        { // Start CommandBuffer
-            VkCommandBufferBeginInfo commandBufferBI{
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-            };
-            vkResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
-            if (vkResult != VK_SUCCESS)
-                return vk_to_foeResult(vkResult);
-        }
-
+    auto jobFn = [=](foeGfxSession, foeGfxDelayedCaller,
+                     VkCommandBuffer commandBuffer) -> foeResultSet {
         // Transition image layout/mask states of incoming
         VkImageSubresourceRange subresourceRange{
             .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -212,31 +158,7 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                              VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr,
                              numBarriers, imgMemBarrier);
 
-        // End Command buffer and submit
-        vkResult = vkEndCommandBuffer(commandBuffer);
-        if (vkResult != VK_SUCCESS)
-            return vk_to_foeResult(vkResult);
-
-        // Job Submission
-        std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
-                                                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-        VkSubmitInfo submitInfo{
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
-            .pWaitSemaphores = waitSemaphores.data(),
-            .pWaitDstStageMask = waitMasks.data(),
-            .commandBufferCount = 1,
-            .pCommandBuffers = &commandBuffer,
-            .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
-            .pSignalSemaphores = signalSemaphores.data(),
-        };
-
-        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
-        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-
-        return vk_to_foeResult(vkResult);
+        return vk_to_foeResult(VK_SUCCESS);
     };
 
     // Resource Management
@@ -261,9 +183,18 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
     std::array<bool const, 2> resourcesInReadOnly{true, false};
     foeGfxVkRenderGraphJob renderGraphJob;
 
+    foeGfxVkRenderGraphJobInfo jobInfo{
+        .resourceCount = 2,
+        .pResourcesIn = resourcesIn.data(),
+        .pResourcesInReadOnly = resourcesInReadOnly.data(),
+        .freeDataFn = freeDataFn,
+        .name = pJobName,
+        .required = false,
+        .fence = fence,
+    };
+
     foeResultSet result =
-        foeGfxVkRenderGraphAddJob(renderGraph, 2, resourcesIn.data(), resourcesInReadOnly.data(),
-                                  freeDataFn, pJobName, false, std::move(jobFn), &renderGraphJob);
+        foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
 

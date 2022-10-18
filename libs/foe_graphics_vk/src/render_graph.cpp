@@ -21,12 +21,18 @@ struct RenderGraphJob {
     /// outputting something, but other reasons exist.
     bool required{false};
     bool processed{false};
+    VkQueueFlags queueFlags; // If queue flags is zero, then no preferred family
+    void *pExtraSubmitInfo;
+    VkFence fence;
+    std::vector<VkSemaphore> waitSemaphores;
+    std::vector<VkSemaphore> signalSemaphores;
     std::function<foeResultSet(foeGfxSession,
                                foeGfxDelayedCaller,
                                std::vector<VkSemaphore> const &,
-                               std::vector<VkSemaphore> const &,
-                               std::function<void(std::function<void()>)>)>
-        jobFn;
+                               std::vector<VkSemaphore> const &)>
+        customJobFn;
+    std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
+        fillCommandBufferFn;
 };
 
 FOE_DEFINE_HANDLE_CASTS(render_graph_job, RenderGraphJob, foeGfxVkRenderGraphJob)
@@ -50,8 +56,6 @@ struct RenderGraph {
     std::vector<std::function<void()>> resourceCleanupCalls;
     /// These are the possible rendering jobs
     std::vector<std::unique_ptr<RenderGraphJob>> jobs;
-    /// These are the CPU jobs that GPU jobs will be waiting on for signals
-    std::vector<std::function<void()>> cpuJobs;
     /// Set of relationships of resources between jobs
     std::vector<RenderGraphRelationship> relationships;
 };
@@ -96,17 +100,13 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
 
 foeResultSet foeGfxVkRenderGraphAddJob(
     foeGfxVkRenderGraph renderGraph,
-    uint32_t resourcesCount,
-    foeGfxVkRenderGraphResource const *pResourcesIn,
-    bool const *pResourcesInReadOnly,
-    foeGfxVkRenderGraphFn freeDataFn,
-    std::string_view name,
-    bool required,
+    foeGfxVkRenderGraphJobInfo *pJobInfo,
     std::function<foeResultSet(foeGfxSession,
                                foeGfxDelayedCaller,
                                std::vector<VkSemaphore> const &,
-                               std::vector<VkSemaphore> const &,
-                               std::function<void(std::function<void()>)>)> &&jobFn,
+                               std::vector<VkSemaphore> const &)> &&customJob,
+    std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
+        &&fillCommandBufferFn,
     foeGfxVkRenderGraphJob *pJob) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
@@ -114,23 +114,31 @@ foeResultSet foeGfxVkRenderGraphAddJob(
     std::unique_ptr<RenderGraphJob> pNewJob{new RenderGraphJob};
 
     *pNewJob = RenderGraphJob{
-        .name = std::string{name},
-        .required = required,
+        .name = std::string{pJobInfo->name},
+        .required = pJobInfo->required,
         .processed = false,
-        .jobFn = std::move(jobFn),
+        .queueFlags = pJobInfo->queueFlags,
+        .pExtraSubmitInfo = pJobInfo->pExtraSubmitInfo,
+        .fence = pJobInfo->fence,
+        .waitSemaphores = {pJobInfo->pWaitSemaphores,
+                           pJobInfo->pWaitSemaphores + pJobInfo->waitSemaphoreCount},
+        .signalSemaphores = {pJobInfo->pSignalSemaphores,
+                             pJobInfo->pSignalSemaphores + pJobInfo->signalSemaphoreCount},
+        .customJobFn = std::move(customJob),
+        .fillCommandBufferFn = std::move(fillCommandBufferFn),
     };
 
     pRenderGraph->jobs.emplace_back(pNewJob.get());
 
     // Setup relationship in the render graph for each used input resource
-    for (uint32_t i = 0; i < resourcesCount; ++i) {
-        auto &inRes = pResourcesIn[i];
+    for (uint32_t i = 0; i < pJobInfo->resourceCount; ++i) {
+        auto &inRes = pJobInfo->pResourcesIn[i];
 
         RenderGraphRelationship relationship{
             .pProvider = render_graph_job_from_handle(inRes.provider),
             .pConsumer = pNewJob.get(),
             .pResource = inRes.pResourceData,
-            .readOnly = pResourcesInReadOnly[i],
+            .readOnly = pJobInfo->pResourcesInReadOnly[i],
             .semaphore = VK_NULL_HANDLE,
         };
 
@@ -138,8 +146,8 @@ foeResultSet foeGfxVkRenderGraphAddJob(
     }
 
     // Add any calls for deleting resources at cleanup
-    if (freeDataFn)
-        pRenderGraph->resourceCleanupCalls.emplace_back(std::move(freeDataFn));
+    if (pJobInfo->freeDataFn)
+        pRenderGraph->resourceCleanupCalls.emplace_back(std::move(pJobInfo->freeDataFn));
 
     *pJob = render_graph_job_to_handle(pNewJob.release());
 
@@ -147,6 +155,10 @@ foeResultSet foeGfxVkRenderGraphAddJob(
 }
 
 namespace {
+
+void cleanupOldCommandPool(VkCommandPool commandPool, foeGfxSession session) {
+    vkDestroyCommandPool(foeGfxVkGetDevice(session), commandPool, nullptr);
+}
 
 void destroy_RenderGraphSemaphores(std::vector<VkSemaphore> const *pAllSemaphores,
                                    foeGfxSession session) {
@@ -164,6 +176,9 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                                         foeGfxDelayedCaller gfxDelayedDestructor) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
+    VkResult vkResult = VK_SUCCESS;
+    uint32_t const numQueueFamilies = foeGfxVkGetNumQueueFamilies(gfxSession);
+
     // COMPILE
 
     // The list of jobs currently set to be processed moving forward
@@ -171,6 +186,27 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
     // The list of semaphores created as part of the compile to be later destroyed
     std::vector<VkSemaphore> allSemaphores;
     allSemaphores.reserve(pRenderGraph->relationships.size());
+
+    // Command Pools
+    std::vector<VkCommandPool> commandPools;
+
+    for (uint32_t i = 0; i < numQueueFamilies; ++i) {
+        VkCommandPoolCreateInfo poolCI{
+            .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .queueFamilyIndex = 0,
+        };
+        VkCommandPool commandPool;
+        vkResult =
+            vkCreateCommandPool(foeGfxVkGetDevice(gfxSession), &poolCI, nullptr, &commandPool);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
+
+        foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
+                                    (PFN_foeGfxDelayedCall)cleanupOldCommandPool,
+                                    (void *)commandPool);
+
+        commandPools.emplace_back(commandPool);
+    }
 
     // Find all jobs that are required to run and add them to be processed
     for (auto const &pJob : pRenderGraph->jobs) {
@@ -234,8 +270,70 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                 signalSemaphores.emplace_back(relationship.semaphore);
         }
 
-        pJob->jobFn(gfxSession, gfxDelayedDestructor, waitSemaphores, signalSemaphores,
-                    [&](std::function<void()> fn) { pRenderGraph->cpuJobs.emplace_back(fn); });
+        uint32_t const desiredQueueFamily =
+            foeGfxVkGetBestQueueFamily(gfxSession, pJob->queueFlags);
+        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+
+        if (pJob->fillCommandBufferFn) {
+            // Create CommandBuffer
+            VkCommandBufferAllocateInfo commandBufferAI{
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+                .commandPool = commandPools[desiredQueueFamily],
+                .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+                .commandBufferCount = 1,
+            };
+
+            vkResult = vkAllocateCommandBuffers(foeGfxVkGetDevice(gfxSession), &commandBufferAI,
+                                                &commandBuffer);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
+            // Start CommandBuffer
+            VkCommandBufferBeginInfo commandBufferBI{
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+            };
+            vkResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBI);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
+
+            pJob->fillCommandBufferFn(gfxSession, gfxDelayedDestructor, commandBuffer);
+
+            // End Command buffer and submit
+            vkResult = vkEndCommandBuffer(commandBuffer);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
+        }
+
+        if (!pJob->customJobFn) {
+            // Job Submission
+            waitSemaphores.insert(waitSemaphores.end(), pJob->waitSemaphores.begin(),
+                                  pJob->waitSemaphores.end());
+            std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
+                                                        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
+            signalSemaphores.insert(signalSemaphores.end(), pJob->signalSemaphores.begin(),
+                                    pJob->signalSemaphores.end());
+
+            VkSubmitInfo submitInfo{
+                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                .pNext = pJob->pExtraSubmitInfo,
+                .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
+                .pWaitSemaphores = waitSemaphores.data(),
+                .pWaitDstStageMask = waitMasks.data(),
+                .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
+                .pSignalSemaphores = signalSemaphores.data(),
+            };
+            if (commandBuffer != VK_NULL_HANDLE) {
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &commandBuffer;
+            }
+
+            auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+            vkResult = vkQueueSubmit(queue, 1, &submitInfo, pJob->fence);
+            foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
+        } else {
+            pJob->customJobFn(gfxSession, gfxDelayedDestructor, waitSemaphores, signalSemaphores);
+        }
     }
 
     // Cleanup graph semaphores after execution
@@ -247,12 +345,4 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                                 (void *)pAllSemaphores);
 
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
-}
-
-void foeGfxVkExecuteRenderGraphCpuJobs(foeGfxVkRenderGraph renderGraph) {
-    auto *pRenderGraph = render_graph_from_handle(renderGraph);
-
-    for (auto const &job : pRenderGraph->cpuJobs) {
-        job();
-    }
 }
