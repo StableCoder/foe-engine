@@ -156,10 +156,9 @@ foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                     .layerCount = 1,
                 },
             .srcOffsets = {{},
-                           VkOffset3D{
-                               .x = (int32_t)pSrcImageData->extent.width,
-                               .y = (int32_t)pSrcImageData->extent.height,
-                           }},
+                           VkOffset3D{.x = (int32_t)pSrcImageData->extent.width,
+                                      .y = (int32_t)pSrcImageData->extent.height,
+                                      .z = 1}},
             .dstSubresource =
                 VkImageSubresourceLayers{
                     .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -168,10 +167,9 @@ foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
                     .layerCount = 1,
                 },
             .dstOffsets = {{},
-                           VkOffset3D{
-                               .x = (int32_t)pDstImageData->extent.width,
-                               .y = (int32_t)pDstImageData->extent.height,
-                           }},
+                           VkOffset3D{.x = (int32_t)pDstImageData->extent.width,
+                                      .y = (int32_t)pDstImageData->extent.height,
+                                      .z = 1}},
         };
 
         vkCmdBlitImage(commandBuffer, pSrcImageData->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
