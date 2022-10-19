@@ -23,7 +23,16 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                           std::vector<VkSemaphore> waitSemaphores,
                                           foeGfxVkRenderGraphResource *pResourcesOut) {
     // Resource management
-    auto *pImportedImage = new (std::nothrow) foeGfxVkGraphImageResource{
+    struct ImportImageJobResources {
+        foeGfxVkGraphImageResource imageResource;
+        foeGfxVkGraphImageState imageState;
+    };
+
+    ImportImageJobResources *pJobResources = new (std::nothrow) ImportImageJobResources;
+    if (pJobResources == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+
+    pJobResources->imageResource = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = nullptr,
         .name = pResourceName,
@@ -33,22 +42,13 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .extent = extent,
         .isMutable = isMutable,
     };
-    if (pImportedImage == nullptr)
-        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
-    auto *pImageState = new (std::nothrow) foeGfxVkGraphImageState{
+    pJobResources->imageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = layout,
     };
-    if (pImageState == nullptr) {
-        delete pImportedImage;
-        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
-    }
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
-        delete pImportedImage;
-        delete pImageState;
-    };
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
@@ -69,8 +69,10 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         // Outgoing resources
         *pResourcesOut = foeGfxVkRenderGraphResource{
             .provider = renderGraphJob,
-            .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImportedImage),
-            .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImageState),
+            .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(
+                &pJobResources->imageResource),
+            .pResourceState =
+                reinterpret_cast<foeGfxVkRenderGraphStructure const *>(&pJobResources->imageState),
         };
     }
 

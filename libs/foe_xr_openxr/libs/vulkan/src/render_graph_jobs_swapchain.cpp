@@ -31,24 +31,36 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
                                                       VkImageLayout layout,
                                                       foeGfxVkRenderGraphResource *pResourcesOut) {
     // Resource management
-    uint64_t *pWaitValue = new uint64_t;
-    *pWaitValue = 1U;
-
-    VkTimelineSemaphoreSubmitInfo *pTimelineSI = new (std::nothrow) VkTimelineSemaphoreSubmitInfo{
-        .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
-        .waitSemaphoreValueCount = 1,
-        .pWaitSemaphoreValues = pWaitValue,
+    struct ImportXrSwapchainImageJobResources {
+        uint64_t waitValue;
+        VkTimelineSemaphoreSubmitInfo timelineSI;
+        foeOpenXrRenderGraphSwapchainResource swapchainImageResource;
+        foeGfxVkGraphImageResource swapchainImage;
+        foeGfxVkGraphImageState swapchainImageState;
     };
 
-    auto *pSwapchain = new (std::nothrow) foeOpenXrRenderGraphSwapchainResource{
+    ImportXrSwapchainImageJobResources *pJobResources =
+        new (std::nothrow) ImportXrSwapchainImageJobResources;
+    if (pJobResources == nullptr)
+        return to_foeResult(FOE_OPENXR_VK_ERROR_OUT_OF_MEMORY);
+
+    pJobResources->waitValue = 1U;
+
+    pJobResources->timelineSI = VkTimelineSemaphoreSubmitInfo{
+        .sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO,
+        .waitSemaphoreValueCount = 1,
+        .pWaitSemaphoreValues = &pJobResources->waitValue,
+    };
+
+    pJobResources->swapchainImageResource = foeOpenXrRenderGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
         .pNext = nullptr,
         .swapchain = swapchain,
     };
 
-    auto *pImage = new (std::nothrow) foeGfxVkGraphImageResource{
+    pJobResources->swapchainImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
-        .pNext = pSwapchain,
+        .pNext = &pJobResources->swapchainImageResource,
         .name = pResourceName,
         .image = image,
         .view = view,
@@ -57,28 +69,12 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
         .isMutable = true,
     };
 
-    auto *pImageState = new (std::nothrow) foeGfxVkGraphImageState{
+    pJobResources->swapchainImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = layout,
     };
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
-        if (pWaitValue)
-            delete pWaitValue;
-        if (pTimelineSI)
-            delete pTimelineSI;
-        if (pSwapchain)
-            delete pSwapchain;
-        if (pImage)
-            delete pImage;
-        if (pImageState)
-            delete pImageState;
-    };
-
-    if (pSwapchain == nullptr || pImage == nullptr || pImageState == nullptr) {
-        freeDataFn();
-        return to_foeResult(FOE_OPENXR_VK_ERROR_OUT_OF_MEMORY);
-    }
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
@@ -87,7 +83,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = true,
-        .pExtraSubmitInfo = pTimelineSI,
+        .pExtraSubmitInfo = &pJobResources->timelineSI,
         .waitSemaphoreCount = 1,
         .pWaitSemaphores = &semaphore,
         .fence = fence,
@@ -104,8 +100,10 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .provider = renderGraphJob,
-        .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImage),
-        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pImageState),
+        .pResourceData =
+            reinterpret_cast<foeGfxVkRenderGraphStructure const *>(&pJobResources->swapchainImage),
+        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(
+            &pJobResources->swapchainImageState),
     };
 
     return to_foeResult(FOE_OPENXR_VK_SUCCESS);

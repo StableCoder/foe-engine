@@ -34,18 +34,26 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
                                                    VkSemaphore waitSemaphore,
                                                    foeGfxVkRenderGraphResource *pResourcesOut) {
     // Resource management
-    auto *pSwapchainImage = new (std::nothrow) foeGfxVkGraphSwapchainResource{
+    struct PresentImageJobResources {
+        foeGfxVkGraphSwapchainResource swapchainResource;
+        foeGfxVkGraphImageResource swapchainImage;
+        foeGfxVkGraphImageState swapchainImageState;
+    };
+
+    PresentImageJobResources *pJobResources = new (std::nothrow) PresentImageJobResources;
+    if (pJobResources == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+
+    pJobResources->swapchainResource = foeGfxVkGraphSwapchainResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN,
         .pNext = nullptr,
         .swapchain = swapchain,
         .index = index,
     };
-    if (pSwapchainImage == nullptr)
-        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
 
-    auto *pImage = new (std::nothrow) foeGfxVkGraphImageResource{
+    pJobResources->swapchainImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
-        .pNext = pSwapchainImage,
+        .pNext = &pJobResources->swapchainResource,
         .name = pResourceName,
         .image = image,
         .view = view,
@@ -53,26 +61,13 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
         .extent = extent,
         .isMutable = true,
     };
-    if (pImage == nullptr) {
-        delete pSwapchainImage;
-        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
-    }
 
-    auto *pImageState = new (std::nothrow) foeGfxVkGraphImageState{
+    pJobResources->swapchainImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = initialLayout,
     };
-    if (pImageState == nullptr) {
-        delete pImage;
-        delete pSwapchainImage;
-        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
-    }
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
-        delete pSwapchainImage;
-        delete pImage;
-        delete pImageState;
-    };
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
@@ -96,8 +91,10 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .provider = renderGraphJob,
-        .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImage),
-        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure *>(pImageState),
+        .pResourceData =
+            reinterpret_cast<foeGfxVkRenderGraphStructure *>(&pJobResources->swapchainImage),
+        .pResourceState =
+            reinterpret_cast<foeGfxVkRenderGraphStructure *>(&pJobResources->swapchainImageState),
     };
 
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
