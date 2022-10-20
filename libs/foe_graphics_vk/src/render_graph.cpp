@@ -8,19 +8,30 @@
 
 #include <memory>
 #include <queue>
+#include <vector>
 
 #include "result.h"
 #include "vk_result.h"
 
 namespace {
 
+struct RenderGraphJob;
+struct RenderGraphDownstreamJobData {
+    RenderGraphJob *pJob;
+    /// Resource Data
+    foeGfxVkRenderGraphStructure const *pResource;
+    void const *pResourceState;
+    /// Whether the downstream job is only going to read the resource
+    bool readOnly;
+};
+
 struct RenderGraphJob {
     /// Name of the job for debugging, mapping and logging purposes
     std::string name;
     /// This job needs to be run as part of the render graph's execution, typically as the job is
     /// outputting something, but other reasons exist.
-    bool required{false};
-    bool processed{false};
+    bool required;
+    bool processed;
     VkQueueFlags queueFlags; // If queue flags is zero, then no preferred family
     void *pExtraSubmitInfo;
     VkFence fence;
@@ -33,31 +44,18 @@ struct RenderGraphJob {
         customJobFn;
     std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
         fillCommandBufferFn;
+
+    std::vector<RenderGraphJob *> upstreamJobs;
+    std::vector<RenderGraphDownstreamJobData> downstreamJobs;
 };
 
 FOE_DEFINE_HANDLE_CASTS(render_graph_job, RenderGraphJob, foeGfxVkRenderGraphJob)
-
-struct RenderGraphRelationship {
-    /// Job that provides this resource, determining when it becomes available
-    RenderGraphJob *pProvider;
-    /// Job that is going to use the resource
-    RenderGraphJob *pConsumer;
-
-    /// Resource Data
-    foeGfxVkRenderGraphStructure const *pResource;
-    /// Whether the consuming job is only going to read the resource
-    bool readOnly;
-    /// Semaphore used to determine when the resource is available for the consumer
-    VkSemaphore semaphore;
-};
 
 struct RenderGraph {
     /// Set of calls used to destroy resources after they have been used
     std::vector<std::function<void()>> resourceCleanupCalls;
     /// These are the possible rendering jobs
     std::vector<std::unique_ptr<RenderGraphJob>> jobs;
-    /// Set of relationships of resources between jobs
-    std::vector<RenderGraphRelationship> relationships;
 };
 
 FOE_DEFINE_HANDLE_CASTS(render_graph, RenderGraph, foeGfxVkRenderGraph)
@@ -134,15 +132,14 @@ foeResultSet foeGfxVkRenderGraphAddJob(
     for (uint32_t i = 0; i < pJobInfo->resourceCount; ++i) {
         auto &inRes = pJobInfo->pResourcesIn[i];
 
-        RenderGraphRelationship relationship{
-            .pProvider = render_graph_job_from_handle(inRes.provider),
-            .pConsumer = pNewJob.get(),
+        RenderGraphJob *pUpstreamJob = render_graph_job_from_handle(inRes.provider);
+
+        pNewJob->upstreamJobs.emplace_back(pUpstreamJob);
+        pUpstreamJob->downstreamJobs.emplace_back(RenderGraphDownstreamJobData{
+            .pJob = pNewJob.get(),
             .pResource = inRes.pResourceData,
             .readOnly = pJobInfo->pResourcesInReadOnly[i],
-            .semaphore = VK_NULL_HANDLE,
-        };
-
-        pRenderGraph->relationships.emplace_back(relationship);
+        });
     }
 
     // Add any calls for deleting resources at cleanup
@@ -185,7 +182,6 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
     std::queue<RenderGraphJob *> toProcess;
     // The list of semaphores created as part of the compile to be later destroyed
     std::vector<VkSemaphore> allSemaphores;
-    allSemaphores.reserve(pRenderGraph->relationships.size());
 
     // Command Pools
     std::vector<VkCommandPool> commandPools;
@@ -215,7 +211,8 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
         }
     }
 
-    // Go through each job determining the ones we actually need and cull the rest
+    // VALIDATION and CULLING
+    // Going downstream to upstream
     while (!toProcess.empty()) {
         auto *pJob = toProcess.front();
         toProcess.pop();
@@ -226,48 +223,42 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
 
         pJob->processed = true;
 
-        for (auto &relationship : pRenderGraph->relationships) {
-            if (relationship.pConsumer == pJob) {
-                // If the provider has already been processed, then don't do it again
-                if (relationship.pProvider == nullptr)
-                    continue;
-                if (!relationship.pProvider->processed)
-                    toProcess.emplace(relationship.pProvider);
-
-                // This should never happen, as each relationship should be processed only once
-                if (relationship.semaphore != VK_NULL_HANDLE)
-                    std::abort();
-
-                VkSemaphoreCreateInfo semaphoreCI{
-                    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-                };
-
-                VkResult vkResult = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI,
-                                                      nullptr, &relationship.semaphore);
-                if (vkResult != VK_SUCCESS)
-                    return vk_to_foeResult(vkResult);
-
-                allSemaphores.emplace_back(relationship.semaphore);
-            }
+        for (auto *pUpstreamJob : pJob->upstreamJobs) {
+            // If the upstream job has not yet been processed, add it
+            if (!pUpstreamJob->processed)
+                toProcess.emplace(pUpstreamJob);
         }
     }
 
-    // EXECUTE
+    // EXECUTION
+    // Going upstream to downstream
     for (auto const &pJob : pRenderGraph->jobs) {
         // Skip 'culled' jobs
         if (!pJob->processed)
             continue;
 
         // Figure out the barriers
-        std::vector<VkSemaphore> waitSemaphores;
-        std::vector<VkSemaphore> signalSemaphores;
-        for (auto const &relationship : pRenderGraph->relationships) {
-            if (relationship.pConsumer == pJob.get() && relationship.semaphore != VK_NULL_HANDLE)
-                waitSemaphores.emplace_back(relationship.semaphore);
+        std::vector<VkSemaphore> &waitSemaphores = pJob->waitSemaphores;
+        std::vector<VkSemaphore> &signalSemaphores = pJob->signalSemaphores;
 
-            // Only signal if the semaphore exists (some consumers may have been culled)
-            if (relationship.pProvider == pJob.get() && relationship.semaphore != VK_NULL_HANDLE)
-                signalSemaphores.emplace_back(relationship.semaphore);
+        for (RenderGraphDownstreamJobData &downstreamJob : pJob->downstreamJobs) {
+            if (!downstreamJob.pJob->processed)
+                // Culled job
+                continue;
+
+            VkSemaphoreCreateInfo semaphoreCI{
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+            };
+
+            VkSemaphore semaphore;
+            VkResult vkResult =
+                vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr, &semaphore);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
+
+            allSemaphores.emplace_back(semaphore);
+            signalSemaphores.emplace_back(semaphore);
+            downstreamJob.pJob->waitSemaphores.emplace_back(semaphore);
         }
 
         uint32_t const desiredQueueFamily =
@@ -306,13 +297,8 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
 
         if (!pJob->customJobFn) {
             // Job Submission
-            waitSemaphores.insert(waitSemaphores.end(), pJob->waitSemaphores.begin(),
-                                  pJob->waitSemaphores.end());
             std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
                                                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-            signalSemaphores.insert(signalSemaphores.end(), pJob->signalSemaphores.begin(),
-                                    pJob->signalSemaphores.end());
 
             VkSubmitInfo submitInfo{
                 .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
