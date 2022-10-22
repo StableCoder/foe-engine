@@ -33,11 +33,12 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     // Check that render target is a mutable image
     auto const *pColourTargetImageData =
         (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-            renderTarget.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+            foeGfxVkRenderGraphGetResourceData(renderTarget.resource),
+            RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pColourTargetImageData == nullptr)
         return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE);
-    if (!pColourTargetImageData->isMutable)
+    if (!foeGfxVkRenderGraphGetResourceIsMutable(renderTarget.resource))
         return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE);
 
     // Get the render target's previous layout
@@ -157,7 +158,7 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pFinalImageState; };
 
     // Add job to graph
-    bool const resourcesInReadOnly = false;
+    bool resourcesInReadOnly = false;
     foeGfxVkRenderGraphJob renderGraphJob;
 
     foeGfxVkRenderGraphJobInfo jobInfo{
@@ -178,7 +179,7 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         // Outgoing resources
         *pResourcesOut = {
             .provider = renderGraphJob,
-            .pResourceData = renderTarget.pResourceData,
+            .resource = renderTarget.resource,
             .pResourceState =
                 reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageState),
         };

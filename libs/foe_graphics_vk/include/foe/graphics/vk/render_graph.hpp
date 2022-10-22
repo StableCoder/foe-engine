@@ -17,6 +17,7 @@
 
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraphJob)
+FOE_DEFINE_HANDLE(foeGfxVkRenderGraphResourceHandle)
 
 typedef std::function<void()> foeGfxVkRenderGraphFn;
 
@@ -37,7 +38,7 @@ FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
 
 struct foeGfxVkRenderGraphResource {
     foeGfxVkRenderGraphJob provider;
-    foeGfxVkRenderGraphStructure const *pResourceData;
+    foeGfxVkRenderGraphResourceHandle resource;
     foeGfxVkRenderGraphStructure const *pResourceState;
 };
 
@@ -45,10 +46,38 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRend
 
 FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
 
+struct foeGfxVkRenderGraphResourceCreateInfo {
+    uint32_t sType;
+    void *pNext;
+    char const *pName;
+    bool isMutable;
+    void *pResourceData;
+};
+
+FOE_GFX_EXPORT foeResultSet
+foeGfxVkRenderGraphCreateResource(foeGfxVkRenderGraph renderGraph,
+                                  foeGfxVkRenderGraphResourceCreateInfo *pResoureCreateInfo,
+                                  foeGfxVkRenderGraphResourceHandle *pResource);
+
+FOE_GFX_EXPORT char const *foeGfxVkRenderGraphGetResourceName(
+    foeGfxVkRenderGraphResourceHandle resource);
+FOE_GFX_EXPORT bool foeGfxVkRenderGraphGetResourceIsMutable(
+    foeGfxVkRenderGraphResourceHandle resource);
+FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourceData(
+    foeGfxVkRenderGraphResourceHandle resource);
+
+struct foeGfxVkRenderGraphResourceState {
+    foeGfxVkRenderGraphJob upstreamJob;
+    bool readOnly;
+    foeGfxVkRenderGraphResourceHandle resource;
+    foeGfxVkRenderGraphStructure const *pIncomingState;
+    foeGfxVkRenderGraphStructure const *pOutgoingState;
+};
+
 struct foeGfxVkRenderGraphJobInfo {
     uint32_t resourceCount;
-    foeGfxVkRenderGraphResource const *pResourcesIn;
-    bool const *pResourcesInReadOnly;
+    foeGfxVkRenderGraphResource *pResourcesIn;
+    bool *pResourcesInReadOnly;
     foeGfxVkRenderGraphFn freeDataFn;
     std::string_view name;
     bool required;

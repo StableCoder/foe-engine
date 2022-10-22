@@ -22,6 +22,8 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                           bool isMutable,
                                           std::vector<VkSemaphore> waitSemaphores,
                                           foeGfxVkRenderGraphResource *pResourcesOut) {
+    foeResultSet result;
+
     // Resource management
     struct ImportImageJobResources {
         foeGfxVkGraphImageResource imageResource;
@@ -35,12 +37,10 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     pJobResources->imageResource = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = nullptr,
-        .name = pResourceName,
         .image = image,
         .view = view,
         .format = format,
         .extent = extent,
-        .isMutable = isMutable,
     };
 
     pJobResources->imageState = foeGfxVkGraphImageState{
@@ -49,6 +49,20 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
+
+    foeGfxVkRenderGraphResourceCreateInfo resourceCI{
+        .sType = FOE_NULL_HANDLE,
+        .pName = pResourceName,
+        .isMutable = isMutable,
+        .pResourceData = &pJobResources->imageResource,
+    };
+
+    foeGfxVkRenderGraphResourceHandle newImageResource = FOE_NULL_HANDLE;
+    result = foeGfxVkRenderGraphCreateResource(renderGraph, &resourceCI, &newImageResource);
+    if (result.value != FOE_SUCCESS) {
+        freeDataFn();
+        return result;
+    }
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
@@ -62,15 +76,14 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .fence = fence,
     };
 
-    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
+    result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
     } else {
         // Outgoing resources
         *pResourcesOut = foeGfxVkRenderGraphResource{
             .provider = renderGraphJob,
-            .pResourceData = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(
-                &pJobResources->imageResource),
+            .resource = newImageResource,
             .pResourceState =
                 reinterpret_cast<foeGfxVkRenderGraphStructure const *>(&pJobResources->imageState),
         };

@@ -61,12 +61,10 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     pJobResources->swapchainImage = foeGfxVkGraphImageResource{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
         .pNext = &pJobResources->swapchainImageResource,
-        .name = pResourceName,
         .image = image,
         .view = view,
         .format = format,
         .extent = extent,
-        .isMutable = true,
     };
 
     pJobResources->swapchainImageState = foeGfxVkGraphImageState{
@@ -75,6 +73,21 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
+
+    foeGfxVkRenderGraphResourceCreateInfo resourceCI{
+        .sType = FOE_NULL_HANDLE,
+        .pName = pResourceName,
+        .isMutable = true,
+        .pResourceData = &pJobResources->swapchainImage,
+    };
+
+    foeGfxVkRenderGraphResourceHandle newSwapchainResource;
+    foeResultSet result =
+        foeGfxVkRenderGraphCreateResource(renderGraph, &resourceCI, &newSwapchainResource);
+    if (result.value != FOE_SUCCESS) {
+        freeDataFn();
+        return result;
+    }
 
     // Add job to graph
     foeGfxVkRenderGraphJob renderGraphJob;
@@ -89,7 +102,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
         .fence = fence,
     };
 
-    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
+    result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         // If we couldn't add it to the render graph, delete all heap data now
         freeDataFn();
@@ -100,8 +113,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     // Outgoing resources
     *pResourcesOut = foeGfxVkRenderGraphResource{
         .provider = renderGraphJob,
-        .pResourceData =
-            reinterpret_cast<foeGfxVkRenderGraphStructure const *>(&pJobResources->swapchainImage),
+        .resource = newSwapchainResource,
         .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(
             &pJobResources->swapchainImageState),
     };

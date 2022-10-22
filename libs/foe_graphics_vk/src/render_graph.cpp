@@ -16,10 +16,30 @@
 namespace {
 
 struct RenderGraphJob;
+
+struct RenderGraphResource {
+    std::string name;
+    bool isMutable;
+    void *pResourceData;
+};
+
+FOE_DEFINE_HANDLE_CASTS(render_graph_resource,
+                        RenderGraphResource,
+                        foeGfxVkRenderGraphResourceHandle)
+
+struct RenderGraphJobResourceState {
+    /// Resource Data
+    RenderGraphResource const *pResource;
+    // Desired Resource State
+    foeGfxVkRenderGraphStructure const *pResourceState;
+    /// Whether the resource is supposed to be modified in this state
+    bool readOnly;
+};
+
 struct RenderGraphDownstreamJobData {
     RenderGraphJob *pJob;
     /// Resource Data
-    foeGfxVkRenderGraphStructure const *pResource;
+    RenderGraphResource const *pResource;
     void const *pResourceState;
     /// Whether the downstream job is only going to read the resource
     bool readOnly;
@@ -56,17 +76,36 @@ struct RenderGraph {
     std::vector<std::function<void()>> resourceCleanupCalls;
     /// These are the possible rendering jobs
     std::vector<std::unique_ptr<RenderGraphJob>> jobs;
+
+    std::vector<RenderGraphResource *> resources;
 };
 
 FOE_DEFINE_HANDLE_CASTS(render_graph, RenderGraph, foeGfxVkRenderGraph)
 
 } // namespace
 
+foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindResourceStructure(
+    foeGfxVkRenderGraphResourceHandle resource, foeGfxVkRenderGraphStructureType sType) {
+    auto *pResource = render_graph_resource_from_handle(resource);
+    foeGfxVkRenderGraphStructure const *pData =
+        (foeGfxVkRenderGraphStructure const *)pResource->pResourceData;
+
+    while (pData != nullptr) {
+        if (pData->sType == sType) {
+            return (foeGfxVkRenderGraphStructure const *)pData;
+        }
+
+        pData = (foeGfxVkRenderGraphStructure const *)pData->pNext;
+    }
+
+    return nullptr;
+}
+
 foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
     foeGfxVkRenderGraphStructure const *pData, foeGfxVkRenderGraphStructureType sType) {
     while (pData != nullptr) {
         if (pData->sType == sType) {
-            return (foeGfxVkRenderGraphStructure *)pData;
+            return (foeGfxVkRenderGraphStructure const *)pData;
         }
 
         pData = (foeGfxVkRenderGraphStructure const *)pData->pNext;
@@ -88,12 +127,54 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Delete RenderGraph content
+    for (auto *pResource : pRenderGraph->resources)
+        delete pResource;
     for (auto const &freeFn : pRenderGraph->resourceCleanupCalls) {
         freeFn();
     }
 
     // Delete graph itself
     delete pRenderGraph;
+}
+
+foeResultSet foeGfxVkRenderGraphCreateResource(
+    foeGfxVkRenderGraph renderGraph,
+    foeGfxVkRenderGraphResourceCreateInfo *pResoureCreateInfo,
+    foeGfxVkRenderGraphResourceHandle *pResource) {
+    auto *pRenderGraph = render_graph_from_handle(renderGraph);
+
+    RenderGraphResource *pNewResource = new (std::nothrow) RenderGraphResource{
+        .name = pResoureCreateInfo->pName,
+        .isMutable = pResoureCreateInfo->isMutable,
+        .pResourceData = pResoureCreateInfo->pResourceData,
+    };
+    if (pNewResource == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+
+    pRenderGraph->resources.emplace_back(pNewResource);
+
+    *pResource = render_graph_resource_to_handle(pNewResource);
+
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+}
+
+char const *foeGfxVkRenderGraphGetResourceName(foeGfxVkRenderGraphResourceHandle resource) {
+    auto *pResource = render_graph_resource_from_handle(resource);
+
+    return pResource->name.c_str();
+}
+
+bool foeGfxVkRenderGraphGetResourceIsMutable(foeGfxVkRenderGraphResourceHandle resource) {
+    auto *pResource = render_graph_resource_from_handle(resource);
+
+    return pResource->isMutable;
+}
+
+foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourceData(
+    foeGfxVkRenderGraphResourceHandle resource) {
+    auto *pResource = render_graph_resource_from_handle(resource);
+
+    return (foeGfxVkRenderGraphStructure const *)pResource->pResourceData;
 }
 
 foeResultSet foeGfxVkRenderGraphAddJob(
@@ -137,7 +218,7 @@ foeResultSet foeGfxVkRenderGraphAddJob(
         pNewJob->upstreamJobs.emplace_back(pUpstreamJob);
         pUpstreamJob->downstreamJobs.emplace_back(RenderGraphDownstreamJobData{
             .pJob = pNewJob.get(),
-            .pResource = inRes.pResourceData,
+            .pResource = render_graph_resource_from_handle(inRes.resource),
             .readOnly = pJobInfo->pResourcesInReadOnly[i],
         });
     }

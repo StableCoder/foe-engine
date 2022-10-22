@@ -18,7 +18,8 @@ foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                           std::vector<VkSemaphore> signalSemaphores) {
     // Check that this is an image resource
     auto const *pImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-        resource.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+        foeGfxVkRenderGraphGetResourceData(resource.resource),
+        RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pImageData == nullptr)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_EXPORT_IMAGE_RESOURCE_NOT_IMAGE);
@@ -33,7 +34,7 @@ foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         std::abort();
 
     // Add job to graph
-    bool const readOnly = true;
+    bool readOnly = true;
     foeGfxVkRenderGraphJob renderGraphJob;
 
     foeGfxVkRenderGraphJobInfo jobInfo{

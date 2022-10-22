@@ -23,15 +23,17 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                            ResolveJobUsedResources *pResourcesOut) {
     // Check that resources are images and the destination is mutable
     auto const *pSrcImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-        srcImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+        foeGfxVkRenderGraphGetResourceData(srcImage.resource),
+        RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
     auto const *pDstImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-        dstImage.pResourceData, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+        foeGfxVkRenderGraphGetResourceData(dstImage.resource),
+        RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pSrcImageData == nullptr)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_SOURCE_NOT_IMAGE);
     if (pDstImageData == nullptr)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_DESTINATION_NOT_IMAGE);
-    if (!pDstImageData->isMutable)
+    if (!foeGfxVkRenderGraphGetResourceIsMutable(dstImage.resource))
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_DESTINATION_NOT_MUTABLE);
 
     // Get the last states of the images
@@ -179,8 +181,8 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete[] pFinalImageStates; };
 
     // Add job to graph
-    std::array<foeGfxVkRenderGraphResource const, 2> resourcesIn{srcImage, dstImage};
-    std::array<bool const, 2> resourcesInReadOnly{true, false};
+    std::array<foeGfxVkRenderGraphResource, 2> resourcesIn{srcImage, dstImage};
+    std::array<bool, 2> resourcesInReadOnly{true, false};
     foeGfxVkRenderGraphJob renderGraphJob;
 
     foeGfxVkRenderGraphJobInfo jobInfo{
@@ -206,14 +208,14 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .srcImage =
             {
                 .provider = renderGraphJob,
-                .pResourceData = srcImage.pResourceData,
+                .resource = srcImage.resource,
                 .pResourceState =
                     reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates),
             },
         .dstImage =
             {
                 .provider = renderGraphJob,
-                .pResourceData = dstImage.pResourceData,
+                .resource = dstImage.resource,
                 .pResourceState =
                     reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates + 1),
             },

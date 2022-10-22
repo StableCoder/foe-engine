@@ -10,12 +10,10 @@
 struct foeGfxVkGraphImageResource {
     foeGfxVkRenderGraphStructureType sType;
     void *pNext;
-    std::string name;
     VkImage image;
     VkImageView view;
     VkFormat format;
     VkExtent2D extent;
-    bool isMutable;
 };
 
 struct foeGfxVkGraphImageState {
