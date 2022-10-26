@@ -57,13 +57,8 @@ struct RenderGraphJob {
     VkFence fence;
     std::vector<VkSemaphore> waitSemaphores;
     std::vector<VkSemaphore> signalSemaphores;
-    std::function<foeResultSet(foeGfxSession,
-                               foeGfxDelayedCaller,
-                               std::vector<VkSemaphore> const &,
-                               std::vector<VkSemaphore> const &)>
-        customJobFn;
-    std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
-        fillCommandBufferFn;
+    PFN_foeGfxVkRenderGraphCustomSubmit customSubmit;
+    PFN_foeGfxVkRenderGraphFillCmdBuffer fillCmdBuf;
 
     std::vector<RenderGraphJob *> upstreamJobs;
     std::vector<RenderGraphDownstreamJobData> downstreamJobs;
@@ -177,16 +172,11 @@ foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourceData(
     return (foeGfxVkRenderGraphStructure const *)pResource->pResourceData;
 }
 
-foeResultSet foeGfxVkRenderGraphAddJob(
-    foeGfxVkRenderGraph renderGraph,
-    foeGfxVkRenderGraphJobInfo *pJobInfo,
-    std::function<foeResultSet(foeGfxSession,
-                               foeGfxDelayedCaller,
-                               std::vector<VkSemaphore> const &,
-                               std::vector<VkSemaphore> const &)> &&customJob,
-    std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
-        &&fillCommandBufferFn,
-    foeGfxVkRenderGraphJob *pJob) {
+foeResultSet foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
+                                       foeGfxVkRenderGraphJobInfo *pJobInfo,
+                                       PFN_foeGfxVkRenderGraphCustomSubmit &&customSubmit,
+                                       PFN_foeGfxVkRenderGraphFillCmdBuffer &&fillCmdBuf,
+                                       foeGfxVkRenderGraphJob *pJob) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Add job to graph to be run
@@ -203,8 +193,8 @@ foeResultSet foeGfxVkRenderGraphAddJob(
                            pJobInfo->pWaitSemaphores + pJobInfo->waitSemaphoreCount},
         .signalSemaphores = {pJobInfo->pSignalSemaphores,
                              pJobInfo->pSignalSemaphores + pJobInfo->signalSemaphoreCount},
-        .customJobFn = std::move(customJob),
-        .fillCommandBufferFn = std::move(fillCommandBufferFn),
+        .customSubmit = std::move(customSubmit),
+        .fillCmdBuf = std::move(fillCmdBuf),
     };
 
     pRenderGraph->jobs.emplace_back(pNewJob.get());
@@ -346,7 +336,7 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
             foeGfxVkGetBestQueueFamily(gfxSession, pJob->queueFlags);
         VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 
-        if (pJob->fillCommandBufferFn) {
+        if (pJob->fillCmdBuf) {
             // Create CommandBuffer
             VkCommandBufferAllocateInfo commandBufferAI{
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -368,7 +358,7 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            pJob->fillCommandBufferFn(gfxSession, gfxDelayedDestructor, commandBuffer);
+            pJob->fillCmdBuf(gfxSession, gfxDelayedDestructor, commandBuffer);
 
             // End Command buffer and submit
             vkResult = vkEndCommandBuffer(commandBuffer);
@@ -376,7 +366,7 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                 return vk_to_foeResult(vkResult);
         }
 
-        if (!pJob->customJobFn) {
+        if (!pJob->customSubmit) {
             // Job Submission
             std::vector<VkPipelineStageFlags> waitMasks(waitSemaphores.size(),
                                                         VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -399,7 +389,7 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
             vkResult = vkQueueSubmit(queue, 1, &submitInfo, pJob->fence);
             foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
         } else {
-            pJob->customJobFn(gfxSession, gfxDelayedDestructor, waitSemaphores, signalSemaphores);
+            pJob->customSubmit(gfxSession, gfxDelayedDestructor, waitSemaphores, signalSemaphores);
         }
     }
 

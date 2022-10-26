@@ -21,6 +21,15 @@ FOE_DEFINE_HANDLE(foeGfxVkRenderGraphResourceHandle)
 
 typedef std::function<void()> foeGfxVkRenderGraphFn;
 
+typedef std::function<foeResultSet(foeGfxSession,
+                                   foeGfxDelayedCaller,
+                                   std::vector<VkSemaphore> const &,
+                                   std::vector<VkSemaphore> const &)>
+    PFN_foeGfxVkRenderGraphCustomSubmit;
+
+typedef std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
+    PFN_foeGfxVkRenderGraphFillCmdBuffer;
+
 enum foeGfxVkRenderGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE,
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
@@ -90,16 +99,12 @@ struct foeGfxVkRenderGraphJobInfo {
     VkFence fence;
 };
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphAddJob(
-    foeGfxVkRenderGraph renderGraph,
-    foeGfxVkRenderGraphJobInfo *pJobInfo,
-    std::function<foeResultSet(foeGfxSession,
-                               foeGfxDelayedCaller,
-                               std::vector<VkSemaphore> const &,
-                               std::vector<VkSemaphore> const &)> &&customJob,
-    std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>
-        &&fillCommandBufferFn,
-    foeGfxVkRenderGraphJob *pJob);
+FOE_GFX_EXPORT foeResultSet
+foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
+                          foeGfxVkRenderGraphJobInfo *pJobInfo,
+                          PFN_foeGfxVkRenderGraphCustomSubmit &&customSubmit,
+                          PFN_foeGfxVkRenderGraphFillCmdBuffer &&fillCmdBuf,
+                          foeGfxVkRenderGraphJob *pJob);
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                                                        foeGfxSession gfxSession,
