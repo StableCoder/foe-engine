@@ -377,19 +377,20 @@ foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
                 .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
                 .pWaitSemaphores = waitSemaphores.data(),
                 .pWaitDstStageMask = waitMasks.data(),
+                .commandBufferCount = (commandBuffer != VK_NULL_HANDLE) ? 1U : 0U,
+                .pCommandBuffers = &commandBuffer,
                 .signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size()),
                 .pSignalSemaphores = signalSemaphores.data(),
             };
-            if (commandBuffer != VK_NULL_HANDLE) {
-                submitInfo.commandBufferCount = 1;
-                submitInfo.pCommandBuffers = &commandBuffer;
-            }
 
             auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
             vkResult = vkQueueSubmit(queue, 1, &submitInfo, pJob->fence);
             foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
         } else {
-            pJob->customSubmit(gfxSession, gfxDelayedDestructor, waitSemaphores, signalSemaphores);
+            pJob->customSubmit(gfxSession, gfxDelayedDestructor, waitSemaphores.size(),
+                               waitSemaphores.data(), (commandBuffer != VK_NULL_HANDLE) ? 1 : 0,
+                               &commandBuffer, signalSemaphores.size(), signalSemaphores.data(),
+                               pJob->fence);
         }
     }
 

@@ -23,8 +23,13 @@ typedef std::function<void()> foeGfxVkRenderGraphFn;
 
 typedef std::function<foeResultSet(foeGfxSession,
                                    foeGfxDelayedCaller,
-                                   std::vector<VkSemaphore> const &,
-                                   std::vector<VkSemaphore> const &)>
+                                   uint32_t,
+                                   VkSemaphore *,
+                                   uint32_t,
+                                   VkCommandBuffer *,
+                                   uint32_t,
+                                   VkSemaphore *,
+                                   VkFence)>
     PFN_foeGfxVkRenderGraphCustomSubmit;
 
 typedef std::function<foeResultSet(foeGfxSession, foeGfxDelayedCaller, VkCommandBuffer)>

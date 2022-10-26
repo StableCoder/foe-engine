@@ -145,42 +145,46 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
         std::abort();
 
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
-                     std::vector<VkSemaphore> const &waitSemaphores,
-                     std::vector<VkSemaphore> const &signalSemaphores) -> foeResultSet {
+                     uint32_t waitSemaphoreCount, VkSemaphore *pWaitSemaphores,
+                     uint32_t commandBufferCount, VkCommandBuffer *pCommandBuffers,
+                     uint32_t signalSemaphoreCount, VkSemaphore *pSignalSemaphores,
+                     VkFence fence) -> foeResultSet {
         VkResult vkResult;
 
         // If we have a fence, then we need to signal it
-        VkPipelineStageFlags waitMask{VK_PIPELINE_STAGE_ALL_COMMANDS_BIT};
-        VkSemaphore signalSemaphore{VK_NULL_HANDLE};
+        VkSemaphore extraSemaphore{VK_NULL_HANDLE};
 
-        { // Create temporary semaphore
+        if (commandBufferCount > 0 || signalSemaphoreCount > 0 || fence != VK_NULL_HANDLE) {
             VkSemaphoreCreateInfo semaphoreCI{
                 .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             };
             vkResult = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
-                                         &signalSemaphore);
+                                         &extraSemaphore);
             if (vkResult)
                 return vk_to_foeResult(vkResult);
 
             foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
                                         (PFN_foeGfxDelayedCall)destroy_VkSemaphore,
-                                        (void *)signalSemaphore);
+                                        (void *)extraSemaphore);
+
+            std::vector<VkPipelineStageFlags> waitMask{waitSemaphoreCount,
+                                                       VK_PIPELINE_STAGE_ALL_COMMANDS_BIT};
+
+            VkSubmitInfo submitInfo{
+                .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                .waitSemaphoreCount = waitSemaphoreCount,
+                .pWaitSemaphores = pWaitSemaphores,
+                .pWaitDstStageMask = waitMask.data(),
+                .signalSemaphoreCount = 1U,
+                .pSignalSemaphores = &extraSemaphore,
+            };
+
+            auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+            vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
+            foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
+            if (vkResult != VK_SUCCESS)
+                std::abort();
         }
-
-        VkSubmitInfo submitInfo{
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size()),
-            .pWaitSemaphores = waitSemaphores.data(),
-            .pWaitDstStageMask = &waitMask,
-            .signalSemaphoreCount = 1U,
-            .pSignalSemaphores = &signalSemaphore,
-        };
-
-        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
-        vkResult = vkQueueSubmit(queue, 1, &submitInfo, fence);
-        foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
-        if (vkResult != VK_SUCCESS)
-            std::abort();
 
         // Now get on with presenting the image
         auto const *pSwapchainData =
@@ -191,15 +195,16 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
         VkResult presentRes{VK_SUCCESS};
         VkPresentInfoKHR presentInfo{
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-            .waitSemaphoreCount = 1U,
-            .pWaitSemaphores = &signalSemaphore,
+            .waitSemaphoreCount = (extraSemaphore != VK_NULL_HANDLE) ? 1U : waitSemaphoreCount,
+            .pWaitSemaphores =
+                (extraSemaphore != VK_NULL_HANDLE) ? &extraSemaphore : pWaitSemaphores,
             .swapchainCount = 1U,
             .pSwapchains = &pSwapchainData->swapchain,
             .pImageIndices = &pSwapchainData->index,
             .pResults = &presentRes,
         };
 
-        queue = foeGfxGetQueue(getFirstQueue(gfxSession));
+        auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
         vkResult = vkQueuePresentKHR(queue, &presentInfo);
         foeGfxReleaseQueue(getFirstQueue(gfxSession), queue);
 
