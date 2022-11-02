@@ -50,49 +50,6 @@ foeResultSet foeGfxVkCopyImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Proceed with job
     auto jobFn = [=](foeGfxSession, foeGfxDelayedCaller,
                      VkCommandBuffer commandBuffer) -> foeResultSet {
-        // Transition image layout/mask states of incoming
-        VkImageSubresourceRange subresourceRange{
-            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            .baseMipLevel = 0,
-            .levelCount = 1,
-            .layerCount = 1,
-        };
-        uint32_t numBarriers = 0;
-        VkImageMemoryBarrier imgMemBarrier[2] = {};
-
-        if (pSrcImageState->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
-            imgMemBarrier[numBarriers] = VkImageMemoryBarrier{
-                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .srcAccessMask = foeGfxVkDetermineAccessFlags(pSrcImageState->layout),
-                .dstAccessMask = foeGfxVkDetermineAccessFlags(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL),
-                .oldLayout = pSrcImageState->layout,
-                .newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pSrcImageData->image,
-                .subresourceRange = subresourceRange,
-            };
-            ++numBarriers;
-        }
-        if (pDstImageState->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            imgMemBarrier[numBarriers] = VkImageMemoryBarrier{
-                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .srcAccessMask = foeGfxVkDetermineAccessFlags(pDstImageState->layout),
-                .dstAccessMask = foeGfxVkDetermineAccessFlags(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL),
-                .oldLayout = pDstImageState->layout,
-                .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pDstImageData->image,
-                .subresourceRange = subresourceRange,
-            };
-            ++numBarriers;
-        }
-
-        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr,
-                             numBarriers, imgMemBarrier);
-
         // Copy Command
         VkImageCopy imageCopy{
             .srcSubresource =
@@ -122,42 +79,6 @@ foeResultSet foeGfxVkCopyImageRenderJob(foeGfxVkRenderGraph renderGraph,
         vkCmdCopyImage(commandBuffer, pSrcImageData->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                        pDstImageData->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopy);
 
-        // Transition images layout/masks of outgoing
-        numBarriers = 0;
-
-        if (srcFinalLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
-            imgMemBarrier[numBarriers] = VkImageMemoryBarrier{
-                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .srcAccessMask = foeGfxVkDetermineAccessFlags(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL),
-                .dstAccessMask = foeGfxVkDetermineAccessFlags(srcFinalLayout),
-                .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                .newLayout = srcFinalLayout,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pSrcImageData->image,
-                .subresourceRange = subresourceRange,
-            };
-            ++numBarriers;
-        }
-        if (dstFinalLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            imgMemBarrier[numBarriers] = VkImageMemoryBarrier{
-                .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                .srcAccessMask = foeGfxVkDetermineAccessFlags(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL),
-                .dstAccessMask = foeGfxVkDetermineAccessFlags(dstFinalLayout),
-                .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                .newLayout = dstFinalLayout,
-                .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                .image = pDstImageData->image,
-                .subresourceRange = subresourceRange,
-            };
-            ++numBarriers;
-        }
-
-        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                             VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr,
-                             numBarriers, imgMemBarrier);
-
         return vk_to_foeResult(VK_SUCCESS);
     };
 
@@ -175,23 +96,95 @@ foeResultSet foeGfxVkCopyImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .layout = dstFinalLayout,
     };
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete[] pFinalImageStates; };
+    auto *pImageStates = new (std::nothrow) foeGfxVkGraphImageState[4];
+    if (pImageStates == nullptr)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+
+    // Source incoming
+    pImageStates[0] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+    // Source outgoing
+    pImageStates[1] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+
+    // Destination incoming
+    pImageStates[2] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+    // Destination outgoing
+    pImageStates[3] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete[] pFinalImageStates;
+        delete[] pImageStates;
+    };
 
     // Add job to graph
-    std::array<foeGfxVkRenderGraphResource, 2> resourcesIn{srcImage, dstImage};
-    std::array<bool, 2> resourcesInReadOnly{true, false};
-    foeGfxVkRenderGraphJob renderGraphJob;
+    std::array<foeGfxVkRenderGraphResourceState, 2> resources{
+        foeGfxVkRenderGraphResourceState{
+            .upstreamJobCount = 1,
+            .pUpstreamJobs = &srcImage.provider,
+            .mode = RENDER_GRAPH_RESOURCE_MODE_READ_ONLY,
+            .resource = srcImage.resource,
+            .pIncomingState = (foeGfxVkRenderGraphStructure *)pImageStates,
+            .pOutgoingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 1),
+        },
+        foeGfxVkRenderGraphResourceState{
+            .upstreamJobCount = 1,
+            .pUpstreamJobs = &dstImage.provider,
+            .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+            .resource = dstImage.resource,
+            .pIncomingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 2),
+            .pOutgoingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 3),
+        },
+    };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
-        .resourceCount = resourcesIn.size(),
-        .pResourcesIn = resourcesIn.data(),
-        .pResourcesInReadOnly = resourcesInReadOnly.data(),
+        .resourceCount = resources.size(),
+        .pResources = resources.data(),
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = false,
         .fence = fence,
     };
 
+    foeGfxVkRenderGraphJob renderGraphJob;
     foeResultSet result =
         foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {

@@ -33,14 +33,35 @@ foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     if (pImageState->layout != requiredLayout)
         std::abort();
 
+    // Resource Management
+    auto *pIncomingImageState = new (std::nothrow) foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = requiredLayout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pIncomingImageState; };
+
     // Add job to graph
-    bool readOnly = true;
-    foeGfxVkRenderGraphJob renderGraphJob;
+    foeGfxVkRenderGraphResourceState resourceState{
+        .upstreamJobCount = 1,
+        .pUpstreamJobs = &resource.provider,
+        .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+        .resource = resource.resource,
+        .pIncomingState = (foeGfxVkRenderGraphStructure *)pIncomingImageState,
+        .pOutgoingState = nullptr,
+    };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
         .resourceCount = 1,
-        .pResourcesIn = &resource,
-        .pResourcesInReadOnly = &readOnly,
+        .pResources = &resourceState,
+        .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = true,
         .signalSemaphoreCount = (uint32_t)signalSemaphores.size(),
@@ -48,5 +69,6 @@ foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .fence = fence,
     };
 
+    foeGfxVkRenderGraphJob renderGraphJob;
     return foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
 }

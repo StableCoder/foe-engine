@@ -70,6 +70,13 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     pJobResources->swapchainImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = layout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
@@ -90,9 +97,16 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     }
 
     // Add job to graph
-    foeGfxVkRenderGraphJob renderGraphJob;
+    foeGfxVkRenderGraphResourceState resourceState{
+        .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+        .resource = newSwapchainResource,
+        .pIncomingState = (foeGfxVkRenderGraphStructure *)&pJobResources->swapchainImageState,
+        .pOutgoingState = nullptr,
+    };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
+        .resourceCount = 1,
+        .pResources = &resourceState,
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = true,
@@ -102,6 +116,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
         .fence = fence,
     };
 
+    foeGfxVkRenderGraphJob renderGraphJob;
     result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         // If we couldn't add it to the render graph, delete all heap data now

@@ -42,6 +42,11 @@ enum foeGfxVkRenderGraphStructureType {
     RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_XR_SWAPCHAIN,
 };
 
+enum foeGfxVkRenderGraphResourceMode {
+    RENDER_GRAPH_RESOURCE_MODE_READ_WRITE = 0,
+    RENDER_GRAPH_RESOURCE_MODE_READ_ONLY = 1,
+};
+
 struct foeGfxVkRenderGraphStructure {
     foeGfxVkRenderGraphStructureType sType;
     void *pNext;
@@ -81,8 +86,9 @@ FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourc
     foeGfxVkRenderGraphResourceHandle resource);
 
 struct foeGfxVkRenderGraphResourceState {
-    foeGfxVkRenderGraphJob upstreamJob;
-    bool readOnly;
+    uint32_t upstreamJobCount;
+    foeGfxVkRenderGraphJob *pUpstreamJobs;
+    foeGfxVkRenderGraphResourceMode mode;
     foeGfxVkRenderGraphResourceHandle resource;
     foeGfxVkRenderGraphStructure const *pIncomingState;
     foeGfxVkRenderGraphStructure const *pOutgoingState;
@@ -90,8 +96,7 @@ struct foeGfxVkRenderGraphResourceState {
 
 struct foeGfxVkRenderGraphJobInfo {
     uint32_t resourceCount;
-    foeGfxVkRenderGraphResource *pResourcesIn;
-    bool *pResourcesInReadOnly;
+    foeGfxVkRenderGraphResourceState const *pResources;
     foeGfxVkRenderGraphFn freeDataFn;
     std::string_view name;
     bool required;
@@ -111,7 +116,9 @@ foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
                           PFN_foeGfxVkRenderGraphFillCmdBuffer &&fillCmdBuf,
                           foeGfxVkRenderGraphJob *pJob);
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkExecuteRenderGraph(foeGfxVkRenderGraph renderGraph,
+FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph);
+
+FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
                                                        foeGfxSession gfxSession,
                                                        foeGfxDelayedCaller gfxDelayedDestructor);
 

@@ -1319,7 +1319,12 @@ int Application::mainloop() {
                             ERRC_END_PROGRAM
                         }
 
-                        result = foeGfxVkExecuteRenderGraph(renderGraph, gfxSession,
+                        result = foeGfxVkRenderGraphCompile(renderGraph);
+                        if (result.value != FOE_SUCCESS) {
+                            ERRC_END_PROGRAM
+                        }
+
+                        result = foeGfxVkRenderGraphExecute(renderGraph, gfxSession,
                                                             gfxDelayedDestructor);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
@@ -1477,7 +1482,7 @@ int Application::mainloop() {
                     ERRC_END_PROGRAM
                 }
 
-                renderTargetColourImageResource = resources.srcImage;
+                // renderTargetColourImageResource = resources.srcImage;
                 presentImageResource = resources.dstImage;
             } else {
                 // Copy
@@ -1490,7 +1495,7 @@ int Application::mainloop() {
                     ERRC_END_PROGRAM
                 }
 
-                renderTargetColourImageResource = resources.srcImage;
+                // renderTargetColourImageResource = resources.srcImage;
                 presentImageResource = resources.dstImage;
             }
 
@@ -1642,7 +1647,12 @@ int Application::mainloop() {
                 ERRC_END_PROGRAM
             }
 
-            result = foeGfxVkExecuteRenderGraph(renderGraph, gfxSession, gfxDelayedDestructor);
+            result = foeGfxVkRenderGraphCompile(renderGraph);
+            if (result.value != FOE_SUCCESS) {
+                ERRC_END_PROGRAM
+            }
+
+            result = foeGfxVkRenderGraphExecute(renderGraph, gfxSession, gfxDelayedDestructor);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }

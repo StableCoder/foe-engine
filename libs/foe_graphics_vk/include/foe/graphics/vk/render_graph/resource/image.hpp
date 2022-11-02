@@ -20,6 +20,7 @@ struct foeGfxVkGraphImageState {
     foeGfxVkRenderGraphStructureType sType;
     void *pNext;
     VkImageLayout layout;
+    VkImageSubresourceRange subresourceRange;
 };
 
 FOE_GFX_EXPORT VkAccessFlags foeGfxVkDetermineAccessFlags(VkImageLayout imageLayout);

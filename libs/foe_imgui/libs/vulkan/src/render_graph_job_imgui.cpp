@@ -155,22 +155,60 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     if (pFinalImageState == nullptr)
         return to_foeResult(FOE_IMGUI_VK_ERROR_OUT_OF_MEMORY);
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pFinalImageState; };
+    auto *pImageStates = new (std::nothrow) foeGfxVkGraphImageState[2];
+    if (pImageStates == nullptr)
+        return to_foeResult(FOE_IMGUI_VK_ERROR_OUT_OF_MEMORY);
+
+    // Source incoming
+    pImageStates[0] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = pColourTargetState->layout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+    // Source outgoing
+    pImageStates[1] = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = finalLayout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pFinalImageState;
+        delete[] pImageStates;
+    };
 
     // Add job to graph
-    bool resourcesInReadOnly = false;
-    foeGfxVkRenderGraphJob renderGraphJob;
+    foeGfxVkRenderGraphResourceState resourceState{
+        .upstreamJobCount = 1,
+        .pUpstreamJobs = &renderTarget.provider,
+        .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+        .resource = renderTarget.resource,
+        .pIncomingState = (foeGfxVkRenderGraphStructure *)pImageStates,
+        .pOutgoingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 1),
+    };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
         .resourceCount = 1,
-        .pResourcesIn = &renderTarget,
-        .pResourcesInReadOnly = &resourcesInReadOnly,
+        .pResources = &resourceState,
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = false,
         .fence = fence,
     };
 
+    foeGfxVkRenderGraphJob renderGraphJob;
     foeResultSet result =
         foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), &renderGraphJob);
     if (result.value != FOE_SUCCESS) {

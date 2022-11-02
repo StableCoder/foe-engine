@@ -63,6 +63,13 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     pJobResources->swapchainImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = initialLayout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
@@ -84,9 +91,16 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
     }
 
     // Add job to graph
-    foeGfxVkRenderGraphJob renderGraphJob;
+    foeGfxVkRenderGraphResourceState resourceState = foeGfxVkRenderGraphResourceState{
+        .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+        .resource = newSwapchainResource,
+        .pIncomingState = nullptr,
+        .pOutgoingState = (foeGfxVkRenderGraphStructure *)&pJobResources->swapchainImageState,
+    };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
+        .resourceCount = 1,
+        .pResources = &resourceState,
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = false,
@@ -95,6 +109,7 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
         .fence = fence,
     };
 
+    foeGfxVkRenderGraphJob renderGraphJob;
     result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
@@ -225,18 +240,33 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGr
         return vk_to_foeResult(vkResult);
     };
 
+    // Resource Management
+    auto *pSwapchainResourceState = new (std::nothrow) foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    };
+
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pSwapchainResourceState; };
+
     // Add job to graph
-    bool resourceReadOnly = false;
-    foeGfxVkRenderGraphJob renderGraphJob;
+    foeGfxVkRenderGraphResourceState resourceState{
+        .upstreamJobCount = 1,
+        .pUpstreamJobs = &swapchainResource.provider,
+        .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+        .resource = swapchainResource.resource,
+        .pIncomingState = (foeGfxVkRenderGraphStructure *)pSwapchainResourceState,
+        .pOutgoingState = nullptr,
+    };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
         .resourceCount = 1,
-        .pResourcesIn = &swapchainResource,
-        .pResourcesInReadOnly = &resourceReadOnly,
+        .pResources = &resourceState,
+        .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = true,
         .fence = fence,
     };
 
+    foeGfxVkRenderGraphJob renderGraphJob;
     return foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, std::move(jobFn), {}, &renderGraphJob);
 }

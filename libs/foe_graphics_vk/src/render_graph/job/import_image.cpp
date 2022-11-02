@@ -46,6 +46,13 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     pJobResources->imageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = layout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
@@ -65,9 +72,17 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
     }
 
     // Add job to graph
-    foeGfxVkRenderGraphJob renderGraphJob;
+    foeGfxVkRenderGraphResourceState resourceState = foeGfxVkRenderGraphResourceState{
+        .mode = (isMutable) ? RENDER_GRAPH_RESOURCE_MODE_READ_WRITE
+                            : RENDER_GRAPH_RESOURCE_MODE_READ_ONLY,
+        .resource = newImageResource,
+        .pIncomingState = nullptr,
+        .pOutgoingState = (foeGfxVkRenderGraphStructure *)&pJobResources->imageState,
+    };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
+        .resourceCount = 1,
+        .pResources = &resourceState,
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = false,
@@ -76,6 +91,7 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .fence = fence,
     };
 
+    foeGfxVkRenderGraphJob renderGraphJob;
     result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();

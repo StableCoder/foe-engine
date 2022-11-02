@@ -363,34 +363,92 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
     // Resource Management
     struct RenderSceneJobResources {
+        foeGfxVkGraphImageState initialColourImageState;
+        foeGfxVkGraphImageState initialDepthStencilImageState;
         foeGfxVkGraphImageState colourImageState;
-        foeGfxVkGraphImageState depthStencilLayoutState;
+        foeGfxVkGraphImageState depthStencilImageState;
     };
 
     RenderSceneJobResources *pJobResources = new (std::nothrow) RenderSceneJobResources;
     if (pJobResources == nullptr)
         return to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
 
+    pJobResources->initialColourImageState = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+    pJobResources->initialDepthStencilImageState = foeGfxVkGraphImageState{
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
+    };
+
     pJobResources->colourImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = finalColourLayout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
     };
-    pJobResources->depthStencilLayoutState = foeGfxVkGraphImageState{
+    pJobResources->depthStencilImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
         .layout = finalDepthLayout,
+        .subresourceRange =
+            {
+                .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .layerCount = 1,
+            },
     };
 
     foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pJobResources; };
 
     // Add job to graph
-    std::array<foeGfxVkRenderGraphResource, 2> resourcesIn{colourRenderTarget, depthRenderTarget};
-    std::array<bool, 2> resourcesInReadOnly{false, false};
+    std::array<foeGfxVkRenderGraphResourceState, 2> resourceStates{
+        foeGfxVkRenderGraphResourceState{
+            .upstreamJobCount = 1,
+            .pUpstreamJobs = &colourRenderTarget.provider,
+            .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+            .resource = colourRenderTarget.resource,
+            .pIncomingState =
+                (foeGfxVkRenderGraphStructure const *)&pJobResources->initialColourImageState,
+            .pOutgoingState =
+                (foeGfxVkRenderGraphStructure const *)&pJobResources->colourImageState,
+        },
+        foeGfxVkRenderGraphResourceState{
+            .upstreamJobCount = 1,
+            .pUpstreamJobs = &depthRenderTarget.provider,
+            .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+            .resource = depthRenderTarget.resource,
+            .pIncomingState =
+                (foeGfxVkRenderGraphStructure const *)&pJobResources->initialDepthStencilImageState,
+            .pOutgoingState =
+                (foeGfxVkRenderGraphStructure const *)&pJobResources->depthStencilImageState,
+        },
+    };
     foeGfxVkRenderGraphJob renderGraphJob;
 
     foeGfxVkRenderGraphJobInfo jobInfo{
-        .resourceCount = 2,
-        .pResourcesIn = resourcesIn.data(),
-        .pResourcesInReadOnly = resourcesInReadOnly.data(),
+        .resourceCount = resourceStates.size(),
+        .pResources = resourceStates.data(),
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = false,
@@ -416,7 +474,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                 .provider = renderGraphJob,
                 .resource = depthRenderTarget.resource,
                 .pResourceState =
-                    (foeGfxVkRenderGraphStructure const *)&pJobResources->depthStencilLayoutState,
+                    (foeGfxVkRenderGraphStructure const *)&pJobResources->depthStencilImageState,
             },
     };
 
