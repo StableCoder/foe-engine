@@ -161,9 +161,9 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
 
 } // namespace
 
-foeResultSet foeCreateThreadPool(uint32_t syncThreads,
-                                 uint32_t asyncThreads,
-                                 foeSplitThreadPool *pPool) {
+extern "C" foeResultSet foeCreateThreadPool(uint32_t syncThreads,
+                                            uint32_t asyncThreads,
+                                            foeSplitThreadPool *pPool) {
     if (syncThreads == 0)
         return to_foeResult(FOE_ERROR_ZERO_SYNC_THREADS);
     if (asyncThreads == 0)
@@ -214,7 +214,7 @@ CREATE_FAILED:
     return result;
 }
 
-void foeDestroyThreadPool(foeSplitThreadPool pool) {
+extern "C" void foeDestroyThreadPool(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     // Terminate running threads
@@ -237,43 +237,45 @@ void foeDestroyThreadPool(foeSplitThreadPool pool) {
     free(pPool);
 }
 
-uint32_t foeNumSyncThreads(foeSplitThreadPool pool) {
+extern "C" uint32_t foeNumSyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     return pPool->syncTasks.threadCount;
 }
 
-uint32_t foeNumAsyncThreads(foeSplitThreadPool pool) {
+extern "C" uint32_t foeNumAsyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     return pPool->asyncTasks.threadCount;
 }
 
-uint32_t foeNumQueuedSyncTasks(foeSplitThreadPool pool) {
+extern "C" uint32_t foeNumQueuedSyncTasks(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     return pPool->syncTasks.queuedCount;
 }
 
-uint32_t foeNumQueuedAsyncTasks(foeSplitThreadPool pool) {
+extern "C" uint32_t foeNumQueuedAsyncTasks(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     return pPool->asyncTasks.queuedCount;
 }
 
-uint32_t foeNumProcessingSyncTasks(foeSplitThreadPool pool) {
+extern "C" uint32_t foeNumProcessingSyncTasks(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     return pPool->syncTasks.runningCount;
 }
 
-uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool) {
+extern "C" uint32_t foeNumProcessingAsyncTasks(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     return pPool->asyncTasks.runningCount;
 }
 
-foeResultSet foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext) {
+extern "C" foeResultSet foeScheduleSyncTask(foeSplitThreadPool pool,
+                                            PFN_foeTask task,
+                                            void *pTaskContext) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     scheduleTask(pPool->syncTasks, task, pTaskContext);
@@ -282,7 +284,9 @@ foeResultSet foeScheduleSyncTask(foeSplitThreadPool pool, PFN_foeTask task, void
     return to_foeResult(FOE_SUCCESS);
 }
 
-foeResultSet foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, void *pTaskContext) {
+extern "C" foeResultSet foeScheduleAsyncTask(foeSplitThreadPool pool,
+                                             PFN_foeTask task,
+                                             void *pTaskContext) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     scheduleTask(pPool->asyncTasks, task, pTaskContext);
@@ -290,7 +294,7 @@ foeResultSet foeScheduleAsyncTask(foeSplitThreadPool pool, PFN_foeTask task, voi
     return to_foeResult(FOE_SUCCESS);
 }
 
-foeResultSet foeWaitSyncThreads(foeSplitThreadPool pool) {
+extern "C" foeResultSet foeWaitSyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     while (pPool->syncTasks.queuedCount > 0 || pPool->syncTasks.runningCount > 0)
@@ -299,7 +303,7 @@ foeResultSet foeWaitSyncThreads(foeSplitThreadPool pool) {
     return to_foeResult(FOE_SUCCESS);
 }
 
-foeResultSet foeWaitAsyncThreads(foeSplitThreadPool pool) {
+extern "C" foeResultSet foeWaitAsyncThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     while (pPool->asyncTasks.queuedCount > 0 || pPool->asyncTasks.runningCount > 0)
@@ -308,7 +312,7 @@ foeResultSet foeWaitAsyncThreads(foeSplitThreadPool pool) {
     return to_foeResult(FOE_SUCCESS);
 }
 
-foeResultSet foeWaitAllThreads(foeSplitThreadPool pool) {
+extern "C" foeResultSet foeWaitAllThreads(foeSplitThreadPool pool) {
     auto *pPool = split_thread_pool_from_handle(pool);
 
     while (pPool->syncTasks.queuedCount > 0 || pPool->syncTasks.runningCount > 0 ||
