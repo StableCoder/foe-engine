@@ -113,10 +113,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     if (result.value != FOE_SUCCESS)
         ERRC_END_PROGRAM_TUPLE
 
-    result = foeStartThreadPool(threadPool);
-    if (result.value != FOE_SUCCESS)
-        ERRC_END_PROGRAM_TUPLE
-
     result = importState("persistent", &searchPaths, &pSimulationSet);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];

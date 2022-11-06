@@ -36,9 +36,6 @@ FOE_EXPORT foeResultSet foeCreateThreadPool(uint32_t syncThreads,
                                             foeSplitThreadPool *pPool);
 FOE_EXPORT void foeDestroyThreadPool(foeSplitThreadPool pool);
 
-FOE_EXPORT foeResultSet foeStartThreadPool(foeSplitThreadPool pool);
-FOE_EXPORT foeResultSet foeStopThreadPool(foeSplitThreadPool pool);
-
 FOE_EXPORT uint32_t foeNumSyncThreads(foeSplitThreadPool pool);
 FOE_EXPORT uint32_t foeNumAsyncThreads(foeSplitThreadPool pool);
 

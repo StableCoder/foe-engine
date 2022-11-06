@@ -52,57 +52,15 @@ TEST_CASE("SplitThreadPool - Creating the pool") {
     }
 }
 
-TEST_CASE("SplitThreadPool - Starting/stopping the pool") {
-    foeSplitThreadPool pool{FOE_NULL_HANDLE};
-    REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
-
-    SECTION("Starting the pool when not started succeeds") {
-        REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
-
-        SECTION("Attempting to start an already started pool fails") {
-            REQUIRE(foeStartThreadPool(pool).value == FOE_ERROR_ALREADY_STARTED);
-        }
-
-        REQUIRE(foeStopThreadPool(pool).value == FOE_SUCCESS);
-
-        SECTION("Restarting a stopped thread pool succeeds") {
-            REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
-        }
-    }
-
-    SECTION("Stopping a non-started pool fails") {
-        REQUIRE(foeStopThreadPool(pool).value == FOE_ERROR_NOT_STARTED);
-    }
-
-    foeDestroyThreadPool(pool);
-}
-
 TEST_CASE("SplitThreadPool - Waiting when no tasks queued") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
 
-    SECTION("Waiting on started pool has no issues") {
-        REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
-
+    SECTION("Waiting on pool with no tasks has no issues") {
         REQUIRE(foeWaitSyncThreads(pool).value == FOE_SUCCESS);
         REQUIRE(foeWaitAsyncThreads(pool).value == FOE_SUCCESS);
         REQUIRE(foeWaitAllThreads(pool).value == FOE_SUCCESS);
     }
-    SECTION("Waiting on non-started pool fails") {
-        SECTION("sync wait") { REQUIRE(foeWaitSyncThreads(pool).value == FOE_ERROR_NOT_STARTED); }
-        SECTION("async wait") { REQUIRE(foeWaitAsyncThreads(pool).value == FOE_ERROR_NOT_STARTED); }
-        SECTION("all wait") { REQUIRE(foeWaitAllThreads(pool).value == FOE_ERROR_NOT_STARTED); }
-    }
-
-    foeDestroyThreadPool(pool);
-}
-
-TEST_CASE("SplitThreadPool - Scheduling tasks when not started fails") {
-    foeSplitThreadPool pool{FOE_NULL_HANDLE};
-    REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
-
-    REQUIRE(foeScheduleSyncTask(pool, testTask, nullptr).value == FOE_ERROR_NOT_STARTED);
-    REQUIRE(foeScheduleAsyncTask(pool, testTask, nullptr).value == FOE_ERROR_NOT_STARTED);
 
     foeDestroyThreadPool(pool);
 }
@@ -110,7 +68,6 @@ TEST_CASE("SplitThreadPool - Scheduling tasks when not started fails") {
 TEST_CASE("SplitThreadPool - Checking task queries") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
-    REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
 
     pauseThreads = true;
 
@@ -174,7 +131,6 @@ TEST_CASE("SplitThreadPool - Checking task queries") {
 TEST_CASE("SplitThreadPool - Waiting on sync tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
-    REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
 
     foeEasySteadyClock timer;
 
@@ -198,7 +154,6 @@ TEST_CASE("SplitThreadPool - Waiting on sync tasks") {
 TEST_CASE("SplitThreadPool - Waiting on async tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
-    REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
 
     foeEasySteadyClock timer;
 
@@ -221,7 +176,6 @@ TEST_CASE("SplitThreadPool - Waiting on async tasks") {
 TEST_CASE("SplitThreadPool - Waiting on all tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
-    REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
 
     foeEasySteadyClock timer;
 
@@ -245,7 +199,6 @@ TEST_CASE("SplitThreadPool - Waiting on all tasks") {
 TEST_CASE("SplitThreadPool - Destroying pool awaits completion of all tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
-    REQUIRE(foeStartThreadPool(pool).value == FOE_SUCCESS);
 
     foeEasySteadyClock timer;
 
