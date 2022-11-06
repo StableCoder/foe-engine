@@ -50,17 +50,19 @@ void scheduleTask(TaskGroupData &taskGroup, PFN_foeTask task, void *pTaskContext
 
 struct SplitThreadPoolImpl {
     /// Tracks if the threads have been requested to end
-    std::atomic_bool terminate{false};
+    std::atomic_bool terminate;
     // Number of threads started
-    std::atomic_uint runners{0};
-    /// Threads in the pool
-    std::thread *threads;
+    std::atomic_uint runners;
 
     /// Sync task data
     TaskGroupData syncTasks;
     /// Async task data
     TaskGroupData asyncTasks;
 };
+
+inline std::thread *getThreadArray(SplitThreadPoolImpl *pThreadPool) {
+    return (std::thread *)(((uint8_t *)pThreadPool) + sizeof(SplitThreadPoolImpl));
+}
 
 FOE_DEFINE_HANDLE_CASTS(split_thread_pool, SplitThreadPoolImpl, foeSplitThreadPool)
 
@@ -167,7 +169,16 @@ foeResultSet foeCreateThreadPool(uint32_t syncThreads,
     if (asyncThreads == 0)
         return to_foeResult(FOE_ERROR_ZERO_ASYNC_THREADS);
 
-    SplitThreadPoolImpl *pNewPool = new (std::nothrow) SplitThreadPoolImpl{
+    // Allocation is the implementation + (total num threads * std::thread) so that it is one
+    // contiguous allocation
+    SplitThreadPoolImpl *pNewPool = (SplitThreadPoolImpl *)malloc(
+        sizeof(SplitThreadPoolImpl) + (syncThreads + asyncThreads) * sizeof(std::thread));
+    if (pNewPool == nullptr)
+        return to_foeResult(FOE_ERROR_OUT_OF_MEMORY);
+
+    new (pNewPool) SplitThreadPoolImpl{
+        .terminate = false,
+        .runners = 0,
         .syncTasks =
             {
                 .threadCount = syncThreads,
@@ -177,29 +188,20 @@ foeResultSet foeCreateThreadPool(uint32_t syncThreads,
                 .threadCount = asyncThreads,
             },
     };
-    if (pNewPool == nullptr)
-        return to_foeResult(FOE_ERROR_OUT_OF_MEMORY);
 
     foeResultSet result = to_foeResult(FOE_SUCCESS);
 
-    pNewPool->threads =
-        static_cast<std::thread *>(malloc(sizeof(std::thread) * (syncThreads + asyncThreads)));
-    if (pNewPool->threads == nullptr) {
-        result = to_foeResult(FOE_ERROR_OUT_OF_MEMORY);
-        goto CREATE_FAILED;
-    }
-
+    std::thread *pThreads = getThreadArray(pNewPool);
     // Start sync threads
     for (uint32_t i = 0; i < pNewPool->syncTasks.threadCount; ++i) {
         ++pNewPool->runners;
-        new (pNewPool->threads + i) std::thread(syncTaskRunner, pNewPool);
+        new (pThreads + i) std::thread(syncTaskRunner, pNewPool);
     }
 
     // Start async threads
     for (uint32_t i = 0; i < pNewPool->asyncTasks.threadCount; ++i) {
         ++pNewPool->runners;
-        new (pNewPool->threads + pNewPool->syncTasks.threadCount + i)
-            std::thread(asyncTaskRunner, pNewPool);
+        new (pThreads + pNewPool->syncTasks.threadCount + i) std::thread(asyncTaskRunner, pNewPool);
     }
 
 CREATE_FAILED:
@@ -224,15 +226,15 @@ void foeDestroyThreadPool(foeSplitThreadPool pool) {
         std::this_thread::yield();
     }
 
+    std::thread *pThreads = getThreadArray(pPool);
     auto const totalThreadCount = pPool->syncTasks.threadCount + pPool->asyncTasks.threadCount;
     for (uint32_t i = 0; i < totalThreadCount; ++i) {
-        pPool->threads[i].join();
+        pThreads[i].join();
     }
 
     // Free used memory
-    free(pPool->threads);
-
-    delete pPool;
+    pPool->~SplitThreadPoolImpl();
+    free(pPool);
 }
 
 uint32_t foeNumSyncThreads(foeSplitThreadPool pool) {
