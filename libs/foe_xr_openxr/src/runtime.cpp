@@ -124,7 +124,7 @@ foeResultSet foeOpenXrEnumerateRuntimeLayers(foeXrRuntime runtime,
                                              char *pLayerNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
-    return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames,
+    return foeCopyDelimitedString(pRuntime->layerNamesLength, pRuntime->pLayerNames, '\0',
                                   pLayerNamesLength, pLayerNames)
                ? to_foeResult(FOE_OPENXR_SUCCESS)
                : to_foeResult(FOE_OPENXR_INCOMPLETE);
@@ -135,7 +135,7 @@ foeResultSet foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runtime,
                                                  char *pExtensionNames) {
     auto *pRuntime = runtime_from_handle(runtime);
 
-    return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames,
+    return foeCopyDelimitedString(pRuntime->extensionNamesLength, pRuntime->pExtensionNames, '\0',
                                   pExtensionNamesLength, pExtensionNames)
                ? to_foeResult(FOE_OPENXR_SUCCESS)
                : to_foeResult(FOE_OPENXR_INCOMPLETE);

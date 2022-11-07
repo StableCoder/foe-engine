@@ -52,10 +52,8 @@ FOE_EXPORT bool foeCreateDelimitedString(
  * Data written to the provided destination is delimited by NULL characters and the returned length
  * counts the last character which will be NULL.
  */
-FOE_EXPORT bool foeCopyDelimitedString(uint32_t srcLength,
-                                       char const *pSrc,
-                                       uint32_t *pDstLength,
-                                       char *pDst);
+FOE_EXPORT bool foeCopyDelimitedString(
+    uint32_t srcLength, char const *pSrc, char delimiter, uint32_t *pDstLength, char *pDst);
 
 /** @brief Returns the start and length of the string inside the larger delimited string
  * @param srcLength is the total length of the original delimited string

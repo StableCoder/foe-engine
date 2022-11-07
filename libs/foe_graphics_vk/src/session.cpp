@@ -638,7 +638,7 @@ extern "C" foeResultSet foeGfxVkEnumerateSessionLayers(foeGfxSession session,
                                                        char *pLayerNames) {
     auto *pSession = session_from_handle(session);
 
-    return foeCopyDelimitedString(pSession->layerNamesLength, pSession->pLayerNames,
+    return foeCopyDelimitedString(pSession->layerNamesLength, pSession->pLayerNames, '\0',
                                   pLayerNamesLength, pLayerNames)
                ? to_foeResult(FOE_GRAPHICS_VK_SUCCESS)
                : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);
@@ -649,7 +649,7 @@ extern "C" foeResultSet foeGfxVkEnumerateSessionExtensions(foeGfxSession session
                                                            char *pExtensionNames) {
     auto *pSession = session_from_handle(session);
 
-    return foeCopyDelimitedString(pSession->extensionNamesLength, pSession->pExtensionNames,
+    return foeCopyDelimitedString(pSession->extensionNamesLength, pSession->pExtensionNames, '\0',
                                   pExtensionNamesLength, pExtensionNames)
                ? to_foeResult(FOE_GRAPHICS_VK_SUCCESS)
                : to_foeResult(FOE_GRAPHICS_VK_INCOMPLETE);

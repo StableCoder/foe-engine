@@ -216,14 +216,14 @@ TEST_CASE("CombinedString - Copying a zero-length combined string", "[foe][Combi
     memset(dstArr, 0, sizeof(dstArr));
 
     SECTION("No destination buffer") {
-        CHECK(foeCopyDelimitedString(srcString.size(), srcString.data(), &dstLen, nullptr));
+        CHECK(foeCopyDelimitedString(srcString.size(), srcString.data(), '\0', &dstLen, nullptr));
 
         CHECK(dstLen == 0);
     }
 
     SECTION("Destination buffer") {
         dstArr[0] = 'a';
-        CHECK(foeCopyDelimitedString(srcString.size(), srcString.data(), &dstLen, nullptr));
+        CHECK(foeCopyDelimitedString(srcString.size(), srcString.data(), '\0', &dstLen, nullptr));
 
         CHECK(dstLen == 0);
         CHECK(dstArr[0] == 'a');
@@ -238,13 +238,15 @@ TEST_CASE("CombinedString - Copying a single combined string", "[foe][CombinedSt
     SECTION("Smaller than destination buffer") {
         std::string srcString = "abcd";
         SECTION("No destination buffer") {
-            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), &dstLen, nullptr));
+            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), '\0', &dstLen,
+                                         nullptr));
 
             CHECK(dstLen == 5);
         }
 
         SECTION("Destination buffer") {
-            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), &dstLen, dstArr));
+            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), '\0', &dstLen,
+                                         dstArr));
 
             CHECK(dstLen == 5);
             CHECK(std::string_view{dstArr} == srcString);
@@ -254,13 +256,15 @@ TEST_CASE("CombinedString - Copying a single combined string", "[foe][CombinedSt
     SECTION("Same size as than destination buffer") {
         std::string srcString = "abcdefg";
         SECTION("No destination buffer") {
-            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), &dstLen, nullptr));
+            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), '\0', &dstLen,
+                                         nullptr));
 
             CHECK(dstLen == 8);
         }
 
         SECTION("Destination buffer") {
-            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), &dstLen, dstArr));
+            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), '\0', &dstLen,
+                                         dstArr));
 
             CHECK(dstLen == 8);
             CHECK(std::string_view{dstArr} == srcString);
@@ -270,15 +274,16 @@ TEST_CASE("CombinedString - Copying a single combined string", "[foe][CombinedSt
     SECTION("Larger than destination buffer") {
         std::string srcString = "abcdefgh";
         SECTION("No destination buffer") {
-            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), &dstLen, nullptr));
+            CHECK(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), '\0', &dstLen,
+                                         nullptr));
 
             CHECK(dstLen == 9);
         }
 
         SECTION("Destination buffer") {
             dstArr[0] = 'a';
-            CHECK_FALSE(
-                foeCopyDelimitedString(srcString.size() + 1, srcString.data(), &dstLen, dstArr));
+            CHECK_FALSE(foeCopyDelimitedString(srcString.size() + 1, srcString.data(), '\0',
+                                               &dstLen, dstArr));
 
             CHECK(dstLen == 0);
             CHECK(dstArr[0] == 'a');
@@ -296,13 +301,13 @@ TEST_CASE("CombinedString - Copying a multi-combined string", "[foe][CombinedStr
         size_t srcLen = 6;
 
         SECTION("No destination buffer") {
-            CHECK(foeCopyDelimitedString(srcLen, srcString, &dstLen, nullptr));
+            CHECK(foeCopyDelimitedString(srcLen, srcString, '\0', &dstLen, nullptr));
 
             CHECK(dstLen == 6);
         }
 
         SECTION("Destination buffer") {
-            CHECK(foeCopyDelimitedString(srcLen, srcString, &dstLen, dstArr));
+            CHECK(foeCopyDelimitedString(srcLen, srcString, '\0', &dstLen, dstArr));
 
             CHECK(dstLen == 6);
             CHECK(memcmp(srcString, dstArr, dstLen) == 0);
@@ -314,13 +319,13 @@ TEST_CASE("CombinedString - Copying a multi-combined string", "[foe][CombinedStr
         size_t srcLen = 8;
 
         SECTION("No destination buffer") {
-            CHECK(foeCopyDelimitedString(srcLen, srcString, &dstLen, nullptr));
+            CHECK(foeCopyDelimitedString(srcLen, srcString, '\0', &dstLen, nullptr));
 
             CHECK(dstLen == 8);
         }
 
         SECTION("Destination buffer") {
-            CHECK(foeCopyDelimitedString(srcLen, srcString, &dstLen, dstArr));
+            CHECK(foeCopyDelimitedString(srcLen, srcString, '\0', &dstLen, dstArr));
 
             CHECK(dstLen == 8);
             CHECK(std::string_view{dstArr} == srcString);
@@ -332,13 +337,13 @@ TEST_CASE("CombinedString - Copying a multi-combined string", "[foe][CombinedStr
         size_t srcLen = 10;
 
         SECTION("No destination buffer") {
-            CHECK(foeCopyDelimitedString(srcLen, srcString, &dstLen, nullptr));
+            CHECK(foeCopyDelimitedString(srcLen, srcString, '\0', &dstLen, nullptr));
 
             CHECK(dstLen == 10);
         }
 
         SECTION("Destination buffer") {
-            CHECK_FALSE(foeCopyDelimitedString(srcLen, srcString, &dstLen, dstArr));
+            CHECK_FALSE(foeCopyDelimitedString(srcLen, srcString, '\0', &dstLen, dstArr));
 
             CHECK(dstLen == 5);
             CHECK(memcmp(srcString, dstArr, dstLen) == 0);

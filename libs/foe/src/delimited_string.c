@@ -57,10 +57,8 @@ bool foeCreateDelimitedString(
     return (usedLength == totalLength);
 }
 
-bool foeCopyDelimitedString(uint32_t srcLength,
-                            char const *pSrc,
-                            uint32_t *pDstLength,
-                            char *pDst) {
+bool foeCopyDelimitedString(
+    uint32_t srcLength, char const *pSrc, char delimiter, uint32_t *pDstLength, char *pDst) {
     if (pDst == NULL) {
         // If the destination pointer wasn't provided, then update and return the length required
         *pDstLength = srcLength;
@@ -74,7 +72,7 @@ bool foeCopyDelimitedString(uint32_t srcLength,
         return true;
     } else {
         uint32_t offset = *pDstLength - 1;
-        while (offset != 0 && pSrc[offset] != '\0') {
+        while (offset != 0 && pSrc[offset] != delimiter) {
             --offset;
         }
 
