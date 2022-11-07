@@ -45,9 +45,8 @@ bool foeCreateDelimitedString(
         }
 
         if (usedLength > 0) {
-            // End of string is still always NUL character
             --pDst;
-            *pDst = '\0';
+            *pDst = delimiter;
         }
     }
 
