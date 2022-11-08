@@ -6,7 +6,6 @@
 #include <foe/resource/resource.h>
 #include <foe/resource/resource_fns.h>
 #include <foe/resource/result.h>
-#include <foe/thread_pool.hpp>
 
 #include "test_log_sink.hpp"
 

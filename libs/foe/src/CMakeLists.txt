@@ -16,8 +16,7 @@ target_sources(
           search_paths_reader.cpp
           search_paths_writer.cpp
           search_paths.cpp
-          split_thread_pool.cpp
-          thread_pool.cpp)
+          split_thread_pool.cpp)
 
 if(WIN32)
   target_sources(foe PRIVATE memory_mapped_file_win32.cpp)

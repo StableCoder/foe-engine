@@ -9,9 +9,6 @@ prepare_catch(COMPILED_CATCH)
 add_test(NAME FoE-Test COMMAND test_foe)
 add_executable(test_foe)
 
-add_test(NAME FoE-Test-Thread-Pool COMMAND test_foe_thread_pool)
-add_executable(test_foe_thread_pool)
-
 add_test(NAME FoE-Test-Split-Thread-Pool COMMAND test_foe_split_thread_pool)
 add_executable(test_foe_split_thread_pool)
 
@@ -40,21 +37,6 @@ target_compile_definitions(
 
 target_code_coverage(
   test_foe
-  AUTO
-  ALL
-  OBJECTS
-  foe
-  EXCLUDE
-  ${CMAKE_CURRENT_SOURCE_DIR}/.*
-  ${CMAKE_SOURCE_DIR}/external/.*)
-
-# Thread Pool Definition
-target_sources(test_foe_thread_pool PRIVATE thread_pool.cpp)
-
-target_link_libraries(test_foe_thread_pool PRIVATE catch foe)
-
-target_code_coverage(
-  test_foe_thread_pool
   AUTO
   ALL
   OBJECTS
