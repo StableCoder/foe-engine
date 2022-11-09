@@ -11,12 +11,14 @@
 #include <foe/graphics/vk/session.h>
 #include <foe/result.h>
 
+#include "custom_main.hpp"
+
 inline foeResultSet createTestSession(foeGfxRuntime *pRuntime, foeGfxSession *pSession) {
     VkResult vkResult;
     foeResultSet result;
     uint32_t vkApiVersion;
-    uint32_t physicalDeviceCount = 1;
-    VkPhysicalDevice vkPhysicalDevice;
+    uint32_t vkPhysicalDeviceCount;
+    std::unique_ptr<VkPhysicalDevice[]> vkPhysicalDevices;
 
     foeGfxRuntime runtime = FOE_NULL_HANDLE;
     foeGfxSession session = FOE_NULL_HANDLE;
@@ -28,15 +30,20 @@ inline foeResultSet createTestSession(foeGfxRuntime *pRuntime, foeGfxSession *pS
     if (result.value != FOE_SUCCESS)
         goto CREATE_TEST_SESSION_FAILED;
 
-    vkResult = vkEnumeratePhysicalDevices(foeGfxVkGetRuntimeInstance(runtime), &physicalDeviceCount,
-                                          &vkPhysicalDevice);
+    vkResult = vkEnumeratePhysicalDevices(foeGfxVkGetRuntimeInstance(runtime),
+                                          &vkPhysicalDeviceCount, nullptr);
+
+    vkPhysicalDevices.reset(new VkPhysicalDevice[vkPhysicalDeviceCount]);
+
+    vkResult = vkEnumeratePhysicalDevices(foeGfxVkGetRuntimeInstance(runtime),
+                                          &vkPhysicalDeviceCount, vkPhysicalDevices.get());
     if (vkResult != VK_SUCCESS && vkResult != VK_INCOMPLETE) {
         result.value = FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY;
         goto CREATE_TEST_SESSION_FAILED;
     }
 
-    result = foeGfxVkCreateSession(runtime, vkPhysicalDevice, 0, nullptr, 0, nullptr, nullptr,
-                                   nullptr, &session);
+    result = foeGfxVkCreateSession(runtime, vkPhysicalDevices[getGpuSelection()], 0, nullptr, 0,
+                                   nullptr, nullptr, nullptr, &session);
     if (result.value != FOE_SUCCESS)
         goto CREATE_TEST_SESSION_FAILED;
 

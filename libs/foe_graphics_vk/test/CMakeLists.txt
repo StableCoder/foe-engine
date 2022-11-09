@@ -12,7 +12,11 @@ add_executable(test_foe_graphics_vk)
 # Definition
 target_sources(
   test_foe_graphics_vk
-  PRIVATE c_header_compatibility.c format.cpp result.cpp sample_count.cpp
+  PRIVATE c_header_compatibility.c
+          custom_main.cpp
+          format.cpp
+          result.cpp
+          sample_count.cpp
           vk_struct_VkPipelineDepthStencilStateCreateInfo.cpp
           vk_struct_VkStencilOpState.cpp)
 
