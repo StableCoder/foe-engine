@@ -5,6 +5,7 @@ stages:
  - Linux Builds
  - Windows Builds
  - macOS Builds
+ - Vulkan Testing
  - Analysis
 
 variables:
@@ -120,7 +121,6 @@ Arch/GCC Static:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON
   <<: *linux_template
 
 Arch/GCC Shared:
@@ -136,7 +136,7 @@ Arch/GCC Shared:
   variables:
     CC: gcc
     CXX: g++
-    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 Arch/Clang Static:
@@ -152,7 +152,6 @@ Arch/Clang Static:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON
   <<: *linux_template
 
 Arch/Clang Shared:
@@ -168,7 +167,7 @@ Arch/Clang Shared:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_SHARED_LIBS=ON
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
 # Fedora
@@ -458,14 +457,14 @@ AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Address -D BUILD_VULKAN_RUNTIME_TESTS=OFF
+    CMAKE_OPTIONS: -D USE_SANITIZER=Address
   <<: *analysis_template
 
 LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Leak -D BUILD_VULKAN_RUNTIME_TESTS=OFF
+    CMAKE_OPTIONS: -D USE_SANITIZER=Leak
   <<: *analysis_template
 
 UndefinedSanitizer:
@@ -474,3 +473,56 @@ UndefinedSanitizer:
     CXX: clang++
     CMAKE_OPTIONS: -D USE_SANITIZER=Undefined
   <<: *analysis_template
+
+# Vulkan Testing
+
+.linux_vulkan_template: &linux_vulkan_template
+  stage: Vulkan Testing
+  needs: []
+  dependencies: []
+  script:
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    - ninja -C build test_foe_graphics_vk
+    - ./build/libs/foe_graphics_vk/test/test_foe_graphics_vk
+
+Arch Vulkan SW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *linux_vulkan_template
+
+Fedora Vulkan SW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+  image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *linux_vulkan_template
+
+Ubuntu Vulkan SW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le]
+  image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *linux_vulkan_template
