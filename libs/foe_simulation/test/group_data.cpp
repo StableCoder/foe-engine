@@ -147,7 +147,6 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
     DummyImporterData dummyImporter, dummyImporter2;
     foeGroupData test;
 
-    /*
     SECTION("No EntityIndexes given") {
         foeEcsIndexes testEntityIndexes = FOE_NULL_HANDLE;
         foeEcsIndexes testResourceIndexes = FOE_NULL_HANDLE;
@@ -406,7 +405,6 @@ TEST_CASE("foeGroupData - addDynamicGroup failure cases", "[foe]") {
         foeEcsDestroyIndexes(testResourceIndexes);
         foeEcsDestroyIndexes(testEntityIndexes);
     }
-    */
 }
 
 TEST_CASE("foeGroupData - setPersistentImporter failure cases", "[foe]") {
