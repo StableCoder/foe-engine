@@ -457,14 +457,14 @@ AddressSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Address
+    CMAKE_OPTIONS: -D USE_SANITIZER=Address -D BUILD_VULKAN_RUNTIME_TESTS=OFF
   <<: *analysis_template
 
 LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Leak
+    CMAKE_OPTIONS: -D USE_SANITIZER=Leak -D BUILD_VULKAN_RUNTIME_TESTS=OFF
   <<: *analysis_template
 
 UndefinedSanitizer:
@@ -522,6 +522,51 @@ Ubuntu Vulkan SW Testing:
     - container
     - linux
     - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *linux_vulkan_template
+
+Arch Vulkan HW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      GPU: [vega7,navi23]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}-${GPU}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *linux_vulkan_template
+
+Fedora Vulkan HW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      GPU: [vega7,navi23]
+  image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - ${ARCH}-${GPU}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *linux_vulkan_template
+
+Ubuntu Vulkan HW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      GPU: [vega7,navi23]
+  image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - ${ARCH}-${GPU}
   variables:
     CC: clang
     CXX: clang++
