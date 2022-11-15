@@ -390,6 +390,121 @@ Windows/Clang Shared:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
+# Vulkan Testing
+
+.vulkan_template: &vulkan_template
+  stage: Vulkan Testing
+  needs: []
+  dependencies: []
+  script:
+    - ./libs/foe_graphics_vk/tools/check_matching_device.sh --device-index 0 --device-name ${GPU}
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    - ninja -C build test_foe_graphics_vk
+    - ./build/libs/foe_graphics_vk/test/test_foe_graphics_vk
+
+Arch Vulkan SW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    GPU: llvmpipe
+  <<: *vulkan_template
+
+Fedora Vulkan SW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64, ppc64le]
+  image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    GPU: llvmpipe
+  <<: *vulkan_template
+
+Ubuntu Vulkan SW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64, ppc64le]
+  image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    GPU: llvmpipe
+  <<: *vulkan_template
+
+Arch Vulkan HW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      GPU: [vega7,navi23]
+  image: docker.io/stabletec/build-foe:arch
+  tags:
+    - container
+    - linux
+    - ${ARCH}-${GPU}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *vulkan_template
+
+Fedora Vulkan HW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      GPU: [vega7,navi23]
+  image: docker.io/stabletec/build-foe:fedora
+  tags:
+    - container
+    - linux
+    - ${ARCH}-${GPU}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *vulkan_template
+
+Ubuntu Vulkan HW Testing:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      GPU: [vega7,navi23]
+  image: docker.io/stabletec/build-foe:ubuntu
+  tags:
+    - container
+    - linux
+    - ${ARCH}-${GPU}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *vulkan_template
+
+macOS Vulkan HW Testing:
+  parallel:
+    matrix:
+    - ARCH: [arm64]
+      GPU: [apple_m1]
+  tags:
+    - macos
+    - ${ARCH}-${GPU}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *vulkan_template
+
 # Analysis Stage Templates
 
 .analysis_template: &analysis_template
@@ -473,105 +588,3 @@ UndefinedSanitizer:
     CXX: clang++
     CMAKE_OPTIONS: -D USE_SANITIZER=Undefined
   <<: *analysis_template
-
-# Vulkan Testing
-
-.linux_vulkan_template: &linux_vulkan_template
-  stage: Vulkan Testing
-  needs: []
-  dependencies: []
-  script:
-    - ./libs/foe_graphics_vk/tools/check_matching_device.sh --device-index 0 --device-name ${GPU}
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
-    - ninja -C build test_foe_graphics_vk
-    - ./build/libs/foe_graphics_vk/test/test_foe_graphics_vk
-
-Arch Vulkan SW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64]
-  image: docker.io/stabletec/build-foe:arch
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: clang
-    CXX: clang++
-    GPU: llvmpipe
-  <<: *linux_vulkan_template
-
-Fedora Vulkan SW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64, ppc64le]
-  image: docker.io/stabletec/build-foe:fedora
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: clang
-    CXX: clang++
-    GPU: llvmpipe
-  <<: *linux_vulkan_template
-
-Ubuntu Vulkan SW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64, ppc64le]
-  image: docker.io/stabletec/build-foe:ubuntu
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: clang
-    CXX: clang++
-    GPU: llvmpipe
-  <<: *linux_vulkan_template
-
-Arch Vulkan HW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64]
-      GPU: [vega7,navi23]
-  image: docker.io/stabletec/build-foe:arch
-  tags:
-    - container
-    - linux
-    - ${ARCH}-${GPU}
-  variables:
-    CC: clang
-    CXX: clang++
-  <<: *linux_vulkan_template
-
-Fedora Vulkan HW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64]
-      GPU: [vega7,navi23]
-  image: docker.io/stabletec/build-foe:fedora
-  tags:
-    - container
-    - linux
-    - ${ARCH}-${GPU}
-  variables:
-    CC: clang
-    CXX: clang++
-  <<: *linux_vulkan_template
-
-Ubuntu Vulkan HW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64]
-      GPU: [vega7,navi23]
-  image: docker.io/stabletec/build-foe:ubuntu
-  tags:
-    - container
-    - linux
-    - ${ARCH}-${GPU}
-  variables:
-    CC: clang
-    CXX: clang++
-  <<: *linux_vulkan_template

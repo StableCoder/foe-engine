@@ -56,6 +56,10 @@ elif [[ "$DEVICE_NAME" == "navi23" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"RADV NAVI23"* ]] || [[ "$VK_DEVICE_NAME" == *"RADV DIMGREY_CAVEFISH"* ]]; then
         exit 0
     fi
+elif [[ "$DEVICE_NAME" == "apple_m1" ]]; then
+    if [[ "$VK_DEVICE_NAME" == *"Apple M1"* ]]; then
+        exit 0
+    fi
 fi
 
 # Exit with error if didn't match above
