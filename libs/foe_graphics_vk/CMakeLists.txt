@@ -26,7 +26,7 @@ target_link_libraries(foe_graphics_vk PRIVATE khronos_mini_libs)
 target_code_coverage(foe_graphics_vk)
 
 if(APPLE)
-  target_compile_definitions(foe_graphics_vk PRIVATE VK_USE_PLATFORM_MACOS_MVK)
+  target_compile_definitions(foe_graphics_vk PUBLIC VK_USE_PLATFORM_MACOS_MVK)
 endif()
 
 if(MSVC)
