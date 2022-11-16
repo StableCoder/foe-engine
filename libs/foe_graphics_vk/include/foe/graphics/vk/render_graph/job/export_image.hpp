@@ -12,11 +12,14 @@
 
 #include <vector>
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                         char const *pJobName,
-                                                         VkFence fence,
-                                                         foeGfxVkRenderGraphResource resource,
-                                                         VkImageLayout requiredLayout,
-                                                         std::vector<VkSemaphore> signalSemaphores);
+FOE_GFX_EXPORT foeResultSet
+foeGfxVkExportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                             char const *pJobName,
+                             VkFence fence,
+                             foeGfxVkRenderGraphResource resource,
+                             uint32_t resourceUpstreamJobCount,
+                             foeGfxVkRenderGraphJob const *pResourceUpstreamJobs,
+                             VkImageLayout requiredLayout,
+                             std::vector<VkSemaphore> signalSemaphores);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_EXPORT_IMAGE_HPP

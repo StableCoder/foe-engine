@@ -21,7 +21,8 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                           VkImageLayout layout,
                                           bool isMutable,
                                           std::vector<VkSemaphore> waitSemaphores,
-                                          foeGfxVkRenderGraphResource *pResourcesOut) {
+                                          foeGfxVkRenderGraphResource *pImportedImageResource,
+                                          foeGfxVkRenderGraphJob *pRenderGraphJob) {
     foeResultSet result;
 
     // Resource management
@@ -64,7 +65,7 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .pResourceData = &pJobResources->imageResource,
     };
 
-    foeGfxVkRenderGraphResourceHandle newImageResource = FOE_NULL_HANDLE;
+    foeGfxVkRenderGraphResource newImageResource = FOE_NULL_HANDLE;
     result = foeGfxVkRenderGraphCreateResource(renderGraph, &resourceCI, &newImageResource);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
@@ -91,18 +92,11 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .fence = fence,
     };
 
-    foeGfxVkRenderGraphJob renderGraphJob;
-    result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
+    result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, pRenderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
     } else {
-        // Outgoing resources
-        *pResourcesOut = foeGfxVkRenderGraphResource{
-            .provider = renderGraphJob,
-            .resource = newImageResource,
-            .pResourceState =
-                reinterpret_cast<foeGfxVkRenderGraphStructure const *>(&pJobResources->imageState),
-        };
+        *pImportedImageResource = newImageResource;
     }
 
     return result;

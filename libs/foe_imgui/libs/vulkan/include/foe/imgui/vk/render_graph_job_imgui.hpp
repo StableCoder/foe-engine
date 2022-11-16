@@ -12,14 +12,17 @@
 class foeImGuiRenderer;
 class foeImGuiState;
 
-FOE_IMGUI_VK_EXPORT foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
-                                                       char const *pJobName,
-                                                       VkFence fence,
-                                                       foeGfxVkRenderGraphResource renderTarget,
-                                                       VkImageLayout finalLayout,
-                                                       foeImGuiRenderer *pImguiRenderer,
-                                                       foeImGuiState *pImguiState,
-                                                       uint32_t frameIndex,
-                                                       foeGfxVkRenderGraphResource *pResourcesOut);
+FOE_IMGUI_VK_EXPORT foeResultSet
+foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
+                      char const *pJobName,
+                      VkFence fence,
+                      foeGfxVkRenderGraphResource renderTarget,
+                      uint32_t renderTargetUpstreamJobCount,
+                      foeGfxVkRenderGraphJob const *pRenderTargetUpstreamJobs,
+                      VkImageLayout finalLayout,
+                      foeImGuiRenderer *pImguiRenderer,
+                      foeImGuiState *pImguiState,
+                      uint32_t frameIndex,
+                      foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // FOE_IMGUI_VK_RENDER_GRAPH_JOB_IMGUI_HPP

@@ -23,13 +23,16 @@ foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                       VkExtent2D extent,
                                       VkImageLayout initialLayout,
                                       VkSemaphore waitSemaphore,
-                                      foeGfxVkRenderGraphResource *pResourceOut);
+                                      foeGfxVkRenderGraphResource *pSwapchainResource,
+                                      foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 /// Assumes the image is in VK_IMAGE_LAYOUT_PRESENT_SRC_KHR layout
 FOE_GFX_EXPORT foeResultSet
 foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                        char const *pJobName,
                                        VkFence fence,
-                                       foeGfxVkRenderGraphResource swapchainResource);
+                                       foeGfxVkRenderGraphResource swapchainResource,
+                                       uint32_t swapchainResourceUpstreamJobCount,
+                                       foeGfxVkRenderGraphJob *pSwapchainResourceUpstreamJobs);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_PRESENT_IMAGE_HPP

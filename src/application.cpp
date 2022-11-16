@@ -1199,7 +1199,9 @@ int Application::mainloop() {
                         }
 
                         foeGfxVkRenderGraphResource renderTargetColourImageResource;
+                        foeGfxVkRenderGraphJob renderTargetColourImportJob;
                         foeGfxVkRenderGraphResource renderTargetDepthImageResource;
+                        foeGfxVkRenderGraphJob renderTargetDepthImportJob;
 
                         result = foeGfxVkImportImageRenderJob(
                             renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
@@ -1209,7 +1211,8 @@ int Application::mainloop() {
                                 .width = it.viewConfig.recommendedImageRectWidth,
                                 .height = it.viewConfig.recommendedImageRectHeight,
                             },
-                            VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource);
+                            VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource,
+                            &renderTargetColourImportJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
@@ -1222,7 +1225,8 @@ int Application::mainloop() {
                                 .width = it.viewConfig.recommendedImageRectWidth,
                                 .height = it.viewConfig.recommendedImageRectHeight,
                             },
-                            VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetDepthImageResource);
+                            VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetDepthImageResource,
+                            &renderTargetDepthImportJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
@@ -1255,6 +1259,8 @@ int Application::mainloop() {
                                                     (void *)timelineSemaphore);
 
                         foeGfxVkRenderGraphResource xrSwapchainImageResource;
+                        foeGfxVkRenderGraphJob xrSwapchainImportJob;
+
                         result = foeOpenXrVkImportSwapchainImageRenderJob(
                             renderGraph, "importXrViewSwapchainImage", VK_NULL_HANDLE,
                             "importXrViewSwapchainImage", timelineSemaphore, it.swapchain,
@@ -1263,58 +1269,52 @@ int Application::mainloop() {
                                 .width = it.viewConfig.recommendedImageRectWidth,
                                 .height = it.viewConfig.recommendedImageRectHeight,
                             },
-                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &xrSwapchainImageResource);
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &xrSwapchainImageResource,
+                            &xrSwapchainImportJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
-                        RenderSceneOutputResources output;
+                        foeGfxVkRenderGraphJob xrRenderSceneJob;
                         result = renderSceneJob(
                             renderGraph, "render3dScene", VK_NULL_HANDLE,
-                            renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                            renderTargetDepthImageResource,
-                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
-                            it.camera.descriptor, output);
+                            renderTargetColourImageResource, 1, &renderTargetColourImportJob,
+                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource, 1,
+                            &renderTargetDepthImportJob, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                            globalMSAA, pSimulationSet, it.camera.descriptor, &xrRenderSceneJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
 
-                        renderTargetColourImageResource = output.colourRenderTarget;
-                        renderTargetDepthImageResource = output.depthRenderTarget;
-
+                        foeGfxVkRenderGraphJob xrResolveOrCopyJob;
                         if (foeGfxVkGetRenderTargetSamples(renderTarget) != VK_SAMPLE_COUNT_1_BIT) {
                             // Resolve
-                            ResolveJobUsedResources resources;
                             result = foeGfxVkResolveImageRenderJob(
                                 renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
-                                renderTargetColourImageResource,
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
-                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &resources);
+                                renderTargetColourImageResource, 1, &xrRenderSceneJob,
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource, 1,
+                                &xrSwapchainImportJob, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                &xrResolveOrCopyJob);
                             if (result.value != FOE_SUCCESS) {
                                 ERRC_END_PROGRAM
                             }
-
-                            renderTargetColourImageResource = resources.srcImage;
-                            xrSwapchainImageResource = resources.dstImage;
                         } else {
                             // Copy
-                            CopyJobUsedResources resources;
                             result = foeGfxVkCopyImageRenderJob(
                                 renderGraph, "copyRenderedImageToBackbuffer", VK_NULL_HANDLE,
-                                renderTargetColourImageResource,
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource,
-                                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, &resources);
+                                renderTargetColourImageResource, 1, &xrRenderSceneJob,
+                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, xrSwapchainImageResource, 1,
+                                &xrSwapchainImportJob, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                &xrResolveOrCopyJob);
                             if (result.value != FOE_SUCCESS) {
                                 ERRC_END_PROGRAM
                             }
-
-                            renderTargetColourImageResource = resources.srcImage;
-                            xrSwapchainImageResource = resources.dstImage;
                         }
 
                         result = foeGfxVkExportImageRenderJob(
                             renderGraph, "exportPresentationImage", VK_NULL_HANDLE,
-                            xrSwapchainImageResource, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, {});
+                            xrSwapchainImageResource, 1, &xrResolveOrCopyJob,
+                            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, {});
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
@@ -1415,14 +1415,17 @@ int Application::mainloop() {
             }
 
             foeGfxVkRenderGraphResource renderTargetColourImageResource;
+            foeGfxVkRenderGraphJob renderTargetColourImportJob;
             foeGfxVkRenderGraphResource renderTargetDepthImageResource;
+            foeGfxVkRenderGraphJob renderTargetDepthImportJob;
 
             result = foeGfxVkImportImageRenderJob(
                 renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
                 foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
                 foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
                 window->swapchain.surfaceFormat().format, window->swapchain.extent(),
-                VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource);
+                VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource,
+                &renderTargetColourImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
@@ -1433,7 +1436,7 @@ int Application::mainloop() {
                 foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 1),
                 foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 1), depthFormat,
                 window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED, true, {},
-                &renderTargetDepthImageResource);
+                &renderTargetDepthImageResource, &renderTargetDepthImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
@@ -1443,20 +1446,19 @@ int Application::mainloop() {
 
             auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
 
-            RenderSceneOutputResources output;
+            foeGfxVkRenderGraphJob renderSceneJobHandle;
             result = renderSceneJob(
-                renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource,
-                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource,
+                renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource, 1,
+                &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
-                (*pCamera)->descriptor, output);
+                (*pCamera)->descriptor, &renderSceneJobHandle);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
-            renderTargetColourImageResource = output.colourRenderTarget;
-            renderTargetDepthImageResource = output.depthRenderTarget;
-
             foeGfxVkRenderGraphResource presentImageResource;
+            foeGfxVkRenderGraphJob presentImageImportJob;
 
             result = foeGfxVkImportSwapchainImageRenderJob(
                 renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
@@ -1465,38 +1467,33 @@ int Application::mainloop() {
                 window->swapchain.imageView(window->swapchain.acquiredIndex()),
                 window->swapchain.surfaceFormat().format, window->swapchain.extent(),
                 VK_IMAGE_LAYOUT_UNDEFINED, window->swapchain.imageReadySemaphore(),
-                &presentImageResource);
+                &presentImageResource, &presentImageImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
+            foeGfxVkRenderGraphJob resolveOrCopyJob;
             if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
                 VK_SAMPLE_COUNT_1_BIT) {
                 // Resolve
-                ResolveJobUsedResources resources;
                 result = foeGfxVkResolveImageRenderJob(
                     renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
-                    renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
+                    renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
+                    &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
-
-                // renderTargetColourImageResource = resources.srcImage;
-                presentImageResource = resources.dstImage;
             } else {
                 // Copy
-                CopyJobUsedResources resources;
                 result = foeGfxVkCopyImageRenderJob(
                     renderGraph, "copyRenderedImageToBackbuffer", VK_NULL_HANDLE,
-                    renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resources);
+                    renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
+                    &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
-
-                // renderTargetColourImageResource = resources.srcImage;
-                presentImageResource = resources.dstImage;
             }
 
             static struct {
@@ -1554,43 +1551,43 @@ int Application::mainloop() {
                 }
 
                 foeGfxVkRenderGraphResource cpuCopiedImage;
+                foeGfxVkRenderGraphJob cpuImageImportJob;
                 result = foeGfxVkImportImageRenderJob(
                     renderGraph, "importCpuImage", VK_NULL_HANDLE, "cpuImage", cpuImage.image,
                     VK_NULL_HANDLE, cpuImage.format, extent, VK_IMAGE_LAYOUT_UNDEFINED, true, {},
-                    &cpuCopiedImage);
+                    &cpuCopiedImage, &cpuImageImportJob);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
 
+                foeGfxVkRenderGraphJob cpuResolveOrCopyJob;
                 if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
                     VK_SAMPLE_COUNT_1_BIT) {
                     // Resolve
-                    ResolveJobUsedResources resources;
                     result = foeGfxVkResolveImageRenderJob(
                         renderGraph, "resolveRenderedImageToCpuImage", VK_NULL_HANDLE,
-                        renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                        cpuCopiedImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &resources);
+                        renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1, &cpuImageImportJob,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cpuResolveOrCopyJob);
                     if (result.value != FOE_SUCCESS) {
                         ERRC_END_PROGRAM
                     }
-                    cpuCopiedImage = resources.dstImage;
                 } else {
                     // Copy
-                    BlitJobUsedResources resources;
                     result = foeGfxVkBlitImageRenderJob(
                         renderGraph, "blitRenderedImageToCpuImage", VK_NULL_HANDLE,
-                        renderTargetColourImageResource, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                        cpuCopiedImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_FILTER_NEAREST,
-                        &resources);
+                        renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1, &cpuImageImportJob,
+                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_FILTER_NEAREST,
+                        &cpuResolveOrCopyJob);
                     if (result.value != FOE_SUCCESS) {
                         ERRC_END_PROGRAM
                     }
-                    cpuCopiedImage = resources.dstImage;
                 }
 
                 foeGfxVkExportImageRenderJob(renderGraph, "exportCpuImage", cpuImage.fence,
-                                             cpuCopiedImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                             {});
+                                             cpuCopiedImage, 1, &cpuResolveOrCopyJob,
+                                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {});
             }
 
             if (cpuImage.fence != VK_NULL_HANDLE && !cpuImage.saved) {
@@ -1625,11 +1622,12 @@ int Application::mainloop() {
                 }
             }
 
+            foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
 #ifdef EDITOR_MODE
             result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
-                                           presentImageResource, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                           &imguiRenderer, &imguiState, frameIndex,
-                                           &presentImageResource);
+                                           presentImageResource, 1, &resolveOrCopyJob,
+                                           VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
+                                           &imguiState, frameIndex, &renderDebugUiJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
@@ -1640,9 +1638,10 @@ int Application::mainloop() {
             uint32_t index;
             window->swapchain.presentData(&swapchain2, &index);
 
-            result = foeGfxVkPresentSwapchainImageRenderJob(renderGraph, "presentFinalImage",
-                                                            frameData[frameIndex].frameComplete,
-                                                            presentImageResource);
+            result = foeGfxVkPresentSwapchainImageRenderJob(
+                renderGraph, "presentFinalImage", frameData[frameIndex].frameComplete,
+                presentImageResource, 1,
+                (renderDebugUiJob != FOE_NULL_HANDLE) ? &renderDebugUiJob : &resolveOrCopyJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }

@@ -23,6 +23,7 @@ foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                          VkFormat format,
                                          VkExtent2D extent,
                                          VkImageLayout layout,
-                                         foeGfxVkRenderGraphResource *pResourcesOut);
+                                         foeGfxVkRenderGraphResource *pXrSwapchainResource,
+                                         foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP

@@ -17,7 +17,7 @@
 
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraph)
 FOE_DEFINE_HANDLE(foeGfxVkRenderGraphJob)
-FOE_DEFINE_HANDLE(foeGfxVkRenderGraphResourceHandle)
+FOE_DEFINE_HANDLE(foeGfxVkRenderGraphResource)
 
 typedef std::function<void()> foeGfxVkRenderGraphFn;
 
@@ -55,12 +55,6 @@ struct foeGfxVkRenderGraphStructure {
 FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
     foeGfxVkRenderGraphStructure const *pData, foeGfxVkRenderGraphStructureType sType);
 
-struct foeGfxVkRenderGraphResource {
-    foeGfxVkRenderGraphJob provider;
-    foeGfxVkRenderGraphResourceHandle resource;
-    foeGfxVkRenderGraphStructure const *pResourceState;
-};
-
 FOE_GFX_EXPORT foeResultSet foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph);
 
 FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
@@ -76,20 +70,18 @@ struct foeGfxVkRenderGraphResourceCreateInfo {
 FOE_GFX_EXPORT foeResultSet
 foeGfxVkRenderGraphCreateResource(foeGfxVkRenderGraph renderGraph,
                                   foeGfxVkRenderGraphResourceCreateInfo *pResoureCreateInfo,
-                                  foeGfxVkRenderGraphResourceHandle *pResource);
+                                  foeGfxVkRenderGraphResource *pResource);
 
-FOE_GFX_EXPORT char const *foeGfxVkRenderGraphGetResourceName(
-    foeGfxVkRenderGraphResourceHandle resource);
-FOE_GFX_EXPORT bool foeGfxVkRenderGraphGetResourceIsMutable(
-    foeGfxVkRenderGraphResourceHandle resource);
+FOE_GFX_EXPORT char const *foeGfxVkRenderGraphGetResourceName(foeGfxVkRenderGraphResource resource);
+FOE_GFX_EXPORT bool foeGfxVkRenderGraphGetResourceIsMutable(foeGfxVkRenderGraphResource resource);
 FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourceData(
-    foeGfxVkRenderGraphResourceHandle resource);
+    foeGfxVkRenderGraphResource resource);
 
 struct foeGfxVkRenderGraphResourceState {
     uint32_t upstreamJobCount;
-    foeGfxVkRenderGraphJob *pUpstreamJobs;
+    foeGfxVkRenderGraphJob const *pUpstreamJobs;
     foeGfxVkRenderGraphResourceMode mode;
-    foeGfxVkRenderGraphResourceHandle resource;
+    foeGfxVkRenderGraphResource resource;
     foeGfxVkRenderGraphStructure const *pIncomingState;
     foeGfxVkRenderGraphStructure const *pOutgoingState;
 };

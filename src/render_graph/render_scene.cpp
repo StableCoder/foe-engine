@@ -208,41 +208,34 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                             char const *pJobName,
                             VkFence fence,
                             foeGfxVkRenderGraphResource colourRenderTarget,
+                            uint32_t colourRenderTargetUpstreamJobCount,
+                            foeGfxVkRenderGraphJob const *pColourRenderTargetUpstreamJobs,
                             VkImageLayout finalColourLayout,
                             foeGfxVkRenderGraphResource depthRenderTarget,
+                            uint32_t depthRenderTargetUpstreamJobCount,
+                            foeGfxVkRenderGraphJob const *pDepthRenderTargetUpstreamJobs,
                             VkImageLayout finalDepthLayout,
                             VkSampleCountFlags renderTargetSamples,
                             foeSimulation *pSimulation,
                             VkDescriptorSet cameraDescriptor,
-                            RenderSceneOutputResources &outputResources) {
+                            foeGfxVkRenderGraphJob *pRenderGraphJob) {
     // Make sure the resources passed in are images, and are mutable
     auto const *pColourImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-        foeGfxVkRenderGraphGetResourceData(colourRenderTarget.resource),
+        foeGfxVkRenderGraphGetResourceData(colourRenderTarget),
         RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
     auto const *pDepthImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-        foeGfxVkRenderGraphGetResourceData(depthRenderTarget.resource),
+        foeGfxVkRenderGraphGetResourceData(depthRenderTarget),
         RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pColourImageData == nullptr)
         return to_foeResult(FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NOT_IMAGE);
-    if (!foeGfxVkRenderGraphGetResourceIsMutable(colourRenderTarget.resource))
+    if (!foeGfxVkRenderGraphGetResourceIsMutable(colourRenderTarget))
         return to_foeResult(FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NOT_MUTABLE);
 
     if (pDepthImageData == nullptr)
         return to_foeResult(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NOT_IMAGE);
-    if (!foeGfxVkRenderGraphGetResourceIsMutable(depthRenderTarget.resource))
+    if (!foeGfxVkRenderGraphGetResourceIsMutable(depthRenderTarget))
         return to_foeResult(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NOT_MUTABLE);
-
-    // Check that the images have previous state
-    auto const *pColourImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
-        colourRenderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
-    auto const *pDepthImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
-        depthRenderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
-
-    if (pColourImageState == nullptr)
-        return to_foeResult(FOE_BRINGUP_RENDER_SCENE_COLOUR_TARGET_NO_STATE);
-    if (pDepthImageState == nullptr)
-        return to_foeResult(FOE_BRINGUP_RENDER_SCENE_DEPTH_TARGET_NO_STATE);
 
     // Proceed with the job
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
@@ -259,7 +252,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                          .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                         .initialLayout = pColourImageState->layout,
+                         .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
                          .finalLayout = finalColourLayout,
                      },
                      VkAttachmentDescription{
@@ -269,7 +262,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                          .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                         .initialLayout = pDepthImageState->layout,
+                         .initialLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
                          .finalLayout = finalDepthLayout,
                      }});
 
@@ -424,27 +417,26 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     std::array<foeGfxVkRenderGraphResourceState, 2> resourceStates{
         foeGfxVkRenderGraphResourceState{
-            .upstreamJobCount = 1,
-            .pUpstreamJobs = &colourRenderTarget.provider,
+            .upstreamJobCount = colourRenderTargetUpstreamJobCount,
+            .pUpstreamJobs = pColourRenderTargetUpstreamJobs,
             .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
-            .resource = colourRenderTarget.resource,
+            .resource = colourRenderTarget,
             .pIncomingState =
                 (foeGfxVkRenderGraphStructure const *)&pJobResources->initialColourImageState,
             .pOutgoingState =
                 (foeGfxVkRenderGraphStructure const *)&pJobResources->colourImageState,
         },
         foeGfxVkRenderGraphResourceState{
-            .upstreamJobCount = 1,
-            .pUpstreamJobs = &depthRenderTarget.provider,
+            .upstreamJobCount = depthRenderTargetUpstreamJobCount,
+            .pUpstreamJobs = pDepthRenderTargetUpstreamJobs,
             .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
-            .resource = depthRenderTarget.resource,
+            .resource = depthRenderTarget,
             .pIncomingState =
                 (foeGfxVkRenderGraphStructure const *)&pJobResources->initialDepthStencilImageState,
             .pOutgoingState =
                 (foeGfxVkRenderGraphStructure const *)&pJobResources->depthStencilImageState,
         },
     };
-    foeGfxVkRenderGraphJob renderGraphJob;
 
     foeGfxVkRenderGraphJobInfo jobInfo{
         .resourceCount = resourceStates.size(),
@@ -456,27 +448,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
     };
 
     foeResultSet result =
-        foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), &renderGraphJob);
-    if (result.value != FOE_SUCCESS)
-        return result;
+        foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), pRenderGraphJob);
 
-    // Outgoing state
-    outputResources = RenderSceneOutputResources{
-        .colourRenderTarget =
-            {
-                .provider = renderGraphJob,
-                .resource = colourRenderTarget.resource,
-                .pResourceState =
-                    (foeGfxVkRenderGraphStructure const *)&pJobResources->colourImageState,
-            },
-        .depthRenderTarget =
-            {
-                .provider = renderGraphJob,
-                .resource = depthRenderTarget.resource,
-                .pResourceState =
-                    (foeGfxVkRenderGraphStructure const *)&pJobResources->depthStencilImageState,
-            },
-    };
-
-    return to_foeResult(FOE_BRINGUP_SUCCESS);
+    return result;
 }

@@ -10,18 +10,18 @@
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
-struct CopyJobUsedResources {
-    foeGfxVkRenderGraphResource srcImage;
-    foeGfxVkRenderGraphResource dstImage;
-};
-
-FOE_GFX_EXPORT foeResultSet foeGfxVkCopyImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                       char const *pJobName,
-                                                       VkFence fence,
-                                                       foeGfxVkRenderGraphResource srcImage,
-                                                       VkImageLayout srcFinalLayout,
-                                                       foeGfxVkRenderGraphResource dstImage,
-                                                       VkImageLayout dstFinalLayout,
-                                                       CopyJobUsedResources *pResourcesOut);
+FOE_GFX_EXPORT foeResultSet
+foeGfxVkCopyImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                           char const *pJobName,
+                           VkFence fence,
+                           foeGfxVkRenderGraphResource srcImage,
+                           uint32_t srcImageUpstreamJobCount,
+                           foeGfxVkRenderGraphJob const *pSrcImageUpstreamJobs,
+                           VkImageLayout srcFinalLayout,
+                           foeGfxVkRenderGraphResource dstImage,
+                           uint32_t dstImageUpstreamJobCount,
+                           foeGfxVkRenderGraphJob const *pDstImageUpstreamJobs,
+                           VkImageLayout dstFinalLayout,
+                           foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_COPY_IMAGE_HPP

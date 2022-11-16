@@ -25,28 +25,23 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                                    char const *pJobName,
                                    VkFence fence,
                                    foeGfxVkRenderGraphResource renderTarget,
+                                   uint32_t renderTargetUpstreamJobCount,
+                                   foeGfxVkRenderGraphJob const *pRenderTargetUpstreamJobs,
                                    VkImageLayout finalLayout,
                                    foeImGuiRenderer *pImguiRenderer,
                                    foeImGuiState *pImguiState,
                                    uint32_t frameIndex,
-                                   foeGfxVkRenderGraphResource *pResourcesOut) {
+                                   foeGfxVkRenderGraphJob *pRenderGraphJob) {
     // Check that render target is a mutable image
     auto const *pColourTargetImageData =
         (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-            foeGfxVkRenderGraphGetResourceData(renderTarget.resource),
+            foeGfxVkRenderGraphGetResourceData(renderTarget),
             RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pColourTargetImageData == nullptr)
         return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_NOT_IMAGE);
-    if (!foeGfxVkRenderGraphGetResourceIsMutable(renderTarget.resource))
+    if (!foeGfxVkRenderGraphGetResourceIsMutable(renderTarget))
         return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_NOT_MUTABLE);
-
-    // Get the render target's previous layout
-    auto const *pColourTargetState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
-        renderTarget.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
-
-    if (pColourTargetState == nullptr)
-        return to_foeResult(FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_MISSING_STATE);
 
     // Job Data
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
@@ -61,7 +56,7 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                                           .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                                           .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                                           .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                          .initialLayout = pColourTargetState->layout,
+                                          .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
                                           .finalLayout = finalLayout,
                                       }});
 
@@ -162,7 +157,7 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
     // Source incoming
     pImageStates[0] = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
-        .layout = pColourTargetState->layout,
+        .layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
         .subresourceRange =
             {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -191,10 +186,10 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
 
     // Add job to graph
     foeGfxVkRenderGraphResourceState resourceState{
-        .upstreamJobCount = 1,
-        .pUpstreamJobs = &renderTarget.provider,
+        .upstreamJobCount = renderTargetUpstreamJobCount,
+        .pUpstreamJobs = pRenderTargetUpstreamJobs,
         .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
-        .resource = renderTarget.resource,
+        .resource = renderTarget,
         .pIncomingState = (foeGfxVkRenderGraphStructure *)pImageStates,
         .pOutgoingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 1),
     };
@@ -208,19 +203,10 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
         .fence = fence,
     };
 
-    foeGfxVkRenderGraphJob renderGraphJob;
     foeResultSet result =
-        foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), &renderGraphJob);
+        foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), pRenderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
-    } else {
-        // Outgoing resources
-        *pResourcesOut = {
-            .provider = renderGraphJob,
-            .resource = renderTarget.resource,
-            .pResourceState =
-                reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageState),
-        };
     }
 
     return result;

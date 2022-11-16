@@ -18,18 +18,20 @@ struct foeOpenXrRenderGraphSwapchainResource {
     XrSwapchain swapchain;
 };
 
-foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                                      char const *pJobName,
-                                                      VkFence fence,
-                                                      char const *pResourceName,
-                                                      VkSemaphore semaphore,
-                                                      XrSwapchain swapchain,
-                                                      VkImage image,
-                                                      VkImageView view,
-                                                      VkFormat format,
-                                                      VkExtent2D extent,
-                                                      VkImageLayout layout,
-                                                      foeGfxVkRenderGraphResource *pResourcesOut) {
+foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(
+    foeGfxVkRenderGraph renderGraph,
+    char const *pJobName,
+    VkFence fence,
+    char const *pResourceName,
+    VkSemaphore semaphore,
+    XrSwapchain swapchain,
+    VkImage image,
+    VkImageView view,
+    VkFormat format,
+    VkExtent2D extent,
+    VkImageLayout layout,
+    foeGfxVkRenderGraphResource *pXrSwapchainResource,
+    foeGfxVkRenderGraphJob *pRenderGraphJob) {
     // Resource management
     struct ImportXrSwapchainImageJobResources {
         uint64_t waitValue;
@@ -88,7 +90,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
         .pResourceData = &pJobResources->swapchainImage,
     };
 
-    foeGfxVkRenderGraphResourceHandle newSwapchainResource;
+    foeGfxVkRenderGraphResource newSwapchainResource;
     foeResultSet result =
         foeGfxVkRenderGraphCreateResource(renderGraph, &resourceCI, &newSwapchainResource);
     if (result.value != FOE_SUCCESS) {
@@ -116,8 +118,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
         .fence = fence,
     };
 
-    foeGfxVkRenderGraphJob renderGraphJob;
-    result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &renderGraphJob);
+    result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, pRenderGraphJob);
     if (result.value != FOE_SUCCESS) {
         // If we couldn't add it to the render graph, delete all heap data now
         freeDataFn();
@@ -126,12 +127,7 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph render
     }
 
     // Outgoing resources
-    *pResourcesOut = foeGfxVkRenderGraphResource{
-        .provider = renderGraphJob,
-        .resource = newSwapchainResource,
-        .pResourceState = reinterpret_cast<foeGfxVkRenderGraphStructure const *>(
-            &pJobResources->swapchainImageState),
-    };
+    *pXrSwapchainResource = newSwapchainResource;
 
     return to_foeResult(FOE_OPENXR_VK_SUCCESS);
 }

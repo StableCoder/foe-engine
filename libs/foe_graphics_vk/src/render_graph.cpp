@@ -26,9 +26,7 @@ struct RenderGraphResource {
     RenderGraphJobResourceState *pFirstJobSeen;
 };
 
-FOE_DEFINE_HANDLE_CASTS(render_graph_resource,
-                        RenderGraphResource,
-                        foeGfxVkRenderGraphResourceHandle)
+FOE_DEFINE_HANDLE_CASTS(render_graph_resource, RenderGraphResource, foeGfxVkRenderGraphResource)
 
 struct RenderGraphJobResourceState {
     RenderGraphJob *pJob;
@@ -84,7 +82,7 @@ FOE_DEFINE_HANDLE_CASTS(render_graph, RenderGraph, foeGfxVkRenderGraph)
 } // namespace
 
 foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindResourceStructure(
-    foeGfxVkRenderGraphResourceHandle resource, foeGfxVkRenderGraphStructureType sType) {
+    foeGfxVkRenderGraphResource resource, foeGfxVkRenderGraphStructureType sType) {
     auto *pResource = render_graph_resource_from_handle(resource);
     foeGfxVkRenderGraphStructure const *pData =
         (foeGfxVkRenderGraphStructure const *)pResource->pResourceData;
@@ -141,7 +139,7 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
 foeResultSet foeGfxVkRenderGraphCreateResource(
     foeGfxVkRenderGraph renderGraph,
     foeGfxVkRenderGraphResourceCreateInfo *pResoureCreateInfo,
-    foeGfxVkRenderGraphResourceHandle *pResource) {
+    foeGfxVkRenderGraphResource *pResource) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     RenderGraphResource *pNewResource = new (std::nothrow) RenderGraphResource{
@@ -159,20 +157,20 @@ foeResultSet foeGfxVkRenderGraphCreateResource(
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
-char const *foeGfxVkRenderGraphGetResourceName(foeGfxVkRenderGraphResourceHandle resource) {
+char const *foeGfxVkRenderGraphGetResourceName(foeGfxVkRenderGraphResource resource) {
     auto *pResource = render_graph_resource_from_handle(resource);
 
     return pResource->name.c_str();
 }
 
-bool foeGfxVkRenderGraphGetResourceIsMutable(foeGfxVkRenderGraphResourceHandle resource) {
+bool foeGfxVkRenderGraphGetResourceIsMutable(foeGfxVkRenderGraphResource resource) {
     auto *pResource = render_graph_resource_from_handle(resource);
 
     return pResource->isMutable;
 }
 
 foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourceData(
-    foeGfxVkRenderGraphResourceHandle resource) {
+    foeGfxVkRenderGraphResource resource) {
     auto *pResource = render_graph_resource_from_handle(resource);
 
     return (foeGfxVkRenderGraphStructure const *)pResource->pResourceData;

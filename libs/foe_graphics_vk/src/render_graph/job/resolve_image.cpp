@@ -17,35 +17,26 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                            char const *pJobName,
                                            VkFence fence,
                                            foeGfxVkRenderGraphResource srcImage,
+                                           uint32_t srcImageUpstreamJobCount,
+                                           foeGfxVkRenderGraphJob const *pSrcImageUpstreamJobs,
                                            VkImageLayout srcFinalLayout,
                                            foeGfxVkRenderGraphResource dstImage,
+                                           uint32_t dstImageUpstreamJobCount,
+                                           foeGfxVkRenderGraphJob const *pDstImageUpstreamJobs,
                                            VkImageLayout dstFinalLayout,
-                                           ResolveJobUsedResources *pResourcesOut) {
+                                           foeGfxVkRenderGraphJob *pRenderGraphJob) {
     // Check that resources are images and the destination is mutable
     auto const *pSrcImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-        foeGfxVkRenderGraphGetResourceData(srcImage.resource),
-        RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+        foeGfxVkRenderGraphGetResourceData(srcImage), RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
     auto const *pDstImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
-        foeGfxVkRenderGraphGetResourceData(dstImage.resource),
-        RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
+        foeGfxVkRenderGraphGetResourceData(dstImage), RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE);
 
     if (pSrcImageData == nullptr)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_SOURCE_NOT_IMAGE);
     if (pDstImageData == nullptr)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_DESTINATION_NOT_IMAGE);
-    if (!foeGfxVkRenderGraphGetResourceIsMutable(dstImage.resource))
+    if (!foeGfxVkRenderGraphGetResourceIsMutable(dstImage))
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_DESTINATION_NOT_MUTABLE);
-
-    // Get the last states of the images
-    auto const *pSrcImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
-        srcImage.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
-    auto const *pDstImageState = (foeGfxVkGraphImageState const *)foeGfxVkGraphFindStructure(
-        dstImage.pResourceState, RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE);
-
-    if (pSrcImageState == nullptr)
-        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_SOURCE_NO_STATE);
-    if (pDstImageState == nullptr)
-        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_RESOLVE_DESTINATION_NO_STATE);
 
     // Proceed with the job
     auto jobFn = [=](foeGfxSession, foeGfxDelayedCaller,
@@ -159,18 +150,18 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
     // Add job to graph
     std::array<foeGfxVkRenderGraphResourceState, 2> resourceStates{
         foeGfxVkRenderGraphResourceState{
-            .upstreamJobCount = 1,
-            .pUpstreamJobs = &srcImage.provider,
+            .upstreamJobCount = srcImageUpstreamJobCount,
+            .pUpstreamJobs = pSrcImageUpstreamJobs,
             .mode = RENDER_GRAPH_RESOURCE_MODE_READ_ONLY,
-            .resource = srcImage.resource,
+            .resource = srcImage,
             .pIncomingState = (foeGfxVkRenderGraphStructure *)pImageStates,
             .pOutgoingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 1),
         },
         foeGfxVkRenderGraphResourceState{
-            .upstreamJobCount = 1,
-            .pUpstreamJobs = &dstImage.provider,
+            .upstreamJobCount = dstImageUpstreamJobCount,
+            .pUpstreamJobs = pDstImageUpstreamJobs,
             .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
-            .resource = dstImage.resource,
+            .resource = dstImage,
             .pIncomingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 2),
             .pOutgoingState = (foeGfxVkRenderGraphStructure *)(pImageStates + 3),
         },
@@ -185,32 +176,13 @@ foeResultSet foeGfxVkResolveImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .fence = fence,
     };
 
-    foeGfxVkRenderGraphJob renderGraphJob;
     foeResultSet result =
-        foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), &renderGraphJob);
+        foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, std::move(jobFn), pRenderGraphJob);
     if (result.value != FOE_SUCCESS) {
         freeDataFn();
 
         return result;
     }
-
-    // Outgoing resources
-    *pResourcesOut = ResolveJobUsedResources{
-        .srcImage =
-            {
-                .provider = renderGraphJob,
-                .resource = srcImage.resource,
-                .pResourceState =
-                    reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates),
-            },
-        .dstImage =
-            {
-                .provider = renderGraphJob,
-                .resource = dstImage.resource,
-                .pResourceState =
-                    reinterpret_cast<foeGfxVkRenderGraphStructure const *>(pFinalImageStates + 1),
-            },
-    };
 
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }

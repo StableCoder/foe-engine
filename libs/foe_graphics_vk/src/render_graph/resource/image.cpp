@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -36,6 +36,9 @@ VkAccessFlags foeGfxVkDetermineAccessFlags(VkImageLayout imageLayout) {
 
     case VK_IMAGE_LAYOUT_PREINITIALIZED:
         return VK_ACCESS_HOST_WRITE_BIT;
+
+    case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+        return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
         // case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
         // case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:

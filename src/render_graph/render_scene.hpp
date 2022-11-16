@@ -11,21 +11,20 @@
 
 struct foeSimulation;
 
-struct RenderSceneOutputResources {
-    foeGfxVkRenderGraphResource colourRenderTarget;
-    foeGfxVkRenderGraphResource depthRenderTarget;
-};
-
 foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                             char const *pJobName,
                             VkFence fence,
                             foeGfxVkRenderGraphResource colourRenderTarget,
+                            uint32_t colourRenderTargetUpstreamJobCount,
+                            foeGfxVkRenderGraphJob const *pColourRenderTargetUpstreamJobs,
                             VkImageLayout finalColourLayout,
                             foeGfxVkRenderGraphResource depthRenderTarget,
+                            uint32_t depthRenderTargetUpstreamJobCount,
+                            foeGfxVkRenderGraphJob const *pDepthRenderTargetUpstreamJobs,
                             VkImageLayout finalDepthLayout,
                             VkSampleCountFlags renderTargetSamples,
                             foeSimulation *pSimulation,
                             VkDescriptorSet cameraDescriptor,
-                            RenderSceneOutputResources &outputResources);
+                            foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // RENDER_SCENE_HPP
