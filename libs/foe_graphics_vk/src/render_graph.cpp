@@ -69,6 +69,8 @@ FOE_DEFINE_HANDLE_CASTS(render_graph_job, RenderGraphJob, foeGfxVkRenderGraphJob
 struct RenderGraph {
     // Whether or not the graph has been compiled and is ready to be executed
     bool compiled;
+    // Number of jobs after compilation set to be executed
+    uint32_t numExecutingJobs;
     /// Set of calls used to destroy resources after they have been used
     std::vector<std::function<void()>> resourceCleanupCalls;
     /// These are the possible rendering jobs
@@ -277,6 +279,7 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
     }
 
     // Going downstream to upstream
+    uint32_t numNewJobs = 0;
     while (!toProcess.empty()) {
         auto *pJob = toProcess.front();
         toProcess.pop();
@@ -285,6 +288,7 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
         if (pJob->processed)
             continue;
 
+        ++numNewJobs;
         pJob->processed = true;
 
         for (auto const &resource : pJob->resources) {
@@ -393,7 +397,9 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
     }
 
     pRenderGraph->compiled = true;
-    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
+    pRenderGraph->numExecutingJobs += numNewJobs;
+    return to_foeResult((pRenderGraph->numExecutingJobs != 0) ? FOE_GRAPHICS_VK_SUCCESS
+                                                              : FOE_GRAPHICS_VK_NO_JOBS_TO_EXECUTE);
 }
 
 namespace {
@@ -420,7 +426,7 @@ foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
 
     if (!pRenderGraph->compiled)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_NOT_COMPILED);
-    if (pRenderGraph->jobs.empty())
+    if (pRenderGraph->numExecutingJobs == 0)
         return to_foeResult(FOE_GRAPHICS_VK_NO_JOBS_TO_EXECUTE);
 
     VkResult vkResult = VK_SUCCESS;
