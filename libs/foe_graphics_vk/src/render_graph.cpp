@@ -47,7 +47,7 @@ struct RenderGraphJob {
     /// This job needs to be run as part of the render graph's execution, typically as the job is
     /// outputting something, but other reasons exist.
     bool required;
-    bool processed;
+    bool execute;
     VkQueueFlags queueFlags; // If queue flags is zero, then no preferred family
     void *pExtraSubmitInfo;
     VkFence fence;
@@ -191,7 +191,7 @@ foeResultSet foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
     RenderGraphJob *pNewJob = new (std::nothrow) RenderGraphJob{
         .name = std::string{pJobInfo->name},
         .required = pJobInfo->required,
-        .processed = false,
+        .execute = false,
         .queueFlags = pJobInfo->queueFlags,
         .pExtraSubmitInfo = pJobInfo->pExtraSubmitInfo,
         .fence = pJobInfo->fence,
@@ -285,16 +285,16 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
         toProcess.pop();
 
         // Skip the job if we already processed it
-        if (pJob->processed)
+        if (pJob->execute)
             continue;
 
         ++numNewJobs;
-        pJob->processed = true;
+        pJob->execute = true;
 
         for (auto const &resource : pJob->resources) {
             // If the upstream job has not yet been processed, add it
             for (auto *pUpstreamResourceState : resource.upstream) {
-                if (!pUpstreamResourceState->pJob->processed) {
+                if (!pUpstreamResourceState->pJob->execute) {
                     toProcess.emplace(pUpstreamResourceState->pJob);
                 }
             }
@@ -312,7 +312,7 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
             // Get the next wave of active uses of this resource
             for (auto *pResourceState : currentUseWave) {
                 for (auto *pDownstreamState : pResourceState->downstream) {
-                    if (pDownstreamState->pJob->processed)
+                    if (pDownstreamState->pJob->execute)
                         nextUseWave.emplace_back(pDownstreamState);
                 }
             }
@@ -459,7 +459,7 @@ foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
     bool anyJobExecuted = false;
     for (auto const &pJob : pRenderGraph->jobs) {
         // Skip 'culled' jobs
-        if (!pJob->processed)
+        if (!pJob->execute)
             continue;
         anyJobExecuted = true;
 
@@ -470,7 +470,7 @@ foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
         for (auto &resource : pJob->resources) {
             for (auto &downstreamResource : resource.downstream) {
                 RenderGraphJob *const pDownstreamJob = downstreamResource->pJob;
-                if (!pDownstreamJob->processed)
+                if (!pDownstreamJob->execute)
                     // Culled job
                     continue;
 
