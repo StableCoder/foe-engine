@@ -260,6 +260,12 @@ foeResultSet foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
     return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }
 
+bool foeGfxVkRenderGraphJobToExecute(foeGfxVkRenderGraphJob job) {
+    auto *pJob = render_graph_job_from_handle(job);
+
+    return pJob->execute;
+}
+
 foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 

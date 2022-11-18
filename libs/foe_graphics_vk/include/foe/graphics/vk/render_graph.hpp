@@ -108,6 +108,8 @@ foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
                           PFN_foeGfxVkRenderGraphFillCmdBuffer &&fillCmdBuf,
                           foeGfxVkRenderGraphJob *pJob);
 
+FOE_GFX_EXPORT bool foeGfxVkRenderGraphJobToExecute(foeGfxVkRenderGraphJob job);
+
 FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph);
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,

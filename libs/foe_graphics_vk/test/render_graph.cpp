@@ -41,6 +41,8 @@ TEST_CASE("foeGfxVkRenderGraph") {
         result = foeGfxVkRenderGraphCompile(renderGraph);
         CHECK(result.value == FOE_GRAPHICS_VK_NO_JOBS_TO_EXECUTE);
 
+        CHECK_FALSE(foeGfxVkRenderGraphJobToExecute(importImageJob));
+
         result = foeGfxVkRenderGraphExecute(renderGraph, FOE_NULL_HANDLE, FOE_NULL_HANDLE);
         CHECK(result.value == FOE_GRAPHICS_VK_NO_JOBS_TO_EXECUTE);
     }
@@ -57,6 +59,8 @@ TEST_CASE("foeGfxVkRenderGraph") {
 
         result = foeGfxVkRenderGraphCompile(renderGraph);
         CHECK(result.value == FOE_SUCCESS);
+
+        CHECK(foeGfxVkRenderGraphJobToExecute(importImageJob));
     }
 
     foeGfxVkDestroyRenderGraph(renderGraph);
