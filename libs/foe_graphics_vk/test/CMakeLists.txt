@@ -15,6 +15,7 @@ target_sources(
   PRIVATE c_header_compatibility.c
           custom_main.cpp
           format.cpp
+          render_graph.cpp
           result.cpp
           sample_count.cpp
           vk_struct_VkPipelineDepthStencilStateCreateInfo.cpp
