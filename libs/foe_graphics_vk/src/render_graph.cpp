@@ -334,36 +334,30 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
 
             foeGfxVkRenderGraphStructure const *pUpstreamReference =
                 currentUseWave[0]->pOutgoingState;
-
-            if (currentUseWave.size() > 1) {
-                for (size_t i = 1; i < currentUseWave.size(); ++i) {
-                    foeGfxVkRenderGraphStructure const *pCompare =
-                        currentUseWave[i]->pOutgoingState;
-
-                    if (pUpstreamReference->sType != pCompare->sType)
-                        std::abort();
-
-                    // Only images
-                    if (((foeGfxVkGraphImageState const *)pUpstreamReference)->layout !=
-                        ((foeGfxVkGraphImageState const *)pCompare)->layout)
-                        std::abort();
-                }
-            }
-
             foeGfxVkRenderGraphStructure const *pDownstreamReference =
                 nextUseWave[0]->pIncomingState;
 
             if (nextUseWave.size() > 1) {
+                if (nextUseWave[0]->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE)
+                    return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
+
                 for (size_t i = 1; i < nextUseWave.size(); ++i) {
+                    if (nextUseWave[i]->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE)
+                        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
+
                     foeGfxVkRenderGraphStructure const *pCompare = nextUseWave[i]->pIncomingState;
 
                     if (pDownstreamReference->sType != pCompare->sType)
-                        std::abort();
+                        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
 
                     // Only images
                     if (((foeGfxVkGraphImageState const *)pDownstreamReference)->layout !=
                         ((foeGfxVkGraphImageState const *)pCompare)->layout)
-                        std::abort();
+                        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
+
+                    if (((foeGfxVkGraphImageState const *)nextUseWave[0]->pOutgoingState)->layout !=
+                        ((foeGfxVkGraphImageState const *)nextUseWave[i]->pOutgoingState)->layout)
+                        return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
                 }
             }
 

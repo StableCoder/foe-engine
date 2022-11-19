@@ -90,3 +90,53 @@ static foeResultSet createImageJob(foeGfxVkRenderGraph renderGraph,
 
     return result;
 }
+
+static foeResultSet singleImageResourceJob(foeGfxVkRenderGraph renderGraph,
+                                           char const *pJobName,
+                                           bool requiredJob,
+                                           foeGfxVkRenderGraphResource image,
+                                           VkImageLayout incomingLayout,
+                                           VkImageLayout outgoingLayout,
+                                           foeGfxVkRenderGraphResourceMode mode,
+                                           uint32_t imageUpstreamJobCount,
+                                           foeGfxVkRenderGraphJob *pImageUpstreamJobs,
+                                           foeGfxVkRenderGraphJob *pJob) {
+    auto *pImageState = new foeGfxVkGraphImageState[2];
+
+    pImageState[0] = {
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = incomingLayout,
+    };
+    pImageState[1] = {
+        .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
+        .layout = outgoingLayout,
+    };
+
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete[] pImageState; };
+
+    // Add job to graph
+    foeGfxVkRenderGraphResourceState resourceState = foeGfxVkRenderGraphResourceState{
+        .upstreamJobCount = imageUpstreamJobCount,
+        .pUpstreamJobs = pImageUpstreamJobs,
+        .mode = mode,
+        .resource = image,
+        .pIncomingState = (foeGfxVkRenderGraphStructure *)&pImageState[0],
+        .pOutgoingState = (foeGfxVkRenderGraphStructure *)&pImageState[1],
+    };
+
+    foeGfxVkRenderGraphJobInfo jobInfo{
+        .resourceCount = 1,
+        .pResources = &resourceState,
+        .freeDataFn = freeDataFn,
+        .name = pJobName,
+        .required = requiredJob,
+        .fence = VK_NULL_HANDLE,
+    };
+
+    foeResultSet result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, pJob);
+    if (result.value != FOE_SUCCESS) {
+        freeDataFn();
+    }
+
+    return result;
+}
