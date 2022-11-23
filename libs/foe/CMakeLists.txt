@@ -24,6 +24,10 @@ target_link_libraries(foe PUBLIC fmt::fmt)
 
 target_code_coverage(foe)
 
+if(DISABLE_PLUGIN_UNLOAD)
+  target_compile_definitions(foe PRIVATE DISABLE_PLUGIN_UNLOAD)
+endif()
+
 if(UNIX)
   target_compile_options(foe PRIVATE -fPIC)
   target_link_libraries(foe PUBLIC dl pthread)

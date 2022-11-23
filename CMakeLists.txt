@@ -17,8 +17,12 @@ option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_VULKAN_RUNTIME_TESTS
        "Build tests that require an available Vulkan runtime" OFF)
-option(LINKTIME_PLUGINS "Link the plugins in rather than loading at runtime"
-       OFF)
+
+# There are cases where it is easier to debug issues if dynamic plugin library
+# content is still loaded into the application when it terminates, such as for
+# tools that do post-analysis such as sanitizers.
+option(DISABLE_PLUGIN_UNLOAD "Prevent plugins from unloading" OFF)
+
 option(EDITOR_MODE "Build with the editor UI capability" OFF)
 cmake_dependent_option(
   IMGUI_DEMO "Build with the ImGui demo in the bringup app" OFF EDITOR_MODE OFF)
@@ -158,51 +162,26 @@ target_link_libraries(foe_bringup_lib PUBLIC foe foe_ecs foe_bringup_lib_eh
 target_include_directories(foe_bringup_lib
                            PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
 
-if(LINKTIME_PLUGINS)
-  target_link_libraries(
-    foe_bringup_lib
-    PUBLIC # Regular Plugins
-           foe_bringup_shared
-           foe_graphics_resource
-           foe_physics
-           foe_position
-           # Yaml Plugins
-           foe_bringup_yaml
-           foe_graphics_resource_yaml
-           foe_imex_yaml
-           foe_physics_yaml
-           foe_position_yaml
-           # Binary Plugin
-           foe_imex_binary
-           foe_physics_binary
-           foe_position_binary
-           foe_graphics_resource_binary
-           foe_bringup_binary)
-else()
-  target_link_libraries(
-    foe_bringup_lib PUBLIC foe_bringup_shared foe_graphics_resource foe_physics
-                           foe_position)
-  target_compile_definitions(
-    foe_bringup_lib
-    PRIVATE
-      # Regular Plugins
-      BRINGUP_PLUGIN="$<TARGET_FILE:foe_bringup_shared>"
-      GRAPHICS_RESOURCE_PLUGIN="$<TARGET_FILE:foe_graphics_resource>"
-      PHYSICS_PLUGIN="$<TARGET_FILE:foe_physics>"
-      POSITION_PLUGIN="$<TARGET_FILE:foe_position>"
-      # Yaml Plugins
-      BRINGUP_YAML_PLUGIN="$<TARGET_FILE:foe_bringup_yaml>"
-      GRAPHICS_RESOURCE_YAML_PLUGIN="$<TARGET_FILE:foe_graphics_resource_yaml>"
-      IMEX_YAML_PLUGIN="$<TARGET_FILE:foe_imex_yaml>"
-      PHYSICS_YAML_PLUGIN="$<TARGET_FILE:foe_physics_yaml>"
-      POSITION_YAML_PLUGIN="$<TARGET_FILE:foe_position_yaml>"
-      # Binary Plugin
-      IMEX_BINARY_PLUGIN="$<TARGET_FILE:foe_imex_binary>"
-      PHYSICS_BINARY_PLUGIN="$<TARGET_FILE:foe_physics_binary>"
-      POSITION_BINARY_PLUGIN="$<TARGET_FILE:foe_position_binary>"
-      GRAPHICS_RESOURCE_BINARY_PLUGIN="$<TARGET_FILE:foe_graphics_resource_binary>"
-      BRINGUP_BINARY_PLUGIN="$<TARGET_FILE:foe_bringup_binary>")
-endif()
+target_compile_definitions(
+  foe_bringup_lib
+  PRIVATE
+    # Regular Plugins
+    BRINGUP_PLUGIN="$<TARGET_FILE:foe_bringup_shared>"
+    GRAPHICS_RESOURCE_PLUGIN="$<TARGET_FILE:foe_graphics_resource>"
+    PHYSICS_PLUGIN="$<TARGET_FILE:foe_physics>"
+    POSITION_PLUGIN="$<TARGET_FILE:foe_position>"
+    # Yaml Plugins
+    BRINGUP_YAML_PLUGIN="$<TARGET_FILE:foe_bringup_yaml>"
+    GRAPHICS_RESOURCE_YAML_PLUGIN="$<TARGET_FILE:foe_graphics_resource_yaml>"
+    IMEX_YAML_PLUGIN="$<TARGET_FILE:foe_imex_yaml>"
+    PHYSICS_YAML_PLUGIN="$<TARGET_FILE:foe_physics_yaml>"
+    POSITION_YAML_PLUGIN="$<TARGET_FILE:foe_position_yaml>"
+    # Binary Plugin
+    IMEX_BINARY_PLUGIN="$<TARGET_FILE:foe_imex_binary>"
+    PHYSICS_BINARY_PLUGIN="$<TARGET_FILE:foe_physics_binary>"
+    POSITION_BINARY_PLUGIN="$<TARGET_FILE:foe_position_binary>"
+    GRAPHICS_RESOURCE_BINARY_PLUGIN="$<TARGET_FILE:foe_graphics_resource_binary>"
+    BRINGUP_BINARY_PLUGIN="$<TARGET_FILE:foe_bringup_binary>")
 
 if(MSVC)
   target_compile_options(foe_bringup_lib PRIVATE /EHsc)

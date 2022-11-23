@@ -1,4 +1,4 @@
-// Copyright (C) 2020 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -48,7 +48,14 @@ void *getUnixPluginSymbolAddr(void *pModule, char const *pSymbol) {
     return pSymbolAddr;
 }
 
-void unloadUnixPlugin(void *pModule) { dlclose(pModule); }
+void unloadUnixPlugin(void *pModule) {
+    // Through the definition of `DISABLE_PLUGIN_UNLOAD`, can stop plugins from being unloaded which
+    // can make debugging issues easier, especially in cases such as sanitizers which analyze data
+    // after the program terminates.
+#ifndef DISABLE_PLUGIN_UNLOAD
+    dlclose(pModule);
+#endif
+}
 #endif
 
 #if defined(_WIN32) || defined(WIN32)
@@ -78,7 +85,14 @@ void *getWindowsPluginSymbolAddr(HMODULE module, char const *pSymbol) {
     return pSymbolAddr;
 }
 
-void unloadWindowsPlugin(HMODULE module) { FreeLibrary(module); }
+void unloadWindowsPlugin(HMODULE module) {
+    // Through the definition of `DISABLE_PLUGIN_UNLOAD`, can stop plugins from being unloaded which
+    // can make debugging issues easier, especially in cases such as sanitizers which analyze data
+    // after the program terminates.
+#ifndef DISABLE_PLUGIN_UNLOAD
+    FreeLibrary(module);
+#endif
+}
 #endif
 
 } // namespace

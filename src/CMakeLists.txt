@@ -12,18 +12,11 @@ target_sources(
           log.cpp
           logging.cpp
           window.cpp
+          register_basic_functionality.cpp
           result.c
           vk_result.c
           #
           render_graph/render_scene.cpp)
-
-if(LINKTIME_PLUGINS)
-  target_sources(foe_bringup_lib
-                 PRIVATE register_basic_functionality_linktime.cpp)
-else()
-  target_sources(foe_bringup_lib
-                 PRIVATE register_basic_functionality_runtime.cpp)
-endif()
 
 if(XR_SUPPORT)
   target_sources(foe_bringup_lib PRIVATE xr.cpp xr_result.c
