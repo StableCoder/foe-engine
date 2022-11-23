@@ -159,6 +159,12 @@ add_subdirectory(src)
 target_link_libraries(foe_bringup_lib PUBLIC foe foe_ecs foe_bringup_lib_eh
                                              foe_imex)
 
+# These are plugins which are linked because the bringup library is using
+# header/content directly
+target_link_libraries(
+  foe_bringup_lib PUBLIC foe_bringup_shared foe_graphics_resource foe_physics
+                         foe_position)
+
 target_include_directories(foe_bringup_lib
                            PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
 
