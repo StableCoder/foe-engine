@@ -185,6 +185,16 @@ foeResultSet foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
                                        foeGfxVkRenderGraphJob *pJob) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
+    // Check resources for mutability issues
+    for (uint32_t i = 0; i < pJobInfo->resourceCount; ++i) {
+        auto &resourceState = pJobInfo->pResources[i];
+        auto *pResource = render_graph_resource_from_handle(resourceState.resource);
+
+        if (resourceState.mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE && !pResource->isMutable)
+            return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_IMMUTABLE_RESOURCE);
+    }
+
+    // When the graph is modified, it should no longer be considered to be in the executable state
     pRenderGraph->compiled = false;
 
     // Add job to graph to be run

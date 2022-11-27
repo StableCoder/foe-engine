@@ -10,7 +10,7 @@
 
 #include <array>
 
-TEST_CASE("foeGfxVkRenderGraph") {
+TEST_CASE("foeGfxVkRenderGraph - Basics") {
     foeResultSet result;
     foeGfxVkRenderGraph renderGraph = FOE_NULL_HANDLE;
 
@@ -30,12 +30,54 @@ TEST_CASE("foeGfxVkRenderGraph") {
         CHECK(result.value == FOE_GRAPHICS_VK_NO_JOBS_TO_EXECUTE);
     }
 
+    SECTION("Attempting to use an immutable resource in read/write mode on a job fails") {
+        foeGfxVkRenderGraphResource resource = FOE_NULL_HANDLE;
+
+        foeGfxVkRenderGraphResourceCreateInfo resourceCI{
+            .sType = FOE_NULL_HANDLE,
+            .pName = "testResource",
+            .isMutable = false,
+            .pResourceData = nullptr,
+        };
+
+        result = foeGfxVkRenderGraphCreateResource(renderGraph, &resourceCI, &resource);
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(resource != FOE_NULL_HANDLE);
+
+        foeGfxVkRenderGraphResourceState resourceState{
+            .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+            .resource = resource,
+        };
+
+        foeGfxVkRenderGraphJobInfo jobInfo{
+            .resourceCount = 1,
+            .pResources = &resourceState,
+            .name = "testJob",
+        };
+
+        foeGfxVkRenderGraphJob job = FOE_NULL_HANDLE;
+        result = foeGfxVkRenderGraphAddJob(renderGraph, &jobInfo, {}, {}, &job);
+        CHECK(result.value == FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_IMMUTABLE_RESOURCE);
+        CHECK(job == FOE_NULL_HANDLE);
+    }
+
+    foeGfxVkDestroyRenderGraph(renderGraph);
+}
+
+TEST_CASE("foeGfxVkRenderGraph - Image Resource") {
+    foeResultSet result;
+    foeGfxVkRenderGraph renderGraph = FOE_NULL_HANDLE;
+
+    result = foeGfxVkCreateRenderGraph(&renderGraph);
+    REQUIRE(result.value == FOE_SUCCESS);
+    REQUIRE(renderGraph != FOE_NULL_HANDLE);
+
     SECTION("Compiling with only non-required jobs leaves no jobs to execute after compilation") {
         foeGfxVkRenderGraphResource imageResource = FOE_NULL_HANDLE;
 
         foeGfxVkRenderGraphJob importImageJob;
         result = createImageJob(renderGraph, "non-required import image", false, "testImage",
-                                VK_IMAGE_LAYOUT_UNDEFINED, false, &imageResource, &importImageJob);
+                                VK_IMAGE_LAYOUT_UNDEFINED, true, &imageResource, &importImageJob);
         CHECK(result.value == FOE_SUCCESS);
         CHECK(imageResource != FOE_NULL_HANDLE);
         CHECK(importImageJob != VK_NULL_HANDLE);
@@ -54,7 +96,7 @@ TEST_CASE("foeGfxVkRenderGraph") {
 
         foeGfxVkRenderGraphJob importImageJob;
         result = createImageJob(renderGraph, "non-required import image", true, "testImage",
-                                VK_IMAGE_LAYOUT_UNDEFINED, false, &imageResource, &importImageJob);
+                                VK_IMAGE_LAYOUT_UNDEFINED, true, &imageResource, &importImageJob);
         CHECK(result.value == FOE_SUCCESS);
         CHECK(imageResource != FOE_NULL_HANDLE);
         CHECK(importImageJob != VK_NULL_HANDLE);
@@ -70,7 +112,7 @@ TEST_CASE("foeGfxVkRenderGraph") {
 
         foeGfxVkRenderGraphJob importImageJob;
         result = createImageJob(renderGraph, "importImageJob", false, "testImage",
-                                VK_IMAGE_LAYOUT_UNDEFINED, false, &imageResource, &importImageJob);
+                                VK_IMAGE_LAYOUT_UNDEFINED, true, &imageResource, &importImageJob);
         CHECK(result.value == FOE_SUCCESS);
         CHECK(imageResource != FOE_NULL_HANDLE);
         CHECK(importImageJob != VK_NULL_HANDLE);
@@ -95,7 +137,7 @@ TEST_CASE("foeGfxVkRenderGraph") {
 
         foeGfxVkRenderGraphJob importImageJob;
         result = createImageJob(renderGraph, "importImageJob", false, "testImage",
-                                VK_IMAGE_LAYOUT_UNDEFINED, false, &imageResource, &importImageJob);
+                                VK_IMAGE_LAYOUT_UNDEFINED, true, &imageResource, &importImageJob);
         CHECK(result.value == FOE_SUCCESS);
         CHECK(imageResource != FOE_NULL_HANDLE);
         CHECK(importImageJob != VK_NULL_HANDLE);
@@ -125,14 +167,14 @@ TEST_CASE("foeGfxVkRenderGraph") {
         CHECK_FALSE(foeGfxVkRenderGraphJobToExecute(nonRequiredJob));
     }
 
-    SECTION(
-        "When a resource is in a one-to-many job relationship, those downstream jobs should be all "
-        "read-only and have the same incoming/outgoing states") {
+    SECTION("When a resource is in a one-to-many job relationship, those downstream jobs "
+            "should be all "
+            "read-only and have the same incoming/outgoing states") {
         foeGfxVkRenderGraphResource imageResource = FOE_NULL_HANDLE;
 
         foeGfxVkRenderGraphJob importImageJob;
         result = createImageJob(renderGraph, "importImageJob", false, "testImage",
-                                VK_IMAGE_LAYOUT_UNDEFINED, false, &imageResource, &importImageJob);
+                                VK_IMAGE_LAYOUT_UNDEFINED, true, &imageResource, &importImageJob);
         CHECK(result.value == FOE_SUCCESS);
         CHECK(imageResource != FOE_NULL_HANDLE);
         CHECK(importImageJob != VK_NULL_HANDLE);
@@ -239,13 +281,13 @@ TEST_CASE("foeGfxVkRenderGraph") {
         }
     }
 
-    SECTION(
-        "When a resource is in a many-to-one job relationship, then there should be no issues") {
+    SECTION("When a resource is in a many-to-one job relationship, then there should be no "
+            "issues") {
         foeGfxVkRenderGraphResource imageResource = FOE_NULL_HANDLE;
 
         foeGfxVkRenderGraphJob importImageJob;
         result = createImageJob(renderGraph, "importImageJob", false, "testImage",
-                                VK_IMAGE_LAYOUT_UNDEFINED, false, &imageResource, &importImageJob);
+                                VK_IMAGE_LAYOUT_UNDEFINED, true, &imageResource, &importImageJob);
         CHECK(result.value == FOE_SUCCESS);
         CHECK(imageResource != FOE_NULL_HANDLE);
         CHECK(importImageJob != VK_NULL_HANDLE);
@@ -285,8 +327,8 @@ TEST_CASE("foeGfxVkRenderGraph") {
         CHECK(foeGfxVkRenderGraphJobToExecute(imageUseOneJob));
     }
 
-    SECTION(
-        "When a resource is in a many-to-many job relationship, then there should be no issues") {
+    SECTION("When a resource is in a many-to-many job relationship, then there should be no "
+            "issues") {
         foeGfxVkRenderGraphResource imageResource = FOE_NULL_HANDLE;
 
         foeGfxVkRenderGraphJob importImageJob;
@@ -294,7 +336,7 @@ TEST_CASE("foeGfxVkRenderGraph") {
         std::array<foeGfxVkRenderGraphJob, 2> imageSecondManyJobs = {};
 
         result = createImageJob(renderGraph, "importImageJob", false, "testImage",
-                                VK_IMAGE_LAYOUT_UNDEFINED, false, &imageResource, &importImageJob);
+                                VK_IMAGE_LAYOUT_UNDEFINED, true, &imageResource, &importImageJob);
         CHECK(result.value == FOE_SUCCESS);
         CHECK(imageResource != FOE_NULL_HANDLE);
         CHECK(importImageJob != VK_NULL_HANDLE);
