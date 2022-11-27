@@ -289,6 +289,12 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
 
     // Find all jobs that are required to run and add them to be processed
     for (auto *pJob : pRenderGraph->jobs) {
+        // Clear any previously set incoming/outgoing barriers, they'll be remade as part of
+        // resource relationship processing
+        pJob->incomingBarriers.clear();
+        pJob->outgoingBarriers.clear();
+
+        // If job is explicitly marked to run, add it to be further processed
         if (pJob->required) {
             toProcess.push(pJob);
         }
