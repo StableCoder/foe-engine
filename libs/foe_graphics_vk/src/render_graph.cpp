@@ -36,9 +36,12 @@ struct RenderGraphJobResourceState {
     foeGfxVkRenderGraphStructure const *pOutgoingState;
     /// Whether the resource is supposed to be modified in this state
     foeGfxVkRenderGraphResourceMode mode;
+};
 
-    std::vector<RenderGraphJobResourceState *> upstream;
-    std::vector<RenderGraphJobResourceState *> downstream;
+struct JobResourceRelationship {
+    RenderGraphJob *pJob;
+    RenderGraphResource *pResource;
+    RenderGraphJobResourceState *pResourceState;
 };
 
 struct RenderGraphJob {
@@ -60,6 +63,10 @@ struct RenderGraphJob {
     // This is here because the incomig/outgoing state of resource *may* differ.
     std::vector<RenderGraphJobResourceState> resources;
 
+    std::vector<JobResourceRelationship> upstreamRelationships;
+    std::vector<JobResourceRelationship> downstreamRelationships;
+
+    std::vector<RenderGraphJob *> compiledDownstreamJobs;
     std::vector<VkImageMemoryBarrier> incomingBarriers;
     std::vector<VkImageMemoryBarrier> outgoingBarriers;
 };
@@ -75,8 +82,13 @@ struct RenderGraph {
     std::vector<std::function<void()>> resourceCleanupCalls;
     /// These are the possible rendering jobs
     std::vector<RenderGraphJob *> jobs;
-
+    /// Set of resources in the render graph
     std::vector<RenderGraphResource *> resources;
+
+    /// Set of jobs created during compilation
+    std::vector<RenderGraphJob *> generatedJobs;
+    /// Set of jobs compiled and ready to be executed
+    std::vector<RenderGraphJob *> executionJobs;
 };
 
 FOE_DEFINE_HANDLE_CASTS(render_graph, RenderGraph, foeGfxVkRenderGraph)
@@ -126,6 +138,8 @@ void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph) {
     auto *pRenderGraph = render_graph_from_handle(renderGraph);
 
     // Delete RenderGraph content
+    for (auto *pGeneratedJob : pRenderGraph->generatedJobs)
+        delete pGeneratedJob;
     for (auto *pJob : pRenderGraph->jobs)
         delete pJob;
     for (auto *pResource : pRenderGraph->resources)
@@ -255,9 +269,17 @@ foeResultSet foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
             if (pUpstreamResourceState == nullptr)
                 std::abort();
 
-            pUpstreamResourceState->downstream.emplace_back(&pNewJob->resources[i]);
+            pUpstreamJob->downstreamRelationships.emplace_back(JobResourceRelationship{
+                .pJob = pNewJob,
+                .pResource = pResource,
+                .pResourceState = &pNewJob->resources[i],
+            });
 
-            pNewJob->resources[i].upstream.emplace_back(pUpstreamResourceState);
+            pNewJob->upstreamRelationships.emplace_back(JobResourceRelationship{
+                .pJob = pUpstreamJob,
+                .pResource = pResource,
+                .pResourceState = pUpstreamResourceState,
+            });
         }
     }
 
@@ -284,6 +306,10 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
         return to_foeResult(FOE_GRAPHICS_VK_NO_JOBS_TO_COMPILE);
     }
 
+    // Destroy any previous generated jobs
+    for (auto pGeneratedJob : pRenderGraph->generatedJobs)
+        delete pGeneratedJob;
+
     // The list of jobs currently set to be processed moving forward
     std::queue<RenderGraphJob *> toProcess;
 
@@ -293,6 +319,8 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
         // resource relationship processing
         pJob->incomingBarriers.clear();
         pJob->outgoingBarriers.clear();
+
+        pJob->compiledDownstreamJobs.clear();
 
         // If job is explicitly marked to run, add it to be further processed
         if (pJob->required) {
@@ -313,12 +341,9 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
         ++numNewJobs;
         pJob->execute = true;
 
-        for (auto const &resource : pJob->resources) {
-            // If the upstream job has not yet been processed, add it
-            for (auto *pUpstreamResourceState : resource.upstream) {
-                if (!pUpstreamResourceState->pJob->execute) {
-                    toProcess.emplace(pUpstreamResourceState->pJob);
-                }
+        for (auto upstreamRelationship : pJob->upstreamRelationships) {
+            if (!upstreamRelationship.pJob->execute) {
+                toProcess.emplace(upstreamRelationship.pJob);
             }
         }
     }
@@ -327,41 +352,56 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
         if (pResource->pFirstJobSeen == nullptr)
             continue;
 
-        std::vector<RenderGraphJobResourceState *> currentUseWave{pResource->pFirstJobSeen};
-        std::vector<RenderGraphJobResourceState *> nextUseWave;
+        struct JobStateSet {
+            RenderGraphJob *pJob;
+            RenderGraphJobResourceState *pState;
+        };
+
+        std::vector<JobStateSet> currentJobWave{JobStateSet{
+            .pJob = pResource->pFirstJobSeen->pJob,
+            .pState = pResource->pFirstJobSeen,
+        }};
+        std::vector<JobStateSet> nextJobWave;
 
         while (true) {
             // Get the next wave of active uses of this resource
-            for (auto *pResourceState : currentUseWave) {
-                for (auto *pDownstreamState : pResourceState->downstream) {
-                    if (pDownstreamState->pJob->execute)
-                        nextUseWave.emplace_back(pDownstreamState);
+            for (auto &jobSet : currentJobWave) {
+                for (auto const &relationship : jobSet.pJob->downstreamRelationships) {
+                    if (relationship.pResource == pResource && relationship.pJob->execute)
+                        nextJobWave.emplace_back(JobStateSet{
+                            .pJob = relationship.pJob,
+                            .pState = relationship.pResourceState,
+                        });
                 }
             }
 
-            if (nextUseWave.empty())
+            if (nextJobWave.empty())
                 // Found no more iterations of the resource or jobs
                 break;
 
             // Sort and remove duplicates
-            std::sort(nextUseWave.begin(), nextUseWave.end());
-            nextUseWave.erase(std::unique(nextUseWave.begin(), nextUseWave.end()),
-                              nextUseWave.end());
+            std::sort(nextJobWave.begin(), nextJobWave.end(),
+                      [](auto const &a, auto const &b) { return a.pJob < b.pJob; });
+            nextJobWave.erase(
+                std::unique(nextJobWave.begin(), nextJobWave.end(),
+                            [](auto const &a, auto const &b) { return a.pJob == b.pJob; }),
+                nextJobWave.end());
 
             foeGfxVkRenderGraphStructure const *pUpstreamReference =
-                currentUseWave[0]->pOutgoingState;
+                currentJobWave[0].pState->pOutgoingState;
             foeGfxVkRenderGraphStructure const *pDownstreamReference =
-                nextUseWave[0]->pIncomingState;
+                nextJobWave[0].pState->pIncomingState;
 
-            if (nextUseWave.size() > 1) {
-                if (nextUseWave[0]->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE)
+            if (nextJobWave.size() > 1) {
+                if (nextJobWave[0].pState->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE)
                     return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
 
-                for (size_t i = 1; i < nextUseWave.size(); ++i) {
-                    if (nextUseWave[i]->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE)
+                for (size_t i = 1; i < nextJobWave.size(); ++i) {
+                    if (nextJobWave[i].pState->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE)
                         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
 
-                    foeGfxVkRenderGraphStructure const *pCompare = nextUseWave[i]->pIncomingState;
+                    foeGfxVkRenderGraphStructure const *pCompare =
+                        nextJobWave[i].pState->pIncomingState;
 
                     if (pDownstreamReference->sType != pCompare->sType)
                         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
@@ -371,8 +411,10 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
                         ((foeGfxVkGraphImageState const *)pCompare)->layout)
                         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
 
-                    if (((foeGfxVkGraphImageState const *)nextUseWave[0]->pOutgoingState)->layout !=
-                        ((foeGfxVkGraphImageState const *)nextUseWave[i]->pOutgoingState)->layout)
+                    if (((foeGfxVkGraphImageState const *)nextJobWave[0].pState->pOutgoingState)
+                            ->layout !=
+                        ((foeGfxVkGraphImageState const *)nextJobWave[i].pState->pOutgoingState)
+                            ->layout)
                         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_INCOMPATIBLE_STATE);
                 }
             }
@@ -395,23 +437,100 @@ foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph) {
                         ((foeGfxVkGraphImageState const *)pUpstreamReference)->subresourceRange,
                 };
 
-                if (currentUseWave[0]->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE) {
+                if (currentJobWave[0].pState->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE) {
                     // Should only be max of one read/write per wave
-                    currentUseWave[0]->pJob->outgoingBarriers.emplace_back(imageBarrier);
-                } else if (nextUseWave[0]->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE) {
-                    nextUseWave[0]->pJob->incomingBarriers.emplace_back(imageBarrier);
+                    currentJobWave[0].pState->pJob->outgoingBarriers.emplace_back(imageBarrier);
+
+                    for (auto const &currentIt : currentJobWave) {
+                        for (auto const &nextIt : nextJobWave) {
+                            currentIt.pJob->compiledDownstreamJobs.emplace_back(nextIt.pJob);
+                        }
+                    }
+                } else if (nextJobWave[0].pState->mode == RENDER_GRAPH_RESOURCE_MODE_READ_WRITE) {
+                    nextJobWave[0].pState->pJob->incomingBarriers.emplace_back(imageBarrier);
+
+                    for (auto const &currentIt : currentJobWave) {
+                        for (auto const &nextIt : nextJobWave) {
+                            currentIt.pJob->compiledDownstreamJobs.emplace_back(nextIt.pJob);
+                        }
+                    }
                 } else {
-                    // Need to insert a synchronization job between the two 'real' jobs
-                    std::abort();
+                    // Need to insert a synchronization job between the two 'real' resource
+                    // read-only jobs
+                    RenderGraphJob *pGeneratedJob = new (std::nothrow) RenderGraphJob{
+                        .name = "generatedJob",
+                        .execute = true,
+                    };
+                    if (pGeneratedJob == nullptr)
+                        return to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
+
+                    pGeneratedJob->incomingBarriers.emplace_back(imageBarrier);
+
+                    // Hook this job as the downstream of the previous job wave
+                    for (auto currentIt : currentJobWave) {
+                        currentIt.pJob->compiledDownstreamJobs.emplace_back(pGeneratedJob);
+                    }
+
+                    for (auto nextIt : nextJobWave) {
+                        pGeneratedJob->compiledDownstreamJobs.emplace_back(nextIt.pJob);
+                    }
+
+                    pRenderGraph->generatedJobs.emplace_back(pGeneratedJob);
                 }
             }
 
             // Do a swap and clear the next wave, save some de/alloc calls
-            std::swap(currentUseWave, nextUseWave);
-            nextUseWave.clear();
+            std::swap(currentJobWave, nextJobWave);
+            nextJobWave.clear();
         }
     }
 
+    // With all job relationships established, now build up the execution list
+    std::vector<RenderGraphJob *> executionList;
+    for (auto *pJob : pRenderGraph->jobs) {
+        if (pJob->execute)
+            executionList.emplace_back(pJob);
+    }
+    for (auto *pJob : pRenderGraph->generatedJobs) {
+        executionList.emplace_back(pJob);
+    }
+
+    // Sort to ensure all jobs have correct ordering, that all downstream jobs are actually
+    // downstream of it
+    bool sorted;
+    do {
+        sorted = true;
+
+        for (size_t i = 0; i < executionList.size(); ++i) {
+            RenderGraphJob *pCurrentJob = executionList[i];
+            size_t earliestDownstream = i;
+
+            for (size_t j = 0; j < i; ++j) {
+                // Check all the jobs executing before this one, see if any of our supposed
+                // 'downstream' are actually currently 'upstream'
+                for (auto *pDowstreamJob : pCurrentJob->compiledDownstreamJobs) {
+                    if (executionList[j] == pDowstreamJob) {
+                        earliestDownstream = j;
+                        break;
+                    }
+                }
+
+                if (earliestDownstream != i)
+                    break;
+            }
+
+            if (earliestDownstream != i) {
+                // Move the job earlier than the first fown 'downstream' job upstream of it's
+                // current place
+                sorted = false;
+                executionList.erase(executionList.begin() + i);
+                executionList.insert(executionList.begin() + earliestDownstream, pCurrentJob);
+            }
+        }
+    } while (!sorted);
+
+    // Final
+    pRenderGraph->executionJobs = std::move(executionList);
     pRenderGraph->compiled = true;
     pRenderGraph->numExecutingJobs += numNewJobs;
     return to_foeResult((pRenderGraph->numExecutingJobs != 0) ? FOE_GRAPHICS_VK_SUCCESS
@@ -472,38 +591,25 @@ foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
     }
 
     // Going upstream to downstream
-    bool anyJobExecuted = false;
-    for (auto const &pJob : pRenderGraph->jobs) {
-        // Skip 'culled' jobs
-        if (!pJob->execute)
-            continue;
-        anyJobExecuted = true;
-
+    for (auto const &pJob : pRenderGraph->executionJobs) {
         // Figure out the barriers
         std::vector<VkSemaphore> &waitSemaphores = pJob->waitSemaphores;
         std::vector<VkSemaphore> &signalSemaphores = pJob->signalSemaphores;
 
-        for (auto &resource : pJob->resources) {
-            for (auto &downstreamResource : resource.downstream) {
-                RenderGraphJob *const pDownstreamJob = downstreamResource->pJob;
-                if (!pDownstreamJob->execute)
-                    // Culled job
-                    continue;
+        for (auto *pDownstreamJob : pJob->compiledDownstreamJobs) {
+            VkSemaphoreCreateInfo semaphoreCI{
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+            };
 
-                VkSemaphoreCreateInfo semaphoreCI{
-                    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-                };
+            VkSemaphore semaphore;
+            VkResult vkResult =
+                vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr, &semaphore);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
-                VkSemaphore semaphore;
-                VkResult vkResult = vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI,
-                                                      nullptr, &semaphore);
-                if (vkResult != VK_SUCCESS)
-                    return vk_to_foeResult(vkResult);
-
-                allSemaphores.emplace_back(semaphore);
-                signalSemaphores.emplace_back(semaphore);
-                pDownstreamJob->waitSemaphores.emplace_back(semaphore);
-            }
+            allSemaphores.emplace_back(semaphore);
+            signalSemaphores.emplace_back(semaphore);
+            pDownstreamJob->waitSemaphores.emplace_back(semaphore);
         }
 
         uint32_t const desiredQueueFamily =
@@ -579,9 +685,6 @@ foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
                                pJob->fence);
         }
     }
-
-    if (!anyJobExecuted)
-        return to_foeResult(FOE_GRAPHICS_VK_NO_JOBS_TO_EXECUTE);
 
     // Cleanup graph semaphores after execution
     std::vector<VkSemaphore> const *pAllSemaphores =
