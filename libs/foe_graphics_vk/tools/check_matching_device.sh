@@ -44,16 +44,20 @@ if [[ "$DEVICE_NAME" == "llvmpipe" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"llvmpipe"* ]]; then
         exit 0
     fi
-elif [[ "$DEVICE_NAME" == "vega7" ]]; then
+elif [[ "$DEVICE_NAME" == "amd_vega7" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"RADV RENOIR"* ]]; then
         exit 0
     fi
-elif [[ "$DEVICE_NAME" == "navi21" ]]; then
+elif [[ "$DEVICE_NAME" == "amd_navi21" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"RADV NAVI21"* ]] || [[ "$VK_DEVICE_NAME" == *"RADV SIENNA_CICHLID"* ]]; then
         exit 0
     fi
-elif [[ "$DEVICE_NAME" == "navi23" ]]; then
+elif [[ "$DEVICE_NAME" == "amd_navi23" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"RADV NAVI23"* ]] || [[ "$VK_DEVICE_NAME" == *"RADV DIMGREY_CAVEFISH"* ]]; then
+        exit 0
+    fi
+elif [[ "$DEVICE_NAME" == "intel_a380" ]]; then
+    if [[ "$VK_DEVICE_NAME" == *Intel*Arc*A380*DG2* ]]; then
         exit 0
     fi
 elif [[ "$DEVICE_NAME" == "apple_m1" ]]; then
