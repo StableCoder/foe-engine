@@ -17,7 +17,7 @@ void VkResultToString(VkResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 inline foeResultSet vk_to_foeResult(VkResult value) {
     foeResultSet result = {
         .value = value,
-        .toString = (PFN_foeResultToString)NULL,
+        .toString = (PFN_foeResultToString)VkResultToString,
     };
 
     return result;

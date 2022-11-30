@@ -163,7 +163,7 @@ target_link_libraries(foe_bringup_lib PUBLIC foe foe_ecs foe_bringup_lib_eh
 # header/content directly
 target_link_libraries(
   foe_bringup_lib PUBLIC foe_bringup_shared foe_graphics_resource foe_physics
-                         foe_position)
+                         foe_position vk_value_serialization)
 
 target_include_directories(foe_bringup_lib
                            PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/public/)
