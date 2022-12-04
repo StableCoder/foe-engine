@@ -1036,7 +1036,18 @@ int Application::mainloop() {
 #endif
             {
                 // Artificially slow down for ImGui
-                std::this_thread::sleep_for(std::chrono::milliseconds(14));
+                static int currentFrameSleep = 0;
+                int lastFrameTime = frameTime.lastFrameTime<std::chrono::nanoseconds>().count();
+
+                if (lastFrameTime > 16 * 1000000) {
+                    --currentFrameSleep;
+                    if (currentFrameSleep < 0)
+                        currentFrameSleep = 0;
+                } else if (lastFrameTime < 16 * 1000000) {
+                    ++currentFrameSleep;
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(currentFrameSleep));
             }
 
             // Swapchain updates if necessary
@@ -1663,6 +1674,7 @@ int Application::mainloop() {
             frameIndex = -1;
             ++frame;
         }
+
     SKIP_FRAME_RENDER:;
 
         foeWaitSyncThreads(threadPool);
