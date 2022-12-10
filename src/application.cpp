@@ -326,8 +326,6 @@ void Application::deinitialize() {
     if (gfxSession != FOE_NULL_HANDLE) {
         for (auto &it : frameData)
             it.destroy(foeGfxVkGetDevice(gfxSession));
-        for (auto &it : swapImageFramebuffers)
-            vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
 
 #ifdef EDITOR_MODE
         imguiRenderer.deinitialize(gfxSession);

@@ -120,9 +120,6 @@ struct Application {
     std::unique_ptr<foeImGuiEntityList> pEntityListUI;
     std::unique_ptr<foeImGuiResourceList> pResourceListUI;
 #endif
-
-    VkSwapchainKHR framebufferSwapchain{VK_NULL_HANDLE};
-    std::vector<VkFramebuffer> swapImageFramebuffers;
 };
 
 #endif // APPLICATION_HPP
