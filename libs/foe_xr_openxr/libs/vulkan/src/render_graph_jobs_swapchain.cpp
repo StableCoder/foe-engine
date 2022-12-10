@@ -102,8 +102,8 @@ foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(
     foeGfxVkRenderGraphResourceState resourceState{
         .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
         .resource = newSwapchainResource,
-        .pIncomingState = (foeGfxVkRenderGraphStructure *)&pJobResources->swapchainImageState,
-        .pOutgoingState = nullptr,
+        .pIncomingState = nullptr,
+        .pOutgoingState = (foeGfxVkRenderGraphStructure *)&pJobResources->swapchainImageState,
     };
 
     foeGfxVkRenderGraphJobInfo jobInfo{
