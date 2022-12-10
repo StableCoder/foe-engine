@@ -262,7 +262,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
                          .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                         .initialLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL,
+                         .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                          .finalLayout = finalDepthLayout,
                      }});
 
@@ -368,7 +368,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
 
     pJobResources->initialColourImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
-        .layout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
         .subresourceRange =
             {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
@@ -379,7 +379,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
     };
     pJobResources->initialDepthStencilImageState = foeGfxVkGraphImageState{
         .sType = RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_IMAGE_STATE,
-        .layout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
         .subresourceRange =
             {
                 .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
