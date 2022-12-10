@@ -243,7 +243,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         ERRC_END_PROGRAM_TUPLE
     }
 
-    result = foeGfxCreateDelayedCaller(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES,
+    result = foeGfxCreateDelayedCaller(gfxSession, FOE_GRAPHICS_MAX_BUFFERED_FRAMES + 1,
                                        &gfxDelayedDestructor);
     if (result.value != FOE_SUCCESS) {
         ERRC_END_PROGRAM_TUPLE
