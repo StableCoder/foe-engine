@@ -4,6 +4,7 @@
 
 #include <foe/graphics/vk/render_graph/job/import_image.hpp>
 
+#include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/session.h>
 
@@ -49,7 +50,7 @@ foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
         .layout = layout,
         .subresourceRange =
             {
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                .aspectMask = foeGfxVkFormatAspects(format),
                 .baseMipLevel = 0,
                 .levelCount = 1,
                 .layerCount = 1,
