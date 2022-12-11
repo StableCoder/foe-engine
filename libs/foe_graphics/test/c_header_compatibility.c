@@ -7,6 +7,7 @@
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/mesh.h>
 #include <foe/graphics/render_target.h>
+#include <foe/graphics/result.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/shader.h>
