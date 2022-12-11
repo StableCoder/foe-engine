@@ -7,13 +7,13 @@
 
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
-#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "builtin_descriptor_sets.hpp"
 #include "descriptor_set_layout_pool.hpp"
+#include "fragment_descriptor_pool.hpp"
 #include "queue_family.hpp"
 #include "render_pass_pool.hpp"
 
@@ -58,7 +58,7 @@ struct foeGfxVkSession {
     foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
 
     foeGfxVkRenderPassPoolImpl renderPassPool;
-    foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
+    foeGfxVkFragmentDescriptorPoolImpl fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool{FOE_NULL_HANDLE};
 };
 

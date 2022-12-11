@@ -14,6 +14,7 @@ target_sources(
           error_colour_image.cpp
           error_depth_stencil_image.cpp
           format.c
+          fragment_descriptor_pool_public.cpp
           fragment_descriptor_pool.cpp
           fragment_descriptor.cpp
           image.cpp

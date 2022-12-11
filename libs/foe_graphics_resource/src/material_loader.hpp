@@ -5,15 +5,15 @@
 #ifndef MATERIAL_LOADER_HPP
 #define MATERIAL_LOADER_HPP
 
-#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
-
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
+#include <foe/graphics/vk/fragment_descriptor_pool.h>
 #include <foe/resource/pool.h>
 #include <vulkan/vulkan.h>
 
 #include <array>
+#include <mutex>
 #include <vector>
 
 class foeMaterialLoader {
@@ -50,7 +50,7 @@ class foeMaterialLoader {
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
 
-    foeGfxVkFragmentDescriptorPool *mGfxFragmentDescriptorPool{nullptr};
+    foeGfxVkFragmentDescriptorPool mGfxFragmentDescriptorPool{FOE_NULL_HANDLE};
 
     VkDescriptorPool mDescriptorPool{VK_NULL_HANDLE};
 

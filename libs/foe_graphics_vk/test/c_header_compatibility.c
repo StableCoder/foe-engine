@@ -7,6 +7,7 @@
 #include <foe/graphics/vk/compare.h>
 #include <foe/graphics/vk/error_images.h>
 #include <foe/graphics/vk/format.h>
+#include <foe/graphics/vk/fragment_descriptor_pool.h>
 #include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/model.h>
@@ -16,5 +17,6 @@
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.h>
+#include <foe/graphics/vk/session.h>
 #include <foe/graphics/vk/shader.h>
 #include <foe/graphics/vk/vk_binary.h>

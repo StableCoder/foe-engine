@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
+#include "fragment_descriptor_pool.hpp"
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
 
-foeGfxVkFragmentDescriptorPool::~foeGfxVkFragmentDescriptorPool() {
+foeGfxVkFragmentDescriptorPoolImpl::~foeGfxVkFragmentDescriptorPoolImpl() {
     std::scoped_lock lock{mSync};
 
     for (auto pDescriptor : mDescriptors) {
@@ -83,7 +83,7 @@ bool compare_VkPipelineColorBlendStateCreateInfo(
 
 } // namespace
 
-auto foeGfxVkFragmentDescriptorPool::get(
+auto foeGfxVkFragmentDescriptorPoolImpl::get(
     VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
     VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
     VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,

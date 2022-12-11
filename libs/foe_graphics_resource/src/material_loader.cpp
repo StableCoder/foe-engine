@@ -9,7 +9,7 @@
 #include <foe/graphics/resource/material_create_info.h>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
+#include <foe/graphics/vk/fragment_descriptor_pool.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/graphics/vk/shader.h>
 
@@ -162,9 +162,9 @@ void foeMaterialLoader::gfxMaintenance() {
                 auto const *pMaterialCI =
                     (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(it.createInfo);
 
-                it.data.pGfxFragDescriptor = mGfxFragmentDescriptorPool->get(
-                    pMaterialCI->pRasterizationSCI, pMaterialCI->pDepthStencilSCI,
-                    pMaterialCI->pColourBlendSCI, fragShader);
+                it.data.pGfxFragDescriptor = foeGfxVkGetFragmentDescriptor(
+                    mGfxFragmentDescriptorPool, pMaterialCI->pRasterizationSCI,
+                    pMaterialCI->pDepthStencilSCI, pMaterialCI->pColourBlendSCI, fragShader);
             }
 
             VkResult vkResult = createDescriptorSet(&it.data);

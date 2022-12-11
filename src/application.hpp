@@ -11,7 +11,6 @@
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/upload_context.h>
-#include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/result.h>
 #include <foe/search_paths.hpp>
 #include <foe/split_thread_pool.h>

@@ -7,6 +7,7 @@
 #include <foe/delimited_string.h>
 #include <foe/graphics/vk/runtime.h>
 
+#include "fragment_descriptor_pool.hpp"
 #include "log.hpp"
 #include "queue_family.hpp"
 #include "render_pass_pool.hpp"
@@ -796,11 +797,10 @@ extern "C" foeGfxVkRenderPassPool foeGfxVkGetRenderPassPool(foeGfxSession sessio
     return render_pass_pool_to_handle(&pSession->renderPassPool);
 }
 
-extern "C" foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(
-    foeGfxSession session) {
+extern "C" foeGfxVkFragmentDescriptorPool foeGfxVkGetFragmentDescriptorPool(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
 
-    return &pSession->fragmentDescriptorPool;
+    return fragment_descriptor_pool_to_handle(&pSession->fragmentDescriptorPool);
 }
 
 extern "C" VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session) {

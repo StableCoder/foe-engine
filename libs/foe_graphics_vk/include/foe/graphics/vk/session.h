@@ -9,6 +9,7 @@
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
+#include <foe/graphics/vk/fragment_descriptor_pool.h>
 #include <foe/graphics/vk/queue_family.h>
 #include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/result.h>
@@ -18,8 +19,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-class foeGfxVkFragmentDescriptorPool;
 
 /** @brief Creates a graphics session using the Vulkan API
  * @param runtime is a handle to the graphics runtime to be created on
@@ -123,8 +122,8 @@ FOE_GFX_EXPORT uint32_t foeGfxVkGetBuiltinSetLayoutIndex(
 
 FOE_GFX_EXPORT foeGfxVkRenderPassPool foeGfxVkGetRenderPassPool(foeGfxSession session);
 
-FOE_GFX_EXPORT foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(
-    foeGfxSession session);
+FOE_GFX_EXPORT foeGfxVkFragmentDescriptorPool
+foeGfxVkGetFragmentDescriptorPool(foeGfxSession session);
 
 FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session);
 FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetMaxSupportedMSAA(foeGfxSession session);
