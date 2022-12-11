@@ -15,8 +15,8 @@
 extern "C" {
 #endif
 
-struct foeGfxVertexDescriptor;
-struct foeGfxVkFragmentDescriptor;
+typedef struct foeGfxVertexDescriptor foeGfxVertexDescriptor;
+typedef struct foeGfxVkFragmentDescriptor foeGfxVkFragmentDescriptor;
 
 FOE_DEFINE_HANDLE(foeGfxVkPipelinePool)
 

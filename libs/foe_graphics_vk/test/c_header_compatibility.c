@@ -10,6 +10,7 @@
 #include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/model.h>
+#include <foe/graphics/vk/pipeline_pool.h>
 #include <foe/graphics/vk/queue_family.h>
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
