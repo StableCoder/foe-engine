@@ -5,7 +5,7 @@
 #include <foe/imgui/vk/render_graph_job_imgui.hpp>
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
-#include <foe/graphics/vk/render_pass_pool.hpp>
+#include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/imgui/state.hpp>
 #include <foe/imgui/vk/renderer.hpp>
@@ -48,17 +48,20 @@ foeResultSet foeImGuiVkRenderUiJob(foeGfxVkRenderGraph renderGraph,
                      VkCommandBuffer commandBuffer) -> foeResultSet {
         VkResult vkResult;
 
-        VkRenderPass renderPass = foeGfxVkGetRenderPassPool(gfxSession)
-                                      ->renderPass({VkAttachmentDescription{
-                                          .format = pColourTargetImageData->format,
-                                          .samples = VK_SAMPLE_COUNT_1_BIT,
-                                          .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
-                                          .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                                          .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                                          .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                                          .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-                                          .finalLayout = finalLayout,
-                                      }});
+        foeGfxVkRenderPassPool renderPassPool = foeGfxVkGetRenderPassPool(gfxSession);
+
+        VkAttachmentDescription attachmentDescription = {
+            .format = pColourTargetImageData->format,
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+            .finalLayout = finalLayout,
+        };
+
+        VkRenderPass renderPass = foeGfxVkGetRenderPass(renderPassPool, 1, &attachmentDescription);
 
         VkFramebuffer framebuffer;
 

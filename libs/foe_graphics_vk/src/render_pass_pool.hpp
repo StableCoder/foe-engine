@@ -2,49 +2,29 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_GRAPHICS_VK_RENDER_PASS_HPP
-#define FOE_GRAPHICS_VK_RENDER_PASS_HPP
+#ifndef RENDER_PASS_POOL_HPP
+#define RENDER_PASS_POOL_HPP
 
-#include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
+#include <foe/graphics/vk/render_pass_pool.h>
+#include <foe/handle.h>
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
 #include <shared_mutex>
 #include <vector>
 
-class foeGfxVkRenderPassPool {
+class foeGfxVkRenderPassPoolImpl {
   public:
-    FOE_GFX_EXPORT foeResultSet initialize(foeGfxSession session) noexcept;
-    FOE_GFX_EXPORT void deinitialize() noexcept;
+    foeResultSet initialize(foeGfxSession session) noexcept;
+    void deinitialize() noexcept;
 
-    /**
-     * @brief Returns a specific render pass for the given attachment
-     * @param attachments Describes the attachment set the render pass is defined by
-     * @return A valid render pass handle, VK_NULL_HANDLE otherwise
-     *
-     * If the render pass described already exists, this will return the handle to that. If it
-     * doesn't it will be generated.
-     */
-    FOE_GFX_EXPORT auto renderPass(std::vector<VkAttachmentDescription> const &attachments)
+    auto renderPass(uint32_t attachmentCount, VkAttachmentDescription const *pAttachments)
         -> VkRenderPass;
 
-    /**
-     * @brief Returns a compatible render pass for the given formats/samples
-     * @param formats Image formats corresponding to the attached images for the render pass
-     * @param samples Sample counts corresponding to the attached images for the render pass
-     * @return First compatible render pass handle, VK_NULL_HANDLE otherwise
-     * @note This is intended for finding render passes quickly for use in geneating framebuffers
-     * rather than rendering.
-     *
-     * Thanks to the compatibility of render passes based on a minimal set of the formnats and
-     * sample count, this function will attempt to find *any* compatible render passes and return
-     * the first found.
-     *
-     * If no render pass is found, it will generate a basic one instead.
-     */
-    FOE_GFX_EXPORT auto renderPass(std::vector<VkFormat> const &formats,
-                                   std::vector<VkSampleCountFlags> const &samples) -> VkRenderPass;
+    auto renderPass(uint32_t attachmentCount,
+                    VkFormat const *pFormats,
+                    VkSampleCountFlags const *pSampleFlags) -> VkRenderPass;
 
   private:
     /// Elements that determine compatibility between render passes
@@ -87,9 +67,11 @@ class foeGfxVkRenderPassPool {
         std::vector<RenderPassVariant> variants;
     };
 
-    auto generateCompatibleKeys(std::vector<VkAttachmentDescription> const &attachments) const
+    auto generateCompatibleKeys(uint32_t attachmentCount,
+                                VkAttachmentDescription const *pAttachments) const
         -> std::vector<RenderPassCompatibleKey>;
-    auto generateVariantKeys(std::vector<VkAttachmentDescription> const &attachments) const
+    auto generateVariantKeys(uint32_t attachmentCount,
+                             VkAttachmentDescription const *pAttachments) const
         -> std::vector<RenderPassVariantKey>;
 
     auto findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
@@ -99,10 +81,11 @@ class foeGfxVkRenderPassPool {
 
     auto generateRenderPass(std::vector<RenderPassCompatibleKey> compatibleKey,
                             std::vector<RenderPassVariantKey> variantKey,
-                            std::vector<VkAttachmentDescription> const &attachments)
-        -> VkRenderPass;
+                            uint32_t attachmentCount,
+                            VkAttachmentDescription const *pAttachments) -> VkRenderPass;
 
-    auto createRenderPass(std::vector<VkAttachmentDescription> const &attachments,
+    auto createRenderPass(uint32_t attachmentCount,
+                          VkAttachmentDescription const *pAttachments,
                           VkRenderPass *pRenderPass) -> VkResult;
 
     VkDevice mDevice{VK_NULL_HANDLE};
@@ -112,4 +95,6 @@ class foeGfxVkRenderPassPool {
     std::vector<RenderPassSet> mRenderPasses;
 };
 
-#endif // FOE_GRAPHICS_VK_RENDER_PASS_HPP
+FOE_DEFINE_HANDLE_CASTS(render_pass_pool, foeGfxVkRenderPassPoolImpl, foeGfxVkRenderPassPool)
+
+#endif // RENDER_PASS_POOL_HPP

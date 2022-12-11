@@ -12,12 +12,13 @@
 #include <foe/graphics/vk/mesh.h>
 #include <foe/graphics/vk/pipeline_pool.h>
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
-#include <foe/graphics/vk/render_pass_pool.hpp>
+#include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/position/component/3d_pool.hpp>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/simulation.hpp>
+#include <vulkan/vulkan_core.h>
 
 #include "../log.hpp"
 #include "../result.h"
@@ -242,29 +243,32 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                      VkCommandBuffer commandBuffer) -> foeResultSet {
         VkResult vkResult;
 
-        VkRenderPass renderPass =
-            foeGfxVkGetRenderPassPool(gfxSession)
-                ->renderPass(
-                    {VkAttachmentDescription{
-                         .format = pColourImageData->format,
-                         .samples = static_cast<VkSampleCountFlagBits>(renderTargetSamples),
-                         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                         .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-                         .finalLayout = finalColourLayout,
-                     },
-                     VkAttachmentDescription{
-                         .format = pDepthImageData->format,
-                         .samples = static_cast<VkSampleCountFlagBits>(renderTargetSamples),
-                         .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                         .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                         .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                         .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                         .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                         .finalLayout = finalDepthLayout,
-                     }});
+        foeGfxVkRenderPassPool renderPassPool = foeGfxVkGetRenderPassPool(gfxSession);
+
+        std::array<VkAttachmentDescription, 2> attachmentDescriptions{
+            VkAttachmentDescription{
+                .format = pColourImageData->format,
+                .samples = static_cast<VkSampleCountFlagBits>(renderTargetSamples),
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                .initialLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+                .finalLayout = finalColourLayout,
+            },
+            VkAttachmentDescription{
+                .format = pDepthImageData->format,
+                .samples = static_cast<VkSampleCountFlagBits>(renderTargetSamples),
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                .finalLayout = finalDepthLayout,
+            }};
+
+        VkRenderPass renderPass = foeGfxVkGetRenderPass(
+            renderPassPool, attachmentDescriptions.size(), attachmentDescriptions.data());
 
         VkFramebuffer framebuffer;
 

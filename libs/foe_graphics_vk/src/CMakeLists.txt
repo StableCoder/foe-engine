@@ -23,6 +23,7 @@ target_sources(
           pipeline_pool.cpp
           queue_family.cpp
           render_graph.cpp
+          render_pass_pool_public.cpp
           render_pass_pool.cpp
           render_target.cpp
           runtime.cpp

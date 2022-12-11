@@ -9,6 +9,7 @@
 
 #include "log.hpp"
 #include "queue_family.hpp"
+#include "render_pass_pool.hpp"
 #include "result.h"
 #include "runtime.h"
 #include "session.hpp"
@@ -789,10 +790,10 @@ extern "C" uint32_t foeGfxVkGetBuiltinSetLayoutIndex(
     return pSession->builtinDescriptorSets.getBuiltinSetLayoutIndex(builtinLayout);
 }
 
-extern "C" foeGfxVkRenderPassPool *foeGfxVkGetRenderPassPool(foeGfxSession session) {
+extern "C" foeGfxVkRenderPassPool foeGfxVkGetRenderPassPool(foeGfxSession session) {
     auto *pSession = session_from_handle(session);
 
-    return &pSession->renderPassPool;
+    return render_pass_pool_to_handle(&pSession->renderPassPool);
 }
 
 extern "C" foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(

@@ -10,6 +10,7 @@
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/queue_family.h>
+#include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/result.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -18,7 +19,6 @@
 extern "C" {
 #endif
 
-class foeGfxVkRenderPassPool;
 class foeGfxVkFragmentDescriptorPool;
 
 /** @brief Creates a graphics session using the Vulkan API
@@ -121,7 +121,7 @@ foeGfxVkGetBuiltinLayout(foeGfxSession session, foeBuiltinDescriptorSetLayoutFla
 FOE_GFX_EXPORT uint32_t foeGfxVkGetBuiltinSetLayoutIndex(
     foeGfxSession session, foeBuiltinDescriptorSetLayoutFlags builtinLayout);
 
-FOE_GFX_EXPORT foeGfxVkRenderPassPool *foeGfxVkGetRenderPassPool(foeGfxSession session);
+FOE_GFX_EXPORT foeGfxVkRenderPassPool foeGfxVkGetRenderPassPool(foeGfxSession session);
 
 FOE_GFX_EXPORT foeGfxVkFragmentDescriptorPool *foeGfxVkGetFragmentDescriptorPool(
     foeGfxSession session);

@@ -9,13 +9,13 @@
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.hpp>
 #include <foe/graphics/vk/pipeline_pool.h>
-#include <foe/graphics/vk/render_pass_pool.hpp>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "builtin_descriptor_sets.hpp"
 #include "descriptor_set_layout_pool.hpp"
 #include "queue_family.hpp"
+#include "render_pass_pool.hpp"
 
 #include <mutex>
 
@@ -57,7 +57,7 @@ struct foeGfxVkSession {
     foeGfxVkBuiltinDescriptorSets builtinDescriptorSets;
     foeGfxVkDescriptorSetLayoutPool descriptorSetLayoutPool;
 
-    foeGfxVkRenderPassPool renderPassPool;
+    foeGfxVkRenderPassPoolImpl renderPassPool;
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool;
     foeGfxVkPipelinePool pipelinePool{FOE_NULL_HANDLE};
 };

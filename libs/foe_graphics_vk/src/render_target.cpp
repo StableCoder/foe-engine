@@ -8,6 +8,7 @@
 #include <foe/graphics/vk/session.h>
 
 #include "log.hpp"
+#include "render_pass_pool.hpp"
 #include "result.h"
 #include "session.hpp"
 #include "vk_result.h"
@@ -109,8 +110,9 @@ foeResultSet foeGfxVkCreateRenderTarget(foeGfxSession session,
         sampleList.emplace_back(samples);
     }
 
-    VkRenderPass compatibleRenderPass =
-        foeGfxVkGetRenderPassPool(session)->renderPass(formatList, sampleList);
+    foeGfxVkRenderPassPool renderPassPool = foeGfxVkGetRenderPassPool(session);
+    VkRenderPass compatibleRenderPass = foeGfxVkGetCompatibleRenderPass(
+        renderPassPool, formatList.size(), formatList.data(), sampleList.data());
     if (compatibleRenderPass == VK_NULL_HANDLE) {
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_RENDER_TARGET_NO_COMPATIBLE_RENDER_PASS);
     }

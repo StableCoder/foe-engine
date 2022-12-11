@@ -8,7 +8,7 @@
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/session.h>
-#include <foe/graphics/vk/render_pass_pool.hpp>
+#include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 

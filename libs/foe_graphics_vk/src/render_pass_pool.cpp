@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/render_pass_pool.hpp>
+#include <foe/graphics/vk/render_pass_pool.h>
 
 #include <foe/graphics/vk/format.h>
 
@@ -10,10 +10,11 @@
 #include <mutex>
 
 #include "log.hpp"
+#include "render_pass_pool.hpp"
 #include "session.hpp"
 #include "vk_result.h"
 
-foeResultSet foeGfxVkRenderPassPool::initialize(foeGfxSession session) noexcept {
+foeResultSet foeGfxVkRenderPassPoolImpl::initialize(foeGfxSession session) noexcept {
     auto *pSession = session_from_handle(session);
 
     mDevice = pSession->device;
@@ -21,7 +22,7 @@ foeResultSet foeGfxVkRenderPassPool::initialize(foeGfxSession session) noexcept 
     return vk_to_foeResult(VK_SUCCESS);
 }
 
-void foeGfxVkRenderPassPool::deinitialize() noexcept {
+void foeGfxVkRenderPassPoolImpl::deinitialize() noexcept {
     std::scoped_lock lock{mSync};
 
     for (auto &it : mRenderPasses) {
@@ -34,10 +35,10 @@ void foeGfxVkRenderPassPool::deinitialize() noexcept {
     mDevice = VK_NULL_HANDLE;
 }
 
-VkRenderPass foeGfxVkRenderPassPool::renderPass(
-    std::vector<VkAttachmentDescription> const &attachments) {
-    auto compatibleKeys = generateCompatibleKeys(attachments);
-    auto variantKeys = generateVariantKeys(attachments);
+VkRenderPass foeGfxVkRenderPassPoolImpl::renderPass(uint32_t attachmentCount,
+                                                    VkAttachmentDescription const *pAttachments) {
+    auto compatibleKeys = generateCompatibleKeys(attachmentCount, pAttachments);
+    auto variantKeys = generateVariantKeys(attachmentCount, pAttachments);
 
     // Try to get the renderpass in shared read mode
     std::shared_lock sharedLock{mSync};
@@ -51,19 +52,20 @@ VkRenderPass foeGfxVkRenderPassPool::renderPass(
     renderPass = findRenderPass(compatibleKeys, variantKeys);
     if (renderPass != VK_NULL_HANDLE)
         return renderPass;
-    return generateRenderPass(compatibleKeys, variantKeys, attachments);
+    return generateRenderPass(compatibleKeys, variantKeys, attachmentCount, pAttachments);
 }
 
-auto foeGfxVkRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
-                                        std::vector<VkSampleCountFlags> const &samples)
+auto foeGfxVkRenderPassPoolImpl::renderPass(uint32_t attachmentCount,
+                                            VkFormat const *pFormats,
+                                            VkSampleCountFlags const *pSampleFlags)
     -> VkRenderPass {
     std::vector<RenderPassCompatibleKey> compatibleKeys;
-    compatibleKeys.reserve(formats.size());
+    compatibleKeys.reserve(attachmentCount);
 
-    for (std::size_t idx = 0; idx < formats.size(); ++idx) {
+    for (std::size_t idx = 0; idx < attachmentCount; ++idx) {
         compatibleKeys.emplace_back(RenderPassCompatibleKey{
-            .format = formats[idx],
-            .samples = samples[idx],
+            .format = pFormats[idx],
+            .samples = pSampleFlags[idx],
         });
     }
 
@@ -78,7 +80,8 @@ auto foeGfxVkRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
 
     // Generate attachment descriptions/variant keys
     std::vector<VkAttachmentDescription> attachments;
-    attachments.reserve(formats.size());
+    attachments.reserve(attachmentCount);
+
     for (auto const &key : compatibleKeys) {
         attachments.emplace_back(VkAttachmentDescription{
             .flags = 0,
@@ -92,22 +95,24 @@ auto foeGfxVkRenderPassPool::renderPass(std::vector<VkFormat> const &formats,
             .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         });
     }
-    auto variantKeys = generateVariantKeys(attachments);
+    auto variantKeys = generateVariantKeys(attachmentCount, attachments.data());
 
     std::scoped_lock lock{mSync};
     renderPass = findRenderPass(compatibleKeys);
     if (renderPass != VK_NULL_HANDLE)
         return renderPass;
-    return generateRenderPass(compatibleKeys, variantKeys, attachments);
+    return generateRenderPass(compatibleKeys, variantKeys, attachmentCount, attachments.data());
 }
 
-auto foeGfxVkRenderPassPool::generateCompatibleKeys(
-    std::vector<VkAttachmentDescription> const &attachments) const
+auto foeGfxVkRenderPassPoolImpl::generateCompatibleKeys(
+    uint32_t attachmentCount, VkAttachmentDescription const *pAttachments) const
     -> std::vector<RenderPassCompatibleKey> {
     std::vector<RenderPassCompatibleKey> key;
-    key.reserve(attachments.size());
+    key.reserve(attachmentCount);
 
-    for (auto const &it : attachments) {
+    for (uint32_t i = 0; i < attachmentCount; ++i) {
+        auto &it = pAttachments[i];
+
         key.emplace_back(RenderPassCompatibleKey{
             .format = it.format,
             .samples = static_cast<VkSampleCountFlags>(it.samples),
@@ -117,13 +122,15 @@ auto foeGfxVkRenderPassPool::generateCompatibleKeys(
     return key;
 }
 
-auto foeGfxVkRenderPassPool::generateVariantKeys(
-    std::vector<VkAttachmentDescription> const &attachments) const
+auto foeGfxVkRenderPassPoolImpl::generateVariantKeys(
+    uint32_t attachmentCount, VkAttachmentDescription const *pAttachments) const
     -> std::vector<RenderPassVariantKey> {
     std::vector<RenderPassVariantKey> key;
-    key.reserve(attachments.size());
+    key.reserve(attachmentCount);
 
-    for (auto const &it : attachments) {
+    for (uint32_t i = 0; i < attachmentCount; ++i) {
+        auto &it = pAttachments[i];
+
         key.emplace_back(RenderPassVariantKey{
             .loadOp = it.loadOp,
             .storeOp = it.storeOp,
@@ -137,7 +144,7 @@ auto foeGfxVkRenderPassPool::generateVariantKeys(
     return key;
 }
 
-auto foeGfxVkRenderPassPool::findRenderPass(
+auto foeGfxVkRenderPassPoolImpl::findRenderPass(
     std::vector<RenderPassCompatibleKey> const &compatibleKey,
     std::vector<RenderPassVariantKey> const &variantKey) -> VkRenderPass {
     for (auto &it : mRenderPasses) {
@@ -157,7 +164,7 @@ auto foeGfxVkRenderPassPool::findRenderPass(
     return VK_NULL_HANDLE;
 }
 
-auto foeGfxVkRenderPassPool::findRenderPass(
+auto foeGfxVkRenderPassPoolImpl::findRenderPass(
     std::vector<RenderPassCompatibleKey> const &compatibleKey) -> VkRenderPass {
     for (auto &it : mRenderPasses) {
         if (it.key == compatibleKey) {
@@ -172,10 +179,11 @@ auto foeGfxVkRenderPassPool::findRenderPass(
     return VK_NULL_HANDLE;
 }
 
-auto foeGfxVkRenderPassPool::generateRenderPass(
+auto foeGfxVkRenderPassPoolImpl::generateRenderPass(
     std::vector<RenderPassCompatibleKey> compatibleKey,
     std::vector<RenderPassVariantKey> variantKey,
-    std::vector<VkAttachmentDescription> const &attachments) -> VkRenderPass {
+    uint32_t attachmentCount,
+    VkAttachmentDescription const *pAttachments) -> VkRenderPass {
     for (auto &it : mRenderPasses) {
         if (it.key == compatibleKey) {
             // Have the same compatible elements, now need to find the specific variant
@@ -188,7 +196,7 @@ auto foeGfxVkRenderPassPool::generateRenderPass(
 
             // Create the specific variant
             VkRenderPass renderPass{VK_NULL_HANDLE};
-            VkResult res = createRenderPass(attachments, &renderPass);
+            VkResult res = createRenderPass(attachmentCount, pAttachments, &renderPass);
             if (res != VK_SUCCESS) {
                 FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR,
                         "Could not create a requested RenderPass")
@@ -206,7 +214,7 @@ auto foeGfxVkRenderPassPool::generateRenderPass(
 
     // Create both a new compatible set and variant
     VkRenderPass renderPass{VK_NULL_HANDLE};
-    VkResult res = createRenderPass(attachments, &renderPass);
+    VkResult res = createRenderPass(attachmentCount, pAttachments, &renderPass);
     if (res != VK_SUCCESS) {
         FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR, "Could not create a requested RenderPass")
         return VK_NULL_HANDLE;
@@ -228,21 +236,21 @@ auto foeGfxVkRenderPassPool::generateRenderPass(
     return renderPass;
 }
 
-auto foeGfxVkRenderPassPool::createRenderPass(
-    std::vector<VkAttachmentDescription> const &attachments, VkRenderPass *pRenderPass)
-    -> VkResult {
+auto foeGfxVkRenderPassPoolImpl::createRenderPass(uint32_t attachmentCount,
+                                                  VkAttachmentDescription const *pAttachments,
+                                                  VkRenderPass *pRenderPass) -> VkResult {
     constexpr auto cInvalidAttachment = UINT32_MAX;
 
     std::vector<VkAttachmentReference> colourReferences;
-    colourReferences.reserve(attachments.size());
+    colourReferences.reserve(attachmentCount);
 
     VkAttachmentReference depthStencilReference{
         .attachment = cInvalidAttachment,
         .layout = VK_IMAGE_LAYOUT_UNDEFINED,
     };
 
-    for (uint32_t i = 0; i < attachments.size(); ++i) {
-        auto &attachment = attachments[i];
+    for (uint32_t i = 0; i < attachmentCount; ++i) {
+        auto &attachment = pAttachments[i];
 
         if (foeGfxVkIsDepthFormat(attachment.format)) {
             if (depthStencilReference.attachment != cInvalidAttachment) {
@@ -296,8 +304,8 @@ auto foeGfxVkRenderPassPool::createRenderPass(
 
     VkRenderPassCreateInfo renderPassCI{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .attachmentCount = static_cast<uint32_t>(attachments.size()),
-        .pAttachments = attachments.data(),
+        .attachmentCount = attachmentCount,
+        .pAttachments = pAttachments,
         .subpassCount = 1,
         .pSubpasses = &subpassDescription,
         .dependencyCount = dependencies.size(),

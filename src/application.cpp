@@ -15,7 +15,7 @@
 #include <foe/graphics/vk/render_graph/job/import_image.hpp>
 #include <foe/graphics/vk/render_graph/job/present_image.hpp>
 #include <foe/graphics/vk/render_graph/job/resolve_image.hpp>
-#include <foe/graphics/vk/render_pass_pool.hpp>
+#include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.h>
@@ -549,8 +549,9 @@ foeResultSet Application::startXR(bool localPoll) {
             it.format = static_cast<VkFormat>(swapchainFormats[0]);
         }
 
-        auto *renderPassPool = foeGfxVkGetRenderPassPool(gfxSession);
-        xrRenderPass = renderPassPool->renderPass({VkAttachmentDescription{
+        foeGfxVkRenderPassPool renderPassPool = foeGfxVkGetRenderPassPool(gfxSession);
+
+        VkAttachmentDescription xrAttachmentDescription{
             .format = static_cast<VkFormat>(swapchainFormats[0]),
             .samples = VK_SAMPLE_COUNT_1_BIT,
             .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -559,29 +560,33 @@ foeResultSet Application::startXR(bool localPoll) {
             .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
             .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
             .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        }});
+        };
+        xrRenderPass = foeGfxVkGetRenderPass(renderPassPool, 1, &xrAttachmentDescription);
 
-        xrOffscreenRenderPass = renderPassPool->renderPass(
-            {VkAttachmentDescription{
-                 .format = static_cast<VkFormat>(swapchainFormats[0]),
-                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
-                 .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                 .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                 .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-             },
-             VkAttachmentDescription{
-                 .format = depthFormat,
-                 .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
-                 .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                 .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                 .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-                 .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-                 .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-                 .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-             }});
+        std::array<VkAttachmentDescription, 2> xrOffscreenAttachmentDescription{
+            VkAttachmentDescription{
+                .format = static_cast<VkFormat>(swapchainFormats[0]),
+                .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                .finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            },
+            VkAttachmentDescription{
+                .format = depthFormat,
+                .samples = static_cast<VkSampleCountFlagBits>(globalMSAA),
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+                .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            }};
+        xrOffscreenRenderPass =
+            foeGfxVkGetRenderPass(renderPassPool, xrOffscreenAttachmentDescription.size(),
+                                  xrOffscreenAttachmentDescription.data());
 
         for (auto &view : xrViews) {
             // Offscreen Render Targets
