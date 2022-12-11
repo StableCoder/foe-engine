@@ -5,7 +5,7 @@
 #include <foe/graphics/vk/pipeline_pool.h>
 
 #include <foe/graphics/vk/fragment_descriptor.hpp>
-#include <foe/graphics/vk/vertex_descriptor.hpp>
+#include <foe/graphics/vk/vertex_descriptor.h>
 
 #include <array>
 #include <vector>
@@ -24,7 +24,7 @@ constexpr size_t cMaxSampleOptions = 7;
 
 struct PipelineSet {
     // Key
-    foeGfxVertexDescriptor *vertexDescriptor;
+    foeGfxVkVertexDescriptor *vertexDescriptor;
     foeGfxVkFragmentDescriptor *fragmentDescriptor;
 
     VkRenderPass renderPass;
@@ -108,7 +108,7 @@ size_t sampleCountIndex(VkSampleCountFlags samples) {
 }
 
 VkResult createPipeline(PipelinePool const *pPipelinePool,
-                        foeGfxVertexDescriptor *vertexDescriptor,
+                        foeGfxVkVertexDescriptor *vertexDescriptor,
                         foeGfxVkFragmentDescriptor *fragmentDescriptor,
                         VkRenderPass renderPass,
                         uint32_t subpass,
@@ -126,7 +126,7 @@ VkResult createPipeline(PipelinePool const *pPipelinePool,
         std::vector<VkPushConstantRange> pushConstantRanges;
 
         { // Builtin Descriptor Set Layouts
-            auto builtinLayouts = vertexDescriptor->getBuiltinSetLayouts() |
+            auto builtinLayouts = foeGfxVkGetVertexDescriptorBuiltinSetLayouts(vertexDescriptor) |
                                   fragmentDescriptor->getBuiltinSetLayouts();
 
             for (int i = 0; i < std::numeric_limits<foeBuiltinDescriptorSetLayoutFlags>::digits;
@@ -359,9 +359,9 @@ VkResult createPipeline(PipelinePool const *pPipelinePool,
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .stageCount = static_cast<uint32_t>(shaderList.size()),
             .pStages = shaderList.data(),
-            .pVertexInputState = vertexDescriptor->getVertexInputSCI(),
+            .pVertexInputState = foeGfxVkGetVertexDescriptorVertexInputSCI(vertexDescriptor),
             .pInputAssemblyState = &vertexDescriptor->mInputAssemblySCI,
-            .pTessellationState = vertexDescriptor->getTessellationSCI(),
+            .pTessellationState = foeGfxVkGetVertexDescriptorTessellationSCI(vertexDescriptor),
             .pViewportState = &viewportState,
             .pRasterizationState = fragmentDescriptor->pRasterizationSCI,
             .pMultisampleState = &multisampleState,
@@ -402,7 +402,7 @@ CREATE_FAILED:
 } // namespace
 
 extern "C" foeResultSet foeGfxVkGetPipeline(foeGfxVkPipelinePool pipelinePool,
-                                            foeGfxVertexDescriptor *vertexDescriptor,
+                                            foeGfxVkVertexDescriptor *vertexDescriptor,
                                             foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                             VkRenderPass renderPass,
                                             uint32_t subpass,

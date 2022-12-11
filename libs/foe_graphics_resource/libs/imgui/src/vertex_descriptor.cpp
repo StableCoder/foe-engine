@@ -18,7 +18,7 @@ void imgui_foeVertexDescriptor(foeVertexDescriptor const *pResource) {
     ImGui::Text("Tessellation Evaluation Shader: %p", pResource->tessellationEvaluationShader);
     ImGui::Text("Geometry Shader: %p", pResource->geometryShader);
 
-    imgui_foeGfxVertexDescriptor(pResource->vertexDescriptor);
+    imgui_foeGfxVkVertexDescriptor(pResource->vertexDescriptor);
 }
 
 void imgui_foeVertexDescriptorCreateInfo(foeVertexDescriptorCreateInfo const *pCreateInfo) {

@@ -7,6 +7,7 @@
 
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
+#include <foe/graphics/vk/vertex_descriptor.h>
 #include <foe/handle.h>
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
@@ -15,7 +16,6 @@
 extern "C" {
 #endif
 
-typedef struct foeGfxVertexDescriptor foeGfxVertexDescriptor;
 typedef struct foeGfxVkFragmentDescriptor foeGfxVkFragmentDescriptor;
 
 FOE_DEFINE_HANDLE(foeGfxVkPipelinePool)
@@ -28,7 +28,7 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkCreatePipelinePool(foeGfxSession session,
 FOE_GFX_EXPORT void foeGfxVkDestroyPipelinePool(foeGfxVkPipelinePool pipelinePool);
 
 FOE_GFX_EXPORT foeResultSet foeGfxVkGetPipeline(foeGfxVkPipelinePool pipelinePool,
-                                                foeGfxVertexDescriptor *vertexDescriptor,
+                                                foeGfxVkVertexDescriptor *vertexDescriptor,
                                                 foeGfxVkFragmentDescriptor *fragmentDescriptor,
                                                 VkRenderPass renderPass,
                                                 uint32_t subpass,

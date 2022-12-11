@@ -19,4 +19,5 @@
 #include <foe/graphics/vk/sample_count.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/graphics/vk/shader.h>
+#include <foe/graphics/vk/vertex_descriptor.h>
 #include <foe/graphics/vk/vk_binary.h>

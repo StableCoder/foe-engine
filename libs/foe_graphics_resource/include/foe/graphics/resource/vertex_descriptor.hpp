@@ -6,7 +6,7 @@
 #define FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_HPP
 
 #include <foe/graphics/resource/export.h>
-#include <foe/graphics/vk/vertex_descriptor.hpp>
+#include <foe/graphics/vk/vertex_descriptor.h>
 #include <foe/resource/resource.h>
 
 struct foeVertexDescriptor {
@@ -15,7 +15,7 @@ struct foeVertexDescriptor {
     foeResource tessellationEvaluationShader;
     foeResource geometryShader;
 
-    foeGfxVertexDescriptor vertexDescriptor;
+    foeGfxVkVertexDescriptor vertexDescriptor;
 };
 
 FOE_GFX_RES_EXPORT void cleanup_foeVertexDescriptor(foeVertexDescriptor *pData);

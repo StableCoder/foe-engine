@@ -151,7 +151,7 @@ auto renderCall(foeId entity,
 
     auto pipelinePool = foeGfxVkGetPipelinePool(gfxSession);
     auto result = foeGfxVkGetPipeline(pipelinePool,
-                                      const_cast<foeGfxVertexDescriptor *>(pGfxVertexDescriptor),
+                                      const_cast<foeGfxVkVertexDescriptor *>(pGfxVertexDescriptor),
                                       pMaterial->pGfxFragDescriptor, renderPass, 0, samples,
                                       &layout, &descriptorSetLayoutCount, &pipeline);
     if (result.value != FOE_SUCCESS)
@@ -162,7 +162,7 @@ auto renderCall(foeId entity,
 
     foeGfxVkBindMesh(pMesh->gfxData, commandBuffer, boned);
 
-    auto vertSetLayouts = pGfxVertexDescriptor->getBuiltinSetLayouts();
+    auto vertSetLayouts = foeGfxVkGetVertexDescriptorBuiltinSetLayouts(pGfxVertexDescriptor);
     if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
         auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
             pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);

@@ -7,8 +7,8 @@
 
 #include <foe/graphics/vk/imgui/export.h>
 
-struct foeGfxVertexDescriptor;
+struct foeGfxVkVertexDescriptor;
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_foeGfxVertexDescriptor(foeGfxVertexDescriptor const &data);
+FOE_GFX_VK_IMGUI_EXPORT void imgui_foeGfxVkVertexDescriptor(foeGfxVkVertexDescriptor const &data);
 
 #endif // FOE_GRAPHICS_VK_IMGUI_VERTEX_DESCRIPTOR_HPP

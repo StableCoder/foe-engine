@@ -5,10 +5,10 @@
 #include <foe/graphics/vk/imgui/vertex_descriptor.hpp>
 
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
-#include <foe/graphics/vk/vertex_descriptor.hpp>
+#include <foe/graphics/vk/vertex_descriptor.h>
 #include <imgui.h>
 
-void imgui_foeGfxVertexDescriptor(foeGfxVertexDescriptor const &data) {
+void imgui_foeGfxVkVertexDescriptor(foeGfxVkVertexDescriptor const &data) {
     ImGui::Text("Vertex Shader: %p", data.mVertex);
     ImGui::Text("Tessellation Control Shader: %p", data.mTessellationControl);
     ImGui::Text("Tessellation Evaluation Shader: %p", data.mTessellationEvaluation);
