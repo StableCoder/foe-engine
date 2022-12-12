@@ -36,12 +36,6 @@
 
 #define FOE_DEFINE_HANDLE_CASTS(HUMAN_NAME, OBJ_TYPE, HANDLE_TYPE)                                 \
                                                                                                    \
-    inline OBJ_TYPE *HUMAN_NAME##_from_handle(HANDLE_TYPE handle) { return (OBJ_TYPE *)handle; }   \
-                                                                                                   \
-    inline HANDLE_TYPE HUMAN_NAME##_to_handle(OBJ_TYPE *object) { return (HANDLE_TYPE)object; }
-
-#define FOE_DEFINE_STATIC_HANDLE_CASTS(HUMAN_NAME, OBJ_TYPE, HANDLE_TYPE)                          \
-                                                                                                   \
     static inline OBJ_TYPE *HUMAN_NAME##_from_handle(HANDLE_TYPE handle) {                         \
         return (OBJ_TYPE *)handle;                                                                 \
     }                                                                                              \

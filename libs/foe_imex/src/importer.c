@@ -8,7 +8,7 @@
 
 #include "result.h"
 
-FOE_DEFINE_STATIC_HANDLE_CASTS(importer, foeBaseInStructure, foeImexImporter)
+FOE_DEFINE_HANDLE_CASTS(importer, foeBaseInStructure, foeImexImporter)
 
 static void *findStruct(foeBaseInStructure const *pStruct, foeStructureType sType) {
     for (; pStruct != NULL; pStruct = pStruct->pNext) {
