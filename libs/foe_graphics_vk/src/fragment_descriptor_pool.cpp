@@ -4,12 +4,23 @@
 
 #include "fragment_descriptor_pool.hpp"
 
-#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.h>
 
 foeGfxVkFragmentDescriptorPoolImpl::~foeGfxVkFragmentDescriptorPoolImpl() {
     std::scoped_lock lock{mSync};
 
     for (auto pDescriptor : mDescriptors) {
+        if (pDescriptor->pColourBlendAttachments)
+            delete[] pDescriptor->pColourBlendAttachments;
+        if (pDescriptor->pColourBlendSCI)
+            delete pDescriptor->pColourBlendSCI;
+
+        if (pDescriptor->pDepthStencilSCI)
+            delete pDescriptor->pDepthStencilSCI;
+
+        if (pDescriptor->pRasterizationSCI)
+            delete pDescriptor->pRasterizationSCI;
+
         delete pDescriptor;
     }
 }
@@ -117,8 +128,37 @@ auto foeGfxVkFragmentDescriptorPoolImpl::get(
         return fragDescriptor;
     }
 
-    auto pFragDescriptor = new foeGfxVkFragmentDescriptor(pRasterizationSCI, pDepthStencilSCI,
-                                                          pColourBlendSCI, fragment);
+    auto pFragDescriptor = new (std::nothrow) foeGfxVkFragmentDescriptor;
+    if (pFragDescriptor == nullptr)
+        std::abort();
+
+    { // Set fragment descriptor data
+        *pFragDescriptor = {
+            .mFragment = fragment,
+        };
+
+        if (pRasterizationSCI)
+            pFragDescriptor->pRasterizationSCI =
+                new VkPipelineRasterizationStateCreateInfo{*pRasterizationSCI};
+
+        if (pDepthStencilSCI)
+            pFragDescriptor->pDepthStencilSCI =
+                new VkPipelineDepthStencilStateCreateInfo{*pDepthStencilSCI};
+
+        if (pColourBlendSCI) {
+            pFragDescriptor->pColourBlendSCI =
+                new VkPipelineColorBlendStateCreateInfo{*pColourBlendSCI};
+
+            pFragDescriptor->pColourBlendAttachments =
+                new VkPipelineColorBlendAttachmentState[pColourBlendSCI->attachmentCount];
+
+            std::copy(pColourBlendSCI->pAttachments,
+                      pColourBlendSCI->pAttachments + pColourBlendSCI->attachmentCount,
+                      pFragDescriptor->pColourBlendAttachments);
+            pFragDescriptor->pColourBlendSCI->pAttachments =
+                pFragDescriptor->pColourBlendAttachments;
+        }
+    }
 
     mDescriptors.emplace_back(pFragDescriptor);
 

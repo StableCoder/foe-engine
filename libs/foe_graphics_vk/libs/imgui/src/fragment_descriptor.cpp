@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/imgui/fragment_descriptor.hpp>
 
-#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.h>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <imgui.h>
 

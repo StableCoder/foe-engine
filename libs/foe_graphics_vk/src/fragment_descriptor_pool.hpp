@@ -5,7 +5,7 @@
 #ifndef FRAGMENT_DESCRIPTOR_POOL_HPP
 #define FRAGMENT_DESCRIPTOR_POOL_HPP
 
-#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.h>
 #include <vulkan/vulkan.h>
 

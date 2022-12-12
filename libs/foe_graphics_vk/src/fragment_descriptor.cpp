@@ -2,66 +2,23 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.h>
 
-#include <algorithm>
-
-foeGfxVkFragmentDescriptor::foeGfxVkFragmentDescriptor(
-    VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
-    VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,
-    VkPipelineColorBlendStateCreateInfo const *pColourBlendSCI,
-    foeGfxShader fragment) :
-    mFragment{fragment},
-    pRasterizationSCI{},
-    pDepthStencilSCI{},
-    pColourBlendSCI{},
-    pColourBlendAttachments{} {
-    if (pRasterizationSCI)
-        this->pRasterizationSCI = new VkPipelineRasterizationStateCreateInfo{*pRasterizationSCI};
-
-    if (pDepthStencilSCI)
-        this->pDepthStencilSCI = new VkPipelineDepthStencilStateCreateInfo{*pDepthStencilSCI};
-
-    if (pColourBlendSCI) {
-        this->pColourBlendSCI = new VkPipelineColorBlendStateCreateInfo{*pColourBlendSCI};
-
-        pColourBlendAttachments =
-            new VkPipelineColorBlendAttachmentState[pColourBlendSCI->attachmentCount];
-
-        std::copy(pColourBlendSCI->pAttachments,
-                  pColourBlendSCI->pAttachments + pColourBlendSCI->attachmentCount,
-                  pColourBlendAttachments);
-        this->pColourBlendSCI->pAttachments = pColourBlendAttachments;
-    }
-}
-
-foeGfxVkFragmentDescriptor::~foeGfxVkFragmentDescriptor() {
-    if (pColourBlendAttachments)
-        delete[] pColourBlendAttachments;
-    if (pColourBlendSCI)
-        delete pColourBlendSCI;
-
-    if (pDepthStencilSCI)
-        delete pDepthStencilSCI;
-
-    if (pRasterizationSCI)
-        delete pRasterizationSCI;
-}
-
-auto foeGfxVkFragmentDescriptor::getBuiltinSetLayouts() const noexcept
-    -> foeBuiltinDescriptorSetLayoutFlags {
+extern "C" foeBuiltinDescriptorSetLayoutFlags foeGfxVkGetFragmentDescriptorBuiltinSetLayouts(
+    foeGfxVkFragmentDescriptor const *pFragmentDescriptor) {
     foeBuiltinDescriptorSetLayoutFlags flags = 0;
 
-    if (mFragment)
-        flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(mFragment);
+    if (pFragmentDescriptor->mFragment)
+        flags |= foeGfxShaderGetBuiltinDescriptorSetLayouts(pFragmentDescriptor->mFragment);
 
     return flags;
 }
 
-auto foeGfxVkFragmentDescriptor::getColourBlendSCI() noexcept
-    -> VkPipelineColorBlendStateCreateInfo const * {
-    if (pColourBlendSCI)
-        pColourBlendSCI->pAttachments = pColourBlendAttachments;
+extern "C" VkPipelineColorBlendStateCreateInfo const *foeGfxVkGetFragmentDescriptorColourBlendSCI(
+    foeGfxVkFragmentDescriptor const *pFragmentDescriptor) {
+    if (pFragmentDescriptor->pColourBlendSCI)
+        pFragmentDescriptor->pColourBlendSCI->pAttachments =
+            pFragmentDescriptor->pColourBlendAttachments;
 
-    return pColourBlendSCI;
+    return pFragmentDescriptor->pColourBlendSCI;
 }

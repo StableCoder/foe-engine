@@ -7,6 +7,7 @@
 #include <foe/graphics/vk/compare.h>
 #include <foe/graphics/vk/error_images.h>
 #include <foe/graphics/vk/format.h>
+#include <foe/graphics/vk/fragment_descriptor.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.h>
 #include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/mesh.h>

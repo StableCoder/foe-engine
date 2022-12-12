@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/pipeline_pool.h>
 
-#include <foe/graphics/vk/fragment_descriptor.hpp>
+#include <foe/graphics/vk/fragment_descriptor.h>
 #include <foe/graphics/vk/vertex_descriptor.h>
 
 #include <array>
@@ -126,8 +126,9 @@ VkResult createPipeline(PipelinePool const *pPipelinePool,
         std::vector<VkPushConstantRange> pushConstantRanges;
 
         { // Builtin Descriptor Set Layouts
-            auto builtinLayouts = foeGfxVkGetVertexDescriptorBuiltinSetLayouts(vertexDescriptor) |
-                                  fragmentDescriptor->getBuiltinSetLayouts();
+            auto builtinLayouts =
+                foeGfxVkGetVertexDescriptorBuiltinSetLayouts(vertexDescriptor) |
+                foeGfxVkGetFragmentDescriptorBuiltinSetLayouts(fragmentDescriptor);
 
             for (int i = 0; i < std::numeric_limits<foeBuiltinDescriptorSetLayoutFlags>::digits;
                  ++i) {
@@ -366,7 +367,7 @@ VkResult createPipeline(PipelinePool const *pPipelinePool,
             .pRasterizationState = fragmentDescriptor->pRasterizationSCI,
             .pMultisampleState = &multisampleState,
             .pDepthStencilState = fragmentDescriptor->pDepthStencilSCI,
-            .pColorBlendState = fragmentDescriptor->getColourBlendSCI(),
+            .pColorBlendState = foeGfxVkGetFragmentDescriptorColourBlendSCI(fragmentDescriptor),
             .pDynamicState = &dynamicState,
             .layout = pipelineLayout,
             .renderPass = renderPass,
