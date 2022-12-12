@@ -8,7 +8,7 @@
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/session.h>
-#include <foe/graphics/vk/swapchain.hpp>
+#include <foe/graphics/vk/swapchain.h>
 #include <foe/result.h>
 #include <foe/wsi/window.h>
 
@@ -23,7 +23,7 @@ struct WindowData {
     bool needSwapchainRebuild{false};
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR surfacePresentMode;
-    foeGfxVkSwapchain swapchain;
+    foeGfxVkSwapchain swapchain{FOE_NULL_HANDLE};
     bool acquiredImage{false};
     foeGfxVkSwapchainImageData acquiredImageData;
 

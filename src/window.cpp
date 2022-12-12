@@ -14,10 +14,8 @@
 
 namespace {
 
-void destroy_foeGfxVkSwapchain(foeGfxVkSwapchain *pSwapchain, foeGfxSession session) {
-    pSwapchain->destroy(foeGfxVkGetDevice(session));
-
-    delete pSwapchain;
+void destroy_foeGfxVkSwapchain(foeGfxVkSwapchain pSwapchain, foeGfxSession session) {
+    foeGfxVkDestroySwapchain(session, pSwapchain);
 }
 
 } // namespace
@@ -31,7 +29,7 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
     foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
 
     // Check if need to rebuild a swapchain
-    if (!pWindow->swapchain || pWindow->needSwapchainRebuild) {
+    if (pWindow->swapchain == FOE_NULL_HANDLE || pWindow->needSwapchainRebuild) {
         pWindow->needSwapchainRebuild = false;
 
         int width, height;
@@ -95,27 +93,22 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
         }
 
         // Create new swapchain
-        foeGfxVkSwapchain newSwapchain;
-        vkResult = newSwapchain.create(
-            foeGfxVkGetPhysicalDevice(gfxSession), foeGfxVkGetDevice(gfxSession), pWindow->surface,
-            pWindow->surfaceFormat, pWindow->surfacePresentMode, VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-            pWindow->swapchain, 3, width, height);
-        if (vkResult != VK_SUCCESS)
-            return vk_to_foeResult(vkResult);
+        foeGfxVkSwapchain newSwapchain = FOE_NULL_HANDLE;
+
+        result = foeGfxVkCreateSwapchain(
+            gfxSession, pWindow->surface, pWindow->surfaceFormat, pWindow->surfacePresentMode,
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain, 3, width, height, &newSwapchain);
+        if (result.value != FOE_SUCCESS)
+            return result;
 
         // If the old swapchain exists, we need to destroy it
         if (pWindow->swapchain) {
-            foeGfxVkSwapchain *pOldSwapchain =
-                new (std::nothrow) foeGfxVkSwapchain{std::move(pWindow->swapchain)};
-            if (pOldSwapchain == nullptr)
-                return to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
-
             foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
                                         (PFN_foeGfxDelayedCall)destroy_foeGfxVkSwapchain,
-                                        (void *)pOldSwapchain);
+                                        (void *)pWindow->swapchain);
         }
 
-        pWindow->swapchain = std::move(newSwapchain);
+        pWindow->swapchain = newSwapchain;
 
         foeGfxUpdateRenderTargetExtent(pWindow->gfxOffscreenRenderTarget, width, height);
     }

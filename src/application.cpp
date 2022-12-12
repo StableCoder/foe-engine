@@ -342,7 +342,7 @@ void Application::deinitialize() {
         it.gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
 
         if (gfxSession != FOE_NULL_HANDLE)
-            it.swapchain.destroy(foeGfxVkGetDevice(gfxSession));
+            foeGfxVkDestroySwapchain(gfxSession, it.swapchain);
 
         if (it.surface != VK_NULL_HANDLE)
             vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), it.surface, nullptr);
@@ -1081,8 +1081,8 @@ int Application::mainloop() {
             windowRenderList.reserve(windowData.size());
 
             for (auto &it : windowData) {
-                result = vk_to_foeResult(it.swapchain.acquireNextImage(
-                    foeGfxVkGetDevice(gfxSession), it.acquiredImageData));
+                result = vk_to_foeResult(
+                    foeGfxVkAcquireSwapchainImage(gfxSession, it.swapchain, &it.acquiredImageData));
                 if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
                     // Waiting for an image to become ready
                 } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -1478,7 +1478,7 @@ int Application::mainloop() {
 
             result = foeGfxVkImportSwapchainImageRenderJob(
                 renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
-                window->swapchain, window->acquiredImageData.imageIndex,
+                window->acquiredImageData.swapchain, window->acquiredImageData.imageIndex,
                 window->acquiredImageData.image, window->acquiredImageData.view,
                 window->surfaceFormat.format, window->acquiredImageData.extent,
                 VK_IMAGE_LAYOUT_UNDEFINED, window->acquiredImageData.readySemaphore,

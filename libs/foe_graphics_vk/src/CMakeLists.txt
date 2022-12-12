@@ -32,7 +32,7 @@ target_sources(
           sample_count.c
           session.cpp
           shader_public.cpp
-          swapchain.cpp
+          swapchain.c
           upload_buffer_public.cpp
           upload_context_public.cpp
           upload_request_public.cpp
