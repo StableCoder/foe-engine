@@ -10,6 +10,18 @@
 
 #include <vector>
 
+struct foeGfxVkSwapchainImageData {
+    // Image Data
+    VkExtent2D extent;
+    VkSemaphore readySemaphore;
+    VkImage image;
+    VkImageView view;
+
+    // Swapchain/Presentation Data
+    VkSwapchainKHR swapchain;
+    uint32_t imageIndex;
+};
+
 /// Wrapper for the VkSwapchainKHR, performing all related functions to it
 class foeGfxVkSwapchain {
   public:
@@ -46,16 +58,8 @@ class foeGfxVkSwapchain {
 
     FOE_GFX_EXPORT void destroy(VkDevice device) noexcept;
 
-    FOE_GFX_EXPORT VkResult acquireNextImage(VkDevice device) noexcept;
-    FOE_GFX_EXPORT void presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex) noexcept;
-
-    FOE_GFX_EXPORT VkExtent2D extent() const noexcept;
-    FOE_GFX_EXPORT uint32_t acquiredIndex() const noexcept;
-    FOE_GFX_EXPORT uint32_t chainSize() const noexcept;
-    FOE_GFX_EXPORT VkImage image(uint32_t index) const noexcept;
-    FOE_GFX_EXPORT VkImageView imageView(uint32_t index) const noexcept;
-
-    FOE_GFX_EXPORT VkSemaphore imageReadySemaphore() const noexcept;
+    FOE_GFX_EXPORT VkResult acquireNextImage(VkDevice device,
+                                             foeGfxVkSwapchainImageData &pSwapchainData) noexcept;
 
   private:
     VkResult createSwapchainViews(VkDevice device, VkFormat format);
@@ -64,7 +68,6 @@ class foeGfxVkSwapchain {
     VkSwapchainKHR mSwapchain{VK_NULL_HANDLE};
 
     VkExtent2D mExtent{};
-    uint32_t mAcquiredIndex{UINT32_MAX};
     std::vector<VkImage> mImages{};
     std::vector<VkImageView> mViews{};
     std::vector<VkSemaphore> mSemaphores{};

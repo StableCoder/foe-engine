@@ -4,8 +4,6 @@
 
 #include <foe/graphics/vk/swapchain.hpp>
 
-#include <memory>
-
 foeGfxVkSwapchain::operator bool() const noexcept { return mSwapchain != VK_NULL_HANDLE; }
 bool foeGfxVkSwapchain::operator!() const noexcept { return mSwapchain == VK_NULL_HANDLE; }
 
@@ -121,48 +119,31 @@ void foeGfxVkSwapchain::destroy(VkDevice device) noexcept {
     mSwapchain = VK_NULL_HANDLE;
 }
 
-VkResult foeGfxVkSwapchain::acquireNextImage(VkDevice device) noexcept {
-    if (mAcquiredIndex != UINT32_MAX) {
-        // If the current image hasn't been 'presented', don't try to acquire another yet
-        return VK_EVENT_SET;
-    }
-
+VkResult foeGfxVkSwapchain::acquireNextImage(VkDevice device,
+                                             foeGfxVkSwapchainImageData &pSwapchainData) noexcept {
     auto newSemaphoreIt = mCurrentSemaphore + 1;
     if (newSemaphoreIt >= mSemaphores.end()) {
         newSemaphoreIt = mSemaphores.begin();
     }
+
     uint32_t tempIndex;
     auto res =
         vkAcquireNextImageKHR(device, mSwapchain, 0, *newSemaphoreIt, VK_NULL_HANDLE, &tempIndex);
     if (res == VK_SUCCESS || res == VK_SUBOPTIMAL_KHR) {
-        mAcquiredIndex = tempIndex;
+        pSwapchainData = {
+            .extent = mExtent,
+            .readySemaphore = *newSemaphoreIt,
+            .image = mImages[tempIndex],
+            .view = mViews[tempIndex],
+            .swapchain = mSwapchain,
+            .imageIndex = tempIndex,
+        };
+
         mCurrentSemaphore = newSemaphoreIt;
     }
 
     return res;
 }
-
-void foeGfxVkSwapchain::presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex) noexcept {
-    if (mAcquiredIndex != UINT32_MAX) {
-        *pSwapchain = mSwapchain;
-        *pIndex = mAcquiredIndex;
-        mAcquiredIndex = UINT32_MAX;
-    }
-}
-
-VkExtent2D foeGfxVkSwapchain::extent() const noexcept { return mExtent; }
-
-uint32_t foeGfxVkSwapchain::acquiredIndex() const noexcept { return mAcquiredIndex; }
-
-uint32_t foeGfxVkSwapchain::chainSize() const noexcept {
-    return static_cast<uint32_t>(mViews.size());
-}
-
-VkImage foeGfxVkSwapchain::image(uint32_t index) const noexcept { return mImages[index]; }
-
-VkImageView foeGfxVkSwapchain::imageView(uint32_t index) const noexcept { return mViews[index]; }
-
-VkSemaphore foeGfxVkSwapchain::imageReadySemaphore() const noexcept { return *mCurrentSemaphore; }
 
 VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device, VkFormat format) {
     uint32_t imageCount;
@@ -209,7 +190,7 @@ VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device, VkFormat forma
 
 VkResult foeGfxVkSwapchain::createSemaphores(VkDevice device) {
     VkResult vkRes{VK_SUCCESS};
-    mSemaphores = std::vector<VkSemaphore>(mImages.size(), VK_NULL_HANDLE);
+    mSemaphores = std::vector<VkSemaphore>(mImages.size() * 2, VK_NULL_HANDLE);
     mCurrentSemaphore = mSemaphores.begin();
 
     VkSemaphoreCreateInfo semaphoreCI{

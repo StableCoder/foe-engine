@@ -1081,8 +1081,8 @@ int Application::mainloop() {
             windowRenderList.reserve(windowData.size());
 
             for (auto &it : windowData) {
-                result =
-                    vk_to_foeResult(it.swapchain.acquireNextImage(foeGfxVkGetDevice(gfxSession)));
+                result = vk_to_foeResult(it.swapchain.acquireNextImage(
+                    foeGfxVkGetDevice(gfxSession), it.acquiredImageData));
                 if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
                     // Waiting for an image to become ready
                 } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -1091,6 +1091,7 @@ int Application::mainloop() {
                 } else if (result.value == VK_SUBOPTIMAL_KHR) {
                     // Surface is still usable, but should rebuild next time
                     it.needSwapchainRebuild = true;
+                    it.acquiredImage = true;
                     windowRenderList.emplace_back(&it);
                 } else if (result.value) {
                     // Catastrophic error
@@ -1098,6 +1099,7 @@ int Application::mainloop() {
                 } else {
                     // No issues, add it to be rendered
                     windowRenderList.emplace_back(&it);
+                    it.acquiredImage = true;
                 }
             }
             if (windowRenderList.empty()) {
@@ -1437,8 +1439,9 @@ int Application::mainloop() {
                 renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
                 foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
                 foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
-                window->surfaceFormat.format, window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED,
-                true, {}, &renderTargetColourImageResource, &renderTargetColourImportJob);
+                window->surfaceFormat.format, window->acquiredImageData.extent,
+                VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource,
+                &renderTargetColourImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
@@ -1448,7 +1451,7 @@ int Application::mainloop() {
                 "renderTargetDepthImage",
                 foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 1),
                 foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 1), depthFormat,
-                window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED, true, {},
+                window->acquiredImageData.extent, VK_IMAGE_LAYOUT_UNDEFINED, true, {},
                 &renderTargetDepthImageResource, &renderTargetDepthImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
@@ -1475,12 +1478,11 @@ int Application::mainloop() {
 
             result = foeGfxVkImportSwapchainImageRenderJob(
                 renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
-                window->swapchain, window->swapchain.acquiredIndex(),
-                window->swapchain.image(window->swapchain.acquiredIndex()),
-                window->swapchain.imageView(window->swapchain.acquiredIndex()),
-                window->surfaceFormat.format, window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED,
-                window->swapchain.imageReadySemaphore(), &presentImageResource,
-                &presentImageImportJob);
+                window->swapchain, window->acquiredImageData.imageIndex,
+                window->acquiredImageData.image, window->acquiredImageData.view,
+                window->surfaceFormat.format, window->acquiredImageData.extent,
+                VK_IMAGE_LAYOUT_UNDEFINED, window->acquiredImageData.readySemaphore,
+                &presentImageResource, &presentImageImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
@@ -1520,7 +1522,7 @@ int Application::mainloop() {
             } cpuImage = {};
 
             if (frame == 100) {
-                auto extent = window->swapchain.extent();
+                auto extent = window->acquiredImageData.extent;
 
                 // Create Fence
                 VkFenceCreateInfo fenceCI{
@@ -1647,9 +1649,7 @@ int Application::mainloop() {
 #endif
             // This is called so that the swapchain advances it's internal acquired index, as if it
             // was presented
-            VkSwapchainKHR swapchain2;
-            uint32_t index;
-            window->swapchain.presentData(&swapchain2, &index);
+            window->acquiredImage = false;
 
             result = foeGfxVkPresentSwapchainImageRenderJob(
                 renderGraph, "presentFinalImage", frameData[frameIndex].frameComplete,

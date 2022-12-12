@@ -24,6 +24,8 @@ struct WindowData {
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR surfacePresentMode;
     foeGfxVkSwapchain swapchain;
+    bool acquiredImage{false};
+    foeGfxVkSwapchainImageData acquiredImageData;
 
     FrameTimer frameTime;
     // foeEntityId attachedCamera;

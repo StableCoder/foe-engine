@@ -60,6 +60,8 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
             uint32_t modeCount;
             vkGetPhysicalDeviceSurfacePresentModesKHR(foeGfxVkGetPhysicalDevice(gfxSession),
                                                       pWindow->surface, &modeCount, nullptr);
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
             std::unique_ptr<VkPresentModeKHR[]> presentModes(new VkPresentModeKHR[modeCount]);
             vkGetPhysicalDeviceSurfacePresentModesKHR(foeGfxVkGetPhysicalDevice(gfxSession),
