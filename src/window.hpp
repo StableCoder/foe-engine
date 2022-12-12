@@ -17,8 +17,13 @@
 struct WindowData {
     foeWsiWindow window{FOE_NULL_HANDLE};
     VkSurfaceKHR surface{VK_NULL_HANDLE};
-    foeGfxVkSwapchain swapchain;
+
     foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
+
+    bool needSwapchainRebuild{false};
+    VkSurfaceFormatKHR surfaceFormat;
+    VkPresentModeKHR surfacePresentMode;
+    foeGfxVkSwapchain swapchain;
 
     FrameTimer frameTime;
     // foeEntityId attachedCamera;

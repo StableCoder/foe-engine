@@ -31,7 +31,9 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
     foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
 
     // Check if need to rebuild a swapchain
-    if (!pWindow->swapchain || pWindow->swapchain.needRebuild()) {
+    if (!pWindow->swapchain || pWindow->needSwapchainRebuild) {
+        pWindow->needSwapchainRebuild = false;
+
         int width, height;
         foeWsiWindowGetSize(pWindow->window, &width, &height);
 
@@ -52,7 +54,7 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            pWindow->swapchain.surfaceFormat(surfaceFormats.get()[0]);
+            pWindow->surfaceFormat = surfaceFormats[0];
 
             // Present Mode
             uint32_t modeCount;
@@ -60,17 +62,18 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
                                                       pWindow->surface, &modeCount, nullptr);
 
             std::unique_ptr<VkPresentModeKHR[]> presentModes(new VkPresentModeKHR[modeCount]);
-
             vkGetPhysicalDeviceSurfacePresentModesKHR(foeGfxVkGetPhysicalDevice(gfxSession),
                                                       pWindow->surface, &modeCount,
                                                       presentModes.get());
+            if (vkResult != VK_SUCCESS)
+                return vk_to_foeResult(vkResult);
 
-            pWindow->swapchain.presentMode(presentModes.get()[0]);
+            pWindow->surfacePresentMode = presentModes[0];
 
             // Offscreen render target
             std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
                 foeGfxVkRenderTargetSpec{
-                    .format = pWindow->swapchain.surfaceFormat().format,
+                    .format = pWindow->surfaceFormat.format,
                     .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
                     .count = 3,
                 },
@@ -93,8 +96,8 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
         foeGfxVkSwapchain newSwapchain;
         vkResult = newSwapchain.create(
             foeGfxVkGetPhysicalDevice(gfxSession), foeGfxVkGetDevice(gfxSession), pWindow->surface,
-            pWindow->swapchain.surfaceFormat(), pWindow->swapchain.presentMode(),
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain, 3, width, height);
+            pWindow->surfaceFormat, pWindow->surfacePresentMode, VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+            pWindow->swapchain, 3, width, height);
         if (vkResult != VK_SUCCESS)
             return vk_to_foeResult(vkResult);
 

@@ -63,9 +63,6 @@ VkResult foeGfxVkSwapchain::create(VkPhysicalDevice physicalDevice,
         preTransform = capabilities.currentTransform;
     }
 
-    mSurfaceFormat = surfaceFormat;
-    mPresentMode = presentMode;
-
     VkSwapchainCreateInfoKHR swapchainCI{
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .surface = surface,
@@ -90,7 +87,7 @@ VkResult foeGfxVkSwapchain::create(VkPhysicalDevice physicalDevice,
     mExtent = extent;
 
     // Get the new image views
-    res = createSwapchainViews(device);
+    res = createSwapchainViews(device, surfaceFormat.format);
     if (res != VK_SUCCESS)
         goto CREATE_FAILED;
 
@@ -153,24 +150,6 @@ void foeGfxVkSwapchain::presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex
     }
 }
 
-bool foeGfxVkSwapchain::needRebuild() const noexcept { return mNeedRebuild; }
-
-void foeGfxVkSwapchain::requestRebuild() noexcept { mNeedRebuild = true; }
-
-VkSurfaceFormatKHR foeGfxVkSwapchain::surfaceFormat() const noexcept { return mSurfaceFormat; }
-
-void foeGfxVkSwapchain::surfaceFormat(VkSurfaceFormatKHR surfaceFormat) noexcept {
-    mSurfaceFormat = surfaceFormat;
-    mNeedRebuild = true;
-}
-
-VkPresentModeKHR foeGfxVkSwapchain::presentMode() const noexcept { return mPresentMode; }
-
-void foeGfxVkSwapchain::presentMode(VkPresentModeKHR presentMode) noexcept {
-    mPresentMode = presentMode;
-    mNeedRebuild = true;
-}
-
 VkExtent2D foeGfxVkSwapchain::extent() const noexcept { return mExtent; }
 
 uint32_t foeGfxVkSwapchain::acquiredIndex() const noexcept { return mAcquiredIndex; }
@@ -185,7 +164,7 @@ VkImageView foeGfxVkSwapchain::imageView(uint32_t index) const noexcept { return
 
 VkSemaphore foeGfxVkSwapchain::imageReadySemaphore() const noexcept { return *mCurrentSemaphore; }
 
-VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device) {
+VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device, VkFormat format) {
     uint32_t imageCount;
     VkResult res = vkGetSwapchainImagesKHR(device, mSwapchain, &imageCount, nullptr);
     if (res != VK_SUCCESS)
@@ -202,7 +181,7 @@ VkResult foeGfxVkSwapchain::createSwapchainViews(VkDevice device) {
     VkImageViewCreateInfo viewCI{
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .format = mSurfaceFormat.format,
+        .format = format,
         .components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B,
                        VK_COMPONENT_SWIZZLE_A},
         .subresourceRange =

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 George Cave.
+// Copyright (C) 2020-2022 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -49,15 +49,6 @@ class foeGfxVkSwapchain {
     FOE_GFX_EXPORT VkResult acquireNextImage(VkDevice device) noexcept;
     FOE_GFX_EXPORT void presentData(VkSwapchainKHR *pSwapchain, uint32_t *pIndex) noexcept;
 
-    FOE_GFX_EXPORT bool needRebuild() const noexcept;
-    FOE_GFX_EXPORT void requestRebuild() noexcept;
-
-    FOE_GFX_EXPORT VkSurfaceFormatKHR surfaceFormat() const noexcept;
-    FOE_GFX_EXPORT void surfaceFormat(VkSurfaceFormatKHR surfaceFormat) noexcept;
-
-    FOE_GFX_EXPORT VkPresentModeKHR presentMode() const noexcept;
-    FOE_GFX_EXPORT void presentMode(VkPresentModeKHR presentMode) noexcept;
-
     FOE_GFX_EXPORT VkExtent2D extent() const noexcept;
     FOE_GFX_EXPORT uint32_t acquiredIndex() const noexcept;
     FOE_GFX_EXPORT uint32_t chainSize() const noexcept;
@@ -67,12 +58,8 @@ class foeGfxVkSwapchain {
     FOE_GFX_EXPORT VkSemaphore imageReadySemaphore() const noexcept;
 
   private:
-    VkResult createSwapchainViews(VkDevice device);
+    VkResult createSwapchainViews(VkDevice device, VkFormat format);
     VkResult createSemaphores(VkDevice device);
-
-    bool mNeedRebuild{false};
-    VkSurfaceFormatKHR mSurfaceFormat{};
-    VkPresentModeKHR mPresentMode{};
 
     VkSwapchainKHR mSwapchain{VK_NULL_HANDLE};
 

@@ -982,7 +982,7 @@ int Application::mainloop() {
         // Check if windows were resized, and if so request associated swapchains to be rebuilt
         for (auto &it : windowData) {
             if (foeWsiWindowResized(it.window)) {
-                it.swapchain.requestRebuild();
+                it.needSwapchainRebuild = true;
 
 #ifdef EDITOR_MODE
                 if (it.window == windowData[0].window) {
@@ -1087,10 +1087,10 @@ int Application::mainloop() {
                     // Waiting for an image to become ready
                 } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
                     // Surface changed, need to rebuild swapchains
-                    it.swapchain.needRebuild();
+                    it.needSwapchainRebuild = true;
                 } else if (result.value == VK_SUBOPTIMAL_KHR) {
                     // Surface is still usable, but should rebuild next time
-                    it.swapchain.needRebuild();
+                    it.needSwapchainRebuild = true;
                     windowRenderList.emplace_back(&it);
                 } else if (result.value) {
                     // Catastrophic error
@@ -1437,9 +1437,8 @@ int Application::mainloop() {
                 renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
                 foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
                 foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
-                window->swapchain.surfaceFormat().format, window->swapchain.extent(),
-                VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource,
-                &renderTargetColourImportJob);
+                window->surfaceFormat.format, window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED,
+                true, {}, &renderTargetColourImageResource, &renderTargetColourImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
@@ -1479,9 +1478,9 @@ int Application::mainloop() {
                 window->swapchain, window->swapchain.acquiredIndex(),
                 window->swapchain.image(window->swapchain.acquiredIndex()),
                 window->swapchain.imageView(window->swapchain.acquiredIndex()),
-                window->swapchain.surfaceFormat().format, window->swapchain.extent(),
-                VK_IMAGE_LAYOUT_UNDEFINED, window->swapchain.imageReadySemaphore(),
-                &presentImageResource, &presentImageImportJob);
+                window->surfaceFormat.format, window->swapchain.extent(), VK_IMAGE_LAYOUT_UNDEFINED,
+                window->swapchain.imageReadySemaphore(), &presentImageResource,
+                &presentImageImportJob);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
