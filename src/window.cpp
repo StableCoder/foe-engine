@@ -110,7 +110,9 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
 
         pWindow->swapchain = newSwapchain;
 
-        foeGfxUpdateRenderTargetExtent(pWindow->gfxOffscreenRenderTarget, width, height);
+        VkExtent2D swapchainExtent = foeGfxVkGetSwapchainExtent(pWindow->swapchain);
+        foeGfxUpdateRenderTargetExtent(pWindow->gfxOffscreenRenderTarget, swapchainExtent.width,
+                                       swapchainExtent.height);
     }
 
     return result;

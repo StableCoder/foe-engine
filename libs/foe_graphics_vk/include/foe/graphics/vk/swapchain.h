@@ -42,6 +42,8 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
 
 FOE_GFX_EXPORT void foeGfxVkDestroySwapchain(foeGfxSession session, foeGfxVkSwapchain swapchain);
 
+FOE_GFX_EXPORT VkExtent2D foeGfxVkGetSwapchainExtent(foeGfxVkSwapchain swapchain);
+
 FOE_GFX_EXPORT VkResult
 foeGfxVkAcquireSwapchainImage(foeGfxSession session,
                               foeGfxVkSwapchain swapchain,

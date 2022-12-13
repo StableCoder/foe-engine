@@ -59,15 +59,7 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
         extent.height = height;
     } else {
         // If the surface size is defined, the swap chain must match
-#ifndef __APPLE__
         extent = capabilities.currentExtent;
-#else
-        // For whatever reason, GLFW is scaling the surface size in the window on 'retina' screens,
-        // so a 1280x720 window on a retina screen has a surface size 2x that, leading to the
-        // rendered portion of the window being a quarter of the screen.
-        extent.width = width;
-        extent.height = height;
-#endif
     }
 
     // Surface Transform
@@ -246,6 +238,12 @@ void foeGfxVkDestroySwapchain(foeGfxSession session, foeGfxVkSwapchain swapchain
         vkDestroySwapchainKHR(device, pSwapchain->swapchain, NULL);
 
     free(pSwapchain);
+}
+
+VkExtent2D foeGfxVkGetSwapchainExtent(foeGfxVkSwapchain swapchain) {
+    struct foeGfxVkSwapchainImpl *pSwapchain = swapchain_from_handle(swapchain);
+
+    return pSwapchain->extent;
 }
 
 VkResult foeGfxVkAcquireSwapchainImage(foeGfxSession session,
