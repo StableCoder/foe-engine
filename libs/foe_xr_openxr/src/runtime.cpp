@@ -197,6 +197,12 @@ foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime) {
     auto *pRuntime = runtime_from_handle(runtime);
     XrResult xrResult = XR_SUCCESS;
 
+    if (pRuntime->pExtensionNames != nullptr)
+        delete[] pRuntime->pExtensionNames;
+
+    if (pRuntime->pLayerNames != nullptr)
+        delete[] pRuntime->pLayerNames;
+
     if (pRuntime->debugMessenger != XR_NULL_HANDLE)
         foeOpenXrDestroyDebugUtilsMessenger(pRuntime->instance, pRuntime->debugMessenger);
 

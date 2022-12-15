@@ -98,7 +98,6 @@ extern "C" void foeXrDestroySession(foeXrSession session) {
     if (pSession->space != XR_NULL_HANDLE) {
         xrDestroySpace(pSession->space);
     }
-    pSession->space = XR_NULL_HANDLE;
 
     if (pSession->session != XR_NULL_HANDLE) {
         xrDestroySession(pSession->session);
@@ -106,7 +105,8 @@ extern "C" void foeXrDestroySession(foeXrSession session) {
         // Remove the session from the runtime
         foeOpenXrAddSessionToRuntime(runtime_from_handle(pSession->runtime), pSession);
     }
-    pSession->session = XR_NULL_HANDLE;
+
+    delete pSession;
 }
 
 extern "C" foeResultSet foeOpenXrBeginSession(foeXrSession session) {
