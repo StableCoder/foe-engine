@@ -787,8 +787,8 @@ foeResultSet Application::stopXR(bool localPoll) {
                     result.toString(result.value, buffer);
                     FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
                             __FILE__, __LINE__, buffer);
+                    return result;
                 }
-                return result;
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
@@ -818,6 +818,9 @@ foeResultSet Application::stopXR(bool localPoll) {
         xrOffscreenRenderTargets.clear();
 
         for (auto &view : xrViews) {
+            for (auto it : view.framebuffers) {
+                vkDestroyFramebuffer(foeGfxVkGetDevice(gfxSession), it, nullptr);
+            }
             for (auto it : view.imageViews) {
                 vkDestroyImageView(foeGfxVkGetDevice(gfxSession), it, nullptr);
             }
@@ -825,6 +828,7 @@ foeResultSet Application::stopXR(bool localPoll) {
                 xrDestroySwapchain(view.swapchain);
             }
         }
+        xrVkCameraSystem.deinitialize();
 
         while (foeOpenXrGetSessionState(xrSession) != XR_SESSION_STATE_EXITING) {
             if (localPoll) {
