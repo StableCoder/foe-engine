@@ -7,7 +7,6 @@ target_sources(
   PRIVATE armature_create_info.c
           armature_create_info.cpp
           armature_state.cpp
-          camera.cpp
           export_registration.c
           import_registration.c
           render_state.cpp

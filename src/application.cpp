@@ -17,6 +17,7 @@
 #include <foe/graphics/vk/render_graph/job/resolve_image.hpp>
 #include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/graphics/vk/render_target.h>
+#include <foe/graphics/vk/render_view_pool.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.h>
 #include <foe/graphics/vk/session.h>
@@ -36,9 +37,8 @@
 #include "register_basic_functionality.h"
 #include "render_graph/render_scene.hpp"
 #include "simulation/armature_system.hpp"
-#include "simulation/camera_pool.hpp"
-#include "simulation/camera_system.hpp"
 #include "simulation/position_descriptor_pool.hpp"
+#include "simulation/type_defs.h"
 #include "simulation/vk_animation.hpp"
 
 #ifdef FOE_XR_SUPPORT
@@ -127,9 +127,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         return std::make_tuple(false, result.value);
     }
 
-    // Special Entities
-    foeEcsNameMapFindID(pSimulationSet->entityNameMap, "camera", &cameraID);
-
 #ifdef EDITOR_MODE
     auto *pImGuiContext = ImGui::CreateContext();
 
@@ -181,6 +178,12 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                                         true, &it.window);
             if (result.value != FOE_SUCCESS)
                 ERRC_END_PROGRAM_TUPLE
+
+            it.position = glm::vec3{0.f, 0.f, -17.5f};
+            it.orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+            it.fovY = 60;
+            it.nearZ = 2;
+            it.farZ = 50;
 
 #ifdef EDITOR_MODE
             windowInfo.addWindow(it.window);
@@ -247,6 +250,18 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
                                        &gfxDelayedDestructor);
     if (result.value != FOE_SUCCESS) {
         ERRC_END_PROGRAM_TUPLE
+    }
+
+    result = foeGfxCreateRenderViewPool(gfxSession, 32, &gfxRenderViewPool);
+    if (result.value != FOE_SUCCESS) {
+        ERRC_END_PROGRAM_TUPLE
+    }
+
+    for (auto &it : windowData) {
+        result = foeGfxAllocateRenderView(gfxRenderViewPool, &it.renderView);
+        if (result.value != FOE_SUCCESS) {
+            ERRC_END_PROGRAM_TUPLE
+        }
     }
 
 #ifdef EDITOR_MODE
@@ -334,6 +349,8 @@ void Application::deinitialize() {
 
     // Destroy window data
     for (auto &it : windowData) {
+        it.renderView = FOE_NULL_HANDLE;
+
 #ifdef EDITOR_MODE
         windowInfo.removeWindow(it.window);
 #endif
@@ -354,6 +371,10 @@ void Application::deinitialize() {
     }
 
     // Cleanup graphics
+    if (gfxRenderViewPool != FOE_NULL_HANDLE)
+        foeGfxDestroyRenderViewPool(gfxSession, gfxRenderViewPool);
+    gfxRenderViewPool = FOE_NULL_HANDLE;
+
     if (gfxDelayedDestructor != FOE_NULL_HANDLE)
         foeGfxDestroyDelayedCaller(gfxDelayedDestructor);
     gfxDelayedDestructor = FOE_NULL_HANDLE;
@@ -401,46 +422,47 @@ namespace {
 void processUserInput(double timeElapsedInSeconds,
                       foeWsiKeyboard const *pKeyboard,
                       foeWsiMouse const *pMouse,
-                      foePosition3d *pCamera) {
+                      glm::vec3 *pPosition,
+                      glm::quat *pOrientation) {
     constexpr float movementMultiplier = 10.f;
     constexpr float rorationMultiplier = 40.f;
     float multiplier = timeElapsedInSeconds * 3.f; // 3 units per second
 
     if (pMouse->inWindow) {
         if (pKeyboard->keyDown(GLFW_KEY_Z)) { // Up
-            pCamera->position += upVec(pCamera->orientation) * movementMultiplier * multiplier;
+            *pPosition += upVec(*pOrientation) * movementMultiplier * multiplier;
         }
         if (pKeyboard->keyDown(GLFW_KEY_X)) { // Down
-            pCamera->position -= upVec(pCamera->orientation) * movementMultiplier * multiplier;
+            *pPosition -= upVec(*pOrientation) * movementMultiplier * multiplier;
         }
 
         if (pKeyboard->keyDown(GLFW_KEY_W)) { // Forward
-            pCamera->position += forwardVec(pCamera->orientation) * movementMultiplier * multiplier;
+            *pPosition += forwardVec(*pOrientation) * movementMultiplier * multiplier;
         }
         if (pKeyboard->keyDown(GLFW_KEY_S)) { // Back
-            pCamera->position -= forwardVec(pCamera->orientation) * movementMultiplier * multiplier;
+            *pPosition -= forwardVec(*pOrientation) * movementMultiplier * multiplier;
         }
 
         if (pKeyboard->keyDown(GLFW_KEY_A)) { // Left
-            pCamera->position += leftVec(pCamera->orientation) * movementMultiplier * multiplier;
+            *pPosition += leftVec(*pOrientation) * movementMultiplier * multiplier;
         }
         if (pKeyboard->keyDown(GLFW_KEY_D)) { // Right
-            pCamera->position -= leftVec(pCamera->orientation) * movementMultiplier * multiplier;
+            *pPosition -= leftVec(*pOrientation) * movementMultiplier * multiplier;
         }
 
         if (pMouse->buttonDown(GLFW_MOUSE_BUTTON_1)) {
-            pCamera->orientation = changeYaw(
-                pCamera->orientation, -glm::radians(pMouse->oldPosition.x - pMouse->position.x));
-            pCamera->orientation = changePitch(
-                pCamera->orientation, glm::radians(pMouse->oldPosition.y - pMouse->position.y));
+            *pOrientation =
+                changeYaw(*pOrientation, -glm::radians(pMouse->oldPosition.x - pMouse->position.x));
+            *pOrientation = changePitch(*pOrientation,
+                                        glm::radians(pMouse->oldPosition.y - pMouse->position.y));
 
             if (pKeyboard->keyDown(GLFW_KEY_Q)) { // Roll Left
-                pCamera->orientation =
-                    changeRoll(pCamera->orientation, glm::radians(rorationMultiplier * multiplier));
+                *pOrientation =
+                    changeRoll(*pOrientation, glm::radians(rorationMultiplier * multiplier));
             }
             if (pKeyboard->keyDown(GLFW_KEY_E)) { // Roll Right
-                pCamera->orientation = changeRoll(pCamera->orientation,
-                                                  -glm::radians(rorationMultiplier * multiplier));
+                *pOrientation =
+                    changeRoll(*pOrientation, -glm::radians(rorationMultiplier * multiplier));
             }
         }
     }
@@ -587,6 +609,16 @@ foeResultSet Application::startXR(bool localPoll) {
         xrOffscreenRenderPass =
             foeGfxVkGetRenderPass(renderPassPool, xrOffscreenAttachmentDescription.size(),
                                   xrOffscreenAttachmentDescription.data());
+
+        result = foeGfxCreateRenderViewPool(gfxSession, xrViews.size(), &xrRenderViewPool);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                    __FILE__, __LINE__, buffer);
+
+            goto START_XR_FAILED;
+        }
 
         for (auto &view : xrViews) {
             // Offscreen Render Targets
@@ -737,16 +769,16 @@ foeResultSet Application::startXR(bool localPoll) {
 
                 view.framebuffers.emplace_back(newFramebuffer);
             }
-        }
 
-        result = xrVkCameraSystem.initialize(gfxSession);
-        if (result.value != FOE_SUCCESS) {
-            char buffer[FOE_MAX_RESULT_STRING_SIZE];
-            result.toString(result.value, buffer);
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
-                    __FILE__, __LINE__, buffer);
+            result = foeGfxAllocateRenderView(xrRenderViewPool, &view.renderView);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, FOE_LOG_LEVEL_FATAL, "End called from {}:{} with error {}",
+                        __FILE__, __LINE__, buffer);
 
-            goto START_XR_FAILED;
+                goto START_XR_FAILED;
+            }
         }
 
         result = foeOpenXrBeginSession(xrSession);
@@ -828,7 +860,10 @@ foeResultSet Application::stopXR(bool localPoll) {
                 xrDestroySwapchain(view.swapchain);
             }
         }
-        xrVkCameraSystem.deinitialize();
+
+        if (xrRenderViewPool != FOE_NULL_HANDLE)
+            foeGfxDestroyRenderViewPool(gfxSession, xrRenderViewPool);
+        xrRenderViewPool = FOE_NULL_HANDLE;
 
         while (foeOpenXrGetSessionState(xrSession) != XR_SESSION_STATE_EXITING) {
             if (localPoll) {
@@ -975,12 +1010,9 @@ int Application::mainloop() {
         if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
 #endif
         {
-            auto pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
-                pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-
-            auto *pCameraPosition = (pPosition3dPool->begin<1>() + pPosition3dPool->find(cameraID));
             processUserInput(timeElapsedInSec, foeWsiGetKeyboard(windowData[0].window),
-                             foeWsiGetMouse(windowData[0].window), pCameraPosition->get());
+                             foeWsiGetMouse(windowData[0].window), &windowData[0].position,
+                             &windowData[0].orientation);
         }
 
         // Check if windows were resized, and if so request associated swapchains to be rebuilt
@@ -1067,19 +1099,6 @@ int Application::mainloop() {
                                          depthFormat);
             }
 
-            { // All Cameras are currently ties to the primary window X/Y viewport size
-                auto pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
-                    pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
-
-                int width, height;
-                foeWsiWindowGetSize(windowData[0].window, &width, &height);
-                for (auto *pCameraData = pCameraPool->begin<1>();
-                     pCameraData != pCameraPool->end<1>(); ++pCameraData) {
-                    pCameraData->get()->viewX = width;
-                    pCameraData->get()->viewY = height;
-                }
-            }
-
             // Acquire Target Presentation Images
             std::vector<WindowData *> windowRenderList;
             windowRenderList.reserve(windowData.size());
@@ -1105,18 +1124,26 @@ int Application::mainloop() {
                     windowRenderList.emplace_back(&it);
                     it.acquiredImage = true;
                 }
+
+                if (it.acquiredImage) {
+                    glm::mat4 matrix = glm::perspectiveFov(
+                        glm::radians(it.fovY), (float)it.acquiredImageData.extent.width,
+                        (float)it.acquiredImageData.extent.height, it.nearZ, it.farZ);
+                    matrix *= glm::mat4_cast(it.orientation) *
+                              glm::translate(glm::mat4(1.f), it.position);
+
+                    foeGfxUpdateRenderView(it.renderView, sizeof(glm::mat4), &matrix);
+                }
             }
             if (windowRenderList.empty()) {
                 goto SKIP_FRAME_RENDER;
             }
 
+            foeGfxUpdateRenderViewPool(gfxSession, gfxRenderViewPool);
+
             frameTime.newFrame();
 
             // Run Systems that generate graphics data
-            ((foeCameraSystem *)foeSimulationGetSystem(pSimulationSet,
-                                                       FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_SYSTEM))
-                ->processCameras(frameIndex);
-
             ((PositionDescriptorPool *)foeSimulationGetSystem(
                  pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL))
                 ->generatePositionDescriptors(frameIndex);
@@ -1168,15 +1195,13 @@ int Application::mainloop() {
                         xrViews[i].camera.fov = views[i].fov;
                         xrViews[i].camera.pose = views[i].pose;
 
-                        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
-                            pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
+                        glm::mat4 matrix = foeXrCameraProjectionMatrix(&xrViews[i].camera) *
+                                           foeXrCameraViewMatrix(&xrViews[i].camera);
 
-                        auto *pCameraPosition =
-                            (pPosition3dPool->begin<1>() + pPosition3dPool->find(cameraID));
-                        xrViews[i].camera.pPosition3D = pCameraPosition->get();
+                        foeGfxUpdateRenderView(xrViews[i].renderView, sizeof(glm::mat4), &matrix);
                     }
 
-                    xrVkCameraSystem.processCameras(frameIndex, xrViews);
+                    foeGfxUpdateRenderViewPool(gfxSession, xrRenderViewPool);
 
                     // Render Code
                     for (size_t i = 0; i < xrViews.size(); ++i) {
@@ -1295,13 +1320,16 @@ int Application::mainloop() {
                             ERRC_END_PROGRAM
                         }
 
+                        VkDescriptorSet viewDescriptorSet =
+                            foeGfxVkGetRenderViewDescriptorSet(xrRenderViewPool, it.renderView);
+
                         foeGfxVkRenderGraphJob xrRenderSceneJob;
                         result = renderSceneJob(
                             renderGraph, "render3dScene", VK_NULL_HANDLE,
                             renderTargetColourImageResource, 1, &renderTargetColourImportJob,
                             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource, 1,
                             &renderTargetDepthImportJob, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                            globalMSAA, pSimulationSet, it.camera.descriptor, &xrRenderSceneJob);
+                            globalMSAA, pSimulationSet, viewDescriptorSet, &xrRenderSceneJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
@@ -1461,10 +1489,8 @@ int Application::mainloop() {
                 ERRC_END_PROGRAM
             }
 
-            auto *pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
-                pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
-
-            auto *pCamera = (pCameraPool->begin<1>() + pCameraPool->find(cameraID));
+            VkDescriptorSet cameraProjViewDescriptor =
+                foeGfxVkGetRenderViewDescriptorSet(gfxRenderViewPool, window->renderView);
 
             foeGfxVkRenderGraphJob renderSceneJobHandle;
             result = renderSceneJob(
@@ -1472,7 +1498,7 @@ int Application::mainloop() {
                 &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                 renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
-                (*pCamera)->descriptor, &renderSceneJobHandle);
+                cameraProjViewDescriptor, &renderSceneJobHandle);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }

@@ -10,7 +10,6 @@ target_sources(
           armature_loader.cpp
           armature_system.cpp
           binary.cpp
-          camera_system.cpp
           cleanup.c
           compare.c
           position_descriptor_pool.cpp

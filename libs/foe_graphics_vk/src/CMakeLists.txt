@@ -28,6 +28,7 @@ target_sources(
           render_pass_pool.cpp
           render_target.cpp
           runtime.cpp
+          render_view_pool.c
           result.c
           sample_count.c
           session.cpp

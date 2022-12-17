@@ -9,7 +9,6 @@
 
 #include "armature_create_info.h"
 #include "armature_state.hpp"
-#include "camera.hpp"
 #include "cleanup.h"
 #include "render_state.hpp"
 
@@ -455,103 +454,6 @@ extern "C" foeResultSet binary_write_foeArmatureState(foeArmatureState const *pD
 
 extern "C" char const *binary_key_foeArmatureState() {
     return "8385dd2b487c215e7e0378bdc04448abe137aa16be3c59cc0ac7e7f0";
-}
-
-extern "C" foeResultSet binary_read_foeCamera(void const *pReadBuffer,
-                                              uint32_t *pReadSize,
-                                              foeCamera *pData) {
-    foeResultSet result = foeBinaryResult_to_foeResultSet(FOE_BINARY_SUCCESS);
-    uint8_t const *readPtr = (uint8_t const *)pReadBuffer;
-    uint32_t bufferSizeLeft = *pReadSize;
-
-    foeCamera newData;
-    memset(&newData, 0, sizeof(foeCamera));
-
-    // float - fieldOfViewY
-    if (bufferSizeLeft < sizeof(float)) {
-        result = foeBinaryResult_to_foeResultSet(FOE_BINARY_ERROR_INSUFFICIENT_BUFFER_SIZE);
-        goto FOE_CAMERA_READ_FAILED;
-    }
-    memcpy(&newData.fieldOfViewY, readPtr, sizeof(float));
-    readPtr += sizeof(float);
-    bufferSizeLeft -= sizeof(float);
-
-    // float - nearZ
-    if (bufferSizeLeft < sizeof(float)) {
-        result = foeBinaryResult_to_foeResultSet(FOE_BINARY_ERROR_INSUFFICIENT_BUFFER_SIZE);
-        goto FOE_CAMERA_READ_FAILED;
-    }
-    memcpy(&newData.nearZ, readPtr, sizeof(float));
-    readPtr += sizeof(float);
-    bufferSizeLeft -= sizeof(float);
-
-    // float - farZ
-    if (bufferSizeLeft < sizeof(float)) {
-        result = foeBinaryResult_to_foeResultSet(FOE_BINARY_ERROR_INSUFFICIENT_BUFFER_SIZE);
-        goto FOE_CAMERA_READ_FAILED;
-    }
-    memcpy(&newData.farZ, readPtr, sizeof(float));
-    readPtr += sizeof(float);
-    bufferSizeLeft -= sizeof(float);
-
-FOE_CAMERA_READ_FAILED:
-    if (result.value == FOE_SUCCESS) {
-        // Copy content over and return total bytes read
-        *pData = newData;
-        *pReadSize = readPtr - (uint8_t const *)pReadBuffer;
-    }
-
-    return result;
-}
-
-extern "C" foeResultSet binary_write_foeCamera(foeCamera const *pData,
-                                               uint32_t *pWriteSize,
-                                               void *pWriteBuffer) {
-    // Calculate the required buffer size needed to write out the content before committing to do so
-    uint32_t writeSize = 0;
-
-    // float - fieldOfViewY
-    writeSize += sizeof(float);
-
-    // float - nearZ
-    writeSize += sizeof(float);
-
-    // float - farZ
-    writeSize += sizeof(float);
-
-    if (pWriteBuffer == NULL) {
-        // If there is no buffer to write to, just return the required buffer size
-        *pWriteSize = writeSize;
-        return foeBinaryResult_to_foeResultSet(FOE_BINARY_SUCCESS);
-    }
-
-    if (*pWriteSize < writeSize) {
-        // The given buffer is too small, return an error with the required minimum size
-        *pWriteSize = writeSize;
-        return foeBinaryResult_to_foeResultSet(FOE_BINARY_ERROR_INSUFFICIENT_BUFFER_SIZE);
-    }
-
-    uint8_t *writePtr = (uint8_t *)pWriteBuffer;
-
-    // float - fieldOfViewY
-    memcpy(writePtr, &pData->fieldOfViewY, sizeof(float));
-    writePtr += sizeof(float);
-
-    // float - nearZ
-    memcpy(writePtr, &pData->nearZ, sizeof(float));
-    writePtr += sizeof(float);
-
-    // float - farZ
-    memcpy(writePtr, &pData->farZ, sizeof(float));
-    writePtr += sizeof(float);
-
-    // Return bytes written and success result
-    *pWriteSize = writePtr - (uint8_t *)pWriteBuffer;
-    return foeBinaryResult_to_foeResultSet(FOE_BINARY_SUCCESS);
-}
-
-extern "C" char const *binary_key_foeCamera() {
-    return "4b119396b3cff9895c5d6f03e1bb285e52e1b94f0b5b534dd3f452f5";
 }
 
 extern "C" foeResultSet binary_read_foeRenderState(void const *pReadBuffer,

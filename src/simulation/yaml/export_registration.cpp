@@ -11,8 +11,6 @@
 
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.hpp"
-#include "../camera_imex.hpp"
-#include "../camera_pool.hpp"
 #include "../render_state_imex.hpp"
 #include "../render_state_pool.hpp"
 #include "../type_defs.h"
@@ -54,18 +52,6 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation c
             keyDataPairs.emplace_back(foeKeyYamlPair{
                 .key = yaml_armature_state_key(),
                 .data = yaml_write_ArmatureState(pArmatureStatePool->begin<1>()[searchIt]),
-            });
-        }
-    }
-
-    // foeCamera
-    auto *pCameraPool = (foeCameraPool *)foeSimulationGetComponentPool(
-        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
-    if (pCameraPool) {
-        if (auto searchIt = pCameraPool->find(entity); searchIt != pCameraPool->size()) {
-            keyDataPairs.emplace_back(foeKeyYamlPair{
-                .key = yaml_camera_key(),
-                .data = yaml_write_Camera(*pCameraPool->begin<1>()[searchIt].get()),
             });
         }
     }

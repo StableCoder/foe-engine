@@ -19,8 +19,7 @@ target_sources(
           render_graph/render_scene.cpp)
 
 if(XR_SUPPORT)
-  target_sources(foe_bringup_lib PRIVATE xr.cpp xr_result.c
-                                         xr_vk_camera_system.cpp)
+  target_sources(foe_bringup_lib PRIVATE xr.cpp xr_result.c)
 endif()
 
 # Exception-handled code

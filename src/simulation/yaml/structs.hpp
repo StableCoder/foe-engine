@@ -38,9 +38,7 @@ bool yaml_read_foeArmatureState(std::string const &nodeName,
 void yaml_write_foeArmatureState(std::string const &nodeName,
                                  foeArmatureState const &data,
                                  YAML::Node &node);
-bool yaml_read_foeCamera(std::string const &nodeName, YAML::Node const &node, foeCamera &data);
 
-void yaml_write_foeCamera(std::string const &nodeName, foeCamera const &data, YAML::Node &node);
 bool yaml_read_foeRenderState(std::string const &nodeName,
                               YAML::Node const &node,
                               foeEcsGroupTranslator groupTranslator,

@@ -10,7 +10,6 @@
 
 #include "../armature_create_info.h"
 #include "../armature_state.hpp"
-#include "../camera.hpp"
 #include "../cleanup.h"
 #include "../render_state.hpp"
 #include "../type_defs.h"
@@ -229,67 +228,6 @@ void yaml_write_foeArmatureState(std::string const &nodeName,
         // float - time
         if (data.time != 0) {
             yaml_write_float("time", data.time, writeNode);
-        }
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException{nodeName + "::" + e.what()};
-        }
-    }
-
-    if (nodeName.empty()) {
-        node = writeNode;
-    } else {
-        node[nodeName] = writeNode;
-    }
-}
-
-bool yaml_read_foeCamera(std::string const &nodeName, YAML::Node const &node, foeCamera &data) {
-    YAML::Node const &readNode = (nodeName.empty()) ? node : node[nodeName];
-    if (!readNode) {
-        return false;
-    }
-
-    foeCamera newData = {};
-    try {
-        // float - fieldOfViewY
-        yaml_read_float("field_of_view_y", readNode, newData.fieldOfViewY);
-
-        // float - nearZ
-        yaml_read_float("near_z", readNode, newData.nearZ);
-
-        // float - farZ
-        yaml_read_float("far_z", readNode, newData.farZ);
-    } catch (foeYamlException const &e) {
-        if (nodeName.empty()) {
-            throw e;
-        } else {
-            throw foeYamlException{nodeName + "::" + e.what()};
-        }
-    }
-
-    data = newData;
-    return true;
-}
-
-void yaml_write_foeCamera(std::string const &nodeName, foeCamera const &data, YAML::Node &node) {
-    YAML::Node writeNode;
-
-    try {
-        // float - fieldOfViewY
-        if (data.fieldOfViewY != 0) {
-            yaml_write_float("field_of_view_y", data.fieldOfViewY, writeNode);
-        }
-
-        // float - nearZ
-        if (data.nearZ != 0) {
-            yaml_write_float("near_z", data.nearZ, writeNode);
-        }
-
-        // float - farZ
-        if (data.farZ != 0) {
-            yaml_write_float("far_z", data.farZ, writeNode);
         }
     } catch (foeYamlException const &e) {
         if (nodeName.empty()) {

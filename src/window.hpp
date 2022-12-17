@@ -7,10 +7,13 @@
 
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
+#include <foe/graphics/render_view_pool.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/swapchain.h>
 #include <foe/result.h>
 #include <foe/wsi/window.h>
+#include <glm/ext.hpp>
+#include <glm/glm.hpp>
 
 #include "frame_timer.hpp"
 
@@ -27,8 +30,12 @@ struct WindowData {
     bool acquiredImage{false};
     foeGfxVkSwapchainImageData acquiredImageData;
 
+    glm::vec3 position;
+    glm::quat orientation;
+    float fovY, nearZ, farZ;
+    foeGfxRenderView renderView{FOE_NULL_HANDLE};
+
     FrameTimer frameTime;
-    // foeEntityId attachedCamera;
 };
 
 foeResultSet performWindowMaintenance(WindowData *pWindow,

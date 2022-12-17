@@ -11,7 +11,6 @@
 
 #include "armature_create_info.h"
 #include "armature_state.h"
-#include "camera.h"
 #include "render_state.h"
 #include "result.h"
 
@@ -22,7 +21,6 @@ static void onDeregister(foeExporter exporter) {
     if (strcmp(exporter.pName, "Yaml") == 0) {
         // Component
         foeImexBinaryDeregisterComponentExportFn(export_foeRenderState);
-        foeImexBinaryDeregisterComponentExportFn(export_foeCamera);
         foeImexBinaryDeregisterComponentExportFn(export_foeArmatureState);
 
         // Resource
@@ -42,11 +40,6 @@ static foeResultSet onRegister(foeExporter exporter) {
 
         // Component
         result = foeImexBinaryRegisterComponentExportFn(export_foeArmatureState);
-        if (result.value != FOE_SUCCESS) {
-            goto REGISTRATION_FAILED;
-        }
-
-        result = foeImexBinaryRegisterComponentExportFn(export_foeCamera);
         if (result.value != FOE_SUCCESS) {
             goto REGISTRATION_FAILED;
         }

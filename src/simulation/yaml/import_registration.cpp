@@ -12,8 +12,6 @@
 #include "../armature.hpp"
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.hpp"
-#include "../camera_imex.hpp"
-#include "../camera_pool.hpp"
 #include "../render_state_imex.hpp"
 #include "../render_state_pool.hpp"
 #include "../type_defs.h"
@@ -89,35 +87,6 @@ bool importRenderState(YAML::Node const &node,
     return false;
 }
 
-bool importCamera(YAML::Node const &node,
-                  foeEcsGroupTranslator groupTranslator,
-                  foeEntityID entity,
-                  foeSimulation const *pSimulation) {
-    if (auto dataNode = node[yaml_camera_key()]; dataNode) {
-        auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
-
-        if (pPool == nullptr)
-            return false;
-
-        try {
-            std::unique_ptr<foeCamera> pData(new (std::nothrow) foeCamera);
-            if (pData == nullptr)
-                throw foeYamlException{" Failed to allocate foeCamera - Out of Memory"};
-
-            *pData = yaml_read_Camera(dataNode);
-
-            pPool->insert(entity, std::move(pData));
-
-            return true;
-        } catch (foeYamlException const &e) {
-            throw foeYamlException{"camera::" + e.whatStr()};
-        }
-    }
-
-    return false;
-}
-
 } // namespace
 
 extern "C" foeResultSet foeBringupYamlRegisterImporters() {
@@ -141,11 +110,6 @@ extern "C" foeResultSet foeBringupYamlRegisterImporters() {
         goto REGISTRATION_FAILED;
     }
 
-    if (!foeImexYamlRegisterComponentFn(yaml_camera_key(), importCamera)) {
-        result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_CAMERA_IMPORTER);
-        goto REGISTRATION_FAILED;
-    }
-
 REGISTRATION_FAILED:
     if (result.value != FOE_SUCCESS)
         foeBringupYamlDeregisterImporters();
@@ -157,7 +121,6 @@ extern "C" void foeBringupYamlDeregisterImporters() {
     // Component
     foeImexYamlDeregisterComponentFn(yaml_armature_state_key(), importArmatureState);
     foeImexYamlDeregisterComponentFn(yaml_render_state_key(), importRenderState);
-    foeImexYamlDeregisterComponentFn(yaml_camera_key(), importCamera);
 
     // Resources
     foeImexYamlDeregisterResourceFns(yaml_armature_key(), yaml_read_armature,

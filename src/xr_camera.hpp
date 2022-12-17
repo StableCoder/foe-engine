@@ -15,7 +15,6 @@ struct foeXrCamera {
     float nearZ, farZ;
 
     // View Data
-    foePosition3d *pPosition3D;
     XrPosef pose;
 
     // Graphics Data
@@ -28,7 +27,7 @@ inline glm::mat4 foeXrCameraProjectionMatrix(foeXrCamera const *pXrCamera) {
 
 inline glm::mat4 foeXrCameraViewMatrix(foeXrCamera const *pXrCamera) {
     glm::mat4 rot = glm::mat4_cast(foeOpenXrPoseOrientation(pXrCamera->pose));
-    glm::vec3 pos = pXrCamera->pPosition3D->position + foeOpenXrPosePosition(pXrCamera->pose);
+    glm::vec3 pos = glm::vec3{0.f, 0.f, -17.5f} + foeOpenXrPosePosition(pXrCamera->pose);
 
     glm::mat4 view = glm::translate(glm::mat4(1.f), pos) * rot;
     view = glm::inverse(view);

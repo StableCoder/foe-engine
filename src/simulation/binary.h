@@ -17,7 +17,6 @@ extern "C" {
 typedef struct AnimationImportInfo AnimationImportInfo;
 typedef struct foeArmatureCreateInfo foeArmatureCreateInfo;
 typedef struct foeArmatureState foeArmatureState;
-typedef struct foeCamera foeCamera;
 typedef struct foeRenderState foeRenderState;
 
 foeResultSet binary_read_AnimationImportInfo(void const *pReadBuffer,
@@ -50,14 +49,6 @@ foeResultSet binary_write_foeArmatureState(foeArmatureState const *pData,
                                            void *pWriteBuffer);
 
 char const *binary_key_foeArmatureState();
-
-foeResultSet binary_read_foeCamera(void const *pReadBuffer, uint32_t *pReadSize, foeCamera *pData);
-
-foeResultSet binary_write_foeCamera(foeCamera const *pData,
-                                    uint32_t *pWriteSize,
-                                    void *pWriteBuffer);
-
-char const *binary_key_foeCamera();
 
 foeResultSet binary_read_foeRenderState(void const *pReadBuffer,
                                         uint32_t *pReadSize,

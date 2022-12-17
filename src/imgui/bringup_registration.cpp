@@ -12,11 +12,9 @@
 #include <imgui.h>
 
 #include "../simulation/armature_state_pool.hpp"
-#include "../simulation/camera_pool.hpp"
 #include "../simulation/render_state_pool.hpp"
 #include "armature.hpp"
 #include "armature_state.hpp"
-#include "camera.hpp"
 #include "render_state.hpp"
 
 namespace {
@@ -31,20 +29,6 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimula
         if (offset != pPool->size()) {
             auto *pComponent = pPool->begin<1>() + offset;
             imgui_foeArmatureState(pComponent);
-        }
-    }
-
-    // foeCamera
-    if (auto *pPool = (foeCameraPool *)foeSimulationGetComponentPool(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_CAMERA_POOL);
-        pPool) {
-        auto offset = pPool->find(entity);
-        if (offset != pPool->size()) {
-            auto *pComponent = pPool->begin<1>() + offset;
-            auto *pCamera = pComponent->get();
-
-            if (pCamera)
-                imgui_Camera(pCamera);
         }
     }
 

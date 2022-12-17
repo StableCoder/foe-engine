@@ -9,7 +9,6 @@
 #include "../binary.h"
 #include "armature_create_info.h"
 #include "armature_state.h"
-#include "camera.h"
 #include "render_state.h"
 #include "result.h"
 
@@ -29,10 +28,6 @@ foeResultSet foeBringupBinaryRegisterImporters() {
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
-    result = foeImexBinaryRegisterComponentImportFn(binary_key_foeCamera(), import_foeCamera);
-    if (result.value != FOE_SUCCESS)
-        goto REGISTRATION_FAILED;
-
     result =
         foeImexBinaryRegisterComponentImportFn(binary_key_foeRenderState(), import_foeRenderState);
     if (result.value != FOE_SUCCESS)
@@ -48,7 +43,6 @@ REGISTRATION_FAILED:
 void foeBringupBinaryDeregisterImporters() {
     // Components
     foeImexBinaryDeregisterComponentImportFn(binary_key_foeRenderState(), import_foeRenderState);
-    foeImexBinaryDeregisterComponentImportFn(binary_key_foeCamera(), import_foeCamera);
     foeImexBinaryDeregisterComponentImportFn(binary_key_foeArmatureState(),
                                              import_foeArmatureState);
 

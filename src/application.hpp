@@ -27,7 +27,6 @@
 #include <foe/xr/openxr/session.h>
 #include <foe/xr/openxr/vk/vulkan.h>
 
-#include "xr_vk_camera_system.hpp"
 #include "xr_vk_session_view.hpp"
 #endif
 
@@ -69,8 +68,6 @@ struct Application {
     foeSearchPaths searchPaths;
 
     // Groups/Entities
-    foeId cameraID = FOE_INVALID_ID;
-
     foeSimulation *pSimulationSet{nullptr};
 
     // I/O
@@ -86,7 +83,7 @@ struct Application {
     std::vector<foeXrVkSessionView> xrViews;
     VkRenderPass xrOffscreenRenderPass;
     std::vector<foeGfxRenderTarget> xrOffscreenRenderTargets;
-    foeXrVkCameraSystem xrVkCameraSystem;
+    foeGfxRenderViewPool xrRenderViewPool{FOE_NULL_HANDLE};
 #endif
 
     // Gfx
@@ -96,6 +93,7 @@ struct Application {
     foeGfxDelayedCaller gfxDelayedDestructor{FOE_NULL_HANDLE};
     VkFormat depthFormat{VK_FORMAT_D16_UNORM};
     VkSampleCountFlags globalMSAA;
+    foeGfxRenderViewPool gfxRenderViewPool{FOE_NULL_HANDLE};
 
     std::array<PerFrameData, FOE_GRAPHICS_MAX_BUFFERED_FRAMES> frameData;
 
