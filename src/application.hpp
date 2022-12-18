@@ -71,7 +71,7 @@ struct Application {
     foeSimulation *pSimulationSet{nullptr};
 
     // I/O
-    std::array<WindowData, 1> windowData;
+    std::array<WindowData, 2> windowData;
     FrameTimer frameTime;
 
     // XR

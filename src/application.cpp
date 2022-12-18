@@ -905,7 +905,9 @@ int Application::mainloop() {
     uint32_t lastFrameIndex = UINT32_MAX;
     uint32_t frameIndex = UINT32_MAX;
 
-    foeWsiWindowShow(windowData[0].window);
+    for (int i = windowData.size() - 1; i >= 0; --i) {
+        foeWsiWindowShow(windowData[i].window);
+    }
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
@@ -1003,27 +1005,36 @@ int Application::mainloop() {
             foeXrProcessEvents(xrRuntime);
 #endif
 
+        // Window Processing
+        for (size_t i = 0; i < windowData.size(); ++i) {
+            auto &window = windowData[i];
+
 #ifdef EDITOR_MODE
-        // User input processing
-        imguiRenderer.keyboardInput(foeWsiGetKeyboard(windowData[0].window));
-        imguiRenderer.mouseInput(foeWsiGetMouse(windowData[0].window));
-        if (!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse())
+            // Only the first/primary window supports ImGui interaction
+            if (i == 0) {
+                imguiRenderer.keyboardInput(foeWsiGetKeyboard(window.window));
+                imguiRenderer.mouseInput(foeWsiGetMouse(window.window));
+            }
+
+            // If ImGui is capturing, don't pass inputs through from the first window
+            if ((!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()) ||
+                i != 0)
 #endif
-        {
-            processUserInput(timeElapsedInSec, foeWsiGetKeyboard(windowData[0].window),
-                             foeWsiGetMouse(windowData[0].window), &windowData[0].position,
-                             &windowData[0].orientation);
-        }
+            {
+                processUserInput(timeElapsedInSec, foeWsiGetKeyboard(window.window),
+                                 foeWsiGetMouse(window.window), &window.position,
+                                 &window.orientation);
+            }
 
-        // Check if windows were resized, and if so request associated swapchains to be rebuilt
-        for (auto &it : windowData) {
-            if (foeWsiWindowResized(it.window)) {
-                it.needSwapchainRebuild = true;
+            // Check if window was resized, and if so request associated swapchains to be rebuilt
+            if (foeWsiWindowResized(window.window)) {
+                window.needSwapchainRebuild = true;
 
 #ifdef EDITOR_MODE
-                if (it.window == windowData[0].window) {
+                // ImGui only follows primary/first window size
+                if (i == 0) {
                     int width, height;
-                    foeWsiWindowGetSize(windowData[0].window, &width, &height);
+                    foeWsiWindowGetSize(window.window, &width, &height);
                     imguiRenderer.resize(width, height);
                 }
 #endif
@@ -1448,245 +1459,252 @@ int Application::mainloop() {
             }
 #endif
 
-            auto &window = windowRenderList[0];
-
-            result = foeGfxAcquireNextRenderTarget(window->gfxOffscreenRenderTarget,
-                                                   FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
-            if (result.value != FOE_SUCCESS) {
-                ERRC_END_PROGRAM
-            }
-
+            // Render Graph for this graphics tick
             foeGfxVkRenderGraph renderGraph;
             result = foeGfxVkCreateRenderGraph(&renderGraph);
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
 
-            foeGfxVkRenderGraphResource renderTargetColourImageResource;
-            foeGfxVkRenderGraphJob renderTargetColourImportJob;
-            foeGfxVkRenderGraphResource renderTargetDepthImageResource;
-            foeGfxVkRenderGraphJob renderTargetDepthImportJob;
+            for (size_t i = 0; i < windowRenderList.size(); ++i) {
+                auto &window = windowRenderList[i];
 
-            result = foeGfxVkImportImageRenderJob(
-                renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
-                foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
-                foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
-                window->surfaceFormat.format, window->acquiredImageData.extent,
-                VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource,
-                &renderTargetColourImportJob);
-            if (result.value != FOE_SUCCESS) {
-                ERRC_END_PROGRAM
-            }
-
-            result = foeGfxVkImportImageRenderJob(
-                renderGraph, "importRenderTargetDepthImage", VK_NULL_HANDLE,
-                "renderTargetDepthImage",
-                foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 1),
-                foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 1), depthFormat,
-                window->acquiredImageData.extent, VK_IMAGE_LAYOUT_UNDEFINED, true, {},
-                &renderTargetDepthImageResource, &renderTargetDepthImportJob);
-            if (result.value != FOE_SUCCESS) {
-                ERRC_END_PROGRAM
-            }
-
-            VkDescriptorSet cameraProjViewDescriptor =
-                foeGfxVkGetRenderViewDescriptorSet(gfxRenderViewPool, window->renderView);
-
-            foeGfxVkRenderGraphJob renderSceneJobHandle;
-            result = renderSceneJob(
-                renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource, 1,
-                &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
-                cameraProjViewDescriptor, &renderSceneJobHandle);
-            if (result.value != FOE_SUCCESS) {
-                ERRC_END_PROGRAM
-            }
-
-            foeGfxVkRenderGraphResource presentImageResource;
-            foeGfxVkRenderGraphJob presentImageImportJob;
-
-            result = foeGfxVkImportSwapchainImageRenderJob(
-                renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
-                window->acquiredImageData.swapchain, window->acquiredImageData.imageIndex,
-                window->acquiredImageData.image, window->acquiredImageData.view,
-                window->surfaceFormat.format, window->acquiredImageData.extent,
-                VK_IMAGE_LAYOUT_UNDEFINED, window->acquiredImageData.readySemaphore,
-                &presentImageResource, &presentImageImportJob);
-            if (result.value != FOE_SUCCESS) {
-                ERRC_END_PROGRAM
-            }
-
-            foeGfxVkRenderGraphJob resolveOrCopyJob;
-            if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
-                VK_SAMPLE_COUNT_1_BIT) {
-                // Resolve
-                result = foeGfxVkResolveImageRenderJob(
-                    renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
-                    renderTargetColourImageResource, 1, &renderSceneJobHandle,
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
-                    &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
+                result = foeGfxAcquireNextRenderTarget(window->gfxOffscreenRenderTarget,
+                                                       FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
-            } else {
-                // Copy
-                result = foeGfxVkCopyImageRenderJob(
-                    renderGraph, "copyRenderedImageToBackbuffer", VK_NULL_HANDLE,
-                    renderTargetColourImageResource, 1, &renderSceneJobHandle,
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
-                    &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
-                if (result.value != FOE_SUCCESS) {
-                    ERRC_END_PROGRAM
-                }
-            }
 
-            static struct {
-                VmaAllocation alloc;
-                VkImage image;
-                VkFormat format;
+                foeGfxVkRenderGraphResource renderTargetColourImageResource;
+                foeGfxVkRenderGraphJob renderTargetColourImportJob;
+                foeGfxVkRenderGraphResource renderTargetDepthImageResource;
+                foeGfxVkRenderGraphJob renderTargetDepthImportJob;
 
-                VkExtent3D extent;
-                VkFence fence;
-                bool saved;
-            } cpuImage = {};
-
-            if (frame == 100) {
-                auto extent = window->acquiredImageData.extent;
-
-                // Create Fence
-                VkFenceCreateInfo fenceCI{
-                    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-                };
-
-                VkResult vkRes = vkCreateFence(foeGfxVkGetDevice(gfxSession), &fenceCI, nullptr,
-                                               &cpuImage.fence);
-                if (vkRes != VK_SUCCESS) {
-                    std::abort();
-                }
-
-                // Create Image
-                cpuImage.format = VK_FORMAT_B8G8R8A8_UNORM;
-                cpuImage.extent = VkExtent3D{
-                    .width = extent.width,
-                    .height = extent.height,
-                    .depth = 1U,
-                };
-
-                VkImageCreateInfo imageCI{
-                    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                    .imageType = VK_IMAGE_TYPE_2D,
-                    .format = cpuImage.format,
-                    .extent = cpuImage.extent,
-                    .mipLevels = 1U,
-                    .arrayLayers = 1U,
-                    .samples = VK_SAMPLE_COUNT_1_BIT,
-                    .tiling = VK_IMAGE_TILING_LINEAR,
-                    .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                };
-
-                VmaAllocationCreateInfo allocCI{
-                    .usage = VMA_MEMORY_USAGE_CPU_ONLY,
-                };
-
-                vkRes = vmaCreateImage(foeGfxVkGetAllocator(gfxSession), &imageCI, &allocCI,
-                                       &cpuImage.image, &cpuImage.alloc, nullptr);
-                if (vkRes != VK_SUCCESS) {
-                    std::abort();
-                }
-
-                foeGfxVkRenderGraphResource cpuCopiedImage;
-                foeGfxVkRenderGraphJob cpuImageImportJob;
                 result = foeGfxVkImportImageRenderJob(
-                    renderGraph, "importCpuImage", VK_NULL_HANDLE, "cpuImage", cpuImage.image,
-                    VK_NULL_HANDLE, cpuImage.format, extent, VK_IMAGE_LAYOUT_UNDEFINED, true, {},
-                    &cpuCopiedImage, &cpuImageImportJob);
+                    renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
+                    foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
+                    foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
+                    window->surfaceFormat.format, window->acquiredImageData.extent,
+                    VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource,
+                    &renderTargetColourImportJob);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
 
-                foeGfxVkRenderGraphJob cpuResolveOrCopyJob;
+                result = foeGfxVkImportImageRenderJob(
+                    renderGraph, "importRenderTargetDepthImage", VK_NULL_HANDLE,
+                    "renderTargetDepthImage",
+                    foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 1),
+                    foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 1),
+                    depthFormat, window->acquiredImageData.extent, VK_IMAGE_LAYOUT_UNDEFINED, true,
+                    {}, &renderTargetDepthImageResource, &renderTargetDepthImportJob);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                VkDescriptorSet cameraProjViewDescriptor =
+                    foeGfxVkGetRenderViewDescriptorSet(gfxRenderViewPool, window->renderView);
+
+                foeGfxVkRenderGraphJob renderSceneJobHandle;
+                result = renderSceneJob(
+                    renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource,
+                    1, &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
+                    cameraProjViewDescriptor, &renderSceneJobHandle);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                foeGfxVkRenderGraphResource presentImageResource;
+                foeGfxVkRenderGraphJob presentImageImportJob;
+
+                result = foeGfxVkImportSwapchainImageRenderJob(
+                    renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
+                    window->acquiredImageData.swapchain, window->acquiredImageData.imageIndex,
+                    window->acquiredImageData.image, window->acquiredImageData.view,
+                    window->surfaceFormat.format, window->acquiredImageData.extent,
+                    VK_IMAGE_LAYOUT_UNDEFINED, window->acquiredImageData.readySemaphore,
+                    &presentImageResource, &presentImageImportJob);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                foeGfxVkRenderGraphJob resolveOrCopyJob;
                 if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
                     VK_SAMPLE_COUNT_1_BIT) {
                     // Resolve
                     result = foeGfxVkResolveImageRenderJob(
-                        renderGraph, "resolveRenderedImageToCpuImage", VK_NULL_HANDLE,
+                        renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
                         renderTargetColourImageResource, 1, &renderSceneJobHandle,
-                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1, &cpuImageImportJob,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &cpuResolveOrCopyJob);
+                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
+                        &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
                     if (result.value != FOE_SUCCESS) {
                         ERRC_END_PROGRAM
                     }
                 } else {
                     // Copy
-                    result = foeGfxVkBlitImageRenderJob(
-                        renderGraph, "blitRenderedImageToCpuImage", VK_NULL_HANDLE,
+                    result = foeGfxVkCopyImageRenderJob(
+                        renderGraph, "copyRenderedImageToBackbuffer", VK_NULL_HANDLE,
                         renderTargetColourImageResource, 1, &renderSceneJobHandle,
-                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1, &cpuImageImportJob,
-                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_FILTER_NEAREST,
-                        &cpuResolveOrCopyJob);
+                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
+                        &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
                     if (result.value != FOE_SUCCESS) {
                         ERRC_END_PROGRAM
                     }
                 }
 
-                foeGfxVkExportImageRenderJob(renderGraph, "exportCpuImage", cpuImage.fence,
-                                             cpuCopiedImage, 1, &cpuResolveOrCopyJob,
-                                             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {});
-            }
+                static struct {
+                    VmaAllocation alloc;
+                    VkImage image;
+                    VkFormat format;
 
-            if (cpuImage.fence != VK_NULL_HANDLE && !cpuImage.saved) {
-                VkResult vkRes = vkGetFenceStatus(foeGfxVkGetDevice(gfxSession), cpuImage.fence);
-                if (vkRes == VK_SUCCESS) {
-                    cpuImage.saved = true;
+                    VkExtent3D extent;
+                    VkFence fence;
+                    bool saved;
+                } cpuImage = {};
 
-                    FIBITMAP *pBitmap =
-                        FreeImage_Allocate(cpuImage.extent.width, cpuImage.extent.height, 32);
+                if (frame == 100 && i == 0) {
+                    auto extent = window->acquiredImageData.extent;
 
-                    auto *pBitmapData = (void *)FreeImage_GetBits(pBitmap);
-                    void *pData = nullptr;
-                    VkResult vkRes =
-                        vmaMapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc, &pData);
+                    // Create Fence
+                    VkFenceCreateInfo fenceCI{
+                        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+                    };
+
+                    VkResult vkRes = vkCreateFence(foeGfxVkGetDevice(gfxSession), &fenceCI, nullptr,
+                                                   &cpuImage.fence);
                     if (vkRes != VK_SUCCESS) {
                         std::abort();
                     }
 
-                    memcpy(pBitmapData, pData, cpuImage.extent.width * cpuImage.extent.height * 4);
-                    vmaUnmapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc);
+                    // Create Image
+                    cpuImage.format = VK_FORMAT_B8G8R8A8_UNORM;
+                    cpuImage.extent = VkExtent3D{
+                        .width = extent.width,
+                        .height = extent.height,
+                        .depth = 1U,
+                    };
 
-                    FreeImage_Save(FIF_PNG, pBitmap, "test.png");
+                    VkImageCreateInfo imageCI{
+                        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                        .imageType = VK_IMAGE_TYPE_2D,
+                        .format = cpuImage.format,
+                        .extent = cpuImage.extent,
+                        .mipLevels = 1U,
+                        .arrayLayers = 1U,
+                        .samples = VK_SAMPLE_COUNT_1_BIT,
+                        .tiling = VK_IMAGE_TILING_LINEAR,
+                        .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                    };
 
-                    FreeImage_Unload(pBitmap);
+                    VmaAllocationCreateInfo allocCI{
+                        .usage = VMA_MEMORY_USAGE_CPU_ONLY,
+                    };
 
-                    vkDestroyFence(foeGfxVkGetDevice(gfxSession), cpuImage.fence, nullptr);
+                    vkRes = vmaCreateImage(foeGfxVkGetAllocator(gfxSession), &imageCI, &allocCI,
+                                           &cpuImage.image, &cpuImage.alloc, nullptr);
+                    if (vkRes != VK_SUCCESS) {
+                        std::abort();
+                    }
 
-                    vmaDestroyImage(foeGfxVkGetAllocator(gfxSession), cpuImage.image,
-                                    cpuImage.alloc);
+                    foeGfxVkRenderGraphResource cpuCopiedImage;
+                    foeGfxVkRenderGraphJob cpuImageImportJob;
+                    result = foeGfxVkImportImageRenderJob(
+                        renderGraph, "importCpuImage", VK_NULL_HANDLE, "cpuImage", cpuImage.image,
+                        VK_NULL_HANDLE, cpuImage.format, extent, VK_IMAGE_LAYOUT_UNDEFINED, true,
+                        {}, &cpuCopiedImage, &cpuImageImportJob);
+                    if (result.value != FOE_SUCCESS) {
+                        ERRC_END_PROGRAM
+                    }
 
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "SAVED IMAGE");
+                    foeGfxVkRenderGraphJob cpuResolveOrCopyJob;
+                    if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
+                        VK_SAMPLE_COUNT_1_BIT) {
+                        // Resolve
+                        result = foeGfxVkResolveImageRenderJob(
+                            renderGraph, "resolveRenderedImageToCpuImage", VK_NULL_HANDLE,
+                            renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1,
+                            &cpuImageImportJob, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                            &cpuResolveOrCopyJob);
+                        if (result.value != FOE_SUCCESS) {
+                            ERRC_END_PROGRAM
+                        }
+                    } else {
+                        // Copy
+                        result = foeGfxVkBlitImageRenderJob(
+                            renderGraph, "blitRenderedImageToCpuImage", VK_NULL_HANDLE,
+                            renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1,
+                            &cpuImageImportJob, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                            VK_FILTER_NEAREST, &cpuResolveOrCopyJob);
+                        if (result.value != FOE_SUCCESS) {
+                            ERRC_END_PROGRAM
+                        }
+                    }
+
+                    foeGfxVkExportImageRenderJob(renderGraph, "exportCpuImage", cpuImage.fence,
+                                                 cpuCopiedImage, 1, &cpuResolveOrCopyJob,
+                                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {});
                 }
-            }
 
-            foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
+                if (cpuImage.fence != VK_NULL_HANDLE && !cpuImage.saved && i == 0) {
+                    VkResult vkRes =
+                        vkGetFenceStatus(foeGfxVkGetDevice(gfxSession), cpuImage.fence);
+                    if (vkRes == VK_SUCCESS) {
+                        cpuImage.saved = true;
+
+                        FIBITMAP *pBitmap =
+                            FreeImage_Allocate(cpuImage.extent.width, cpuImage.extent.height, 32);
+
+                        auto *pBitmapData = (void *)FreeImage_GetBits(pBitmap);
+                        void *pData = nullptr;
+                        VkResult vkRes =
+                            vmaMapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc, &pData);
+                        if (vkRes != VK_SUCCESS) {
+                            std::abort();
+                        }
+
+                        memcpy(pBitmapData, pData,
+                               cpuImage.extent.width * cpuImage.extent.height * 4);
+                        vmaUnmapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc);
+
+                        FreeImage_Save(FIF_PNG, pBitmap, "test.png");
+
+                        FreeImage_Unload(pBitmap);
+
+                        vkDestroyFence(foeGfxVkGetDevice(gfxSession), cpuImage.fence, nullptr);
+
+                        vmaDestroyImage(foeGfxVkGetAllocator(gfxSession), cpuImage.image,
+                                        cpuImage.alloc);
+
+                        FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "SAVED IMAGE");
+                    }
+                }
+
+                foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
 #ifdef EDITOR_MODE
-            result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
-                                           presentImageResource, 1, &resolveOrCopyJob,
-                                           VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
-                                           &imguiState, frameIndex, &renderDebugUiJob);
-            if (result.value != FOE_SUCCESS) {
-                ERRC_END_PROGRAM
-            }
+                // ImGui only renders on the first/primary window
+                if (window == &windowData[0]) {
+                    result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
+                                                   presentImageResource, 1, &resolveOrCopyJob,
+                                                   VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
+                                                   &imguiState, frameIndex, &renderDebugUiJob);
+                    if (result.value != FOE_SUCCESS) {
+                        ERRC_END_PROGRAM
+                    }
+                }
 #endif
-            // This is called so that the swapchain advances it's internal acquired index, as if it
-            // was presented
-            window->acquiredImage = false;
 
-            result = foeGfxVkPresentSwapchainImageRenderJob(
-                renderGraph, "presentFinalImage", frameData[frameIndex].frameComplete,
-                presentImageResource, 1,
-                (renderDebugUiJob != FOE_NULL_HANDLE) ? &renderDebugUiJob : &resolveOrCopyJob);
-            if (result.value != FOE_SUCCESS) {
-                ERRC_END_PROGRAM
+                window->acquiredImage = false;
+                result = foeGfxVkPresentSwapchainImageRenderJob(
+                    renderGraph, "presentFinalImage", frameData[frameIndex].frameComplete,
+                    presentImageResource, 1,
+                    (renderDebugUiJob != FOE_NULL_HANDLE) ? &renderDebugUiJob : &resolveOrCopyJob);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
             }
 
             result = foeGfxVkRenderGraphCompile(renderGraph);
