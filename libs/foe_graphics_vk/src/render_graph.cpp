@@ -231,6 +231,19 @@ foeResultSet foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
 
     pRenderGraph->jobs.emplace_back(pNewJob);
 
+    // Setup direct upstream relationships
+    for (uint32_t i = 0; i < pJobInfo->otherUpstreamJobCount; ++i) {
+        auto *pUpstreamJob = render_graph_job_from_handle(pJobInfo->pOtherUpstreamJobs[i]);
+
+        pNewJob->upstreamRelationships.emplace_back(JobResourceRelationship{
+            .pJob = pUpstreamJob,
+        });
+
+        pUpstreamJob->downstreamRelationships.emplace_back(JobResourceRelationship{
+            .pJob = pNewJob,
+        });
+    }
+
     // Setup relationship in the render graph for each used input resource
     pNewJob->resources.reserve(pJobInfo->resourceCount);
     for (uint32_t i = 0; i < pJobInfo->resourceCount; ++i) {

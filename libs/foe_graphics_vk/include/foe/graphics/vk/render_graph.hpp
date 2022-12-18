@@ -94,6 +94,8 @@ struct foeGfxVkRenderGraphJobInfo {
     bool required;
     VkQueueFlags queueFlags;
     void *pExtraSubmitInfo;
+    uint32_t otherUpstreamJobCount;
+    foeGfxVkRenderGraphJob *pOtherUpstreamJobs;
     uint32_t waitSemaphoreCount;
     VkSemaphore *pWaitSemaphores;
     uint32_t signalSemaphoreCount;

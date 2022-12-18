@@ -15,6 +15,7 @@
 #include <foe/graphics/vk/render_graph/job/import_image.hpp>
 #include <foe/graphics/vk/render_graph/job/present_image.hpp>
 #include <foe/graphics/vk/render_graph/job/resolve_image.hpp>
+#include <foe/graphics/vk/render_graph/job/synchronize.hpp>
 #include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/render_view_pool.h>
@@ -1466,12 +1467,7 @@ int Application::mainloop() {
                 ERRC_END_PROGRAM
             }
 
-            struct PresentSwapchain {
-                foeGfxVkRenderGraphResource swapchain;
-                std::vector<foeGfxVkRenderGraphJob> upstreamJobs;
-            };
-
-            std::vector<PresentSwapchain> swapchainPresentations;
+            std::vector<foeGfxVkRenderGraphJob> completeJobList;
 
             for (size_t i = 0; i < windowRenderList.size(); ++i) {
                 auto &window = windowRenderList[i];
@@ -1703,34 +1699,34 @@ int Application::mainloop() {
                     }
                 }
 #endif
+                // For the 'frame complete' fence, use the jobs just before swapchain present.
+                completeJobList.emplace_back(
+                    (renderDebugUiJob != FOE_NULL_HANDLE) ? renderDebugUiJob : resolveOrCopyJob);
 
                 window->acquiredImage = false;
 
-                swapchainPresentations.emplace_back(PresentSwapchain{
-                    .swapchain = presentImageResource,
-                    .upstreamJobs = {(renderDebugUiJob != FOE_NULL_HANDLE) ? renderDebugUiJob
-                                                                           : resolveOrCopyJob},
-                });
-            }
+                foeGfxVkSwapchainPresentInfo presentInfo = {
+                    .swapchainResource = presentImageResource,
+                    .upstreamJobCount = 1U,
+                    .pUpstreamJobs = (renderDebugUiJob != FOE_NULL_HANDLE) ? &renderDebugUiJob
+                                                                           : &resolveOrCopyJob,
+                };
 
-            // Need to collate the presentations together for the frameComplete fence
-            if (!swapchainPresentations.empty()) {
-                std::vector<foeGfxVkSwapchainPresentInfo> presentInfo;
-
-                for (auto &it : swapchainPresentations) {
-                    presentInfo.emplace_back(foeGfxVkSwapchainPresentInfo{
-                        .swapchainResource = it.swapchain,
-                        .upstreamJobCount = (uint32_t)it.upstreamJobs.size(),
-                        .pUpstreamJobs = it.upstreamJobs.data(),
-                    });
-                }
-
-                result = foeGfxVkPresentSwapchainImageRenderJob(
-                    renderGraph, "presentFinalImage", frameData[frameIndex].frameComplete,
-                    presentInfo.size(), presentInfo.data());
+                result = foeGfxVkPresentSwapchainImageRenderJob(renderGraph, "presentFinalImage",
+                                                                FOE_NULL_HANDLE, 1U, &presentInfo);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
+            }
+
+            // Create a single final frame-complete synchronization job for the fence marking the
+            // end of a frame
+            foeGfxVkRenderGraphJob frameCompleteSyncJob = FOE_NULL_HANDLE;
+            result = foeGfxVkSynchronizeJob(
+                renderGraph, "frameCompleteSynchronize", true, frameData[frameIndex].frameComplete,
+                completeJobList.size(), completeJobList.data(), &frameCompleteSyncJob);
+            if (result.value != FOE_SUCCESS) {
+                ERRC_END_PROGRAM
             }
 
             result = foeGfxVkRenderGraphCompile(renderGraph);
