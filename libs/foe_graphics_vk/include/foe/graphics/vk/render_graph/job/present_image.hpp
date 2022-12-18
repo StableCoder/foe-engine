@@ -10,6 +10,12 @@
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
+typedef struct foeGfxVkSwapchainPresentInfo {
+    foeGfxVkRenderGraphResource swapchainResource;
+    uint32_t upstreamJobCount;
+    foeGfxVkRenderGraphJob *pUpstreamJobs;
+} foeGfxVkSwapchainPresentInfo;
+
 FOE_GFX_EXPORT foeResultSet
 foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                       char const *pJobName,
@@ -26,13 +32,11 @@ foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                       foeGfxVkRenderGraphResource *pSwapchainResource,
                                       foeGfxVkRenderGraphJob *pRenderGraphJob);
 
-/// Assumes the image is in VK_IMAGE_LAYOUT_PRESENT_SRC_KHR layout
 FOE_GFX_EXPORT foeResultSet
 foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
                                        char const *pJobName,
                                        VkFence fence,
-                                       foeGfxVkRenderGraphResource swapchainResource,
-                                       uint32_t swapchainResourceUpstreamJobCount,
-                                       foeGfxVkRenderGraphJob *pSwapchainResourceUpstreamJobs);
+                                       uint32_t presentInfoCount,
+                                       foeGfxVkSwapchainPresentInfo *pPresentInfos);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_PRESENT_IMAGE_HPP

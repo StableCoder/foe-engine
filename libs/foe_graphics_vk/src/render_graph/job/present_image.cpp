@@ -125,27 +125,37 @@ foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGra
 
 namespace {
 
+struct ExtraJobData {
+    std::vector<VkSwapchainKHR> swapchains;
+    std::vector<uint32_t> swapchainImageIndexes;
+};
+
 void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
     vkDestroySemaphore(foeGfxVkGetDevice(session), semaphore, nullptr);
 }
 
 } // namespace
 
-foeResultSet foeGfxVkPresentSwapchainImageRenderJob(
-    foeGfxVkRenderGraph renderGraph,
-    char const *pJobName,
-    VkFence fence,
-    foeGfxVkRenderGraphResource swapchainResource,
-    uint32_t swapchainResourceUpstreamJobCount,
-    foeGfxVkRenderGraphJob *pSwapchainResourceUpstreamJobs) {
-    // Check that the given resource is the correct type
-    auto const *pSwapchainData = (foeGfxVkGraphSwapchainResource const *)foeGfxVkGraphFindStructure(
-        foeGfxVkRenderGraphGetResourceData(swapchainResource),
-        RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN);
+foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                    char const *pJobName,
+                                                    VkFence fence,
+                                                    uint32_t presentInfoCount,
+                                                    foeGfxVkSwapchainPresentInfo *pPresentInfos) {
+    ExtraJobData *pExtraJobData = new ExtraJobData;
 
-    if (pSwapchainData == nullptr)
-        return to_foeResult(
-            FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_PRESENT_SWAPCHAIN_RESOURCE_NOT_SWAPCHAIN);
+    for (uint32_t i = 0; i < presentInfoCount; ++i) {
+        foeGfxVkGraphSwapchainResource const *pSwapchainData =
+            (foeGfxVkGraphSwapchainResource const *)foeGfxVkGraphFindStructure(
+                foeGfxVkRenderGraphGetResourceData(pPresentInfos[i].swapchainResource),
+                RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN);
+
+        if (pSwapchainData == nullptr)
+            return to_foeResult(
+                FOE_GRAPHICS_VK_ERROR_RENDER_GRAPH_PRESENT_SWAPCHAIN_RESOURCE_NOT_SWAPCHAIN);
+
+        pExtraJobData->swapchains.emplace_back(pSwapchainData->swapchain);
+        pExtraJobData->swapchainImageIndexes.emplace_back(pSwapchainData->index);
+    }
 
     auto jobFn = [=](foeGfxSession gfxSession, foeGfxDelayedCaller gfxDelayedDestructor,
                      uint32_t waitSemaphoreCount, VkSemaphore *pWaitSemaphores,
@@ -190,21 +200,16 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(
         }
 
         // Now get on with presenting the image
-        auto const *pSwapchainData =
-            (foeGfxVkGraphSwapchainResource const *)foeGfxVkGraphFindStructure(
-                foeGfxVkRenderGraphGetResourceData(swapchainResource),
-                RENDER_GRAPH_RESOURCE_STRUCTURE_TYPE_VK_SWAPCHAIN);
-
-        VkResult presentRes{VK_SUCCESS};
+        std::vector<VkResult> presentResults{pExtraJobData->swapchains.size(), VK_SUCCESS};
         VkPresentInfoKHR presentInfo{
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = (extraSemaphore != VK_NULL_HANDLE) ? 1U : waitSemaphoreCount,
             .pWaitSemaphores =
                 (extraSemaphore != VK_NULL_HANDLE) ? &extraSemaphore : pWaitSemaphores,
-            .swapchainCount = 1U,
-            .pSwapchains = &pSwapchainData->swapchain,
-            .pImageIndices = &pSwapchainData->index,
-            .pResults = &presentRes,
+            .swapchainCount = (uint32_t)pExtraJobData->swapchains.size(),
+            .pSwapchains = pExtraJobData->swapchains.data(),
+            .pImageIndices = pExtraJobData->swapchainImageIndexes.data(),
+            .pResults = presentResults.data(),
         };
 
         auto queue = foeGfxGetQueue(getFirstQueue(gfxSession));
@@ -218,11 +223,13 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(
             return vk_to_foeResult(vkResult);
         }
 
-        if (presentRes == VK_ERROR_OUT_OF_DATE_KHR || presentRes == VK_SUBOPTIMAL_KHR) {
-            // The associated window has been resized, will be fixed for the next frame
-            vkResult = VK_SUCCESS;
-        } else if (presentRes != VK_SUCCESS) {
-            return vk_to_foeResult(presentRes);
+        for (auto &result : presentResults) {
+            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+                // The associated window has been resized, will be fixed for the next frame
+                vkResult = VK_SUCCESS;
+            } else if (result != VK_SUCCESS) {
+                return vk_to_foeResult(result);
+            }
         }
 
         return vk_to_foeResult(vkResult);
@@ -234,21 +241,28 @@ foeResultSet foeGfxVkPresentSwapchainImageRenderJob(
         .layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
     };
 
-    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void { delete pSwapchainResourceState; };
-
-    // Add job to graph
-    foeGfxVkRenderGraphResourceState resourceState{
-        .upstreamJobCount = swapchainResourceUpstreamJobCount,
-        .pUpstreamJobs = pSwapchainResourceUpstreamJobs,
-        .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
-        .resource = swapchainResource,
-        .pIncomingState = (foeGfxVkRenderGraphStructure *)pSwapchainResourceState,
-        .pOutgoingState = nullptr,
+    foeGfxVkRenderGraphFn freeDataFn = [=]() -> void {
+        delete pExtraJobData;
+        delete pSwapchainResourceState;
     };
 
+    // Add job to graph
+    std::vector<foeGfxVkRenderGraphResourceState> resourceStates;
+
+    for (uint32_t i = 0; i < presentInfoCount; ++i) {
+        resourceStates.emplace_back(foeGfxVkRenderGraphResourceState{
+            .upstreamJobCount = pPresentInfos[i].upstreamJobCount,
+            .pUpstreamJobs = pPresentInfos[i].pUpstreamJobs,
+            .mode = RENDER_GRAPH_RESOURCE_MODE_READ_WRITE,
+            .resource = pPresentInfos[i].swapchainResource,
+            .pIncomingState = (foeGfxVkRenderGraphStructure *)pSwapchainResourceState,
+            .pOutgoingState = nullptr,
+        });
+    }
+
     foeGfxVkRenderGraphJobInfo jobInfo{
-        .resourceCount = 1,
-        .pResources = &resourceState,
+        .resourceCount = (uint32_t)resourceStates.size(),
+        .pResources = resourceStates.data(),
         .freeDataFn = freeDataFn,
         .name = pJobName,
         .required = true,
