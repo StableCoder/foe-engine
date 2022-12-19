@@ -24,10 +24,7 @@
 #include <memory>
 
 #ifdef FOE_XR_SUPPORT
-#include <foe/xr/openxr/session.h>
-#include <foe/xr/openxr/vk/vulkan.h>
-
-#include "xr_vk_session_view.hpp"
+#include "xr.hpp"
 #endif
 
 #ifdef EDITOR_MODE
@@ -56,9 +53,6 @@ struct Application {
     auto initialize(int argc, char **argv) -> std::tuple<bool, int>;
     void deinitialize();
 
-    foeResultSet startXR(bool localPoll);
-    foeResultSet stopXR(bool localPoll);
-
     int mainloop();
 
     // Variables
@@ -77,13 +71,7 @@ struct Application {
     // XR
     foeXrRuntime xrRuntime{FOE_NULL_HANDLE};
 #ifdef FOE_XR_SUPPORT
-    foeXrSession xrSession{FOE_NULL_HANDLE};
-    VkRenderPass xrRenderPass;
-    XrFrameState xrFrameState;
-    std::vector<foeXrVkSessionView> xrViews;
-    VkRenderPass xrOffscreenRenderPass;
-    std::vector<foeGfxRenderTarget> xrOffscreenRenderTargets;
-    foeGfxRenderViewPool xrRenderViewPool{FOE_NULL_HANDLE};
+    BringupAppXrData xrData;
 #endif
 
     // Gfx
