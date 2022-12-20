@@ -754,6 +754,10 @@ int Application::mainloop() {
 
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
+            std::vector<XrCompositionLayerProjectionView> projectionViews{
+                xrData.views.size(), XrCompositionLayerProjectionView{
+                                         .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW}};
+
             if (xrAcquiredFrame) {
                 XrFrameBeginInfo frameBeginInfo{.type = XR_TYPE_FRAME_BEGIN_INFO};
                 result = xr_to_foeResult(
@@ -761,12 +765,6 @@ int Application::mainloop() {
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }
-
-                std::vector<XrCompositionLayerBaseHeader *> layers;
-                std::vector<XrCompositionLayerProjectionView> projectionViews{
-                    xrData.views.size(), XrCompositionLayerProjectionView{
-                                             .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW}};
-                XrCompositionLayerProjection layerProj;
 
                 if (xrData.frameState.shouldRender) {
                     XrViewLocateInfo viewLocateInfo{
@@ -893,10 +891,9 @@ int Application::mainloop() {
                             .flags = 0,
                         };
 
-                        VkSemaphore timelineSemaphore;
                         VkResult vkResult =
                             vkCreateSemaphore(foeGfxVkGetDevice(gfxSession), &semaphoreCI, nullptr,
-                                              &timelineSemaphore);
+                                              &it.timelineSemaphore);
                         if (vkResult != VK_SUCCESS) {
                             result = vk_to_foeResult(vkResult);
                             ERRC_END_PROGRAM
@@ -904,14 +901,14 @@ int Application::mainloop() {
 
                         foeGfxAddDefaultDelayedCall(gfxDelayedDestructor,
                                                     (PFN_foeGfxDelayedCall)destroy_VkSemaphore,
-                                                    (void *)timelineSemaphore);
+                                                    (void *)it.timelineSemaphore);
 
                         foeGfxVkRenderGraphResource xrSwapchainImageResource;
                         foeGfxVkRenderGraphJob xrSwapchainImportJob;
 
                         result = foeOpenXrVkImportSwapchainImageRenderJob(
                             renderGraph, "importxrData.viewswapchainImage", VK_NULL_HANDLE,
-                            "importxrData.viewswapchainImage", timelineSemaphore, it.swapchain,
+                            "importxrData.viewswapchainImage", it.timelineSemaphore, it.swapchain,
                             it.images[newIndex].image, it.imageViews[newIndex], xrData.colourFormat,
                             VkExtent2D{
                                 .width = it.viewConfig.recommendedImageRectWidth,
@@ -1003,7 +1000,7 @@ int Application::mainloop() {
                                 VkSemaphoreSignalInfo signalInfo{
                                     .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO,
                                     .pNext = nullptr,
-                                    .semaphore = timelineSemaphore,
+                                    .semaphore = it.timelineSemaphore,
                                     .value = 1,
                                 };
 
@@ -1025,30 +1022,6 @@ int Application::mainloop() {
 
                         foeGfxVkDestroyRenderGraph(renderGraph);
                     }
-
-                    // Assemble composition layers
-                    layerProj = XrCompositionLayerProjection{
-                        .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION,
-                        .layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT,
-                        .space = foeOpenXrGetSpace(xrData.session),
-                        .viewCount = static_cast<uint32_t>(projectionViews.size()),
-                        .views = projectionViews.data(),
-                    };
-                    layers.emplace_back(
-                        reinterpret_cast<XrCompositionLayerBaseHeader *>(&layerProj));
-                }
-
-                XrFrameEndInfo endFrameInfo{
-                    .type = XR_TYPE_FRAME_END_INFO,
-                    .displayTime = xrData.frameState.predictedDisplayTime,
-                    .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
-                    .layerCount = static_cast<uint32_t>(layers.size()),
-                    .layers = layers.data(),
-                };
-                result =
-                    xr_to_foeResult(xrEndFrame(foeOpenXrGetSession(xrData.session), &endFrameInfo));
-                if (result.value != FOE_SUCCESS) {
-                    ERRC_END_PROGRAM
                 }
             }
 #endif
@@ -1331,6 +1304,39 @@ int Application::mainloop() {
             if (result.value != FOE_SUCCESS) {
                 ERRC_END_PROGRAM
             }
+
+#ifdef FOE_XR_SUPPORT
+            if (xrAcquiredFrame) {
+                XrCompositionLayerProjection layerProj;
+                XrCompositionLayerBaseHeader *pLayers = NULL;
+
+                if (xrData.frameState.shouldRender) {
+                    // Assemble composition layers
+                    layerProj = XrCompositionLayerProjection{
+                        .type = XR_TYPE_COMPOSITION_LAYER_PROJECTION,
+                        .layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT,
+                        .space = foeOpenXrGetSpace(xrData.session),
+                        .viewCount = static_cast<uint32_t>(projectionViews.size()),
+                        .views = projectionViews.data(),
+                    };
+
+                    pLayers = reinterpret_cast<XrCompositionLayerBaseHeader *>(&layerProj);
+                }
+
+                XrFrameEndInfo endFrameInfo{
+                    .type = XR_TYPE_FRAME_END_INFO,
+                    .displayTime = xrData.frameState.predictedDisplayTime,
+                    .environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
+                    .layerCount = (pLayers) ? 1U : 0U,
+                    .layers = &pLayers,
+                };
+                result =
+                    xr_to_foeResult(xrEndFrame(foeOpenXrGetSession(xrData.session), &endFrameInfo));
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+            }
+#endif
 
             foeGfxVkDestroyRenderGraph(renderGraph);
 

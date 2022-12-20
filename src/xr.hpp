@@ -54,6 +54,7 @@ struct foeXrVkSessionView {
     std::vector<VkFramebuffer> framebuffers;
     foeXrCamera camera;
 
+    VkSemaphore timelineSemaphore;
     foeGfxRenderTarget offscreenRenderTarget;
     foeGfxRenderView renderView{FOE_NULL_HANDLE};
 };
