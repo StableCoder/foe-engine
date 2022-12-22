@@ -445,8 +445,6 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     else
         pNewSession->features_1_0 = *pBasicFeatures;
 
-    uint32_t vkApiVersion = foeGfxVkEnumerateApiVersion(runtime);
-
 #ifdef VK_VERSION_1_1
     pNewSession->features_1_1 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES,
@@ -457,18 +455,14 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
     };
 
-    if (vkApiVersion >= VK_MAKE_VERSION(1, 2, 0)) {
         pNewSession->features_1_1.pNext = &pNewSession->features_1_2;
-    }
 #endif
 #ifdef VK_VERSION_1_3
     pNewSession->features_1_3 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
     };
 
-    if (vkApiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
         pNewSession->features_1_2.pNext = &pNewSession->features_1_3;
-    }
 #endif
 
     while (pFeatures != nullptr) {
@@ -485,44 +479,26 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
 #endif
 #ifdef VK_VERSION_1_1
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES) {
-            if (vkApiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-                mergeFeatureSet_VkPhysicalDeviceVulkan11Features(
-                    static_cast<VkPhysicalDeviceVulkan11Features const *>(pFeatures),
-                    &pNewSession->features_1_1);
-                processed = true;
-            } else {
-                result =
-                    to_foeResult(FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT);
-                break;
-            }
+            mergeFeatureSet_VkPhysicalDeviceVulkan11Features(
+                static_cast<VkPhysicalDeviceVulkan11Features const *>(pFeatures),
+                &pNewSession->features_1_1);
+            processed = true;
         }
 #endif
 #ifdef VK_VERSION_1_2
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES) {
-            if (vkApiVersion >= VK_MAKE_VERSION(1, 2, 0)) {
-                mergeFeatureSet_VkPhysicalDeviceVulkan12Features(
-                    static_cast<VkPhysicalDeviceVulkan12Features const *>(pFeatures),
-                    &pNewSession->features_1_2);
-                processed = true;
-            } else {
-                result =
-                    to_foeResult(FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT);
-                break;
-            }
+            mergeFeatureSet_VkPhysicalDeviceVulkan12Features(
+                static_cast<VkPhysicalDeviceVulkan12Features const *>(pFeatures),
+                &pNewSession->features_1_2);
+            processed = true;
         }
 #endif
 #ifdef VK_VERSION_1_3
         if (pIn->sType == VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES) {
-            if (vkApiVersion >= VK_MAKE_VERSION(1, 3, 0)) {
-                mergeFeatureSet_VkPhysicalDeviceVulkan13Features(
-                    static_cast<VkPhysicalDeviceVulkan13Features const *>(pFeatures),
-                    &pNewSession->features_1_3);
-                processed = true;
-            } else {
-                result =
-                    to_foeResult(FOE_GRAPHICS_VK_ERROR_SESSION_RUNTIME_NOT_SUPPORT_FEATURE_STRUCT);
-                break;
-            }
+            mergeFeatureSet_VkPhysicalDeviceVulkan13Features(
+                static_cast<VkPhysicalDeviceVulkan13Features const *>(pFeatures),
+                &pNewSession->features_1_3);
+            processed = true;
         }
 #endif
 
