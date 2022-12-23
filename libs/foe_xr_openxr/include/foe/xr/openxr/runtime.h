@@ -70,8 +70,6 @@ FOE_XR_EXPORT foeResultSet foeOpenXrEnumerateRuntimeExtensions(foeXrRuntime runt
                                                                uint32_t *pExtensionNamesLength,
                                                                char *pExtensionNames);
 
-FOE_XR_EXPORT foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime);
-
 FOE_XR_EXPORT foeResultSet foeXrProcessEvents(foeXrRuntime runtime);
 
 FOE_XR_EXPORT XrInstance foeOpenXrGetInstance(foeXrRuntime runtime);

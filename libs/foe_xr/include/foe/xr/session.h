@@ -6,7 +6,10 @@
 #define FOE_XR_SESSION_H
 
 #include <foe/handle.h>
+
+#ifdef FOE_XR_SUPPORT
 #include <foe/xr/export.h>
+#endif // FOE_XR_SUPPORT
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +17,9 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeXrSession)
 
+#ifdef FOE_XR_SUPPORT
 FOE_XR_EXPORT void foeXrDestroySession(foeXrSession session);
+#endif // FOE_XR_SUPPORT
 
 #ifdef __cplusplus
 }

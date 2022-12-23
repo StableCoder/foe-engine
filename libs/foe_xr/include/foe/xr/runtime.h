@@ -7,6 +7,11 @@
 
 #include <foe/handle.h>
 
+#ifdef FOE_XR_SUPPORT
+#include <foe/result.h>
+#include <foe/xr/export.h>
+#endif // FOE_XR_SUPPORT
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,6 +26,10 @@ extern "C" {
  * or fancy export work, no functions are actually exported by this library.
  */
 FOE_DEFINE_HANDLE(foeXrRuntime)
+
+#ifdef FOE_XR_SUPPORT
+FOE_XR_EXPORT foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime);
+#endif // FOE_XR_SUPPORT
 
 #ifdef __cplusplus
 }
