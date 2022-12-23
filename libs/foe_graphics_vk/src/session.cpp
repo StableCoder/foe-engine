@@ -455,14 +455,14 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
     };
 
-        pNewSession->features_1_1.pNext = &pNewSession->features_1_2;
+    pNewSession->features_1_1.pNext = &pNewSession->features_1_2;
 #endif
 #ifdef VK_VERSION_1_3
     pNewSession->features_1_3 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
     };
 
-        pNewSession->features_1_2.pNext = &pNewSession->features_1_3;
+    pNewSession->features_1_2.pNext = &pNewSession->features_1_3;
 #endif
 
     while (pFeatures != nullptr) {

@@ -13,10 +13,15 @@
 #include "result.h"
 
 #include <memory>
+#include <vector>
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/runtime.h>
 #include <foe/xr/openxr/vk/vulkan.h>
+#endif
+
+#ifndef VK_VERSION_1_2
+static_assert(false, "FoE engine requires at least Vulkan 1.2 support (for timeline semaphores).");
 #endif
 
 foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
@@ -259,18 +264,6 @@ foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
     }
 #endif
 
-#ifdef FOE_XR_SUPPORT
-    // Enable Synchronization2 (for Timeline Semaphores)
-    extensions.emplace_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
-#endif
-
-    VkPhysicalDeviceVulkan12Features features12{
-        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
-#ifdef FOE_XR_SUPPORT
-        .timelineSemaphore = VK_TRUE,
-#endif
-    };
-
     std::vector<char const *> layersList;
     std::vector<char const *> extensionsList;
 
@@ -279,7 +272,36 @@ foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
     for (auto &it : extensions)
         extensionsList.emplace_back(it.data());
 
+    // Get full list of available device extensions
+    uint32_t deviceExtensionCount;
+    vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, nullptr, &deviceExtensionCount, nullptr);
+    std::vector<VkExtensionProperties> extProps{deviceExtensionCount};
+    vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, nullptr, &deviceExtensionCount,
+                                         extProps.data());
+
+    // Check support for timeline semaphores/synchronization2
+    bool synchronization2 = false;
+    bool timelineSemaphores = false;
+
+    for (uint32_t i = 0; i < extProps.size(); ++i) {
+        if (strcmp(extProps[i].extensionName, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME) == 0) {
+            synchronization2 = true;
+            break;
+        } else if (strcmp(extProps[i].extensionName, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME) ==
+                   0) {
+            timelineSemaphores = true;
+        }
+    }
+
+    if (synchronization2) {
+        extensionsList.emplace_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+    } else if (timelineSemaphores) {
+        extensionsList.emplace_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    } else {
+        return to_foeResult(FOE_BRINGUP_ERROR_NO_TIMELINE_SEMAPHORE_SUPPORT);
+    }
+
     return foeGfxVkCreateSession(gfxRuntime, vkPhysicalDevice, layersList.size(), layersList.data(),
-                                 extensionsList.size(), extensionsList.data(), nullptr, &features12,
+                                 extensionsList.size(), extensionsList.data(), nullptr, nullptr,
                                  pGfxSession);
 }
