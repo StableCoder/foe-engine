@@ -512,6 +512,24 @@ extern "C" foeResultSet foeGfxVkCreateSession(foeGfxRuntime runtime,
     if (result.value != FOE_SUCCESS)
         goto CREATE_FAILED;
 
+    // Remove duplicate layers/extensions
+    for (auto it = layers.begin(); it != layers.end(); ++it) {
+        for (auto cmpIt = it + 1; cmpIt != layers.end();) {
+            if (strcmp(*it, *cmpIt) == 0)
+                cmpIt = layers.erase(cmpIt);
+            else
+                ++cmpIt;
+        }
+    }
+    for (auto it = extensions.begin(); it != extensions.end(); ++it) {
+        for (auto cmpIt = it + 1; cmpIt != extensions.end();) {
+            if (strcmp(*it, *cmpIt) == 0)
+                cmpIt = extensions.erase(cmpIt);
+            else
+                ++cmpIt;
+        }
+    }
+
     {
 #ifdef VK_KHR_get_physical_device_properties2
         VkPhysicalDeviceFeatures2 features_1_0{

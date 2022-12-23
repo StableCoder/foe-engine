@@ -83,6 +83,24 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
     extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 #endif
 
+    // Remove duplicate layers/extensions
+    for (auto it = layers.begin(); it != layers.end(); ++it) {
+        for (auto cmpIt = it + 1; cmpIt != layers.end();) {
+            if (strcmp(*it, *cmpIt) == 0)
+                cmpIt = layers.erase(cmpIt);
+            else
+                ++cmpIt;
+        }
+    }
+    for (auto it = extensions.begin(); it != extensions.end(); ++it) {
+        for (auto cmpIt = it + 1; cmpIt != extensions.end();) {
+            if (strcmp(*it, *cmpIt) == 0)
+                cmpIt = extensions.erase(cmpIt);
+            else
+                ++cmpIt;
+        }
+    }
+
     // Create Instance
     VkInstanceCreateInfo instanceCI {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
