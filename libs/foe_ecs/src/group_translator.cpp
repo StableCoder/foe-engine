@@ -25,13 +25,16 @@ extern "C" foeResultSet foeEcsCreateGroupTranslator(uint32_t originalCount,
                                                     char const **ppTranslatedNames,
                                                     foeIdGroup *pTranslatedGroups,
                                                     foeEcsGroupTranslator *pGroupTranslator) {
-    foeEcsResult result{FOE_ECS_SUCCESS};
     size_t translatorSize = sizeof(uint32_t) + (originalCount * sizeof(Translation));
+
     void *pNewGroupTranslator = malloc(translatorSize);
+    if (pNewGroupTranslator == NULL)
+        return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
 
     uint32_t *pCount = (uint32_t *)pNewGroupTranslator;
     *pCount = originalCount;
 
+    foeEcsResult result{FOE_ECS_SUCCESS};
     Translation *pTranslations = (Translation *)(pCount + 1);
     for (uint32_t i = 0; i < originalCount; ++i) {
         bool found = false;
