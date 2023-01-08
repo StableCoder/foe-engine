@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,7 @@
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.hpp"
 #include "../render_state_imex.hpp"
-#include "../render_state_pool.hpp"
+#include "../render_state_pool.h"
 #include "../type_defs.h"
 #include "armature.hpp"
 #include "result.h"
@@ -57,13 +57,22 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation c
     }
 
     // RenderState
-    auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+    foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
-    if (pRenderStatePool) {
-        if (auto searchIt = pRenderStatePool->find(entity); searchIt != pRenderStatePool->size()) {
+    if (renderStatePool) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(renderStatePool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(renderStatePool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            foeRenderState *pRenderState =
+                (foeRenderState *)foeEcsComponentPoolDataPtr(renderStatePool) + offset;
+
             keyDataPairs.emplace_back(foeKeyYamlPair{
                 .key = yaml_render_state_key(),
-                .data = yaml_write_RenderState(pRenderStatePool->begin<1>()[searchIt]),
+                .data = yaml_write_RenderState(*pRenderState),
             });
         }
     }

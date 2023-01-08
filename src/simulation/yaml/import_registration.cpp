@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +13,7 @@
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.hpp"
 #include "../render_state_imex.hpp"
-#include "../render_state_pool.hpp"
+#include "../render_state_pool.h"
 #include "../type_defs.h"
 #include "armature.hpp"
 #include "result.h"
@@ -67,16 +67,16 @@ bool importRenderState(YAML::Node const &node,
                        foeEntityID entity,
                        foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_render_state_key()]; dataNode) {
-        auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+        foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
-        if (pPool == nullptr)
+        if (renderStatePool == FOE_NULL_HANDLE)
             return false;
 
         try {
             foeRenderState data = yaml_read_RenderState(dataNode, groupTranslator);
 
-            pPool->insert(entity, std::move(data));
+            foeEcsComponentPoolInsert(renderStatePool, entity, &data);
 
             return true;
         } catch (foeYamlException const &e) {

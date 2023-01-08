@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,7 @@
 #include <imgui.h>
 
 #include "../simulation/armature_state_pool.hpp"
-#include "../simulation/render_state_pool.hpp"
+#include "../simulation/render_state_pool.h"
 #include "armature.hpp"
 #include "armature_state.hpp"
 #include "render_state.hpp"
@@ -33,13 +33,20 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimula
     }
 
     // foeRenderState
-    if (auto *pPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+    if (foeRenderStatePool componentPool = (foeRenderStatePool)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
-        pPool) {
-        auto offset = pPool->find(entity);
-        if (offset != pPool->size()) {
-            auto *pComponent = pPool->begin<1>() + offset;
-            imgui_foeRenderState(pComponent);
+        componentPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            foeRenderState *pComponentData =
+                (foeRenderState *)foeEcsComponentPoolDataPtr(componentPool) + offset;
+
+            imgui_foeRenderState(pComponentData);
         }
     }
 }

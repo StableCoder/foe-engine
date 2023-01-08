@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,28 +13,27 @@
 #include "../vk_result.h"
 #include "armature.hpp"
 #include "armature_state_pool.hpp"
-#include "render_state_pool.hpp"
 #include "type_defs.h"
 
 foeResultSet VkAnimationPool::initialize(foeResourcePool resourcePool,
                                          foeArmatureStatePool *pArmatureStatePool,
-                                         foeRenderStatePool *pRenderStatePool) {
+                                         foeRenderStatePool renderStatePool) {
     if (resourcePool == FOE_NULL_HANDLE || pArmatureStatePool == nullptr ||
-        pRenderStatePool == nullptr)
+        renderStatePool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
 
     // External
     mResourcePool = resourcePool;
 
     mpArmatureStatePool = pArmatureStatePool;
-    mpRenderStatePool = pRenderStatePool;
+    mRenderStatePool = renderStatePool;
 
     return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
 
 void VkAnimationPool::deinitialize() {
     // External
-    mpRenderStatePool = nullptr;
+    mRenderStatePool = FOE_NULL_HANDLE;
     mpArmatureStatePool = nullptr;
 
     mResourcePool = FOE_NULL_HANDLE;
@@ -191,9 +190,9 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
     VkDeviceSize offset = 0;
     vmaMapMemory(mAllocator, boneUniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    auto *pID = mpRenderStatePool->begin();
-    auto const *pEndID = mpRenderStatePool->end();
-    auto *pRenderState = mpRenderStatePool->begin<1>();
+    foeEntityID const *pID = foeEcsComponentPoolIdPtr(mRenderStatePool);
+    foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(mRenderStatePool);
+    foeRenderState *pRenderState = (foeRenderState *)foeEcsComponentPoolDataPtr(mRenderStatePool);
 
     for (; pID != pEndID; ++pID, ++pRenderState) {
         // Make sure the buffer offset matches the minimum allowed alignment

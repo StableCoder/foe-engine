@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,7 +22,7 @@
 
 #include "../log.hpp"
 #include "../result.h"
-#include "../simulation/render_state_pool.hpp"
+#include "../simulation/render_state_pool.h"
 #include "../vk_result.h"
 
 namespace {
@@ -339,14 +339,16 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
         }
 
         { // RENDER STUFF
-            auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+            foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
-            auto idIt = pRenderStatePool->cbegin();
-            auto const endIdIt = pRenderStatePool->cend();
-            auto dataIt = pRenderStatePool->cbegin<1>();
-            for (; idIt != endIdIt; ++idIt, ++dataIt) {
-                renderCall(*idIt, dataIt, gfxSession, pSimulation, commandBuffer,
+            foeEntityID const *pID = foeEcsComponentPoolIdPtr(renderStatePool);
+            foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(renderStatePool);
+            foeRenderState *pRenderState =
+                (foeRenderState *)foeEcsComponentPoolDataPtr(renderStatePool);
+
+            for (; pID != pEndID; ++pID, ++pRenderState) {
+                renderCall(*pID, pRenderState, gfxSession, pSimulation, commandBuffer,
                            renderTargetSamples, renderPass, cameraDescriptor);
             }
         }

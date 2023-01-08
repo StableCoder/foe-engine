@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,16 +12,17 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
+#include "render_state_pool.h"
+
 #include <array>
 
 class foeArmatureStatePool;
-class foeRenderStatePool;
 
 class VkAnimationPool {
   public:
     foeResultSet initialize(foeResourcePool resourcePool,
                             foeArmatureStatePool *pArmatureStatePool,
-                            foeRenderStatePool *pRenderStatePool);
+                            foeRenderStatePool renderStatePool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -43,7 +44,7 @@ class VkAnimationPool {
 
     // Components
     foeArmatureStatePool *mpArmatureStatePool{nullptr};
-    foeRenderStatePool *mpRenderStatePool{nullptr};
+    foeRenderStatePool mRenderStatePool{FOE_NULL_HANDLE};
 
     // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};

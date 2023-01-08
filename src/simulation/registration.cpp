@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +17,7 @@
 #include "armature_state_pool.hpp"
 #include "armature_system.hpp"
 #include "position_descriptor_pool.hpp"
-#include "render_state_pool.hpp"
+#include "render_state_pool.h"
 #include "type_defs.h"
 #include "vk_animation.hpp"
 
@@ -138,9 +138,9 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
             ++errors;
         } else if (count == 0) {
-            foeRenderStatePool *pData;
+            foeRenderStatePool pool;
             result = foeSimulationReleaseComponentPool(
-                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, (void **)&pData);
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, (void **)&pool);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -149,7 +149,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
                 ++errors;
             } else {
-                delete pData;
+                foeEcsDestroyComponentPool(pool);
             }
         }
     }
@@ -292,11 +292,15 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL,
-            .pComponentPool = new (std::nothrow) foeRenderStatePool,
-            .pMaintenanceFn = [](void *pData) { ((foeRenderStatePool *)pData)->maintenance(); },
+            .pMaintenanceFn =
+                [](void *componentPool) {
+                    foeEcsComponentPoolMaintenance((foeRenderStatePool)componentPool);
+                },
         };
-        if (createInfo.pComponentPool == nullptr) {
-            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+
+        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRenderState),
+                                           (foeEcsComponentPool *)&createInfo.pComponentPool);
+        if (result.value != FOE_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -612,13 +616,13 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     if (count == 1) {
         auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
-        auto *pRenderStatePool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+        foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
         auto *pData = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
 
-        result = pData->initialize(pSimulation->resourcePool, pArmatureStatePool, pRenderStatePool);
+        result = pData->initialize(pSimulation->resourcePool, pArmatureStatePool, renderStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

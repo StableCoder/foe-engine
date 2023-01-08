@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@
 #include <foe/ecs/group_translator.h>
 #include <yaml-cpp/yaml.h>
 
-#include "render_state.hpp"
+#include "render_state.h"
 #include "yaml/structs.hpp"
 
 inline char const *yaml_render_state_key() { return "render_state"; }

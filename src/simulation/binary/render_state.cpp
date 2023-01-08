@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,8 +7,8 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "../binary.h"
-#include "../render_state.hpp"
-#include "../render_state_pool.hpp"
+#include "../render_state.h"
+#include "../render_state_pool.h"
 #include "result.h"
 
 extern "C" foeResultSet export_foeRenderState(foeEntityID entity,
@@ -17,11 +17,18 @@ extern "C" foeResultSet export_foeRenderState(foeEntityID entity,
     foeResultSet result = to_foeResult(FOE_BRINGUP_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
-    auto *pComponentPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+    foeRenderStatePool componentPool = (foeRenderStatePool)foeSimulationGetComponentPool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
-    if (pComponentPool) {
-        if (auto searchIt = pComponentPool->find(entity); searchIt != pComponentPool->size()) {
-            auto *pComponentData = pComponentPool->begin<1>() + searchIt;
+    if (componentPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            foeRenderState *pComponentData =
+                (foeRenderState *)foeEcsComponentPoolDataPtr(componentPool) + offset;
 
             result = binary_write_foeRenderState(pComponentData, &set.dataSize, nullptr);
             if (result.value != FOE_SUCCESS)
@@ -52,16 +59,16 @@ extern "C" foeResultSet import_foeRenderState(void const *pReadBuffer,
                                               foeEcsGroupTranslator groupTranslator,
                                               foeEntityID entity,
                                               foeSimulation const *pSimulation) {
-    auto *pComponentPool = (foeRenderStatePool *)foeSimulationGetComponentPool(
+    foeRenderStatePool componentPool = (foeRenderStatePool)foeSimulationGetComponentPool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
-    if (pComponentPool == nullptr)
+    if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_BRINGUP_BINARY_ERROR_RENDER_STATE_POOL_NOT_FOUND);
 
     foeRenderState componentData;
     foeResultSet result =
         binary_read_foeRenderState(pReadBuffer, pReadSize, groupTranslator, &componentData);
     if (result.value == FOE_SUCCESS)
-        pComponentPool->insert(entity, std::move(componentData));
+        result = foeEcsComponentPoolInsert(componentPool, entity, &componentData);
 
     return result;
 }
