@@ -12,20 +12,19 @@
 #include "../result.h"
 #include "../vk_result.h"
 #include "armature.hpp"
-#include "armature_state_pool.hpp"
 #include "type_defs.h"
 
 foeResultSet VkAnimationPool::initialize(foeResourcePool resourcePool,
-                                         foeArmatureStatePool *pArmatureStatePool,
+                                         foeArmatureStatePool armatureStatePool,
                                          foeRenderStatePool renderStatePool) {
-    if (resourcePool == FOE_NULL_HANDLE || pArmatureStatePool == nullptr ||
+    if (resourcePool == FOE_NULL_HANDLE || armatureStatePool == FOE_NULL_HANDLE ||
         renderStatePool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
 
     // External
     mResourcePool = resourcePool;
 
-    mpArmatureStatePool = pArmatureStatePool;
+    mArmatureStatePool = armatureStatePool;
     mRenderStatePool = renderStatePool;
 
     return to_foeResult(FOE_BRINGUP_SUCCESS);
@@ -34,7 +33,7 @@ foeResultSet VkAnimationPool::initialize(foeResourcePool resourcePool,
 void VkAnimationPool::deinitialize() {
     // External
     mRenderStatePool = FOE_NULL_HANDLE;
-    mpArmatureStatePool = nullptr;
+    mArmatureStatePool = FOE_NULL_HANDLE;
 
     mResourcePool = FOE_NULL_HANDLE;
 }
@@ -194,6 +193,13 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
     foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(mRenderStatePool);
     foeRenderState *pRenderState = (foeRenderState *)foeEcsComponentPoolDataPtr(mRenderStatePool);
 
+    foeEntityID const *pArmatureID = foeEcsComponentPoolIdPtr(mArmatureStatePool);
+    foeEntityID const *const pStartArmatureID = pArmatureID;
+    foeEntityID const *const pEndArmatureID =
+        pArmatureID + foeEcsComponentPoolSize(mArmatureStatePool);
+    foeArmatureState *const pStartArmatureData =
+        (foeArmatureState *)foeEcsComponentPoolDataPtr(mArmatureStatePool);
+
     for (; pID != pEndID; ++pID, ++pRenderState) {
         // Make sure the buffer offset matches the minimum allowed alignment
         {
@@ -207,9 +213,10 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
         // Only need bone state data if we have an associated armature.
         foeArmatureState const *pArmatureState{nullptr};
 
-        auto searchOffset = mpArmatureStatePool->find(*pID);
-        if (searchOffset != mpArmatureStatePool->size()) {
-            pArmatureState = mpArmatureStatePool->begin<1>() + searchOffset;
+        pArmatureID = std::lower_bound(pArmatureID, pEndArmatureID, *pID);
+        if (pArmatureID != pEndArmatureID && *pArmatureID == *pID) {
+            size_t offset = pArmatureID - pStartArmatureID;
+            pArmatureState = pStartArmatureData + offset;
         } else {
             continue;
         }

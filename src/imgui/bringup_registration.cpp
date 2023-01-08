@@ -21,14 +21,19 @@ namespace {
 
 void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     // foeArmatureState
-
-    if (auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+    if (foeArmatureStatePool componentPool = (foeArmatureStatePool)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
-        pPool) {
-        auto offset = pPool->find(entity);
-        if (offset != pPool->size()) {
-            auto *pComponent = pPool->begin<1>() + offset;
-            imgui_foeArmatureState(pComponent);
+        componentPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            foeArmatureState *pComponentData =
+                (foeArmatureState *)foeEcsComponentPoolDataPtr(componentPool) + offset;
+            imgui_foeArmatureState(pComponentData);
         }
     }
 

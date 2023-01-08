@@ -67,30 +67,32 @@ void animateArmatureNode(foeArmatureNode const *pNode,
 } // namespace
 
 foeResultSet foeArmatureSystem::initialize(foeResourcePool resourcePool,
-                                           foeArmatureStatePool *pArmatureStatePool) {
+                                           foeArmatureStatePool armatureStatePool) {
     if (resourcePool == nullptr) {
         return to_foeResult(FOE_BRINGUP_ERROR_NO_ARMATURE_POOL_PROVIDED);
     }
-    if (pArmatureStatePool == nullptr) {
+    if (armatureStatePool == nullptr) {
         return to_foeResult(FOE_BRINGUP_ERROR_NO_ARMATURE_STATE_POOL_PROVIDED);
     }
 
     mResourcePool = resourcePool;
-    mpArmatureStatePool = pArmatureStatePool;
+    mArmatureStatePool = armatureStatePool;
 
     return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
 
 void foeArmatureSystem::deinitialize() {
-    mpArmatureStatePool = nullptr;
+    mArmatureStatePool = FOE_NULL_HANDLE;
     mResourcePool = nullptr;
 }
 
 bool foeArmatureSystem::initialized() const noexcept { return mResourcePool != nullptr; }
 
 foeResultSet foeArmatureSystem::process(float timePassed) {
-    auto *pArmatureState = mpArmatureStatePool->begin<1>();
-    auto const *pEndArmatureState = mpArmatureStatePool->end<1>();
+    foeArmatureState *pArmatureState =
+        (foeArmatureState *)foeEcsComponentPoolDataPtr(mArmatureStatePool);
+    foeArmatureState *const pEndArmatureState =
+        pArmatureState + foeEcsComponentPoolSize(mArmatureStatePool);
 
     for (; pArmatureState != pEndArmatureState; ++pArmatureState) {
         // Add the time that has passed to the armature/animation

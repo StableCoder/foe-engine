@@ -166,9 +166,10 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
             ++errors;
         } else if (count == 0) {
-            foeArmatureStatePool *pData;
+            foeArmatureStatePool componentPool;
             result = foeSimulationReleaseComponentPool(
-                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL, (void **)&pData);
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
+                (void **)&componentPool);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -177,7 +178,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
                 ++errors;
             } else {
-                delete pData;
+                foeEcsDestroyComponentPool(componentPool);
             }
         }
     }
@@ -262,11 +263,14 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL,
-            .pComponentPool = new (std::nothrow) foeArmatureStatePool,
-            .pMaintenanceFn = [](void *pData) { ((foeArmatureStatePool *)pData)->maintenance(); },
+            .pMaintenanceFn =
+                [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
         };
-        if (createInfo.pComponentPool == nullptr) {
-            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+
+        result = foeEcsCreateComponentPool(0, 16, sizeof(foeArmatureState),
+                                           (PFN_foeEcsComponentDestructor)cleanup_foeArmatureState,
+                                           (foeEcsComponentPool *)&createInfo.pComponentPool);
+        if (result.value != FOE_NULL_HANDLE) {
             goto CREATE_FAILED;
         }
 
@@ -553,12 +557,13 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     }
     selection.armatureSystem = true;
     if (count == 1) {
-        auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        foeArmatureStatePool armatureStatePool =
+            (foeArmatureStatePool)foeSimulationGetComponentPool(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
         auto *pData = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-        result = pData->initialize(pSimulation->resourcePool, pArmatureStatePool);
+        result = pData->initialize(pSimulation->resourcePool, armatureStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -614,15 +619,16 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     }
     selection.animationSystem = true;
     if (count == 1) {
-        auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        foeArmatureStatePool armatureStatePool =
+            (foeArmatureStatePool)foeSimulationGetComponentPool(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
         foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
 
         auto *pData = (VkAnimationPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL);
 
-        result = pData->initialize(pSimulation->resourcePool, pArmatureStatePool, renderStatePool);
+        result = pData->initialize(pSimulation->resourcePool, armatureStatePool, renderStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

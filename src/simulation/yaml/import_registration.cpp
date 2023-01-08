@@ -42,16 +42,20 @@ bool importArmatureState(YAML::Node const &node,
                          foeEntityID entity,
                          foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_armature_state_key()]; dataNode) {
-        auto *pPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        foeArmatureStatePool armatureStatePool =
+            (foeArmatureStatePool)foeSimulationGetComponentPool(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
 
-        if (pPool == nullptr)
+        if (armatureStatePool == FOE_NULL_HANDLE)
             return false;
 
         try {
             foeArmatureState data = yaml_read_ArmatureState(dataNode, groupTranslator);
 
-            pPool->insert(entity, std::move(data));
+            foeResultSet result = foeEcsComponentPoolInsert(armatureStatePool, entity, &data);
+            if (result.value != FOE_SUCCESS) {
+                cleanup_foeArmatureState(&data);
+            }
 
             return true;
         } catch (foeYamlException const &e) {

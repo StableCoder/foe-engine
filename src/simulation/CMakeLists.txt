@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,7 @@ target_sources(
           ../result.c
           ../vk_result.c
           armature_loader.cpp
+          armature_state.cpp
           armature_system.cpp
           binary.cpp
           cleanup.c

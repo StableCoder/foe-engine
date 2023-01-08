@@ -44,14 +44,22 @@ std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation c
     std::vector<foeKeyYamlPair> keyDataPairs;
 
     // ArmatureState
-    auto *pArmatureStatePool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+    foeArmatureStatePool armatureStatePool = (foeArmatureStatePool)foeSimulationGetComponentPool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
-    if (pArmatureStatePool) {
-        if (auto searchIt = pArmatureStatePool->find(entity);
-            searchIt != pArmatureStatePool->size()) {
+    if (armatureStatePool) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(armatureStatePool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(armatureStatePool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            foeArmatureState *pArmatureState =
+                (foeArmatureState *)foeEcsComponentPoolDataPtr(armatureStatePool) + offset;
+
             keyDataPairs.emplace_back(foeKeyYamlPair{
                 .key = yaml_armature_state_key(),
-                .data = yaml_write_ArmatureState(pArmatureStatePool->begin<1>()[searchIt]),
+                .data = yaml_write_ArmatureState(*pArmatureState),
             });
         }
     }

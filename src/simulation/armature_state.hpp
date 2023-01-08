@@ -17,8 +17,8 @@ struct foeArmatureState {
     // Animation info
     uint32_t animationID{UINT32_MAX};
     float time{0.f};
-
-    ~foeArmatureState() { free(pArmatureBones); }
 };
+
+void cleanup_foeArmatureState(foeArmatureState const *pData);
 
 #endif // ARMATURE_STATE_HPP

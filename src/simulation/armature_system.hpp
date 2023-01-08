@@ -7,11 +7,11 @@
 
 #include <foe/resource/pool.h>
 
-class foeArmatureStatePool;
+#include "armature_state_pool.hpp"
 
 class foeArmatureSystem {
   public:
-    foeResultSet initialize(foeResourcePool resourcePool, foeArmatureStatePool *pArmatureStatePool);
+    foeResultSet initialize(foeResourcePool resourcePool, foeArmatureStatePool armatureStatePool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -22,7 +22,7 @@ class foeArmatureSystem {
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
 
     // Components
-    foeArmatureStatePool *mpArmatureStatePool{nullptr};
+    foeArmatureStatePool mArmatureStatePool{FOE_NULL_HANDLE};
 };
 
 #endif // ARMATURE_SYSTEM_HPP

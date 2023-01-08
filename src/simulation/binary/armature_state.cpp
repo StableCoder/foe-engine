@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,11 +17,18 @@ extern "C" foeResultSet export_foeArmatureState(foeEntityID entity,
     foeResultSet result = to_foeResult(FOE_BRINGUP_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
-    auto *pComponentPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+    foeArmatureStatePool componentPool = (foeArmatureStatePool)foeSimulationGetComponentPool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
-    if (pComponentPool) {
-        if (auto searchIt = pComponentPool->find(entity); searchIt != pComponentPool->size()) {
-            auto *pComponentData = pComponentPool->begin<1>() + searchIt;
+    if (componentPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            foeArmatureState *pComponentData =
+                (foeArmatureState *)foeEcsComponentPoolDataPtr(componentPool) + offset;
 
             result = binary_write_foeArmatureState(pComponentData, &set.dataSize, nullptr);
             if (result.value != FOE_SUCCESS)
@@ -52,16 +59,20 @@ extern "C" foeResultSet import_foeArmatureState(void const *pReadBuffer,
                                                 foeEcsGroupTranslator groupTranslator,
                                                 foeEntityID entity,
                                                 foeSimulation const *pSimulation) {
-    auto *pComponentPool = (foeArmatureStatePool *)foeSimulationGetComponentPool(
+    foeArmatureStatePool componentPool = (foeArmatureStatePool)foeSimulationGetComponentPool(
         pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
-    if (pComponentPool == nullptr)
+    if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_BRINGUP_BINARY_ERROR_ARMATURE_STATE_POOL_NOT_FOUND);
 
     foeArmatureState componentData;
     foeResultSet result =
         binary_read_foeArmatureState(pReadBuffer, pReadSize, groupTranslator, &componentData);
-    if (result.value == FOE_SUCCESS)
-        pComponentPool->insert(entity, std::move(componentData));
+    if (result.value == FOE_SUCCESS) {
+        result = foeEcsComponentPoolInsert(componentPool, entity, &componentData);
+        if (result.value != FOE_SUCCESS) {
+            cleanup_foeArmatureState(&componentData);
+        }
+    }
 
     return result;
 }

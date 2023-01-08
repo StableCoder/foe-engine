@@ -12,16 +12,15 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
+#include "armature_state_pool.hpp"
 #include "render_state_pool.h"
 
 #include <array>
 
-class foeArmatureStatePool;
-
 class VkAnimationPool {
   public:
     foeResultSet initialize(foeResourcePool resourcePool,
-                            foeArmatureStatePool *pArmatureStatePool,
+                            foeArmatureStatePool armatureStatePool,
                             foeRenderStatePool renderStatePool);
     void deinitialize();
     bool initialized() const noexcept;
@@ -43,7 +42,7 @@ class VkAnimationPool {
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
 
     // Components
-    foeArmatureStatePool *mpArmatureStatePool{nullptr};
+    foeArmatureStatePool mArmatureStatePool{FOE_NULL_HANDLE};
     foeRenderStatePool mRenderStatePool{FOE_NULL_HANDLE};
 
     // Graphics
