@@ -239,7 +239,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
 
         if (foeResourceGetState(mesh) != FOE_RESOURCE_LOAD_STATE_LOADED ||
             foeResourceGetState(armature) != FOE_RESOURCE_LOAD_STATE_LOADED ||
-            pArmatureState->armatureState.empty()) {
+            pArmatureState->armatureBoneCount == 0) {
             continue;
         }
 
@@ -264,7 +264,7 @@ VkResult VkAnimationPool::uploadBoneOffsets(uint32_t frameIndex) {
                 // Didn't find a matching node,
                 lastBone = glm::mat4{1.f};
             } else {
-                lastBone = pArmatureState->armatureState[armatureNodeIndex];
+                lastBone = pArmatureState->pArmatureBones[armatureNodeIndex];
             }
 
             *pBufferData = lastBone * bone.offsetMatrix;

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -88,7 +88,7 @@ void foeArmatureSystem::deinitialize() {
 
 bool foeArmatureSystem::initialized() const noexcept { return mResourcePool != nullptr; }
 
-void foeArmatureSystem::process(float timePassed) {
+foeResultSet foeArmatureSystem::process(float timePassed) {
     auto *pArmatureState = mpArmatureStatePool->begin<1>();
     auto const *pEndArmatureState = mpArmatureStatePool->end<1>();
 
@@ -124,11 +124,18 @@ void foeArmatureSystem::process(float timePassed) {
 
         // If the animation index isn't on the given armature, then just set the default armature
         // values
-        pArmatureState->armatureState.resize(pArmature->armature.size());
+        if (pArmatureState->pArmatureBones != NULL)
+            free(pArmatureState->pArmatureBones);
+        pArmatureState->pArmatureBones =
+            (glm::mat4 *)malloc(pArmature->armature.size() * sizeof(glm::mat4));
+        if (pArmatureState->pArmatureBones == NULL)
+            return to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+        pArmatureState->armatureBoneCount = pArmature->armature.size();
+
         if (pArmature->animations.size() <= pArmatureState->animationID) {
             // The original armature matrices
             originalArmatureNode(&pArmature->armature[0], glm::mat4{1.f},
-                                 &pArmatureState->armatureState[0]);
+                                 pArmatureState->pArmatureBones);
 
             // Not applying animations, so continue to next entity
             continue;
@@ -145,6 +152,8 @@ void foeArmatureSystem::process(float timePassed) {
         animationTime *= animation.ticksPerSecond;
 
         animateArmatureNode(&pArmature->armature[0], animation.nodeChannels, animationTime,
-                            glm::mat4{1.f}, &pArmatureState->armatureState[0]);
+                            glm::mat4{1.f}, pArmatureState->pArmatureBones);
     }
+
+    return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
