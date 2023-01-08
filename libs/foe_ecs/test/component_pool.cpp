@@ -5,11 +5,117 @@
 #include <catch.hpp>
 #include <foe/ecs/component_pool.h>
 
+#include <atomic>
+
+TEST_CASE("ComponentPool - Check destructors called when component data is freed") {
+    foeEcsComponentPool testPool = FOE_NULL_HANDLE;
+    std::atomic<int> testDestructorCallCount = 0;
+    std::atomic<int> *const pAtomicCounter = &testDestructorCallCount;
+    foeResultSet result;
+
+    auto destructorCall = [](void *pData) {
+        std::atomic<int> *const pAtomicCounter = *((std::atomic<int> **)pData);
+        *pAtomicCounter += 1;
+    };
+
+    result = foeEcsCreateComponentPool(0, 1, sizeof(std::atomic<int> *), destructorCall, &testPool);
+    REQUIRE(result.value == FOE_SUCCESS);
+    REQUIRE(testPool != FOE_NULL_HANDLE);
+
+    SECTION("Called when insert data is skipped (due to duplicates)") {
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        CHECK(testDestructorCallCount == 0);
+
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        CHECK(testDestructorCallCount == 1);
+
+        foeEcsDestroyComponentPool(testPool);
+    }
+
+    SECTION("Called when insert data is skipped (already inserted)") {
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        CHECK(testDestructorCallCount == 0);
+
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        CHECK(testDestructorCallCount == 1);
+
+        foeEcsDestroyComponentPool(testPool);
+    }
+
+    SECTION("Called when data is removed") {
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolRemove(testPool, foeEntityID(16));
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        // Initial removal, the data is shifted tot he 'removed' pool
+        CHECK(testDestructorCallCount == 0);
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        // Second call data is actually discarded
+        CHECK(testDestructorCallCount == 0);
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        CHECK(testDestructorCallCount == 1);
+
+        foeEcsDestroyComponentPool(testPool);
+    }
+
+    SECTION("Called when pool is destroyed on data in removed, regular and awaiting insertion") {
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolRemove(testPool, foeEntityID(16));
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolMaintenance(testPool);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        result = foeEcsComponentPoolInsert(testPool, foeEntityID(16), (void *)&pAtomicCounter);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        CHECK(testDestructorCallCount == 0);
+
+        foeEcsDestroyComponentPool(testPool);
+
+        CHECK(testDestructorCallCount == 3);
+    }
+}
+
 TEST_CASE("ComponentPool - Maintenance with no changes does nothing") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -28,7 +134,7 @@ TEST_CASE("ComponentPool - Test initial capacity") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(1024, 1, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(1024, 1, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -50,7 +156,7 @@ TEST_CASE("ComponentPool - Test reserving capacity") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -74,7 +180,7 @@ TEST_CASE("ComponentPool - Test capacity expansion rate") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1024, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(0, 1024, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -96,7 +202,7 @@ TEST_CASE("ComponentPool - Test changing capacity expansion rate") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -120,7 +226,7 @@ TEST_CASE("ComponentPool - Test setting insertion capacity") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -146,7 +252,7 @@ TEST_CASE("ComponentPool - Single insertion") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -186,7 +292,7 @@ TEST_CASE("ComponentPool - Multiple reversed insertion") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(uint32_t), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -239,7 +345,7 @@ TEST_CASE("ComponentPool - Staggered insertion") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -338,7 +444,7 @@ TEST_CASE(
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -378,7 +484,7 @@ TEST_CASE("ComponentPool - Attempting to add same entity in a different pass fai
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -468,7 +574,7 @@ TEST_CASE("ComponentPool - Single removal") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -520,7 +626,7 @@ TEST_CASE("ComponentPool - Multiple removal") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -572,7 +678,7 @@ TEST_CASE("ComponentPool - Staggered removal") {
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -638,7 +744,7 @@ TEST_CASE(
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 
@@ -703,7 +809,7 @@ TEST_CASE("ComponentPool - Attempting to remove items not in the pool has no und
     foeEcsComponentPool testPool = FOE_NULL_HANDLE;
     foeResultSet result;
 
-    result = foeEcsCreateComponentPool(0, 1, sizeof(int), &testPool);
+    result = foeEcsCreateComponentPool(0, 1, sizeof(int), NULL, &testPool);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(testPool != FOE_NULL_HANDLE);
 

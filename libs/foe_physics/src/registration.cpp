@@ -175,7 +175,7 @@ foeResultSet create(foeSimulation *pSimulation) {
                 [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
         };
 
-        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRigidBody),
+        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRigidBody), NULL,
                                            (foeEcsComponentPool *)&createInfo.pComponentPool);
         if (result.value != FOE_SUCCESS) {
             goto CREATE_FAILED;

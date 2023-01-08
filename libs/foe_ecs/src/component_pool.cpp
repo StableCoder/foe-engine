@@ -50,6 +50,8 @@ struct ComponentPool {
 
     // Other Data
     size_t dataTypeSize;
+    PFN_foeEcsComponentDestructor
+        dataDestructor;           // Function to call when component data is being destroyed
     size_t expansionRate;         // The linear rate at which the storage capacity increases
     size_t desiredCapacity;       // The desired minimum capacity, enforced during maintenance cycle
     size_t desiredInsertCapacity; // Desired capacity to items toInsert, to reduce reallocations
@@ -186,14 +188,24 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
         return to_foeResult(FOE_ECS_SUCCESS);
     }
 
-    // Sort data to insert
-    std::sort(toInsertOffsets.begin(), toInsertOffsets.end(),
-              [](InsertOffsets const &a, InsertOffsets const &b) { return a.id < b.id; });
-    toInsertOffsets.erase(foe::unique_last(toInsertOffsets.begin(), toInsertOffsets.end(),
-                                           [](InsertOffsets const &a, InsertOffsets const &b) {
-                                               return a.id == b.id;
-                                           }),
-                          toInsertOffsets.end());
+    { // Sort data to insert
+        std::sort(toInsertOffsets.begin(), toInsertOffsets.end(),
+                  [](InsertOffsets const &a, InsertOffsets const &b) { return a.id < b.id; });
+
+        auto newToInsertOffsetsEnd = foe::unique_last(
+            toInsertOffsets.begin(), toInsertOffsets.end(),
+            [](InsertOffsets const &a, InsertOffsets const &b) { return a.id == b.id; });
+
+        if (pComponentPool->dataDestructor) {
+            for (auto it = newToInsertOffsetsEnd; it != toInsertOffsets.end(); ++it) {
+                void *const pSkippedData = (uint8_t *)toInsertDataSet.pData +
+                                           (it->srcOffset * pComponentPool->dataTypeSize);
+                pComponentPool->dataDestructor(pSkippedData);
+            }
+        }
+
+        toInsertOffsets.erase(newToInsertOffsetsEnd, toInsertOffsets.end());
+    }
 
     // Insertion offset pointers
     InsertOffsets *pInsert = toInsertOffsets.data();
@@ -214,6 +226,14 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
         if (pID != pEndID && *pID == pInsert->id) {
             // Mark the ID as invalid, so it is skipped when doing actual insertion pass later
             pInsert->id = FOE_INVALID_ID;
+
+            // If there's a destructor, be sure to call it on the data we're skipping
+            if (pComponentPool->dataDestructor) {
+                void *const pSkippedData = (uint8_t *)toInsertDataSet.pData +
+                                           (pInsert->srcOffset * pComponentPool->dataTypeSize);
+                pComponentPool->dataDestructor(pSkippedData);
+            }
+
             ++pInsert;
             continue;
         }
@@ -294,7 +314,7 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
     if (dstPool.pIDs != pComponentPool->storedData.pIDs) {
         // Move remaining old data
         if (0 < lastMovedItem) {
-            moveData(&dstPool, accumulatedDistance, &pComponentPool->storedData, 0, lastMovedItem,
+            moveData(&dstPool, 0, &pComponentPool->storedData, 0, lastMovedItem,
                      pComponentPool->dataTypeSize);
         }
 
@@ -314,6 +334,7 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
 extern "C" foeResultSet foeEcsCreateComponentPool(size_t initialCapacity,
                                                   size_t expansionRate,
                                                   size_t dataSize,
+                                                  PFN_foeEcsComponentDestructor dataDestructor,
                                                   foeEcsComponentPool *pComponentPool) {
     ComponentPool *pNewComponentPool = (ComponentPool *)calloc(1, sizeof(ComponentPool));
     if (pNewComponentPool == nullptr)
@@ -323,6 +344,7 @@ extern "C" foeResultSet foeEcsCreateComponentPool(size_t initialCapacity,
     new (pNewComponentPool) ComponentPool;
 
     pNewComponentPool->dataTypeSize = dataSize;
+    pNewComponentPool->dataDestructor = dataDestructor;
     pNewComponentPool->expansionRate = expansionRate;
     pNewComponentPool->desiredCapacity = initialCapacity;
 
@@ -333,6 +355,26 @@ extern "C" foeResultSet foeEcsCreateComponentPool(size_t initialCapacity,
 
 extern "C" void foeEcsDestroyComponentPool(foeEcsComponentPool componentPool) {
     ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
+
+    if (pComponentPool->dataDestructor != NULL) {
+        uint8_t *pData = (uint8_t *)pComponentPool->removedData.pData;
+        for (size_t i = 0; i < pComponentPool->removedData.count;
+             ++i, pData += pComponentPool->dataTypeSize) {
+            pComponentPool->dataDestructor(pData);
+        }
+
+        pData = (uint8_t *)pComponentPool->toInsertData.pData;
+        for (size_t i = 0; i < pComponentPool->toInsertData.count;
+             ++i, pData += pComponentPool->dataTypeSize) {
+            pComponentPool->dataDestructor(pData);
+        }
+
+        pData = (uint8_t *)pComponentPool->storedData.pData;
+        for (size_t i = 0; i < pComponentPool->storedData.count;
+             ++i, pData += pComponentPool->dataTypeSize) {
+            pComponentPool->dataDestructor(pData);
+        }
+    }
 
     deallocDataSet(&pComponentPool->removedData);
 
@@ -349,6 +391,13 @@ extern "C" foeResultSet foeEcsComponentPoolMaintenance(foeEcsComponentPool compo
     ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
 
     // Clear Removed/Inserted
+    if (pComponentPool->dataDestructor != NULL) {
+        uint8_t *pData = (uint8_t *)pComponentPool->removedData.pData;
+        for (size_t i = 0; i < pComponentPool->removedData.count;
+             ++i, pData += pComponentPool->dataTypeSize) {
+            pComponentPool->dataDestructor(pData);
+        }
+    }
     pComponentPool->removedData.count = 0;
     pComponentPool->insertedCount = 0;
 
@@ -408,7 +457,8 @@ extern "C" void foeEcsComponentPoolReserveInsertCapacity(foeEcsComponentPool com
                                                          size_t capacity) {
     ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
 
-    pComponentPool->desiredInsertCapacity = capacity;
+    pComponentPool->desiredInsertCapacity =
+        std::max(pComponentPool->desiredInsertCapacity, capacity);
 }
 
 extern "C" foeResultSet foeEcsComponentPoolInsert(foeEcsComponentPool componentPool,

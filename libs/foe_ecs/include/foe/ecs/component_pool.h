@@ -18,9 +18,12 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeEcsComponentPool)
 
+typedef void (*PFN_foeEcsComponentDestructor)(void *);
+
 FOE_ECS_EXPORT foeResultSet foeEcsCreateComponentPool(size_t initialCapacity,
                                                       size_t expansionRate,
                                                       size_t dataSize,
+                                                      PFN_foeEcsComponentDestructor dataDestructor,
                                                       foeEcsComponentPool *pComponentPool);
 
 FOE_ECS_EXPORT void foeEcsDestroyComponentPool(foeEcsComponentPool componentPool);

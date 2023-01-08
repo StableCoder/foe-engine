@@ -298,7 +298,7 @@ foeResultSet create(foeSimulation *pSimulation) {
                 },
         };
 
-        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRenderState),
+        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRenderState), NULL,
                                            (foeEcsComponentPool *)&createInfo.pComponentPool);
         if (result.value != FOE_SUCCESS) {
             goto CREATE_FAILED;
