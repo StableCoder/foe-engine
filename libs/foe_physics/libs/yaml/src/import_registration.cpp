@@ -1,11 +1,11 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/physics/yaml/import_registration.h>
 
 #include <foe/imex/yaml/importer.hpp>
-#include <foe/physics/component/rigid_body_pool.hpp>
+#include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/type_defs.h>
 #include <foe/resource/pool.h>
@@ -36,16 +36,16 @@ bool importRigidBody(YAML::Node const &node,
                      foeEntityID entity,
                      foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_rigid_body_key()]; dataNode) {
-        auto *pPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+        foeRigidBodyPool pool = (foeRigidBodyPool)foeSimulationGetComponentPool(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
 
-        if (pPool == nullptr)
+        if (pool == FOE_NULL_HANDLE)
             return false;
 
         try {
             foeRigidBody data = yaml_read_rigid_body(dataNode, groupTranslator);
 
-            pPool->insert(entity, std::move(data));
+            foeEcsComponentPoolInsert(pool, entity, &data);
 
             return true;
         } catch (foeYamlException const &e) {

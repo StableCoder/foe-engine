@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,7 @@
 
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
-#include <foe/physics/component/rigid_body_pool.hpp>
+#include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/type_defs.h>
 #include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
@@ -40,13 +40,23 @@ std::vector<foeKeyYamlPair> exportResources(foeResourceCreateInfo createInfo) {
 std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+    foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
-    if (pRigidBodyPool) {
-        if (auto offset = pRigidBodyPool->find(entity); offset != pRigidBodyPool->size()) {
+    if (rigidBodyPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(rigidBodyPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(rigidBodyPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+
+            foeRigidBody *pRigidBodyData =
+                (foeRigidBody *)foeEcsComponentPoolDataPtr(rigidBodyPool) + offset;
+
             keyDataPairs.emplace_back(foeKeyYamlPair{
                 .key = yaml_rigid_body_key(),
-                .data = yaml_write_rigid_body(*(pRigidBodyPool->begin<1>() + offset)),
+                .data = yaml_write_rigid_body(*pRigidBodyData),
             });
         }
     }

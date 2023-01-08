@@ -1,14 +1,17 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "rigid_body.h"
 
 #include <foe/physics/binary.h>
-#include <foe/physics/component/rigid_body_pool.hpp>
+#include <foe/physics/component/rigid_body_pool.h>
+#include <foe/physics/type_defs.h>
 #include <foe/simulation/simulation.hpp>
 
 #include "result.h"
+
+#include <algorithm>
 
 extern "C" foeResultSet export_foeRigidBody(foeEntityID entity,
                                             foeSimulation const *pSimulation,
@@ -16,11 +19,19 @@ extern "C" foeResultSet export_foeRigidBody(foeEntityID entity,
     foeResultSet result = to_foeResult(FOE_PHYSICS_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
-    auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+    foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
-    if (pRigidBodyPool) {
-        if (auto offset = pRigidBodyPool->find(entity); offset != pRigidBodyPool->size()) {
-            auto *pRigidBodyData = pRigidBodyPool->begin<1>() + offset;
+    if (rigidBodyPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(rigidBodyPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(rigidBodyPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+
+            foeRigidBody *pRigidBodyData =
+                (foeRigidBody *)foeEcsComponentPoolDataPtr(rigidBodyPool) + offset;
 
             result = binary_write_foeRigidBody(pRigidBodyData, &set.dataSize, nullptr);
             if (result.value != FOE_SUCCESS)
@@ -52,16 +63,16 @@ extern "C" foeResultSet import_foeRigidBody(void const *pReadBuffer,
                                             foeEcsGroupTranslator groupTranslator,
                                             foeEntityID entity,
                                             foeSimulation const *pSimulation) {
-    auto *pComponentPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+    foeRigidBodyPool componentPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
-    if (pComponentPool == nullptr)
+    if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_BINARY_ERROR_RIGID_BODY_POOL_NOT_FOUND);
 
     foeRigidBody componentData;
     foeResultSet result =
         binary_read_foeRigidBody(pReadBuffer, pReadSize, groupTranslator, &componentData);
     if (result.value == FOE_SUCCESS)
-        pComponentPool->insert(entity, std::move(componentData));
+        foeEcsComponentPoolInsert(componentPool, entity, &componentData);
 
     return result;
 }

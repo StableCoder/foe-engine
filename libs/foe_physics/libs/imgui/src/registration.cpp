@@ -1,10 +1,10 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/physics/imgui/registration.hpp>
 
-#include <foe/physics/component/rigid_body_pool.hpp>
+#include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/type_defs.h>
 #include <foe/resource/imgui/create_info.h>
 #include <foe/resource/imgui/resource.h>
@@ -21,14 +21,22 @@ namespace {
 
 void imgui_foePhysicsComponent(foeEntityID entity, foeSimulation const *pSimulation) {
     // foeRigidBody
-    auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+    foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
         pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
 
-    if (pRigidBodyPool != nullptr) {
-        auto offset = pRigidBodyPool->find(entity);
-        if (offset != pRigidBodyPool->size()) {
-            auto *pComponent = pRigidBodyPool->begin<1>() + offset;
-            imgui_foeRigidBody(pComponent);
+    if (rigidBodyPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(rigidBodyPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(rigidBodyPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+
+            foeRigidBody *pRigidBodyData =
+                (foeRigidBody *)foeEcsComponentPoolDataPtr(rigidBodyPool) + offset;
+
+            imgui_foeRigidBody(pRigidBodyData);
         }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <foe/ecs/id.h>
+#include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/export.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
@@ -16,7 +17,6 @@
 #include <vector>
 
 class foeCollisionShapeLoader;
-class foeRigidBodyPool;
 class foePosition3dPool;
 
 struct foeRigidBody;
@@ -30,7 +30,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
 
     foeResultSet initialize(foeResourcePool resourcePool,
                             foeCollisionShapeLoader *pCollisionShapeLoader,
-                            foeRigidBodyPool *pRigidBodyPool,
+                            foeRigidBodyPool rigidBodyPool,
                             foePosition3dPool *pPosition3dPool);
     void deinitialize();
     bool initialized() const noexcept;
@@ -49,7 +49,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     foeCollisionShapeLoader *mpCollisionShapeLoader{nullptr};
 
     // Components
-    foeRigidBodyPool *mpRigidBodyPool{nullptr};
+    foeRigidBodyPool mRigidBodyPool{FOE_NULL_HANDLE};
     foePosition3dPool *mpPosition3dPool{nullptr};
 
     // Physics World Instance Items

@@ -1,10 +1,10 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/physics/registration.h>
 
-#include <foe/physics/component/rigid_body_pool.hpp>
+#include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>
@@ -77,9 +77,9 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
             ++errors;
         } else if (count == 0) {
-            foeRigidBodyPool *pData;
+            foeRigidBodyPool pool;
             result = foeSimulationReleaseComponentPool(
-                pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL, (void **)&pData);
+                pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL, (void **)&pool);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -88,7 +88,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
                 ++errors;
             } else {
-                delete pData;
+                foeEcsDestroyComponentPool(pool);
             }
         }
     }
@@ -171,11 +171,13 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL,
-            .pComponentPool = new (std::nothrow) foeRigidBodyPool,
-            .pMaintenanceFn = [](void *pData) { ((foeRigidBodyPool *)pData)->maintenance(); },
+            .pMaintenanceFn =
+                [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
         };
-        if (createInfo.pComponentPool == nullptr) {
-            result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+
+        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRigidBody),
+                                           (foeEcsComponentPool *)&createInfo.pComponentPool);
+        if (result.value != FOE_SUCCESS) {
             goto CREATE_FAILED;
         }
 
@@ -334,7 +336,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
 
-        auto *pRigidBodyPool = (foeRigidBodyPool *)foeSimulationGetComponentPool(
+        foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
         auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
             pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
@@ -343,7 +345,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
 
         result = pSystem->initialize(pSimulation->resourcePool, pCollisionShapeLoader,
-                                     pRigidBodyPool, pPosition3dPool);
+                                     rigidBodyPool, pPosition3dPool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

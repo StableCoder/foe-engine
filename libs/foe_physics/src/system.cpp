@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,7 @@
 
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/physics/component/rigid_body.h>
-#include <foe/physics/component/rigid_body_pool.hpp>
+#include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.hpp>
@@ -30,13 +30,13 @@ foePhysicsSystem::~foePhysicsSystem() {}
 
 foeResultSet foePhysicsSystem::initialize(foeResourcePool resourcePool,
                                           foeCollisionShapeLoader *pCollisionShapeLoader,
-                                          foeRigidBodyPool *pRigidBodyPool,
+                                          foeRigidBodyPool rigidBodyPool,
                                           foePosition3dPool *pPosition3dPool) {
     if (resourcePool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES);
     if (pCollisionShapeLoader == nullptr)
         return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER);
-    if (pRigidBodyPool == nullptr)
+    if (rigidBodyPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS);
     if (pPosition3dPool == nullptr)
         return to_foeResult(FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS);
@@ -44,7 +44,7 @@ foeResultSet foePhysicsSystem::initialize(foeResourcePool resourcePool,
     mResourcePool = resourcePool;
     mpCollisionShapeLoader = pCollisionShapeLoader;
 
-    mpRigidBodyPool = pRigidBodyPool;
+    mRigidBodyPool = rigidBodyPool;
     mpPosition3dPool = pPosition3dPool;
 
     mAwaitingLoadingResources.clear();
@@ -52,12 +52,12 @@ foeResultSet foePhysicsSystem::initialize(foeResourcePool resourcePool,
     // As we're initializing, we need to go through and process any already available data, so that
     // per-tick processing can be streamlined to operate more quickly using deltas
     { // Iterate through active rigid bodies, the primary for this system
-        auto *pId = mpRigidBodyPool->begin();
-        auto const *const pEndId = mpRigidBodyPool->end();
-        auto *pData = mpRigidBodyPool->begin<1>();
+        foeEntityID const *pID = foeEcsComponentPoolIdPtr(rigidBodyPool);
+        foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(rigidBodyPool);
+        foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolDataPtr(rigidBodyPool);
 
-        for (; pId != pEndId; ++pId, ++pData) {
-            addObject(*pId, pData, nullptr, nullptr);
+        for (; pID != pEndID; ++pID, ++pData) {
+            addObject(*pID, pData, nullptr, nullptr);
         }
     }
 
@@ -68,30 +68,30 @@ void foePhysicsSystem::deinitialize() {
     // On the way out, go through ALL and remove from any worlds
     mAwaitingLoadingResources.clear();
 
-    if (mpRigidBodyPool) {
+    if (mRigidBodyPool) {
         { // Iterate through 'active' rigid bodies, the primary for this system
-            auto *pId = mpRigidBodyPool->begin();
-            auto const *const pEndId = mpRigidBodyPool->end();
-            auto *pData = mpRigidBodyPool->begin<1>();
+            foeEntityID const *pID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
+            foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(mRigidBodyPool);
+            foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool);
 
-            for (; pId != pEndId; ++pId, ++pData) {
-                removeObject(*pId, pData);
+            for (; pID != pEndID; ++pID, ++pData) {
+                removeObject(*pID, pData);
             }
         }
 
         { // Iterate through 'removed' rigid bodies, the primary for this system
-            auto *pId = mpRigidBodyPool->rmbegin();
-            auto const *const pEndId = mpRigidBodyPool->rmend();
-            auto *pData = mpRigidBodyPool->rmbegin<1>();
+            foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(mRigidBodyPool);
+            foeEntityID const *const pEndID = pID + foeEcsComponentPoolRemoved(mRigidBodyPool);
+            foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolRemovedDataPtr(mRigidBodyPool);
 
-            for (; pId != pEndId; ++pId, ++pData) {
-                removeObject(*pId, pData);
+            for (; pID != pEndID; ++pID, ++pData) {
+                removeObject(*pID, pData);
             }
         }
     }
 
     mpPosition3dPool = nullptr;
-    mpRigidBodyPool = nullptr;
+    mRigidBodyPool = FOE_NULL_HANDLE;
 
     mpCollisionShapeLoader = nullptr;
     mResourcePool = FOE_NULL_HANDLE;
@@ -108,18 +108,18 @@ void foePhysicsSystem::process(float timePassed) {
 
     // Removals
     { // RigidBodies
-        auto *pId = mpRigidBodyPool->rmbegin();
-        auto *const pIdEnd = mpRigidBodyPool->rmend();
-        auto *pData = mpRigidBodyPool->rmbegin<1>();
+        foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(mRigidBodyPool);
+        foeEntityID const *const pEndID = pID + foeEcsComponentPoolRemoved(mRigidBodyPool);
+        foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolRemovedDataPtr(mRigidBodyPool);
 
-        for (; pId != pIdEnd; ++pId, ++pData) {
-            removeObject(*pId, pData);
+        for (; pID != pEndID; ++pID, ++pData) {
+            removeObject(*pID, pData);
         }
     }
 
     { // foePosition3d
-        auto *pId = mpRigidBodyPool->rmbegin();
-        auto *const pIdEnd = mpRigidBodyPool->rmend();
+        auto *pId = mpPosition3dPool->rmbegin();
+        auto *const pIdEnd = mpPosition3dPool->rmend();
 
         for (; pId != pIdEnd; ++pId) {
             removeObject(*pId, nullptr);
@@ -128,13 +128,15 @@ void foePhysicsSystem::process(float timePassed) {
 
     // Insertions
     { // RigidBodies
-        auto offsetIt = mpRigidBodyPool->inbegin();
-        auto offsetEndIt = mpRigidBodyPool->inend();
-        auto *const pId = mpRigidBodyPool->begin();
-        auto *const pData = mpRigidBodyPool->begin<1>();
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
+        foeRigidBody *const pStartData =
+            (foeRigidBody *const)foeEcsComponentPoolDataPtr(mRigidBodyPool);
 
-        for (; offsetIt != offsetEndIt; ++offsetIt) {
-            addObject(pId[*offsetIt], &pData[*offsetIt], nullptr, nullptr);
+        size_t const *pOffset = foeEcsComponentPoolInsertedOffsetPtr(mRigidBodyPool);
+        size_t const *const pEndOffset = pOffset + foeEcsComponentPoolInserted(mRigidBodyPool);
+
+        for (; pOffset != pEndOffset; ++pOffset) {
+            addObject(pStartID[*pOffset], pStartData + *pOffset, nullptr, nullptr);
         }
     }
 
@@ -152,15 +154,15 @@ void foePhysicsSystem::process(float timePassed) {
     mpWorld->stepSimulation(timePassed);
 
     { // Copy position data to foePosition3d objects
-        auto *pId = mpRigidBodyPool->begin();
-        auto *const pEndId = mpRigidBodyPool->end();
-        auto *pData = mpRigidBodyPool->begin<1>();
+        foeEntityID const *pID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
+        foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(mRigidBodyPool);
+        foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool);
 
-        for (; pId != pEndId; ++pId, ++pData) {
+        for (; pID != pEndID; ++pID, ++pData) {
             if (pData->pRigidBody == nullptr)
                 continue;
 
-            auto posOffset = mpPosition3dPool->find(*pId);
+            auto posOffset = mpPosition3dPool->find(*pID);
             assert(posOffset != mpPosition3dPool->size());
 
             foePosition3d *pPosition = mpPosition3dPool->begin<1>()[posOffset].get();
@@ -184,9 +186,14 @@ void foePhysicsSystem::addObject(foeEntityID entity,
                                  foeResource collisionShape) {
     // RigidBody
     if (pRigidBody == nullptr) {
-        size_t dataOffset = mpRigidBodyPool->find(entity);
-        if (dataOffset != mpRigidBodyPool->size()) {
-            pRigidBody = mpRigidBodyPool->begin<1>() + dataOffset;
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(mRigidBodyPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            pRigidBody = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool) + offset;
         } else {
             return;
         }
@@ -250,9 +257,14 @@ void foePhysicsSystem::addObject(foeEntityID entity,
 void foePhysicsSystem::removeObject(foeEntityID entity, foeRigidBody *pRigidBody) {
     // RigidBody
     if (pRigidBody == nullptr) {
-        size_t dataOffset = mpRigidBodyPool->find(entity);
-        if (dataOffset != mpRigidBodyPool->size()) {
-            pRigidBody = mpRigidBodyPool->begin<1>() + dataOffset;
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(mRigidBodyPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+            pRigidBody = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool) + offset;
         } else {
             return;
         }
