@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,8 @@
 
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d_pool.h>
+#include <foe/position/type_defs.h>
 #include <foe/simulation/simulation.hpp>
 
 #include "3d.hpp"
@@ -17,13 +18,23 @@ namespace {
 std::vector<foeKeyYamlPair> exportComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     std::vector<foeKeyYamlPair> keyDataPairs;
 
-    auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+    foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
         pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-    if (pPosition3dPool != nullptr) {
-        if (auto searchIt = pPosition3dPool->find(entity); searchIt != pPosition3dPool->size()) {
+    if (componentPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
+
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+
+            foePosition3d **ppPositionData =
+                (foePosition3d **)foeEcsComponentPoolDataPtr(componentPool) + offset;
+
             keyDataPairs.emplace_back(foeKeyYamlPair{
                 .key = yaml_position3d_key(),
-                .data = yaml_write_position3d(*pPosition3dPool->begin<1>()[searchIt].get()),
+                .data = yaml_write_position3d(**ppPositionData),
             });
         }
     }

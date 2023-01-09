@@ -1,10 +1,11 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/position/registration.h>
 
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d.hpp>
+#include <foe/position/component/3d_pool.h>
 #include <foe/position/type_defs.h>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -23,17 +24,25 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationComponentPoolData createInfo{
             .sType = FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL,
-            .pComponentPool = new (std::nothrow) foePosition3dPool,
-            .pMaintenanceFn = [](void *pData) { ((foePosition3dPool *)pData)->maintenance(); },
+            .pMaintenanceFn =
+                [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
         };
-        if (createInfo.pComponentPool == nullptr) {
+
+        result = foeEcsCreateComponentPool(
+            0, 16, sizeof(foePosition3d *),
+            [](void *pData) {
+                foePosition3d **ppPosition = (foePosition3d **)pData;
+                delete *ppPosition;
+            },
+            (foeEcsComponentPool *)&createInfo.pComponentPool);
+        if (result.value != FOE_SUCCESS) {
             result = to_foeResult(FOE_POSITION_ERROR_OUT_OF_MEMORY);
             goto CREATE_FAILED;
         }
 
         result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
-            delete (foePosition3dPool *)createInfo.pComponentPool;
+            foeEcsDestroyComponentPool((foeEcsComponentPool)createInfo.pComponentPool);
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -68,9 +77,9 @@ size_t destroy(foeSimulation *pSimulation) {
 
         ++errors;
     } else if (count == 0) {
-        foePosition3dPool *pData;
+        foePosition3dPool componentPool;
         result = foeSimulationReleaseComponentPool(
-            pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, (void **)&pData);
+            pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL, (void **)&componentPool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -79,7 +88,7 @@ size_t destroy(foeSimulation *pSimulation) {
 
             ++errors;
         } else {
-            delete pData;
+            foeEcsDestroyComponentPool(componentPool);
         }
     }
 

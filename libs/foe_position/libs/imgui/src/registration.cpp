@@ -1,10 +1,11 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/position/imgui/registration.hpp>
 
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d_pool.h>
+#include <foe/position/type_defs.h>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/type_defs.h>
 
@@ -14,15 +15,21 @@ namespace {
 
 void imgui_foePositionComponents(foeEntityID entity, foeSimulation const *pSimulation) {
     // foePosition3d
-    auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+    foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
         pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-    if (pPool != nullptr) {
-        auto offset = pPool->find(entity);
-        if (offset != pPool->size()) {
-            auto *pComponent = pPool->begin<1>() + offset;
+    if (componentPool == FOE_NULL_HANDLE)
+        return;
 
-            imgui_foePosition3d(pComponent->get());
-        }
+    foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
+    foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
+
+    foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+    if (pID != pEndID && *pID == entity) {
+        foePosition3d **pComponentData =
+            (foePosition3d **)foeEcsComponentPoolDataPtr(componentPool) + (pID - pStartID);
+
+        imgui_foePosition3d(*pComponentData);
     }
 }
 

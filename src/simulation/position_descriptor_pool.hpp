@@ -1,14 +1,14 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #ifndef POSITION_DESCRIPTOR_POOL_HPP
 #define POSITION_DESCRIPTOR_POOL_HPP
 
-#include <foe/data_pool.hpp>
 #include <foe/ecs/id.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
+#include <foe/position/component/3d_pool.h>
 #include <foe/result.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
@@ -17,11 +17,9 @@
 #include <memory>
 #include <vector>
 
-class foePosition3dPool;
-
 struct PositionDescriptorPool {
   public:
-    foeResultSet initialize(foePosition3dPool *pPosition3dPool);
+    foeResultSet initialize(foePosition3dPool position3dPool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -39,7 +37,7 @@ struct PositionDescriptorPool {
     };
 
     // Components
-    foePosition3dPool *mpPosition3dPool{nullptr};
+    foePosition3dPool mPosition3dPool{FOE_NULL_HANDLE};
 
     // Graphics
     VkDevice mDevice{VK_NULL_HANDLE};

@@ -1,29 +1,32 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "position_descriptor_pool.hpp"
 
 #include <foe/graphics/vk/session.h>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d.hpp>
+#include <foe/position/component/3d_pool.h>
 
 #include "../result.h"
 #include "../vk_result.h"
 #include "type_defs.h"
 
-foeResultSet PositionDescriptorPool::initialize(foePosition3dPool *pPosition3dPool) {
-    if (pPosition3dPool == nullptr) {
+foeResultSet PositionDescriptorPool::initialize(foePosition3dPool position3dPool) {
+    if (position3dPool == FOE_NULL_HANDLE) {
         return to_foeResult(FOE_BRINGUP_INITIALIZATION_FAILED);
     }
 
-    mpPosition3dPool = pPosition3dPool;
+    mPosition3dPool = position3dPool;
 
     return to_foeResult(FOE_BRINGUP_SUCCESS);
 }
 
-void PositionDescriptorPool::deinitialize() { mpPosition3dPool = nullptr; }
+void PositionDescriptorPool::deinitialize() { mPosition3dPool = FOE_NULL_HANDLE; }
 
-bool PositionDescriptorPool::initialized() const noexcept { return mpPosition3dPool != nullptr; }
+bool PositionDescriptorPool::initialized() const noexcept {
+    return mPosition3dPool != FOE_NULL_HANDLE;
+}
 
 foeResultSet PositionDescriptorPool::initializeGraphics(foeGfxSession gfxSession) {
     if (!initialized())
@@ -109,14 +112,14 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex
     UniformBuffer &uniform = mBuffers[frameIndex];
 
     // Make sure the frame data buffer is large enough
-    if (uniform.capacity < mpPosition3dPool->size()) {
+    if (uniform.capacity < foeEcsComponentPoolSize(mPosition3dPool)) {
         if (uniform.buffer != VK_NULL_HANDLE) {
             vmaDestroyBuffer(mAllocator, uniform.buffer, uniform.alloc);
         }
 
         VkBufferCreateInfo bufferCI{
             .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-            .size = mMinUniformBufferOffsetAlignment * mpPosition3dPool->size(),
+            .size = mMinUniformBufferOffsetAlignment * foeEcsComponentPoolSize(mPosition3dPool),
             .usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
         };
 
@@ -130,7 +133,7 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex
             return res;
         }
 
-        uniform.capacity = mpPosition3dPool->size();
+        uniform.capacity = foeEcsComponentPoolSize(mPosition3dPool);
     }
 
     // Reset the DescriptorPool
@@ -142,13 +145,14 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex
 
     vmaMapMemory(mAllocator, uniform.alloc, reinterpret_cast<void **>(&pBufferData));
 
-    auto *const pDataEnd = mpPosition3dPool->end<1>();
+    foePosition3d **ppData = (foePosition3d **)foeEcsComponentPoolDataPtr(mPosition3dPool);
+    foePosition3d **const ppEndData = ppData + foeEcsComponentPoolSize(mPosition3dPool);
 
-    for (auto *pData = mpPosition3dPool->begin<1>(); pData != pDataEnd; ++pData) {
+    for (; ppData != ppEndData; ++ppData) {
         VkDescriptorSet set;
         *reinterpret_cast<glm::mat4 *>(pBufferData) =
-            glm::mat4_cast(pData->get()->orientation) *
-            glm::translate(glm::mat4(1.f), pData->get()->position);
+            glm::mat4_cast((*ppData)->orientation) *
+            glm::translate(glm::mat4(1.f), (*ppData)->position);
 
         { // Descriptor Set
             VkDescriptorSetAllocateInfo setAI{
@@ -181,7 +185,7 @@ VkResult PositionDescriptorPool::generatePositionDescriptors(uint32_t frameIndex
             vkUpdateDescriptorSets(mDevice, 1, &writeSet, 0, nullptr);
         }
 
-        pData->get()->descriptorSet = set;
+        (*ppData)->descriptorSet = set;
 
         pBufferData += mMinUniformBufferOffsetAlignment;
         offset += mMinUniformBufferOffsetAlignment;

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,7 +25,6 @@
 #include <foe/imex/exporters.h>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>
-#include <foe/position/component/3d_pool.hpp>
 #include <foe/quaternion_math.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <foe/wsi/keyboard.hpp>

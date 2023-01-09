@@ -8,7 +8,8 @@
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/system.hpp>
 #include <foe/physics/type_defs.h>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d_pool.h>
+#include <foe/position/type_defs.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource_fns.h>
 #include <foe/simulation/registration.hpp>
@@ -338,14 +339,14 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
 
         foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
-        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+        foePosition3dPool position3dPool = (foePosition3dPool)foeSimulationGetComponentPool(
             pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
         auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
 
         result = pSystem->initialize(pSimulation->resourcePool, pCollisionShapeLoader,
-                                     rigidBodyPool, pPosition3dPool);
+                                     rigidBodyPool, position3dPool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

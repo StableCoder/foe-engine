@@ -9,6 +9,7 @@
 #include <foe/ecs/id.h>
 #include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/export.h>
+#include <foe/position/component/3d_pool.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/result.h>
@@ -17,7 +18,6 @@
 #include <vector>
 
 class foeCollisionShapeLoader;
-class foePosition3dPool;
 
 struct foeRigidBody;
 struct foePosition3d;
@@ -31,7 +31,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
     foeResultSet initialize(foeResourcePool resourcePool,
                             foeCollisionShapeLoader *pCollisionShapeLoader,
                             foeRigidBodyPool rigidBodyPool,
-                            foePosition3dPool *pPosition3dPool);
+                            foePosition3dPool position3dPool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -50,7 +50,7 @@ class FOE_PHYSICS_EXPORT foePhysicsSystem {
 
     // Components
     foeRigidBodyPool mRigidBodyPool{FOE_NULL_HANDLE};
-    foePosition3dPool *mpPosition3dPool{nullptr};
+    foePosition3dPool mPosition3dPool{FOE_NULL_HANDLE};
 
     // Physics World Instance Items
     std::unique_ptr<btBroadphaseInterface> mpBroadphase;

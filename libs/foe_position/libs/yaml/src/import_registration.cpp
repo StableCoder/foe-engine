@@ -1,11 +1,12 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/position/yaml/import_registration.h>
 
 #include <foe/imex/yaml/importer.hpp>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d_pool.h>
+#include <foe/position/type_defs.h>
 #include <foe/simulation/type_defs.h>
 #include <foe/yaml/exception.hpp>
 
@@ -19,19 +20,25 @@ bool importPosition3D(YAML::Node const &node,
                       foeEntityID entity,
                       foeSimulation const *pSimulation) {
     if (auto dataNode = node[yaml_position3d_key()]; dataNode) {
-        auto *pPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+        foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
             pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
-        if (pPool == nullptr)
+        if (componentPool == FOE_NULL_HANDLE)
             return false;
 
         try {
             std::unique_ptr<foePosition3d> pData(new foePosition3d);
             *pData = yaml_read_position3d(dataNode);
 
-            pPool->insert(entity, std::move(pData));
+            foePosition3d *ppData = pData.get();
 
-            return true;
+            foeResultSet result = foeEcsComponentPoolInsert(componentPool, entity, &ppData);
+            if (result.value == FOE_SUCCESS) {
+                pData.release();
+                return true;
+            } else {
+                return false;
+            }
         } catch (foeYamlException const &e) {
             throw foeYamlException{std::string{yaml_position3d_key()} + "::" + e.whatStr()};
         }

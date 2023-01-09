@@ -5,7 +5,8 @@
 #include "registration.h"
 
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d_pool.h>
+#include <foe/position/type_defs.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource_fns.h>
 #include <foe/simulation/registration.hpp>
@@ -589,12 +590,12 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     }
     selection.positionSystem = true;
     if (count == 1) {
-        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+        foePosition3dPool position3dPool = (foePosition3dPool)foeSimulationGetComponentPool(
             pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
         auto *pData = (PositionDescriptorPool *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL);
-        result = pData->initialize(pPosition3dPool);
+        result = pData->initialize(position3dPool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

@@ -14,7 +14,9 @@
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 #include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/graphics/vk/session.h>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d.hpp>
+#include <foe/position/component/3d_pool.h>
+#include <foe/position/type_defs.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/simulation.hpp>
@@ -164,16 +166,23 @@ auto renderCall(foeId entity,
 
     auto vertSetLayouts = foeGfxVkGetVertexDescriptorBuiltinSetLayouts(pGfxVertexDescriptor);
     if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
-        auto *pPosition3dPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+        foePosition3dPool position3dPool = (foePosition3dPool)foeSimulationGetComponentPool(
             pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
-        auto posOffset = pPosition3dPool->find(entity);
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(position3dPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(position3dPool);
 
-        // If can't find a position, return failure
-        if (posOffset == pPosition3dPool->size())
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID == pEndID || *pID != entity) {
             return false;
+        }
+        size_t offset = pID - pStartID;
 
-        auto *pPosition = (pPosition3dPool->begin<1>() + posOffset)->get();
+        foePosition3d **ppPositionData =
+            (foePosition3d **)foeEcsComponentPoolDataPtr(position3dPool) + offset;
+
+        foePosition3d *pPosition = *ppPositionData;
         // Bind the object's position *if* the descriptor supports it
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
                                 &pPosition->descriptorSet, 0, nullptr);

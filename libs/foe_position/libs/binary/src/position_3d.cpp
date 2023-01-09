@@ -1,11 +1,13 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "position_3d.h"
 
 #include <foe/position/binary.h>
-#include <foe/position/component/3d_pool.hpp>
+#include <foe/position/component/3d.hpp>
+#include <foe/position/component/3d_pool.h>
+#include <foe/position/type_defs.h>
 #include <foe/simulation/simulation.hpp>
 
 #include "result.h"
@@ -16,13 +18,21 @@ extern "C" foeResultSet export_foePosition3D(foeEntityID entity,
     foeResultSet result = to_foeResult(FOE_POSITION_BINARY_DATA_NOT_EXPORTED);
     foeImexBinarySet set = {};
 
-    auto *pComponentPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+    foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
         pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-    if (pComponentPool) {
-        if (auto offset = pComponentPool->find(entity); offset != pComponentPool->size()) {
-            auto *pComponentData = pComponentPool->begin<1>() + offset;
+    if (componentPool != FOE_NULL_HANDLE) {
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(componentPool);
+        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(componentPool);
 
-            result = binary_write_foePosition3d(pComponentData->get(), &set.dataSize, nullptr);
+        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+
+        if (pID != pEndID && *pID == entity) {
+            size_t offset = pID - pStartID;
+
+            foePosition3d **ppPositionData =
+                (foePosition3d **)foeEcsComponentPoolDataPtr(componentPool) + offset;
+
+            result = binary_write_foePosition3d(*ppPositionData, &set.dataSize, nullptr);
             if (result.value != FOE_SUCCESS)
                 goto EXPORT_FAILED;
 
@@ -32,7 +42,7 @@ extern "C" foeResultSet export_foePosition3D(foeEntityID entity,
                 goto EXPORT_FAILED;
             }
 
-            result = binary_write_foePosition3d(pComponentData->get(), &set.dataSize, set.pData);
+            result = binary_write_foePosition3d(*ppPositionData, &set.dataSize, set.pData);
             set.pKey = binary_key_foePosition3d();
         }
     }
@@ -51,15 +61,19 @@ extern "C" foeResultSet import_foePosition3D(void const *pReadBuffer,
                                              foeEcsGroupTranslator groupTranslator,
                                              foeEntityID entity,
                                              foeSimulation const *pSimulation) {
-    auto *pComponentPool = (foePosition3dPool *)foeSimulationGetComponentPool(
+    foePosition3dPool componentPool = (foePosition3dPool)foeSimulationGetComponentPool(
         pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-    if (pComponentPool == nullptr)
+    if (componentPool == FOE_NULL_HANDLE)
         return to_foeResult(FOE_POSITION_BINARY_ERROR_POSITION_3D_POOL_NOT_FOUND);
 
     std::unique_ptr<foePosition3d> pComponentData(new foePosition3d);
+    foePosition3d *pData = pComponentData.get();
     foeResultSet result = binary_read_foePosition3d(pReadBuffer, pReadSize, pComponentData.get());
     if (result.value == FOE_SUCCESS)
-        pComponentPool->insert(entity, std::move(pComponentData));
+        result = foeEcsComponentPoolInsert(componentPool, entity, &pData);
+
+    if (result.value == FOE_SUCCESS)
+        pComponentData.release();
 
     return result;
 }
