@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,6 @@ target_sources(
   test_foe
   PRIVATE algorithm.cpp
           c_header_compatibility.c
-          data_pool_custom.cpp
-          data_pool_int.cpp
-          data_pool_multi.cpp
           delimited_string.cpp
           filesystem.cpp
           logger.cpp
@@ -62,5 +59,4 @@ target_code_coverage(
 
 # Directories
 add_subdirectory(chrono)
-add_subdirectory(storage)
 add_subdirectory(test_plugin_so)
