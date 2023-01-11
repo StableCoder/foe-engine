@@ -72,7 +72,7 @@ Python Files:
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
 
@@ -81,7 +81,7 @@ Python Files:
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja -C build
     - ninja -C build test
 
@@ -96,7 +96,7 @@ Python Files:
   dependencies: []
   retry: 2
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
     - ninja -C build
     - ninja -C build test
 
@@ -392,7 +392,7 @@ Windows/Clang Shared:
   dependencies: []
   script:
     - ./libs/foe_graphics_vk/tools/check_matching_device.sh --device-index 0 --device-name ${GPU}
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_EXTRAS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D BUILD_VULKAN_RUNTIME_TESTS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - ninja -C build test_foe_graphics_vk
     - ./build/libs/foe_graphics_vk/test/test_foe_graphics_vk
 

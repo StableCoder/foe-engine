@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,6 @@ project(FoE-Engine C CXX)
 # Global Options
 include(CMakeDependentOption)
 option(BUILD_EXAMPLES "Build example programs" OFF)
-option(BUILD_EXTRAS "Builds other programs, such as benchmarks" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_VULKAN_RUNTIME_TESTS
