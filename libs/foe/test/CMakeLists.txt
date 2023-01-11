@@ -8,6 +8,7 @@ prepare_catch(COMPILED_CATCH)
 # Declaration
 add_test(NAME FoE-Test COMMAND test_foe)
 add_executable(test_foe)
+add_dependencies(test_foe test_foe_plugin_so)
 
 add_test(NAME FoE-Test-Split-Thread-Pool COMMAND test_foe_split_thread_pool)
 add_executable(test_foe_split_thread_pool)
