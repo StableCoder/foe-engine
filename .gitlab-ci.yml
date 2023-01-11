@@ -528,7 +528,7 @@ Static Analysis:
     CC: clang
     CXX: clang++
   script:
-    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_EXAMPLES=ON -D CLANG_TIDY=ON -D CPPCHECK=ON
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D CLANG_TIDY=ON -D CPPCHECK=ON
     - ninja -C build
 
 Code Coverage:

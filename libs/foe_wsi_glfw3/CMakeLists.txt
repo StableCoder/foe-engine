@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -55,9 +55,6 @@ else()
 endif()
 
 # Auxiliary Targets
-if(BUILD_EXAMPLES)
-  add_subdirectory(example)
-endif()
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()

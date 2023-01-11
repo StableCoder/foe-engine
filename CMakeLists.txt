@@ -11,7 +11,6 @@ project(FoE-Engine C CXX)
 
 # Global Options
 include(CMakeDependentOption)
-option(BUILD_EXAMPLES "Build example programs" OFF)
 option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
 option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_VULKAN_RUNTIME_TESTS
