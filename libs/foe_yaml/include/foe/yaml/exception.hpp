@@ -20,7 +20,7 @@ class FOE_YAML_EXPORT foeYamlException : std::exception {
 
     operator std::string() const noexcept;
 
-    const char *what() const noexcept override;
+    char const *what() const noexcept override;
     std::string whatStr() const noexcept;
 
   private:

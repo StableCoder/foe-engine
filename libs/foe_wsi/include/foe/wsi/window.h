@@ -50,8 +50,8 @@ FOE_WSI_EXPORT void foeWsiDestroyWindow(foeWsiWindow window);
  */
 FOE_WSI_EXPORT void foeWsiWindowProcessing(foeWsiWindow window);
 
-FOE_WSI_EXPORT const char *foeWsiWindowGetTitle(foeWsiWindow window);
-FOE_WSI_EXPORT void foeWsiWindowSetTitle(foeWsiWindow window, const char *pTitle);
+FOE_WSI_EXPORT char const *foeWsiWindowGetTitle(foeWsiWindow window);
+FOE_WSI_EXPORT void foeWsiWindowSetTitle(foeWsiWindow window, char const *pTitle);
 
 FOE_WSI_EXPORT bool foeWsiWindowGetShouldClose(foeWsiWindow window);
 FOE_WSI_EXPORT void foeWsiWindowSetShouldClose(foeWsiWindow window, bool terminate);

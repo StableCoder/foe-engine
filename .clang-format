@@ -3,8 +3,11 @@ Language: Cpp
 Standard: Latest
 IndentWidth: 4
 ColumnLimit: 100
-BinPackParameters: false
+
 AlwaysBreakTemplateDeclarations: true
-PenaltyReturnTypeOnItsOwnLine: 10000
+BinPackParameters: false
 BreakConstructorInitializers: AfterColon
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
+BreakInheritanceList: AfterColon
+PackConstructorInitializers: NextLine
+PenaltyReturnTypeOnItsOwnLine: 10000
+QualifierAlignment: Right

@@ -12,7 +12,7 @@ namespace {
 
 typedef void (*PFN_foeWsiGlobalProcessing)();
 
-typedef foeResultSet (*PFN_foeWsiCreateWindow)(int, int, const char *, bool, foeWsiWindow *);
+typedef foeResultSet (*PFN_foeWsiCreateWindow)(int, int, char const *, bool, foeWsiWindow *);
 typedef void (*PFN_foeWsiDestroyWindow)(foeWsiWindow);
 typedef void (*PFN_foeWsiWindowProcessing)(foeWsiWindow);
 
@@ -148,7 +148,7 @@ bool foeWsiLoadImplementation(char const *pPath) {
 void foeWsiGlobalProcessing() { gDispatchTable.GlobalProcessing(); }
 
 foeResultSet foeWsiCreateWindow(
-    int width, int height, const char *pTitle, bool visible, foeWsiWindow *pWindow) {
+    int width, int height, char const *pTitle, bool visible, foeWsiWindow *pWindow) {
     return gDispatchTable.CreateWindow(width, height, pTitle, visible, pWindow);
 }
 
@@ -160,7 +160,7 @@ char const *foeWsiWindowGetTitle(foeWsiWindow window) {
     return gDispatchTable.WindowGetTitle(window);
 }
 
-void foeWsiWindowSetTitle(foeWsiWindow window, const char *pTitle) {
+void foeWsiWindowSetTitle(foeWsiWindow window, char const *pTitle) {
     gDispatchTable.WindowSetTitle(window, pTitle);
 }
 

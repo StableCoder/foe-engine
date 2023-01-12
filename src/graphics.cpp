@@ -34,7 +34,7 @@ foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
 
     if (enableWindowing) {
         uint32_t extensionCount;
-        const char **extensionNames;
+        char const **extensionNames;
         foeResultSet result = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
         if (result.value != FOE_SUCCESS) {
             return result;

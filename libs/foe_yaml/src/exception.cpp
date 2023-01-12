@@ -8,6 +8,6 @@ foeYamlException::foeYamlException(std::string what) : mWhat{what} {}
 
 foeYamlException::operator std::string() const noexcept { return mWhat; }
 
-const char *foeYamlException::what() const noexcept { return mWhat.data(); }
+char const *foeYamlException::what() const noexcept { return mWhat.data(); }
 
 std::string foeYamlException::whatStr() const noexcept { return mWhat; }
