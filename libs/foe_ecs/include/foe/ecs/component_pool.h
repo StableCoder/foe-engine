@@ -49,7 +49,7 @@ FOE_ECS_EXPORT void foeEcsComponentPoolReserveInsertCapacity(foeEcsComponentPool
                                                              size_t capacity);
 
 FOE_ECS_EXPORT foeResultSet foeEcsComponentPoolInsert(foeEcsComponentPool componentPool,
-                                                      foeEntityID id,
+                                                      foeEntityID entity,
                                                       void *pData);
 
 FOE_ECS_EXPORT size_t foeEcsComponentPoolInserted(foeEcsComponentPool componentPool);
@@ -58,7 +58,7 @@ FOE_ECS_EXPORT size_t const *foeEcsComponentPoolInsertedOffsetPtr(
     foeEcsComponentPool componentPool);
 
 FOE_ECS_EXPORT foeResultSet foeEcsComponentPoolRemove(foeEcsComponentPool componentPool,
-                                                      foeEntityID id);
+                                                      foeEntityID entity);
 
 FOE_ECS_EXPORT size_t foeEcsComponentPoolRemoved(foeEcsComponentPool componentPool);
 
