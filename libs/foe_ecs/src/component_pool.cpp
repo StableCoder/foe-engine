@@ -119,21 +119,21 @@ foeResultSet removePass(ComponentPool *pComponentPool) {
             return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
     }
 
-    foeEntityID const *const pStartID = pComponentPool->storedData.pIDs;
+    foeEntityID const *pID = pComponentPool->storedData.pIDs;
+    foeEntityID const *const pStartID = pID;
     foeEntityID const *const pEndID = pStartID + pComponentPool->storedData.count;
-    foeEntityID *pID = (foeEntityID *)pStartID;
 
     foeEntityID const *pRemoveID = toRemoveIDs.data();
     foeEntityID const *const pEndRemoveID = pRemoveID + toRemoveIDs.size();
 
     size_t removedCount = 0;
-    size_t lastMovedObject = 0;
+    size_t lastShiftedOffset = 0;
+
     while (pID != pEndID && pRemoveID != pEndRemoveID) {
         // If we haven't found the next item to remove yet, continue the search
-        if (*pID < *pRemoveID) {
-            ++pID;
-            continue;
-        }
+        pID = std::lower_bound(pID, pEndID, *pRemoveID);
+        if (pID == pEndID)
+            break;
 
         if (*pID == *pRemoveID) {
             // Move the removed entry out
@@ -142,16 +142,16 @@ foeResultSet removePass(ComponentPool *pComponentPool) {
                      offset, 1, pComponentPool->dataSize);
 
             // Move any other objects that need to be shifted down in the regular storage
-            if (lastMovedObject != 0) {
-                moveData(&pComponentPool->storedData, lastMovedObject - removedCount,
-                         &pComponentPool->storedData, lastMovedObject, offset - lastMovedObject,
+            if (lastShiftedOffset != 0) {
+                moveData(&pComponentPool->storedData, lastShiftedOffset - removedCount,
+                         &pComponentPool->storedData, lastShiftedOffset, offset - lastShiftedOffset,
                          pComponentPool->dataSize);
             }
 
             ++pID;
             ++pRemoveID;
             ++removedCount;
-            lastMovedObject = offset + 1;
+            lastShiftedOffset = offset + 1;
         } else {
             // The ID is larger than the ID to remove, so the ID isn't in the pool, so skip it
             ++pRemoveID;
@@ -159,10 +159,10 @@ foeResultSet removePass(ComponentPool *pComponentPool) {
     }
 
     // Need to move any remaining objects
-    if (lastMovedObject != 0) {
-        moveData(&pComponentPool->storedData, lastMovedObject - removedCount,
-                 &pComponentPool->storedData, lastMovedObject,
-                 pComponentPool->storedData.count - lastMovedObject, pComponentPool->dataSize);
+    if (lastShiftedOffset != 0) {
+        moveData(&pComponentPool->storedData, lastShiftedOffset - removedCount,
+                 &pComponentPool->storedData, lastShiftedOffset,
+                 pComponentPool->storedData.count - lastShiftedOffset, pComponentPool->dataSize);
     }
 
     pComponentPool->storedData.count -= removedCount;
@@ -275,37 +275,37 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
 
     // Setup pointers for actual insertion pass
     pInsert = toInsertOffsets.data() + toInsertOffsets.size() - 1;
-    InsertOffsets const *const pInsertReverseEnd = toInsertOffsets.data() - 1;
+    InsertOffsets const *const pEndReverseInsert = toInsertOffsets.data() - 1;
 
     size_t *pInsertedOffset = pComponentPool->pInsertedOffsets + toInsertCount - 1;
 
-    size_t lastMovedItem = pComponentPool->storedData.count;
-    size_t accumulatedDistance = toInsertCount;
+    size_t lastShiftedOffset = pComponentPool->storedData.count;
+    size_t shiftDistance = toInsertCount;
 
     // In reverse order, insert the items, shifting required items to the right
-    for (; pInsert != pInsertReverseEnd; --pInsert) {
+    for (; pInsert != pEndReverseInsert; --pInsert) {
         // Some items need to be skipped
         if (pInsert->entity == FOE_INVALID_ID)
             continue;
 
-        if (pInsert->dstOffset < lastMovedItem) {
+        if (pInsert->dstOffset < lastShiftedOffset) {
             size_t const srcOffset = pInsert->dstOffset;
-            size_t const dstOffset = srcOffset + accumulatedDistance;
-            size_t const numMove = lastMovedItem - srcOffset;
+            size_t const dstOffset = srcOffset + shiftDistance;
+            size_t const numMove = lastShiftedOffset - srcOffset;
 
             moveData(&dstPool, dstOffset, &pComponentPool->storedData, srcOffset, numMove,
                      pComponentPool->dataSize);
 
-            lastMovedItem = srcOffset;
+            lastShiftedOffset = srcOffset;
         }
 
         // Everything necessary has been shifted out of the way, place new entry now
-        --accumulatedDistance;
+        --shiftDistance;
 
-        moveData(&dstPool, pInsert->dstOffset + accumulatedDistance, &toInsertDataSet,
-                 pInsert->srcOffset, 1, pComponentPool->dataSize);
+        moveData(&dstPool, pInsert->dstOffset + shiftDistance, &toInsertDataSet, pInsert->srcOffset,
+                 1, pComponentPool->dataSize);
 
-        *pInsertedOffset = pInsert->dstOffset + accumulatedDistance;
+        *pInsertedOffset = pInsert->dstOffset + shiftDistance;
         --pInsertedOffset;
     }
 
@@ -314,8 +314,8 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
     dstPool.count = pComponentPool->storedData.count + toInsertCount;
     if (dstPool.pIDs != pComponentPool->storedData.pIDs) {
         // Move remaining old data
-        if (0 < lastMovedItem) {
-            moveData(&dstPool, 0, &pComponentPool->storedData, 0, lastMovedItem,
+        if (0 < lastShiftedOffset) {
+            moveData(&dstPool, 0, &pComponentPool->storedData, 0, lastShiftedOffset,
                      pComponentPool->dataSize);
         }
 
