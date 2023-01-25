@@ -259,16 +259,42 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
         newCapacity = pComponentPool->desiredCapacity;
 
     if (dstPool.capacity < newCapacity) {
-        if (!allocDataSet(newCapacity, pComponentPool->dataSize, &dstPool))
+        if (!allocDataSet(newCapacity, pComponentPool->dataSize, &dstPool)) {
+            if (pComponentPool->dataDestructor) {
+                for (auto pInsert = toInsertOffsets.begin(); pInsert != toInsertOffsets.end();
+                     ++pInsert) {
+                    if (pInsert->entity != FOE_INVALID_ID) {
+                        void *const pNonSkippedData =
+                            (uint8_t *)toInsertDataSet.pData +
+                            (pInsert->srcOffset * pComponentPool->dataSize);
+                        pComponentPool->dataDestructor(pNonSkippedData);
+                    }
+                }
+            }
+            deallocDataSet(&toInsertDataSet);
             return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
+        }
     }
 
     // Check capacity for inserted array
     if (pComponentPool->insertedCapacity < toInsertCount) {
         free(pComponentPool->pInsertedOffsets);
         pComponentPool->pInsertedOffsets = (size_t *)malloc(toInsertCount * sizeof(size_t));
-        if (pComponentPool->pInsertedOffsets == nullptr)
+        if (pComponentPool->pInsertedOffsets == nullptr) {
+            if (pComponentPool->dataDestructor) {
+                for (auto pInsert = toInsertOffsets.begin(); pInsert != toInsertOffsets.end();
+                     ++pInsert) {
+                    if (pInsert->entity != FOE_INVALID_ID) {
+                        void *const pNonSkippedData =
+                            (uint8_t *)toInsertDataSet.pData +
+                            (pInsert->srcOffset * pComponentPool->dataSize);
+                        pComponentPool->dataDestructor(pNonSkippedData);
+                    }
+                }
+            }
+            deallocDataSet(&toInsertDataSet);
             return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
+        }
         pComponentPool->insertedCapacity = toInsertCount;
     }
     pComponentPool->insertedCount = toInsertCount;
