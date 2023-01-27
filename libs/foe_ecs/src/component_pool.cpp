@@ -4,8 +4,6 @@
 
 #include <foe/ecs/component_pool.h>
 
-#include <foe/algorithm.hpp>
-
 #include "result.h"
 
 #include <algorithm>
@@ -58,6 +56,17 @@ struct ComponentPool {
 };
 
 FOE_DEFINE_HANDLE_CASTS(component_pool, ComponentPool, foeEcsComponentPool)
+
+void destructAllDataSet(PFN_foeEcsComponentDestructor pfnDataDestructor,
+                        size_t dataSize,
+                        DataSet *pDataSet) {
+    if (pfnDataDestructor != NULL) {
+        uint8_t *pData = (uint8_t *)pDataSet->pData;
+        for (size_t i = 0; i < pDataSet->count; ++i, pData += dataSize) {
+            pfnDataDestructor(pData);
+        }
+    }
+}
 
 void deallocDataSet(DataSet *pDataSet) {
     free(pDataSet->pData);
@@ -188,25 +197,9 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
         return to_foeResult(FOE_ECS_SUCCESS);
     }
 
-    { // Sort data to insert
-        std::sort(
-            toInsertOffsets.begin(), toInsertOffsets.end(),
-            [](InsertOffsets const &a, InsertOffsets const &b) { return a.entity < b.entity; });
-
-        auto newToInsertOffsetsEnd = foe::unique_last(
-            toInsertOffsets.begin(), toInsertOffsets.end(),
-            [](InsertOffsets const &a, InsertOffsets const &b) { return a.entity == b.entity; });
-
-        if (pComponentPool->dataDestructor) {
-            for (auto it = newToInsertOffsetsEnd; it != toInsertOffsets.end(); ++it) {
-                void *const pSkippedData =
-                    (uint8_t *)toInsertDataSet.pData + (it->srcOffset * pComponentPool->dataSize);
-                pComponentPool->dataDestructor(pSkippedData);
-            }
-        }
-
-        toInsertOffsets.erase(newToInsertOffsetsEnd, toInsertOffsets.end());
-    }
+    // Sort data to insert
+    std::sort(toInsertOffsets.begin(), toInsertOffsets.end(),
+              [](InsertOffsets const &a, InsertOffsets const &b) { return a.entity < b.entity; });
 
     // Insertion offset pointers
     InsertOffsets *pInsert = toInsertOffsets.data();
@@ -219,6 +212,14 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
 
     size_t toInsertCount = 0;
     while (pInsert != pInsertEnd) {
+        // If the next entity has the same ID, skip this one, we always want to use the last one
+        if (auto const pNextInsert = pInsert + 1;
+            pNextInsert != pInsertEnd && pInsert->entity == pNextInsert->entity) {
+            pInsert->entity = FOE_INVALID_ID;
+            ++pInsert;
+            continue;
+        }
+
         // Try to shortcut a linear search by doing binary search
         pID = std::lower_bound(pID, pEndID, pInsert->entity);
 
@@ -227,14 +228,6 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
         if (pID != pEndID && *pID == pInsert->entity) {
             // Mark the ID as invalid, so it is skipped when doing actual insertion pass later
             pInsert->entity = FOE_INVALID_ID;
-
-            // If there's a destructor, be sure to call it on the data we're skipping
-            if (pComponentPool->dataDestructor) {
-                void *const pSkippedData = (uint8_t *)toInsertDataSet.pData +
-                                           (pInsert->srcOffset * pComponentPool->dataSize);
-                pComponentPool->dataDestructor(pSkippedData);
-            }
-
             ++pInsert;
             continue;
         }
@@ -247,6 +240,8 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
     }
 
     if (toInsertCount == 0) {
+        destructAllDataSet(pComponentPool->dataDestructor, pComponentPool->dataSize,
+                           &toInsertDataSet);
         deallocDataSet(&toInsertDataSet);
         return to_foeResult(FOE_ECS_SUCCESS);
     }
@@ -260,17 +255,8 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
 
     if (dstPool.capacity < newCapacity) {
         if (!allocDataSet(newCapacity, pComponentPool->dataSize, &dstPool)) {
-            if (pComponentPool->dataDestructor) {
-                for (auto pInsert = toInsertOffsets.begin(); pInsert != toInsertOffsets.end();
-                     ++pInsert) {
-                    if (pInsert->entity != FOE_INVALID_ID) {
-                        void *const pNonSkippedData =
-                            (uint8_t *)toInsertDataSet.pData +
-                            (pInsert->srcOffset * pComponentPool->dataSize);
-                        pComponentPool->dataDestructor(pNonSkippedData);
-                    }
-                }
-            }
+            destructAllDataSet(pComponentPool->dataDestructor, pComponentPool->dataSize,
+                               &toInsertDataSet);
             deallocDataSet(&toInsertDataSet);
             return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
         }
@@ -281,17 +267,8 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
         free(pComponentPool->pInsertedOffsets);
         pComponentPool->pInsertedOffsets = (size_t *)malloc(toInsertCount * sizeof(size_t));
         if (pComponentPool->pInsertedOffsets == nullptr) {
-            if (pComponentPool->dataDestructor) {
-                for (auto pInsert = toInsertOffsets.begin(); pInsert != toInsertOffsets.end();
-                     ++pInsert) {
-                    if (pInsert->entity != FOE_INVALID_ID) {
-                        void *const pNonSkippedData =
-                            (uint8_t *)toInsertDataSet.pData +
-                            (pInsert->srcOffset * pComponentPool->dataSize);
-                        pComponentPool->dataDestructor(pNonSkippedData);
-                    }
-                }
-            }
+            destructAllDataSet(pComponentPool->dataDestructor, pComponentPool->dataSize,
+                               &toInsertDataSet);
             deallocDataSet(&toInsertDataSet);
             return to_foeResult(FOE_ECS_ERROR_OUT_OF_MEMORY);
         }
@@ -311,8 +288,15 @@ foeResultSet insertPass(ComponentPool *pComponentPool) {
     // In reverse order, insert the items, shifting required items to the right
     for (; pInsert != pEndReverseInsert; --pInsert) {
         // Some items need to be skipped
-        if (pInsert->entity == FOE_INVALID_ID)
+        if (pInsert->entity == FOE_INVALID_ID) {
+            // If there is a destructor, call it
+            if (pComponentPool->dataDestructor) {
+                void *const pSkippedData = (uint8_t *)toInsertDataSet.pData +
+                                           (pInsert->srcOffset * pComponentPool->dataSize);
+                pComponentPool->dataDestructor(pSkippedData);
+            }
             continue;
+        }
 
         if (pInsert->dstOffset < lastShiftedOffset) {
             size_t const srcOffset = pInsert->dstOffset;
@@ -383,33 +367,23 @@ extern "C" foeResultSet foeEcsCreateComponentPool(size_t initialCapacity,
 extern "C" void foeEcsDestroyComponentPool(foeEcsComponentPool componentPool) {
     ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
 
-    if (pComponentPool->dataDestructor != NULL) {
-        uint8_t *pData = (uint8_t *)pComponentPool->removedData.pData;
-        for (size_t i = 0; i < pComponentPool->removedData.count;
-             ++i, pData += pComponentPool->dataSize) {
-            pComponentPool->dataDestructor(pData);
-        }
-
-        pData = (uint8_t *)pComponentPool->toInsertData.pData;
-        for (size_t i = 0; i < pComponentPool->toInsertData.count;
-             ++i, pData += pComponentPool->dataSize) {
-            pComponentPool->dataDestructor(pData);
-        }
-
-        pData = (uint8_t *)pComponentPool->storedData.pData;
-        for (size_t i = 0; i < pComponentPool->storedData.count;
-             ++i, pData += pComponentPool->dataSize) {
-            pComponentPool->dataDestructor(pData);
-        }
-    }
-
+    // Removed
+    destructAllDataSet(pComponentPool->dataDestructor, pComponentPool->dataSize,
+                       &pComponentPool->removedData);
     deallocDataSet(&pComponentPool->removedData);
 
+    // toInsert
+    destructAllDataSet(pComponentPool->dataDestructor, pComponentPool->dataSize,
+                       &pComponentPool->toInsertData);
     deallocDataSet(&pComponentPool->toInsertData);
     free(pComponentPool->pInsertedOffsets);
 
+    // Regular
+    destructAllDataSet(pComponentPool->dataDestructor, pComponentPool->dataSize,
+                       &pComponentPool->storedData);
     deallocDataSet(&pComponentPool->storedData);
 
+    // Destruct/Free
     pComponentPool->~ComponentPool();
     free(pComponentPool);
 }
