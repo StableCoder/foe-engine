@@ -13,8 +13,10 @@ add_executable(test_foe_ecs)
 target_sources(
   test_foe_ecs
   PRIVATE c_header_compatibility.c
+          component_pool_entity_list.cpp
           component_pool.cpp
           editor_name_map.cpp
+          entity_list.cpp
           group_translator.cpp
           id.cpp
           indexes.cpp

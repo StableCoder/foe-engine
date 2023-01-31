@@ -6,6 +6,7 @@ target_sources(
   foe_ecs
   PRIVATE binary.c
           component_pool.cpp
+          entity_list.c
           group_translator.cpp
           id_to_string.cpp
           indexes.cpp

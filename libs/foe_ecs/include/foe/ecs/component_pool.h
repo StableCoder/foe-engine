@@ -5,6 +5,7 @@
 #ifndef FOE_ECS_COMPONENT_POOL_H
 #define FOE_ECS_COMPONENT_POOL_H
 
+#include <foe/ecs/entity_list.h>
 #include <foe/ecs/export.h>
 #include <foe/ecs/id.h>
 #include <foe/handle.h>
@@ -66,6 +67,17 @@ FOE_ECS_EXPORT foeEntityID const *foeEcsComponentPoolRemovedIdPtr(
     foeEcsComponentPool componentPool);
 
 FOE_ECS_EXPORT void *foeEcsComponentPoolRemovedDataPtr(foeEcsComponentPool componentPool);
+
+FOE_ECS_EXPORT foeResultSet foeEcsComponentPoolAddEntityList(foeEcsComponentPool componentPool,
+                                                             foeEcsEntityList entityList);
+
+FOE_ECS_EXPORT void foeEcsComponentPoolRemoveEntityList(foeEcsComponentPool componentPool,
+                                                        foeEcsEntityList entityList);
+
+FOE_ECS_EXPORT size_t foeEcsComponentPoolEntityListSize(foeEcsComponentPool componentPool);
+
+FOE_ECS_EXPORT foeEcsEntityList const *foeEcsComponentPoolEntityLists(
+    foeEcsComponentPool componentPool);
 
 #ifdef __cplusplus
 }

@@ -46,6 +46,9 @@ struct ComponentPool {
     // Removed
     DataSet removedData;
 
+    // Entity Lists
+    std::vector<foeEcsEntityList> modifiedEntityLists;
+
     // Other Data
     size_t dataSize;
     PFN_foeEcsComponentDestructor
@@ -548,4 +551,40 @@ extern "C" void *foeEcsComponentPoolRemovedDataPtr(foeEcsComponentPool component
     ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
 
     return pComponentPool->removedData.pData;
+}
+
+extern "C" foeResultSet foeEcsComponentPoolAddEntityList(foeEcsComponentPool componentPool,
+                                                         foeEcsEntityList entityList) {
+    ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
+
+    pComponentPool->modifiedEntityLists.emplace_back(entityList);
+
+    return to_foeResult(FOE_ECS_SUCCESS);
+}
+
+extern "C" void foeEcsComponentPoolRemoveEntityList(foeEcsComponentPool componentPool,
+                                                    foeEcsEntityList entityList) {
+    ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
+
+    auto const endIt = pComponentPool->modifiedEntityLists.end();
+
+    for (auto it = pComponentPool->modifiedEntityLists.begin(); it != endIt; ++it) {
+        if (*it == entityList) {
+            pComponentPool->modifiedEntityLists.erase(it);
+            break;
+        }
+    }
+}
+
+extern "C" size_t foeEcsComponentPoolEntityListSize(foeEcsComponentPool componentPool) {
+    ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
+
+    return pComponentPool->modifiedEntityLists.size();
+}
+
+extern "C" foeEcsEntityList const *foeEcsComponentPoolEntityLists(
+    foeEcsComponentPool componentPool) {
+    ComponentPool *pComponentPool = component_pool_from_handle(componentPool);
+
+    return pComponentPool->modifiedEntityLists.data();
 }
