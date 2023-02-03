@@ -233,7 +233,7 @@ Fedora/Clang Shared:
 Ubuntu/GCC Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
+    - ARCH: [amd64, arm64, ppc64le]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
@@ -249,7 +249,7 @@ Ubuntu/GCC Static:
 Ubuntu/GCC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
+    - ARCH: [amd64, arm64, ppc64le]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
@@ -265,7 +265,7 @@ Ubuntu/GCC Shared:
 Ubuntu/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
+    - ARCH: [amd64, arm64, ppc64le]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
@@ -281,7 +281,7 @@ Ubuntu/Clang Static:
 Ubuntu/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
+    - ARCH: [amd64, arm64, ppc64le]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
