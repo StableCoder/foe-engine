@@ -359,7 +359,7 @@ void Application::deinitialize() {
             foeGfxDestroyRenderTarget(it.gfxOffscreenRenderTarget);
         it.gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
 
-        if (gfxSession != FOE_NULL_HANDLE)
+        if (it.swapchain != FOE_NULL_HANDLE)
             foeGfxVkDestroySwapchain(gfxSession, it.swapchain);
 
         if (it.surface != VK_NULL_HANDLE)
@@ -694,8 +694,10 @@ int Application::mainloop() {
                 if (it.window == FOE_NULL_HANDLE)
                     continue;
 
-                performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, globalMSAA,
-                                         depthFormat);
+                result = performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, globalMSAA,
+                                                  depthFormat);
+                if (result.value != FOE_SUCCESS)
+                    ERRC_END_PROGRAM
             }
 
             // Acquire Target Presentation Images

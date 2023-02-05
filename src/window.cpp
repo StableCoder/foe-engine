@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@
 #include "result.h"
 #include "vk_result.h"
 
-#include <memory>
+#include <vector>
 
 namespace {
 
@@ -43,12 +43,11 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            std::unique_ptr<VkSurfaceFormatKHR[]> surfaceFormats(
-                new VkSurfaceFormatKHR[formatCount]);
+            std::vector<VkSurfaceFormatKHR> surfaceFormats{formatCount, VkSurfaceFormatKHR{}};
 
             vkResult = vkGetPhysicalDeviceSurfaceFormatsKHR(foeGfxVkGetPhysicalDevice(gfxSession),
                                                             pWindow->surface, &formatCount,
-                                                            surfaceFormats.get());
+                                                            surfaceFormats.data());
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
@@ -61,10 +60,10 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            std::unique_ptr<VkPresentModeKHR[]> presentModes(new VkPresentModeKHR[modeCount]);
+            std::vector<VkPresentModeKHR> presentModes{modeCount, VkPresentModeKHR{}};
             vkGetPhysicalDeviceSurfacePresentModesKHR(foeGfxVkGetPhysicalDevice(gfxSession),
                                                       pWindow->surface, &modeCount,
-                                                      presentModes.get());
+                                                      presentModes.data());
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
@@ -97,7 +96,7 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
 
         result = foeGfxVkCreateSwapchain(
             gfxSession, pWindow->surface, pWindow->surfaceFormat, pWindow->surfacePresentMode,
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain, 3, width, height, &newSwapchain);
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain, 4, width, height, &newSwapchain);
         if (result.value != FOE_SUCCESS)
             return result;
 
