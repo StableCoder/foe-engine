@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -84,7 +84,7 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
     VkSwapchainCreateInfoKHR swapchainCI = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .surface = surface,
-        .minImageCount = 3,
+        .minImageCount = chainSize,
         .imageFormat = surfaceFormat.format,
         .imageColorSpace = surfaceFormat.colorSpace,
         .imageExtent = extent,
