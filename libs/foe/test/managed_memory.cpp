@@ -56,7 +56,7 @@ TEST_CASE("ManagedMemory - metadata and cleanup") {
         uint16_t **ppData = (uint16_t **)pMetadata;
         CHECK(*ppData == pData);
 
-        delete[](uint16_t *) pData;
+        delete[] (uint16_t *)pData;
     };
 
     result = foeCreateManagedMemory(buffer, sizeof(uint16_t) * cDataCount, cleanupFn, &buffer,
@@ -99,7 +99,7 @@ TEST_CASE("ManagedMemory - subset success case") {
         uint16_t **ppData = (uint16_t **)pMetadata;
         CHECK(*ppData == pData);
 
-        delete[](uint16_t *) pData;
+        delete[] (uint16_t *)pData;
     };
 
     result = foeCreateManagedMemory(buffer, sizeof(uint16_t) * cDataCount, cleanupFn, &buffer,
@@ -151,7 +151,7 @@ TEST_CASE("ManagedMemory - subset failure case") {
         uint16_t **ppData = (uint16_t **)pMetadata;
         CHECK(*ppData == pData);
 
-        delete[](uint16_t *) pData;
+        delete[] (uint16_t *)pData;
     };
 
     result = foeCreateManagedMemory(buffer, sizeof(uint16_t) * cDataCount, cleanupFn, &buffer,
