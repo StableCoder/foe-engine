@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -35,7 +35,7 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
                                                     VkPresentModeKHR presentMode,
                                                     VkImageUsageFlags extraUsage,
                                                     foeGfxVkSwapchain oldSwapchain,
-                                                    uint32_t chainSize,
+                                                    uint32_t minChainSize,
                                                     uint32_t width,
                                                     uint32_t height,
                                                     foeGfxVkSwapchain *pSwapchain);

@@ -33,7 +33,7 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
                                      VkPresentModeKHR presentMode,
                                      VkImageUsageFlags extraUsage,
                                      foeGfxVkSwapchain oldSwapchain,
-                                     uint32_t chainSize,
+                                     uint32_t minChainSize,
                                      uint32_t width,
                                      uint32_t height,
                                      foeGfxVkSwapchain *pSwapchain) {
@@ -46,9 +46,9 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
         return vk_to_foeResult(vkResult);
 
     // Determine chain size
-    if (chainSize < capabilities.minImageCount)
+    if (minChainSize < capabilities.minImageCount)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_CHAIN_SIZE_LESS_THAN_SUPPORTED);
-    if (capabilities.maxImageCount != 0 && chainSize > capabilities.maxImageCount)
+    if (capabilities.maxImageCount != 0 && minChainSize > capabilities.maxImageCount)
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_CHAIN_SIZE_MORE_THAN_SUPPORTED);
 
     // Extent
@@ -77,14 +77,13 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
 
     // Set basics
     foeResultSet result = to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
-    pNewSwapchain->chainSize = chainSize;
     pNewSwapchain->extent = extent;
 
     // Create swapchain
     VkSwapchainCreateInfoKHR swapchainCI = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .surface = surface,
-        .minImageCount = chainSize,
+        .minImageCount = minChainSize,
         .imageFormat = surfaceFormat.format,
         .imageColorSpace = surfaceFormat.colorSpace,
         .imageExtent = extent,
@@ -117,14 +116,9 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
             goto CREATE_FAILED;
         }
 
-        if (imageCount != chainSize) {
-            // If the actual number of images is different from the desired chain size
-            // This would probably mean needing to re-work this implementation
-            result = to_foeResult(FOE_GRAPHICS_VK_ERROR_CHAIN_SIZE_DIFFERS);
-            goto CREATE_FAILED;
-        }
+        pNewSwapchain->chainSize = imageCount;
 
-        pNewSwapchain->pImages = (VkImage *)malloc(chainSize * sizeof(VkImage));
+        pNewSwapchain->pImages = (VkImage *)malloc(imageCount * sizeof(VkImage));
         if (pNewSwapchain->pImages == NULL) {
             result = to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
             goto CREATE_FAILED;
@@ -139,7 +133,7 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
     }
 
     { // Image Views
-        pNewSwapchain->pViews = calloc(chainSize, sizeof(VkImageView));
+        pNewSwapchain->pViews = calloc(pNewSwapchain->chainSize, sizeof(VkImageView));
         if (pNewSwapchain->pViews == NULL) {
             result = to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
             goto CREATE_FAILED;
@@ -161,7 +155,7 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
                 },
         };
 
-        for (uint32_t i = 0; i < chainSize; ++i) {
+        for (uint32_t i = 0; i < pNewSwapchain->chainSize; ++i) {
             viewCI.image = pNewSwapchain->pImages[i];
 
             vkResult = vkCreateImageView(device, &viewCI, NULL, pNewSwapchain->pViews + i);
@@ -173,7 +167,8 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
     }
 
     { // Semaphores
-        pNewSwapchain->pSemaphores = (VkSemaphore *)calloc(chainSize * 2, sizeof(VkSemaphore));
+        pNewSwapchain->pSemaphores =
+            (VkSemaphore *)calloc(SEMAPHORE_COUNT(pNewSwapchain->chainSize), sizeof(VkSemaphore));
         if (pNewSwapchain->pSemaphores == NULL) {
             result = to_foeResult(FOE_GRAPHICS_VK_ERROR_OUT_OF_MEMORY);
             goto CREATE_FAILED;
@@ -185,7 +180,7 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
         };
 
-        for (uint32_t i = 0; i < SEMAPHORE_COUNT(chainSize); ++i) {
+        for (uint32_t i = 0; i < SEMAPHORE_COUNT(pNewSwapchain->chainSize); ++i) {
             vkResult =
                 vkCreateSemaphore(device, &semaphoreCI, NULL, pNewSwapchain->pSemaphores + i);
             if (vkResult != VK_SUCCESS) {
