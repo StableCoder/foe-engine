@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -278,6 +278,7 @@ bool foeImGuiEntityList::displayEntity(EntityDisplayData *pData) {
         } while (result.value != FOE_ECS_NO_MATCH);
     }
     ImGui::Text("EditorID: %s", pEditorName);
+    free(pEditorName);
 
     mpRegistrar->displayEntity(pData->entity, mpSimulationState);
 
