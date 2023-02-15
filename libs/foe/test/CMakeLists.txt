@@ -22,6 +22,7 @@ target_sources(
           filesystem.cpp
           logger.cpp
           managed_memory.cpp
+          memory_alignment.cpp
           memory_mapped_file.cpp
           plugin.cpp
           result.cpp
