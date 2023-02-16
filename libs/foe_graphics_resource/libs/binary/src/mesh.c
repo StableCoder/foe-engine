@@ -81,7 +81,6 @@ foeResultSet export_foeMeshCubeCreateInfo(foeResourceCreateInfo createInfo,
     if (ciType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_CUBE_CREATE_INFO) {
     }
 
-EXPORT_FAILED:
     if (result.value != FOE_SUCCESS) {
         if (set.pData)
             free(set.pData);
@@ -113,7 +112,6 @@ foeResultSet export_foeMeshIcosphereCreateInfo(foeResourceCreateInfo createInfo,
     if (ciType == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_ICOSPHERE_CREATE_INFO) {
     }
 
-EXPORT_FAILED:
     if (result.value != FOE_SUCCESS) {
         if (set.pData)
             free(set.pData);

@@ -129,7 +129,7 @@ TEST_CASE("foeEcsIndexes - Reset with custom values", "[foe][ecs][foeEcsIndexes]
                 FOE_ECS_SUCCESS);
 
         REQUIRE(nextIndex == 100);
-        REQUIRE(recyclableCount == 9 - i);
+        REQUIRE(recyclableCount == 9U - i);
         REQUIRE(id == foeId(i));
     }
 

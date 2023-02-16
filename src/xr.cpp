@@ -250,7 +250,6 @@ foeResultSet startXR(foeXrRuntime runtime,
                 },
             };
 
-            foeGfxRenderTarget newRenderTarget{FOE_NULL_HANDLE};
             result = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedCaller, offscreenSpecs.data(),
                                                 offscreenSpecs.size(), gfxMSAA,
                                                 &view.offscreenRenderTarget);

@@ -201,6 +201,8 @@ void foeSimulationImGuiGroupData::customUI() {
             ImGui::TableNextColumn();
             char const *pGroupName = "?Unknown?";
             foeResultSet result = foeImexImporterGetGroupName(importer, &pGroupName);
+            if (result.value != FOE_SUCCESS)
+                std::abort();
             if (ImGui::Selectable(pGroupName, mSelected == group)) {
                 mSelected = group;
             }

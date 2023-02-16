@@ -7,12 +7,6 @@
 
 #include <string_view>
 
-#ifndef TEST_DIR
-#define TEST_DIR ""
-#endif
-
-constexpr std::string_view cTestDir = TEST_DIR;
-
 TEST_CASE("Default constructor") {
     foeSearchPaths test;
 
@@ -73,7 +67,7 @@ TEST_CASE("SearchPaths - Read lock", "[foe][SearchPaths]") {
         REQUIRE(newReader.searchPaths() != nullptr);
 
         SECTION("Moving to current properly releases lock") {
-            newReader = std::move(foeSearchPaths::Reader{});
+            newReader = foeSearchPaths::Reader{};
 
             auto writer = test.tryGetWriter();
             REQUIRE(writer.valid());
@@ -135,7 +129,7 @@ TEST_CASE("SearchPath - Write lock", "[foe][SearchPaths]") {
         REQUIRE(newWriter.searchPaths() != nullptr);
 
         SECTION("Moving to current properly releases lock") {
-            newWriter = std::move(foeSearchPaths::Writer{});
+            newWriter = foeSearchPaths::Writer{};
 
             auto reader = test.tryGetReader();
             REQUIRE(reader.valid());

@@ -54,13 +54,13 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
         CHECK(foeResourceGetType(resource) == 1);
         REQUIRE(foeResourceGetRefCount(resource) == 1);
     }
-    SECTION("Type: UINT32_MAX / ID: UINT32_MAX") {
-        foeResultSet result = foeCreateResource(UINT32_MAX, UINT32_MAX, &fns, 0, &resource);
+    SECTION("Type: INT_MAX / ID: UINT32_MAX") {
+        foeResultSet result = foeCreateResource(UINT32_MAX, INT_MAX, &fns, 0, &resource);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(resource != FOE_NULL_HANDLE);
         CHECK(foeResourceGetID(resource) == UINT32_MAX);
-        CHECK(foeResourceGetType(resource) == UINT32_MAX);
+        CHECK(foeResourceGetType(resource) == INT_MAX);
         REQUIRE(foeResourceGetRefCount(resource) == 1);
     }
 

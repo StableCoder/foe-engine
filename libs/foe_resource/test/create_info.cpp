@@ -87,13 +87,13 @@ TEST_CASE("foeResourceCreateInfo - Create properly sets initial state and differ
     }
     SECTION("Type: UINT32_MAX") {
         foeResultSet result =
-            foeCreateResourceCreateInfo(UINT32_MAX, nullptr, 0, nullptr, dummyData, &createInfo);
+            foeCreateResourceCreateInfo(INT_MAX, nullptr, 0, nullptr, dummyData, &createInfo);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(createInfo != FOE_NULL_HANDLE);
         CHECK(foeResourceCreateInfoGetRefCount(createInfo) == 1);
 
-        CHECK(foeResourceCreateInfoGetType(createInfo) == UINT32_MAX);
+        CHECK(foeResourceCreateInfoGetType(createInfo) == INT_MAX);
     }
 
     foeResourceCreateInfoDecrementRefCount(createInfo);

@@ -66,7 +66,7 @@ extern "C" foeResultSet foeGfxVkRecordModelUploadCommands(foeGfxUploadContext up
                                                           foeGfxUploadRequest *pUploadRequest) {
     auto *pUploadContext = upload_context_from_handle(uploadContext);
 
-    VkResult vkResult;
+    VkResult vkResult = VK_SUCCESS;
     foeResultSet result;
     foeGfxVkUploadRequest *uploadRequest{nullptr};
 

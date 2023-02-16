@@ -300,7 +300,6 @@ foeResultSet exportEntity(foeEntityID entityID,
 
     pEntitySets->emplace_back(std::move(newSet));
 
-EXPORT_ENTITY_FAILED:
     return to_foeResult(FOE_IMEX_BINARY_SUCCESS);
 }
 

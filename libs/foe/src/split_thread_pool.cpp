@@ -189,8 +189,6 @@ extern "C" foeResultSet foeCreateThreadPool(uint32_t syncThreads,
             },
     };
 
-    foeResultSet result = to_foeResult(FOE_SUCCESS);
-
     std::thread *pThreads = getThreadArray(pNewPool);
     // Start sync threads
     for (uint32_t i = 0; i < pNewPool->syncTasks.threadCount; ++i) {
@@ -204,14 +202,9 @@ extern "C" foeResultSet foeCreateThreadPool(uint32_t syncThreads,
         new (pThreads + pNewPool->syncTasks.threadCount + i) std::thread(asyncTaskRunner, pNewPool);
     }
 
-CREATE_FAILED:
-    if (result.value != FOE_SUCCESS) {
-        delete pNewPool;
-    } else {
-        *pPool = split_thread_pool_to_handle(pNewPool);
-    }
+    *pPool = split_thread_pool_to_handle(pNewPool);
 
-    return result;
+    return to_foeResult(FOE_SUCCESS);
 }
 
 extern "C" void foeDestroyThreadPool(foeSplitThreadPool pool) {
