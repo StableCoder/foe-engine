@@ -78,10 +78,28 @@ foeResultSet foeArmatureSystem::initialize(foeResourcePool resourcePool,
     mResourcePool = resourcePool;
     mArmatureStatePool = armatureStatePool;
 
-    return to_foeResult(FOE_BRINGUP_SUCCESS);
+    foeResultSet result = foeEcsCreateEntityList(&modifiedEntityList);
+    if (result.value != FOE_SUCCESS)
+        goto INITIALIZATION_FAILED;
+
+    result = foeEcsComponentPoolAddEntityList(mArmatureStatePool, modifiedEntityList);
+    if (result.value != FOE_SUCCESS)
+        goto INITIALIZATION_FAILED;
+
+INITIALIZATION_FAILED:
+    if (result.value != FOE_SUCCESS)
+        deinitialize();
+
+    return result;
 }
 
 void foeArmatureSystem::deinitialize() {
+    if (modifiedEntityList != FOE_NULL_HANDLE) {
+        foeEcsComponentPoolRemoveEntityList(mArmatureStatePool, modifiedEntityList);
+        foeEcsDestroyEntityList(modifiedEntityList);
+        modifiedEntityList = FOE_NULL_HANDLE;
+    }
+
     mArmatureStatePool = FOE_NULL_HANDLE;
     mResourcePool = nullptr;
 }
@@ -89,12 +107,15 @@ void foeArmatureSystem::deinitialize() {
 bool foeArmatureSystem::initialized() const noexcept { return mResourcePool != nullptr; }
 
 foeResultSet foeArmatureSystem::process(float timePassed) {
+    foeEntityID const *pArmatureStateID = foeEcsComponentPoolIdPtr(mArmatureStatePool);
+    foeEntityID const *const pEndArmatureStateID =
+        pArmatureStateID + foeEcsComponentPoolSize(mArmatureStatePool);
     foeArmatureState *pArmatureState =
         (foeArmatureState *)foeEcsComponentPoolDataPtr(mArmatureStatePool);
-    foeArmatureState *const pEndArmatureState =
-        pArmatureState + foeEcsComponentPoolSize(mArmatureStatePool);
 
-    for (; pArmatureState != pEndArmatureState; ++pArmatureState) {
+    std::vector<foeEntityID> modifiedIDs;
+
+    for (; pArmatureStateID != pEndArmatureStateID; ++pArmatureStateID, ++pArmatureState) {
         // Add the time that has passed to the armature/animation
         pArmatureState->time += timePassed;
 
@@ -121,6 +142,8 @@ foeResultSet foeArmatureSystem::process(float timePassed) {
 
             continue;
         }
+
+        modifiedIDs.emplace_back(*pArmatureStateID);
 
         foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
 
@@ -156,6 +179,10 @@ foeResultSet foeArmatureSystem::process(float timePassed) {
         animateArmatureNode(&pArmature->armature[0], animation.nodeChannels, animationTime,
                             glm::mat4{1.f}, pArmatureState->pArmatureBones);
     }
+
+    uint32_t numModified = modifiedIDs.size();
+    foeEntityID *pModifiedIDs = modifiedIDs.data();
+    foeEcsResetEntityList(modifiedEntityList, 1, &numModified, &pModifiedIDs);
 
     return to_foeResult(FOE_BRINGUP_SUCCESS);
 }

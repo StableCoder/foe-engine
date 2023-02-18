@@ -37,9 +37,8 @@
 #include "register_basic_functionality.h"
 #include "render_graph/render_scene.hpp"
 #include "simulation/armature_system.hpp"
-#include "simulation/position_descriptor_pool.hpp"
+#include "simulation/render_system.hpp"
 #include "simulation/type_defs.h"
-#include "simulation/vk_animation.hpp"
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/runtime.h>
@@ -583,6 +582,9 @@ int Application::mainloop() {
                                     pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM),
                                 timeElapsedInSec);
 
+        foeProcessRenderSystem((foeRenderSystem)foeSimulationGetSystem(
+            pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_SYSTEM));
+
         // Process Window Events
         for (auto &it : windowData)
             foeWsiWindowProcessing(it.window);
@@ -746,13 +748,10 @@ int Application::mainloop() {
             frameTime.newFrame();
 
             // Run Systems that generate graphics data
-            ((PositionDescriptorPool *)foeSimulationGetSystem(
-                 pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_POSITION_DESCRIPTOR_POOL))
-                ->generatePositionDescriptors(frameIndex);
-
-            ((VkAnimationPool *)foeSimulationGetSystem(
-                 pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_VK_ANIMATION_POOL))
-                ->uploadBoneOffsets(frameIndex);
+            foeProcessRenderSystemGraphics(
+                (foeRenderSystem)foeSimulationGetSystem(pSimulationSet,
+                                                        FOE_BRINGUP_STRUCTURE_TYPE_RENDER_SYSTEM),
+                frameIndex);
 
 #ifdef FOE_XR_SUPPORT
             // OpenXR Render Section
@@ -931,7 +930,8 @@ int Application::mainloop() {
                             renderTargetColourImageResource, 1, &renderTargetColourImportJob,
                             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource, 1,
                             &renderTargetDepthImportJob, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                            globalMSAA, pSimulationSet, viewDescriptorSet, &xrRenderSceneJob);
+                            globalMSAA, pSimulationSet, viewDescriptorSet, frameIndex,
+                            &xrRenderSceneJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
                         }
@@ -1082,7 +1082,7 @@ int Application::mainloop() {
                     1, &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
-                    cameraProjViewDescriptor, &renderSceneJobHandle);
+                    cameraProjViewDescriptor, frameIndex, &renderSceneJobHandle);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM
                 }

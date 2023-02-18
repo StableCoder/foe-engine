@@ -23,6 +23,8 @@ class foeArmatureSystem {
 
     // Components
     foeArmatureStatePool mArmatureStatePool{FOE_NULL_HANDLE};
+
+    foeEcsEntityList modifiedEntityList{FOE_NULL_HANDLE};
 };
 
 #endif // ARMATURE_SYSTEM_HPP

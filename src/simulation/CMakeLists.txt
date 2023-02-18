@@ -13,9 +13,10 @@ target_sources(
           binary.cpp
           cleanup.c
           compare.c
-          position_descriptor_pool.cpp
           registration.cpp
-          vk_animation.cpp)
+          render_system_armature.cpp
+          render_system_position.cpp
+          render_system.cpp)
 
 add_subdirectory(binary)
 add_subdirectory(yaml)

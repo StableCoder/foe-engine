@@ -24,120 +24,32 @@
 
 #include "../log.hpp"
 #include "../result.h"
-#include "../simulation/render_state_pool.h"
+#include "../simulation/render_system.hpp"
 #include "../vk_result.h"
 
 namespace {
 
-auto renderCall(foeId entity,
-                foeRenderState const *pRenderState,
+auto renderCall(RenderDataSet const *pDataSet,
+                VkDescriptorSet positionDescriptorSet,
+                VkDescriptorSet armatureDescriptorSet,
                 foeGfxSession gfxSession,
-                foeSimulation *pSimulationSet,
                 VkCommandBuffer commandBuffer,
                 VkSampleCountFlags samples,
                 VkRenderPass renderPass,
                 VkDescriptorSet cameraDescriptor) -> bool {
     VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
-    foeResource vertexDescriptor{FOE_NULL_HANDLE};
-    foeResource material{FOE_NULL_HANDLE};
-    foeResource mesh{FOE_NULL_HANDLE};
+    foeResource vertexDescriptor{pDataSet->vertexDescriptor};
+    foeResource material{pDataSet->material};
+    foeResource mesh{pDataSet->mesh};
 
     bool boned{false};
-    if (pRenderState->bonedVertexDescriptor != FOE_INVALID_ID &&
-        pRenderState->boneDescriptorSet != VK_NULL_HANDLE) {
+    if (pDataSet->bonedVertexDescriptor != FOE_NULL_HANDLE &&
+        armatureDescriptorSet != VK_NULL_HANDLE) {
         boned = true;
 
-        do {
-            vertexDescriptor = foeResourcePoolFind(pSimulationSet->resourcePool,
-                                                   pRenderState->bonedVertexDescriptor);
-
-            if (vertexDescriptor == FOE_NULL_HANDLE) {
-                vertexDescriptor = foeResourcePoolAdd(
-                    pSimulationSet->resourcePool, pRenderState->bonedVertexDescriptor,
-                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
-                    sizeof(foeVertexDescriptor));
-            }
-        } while (vertexDescriptor == FOE_NULL_HANDLE);
-    } else {
-        do {
-            vertexDescriptor =
-                foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->vertexDescriptor);
-
-            if (vertexDescriptor == FOE_NULL_HANDLE) {
-                vertexDescriptor =
-                    foeResourcePoolAdd(pSimulationSet->resourcePool, pRenderState->vertexDescriptor,
-                                       FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
-                                       sizeof(foeVertexDescriptor));
-            }
-        } while (vertexDescriptor == FOE_NULL_HANDLE);
+        vertexDescriptor = pDataSet->bonedVertexDescriptor;
     }
-
-    do {
-        material = foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->material);
-
-        if (material == FOE_NULL_HANDLE) {
-            material = foeResourcePoolAdd(pSimulationSet->resourcePool, pRenderState->material,
-                                          FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL,
-                                          sizeof(foeMaterial));
-        }
-    } while (material == FOE_NULL_HANDLE);
-
-    do {
-        mesh = foeResourcePoolFind(pSimulationSet->resourcePool, pRenderState->mesh);
-
-        if (mesh == FOE_NULL_HANDLE) {
-            mesh = foeResourcePoolAdd(pSimulationSet->resourcePool, pRenderState->mesh,
-                                      FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh));
-        }
-    } while (mesh == FOE_NULL_HANDLE);
-
-    if (vertexDescriptor == FOE_NULL_HANDLE || material == FOE_NULL_HANDLE ||
-        mesh == FOE_NULL_HANDLE) {
-        return false;
-    }
-
-    bool skip = false;
-    if (auto loadState = foeResourceGetState(vertexDescriptor);
-        loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-        if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
-            !foeResourceGetIsLoading(vertexDescriptor)) {
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                    "While attempting to render {}, VertexDescriptor resource {} was unloaded and "
-                    "wasn't being loaded, requesting load",
-                    foeIdToString(entity), foeIdToString(foeResourceGetID(vertexDescriptor)));
-            foeResourceLoadData(vertexDescriptor);
-        }
-
-        skip = true;
-    }
-
-    if (auto loadState = foeResourceGetState(material);
-        loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-        if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED && !foeResourceGetIsLoading(material)) {
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                    "While attempting to render {}, Material resource {} was unloaded and wasn't "
-                    "being loaded, requesting load",
-                    foeIdToString(entity), foeIdToString(foeResourceGetID(material)));
-            foeResourceLoadData(material);
-        }
-
-        skip = true;
-    }
-
-    if (auto loadState = foeResourceGetState(mesh); loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-        if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED && !foeResourceGetIsLoading(mesh)) {
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                    "While attempting to render {}, Mesh resource {} was unloaded and wasn't being "
-                    "loaded, requesting load",
-                    foeIdToString(entity), foeIdToString(foeResourceGetID(mesh)));
-            foeResourceLoadData(mesh);
-        }
-
-        skip = true;
-    }
-    if (skip)
-        return false;
 
     // Get Resource Data
     auto const *pVertexDescriptor =
@@ -166,26 +78,9 @@ auto renderCall(foeId entity,
 
     auto vertSetLayouts = foeGfxVkGetVertexDescriptorBuiltinSetLayouts(pGfxVertexDescriptor);
     if (vertSetLayouts & FOE_BUILTIN_DESCRIPTOR_SET_LAYOUT_MODEL_MATRIX) {
-        foePosition3dPool position3dPool = (foePosition3dPool)foeSimulationGetComponentPool(
-            pSimulationSet, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-
-        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(position3dPool);
-        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(position3dPool);
-
-        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
-
-        if (pID == pEndID || *pID != entity) {
-            return false;
-        }
-        size_t offset = pID - pStartID;
-
-        foePosition3d **ppPositionData =
-            (foePosition3d **)foeEcsComponentPoolDataPtr(position3dPool) + offset;
-
-        foePosition3d *pPosition = *ppPositionData;
         // Bind the object's position *if* the descriptor supports it
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
-                                &pPosition->descriptorSet, 0, nullptr);
+                                &positionDescriptorSet, 0, nullptr);
     } else {
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 1, 1,
                                 &dummyDescriptorSet, 0, nullptr);
@@ -193,7 +88,7 @@ auto renderCall(foeId entity,
     if (boned) {
         // If we have bone information, bind that too
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 2, 1,
-                                &pRenderState->boneDescriptorSet, 0, nullptr);
+                                &armatureDescriptorSet, 0, nullptr);
     }
     // Bind the fragment descriptor set *if* it exists?
     if (auto set = pMaterial->materialDescriptorSet; set != VK_NULL_HANDLE) {
@@ -228,6 +123,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                             VkSampleCountFlags renderTargetSamples,
                             foeSimulation *pSimulation,
                             VkDescriptorSet cameraDescriptor,
+                            uint32_t frameIndex,
                             foeGfxVkRenderGraphJob *pRenderGraphJob) {
     // Make sure the resources passed in are images, and are mutable
     auto const *pColourImageData = (foeGfxVkGraphImageResource const *)foeGfxVkGraphFindStructure(
@@ -348,17 +244,26 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
         }
 
         { // RENDER STUFF
-            foeRenderStatePool renderStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
-                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
+            foeRenderSystem renderSystem = (foeRenderSystem)foeSimulationGetSystem(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_SYSTEM);
 
-            foeEntityID const *pID = foeEcsComponentPoolIdPtr(renderStatePool);
-            foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(renderStatePool);
-            foeRenderState *pRenderState =
-                (foeRenderState *)foeEcsComponentPoolDataPtr(renderStatePool);
+            auto renderDataSets = getRenderDataSets(renderSystem);
+            VkDescriptorSet const *pPositionDescriptorSets =
+                getPositionDescriptorSets(renderSystem, frameIndex);
+            VkDescriptorSet const *pArmatureDescriptorSets =
+                getArmatureDescriptorSets(renderSystem, frameIndex);
 
-            for (; pID != pEndID; ++pID, ++pRenderState) {
-                renderCall(*pID, pRenderState, gfxSession, pSimulation, commandBuffer,
-                           renderTargetSamples, renderPass, cameraDescriptor);
+            auto *pDataSet = renderDataSets.data();
+            auto const *pEnd = pDataSet + renderDataSets.size();
+
+            for (; pDataSet != pEnd; ++pDataSet, ++pPositionDescriptorSets) {
+                VkDescriptorSet armatureDescriptorSet = VK_NULL_HANDLE;
+                if (pDataSet->armatureIndex != UINT32_MAX) {
+                    armatureDescriptorSet = pArmatureDescriptorSets[pDataSet->armatureIndex];
+                }
+
+                renderCall(pDataSet, *pPositionDescriptorSets, armatureDescriptorSet, gfxSession,
+                           commandBuffer, renderTargetSamples, renderPass, cameraDescriptor);
             }
         }
 

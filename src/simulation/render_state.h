@@ -6,7 +6,6 @@
 #define RENDER_STATE_H
 
 #include <foe/ecs/id.h>
-#include <vulkan/vulkan.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,9 +16,6 @@ struct foeRenderState {
     foeId bonedVertexDescriptor;
     foeId material;
     foeId mesh;
-
-    // Runtime info
-    VkDescriptorSet boneDescriptorSet{};
 };
 
 #ifdef __cplusplus

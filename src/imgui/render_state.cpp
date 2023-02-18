@@ -14,8 +14,7 @@ void imgui_foeRenderState(foeRenderState *pComponent) {
 
     ImGui::Text("Vertex Descriptor: %08x", pComponent->vertexDescriptor);
 
-    ImGui::Text("Boned Vertex Descriptor: %p",
-                reinterpret_cast<void *>(pComponent->boneDescriptorSet));
+    ImGui::Text("Boned Vertex Descriptor: %08x", pComponent->bonedVertexDescriptor);
 
     ImGui::Text("Material: %08x", pComponent->material);
 

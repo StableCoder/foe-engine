@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,7 @@ foeResultSet renderSceneJob(foeGfxVkRenderGraph renderGraph,
                             VkSampleCountFlags renderTargetSamples,
                             foeSimulation *pSimulation,
                             VkDescriptorSet cameraDescriptor,
+                            uint32_t frameIndex,
                             foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // RENDER_SCENE_HPP
