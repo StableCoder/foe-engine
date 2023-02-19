@@ -29,7 +29,7 @@ foeResultSet foeInitializeRenderSystemGraphics(foeRenderSystem renderSystem,
                                                foeResourcePool resourcePool,
                                                foeRenderStatePool renderStatePool,
                                                foePosition3dPool positionPool,
-                                               foeArmatureStatePool armatureStatePool);
+                                               foeAnimatedBoneStatePool animatedBoneStatePool);
 
 void foeDeinitializeRenderSystemGraphics(foeRenderSystem renderSystem);
 

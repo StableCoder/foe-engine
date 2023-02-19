@@ -54,7 +54,7 @@ bool importArmatureState(YAML::Node const &node,
 
             foeResultSet result = foeEcsComponentPoolInsert(armatureStatePool, entity, &data);
             if (result.value != FOE_SUCCESS) {
-                cleanup_foeArmatureState(&data);
+                return false;
             }
 
             return true;

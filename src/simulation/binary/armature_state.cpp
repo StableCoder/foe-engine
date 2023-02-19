@@ -70,7 +70,7 @@ extern "C" foeResultSet import_foeArmatureState(void const *pReadBuffer,
     if (result.value == FOE_SUCCESS) {
         result = foeEcsComponentPoolInsert(componentPool, entity, &componentData);
         if (result.value != FOE_SUCCESS) {
-            cleanup_foeArmatureState(&componentData);
+            return result;
         }
     }
 

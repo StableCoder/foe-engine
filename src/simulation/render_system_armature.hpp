@@ -55,7 +55,7 @@ struct RenderSystemArmatureData {
 void deinitializeArmatureData(foeGfxSession gfxSession, RenderSystemArmatureData &armatureData);
 
 [[nodiscard]] foeResultSet getArmatureData(RenderSystemArmatureData &armatureData,
-                                           foeArmatureState const *pArmatureState,
+                                           foeAnimatedBoneState const *pAnimatedBoneState,
                                            foeResource mesh,
                                            uint32_t &armatureIndex);
 

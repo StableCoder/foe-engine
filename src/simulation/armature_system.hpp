@@ -9,9 +9,13 @@
 
 #include "armature_state_pool.hpp"
 
+#include <vector>
+
 class foeArmatureSystem {
   public:
-    foeResultSet initialize(foeResourcePool resourcePool, foeArmatureStatePool armatureStatePool);
+    foeResultSet initialize(foeResourcePool resourcePool,
+                            foeArmatureStatePool armatureStatePool,
+                            foeAnimatedBoneStatePool animatedBoneStatePool);
     void deinitialize();
     bool initialized() const noexcept;
 
@@ -23,8 +27,14 @@ class foeArmatureSystem {
 
     // Components
     foeArmatureStatePool mArmatureStatePool{FOE_NULL_HANDLE};
+    foeAnimatedBoneStatePool mAnimatedBoneStatePool{FOE_NULL_HANDLE};
 
-    foeEcsEntityList modifiedEntityList{FOE_NULL_HANDLE};
+    struct AwaitingData {
+        foeEntityID entity;
+        foeResource armature;
+    };
+
+    std::vector<AwaitingData> mAwaitingLoading;
 };
 
 #endif // ARMATURE_SYSTEM_HPP

@@ -28,6 +28,7 @@ struct TypeSelection {
     bool armatureLoader;
     // Components
     bool armatureComponents;
+    bool animatedBoneStateComponents;
     bool renderStateComponents;
     // Systems
     bool armatureSystem;
@@ -121,6 +122,36 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
                 ++errors;
             } else {
                 foeEcsDestroyComponentPool(pool);
+            }
+        }
+    }
+
+    if (pSelection == nullptr || pSelection->animatedBoneStateComponents) {
+        result = foeSimulationDecrementRefCount(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, &count);
+        if (result.value != FOE_SUCCESS) {
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(
+                foeBringup, FOE_LOG_LEVEL_WARNING,
+                "Attempted to decrement/destroy foeAnimatedBoneStatePool that doesn't exist: {}",
+                buffer);
+
+            ++errors;
+        } else if (count == 0) {
+            foeAnimatedBoneStatePool componentPool;
+            result = foeSimulationReleaseComponentPool(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL,
+                (void **)&componentPool);
+            if (result.value != FOE_SUCCESS) {
+                char buffer[FOE_MAX_RESULT_STRING_SIZE];
+                result.toString(result.value, buffer);
+                FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                        "Could not release foeAnimatedBoneStatePool to destroy: {}", buffer);
+
+                ++errors;
+            } else {
+                foeEcsDestroyComponentPool(componentPool);
             }
         }
     }
@@ -238,8 +269,7 @@ foeResultSet create(foeSimulation *pSimulation) {
                 [](void *pData) { foeEcsComponentPoolMaintenance((foeEcsComponentPool)pData); },
         };
 
-        result = foeEcsCreateComponentPool(0, 16, sizeof(foeArmatureState),
-                                           (PFN_foeEcsComponentDestructor)cleanup_foeArmatureState,
+        result = foeEcsCreateComponentPool(0, 16, sizeof(foeArmatureState), nullptr,
                                            (foeEcsComponentPool *)&createInfo.pComponentPool);
         if (result.value != FOE_NULL_HANDLE) {
             goto CREATE_FAILED;
@@ -262,6 +292,42 @@ foeResultSet create(foeSimulation *pSimulation) {
     }
     created.armatureComponents = true;
 
+    result = foeSimulationIncrementRefCount(
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, nullptr);
+    if (result.value != FOE_SUCCESS) {
+        foeSimulationComponentPoolData createInfo{
+            .sType = FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL,
+            .pMaintenanceFn =
+                [](void *componentPool) {
+                    foeEcsComponentPoolMaintenance((foeAnimatedBoneStatePool)componentPool);
+                },
+        };
+
+        result =
+            foeEcsCreateComponentPool(0, 16, sizeof(foeAnimatedBoneState),
+                                      (PFN_foeEcsComponentDestructor)cleanup_foeAnimatedBoneState,
+                                      (foeEcsComponentPool *)&createInfo.pComponentPool);
+        if (result.value != FOE_NULL_HANDLE) {
+            goto CREATE_FAILED;
+        }
+
+        result = foeSimulationInsertComponentPool(pSimulation, &createInfo);
+        if (result.value != FOE_SUCCESS) {
+            delete (foeAnimatedBoneStatePool *)createInfo.pComponentPool;
+
+            char buffer[FOE_MAX_RESULT_STRING_SIZE];
+            result.toString(result.value, buffer);
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+                    "create - Failed to create foeAnimatedBoneStatePool on Simulation {}: {}",
+                    (void *)pSimulation, buffer);
+
+            goto CREATE_FAILED;
+        }
+        foeSimulationIncrementRefCount(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL, nullptr);
+    }
+    created.animatedBoneStateComponents = true;
+
     result = foeSimulationIncrementRefCount(pSimulation,
                                             FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL, nullptr);
     if (result.value != FOE_SUCCESS) {
@@ -273,7 +339,7 @@ foeResultSet create(foeSimulation *pSimulation) {
                 },
         };
 
-        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRenderState), NULL,
+        result = foeEcsCreateComponentPool(0, 16, sizeof(foeRenderState), nullptr,
                                            (foeEcsComponentPool *)&createInfo.pComponentPool);
         if (result.value != FOE_SUCCESS) {
             goto CREATE_FAILED;
@@ -465,10 +531,14 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
         foeArmatureStatePool armatureStatePool =
             (foeArmatureStatePool)foeSimulationGetComponentPool(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        foeAnimatedBoneStatePool animatedBoneStatePool =
+            (foeAnimatedBoneStatePool)foeSimulationGetComponentPool(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL);
 
         auto *pData = (foeArmatureSystem *)foeSimulationGetSystem(
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-        result = pData->initialize(pSimulation->resourcePool, armatureStatePool);
+        result =
+            pData->initialize(pSimulation->resourcePool, armatureStatePool, animatedBoneStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -549,12 +619,13 @@ foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSes
             pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_STATE_POOL);
         foePosition3dPool positionPool = (foeRenderStatePool)foeSimulationGetComponentPool(
             pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
-        foeArmatureStatePool armatureStatePool = (foeRenderStatePool)foeSimulationGetComponentPool(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_STATE_POOL);
+        foeAnimatedBoneStatePool animatedBoneStatePool =
+            (foeAnimatedBoneStatePool)foeSimulationGetComponentPool(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL);
 
         result =
             foeInitializeRenderSystemGraphics(renderSystem, gfxSession, pSimulation->resourcePool,
-                                              renderStatePool, positionPool, armatureStatePool);
+                                              renderStatePool, positionPool, animatedBoneStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

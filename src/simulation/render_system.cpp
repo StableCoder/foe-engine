@@ -28,7 +28,7 @@ struct RenderSystem {
     foeResourcePool resourcePool;
     foeRenderStatePool renderStatePool;
     foePosition3dPool positionPool;
-    foeArmatureStatePool armatureStatePool;
+    foeAnimatedBoneStatePool animatedBoneStatePool;
 
     std::vector<RenderDataSet> awaitingLoading;
 
@@ -291,12 +291,13 @@ extern "C" void foeDestroyRenderSystem(foeRenderSystem renderSystem) {
     delete pRenderSystem;
 }
 
-extern "C" foeResultSet foeInitializeRenderSystemGraphics(foeRenderSystem renderSystem,
-                                                          foeGfxSession gfxSession,
-                                                          foeResourcePool resourcePool,
-                                                          foeRenderStatePool renderStatePool,
-                                                          foePosition3dPool positionPool,
-                                                          foeArmatureStatePool armatureStatePool) {
+extern "C" foeResultSet foeInitializeRenderSystemGraphics(
+    foeRenderSystem renderSystem,
+    foeGfxSession gfxSession,
+    foeResourcePool resourcePool,
+    foeRenderStatePool renderStatePool,
+    foePosition3dPool positionPool,
+    foeAnimatedBoneStatePool animatedBoneStatePool) {
     RenderSystem *pRenderSystem = render_system_from_handle(renderSystem);
     foeResultSet result = to_foeResult(FOE_BRINGUP_SUCCESS);
 
@@ -311,7 +312,7 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(foeRenderSystem render
     pRenderSystem->resourcePool = resourcePool;
     pRenderSystem->renderStatePool = renderStatePool;
     pRenderSystem->positionPool = positionPool;
-    pRenderSystem->armatureStatePool = armatureStatePool;
+    pRenderSystem->animatedBoneStatePool = animatedBoneStatePool;
     pRenderSystem->gfxSession = gfxSession;
 
     // Subsystems
@@ -339,12 +340,12 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(foeRenderSystem render
         foePosition3d const *const *const ppStartPositionData =
             (foePosition3d const *const *const)foeEcsComponentPoolDataPtr(positionPool);
 
-        foeEntityID const *pArmatureStateID = foeEcsComponentPoolIdPtr(armatureStatePool);
-        foeEntityID const *const pStartArmatureStateID = pArmatureStateID;
-        foeEntityID const *const pEndArmatureStateID =
-            pStartArmatureStateID + foeEcsComponentPoolSize(armatureStatePool);
-        foeArmatureState const *const pStartArmatureStateData =
-            (foeArmatureState const *const)foeEcsComponentPoolDataPtr(armatureStatePool);
+        foeEntityID const *pAnimatedBoneStateID = foeEcsComponentPoolIdPtr(animatedBoneStatePool);
+        foeEntityID const *const pStartAnimatedBoneStateID = pAnimatedBoneStateID;
+        foeEntityID const *const pEndAnimatedBoneStateID =
+            pStartAnimatedBoneStateID + foeEcsComponentPoolSize(animatedBoneStatePool);
+        foeAnimatedBoneState const *const pStartAnimatedBoneStateData =
+            (foeAnimatedBoneState const *const)foeEcsComponentPoolDataPtr(animatedBoneStatePool);
 
         for (; pRenderStateID != pEndRenderStateID; ++pRenderStateID, ++pRenderStateData) {
             // Check if associated position component exists
@@ -362,13 +363,13 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(foeRenderSystem render
             switch (checkLoadState(&newDataSet)) {
             case FOE_RESOURCE_LOAD_STATE_LOADED:
                 // Data is loaded, can add right away
-                pArmatureStateID =
-                    std::lower_bound(pArmatureStateID, pEndArmatureStateID, *pRenderStateID);
-                if (pArmatureStateID != pEndArmatureStateID &&
-                    *pArmatureStateID == *pRenderStateID) {
+                pAnimatedBoneStateID = std::lower_bound(pAnimatedBoneStateID,
+                                                        pEndAnimatedBoneStateID, *pRenderStateID);
+                if (pAnimatedBoneStateID != pEndAnimatedBoneStateID &&
+                    *pAnimatedBoneStateID == *pRenderStateID) {
                     result = getArmatureData(pRenderSystem->armatureData,
-                                             pStartArmatureStateData +
-                                                 (pArmatureStateID - pStartArmatureStateID),
+                                             pStartAnimatedBoneStateData +
+                                                 (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
                                              newDataSet.mesh, newDataSet.armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         goto GRAPHICS_INITIALIZATION_FAILED;
@@ -424,7 +425,7 @@ extern "C" void foeDeinitializeRenderSystemGraphics(foeRenderSystem renderSystem
 
     // Clear external data
     pRenderSystem->gfxSession = FOE_NULL_HANDLE;
-    pRenderSystem->armatureStatePool = FOE_NULL_HANDLE;
+    pRenderSystem->animatedBoneStatePool = FOE_NULL_HANDLE;
     pRenderSystem->positionPool = FOE_NULL_HANDLE;
     pRenderSystem->renderStatePool = FOE_NULL_HANDLE;
     pRenderSystem->resourcePool = FOE_NULL_HANDLE;
@@ -455,14 +456,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             (foePosition3d const *const *const)foeEcsComponentPoolDataPtr(
                 pRenderSystem->positionPool);
 
-        foeEntityID const *pArmatureStateID =
-            foeEcsComponentPoolIdPtr(pRenderSystem->armatureStatePool);
-        foeEntityID const *const pStartArmatureStateID = pArmatureStateID;
-        foeEntityID const *const pEndArmatureStateID =
-            pStartArmatureStateID + foeEcsComponentPoolSize(pRenderSystem->armatureStatePool);
-        foeArmatureState const *const pStartArmatureStateData =
-            (foeArmatureState const *const)foeEcsComponentPoolDataPtr(
-                pRenderSystem->armatureStatePool);
+        foeEntityID const *pAnimatedBoneStateID =
+            foeEcsComponentPoolIdPtr(pRenderSystem->animatedBoneStatePool);
+        foeEntityID const *const pStartAnimatedBoneStateID = pAnimatedBoneStateID;
+        foeEntityID const *const pEndAnimatedBoneStateID =
+            pStartAnimatedBoneStateID +
+            foeEcsComponentPoolSize(pRenderSystem->animatedBoneStatePool);
+        foeAnimatedBoneState const *const pStartAnimatedBoneStateData =
+            (foeAnimatedBoneState const *const)foeEcsComponentPoolDataPtr(
+                pRenderSystem->animatedBoneStatePool);
 
         auto renderDataIt = pRenderSystem->renderData.begin();
 
@@ -519,13 +521,13 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     clearRenderData(&(*awaitingIt));
                 }
 
-                pArmatureStateID =
-                    std::lower_bound(pArmatureStateID, pEndArmatureStateID, *pRenderStateID);
-                if (pArmatureStateID != pEndArmatureStateID &&
-                    *pArmatureStateID == *pRenderStateID) {
+                pAnimatedBoneStateID = std::lower_bound(pAnimatedBoneStateID,
+                                                        pEndAnimatedBoneStateID, *pRenderStateID);
+                if (pAnimatedBoneStateID != pEndAnimatedBoneStateID &&
+                    *pAnimatedBoneStateID == *pRenderStateID) {
                     result = getArmatureData(pRenderSystem->armatureData,
-                                             pStartArmatureStateData +
-                                                 (pArmatureStateID - pStartArmatureStateID),
+                                             pStartAnimatedBoneStateData +
+                                                 (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
                                              awaitingIt->mesh, awaitingIt->armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         return result;
@@ -556,17 +558,17 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
         }
     }
 
-    { // ArmatureState removals
-        foeEntityID const *pArmatureStateID =
-            foeEcsComponentPoolRemovedIdPtr(pRenderSystem->armatureStatePool);
-        foeEntityID const *const pEndArmatureStateID =
-            pArmatureStateID + foeEcsComponentPoolRemoved(pRenderSystem->armatureStatePool);
+    { // AnimatedBoneState removals
+        foeEntityID const *pAnimatedBoneStateID =
+            foeEcsComponentPoolRemovedIdPtr(pRenderSystem->animatedBoneStatePool);
+        foeEntityID const *const pEndAnimatedBoneStateID =
+            pAnimatedBoneStateID + foeEcsComponentPoolRemoved(pRenderSystem->animatedBoneStatePool);
 
         auto renderDataIt = pRenderSystem->renderData.begin();
         auto const endRenderDataIt = pRenderSystem->renderData.end();
 
-        while (pArmatureStateID != pEndArmatureStateID) {
-            renderDataIt = std::lower_bound(renderDataIt, endRenderDataIt, *pArmatureStateID,
+        while (pAnimatedBoneStateID != pEndAnimatedBoneStateID) {
+            renderDataIt = std::lower_bound(renderDataIt, endRenderDataIt, *pAnimatedBoneStateID,
                                             [](RenderDataSet const &obj, foeEntityID const entity) {
                                                 return obj.entity < entity;
                                             });
@@ -575,11 +577,11 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 // Reached the end of render data, nothing left to do
                 break;
 
-            if (renderDataIt->entity == *pArmatureStateID)
+            if (renderDataIt->entity == *pAnimatedBoneStateID)
                 // If we found a match, then clear any armature data
                 clearArmatureData(pRenderSystem->armatureData, renderDataIt->armatureIndex);
 
-            ++pArmatureStateID;
+            ++pAnimatedBoneStateID;
         }
     }
 
@@ -663,14 +665,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             foeRenderState const *const pStartRenderStateData =
                 (foeRenderState const *)foeEcsComponentPoolDataPtr(pRenderSystem->renderStatePool);
 
-            foeEntityID const *pArmatureStateID =
-                foeEcsComponentPoolIdPtr(pRenderSystem->armatureStatePool);
-            foeEntityID const *const pStartArmatureStateID = pArmatureStateID;
-            foeEntityID const *const pEndArmatureStateID =
-                pStartArmatureStateID + foeEcsComponentPoolSize(pRenderSystem->armatureStatePool);
-            foeArmatureState const *const pStartArmatureStateData =
-                (foeArmatureState const *const)foeEcsComponentPoolDataPtr(
-                    pRenderSystem->armatureStatePool);
+            foeEntityID const *pAnimatedBoneStateID =
+                foeEcsComponentPoolIdPtr(pRenderSystem->animatedBoneStatePool);
+            foeEntityID const *const pStartAnimatedBoneStateID = pAnimatedBoneStateID;
+            foeEntityID const *const pEndAnimatedBoneStateID =
+                pStartAnimatedBoneStateID +
+                foeEcsComponentPoolSize(pRenderSystem->animatedBoneStatePool);
+            foeAnimatedBoneState const *const pStartAnimatedBoneStateData =
+                (foeAnimatedBoneState const *const)foeEcsComponentPoolDataPtr(
+                    pRenderSystem->animatedBoneStatePool);
 
             auto renderDataIt = pRenderSystem->renderData.begin();
 
@@ -726,14 +729,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
                 case FOE_RESOURCE_LOAD_STATE_LOADED:
                     // Everything is still considered loaded and ready to go
-                    pArmatureStateID =
-                        std::lower_bound(pArmatureStateID, pEndArmatureStateID, *pRenderStateID);
-                    if (pArmatureStateID != pEndArmatureStateID &&
-                        *pArmatureStateID == *pRenderStateID) {
-                        result = getArmatureData(pRenderSystem->armatureData,
-                                                 pStartArmatureStateData +
-                                                     (pArmatureStateID - pStartArmatureStateID),
-                                                 renderDataIt->mesh, renderDataIt->armatureIndex);
+                    pAnimatedBoneStateID = std::lower_bound(
+                        pAnimatedBoneStateID, pEndAnimatedBoneStateID, *pRenderStateID);
+                    if (pAnimatedBoneStateID != pEndAnimatedBoneStateID &&
+                        *pAnimatedBoneStateID == *pRenderStateID) {
+                        result =
+                            getArmatureData(pRenderSystem->armatureData,
+                                            pStartAnimatedBoneStateData +
+                                                (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
+                                            renderDataIt->mesh, renderDataIt->armatureIndex);
                         if (result.value != FOE_SUCCESS)
                             return result;
                     }
@@ -741,58 +745,6 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 }
 
                 ++pRenderStateID;
-            }
-        }
-    }
-
-    { // Modified ArmatureState
-        size_t const entityListCount =
-            foeEcsComponentPoolEntityListSize(pRenderSystem->armatureStatePool);
-        foeEcsEntityList const *pLists =
-            foeEcsComponentPoolEntityLists(pRenderSystem->armatureStatePool);
-
-        for (size_t i = 0; i < entityListCount; ++i) {
-            foeEcsEntityList entityList = pLists[i];
-
-            foeEntityID const *pModifiedID = foeEcsEntityListPtr(entityList);
-            foeEntityID const *const pEndModifiedID =
-                pModifiedID + foeEcsEntityListSize(entityList);
-
-            foeEntityID const *pArmatureStateID =
-                foeEcsComponentPoolIdPtr(pRenderSystem->armatureStatePool);
-            foeEntityID const *const pStartArmatureStateID = pArmatureStateID;
-            foeEntityID const *const pEndArmatureStateID =
-                pStartArmatureStateID + foeEcsComponentPoolSize(pRenderSystem->armatureStatePool);
-            foeArmatureState const *const pStartArmatureStateData =
-                (foeArmatureState const *const)foeEcsComponentPoolDataPtr(
-                    pRenderSystem->armatureStatePool);
-
-            auto renderDataIt = pRenderSystem->renderData.begin();
-            auto const endRenderDataIt = pRenderSystem->renderData.end();
-
-            for (; pModifiedID != pEndModifiedID; ++pModifiedID) {
-                renderDataIt =
-                    std::lower_bound(renderDataIt, pRenderSystem->renderData.end(), *pModifiedID,
-                                     [](RenderDataSet const &obj, foeEntityID const entity) {
-                                         return obj.entity < entity;
-                                     });
-
-                if (renderDataIt == pRenderSystem->renderData.end())
-                    // Reached the end of the held data, nothing else forward can be processed
-                    break;
-                if (*pModifiedID != renderDataIt->entity)
-                    // Did not find an exact match, continue
-                    continue;
-
-                pArmatureStateID =
-                    std::lower_bound(pArmatureStateID, pEndArmatureStateID, *pModifiedID);
-                foeArmatureState const *const pArmatureStateData =
-                    pStartArmatureStateData + (pArmatureStateID - pStartArmatureStateID);
-
-                result = getArmatureData(pRenderSystem->armatureData, pArmatureStateData,
-                                         renderDataIt->mesh, renderDataIt->armatureIndex);
-                if (result.value != FOE_SUCCESS)
-                    return result;
             }
         }
     }
@@ -874,14 +826,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
         foeRenderState const *pStartRenderStateData =
             (foeRenderState const *)foeEcsComponentPoolDataPtr(pRenderSystem->renderStatePool);
 
-        foeEntityID const *pArmatureStateID =
-            foeEcsComponentPoolIdPtr(pRenderSystem->armatureStatePool);
-        foeEntityID const *const pStartArmatureStateID = pArmatureStateID;
-        foeEntityID const *const pEndArmatureStateID =
-            pStartArmatureStateID + foeEcsComponentPoolSize(pRenderSystem->armatureStatePool);
-        foeArmatureState const *const pStartArmatureStateData =
-            (foeArmatureState const *const)foeEcsComponentPoolDataPtr(
-                pRenderSystem->armatureStatePool);
+        foeEntityID const *pAnimatedBoneStateID =
+            foeEcsComponentPoolIdPtr(pRenderSystem->animatedBoneStatePool);
+        foeEntityID const *const pStartAnimatedBoneStateID = pAnimatedBoneStateID;
+        foeEntityID const *const pEndAnimatedBoneStateID =
+            pStartAnimatedBoneStateID +
+            foeEcsComponentPoolSize(pRenderSystem->animatedBoneStatePool);
+        foeAnimatedBoneState const *const pStartAnimatedBoneStateData =
+            (foeAnimatedBoneState const *const)foeEcsComponentPoolDataPtr(
+                pRenderSystem->animatedBoneStatePool);
 
         auto renderDataIt = pRenderSystem->renderData.begin();
 
@@ -913,11 +866,13 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             switch (checkLoadState(&newDataSet)) {
             case FOE_RESOURCE_LOAD_STATE_LOADED: {
                 // Check if we also have armature data available
-                pArmatureStateID = std::lower_bound(pArmatureStateID, pEndArmatureStateID, entity);
-                if (pArmatureStateID != pEndArmatureStateID && *pArmatureStateID == entity) {
+                pAnimatedBoneStateID =
+                    std::lower_bound(pAnimatedBoneStateID, pEndAnimatedBoneStateID, entity);
+                if (pAnimatedBoneStateID != pEndAnimatedBoneStateID &&
+                    *pAnimatedBoneStateID == entity) {
                     result = getArmatureData(pRenderSystem->armatureData,
-                                             pStartArmatureStateData +
-                                                 (pArmatureStateID - pStartArmatureStateID),
+                                             pStartAnimatedBoneStateData +
+                                                 (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
                                              newDataSet.mesh, newDataSet.armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         return result;
@@ -966,14 +921,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             (foePosition3d const *const *const)foeEcsComponentPoolDataPtr(
                 pRenderSystem->positionPool);
 
-        foeEntityID const *pArmatureStateID =
-            foeEcsComponentPoolIdPtr(pRenderSystem->armatureStatePool);
-        foeEntityID const *const pStartArmatureStateID = pArmatureStateID;
-        foeEntityID const *const pEndArmatureStateID =
-            pStartArmatureStateID + foeEcsComponentPoolSize(pRenderSystem->armatureStatePool);
-        foeArmatureState const *const pStartArmatureStateData =
-            (foeArmatureState const *const)foeEcsComponentPoolDataPtr(
-                pRenderSystem->armatureStatePool);
+        foeEntityID const *pAnimatedBoneStateID =
+            foeEcsComponentPoolIdPtr(pRenderSystem->animatedBoneStatePool);
+        foeEntityID const *const pStartAnimatedBoneStateID = pAnimatedBoneStateID;
+        foeEntityID const *const pEndAnimatedBoneStateID =
+            pStartAnimatedBoneStateID +
+            foeEcsComponentPoolSize(pRenderSystem->animatedBoneStatePool);
+        foeAnimatedBoneState const *const pStartAnimatedBoneStateData =
+            (foeAnimatedBoneState const *const)foeEcsComponentPoolDataPtr(
+                pRenderSystem->animatedBoneStatePool);
 
         auto renderDataIt = pRenderSystem->renderData.begin();
 
@@ -1003,11 +959,13 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             switch (checkLoadState(&newDataSet)) {
             case FOE_RESOURCE_LOAD_STATE_LOADED: {
                 // Check if we also have armature data available
-                pArmatureStateID = std::lower_bound(pArmatureStateID, pEndArmatureStateID, entity);
-                if (pArmatureStateID != pEndArmatureStateID && *pArmatureStateID == entity) {
+                pAnimatedBoneStateID =
+                    std::lower_bound(pAnimatedBoneStateID, pEndAnimatedBoneStateID, entity);
+                if (pAnimatedBoneStateID != pEndAnimatedBoneStateID &&
+                    *pAnimatedBoneStateID == entity) {
                     result = getArmatureData(pRenderSystem->armatureData,
-                                             pStartArmatureStateData +
-                                                 (pArmatureStateID - pStartArmatureStateID),
+                                             pStartAnimatedBoneStateData +
+                                                 (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
                                              newDataSet.mesh, newDataSet.armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         return result;
@@ -1037,23 +995,25 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
         }
     }
 
-    { // ArmatureState Insertions
-        foeEntityID const *const pStartArmatureStateID =
-            foeEcsComponentPoolIdPtr(pRenderSystem->armatureStatePool);
-        foeArmatureState const *const pStartArmatureStateData =
-            (foeArmatureState const *)foeEcsComponentPoolDataPtr(pRenderSystem->armatureStatePool);
+    { // AnimatedBoneState Insertions
+        foeEntityID const *const pStartAnimatedBoneStateID =
+            foeEcsComponentPoolIdPtr(pRenderSystem->animatedBoneStatePool);
+        foeAnimatedBoneState const *const pStartAnimatedBoneStateData =
+            (foeAnimatedBoneState const *)foeEcsComponentPoolDataPtr(
+                pRenderSystem->animatedBoneStatePool);
 
         size_t const *pOffset =
-            foeEcsComponentPoolInsertedOffsetPtr(pRenderSystem->armatureStatePool);
+            foeEcsComponentPoolInsertedOffsetPtr(pRenderSystem->animatedBoneStatePool);
         size_t const *const pEndOffset =
-            pOffset + foeEcsComponentPoolInserted(pRenderSystem->armatureStatePool);
+            pOffset + foeEcsComponentPoolInserted(pRenderSystem->animatedBoneStatePool);
 
         auto renderDataIt = pRenderSystem->renderData.begin();
         auto const endRenderDataIt = pRenderSystem->renderData.end();
 
         while (pOffset != pEndOffset) {
-            foeEntityID entity = pStartArmatureStateID[*pOffset];
-            foeArmatureState const *const pArmatureStateData = pStartArmatureStateData + *pOffset;
+            foeEntityID entity = pStartAnimatedBoneStateID[*pOffset];
+            foeAnimatedBoneState const *const pAnimatedBoneStateData =
+                pStartAnimatedBoneStateData + *pOffset;
 
             renderDataIt = std::lower_bound(renderDataIt, endRenderDataIt, entity,
                                             [](RenderDataSet const &obj, foeEntityID const entity) {
@@ -1065,7 +1025,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 break;
 
             if (renderDataIt->entity == entity) {
-                result = getArmatureData(pRenderSystem->armatureData, pArmatureStateData,
+                result = getArmatureData(pRenderSystem->armatureData, pAnimatedBoneStateData,
                                          renderDataIt->mesh, renderDataIt->armatureIndex);
                 if (result.value != FOE_SUCCESS)
                     return result;
@@ -1076,14 +1036,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
     }
 
     { // Armature CPU Buffer
-        foeEntityID const *pArmatureStateID =
-            foeEcsComponentPoolIdPtr(pRenderSystem->armatureStatePool);
-        foeEntityID const *const pStartArmatureStateID = pArmatureStateID;
-        foeEntityID const *const pEndArmatureStateID =
-            pStartArmatureStateID + foeEcsComponentPoolSize(pRenderSystem->armatureStatePool);
-        foeArmatureState const *const pStartArmatureStateData =
-            (foeArmatureState const *const)foeEcsComponentPoolDataPtr(
-                pRenderSystem->armatureStatePool);
+        foeEntityID const *pAnimatedBoneStateID =
+            foeEcsComponentPoolIdPtr(pRenderSystem->animatedBoneStatePool);
+        foeEntityID const *const pStartAnimatedBoneStateID = pAnimatedBoneStateID;
+        foeEntityID const *const pEndAnimatedBoneStateID =
+            pStartAnimatedBoneStateID +
+            foeEcsComponentPoolSize(pRenderSystem->animatedBoneStatePool);
+        foeAnimatedBoneState const *const pStartAnimatedBoneStateData =
+            (foeAnimatedBoneState const *const)foeEcsComponentPoolDataPtr(
+                pRenderSystem->animatedBoneStatePool);
 
         auto renderDataIt = pRenderSystem->renderData.begin();
         auto const endRenderDataIt = pRenderSystem->renderData.end();
@@ -1099,32 +1060,16 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 (glm::mat4 *)((uint8_t *)pRenderSystem->armatureData.pBoneData +
                               pArmatureEntry->offset);
 
-            pArmatureStateID =
-                std::lower_bound(pArmatureStateID, pEndArmatureStateID, renderDataIt->entity);
-            foeArmatureState const *pArmatureStateData =
-                pStartArmatureStateData + (pArmatureStateID - pStartArmatureStateID);
+            pAnimatedBoneStateID = std::lower_bound(pAnimatedBoneStateID, pEndAnimatedBoneStateID,
+                                                    renderDataIt->entity);
+            foeAnimatedBoneState const *pAnimatedBoneStateData =
+                pStartAnimatedBoneStateData + (pAnimatedBoneStateID - pStartAnimatedBoneStateID);
 
             foeMesh const *pMesh = (foeMesh const *)foeResourceGetData(renderDataIt->mesh);
 
             // Get Armature Resource
-            foeResource armature{FOE_NULL_HANDLE};
-            do {
-                armature = foeResourcePoolFind(pRenderSystem->resourcePool,
-                                               pArmatureStateData->armatureID);
-
-                if (armature == FOE_NULL_HANDLE) {
-                    armature = foeResourcePoolAdd(
-                        pRenderSystem->resourcePool, pArmatureStateData->armatureID,
-                        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
-                }
-            } while (armature == FOE_NULL_HANDLE);
-
-            if (foeResourceGetState(armature) != FOE_RESOURCE_LOAD_STATE_LOADED ||
-                pArmatureStateData->armatureBoneCount == 0) {
-                continue;
-            }
-
-            foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
+            foeArmature const *pArmature =
+                (foeArmature const *)foeResourceGetData(pAnimatedBoneStateData->armature);
 
             glm::mat4 lastBone = glm::mat4{1.f};
             for (auto const &bone : pMesh->gfxBones) {
@@ -1143,7 +1088,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     // Didn't find a matching node,
                     lastBone = glm::mat4{1.f};
                 } else {
-                    lastBone = pArmatureStateData->pArmatureBones[armatureNodeIndex];
+                    lastBone = pAnimatedBoneStateData->pBones[armatureNodeIndex];
                 }
 
                 *pBufferData = lastBone * bone.offsetMatrix;

@@ -262,7 +262,7 @@ foeResultSet prepareArmatureGpuData(RenderSystemArmatureData &armatureData,
 }
 
 foeResultSet getArmatureData(RenderSystemArmatureData &armatureData,
-                             foeArmatureState const *pArmatureState,
+                             foeAnimatedBoneState const *pAnimatedBoneState,
                              foeResource mesh,
                              uint32_t &armatureIndex) {
     foeMesh const *pMesh = (foeMesh const *)foeResourceGetData(mesh);

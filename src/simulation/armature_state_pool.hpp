@@ -12,4 +12,6 @@
 
 typedef foeEcsComponentPool foeArmatureStatePool;
 
+typedef foeEcsComponentPool foeAnimatedBoneStatePool;
+
 #endif // ARMATURE_STATE_POOL_HPP

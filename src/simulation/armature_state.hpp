@@ -6,19 +6,25 @@
 #define ARMATURE_STATE_HPP
 
 #include <foe/ecs/id.h>
-#include <glm/glm.hpp>
 
 struct foeArmatureState {
     // Armature information
     foeId armatureID{FOE_INVALID_ID};
-    uint32_t armatureBoneCount{0};
-    glm::mat4 *pArmatureBones{nullptr};
-
     // Animation info
     uint32_t animationID{UINT32_MAX};
     float time{0.f};
 };
 
-void cleanup_foeArmatureState(foeArmatureState const *pData);
+#include <foe/resource/resource.h>
+#include <glm/glm.hpp>
+
+struct foeAnimatedBoneState {
+    foeResource armature;
+
+    uint32_t boneCount{0};
+    glm::mat4 *pBones{nullptr};
+};
+
+void cleanup_foeAnimatedBoneState(foeAnimatedBoneState const *pData);
 
 #endif // ARMATURE_STATE_HPP
