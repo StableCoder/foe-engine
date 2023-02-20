@@ -2,8 +2,10 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/physics/system.hpp>
+#include <foe/physics/system.h>
 
+#include <btBulletDynamicsCommon.h>
+#include <foe/ecs/id.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/physics/component/rigid_body.h>
 #include <foe/physics/component/rigid_body_pool.h>
@@ -11,236 +13,108 @@
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d.hpp>
 #include <foe/position/component/3d_pool.h>
+#include <foe/resource/resource.h>
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "bt_glm_conversion.hpp"
 #include "log.hpp"
 #include "result.h"
 
-foePhysicsSystem::foePhysicsSystem() :
-    mpBroadphase{new btDbvtBroadphase{}},
-    mpCollisionConfig{new btDefaultCollisionConfiguration{}},
-    mpCollisionDispatcher{new btCollisionDispatcher{mpCollisionConfig.get()}},
-    mpSolver{new btSequentialImpulseConstraintSolver{}},
-    mpWorld{new btDiscreteDynamicsWorld{mpCollisionDispatcher.get(), mpBroadphase.get(),
-                                        mpSolver.get(), mpCollisionConfig.get()}} {
-    mpWorld->setGravity(btVector3{0, -9.8, 0});
-}
+#include <algorithm>
+#include <vector>
 
-foePhysicsSystem::~foePhysicsSystem() {}
+namespace {
 
-foeResultSet foePhysicsSystem::initialize(foeResourcePool resourcePool,
-                                          foeCollisionShapeLoader *pCollisionShapeLoader,
-                                          foeRigidBodyPool rigidBodyPool,
-                                          foePosition3dPool position3dPool) {
-    if (resourcePool == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES);
-    if (pCollisionShapeLoader == nullptr)
-        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_LOADER);
-    if (rigidBodyPool == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS);
-    if (position3dPool == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS);
+struct ActiveWorldObject {
+    foeEntityID entity;
+    foeResource collisionShape;
+    float mass;
+    btRigidBody *pRigidBody;
+};
 
-    mResourcePool = resourcePool;
-    mpCollisionShapeLoader = pCollisionShapeLoader;
+struct PhysicsSystem {
+    // External Data
+    foeResourcePool resourcePool;
+    foeRigidBodyPool rigidBodyPool;
+    foePosition3dPool positionPool;
 
-    mRigidBodyPool = rigidBodyPool;
-    mPosition3dPool = position3dPool;
+    // Entity Lists
+    foeEcsEntityList positionModifiedEntityList;
 
-    mAwaitingLoadingResources.clear();
+    // Physics World Instance Items
+    btBroadphaseInterface *pBroadphase;
+    btDefaultCollisionConfiguration *pCollisionConfig;
+    btCollisionDispatcher *pCollisionDispatcher;
+    btSequentialImpulseConstraintSolver *pSolver;
+    btDiscreteDynamicsWorld *pWorld;
 
-    // As we're initializing, we need to go through and process any already available data, so that
-    // per-tick processing can be streamlined to operate more quickly using deltas
-    { // Iterate through active rigid bodies, the primary for this system
-        foeEntityID const *pID = foeEcsComponentPoolIdPtr(rigidBodyPool);
-        foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(rigidBodyPool);
-        foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolDataPtr(rigidBodyPool);
+    // Currently active physics objects
+    std::vector<ActiveWorldObject> activeWorldObjects;
 
-        for (; pID != pEndID; ++pID, ++pData) {
-            addObject(*pID, pData, nullptr, nullptr);
-        }
-    }
+    // Lists entities that need some resources to load before being added to a world
+    std::vector<foeEntityID> awaitingLoadingResources;
+};
 
-    return to_foeResult(FOE_PHYSICS_SUCCESS);
-}
+FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
 
-void foePhysicsSystem::deinitialize() {
-    // On the way out, go through ALL and remove from any worlds
-    mAwaitingLoadingResources.clear();
+[[nodiscard]] foeResultSet addWorldObject(PhysicsSystem *pPhysicsSystem,
+                                          foeEntityID entity,
+                                          foeRigidBody *pRigidBody,
+                                          foePosition3d *pPosition,
+                                          foeResource collisionShape) {
+    auto searchIt = std::lower_bound(
+        pPhysicsSystem->activeWorldObjects.begin(), pPhysicsSystem->activeWorldObjects.end(),
+        entity,
+        [](ActiveWorldObject const &obj, foeEntityID const entity) { return obj.entity < entity; });
 
-    if (mRigidBodyPool) {
-        { // Iterate through 'active' rigid bodies, the primary for this system
-            foeEntityID const *pID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
-            foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(mRigidBodyPool);
-            foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool);
+    // If already added, don't re-add it
+    if (searchIt != pPhysicsSystem->activeWorldObjects.end() && searchIt->entity == entity)
+        return to_foeResult(FOE_PHYSICS_SUCCESS);
 
-            for (; pID != pEndID; ++pID, ++pData) {
-                removeObject(*pID, pData);
-            }
-        }
-
-        { // Iterate through 'removed' rigid bodies, the primary for this system
-            foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(mRigidBodyPool);
-            foeEntityID const *const pEndID = pID + foeEcsComponentPoolRemoved(mRigidBodyPool);
-            foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolRemovedDataPtr(mRigidBodyPool);
-
-            for (; pID != pEndID; ++pID, ++pData) {
-                removeObject(*pID, pData);
-            }
-        }
-    }
-
-    mPosition3dPool = FOE_NULL_HANDLE;
-    mRigidBodyPool = FOE_NULL_HANDLE;
-
-    mpCollisionShapeLoader = nullptr;
-    mResourcePool = FOE_NULL_HANDLE;
-}
-
-bool foePhysicsSystem::initialized() const noexcept { return mpCollisionShapeLoader != nullptr; }
-
-void foePhysicsSystem::process(float timePassed) {
-    // Any previously attempted items that were waiting for external resources to be loaded
-    auto awaitingResources = std::move(mAwaitingLoadingResources);
-    for (auto const &it : awaitingResources) {
-        addObject(it, nullptr, nullptr, nullptr);
-    }
-
-    // Removals
-    { // RigidBodies
-        foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(mRigidBodyPool);
-        foeEntityID const *const pEndID = pID + foeEcsComponentPoolRemoved(mRigidBodyPool);
-        foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolRemovedDataPtr(mRigidBodyPool);
-
-        for (; pID != pEndID; ++pID, ++pData) {
-            removeObject(*pID, pData);
-        }
-    }
-
-    { // foePosition3d
-        foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(mPosition3dPool);
-        foeEntityID const *const pEndID = pID + foeEcsComponentPoolRemoved(mPosition3dPool);
-
-        for (; pID != pEndID; ++pID) {
-            removeObject(*pID, nullptr);
-        }
-    }
-
-    // Insertions
-    { // RigidBodies
-        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
-        foeRigidBody *const pStartData =
-            (foeRigidBody *const)foeEcsComponentPoolDataPtr(mRigidBodyPool);
-
-        size_t const *pOffset = foeEcsComponentPoolInsertedOffsetPtr(mRigidBodyPool);
-        size_t const *const pEndOffset = pOffset + foeEcsComponentPoolInserted(mRigidBodyPool);
-
-        for (; pOffset != pEndOffset; ++pOffset) {
-            addObject(pStartID[*pOffset], pStartData + *pOffset, nullptr, nullptr);
-        }
-    }
-
-    { // foePosition3d
-        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mPosition3dPool);
-        foePosition3d **const pStartData =
-            (foePosition3d **)foeEcsComponentPoolDataPtr(mPosition3dPool);
-
-        size_t const *pOffset = foeEcsComponentPoolInsertedOffsetPtr(mPosition3dPool);
-        size_t const *const pEndOffset = pOffset + foeEcsComponentPoolInserted(mPosition3dPool);
-
-        for (; pOffset != pEndOffset; ++pOffset) {
-            addObject(pStartID[*pOffset], nullptr, pStartData[*pOffset], nullptr);
-        }
-    }
-
-    mpWorld->stepSimulation(timePassed);
-
-    { // Copy position data to foePosition3d objects
-        foeEntityID const *pID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
-        foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(mRigidBodyPool);
-        foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool);
-
-        foeEntityID const *pPositionID = foeEcsComponentPoolIdPtr(mPosition3dPool);
-
-        foeEntityID const *const pStartPositionID = pPositionID;
-        foeEntityID const *const pEndPositionID =
-            pStartPositionID + foeEcsComponentPoolSize(mPosition3dPool);
-
-        foePosition3d **const pStartPositionData =
-            (foePosition3d **)foeEcsComponentPoolDataPtr(mPosition3dPool);
-
-        for (; pID != pEndID; ++pID, ++pData) {
-            if (pData->pRigidBody == nullptr)
-                continue;
-
-            pPositionID = std::lower_bound(pPositionID, pEndPositionID, *pID);
-            if (pPositionID == pEndPositionID)
-                break;
-            if (*pPositionID != *pID)
-                continue;
-
-            foePosition3d *pPosition = pStartPositionData[pPositionID - pStartPositionID];
-
-            glm::mat4 transform = btToGlmMat4(pData->pRigidBody->getWorldTransform());
-            glm::vec3 scale;
-            glm::quat rotation;
-            glm::vec3 translation;
-            glm::vec3 skew;
-            glm::vec4 perspective;
-            glm::decompose(transform, scale, rotation, translation, skew, perspective);
-            pPosition->position = translation;
-            pPosition->orientation = rotation;
-        }
-    }
-}
-
-void foePhysicsSystem::addObject(foeEntityID entity,
-                                 foeRigidBody *pRigidBody,
-                                 foePosition3d *pPosition,
-                                 foeResource collisionShape) {
     // RigidBody
     if (pRigidBody == nullptr) {
-        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
-        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(mRigidBodyPool);
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(pPhysicsSystem->rigidBodyPool);
+        foeEntityID const *const pEndID =
+            pStartID + foeEcsComponentPoolSize(pPhysicsSystem->rigidBodyPool);
 
         foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
 
         if (pID != pEndID && *pID == entity) {
             size_t offset = pID - pStartID;
-            pRigidBody = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool) + offset;
+            pRigidBody =
+                (foeRigidBody *)foeEcsComponentPoolDataPtr(pPhysicsSystem->rigidBodyPool) + offset;
         } else {
-            return;
+            return to_foeResult(FOE_PHYSICS_SUCCESS);
         }
     }
-
-    // If already active
-    if (pRigidBody->pRigidBody)
-        return;
 
     // foePosition3d
     if (pPosition == nullptr) {
-        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mPosition3dPool);
-        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(mPosition3dPool);
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(pPhysicsSystem->positionPool);
+        foeEntityID const *const pEndID =
+            pStartID + foeEcsComponentPoolSize(pPhysicsSystem->positionPool);
 
         foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
 
         if (pID != pEndID && *pID == entity) {
             size_t offset = pID - pStartID;
-            pPosition = *((foePosition3d **)foeEcsComponentPoolDataPtr(mPosition3dPool) + offset);
+            pPosition =
+                *((foePosition3d **)foeEcsComponentPoolDataPtr(pPhysicsSystem->positionPool) +
+                  offset);
         } else {
-            return;
+            return to_foeResult(FOE_PHYSICS_SUCCESS);
         }
     }
 
     // CollisionShape
     while (collisionShape == FOE_NULL_HANDLE) {
-        collisionShape = foeResourcePoolFind(mResourcePool, pRigidBody->collisionShape);
+        collisionShape =
+            foeResourcePoolFind(pPhysicsSystem->resourcePool, pRigidBody->collisionShape);
 
         if (collisionShape == FOE_NULL_HANDLE)
-            collisionShape = foeResourcePoolAdd(mResourcePool, pRigidBody->collisionShape,
-                                                FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE,
-                                                sizeof(foeCollisionShape));
+            collisionShape = foeResourcePoolAdd(
+                pPhysicsSystem->resourcePool, pRigidBody->collisionShape,
+                FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE, sizeof(foeCollisionShape));
     }
 
     if (auto loadState = foeResourceGetState(collisionShape);
@@ -248,16 +122,16 @@ void foePhysicsSystem::addObject(foeEntityID entity,
         if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
             !foeResourceGetIsLoading(collisionShape)) {
             foeResourceLoadData(collisionShape);
-            mAwaitingLoadingResources.emplace_back(entity);
         }
+        pPhysicsSystem->awaitingLoadingResources.emplace_back(entity);
 
-        return;
+        return to_foeResult(FOE_PHYSICS_SUCCESS);
     } else if (foeResourceGetType(collisionShape) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
         FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foePhysicsSystem - Failed to load {} rigid body because the given "
                 "collision shape {} is not a collision shape resource.",
                 foeIdToString(entity), foeIdToString(pRigidBody->collisionShape))
-        return;
+        return to_foeResult(FOE_PHYSICS_SUCCESS);
     }
 
     // Get Resource Data Pointers
@@ -269,33 +143,382 @@ void foePhysicsSystem::addObject(foeEntityID entity,
     rigidBodyCI.m_startWorldTransform =
         glmToBtTransform(pPosition->position, pPosition->orientation);
 
-    pRigidBody->pRigidBody = new btRigidBody{rigidBodyCI};
+    ActiveWorldObject newObject = {
+        .entity = entity,
+        .collisionShape = collisionShape,
+        .mass = pRigidBody->mass,
+        .pRigidBody = (btRigidBody *)malloc(sizeof(btRigidBody)),
+    };
+    if (newObject.pRigidBody == nullptr)
+        return to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+    new (newObject.pRigidBody) btRigidBody{rigidBodyCI};
 
-    mpWorld->addRigidBody(pRigidBody->pRigidBody);
+    foeResourceIncrementRefCount(collisionShape);
+    foeResourceIncrementUseCount(collisionShape);
+
+    pPhysicsSystem->pWorld->addRigidBody(newObject.pRigidBody);
+
+    pPhysicsSystem->activeWorldObjects.insert(searchIt, newObject);
+
+    return to_foeResult(FOE_PHYSICS_SUCCESS);
 }
 
-void foePhysicsSystem::removeObject(foeEntityID entity, foeRigidBody *pRigidBody) {
-    // RigidBody
-    if (pRigidBody == nullptr) {
-        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(mRigidBodyPool);
-        foeEntityID const *const pEndID = pStartID + foeEcsComponentPoolSize(mRigidBodyPool);
+void removeWorldObject(PhysicsSystem *pPhysicsSystem, foeEntityID entity) {
+    auto searchIt = std::lower_bound(
+        pPhysicsSystem->activeWorldObjects.begin(), pPhysicsSystem->activeWorldObjects.end(),
+        entity,
+        [](ActiveWorldObject const &obj, foeEntityID const entity) { return obj.entity < entity; });
 
-        foeEntityID const *pID = std::lower_bound(pStartID, pEndID, entity);
+    if (searchIt == pPhysicsSystem->activeWorldObjects.end() || searchIt->entity != entity)
+        return;
 
-        if (pID != pEndID && *pID == entity) {
-            size_t offset = pID - pStartID;
-            pRigidBody = (foeRigidBody *)foeEcsComponentPoolDataPtr(mRigidBodyPool) + offset;
-        } else {
-            return;
+    pPhysicsSystem->pWorld->removeRigidBody(searchIt->pRigidBody);
+
+    foeResourceDecrementRefCount(searchIt->collisionShape);
+    foeResourceDecrementUseCount(searchIt->collisionShape);
+
+    searchIt->pRigidBody->~btRigidBody();
+    free(searchIt->pRigidBody);
+
+    pPhysicsSystem->activeWorldObjects.erase(searchIt);
+}
+
+} // namespace
+
+extern "C" foeResultSet foePhysicsCreateSystem(foePhysicsSystem *pPhysicsSystem) {
+    PhysicsSystem *pNewPhysicsSystem = new (std::nothrow) PhysicsSystem{};
+    if (pNewPhysicsSystem == nullptr)
+        return to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+
+    *pPhysicsSystem = physics_system_to_handle(pNewPhysicsSystem);
+    return to_foeResult(FOE_PHYSICS_SUCCESS);
+}
+
+extern "C" void foePhysicsDestroySystem(foePhysicsSystem physicsSystem) {
+    PhysicsSystem *pPhysicsSystem = physics_system_from_handle(physicsSystem);
+
+    delete pPhysicsSystem;
+}
+
+extern "C" foeResultSet foePhysicsInitializeSystem(foePhysicsSystem physicsSystem,
+                                                   foeResourcePool resourcePool,
+                                                   foeRigidBodyPool rigidBodyPool,
+                                                   foePosition3dPool positionPool) {
+    PhysicsSystem *pPhysicsSystem = physics_system_from_handle(physicsSystem);
+
+    if (resourcePool == FOE_NULL_HANDLE)
+        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_COLLISION_SHAPE_RESOURCES);
+    if (rigidBodyPool == FOE_NULL_HANDLE)
+        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_RIGID_BODY_COMPONENTS);
+    if (positionPool == FOE_NULL_HANDLE)
+        return to_foeResult(FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS);
+
+    // Set external data
+    pPhysicsSystem->resourcePool = resourcePool;
+    pPhysicsSystem->rigidBodyPool = rigidBodyPool;
+    pPhysicsSystem->positionPool = positionPool;
+
+    // Setup internal data
+    foeResultSet result = to_foeResult(FOE_PHYSICS_SUCCESS);
+
+    // Entity List
+    result = foeEcsCreateEntityList(&pPhysicsSystem->positionModifiedEntityList);
+    if (result.value != FOE_SUCCESS)
+        goto INITIALIZATION_FAILED;
+    result =
+        foeEcsComponentPoolAddEntityList(positionPool, pPhysicsSystem->positionModifiedEntityList);
+    if (result.value != FOE_SUCCESS)
+        goto INITIALIZATION_FAILED;
+
+    // Physics World
+    pPhysicsSystem->pBroadphase = new (std::nothrow) btDbvtBroadphase;
+    if (pPhysicsSystem->pBroadphase == nullptr) {
+        result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+        goto INITIALIZATION_FAILED;
+    }
+
+    pPhysicsSystem->pCollisionConfig = new (std::nothrow) btDefaultCollisionConfiguration;
+    if (pPhysicsSystem->pCollisionConfig == nullptr) {
+        result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+        goto INITIALIZATION_FAILED;
+    }
+
+    pPhysicsSystem->pCollisionDispatcher =
+        new (std::nothrow) btCollisionDispatcher{pPhysicsSystem->pCollisionConfig};
+    if (pPhysicsSystem->pCollisionDispatcher == nullptr) {
+        result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+        goto INITIALIZATION_FAILED;
+    }
+
+    pPhysicsSystem->pSolver =
+        (btSequentialImpulseConstraintSolver *)malloc(sizeof(btSequentialImpulseConstraintSolver));
+    if (pPhysicsSystem->pSolver == nullptr) {
+        result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+        goto INITIALIZATION_FAILED;
+    }
+    new (pPhysicsSystem->pSolver) btSequentialImpulseConstraintSolver;
+
+    pPhysicsSystem->pWorld = (btDiscreteDynamicsWorld *)malloc(sizeof(btDiscreteDynamicsWorld));
+    if (pPhysicsSystem->pWorld == nullptr) {
+        result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+        goto INITIALIZATION_FAILED;
+    }
+    new (pPhysicsSystem->pWorld)
+        btDiscreteDynamicsWorld{pPhysicsSystem->pCollisionDispatcher, pPhysicsSystem->pBroadphase,
+                                pPhysicsSystem->pSolver, pPhysicsSystem->pCollisionConfig};
+
+    pPhysicsSystem->pWorld->setGravity(btVector3{0, -9.8, 0});
+
+    // As we're initializing, we need to go through and process any already
+    // available data, so that per-tick processing can be streamlined to operate
+    // more quickly using deltas
+    { // Iterate through active rigid bodies, the primary for this system
+        foeEntityID const *pID = foeEcsComponentPoolIdPtr(rigidBodyPool);
+        foeEntityID const *const pEndID = pID + foeEcsComponentPoolSize(rigidBodyPool);
+        foeRigidBody *pData = (foeRigidBody *)foeEcsComponentPoolDataPtr(rigidBodyPool);
+
+        for (; pID != pEndID; ++pID, ++pData) {
+            result = addWorldObject(pPhysicsSystem, *pID, pData, nullptr, nullptr);
+            if (result.value != FOE_SUCCESS)
+                goto INITIALIZATION_FAILED;
         }
     }
 
-    // If inactive
-    if (pRigidBody->pRigidBody == nullptr)
-        return;
+INITIALIZATION_FAILED:
+    if (result.value != FOE_SUCCESS)
+        foePhysicsDeinitializeSystem(physicsSystem);
 
-    mpWorld->removeRigidBody(pRigidBody->pRigidBody);
+    return to_foeResult(FOE_PHYSICS_SUCCESS);
+}
 
-    delete pRigidBody->pRigidBody;
-    pRigidBody->pRigidBody = nullptr;
+extern "C" void foePhysicsDeinitializeSystem(foePhysicsSystem physicsSystem) {
+    PhysicsSystem *pPhysicsSystem = physics_system_from_handle(physicsSystem);
+
+    // Go through and clear any items awaiting resources being loaded
+    pPhysicsSystem->awaitingLoadingResources.clear();
+
+    // Remove objects from the world
+    if (pPhysicsSystem->rigidBodyPool) {
+        { // Iterate through 'active' rigid bodies, the primary for this system
+            foeEntityID const *pID = foeEcsComponentPoolIdPtr(pPhysicsSystem->rigidBodyPool);
+            foeEntityID const *const pEndID =
+                pID + foeEcsComponentPoolSize(pPhysicsSystem->rigidBodyPool);
+
+            for (; pID != pEndID; ++pID) {
+                removeWorldObject(pPhysicsSystem, *pID);
+            }
+        }
+
+        { // Iterate through 'removed' rigid bodies, the primary for this system
+            foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(pPhysicsSystem->rigidBodyPool);
+            foeEntityID const *const pEndID =
+                pID + foeEcsComponentPoolRemoved(pPhysicsSystem->rigidBodyPool);
+
+            for (; pID != pEndID; ++pID) {
+                removeWorldObject(pPhysicsSystem, *pID);
+            }
+        }
+    }
+
+    // Physics World
+    if (pPhysicsSystem->pWorld != nullptr) {
+        pPhysicsSystem->pWorld->~btDiscreteDynamicsWorld();
+        free(pPhysicsSystem->pWorld);
+    }
+    pPhysicsSystem->pWorld = nullptr;
+
+    if (pPhysicsSystem->pSolver != nullptr) {
+        pPhysicsSystem->pSolver->~btSequentialImpulseConstraintSolver();
+        free(pPhysicsSystem->pSolver);
+    }
+    pPhysicsSystem->pSolver = nullptr;
+
+    if (pPhysicsSystem->pCollisionDispatcher != nullptr)
+        delete pPhysicsSystem->pCollisionDispatcher;
+    pPhysicsSystem->pCollisionDispatcher = nullptr;
+
+    if (pPhysicsSystem->pCollisionConfig != nullptr)
+        delete pPhysicsSystem->pCollisionConfig;
+    pPhysicsSystem->pCollisionConfig = nullptr;
+
+    if (pPhysicsSystem->pBroadphase != nullptr)
+        delete pPhysicsSystem->pBroadphase;
+    pPhysicsSystem->pBroadphase = nullptr;
+
+    // Entity List
+    if (pPhysicsSystem->positionModifiedEntityList != FOE_NULL_HANDLE) {
+        foeEcsComponentPoolRemoveEntityList(pPhysicsSystem->positionPool,
+                                            pPhysicsSystem->positionModifiedEntityList);
+        foeEcsDestroyEntityList(pPhysicsSystem->positionModifiedEntityList);
+        pPhysicsSystem->positionModifiedEntityList = FOE_NULL_HANDLE;
+    }
+
+    // Clear external data
+    pPhysicsSystem->positionPool = FOE_NULL_HANDLE;
+    pPhysicsSystem->rigidBodyPool = FOE_NULL_HANDLE;
+    pPhysicsSystem->resourcePool = FOE_NULL_HANDLE;
+}
+
+extern "C" foeResultSet foePhysicsProcessSystem(foePhysicsSystem physicsSystem, float timeElapsed) {
+    PhysicsSystem *pPhysicsSystem = physics_system_from_handle(physicsSystem);
+    foeResultSet result = to_foeResult(FOE_PHYSICS_SUCCESS);
+
+    // Any previously attempted items that were waiting for external resources to be
+    // loaded
+    auto awaitingResources = std::move(pPhysicsSystem->awaitingLoadingResources);
+    for (auto const &it : awaitingResources) {
+        result = addWorldObject(pPhysicsSystem, it, nullptr, nullptr, nullptr);
+        if (result.value != FOE_SUCCESS)
+            return result;
+    }
+
+    { // Removed RigidBody
+        foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(pPhysicsSystem->rigidBodyPool);
+        foeEntityID const *const pEndID =
+            pID + foeEcsComponentPoolRemoved(pPhysicsSystem->rigidBodyPool);
+
+        for (; pID != pEndID; ++pID) {
+            removeWorldObject(pPhysicsSystem, *pID);
+        }
+    }
+
+    { // Removed Position
+        foeEntityID const *pID = foeEcsComponentPoolRemovedIdPtr(pPhysicsSystem->positionPool);
+        foeEntityID const *const pEndID =
+            pID + foeEcsComponentPoolRemoved(pPhysicsSystem->positionPool);
+
+        for (; pID != pEndID; ++pID) {
+            removeWorldObject(pPhysicsSystem, *pID);
+        }
+    }
+
+    { // Modified RigidBody
+        size_t const entityListCount =
+            foeEcsComponentPoolEntityListSize(pPhysicsSystem->rigidBodyPool);
+        foeEcsEntityList const *pLists =
+            foeEcsComponentPoolEntityLists(pPhysicsSystem->rigidBodyPool);
+
+        for (size_t i = 0; i < entityListCount; ++i) {
+            foeEcsEntityList entityList = pLists[i];
+
+            foeEntityID const *pModifiedID = foeEcsEntityListPtr(entityList);
+            foeEntityID const *const pEndModifiedID =
+                pModifiedID + foeEcsEntityListSize(entityList);
+
+            for (; pModifiedID != pEndModifiedID; ++pModifiedID) {
+                removeWorldObject(pPhysicsSystem, *pModifiedID);
+                result =
+                    addWorldObject(pPhysicsSystem, *pModifiedID, nullptr, nullptr, FOE_NULL_HANDLE);
+                if (result.value != FOE_SUCCESS)
+                    return result;
+            }
+        }
+    }
+
+    { // Modified Position
+        size_t const entityListCount =
+            foeEcsComponentPoolEntityListSize(pPhysicsSystem->rigidBodyPool);
+        foeEcsEntityList const *pLists =
+            foeEcsComponentPoolEntityLists(pPhysicsSystem->rigidBodyPool);
+
+        for (size_t i = 0; i < entityListCount; ++i) {
+            foeEcsEntityList entityList = pLists[i];
+
+            // Make sure not to process items modified by this same system
+            if (entityList == pPhysicsSystem->positionModifiedEntityList)
+                continue;
+
+            foeEntityID const *pModifiedID = foeEcsEntityListPtr(entityList);
+            foeEntityID const *const pEndModifiedID =
+                pModifiedID + foeEcsEntityListSize(entityList);
+
+            for (; pModifiedID != pEndModifiedID; ++pModifiedID) {
+                removeWorldObject(pPhysicsSystem, *pModifiedID);
+                result =
+                    addWorldObject(pPhysicsSystem, *pModifiedID, nullptr, nullptr, FOE_NULL_HANDLE);
+                if (result.value != FOE_SUCCESS)
+                    return result;
+            }
+        }
+    }
+
+    { // Inserted RigidBody
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(pPhysicsSystem->rigidBodyPool);
+        foeRigidBody *const pStartData =
+            (foeRigidBody *const)foeEcsComponentPoolDataPtr(pPhysicsSystem->rigidBodyPool);
+
+        size_t const *pOffset = foeEcsComponentPoolInsertedOffsetPtr(pPhysicsSystem->rigidBodyPool);
+        size_t const *const pEndOffset =
+            pOffset + foeEcsComponentPoolInserted(pPhysicsSystem->rigidBodyPool);
+
+        for (; pOffset != pEndOffset; ++pOffset) {
+            result = addWorldObject(pPhysicsSystem, pStartID[*pOffset], pStartData + *pOffset,
+                                    nullptr, nullptr);
+            if (result.value != FOE_SUCCESS)
+                return result;
+        }
+    }
+
+    { // Inserted Position
+        foeEntityID const *const pStartID = foeEcsComponentPoolIdPtr(pPhysicsSystem->positionPool);
+        foePosition3d **const pStartData =
+            (foePosition3d **)foeEcsComponentPoolDataPtr(pPhysicsSystem->positionPool);
+
+        size_t const *pOffset = foeEcsComponentPoolInsertedOffsetPtr(pPhysicsSystem->positionPool);
+        size_t const *const pEndOffset =
+            pOffset + foeEcsComponentPoolInserted(pPhysicsSystem->positionPool);
+
+        for (; pOffset != pEndOffset; ++pOffset) {
+            result = addWorldObject(pPhysicsSystem, pStartID[*pOffset], nullptr,
+                                    pStartData[*pOffset], nullptr);
+            if (result.value != FOE_SUCCESS)
+                return result;
+        }
+    }
+
+    // Actual step the world forward by the amount of elapsed time
+    pPhysicsSystem->pWorld->stepSimulation(timeElapsed);
+
+    { // Copy position data to foePosition3d objects
+        std::vector<foeEntityID> modifiedIDs;
+        modifiedIDs.reserve(pPhysicsSystem->activeWorldObjects.size());
+
+        foeEntityID const *pPositionID = foeEcsComponentPoolIdPtr(pPhysicsSystem->positionPool);
+
+        foeEntityID const *const pStartPositionID = pPositionID;
+        foeEntityID const *const pEndPositionID =
+            pStartPositionID + foeEcsComponentPoolSize(pPhysicsSystem->positionPool);
+        foePosition3d **const pStartPositionData =
+            (foePosition3d **)foeEcsComponentPoolDataPtr(pPhysicsSystem->positionPool);
+
+        for (auto const &activeWorldObject : pPhysicsSystem->activeWorldObjects) {
+            pPositionID = std::lower_bound(pPositionID, pEndPositionID, activeWorldObject.entity);
+            if (pPositionID == pEndPositionID)
+                break;
+            if (*pPositionID != activeWorldObject.entity)
+                continue;
+
+            foePosition3d *pPosition = pStartPositionData[pPositionID - pStartPositionID];
+
+            glm::mat4 transform = btToGlmMat4(activeWorldObject.pRigidBody->getWorldTransform());
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 translation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::decompose(transform, scale, rotation, translation, skew, perspective);
+            pPosition->position = translation;
+            pPosition->orientation = rotation;
+
+            modifiedIDs.emplace_back(*pPositionID);
+        }
+
+        // Tell other systems about what positions were modified here
+        uint32_t listCount = modifiedIDs.size();
+        foeEntityID *pEntityList = modifiedIDs.data();
+        foeEcsResetEntityList(pPhysicsSystem->positionModifiedEntityList, 1, &listCount,
+                              &pEntityList);
+    }
+
+    return to_foeResult(FOE_PHYSICS_SUCCESS);
 }

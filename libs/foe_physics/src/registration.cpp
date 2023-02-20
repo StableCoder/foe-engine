@@ -6,7 +6,7 @@
 
 #include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/resource/collision_shape.hpp>
-#include <foe/physics/system.hpp>
+#include <foe/physics/system.h>
 #include <foe/physics/type_defs.h>
 #include <foe/position/component/3d_pool.h>
 #include <foe/position/type_defs.h>
@@ -49,9 +49,9 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
             ++errors;
         } else if (count == 0) {
-            foePhysicsSystem *pData;
+            foePhysicsSystem system;
             result = foeSimulationReleaseSystem(
-                pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, (void **)&pData);
+                pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM, (void **)&system);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
@@ -60,7 +60,7 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
 
                 ++errors;
             } else {
-                delete pData;
+                foePhysicsDestroySystem(system);
             }
         }
     }
@@ -205,12 +205,11 @@ foeResultSet create(foeSimulation *pSimulation) {
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
             .sType = FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM,
-            .pSystem = new (std::nothrow) foePhysicsSystem,
         };
-        if (createInfo.pSystem == nullptr) {
-            result = to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
+
+        result = foePhysicsCreateSystem((foePhysicsSystem *)&createInfo.pSystem);
+        if (result.value != FOE_SUCCESS)
             goto CREATE_FAILED;
-        }
 
         result = foeSimulationInsertSystem(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
@@ -260,9 +259,9 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
                 (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
-            auto *pLoader = (foePhysicsSystem *)foeSimulationGetSystem(
+            foePhysicsSystem system = (foePhysicsSystem)foeSimulationGetSystem(
                 pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
-            pLoader->deinitialize();
+            foePhysicsDeinitializeSystem(system);
         }
     }
 
@@ -334,19 +333,16 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     }
     selection.physicsSystem = true;
     if (count == 1) {
-        auto *pCollisionShapeLoader = (foeCollisionShapeLoader *)foeSimulationGetResourceLoader(
-            pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_LOADER);
-
         foeRigidBodyPool rigidBodyPool = (foeRigidBodyPool)foeSimulationGetComponentPool(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_RIGID_BODY_POOL);
         foePosition3dPool position3dPool = (foePosition3dPool)foeSimulationGetComponentPool(
             pSimulation, FOE_POSITION_STRUCTURE_TYPE_POSITION_3D_POOL);
 
-        auto *pSystem = (foePhysicsSystem *)foeSimulationGetSystem(
+        foePhysicsSystem system = (foePhysicsSystem)foeSimulationGetSystem(
             pSimulation, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM);
 
-        result = pSystem->initialize(pSimulation->resourcePool, pCollisionShapeLoader,
-                                     rigidBodyPool, position3dPool);
+        result = foePhysicsInitializeSystem(system, pSimulation->resourcePool, rigidBodyPool,
+                                            position3dPool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);

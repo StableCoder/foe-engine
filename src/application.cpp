@@ -23,7 +23,7 @@
 #include <foe/graphics/vk/sample_count.h>
 #include <foe/graphics/vk/session.h>
 #include <foe/imex/exporters.h>
-#include <foe/physics/system.hpp>
+#include <foe/physics/system.h>
 #include <foe/physics/type_defs.h>
 #include <foe/quaternion_math.hpp>
 #include <foe/simulation/simulation.hpp>
@@ -578,9 +578,10 @@ int Application::mainloop() {
         ((foeArmatureSystem *)foeSimulationGetSystem(pSimulationSet,
                                                      FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM))
             ->process(timeElapsedInSec);
-        ((foePhysicsSystem *)foeSimulationGetSystem(pSimulationSet,
-                                                    FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM))
-            ->process(timeElapsedInSec);
+
+        foePhysicsProcessSystem((foePhysicsSystem)foeSimulationGetSystem(
+                                    pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM),
+                                timeElapsedInSec);
 
         // Process Window Events
         for (auto &it : windowData)

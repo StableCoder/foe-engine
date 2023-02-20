@@ -11,10 +11,7 @@
 extern "C" {
 #endif
 
-typedef class btRigidBody btRigidBody;
-
 struct foeRigidBody {
-    btRigidBody *pRigidBody;
     float mass;
     foeResourceID collisionShape;
 };
