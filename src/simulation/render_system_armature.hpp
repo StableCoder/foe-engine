@@ -12,7 +12,7 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
-#include "armature_state.hpp"
+#include "animated_bone_state.hpp"
 
 #include <vector>
 

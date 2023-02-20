@@ -8,7 +8,7 @@
 #include <foe/ecs/binary.h>
 
 #include "armature_create_info.h"
-#include "armature_state.hpp"
+#include "armature_state.h"
 #include "cleanup.h"
 #include "render_state.h"
 

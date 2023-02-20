@@ -36,7 +36,8 @@
 #include "logging.hpp"
 #include "register_basic_functionality.h"
 #include "render_graph/render_scene.hpp"
-#include "simulation/armature_system.hpp"
+#include "simulation/animated_bone_system.h"
+#include "simulation/armature_state.h"
 #include "simulation/render_system.hpp"
 #include "simulation/type_defs.h"
 
@@ -574,9 +575,10 @@ int Application::mainloop() {
         }
 
         // Process systems
-        ((foeArmatureSystem *)foeSimulationGetSystem(pSimulationSet,
-                                                     FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM))
-            ->process(timeElapsedInSec);
+        foeProcessAnimatedBoneSystem(
+            (foeAnimatedBoneSystem)foeSimulationGetSystem(
+                pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM),
+            timeElapsedInSec);
 
         foePhysicsProcessSystem((foePhysicsSystem)foeSimulationGetSystem(
                                     pSimulationSet, FOE_PHYSICS_STRUCTURE_TYPE_PHYSICS_SYSTEM),

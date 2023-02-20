@@ -14,9 +14,12 @@
 
 #include "../log.hpp"
 #include "../result.h"
+#include "animated_bone_state.hpp"
+#include "animated_bone_state_pool.h"
+#include "animated_bone_system.h"
 #include "armature_loader.hpp"
-#include "armature_state_pool.hpp"
-#include "armature_system.hpp"
+#include "armature_state.h"
+#include "armature_state_pool.h"
 #include "render_state_pool.h"
 #include "render_system.hpp"
 #include "type_defs.h"
@@ -31,7 +34,7 @@ struct TypeSelection {
     bool animatedBoneStateComponents;
     bool renderStateComponents;
     // Systems
-    bool armatureSystem;
+    bool animatedBoneSystem;
     bool renderSystem;
 };
 
@@ -69,30 +72,30 @@ size_t destroySelection(foeSimulation *pSimulation, TypeSelection const *pSelect
         }
     }
 
-    if (pSelection == nullptr || pSelection->armatureSystem) {
-        result = foeSimulationDecrementRefCount(pSimulation,
-                                                FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
+    if (pSelection == nullptr || pSelection->animatedBoneSystem) {
+        result = foeSimulationDecrementRefCount(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
-                    "Attempted to decrement/destroy foeArmatureSystem that doesn't exist: {}",
+                    "Attempted to decrement/destroy foeAnimatedBoneSystem that doesn't exist: {}",
                     buffer);
 
             ++errors;
         } else if (count == 0) {
-            foeArmatureSystem *pData;
+            foeAnimatedBoneSystem system;
             result = foeSimulationReleaseSystem(
-                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, (void **)&pData);
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, (void **)&system);
             if (result.value != FOE_SUCCESS) {
                 char buffer[FOE_MAX_RESULT_STRING_SIZE];
                 result.toString(result.value, buffer);
                 FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
-                        "Could not release foeArmatureSystem to destroy: {}", buffer);
+                        "Could not release foeAnimatedBoneSystem to destroy: {}", buffer);
 
                 ++errors;
             } else {
-                delete pData;
+                foeDestroyAnimatedBoneSystem((foeAnimatedBoneSystem)system);
             }
         }
     }
@@ -363,21 +366,21 @@ foeResultSet create(foeSimulation *pSimulation) {
     created.renderStateComponents = true;
 
     // Systems
-    result = foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
-                                            nullptr);
+    result = foeSimulationIncrementRefCount(
+        pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, nullptr);
     if (result.value != FOE_SUCCESS) {
         foeSimulationSystemData createInfo{
-            .sType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
-            .pSystem = new (std::nothrow) foeArmatureSystem,
+            .sType = FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM,
         };
-        if (createInfo.pSystem == nullptr) {
-            result = to_foeResult(FOE_BRINGUP_ERROR_OUT_OF_MEMORY);
+
+        result = foeCreateAnimatedBoneSystem((foeAnimatedBoneSystem *)&createInfo.pSystem);
+        if (result.value != FOE_SUCCESS) {
             goto CREATE_FAILED;
         }
 
         result = foeSimulationInsertSystem(pSimulation, &createInfo);
         if (result.value != FOE_SUCCESS) {
-            delete (foeArmatureSystem *)createInfo.pSystem;
+            foeDestroyAnimatedBoneSystem((foeAnimatedBoneSystem)createInfo.pSystem);
 
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
@@ -387,10 +390,10 @@ foeResultSet create(foeSimulation *pSimulation) {
 
             goto CREATE_FAILED;
         }
-        foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM,
+        foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM,
                                        nullptr);
     }
-    created.armatureSystem = true;
+    created.animatedBoneSystem = true;
 
     result = foeSimulationIncrementRefCount(pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_SYSTEM,
                                             nullptr);
@@ -440,21 +443,21 @@ size_t deinitializeSelection(foeSimulation *pSimulation, TypeSelection const *pS
     size_t errors = 0;
 
     // Systems
-    if (pSelection == nullptr || pSelection->armatureSystem) {
+    if (pSelection == nullptr || pSelection->animatedBoneSystem) {
         result = foeSimulationDecrementInitCount(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
-            FOE_LOG(
-                foeBringup, FOE_LOG_LEVEL_WARNING,
-                "Failed to decrement foeArmatureSystem initialization count on Simulation {}: {}",
-                (void *)pSimulation, buffer);
+            FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING,
+                    "Failed to decrement foeAnimatedBoneSystem initialization count on Simulation "
+                    "{}: {}",
+                    (void *)pSimulation, buffer);
             ++errors;
         } else if (count == 0) {
-            auto *pLoader = (foeArmatureSystem *)foeSimulationGetSystem(
-                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-            pLoader->deinitialize();
+            foeAnimatedBoneSystem system = (foeAnimatedBoneSystem)foeSimulationGetSystem(
+                pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM);
+            foeDeinitializeAnimatedBoneSystem(system);
         }
     }
 
@@ -515,8 +518,8 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
     }
 
     // Systems
-    result = foeSimulationIncrementInitCount((foeSimulation *)pSimulation,
-                                             FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM, &count);
+    result = foeSimulationIncrementInitCount(
+        (foeSimulation *)pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM, &count);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -526,7 +529,7 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
 
         goto INITIALIZATION_FAILED;
     }
-    selection.armatureSystem = true;
+    selection.animatedBoneSystem = true;
     if (count == 1) {
         foeArmatureStatePool armatureStatePool =
             (foeArmatureStatePool)foeSimulationGetComponentPool(
@@ -535,15 +538,15 @@ foeResultSet initialize(foeSimulation *pSimulation, foeSimulationInitInfo const 
             (foeAnimatedBoneStatePool)foeSimulationGetComponentPool(
                 pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_STATE_POOL);
 
-        auto *pData = (foeArmatureSystem *)foeSimulationGetSystem(
-            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_SYSTEM);
-        result =
-            pData->initialize(pSimulation->resourcePool, armatureStatePool, animatedBoneStatePool);
+        foeAnimatedBoneSystem system = (foeAnimatedBoneSystem)foeSimulationGetSystem(
+            pSimulation, FOE_BRINGUP_STRUCTURE_TYPE_ANIMATED_BONE_SYSTEM);
+        result = foeInitializeAnimatedBoneSystem(system, pSimulation->resourcePool,
+                                                 armatureStatePool, animatedBoneStatePool);
         if (result.value != FOE_SUCCESS) {
             char buffer[FOE_MAX_RESULT_STRING_SIZE];
             result.toString(result.value, buffer);
             FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
-                    "Failed to initialize foeArmatureSystem on Simulation {}: {}",
+                    "Failed to initialize foeAnimatedBoneSystem on Simulation {}: {}",
                     (void *)pSimulation, buffer);
 
             goto INITIALIZATION_FAILED;

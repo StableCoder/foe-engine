@@ -11,7 +11,8 @@
 #include <foe/simulation/simulation.hpp>
 #include <imgui.h>
 
-#include "../simulation/armature_state_pool.hpp"
+#include "../simulation/armature_state.h"
+#include "../simulation/armature_state_pool.h"
 #include "../simulation/render_state_pool.h"
 #include "armature.hpp"
 #include "armature_state.hpp"

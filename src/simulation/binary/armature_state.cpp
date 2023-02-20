@@ -7,7 +7,8 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "../armature.hpp"
-#include "../armature_state_pool.hpp"
+#include "../armature_state.h"
+#include "../armature_state_pool.h"
 #include "../binary.h"
 #include "result.h"
 

@@ -305,7 +305,7 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(
     if (gfxSession == FOE_NULL_HANDLE)
         std::abort();
     if (resourcePool == FOE_NULL_HANDLE || renderStatePool == FOE_NULL_HANDLE ||
-        positionPool == FOE_NULL_HANDLE)
+        positionPool == FOE_NULL_HANDLE || animatedBoneStatePool == FOE_NULL_HANDLE)
         std::abort();
 
     // Set external data

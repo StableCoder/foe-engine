@@ -10,7 +10,7 @@
 #include <foe/simulation/simulation.hpp>
 
 #include "../armature_state_imex.hpp"
-#include "../armature_state_pool.hpp"
+#include "../armature_state_pool.h"
 #include "../render_state_imex.hpp"
 #include "../render_state_pool.h"
 #include "../type_defs.h"

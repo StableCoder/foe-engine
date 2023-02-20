@@ -7,9 +7,9 @@ target_sources(
   PRIVATE ../log.cpp
           ../result.c
           ../vk_result.c
+          animated_bone_state.cpp
+          animated_bone_system.cpp
           armature_loader.cpp
-          armature_state.cpp
-          armature_system.cpp
           binary.cpp
           cleanup.c
           compare.c

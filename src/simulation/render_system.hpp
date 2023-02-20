@@ -11,7 +11,7 @@
 #include <foe/resource/pool.h>
 #include <foe/result.h>
 
-#include "armature_state_pool.hpp"
+#include "animated_bone_state_pool.h"
 #include "render_state_pool.h"
 
 #ifdef __cplusplus
