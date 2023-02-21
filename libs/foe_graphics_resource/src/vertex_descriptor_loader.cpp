@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -34,8 +34,20 @@ foeResultSet foeVertexDescriptorLoader::initialize(foeResourcePool resourcePool)
 }
 
 void foeVertexDescriptorLoader::deinitialize() {
+    // External
+    mResourcePool = nullptr;
+}
+
+bool foeVertexDescriptorLoader::initialized() const noexcept {
+    return mResourcePool != FOE_NULL_HANDLE;
+}
+
+foeResultSet foeVertexDescriptorLoader::initializeGraphics(foeGfxSession gfxSession) {
+    return to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+}
+
+void foeVertexDescriptorLoader::deinitializeGraphics() {
     // Unload all resources this loader loaded
-    // @todo This should probably be under a gfxDeinitialize instead
     bool upcomingWork;
     do {
         upcomingWork =
@@ -52,13 +64,6 @@ void foeVertexDescriptorLoader::deinitialize() {
         upcomingWork |= !mUnloadRequests.empty();
         mUnloadSync.unlock();
     } while (upcomingWork);
-
-    // External
-    mResourcePool = nullptr;
-}
-
-bool foeVertexDescriptorLoader::initialized() const noexcept {
-    return mResourcePool != FOE_NULL_HANDLE;
 }
 
 void foeVertexDescriptorLoader::gfxMaintenance() {

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -577,6 +577,14 @@ size_t deinitializeGraphicsSelection(foeSimulation *pSimulation, TypeSelection c
             ++errors;
     }
 
+    if (pSelection == nullptr || pSelection->vertexDescriptorLoader) {
+        result = deinitializeGraphicsItem<foeVertexDescriptorLoader>(
+            pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
+            "foeVertexDescriptorLoader");
+        if (result.value != FOE_SUCCESS)
+            ++errors;
+    }
+
     if (pSelection == nullptr || pSelection->shaderLoader) {
         result = deinitializeGraphicsItem<foeShaderLoader>(
             pSimulation, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER_LOADER, "foeShaderLoader");
@@ -653,6 +661,13 @@ foeResultSet initializeGraphics(foeSimulation *pSimulation, foeGfxSession gfxSes
     if (result.value != FOE_SUCCESS)
         goto INITIALIZATION_FAILED;
     selection.shaderLoader = true;
+
+    result = initializeGraphicsItem<foeVertexDescriptorLoader>(
+        pSimulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR_LOADER,
+        "foeVertexDescriptorLoader");
+    if (result.value != FOE_SUCCESS)
+        goto INITIALIZATION_FAILED;
+    selection.vertexDescriptorLoader = true;
 
     result = initializeGraphicsItem<foeMeshLoader>(
         pSimulation, gfxSession, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_LOADER, "foeMeshLoader");

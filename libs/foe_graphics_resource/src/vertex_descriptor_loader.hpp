@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,6 +18,9 @@ class foeVertexDescriptorLoader {
     foeResultSet initialize(foeResourcePool resourcePool);
     void deinitialize();
     bool initialized() const noexcept;
+
+    foeResultSet initializeGraphics(foeGfxSession gfxSession);
+    void deinitializeGraphics();
 
     void gfxMaintenance();
 
