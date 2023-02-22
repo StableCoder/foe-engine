@@ -91,12 +91,20 @@ foeResultSet performWindowMaintenance(WindowData *pWindow,
             }
         }
 
+        // Determine the minimum swapchain size
+        VkSurfaceCapabilitiesKHR capabilities;
+        VkResult vkResult = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+            foeGfxVkGetPhysicalDevice(gfxSession), pWindow->surface, &capabilities);
+        if (vkResult != VK_SUCCESS)
+            return vk_to_foeResult(vkResult);
+
         // Create new swapchain
         foeGfxVkSwapchain newSwapchain = FOE_NULL_HANDLE;
 
-        result = foeGfxVkCreateSwapchain(
-            gfxSession, pWindow->surface, pWindow->surfaceFormat, pWindow->surfacePresentMode,
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain, 4, width, height, &newSwapchain);
+        result = foeGfxVkCreateSwapchain(gfxSession, pWindow->surface, pWindow->surfaceFormat,
+                                         pWindow->surfacePresentMode,
+                                         VK_IMAGE_USAGE_TRANSFER_DST_BIT, pWindow->swapchain,
+                                         capabilities.minImageCount, width, height, &newSwapchain);
         if (result.value != FOE_SUCCESS)
             return result;
 
