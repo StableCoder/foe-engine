@@ -94,22 +94,11 @@ YAML::Node exportResource(
     }
 
     // Get the CreateInfo for a resource
-    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
     foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
-
-    if (resource != FOE_NULL_HANDLE) {
-        resourceCI = foeResourceGetCreateInfo(resource);
-    }
-
-    if (resourceCI == FOE_NULL_HANDLE) {
-        foeResultSet result =
-            foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &resourceCI);
-        if (result.value != FOE_SUCCESS)
-            // @todo Properly handle failure to find CreateInfo
-            std::abort();
-
-        foeResourceCreateInfoIncrementRefCount(resourceCI);
-    }
+    foeResultSet result = foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &resourceCI);
+    if (result.value != FOE_SUCCESS || resourceCI == FOE_NULL_HANDLE)
+        // @todo Properly handle failure to find CreateInfo
+        std::abort();
 
     for (auto const &fn : resourceFns) {
         auto keyDataPairs = fn(resourceCI);

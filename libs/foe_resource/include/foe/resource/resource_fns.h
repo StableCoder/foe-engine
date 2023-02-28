@@ -15,7 +15,10 @@ extern "C" {
 #endif
 
 typedef foeResourceCreateInfo (*PFN_foeGetResourceCreateInfoData)(void *, foeResourceID);
-typedef void (*PFN_foeLoadResourceData)(void *, foeResource, PFN_foeResourcePostLoad *);
+typedef void (*PFN_foeLoadResourceData)(void *,
+                                        foeResource,
+                                        foeResourceCreateInfo,
+                                        PFN_foeResourcePostLoad *);
 
 /**
  * Set of functions common to all foeResource types for importing definitions, loading data and

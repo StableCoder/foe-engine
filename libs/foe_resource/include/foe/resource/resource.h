@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,12 +31,14 @@ typedef bool(PFN_foeResourceUnloadCall)(foeResource,             // Resource
                                         void (*)(void *, void *) // Data handling call
 );
 
+// To *always* be called at the end of a loading process, success or failure.
+// Sets data appropriately and decrements reference count of both Resource and CreateInfo safely.
 typedef void(PFN_foeResourcePostLoad)(
     foeResource,                                                               // Resource
+    foeResourceCreateInfo,                                                     // CreateInfo
     foeResultSet,                                                              // ErrorCode
     void *,                                                                    // Source
     void (*)(void *, void *),                                                  // Move Fn
-    foeResourceCreateInfo,                                                     // CreateInfo
     void *,                                                                    // Unload Context
     void (*)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool) // Unload Fn
 );
@@ -71,13 +73,8 @@ FOE_RES_EXPORT foeResourceLoadState foeResourceGetState(foeResource resource);
 
 FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
 
-FOE_RES_EXPORT void foeResourceLoadCreateInfo(foeResource resource);
 FOE_RES_EXPORT void foeResourceLoadData(foeResource resource);
 FOE_RES_EXPORT void foeResourceUnloadData(foeResource resource, bool immediate);
-
-// @warning The handle has already been pre-incremented before being returned. The used is
-// responsible for decrementing the reference count before disposing of it.
-FOE_RES_EXPORT foeResourceCreateInfo foeResourceGetCreateInfo(foeResource resource);
 
 #ifdef __cplusplus
 }

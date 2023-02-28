@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,13 +18,6 @@ struct foeResourceFns;
 
 namespace {
 
-enum ResourceLoadingFlagBits : uint8_t {
-    None = 0,
-    CreateInfo = 0x01,
-    Data = 0x02,
-};
-typedef uint8_t ResourceLoadingFlags;
-
 struct foeResourceImpl {
     foeResourceID id;
     foeResourceType type;
@@ -36,15 +29,14 @@ struct foeResourceImpl {
     std::atomic_int refCount{1};
     std::atomic_int useCount{0};
 
-    // Create Info State
-    foeResourceCreateInfo createInfo{FOE_NULL_HANDLE};
-
     // Load State
     std::atomic_uint iteration{0};
-    std::atomic<ResourceLoadingFlags> loading{ResourceLoadingFlagBits::None};
+    std::atomic_flag loading = ATOMIC_FLAG_INIT;
     std::atomic<foeResourceLoadState> state{FOE_RESOURCE_LOAD_STATE_UNLOADED};
 
-    foeResourceCreateInfo loadedCreateInfo{FOE_NULL_HANDLE};
+    // @TODO - Keep loaded ResourceCreateInfo in EditorMode?
+    // Perhaps as part of the data next chain
+
     void *pUnloadContext{nullptr};
     void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool){nullptr};
 
@@ -115,11 +107,6 @@ extern "C" int foeResourceDecrementRefCount(foeResource resource) {
 
         foeResourceUnloadData(resource, true);
 
-        // Clear createInfo
-        if (pResource->createInfo != FOE_NULL_HANDLE) {
-            foeResourceCreateInfoDecrementRefCount(pResource->createInfo);
-        }
-
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Destroyed",
                 foeIdToString(pResource->id), pResource->type)
 
@@ -148,7 +135,7 @@ extern "C" int foeResourceDecrementUseCount(foeResource resource) {
 
 extern "C" bool foeResourceGetIsLoading(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
-    return pResource->loading != ResourceLoadingFlagBits::None;
+    return pResource->loading.test();
 }
 
 extern "C" foeResourceLoadState foeResourceGetState(foeResource resource) {
@@ -163,87 +150,18 @@ extern "C" void const *foeResourceGetData(foeResource resource) {
 
 namespace {
 
-void loadCreateInfoTask(foeResourceImpl *pResource) {
-    foeResourceCreateInfo newCreateInfo =
-        pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext, pResource->id);
-    foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
-
-    pResource->sync.lock();
-    if (newCreateInfo != FOE_NULL_HANDLE) {
-        oldCreateInfo = pResource->createInfo;
-    }
-    pResource->createInfo = newCreateInfo;
-    pResource->sync.unlock();
-
-    // Remove the loading/CI flag
-    ResourceLoadingFlags expected = pResource->loading;
-    ResourceLoadingFlags desired;
-    do {
-        desired = expected ^ ResourceLoadingFlagBits::CreateInfo;
-    } while (!pResource->loading.compare_exchange_weak(expected, desired));
-
-    foeResourceDecrementRefCount(resource_to_handle(pResource));
-
-    // If destroying old create info data, do it outside the locked area, could be expensive
-    if (oldCreateInfo != FOE_NULL_HANDLE) {
-        foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-    }
-}
-
-} // namespace
-
-extern "C" void foeResourceLoadCreateInfo(foeResource resource) {
-    auto *pResource = resource_from_handle(resource);
-
-    foeResourceIncrementRefCount(resource);
-
-    ResourceLoadingFlags expected = ResourceLoadingFlagBits::None;
-    if (!pResource->loading.compare_exchange_strong(expected,
-                                                    ResourceLoadingFlagBits::CreateInfo)) {
-        FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
-                "[{},{}] foeResource - Attempted to load CreateInfo in parrallel",
-                foeIdToString(pResource->id), pResource->type)
-        foeResourceDecrementRefCount(resource);
-        return;
-    }
-
-    if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
-        FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE,
-                "[{},{}] foeResource - Loading CreateInfo asynchronously",
-                foeIdToString(pResource->id), pResource->type)
-
-        pResource->pResourceFns->scheduleAsyncTask(
-            pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadCreateInfoTask,
-            pResource);
-    } else {
-        FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE,
-                "[{},{}] foeResource - Loading CreateInfo synchronously", pResource->id,
-                pResource->type)
-
-        loadCreateInfoTask(pResource);
-    }
-}
-
-namespace {
-
 void postLoadFn(
     foeResource resource,
+    foeResourceCreateInfo createInfo,
     foeResultSet loadResult,
     void *pSrc,
     void (*pMoveDataFn)(void *, void *),
-    foeResourceCreateInfo createInfo,
     void *pUnloadContext,
     void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool)) {
     auto *pResource = resource_from_handle(resource);
-    foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
 
     if (loadResult.value != FOE_SUCCESS) {
         // Loading didn't go well
-
-        // Since we're not going to be using it, decrement which may destroy it
-        if (createInfo != FOE_NULL_HANDLE)
-            foeResourceCreateInfoDecrementRefCount(createInfo);
-
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         loadResult.toString(loadResult.value, buffer);
         FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
@@ -252,7 +170,6 @@ void postLoadFn(
 
         auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
         pResource->state.compare_exchange_strong(expected, FOE_RESOURCE_LOAD_STATE_FAILED);
-        pResource->loading = ResourceLoadingFlagBits::None;
     } else {
         pResource->sync.lock();
 
@@ -262,9 +179,6 @@ void postLoadFn(
         // Move the new data in
         pMoveDataFn(pSrc, (void *)foeResourceGetData(resource));
 
-        oldCreateInfo = pResource->loadedCreateInfo;
-
-        pResource->loadedCreateInfo = createInfo;
         pResource->pUnloadContext = pUnloadContext;
         pResource->pUnloadFn = pUnloadFn;
 
@@ -272,51 +186,28 @@ void postLoadFn(
         pResource->sync.unlock();
     }
 
-    pResource->loading = ResourceLoadingFlagBits::None;
-    foeResourceDecrementRefCount(resource);
+    pResource->loading.clear();
 
-    // If destroying old create info data, do it outside the critical area, could be expensive
-    if (oldCreateInfo != FOE_NULL_HANDLE) {
-        foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-    }
+    // Decrement the reference count of both resource and create info, no longer needed after the
+    // loading process is done
+    foeResourceDecrementRefCount(resource);
+    foeResourceCreateInfoDecrementRefCount(createInfo);
 }
 
-struct LoadTaskData {
-    foeResourceImpl *pResource;
-    ResourceLoadingFlags loadingFlags;
-};
+void loadResourceTask(foeResourceImpl *pResource) {
+    foeResourceCreateInfo createInfo =
+        pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext, pResource->id);
 
-void loadResourceTask(LoadTaskData *pContext) {
-    foeResourceImpl *pResource = pContext->pResource;
-
-    foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource_to_handle(pResource));
-
-    if (createInfo == FOE_NULL_HANDLE) {
-        if (pContext->loadingFlags & ResourceLoadingFlagBits::CreateInfo) {
-            // We're responsible for loading flag bits
-            foeResourceIncrementRefCount(resource_to_handle(pResource));
-            loadCreateInfoTask(pResource);
-        } else {
-            // Another thread is loading it, keep yielding until it's done
-            // @todo Possibly look into re-queuing via async call instead?
-            while (pResource->loading.load() & ResourceLoadingFlagBits::CreateInfo) {
-                std::this_thread::yield();
-            }
-        }
-    } else {
-        foeResourceCreateInfoDecrementRefCount(createInfo);
-    }
-
-    if (pResource->createInfo != FOE_NULL_HANDLE) {
+    if (createInfo != FOE_NULL_HANDLE) {
+        // This call will decrement the CreateInfo reference count
+        // @TODO - Change to not deal with CreateInfo reference counts?
         pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
-                                         resource_to_handle(pResource), postLoadFn);
+                                         resource_to_handle(pResource), createInfo, postLoadFn);
     } else {
-        postLoadFn(resource_to_handle(pResource), to_foeResult(FOE_RESOURCE_ERROR_NO_CREATE_INFO),
-                   nullptr, nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource_to_handle(pResource), FOE_NULL_HANDLE,
+                   to_foeResult(FOE_RESOURCE_ERROR_NO_CREATE_INFO), nullptr, nullptr, nullptr,
+                   nullptr);
     }
-
-    // Free the heap-allocated context data
-    free(pContext);
 }
 
 } // namespace
@@ -326,25 +217,14 @@ extern "C" void foeResourceLoadData(foeResource resource) {
 
     foeResourceIncrementRefCount(resource);
 
-    ResourceLoadingFlags expected = pResource->loading;
     // Only want to start loading if the data isn't already slated to be loaded
-    if (expected & ResourceLoadingFlagBits::Data ||
-        !pResource->loading.compare_exchange_strong(expected,
-                                                    expected | ResourceLoadingFlagBits::CreateInfo |
-                                                        ResourceLoadingFlagBits::Data)) {
+    if (pResource->loading.test_and_set()) {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
                 "[{},{}] foeResource - Attempted to load in parrallel",
                 foeIdToString(pResource->id), pResource->type)
         foeResourceDecrementRefCount(resource);
         return;
     }
-
-    LoadTaskData *pTaskContext = (LoadTaskData *)malloc(sizeof(LoadTaskData));
-    expected ^= ResourceLoadingFlagBits::CreateInfo | ResourceLoadingFlagBits::Data;
-    *pTaskContext = {
-        .pResource = pResource,
-        .loadingFlags = expected,
-    };
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE,
@@ -353,12 +233,12 @@ extern "C" void foeResourceLoadData(foeResource resource) {
 
         pResource->pResourceFns->scheduleAsyncTask(
             pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadResourceTask,
-            pTaskContext);
+            pResource);
     } else {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Loading synchronously",
                 foeIdToString(pResource->id), pResource->type)
 
-        loadResourceTask(pTaskContext);
+        loadResourceTask(pResource);
     }
 }
 
@@ -379,9 +259,6 @@ bool resourceUnloadCall(foeResource resource,
 
         pMoveFn((void *)foeResourceGetData(resource), pDst);
 
-        oldCreateInfo = pResource->loadedCreateInfo;
-
-        pResource->loadedCreateInfo = FOE_NULL_HANDLE;
         pResource->pUnloadContext = nullptr;
         pResource->pUnloadFn = nullptr;
         pResource->state = FOE_RESOURCE_LOAD_STATE_UNLOADED;
@@ -428,18 +305,4 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
     }
 
     pResource->sync.unlock();
-}
-
-foeResourceCreateInfo foeResourceGetCreateInfo(foeResource resource) {
-    auto *pResource = resource_from_handle(resource);
-
-    pResource->sync.lock();
-
-    foeResourceCreateInfo createInfo = pResource->createInfo;
-    if (createInfo != FOE_NULL_HANDLE)
-        foeResourceCreateInfoIncrementRefCount(createInfo);
-
-    pResource->sync.unlock();
-
-    return createInfo;
 }

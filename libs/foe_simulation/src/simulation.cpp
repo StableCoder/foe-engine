@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -90,20 +90,21 @@ foeResourceCreateInfo getResourceCreateInfo(void *pContext, foeResourceID resour
     return pSimulation->groupData.getResourceCreateInfo(resourceID);
 }
 
-void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
+void loadResource(void *pContext,
+                  foeResource resource,
+                  foeResourceCreateInfo resourceCreateInfo,
+                  PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
 
-    auto createInfo = foeResourceGetCreateInfo(resource);
-
     for (auto const &it : pSimulation->resourceLoaders) {
-        if (it.pCanProcessCreateInfoFn(createInfo)) {
-            it.pLoadFn(it.pLoader, resource, createInfo, pPostLoadFn);
+        if (it.pCanProcessCreateInfoFn(resourceCreateInfo)) {
+            it.pLoadFn(it.pLoader, resource, resourceCreateInfo, pPostLoadFn);
             return;
         }
     }
 
-    pPostLoadFn(resource, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
-                nullptr, nullptr, nullptr);
+    pPostLoadFn(resource, resourceCreateInfo, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND),
+                nullptr, nullptr, nullptr, nullptr);
 }
 
 } // namespace

@@ -43,7 +43,13 @@ void imgui_foeGraphicsResources(
         }
 
         if (ImGui::CollapsingHeader("CreateInfo")) {
-            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
+            foeResultSet result =
+                foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &createInfo);
+            if (result.value != FOE_SUCCESS || createInfo == FOE_NULL_HANDLE)
+                // @TODO - Implement proper error handling
+                std::abort();
+
             if (createInfo != FOE_NULL_HANDLE) {
                 imgui_foeResourceCreateInfo(createInfo);
                 ImGui::Separator();
@@ -67,7 +73,13 @@ void imgui_foeGraphicsResources(
         }
 
         if (ImGui::CollapsingHeader("CreateInfo")) {
-            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
+            foeResultSet result =
+                foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &createInfo);
+            if (result.value != FOE_SUCCESS || createInfo == FOE_NULL_HANDLE)
+                // @TODO - Implement proper error handling
+                std::abort();
+
             if (createInfo != FOE_NULL_HANDLE) {
                 imgui_foeResourceCreateInfo(createInfo);
                 ImGui::Separator();
@@ -91,7 +103,13 @@ void imgui_foeGraphicsResources(
         }
 
         if (ImGui::CollapsingHeader("CreateInfo")) {
-            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
+            foeResultSet result =
+                foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &createInfo);
+            if (result.value != FOE_SUCCESS || createInfo == FOE_NULL_HANDLE)
+                // @TODO - Implement proper error handling
+                std::abort();
+
             if (createInfo != FOE_NULL_HANDLE) {
                 imgui_foeResourceCreateInfo(createInfo);
                 ImGui::Separator();
@@ -115,7 +133,13 @@ void imgui_foeGraphicsResources(
         }
 
         if (ImGui::CollapsingHeader("CreateInfo")) {
-            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
+            foeResultSet result =
+                foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &createInfo);
+            if (result.value != FOE_SUCCESS || createInfo == FOE_NULL_HANDLE)
+                // @TODO - Implement proper error handling
+                std::abort();
+
             if (createInfo != FOE_NULL_HANDLE) {
                 imgui_foeResourceCreateInfo(createInfo);
                 ImGui::Separator();
@@ -140,7 +164,13 @@ void imgui_foeGraphicsResources(
         }
 
         if (ImGui::CollapsingHeader("CreateInfo")) {
-            foeResourceCreateInfo createInfo = foeResourceGetCreateInfo(resource);
+            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
+            foeResultSet result =
+                foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &createInfo);
+            if (result.value != FOE_SUCCESS || createInfo == FOE_NULL_HANDLE)
+                // @TODO - Implement proper error handling
+                std::abort();
+
             if (createInfo != FOE_NULL_HANDLE) {
                 imgui_foeResourceCreateInfo(createInfo);
                 ImGui::Separator();

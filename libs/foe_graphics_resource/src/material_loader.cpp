@@ -177,15 +177,15 @@ void foeMaterialLoader::gfxMaintenance() {
                 new (pDst) foeMaterial(std::move(*pSrcData));
             };
 
-            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
+            it.pPostLoadFn(it.resource, it.createInfo, {}, &it.data, moveFn, this,
                            foeMaterialLoader::unloadResource);
         } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
         DESCRIPTOR_CREATE_FAILED:
             // One of them failed to load, we're not proceeding with this resource
             it.pPostLoadFn(
-                it.resource,
+                it.resource, it.createInfo,
                 to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
-                nullptr, nullptr, nullptr, nullptr, nullptr);
+                nullptr, nullptr, nullptr, nullptr);
 
             // Unload the data we did get
             if (it.data.fragmentShader != nullptr) {
@@ -236,16 +236,18 @@ void foeMaterialLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeMaterialLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     }
 
@@ -322,7 +324,7 @@ LOAD_FAILED:
         foeResourceDecrementRefCount(data.image);
 
     // Call the resource post-load function with the error result code
-    pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
+    pPostLoadFn(resource, createInfo, result, nullptr, nullptr, nullptr, nullptr);
 }
 
 VkResult foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialData) {

@@ -142,7 +142,8 @@ void foeImageLoader::gfxMaintenance() {
                     new (pDst) foeImage(std::move(*pSrcData));
                 };
 
-                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
+                it.pPostLoadFn(it.resource, it.createInfo,
+                               to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data, moveFn, this,
                                foeImageLoader::unloadResource);
             } else {
                 // Destroy the data immediately
@@ -162,9 +163,9 @@ void foeImageLoader::gfxMaintenance() {
             foeGfxDestroyUploadRequest(mGfxUploadContext, it.uploadRequest);
         } else if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
             // There's an error, this is lost.
-            it.pPostLoadFn(it.resource,
+            it.pPostLoadFn(it.resource, it.createInfo,
                            to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_UPLOAD_FAILURE), nullptr,
-                           nullptr, nullptr, nullptr, nullptr);
+                           nullptr, nullptr, nullptr);
         } else {
             stillLoading.emplace_back(std::move(it));
         }
@@ -204,16 +205,18 @@ void foeImageLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeImageLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     }
     auto const *pImageCI = (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
@@ -446,7 +449,7 @@ LOADING_FAILED:
                 foeIdToString(foeResourceGetID(resource)), buffer)
 
         // Run the post-load function with the error
-        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo, result, nullptr, nullptr, nullptr, nullptr);
 
         if (gfxUploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pimage an nullptr, so the upload completes then the

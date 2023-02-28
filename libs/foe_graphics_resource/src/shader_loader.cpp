@@ -106,8 +106,8 @@ void foeShaderLoader::gfxMaintenance() {
             new (pDst) foeShader(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
-                       foeShaderLoader::unloadResource);
+        it.pPostLoadFn(it.resource, it.createInfo, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS),
+                       &it.data, moveFn, this, foeShaderLoader::unloadResource);
     }
 }
 
@@ -133,16 +133,18 @@ void foeShaderLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeShaderLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     }
 
@@ -180,7 +182,7 @@ LOAD_FAILED:
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR, "Failed to load foeShader {}: {}",
                 foeIdToString(foeResourceGetID(resource)), buffer)
 
-        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo, result, nullptr, nullptr, nullptr, nullptr);
     } else {
         // Loaded upto this point successfully
         mLoadSync.lock();

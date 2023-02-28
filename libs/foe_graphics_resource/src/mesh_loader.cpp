@@ -134,7 +134,8 @@ void foeMeshLoader::gfxMaintenance() {
                     new (pDst) foeMesh(std::move(*pSrcData));
                 };
 
-                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, it.createInfo, this,
+                it.pPostLoadFn(it.resource, it.createInfo,
+                               to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data, moveFn, this,
                                foeMeshLoader::unloadResource);
             } else {
                 // No target resource, this is to be discarded
@@ -147,9 +148,9 @@ void foeMeshLoader::gfxMaintenance() {
                 foeGfxDestroyUploadBuffer(mGfxUploadContext, it.uploadBuffer);
             foeGfxDestroyUploadRequest(mGfxUploadContext, it.uploadRequest);
 
-            it.pPostLoadFn(it.resource,
+            it.pPostLoadFn(it.resource, it.createInfo,
                            to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_UPLOAD_FAILED), nullptr,
-                           nullptr, nullptr, nullptr, nullptr);
+                           nullptr, nullptr, nullptr);
         } else {
             // Still uploading, requeue
             stillLoading.emplace_back(std::move(it));
@@ -192,16 +193,18 @@ void foeMeshLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeMeshLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
+                    nullptr, nullptr, nullptr);
         return;
     }
 
@@ -507,7 +510,7 @@ LOAD_FAILED:
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to load foeMesh {} with error: {}",
                 foeIdToString(foeResourceGetID(resource)), buffer)
-        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, createInfo, result, nullptr, nullptr, nullptr, nullptr);
 
         if (uploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pMesh as nullptr, so the upload completes then
