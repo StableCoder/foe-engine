@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -51,5 +51,6 @@ extern "C" foeResultSet create_foeVertexDescriptorCreateInfo(foeResourceID resou
         return to_foeResult(
             FOE_GRAPHICS_RESOURCE_BINARY_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(vertex_descriptor);
     return to_foeResult(FOE_GRAPHICS_RESOURCE_BINARY_SUCCESS);
 }

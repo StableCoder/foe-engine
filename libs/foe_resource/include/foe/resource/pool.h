@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,11 +27,13 @@ FOE_RES_EXPORT foeResultSet foeCreateResourcePool(foeResourceFns const *pResourc
 
 FOE_RES_EXPORT void foeDestroyResourcePool(foeResourcePool resourcePool);
 
+// Returned resources have reference count pre-incremented.
 FOE_RES_EXPORT foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
                                               foeResourceID resourceID,
                                               foeResourceType resourceType,
                                               size_t resourceSize);
 
+// Returned resources have reference count pre-incremented.
 FOE_RES_EXPORT foeResource foeResourcePoolFind(foeResourcePool resourcePool,
                                                foeResourceID resourceID);
 

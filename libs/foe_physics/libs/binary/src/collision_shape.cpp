@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -47,5 +47,6 @@ extern "C" foeResultSet create_foeCollisionShapeCreateInfo(foeResourceID resourc
     if (collisionShape == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_BINARY_ERROR_COLLISION_SHAPE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(collisionShape);
     return to_foeResult(FOE_PHYSICS_BINARY_SUCCESS);
 }

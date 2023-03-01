@@ -91,7 +91,7 @@ void getRenderData(foeResourcePool resourcePool,
                                        sizeof(foeVertexDescriptor));
             }
         } while (vertexDescriptor == FOE_NULL_HANDLE);
-        foeResourceIncrementRefCount(vertexDescriptor);
+
         foeResourceIncrementUseCount(vertexDescriptor);
     }
 
@@ -118,7 +118,7 @@ void getRenderData(foeResourcePool resourcePool,
                                        sizeof(foeVertexDescriptor));
             }
         } while (bonedVertexDescriptor == FOE_NULL_HANDLE);
-        foeResourceIncrementRefCount(bonedVertexDescriptor);
+
         foeResourceIncrementUseCount(bonedVertexDescriptor);
     }
 
@@ -141,7 +141,7 @@ void getRenderData(foeResourcePool resourcePool,
                                               sizeof(foeMaterial));
             }
         } while (material == FOE_NULL_HANDLE);
-        foeResourceIncrementRefCount(material);
+
         foeResourceIncrementUseCount(material);
     }
 
@@ -164,7 +164,7 @@ void getRenderData(foeResourcePool resourcePool,
                                        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh));
             }
         } while (mesh == FOE_NULL_HANDLE);
-        foeResourceIncrementRefCount(mesh);
+
         foeResourceIncrementUseCount(mesh);
     }
 }

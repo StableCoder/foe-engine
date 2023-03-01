@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -42,12 +42,13 @@ extern "C" foeResultSet import_foeArmatureCreateInfo(void const *pReadBuffer,
 extern "C" foeResultSet create_foeArmatureCreateInfo(foeResourceID resource,
                                                      foeResourceCreateInfo resourceCI,
                                                      foeSimulation const *pSimulation) {
-    foeResource collisionShape =
+    foeResource armature =
         foeResourcePoolAdd(pSimulation->resourcePool, resource, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
                            sizeof(foeArmature));
 
-    if (collisionShape == FOE_NULL_HANDLE)
+    if (armature == FOE_NULL_HANDLE)
         return to_foeResult(FOE_BRINGUP_BINARY_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(armature);
     return to_foeResult(FOE_BRINGUP_BINARY_SUCCESS);
 }

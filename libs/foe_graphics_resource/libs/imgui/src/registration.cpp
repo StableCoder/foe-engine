@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,7 @@ void imgui_foeGraphicsResources(
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
+    foeResourceDecrementRefCount(resource);
 
     if (resource == FOE_NULL_HANDLE)
         return;

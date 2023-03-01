@@ -32,6 +32,7 @@ foeResultSet armatureCreateProcessing(foeResourceID resourceID,
     if (armature == FOE_NULL_HANDLE)
         return to_foeResult(FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(armature);
     return to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
 }
 

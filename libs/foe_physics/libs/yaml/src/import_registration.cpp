@@ -28,6 +28,7 @@ foeResultSet collisionShapeCreateProcessing(foeResourceID resourceID,
     if (collisionShape == FOE_NULL_HANDLE)
         return to_foeResult(FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(collisionShape);
     return to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
 }
 

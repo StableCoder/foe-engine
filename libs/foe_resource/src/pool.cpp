@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -86,6 +86,9 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
         return FOE_NULL_HANDLE;
     }
 
+    // Since we're returning the resource, increment the count to account for that
+    foeResourceIncrementRefCount(newResource);
+
     pResourcePool->resources.emplace_back(newResource);
     return newResource;
 }
@@ -97,8 +100,10 @@ extern "C" foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeReso
 
     for (auto const it : pResourcePool->resources) {
         if (foeResourceGetID(it) == resourceID) {
+            // Since we're returning the resource, increment the count to account for that
+            foeResourceIncrementRefCount(it);
+
             return it;
-            break;
         }
     }
 

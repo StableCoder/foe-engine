@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -267,7 +267,6 @@ void foeMaterialLoader::load(foeResource resource,
                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
         }
 
-        foeResourceIncrementRefCount(data.fragmentShader);
         foeResourceIncrementUseCount(data.fragmentShader);
 
         if (foeResourceGetState(data.fragmentShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
@@ -286,7 +285,6 @@ void foeMaterialLoader::load(foeResource resource,
                                                 sizeof(foeImage));
         }
 
-        foeResourceIncrementRefCount(data.image);
         foeResourceIncrementUseCount(data.image);
 
         if (foeResourceGetState(data.image) != FOE_RESOURCE_LOAD_STATE_LOADED &&

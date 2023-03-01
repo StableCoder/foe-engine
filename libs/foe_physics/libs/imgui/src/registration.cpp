@@ -46,6 +46,7 @@ void imgui_foePhysicsResource(
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
+    foeResourceDecrementRefCount(resource);
 
     if (resource == FOE_NULL_HANDLE)
         return;

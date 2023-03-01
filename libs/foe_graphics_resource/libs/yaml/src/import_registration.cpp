@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -34,6 +34,7 @@ foeResultSet imageCreateProcessing(foeResourceID resourceID,
     if (image == FOE_NULL_HANDLE)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(image);
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
@@ -47,6 +48,7 @@ foeResultSet materialCreateProcessing(foeResourceID resourceID,
     if (material == FOE_NULL_HANDLE)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MATERIAL_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(material);
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
@@ -60,33 +62,36 @@ foeResultSet meshCreateProcessing(foeResourceID resourceID,
     if (mesh == FOE_NULL_HANDLE)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_MESH_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(mesh);
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
 foeResultSet shaderCreateProcessing(foeResourceID resourceID,
                                     foeResourceCreateInfo createInfo,
                                     foeSimulation const *pSimulation) {
-    auto *pShader =
+    foeResource shader =
         foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
                            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
 
-    if (!pShader)
+    if (shader == FOE_NULL_HANDLE)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_ERROR_SHADER_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(shader);
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 
 foeResultSet vertexDescriptorCreateProcessing(foeResourceID resourceID,
                                               foeResourceCreateInfo createInfo,
                                               foeSimulation const *pSimulation) {
-    auto *pVertexResource = foeResourcePoolAdd(
+    foeResource vertexDescriptor = foeResourcePoolAdd(
         pSimulation->resourcePool, resourceID,
         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, sizeof(foeVertexDescriptor));
 
-    if (!pVertexResource)
+    if (vertexDescriptor == FOE_NULL_HANDLE)
         return to_foeResult(
             FOE_GRAPHICS_RESOURCE_YAML_ERROR_VERTEX_DESCRIPTOR_RESOURCE_ALREADY_EXISTS);
 
+    foeResourceDecrementRefCount(vertexDescriptor);
     return to_foeResult(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS);
 }
 

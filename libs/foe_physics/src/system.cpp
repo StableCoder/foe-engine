@@ -125,12 +125,19 @@ FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
         }
         pPhysicsSystem->awaitingLoadingResources.emplace_back(entity);
 
+        // No longer holding on to this resource reference
+        foeResourceDecrementRefCount(collisionShape);
+
         return to_foeResult(FOE_PHYSICS_SUCCESS);
     } else if (foeResourceGetType(collisionShape) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
         FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foePhysicsSystem - Failed to load {} rigid body because the given "
                 "collision shape {} is not a collision shape resource.",
                 foeIdToString(entity), foeIdToString(pRigidBody->collisionShape))
+
+        // No longer holding on to this resource reference
+        foeResourceDecrementRefCount(collisionShape);
+
         return to_foeResult(FOE_PHYSICS_SUCCESS);
     }
 
@@ -153,7 +160,6 @@ FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
         return to_foeResult(FOE_PHYSICS_ERROR_OUT_OF_MEMORY);
     new (newObject.pRigidBody) btRigidBody{rigidBodyCI};
 
-    foeResourceIncrementRefCount(collisionShape);
     foeResourceIncrementUseCount(collisionShape);
 
     pPhysicsSystem->pWorld->addRigidBody(newObject.pRigidBody);

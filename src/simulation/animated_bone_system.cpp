@@ -163,7 +163,7 @@ extern "C" foeResultSet foeInitializeAnimatedBoneSystem(
                                                   sizeof(foeArmature));
                 }
             } while (armature == FOE_NULL_HANDLE);
-            foeResourceIncrementRefCount(armature);
+
             foeResourceIncrementUseCount(armature);
 
             foeResourceLoadState loadState = foeResourceGetState(armature);
@@ -406,7 +406,7 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                                 FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
                         }
                     } while (armature == FOE_NULL_HANDLE);
-                    foeResourceIncrementRefCount(armature);
+
                     foeResourceIncrementUseCount(armature);
 
                     foeResourceLoadState loadState = foeResourceGetState(armature);
@@ -489,7 +489,7 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                                     FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
                             }
                         } while (newArmature == FOE_NULL_HANDLE);
-                        foeResourceIncrementRefCount(newArmature);
+
                         foeResourceIncrementUseCount(newArmature);
 
                         foeResourceLoadState loadState = foeResourceGetState(newArmature);
@@ -578,7 +578,7 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                         FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
                 }
             } while (armature == FOE_NULL_HANDLE);
-            foeResourceIncrementRefCount(armature);
+
             foeResourceIncrementUseCount(armature);
 
             foeResourceLoadState loadState = foeResourceGetState(armature);
