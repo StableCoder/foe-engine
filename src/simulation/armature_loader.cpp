@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -169,24 +169,22 @@ void foeArmatureLoader::load(void *pLoader,
 void foeArmatureLoader::load(foeResource resource,
                              foeResourceCreateInfo createInfo,
                              PFN_foeResourcePostLoad *pPostLoadFn) {
-    if (!canProcessCreateInfo(createInfo) ||
-        foeResourceGetType(resource) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
-        foeBringupResult result;
-        if (foeResourceGetType(resource) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
-            result = FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE;
-            FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
-                    "foeArmatureLoader - Cannot load {} as it is an incompatible type: {}",
-                    foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
-        } else {
-            result = FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO;
-            FOE_LOG(
-                foeBringup, FOE_LOG_LEVEL_ERROR,
+    if (!canProcessCreateInfo(createInfo)) {
+        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
                 "foeArmatureLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
-        }
 
-        pPostLoadFn(resource, to_foeResult(result), nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr, nullptr);
+        return;
+    } else if (foeResourceGetType(resource) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
+                "foeArmatureLoader - Cannot load {} as it is an incompatible type: {}",
+                foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+
+        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE), nullptr,
+                    nullptr, nullptr, nullptr, nullptr);
         return;
     }
 

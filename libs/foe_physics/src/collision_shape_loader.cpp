@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -96,24 +96,23 @@ void foeCollisionShapeLoader::load(void *pLoader,
 void foeCollisionShapeLoader::load(foeResource resource,
                                    foeResourceCreateInfo createInfo,
                                    PFN_foeResourcePostLoad *pPostLoadFn) {
-    if (!canProcessCreateInfo(createInfo) ||
-        foeResourceGetType(resource) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
-        foePhysicsResult result;
-        if (foeResourceGetType(resource) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
-            result = FOE_PHYSICS_ERROR_INCOMPATIBLE_RESOURCE_TYPE;
-            FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
-                    "foeCollisionShapeLoader - Cannot load {} as it is an incompatible type: {}",
-                    foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
-        } else {
-            result = FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO;
-            FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
-                    "foeCollisionShapeLoader - Cannot load {} as given CreateInfo is incompatible "
-                    "type: {}",
-                    foeIdToString(foeResourceGetID(resource)),
-                    foeResourceCreateInfoGetType(createInfo));
-        }
+    if (!canProcessCreateInfo(createInfo)) {
+        FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
+                "foeCollisionShapeLoader - Cannot load {} as given CreateInfo is incompatible "
+                "type: {}",
+                foeIdToString(foeResourceGetID(resource)),
+                foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(result), nullptr, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr, nullptr);
+        return;
+    } else if (foeResourceGetType(resource) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+        FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
+                "foeCollisionShapeLoader - Cannot load {} as it is an incompatible type: {}",
+                foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+
+        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
+                    nullptr, nullptr, nullptr, nullptr);
         return;
     }
 
