@@ -230,12 +230,12 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         return;
     }
 
-    auto const *pCI =
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+    foeVertexDescriptorCreateInfo const *pCI =
         (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-
     foeVertexDescriptor data{};
 
-    // Find all of the subresources
+    // Find all required sub-resources, and make sure they are compatible types
     if (pCI->vertexShader != FOE_INVALID_ID) {
         while (data.vertexShader == FOE_NULL_HANDLE) {
             data.vertexShader = foeResourcePoolFind(mResourcePool, pCI->vertexShader);
@@ -246,11 +246,11 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                                                        sizeof(foeShader));
         }
 
-        foeResourceIncrementUseCount(data.vertexShader);
-
-        if (foeResourceGetState(data.vertexShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.vertexShader))
-            foeResourceLoadData(data.vertexShader);
+        if (foeResourceGetType(data.vertexShader) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+            result = to_foeResult(
+                FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
+            goto LOAD_FAILED;
+        }
     }
     if (pCI->tessellationControlShader != FOE_INVALID_ID) {
         while (data.tessellationControlShader == FOE_NULL_HANDLE) {
@@ -263,11 +263,12 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
         }
 
-        foeResourceIncrementUseCount(data.tessellationControlShader);
-
-        if (foeResourceGetState(data.tessellationControlShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.tessellationControlShader))
-            foeResourceLoadData(data.tessellationControlShader);
+        if (foeResourceGetType(data.tessellationControlShader) !=
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+            result = to_foeResult(
+                FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
+            goto LOAD_FAILED;
+        }
     }
     if (pCI->tessellationEvaluationShader != FOE_INVALID_ID) {
         while (data.tessellationEvaluationShader == FOE_NULL_HANDLE) {
@@ -280,12 +281,12 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
         }
 
-        foeResourceIncrementUseCount(data.tessellationEvaluationShader);
-
-        if (foeResourceGetState(data.tessellationEvaluationShader) !=
-                FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.tessellationEvaluationShader))
-            foeResourceLoadData(data.tessellationEvaluationShader);
+        if (foeResourceGetType(data.tessellationEvaluationShader) !=
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+            result = to_foeResult(
+                FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
+            goto LOAD_FAILED;
+        }
     }
     if (pCI->geometryShader != FOE_INVALID_ID) {
         while (data.geometryShader == FOE_NULL_HANDLE) {
@@ -297,8 +298,38 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                     sizeof(foeShader));
         }
 
-        foeResourceIncrementUseCount(data.geometryShader);
+        if (foeResourceGetType(data.geometryShader) !=
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+            result = to_foeResult(
+                FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
+            goto LOAD_FAILED;
+        }
+    }
 
+    // If here, we have all requested resources, so increment their use, then make sure they are
+    // loaded or loading. We only want to attempt to load *any* of the sub-resources if we can find
+    // them all as compatible types
+    if (data.vertexShader != FOE_NULL_HANDLE) {
+        foeResourceIncrementUseCount(data.vertexShader);
+        if (foeResourceGetState(data.vertexShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
+            !foeResourceGetIsLoading(data.vertexShader))
+            foeResourceLoadData(data.vertexShader);
+    }
+    if (data.tessellationControlShader != FOE_NULL_HANDLE) {
+        foeResourceIncrementUseCount(data.tessellationControlShader);
+        if (foeResourceGetState(data.tessellationControlShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
+            !foeResourceGetIsLoading(data.tessellationControlShader))
+            foeResourceLoadData(data.tessellationControlShader);
+    }
+    if (data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
+        foeResourceIncrementUseCount(data.tessellationEvaluationShader);
+        if (foeResourceGetState(data.tessellationEvaluationShader) !=
+                FOE_RESOURCE_LOAD_STATE_LOADED &&
+            !foeResourceGetIsLoading(data.tessellationEvaluationShader))
+            foeResourceLoadData(data.tessellationEvaluationShader);
+    }
+    if (data.geometryShader != FOE_NULL_HANDLE) {
+        foeResourceIncrementUseCount(data.geometryShader);
         if (foeResourceGetState(data.geometryShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.geometryShader))
             foeResourceLoadData(data.geometryShader);
@@ -313,6 +344,20 @@ void foeVertexDescriptorLoader::load(foeResource resource,
         .data = data,
     });
     mLoadSync.unlock();
+    return;
+
+LOAD_FAILED:
+    if (data.vertexShader != FOE_NULL_HANDLE)
+        foeResourceDecrementRefCount(data.vertexShader);
+    if (data.tessellationControlShader != FOE_NULL_HANDLE)
+        foeResourceDecrementRefCount(data.tessellationControlShader);
+    if (data.tessellationEvaluationShader != FOE_NULL_HANDLE)
+        foeResourceDecrementRefCount(data.tessellationEvaluationShader);
+    if (data.geometryShader != FOE_NULL_HANDLE)
+        foeResourceDecrementRefCount(data.geometryShader);
+
+    // Call the resource post-load function with the error result code
+    pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void foeVertexDescriptorLoader::unloadResource(void *pContext,

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,9 +16,11 @@ struct foeMaterial {
     foeResource fragmentShader;
     // For the Material
     foeResource image;
-
-    foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
+    // Managed by material loader
     VkDescriptorSet materialDescriptorSet;
+
+    // Pointer to data managed by external system (FragmentDescriptorPool)
+    foeGfxVkFragmentDescriptor *pGfxFragDescriptor;
 };
 
 #endif // FOE_GRAPHICS_RESOURCE_MATERIAL_HPP

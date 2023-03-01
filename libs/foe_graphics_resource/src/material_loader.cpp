@@ -249,12 +249,12 @@ void foeMaterialLoader::load(foeResource resource,
         return;
     }
 
-    auto const *pMaterialCI =
+    foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+    foeMaterialCreateInfo const *pMaterialCI =
         (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-
     foeMaterial data{};
 
-    // Fragment Shader
+    // Find all required sub-resources, and make sure they are compatible types
     if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {
         while (data.fragmentShader == FOE_NULL_HANDLE) {
             data.fragmentShader = foeResourcePoolFind(mResourcePool, pMaterialCI->fragmentShader);
@@ -265,14 +265,13 @@ void foeMaterialLoader::load(foeResource resource,
                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
         }
 
-        foeResourceIncrementUseCount(data.fragmentShader);
-
-        if (foeResourceGetState(data.fragmentShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.fragmentShader))
-            foeResourceLoadData(data.fragmentShader);
+        if (foeResourceGetType(data.fragmentShader) !=
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_INCOMPATIBLE);
+            goto LOAD_FAILED;
+        }
     }
 
-    // Image
     if (pMaterialCI->image != FOE_INVALID_ID) {
         while (data.image == FOE_NULL_HANDLE) {
             data.image = foeResourcePoolFind(mResourcePool, pMaterialCI->image);
@@ -283,8 +282,23 @@ void foeMaterialLoader::load(foeResource resource,
                                                 sizeof(foeImage));
         }
 
-        foeResourceIncrementUseCount(data.image);
+        if (foeResourceGetType(data.image) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
+            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_INCOMPATIBLE);
+            goto LOAD_FAILED;
+        }
+    }
 
+    // If here, we have all requested resources, so increment their use, then make sure they are
+    // loaded or loading. We only want to attempt to load *any* of the sub-resources if we can find
+    // them all as compatible types
+    if (data.fragmentShader != FOE_NULL_HANDLE) {
+        foeResourceIncrementUseCount(data.fragmentShader);
+        if (foeResourceGetState(data.fragmentShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
+            !foeResourceGetIsLoading(data.fragmentShader))
+            foeResourceLoadData(data.fragmentShader);
+    }
+    if (data.image != FOE_NULL_HANDLE) {
+        foeResourceIncrementUseCount(data.image);
         if (foeResourceGetState(data.image) != FOE_RESOURCE_LOAD_STATE_LOADED &&
             !foeResourceGetIsLoading(data.image))
             foeResourceLoadData(data.image);
@@ -299,6 +313,16 @@ void foeMaterialLoader::load(foeResource resource,
         .data = std::move(data),
     });
     mLoadSync.unlock();
+    return;
+
+LOAD_FAILED:
+    if (data.fragmentShader != FOE_NULL_HANDLE)
+        foeResourceDecrementRefCount(data.fragmentShader);
+    if (data.image != FOE_NULL_HANDLE)
+        foeResourceDecrementRefCount(data.image);
+
+    // Call the resource post-load function with the error result code
+    pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 VkResult foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialData) {
