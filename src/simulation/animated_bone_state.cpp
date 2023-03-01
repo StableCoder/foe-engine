@@ -5,10 +5,10 @@
 #include "animated_bone_state.hpp"
 
 void cleanup_foeAnimatedBoneState(foeAnimatedBoneState const *pData) {
-    assert(pData->armature != FOE_NULL_HANDLE);
-
-    foeResourceDecrementUseCount(pData->armature);
-    foeResourceDecrementRefCount(pData->armature);
+    if (pData->armature) {
+        foeResourceDecrementUseCount(pData->armature);
+        foeResourceDecrementRefCount(pData->armature);
+    }
 
     free(pData->pBones);
 }

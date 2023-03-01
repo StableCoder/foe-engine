@@ -235,8 +235,15 @@ extern "C" void foeDeinitializeAnimatedBoneSystem(foeAnimatedBoneSystem animated
         foeEntityID const *const pEndAnimatedBoneStateID =
             pAnimatedBoneStateID +
             foeEcsComponentPoolSize(pAnimatedBoneSystem->mAnimatedBoneStatePool);
+        foeAnimatedBoneState const *pAnimatedBoneStateData =
+            (foeAnimatedBoneState *)foeEcsComponentPoolDataPtr(
+                pAnimatedBoneSystem->mAnimatedBoneStatePool);
 
-        for (; pAnimatedBoneStateID != pEndAnimatedBoneStateID; ++pAnimatedBoneStateID) {
+        for (; pAnimatedBoneStateID != pEndAnimatedBoneStateID;
+             ++pAnimatedBoneStateID, ++pAnimatedBoneStateData) {
+            cleanup_foeAnimatedBoneState(pAnimatedBoneStateData);
+            memset((void *)pAnimatedBoneStateData, 0, sizeof(foeAnimatedBoneState));
+
             foeEcsComponentPoolRemove(pAnimatedBoneSystem->mAnimatedBoneStatePool,
                                       *pAnimatedBoneStateID);
         }
