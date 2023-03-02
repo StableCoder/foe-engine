@@ -45,7 +45,7 @@ struct RenderSystem {
 
 FOE_DEFINE_HANDLE_CASTS(render_system, RenderSystem, foeRenderSystem)
 
-void clearRenderData(RenderDataSet const *pRenderData) {
+void clearRenderData(RenderResources const *pRenderData) {
     if (pRenderData->mesh != FOE_NULL_HANDLE) {
         foeResourceDecrementUseCount(pRenderData->mesh);
         foeResourceDecrementRefCount(pRenderData->mesh);
@@ -69,7 +69,7 @@ void clearRenderData(RenderDataSet const *pRenderData) {
 
 void getRenderData(foeResourcePool resourcePool,
                    foeRenderState const *pRenderState,
-                   RenderDataSet *pRenderData) {
+                   RenderResources *pRenderData) {
     // Vertex Descriptor
     foeResource &vertexDescriptor = pRenderData->vertexDescriptor;
     // Check if we already have an associated resource, if it isn't the desired one, release it
@@ -169,7 +169,7 @@ void getRenderData(foeResourcePool resourcePool,
     }
 }
 
-foeResourceLoadState checkLoadState(RenderDataSet const *pRenderDataSet) {
+foeResourceLoadState checkLoadState(foeEntityID entity, RenderResources const *pRenderDataSet) {
     foeResourceLoadState overallLoadState = FOE_RESOURCE_LOAD_STATE_LOADED;
 
     if (pRenderDataSet->vertexDescriptor != FOE_NULL_HANDLE) {
@@ -189,7 +189,7 @@ foeResourceLoadState checkLoadState(RenderDataSet const *pRenderDataSet) {
                             "While attempting to render {}, VertexDescriptor resource {} was "
                             "unloaded and "
                             "wasn't being loaded, requesting load",
-                            foeIdToString(pRenderDataSet->entity),
+                            foeIdToString(entity),
                             foeIdToString(foeResourceGetID(pRenderDataSet->vertexDescriptor)));
                     foeResourceLoadData(pRenderDataSet->vertexDescriptor);
                 }
@@ -214,7 +214,7 @@ foeResourceLoadState checkLoadState(RenderDataSet const *pRenderDataSet) {
                             "While attempting to render {}, VertexDescriptor resource {} was "
                             "unloaded and "
                             "wasn't being loaded, requesting load",
-                            foeIdToString(pRenderDataSet->entity),
+                            foeIdToString(entity),
                             foeIdToString(foeResourceGetID(pRenderDataSet->bonedVertexDescriptor)));
                     foeResourceLoadData(pRenderDataSet->bonedVertexDescriptor);
                 }
@@ -238,7 +238,7 @@ foeResourceLoadState checkLoadState(RenderDataSet const *pRenderDataSet) {
                     FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
                             "While attempting to render {}, Material resource {} was unloaded and "
                             "wasn't being loaded, requesting load",
-                            foeIdToString(pRenderDataSet->entity),
+                            foeIdToString(entity),
                             foeIdToString(foeResourceGetID(pRenderDataSet->material)));
                     foeResourceLoadData(pRenderDataSet->material);
                 }
@@ -263,7 +263,7 @@ foeResourceLoadState checkLoadState(RenderDataSet const *pRenderDataSet) {
                             "While attempting to render {}, VertexDescriptor resource {} was "
                             "unloaded and "
                             "wasn't being loaded, requesting load",
-                            foeIdToString(pRenderDataSet->entity),
+                            foeIdToString(entity),
                             foeIdToString(foeResourceGetID(pRenderDataSet->mesh)));
                     foeResourceLoadData(pRenderDataSet->mesh);
                 }
@@ -358,9 +358,9 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(
                 continue;
 
             RenderDataSet newDataSet{.entity = *pRenderStateID, .armatureIndex = UINT32_MAX};
-            getRenderData(resourcePool, pRenderStateData, &newDataSet);
+            getRenderData(resourcePool, pRenderStateData, &newDataSet.resources);
 
-            switch (checkLoadState(&newDataSet)) {
+            switch (checkLoadState(newDataSet.entity, &newDataSet.resources)) {
             case FOE_RESOURCE_LOAD_STATE_LOADED:
                 // Data is loaded, can add right away
                 pAnimatedBoneStateID = std::lower_bound(pAnimatedBoneStateID,
@@ -370,7 +370,7 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(
                     result = getArmatureData(pRenderSystem->armatureData,
                                              pStartAnimatedBoneStateData +
                                                  (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
-                                             newDataSet.mesh, newDataSet.armatureIndex);
+                                             newDataSet.resources.mesh, newDataSet.armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         goto GRAPHICS_INITIALIZATION_FAILED;
                 }
@@ -392,7 +392,7 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(
             case FOE_RESOURCE_LOAD_STATE_FAILED:
                 // Some required resource failed to load
                 clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
-                clearRenderData(&newDataSet);
+                clearRenderData(&newDataSet.resources);
                 break;
             }
         }
@@ -414,13 +414,13 @@ extern "C" void foeDeinitializeRenderSystemGraphics(foeRenderSystem renderSystem
 
     // Clear items awaiting loading
     for (auto const &dataSet : pRenderSystem->awaitingLoading) {
-        clearRenderData(&dataSet);
+        clearRenderData(&dataSet.resources);
     }
     pRenderSystem->awaitingLoading.clear();
 
     // Decompile data sets
     for (auto const &dataSet : pRenderSystem->renderData) {
-        clearRenderData(&dataSet);
+        clearRenderData(&dataSet.resources);
     }
 
     // Clear external data
@@ -482,7 +482,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 // Whatever we were loading is no longer in the RenderState component pool,
                 // clear the data and continue
                 clearArmatureData(pRenderSystem->armatureData, awaitingIt->armatureIndex);
-                clearRenderData(&(*awaitingIt));
+                clearRenderData(&awaitingIt->resources);
                 continue;
             }
 
@@ -493,13 +493,13 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 // Whatever we were loading is no longer in the Position component pool, clear
                 // the data and continue
                 clearArmatureData(pRenderSystem->armatureData, awaitingIt->armatureIndex);
-                clearRenderData(&(*awaitingIt));
+                clearRenderData(&awaitingIt->resources);
                 continue;
             }
 
-            getRenderData(pRenderSystem->resourcePool, pRenderStateData, &(*awaitingIt));
+            getRenderData(pRenderSystem->resourcePool, pRenderStateData, &awaitingIt->resources);
 
-            switch (checkLoadState(&(*awaitingIt))) {
+            switch (checkLoadState(awaitingIt->entity, &awaitingIt->resources)) {
             case FOE_RESOURCE_LOAD_STATE_UNLOADED:
                 // Still loading
                 pRenderSystem->awaitingLoading.emplace_back(*awaitingIt);
@@ -518,7 +518,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     // If the item already exists in the render array, clear the awaiting data,
                     // should never happen maybe?
                     clearArmatureData(pRenderSystem->armatureData, awaitingIt->armatureIndex);
-                    clearRenderData(&(*awaitingIt));
+                    clearRenderData(&awaitingIt->resources);
                 }
 
                 pAnimatedBoneStateID = std::lower_bound(pAnimatedBoneStateID,
@@ -528,7 +528,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     result = getArmatureData(pRenderSystem->armatureData,
                                              pStartAnimatedBoneStateData +
                                                  (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
-                                             awaitingIt->mesh, awaitingIt->armatureIndex);
+                                             awaitingIt->resources.mesh, awaitingIt->armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         return result;
                 }
@@ -546,7 +546,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             case FOE_RESOURCE_LOAD_STATE_FAILED:
                 // Failed to load, discard
                 clearArmatureData(pRenderSystem->armatureData, awaitingIt->armatureIndex);
-                clearRenderData(&(*awaitingIt));
+                clearRenderData(&awaitingIt->resources);
                 break;
             }
         }
@@ -554,7 +554,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
     END_AWAITING_RESOURCE_PROCESSING:
         for (; awaitingIt != dataSets.end(); ++awaitingIt) {
             clearArmatureData(pRenderSystem->armatureData, awaitingIt->armatureIndex);
-            clearRenderData(&(*awaitingIt));
+            clearRenderData(&awaitingIt->resources);
         }
     }
 
@@ -604,7 +604,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
             if (*pRenderStateID == renderDataSetIt->entity) {
                 clearArmatureData(pRenderSystem->armatureData, renderDataSetIt->armatureIndex);
-                clearRenderData(&(*renderDataSetIt));
+                clearRenderData(&renderDataSetIt->resources);
 
                 removePositionData(pRenderSystem->positionData,
                                    renderDataSetIt - pRenderSystem->renderData.begin());
@@ -633,7 +633,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
             if (*pPositionID == renderDataSetIt->entity) {
                 clearArmatureData(pRenderSystem->armatureData, renderDataSetIt->armatureIndex);
-                clearRenderData(&(*renderDataSetIt));
+                clearRenderData(&renderDataSetIt->resources);
 
                 removePositionData(pRenderSystem->positionData,
                                    renderDataSetIt - pRenderSystem->renderData.begin());
@@ -702,9 +702,9 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
                 foeRenderState const *pRenderState =
                     pStartRenderStateData + (pRenderStateID - pStartRenderStateID);
-                getRenderData(pRenderSystem->resourcePool, pRenderState, &(*renderDataIt));
+                getRenderData(pRenderSystem->resourcePool, pRenderState, &renderDataIt->resources);
 
-                switch (checkLoadState(&(*renderDataIt))) {
+                switch (checkLoadState(renderDataIt->entity, &renderDataIt->resources)) {
                 case FOE_RESOURCE_LOAD_STATE_UNLOADED:
                     // Some required resource is still loading
                     clearArmatureData(pRenderSystem->armatureData, renderDataIt->armatureIndex);
@@ -719,7 +719,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 case FOE_RESOURCE_LOAD_STATE_FAILED:
                     // Some required resource failed to load
                     clearArmatureData(pRenderSystem->armatureData, renderDataIt->armatureIndex);
-                    clearRenderData(&(*renderDataIt));
+                    clearRenderData(&renderDataIt->resources);
 
                     removePositionData(pRenderSystem->positionData,
                                        renderDataIt - pRenderSystem->renderData.begin());
@@ -733,11 +733,11 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                         pAnimatedBoneStateID, pEndAnimatedBoneStateID, *pRenderStateID);
                     if (pAnimatedBoneStateID != pEndAnimatedBoneStateID &&
                         *pAnimatedBoneStateID == *pRenderStateID) {
-                        result =
-                            getArmatureData(pRenderSystem->armatureData,
-                                            pStartAnimatedBoneStateData +
-                                                (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
-                                            renderDataIt->mesh, renderDataIt->armatureIndex);
+                        result = getArmatureData(
+                            pRenderSystem->armatureData,
+                            pStartAnimatedBoneStateData +
+                                (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
+                            renderDataIt->resources.mesh, renderDataIt->armatureIndex);
                         if (result.value != FOE_SUCCESS)
                             return result;
                     }
@@ -861,9 +861,9 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 continue;
 
             RenderDataSet newDataSet{.entity = entity, .armatureIndex = UINT32_MAX};
-            getRenderData(pRenderSystem->resourcePool, pRenderStateData, &newDataSet);
+            getRenderData(pRenderSystem->resourcePool, pRenderStateData, &newDataSet.resources);
 
-            switch (checkLoadState(&newDataSet)) {
+            switch (checkLoadState(newDataSet.entity, &newDataSet.resources)) {
             case FOE_RESOURCE_LOAD_STATE_LOADED: {
                 // Check if we also have armature data available
                 pAnimatedBoneStateID =
@@ -873,7 +873,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     result = getArmatureData(pRenderSystem->armatureData,
                                              pStartAnimatedBoneStateData +
                                                  (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
-                                             newDataSet.mesh, newDataSet.armatureIndex);
+                                             newDataSet.resources.mesh, newDataSet.armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         return result;
                 }
@@ -896,7 +896,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             case FOE_RESOURCE_LOAD_STATE_FAILED:
                 // Some required resource failed to load
                 clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
-                clearRenderData(&newDataSet);
+                clearRenderData(&newDataSet.resources);
                 break;
             }
         }
@@ -954,9 +954,9 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 continue;
 
             RenderDataSet newDataSet{.entity = entity, .armatureIndex = UINT32_MAX};
-            getRenderData(pRenderSystem->resourcePool, pRenderStateData, &newDataSet);
+            getRenderData(pRenderSystem->resourcePool, pRenderStateData, &newDataSet.resources);
 
-            switch (checkLoadState(&newDataSet)) {
+            switch (checkLoadState(newDataSet.entity, &newDataSet.resources)) {
             case FOE_RESOURCE_LOAD_STATE_LOADED: {
                 // Check if we also have armature data available
                 pAnimatedBoneStateID =
@@ -966,7 +966,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     result = getArmatureData(pRenderSystem->armatureData,
                                              pStartAnimatedBoneStateData +
                                                  (pAnimatedBoneStateID - pStartAnimatedBoneStateID),
-                                             newDataSet.mesh, newDataSet.armatureIndex);
+                                             newDataSet.resources.mesh, newDataSet.armatureIndex);
                     if (result.value != FOE_SUCCESS)
                         return result;
                 }
@@ -989,7 +989,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             case FOE_RESOURCE_LOAD_STATE_FAILED:
                 // Some required resource failed to load
                 clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
-                clearRenderData(&newDataSet);
+                clearRenderData(&newDataSet.resources);
                 break;
             }
         }
@@ -1026,7 +1026,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
             if (renderDataIt->entity == entity) {
                 result = getArmatureData(pRenderSystem->armatureData, pAnimatedBoneStateData,
-                                         renderDataIt->mesh, renderDataIt->armatureIndex);
+                                         renderDataIt->resources.mesh, renderDataIt->armatureIndex);
                 if (result.value != FOE_SUCCESS)
                     return result;
             }
@@ -1065,7 +1065,8 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
             foeAnimatedBoneState const *pAnimatedBoneStateData =
                 pStartAnimatedBoneStateData + (pAnimatedBoneStateID - pStartAnimatedBoneStateID);
 
-            foeMesh const *pMesh = (foeMesh const *)foeResourceGetData(renderDataIt->mesh);
+            foeMesh const *pMesh =
+                (foeMesh const *)foeResourceGetData(renderDataIt->resources.mesh);
 
             // Get Armature Resource
             foeArmature const *pArmature =

@@ -39,16 +39,16 @@ auto renderCall(RenderDataSet const *pDataSet,
                 VkDescriptorSet cameraDescriptor) -> bool {
     VkDescriptorSet const dummyDescriptorSet = foeGfxVkGetDummySet(gfxSession);
 
-    foeResource vertexDescriptor{pDataSet->vertexDescriptor};
-    foeResource material{pDataSet->material};
-    foeResource mesh{pDataSet->mesh};
+    foeResource vertexDescriptor{pDataSet->resources.vertexDescriptor};
+    foeResource material{pDataSet->resources.material};
+    foeResource mesh{pDataSet->resources.mesh};
 
     bool boned{false};
-    if (pDataSet->bonedVertexDescriptor != FOE_NULL_HANDLE &&
+    if (pDataSet->resources.bonedVertexDescriptor != FOE_NULL_HANDLE &&
         armatureDescriptorSet != VK_NULL_HANDLE) {
         boned = true;
 
-        vertexDescriptor = pDataSet->bonedVertexDescriptor;
+        vertexDescriptor = pDataSet->resources.bonedVertexDescriptor;
     }
 
     // Get Resource Data

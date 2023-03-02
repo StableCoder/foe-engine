@@ -42,15 +42,17 @@ foeResultSet foeProcessRenderSystemGraphics(foeRenderSystem renderSystem, uint32
 #endif
 
 // TEMP
-
-struct RenderDataSet {
-    foeEntityID entity;
-
+struct RenderResources {
     foeResource vertexDescriptor;
     foeResource bonedVertexDescriptor;
     foeResource material;
     foeResource mesh;
+};
 
+struct RenderDataSet {
+    foeEntityID entity;
+
+    RenderResources resources;
     uint32_t armatureIndex;
 };
 
