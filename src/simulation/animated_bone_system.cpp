@@ -164,6 +164,12 @@ extern "C" foeResultSet foeInitializeAnimatedBoneSystem(
                 }
             } while (armature == FOE_NULL_HANDLE);
 
+            // Resource ID provided does not match with an Armature type, don't use it
+            if (foeResourceGetType(armature) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+                foeResourceDecrementRefCount(armature);
+                continue;
+            }
+
             foeResourceIncrementUseCount(armature);
 
             foeResourceLoadState loadState = foeResourceGetState(armature);
@@ -414,6 +420,12 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                         }
                     } while (armature == FOE_NULL_HANDLE);
 
+                    // Resource ID provided does not match with an Armature type, don't use it
+                    if (foeResourceGetType(armature) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+                        foeResourceDecrementRefCount(armature);
+                        continue;
+                    }
+
                     foeResourceIncrementUseCount(armature);
 
                     foeResourceLoadState loadState = foeResourceGetState(armature);
@@ -485,6 +497,9 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                         foeResourceGetID(pAnimatedBoneStateData->armature)) {
                         // The armature has changed
                         foeResource newArmature = FOE_NULL_HANDLE;
+                        foeResourceLoadState loadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+
+                        // Acquire new armature resource
                         do {
                             newArmature = foeResourcePoolFind(pAnimatedBoneSystem->mResourcePool,
                                                               pArmatureStateData->armatureID);
@@ -497,9 +512,15 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                             }
                         } while (newArmature == FOE_NULL_HANDLE);
 
-                        foeResourceIncrementUseCount(newArmature);
+                        if (foeResourceGetType(newArmature) !=
+                            FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+                            // Newly acquired resource is not correct type, don't use it
+                            foeResourceDecrementRefCount(newArmature);
+                        } else {
+                            foeResourceIncrementUseCount(newArmature);
+                            loadState = foeResourceGetState(newArmature);
+                        }
 
-                        foeResourceLoadState loadState = foeResourceGetState(newArmature);
                         switch (loadState) {
                         case FOE_RESOURCE_LOAD_STATE_LOADED: {
                             // Unreference the old armature
@@ -585,6 +606,11 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                         FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
                 }
             } while (armature == FOE_NULL_HANDLE);
+
+            if (foeResourceGetType(armature) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+                foeResourceDecrementRefCount(armature);
+                continue;
+            }
 
             foeResourceIncrementUseCount(armature);
 
