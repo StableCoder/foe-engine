@@ -192,8 +192,9 @@ void foeArmatureLoader::load(foeResource resource,
 
     auto const *pArmatureCreateInfo =
         (foeArmatureCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-
-    foeArmature data{};
+    foeArmature data{
+        .rType = FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
+    };
 
     if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
         pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr, nullptr,

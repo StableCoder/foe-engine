@@ -236,7 +236,9 @@ void foeVertexDescriptorLoader::load(foeResource resource,
     foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
     foeVertexDescriptorCreateInfo const *pCI =
         (foeVertexDescriptorCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-    foeVertexDescriptor data{};
+    foeVertexDescriptor data{
+        .rType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
+    };
 
     // Find all required sub-resources, and make sure they are compatible types
     if (pCI->vertexShader != FOE_INVALID_ID) {

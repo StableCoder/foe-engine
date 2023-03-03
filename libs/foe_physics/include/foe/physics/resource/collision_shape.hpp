@@ -6,10 +6,13 @@
 #define FOE_PHYSICS_RESOURCE_COLLISION_SHAPE_HPP
 
 #include <btBulletDynamicsCommon.h>
+#include <foe/resource/type_defs.h>
 
 #include <memory>
 
 struct foeCollisionShape {
+    foeResourceType rType;
+    void *pNext;
     std::unique_ptr<btCollisionShape> collisionShape;
 };
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,6 +26,7 @@ typedef enum foeResourceResult {
     FOE_RESOURCE_ERROR_NO_CREATE_INFO = -1000007007,
     FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED = -1000007008,
     FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED = -1000007009,
+    FOE_RESOURCE_ERROR_DATA_SIZE_SMALLER_THAN_BASE = -1000007010,
 } foeResourceResult;
 
 FOE_RES_EXPORT void foeResourceResultToString(foeResourceResult value,

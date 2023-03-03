@@ -20,7 +20,6 @@ namespace {
 
 struct foeResourceImpl {
     foeResourceID id;
-    foeResourceType type;
 
     foeResourceFns const *pResourceFns;
 
@@ -40,8 +39,8 @@ struct foeResourceImpl {
     void *pUnloadContext{nullptr};
     void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool){nullptr};
 
-    foeResourceImpl(foeResourceID id, foeResourceType type, foeResourceFns const *pResourceFns) :
-        id{id}, type{type}, pResourceFns{pResourceFns} {}
+    foeResourceImpl(foeResourceID id, foeResourceFns const *pResourceFns) :
+        id{id}, pResourceFns{pResourceFns} {}
 };
 
 FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
@@ -55,12 +54,19 @@ extern "C" foeResultSet foeCreateResource(foeResourceID id,
                                           foeResource *pResource) {
     if (pResourceFns == nullptr)
         return to_foeResult(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
+    if (size < sizeof(foeResourceBase))
+        return to_foeResult(FOE_RESOURCE_ERROR_DATA_SIZE_SMALLER_THAN_BASE);
 
     auto *pNewResource = (foeResourceImpl *)malloc(sizeof(foeResourceImpl) + size);
     if (pNewResource == NULL)
         return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
 
-    new (pNewResource) foeResourceImpl(id, type, pResourceFns);
+    new (pNewResource) foeResourceImpl(id, pResourceFns);
+
+    // Set the initial type
+    foeResourceBase *pBaseData =
+        (foeResourceBase *)foeResourceGetData(resource_to_handle(pNewResource));
+    pBaseData->rType = type;
 
     *pResource = resource_to_handle(pNewResource);
 
@@ -76,8 +82,12 @@ extern "C" foeResourceID foeResourceGetID(foeResource resource) {
 }
 
 extern "C" foeResourceType foeResourceGetType(foeResource resource) {
-    auto *pResource = resource_from_handle(resource);
-    return pResource->type;
+    foeResourceBase const *pBaseData = (foeResourceBase *)foeResourceGetData(resource);
+    return pBaseData->rType;
+}
+
+extern "C" bool foeResourceHasType(foeResource resource, foeResourceType type) {
+    return foeResourceGetTypeData(resource, type) != nullptr;
 }
 
 extern "C" int foeResourceGetRefCount(foeResource resource) {
@@ -96,19 +106,19 @@ extern "C" int foeResourceDecrementRefCount(foeResource resource) {
 
     if (refCount == 0) {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Destroying",
-                foeIdToString(pResource->id), pResource->type)
+                foeIdToString(pResource->id), foeResourceGetType(resource))
 
         int useCount = pResource->useCount;
         if (useCount != 0) {
             FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
                     "[{},{}] foeResource - Destroying with a non-zero use count of: {}",
-                    foeIdToString(pResource->id), pResource->type, useCount)
+                    foeIdToString(pResource->id), foeResourceGetType(resource), useCount)
         }
 
         foeResourceUnloadData(resource, true);
 
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Destroyed",
-                foeIdToString(pResource->id), pResource->type)
+                foeIdToString(pResource->id), foeResourceGetType(resource))
 
         pResource->~foeResourceImpl();
 
@@ -148,6 +158,19 @@ extern "C" void const *foeResourceGetData(foeResource resource) {
     return (char *)pResource + sizeof(foeResourceImpl);
 }
 
+extern "C" void const *foeResourceGetTypeData(foeResource resource, foeResourceType type) {
+    foeResourceBase const *pData = (foeResourceBase const *)foeResourceGetData(resource);
+
+    while (pData != nullptr) {
+        if (pData->rType == type)
+            return pData;
+
+        pData = (foeResourceBase const *)pData->pNext;
+    }
+
+    return nullptr;
+}
+
 namespace {
 
 void postLoadFn(
@@ -165,7 +188,7 @@ void postLoadFn(
         loadResult.toString(loadResult.value, buffer);
         FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
                 "[{},{}] foeResource - Failed to load  with error: {}",
-                foeIdToString(pResource->id), pResource->type, buffer)
+                foeIdToString(pResource->id), foeResourceGetType(resource), buffer)
 
         auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
         pResource->state.compare_exchange_strong(expected, FOE_RESOURCE_LOAD_STATE_FAILED);
@@ -222,7 +245,7 @@ extern "C" void foeResourceLoadData(foeResource resource) {
             pResource);
     } else {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Loading synchronously",
-                foeIdToString(pResource->id), pResource->type)
+                foeIdToString(pResource->id), foeResourceGetType(resource))
 
         loadResourceTask(pResource);
     }
@@ -267,16 +290,16 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
         if (int uses = pResource->useCount; uses > 0) {
             FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
                     "[{},{}] foeResource - Unloading while still actively used {} times",
-                    foeIdToString(pResource->id), pResource->type, uses)
+                    foeIdToString(pResource->id), foeResourceGetType(resource), uses)
         }
 
         if (immediate) {
             FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE,
                     "[{},{}] foeResource - Unloading immediately", foeIdToString(pResource->id),
-                    pResource->type)
+                    foeResourceGetType(resource))
         } else {
             FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Unloading normally",
-                    foeIdToString(pResource->id), pResource->type)
+                    foeIdToString(pResource->id), foeResourceGetType(resource))
         }
 
         pResource->pUnloadFn(pResource->pUnloadContext, resource, pResource->iteration,

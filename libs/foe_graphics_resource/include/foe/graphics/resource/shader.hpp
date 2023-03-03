@@ -6,8 +6,11 @@
 #define FOE_GRAPHICS_RESOURCE_SHADER_HPP
 
 #include <foe/graphics/shader.h>
+#include <foe/resource/type_defs.h>
 
 struct foeShader {
+    foeResourceType rType;
+    void *pNext;
     foeGfxShader shader;
 };
 

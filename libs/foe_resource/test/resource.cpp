@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,20 +15,28 @@ constexpr size_t cNumThreads = 4;
 constexpr size_t cNumCount = 8192 * 8;
 
 TEST_CASE("foeResource - Create while not providing foeResourceFns fails") {
-    foeResource resource{FOE_NULL_HANDLE};
+    foeResource resource{(foeResource)0xdeadbeef};
 
-    foeResultSet result = foeCreateResource(0, 0, nullptr, 0, &resource);
+    foeResultSet result = foeCreateResource(0, 0, nullptr, sizeof(foeResourceBase), &resource);
 
     CHECK(result.value == FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
-    CHECK(resource == FOE_NULL_HANDLE);
+    CHECK(resource == (foeResource)0xdeadbeef);
+}
 
-    SECTION("Ensure the 'pResource' variable isn't updated on a failure case") {
-        resource = (foeResource)0xbebebebebebe;
+TEST_CASE("foeResource - Create when data size is < sizeof(foeResourceBase) fails") {
+    foeResource resource{(foeResource)0xdeadbeef};
+    foeResourceFns fns{};
+    foeResultSet result;
 
-        result = foeCreateResource(0, 0, nullptr, 0, &resource);
-
-        CHECK(result.value == FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED);
-        CHECK(resource == (foeResource)0xbebebebebebe);
+    SECTION("Size of 0") {
+        result = foeCreateResource(0, 0, &fns, 0, &resource);
+        CHECK(result.value == FOE_RESOURCE_ERROR_DATA_SIZE_SMALLER_THAN_BASE);
+        CHECK(resource == (foeResource)0xdeadbeef);
+    }
+    SECTION("One byte smaller") {
+        result = foeCreateResource(0, 0, &fns, sizeof(foeResourceBase) - 1, &resource);
+        CHECK(result.value == FOE_RESOURCE_ERROR_DATA_SIZE_SMALLER_THAN_BASE);
+        CHECK(resource == (foeResource)0xdeadbeef);
     }
 }
 
@@ -37,7 +45,7 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
     foeResource resource{FOE_NULL_HANDLE};
 
     SECTION("Type: 0 / ID: 0") {
-        foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
+        foeResultSet result = foeCreateResource(0, 0, &fns, sizeof(foeResourceBase), &resource);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(resource != FOE_NULL_HANDLE);
@@ -46,7 +54,7 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
         REQUIRE(foeResourceGetRefCount(resource) == 1);
     }
     SECTION("Type: 1 / ID: 1") {
-        foeResultSet result = foeCreateResource(1, 1, &fns, 0, &resource);
+        foeResultSet result = foeCreateResource(1, 1, &fns, sizeof(foeResourceBase), &resource);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(resource != FOE_NULL_HANDLE);
@@ -55,7 +63,8 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
         REQUIRE(foeResourceGetRefCount(resource) == 1);
     }
     SECTION("Type: INT_MAX / ID: UINT32_MAX") {
-        foeResultSet result = foeCreateResource(UINT32_MAX, INT_MAX, &fns, 0, &resource);
+        foeResultSet result =
+            foeCreateResource(UINT32_MAX, INT_MAX, &fns, sizeof(foeResourceBase), &resource);
 
         CHECK(result.value == FOE_RESOURCE_SUCCESS);
         REQUIRE(resource != FOE_NULL_HANDLE);
@@ -74,7 +83,7 @@ TEST_CASE("foeResource - Incrementing/Decrementing reference and use counts") {
     foeResourceFns fns{};
     foeResource resource{FOE_NULL_HANDLE};
 
-    foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
+    foeResultSet result = foeCreateResource(0, 0, &fns, sizeof(foeResourceBase), &resource);
 
     REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);
@@ -187,7 +196,7 @@ TEST_CASE("foeResource - Regular lifetime logs (no import/loading)") {
 
     foeLogRegisterSink(&testSink, TestLogSink::log, nullptr);
 
-    foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
+    foeResultSet result = foeCreateResource(0, 0, &fns, sizeof(foeResourceBase), &resource);
 
     REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);
@@ -215,7 +224,7 @@ TEST_CASE("foeResource - Warning logged when destroyed with non-zero reference o
     foeResourceFns fns{};
     foeResource resource{FOE_NULL_HANDLE};
 
-    foeResultSet result = foeCreateResource(0, 0, &fns, 0, &resource);
+    foeResultSet result = foeCreateResource(0, 0, &fns, sizeof(foeResourceBase), &resource);
 
     REQUIRE(result.value == FOE_RESOURCE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);

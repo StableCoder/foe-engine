@@ -120,8 +120,9 @@ void foeCollisionShapeLoader::load(foeResource resource,
 
     auto const *pCollisionShapeCreateInfo =
         (foeCollisionShapeCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-
-    foeCollisionShape data{};
+    foeCollisionShape data{
+        .rType = FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE,
+    };
 
     data.collisionShape =
         std::make_unique<btBoxShape>(glmToBtVec3(pCollisionShapeCreateInfo->boxSize));

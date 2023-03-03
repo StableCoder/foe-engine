@@ -256,7 +256,9 @@ void foeMaterialLoader::load(foeResource resource,
     foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
     foeMaterialCreateInfo const *pMaterialCI =
         (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-    foeMaterial data{};
+    foeMaterial data{
+        .rType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL,
+    };
 
     // Find all required sub-resources, and make sure they are compatible types
     if (pMaterialCI->fragmentShader != FOE_INVALID_ID) {

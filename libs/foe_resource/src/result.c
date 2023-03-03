@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,6 +31,7 @@ void foeResourceResultToString(foeResourceResult value, char buffer[FOE_MAX_RESU
         RESULT_CASE(FOE_RESOURCE_ERROR_NO_CREATE_INFO)
         RESULT_CASE(FOE_RESOURCE_ERROR_RESOURCE_FUNCTIONS_NOT_PROVIDED)
         RESULT_CASE(FOE_RESOURCE_ERROR_DATA_FUNCTION_NOT_PROVIDED)
+        RESULT_CASE(FOE_RESOURCE_ERROR_DATA_SIZE_SMALLER_THAN_BASE)
 
     default:
         if (value > 0) {

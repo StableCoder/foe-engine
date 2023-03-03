@@ -148,10 +148,11 @@ void foeShaderLoader::load(foeResource resource,
         return;
     }
 
-    auto const *pShaderCI = (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
-
-    foeShader data{};
     foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
+    auto const *pShaderCI = (foeShaderCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
+    foeShader data{
+        .rType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER,
+    };
 
     { // Load Shader SPIR-V from external file
         foeManagedMemory managedMemory = FOE_NULL_HANDLE;

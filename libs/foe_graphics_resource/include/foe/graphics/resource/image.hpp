@@ -5,10 +5,13 @@
 #ifndef FOE_GRAPHICS_RESOURCE_IMAGE_HPP
 #define FOE_GRAPHICS_RESOURCE_IMAGE_HPP
 
+#include <foe/resource/type_defs.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 struct foeImage {
+    foeResourceType rType;
+    void *pNext;
     VmaAllocation alloc;
     VkImage image;
     VkImageView view;

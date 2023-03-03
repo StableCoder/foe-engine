@@ -212,8 +212,10 @@ void foeMeshLoader::load(foeResource resource,
     foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS);
     foeGfxUploadRequest uploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer uploadBuffer{FOE_NULL_HANDLE};
-    foeMesh data{};
-    foeManagedMemory managedMemory = FOE_NULL_HANDLE;
+    foeManagedMemory managedMemory{FOE_NULL_HANDLE};
+    foeMesh data{
+        .rType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH,
+    };
 
     if (type == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH_FILE_CREATE_INFO) {
         foeMeshFileCreateInfo const *pCI =

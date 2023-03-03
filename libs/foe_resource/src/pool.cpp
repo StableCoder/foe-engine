@@ -104,8 +104,10 @@ extern "C" foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeReso
         pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
         [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
 
-    if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID)
+    if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID) {
+        foeResourceIncrementRefCount(*searchIt);
         return *searchIt;
+    }
 
     return FOE_NULL_HANDLE;
 }

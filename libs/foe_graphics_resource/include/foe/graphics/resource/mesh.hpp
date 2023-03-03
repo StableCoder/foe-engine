@@ -8,10 +8,13 @@
 #include <foe/graphics/mesh.h>
 #include <foe/model/armature.hpp>
 #include <foe/model/vertex_component.hpp>
+#include <foe/resource/type_defs.h>
 
 #include <vector>
 
 struct foeMesh {
+    foeResourceType rType;
+    void *pNext;
     foeGfxMesh gfxData{};
     std::vector<foeMeshBone> gfxBones{};
     std::vector<foeVertexComponent> gfxVertexComponent{};

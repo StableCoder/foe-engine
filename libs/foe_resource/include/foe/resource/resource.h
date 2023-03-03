@@ -8,6 +8,7 @@
 #include <foe/ecs/id.h>
 #include <foe/handle.h>
 #include <foe/resource/export.h>
+#include <foe/resource/type_defs.h>
 #include <foe/result.h>
 
 #include <stdbool.h>
@@ -20,8 +21,6 @@ extern "C" {
 typedef struct foeResourceFns foeResourceFns;
 
 FOE_DEFINE_HANDLE(foeResource)
-
-typedef int foeResourceType;
 
 /// @returns True if the data was moved/destroyed, otherwise false. If false, usually because of
 /// mismatching resource iteration.
@@ -53,11 +52,13 @@ FOE_RES_EXPORT char const *foeResourceLoadStateToString(foeResourceLoadState sta
 FOE_RES_EXPORT foeResultSet foeCreateResource(foeResourceID id,
                                               foeResourceType type,
                                               foeResourceFns const *pResourceFns,
-                                              size_t size,
+                                              size_t size, // Must be >= to sizeof(foeResourceBase)
                                               foeResource *pResource);
 
 FOE_RES_EXPORT foeResourceID foeResourceGetID(foeResource resource);
+
 FOE_RES_EXPORT foeResourceType foeResourceGetType(foeResource resource);
+FOE_RES_EXPORT bool foeResourceHasType(foeResource resource, foeResourceType type);
 
 FOE_RES_EXPORT int foeResourceGetRefCount(foeResource resource);
 FOE_RES_EXPORT int foeResourceIncrementRefCount(foeResource resource);
@@ -71,6 +72,7 @@ FOE_RES_EXPORT bool foeResourceGetIsLoading(foeResource resource);
 FOE_RES_EXPORT foeResourceLoadState foeResourceGetState(foeResource resource);
 
 FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
+FOE_RES_EXPORT void const *foeResourceGetTypeData(foeResource resource, foeResourceType type);
 
 FOE_RES_EXPORT void foeResourceLoadData(foeResource resource);
 FOE_RES_EXPORT void foeResourceUnloadData(foeResource resource, bool immediate);

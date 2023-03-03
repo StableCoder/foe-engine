@@ -7,11 +7,14 @@
 
 #include <foe/graphics/resource/export.h>
 #include <foe/resource/resource.h>
+#include <foe/resource/type_defs.h>
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkFragmentDescriptor;
 
 struct foeMaterial {
+    foeResourceType rType;
+    void *pNext;
     // For the FragmentDescriptor
     foeResource fragmentShader;
     // For the Material

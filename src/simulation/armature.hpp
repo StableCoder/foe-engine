@@ -7,8 +7,11 @@
 
 #include <foe/model/animation.hpp>
 #include <foe/model/armature.hpp>
+#include <foe/resource/type_defs.h>
 
 struct foeArmature {
+    foeResourceType rType;
+    void *pNext;
     std::vector<foeArmatureNode> armature;
     std::vector<foeAnimation> animations;
 };

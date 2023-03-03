@@ -224,7 +224,9 @@ void foeImageLoader::load(foeResource resource,
     VkResult vkRes{VK_SUCCESS};
     foeGfxUploadRequest gfxUploadRequest{FOE_NULL_HANDLE};
     foeGfxUploadBuffer gfxUploadBuffer{FOE_NULL_HANDLE};
-    foeImage imgData{};
+    foeImage imgData{
+        .rType = FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE,
+    };
 
     { // Import the data
         foeManagedMemory managedMemory = FOE_NULL_HANDLE;
