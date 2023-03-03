@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,10 +21,6 @@ foeResultSet import_foeMaterialCreateInfo(void const *pReadBuffer,
                                           uint32_t *pReadSize,
                                           foeEcsGroupTranslator groupTranslator,
                                           foeResourceCreateInfo *pResourceCI);
-
-foeResultSet create_foeMaterialCreateInfo(foeResourceID resource,
-                                          foeResourceCreateInfo resourceCI,
-                                          foeSimulation const *pSimulation);
 
 #ifdef __cplusplus
 }

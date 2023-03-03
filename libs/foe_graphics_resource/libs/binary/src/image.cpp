@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,12 +6,13 @@
 
 #include <foe/graphics/resource/binary.h>
 #include <foe/graphics/resource/cleanup.h>
-#include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/simulation/simulation.hpp>
 
 #include "result.h"
+
+#include <new>
+#include <utility>
 
 extern "C" foeResultSet import_foeImageCreateInfo(void const *pReadBuffer,
                                                   uint32_t *pReadSize,
@@ -37,17 +38,4 @@ extern "C" foeResultSet import_foeImageCreateInfo(void const *pReadBuffer,
     if (result.value == FOE_SUCCESS)
         *pResourceCI = createInfo;
     return result;
-}
-
-extern "C" foeResultSet create_foeImageCreateInfo(foeResourceID resourceID,
-                                                  foeResourceCreateInfo createInfo,
-                                                  foeSimulation const *pSimulation) {
-    foeResource image =
-        foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
-                           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE, sizeof(foeImage));
-
-    if (image == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_GRAPHICS_RESOURCE_BINARY_ERROR_IMAGE_RESOURCE_ALREADY_EXISTS);
-
-    return to_foeResult(FOE_GRAPHICS_RESOURCE_BINARY_SUCCESS);
 }

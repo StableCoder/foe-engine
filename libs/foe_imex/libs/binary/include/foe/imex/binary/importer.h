@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,10 +21,6 @@ typedef foeResultSet (*PFN_foeImexBinaryImportResource)(void const *,
                                                         foeEcsGroupTranslator,
                                                         foeResourceCreateInfo *);
 
-typedef foeResultSet (*PFN_foeImexBinaryCreateResource)(foeResourceID,
-                                                        foeResourceCreateInfo,
-                                                        foeSimulation const *);
-
 typedef foeResultSet (*PFN_foeImexBinaryImportComponent)(
     void const *, uint32_t *, foeEcsGroupTranslator, foeEntityID, foeSimulation const *);
 
@@ -32,15 +28,11 @@ FOE_IMEX_BINARY_EXPORT foeResultSet foeCreateBinaryImporter(foeIdGroup group,
                                                             char const *pFilePath,
                                                             foeImexImporter *pImporter);
 
-FOE_IMEX_BINARY_EXPORT foeResultSet
-foeImexBinaryRegisterResourceImportFns(char const *pBinaryKey,
-                                       PFN_foeImexBinaryImportResource importFn,
-                                       PFN_foeImexBinaryCreateResource createFn);
+FOE_IMEX_BINARY_EXPORT foeResultSet foeImexBinaryRegisterResourceImportFns(
+    char const *pBinaryKey, PFN_foeImexBinaryImportResource importFn);
 
-FOE_IMEX_BINARY_EXPORT foeResultSet
-foeImexBinaryDeregisterResourceImportFns(char const *pBinaryKey,
-                                         PFN_foeImexBinaryImportResource importFn,
-                                         PFN_foeImexBinaryCreateResource createFn);
+FOE_IMEX_BINARY_EXPORT foeResultSet foeImexBinaryDeregisterResourceImportFns(
+    char const *pBinaryKey, PFN_foeImexBinaryImportResource importFn);
 
 FOE_IMEX_BINARY_EXPORT foeResultSet foeImexBinaryRegisterComponentImportFn(
     char const *pBinaryKey, PFN_foeImexBinaryImportComponent importFn);

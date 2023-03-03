@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -35,9 +35,7 @@ auto getComponentFns() -> std::map<std::string_view, PFN_foeImexBinaryImportComp
 }
 
 extern "C" foeResultSet foeImexBinaryRegisterResourceImportFns(
-    char const *pBinaryKey,
-    PFN_foeImexBinaryImportResource importFn,
-    PFN_foeImexBinaryCreateResource createFn) {
+    char const *pBinaryKey, PFN_foeImexBinaryImportResource importFn) {
     std::unique_lock lock{gSync};
 
     auto searchIt = gResourceFns.find(pBinaryKey);
@@ -54,16 +52,13 @@ extern "C" foeResultSet foeImexBinaryRegisterResourceImportFns(
             pBinaryKey);
     gResourceFns[pBinaryKey] = BinaryResourceFns{
         .importFn = importFn,
-        .createFn = createFn,
     };
 
     return to_foeResult(FOE_IMEX_BINARY_SUCCESS);
 }
 
 extern "C" foeResultSet foeImexBinaryDeregisterResourceImportFns(
-    char const *pBinaryKey,
-    PFN_foeImexBinaryImportResource importFn,
-    PFN_foeImexBinaryCreateResource createFn) {
+    char const *pBinaryKey, PFN_foeImexBinaryImportResource importFn) {
     std::unique_lock lock{gSync};
 
     auto searchIt = gResourceFns.find(pBinaryKey);
@@ -75,7 +70,7 @@ extern "C" foeResultSet foeImexBinaryDeregisterResourceImportFns(
         return to_foeResult(FOE_IMEX_BINARY_ERROR_KEY_NOT_REGISTERED);
     }
 
-    if (searchIt->second.importFn != importFn || searchIt->second.createFn != createFn) {
+    if (searchIt->second.importFn != importFn) {
         FOE_LOG(foeImexBinary, FOE_LOG_LEVEL_ERROR,
                 "Could not deregister binary resource import/create functions for the binary key "
                 "'{}' as the functions do not match",

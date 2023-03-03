@@ -5,11 +5,9 @@
 #include "import_registration.h"
 
 #include <foe/imex/yaml/importer.hpp>
-#include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
 #include <foe/yaml/exception.hpp>
 
-#include "../armature.hpp"
 #include "../armature_state_imex.hpp"
 #include "../armature_state_pool.h"
 #include "../render_state_imex.hpp"
@@ -19,22 +17,6 @@
 #include "result.h"
 
 namespace {
-
-// Resources
-
-foeResultSet armatureCreateProcessing(foeResourceID resourceID,
-                                      foeResourceCreateInfo createInfo,
-                                      foeSimulation const *pSimulation) {
-    foeResource armature =
-        foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
-                           FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
-
-    if (armature == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_BRINGUP_YAML_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS);
-
-    foeResourceDecrementRefCount(armature);
-    return to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
-}
 
 // Components
 
@@ -98,8 +80,7 @@ extern "C" foeResultSet foeBringupYamlRegisterImporters() {
     foeResultSet result = to_foeResult(FOE_BRINGUP_YAML_SUCCESS);
 
     // Resources
-    if (!foeImexYamlRegisterResourceFns(yaml_armature_key(), yaml_read_armature,
-                                        armatureCreateProcessing)) {
+    if (!foeImexYamlRegisterResourceFns(yaml_armature_key(), yaml_read_armature)) {
         result = to_foeResult(FOE_BRINGUP_YAML_ERROR_FAILED_TO_REGISTER_ARMATURE_IMPORTER);
         goto REGISTRATION_FAILED;
     }
@@ -128,6 +109,5 @@ extern "C" void foeBringupYamlDeregisterImporters() {
     foeImexYamlDeregisterComponentFn(yaml_render_state_key(), importRenderState);
 
     // Resources
-    foeImexYamlDeregisterResourceFns(yaml_armature_key(), yaml_read_armature,
-                                     armatureCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_armature_key(), yaml_read_armature);
 }

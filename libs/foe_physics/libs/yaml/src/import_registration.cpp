@@ -6,9 +6,7 @@
 
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/physics/component/rigid_body_pool.h>
-#include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/type_defs.h>
-#include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
 #include <foe/yaml/exception.hpp>
 
@@ -17,20 +15,6 @@
 #include "rigid_body.hpp"
 
 namespace {
-
-foeResultSet collisionShapeCreateProcessing(foeResourceID resourceID,
-                                            foeResourceCreateInfo createInfo,
-                                            foeSimulation const *pSimulation) {
-    foeResource collisionShape =
-        foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
-                           FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE, sizeof(foeCollisionShape));
-
-    if (collisionShape == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_PHYSICS_YAML_ERROR_COLLISION_SHAPE_ALREADY_EXISTS);
-
-    foeResourceDecrementRefCount(collisionShape);
-    return to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
-}
 
 bool importRigidBody(YAML::Node const &node,
                      foeEcsGroupTranslator groupTranslator,
@@ -63,8 +47,7 @@ extern "C" foeResultSet foePhysicsYamlRegisterImporters() {
     foeResultSet result = to_foeResult(FOE_PHYSICS_YAML_SUCCESS);
 
     // Resources
-    if (!foeImexYamlRegisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
-                                        collisionShapeCreateProcessing)) {
+    if (!foeImexYamlRegisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape)) {
         result = to_foeResult(FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_COLLISION_SHAPE_IMPORTER);
         goto REGISTRATION_FAILED;
     }
@@ -87,6 +70,5 @@ extern "C" void foePhysicsYamlDeregisterImporters() {
     foeImexYamlDeregisterComponentFn(yaml_rigid_body_key(), importRigidBody);
 
     // Resources
-    foeImexYamlDeregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape,
-                                     collisionShapeCreateProcessing);
+    foeImexYamlDeregisterResourceFns(yaml_collision_shape_key(), yaml_read_collision_shape);
 }

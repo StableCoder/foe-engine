@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,10 +22,6 @@ foeResultSet import_foeMeshFileCreateInfo(void const *pReadBuffer,
                                           foeEcsGroupTranslator groupTranslator,
                                           foeResourceCreateInfo *pResourceCI);
 
-foeResultSet create_foeMeshFileCreateInfo(foeResourceID resource,
-                                          foeResourceCreateInfo resourceCI,
-                                          foeSimulation const *pSimulation);
-
 foeResultSet export_foeMeshCubeCreateInfo(foeResourceCreateInfo createInfo,
                                           foeImexBinarySet *pBinarySet,
                                           foeImexBinaryFiles *pFiles);
@@ -35,10 +31,6 @@ foeResultSet import_foeMeshCubeCreateInfo(void const *pReadBuffer,
                                           foeEcsGroupTranslator groupTranslator,
                                           foeResourceCreateInfo *pResourceCI);
 
-foeResultSet create_foeMeshCubeCreateInfo(foeResourceID resource,
-                                          foeResourceCreateInfo resourceCI,
-                                          foeSimulation const *pSimulation);
-
 foeResultSet export_foeMeshIcosphereCreateInfo(foeResourceCreateInfo createInfo,
                                                foeImexBinarySet *pBinarySet,
                                                foeImexBinaryFiles *pFiles);
@@ -47,10 +39,6 @@ foeResultSet import_foeMeshIcosphereCreateInfo(void const *pReadBuffer,
                                                uint32_t *pReadSize,
                                                foeEcsGroupTranslator groupTranslator,
                                                foeResourceCreateInfo *pResourceCI);
-
-foeResultSet create_foeMeshIcosphereCreateInfo(foeResourceID resource,
-                                               foeResourceCreateInfo resourceCI,
-                                               foeSimulation const *pSimulation);
 
 #ifdef __cplusplus
 }

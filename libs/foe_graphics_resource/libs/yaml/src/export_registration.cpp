@@ -1,18 +1,13 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/graphics/resource/yaml/export_registration.h>
 
-#include <foe/graphics/resource/image.hpp>
-#include <foe/graphics/resource/material.hpp>
-#include <foe/graphics/resource/mesh.hpp>
-#include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/type_defs.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
-#include <foe/resource/pool.h>
 
 #include "image.hpp"
 #include "material.hpp"

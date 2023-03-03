@@ -33,9 +33,7 @@ auto getComponentFns() -> std::map<std::string, PFN_foeImexYamlComponent> const 
     return gComponentFns;
 }
 
-bool foeImexYamlRegisterResourceFns(std::string_view key,
-                                    PFN_foeImexYamlResourceImport pImportFn,
-                                    PFN_foeImexYamlResourceCreate pCreateFn) {
+bool foeImexYamlRegisterResourceFns(std::string_view key, PFN_foeImexYamlResourceImport pImportFn) {
     auto localKey = std::string{key};
     std::unique_lock lock{gSync};
 
@@ -49,15 +47,13 @@ bool foeImexYamlRegisterResourceFns(std::string_view key,
     FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_INFO, "Adding Yaml Import function for {}", key);
     gResourceFns[localKey] = foeImexYamlResourceFns{
         .pImport = pImportFn,
-        .pCreate = pCreateFn,
     };
 
     return true;
 }
 
 bool foeImexYamlDeregisterResourceFns(std::string_view key,
-                                      PFN_foeImexYamlResourceImport pImportFn,
-                                      PFN_foeImexYamlResourceCreate pCreateFn) {
+                                      PFN_foeImexYamlResourceImport pImportFn) {
     std::unique_lock lock{gSync};
 
     auto searchIt = gResourceFns.find(std::string{key});
@@ -66,7 +62,7 @@ bool foeImexYamlDeregisterResourceFns(std::string_view key,
                 "Could not remove Yaml Import function for {}, as it isn't added", key);
         return false;
     }
-    if (searchIt->second.pImport != pImportFn || searchIt->second.pCreate != pCreateFn) {
+    if (searchIt->second.pImport != pImportFn) {
         FOE_LOG(foeImexYaml, FOE_LOG_LEVEL_WARNING,
                 "Attempted to remove Yaml Import function for {}, but the provided "
                 "function pointers are not the same as was added",

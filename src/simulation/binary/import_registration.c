@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,8 +17,7 @@ foeResultSet foeBringupBinaryRegisterImporters() {
 
     // Resources
     result = foeImexBinaryRegisterResourceImportFns(binary_key_foeArmatureCreateInfo(),
-                                                    import_foeArmatureCreateInfo,
-                                                    create_foeArmatureCreateInfo);
+                                                    import_foeArmatureCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
@@ -48,6 +47,5 @@ void foeBringupBinaryDeregisterImporters() {
 
     // Resources
     foeImexBinaryDeregisterResourceImportFns(binary_key_foeArmatureCreateInfo(),
-                                             import_foeArmatureCreateInfo,
-                                             create_foeArmatureCreateInfo);
+                                             import_foeArmatureCreateInfo);
 }

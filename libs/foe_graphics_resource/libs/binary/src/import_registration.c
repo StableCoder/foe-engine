@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,43 +21,38 @@ foeResultSet foeGraphicsResourceBinaryRegisterImporters() {
     foeResultSet result = to_foeResult(FOE_GRAPHICS_RESOURCE_BINARY_SUCCESS);
 
     // Resources
-    result = foeImexBinaryRegisterResourceImportFns(
-        binary_key_foeImageCreateInfo(), import_foeImageCreateInfo, create_foeImageCreateInfo);
+    result = foeImexBinaryRegisterResourceImportFns(binary_key_foeImageCreateInfo(),
+                                                    import_foeImageCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
     result = foeImexBinaryRegisterResourceImportFns(binary_key_foeMaterialCreateInfo(),
-                                                    import_foeMaterialCreateInfo,
-                                                    create_foeMaterialCreateInfo);
+                                                    import_foeMaterialCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
     result = foeImexBinaryRegisterResourceImportFns(binary_key_foeMeshFileCreateInfo(),
-                                                    import_foeMeshFileCreateInfo,
-                                                    create_foeMeshFileCreateInfo);
+                                                    import_foeMeshFileCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
     result = foeImexBinaryRegisterResourceImportFns(binary_key_foeMeshCubeCreateInfo(),
-                                                    import_foeMeshCubeCreateInfo,
-                                                    create_foeMeshCubeCreateInfo);
+                                                    import_foeMeshCubeCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
     result = foeImexBinaryRegisterResourceImportFns(binary_key_foeMeshIcosphereCreateInfo(),
-                                                    import_foeMeshIcosphereCreateInfo,
-                                                    create_foeMeshIcosphereCreateInfo);
+                                                    import_foeMeshIcosphereCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
-    result = foeImexBinaryRegisterResourceImportFns(
-        binary_key_foeShaderCreateInfo(), import_foeShaderCreateInfo, create_foeShaderCreateInfo);
+    result = foeImexBinaryRegisterResourceImportFns(binary_key_foeShaderCreateInfo(),
+                                                    import_foeShaderCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
     result = foeImexBinaryRegisterResourceImportFns(binary_key_foeVertexDescriptorCreateInfo(),
-                                                    import_foeVertexDescriptorCreateInfo,
-                                                    create_foeVertexDescriptorCreateInfo);
+                                                    import_foeVertexDescriptorCreateInfo);
     if (result.value != FOE_SUCCESS)
         goto REGISTRATION_FAILED;
 
@@ -71,28 +66,23 @@ REGISTRATION_FAILED:
 void foeGraphicsResourceBinaryDeregisterImporters() {
     // Resources
     foeImexBinaryDeregisterResourceImportFns(binary_key_foeVertexDescriptorCreateInfo(),
-                                             import_foeVertexDescriptorCreateInfo,
-                                             create_foeVertexDescriptorCreateInfo);
+                                             import_foeVertexDescriptorCreateInfo);
 
-    foeImexBinaryDeregisterResourceImportFns(
-        binary_key_foeShaderCreateInfo(), import_foeShaderCreateInfo, create_foeShaderCreateInfo);
+    foeImexBinaryDeregisterResourceImportFns(binary_key_foeShaderCreateInfo(),
+                                             import_foeShaderCreateInfo);
 
     foeImexBinaryDeregisterResourceImportFns(binary_key_foeMeshIcosphereCreateInfo(),
-                                             import_foeMeshIcosphereCreateInfo,
-                                             create_foeMeshIcosphereCreateInfo);
+                                             import_foeMeshIcosphereCreateInfo);
 
     foeImexBinaryDeregisterResourceImportFns(binary_key_foeMeshCubeCreateInfo(),
-                                             import_foeMeshCubeCreateInfo,
-                                             create_foeMeshCubeCreateInfo);
+                                             import_foeMeshCubeCreateInfo);
 
     foeImexBinaryDeregisterResourceImportFns(binary_key_foeMeshFileCreateInfo(),
-                                             import_foeMeshFileCreateInfo,
-                                             create_foeMeshFileCreateInfo);
+                                             import_foeMeshFileCreateInfo);
 
     foeImexBinaryDeregisterResourceImportFns(binary_key_foeMaterialCreateInfo(),
-                                             import_foeMaterialCreateInfo,
-                                             create_foeMaterialCreateInfo);
+                                             import_foeMaterialCreateInfo);
 
     foeImexBinaryDeregisterResourceImportFns(binary_key_foeImageCreateInfo(),
-                                             import_foeImageCreateInfo, create_foeImageCreateInfo);
+                                             import_foeImageCreateInfo);
 }

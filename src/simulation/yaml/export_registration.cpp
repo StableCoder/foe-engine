@@ -6,7 +6,6 @@
 
 #include <foe/imex/exporters.h>
 #include <foe/imex/yaml/exporter.hpp>
-#include <foe/resource/pool.h>
 #include <foe/simulation/simulation.hpp>
 
 #include "../armature_state_imex.hpp"

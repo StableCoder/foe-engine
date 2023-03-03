@@ -4,8 +4,6 @@
 
 #include "armature_create_info.h"
 
-#include <foe/simulation/simulation.hpp>
-
 #include "../armature.hpp"
 #include "../armature_create_info.h"
 #include "../binary.h"
@@ -37,18 +35,4 @@ extern "C" foeResultSet import_foeArmatureCreateInfo(void const *pReadBuffer,
     if (result.value == FOE_SUCCESS)
         *pResourceCI = createInfo;
     return result;
-}
-
-extern "C" foeResultSet create_foeArmatureCreateInfo(foeResourceID resource,
-                                                     foeResourceCreateInfo resourceCI,
-                                                     foeSimulation const *pSimulation) {
-    foeResource armature =
-        foeResourcePoolAdd(pSimulation->resourcePool, resource, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
-                           sizeof(foeArmature));
-
-    if (armature == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_BRINGUP_BINARY_ERROR_ARMATURE_RESOURCE_ALREADY_EXISTS);
-
-    foeResourceDecrementRefCount(armature);
-    return to_foeResult(FOE_BRINGUP_BINARY_SUCCESS);
 }

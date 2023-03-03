@@ -6,12 +6,13 @@
 
 #include <foe/graphics/resource/binary.h>
 #include <foe/graphics/resource/cleanup.h>
-#include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
-#include <foe/simulation/simulation.hpp>
 
 #include "result.h"
+
+#include <new>
+#include <utility>
 
 extern "C" foeResultSet import_foeShaderCreateInfo(void const *pReadBuffer,
                                                    uint32_t *pReadSize,
@@ -37,18 +38,4 @@ extern "C" foeResultSet import_foeShaderCreateInfo(void const *pReadBuffer,
     if (result.value == FOE_SUCCESS)
         *pResourceCI = createInfo;
     return result;
-}
-
-extern "C" foeResultSet create_foeShaderCreateInfo(foeResourceID resourceID,
-                                                   foeResourceCreateInfo createInfo,
-                                                   foeSimulation const *pSimulation) {
-    foeResource shader =
-        foeResourcePoolAdd(pSimulation->resourcePool, resourceID,
-                           FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
-
-    if (shader == FOE_NULL_HANDLE)
-        return to_foeResult(FOE_GRAPHICS_RESOURCE_BINARY_ERROR_SHADER_RESOURCE_ALREADY_EXISTS);
-
-    foeResourceDecrementRefCount(shader);
-    return to_foeResult(FOE_GRAPHICS_RESOURCE_BINARY_SUCCESS);
 }

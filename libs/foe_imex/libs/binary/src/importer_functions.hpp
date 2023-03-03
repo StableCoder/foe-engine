@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,7 +12,6 @@
 
 struct BinaryResourceFns {
     PFN_foeImexBinaryImportResource importFn;
-    PFN_foeImexBinaryCreateResource createFn;
 };
 
 auto sharedLockImportFunctionality() -> std::shared_lock<std::shared_mutex>;

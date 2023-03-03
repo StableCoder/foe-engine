@@ -13,7 +13,6 @@
 
 struct foeImexYamlResourceFns {
     PFN_foeImexYamlResourceImport pImport;
-    PFN_foeImexYamlResourceCreate pCreate;
 };
 
 auto sharedLockImportFunctionality() -> std::shared_lock<std::shared_mutex>;
