@@ -112,11 +112,11 @@ FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
             foeResourcePoolFind(pPhysicsSystem->resourcePool, pRigidBody->collisionShape);
 
         if (collisionShape == FOE_NULL_HANDLE)
-            collisionShape = foeResourcePoolAdd(
-                pPhysicsSystem->resourcePool, pRigidBody->collisionShape,
-                FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE, sizeof(foeCollisionShape));
+            collisionShape =
+                foeResourcePoolAdd(pPhysicsSystem->resourcePool, pRigidBody->collisionShape);
     }
 
+CHECK_COLLISION_SHAPE_LOADED:
     if (auto loadState = foeResourceGetState(collisionShape);
         loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
         if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
@@ -129,10 +129,26 @@ FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
         foeResourceDecrementRefCount(collisionShape);
 
         return to_foeResult(FOE_PHYSICS_SUCCESS);
-    } else if (foeResourceGetType(collisionShape) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+    }
+    if (foeResourceGetType(collisionShape) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
+        // Resource has been replaced, advance to it instead
+        foeResource replacementResource = foeResourceGetReplacement(collisionShape);
+
+        foeResourceDecrementRefCount(collisionShape);
+
+        collisionShape = replacementResource;
+
+        goto CHECK_COLLISION_SHAPE_LOADED;
+    }
+
+    // Get CollisionShape data, if it exists in the acquired resource
+    auto const *pCollisionShape = (foeCollisionShape const *)foeResourceGetTypeData(
+        collisionShape, FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE);
+
+    if (pCollisionShape == nullptr) {
         FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foePhysicsSystem - Failed to load {} rigid body because the given "
-                "collision shape {} is not a collision shape resource.",
+                "resource {} is not a collision shape resource.",
                 foeIdToString(entity), foeIdToString(pRigidBody->collisionShape))
 
         // No longer holding on to this resource reference
@@ -140,9 +156,6 @@ FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
 
         return to_foeResult(FOE_PHYSICS_SUCCESS);
     }
-
-    // Get Resource Data Pointers
-    auto const *pCollisionShape = (foeCollisionShape const *)foeResourceGetData(collisionShape);
 
     // We have everything we need now
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI{pRigidBody->mass, nullptr,

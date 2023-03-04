@@ -102,12 +102,29 @@ void foeShaderLoader::gfxMaintenance() {
 
     for (auto &it : toLoad) {
         auto moveFn = [](void *pSrc, void *pDst) {
-            auto *pSrcData = (foeShader *)pSrc;
+            foeShader *pSrcData = (foeShader *)pSrc;
             new (pDst) foeShader(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data, moveFn,
-                       this, foeShaderLoader::unloadResource);
+        if (foeResourceGetType(it.resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
+            // We need to replace this placeholder with the actual resource
+            foeResource newResource = foeResourcePoolLoadedReplace(
+                mResourcePool, foeResourceGetID(it.resource),
+                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader), &it.data, moveFn,
+                this, foeShaderLoader::unloadResource);
+
+            if (newResource == FOE_NULL_HANDLE)
+                // @TODO - Handle failure
+                std::abort();
+
+            // Decrement references we no longer need/use
+            foeResourceDecrementRefCount(it.resource);
+            foeResourceDecrementRefCount(newResource);
+        } else {
+            // The resource handle is of the desired type already, use the regular load function
+            it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data,
+                           moveFn, this, foeShaderLoader::unloadResource);
+        }
     }
 }
 
@@ -137,10 +154,12 @@ void foeShaderLoader::load(foeResource resource,
                     nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
-    } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+    } else if (foeResourceType type = foeResourceGetType(resource);
+               type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+               type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeShaderLoader - Cannot load {} as it is an incompatible type: {}",
-                foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+                foeIdToString(foeResourceGetID(resource)), type);
 
         pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
                     nullptr, nullptr, nullptr, nullptr);

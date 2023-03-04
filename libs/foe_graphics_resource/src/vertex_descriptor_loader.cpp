@@ -66,6 +66,31 @@ void foeVertexDescriptorLoader::deinitializeGraphics() {
     } while (upcomingWork);
 }
 
+namespace {
+
+bool processResourceReplacement(foeResource *pResource) {
+    bool replaced = false;
+
+    if (*pResource == FOE_NULL_HANDLE)
+        return false;
+
+    while (foeResourceGetType(*pResource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
+        foeResource replacement = foeResourceGetReplacement(*pResource);
+
+        foeResourceIncrementUseCount(replacement);
+
+        foeResourceDecrementUseCount(*pResource);
+        foeResourceDecrementRefCount(*pResource);
+
+        *pResource = replacement;
+        replaced = true;
+    }
+
+    return replaced;
+}
+
+} // namespace
+
 void foeVertexDescriptorLoader::gfxMaintenance() {
     // Unload Requests
     mUnloadSync.lock();
@@ -85,14 +110,75 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
     std::vector<LoadData> stillLoading;
 
     for (auto &it : toLoad) {
-        std::array<foeResource, 4> subResources = {
-            it.data.vertexShader,
-            it.data.tessellationControlShader,
-            it.data.tessellationEvaluationShader,
-            it.data.geometryShader,
-        };
+        foeResourceLoadState subResLoadState;
+        bool replacement;
 
-        auto subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
+        do {
+            std::array<foeResource, 4> subResources = {
+                it.data.vertexShader,
+                it.data.tessellationControlShader,
+                it.data.tessellationEvaluationShader,
+                it.data.geometryShader,
+            };
+
+            subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
+
+            // Perform any replacements after getting the overall load state
+            replacement = false;
+            replacement = replacement || processResourceReplacement(&it.data.vertexShader);
+            replacement =
+                replacement || processResourceReplacement(&it.data.tessellationControlShader);
+            replacement =
+                replacement || processResourceReplacement(&it.data.tessellationEvaluationShader);
+            replacement = replacement || processResourceReplacement(&it.data.geometryShader);
+
+            // Repeat as long as replacements are occurring
+        } while (replacement);
+
+        // Verify sub-resource types
+        if (it.data.vertexShader != FOE_NULL_HANDLE) {
+            if (foeResourceType type = foeResourceGetType(it.data.vertexShader);
+                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                !foeResourceHasType(it.data.vertexShader,
+                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
+                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            }
+        }
+
+        if (it.data.tessellationControlShader != FOE_NULL_HANDLE) {
+            if (foeResourceType type = foeResourceGetType(it.data.tessellationControlShader);
+                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                !foeResourceHasType(it.data.tessellationControlShader,
+                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
+                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            }
+        }
+
+        if (it.data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
+            if (foeResourceType type = foeResourceGetType(it.data.tessellationEvaluationShader);
+                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                !foeResourceHasType(it.data.tessellationEvaluationShader,
+                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
+                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            }
+        }
+
+        if (it.data.geometryShader != FOE_NULL_HANDLE) {
+            if (foeResourceType type = foeResourceGetType(it.data.geometryShader);
+                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                !foeResourceHasType(it.data.geometryShader,
+                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
+                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            }
+        }
 
         if (subResLoadState == FOE_RESOURCE_LOAD_STATE_LOADED) {
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
@@ -146,8 +232,25 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 new (pDst) foeVertexDescriptor{*pSrcData};
             };
 
-            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, this,
-                           foeVertexDescriptorLoader::unloadResource);
+            if (foeResourceGetType(it.resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
+                // Need to replace the placeholder with the actual resource
+                foeResource newResource = foeResourcePoolLoadedReplace(
+                    mResourcePool, foeResourceGetID(it.resource),
+                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
+                    sizeof(foeVertexDescriptor), &it.data, moveFn, this,
+                    foeVertexDescriptorLoader::unloadResource);
+
+                if (newResource == FOE_NULL_HANDLE)
+                    // @TODO - Handle failure
+                    std::abort();
+
+                foeResourceDecrementRefCount(it.resource);
+                foeResourceDecrementRefCount(newResource);
+            } else {
+                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, this,
+                               foeVertexDescriptorLoader::unloadResource);
+            }
+
             foeResourceCreateInfoDecrementRefCount(it.createInfo);
         } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
             // At least one of the items failed to load
@@ -221,8 +324,9 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                     nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
-    } else if (foeResourceGetType(resource) !=
-               FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
+    } else if (foeResourceType type = foeResourceGetType(resource);
+               type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR &&
+               type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeVertexDescriptorLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
@@ -246,12 +350,14 @@ void foeVertexDescriptorLoader::load(foeResource resource,
             data.vertexShader = foeResourcePoolFind(mResourcePool, pCI->vertexShader);
 
             if (data.vertexShader == FOE_NULL_HANDLE)
-                data.vertexShader = foeResourcePoolAdd(mResourcePool, pCI->vertexShader,
-                                                       FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER,
-                                                       sizeof(foeShader));
+                data.vertexShader = foeResourcePoolAdd(mResourcePool, pCI->vertexShader);
         }
 
-        if (foeResourceGetType(data.vertexShader) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+        if (foeResourceType type = foeResourceGetType(data.vertexShader);
+            type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+            !foeResourceHasType(data.vertexShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
             result = to_foeResult(
                 FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
             goto LOAD_FAILED;
@@ -263,13 +369,16 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                 foeResourcePoolFind(mResourcePool, pCI->tessellationControlShader);
 
             if (data.tessellationControlShader == FOE_NULL_HANDLE)
-                data.tessellationControlShader = foeResourcePoolAdd(
-                    mResourcePool, pCI->tessellationControlShader,
-                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
+                data.tessellationControlShader =
+                    foeResourcePoolAdd(mResourcePool, pCI->tessellationControlShader);
         }
 
-        if (foeResourceGetType(data.tessellationControlShader) !=
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+        if (foeResourceType type = foeResourceGetType(data.tessellationControlShader);
+            type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+            !foeResourceHasType(data.tessellationControlShader,
+                                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
             result = to_foeResult(
                 FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
             goto LOAD_FAILED;
@@ -281,13 +390,16 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                 foeResourcePoolFind(mResourcePool, pCI->tessellationEvaluationShader);
 
             if (data.tessellationEvaluationShader == FOE_NULL_HANDLE)
-                data.tessellationEvaluationShader = foeResourcePoolAdd(
-                    mResourcePool, pCI->tessellationEvaluationShader,
-                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
+                data.tessellationEvaluationShader =
+                    foeResourcePoolAdd(mResourcePool, pCI->tessellationEvaluationShader);
         }
 
-        if (foeResourceGetType(data.tessellationEvaluationShader) !=
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+        if (foeResourceType type = foeResourceGetType(data.tessellationEvaluationShader);
+            type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+            !foeResourceHasType(data.tessellationEvaluationShader,
+                                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
             result = to_foeResult(
                 FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
             goto LOAD_FAILED;
@@ -298,13 +410,14 @@ void foeVertexDescriptorLoader::load(foeResource resource,
             data.geometryShader = foeResourcePoolFind(mResourcePool, pCI->geometryShader);
 
             if (data.geometryShader == FOE_NULL_HANDLE)
-                data.geometryShader = foeResourcePoolAdd(
-                    mResourcePool, pCI->geometryShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER,
-                    sizeof(foeShader));
+                data.geometryShader = foeResourcePoolAdd(mResourcePool, pCI->geometryShader);
         }
 
-        if (foeResourceGetType(data.geometryShader) !=
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+        if (foeResourceType type = foeResourceGetType(data.geometryShader);
+            type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+            !foeResourceHasType(data.geometryShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
             result = to_foeResult(
                 FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_INCOMPATIBLE);
             goto LOAD_FAILED;

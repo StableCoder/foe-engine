@@ -124,6 +124,31 @@ extern "C" void foeDestroyAnimatedBoneSystem(foeAnimatedBoneSystem animatedBoneS
     delete pRenderSystem;
 }
 
+namespace {
+
+bool processResourceReplacement(foeResource *pResource) {
+    bool replaced = false;
+
+    if (*pResource == FOE_NULL_HANDLE)
+        return false;
+
+    while (foeResourceGetType(*pResource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
+        foeResource replacement = foeResourceGetReplacement(*pResource);
+
+        foeResourceIncrementUseCount(replacement);
+
+        foeResourceDecrementUseCount(*pResource);
+        foeResourceDecrementRefCount(*pResource);
+
+        *pResource = replacement;
+        replaced = true;
+    }
+
+    return replaced;
+}
+
+} // namespace
+
 extern "C" foeResultSet foeInitializeAnimatedBoneSystem(
     foeAnimatedBoneSystem animatedBoneSystem,
     foeResourcePool resourcePool,
@@ -158,21 +183,29 @@ extern "C" foeResultSet foeInitializeAnimatedBoneSystem(
                 armature = foeResourcePoolFind(resourcePool, pArmatureStateData->armatureID);
 
                 if (armature == FOE_NULL_HANDLE) {
-                    armature = foeResourcePoolAdd(resourcePool, pArmatureStateData->armatureID,
-                                                  FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
-                                                  sizeof(foeArmature));
+                    armature = foeResourcePoolAdd(resourcePool, pArmatureStateData->armatureID);
                 }
             } while (armature == FOE_NULL_HANDLE);
 
             // Resource ID provided does not match with an Armature type, don't use it
-            if (foeResourceGetType(armature) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+            if (foeResourceType type = foeResourceGetType(armature);
+                type != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                !foeResourceHasType(armature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE)) {
                 foeResourceDecrementRefCount(armature);
                 continue;
             }
 
             foeResourceIncrementUseCount(armature);
 
-            foeResourceLoadState loadState = foeResourceGetState(armature);
+            bool replacement;
+            foeResourceLoadState loadState;
+            do {
+                loadState = foeResourceGetState(armature);
+                replacement = processResourceReplacement(&armature);
+            } while (replacement);
+
             switch (loadState) {
             case FOE_RESOURCE_LOAD_STATE_LOADED: {
                 foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
@@ -297,7 +330,13 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
             foeArmatureState const *const pArmatureStateData =
                 pStartArmatureStateData + (pArmatureStateID - pStartArmatureStateID);
 
-            foeResourceLoadState loadState = foeResourceGetState(awaitingIt->armature);
+            bool replacement;
+            foeResourceLoadState loadState;
+            do {
+                loadState = foeResourceGetState(awaitingIt->armature);
+                replacement = processResourceReplacement(&awaitingIt->armature);
+            } while (replacement);
+
             switch (loadState) {
             case FOE_RESOURCE_LOAD_STATE_LOADED: {
                 foeArmature const *pArmature =
@@ -414,21 +453,30 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                                                        pArmatureStateData->armatureID);
 
                         if (armature == FOE_NULL_HANDLE) {
-                            armature = foeResourcePoolAdd(
-                                pAnimatedBoneSystem->mResourcePool, pArmatureStateData->armatureID,
-                                FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
+                            armature = foeResourcePoolAdd(pAnimatedBoneSystem->mResourcePool,
+                                                          pArmatureStateData->armatureID);
                         }
                     } while (armature == FOE_NULL_HANDLE);
 
                     // Resource ID provided does not match with an Armature type, don't use it
-                    if (foeResourceGetType(armature) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+                    if (foeResourceType type = foeResourceGetType(armature);
+                        type != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE &&
+                        type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                        type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                        !foeResourceHasType(armature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE)) {
                         foeResourceDecrementRefCount(armature);
                         continue;
                     }
 
                     foeResourceIncrementUseCount(armature);
 
-                    foeResourceLoadState loadState = foeResourceGetState(armature);
+                    bool replacement;
+                    foeResourceLoadState loadState;
+                    do {
+                        loadState = foeResourceGetState(armature);
+                        replacement = processResourceReplacement(&armature);
+                    } while (replacement);
+
                     switch (loadState) {
                     case FOE_RESOURCE_LOAD_STATE_LOADED: {
                         foeArmature const *pArmature =
@@ -505,21 +553,27 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                                                               pArmatureStateData->armatureID);
 
                             if (newArmature == FOE_NULL_HANDLE) {
-                                newArmature = foeResourcePoolAdd(
-                                    pAnimatedBoneSystem->mResourcePool,
-                                    pArmatureStateData->armatureID,
-                                    FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
+                                newArmature = foeResourcePoolAdd(pAnimatedBoneSystem->mResourcePool,
+                                                                 pArmatureStateData->armatureID);
                             }
                         } while (newArmature == FOE_NULL_HANDLE);
 
-                        if (foeResourceGetType(newArmature) !=
-                            FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+                        if (foeResourceType type = foeResourceGetType(newArmature);
+                            type != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE &&
+                            type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                            type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                            !foeResourceHasType(newArmature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE)) {
                             // Newly acquired resource is not correct type, don't use it
                             foeResourceDecrementRefCount(newArmature);
                         } else {
                             foeResourceIncrementUseCount(newArmature);
-                            loadState = foeResourceGetState(newArmature);
                         }
+
+                        bool replacement;
+                        do {
+                            loadState = foeResourceGetState(newArmature);
+                            replacement = processResourceReplacement(&newArmature);
+                        } while (replacement);
 
                         switch (loadState) {
                         case FOE_RESOURCE_LOAD_STATE_LOADED: {
@@ -601,20 +655,29 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                                                pArmatureStateData->armatureID);
 
                 if (armature == FOE_NULL_HANDLE) {
-                    armature = foeResourcePoolAdd(
-                        pAnimatedBoneSystem->mResourcePool, pArmatureStateData->armatureID,
-                        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature));
+                    armature = foeResourcePoolAdd(pAnimatedBoneSystem->mResourcePool,
+                                                  pArmatureStateData->armatureID);
                 }
             } while (armature == FOE_NULL_HANDLE);
 
-            if (foeResourceGetType(armature) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+            if (foeResourceType type = foeResourceGetType(armature);
+                type != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                !foeResourceHasType(armature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE)) {
                 foeResourceDecrementRefCount(armature);
                 continue;
             }
 
             foeResourceIncrementUseCount(armature);
 
-            foeResourceLoadState loadState = foeResourceGetState(armature);
+            bool replacement;
+            foeResourceLoadState loadState;
+            do {
+                loadState = foeResourceGetState(armature);
+                replacement = processResourceReplacement(&armature);
+            } while (replacement);
+
             switch (loadState) {
             case FOE_RESOURCE_LOAD_STATE_LOADED: {
                 foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);

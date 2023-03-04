@@ -76,8 +76,25 @@ void foeCollisionShapeLoader::maintenance() {
             new (pDst) foeCollisionShape(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, to_foeResult(FOE_PHYSICS_SUCCESS), &it.data, moveFn, this,
-                       foeCollisionShapeLoader::unloadResource);
+        if (foeResourceGetType(it.resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
+            // Replace the undefined resource with the actual resource now
+            foeResource newResource = foeResourcePoolLoadedReplace(
+                mResourcePool, foeResourceGetID(it.resource),
+                FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE, sizeof(foeCollisionShape), &it.data,
+                moveFn, this, foeCollisionShapeLoader::unloadResource);
+
+            if (newResource == FOE_NULL_HANDLE)
+                // @TODO - Handle Failure
+                std::abort();
+
+            // Decrement the references we no longer use
+            foeResourceDecrementRefCount(it.resource);
+            foeResourceDecrementRefCount(newResource);
+        } else {
+            // The resource handle is of the desired type already, use the regular load function
+            it.pPostLoadFn(it.resource, to_foeResult(FOE_PHYSICS_SUCCESS), &it.data, moveFn, this,
+                           foeCollisionShapeLoader::unloadResource);
+        }
     }
 }
 
@@ -107,7 +124,9 @@ void foeCollisionShapeLoader::load(foeResource resource,
                     nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
-    } else if (foeResourceGetType(resource) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
+    } else if (foeResourceType type = foeResourceGetType(resource);
+               type != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE &&
+               type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
         FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foeCollisionShapeLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));

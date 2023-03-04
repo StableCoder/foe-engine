@@ -18,6 +18,13 @@ struct foeResourceFns;
 
 namespace {
 
+struct ReplacedResource {
+    foeResourceType rType;
+    void *pNext;
+    foeResource replacementResource;
+    bool incrementedUse;
+};
+
 struct foeResourceImpl {
     foeResourceID id;
 
@@ -45,7 +52,61 @@ struct foeResourceImpl {
 
 FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
 
+void postLoadFn(
+    foeResource resource,
+    foeResultSet loadResult,
+    void *pSrc,
+    void (*pMoveDataFn)(void *, void *),
+    void *pUnloadContext,
+    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool)) {
+    auto *pResource = resource_from_handle(resource);
+
+    if (loadResult.value != FOE_SUCCESS) {
+        // Loading didn't go well
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        loadResult.toString(loadResult.value, buffer);
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
+                "[{},{}] foeResource - Failed to load  with error: {}",
+                foeIdToString(pResource->id), foeResourceGetType(resource), buffer)
+
+        auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
+        pResource->state.compare_exchange_strong(expected, FOE_RESOURCE_LOAD_STATE_FAILED);
+    } else {
+        pResource->sync.lock();
+
+        // Unload any previous data
+        foeResourceUnloadData(resource, true);
+
+        // Move the new data in
+        pMoveDataFn(pSrc, (void *)foeResourceGetData(resource));
+
+        pResource->pUnloadContext = pUnloadContext;
+        pResource->pUnloadFn = pUnloadFn;
+
+        pResource->state = FOE_RESOURCE_LOAD_STATE_LOADED;
+        pResource->sync.unlock();
+    }
+
+    pResource->loading.clear();
+
+    // Decrement the reference count of both resource and create info, no longer needed after
+    // the loading process is done
+    foeResourceDecrementRefCount(resource);
+}
+
+void loadResourceTask(foeResourceImpl *pResource) {
+    pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
+                                     resource_to_handle(pResource), postLoadFn);
+}
+
 } // namespace
+
+extern "C" foeResultSet foeCreateUndefinedResource(foeResourceID id,
+                                                   foeResourceFns const *pResourceFns,
+                                                   foeResource *pResource) {
+    return foeCreateResource(id, FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED, pResourceFns,
+                             sizeof(ReplacedResource), pResource);
+}
 
 extern "C" foeResultSet foeCreateResource(foeResourceID id,
                                           foeResourceType type,
@@ -63,6 +124,10 @@ extern "C" foeResultSet foeCreateResource(foeResourceID id,
 
     new (pNewResource) foeResourceImpl(id, pResourceFns);
 
+    // Zero the data area
+    void *pData = (void *)foeResourceGetData(resource_to_handle(pNewResource));
+    memset(pData, 0, size);
+
     // Set the initial type
     foeResourceBase *pBaseData =
         (foeResourceBase *)foeResourceGetData(resource_to_handle(pNewResource));
@@ -76,6 +141,77 @@ extern "C" foeResultSet foeCreateResource(foeResourceID id,
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
+extern "C" foeResultSet foeCreateLoadedResource(
+    foeResourceID id,
+    foeResourceType type,
+    foeResourceFns const *pResourceFns,
+    size_t size,
+    void *pSrc,
+    void (*pMoveFn)(void *, void *),
+    void *pUnloadContext,
+    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool),
+    foeResource *pResource) {
+    foeResultSet result = foeCreateResource(id, type, pResourceFns, size, pResource);
+
+    if (result.value == FOE_SUCCESS) {
+        // If successfully created, then run the move/load
+        foeResourceIncrementRefCount(*pResource);
+        postLoadFn(*pResource, result, pSrc, pMoveFn, pUnloadContext, pUnloadFn);
+    }
+
+    return result;
+}
+
+extern "C" foeResultSet foeResourceReplace(foeResource oldResource, foeResource newResource) {
+    foeResourceImpl *pOldResource = resource_from_handle(oldResource);
+    foeResultSet result = to_foeResult(FOE_RESOURCE_SUCCESS);
+
+    pOldResource->sync.lock();
+
+    if (foeResourceGetType(oldResource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
+        ReplacedResource *pOldData = (ReplacedResource *)foeResourceGetData(oldResource);
+        pOldData->replacementResource = newResource;
+        foeResourceIncrementRefCount(newResource);
+
+        if (foeResourceGetUseCount(oldResource) != 0) {
+            foeResourceIncrementUseCount(newResource);
+            pOldData->incrementedUse = true;
+        }
+
+        // @TODO - Not sure if this is guarantees therType to happen after the newResource is set,
+        // nor that the changes are all made visible to other threads correctly.
+        std::atomic_thread_fence(std::memory_order_relaxed);
+
+        pOldData->rType = FOE_RESOURCE_RESOURCE_TYPE_REPLACED;
+        pOldResource->state = FOE_RESOURCE_LOAD_STATE_LOADED;
+        pOldResource->loading.clear();
+
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE,
+                "[{},{}] foeResource - Replacing resource @ {} with type {} @ {}",
+                foeIdToString(pOldResource->id), foeResourceGetType(oldResource),
+                (void *)pOldResource, foeResourceGetType(newResource), (void *)newResource);
+    } else {
+        result = to_foeResult(FOE_RESOURCE_ERROR_RESOURCE_NOT_UNDEFINED);
+    }
+
+    pOldResource->sync.unlock();
+
+    return result;
+}
+
+extern "C" foeResource foeResourceGetReplacement(foeResource resource) {
+    foeResourceImpl *pResource = resource_from_handle(resource);
+
+    if (foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+        foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
+        ReplacedResource *pData = (ReplacedResource *)foeResourceGetData(resource);
+
+        foeResourceIncrementRefCount(pData->replacementResource);
+        return pData->replacementResource;
+    }
+
+    return FOE_NULL_HANDLE;
+}
 extern "C" foeResourceID foeResourceGetID(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
     return pResource->id;
@@ -120,6 +256,14 @@ extern "C" int foeResourceDecrementRefCount(foeResource resource) {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Destroyed",
                 foeIdToString(pResource->id), foeResourceGetType(resource))
 
+        if (foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
+            ReplacedResource *pData = (ReplacedResource *)foeResourceGetData(resource);
+
+            if (pData->incrementedUse)
+                foeResourceDecrementUseCount(pData->replacementResource);
+            foeResourceDecrementRefCount(pData->replacementResource);
+        }
+
         pResource->~foeResourceImpl();
 
         free(pResource);
@@ -140,7 +284,17 @@ extern "C" int foeResourceIncrementUseCount(foeResource resource) {
 
 extern "C" int foeResourceDecrementUseCount(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
-    return --pResource->useCount;
+    int useCount = --pResource->useCount;
+
+    if (useCount == 0 && foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
+        ReplacedResource *pData = (ReplacedResource *)foeResourceGetData(resource);
+        if (pData->incrementedUse) {
+            pData->incrementedUse = false;
+            foeResourceDecrementUseCount(pData->replacementResource);
+        }
+    }
+
+    return useCount;
 }
 
 extern "C" bool foeResourceGetIsLoading(foeResource resource) {
@@ -170,57 +324,6 @@ extern "C" void const *foeResourceGetTypeData(foeResource resource, foeResourceT
 
     return nullptr;
 }
-
-namespace {
-
-void postLoadFn(
-    foeResource resource,
-    foeResultSet loadResult,
-    void *pSrc,
-    void (*pMoveDataFn)(void *, void *),
-    void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool)) {
-    auto *pResource = resource_from_handle(resource);
-
-    if (loadResult.value != FOE_SUCCESS) {
-        // Loading didn't go well
-        char buffer[FOE_MAX_RESULT_STRING_SIZE];
-        loadResult.toString(loadResult.value, buffer);
-        FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
-                "[{},{}] foeResource - Failed to load  with error: {}",
-                foeIdToString(pResource->id), foeResourceGetType(resource), buffer)
-
-        auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
-        pResource->state.compare_exchange_strong(expected, FOE_RESOURCE_LOAD_STATE_FAILED);
-    } else {
-        pResource->sync.lock();
-
-        // Unload any previous data
-        foeResourceUnloadData(resource, true);
-
-        // Move the new data in
-        pMoveDataFn(pSrc, (void *)foeResourceGetData(resource));
-
-        pResource->pUnloadContext = pUnloadContext;
-        pResource->pUnloadFn = pUnloadFn;
-
-        pResource->state = FOE_RESOURCE_LOAD_STATE_LOADED;
-        pResource->sync.unlock();
-    }
-
-    pResource->loading.clear();
-
-    // Decrement the reference count of both resource and create info, no longer needed after the
-    // loading process is done
-    foeResourceDecrementRefCount(resource);
-}
-
-void loadResourceTask(foeResourceImpl *pResource) {
-    pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
-                                     resource_to_handle(pResource), postLoadFn);
-}
-
-} // namespace
 
 extern "C" void foeResourceLoadData(foeResource resource) {
     auto *pResource = resource_from_handle(resource);

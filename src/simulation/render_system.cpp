@@ -74,8 +74,11 @@ bool getResourceData(foeResourcePool resourcePool,
                      foeResource oldResource,
                      foeResource &newResource) {
     if (oldResource != FOE_NULL_HANDLE) {
-        if (foeResourceGetID(oldResource) == resourceID &&
-            foeResourceGetType(oldResource) == resourceType) {
+        if (foeResourceType type = foeResourceGetType(oldResource);
+            foeResourceGetID(oldResource) == resourceID &&
+            (type == resourceType || type == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED ||
+             type == FOE_RESOURCE_RESOURCE_TYPE_REPLACED ||
+             foeResourceHasType(oldResource, resourceType))) {
             // The old resource is the ID and type we still want, just re-use it
             newResource = oldResource;
             return true;
@@ -96,19 +99,43 @@ bool getResourceData(foeResourcePool resourcePool,
         newResource = foeResourcePoolFind(resourcePool, resourceID);
 
         if (newResource == FOE_NULL_HANDLE)
-            newResource =
-                foeResourcePoolAdd(resourcePool, resourceID, resourceType, resourceTypeSize);
+            newResource = foeResourcePoolAdd(resourcePool, resourceID);
     } while (newResource == FOE_NULL_HANDLE);
 
-    // Make sure retrieved resource is the correct type
-    if (foeResourceGetType(newResource) != resourceType)
+    // Make sure retrieved resource is the correct type, or could become the desired type
+    if (foeResourceType type = foeResourceGetType(newResource);
+        type != resourceType && type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+        type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+        !foeResourceHasType(newResource, resourceType))
         return false;
 
     return true;
 }
 
+bool processResourceReplacement(foeResource *pResource) {
+    bool replaced = false;
+
+    if (*pResource == FOE_NULL_HANDLE)
+        return false;
+
+    while (foeResourceGetType(*pResource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
+        foeResource replacement = foeResourceGetReplacement(*pResource);
+
+        foeResourceIncrementUseCount(replacement);
+
+        foeResourceDecrementUseCount(*pResource);
+        foeResourceDecrementRefCount(*pResource);
+
+        *pResource = replacement;
+        replaced = true;
+    }
+
+    return replaced;
+}
+
 void loadResourceData(foeResource oldResource,
-                      foeResource newResource,
+                      foeResource &newResource,
+                      foeResourceType resourceType,
                       foeResourceLoadState &overallLoadState) {
     if (newResource == FOE_NULL_HANDLE)
         // No resource to even deal with, no change to overall load state
@@ -122,6 +149,17 @@ void loadResourceData(foeResource oldResource,
         if (loadState != FOE_RESOURCE_LOAD_STATE_LOADED && !foeResourceGetIsLoading(newResource))
             foeResourceLoadData(newResource);
     }
+
+    bool replacement;
+    do {
+        loadState = foeResourceGetState(newResource);
+        replacement = processResourceReplacement(&newResource);
+    } while (replacement);
+
+    // If it is loaded, make sure it has the data type we are looking for
+    if (loadState == FOE_RESOURCE_LOAD_STATE_LOADED &&
+        !foeResourceHasType(newResource, resourceType))
+        loadState = FOE_RESOURCE_LOAD_STATE_FAILED;
 
     // Logic for overall load state
     if (loadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
@@ -185,11 +223,13 @@ void getResourceCleanup(foeResource oldResource, foeResource newResource) {
         overallLoadState = FOE_RESOURCE_LOAD_STATE_LOADED;
 
         loadResourceData(pRenderData->vertexDescriptor, newResourceData.vertexDescriptor,
-                         overallLoadState);
+                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, overallLoadState);
         loadResourceData(pRenderData->bonedVertexDescriptor, newResourceData.bonedVertexDescriptor,
-                         overallLoadState);
-        loadResourceData(pRenderData->material, newResourceData.material, overallLoadState);
-        loadResourceData(pRenderData->mesh, newResourceData.mesh, overallLoadState);
+                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, overallLoadState);
+        loadResourceData(pRenderData->material, newResourceData.material,
+                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, overallLoadState);
+        loadResourceData(pRenderData->mesh, newResourceData.mesh,
+                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, overallLoadState);
     }
 
     if (overallLoadState != FOE_RESOURCE_LOAD_STATE_FAILED) {

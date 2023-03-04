@@ -58,10 +58,7 @@ extern "C" void foeDestroyResourcePool(foeResourcePool resourcePool) {
     delete pResourcePool;
 }
 
-extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
-                                          foeResourceID resourceID,
-                                          foeResourceType resourceType,
-                                          size_t resourceSize) {
+extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool, foeResourceID resourceID) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
 
     std::unique_lock lock{pResourcePool->sync};
@@ -70,14 +67,14 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
         pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
         [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
 
-    // If it finds it, return nullptr
     if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID)
+        // Didn't find the resource we're supposed to be replacing
         return FOE_NULL_HANDLE;
 
     // Not found, add it
     foeResource newResource;
-    foeResultSet result = foeCreateResource(resourceID, resourceType, &pResourcePool->callbacks,
-                                            resourceSize, &newResource);
+    foeResultSet result =
+        foeCreateUndefinedResource(resourceID, &pResourcePool->callbacks, &newResource);
     if (result.value != FOE_RESOURCE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
@@ -92,6 +89,72 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
     foeResourceIncrementRefCount(newResource);
 
     pResourcePool->resources.insert(searchIt, newResource);
+    return newResource;
+}
+
+extern "C" foeResource foeResourcePoolLoadedReplace(
+    foeResourcePool resourcePool,
+    foeResourceID resourceID,
+    foeResourceType resourceType,
+    size_t resourceSize,
+    void *pSrc,
+    void (*pMoveFn)(void *, void *),
+    void *pUnloadContext,
+    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool)) {
+    ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
+
+    std::unique_lock lock{pResourcePool->sync};
+
+    auto searchIt = std::lower_bound(
+        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
+        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
+
+    if (searchIt == pResourcePool->resources.end() || foeResourceGetID(*searchIt) != resourceID)
+        // Didn't find the resource we're supposed to be replacing
+        return FOE_NULL_HANDLE;
+
+    // Creat the new resource that will be the replacement
+    foeResource newResource = FOE_NULL_HANDLE;
+    foeResultSet result =
+        foeCreateLoadedResource(resourceID, resourceType, &pResourcePool->callbacks, resourceSize,
+                                pSrc, pMoveFn, pUnloadContext, pUnloadFn, &newResource);
+    if (result.value != FOE_RESOURCE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
+                "[{}] foeResourcePool - Error while creating a new replacement resource [{}]: {}",
+                (void *)pResourcePool, foeIdToString(resourceID), buffer)
+
+        return FOE_NULL_HANDLE;
+    }
+
+    result = foeResourceReplace(*searchIt, newResource);
+    if (result.value != FOE_RESOURCE_SUCCESS) {
+        foeResourceDecrementRefCount(newResource);
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
+                "[{}] foeResourcePool - Error while replacing a resource [{}]: {}",
+                (void *)pResourcePool, foeIdToString(resourceID), buffer)
+
+        return FOE_NULL_HANDLE;
+    }
+
+    // Swap the resources
+    foeResource oldResource = *searchIt;
+    *searchIt = newResource;
+
+    lock.unlock();
+
+    // Decrement use of old resource
+    foeResourceDecrementRefCount(oldResource);
+    // Increment new resource before passing it off
+    // Should be count of 3:
+    // - ref for the pool
+    // - ref for replaced
+    // - ref being passed back
+    foeResourceIncrementRefCount(newResource);
+
     return newResource;
 }
 

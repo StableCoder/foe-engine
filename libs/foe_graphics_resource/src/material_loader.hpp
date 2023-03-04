@@ -6,6 +6,7 @@
 #define MATERIAL_LOADER_HPP
 
 #include <foe/graphics/resource/material.hpp>
+#include <foe/graphics/resource/result.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.h>

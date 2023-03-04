@@ -49,11 +49,30 @@ typedef enum foeResourceLoadState {
 
 FOE_RES_EXPORT char const *foeResourceLoadStateToString(foeResourceLoadState state);
 
+FOE_RES_EXPORT foeResultSet foeCreateUndefinedResource(foeResourceID id,
+                                                       foeResourceFns const *pResourceFns,
+                                                       foeResource *pResource);
+
+FOE_RES_EXPORT foeResultSet foeCreateLoadedResource(
+    foeResourceID id,
+    foeResourceType type,
+    foeResourceFns const *pResourceFns,
+    size_t size,
+    void *pSrc,
+    void (*pMoveFn)(void *, void *),
+    void *pUnloadContext,
+    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool),
+    foeResource *pResource);
+
 FOE_RES_EXPORT foeResultSet foeCreateResource(foeResourceID id,
                                               foeResourceType type,
                                               foeResourceFns const *pResourceFns,
                                               size_t size, // Must be >= to sizeof(foeResourceBase)
                                               foeResource *pResource);
+
+FOE_RES_EXPORT foeResultSet foeResourceReplace(foeResource oldResource, foeResource newResource);
+// Returned resource has it's reference already incremented
+FOE_RES_EXPORT foeResource foeResourceGetReplacement(foeResource resource);
 
 FOE_RES_EXPORT foeResourceID foeResourceGetID(foeResource resource);
 

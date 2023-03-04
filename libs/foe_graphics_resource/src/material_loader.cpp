@@ -107,6 +107,31 @@ bool foeMaterialLoader::initializedGraphics() const noexcept {
     return mGfxSession != FOE_NULL_HANDLE;
 }
 
+namespace {
+
+bool processResourceReplacement(foeResource *pResource) {
+    bool replaced = false;
+
+    if (*pResource == FOE_NULL_HANDLE)
+        return false;
+
+    while (foeResourceGetType(*pResource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
+        foeResource replacement = foeResourceGetReplacement(*pResource);
+
+        foeResourceIncrementUseCount(replacement);
+
+        foeResourceDecrementUseCount(*pResource);
+        foeResourceDecrementRefCount(*pResource);
+
+        *pResource = replacement;
+        replaced = true;
+    }
+
+    return replaced;
+}
+
+} // namespace
+
 void foeMaterialLoader::gfxMaintenance() {
     // Process Delayed Data Destruction
     mDestroySync.lock();
@@ -144,45 +169,110 @@ void foeMaterialLoader::gfxMaintenance() {
     std::vector<LoadData> stillLoading;
 
     for (auto &it : toLoad) {
-        // Check to see if what we need has been loaded yet
-        std::array<foeResource, 2> subResources = {
-            it.data.fragmentShader,
-            it.data.image,
-        };
+        bool replacement;
+        foeResourceLoadState subResLoadState;
 
-        auto subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
+        do {
+            // Check to see if what we need has been loaded yet
+            std::array<foeResource, 2> subResources = {
+                it.data.fragmentShader,
+                it.data.image,
+            };
+            subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
+
+            // Then perform any replacements after retreiving the load state
+            replacement = false;
+            replacement = replacement || processResourceReplacement(&it.data.fragmentShader);
+            replacement = replacement || processResourceReplacement(&it.data.image);
+
+            // Repeat as long as replacements are occurring
+        } while (replacement);
+
+        // Verify the sub-resources are/have expected type
+        if (it.data.fragmentShader != FOE_NULL_HANDLE) {
+            if (foeResourceType type = foeResourceGetType(it.data.fragmentShader);
+                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                !foeResourceHasType(it.data.fragmentShader,
+                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
+                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            }
+        }
+
+        if (it.data.image != FOE_NULL_HANDLE) {
+            if (foeResourceType type = foeResourceGetType(it.data.fragmentShader);
+                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+                !foeResourceHasType(it.data.fragmentShader,
+                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE)) {
+                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            }
+        }
 
         if (subResLoadState == FOE_RESOURCE_LOAD_STATE_LOADED) {
-            { // Using the sub-resources that are loaded, and definition data, create the resource
-                foeGfxShader fragShader =
-                    (it.data.fragmentShader != FOE_NULL_HANDLE)
-                        ? ((foeShader const *)foeResourceGetData(it.data.fragmentShader))->shader
-                        : FOE_NULL_HANDLE;
+            // Using the sub-resources that are loaded, and definition data, create the resource
+            foeGfxShader fragShader =
+                (it.data.fragmentShader != FOE_NULL_HANDLE)
+                    ? ((foeShader const *)foeResourceGetTypeData(
+                           it.data.fragmentShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER))
+                          ->shader
+                    : FOE_NULL_HANDLE;
 
-                auto const *pMaterialCI =
-                    (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(it.createInfo);
+            auto const *pMaterialCI =
+                (foeMaterialCreateInfo const *)foeResourceCreateInfoGetData(it.createInfo);
 
-                it.data.pGfxFragDescriptor = foeGfxVkGetFragmentDescriptor(
-                    mGfxFragmentDescriptorPool, pMaterialCI->pRasterizationSCI,
-                    pMaterialCI->pDepthStencilSCI, pMaterialCI->pColourBlendSCI, fragShader);
-            }
+            it.data.pGfxFragDescriptor = foeGfxVkGetFragmentDescriptor(
+                mGfxFragmentDescriptorPool, pMaterialCI->pRasterizationSCI,
+                pMaterialCI->pDepthStencilSCI, pMaterialCI->pColourBlendSCI, fragShader);
 
             VkResult vkResult = createDescriptorSet(&it.data);
-            if (vkResult != VK_SUCCESS)
-                goto DESCRIPTOR_CREATE_FAILED;
+            if (vkResult != VK_SUCCESS) {
+                // Failed to load
+                it.pPostLoadFn(
+                    it.resource,
+                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
+                    nullptr, nullptr, nullptr, nullptr);
+                foeResourceCreateInfoDecrementRefCount(it.createInfo);
 
-            // Everything's ready, load the resource
-            auto moveFn = [](void *pSrc, void *pDst) {
-                auto *pSrcData = (foeMaterial *)pSrc;
-                new (pDst) foeMaterial(std::move(*pSrcData));
-            };
+                // Unload the data we did get
+                if (it.data.fragmentShader != nullptr) {
+                    foeResourceDecrementUseCount(it.data.fragmentShader);
+                    foeResourceDecrementRefCount(it.data.fragmentShader);
+                }
+                if (it.data.image != FOE_NULL_HANDLE) {
+                    foeResourceDecrementUseCount(it.data.image);
+                    foeResourceDecrementRefCount(it.data.image);
+                }
+            } else {
+                // Everything's ready, load the resource
+                auto moveFn = [](void *pSrc, void *pDst) {
+                    auto *pSrcData = (foeMaterial *)pSrc;
+                    new (pDst) foeMaterial(std::move(*pSrcData));
+                };
 
-            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, this,
-                           foeMaterialLoader::unloadResource);
-            foeResourceCreateInfoDecrementRefCount(it.createInfo);
+                if (foeResourceGetType(it.resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
+                    // Need to replace the placeholder with the actual resource
+                    foeResource newResource = foeResourcePoolLoadedReplace(
+                        mResourcePool, foeResourceGetID(it.resource),
+                        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, sizeof(foeMaterial),
+                        &it.data, moveFn, this, foeMaterialLoader::unloadResource);
+
+                    if (newResource == FOE_NULL_HANDLE)
+                        // @TODO - Handle failure
+                        std::abort();
+
+                    foeResourceDecrementRefCount(it.resource);
+                    foeResourceDecrementRefCount(newResource);
+                } else {
+                    it.pPostLoadFn(it.resource, {}, &it.data, moveFn, this,
+                                   foeMaterialLoader::unloadResource);
+                }
+
+                foeResourceCreateInfoDecrementRefCount(it.createInfo);
+            }
         } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-        DESCRIPTOR_CREATE_FAILED:
-            // One of them failed to load, we're not proceeding with this resource
             it.pPostLoadFn(
                 it.resource,
                 to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
@@ -242,10 +332,12 @@ void foeMaterialLoader::load(foeResource resource,
                     nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
-    } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL) {
+    } else if (foeResourceType type = foeResourceGetType(resource);
+               type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL &&
+               type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeMaterialLoader - Cannot load {} as it is an incompatible type: {}",
-                foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+                foeIdToString(foeResourceGetID(resource)), type);
 
         pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
                     nullptr, nullptr, nullptr, nullptr);
@@ -266,13 +358,15 @@ void foeMaterialLoader::load(foeResource resource,
             data.fragmentShader = foeResourcePoolFind(mResourcePool, pMaterialCI->fragmentShader);
 
             if (data.fragmentShader == FOE_NULL_HANDLE)
-                data.fragmentShader = foeResourcePoolAdd(
-                    mResourcePool, pMaterialCI->fragmentShader,
-                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, sizeof(foeShader));
+                data.fragmentShader =
+                    foeResourcePoolAdd(mResourcePool, pMaterialCI->fragmentShader);
         }
 
-        if (foeResourceGetType(data.fragmentShader) !=
-            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
+        if (foeResourceType type = foeResourceGetType(data.fragmentShader);
+            type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+            !foeResourceHasType(data.fragmentShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_INCOMPATIBLE);
             goto LOAD_FAILED;
         }
@@ -283,12 +377,14 @@ void foeMaterialLoader::load(foeResource resource,
             data.image = foeResourcePoolFind(mResourcePool, pMaterialCI->image);
 
             if (data.image == FOE_NULL_HANDLE)
-                data.image = foeResourcePoolAdd(mResourcePool, pMaterialCI->image,
-                                                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE,
-                                                sizeof(foeImage));
+                data.image = foeResourcePoolAdd(mResourcePool, pMaterialCI->image);
         }
 
-        if (foeResourceGetType(data.image) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
+        if (foeResourceType type = foeResourceGetType(data.image);
+            type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+            type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+            !foeResourceHasType(data.image, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE)) {
             result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_INCOMPATIBLE);
             goto LOAD_FAILED;
         }

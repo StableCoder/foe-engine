@@ -78,8 +78,21 @@ void foeArmatureLoader::maintenance() {
             new (pDst) foeArmature(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, to_foeResult(FOE_BRINGUP_SUCCESS), &it.data, moveFn, this,
-                       foeArmatureLoader::unloadResource);
+        if (foeResourceGetType(it.resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
+            foeResource newResource = foeResourcePoolLoadedReplace(
+                mResourcePool, foeResourceGetID(it.resource), FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
+                sizeof(foeArmature), &it.data, moveFn, this, foeArmatureLoader::unloadResource);
+
+            if (newResource == FOE_NULL_HANDLE)
+                // @TODO - Handle failure
+                std::abort();
+
+            foeResourceDecrementRefCount(it.resource);
+            foeResourceDecrementRefCount(newResource);
+        } else {
+            it.pPostLoadFn(it.resource, to_foeResult(FOE_BRINGUP_SUCCESS), &it.data, moveFn, this,
+                           foeArmatureLoader::unloadResource);
+        }
     }
 }
 
@@ -179,10 +192,12 @@ void foeArmatureLoader::load(foeResource resource,
                     nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
-    } else if (foeResourceGetType(resource) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
+    } else if (foeResourceType type = foeResourceGetType(resource);
+               type != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE &&
+               type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
         FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
                 "foeArmatureLoader - Cannot load {} as it is an incompatible type: {}",
-                foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+                foeIdToString(foeResourceGetID(resource)), type);
 
         pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE), nullptr,
                     nullptr, nullptr, nullptr);

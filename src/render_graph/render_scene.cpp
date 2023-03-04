@@ -52,10 +52,13 @@ auto renderCall(RenderDataSet const *pDataSet,
     }
 
     // Get Resource Data
-    auto const *pVertexDescriptor =
-        (foeVertexDescriptor const *)foeResourceGetData(vertexDescriptor);
-    auto const *pMaterial = (foeMaterial const *)foeResourceGetData(material);
-    auto const *pMesh = (foeMesh const *)foeResourceGetData(mesh);
+    foeVertexDescriptor const *pVertexDescriptor =
+        (foeVertexDescriptor const *)foeResourceGetTypeData(
+            vertexDescriptor, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR);
+    foeMaterial const *pMaterial = (foeMaterial const *)foeResourceGetTypeData(
+        material, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL);
+    foeMesh const *pMesh =
+        (foeMesh const *)foeResourceGetTypeData(mesh, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH);
 
     // Retrieve the pipeline
     auto *pGfxVertexDescriptor = &pVertexDescriptor->vertexDescriptor;

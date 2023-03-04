@@ -134,8 +134,22 @@ void foeMeshLoader::gfxMaintenance() {
                     new (pDst) foeMesh(std::move(*pSrcData));
                 };
 
-                it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data,
-                               moveFn, this, foeMeshLoader::unloadResource);
+                if (foeResourceGetType(it.resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
+                    foeResource newResource = foeResourcePoolLoadedReplace(
+                        mResourcePool, foeResourceGetID(it.resource),
+                        FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, sizeof(foeMesh), &it.data,
+                        moveFn, this, foeMeshLoader::unloadResource);
+
+                    if (newResource == FOE_NULL_HANDLE)
+                        // @TODO - Handle failure
+                        std::abort();
+
+                    foeResourceDecrementRefCount(it.resource);
+                    foeResourceDecrementRefCount(newResource);
+                } else {
+                    it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS),
+                                   &it.data, moveFn, this, foeMeshLoader::unloadResource);
+                }
             } else {
                 // No target resource, this is to be discarded
                 if (it.data.gfxData != FOE_NULL_HANDLE)
@@ -196,10 +210,12 @@ void foeMeshLoader::load(foeResource resource,
                     nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
-    } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH) {
+    } else if (foeResourceType type = foeResourceGetType(resource);
+               type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH &&
+               type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeMeshLoader - Cannot load {} as it is an incompatible type: {}",
-                foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
+                foeIdToString(foeResourceGetID(resource)), type);
 
         pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
                     nullptr, nullptr, nullptr, nullptr);
