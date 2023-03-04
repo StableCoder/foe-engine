@@ -106,8 +106,8 @@ void foeShaderLoader::gfxMaintenance() {
             new (pDst) foeShader(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, it.createInfo, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS),
-                       &it.data, moveFn, this, foeShaderLoader::unloadResource);
+        it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data, moveFn,
+                       this, foeShaderLoader::unloadResource);
     }
 }
 
@@ -133,18 +133,18 @@ void foeShaderLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, createInfo,
-                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
-                    nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                    nullptr, nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeShaderLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, createInfo,
-                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
-                    nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
+                    nullptr, nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
 
@@ -175,6 +175,8 @@ void foeShaderLoader::load(foeResource resource,
     }
 
 LOAD_FAILED:
+    foeResourceCreateInfoDecrementRefCount(createInfo);
+
     if (result.value != FOE_SUCCESS) {
         // Failed at some point
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
@@ -182,13 +184,12 @@ LOAD_FAILED:
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR, "Failed to load foeShader {}: {}",
                 foeIdToString(foeResourceGetID(resource)), buffer)
 
-        pPostLoadFn(resource, createInfo, result, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
     } else {
         // Loaded upto this point successfully
         mLoadSync.lock();
         mLoadRequests.emplace_back(LoadData{
             .resource = resource,
-            .createInfo = createInfo,
             .pPostLoadFn = pPostLoadFn,
             .data = std::move(data),
         });

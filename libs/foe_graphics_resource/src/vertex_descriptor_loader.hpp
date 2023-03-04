@@ -7,6 +7,7 @@
 
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/type_defs.h>
+#include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 

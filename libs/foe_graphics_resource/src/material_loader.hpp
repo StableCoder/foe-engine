@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,7 @@
 #include <foe/graphics/session.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/fragment_descriptor_pool.h>
+#include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <vulkan/vulkan.h>
 

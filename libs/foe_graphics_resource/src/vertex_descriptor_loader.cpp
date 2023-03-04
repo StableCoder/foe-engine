@@ -146,9 +146,9 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 new (pDst) foeVertexDescriptor{*pSrcData};
             };
 
-            it.pPostLoadFn(it.resource, it.createInfo, {}, &it.data, moveFn, this,
+            it.pPostLoadFn(it.resource, {}, &it.data, moveFn, this,
                            foeVertexDescriptorLoader::unloadResource);
-
+            foeResourceCreateInfoDecrementRefCount(it.createInfo);
         } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
             // At least one of the items failed to load
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
@@ -171,10 +171,11 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
             cleanup_foeVertexDescriptor(&it.data);
 
             it.pPostLoadFn(
-                it.resource, it.createInfo,
+                it.resource,
                 to_foeResult(
                     FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_FAILED_TO_LOAD),
                 nullptr, nullptr, nullptr, nullptr);
+            foeResourceCreateInfoDecrementRefCount(it.createInfo);
         } else {
             // Sub-items are still at least loading
             stillLoading.emplace_back(it);
@@ -216,9 +217,9 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, createInfo,
-                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
-                    nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                    nullptr, nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceGetType(resource) !=
                FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR) {
@@ -226,9 +227,9 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                 "foeVertexDescriptorLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, createInfo,
-                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
-                    nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
+                    nullptr, nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
 
@@ -359,7 +360,8 @@ LOAD_FAILED:
         foeResourceDecrementRefCount(data.geometryShader);
 
     // Call the resource post-load function with the error result code
-    pPostLoadFn(resource, createInfo, result, nullptr, nullptr, nullptr, nullptr);
+    pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
+    foeResourceCreateInfoDecrementRefCount(createInfo);
 }
 
 void foeVertexDescriptorLoader::unloadResource(void *pContext,

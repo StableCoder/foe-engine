@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,7 @@
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/shader.h>
 #include <foe/managed_memory.h>
+#include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
@@ -56,7 +57,6 @@ class foeShaderLoader {
 
     struct LoadData {
         foeResource resource;
-        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeShader data;
     };

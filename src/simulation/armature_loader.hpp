@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@
 #define ARMATURE_LOADER_HPP
 
 #include <foe/managed_memory.h>
+#include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/result.h>
@@ -50,7 +51,6 @@ class foeArmatureLoader {
 
     struct LoadData {
         foeResource resource;
-        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeArmature data;
     };

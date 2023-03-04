@@ -152,7 +152,6 @@ namespace {
 
 void postLoadFn(
     foeResource resource,
-    foeResourceCreateInfo createInfo,
     foeResultSet loadResult,
     void *pSrc,
     void (*pMoveDataFn)(void *, void *),
@@ -191,7 +190,6 @@ void postLoadFn(
     // Decrement the reference count of both resource and create info, no longer needed after the
     // loading process is done
     foeResourceDecrementRefCount(resource);
-    foeResourceCreateInfoDecrementRefCount(createInfo);
 }
 
 void loadResourceTask(foeResourceImpl *pResource) {
@@ -204,9 +202,12 @@ void loadResourceTask(foeResourceImpl *pResource) {
         pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
                                          resource_to_handle(pResource), createInfo, postLoadFn);
     } else {
-        postLoadFn(resource_to_handle(pResource), FOE_NULL_HANDLE,
-                   to_foeResult(FOE_RESOURCE_ERROR_NO_CREATE_INFO), nullptr, nullptr, nullptr,
-                   nullptr);
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
+                "[{},{}] foeResource - Failed to import ResourceCreateInfo",
+                foeIdToString(pResource->id), foeResourceGetType(resource_to_handle(pResource)));
+
+        postLoadFn(resource_to_handle(pResource), to_foeResult(FOE_RESOURCE_ERROR_NO_CREATE_INFO),
+                   nullptr, nullptr, nullptr, nullptr);
     }
 }
 

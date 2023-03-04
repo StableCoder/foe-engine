@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@
 
 #include <foe/ecs/id.h>
 #include <foe/physics/resource/collision_shape.hpp>
+#include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 
@@ -44,7 +45,6 @@ class foeCollisionShapeLoader {
 
     struct LoadData {
         foeResource resource;
-        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeCollisionShape data;
     };

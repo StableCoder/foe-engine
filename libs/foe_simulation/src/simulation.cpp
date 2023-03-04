@@ -103,8 +103,9 @@ void loadResource(void *pContext,
         }
     }
 
-    pPostLoadFn(resource, resourceCreateInfo, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND),
-                nullptr, nullptr, nullptr, nullptr);
+    pPostLoadFn(resource, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
+                nullptr, nullptr);
+    foeResourceCreateInfoDecrementRefCount(resourceCreateInfo);
 }
 
 } // namespace

@@ -76,8 +76,8 @@ void foeCollisionShapeLoader::maintenance() {
             new (pDst) foeCollisionShape(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, it.createInfo, to_foeResult(FOE_PHYSICS_SUCCESS), &it.data,
-                       moveFn, this, foeCollisionShapeLoader::unloadResource);
+        it.pPostLoadFn(it.resource, to_foeResult(FOE_PHYSICS_SUCCESS), &it.data, moveFn, this,
+                       foeCollisionShapeLoader::unloadResource);
     }
 }
 
@@ -103,17 +103,18 @@ void foeCollisionShapeLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, createInfo, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceGetType(resource) != FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
         FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foeCollisionShapeLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, createInfo,
-                    to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr, nullptr,
-                    nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
+                    nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
 
@@ -125,10 +126,11 @@ void foeCollisionShapeLoader::load(foeResource resource,
     data.collisionShape =
         std::make_unique<btBoxShape>(glmToBtVec3(pCollisionShapeCreateInfo->boxSize));
 
+    foeResourceCreateInfoDecrementRefCount(createInfo);
+
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
-        .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });

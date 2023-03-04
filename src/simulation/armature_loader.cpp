@@ -78,8 +78,8 @@ void foeArmatureLoader::maintenance() {
             new (pDst) foeArmature(std::move(*pSrcData));
         };
 
-        it.pPostLoadFn(it.resource, it.createInfo, to_foeResult(FOE_BRINGUP_SUCCESS), &it.data,
-                       moveFn, this, foeArmatureLoader::unloadResource);
+        it.pPostLoadFn(it.resource, to_foeResult(FOE_BRINGUP_SUCCESS), &it.data, moveFn, this,
+                       foeArmatureLoader::unloadResource);
     }
 }
 
@@ -175,16 +175,18 @@ void foeArmatureLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, createInfo, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                    nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceGetType(resource) != FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
         FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
                 "foeArmatureLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, createInfo, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE),
-                    nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE), nullptr,
+                    nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
 
@@ -194,15 +196,17 @@ void foeArmatureLoader::load(foeResource resource,
     foeArmature data{};
 
     if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
-        pPostLoadFn(resource, createInfo, to_foeResult(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr,
-                    nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr, nullptr,
+                    nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
+
+    foeResourceCreateInfoDecrementRefCount(createInfo);
 
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
-        .createInfo = createInfo,
         .pPostLoadFn = pPostLoadFn,
         .data = std::move(data),
     });

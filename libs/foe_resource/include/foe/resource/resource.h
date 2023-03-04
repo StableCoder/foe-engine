@@ -7,11 +7,11 @@
 
 #include <foe/ecs/id.h>
 #include <foe/handle.h>
-#include <foe/resource/create_info.h>
 #include <foe/resource/export.h>
 #include <foe/result.h>
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +35,6 @@ typedef bool(PFN_foeResourceUnloadCall)(foeResource,             // Resource
 // Sets data appropriately and decrements reference count of both Resource and CreateInfo safely.
 typedef void(PFN_foeResourcePostLoad)(
     foeResource,                                                               // Resource
-    foeResourceCreateInfo,                                                     // CreateInfo
     foeResultSet,                                                              // ErrorCode
     void *,                                                                    // Source
     void (*)(void *, void *),                                                  // Move Fn

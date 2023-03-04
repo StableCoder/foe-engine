@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,7 @@
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/upload_request.h>
 #include <foe/managed_memory.h>
+#include <foe/resource/create_info.h>
 #include <foe/resource/pool.h>
 #include <foe/resource/resource.h>
 #include <foe/result.h>
@@ -62,7 +63,6 @@ class foeMeshLoader {
 
     struct LoadData {
         foeResource resource;
-        foeResourceCreateInfo createInfo;
         PFN_foeResourcePostLoad *pPostLoadFn;
         foeMesh data;
 

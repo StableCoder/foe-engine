@@ -142,9 +142,8 @@ void foeImageLoader::gfxMaintenance() {
                     new (pDst) foeImage(std::move(*pSrcData));
                 };
 
-                it.pPostLoadFn(it.resource, it.createInfo,
-                               to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data, moveFn, this,
-                               foeImageLoader::unloadResource);
+                it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data,
+                               moveFn, this, foeImageLoader::unloadResource);
             } else {
                 // Destroy the data immediately
                 VkDevice device = foeGfxVkGetDevice(mGfxSession);
@@ -163,7 +162,7 @@ void foeImageLoader::gfxMaintenance() {
             foeGfxDestroyUploadRequest(mGfxUploadContext, it.uploadRequest);
         } else if (requestStatus != FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
             // There's an error, this is lost.
-            it.pPostLoadFn(it.resource, it.createInfo,
+            it.pPostLoadFn(it.resource,
                            to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_UPLOAD_FAILURE), nullptr,
                            nullptr, nullptr, nullptr);
         } else {
@@ -205,18 +204,18 @@ void foeImageLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, createInfo,
-                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
-                    nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                    nullptr, nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceGetType(resource) != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeImageLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, createInfo,
-                    to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
-                    nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
+                    nullptr, nullptr, nullptr, nullptr);
+        foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
     auto const *pImageCI = (foeImageCreateInfo const *)foeResourceCreateInfoGetData(createInfo);
@@ -436,6 +435,8 @@ void foeImageLoader::load(foeResource resource,
     }
 
 LOADING_FAILED:
+    foeResourceCreateInfoDecrementRefCount(createInfo);
+
     if (result.value == FOE_SUCCESS && vkRes != VK_SUCCESS) {
         result = vk_to_foeResult(vkRes);
     }
@@ -449,7 +450,7 @@ LOADING_FAILED:
                 foeIdToString(foeResourceGetID(resource)), buffer)
 
         // Run the post-load function with the error
-        pPostLoadFn(resource, createInfo, result, nullptr, nullptr, nullptr, nullptr);
+        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
 
         if (gfxUploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pimage an nullptr, so the upload completes then the
@@ -478,7 +479,6 @@ LOADING_FAILED:
         mLoadSync.lock();
         mLoadRequests.emplace_back(LoadData{
             .resource = resource,
-            .createInfo = createInfo,
             .pPostLoadFn = pPostLoadFn,
             .data = std::move(imgData),
             .uploadRequest = gfxUploadRequest,
