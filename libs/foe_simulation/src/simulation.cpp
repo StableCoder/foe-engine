@@ -90,11 +90,17 @@ foeResourceCreateInfo getResourceCreateInfo(void *pContext, foeResourceID resour
     return pSimulation->groupData.getResourceCreateInfo(resourceID);
 }
 
-void loadResource(void *pContext,
-                  foeResource resource,
-                  foeResourceCreateInfo resourceCreateInfo,
-                  PFN_foeResourcePostLoad *pPostLoadFn) {
+void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad *pPostLoadFn) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
+
+    foeResourceCreateInfo resourceCreateInfo =
+        getResourceCreateInfo(pSimulation, foeResourceGetID(resource));
+
+    if (resourceCreateInfo == FOE_NULL_HANDLE) {
+        pPostLoadFn(resource, to_foeResult(FOE_SIMULATION_ERROR_NO_CREATE_INFO), nullptr, nullptr,
+                    nullptr, nullptr);
+        return;
+    }
 
     for (auto const &it : pSimulation->resourceLoaders) {
         if (it.pCanProcessCreateInfoFn(resourceCreateInfo)) {
@@ -103,6 +109,7 @@ void loadResource(void *pContext,
         }
     }
 
+    // If no suitable loader could be found
     pPostLoadFn(resource, to_foeResult(FOE_SIMULATION_ERROR_NO_LOADER_FOUND), nullptr, nullptr,
                 nullptr, nullptr);
     foeResourceCreateInfoDecrementRefCount(resourceCreateInfo);
@@ -307,8 +314,6 @@ foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationS
 
     // Resource Pool
     foeResourceFns resourceCallbacks{
-        .pImportContext = newSimState.get(),
-        .pImportFn = getResourceCreateInfo,
         .pLoadContext = newSimState.get(),
         .pLoadFn = loadResource,
     };

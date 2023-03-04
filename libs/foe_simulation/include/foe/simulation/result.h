@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,6 +27,7 @@ typedef enum foeSimulationResult {
     FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_ALREADY_INITIALIZED = -1000006011,
     FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED = -1000006012,
     FOE_SIMULATION_ERROR_CONTENT_NOT_FOUND = -1000006013,
+    FOE_SIMULATION_ERROR_NO_CREATE_INFO = -1000006014,
 } foeSimulationResult;
 
 FOE_SIM_EXPORT void foeSimulationResultToString(foeSimulationResult value,

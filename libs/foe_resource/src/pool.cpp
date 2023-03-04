@@ -10,6 +10,7 @@
 #include "log.hpp"
 #include "result.h"
 
+#include <algorithm>
 #include <mutex>
 #include <shared_mutex>
 #include <vector>
@@ -65,12 +66,13 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
 
     std::unique_lock lock{pResourcePool->sync};
 
+    auto searchIt = std::lower_bound(
+        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
+        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
+
     // If it finds it, return nullptr
-    for (auto const it : pResourcePool->resources) {
-        if (foeResourceGetID(it) == resourceID) {
-            return FOE_NULL_HANDLE;
-        }
-    }
+    if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID)
+        return FOE_NULL_HANDLE;
 
     // Not found, add it
     foeResource newResource;
@@ -89,7 +91,7 @@ extern "C" foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
     // Since we're returning the resource, increment the count to account for that
     foeResourceIncrementRefCount(newResource);
 
-    pResourcePool->resources.emplace_back(newResource);
+    pResourcePool->resources.insert(searchIt, newResource);
     return newResource;
 }
 
@@ -98,14 +100,12 @@ extern "C" foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeReso
 
     std::shared_lock lock{pResourcePool->sync};
 
-    for (auto const it : pResourcePool->resources) {
-        if (foeResourceGetID(it) == resourceID) {
-            // Since we're returning the resource, increment the count to account for that
-            foeResourceIncrementRefCount(it);
+    auto searchIt = std::lower_bound(
+        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
+        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
 
-            return it;
-        }
-    }
+    if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID)
+        return *searchIt;
 
     return FOE_NULL_HANDLE;
 }
@@ -113,15 +113,17 @@ extern "C" foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeReso
 extern "C" foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
                                               foeResourceID resourceID) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
-
-    std::unique_lock lock{pResourcePool->sync};
     foeResource resource{FOE_NULL_HANDLE};
 
-    for (auto it = pResourcePool->resources.begin(); it != pResourcePool->resources.end(); ++it) {
-        if (foeResourceGetID(*it) == resourceID) {
-            resource = *it;
-            pResourcePool->resources.erase(it);
-        }
+    std::unique_lock lock{pResourcePool->sync};
+
+    auto searchIt = std::lower_bound(
+        pResourcePool->resources.begin(), pResourcePool->resources.end(), resourceID,
+        [](foeResource resource, foeResourceID id) { return foeResourceGetID(resource) < id; });
+
+    if (searchIt != pResourcePool->resources.end() && foeResourceGetID(*searchIt) == resourceID) {
+        resource = *searchIt;
+        pResourcePool->resources.erase(searchIt);
     }
     lock.unlock();
 

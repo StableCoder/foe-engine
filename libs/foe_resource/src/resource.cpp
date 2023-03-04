@@ -193,22 +193,8 @@ void postLoadFn(
 }
 
 void loadResourceTask(foeResourceImpl *pResource) {
-    foeResourceCreateInfo createInfo =
-        pResource->pResourceFns->pImportFn(pResource->pResourceFns->pImportContext, pResource->id);
-
-    if (createInfo != FOE_NULL_HANDLE) {
-        // This call will decrement the CreateInfo reference count
-        // @TODO - Change to not deal with CreateInfo reference counts?
-        pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
-                                         resource_to_handle(pResource), createInfo, postLoadFn);
-    } else {
-        FOE_LOG(foeResource, FOE_LOG_LEVEL_ERROR,
-                "[{},{}] foeResource - Failed to import ResourceCreateInfo",
-                foeIdToString(pResource->id), foeResourceGetType(resource_to_handle(pResource)));
-
-        postLoadFn(resource_to_handle(pResource), to_foeResult(FOE_RESOURCE_ERROR_NO_CREATE_INFO),
-                   nullptr, nullptr, nullptr, nullptr);
-    }
+    pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
+                                     resource_to_handle(pResource), postLoadFn);
 }
 
 } // namespace
@@ -221,16 +207,15 @@ extern "C" void foeResourceLoadData(foeResource resource) {
     // Only want to start loading if the data isn't already slated to be loaded
     if (pResource->loading.test_and_set()) {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
-                "[{},{}] foeResource - Attempted to load in parrallel",
-                foeIdToString(pResource->id), pResource->type)
+                "[{},{}] foeResource - Resource already loading", foeIdToString(pResource->id),
+                foeResourceGetType(resource))
         foeResourceDecrementRefCount(resource);
         return;
     }
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
-        FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE,
-                "[{},{}] foeResource - Importing CreateInfo asynchronously",
-                foeIdToString(pResource->id), pResource->type)
+        FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Loading asynchronously",
+                foeIdToString(pResource->id), foeResourceGetType(resource))
 
         pResource->pResourceFns->scheduleAsyncTask(
             pResource->pResourceFns->pScheduleAsyncTaskContext, (PFN_foeTask)loadResourceTask,
@@ -251,7 +236,6 @@ bool resourceUnloadCall(foeResource resource,
                         void (*pMoveFn)(void *, void *)) {
     auto *pResource = resource_from_handle(resource);
     bool retVal{false};
-    foeResourceCreateInfo oldCreateInfo{FOE_NULL_HANDLE};
 
     pResource->sync.lock();
 
@@ -268,12 +252,6 @@ bool resourceUnloadCall(foeResource resource,
     }
 
     pResource->sync.unlock();
-
-    // To prevent issues due to maybe slower destruction of ResourceCreateInfo,
-    // decrement/destroy it outside the sync-locked portion
-    if (oldCreateInfo != FOE_NULL_HANDLE) {
-        foeResourceCreateInfoDecrementRefCount(oldCreateInfo);
-    }
 
     return retVal;
 }
