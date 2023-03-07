@@ -325,7 +325,7 @@ extern "C" void const *foeResourceGetTypeData(foeResource resource, foeResourceT
     return nullptr;
 }
 
-extern "C" void foeResourceLoadData(foeResource resource) {
+extern "C" foeResultSet foeResourceLoadData(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
 
     foeResourceIncrementRefCount(resource);
@@ -336,7 +336,7 @@ extern "C" void foeResourceLoadData(foeResource resource) {
                 "[{},{}] foeResource - Resource already loading", foeIdToString(pResource->id),
                 foeResourceGetType(resource))
         foeResourceDecrementRefCount(resource);
-        return;
+        return to_foeResult(FOE_RESOURCE_ALREADY_LOADING);
     }
 
     if (pResource->pResourceFns->scheduleAsyncTask != nullptr) {
@@ -352,6 +352,8 @@ extern "C" void foeResourceLoadData(foeResource resource) {
 
         loadResourceTask(pResource);
     }
+
+    return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
 namespace {

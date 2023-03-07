@@ -93,7 +93,7 @@ FOE_RES_EXPORT foeResourceLoadState foeResourceGetState(foeResource resource);
 FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
 FOE_RES_EXPORT void const *foeResourceGetTypeData(foeResource resource, foeResourceType type);
 
-FOE_RES_EXPORT void foeResourceLoadData(foeResource resource);
+FOE_RES_EXPORT foeResultSet foeResourceLoadData(foeResource resource);
 FOE_RES_EXPORT void foeResourceUnloadData(foeResource resource, bool immediate);
 
 #ifdef __cplusplus
