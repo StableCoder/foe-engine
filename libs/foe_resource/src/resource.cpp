@@ -328,6 +328,10 @@ extern "C" void const *foeResourceGetTypeData(foeResource resource, foeResourceT
 extern "C" foeResultSet foeResourceLoadData(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
 
+    foeResourceType type = foeResourceGetType(resource);
+    if (type == FOE_RESOURCE_RESOURCE_TYPE_REPLACED)
+        return to_foeResult(FOE_RESOURCE_ERROR_REPLACED_CANNOT_BE_LOADED);
+
     foeResourceIncrementRefCount(resource);
 
     // Only want to start loading if the data isn't already slated to be loaded
