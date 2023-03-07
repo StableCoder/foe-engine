@@ -63,7 +63,7 @@ void foeArmatureLoader::maintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        unloadResource(this, it.resource, it.iteration, it.unloadCallFn, true);
         foeResourceDecrementRefCount(it.resource);
     }
 
@@ -90,8 +90,8 @@ void foeArmatureLoader::maintenance() {
             foeResourceDecrementRefCount(it.resource);
             foeResourceDecrementRefCount(newResource);
         } else {
-            it.pPostLoadFn(it.resource, to_foeResult(FOE_BRINGUP_SUCCESS), &it.data, moveFn, this,
-                           foeArmatureLoader::unloadResource);
+            it.postLoadFn(it.resource, to_foeResult(FOE_BRINGUP_SUCCESS), &it.data, moveFn, this,
+                          foeArmatureLoader::unloadResource);
         }
     }
 }
@@ -175,21 +175,21 @@ bool processCreateInfo(
 void foeArmatureLoader::load(void *pLoader,
                              foeResource resource,
                              foeResourceCreateInfo createInfo,
-                             PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeArmatureLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
+                             PFN_foeResourcePostLoad postLoadFn) {
+    reinterpret_cast<foeArmatureLoader *>(pLoader)->load(resource, createInfo, postLoadFn);
 }
 
 void foeArmatureLoader::load(foeResource resource,
                              foeResourceCreateInfo createInfo,
-                             PFN_foeResourcePostLoad *pPostLoadFn) {
+                             PFN_foeResourcePostLoad postLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR,
                 "foeArmatureLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
-                    nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                   nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceType type = foeResourceGetType(resource);
@@ -199,8 +199,8 @@ void foeArmatureLoader::load(foeResource resource,
                 "foeArmatureLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), type);
 
-        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE), nullptr,
-                    nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_INCOMPATIBLE_RESOURCE), nullptr,
+                   nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
@@ -212,8 +212,8 @@ void foeArmatureLoader::load(foeResource resource,
     };
 
     if (!processCreateInfo(mExternalFileSearchFn, pArmatureCreateInfo, data)) {
-        pPostLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr, nullptr,
-                    nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_BRINGUP_ERROR_IMPORT_FAILED), nullptr, nullptr,
+                   nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
@@ -223,7 +223,7 @@ void foeArmatureLoader::load(foeResource resource,
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
-        .pPostLoadFn = pPostLoadFn,
+        .postLoadFn = postLoadFn,
         .data = std::move(data),
     });
     mLoadSync.unlock();
@@ -232,7 +232,7 @@ void foeArmatureLoader::load(foeResource resource,
 void foeArmatureLoader::unloadResource(void *pContext,
                                        foeResource resource,
                                        uint32_t resourceIteration,
-                                       PFN_foeResourceUnloadCall *pUnloadCallFn,
+                                       PFN_foeResourceUnloadCall unloadCallFn,
                                        bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeArmatureLoader *>(pContext);
 
@@ -242,7 +242,7 @@ void foeArmatureLoader::unloadResource(void *pContext,
             pArmature->~foeArmature();
         };
 
-        pUnloadCallFn(resource, resourceIteration, nullptr, destroyFn);
+        unloadCallFn(resource, resourceIteration, nullptr, destroyFn);
     } else {
         foeResourceIncrementRefCount(resource);
         pLoader->mUnloadSync.lock();
@@ -250,7 +250,7 @@ void foeArmatureLoader::unloadResource(void *pContext,
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
             .iteration = resourceIteration,
-            .pUnloadCallFn = pUnloadCallFn,
+            .unloadCallFn = unloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();

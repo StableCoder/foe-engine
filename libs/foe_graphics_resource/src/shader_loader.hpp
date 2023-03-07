@@ -37,18 +37,18 @@ class foeShaderLoader {
     static void load(void *pLoader,
                      foeResource resource,
                      foeResourceCreateInfo createInfo,
-                     PFN_foeResourcePostLoad *pPostLoadFn);
+                     PFN_foeResourcePostLoad postLoadFn);
 
   private:
     static void unloadResource(void *pContext,
                                foeResource resource,
                                uint32_t resourceIteration,
-                               PFN_foeResourceUnloadCall *pUnloadCallFn,
+                               PFN_foeResourceUnloadCall unloadCallFn,
                                bool immediateUnload);
 
     void load(foeResource resource,
               foeResourceCreateInfo createInfo,
-              PFN_foeResourcePostLoad *pPostLoadFn);
+              PFN_foeResourcePostLoad postLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     std::function<foeResultSet(char const *, foeManagedMemory *)> mExternalFileSearchFn;
@@ -57,7 +57,7 @@ class foeShaderLoader {
 
     struct LoadData {
         foeResource resource;
-        PFN_foeResourcePostLoad *pPostLoadFn;
+        PFN_foeResourcePostLoad postLoadFn;
         foeShader data;
     };
 
@@ -67,7 +67,7 @@ class foeShaderLoader {
     struct UnloadData {
         foeResource resource;
         uint32_t iteration;
-        PFN_foeResourceUnloadCall *pUnloadCallFn;
+        PFN_foeResourceUnloadCall unloadCallFn;
     };
 
     std::mutex mUnloadSync;

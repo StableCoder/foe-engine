@@ -61,7 +61,7 @@ void foeCollisionShapeLoader::maintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        unloadResource(this, it.resource, it.iteration, it.unloadCallFn, true);
         foeResourceDecrementRefCount(it.resource);
     }
 
@@ -92,8 +92,8 @@ void foeCollisionShapeLoader::maintenance() {
             foeResourceDecrementRefCount(newResource);
         } else {
             // The resource handle is of the desired type already, use the regular load function
-            it.pPostLoadFn(it.resource, to_foeResult(FOE_PHYSICS_SUCCESS), &it.data, moveFn, this,
-                           foeCollisionShapeLoader::unloadResource);
+            it.postLoadFn(it.resource, to_foeResult(FOE_PHYSICS_SUCCESS), &it.data, moveFn, this,
+                          foeCollisionShapeLoader::unloadResource);
         }
     }
 }
@@ -106,13 +106,13 @@ bool foeCollisionShapeLoader::canProcessCreateInfo(foeResourceCreateInfo createI
 void foeCollisionShapeLoader::load(void *pLoader,
                                    foeResource resource,
                                    foeResourceCreateInfo createInfo,
-                                   PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
+                                   PFN_foeResourcePostLoad postLoadFn) {
+    reinterpret_cast<foeCollisionShapeLoader *>(pLoader)->load(resource, createInfo, postLoadFn);
 }
 
 void foeCollisionShapeLoader::load(foeResource resource,
                                    foeResourceCreateInfo createInfo,
-                                   PFN_foeResourcePostLoad *pPostLoadFn) {
+                                   PFN_foeResourcePostLoad postLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         FOE_LOG(foePhysics, FOE_LOG_LEVEL_ERROR,
                 "foeCollisionShapeLoader - Cannot load {} as given CreateInfo is incompatible "
@@ -120,8 +120,8 @@ void foeCollisionShapeLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
-                    nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_CREATE_INFO), nullptr,
+                   nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceType type = foeResourceGetType(resource);
@@ -131,8 +131,8 @@ void foeCollisionShapeLoader::load(foeResource resource,
                 "foeCollisionShapeLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
-                    nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_PHYSICS_ERROR_INCOMPATIBLE_RESOURCE_TYPE), nullptr,
+                   nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
@@ -151,7 +151,7 @@ void foeCollisionShapeLoader::load(foeResource resource,
     mLoadSync.lock();
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
-        .pPostLoadFn = pPostLoadFn,
+        .postLoadFn = postLoadFn,
         .data = std::move(data),
     });
     mLoadSync.unlock();
@@ -160,7 +160,7 @@ void foeCollisionShapeLoader::load(foeResource resource,
 void foeCollisionShapeLoader::unloadResource(void *pContext,
                                              foeResource resource,
                                              uint32_t resourceIteration,
-                                             PFN_foeResourceUnloadCall *pUnloadCallFn,
+                                             PFN_foeResourceUnloadCall unloadCallFn,
                                              bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeCollisionShapeLoader *>(pContext);
 
@@ -175,7 +175,7 @@ void foeCollisionShapeLoader::unloadResource(void *pContext,
 
         foeCollisionShape data{};
 
-        pUnloadCallFn(resource, resourceIteration, &data, moveFn);
+        unloadCallFn(resource, resourceIteration, &data, moveFn);
     } else {
         foeResourceIncrementRefCount(resource);
         pLoader->mUnloadSync.lock();
@@ -183,7 +183,7 @@ void foeCollisionShapeLoader::unloadResource(void *pContext,
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
             .iteration = resourceIteration,
-            .pUnloadCallFn = pUnloadCallFn,
+            .unloadCallFn = unloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();

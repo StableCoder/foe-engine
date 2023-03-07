@@ -98,7 +98,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        unloadResource(this, it.resource, it.iteration, it.unloadCallFn, true);
         foeResourceDecrementRefCount(it.resource);
     }
 
@@ -247,8 +247,8 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
                 foeResourceDecrementRefCount(it.resource);
                 foeResourceDecrementRefCount(newResource);
             } else {
-                it.pPostLoadFn(it.resource, {}, &it.data, moveFn, this,
-                               foeVertexDescriptorLoader::unloadResource);
+                it.postLoadFn(it.resource, {}, &it.data, moveFn, this,
+                              foeVertexDescriptorLoader::unloadResource);
             }
 
             foeResourceCreateInfoDecrementRefCount(it.createInfo);
@@ -273,7 +273,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
 
             cleanup_foeVertexDescriptor(&it.data);
 
-            it.pPostLoadFn(
+            it.postLoadFn(
                 it.resource,
                 to_foeResult(
                     FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_FAILED_TO_LOAD),
@@ -306,13 +306,13 @@ bool foeVertexDescriptorLoader::canProcessCreateInfo(foeResourceCreateInfo creat
 void foeVertexDescriptorLoader::load(void *pLoader,
                                      foeResource resource,
                                      foeResourceCreateInfo createInfo,
-                                     PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
+                                     PFN_foeResourcePostLoad postLoadFn) {
+    reinterpret_cast<foeVertexDescriptorLoader *>(pLoader)->load(resource, createInfo, postLoadFn);
 }
 
 void foeVertexDescriptorLoader::load(foeResource resource,
                                      foeResourceCreateInfo createInfo,
-                                     PFN_foeResourcePostLoad *pPostLoadFn) {
+                                     PFN_foeResourcePostLoad postLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeVertexDescriptorLoader - Cannot load {} as given CreateInfo is "
@@ -320,8 +320,8 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceType type = foeResourceGetType(resource);
@@ -331,8 +331,8 @@ void foeVertexDescriptorLoader::load(foeResource resource,
                 "foeVertexDescriptorLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), foeResourceGetType(resource));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
@@ -458,7 +458,7 @@ void foeVertexDescriptorLoader::load(foeResource resource,
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
         .createInfo = createInfo,
-        .pPostLoadFn = pPostLoadFn,
+        .postLoadFn = postLoadFn,
         .data = data,
     });
     mLoadSync.unlock();
@@ -475,14 +475,14 @@ LOAD_FAILED:
         foeResourceDecrementRefCount(data.geometryShader);
 
     // Call the resource post-load function with the error result code
-    pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
+    postLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
     foeResourceCreateInfoDecrementRefCount(createInfo);
 }
 
 void foeVertexDescriptorLoader::unloadResource(void *pContext,
                                                foeResource resource,
                                                uint32_t resourceIteration,
-                                               PFN_foeResourceUnloadCall *pUnloadCallFn,
+                                               PFN_foeResourceUnloadCall unloadCallFn,
                                                bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeVertexDescriptorLoader *>(pContext);
 
@@ -496,7 +496,7 @@ void foeVertexDescriptorLoader::unloadResource(void *pContext,
 
         foeVertexDescriptor data;
 
-        if (!pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (!unloadCallFn(resource, resourceIteration, &data, moveFn)) {
             // If it failed, it's probably due to the resource iteration being different than
             // desired, so it didn't happen.
             return;
@@ -528,7 +528,7 @@ void foeVertexDescriptorLoader::unloadResource(void *pContext,
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
             .iteration = resourceIteration,
-            .pUnloadCallFn = pUnloadCallFn,
+            .unloadCallFn = unloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -51,7 +51,7 @@ struct foeSimulationLoaderData {
     /// Function that returns whether the loader can process a given ResourceCreateInfo type
     bool (*pCanProcessCreateInfoFn)(foeResourceCreateInfo);
     /// Function to be called to load a resource with a compatible ResourceCreateInfo
-    void (*pLoadFn)(void *, foeResource, foeResourceCreateInfo, PFN_foeResourcePostLoad *);
+    void (*pLoadFn)(void *, foeResource, foeResourceCreateInfo, PFN_foeResourcePostLoad);
     /// Maintenance to be performed as part of the regular simulation loop
     void (*pMaintenanceFn)(void *);
     /// Maintenance to be performed as part of the graphics loop

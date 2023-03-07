@@ -108,7 +108,7 @@ void foeMeshLoader::gfxMaintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        unloadResource(this, it.resource, it.iteration, it.unloadCallFn, true);
         foeResourceDecrementRefCount(it.resource);
     }
 
@@ -147,8 +147,8 @@ void foeMeshLoader::gfxMaintenance() {
                     foeResourceDecrementRefCount(it.resource);
                     foeResourceDecrementRefCount(newResource);
                 } else {
-                    it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS),
-                                   &it.data, moveFn, this, foeMeshLoader::unloadResource);
+                    it.postLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS),
+                                  &it.data, moveFn, this, foeMeshLoader::unloadResource);
                 }
             } else {
                 // No target resource, this is to be discarded
@@ -161,9 +161,8 @@ void foeMeshLoader::gfxMaintenance() {
                 foeGfxDestroyUploadBuffer(mGfxUploadContext, it.uploadBuffer);
             foeGfxDestroyUploadRequest(mGfxUploadContext, it.uploadRequest);
 
-            it.pPostLoadFn(it.resource,
-                           to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_UPLOAD_FAILED), nullptr,
-                           nullptr, nullptr, nullptr);
+            it.postLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MESH_UPLOAD_FAILED),
+                          nullptr, nullptr, nullptr, nullptr);
         } else {
             // Still uploading, requeue
             stillLoading.emplace_back(std::move(it));
@@ -193,21 +192,21 @@ bool foeMeshLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
 void foeMeshLoader::load(void *pLoader,
                          foeResource resource,
                          foeResourceCreateInfo createInfo,
-                         PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeMeshLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
+                         PFN_foeResourcePostLoad postLoadFn) {
+    reinterpret_cast<foeMeshLoader *>(pLoader)->load(resource, createInfo, postLoadFn);
 }
 
 void foeMeshLoader::load(foeResource resource,
                          foeResourceCreateInfo createInfo,
-                         PFN_foeResourcePostLoad *pPostLoadFn) {
+                         PFN_foeResourcePostLoad postLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeMeshLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceType type = foeResourceGetType(resource);
@@ -217,8 +216,8 @@ void foeMeshLoader::load(foeResource resource,
                 "foeMeshLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), type);
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
@@ -529,7 +528,7 @@ LOAD_FAILED:
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "Failed to load foeMesh {} with error: {}",
                 foeIdToString(foeResourceGetID(resource)), buffer)
-        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
 
         if (uploadRequest != FOE_NULL_HANDLE) {
             // A partial upload success, leave pMesh as nullptr, so the upload completes then
@@ -554,7 +553,7 @@ LOAD_FAILED:
 
         mLoadRequests.emplace_back(LoadData{
             .resource = resource,
-            .pPostLoadFn = pPostLoadFn,
+            .postLoadFn = postLoadFn,
             .data = std::move(data),
             .uploadRequest = uploadRequest,
             .uploadBuffer = uploadBuffer,
@@ -567,7 +566,7 @@ LOAD_FAILED:
 void foeMeshLoader::unloadResource(void *pContext,
                                    foeResource resource,
                                    uint32_t resourceIteration,
-                                   PFN_foeResourceUnloadCall *pUnloadCallFn,
+                                   PFN_foeResourceUnloadCall unloadCallFn,
                                    bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeMeshLoader *>(pContext);
 
@@ -582,7 +581,7 @@ void foeMeshLoader::unloadResource(void *pContext,
 
         foeMesh data{};
 
-        if (pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (unloadCallFn(resource, resourceIteration, &data, moveFn)) {
             pLoader->mDestroySync.lock();
             pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
             pLoader->mDestroySync.unlock();
@@ -594,7 +593,7 @@ void foeMeshLoader::unloadResource(void *pContext,
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
             .iteration = resourceIteration,
-            .pUnloadCallFn = pUnloadCallFn,
+            .unloadCallFn = unloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();

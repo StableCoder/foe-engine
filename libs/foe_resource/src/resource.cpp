@@ -44,7 +44,7 @@ struct foeResourceImpl {
     // Perhaps as part of the data next chain
 
     void *pUnloadContext{nullptr};
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool){nullptr};
+    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool){nullptr};
 
     foeResourceImpl(foeResourceID id, foeResourceFns const *pResourceFns) :
         id{id}, pResourceFns{pResourceFns} {}
@@ -52,13 +52,12 @@ struct foeResourceImpl {
 
 FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
 
-void postLoadFn(
-    foeResource resource,
-    foeResultSet loadResult,
-    void *pSrc,
-    void (*pMoveDataFn)(void *, void *),
-    void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool)) {
+void postLoadFn(foeResource resource,
+                foeResultSet loadResult,
+                void *pSrc,
+                void (*pMoveDataFn)(void *, void *),
+                void *pUnloadContext,
+                void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool)) {
     auto *pResource = resource_from_handle(resource);
 
     if (loadResult.value != FOE_SUCCESS) {
@@ -149,7 +148,7 @@ extern "C" foeResultSet foeCreateLoadedResource(
     void *pSrc,
     void (*pMoveFn)(void *, void *),
     void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool),
+    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool),
     foeResource *pResource) {
     foeResultSet result = foeCreateResource(id, type, pResourceFns, size, pResource);
 

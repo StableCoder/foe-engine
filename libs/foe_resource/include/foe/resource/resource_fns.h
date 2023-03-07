@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-typedef void (*PFN_foeLoadResourceData)(void *, foeResource, PFN_foeResourcePostLoad *);
+typedef void (*PFN_foeLoadResourceData)(void *, foeResource, PFN_foeResourcePostLoad);
 
 /**
  * Set of functions common to all foeResource types for loading data and to run loading calls

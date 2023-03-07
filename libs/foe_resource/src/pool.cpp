@@ -100,7 +100,7 @@ extern "C" foeResource foeResourcePoolLoadedReplace(
     void *pSrc,
     void (*pMoveFn)(void *, void *),
     void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall *, bool)) {
+    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool)) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
 
     std::unique_lock lock{pResourcePool->sync};

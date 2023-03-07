@@ -157,7 +157,7 @@ void foeMaterialLoader::gfxMaintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        unloadResource(this, it.resource, it.iteration, it.unloadCallFn, true);
         foeResourceDecrementRefCount(it.resource);
     }
 
@@ -230,7 +230,7 @@ void foeMaterialLoader::gfxMaintenance() {
             VkResult vkResult = createDescriptorSet(&it.data);
             if (vkResult != VK_SUCCESS) {
                 // Failed to load
-                it.pPostLoadFn(
+                it.postLoadFn(
                     it.resource,
                     to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
                     nullptr, nullptr, nullptr, nullptr);
@@ -266,14 +266,14 @@ void foeMaterialLoader::gfxMaintenance() {
                     foeResourceDecrementRefCount(it.resource);
                     foeResourceDecrementRefCount(newResource);
                 } else {
-                    it.pPostLoadFn(it.resource, {}, &it.data, moveFn, this,
-                                   foeMaterialLoader::unloadResource);
+                    it.postLoadFn(it.resource, {}, &it.data, moveFn, this,
+                                  foeMaterialLoader::unloadResource);
                 }
 
                 foeResourceCreateInfoDecrementRefCount(it.createInfo);
             }
         } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-            it.pPostLoadFn(
+            it.postLoadFn(
                 it.resource,
                 to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
                 nullptr, nullptr, nullptr, nullptr);
@@ -315,21 +315,21 @@ bool foeMaterialLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
 void foeMaterialLoader::load(void *pLoader,
                              foeResource resource,
                              foeResourceCreateInfo createInfo,
-                             PFN_foeResourcePostLoad *pPostLoadFn) {
-    reinterpret_cast<foeMaterialLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
+                             PFN_foeResourcePostLoad postLoadFn) {
+    reinterpret_cast<foeMaterialLoader *>(pLoader)->load(resource, createInfo, postLoadFn);
 }
 
 void foeMaterialLoader::load(foeResource resource,
                              foeResourceCreateInfo createInfo,
-                             PFN_foeResourcePostLoad *pPostLoadFn) {
+                             PFN_foeResourcePostLoad postLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeMaterialLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceType type = foeResourceGetType(resource);
@@ -339,8 +339,8 @@ void foeMaterialLoader::load(foeResource resource,
                 "foeMaterialLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), type);
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
@@ -411,7 +411,7 @@ void foeMaterialLoader::load(foeResource resource,
     mLoadRequests.emplace_back(LoadData{
         .resource = resource,
         .createInfo = createInfo,
-        .pPostLoadFn = pPostLoadFn,
+        .postLoadFn = postLoadFn,
         .data = std::move(data),
     });
     mLoadSync.unlock();
@@ -424,7 +424,7 @@ LOAD_FAILED:
         foeResourceDecrementRefCount(data.image);
 
     // Call the resource post-load function with the error result code
-    pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
+    postLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
     foeResourceCreateInfoDecrementRefCount(createInfo);
 }
 
@@ -480,7 +480,7 @@ VkResult foeMaterialLoader::createDescriptorSet(foeMaterial *pMaterialData) {
 void foeMaterialLoader::unloadResource(void *pContext,
                                        foeResource resource,
                                        uint32_t resourceIteration,
-                                       PFN_foeResourceUnloadCall *pUnloadCallFn,
+                                       PFN_foeResourceUnloadCall unloadCallFn,
                                        bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeMaterialLoader *>(pContext);
 
@@ -495,7 +495,7 @@ void foeMaterialLoader::unloadResource(void *pContext,
 
         foeMaterial data{};
 
-        if (pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (unloadCallFn(resource, resourceIteration, &data, moveFn)) {
             // Decrement the references of any sub-resources
             if (data.fragmentShader != FOE_NULL_HANDLE) {
                 foeResourceDecrementUseCount(data.fragmentShader);
@@ -518,7 +518,7 @@ void foeMaterialLoader::unloadResource(void *pContext,
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
             .iteration = resourceIteration,
-            .pUnloadCallFn = pUnloadCallFn,
+            .unloadCallFn = unloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();

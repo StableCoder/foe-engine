@@ -34,7 +34,7 @@ class foeMaterialLoader {
     static void load(void *pLoader,
                      foeResource resource,
                      foeResourceCreateInfo createInfo,
-                     PFN_foeResourcePostLoad *pPostLoadFn);
+                     PFN_foeResourcePostLoad postLoadFn);
 
   private:
     VkResult createDescriptorSet(foeMaterial *pMaterialData);
@@ -42,12 +42,12 @@ class foeMaterialLoader {
     static void unloadResource(void *pContext,
                                foeResource resource,
                                uint32_t resourceIteration,
-                               PFN_foeResourceUnloadCall *pUnloadCallFn,
+                               PFN_foeResourceUnloadCall unloadCallFn,
                                bool immediateUnload);
 
     void load(foeResource resource,
               foeResourceCreateInfo createInfo,
-              PFN_foeResourcePostLoad *pPostLoadFn);
+              PFN_foeResourcePostLoad postLoadFn);
 
     foeResourcePool mResourcePool{FOE_NULL_HANDLE};
     foeGfxSession mGfxSession{FOE_NULL_HANDLE};
@@ -59,7 +59,7 @@ class foeMaterialLoader {
     struct LoadData {
         foeResource resource;
         foeResourceCreateInfo createInfo;
-        PFN_foeResourcePostLoad *pPostLoadFn;
+        PFN_foeResourcePostLoad postLoadFn;
         foeMaterial data;
     };
 
@@ -69,7 +69,7 @@ class foeMaterialLoader {
     struct UnloadData {
         foeResource resource;
         uint32_t iteration;
-        PFN_foeResourceUnloadCall *pUnloadCallFn;
+        PFN_foeResourceUnloadCall unloadCallFn;
     };
 
     std::mutex mUnloadSync;

@@ -91,7 +91,7 @@ void foeShaderLoader::gfxMaintenance() {
     mUnloadSync.unlock();
 
     for (auto &it : toUnload) {
-        unloadResource(this, it.resource, it.iteration, it.pUnloadCallFn, true);
+        unloadResource(this, it.resource, it.iteration, it.unloadCallFn, true);
         foeResourceDecrementRefCount(it.resource);
     }
 
@@ -122,8 +122,8 @@ void foeShaderLoader::gfxMaintenance() {
             foeResourceDecrementRefCount(newResource);
         } else {
             // The resource handle is of the desired type already, use the regular load function
-            it.pPostLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data,
-                           moveFn, this, foeShaderLoader::unloadResource);
+            it.postLoadFn(it.resource, to_foeResult(FOE_GRAPHICS_RESOURCE_SUCCESS), &it.data,
+                          moveFn, this, foeShaderLoader::unloadResource);
         }
     }
 }
@@ -136,22 +136,22 @@ bool foeShaderLoader::canProcessCreateInfo(foeResourceCreateInfo createInfo) {
 void foeShaderLoader::load(void *pLoader,
                            foeResource resource,
                            foeResourceCreateInfo createInfo,
-                           PFN_foeResourcePostLoad *pPostLoadFn) {
+                           PFN_foeResourcePostLoad postLoadFn) {
 
-    reinterpret_cast<foeShaderLoader *>(pLoader)->load(resource, createInfo, pPostLoadFn);
+    reinterpret_cast<foeShaderLoader *>(pLoader)->load(resource, createInfo, postLoadFn);
 }
 
 void foeShaderLoader::load(foeResource resource,
                            foeResourceCreateInfo createInfo,
-                           PFN_foeResourcePostLoad *pPostLoadFn) {
+                           PFN_foeResourcePostLoad postLoadFn) {
     if (!canProcessCreateInfo(createInfo)) {
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
                 "foeShaderLoader - Cannot load {} as given CreateInfo is incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)),
                 foeResourceCreateInfoGetType(createInfo));
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_CREATE_INFO),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     } else if (foeResourceType type = foeResourceGetType(resource);
@@ -161,8 +161,8 @@ void foeShaderLoader::load(foeResource resource,
                 "foeShaderLoader - Cannot load {} as it is an incompatible type: {}",
                 foeIdToString(foeResourceGetID(resource)), type);
 
-        pPostLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
-                    nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_INCOMPATIBLE_RESOURCE_TYPE),
+                   nullptr, nullptr, nullptr, nullptr);
         foeResourceCreateInfoDecrementRefCount(createInfo);
         return;
     }
@@ -204,13 +204,13 @@ LOAD_FAILED:
         FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR, "Failed to load foeShader {}: {}",
                 foeIdToString(foeResourceGetID(resource)), buffer)
 
-        pPostLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
+        postLoadFn(resource, result, nullptr, nullptr, nullptr, nullptr);
     } else {
         // Loaded upto this point successfully
         mLoadSync.lock();
         mLoadRequests.emplace_back(LoadData{
             .resource = resource,
-            .pPostLoadFn = pPostLoadFn,
+            .postLoadFn = postLoadFn,
             .data = std::move(data),
         });
         mLoadSync.unlock();
@@ -220,7 +220,7 @@ LOAD_FAILED:
 void foeShaderLoader::unloadResource(void *pContext,
                                      foeResource resource,
                                      uint32_t resourceIteration,
-                                     PFN_foeResourceUnloadCall *pUnloadCallFn,
+                                     PFN_foeResourceUnloadCall unloadCallFn,
                                      bool immediateUnload) {
     auto *pLoader = reinterpret_cast<foeShaderLoader *>(pContext);
 
@@ -235,7 +235,7 @@ void foeShaderLoader::unloadResource(void *pContext,
 
         foeShader data{};
 
-        if (pUnloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (unloadCallFn(resource, resourceIteration, &data, moveFn)) {
             pLoader->mDestroySync.lock();
             pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
             pLoader->mDestroySync.unlock();
@@ -247,7 +247,7 @@ void foeShaderLoader::unloadResource(void *pContext,
         pLoader->mUnloadRequests.emplace_back(UnloadData{
             .resource = resource,
             .iteration = resourceIteration,
-            .pUnloadCallFn = pUnloadCallFn,
+            .unloadCallFn = unloadCallFn,
         });
 
         pLoader->mUnloadSync.unlock();
