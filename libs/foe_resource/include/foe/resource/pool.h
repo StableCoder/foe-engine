@@ -37,10 +37,10 @@ FOE_RES_EXPORT foeResource foeResourcePoolLoadedReplace(
     foeResourceID resourceID,
     foeResourceType resourceType,
     size_t resourceSize,
-    void *pSrc,
-    void (*pMoveFn)(void *, void *),
-    void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool));
+    void *pLoadDataContext,
+    PFN_foeResourceDataModify loadDataFn,
+    void *pUnloadDataContext,
+    void (*pUnloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool));
 
 // Returned resources have reference count pre-incremented.
 FOE_RES_EXPORT foeResource foeResourcePoolFind(foeResourcePool resourcePool,

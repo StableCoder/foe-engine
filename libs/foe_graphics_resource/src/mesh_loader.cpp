@@ -571,17 +571,17 @@ void foeMeshLoader::unloadResource(void *pContext,
     auto *pLoader = reinterpret_cast<foeMeshLoader *>(pContext);
 
     if (immediateUnload) {
-        auto moveFn = [](void *pSrc, void *pDst) {
-            auto *pSrcData = (foeMesh *)pSrc;
-            auto *pDstData = (foeMesh *)pDst;
+        auto unloadDataFn = [](void *pLoaderContext, void *pResourceRawData) {
+            foeMesh *pLoaderData = (foeMesh *)pLoaderContext;
+            foeMesh *pResourceData = (foeMesh *)pResourceRawData;
 
-            *pDstData = std::move(*pSrcData);
-            pSrcData->~foeMesh();
+            *pLoaderData = std::move(*pResourceData);
+            pResourceData->~foeMesh();
         };
 
-        foeMesh data{};
+        foeMesh data;
 
-        if (unloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (unloadCallFn(resource, resourceIteration, &data, unloadDataFn)) {
             pLoader->mDestroySync.lock();
             pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
             pLoader->mDestroySync.unlock();

@@ -43,8 +43,8 @@ struct foeResourceImpl {
     // @TODO - Keep loaded ResourceCreateInfo in EditorMode?
     // Perhaps as part of the data next chain
 
-    void *pUnloadContext{nullptr};
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool){nullptr};
+    void *pUnloadDataContext{nullptr};
+    void (*unloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool){nullptr};
 
     foeResourceImpl(foeResourceID id, foeResourceFns const *pResourceFns) :
         id{id}, pResourceFns{pResourceFns} {}
@@ -52,12 +52,13 @@ struct foeResourceImpl {
 
 FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
 
-void postLoadFn(foeResource resource,
-                foeResultSet loadResult,
-                void *pSrc,
-                void (*pMoveDataFn)(void *, void *),
-                void *pUnloadContext,
-                void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool)) {
+void postLoadFn(
+    foeResource resource,
+    foeResultSet loadResult,
+    void *pLoadDataContext,
+    PFN_foeResourceDataModify loadDataFn,
+    void *pUnloadDataContext,
+    void (*unloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool)) {
     auto *pResource = resource_from_handle(resource);
 
     if (loadResult.value != FOE_SUCCESS) {
@@ -77,10 +78,10 @@ void postLoadFn(foeResource resource,
         foeResourceUnloadData(resource, true);
 
         // Move the new data in
-        pMoveDataFn(pSrc, (void *)foeResourceGetData(resource));
+        loadDataFn(pLoadDataContext, (void *)foeResourceGetData(resource));
 
-        pResource->pUnloadContext = pUnloadContext;
-        pResource->pUnloadFn = pUnloadFn;
+        pResource->pUnloadDataContext = pUnloadDataContext;
+        pResource->unloadDataFn = unloadDataFn;
 
         pResource->state = FOE_RESOURCE_LOAD_STATE_LOADED;
         pResource->sync.unlock();
@@ -145,17 +146,18 @@ extern "C" foeResultSet foeCreateLoadedResource(
     foeResourceType type,
     foeResourceFns const *pResourceFns,
     size_t size,
-    void *pSrc,
-    void (*pMoveFn)(void *, void *),
-    void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool),
+    void *pLoadDataContext,
+    PFN_foeResourceDataModify loadDataFn,
+    void *pUnloadDataContext,
+    void (*unloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool),
     foeResource *pResource) {
     foeResultSet result = foeCreateResource(id, type, pResourceFns, size, pResource);
 
     if (result.value == FOE_SUCCESS) {
         // If successfully created, then run the move/load
         foeResourceIncrementRefCount(*pResource);
-        postLoadFn(*pResource, result, pSrc, pMoveFn, pUnloadContext, pUnloadFn);
+        postLoadFn(*pResource, result, pLoadDataContext, loadDataFn, pUnloadDataContext,
+                   unloadDataFn);
     }
 
     return result;
@@ -363,8 +365,8 @@ namespace {
 
 bool resourceUnloadCall(foeResource resource,
                         uint32_t iteration,
-                        void *pDst,
-                        void (*pMoveFn)(void *, void *)) {
+                        void *pUnloadDataContext,
+                        PFN_foeResourceDataModify unloadDataFn) {
     auto *pResource = resource_from_handle(resource);
     bool retVal{false};
 
@@ -373,10 +375,22 @@ bool resourceUnloadCall(foeResource resource,
     if (iteration == pResource->iteration) {
         retVal = true;
 
-        pMoveFn((void *)foeResourceGetData(resource), pDst);
+        // Make sure to save the ResourceType
+        foeResourceBase *pResourceBaseData = (foeResourceBase *)foeResourceGetData(resource);
+        foeResourceType rType = pResourceBaseData->rType;
 
-        pResource->pUnloadContext = nullptr;
-        pResource->pUnloadFn = nullptr;
+        unloadDataFn(pUnloadDataContext, (void *)pResourceBaseData);
+
+        // Make sur ethe resource is 'reset', in that the top-level resource type is still the same
+        // and the pNext is reset
+        *pResourceBaseData = {
+            .rType = rType,
+        };
+
+        // No longer being loaded, reset the unload context/fn
+        pResource->pUnloadDataContext = nullptr;
+        pResource->unloadDataFn = nullptr;
+
         pResource->state = FOE_RESOURCE_LOAD_STATE_UNLOADED;
 
         ++pResource->iteration;
@@ -394,7 +408,7 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
 
     pResource->sync.lock();
 
-    if (pResource->pUnloadFn != nullptr) {
+    if (pResource->unloadDataFn != nullptr) {
         if (int uses = pResource->useCount; uses > 0) {
             FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
                     "[{},{}] foeResource - Unloading while still actively used {} times",
@@ -410,8 +424,8 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
                     foeIdToString(pResource->id), foeResourceGetType(resource))
         }
 
-        pResource->pUnloadFn(pResource->pUnloadContext, resource, pResource->iteration,
-                             resourceUnloadCall, immediate);
+        pResource->unloadDataFn(pResource->pUnloadDataContext, resource, pResource->iteration,
+                                resourceUnloadCall, immediate);
     }
 
     pResource->sync.unlock();

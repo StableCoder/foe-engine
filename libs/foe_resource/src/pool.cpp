@@ -97,10 +97,10 @@ extern "C" foeResource foeResourcePoolLoadedReplace(
     foeResourceID resourceID,
     foeResourceType resourceType,
     size_t resourceSize,
-    void *pSrc,
-    void (*pMoveFn)(void *, void *),
-    void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool)) {
+    void *pLoadDataContext,
+    PFN_foeResourceDataModify loadDataFn,
+    void *pUnloadDataContext,
+    void (*pUnloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool)) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
 
     std::unique_lock lock{pResourcePool->sync};
@@ -115,9 +115,9 @@ extern "C" foeResource foeResourcePoolLoadedReplace(
 
     // Creat the new resource that will be the replacement
     foeResource newResource = FOE_NULL_HANDLE;
-    foeResultSet result =
-        foeCreateLoadedResource(resourceID, resourceType, &pResourcePool->callbacks, resourceSize,
-                                pSrc, pMoveFn, pUnloadContext, pUnloadFn, &newResource);
+    foeResultSet result = foeCreateLoadedResource(
+        resourceID, resourceType, &pResourcePool->callbacks, resourceSize, pLoadDataContext,
+        loadDataFn, pUnloadDataContext, pUnloadDataFn, &newResource);
     if (result.value != FOE_RESOURCE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);

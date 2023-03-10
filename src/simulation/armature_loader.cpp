@@ -237,12 +237,13 @@ void foeArmatureLoader::unloadResource(void *pContext,
     auto *pLoader = reinterpret_cast<foeArmatureLoader *>(pContext);
 
     if (immediateUnload) {
-        auto destroyFn = [](void *pSrc, void *pDst) {
-            foeArmature *pArmature = (foeArmature *)pSrc;
+        auto unloadDataFn = [](void *pLoaderContext, void *pResourceRawData) {
+            foeArmature *pArmature = (foeArmature *)pResourceRawData;
+
             pArmature->~foeArmature();
         };
 
-        unloadCallFn(resource, resourceIteration, nullptr, destroyFn);
+        unloadCallFn(resource, resourceIteration, nullptr, unloadDataFn);
     } else {
         foeResourceIncrementRefCount(resource);
         pLoader->mUnloadSync.lock();

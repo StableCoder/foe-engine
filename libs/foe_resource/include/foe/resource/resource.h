@@ -22,22 +22,28 @@ typedef struct foeResourceFns foeResourceFns;
 
 FOE_DEFINE_HANDLE(foeResource)
 
+// This call is when raw resource data is being modified, for example when loading/unloading data
+typedef void (*PFN_foeResourceDataModify)(
+    void *, // Context
+    void *  // Pointer to the raw data in the resource to be modified
+);
+
 /// @returns True if the data was moved/destroyed, otherwise false. If false, usually because of
 /// mismatching resource iteration.
-typedef bool (*PFN_foeResourceUnloadCall)(foeResource,             // Resource
-                                          uint32_t,                // Iteration
-                                          void *,                  // Destination
-                                          void (*)(void *, void *) // Data handling call
+typedef bool (*PFN_foeResourceUnloadCall)(foeResource,              // Resource
+                                          uint32_t,                 // Iteration
+                                          void *,                   // Unload modify call context
+                                          PFN_foeResourceDataModify // Data modify call
 );
 
 // To *always* be called at the end of a loading process, success or failure.
 // Sets data appropriately and decrements reference count of both Resource and CreateInfo safely.
 typedef void (*PFN_foeResourcePostLoad)(
-    foeResource,                                                             // Resource
-    foeResultSet,                                                            // ErrorCode
-    void *,                                                                  // Source
-    void (*)(void *, void *),                                                // Move Fn
-    void *,                                                                  // Unload Context
+    foeResource,               // Resource
+    foeResultSet,              // ErrorCode
+    void *,                    // Load modify call context
+    PFN_foeResourceDataModify, // Data modify call
+    void *,                    // Unload Context
     void (*)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool) // Unload Fn
 );
 
@@ -58,10 +64,10 @@ FOE_RES_EXPORT foeResultSet foeCreateLoadedResource(
     foeResourceType type,
     foeResourceFns const *pResourceFns,
     size_t size,
-    void *pSrc,
-    void (*pMoveFn)(void *, void *),
-    void *pUnloadContext,
-    void (*pUnloadFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool),
+    void *pLoadDataContext,
+    PFN_foeResourceDataModify loadDataFn,
+    void *pUnloadDataContext,
+    void (*pUnloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool),
     foeResource *pResource);
 
 FOE_RES_EXPORT foeResultSet foeCreateResource(foeResourceID id,

@@ -515,17 +515,16 @@ void foeImageLoader::unloadResource(void *pContext,
     auto *pLoader = reinterpret_cast<foeImageLoader *>(pContext);
 
     if (immediateUnload) {
-        auto moveFn = [](void *pSrc, void *pDst) {
-            auto *pSrcData = (foeImage *)pSrc;
-            auto *pDstData = (foeImage *)pDst;
+        auto unloadFn = [](void *pLoaderContext, void *pResourceRawData) {
+            foeImage *pLoaderData = (foeImage *)pLoaderContext;
+            foeImage *pResourceData = (foeImage *)pResourceRawData;
 
-            *pDstData = std::move(*pSrcData);
-            pSrcData->~foeImage();
+            *pLoaderData = *pResourceData;
         };
 
-        foeImage data{};
+        foeImage data;
 
-        if (unloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (unloadCallFn(resource, resourceIteration, &data, unloadFn)) {
             pLoader->mDestroySync.lock();
             pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
             pLoader->mDestroySync.unlock();

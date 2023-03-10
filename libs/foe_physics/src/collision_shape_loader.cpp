@@ -165,17 +165,17 @@ void foeCollisionShapeLoader::unloadResource(void *pContext,
     auto *pLoader = reinterpret_cast<foeCollisionShapeLoader *>(pContext);
 
     if (immediateUnload) {
-        auto moveFn = [](void *pSrc, void *pDst) {
-            auto *pSrcData = (foeCollisionShape *)pSrc;
-            auto *pDstData = (foeCollisionShape *)pDst;
+        auto unloadDataFn = [](void *pLoaderContext, void *pResourceRawData) {
+            foeCollisionShape *pLoaderData = (foeCollisionShape *)pLoaderContext;
+            foeCollisionShape *pResourceData = (foeCollisionShape *)pResourceRawData;
 
-            *pDstData = std::move(*pSrcData);
-            pSrcData->~foeCollisionShape();
+            *pLoaderData = std::move(*pResourceData);
+            pResourceData->~foeCollisionShape();
         };
 
-        foeCollisionShape data{};
+        foeCollisionShape data;
 
-        unloadCallFn(resource, resourceIteration, &data, moveFn);
+        unloadCallFn(resource, resourceIteration, &data, unloadDataFn);
     } else {
         foeResourceIncrementRefCount(resource);
         pLoader->mUnloadSync.lock();

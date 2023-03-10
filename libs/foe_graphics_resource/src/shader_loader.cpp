@@ -225,17 +225,16 @@ void foeShaderLoader::unloadResource(void *pContext,
     auto *pLoader = reinterpret_cast<foeShaderLoader *>(pContext);
 
     if (immediateUnload) {
-        auto moveFn = [](void *pSrc, void *pDst) {
-            auto *pSrcData = (foeShader *)pSrc;
-            auto *pDstData = (foeShader *)pDst;
+        auto unloadDataFn = [](void *pLoaderContext, void *pResourceRawData) {
+            foeShader *pLoaderData = (foeShader *)pLoaderContext;
+            foeShader *pResourceData = (foeShader *)pResourceRawData;
 
-            *pDstData = std::move(*pSrcData);
-            pSrcData->~foeShader();
+            *pLoaderData = *pResourceData;
         };
 
-        foeShader data{};
+        foeShader data;
 
-        if (unloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (unloadCallFn(resource, resourceIteration, &data, unloadDataFn)) {
             pLoader->mDestroySync.lock();
             pLoader->mDataDestroyLists[pLoader->mDataDestroyIndex].emplace_back(std::move(data));
             pLoader->mDestroySync.unlock();

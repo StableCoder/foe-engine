@@ -485,17 +485,16 @@ void foeMaterialLoader::unloadResource(void *pContext,
     auto *pLoader = reinterpret_cast<foeMaterialLoader *>(pContext);
 
     if (immediateUnload) {
-        auto moveFn = [](void *pSrc, void *pDst) {
-            auto *pSrcData = (foeMaterial *)pSrc;
-            auto *pDstData = (foeMaterial *)pDst;
+        auto unloadDataFn = [](void *pLoaderContext, void *pResourceRawData) {
+            foeMaterial *pLoaderData = (foeMaterial *)pLoaderContext;
+            foeMaterial *pResourceData = (foeMaterial *)pResourceRawData;
 
-            *pDstData = std::move(*pSrcData);
-            pSrcData->~foeMaterial();
+            *pLoaderData = *pResourceData;
         };
 
-        foeMaterial data{};
+        foeMaterial data;
 
-        if (unloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (unloadCallFn(resource, resourceIteration, &data, unloadDataFn)) {
             // Decrement the references of any sub-resources
             if (data.fragmentShader != FOE_NULL_HANDLE) {
                 foeResourceDecrementUseCount(data.fragmentShader);

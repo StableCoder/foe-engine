@@ -487,16 +487,16 @@ void foeVertexDescriptorLoader::unloadResource(void *pContext,
     auto *pLoader = reinterpret_cast<foeVertexDescriptorLoader *>(pContext);
 
     if (immediateUnload) {
-        auto moveFn = [](void *pSrc, void *pDst) {
-            auto *pSrcData = (foeVertexDescriptor *)pSrc;
-            auto *pDstData = (foeVertexDescriptor *)pDst;
+        auto unloadDataFn = [](void *pLoaderContext, void *pResourceRawData) {
+            foeVertexDescriptor *pLoaderData = (foeVertexDescriptor *)pLoaderContext;
+            foeVertexDescriptor *pResourceData = (foeVertexDescriptor *)pResourceRawData;
 
-            *pDstData = *pSrcData;
+            *pLoaderData = *pResourceData;
         };
 
         foeVertexDescriptor data;
 
-        if (!unloadCallFn(resource, resourceIteration, &data, moveFn)) {
+        if (!unloadCallFn(resource, resourceIteration, &data, unloadDataFn)) {
             // If it failed, it's probably due to the resource iteration being different than
             // desired, so it didn't happen.
             return;
