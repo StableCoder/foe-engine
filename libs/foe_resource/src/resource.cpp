@@ -397,6 +397,7 @@ bool resourceUnloadCall(foeResource resource,
     }
 
     pResource->sync.unlock();
+    foeResourceDecrementRefCount(resource);
 
     return retVal;
 }
@@ -409,6 +410,8 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
     pResource->sync.lock();
 
     if (pResource->unloadDataFn != nullptr) {
+        foeResourceIncrementRefCount(resource);
+
         if (int uses = pResource->useCount; uses > 0) {
             FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
                     "[{},{}] foeResource - Unloading while still actively used {} times",

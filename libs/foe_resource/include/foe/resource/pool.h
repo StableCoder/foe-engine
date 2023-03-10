@@ -53,8 +53,10 @@ FOE_RES_EXPORT void foeResourcePoolAddAsyncTaskCallback(foeResourcePool resource
                                                         PFN_foeScheduleTask scheduleAsyncTask,
                                                         void *pScheduleAsyncTaskContext);
 
+// Unloads called 'immediately'
 FOE_RES_EXPORT void foeResourcePoolUnloadAll(foeResourcePool resourcePool);
 
+// Unloads called 'immediately'
 FOE_RES_EXPORT uint32_t foeResourcePoolUnloadType(foeResourcePool resourcePool,
                                                   foeResourceType resourceType);
 
