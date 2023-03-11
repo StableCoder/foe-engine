@@ -252,6 +252,9 @@ extern "C" int foeResourceDecrementRefCount(foeResource resource) {
                     foeIdToString(pResource->id), foeResourceGetType(resource), useCount)
         }
 
+        // Increment the refcount by 1, to prevent the ref-count changes in the unload call from
+        // also hitting 0 again and calling this part recursively again
+        foeResourceIncrementRefCount(resource);
         foeResourceUnloadData(resource, true);
 
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE, "[{},{}] foeResource - Destroyed",
