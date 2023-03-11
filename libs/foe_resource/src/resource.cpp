@@ -413,6 +413,7 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
     pResource->sync.lock();
 
     if (pResource->unloadDataFn != nullptr) {
+        // If there is a provided unload function, then use it
         foeResourceIncrementRefCount(resource);
 
         if (int uses = pResource->useCount; uses > 0) {
@@ -432,6 +433,12 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
 
         pResource->unloadDataFn(pResource->pUnloadDataContext, resource, pResource->iteration,
                                 resourceUnloadCall, immediate);
+    } else {
+        // No provided unload function, thus no heavy work but to switch to 'unloaded' iff state was
+        // 'loaded'
+        foeResourceLoadState expected = FOE_RESOURCE_LOAD_STATE_LOADED;
+        std::atomic_compare_exchange_strong(&pResource->state, &expected,
+                                            FOE_RESOURCE_LOAD_STATE_UNLOADED);
     }
 
     pResource->sync.unlock();
