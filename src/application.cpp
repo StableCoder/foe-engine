@@ -297,8 +297,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             foeScheduleAsyncTask(threadPool, task, pTaskContext);
         };
 
-        foeResourcePoolAddAsyncTaskCallback(pSimulationSet->resourcePool, asyncTaskFunc,
-                                            (void *)threadPool);
+        foeResourcePoolSetAsyncTaskCallback(pSimulationSet->resourcePool, (void *)threadPool,
+                                            asyncTaskFunc);
     }
 
 #ifdef FOE_XR_SUPPORT

@@ -49,9 +49,9 @@ FOE_RES_EXPORT foeResource foeResourcePoolFind(foeResourcePool resourcePool,
 FOE_RES_EXPORT foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
                                                   foeResourceID resourceID);
 
-FOE_RES_EXPORT void foeResourcePoolAddAsyncTaskCallback(foeResourcePool resourcePool,
-                                                        PFN_foeScheduleTask scheduleAsyncTask,
-                                                        void *pScheduleAsyncTaskContext);
+FOE_RES_EXPORT void foeResourcePoolSetAsyncTaskCallback(foeResourcePool resourcePool,
+                                                        void *pScheduleAsyncTaskContext,
+                                                        PFN_foeScheduleTask scheduleAsyncTask);
 
 // Unloads called 'immediately'
 FOE_RES_EXPORT void foeResourcePoolUnloadAll(foeResourcePool resourcePool);

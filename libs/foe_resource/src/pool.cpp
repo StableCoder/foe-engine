@@ -207,9 +207,9 @@ extern "C" foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
     return to_foeResult(FOE_RESOURCE_SUCCESS);
 }
 
-extern "C" void foeResourcePoolAddAsyncTaskCallback(foeResourcePool resourcePool,
-                                                    PFN_foeScheduleTask scheduleAsyncTask,
-                                                    void *pScheduleAsyncTaskContext) {
+extern "C" void foeResourcePoolSetAsyncTaskCallback(foeResourcePool resourcePool,
+                                                    void *pScheduleAsyncTaskContext,
+                                                    PFN_foeScheduleTask scheduleAsyncTask) {
     ResourcePool *pResourcePool = resource_pool_from_handle(resourcePool);
 
     pResourcePool->callbacks.scheduleAsyncTask = scheduleAsyncTask;
