@@ -410,6 +410,11 @@ bool resourceUnloadCall(foeResource resource,
 extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
     auto *pResource = resource_from_handle(resource);
 
+    foeResourceType type = foeResourceGetType(resource);
+    if (type == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED || type == FOE_RESOURCE_RESOURCE_TYPE_REPLACED)
+        // Cannot 'unload' an undefined/replaced resource, can only be destroyed
+        return;
+
     pResource->sync.lock();
 
     if (pResource->unloadDataFn != nullptr) {
