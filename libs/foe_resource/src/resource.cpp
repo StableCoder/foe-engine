@@ -25,7 +25,7 @@ struct ReplacedResource {
     bool incrementedUse;
 };
 
-struct foeResourceImpl {
+struct Resource {
     foeResourceID id;
 
     foeResourceFns const *pResourceFns;
@@ -46,11 +46,11 @@ struct foeResourceImpl {
     void *pUnloadDataContext{nullptr};
     void (*unloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool){nullptr};
 
-    foeResourceImpl(foeResourceID id, foeResourceFns const *pResourceFns) :
+    Resource(foeResourceID id, foeResourceFns const *pResourceFns) :
         id{id}, pResourceFns{pResourceFns} {}
 };
 
-FOE_DEFINE_HANDLE_CASTS(resource, foeResourceImpl, foeResource)
+FOE_DEFINE_HANDLE_CASTS(resource, Resource, foeResource)
 
 void postLoadFn(
     foeResource resource,
@@ -94,7 +94,7 @@ void postLoadFn(
     foeResourceDecrementRefCount(resource);
 }
 
-void loadResourceTask(foeResourceImpl *pResource) {
+void loadResourceTask(Resource *pResource) {
     pResource->pResourceFns->pLoadFn(pResource->pResourceFns->pLoadContext,
                                      resource_to_handle(pResource), postLoadFn);
 }
@@ -118,11 +118,11 @@ extern "C" foeResultSet foeCreateResource(foeResourceID id,
     if (size < sizeof(foeResourceBase))
         return to_foeResult(FOE_RESOURCE_ERROR_DATA_SIZE_SMALLER_THAN_BASE);
 
-    auto *pNewResource = (foeResourceImpl *)malloc(sizeof(foeResourceImpl) + size);
+    auto *pNewResource = (Resource *)malloc(sizeof(Resource) + size);
     if (pNewResource == NULL)
         return to_foeResult(FOE_RESOURCE_ERROR_OUT_OF_MEMORY);
 
-    new (pNewResource) foeResourceImpl(id, pResourceFns);
+    new (pNewResource) Resource(id, pResourceFns);
 
     // Zero the data area
     void *pData = (void *)foeResourceGetData(resource_to_handle(pNewResource));
@@ -164,7 +164,7 @@ extern "C" foeResultSet foeCreateLoadedResource(
 }
 
 extern "C" foeResultSet foeResourceReplace(foeResource oldResource, foeResource newResource) {
-    foeResourceImpl *pOldResource = resource_from_handle(oldResource);
+    Resource *pOldResource = resource_from_handle(oldResource);
     foeResultSet result = to_foeResult(FOE_RESOURCE_SUCCESS);
 
     pOldResource->sync.lock();
@@ -201,7 +201,7 @@ extern "C" foeResultSet foeResourceReplace(foeResource oldResource, foeResource 
 }
 
 extern "C" foeResource foeResourceGetReplacement(foeResource resource) {
-    foeResourceImpl *pResource = resource_from_handle(resource);
+    Resource *pResource = resource_from_handle(resource);
 
     if (foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
         foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
@@ -268,7 +268,7 @@ extern "C" int foeResourceDecrementRefCount(foeResource resource) {
             foeResourceDecrementRefCount(pData->replacementResource);
         }
 
-        pResource->~foeResourceImpl();
+        pResource->~Resource();
 
         free(pResource);
     }
@@ -313,7 +313,7 @@ extern "C" foeResourceLoadState foeResourceGetState(foeResource resource) {
 
 extern "C" void const *foeResourceGetData(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
-    return (char *)pResource + sizeof(foeResourceImpl);
+    return (char *)pResource + sizeof(Resource);
 }
 
 extern "C" void const *foeResourceGetTypeData(foeResource resource, foeResourceType type) {
