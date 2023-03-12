@@ -14,11 +14,11 @@ target_sources(
   test_foe_resource
   PRIVATE c_header_compatibility.c
           create_info.cpp
-          load_state.cpp
           pool.cpp
           resource.cpp
           resource_loading.cpp
           resource_replacement.cpp
+          resource_state_flag_bits.cpp
           resource_unloading.cpp
           result.cpp)
 

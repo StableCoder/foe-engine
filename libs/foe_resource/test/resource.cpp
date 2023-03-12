@@ -58,7 +58,7 @@ TEST_CASE("foeResource - Creating an undefined resource") {
     CHECK(foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED);
     CHECK(foeResourceHasType(resource, FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED));
     CHECK_FALSE(foeResourceHasType(resource, 0));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     CHECK(0 == foeResourceDecrementRefCount(resource));
 }
@@ -99,7 +99,7 @@ TEST_CASE("foeResource - Creating a preloaded resource") {
     CHECK(foeResourceGetType(resource) == cTestResourceType);
     CHECK(foeResourceHasType(resource, cTestResourceType));
     CHECK_FALSE(foeResourceHasType(resource, 0));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
 
     // Check that the data can be retrieved, and matches what was given
     void const *pResourceData = foeResourceGetData(resource);
@@ -152,8 +152,7 @@ TEST_CASE("foeResource - Create properly sets initial state and different Type/I
     CHECK(foeResourceGetRefCount(resource) == 1);
     CHECK(foeResourceGetUseCount(resource) == 0);
 
-    CHECK_FALSE(foeResourceGetIsLoading(resource));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     CHECK(foeResourceDecrementRefCount(resource) == 0);
 }

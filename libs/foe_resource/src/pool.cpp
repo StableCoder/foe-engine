@@ -235,8 +235,8 @@ extern "C" uint32_t foeResourcePoolUnloadType(foeResourcePool resourcePool,
 
     for (foeResource it : pResourcePool->resources) {
         if (foeResourceGetType(it) == resourceType &&
-            (foeResourceGetIsLoading(it) ||
-             foeResourceGetState(it) == FOE_RESOURCE_LOAD_STATE_LOADED)) {
+            (foeResourceGetState(it) &
+             (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT)) != 0) {
             foeResourceUnloadData(it, false);
             ++count;
         }

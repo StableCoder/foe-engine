@@ -18,7 +18,7 @@ TEST_CASE("foeResource - Attempting to do a resource replacement with a defined 
 
     // Initially there is no replacement resource, as this object is 'unloaded'
     CHECK(foeResourceGetReplacement(resource) == FOE_NULL_HANDLE);
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     // Create the resource to act as the 'replacement' (type does not matter)
     foeResource replacementResource{FOE_NULL_HANDLE};
@@ -45,7 +45,7 @@ TEST_CASE("foeResource - Replacement of undefined resource works as expected") {
 
     // Initially there is no replacement resource, as this object is 'unloaded'
     CHECK(foeResourceGetReplacement(resource) == FOE_NULL_HANDLE);
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     // Create the resource to act as the 'replacement' (type does not matter)
     foeResource replacementResource{FOE_NULL_HANDLE};
@@ -66,7 +66,7 @@ TEST_CASE("foeResource - Replacement of undefined resource works as expected") {
         // The old resource should now be considered as 'loaded', and the replacement resource
         // should be accurate
         CHECK(foeResourceGetReplacement(resource) == replacementResource);
-        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
 
         // The replacement resource should now have 3 references counted:
         // 1. Reference returned when created
@@ -103,7 +103,7 @@ TEST_CASE("foeResource - Replacement of undefined resource works as expected") {
         // The old resource should now be considered as 'loaded', and the replacement resource
         // should be accurate
         CHECK(foeResourceGetReplacement(resource) == replacementResource);
-        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
 
         // The replacement resource should now have 3 references counted
         // 1. Reference returned when created

@@ -14,6 +14,7 @@
 #include "type_defs.h"
 
 #include <algorithm>
+#include <cassert>
 #include <vector>
 
 namespace {
@@ -147,6 +148,43 @@ bool processResourceReplacement(foeResource *pResource) {
     return replaced;
 }
 
+foeResourceStateFlags processResourceLoadState(foeResource *pResource,
+                                               foeResourceType resourceType,
+                                               foeResourceStateFlags overallState) {
+    if (*pResource == FOE_NULL_HANDLE)
+        return overallState;
+
+    foeResourceStateFlags resourceState;
+
+    do {
+        resourceState = foeResourceGetState(*pResource);
+    } while (processResourceReplacement(pResource));
+
+    if (foeResourceType type = foeResourceGetType(*pResource);
+        type != resourceType && type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+        type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+        !foeResourceHasType(*pResource, resourceType)) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    }
+
+    if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    } else if ((resourceState & FOE_RESOURCE_STATE_LOADED_BIT) == 0) {
+        // This resource is not loaded, therefore remove the overall LOADED flag
+        overallState &= ~FOE_RESOURCE_STATE_LOADED_BIT;
+
+        if ((resourceState & FOE_RESOURCE_STATE_LOADING_BIT) == 0) {
+            // Resource is not LOADED and not LOADING, request load
+            foeResourceLoadData(*pResource);
+            overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+        }
+    }
+    if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT)
+        overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+
+    return overallState;
+}
+
 } // namespace
 
 extern "C" foeResultSet foeInitializeAnimatedBoneSystem(
@@ -199,15 +237,16 @@ extern "C" foeResultSet foeInitializeAnimatedBoneSystem(
 
             foeResourceIncrementUseCount(armature);
 
-            bool replacement;
-            foeResourceLoadState loadState;
-            do {
-                loadState = foeResourceGetState(armature);
-                replacement = processResourceReplacement(&armature);
-            } while (replacement);
+            foeResourceStateFlags resourceState = processResourceLoadState(
+                &armature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, FOE_RESOURCE_STATE_LOADED_BIT);
 
-            switch (loadState) {
-            case FOE_RESOURCE_LOAD_STATE_LOADED: {
+            assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                    FOE_RESOURCE_STATE_LOADED_BIT));
+
+            if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                // It failed to load, leave without adding to either the derived component pool
+                // or re-adding to the awating list
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                 foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
 
                 foeAnimatedBoneState newData{
@@ -229,23 +268,12 @@ extern "C" foeResultSet foeInitializeAnimatedBoneSystem(
                     free(newData.pBones);
                     return result;
                 }
-            } break;
-
-            case FOE_RESOURCE_LOAD_STATE_FAILED:
-                // It failed to load, break out without adding to either the derived component pool
-                // or adding to the awating list
-                break;
-
-            case FOE_RESOURCE_LOAD_STATE_UNLOADED:
-                // Not yet loaded, possibly being loaded
-                if (!foeResourceGetIsLoading(armature)) {
-                    foeResourceLoadData(armature);
-                }
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
+                // Not yet loaded
                 pAnimatedBoneSystem->mAwaitingLoading.emplace_back(AwaitingData{
                     .entity = *pArmatureStateID,
                     .armature = armature,
                 });
-                break;
             }
         }
     }
@@ -330,15 +358,17 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
             foeArmatureState const *const pArmatureStateData =
                 pStartArmatureStateData + (pArmatureStateID - pStartArmatureStateID);
 
-            bool replacement;
-            foeResourceLoadState loadState;
-            do {
-                loadState = foeResourceGetState(awaitingIt->armature);
-                replacement = processResourceReplacement(&awaitingIt->armature);
-            } while (replacement);
+            foeResourceStateFlags resourceState =
+                processResourceLoadState(&awaitingIt->armature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
+                                         FOE_RESOURCE_STATE_LOADED_BIT);
 
-            switch (loadState) {
-            case FOE_RESOURCE_LOAD_STATE_LOADED: {
+            assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                    FOE_RESOURCE_STATE_LOADED_BIT));
+
+            if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                // It failed to load, leave without adding to either the derived component pool
+                // or re-adding to the awating list
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                 foeArmature const *pArmature =
                     (foeArmature const *)foeResourceGetData(awaitingIt->armature);
 
@@ -361,20 +391,9 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                     free(newData.pBones);
                     return result;
                 }
-            } break;
-
-            case FOE_RESOURCE_LOAD_STATE_FAILED:
-                // It failed to load, break out without adding to either the derived
-                // component pool or adding to the awating list
-                break;
-
-            case FOE_RESOURCE_LOAD_STATE_UNLOADED:
-                // Not yet loaded, possibly being loaded
-                if (!foeResourceGetIsLoading(awaitingIt->armature)) {
-                    foeResourceLoadData(awaitingIt->armature);
-                }
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
+                // Not yet loaded
                 pAnimatedBoneSystem->mAwaitingLoading.emplace_back(*awaitingIt);
-                break;
             }
         }
 
@@ -470,15 +489,24 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
 
                     foeResourceIncrementUseCount(armature);
 
-                    bool replacement;
-                    foeResourceLoadState loadState;
-                    do {
-                        loadState = foeResourceGetState(armature);
-                        replacement = processResourceReplacement(&armature);
-                    } while (replacement);
+                    foeResourceStateFlags resourceState =
+                        processResourceLoadState(&armature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
+                                                 FOE_RESOURCE_STATE_LOADED_BIT);
 
-                    switch (loadState) {
-                    case FOE_RESOURCE_LOAD_STATE_LOADED: {
+                    assert(resourceState &
+                           (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                            FOE_RESOURCE_STATE_LOADED_BIT));
+
+                    if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                        // It failed to load, break out without adding to either the derived
+                        // component pool or adding to the awating list
+
+                        // Remove component since we can't do animation processing
+                        result = foeEcsComponentPoolRemove(
+                            pAnimatedBoneSystem->mAnimatedBoneStatePool, *pModifiedID);
+                        if (result.value != FOE_SUCCESS)
+                            std::abort();
+                    } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                         foeArmature const *pArmature =
                             (foeArmature const *)foeResourceGetData(armature);
 
@@ -502,22 +530,7 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                             free(newData.pBones);
                             return result;
                         }
-                    } break;
-
-                    case FOE_RESOURCE_LOAD_STATE_FAILED:
-                        // It failed to load, break out without adding to either the derived
-                        // component pool or adding to the awating list
-
-                        // Remove component since we can't do animation processing
-                        result = foeEcsComponentPoolRemove(
-                            pAnimatedBoneSystem->mAnimatedBoneStatePool, *pModifiedID);
-                        if (result.value != FOE_SUCCESS)
-                            std::abort();
-                        break;
-
-                    case FOE_RESOURCE_LOAD_STATE_UNLOADED:
-                        // Not yet loaded, possibly being loaded
-
+                    } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
                         // Remove component until it is loaded since we can't do animation
                         // processing
                         result = foeEcsComponentPoolRemove(
@@ -525,14 +538,10 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                         if (result.value != FOE_SUCCESS)
                             std::abort();
 
-                        if (!foeResourceGetIsLoading(armature)) {
-                            foeResourceLoadData(armature);
-                        }
                         pAnimatedBoneSystem->mAwaitingLoading.emplace_back(AwaitingData{
                             .entity = *pModifiedID,
                             .armature = armature,
                         });
-                        break;
                     }
                 } else {
                     // There is already an associated AnimatedBoneState component, see what's
@@ -545,7 +554,6 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                         foeResourceGetID(pAnimatedBoneStateData->armature)) {
                         // The armature has changed
                         foeResource newArmature = FOE_NULL_HANDLE;
-                        foeResourceLoadState loadState = FOE_RESOURCE_LOAD_STATE_FAILED;
 
                         // Acquire new armature resource
                         do {
@@ -569,14 +577,20 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                             foeResourceIncrementUseCount(newArmature);
                         }
 
-                        bool replacement;
-                        do {
-                            loadState = foeResourceGetState(newArmature);
-                            replacement = processResourceReplacement(&newArmature);
-                        } while (replacement);
+                        foeResourceStateFlags resourceState = processResourceLoadState(
+                            &newArmature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE,
+                            FOE_RESOURCE_STATE_LOADED_BIT);
 
-                        switch (loadState) {
-                        case FOE_RESOURCE_LOAD_STATE_LOADED: {
+                        assert(resourceState &
+                               (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                FOE_RESOURCE_STATE_LOADED_BIT));
+
+                        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                            // It failed to load, break out without adding to either the derived
+                            // component pool or adding to the awating list
+                            foeEcsComponentPoolRemove(pAnimatedBoneSystem->mAnimatedBoneStatePool,
+                                                      *pArmatureStateID);
+                        } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                             // Unreference the old armature
                             foeResourceDecrementUseCount(pAnimatedBoneStateData->armature);
                             foeResourceDecrementRefCount(pAnimatedBoneStateData->armature);
@@ -604,28 +618,15 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                             animateArmature(pArmature, pArmatureStateData->animationID,
                                             pArmatureStateData->time,
                                             pAnimatedBoneStateData->pBones);
-                        } break;
-
-                        case FOE_RESOURCE_LOAD_STATE_FAILED:
-                            // It failed to load, break out without adding to either the derived
-                            // component pool or adding to the awating list
-                            foeEcsComponentPoolRemove(pAnimatedBoneSystem->mAnimatedBoneStatePool,
-                                                      *pArmatureStateID);
-                            break;
-
-                        case FOE_RESOURCE_LOAD_STATE_UNLOADED:
+                        } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
                             // Not yet loaded, possibly being loaded
                             foeEcsComponentPoolRemove(pAnimatedBoneSystem->mAnimatedBoneStatePool,
                                                       *pArmatureStateID);
 
-                            if (!foeResourceGetIsLoading(newArmature)) {
-                                foeResourceLoadData(newArmature);
-                            }
                             pAnimatedBoneSystem->mAwaitingLoading.emplace_back(AwaitingData{
                                 .entity = *pModifiedID,
                                 .armature = newArmature,
                             });
-                            break;
                         }
                     }
                 }
@@ -671,15 +672,16 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
 
             foeResourceIncrementUseCount(armature);
 
-            bool replacement;
-            foeResourceLoadState loadState;
-            do {
-                loadState = foeResourceGetState(armature);
-                replacement = processResourceReplacement(&armature);
-            } while (replacement);
+            foeResourceStateFlags resourceState = processResourceLoadState(
+                &armature, FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE, FOE_RESOURCE_STATE_LOADED_BIT);
 
-            switch (loadState) {
-            case FOE_RESOURCE_LOAD_STATE_LOADED: {
+            assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                    FOE_RESOURCE_STATE_LOADED_BIT));
+
+            if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                // It failed to load, break out without adding to either the derived component
+                // pool or adding to the awating list
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                 foeArmature const *pArmature = (foeArmature const *)foeResourceGetData(armature);
 
                 foeAnimatedBoneState newData{
@@ -701,23 +703,12 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                     free(newData.pBones);
                     return result;
                 }
-            } break;
-
-            case FOE_RESOURCE_LOAD_STATE_FAILED:
-                // It failed to load, break out without adding to either the derived component
-                // pool or adding to the awating list
-                break;
-
-            case FOE_RESOURCE_LOAD_STATE_UNLOADED:
-                // Not yet loaded, possibly being loaded
-                if (!foeResourceGetIsLoading(armature)) {
-                    foeResourceLoadData(armature);
-                }
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
+                // Not yet loaded
                 pAnimatedBoneSystem->mAwaitingLoading.emplace_back(AwaitingData{
                     .entity = entity,
                     .armature = armature,
                 });
-                break;
             }
         }
     }

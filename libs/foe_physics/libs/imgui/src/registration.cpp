@@ -55,10 +55,8 @@ void imgui_foePhysicsResource(
     if (foeResourceGetType(resource) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
         imgui_foeResource(resource);
 
-        std::string resDataHeader = "Data: ";
-        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
+        if (ImGui::CollapsingHeader("Data")) {
+            if (foeResourceGetState(resource) & FOE_RESOURCE_STATE_LOADED_BIT) {
                 imgui_foeCollisionShape((foeCollisionShape const *)foeResourceGetData(resource));
             }
         }

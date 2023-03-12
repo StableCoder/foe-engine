@@ -37,8 +37,7 @@ struct Resource {
 
     // Load State
     std::atomic_uint iteration{0};
-    std::atomic_flag loading = ATOMIC_FLAG_INIT;
-    std::atomic<foeResourceLoadState> state{FOE_RESOURCE_LOAD_STATE_UNLOADED};
+    std::atomic<foeResourceStateFlags> state{0};
 
     // @TODO - Keep loaded ResourceCreateInfo in EditorMode?
     // Perhaps as part of the data next chain
@@ -69,8 +68,14 @@ void postLoadFn(
                 "[{},{}] foeResource - Failed to load  with error: {}",
                 foeIdToString(pResource->id), foeResourceGetType(resource), buffer)
 
-        auto expected = FOE_RESOURCE_LOAD_STATE_UNLOADED;
-        pResource->state.compare_exchange_strong(expected, FOE_RESOURCE_LOAD_STATE_FAILED);
+        foeResourceStateFlags expected = pResource->state;
+        foeResourceStateFlags desired;
+        do {
+            // Adding the FAILED flag bit
+            desired = expected | FOE_RESOURCE_STATE_FAILED_BIT;
+            // Remove the LOADING flag bit
+            desired &= ~(FOE_RESOURCE_STATE_LOADING_BIT);
+        } while (!pResource->state.compare_exchange_weak(expected, desired));
     } else {
         pResource->sync.lock();
 
@@ -83,11 +88,17 @@ void postLoadFn(
         pResource->pUnloadDataContext = pUnloadDataContext;
         pResource->unloadDataFn = unloadDataFn;
 
-        pResource->state = FOE_RESOURCE_LOAD_STATE_LOADED;
+        foeResourceStateFlags expected = pResource->state;
+        foeResourceStateFlags desired;
+        do {
+            // Adding the LOADED flag bit
+            desired = expected | FOE_RESOURCE_STATE_LOADED_BIT;
+            // Remove the LOADING and FAILED flag bits
+            desired &= ~(FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT);
+        } while (!pResource->state.compare_exchange_weak(expected, desired));
+
         pResource->sync.unlock();
     }
-
-    pResource->loading.clear();
 
     // Decrement the reference count of both resource and create info, no longer needed after
     // the loading process is done
@@ -100,6 +111,19 @@ void loadResourceTask(Resource *pResource) {
 }
 
 } // namespace
+
+extern "C" char const *foeResourceStateFlagBitToString(foeResourceStateFlagBits flag) {
+    switch (flag) {
+    case FOE_RESOURCE_STATE_LOADING_BIT:
+        return "LOADING";
+    case FOE_RESOURCE_STATE_FAILED_BIT:
+        return "FAILED";
+    case FOE_RESOURCE_STATE_LOADED_BIT:
+        return "LOADED";
+    }
+
+    return "<UNKNOWN>";
+}
 
 extern "C" foeResultSet foeCreateUndefinedResource(foeResourceID id,
                                                    foeResourceFns const *pResourceFns,
@@ -184,8 +208,15 @@ extern "C" foeResultSet foeResourceReplace(foeResource oldResource, foeResource 
         std::atomic_thread_fence(std::memory_order_relaxed);
 
         pOldData->rType = FOE_RESOURCE_RESOURCE_TYPE_REPLACED;
-        pOldResource->state = FOE_RESOURCE_LOAD_STATE_LOADED;
-        pOldResource->loading.clear();
+
+        foeResourceStateFlags expected = pOldResource->state;
+        foeResourceStateFlags desired;
+        do {
+            // Add the LOADING flag bit
+            desired = expected | FOE_RESOURCE_STATE_LOADED_BIT;
+            // Remove the LOADING and FAILED flag bits
+            desired &= ~(FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT);
+        } while (!pOldResource->state.compare_exchange_weak(expected, desired));
 
         FOE_LOG(foeResource, FOE_LOG_LEVEL_VERBOSE,
                 "[{},{}] foeResource - Replacing resource @ {} with type {} @ {}",
@@ -203,8 +234,7 @@ extern "C" foeResultSet foeResourceReplace(foeResource oldResource, foeResource 
 extern "C" foeResource foeResourceGetReplacement(foeResource resource) {
     Resource *pResource = resource_from_handle(resource);
 
-    if (foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-        foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
+    if (foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED) {
         ReplacedResource *pData = (ReplacedResource *)foeResourceGetData(resource);
 
         foeResourceIncrementRefCount(pData->replacementResource);
@@ -301,12 +331,7 @@ extern "C" int foeResourceDecrementUseCount(foeResource resource) {
     return useCount;
 }
 
-extern "C" bool foeResourceGetIsLoading(foeResource resource) {
-    auto *pResource = resource_from_handle(resource);
-    return pResource->loading.test();
-}
-
-extern "C" foeResourceLoadState foeResourceGetState(foeResource resource) {
+extern "C" foeResourceStateFlags foeResourceGetState(foeResource resource) {
     auto *pResource = resource_from_handle(resource);
     return pResource->state;
 }
@@ -339,7 +364,17 @@ extern "C" foeResultSet foeResourceLoadData(foeResource resource) {
     foeResourceIncrementRefCount(resource);
 
     // Only want to start loading if the data isn't already slated to be loaded
-    if (pResource->loading.test_and_set()) {
+    bool setLoadingFlag = false;
+    foeResourceStateFlags expected = pResource->state;
+    do {
+        if ((expected & FOE_RESOURCE_STATE_LOADING_BIT) != 0)
+            break;
+
+        setLoadingFlag = pResource->state.compare_exchange_weak(
+            expected, expected | FOE_RESOURCE_STATE_LOADING_BIT);
+    } while (!setLoadingFlag);
+
+    if (!setLoadingFlag) {
         FOE_LOG(foeResource, FOE_LOG_LEVEL_WARNING,
                 "[{},{}] foeResource - Resource already loading", foeIdToString(pResource->id),
                 foeResourceGetType(resource))
@@ -394,7 +429,11 @@ bool resourceUnloadCall(foeResource resource,
         pResource->pUnloadDataContext = nullptr;
         pResource->unloadDataFn = nullptr;
 
-        pResource->state = FOE_RESOURCE_LOAD_STATE_UNLOADED;
+        foeResourceStateFlags expected = pResource->state;
+        while ((expected & FOE_RESOURCE_STATE_LOADED_BIT) != 0 &&
+               !pResource->state.compare_exchange_weak(expected,
+                                                       expected & ~FOE_RESOURCE_STATE_LOADED_BIT))
+            ;
 
         ++pResource->iteration;
     }
@@ -439,11 +478,12 @@ extern "C" void foeResourceUnloadData(foeResource resource, bool immediate) {
         pResource->unloadDataFn(pResource->pUnloadDataContext, resource, pResource->iteration,
                                 resourceUnloadCall, immediate);
     } else {
-        // No provided unload function, thus no heavy work but to switch to 'unloaded' iff state was
-        // 'loaded'
-        foeResourceLoadState expected = FOE_RESOURCE_LOAD_STATE_LOADED;
-        std::atomic_compare_exchange_strong(&pResource->state, &expected,
-                                            FOE_RESOURCE_LOAD_STATE_UNLOADED);
+        // No provided unload function, thus no heavy work but need to remove the LOADED flag
+        foeResourceStateFlags expected = pResource->state;
+        while ((expected & FOE_RESOURCE_STATE_LOADED_BIT) != 0 &&
+               !pResource->state.compare_exchange_weak(expected,
+                                                       expected & ~FOE_RESOURCE_STATE_LOADED_BIT))
+            ;
     }
 
     pResource->sync.unlock();

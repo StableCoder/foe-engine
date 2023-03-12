@@ -92,8 +92,7 @@ TEST_CASE("foeResource - Loading via provided resource functions") {
     REQUIRE(resource != FOE_NULL_HANDLE);
 
     CHECK(foeResourceGetRefCount(resource) == 1);
-    CHECK_FALSE(foeResourceGetIsLoading(resource));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     result = foeResourceLoadData(resource);
     REQUIRE(result.value == FOE_SUCCESS);
@@ -101,8 +100,7 @@ TEST_CASE("foeResource - Loading via provided resource functions") {
     // When a load call is successful, then reference count should have been incremented
     // (Prevents resource from destruction when still in use by the loading process)
     CHECK(foeResourceGetRefCount(resource) == 2);
-    CHECK(foeResourceGetIsLoading(resource));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADING_BIT);
 
     // Check the postLoadFn was set as expected (by `startLoadCall`)
     REQUIRE(postLoadFn != nullptr);
@@ -124,20 +122,20 @@ TEST_CASE("foeResource - Loading via provided resource functions") {
         postLoadFn(resource, foeResultSet{.value = -1, .toString = errToString}, nullptr, nullptr,
                    nullptr, nullptr);
 
-        CHECK_FALSE(foeResourceGetIsLoading(resource));
-        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_FAILED);
+        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_FAILED_BIT);
         CHECK(foeResourceGetRefCount(resource) == 1);
 
         SECTION("Subsequent successful load leaves resource in LOADED state") {
             result = foeResourceLoadData(resource);
             REQUIRE(result.value == FOE_SUCCESS);
 
-            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_FAILED);
+            CHECK(foeResourceGetState(resource) ==
+                  (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT));
 
             postLoadFn(resource, foeResultSet{.value = FOE_SUCCESS}, &testData2, loadDataFn,
                        nullptr, nullptr);
 
-            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
 
             void const *pResourceData = foeResourceGetData(resource);
             CHECK(pResourceData != nullptr);
@@ -150,8 +148,7 @@ TEST_CASE("foeResource - Loading via provided resource functions") {
         postLoadFn(resource, foeResultSet{.value = FOE_SUCCESS}, &testData, loadDataFn, nullptr,
                    nullptr);
 
-        CHECK_FALSE(foeResourceGetIsLoading(resource));
-        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+        CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
         CHECK(foeResourceGetRefCount(resource) == 1);
 
         // Check that the data can be retrieved, and matches what was given
@@ -165,8 +162,8 @@ TEST_CASE("foeResource - Loading via provided resource functions") {
             REQUIRE(result.value == FOE_SUCCESS);
 
             CHECK(foeResourceGetRefCount(resource) == 2);
-            CHECK(foeResourceGetIsLoading(resource));
-            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+            CHECK(foeResourceGetState(resource) ==
+                  (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT));
 
             postLoadFn(resource, foeResultSet{.value = FOE_SUCCESS}, &testData2, loadDataFn,
                        nullptr, nullptr);

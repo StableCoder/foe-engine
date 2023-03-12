@@ -176,7 +176,7 @@ TEST_CASE("foeResourcePool - Replacing a resource in a pool") {
     // Original resource has two references (pool and returned handle)
     CHECK(foeResourceGetRefCount(resource));
     // Original resource is undefined, unloaded, no available replacement
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
     CHECK(foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED);
     CHECK(foeResourceGetReplacement(resource) == FOE_NULL_HANDLE);
 
@@ -186,7 +186,7 @@ TEST_CASE("foeResourcePool - Replacing a resource in a pool") {
     REQUIRE(replacementResource != FOE_NULL_HANDLE);
 
     // Old resource indicates that a replacement has happened and points to the same new resource
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
     CHECK(foeResourceGetType(resource) == FOE_RESOURCE_RESOURCE_TYPE_REPLACED);
     // Old resource ref count decremented by one (pool ref removed)
     CHECK(foeResourceGetRefCount(resource) == 1);
@@ -315,7 +315,7 @@ TEST_CASE("foeResourcePool - Unloading resources via pool") {
     replacement1 = foeResourcePoolLoadedReplace(pool, 0, cTestResourceType, sizeof(TestResource),
                                                 &testData, loadDataFn, &unloaded1, unloadFn);
     REQUIRE(replacement1 != FOE_NULL_HANDLE);
-    CHECK(foeResourceGetState(replacement1) == FOE_RESOURCE_LOAD_STATE_LOADED);
+    CHECK(foeResourceGetState(replacement1) == FOE_RESOURCE_STATE_LOADED_BIT);
     CHECK(foeResourceDecrementRefCount(replacement1) == 1);
 
     // Resource Type 2
@@ -326,7 +326,7 @@ TEST_CASE("foeResourcePool - Unloading resources via pool") {
     replacement2 = foeResourcePoolLoadedReplace(pool, 1, cTestResourceType2, sizeof(TestResource),
                                                 &testData2, loadDataFn, &unloaded2, unloadFn);
     REQUIRE(replacement2 != FOE_NULL_HANDLE);
-    CHECK(foeResourceGetState(replacement2) == FOE_RESOURCE_LOAD_STATE_LOADED);
+    CHECK(foeResourceGetState(replacement2) == FOE_RESOURCE_STATE_LOADED_BIT);
     CHECK(foeResourceDecrementRefCount(replacement2) == 1);
 
     SECTION("Unloading per-type") {
@@ -334,26 +334,26 @@ TEST_CASE("foeResourcePool - Unloading resources via pool") {
             CHECK(foeResourcePoolUnloadType(pool, cTestResourceType) == 1);
 
             // Type 1 was unloaded
-            CHECK(foeResourceGetState(replacement1) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+            CHECK(foeResourceGetState(replacement1) == (foeResourceStateFlags)0);
             CHECK(unloaded1.resource == replacement1);
             CHECK(unloaded1.type == cTestResourceType);
             CHECK_FALSE(unloaded1.immediate);
 
             // Type 2 is unchanged
-            CHECK(foeResourceGetState(replacement2) == FOE_RESOURCE_LOAD_STATE_LOADED);
+            CHECK(foeResourceGetState(replacement2) == FOE_RESOURCE_STATE_LOADED_BIT);
             CHECK(unloaded2.resource == FOE_NULL_HANDLE);
         }
         SECTION("Type 2") {
             CHECK(foeResourcePoolUnloadType(pool, cTestResourceType2) == 1);
 
             // Type 2 was unloaded
-            CHECK(foeResourceGetState(replacement2) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+            CHECK(foeResourceGetState(replacement2) == (foeResourceStateFlags)0);
             CHECK(unloaded2.resource == replacement2);
             CHECK(unloaded2.type == cTestResourceType2);
             CHECK_FALSE(unloaded2.immediate);
 
             // Type 1 is unchanged
-            CHECK(foeResourceGetState(replacement1) == FOE_RESOURCE_LOAD_STATE_LOADED);
+            CHECK(foeResourceGetState(replacement1) == FOE_RESOURCE_STATE_LOADED_BIT);
             CHECK(unloaded1.resource == FOE_NULL_HANDLE);
         }
     }
@@ -361,13 +361,13 @@ TEST_CASE("foeResourcePool - Unloading resources via pool") {
         foeResourcePoolUnloadAll(pool);
 
         // Type 1 was unloaded
-        CHECK(foeResourceGetState(replacement1) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+        CHECK(foeResourceGetState(replacement1) == (foeResourceStateFlags)0);
         CHECK(unloaded1.resource == replacement1);
         CHECK(unloaded1.type == cTestResourceType);
         CHECK_FALSE(unloaded1.immediate);
 
         // Type 2 was unloaded
-        CHECK(foeResourceGetState(replacement2) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+        CHECK(foeResourceGetState(replacement2) == (foeResourceStateFlags)0);
         CHECK(unloaded2.resource == replacement2);
         CHECK(unloaded2.type == cTestResourceType2);
         CHECK_FALSE(unloaded2.immediate);

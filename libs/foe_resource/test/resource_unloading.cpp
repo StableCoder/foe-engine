@@ -92,15 +92,13 @@ TEST_CASE("foeResource - Unloading a 'unloaded' resource") {
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(resource != FOE_NULL_HANDLE);
 
-    CHECK_FALSE(foeResourceGetIsLoading(resource));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     // Performing an unload does nothing untoward, no state change
     SECTION("Immediate") { foeResourceUnloadData(resource, true); }
     SECTION("Delayed") { foeResourceUnloadData(resource, false); }
 
-    CHECK_FALSE(foeResourceGetIsLoading(resource));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     // Cleanup
     CHECK(foeResourceDecrementRefCount(resource) == 0);
@@ -127,16 +125,14 @@ TEST_CASE("foeResource - Unloading a 'failed' resource") {
     postLoadFn(resource, foeResultSet{.value = -1, .toString = errToString}, nullptr, nullptr,
                nullptr, nullptr);
 
-    CHECK_FALSE(foeResourceGetIsLoading(resource));
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_FAILED);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_FAILED_BIT);
 
     // Performing an unload does nothing untoward, no state change
     SECTION("Immediate") { foeResourceUnloadData(resource, true); }
     SECTION("Delayed") { foeResourceUnloadData(resource, false); }
 
-    CHECK_FALSE(foeResourceGetIsLoading(resource));
     // Still considered a 'failed' resource
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_FAILED);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_FAILED_BIT);
 
     // Cleanup
     CHECK(foeResourceDecrementRefCount(resource) == 0);
@@ -153,7 +149,7 @@ TEST_CASE("foeResource - Can not unload a replaced resource") {
 
     // Initially there is no replacement resource, as this object is 'unloaded'
     CHECK(foeResourceGetReplacement(resource) == FOE_NULL_HANDLE);
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+    CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
 
     // Create the resource to act as the 'replacement' (type does not matter)
     foeResource replacementResource{FOE_NULL_HANDLE};
@@ -170,7 +166,7 @@ TEST_CASE("foeResource - Can not unload a replaced resource") {
     // The old resource should now be considered as 'loaded', and the replacement resource
     // should be accurate
     CHECK(foeResourceGetReplacement(resource) == replacementResource);
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
     CHECK(foeResourceDecrementRefCount(replacementResource) == 2);
 
     // Attempt to unload the replaced resource
@@ -178,7 +174,7 @@ TEST_CASE("foeResource - Can not unload a replaced resource") {
 
     // No changes
     CHECK(foeResourceGetReplacement(resource) == replacementResource);
-    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+    CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
     CHECK(foeResourceDecrementRefCount(replacementResource) == 2);
 
     // Cleanup
@@ -209,24 +205,24 @@ TEST_CASE("foeResource - Unloading a regular resource") {
     SECTION("With no provided unload function") {
         postLoadFn(resource, foeResultSet{.value = FOE_SUCCESS}, &testData, loadDataFn, nullptr,
                    nullptr);
-        REQUIRE(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+        REQUIRE(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
         REQUIRE(memcmp(foeResourceGetData(resource), &testData, sizeof(TestResource)) == 0);
 
         SECTION("Immediate unloading happens immediately") {
             foeResourceUnloadData(resource, true);
 
-            REQUIRE(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+            REQUIRE(foeResourceGetState(resource) == (foeResourceStateFlags)0);
         }
         SECTION("Delayed unloading happens immediately") {
             foeResourceUnloadData(resource, false);
 
-            REQUIRE(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+            REQUIRE(foeResourceGetState(resource) == (foeResourceStateFlags)0);
         }
     }
     SECTION("With provided unload function") {
         postLoadFn(resource, foeResultSet{.value = FOE_SUCCESS}, &testData, loadDataFn,
                    &delayedUnloadingData, unloadFn);
-        REQUIRE(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+        REQUIRE(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
         REQUIRE(memcmp(foeResourceGetData(resource), &testData, sizeof(TestResource)) == 0);
 
         SECTION("Immediate Unloading") {
@@ -236,7 +232,7 @@ TEST_CASE("foeResource - Unloading a regular resource") {
             foeResourceUnloadData(resource, true);
 
             // State has been changed to 'unloaded'
-            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+            CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
             CHECK(foeResourceGetType(resource) == cTestResourceType);
             CHECK(foeResourceGetRefCount(resource) == 1);
         }
@@ -247,7 +243,7 @@ TEST_CASE("foeResource - Unloading a regular resource") {
             foeResourceUnloadData(resource, false);
 
             // State is still 'loaded'
-            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED);
+            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_STATE_LOADED_BIT);
             CHECK(foeResourceGetType(resource) == cTestResourceType);
             // Reference count incremented, captured by whatever has the resource handle for
             // unloading
@@ -256,7 +252,7 @@ TEST_CASE("foeResource - Unloading a regular resource") {
             // Running the delayed unload call completes the unload as expected
             processDelayedUnloading(&delayedUnloadingData);
 
-            CHECK(foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_UNLOADED);
+            CHECK(foeResourceGetState(resource) == (foeResourceStateFlags)0);
             CHECK(foeResourceGetType(resource) == cTestResourceType);
             CHECK(foeResourceGetRefCount(resource) == 1);
         }

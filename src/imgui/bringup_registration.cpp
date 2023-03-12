@@ -71,10 +71,8 @@ void imgui_foeBringupResources(
     if (foeResourceGetType(resource) == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
         imgui_foeResource(resource);
 
-        std::string resDataHeader = "Data: ";
-        resDataHeader += foeResourceLoadStateToString(foeResourceGetState(resource));
-        if (ImGui::CollapsingHeader(resDataHeader.c_str())) {
-            if (foeResourceGetState(resource) == FOE_RESOURCE_LOAD_STATE_LOADED) {
+        if (ImGui::CollapsingHeader("Data")) {
+            if (foeResourceGetState(resource) & FOE_RESOURCE_STATE_LOADED_BIT) {
                 imgui_foeArmature((foeArmature const *)foeResourceGetData(resource));
             }
         }

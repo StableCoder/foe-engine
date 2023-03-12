@@ -133,42 +133,59 @@ bool processResourceReplacement(foeResource *pResource) {
     return replaced;
 }
 
-void loadResourceData(foeResource oldResource,
-                      foeResource &newResource,
-                      foeResourceType resourceType,
-                      foeResourceLoadState &overallLoadState) {
+foeResourceStateFlags processResourceLoadState(foeResource *pResource,
+                                               foeResourceType resourceType,
+                                               foeResourceStateFlags overallState) {
+    if (*pResource == FOE_NULL_HANDLE)
+        return overallState;
+
+    foeResourceStateFlags resourceState;
+
+    do {
+        resourceState = foeResourceGetState(*pResource);
+    } while (processResourceReplacement(pResource));
+
+    if (foeResourceType type = foeResourceGetType(*pResource);
+        type != resourceType && type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+        type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+        !foeResourceHasType(*pResource, resourceType)) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    }
+
+    if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    } else if ((resourceState & FOE_RESOURCE_STATE_LOADED_BIT) == 0) {
+        // This resource is not loaded, therefore remove the overall LOADED flag
+        overallState &= ~FOE_RESOURCE_STATE_LOADED_BIT;
+
+        if ((resourceState & FOE_RESOURCE_STATE_LOADING_BIT) == 0) {
+            // Resource is not LOADED and not LOADING, request load
+            foeResourceLoadData(*pResource);
+            overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+        }
+    }
+    if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT)
+        overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+
+    return overallState;
+}
+
+foeResourceStateFlags loadResourceData(foeResource oldResource,
+                                       foeResource &newResource,
+                                       foeResourceType resourceType,
+                                       foeResourceStateFlags overallState) {
     if (newResource == FOE_NULL_HANDLE)
         // No resource to even deal with, no change to overall load state
-        return;
+        return overallState;
 
-    foeResourceLoadState loadState = foeResourceGetState(newResource);
+    foeResourceStateFlags resourceState = foeResourceGetState(newResource);
 
     if (oldResource != newResource) {
         // A new resource, need to increment it's use and maybe start the loading process
         foeResourceIncrementUseCount(newResource);
-        if (loadState != FOE_RESOURCE_LOAD_STATE_LOADED && !foeResourceGetIsLoading(newResource))
-            foeResourceLoadData(newResource);
     }
 
-    bool replacement;
-    do {
-        loadState = foeResourceGetState(newResource);
-        replacement = processResourceReplacement(&newResource);
-    } while (replacement);
-
-    // If it is loaded, make sure it has the data type we are looking for
-    if (loadState == FOE_RESOURCE_LOAD_STATE_LOADED &&
-        !foeResourceHasType(newResource, resourceType))
-        loadState = FOE_RESOURCE_LOAD_STATE_FAILED;
-
-    // Logic for overall load state
-    if (loadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-        // The resource failed to load previously, this object isn't happening
-        overallLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
-    } else if (overallLoadState == FOE_RESOURCE_LOAD_STATE_LOADED &&
-               loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-        overallLoadState = FOE_RESOURCE_LOAD_STATE_UNLOADED;
-    }
+    return processResourceLoadState(&newResource, resourceType, overallState);
 }
 
 void getResourceCleanup(foeResource oldResource, foeResource newResource) {
@@ -185,12 +202,12 @@ void getResourceCleanup(foeResource oldResource, foeResource newResource) {
     foeResourceDecrementRefCount(newResource);
 }
 
-[[nodiscard]] foeResourceLoadState getRenderData(foeResourcePool resourcePool,
-                                                 foeRenderState const *pRenderState,
-                                                 RenderResources *pRenderData) {
+[[nodiscard]] foeResourceStateFlags getRenderData(foeResourcePool resourcePool,
+                                                  foeRenderState const *pRenderState,
+                                                  RenderResources *pRenderData) {
     RenderResources newResourceData = {};
     bool good = true;
-    foeResourceLoadState overallLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+    foeResourceStateFlags overallResourceState = FOE_RESOURCE_STATE_FAILED_BIT;
 
     good = good && getResourceData(resourcePool, pRenderState->vertexDescriptor,
                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR,
@@ -220,21 +237,25 @@ void getResourceCleanup(foeResource oldResource, foeResource newResource) {
         // loading when we're missing things we didn;'t have anyways
 
         // Set to good state initially
-        overallLoadState = FOE_RESOURCE_LOAD_STATE_LOADED;
+        overallResourceState = FOE_RESOURCE_STATE_LOADED_BIT;
 
-        loadResourceData(pRenderData->vertexDescriptor, newResourceData.vertexDescriptor,
-                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, overallLoadState);
-        loadResourceData(pRenderData->bonedVertexDescriptor, newResourceData.bonedVertexDescriptor,
-                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, overallLoadState);
-        loadResourceData(pRenderData->material, newResourceData.material,
-                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, overallLoadState);
-        loadResourceData(pRenderData->mesh, newResourceData.mesh,
-                         FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, overallLoadState);
+        overallResourceState = loadResourceData(
+            pRenderData->vertexDescriptor, newResourceData.vertexDescriptor,
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, overallResourceState);
+        overallResourceState = loadResourceData(
+            pRenderData->bonedVertexDescriptor, newResourceData.bonedVertexDescriptor,
+            FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_VERTEX_DESCRIPTOR, overallResourceState);
+        overallResourceState =
+            loadResourceData(pRenderData->material, newResourceData.material,
+                             FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MATERIAL, overallResourceState);
+        overallResourceState =
+            loadResourceData(pRenderData->mesh, newResourceData.mesh,
+                             FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_MESH, overallResourceState);
     }
 
-    if (overallLoadState != FOE_RESOURCE_LOAD_STATE_FAILED) {
+    if ((overallResourceState & FOE_RESOURCE_STATE_FAILED_BIT) == 0) {
         *pRenderData = newResourceData;
-        return overallLoadState;
+        return overallResourceState;
     }
 
     // We failed somewhere, clean up
@@ -243,112 +264,7 @@ void getResourceCleanup(foeResource oldResource, foeResource newResource) {
     getResourceCleanup(pRenderData->material, newResourceData.material);
     getResourceCleanup(pRenderData->mesh, newResourceData.mesh);
 
-    return overallLoadState;
-}
-
-foeResourceLoadState checkLoadState(foeEntityID entity, RenderResources const *pRenderDataSet) {
-    foeResourceLoadState overallLoadState = FOE_RESOURCE_LOAD_STATE_LOADED;
-
-    if (pRenderDataSet->vertexDescriptor != FOE_NULL_HANDLE) {
-        if (auto loadState = foeResourceGetState(pRenderDataSet->vertexDescriptor);
-            loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-            if (loadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-                // The resource failed to load previously, this object isn't happening
-                overallLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
-            } else {
-                // It's just in an unloaded or loading state
-                if (overallLoadState == FOE_RESOURCE_LOAD_STATE_LOADED)
-                    overallLoadState = FOE_RESOURCE_LOAD_STATE_UNLOADED;
-
-                if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
-                    !foeResourceGetIsLoading(pRenderDataSet->vertexDescriptor)) {
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                            "While attempting to render {}, VertexDescriptor resource {} was "
-                            "unloaded and "
-                            "wasn't being loaded, requesting load",
-                            foeIdToString(entity),
-                            foeIdToString(foeResourceGetID(pRenderDataSet->vertexDescriptor)));
-                    foeResourceLoadData(pRenderDataSet->vertexDescriptor);
-                }
-            }
-        }
-    }
-
-    if (pRenderDataSet->bonedVertexDescriptor != FOE_NULL_HANDLE) {
-        if (auto loadState = foeResourceGetState(pRenderDataSet->bonedVertexDescriptor);
-            loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-            if (loadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-                // The resource failed to load previously, this object isn't happening
-                overallLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
-            } else {
-                // It's just in an unloaded or loading state
-                if (overallLoadState == FOE_RESOURCE_LOAD_STATE_LOADED)
-                    overallLoadState = FOE_RESOURCE_LOAD_STATE_UNLOADED;
-
-                if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
-                    !foeResourceGetIsLoading(pRenderDataSet->bonedVertexDescriptor)) {
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                            "While attempting to render {}, VertexDescriptor resource {} was "
-                            "unloaded and "
-                            "wasn't being loaded, requesting load",
-                            foeIdToString(entity),
-                            foeIdToString(foeResourceGetID(pRenderDataSet->bonedVertexDescriptor)));
-                    foeResourceLoadData(pRenderDataSet->bonedVertexDescriptor);
-                }
-            }
-        }
-    }
-
-    if (pRenderDataSet->material != FOE_NULL_HANDLE) {
-        if (auto loadState = foeResourceGetState(pRenderDataSet->material);
-            loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-            if (loadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-                // The resource failed to load previously, this object isn't happening
-                overallLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
-            } else {
-                // It's just in an unloaded or loading state
-                if (overallLoadState == FOE_RESOURCE_LOAD_STATE_LOADED)
-                    overallLoadState = FOE_RESOURCE_LOAD_STATE_UNLOADED;
-
-                if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
-                    !foeResourceGetIsLoading(pRenderDataSet->material)) {
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                            "While attempting to render {}, Material resource {} was unloaded and "
-                            "wasn't being loaded, requesting load",
-                            foeIdToString(entity),
-                            foeIdToString(foeResourceGetID(pRenderDataSet->material)));
-                    foeResourceLoadData(pRenderDataSet->material);
-                }
-            }
-        }
-    }
-
-    if (pRenderDataSet->mesh != FOE_NULL_HANDLE) {
-        if (auto loadState = foeResourceGetState(pRenderDataSet->mesh);
-            loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-            if (loadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-                // The resource failed to load previously, this object isn't happening
-                overallLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
-            } else {
-                // It's just in an unloaded or loading state
-                if (overallLoadState == FOE_RESOURCE_LOAD_STATE_LOADED)
-                    overallLoadState = FOE_RESOURCE_LOAD_STATE_UNLOADED;
-
-                if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
-                    !foeResourceGetIsLoading(pRenderDataSet->mesh)) {
-                    FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE,
-                            "While attempting to render {}, VertexDescriptor resource {} was "
-                            "unloaded and "
-                            "wasn't being loaded, requesting load",
-                            foeIdToString(entity),
-                            foeIdToString(foeResourceGetID(pRenderDataSet->mesh)));
-                    foeResourceLoadData(pRenderDataSet->mesh);
-                }
-            }
-        }
-    }
-
-    return overallLoadState;
+    return overallResourceState;
 }
 
 } // namespace
@@ -436,8 +352,16 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(
 
             RenderDataSet newDataSet{.entity = *pRenderStateID, .armatureIndex = UINT32_MAX};
 
-            switch (getRenderData(resourcePool, pRenderStateData, &newDataSet.resources)) {
-            case FOE_RESOURCE_LOAD_STATE_LOADED:
+            foeResourceStateFlags resourceState =
+                getRenderData(resourcePool, pRenderStateData, &newDataSet.resources);
+
+            assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                    FOE_RESOURCE_STATE_LOADED_BIT));
+
+            if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                // Some required resource failed to load
+                clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                 // Data is loaded, can add right away
                 pAnimatedBoneStateID = std::lower_bound(pAnimatedBoneStateID,
                                                         pEndAnimatedBoneStateID, *pRenderStateID);
@@ -458,17 +382,9 @@ extern "C" foeResultSet foeInitializeRenderSystemGraphics(
                     goto GRAPHICS_INITIALIZATION_FAILED;
 
                 pRenderSystem->renderData.emplace_back(newDataSet);
-                break;
-
-            case FOE_RESOURCE_LOAD_STATE_UNLOADED:
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
                 // Something is loading
                 pRenderSystem->awaitingLoading.emplace_back(newDataSet);
-                break;
-
-            case FOE_RESOURCE_LOAD_STATE_FAILED:
-                // Some required resource failed to load
-                clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
-                break;
             }
         }
     }
@@ -572,14 +488,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 continue;
             }
 
-            switch (getRenderData(pRenderSystem->resourcePool, pRenderStateData,
-                                  &awaitingIt->resources)) {
-            case FOE_RESOURCE_LOAD_STATE_UNLOADED:
-                // Still loading
-                pRenderSystem->awaitingLoading.emplace_back(*awaitingIt);
-                break;
+            foeResourceStateFlags resourceState = getRenderData(
+                pRenderSystem->resourcePool, pRenderStateData, &awaitingIt->resources);
 
-            case FOE_RESOURCE_LOAD_STATE_LOADED: {
+            assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                    FOE_RESOURCE_STATE_LOADED_BIT));
+
+            if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                clearArmatureData(pRenderSystem->armatureData, awaitingIt->armatureIndex);
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                 // Loaded, ready to go
                 renderDataIt = std::lower_bound(
                     renderDataIt, pRenderSystem->renderData.end(), awaitingIt->entity,
@@ -615,12 +532,9 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     return result;
 
                 pRenderSystem->renderData.insert(renderDataIt, *awaitingIt);
-            } break;
-
-            case FOE_RESOURCE_LOAD_STATE_FAILED:
-                // Failed to load, discard
-                clearArmatureData(pRenderSystem->armatureData, awaitingIt->armatureIndex);
-                break;
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
+                // Still loading
+                pRenderSystem->awaitingLoading.emplace_back(*awaitingIt);
             }
         }
 
@@ -776,20 +690,14 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 foeRenderState const *pRenderState =
                     pStartRenderStateData + (pRenderStateID - pStartRenderStateID);
 
-                switch (getRenderData(pRenderSystem->resourcePool, pRenderState,
-                                      &renderDataIt->resources)) {
-                case FOE_RESOURCE_LOAD_STATE_UNLOADED:
-                    // Some required resource is still loading
-                    clearArmatureData(pRenderSystem->armatureData, renderDataIt->armatureIndex);
-                    pRenderSystem->awaitingLoading.emplace_back(*renderDataIt);
+                foeResourceStateFlags resourceState = getRenderData(
+                    pRenderSystem->resourcePool, pRenderState, &renderDataIt->resources);
 
-                    removePositionData(pRenderSystem->positionData,
-                                       renderDataIt - pRenderSystem->renderData.begin());
+                assert(resourceState &
+                       (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                        FOE_RESOURCE_STATE_LOADED_BIT));
 
-                    renderDataIt = pRenderSystem->renderData.erase(renderDataIt);
-                    break;
-
-                case FOE_RESOURCE_LOAD_STATE_FAILED:
+                if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
                     // Some required resource failed to load
                     clearArmatureData(pRenderSystem->armatureData, renderDataIt->armatureIndex);
 
@@ -797,9 +705,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                                        renderDataIt - pRenderSystem->renderData.begin());
 
                     renderDataIt = pRenderSystem->renderData.erase(renderDataIt);
-                    break;
-
-                case FOE_RESOURCE_LOAD_STATE_LOADED:
+                } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                     // Everything is still considered loaded and ready to go
                     pAnimatedBoneStateID = std::lower_bound(
                         pAnimatedBoneStateID, pEndAnimatedBoneStateID, *pRenderStateID);
@@ -813,7 +719,15 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                         if (result.value != FOE_SUCCESS)
                             return result;
                     }
-                    break;
+                } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
+                    // Some required resource is still loading
+                    clearArmatureData(pRenderSystem->armatureData, renderDataIt->armatureIndex);
+                    pRenderSystem->awaitingLoading.emplace_back(*renderDataIt);
+
+                    removePositionData(pRenderSystem->positionData,
+                                       renderDataIt - pRenderSystem->renderData.begin());
+
+                    renderDataIt = pRenderSystem->renderData.erase(renderDataIt);
                 }
 
                 ++pRenderStateID;
@@ -934,9 +848,16 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
             RenderDataSet newDataSet{.entity = entity, .armatureIndex = UINT32_MAX};
 
-            switch (getRenderData(pRenderSystem->resourcePool, pRenderStateData,
-                                  &newDataSet.resources)) {
-            case FOE_RESOURCE_LOAD_STATE_LOADED: {
+            foeResourceStateFlags resourceState =
+                getRenderData(pRenderSystem->resourcePool, pRenderStateData, &newDataSet.resources);
+
+            assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                    FOE_RESOURCE_STATE_LOADED_BIT));
+
+            if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                // Some required resource failed to load
+                clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                 // Check if we also have armature data available
                 pAnimatedBoneStateID =
                     std::lower_bound(pAnimatedBoneStateID, pEndAnimatedBoneStateID, entity);
@@ -958,17 +879,9 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     return result;
 
                 renderDataIt = pRenderSystem->renderData.insert(renderDataIt, newDataSet);
-            } break;
-
-            case FOE_RESOURCE_LOAD_STATE_UNLOADED:
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
                 // Some required resource is still loading
                 pRenderSystem->awaitingLoading.emplace_back(newDataSet);
-                break;
-
-            case FOE_RESOURCE_LOAD_STATE_FAILED:
-                // Some required resource failed to load
-                clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
-                break;
             }
         }
     }
@@ -1026,9 +939,16 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
 
             RenderDataSet newDataSet{.entity = entity, .armatureIndex = UINT32_MAX};
 
-            switch (getRenderData(pRenderSystem->resourcePool, pRenderStateData,
-                                  &newDataSet.resources)) {
-            case FOE_RESOURCE_LOAD_STATE_LOADED: {
+            foeResourceStateFlags resourceState =
+                getRenderData(pRenderSystem->resourcePool, pRenderStateData, &newDataSet.resources);
+
+            assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                    FOE_RESOURCE_STATE_LOADED_BIT));
+
+            if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+                // Some required resource failed to load
+                clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
                 // Check if we also have armature data available
                 pAnimatedBoneStateID =
                     std::lower_bound(pAnimatedBoneStateID, pEndAnimatedBoneStateID, entity);
@@ -1050,17 +970,9 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                     return result;
 
                 renderDataIt = pRenderSystem->renderData.insert(renderDataIt, newDataSet);
-            } break;
-
-            case FOE_RESOURCE_LOAD_STATE_UNLOADED:
+            } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
                 // Some required resource is still loading
                 pRenderSystem->awaitingLoading.emplace_back(newDataSet);
-                break;
-
-            case FOE_RESOURCE_LOAD_STATE_FAILED:
-                // Some required resource failed to load
-                clearArmatureData(pRenderSystem->armatureData, newDataSet.armatureIndex);
-                break;
             }
         }
     }

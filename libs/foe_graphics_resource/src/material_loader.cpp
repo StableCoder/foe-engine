@@ -16,9 +16,9 @@
 #include "log.hpp"
 #include "result.h"
 #include "vk_result.h"
-#include "worst_resource_state.hpp"
 
 #include <array>
+#include <cassert>
 #include <type_traits>
 
 foeResultSet foeMaterialLoader::initialize(foeResourcePool resourcePool) {
@@ -130,6 +130,43 @@ bool processResourceReplacement(foeResource *pResource) {
     return replaced;
 }
 
+foeResourceStateFlags processResourceLoadState(foeResource *pResource,
+                                               foeResourceType resourceType,
+                                               foeResourceStateFlags overallState) {
+    if (*pResource == FOE_NULL_HANDLE)
+        return overallState;
+
+    foeResourceStateFlags resourceState;
+
+    do {
+        resourceState = foeResourceGetState(*pResource);
+    } while (processResourceReplacement(pResource));
+
+    if (foeResourceType type = foeResourceGetType(*pResource);
+        type != resourceType && type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+        type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+        !foeResourceHasType(*pResource, resourceType)) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    }
+
+    if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    } else if ((resourceState & FOE_RESOURCE_STATE_LOADED_BIT) == 0) {
+        // This resource is not loaded, therefore remove the overall LOADED flag
+        overallState &= ~FOE_RESOURCE_STATE_LOADED_BIT;
+
+        if ((resourceState & FOE_RESOURCE_STATE_LOADING_BIT) == 0) {
+            // Resource is not LOADED and not LOADING, request load
+            foeResourceLoadData(*pResource);
+            overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+        }
+    }
+    if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT)
+        overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+
+    return overallState;
+}
+
 } // namespace
 
 void foeMaterialLoader::gfxMaintenance() {
@@ -169,49 +206,40 @@ void foeMaterialLoader::gfxMaintenance() {
     std::vector<LoadData> stillLoading;
 
     for (auto &it : toLoad) {
-        bool replacement;
-        foeResourceLoadState subResLoadState;
+        foeResourceStateFlags resourceState = FOE_RESOURCE_STATE_LOADED_BIT;
 
-        do {
-            // Check to see if what we need has been loaded yet
-            std::array<foeResource, 2> subResources = {
-                it.data.fragmentShader,
-                it.data.image,
-            };
-            subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
+        resourceState = processResourceLoadState(
+            &it.data.fragmentShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, resourceState);
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT)
+            goto PROCESS_RESOURCE;
 
-            // Then perform any replacements after retreiving the load state
-            replacement = false;
-            replacement = replacement || processResourceReplacement(&it.data.fragmentShader);
-            replacement = replacement || processResourceReplacement(&it.data.image);
+        resourceState = processResourceLoadState(
+            &it.data.image, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE, resourceState);
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT)
+            goto PROCESS_RESOURCE;
 
-            // Repeat as long as replacements are occurring
-        } while (replacement);
+    PROCESS_RESOURCE:
+        assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                FOE_RESOURCE_STATE_LOADED_BIT));
 
-        // Verify the sub-resources are/have expected type
-        if (it.data.fragmentShader != FOE_NULL_HANDLE) {
-            if (foeResourceType type = foeResourceGetType(it.data.fragmentShader);
-                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
-                !foeResourceHasType(it.data.fragmentShader,
-                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
-                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+            // A subresource failed to load or is the incorrect type, cannot proceed to load this
+            // resource, remove references to subresources
+            it.postLoadFn(
+                it.resource,
+                to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
+                nullptr, nullptr, nullptr, nullptr);
+            foeResourceCreateInfoDecrementRefCount(it.createInfo);
+
+            if (it.data.fragmentShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.fragmentShader);
+                foeResourceDecrementRefCount(it.data.fragmentShader);
             }
-        }
-
-        if (it.data.image != FOE_NULL_HANDLE) {
-            if (foeResourceType type = foeResourceGetType(it.data.fragmentShader);
-                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
-                !foeResourceHasType(it.data.fragmentShader,
-                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE)) {
-                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            if (it.data.image != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.image);
+                foeResourceDecrementRefCount(it.data.image);
             }
-        }
-
-        if (subResLoadState == FOE_RESOURCE_LOAD_STATE_LOADED) {
+        } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
             // Using the sub-resources that are loaded, and definition data, create the resource
             foeGfxShader fragShader =
                 (it.data.fragmentShader != FOE_NULL_HANDLE)
@@ -272,24 +300,8 @@ void foeMaterialLoader::gfxMaintenance() {
 
                 foeResourceCreateInfoDecrementRefCount(it.createInfo);
             }
-        } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-            it.postLoadFn(
-                it.resource,
-                to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_MATERIAL_SUBRESOURCE_FAILED_TO_LOAD),
-                nullptr, nullptr, nullptr, nullptr);
-            foeResourceCreateInfoDecrementRefCount(it.createInfo);
-
-            // Unload the data we did get
-            if (it.data.fragmentShader != nullptr) {
-                foeResourceDecrementUseCount(it.data.fragmentShader);
-                foeResourceDecrementRefCount(it.data.fragmentShader);
-            }
-            if (it.data.image != FOE_NULL_HANDLE) {
-                foeResourceDecrementUseCount(it.data.image);
-                foeResourceDecrementRefCount(it.data.image);
-            }
-        } else {
-            // All items are at least 'loading', so just re-queue
+        } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
+            // Otherwise content is still LOADING, add to be reprocessed later
             stillLoading.emplace_back(std::move(it));
         }
     }
@@ -395,14 +407,14 @@ void foeMaterialLoader::load(foeResource resource,
     // them all as compatible types
     if (data.fragmentShader != FOE_NULL_HANDLE) {
         foeResourceIncrementUseCount(data.fragmentShader);
-        if (foeResourceGetState(data.fragmentShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.fragmentShader))
+        if ((foeResourceGetState(data.fragmentShader) &
+             (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT)) == 0)
             foeResourceLoadData(data.fragmentShader);
     }
     if (data.image != FOE_NULL_HANDLE) {
         foeResourceIncrementUseCount(data.image);
-        if (foeResourceGetState(data.image) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.image))
+        if ((foeResourceGetState(data.image) &
+             (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT)) == 0)
             foeResourceLoadData(data.image);
     }
 

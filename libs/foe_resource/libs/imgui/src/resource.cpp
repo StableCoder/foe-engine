@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,23 +6,25 @@
 
 #include <imgui.h>
 
+#include <limits>
+#include <string>
+
 extern "C" void imgui_foeResource(foeResource resource) {
     ImGui::Text("Type: %i", foeResourceGetType(resource));
 
-    // Is Loading
-    if (foeResourceGetIsLoading(resource))
-        ImGui::Text("Is Loading: true");
-    else
-        ImGui::Text("Is Loading: false");
+    std::string stateStr = "";
 
     // State
-    auto const state = foeResourceGetState(resource);
-    if (state == FOE_RESOURCE_LOAD_STATE_UNLOADED)
-        ImGui::Text("LoadState: unloaded");
-    else if (state == FOE_RESOURCE_LOAD_STATE_LOADED)
-        ImGui::Text("LoadState: loaded");
-    else if (state == FOE_RESOURCE_LOAD_STATE_FAILED)
-        ImGui::Text("LoadState: failed");
+    foeResourceStateFlags state = foeResourceGetState(resource);
+    for (int i = 0; i < std::numeric_limits<foeResourceStateFlags>::digits; ++i) {
+        uint32_t bit = (1 << i);
+        if (state & bit) {
+            if (!stateStr.empty())
+                stateStr += " | ";
+            stateStr += foeResourceStateFlagBitToString((foeResourceStateFlagBits)bit);
+        }
+    }
+    ImGui::Text("State: %s", stateStr.c_str());
 
     // Counts
     ImGui::Text("Ref Count: %u", foeResourceGetRefCount(resource));

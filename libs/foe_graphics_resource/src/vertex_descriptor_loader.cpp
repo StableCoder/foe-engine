@@ -11,10 +11,10 @@
 
 #include "log.hpp"
 #include "result.h"
-#include "worst_resource_state.hpp"
 
 #include <array>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdlib>
 
 foeResultSet foeVertexDescriptorLoader::initialize(foeResourcePool resourcePool) {
     if (resourcePool == FOE_NULL_HANDLE) {
@@ -89,6 +89,43 @@ bool processResourceReplacement(foeResource *pResource) {
     return replaced;
 }
 
+foeResourceStateFlags processResourceLoadState(foeResource *pResource,
+                                               foeResourceType resourceType,
+                                               foeResourceStateFlags overallState) {
+    if (*pResource == FOE_NULL_HANDLE)
+        return overallState;
+
+    foeResourceStateFlags resourceState;
+
+    do {
+        resourceState = foeResourceGetState(*pResource);
+    } while (processResourceReplacement(pResource));
+
+    if (foeResourceType type = foeResourceGetType(*pResource);
+        type != resourceType && type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
+        type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
+        !foeResourceHasType(*pResource, resourceType)) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    }
+
+    if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+        overallState |= FOE_RESOURCE_STATE_FAILED_BIT;
+    } else if ((resourceState & FOE_RESOURCE_STATE_LOADED_BIT) == 0) {
+        // This resource is not loaded, therefore remove the overall LOADED flag
+        overallState &= ~FOE_RESOURCE_STATE_LOADED_BIT;
+
+        if ((resourceState & FOE_RESOURCE_STATE_LOADING_BIT) == 0) {
+            // Resource is not LOADED and not LOADING, request load
+            foeResourceLoadData(*pResource);
+            overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+        }
+    }
+    if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT)
+        overallState |= FOE_RESOURCE_STATE_LOADING_BIT;
+
+    return overallState;
+}
+
 } // namespace
 
 void foeVertexDescriptorLoader::gfxMaintenance() {
@@ -110,77 +147,62 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
     std::vector<LoadData> stillLoading;
 
     for (auto &it : toLoad) {
-        foeResourceLoadState subResLoadState;
-        bool replacement;
+        foeResourceStateFlags resourceState = FOE_RESOURCE_STATE_LOADED_BIT;
 
-        do {
-            std::array<foeResource, 4> subResources = {
-                it.data.vertexShader,
-                it.data.tessellationControlShader,
-                it.data.tessellationEvaluationShader,
-                it.data.geometryShader,
-            };
+        resourceState = processResourceLoadState(
+            &it.data.vertexShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, resourceState);
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT)
+            goto PROCESS_RESOURCE;
 
-            subResLoadState = worstResourceLoadState(subResources.size(), subResources.data());
+        resourceState =
+            processResourceLoadState(&it.data.tessellationControlShader,
+                                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, resourceState);
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT)
+            goto PROCESS_RESOURCE;
 
-            // Perform any replacements after getting the overall load state
-            replacement = false;
-            replacement = replacement || processResourceReplacement(&it.data.vertexShader);
-            replacement =
-                replacement || processResourceReplacement(&it.data.tessellationControlShader);
-            replacement =
-                replacement || processResourceReplacement(&it.data.tessellationEvaluationShader);
-            replacement = replacement || processResourceReplacement(&it.data.geometryShader);
+        resourceState =
+            processResourceLoadState(&it.data.tessellationEvaluationShader,
+                                     FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, resourceState);
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT)
+            goto PROCESS_RESOURCE;
 
-            // Repeat as long as replacements are occurring
-        } while (replacement);
+        resourceState = processResourceLoadState(
+            &it.data.geometryShader, FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER, resourceState);
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT)
+            goto PROCESS_RESOURCE;
 
-        // Verify sub-resource types
-        if (it.data.vertexShader != FOE_NULL_HANDLE) {
-            if (foeResourceType type = foeResourceGetType(it.data.vertexShader);
-                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
-                !foeResourceHasType(it.data.vertexShader,
-                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
-                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+    PROCESS_RESOURCE:
+        assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
+                                FOE_RESOURCE_STATE_LOADED_BIT));
+
+        if (resourceState & FOE_RESOURCE_STATE_FAILED_BIT) {
+            // At least one of the items failed to load
+            if (it.data.vertexShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.vertexShader);
+                foeResourceDecrementRefCount(it.data.vertexShader);
             }
-        }
-
-        if (it.data.tessellationControlShader != FOE_NULL_HANDLE) {
-            if (foeResourceType type = foeResourceGetType(it.data.tessellationControlShader);
-                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
-                !foeResourceHasType(it.data.tessellationControlShader,
-                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
-                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            if (it.data.tessellationControlShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.tessellationControlShader);
+                foeResourceDecrementRefCount(it.data.tessellationControlShader);
             }
-        }
-
-        if (it.data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
-            if (foeResourceType type = foeResourceGetType(it.data.tessellationEvaluationShader);
-                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
-                !foeResourceHasType(it.data.tessellationEvaluationShader,
-                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
-                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            if (it.data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.tessellationEvaluationShader);
+                foeResourceDecrementRefCount(it.data.tessellationEvaluationShader);
             }
-        }
-
-        if (it.data.geometryShader != FOE_NULL_HANDLE) {
-            if (foeResourceType type = foeResourceGetType(it.data.geometryShader);
-                type != FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-                type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
-                !foeResourceHasType(it.data.geometryShader,
-                                    FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_SHADER)) {
-                subResLoadState = FOE_RESOURCE_LOAD_STATE_FAILED;
+            if (it.data.geometryShader != FOE_NULL_HANDLE) {
+                foeResourceDecrementUseCount(it.data.geometryShader);
+                foeResourceDecrementRefCount(it.data.geometryShader);
             }
-        }
 
-        if (subResLoadState == FOE_RESOURCE_LOAD_STATE_LOADED) {
+            cleanup_foeVertexDescriptor(&it.data);
+
+            it.postLoadFn(
+                it.resource,
+                to_foeResult(
+                    FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_FAILED_TO_LOAD),
+                nullptr, nullptr, nullptr, nullptr);
+            foeResourceCreateInfoDecrementRefCount(it.createInfo);
+        } else if (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) {
             if (it.data.vertexShader != FOE_NULL_HANDLE) {
                 it.data.vertexDescriptor.mVertex =
                     ((foeShader const *)foeResourceGetData(it.data.vertexShader))->shader;
@@ -252,34 +274,7 @@ void foeVertexDescriptorLoader::gfxMaintenance() {
             }
 
             foeResourceCreateInfoDecrementRefCount(it.createInfo);
-        } else if (subResLoadState == FOE_RESOURCE_LOAD_STATE_FAILED) {
-            // At least one of the items failed to load
-            if (it.data.vertexShader != FOE_NULL_HANDLE) {
-                foeResourceDecrementUseCount(it.data.vertexShader);
-                foeResourceDecrementRefCount(it.data.vertexShader);
-            }
-            if (it.data.tessellationControlShader != FOE_NULL_HANDLE) {
-                foeResourceDecrementUseCount(it.data.tessellationControlShader);
-                foeResourceDecrementRefCount(it.data.tessellationControlShader);
-            }
-            if (it.data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
-                foeResourceDecrementUseCount(it.data.tessellationEvaluationShader);
-                foeResourceDecrementRefCount(it.data.tessellationEvaluationShader);
-            }
-            if (it.data.geometryShader != FOE_NULL_HANDLE) {
-                foeResourceDecrementUseCount(it.data.geometryShader);
-                foeResourceDecrementRefCount(it.data.geometryShader);
-            }
-
-            cleanup_foeVertexDescriptor(&it.data);
-
-            it.postLoadFn(
-                it.resource,
-                to_foeResult(
-                    FOE_GRAPHICS_RESOURCE_ERROR_VERTEX_DESCRIPTOR_SUBRESOURCE_FAILED_TO_LOAD),
-                nullptr, nullptr, nullptr, nullptr);
-            foeResourceCreateInfoDecrementRefCount(it.createInfo);
-        } else {
+        } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
             // Sub-items are still at least loading
             stillLoading.emplace_back(it);
         }
@@ -429,27 +424,26 @@ void foeVertexDescriptorLoader::load(foeResource resource,
     // them all as compatible types
     if (data.vertexShader != FOE_NULL_HANDLE) {
         foeResourceIncrementUseCount(data.vertexShader);
-        if (foeResourceGetState(data.vertexShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.vertexShader))
+        if ((foeResourceGetState(data.vertexShader) &
+             (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT)) == 0)
             foeResourceLoadData(data.vertexShader);
     }
     if (data.tessellationControlShader != FOE_NULL_HANDLE) {
         foeResourceIncrementUseCount(data.tessellationControlShader);
-        if (foeResourceGetState(data.tessellationControlShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.tessellationControlShader))
+        if ((foeResourceGetState(data.tessellationControlShader) &
+             (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT)) == 0)
             foeResourceLoadData(data.tessellationControlShader);
     }
     if (data.tessellationEvaluationShader != FOE_NULL_HANDLE) {
         foeResourceIncrementUseCount(data.tessellationEvaluationShader);
-        if (foeResourceGetState(data.tessellationEvaluationShader) !=
-                FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.tessellationEvaluationShader))
+        if ((foeResourceGetState(data.tessellationEvaluationShader) &
+             (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT)) == 0)
             foeResourceLoadData(data.tessellationEvaluationShader);
     }
     if (data.geometryShader != FOE_NULL_HANDLE) {
         foeResourceIncrementUseCount(data.geometryShader);
-        if (foeResourceGetState(data.geometryShader) != FOE_RESOURCE_LOAD_STATE_LOADED &&
-            !foeResourceGetIsLoading(data.geometryShader))
+        if ((foeResourceGetState(data.geometryShader) &
+             (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_LOADED_BIT)) == 0)
             foeResourceLoadData(data.geometryShader);
     }
 

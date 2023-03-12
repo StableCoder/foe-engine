@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,6 +15,5 @@ target_sources(
           result.c
           shader_loader.cpp
           vertex_descriptor_loader.cpp
-          worst_resource_state.cpp
           vertex_descriptor.cpp
           vk_result.c)

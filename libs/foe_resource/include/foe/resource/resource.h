@@ -47,13 +47,14 @@ typedef void (*PFN_foeResourcePostLoad)(
     void (*)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool) // Unload Fn
 );
 
-typedef enum foeResourceLoadState {
-    FOE_RESOURCE_LOAD_STATE_UNLOADED = 0,
-    FOE_RESOURCE_LOAD_STATE_LOADED,
-    FOE_RESOURCE_LOAD_STATE_FAILED,
-} foeResourceLoadState;
+typedef enum foeResourceStateFlagBits {
+    FOE_RESOURCE_STATE_LOADING_BIT = 0x1,
+    FOE_RESOURCE_STATE_FAILED_BIT = 0x2,
+    FOE_RESOURCE_STATE_LOADED_BIT = 0x4,
+} foeResourceStateFlagBits;
+typedef uint32_t foeResourceStateFlags;
 
-FOE_RES_EXPORT char const *foeResourceLoadStateToString(foeResourceLoadState state);
+FOE_RES_EXPORT char const *foeResourceStateFlagBitToString(foeResourceStateFlagBits flag);
 
 FOE_RES_EXPORT foeResultSet foeCreateUndefinedResource(foeResourceID id,
                                                        foeResourceFns const *pResourceFns,
@@ -93,8 +94,7 @@ FOE_RES_EXPORT int foeResourceGetUseCount(foeResource resource);
 FOE_RES_EXPORT int foeResourceIncrementUseCount(foeResource resource);
 FOE_RES_EXPORT int foeResourceDecrementUseCount(foeResource resource);
 
-FOE_RES_EXPORT bool foeResourceGetIsLoading(foeResource resource);
-FOE_RES_EXPORT foeResourceLoadState foeResourceGetState(foeResource resource);
+FOE_RES_EXPORT foeResourceStateFlags foeResourceGetState(foeResource resource);
 
 FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
 FOE_RES_EXPORT void const *foeResourceGetTypeData(foeResource resource, foeResourceType type);

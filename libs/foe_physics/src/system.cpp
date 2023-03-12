@@ -117,10 +117,9 @@ FOE_DEFINE_HANDLE_CASTS(physics_system, PhysicsSystem, foePhysicsSystem)
     }
 
 CHECK_COLLISION_SHAPE_LOADED:
-    if (auto loadState = foeResourceGetState(collisionShape);
-        loadState != FOE_RESOURCE_LOAD_STATE_LOADED) {
-        if (loadState == FOE_RESOURCE_LOAD_STATE_UNLOADED &&
-            !foeResourceGetIsLoading(collisionShape)) {
+    if (auto resourceState = foeResourceGetState(collisionShape);
+        (resourceState & FOE_RESOURCE_STATE_LOADED_BIT) == 0) {
+        if ((resourceState & FOE_RESOURCE_STATE_LOADING_BIT) == 0) {
             foeResourceLoadData(collisionShape);
         }
         pPhysicsSystem->awaitingLoadingResources.emplace_back(entity);
