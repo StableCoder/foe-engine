@@ -296,11 +296,33 @@ Ubuntu/Clang Shared:
 
 # macOS
 
+macOS/AppleClang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release]
+  tags:
+    - macos
+    - ${ARCH}
+  <<: *platform_macos_template
+
+macOS/AppleClang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release]
+  tags:
+    - macos
+    - ${ARCH}
+  variables:
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
+  <<: *platform_macos_template
+
 macOS/Clang Static:
   parallel:
     matrix:
     - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release, Debug]
+      BUILD_TYPE: [Release]
   tags:
     - macos
     - ${ARCH}
@@ -313,7 +335,7 @@ macOS/Clang Shared:
   parallel:
     matrix:
     - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release, Debug]
+      BUILD_TYPE: [Release]
   tags:
     - macos
     - ${ARCH}
@@ -495,8 +517,6 @@ macOS Vulkan HW Testing:
     - macos
     - ${ARCH}-${GPU}
   variables:
-    CC: clang
-    CXX: clang++
   <<: *vulkan_template
 
 # Analysis Stage Templates
