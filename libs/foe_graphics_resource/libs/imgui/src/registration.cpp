@@ -25,10 +25,11 @@ void imgui_foeGraphicsResources(
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
-    foeResourceDecrementRefCount(resource);
 
     if (resource == FOE_NULL_HANDLE)
         return;
+
+    foeResourceDecrementRefCount(resource);
 
     // foeImage
     if (foeResourceGetType(resource) == FOE_GRAPHICS_RESOURCE_STRUCTURE_TYPE_IMAGE) {

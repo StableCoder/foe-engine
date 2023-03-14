@@ -62,10 +62,11 @@ void imgui_foeBringupResources(
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
-    foeResourceDecrementRefCount(resource);
 
     if (resource == FOE_NULL_HANDLE)
         return;
+
+    foeResourceDecrementRefCount(resource);
 
     // foeArmature
     if (foeResourceGetType(resource) == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {

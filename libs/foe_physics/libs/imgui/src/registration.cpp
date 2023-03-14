@@ -46,10 +46,10 @@ void imgui_foePhysicsResource(
     foeSimulation const *pSimulation,
     std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
     foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
-    foeResourceDecrementRefCount(resource);
-
     if (resource == FOE_NULL_HANDLE)
         return;
+
+    foeResourceDecrementRefCount(resource);
 
     // foeCollisionShape
     if (foeResourceGetType(resource) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
