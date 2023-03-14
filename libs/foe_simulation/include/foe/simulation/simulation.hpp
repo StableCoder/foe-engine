@@ -9,10 +9,11 @@
 #include <foe/ecs/name_map.h>
 #include <foe/graphics/session.h>
 #include <foe/resource/pool.h>
-#include <foe/resource/records.h>
 #include <foe/resource/resource.h>
 #include <foe/simulation/export.h>
 #include <foe/simulation/group_data.hpp>
+#include <foe/simulation/resource_create_info_history.h>
+#include <foe/simulation/resource_create_info_pool.h>
 #include <foe/simulation/type_defs.h>
 
 #include <filesystem>
@@ -99,7 +100,9 @@ struct foeSimulation {
 
     // Resource Data
     foeEcsNameMap resourceNameMap = FOE_NULL_HANDLE;
-    foeResourceRecords resourceRecords;
+    foeResourceCreateInfoPool resourceCreateInfoSavedBaseData;
+    foeResourceCreateInfoPool resourceCreateInfoSavedPersistentData;
+    foeResourceCreateInfoHistory resourceCreateInfoSessionPersistentData;
     foeResourcePool resourcePool;
     std::vector<foeSimulationLoaderData> resourceLoaders;
 

@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 target_sources(foe_resource PRIVATE create_info.cpp log.cpp pool.cpp
-                                    records.cpp resource.cpp result.c)
+                                    resource.cpp result.c)

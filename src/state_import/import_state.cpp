@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -408,12 +408,12 @@ foeResultSet importState(std::string_view topLevelDataSet,
 
                 struct CallContext {
                     foeImexImporter importer;
-                    foeResourceRecords records;
+                    foeResourceCreateInfoPool pool;
                     foeIdGroupValue groupValue;
                 };
                 CallContext callContext = {
                     .importer = groupImporter,
-                    .records = pSimulationSet->resourceRecords,
+                    .pool = pSimulationSet->resourceCreateInfoSavedBaseData,
                     .groupValue = groupValue,
                 };
 
@@ -429,14 +429,11 @@ foeResultSet importState(std::string_view topLevelDataSet,
                         if (result.value != FOE_SUCCESS)
                             return;
 
-                        if (foeIdGroupToValue(foeIdGetGroup(id)) == pCallContext->groupValue) {
-                            foeResourceAddRecordEntry(pCallContext->records, id);
-                        }
-
                         if (resourceCI != FOE_NULL_HANDLE) {
-                            foeResourceAddSavedRecord(pCallContext->records,
-                                                      foeIdValueToGroup(pCallContext->groupValue),
-                                                      id, resourceCI);
+                            foeResourceID fullID =
+                                foeIdCreate(foeIdValueToGroup(pCallContext->groupValue), id);
+                            foeResourceCreateInfoPoolAdd(pCallContext->pool, fullID, resourceCI);
+
                             foeResourceCreateInfoDecrementRefCount(resourceCI);
                         }
                     },
@@ -457,11 +454,11 @@ foeResultSet importState(std::string_view topLevelDataSet,
 
             struct CallContext {
                 foeImexImporter importer;
-                foeResourceRecords records;
+                foeResourceCreateInfoPool pool;
             };
             CallContext callContext = {
                 .importer = persistentImporter,
-                .records = pSimulationSet->resourceRecords,
+                .pool = pSimulationSet->resourceCreateInfoSavedPersistentData,
             };
 
             // Go through all the indexes for the group, set any available editor names
@@ -477,14 +474,10 @@ foeResultSet importState(std::string_view topLevelDataSet,
                     if (result.value != FOE_SUCCESS)
                         return;
 
-                    if (foeIdGroupToValue(foeIdGetGroup(id)) == foeIdPersistentGroupValue) {
-                        foeResourceAddRecordEntry(pCallContext->records, id);
-                    }
-
                     if (resourceCI != FOE_NULL_HANDLE) {
-                        foeResourceAddSavedRecord(pCallContext->records,
-                                                  foeIdValueToGroup(foeIdPersistentGroupValue), id,
-                                                  resourceCI);
+                        foeResourceID fullID = foeIdCreate(foeIdPersistentGroup, id);
+                        foeResourceCreateInfoPoolAdd(pCallContext->pool, fullID, resourceCI);
+
                         foeResourceCreateInfoDecrementRefCount(resourceCI);
                     }
                 },

@@ -81,13 +81,27 @@ void deinitializeSimulationGraphics(foeSimulation *pSimulation) {
 foeResourceCreateInfo getResourceCreateInfo(void *pContext, foeResourceID resourceID) {
     auto *pSimulation = reinterpret_cast<foeSimulation *>(pContext);
 
-    if (pSimulation->resourceRecords != FOE_NULL_HANDLE) {
+    foeIdGroup group = foeIdGetGroup(resourceID);
+    if (group == foeIdPersistentGroup) {
         foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
-        foeResourceRecordsGetCreateInfo(pSimulation->resourceRecords, resourceID, &resourceCI);
-        return resourceCI;
+        resourceCI = foeResourceCreateInfoHistoryCurrent(
+            pSimulation->resourceCreateInfoSessionPersistentData, resourceID);
+        if (resourceCI != FOE_NULL_HANDLE)
+            return resourceCI;
+
+        resourceCI = foeResourceCreateInfoPoolGet(
+            pSimulation->resourceCreateInfoSavedPersistentData, resourceID);
+        if (resourceCI != FOE_NULL_HANDLE)
+            return resourceCI;
+    } else if (group < foeIdPersistentGroup) {
+        foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
+        resourceCI =
+            foeResourceCreateInfoPoolGet(pSimulation->resourceCreateInfoSavedBaseData, resourceID);
+        if (resourceCI != FOE_NULL_HANDLE)
+            return resourceCI;
     }
 
-    return pSimulation->groupData.getResourceCreateInfo(resourceID);
+    return FOE_NULL_HANDLE;
 }
 
 void loadResource(void *pContext, foeResource resource, PFN_foeResourcePostLoad postLoadFn) {
@@ -298,16 +312,44 @@ foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationS
         return to_foeResult(FOE_SIMULATION_ERROR_OUT_OF_MEMORY);
 
     newSimState->gfxSession = FOE_NULL_HANDLE;
-    newSimState->resourceRecords = FOE_NULL_HANDLE;
+    newSimState->resourceCreateInfoSavedBaseData = FOE_NULL_HANDLE;
+    newSimState->resourceCreateInfoSavedPersistentData = FOE_NULL_HANDLE;
+    newSimState->resourceCreateInfoSessionPersistentData = FOE_NULL_HANDLE;
     newSimState->resourcePool = FOE_NULL_HANDLE;
 
-    // Resource Records
-    result = foeResourceCreateRecords(&newSimState->resourceRecords);
+    // Saved Base Data
+    result = foeCreateResourceCreateInfoPool(&newSimState->resourceCreateInfoSavedBaseData);
     if (result.value != FOE_SUCCESS) {
         char buffer[FOE_MAX_RESULT_STRING_SIZE];
         result.toString(result.value, buffer);
         FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
-                "foeSimulation - Failed to create foeResourceRecords due to: {}", buffer);
+                "foeSimulation - Failed to create foeResourceCreateInfoPool (Base) due to: {}",
+                buffer);
+
+        return result;
+    }
+
+    // Saved Persistent Data
+    result = foeCreateResourceCreateInfoPool(&newSimState->resourceCreateInfoSavedPersistentData);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(
+            foeSimulation, FOE_LOG_LEVEL_ERROR,
+            "foeSimulation - Failed to create foeResourceCreateInfoPool (Persistent) due to: {}",
+            buffer);
+
+        return result;
+    }
+
+    // Session Persistent Data
+    result =
+        foeCreateResourceCreateInfoHistory(&newSimState->resourceCreateInfoSessionPersistentData);
+    if (result.value != FOE_SUCCESS) {
+        char buffer[FOE_MAX_RESULT_STRING_SIZE];
+        result.toString(result.value, buffer);
+        FOE_LOG(foeSimulation, FOE_LOG_LEVEL_ERROR,
+                "foeSimulation - Failed to create foeResourceCreateInfoHistory due to: {}", buffer);
 
         return result;
     }
@@ -435,8 +477,12 @@ foeResultSet foeDestroySimulation(foeSimulation *pSimulation) {
     foeDestroyResourcePool(pSimulation->resourcePool);
 
     // Destroy Records
-    if (pSimulation->resourceRecords != FOE_NULL_HANDLE)
-        foeResourceDestroyRecords(pSimulation->resourceRecords);
+    if (pSimulation->resourceCreateInfoSessionPersistentData != FOE_NULL_HANDLE)
+        foeDestroyResourceCreateInfoHistory(pSimulation->resourceCreateInfoSessionPersistentData);
+    if (pSimulation->resourceCreateInfoSavedPersistentData != FOE_NULL_HANDLE)
+        foeDestroyResourceCreateInfoPool(pSimulation->resourceCreateInfoSavedPersistentData);
+    if (pSimulation->resourceCreateInfoSavedBaseData != FOE_NULL_HANDLE)
+        foeDestroyResourceCreateInfoPool(pSimulation->resourceCreateInfoSavedBaseData);
 
     // Delete it
     delete pSimulation;
