@@ -6,13 +6,8 @@
 
 #include <foe/physics/component/rigid_body_pool.h>
 #include <foe/physics/type_defs.h>
-#include <foe/resource/imgui/create_info.h>
-#include <foe/resource/imgui/resource.h>
-#include <foe/resource/pool.h>
-#include <foe/resource/resource.h>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <imgui.h>
 
 #include "collision_shape.hpp"
 #include "rigid_body.hpp"
@@ -41,51 +36,16 @@ void imgui_foePhysicsComponent(foeEntityID entity, foeSimulation const *pSimulat
     }
 }
 
-void imgui_foePhysicsResource(
-    foeResourceID resourceID,
-    foeSimulation const *pSimulation,
-    std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
-    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
-    if (resource == FOE_NULL_HANDLE)
-        return;
-
-    foeResourceDecrementRefCount(resource);
-
-    // foeCollisionShape
-    if (foeResourceGetType(resource) == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE) {
-        imgui_foeResource(resource);
-
-        if (ImGui::CollapsingHeader("Data")) {
-            if (foeResourceGetState(resource) & FOE_RESOURCE_STATE_LOADED_BIT) {
-                imgui_foeCollisionShape((foeCollisionShape const *)foeResourceGetData(resource));
-            }
-        }
-
-        if (ImGui::CollapsingHeader("CreateInfo")) {
-            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
-            foeResultSet result =
-                foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &createInfo);
-            if (result.value != FOE_SUCCESS || createInfo == FOE_NULL_HANDLE)
-                // @TODO - Implement proper error handling
-                std::abort();
-
-            if (createInfo != FOE_NULL_HANDLE) {
-                imgui_foeResourceCreateInfo(createInfo);
-                ImGui::Separator();
-                showResourceCreateInfoDataFn(createInfo);
-
-                foeResourceCreateInfoDecrementRefCount(createInfo);
-            }
-        }
-    }
+void imgui_foePhysicsResource(foeResourceBase const *pResourceData) {
+    if (pResourceData->rType == FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE)
+        imgui_foeCollisionShape((foeCollisionShape const *)pResourceData);
 }
 
 void imgui_foePhysicsResourceCreateInfo(foeResourceCreateInfo createInfo) {
     if (foeResourceCreateInfoGetType(createInfo) ==
-        FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO) {
+        FOE_PHYSICS_STRUCTURE_TYPE_COLLISION_SHAPE_CREATE_INFO)
         imgui_foeCollisionShapeCreateInfo(
             (foeCollisionShapeCreateInfo const *)foeResourceCreateInfoGetData(createInfo));
-    }
 }
 
 } // namespace

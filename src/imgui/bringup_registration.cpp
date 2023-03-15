@@ -4,12 +4,8 @@
 
 #include "bringup_registration.hpp"
 
-#include <foe/resource/imgui/create_info.h>
-#include <foe/resource/imgui/resource.h>
-#include <foe/resource/pool.h>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <imgui.h>
 
 #include "../simulation/armature_state.h"
 #include "../simulation/armature_state_pool.h"
@@ -57,52 +53,16 @@ void imgui_foeBringupComponents(foeEntityID entity, foeSimulation const *pSimula
     }
 }
 
-void imgui_foeBringupResources(
-    foeResourceID resourceID,
-    foeSimulation const *pSimulation,
-    std::function<void(foeResourceCreateInfo)> showResourceCreateInfoDataFn) {
-    foeResource resource = foeResourcePoolFind(pSimulation->resourcePool, resourceID);
-
-    if (resource == FOE_NULL_HANDLE)
-        return;
-
-    foeResourceDecrementRefCount(resource);
-
-    // foeArmature
-    if (foeResourceGetType(resource) == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE) {
-        imgui_foeResource(resource);
-
-        if (ImGui::CollapsingHeader("Data")) {
-            if (foeResourceGetState(resource) & FOE_RESOURCE_STATE_LOADED_BIT) {
-                imgui_foeArmature((foeArmature const *)foeResourceGetData(resource));
-            }
-        }
-
-        if (ImGui::CollapsingHeader("CreateInfo")) {
-            foeResourceCreateInfo createInfo = FOE_NULL_HANDLE;
-            foeResultSet result =
-                foeSimulationGetResourceCreateInfo(pSimulation, resourceID, &createInfo);
-            if (result.value != FOE_SUCCESS || createInfo == FOE_NULL_HANDLE)
-                // @TODO - Implement proper error handling
-                std::abort();
-
-            if (createInfo != FOE_NULL_HANDLE) {
-                imgui_foeResourceCreateInfo(createInfo);
-                ImGui::Separator();
-                showResourceCreateInfoDataFn(createInfo);
-
-                foeResourceCreateInfoDecrementRefCount(createInfo);
-            }
-        }
-    }
+void imgui_foeBringupResources(foeResourceBase const *pResourceData) {
+    if (pResourceData->rType == FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE)
+        imgui_foeArmature((foeArmature const *)pResourceData);
 }
 
 void imgui_BringupResourceCreateInfo(foeResourceCreateInfo resourceCreateInfo) {
     if (foeResourceCreateInfoGetType(resourceCreateInfo) ==
-        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO) {
+        FOE_BRINGUP_STRUCTURE_TYPE_ARMATURE_CREATE_INFO)
         imgui_foeArmatureCreateInfo(
             (foeArmatureCreateInfo const *)foeResourceCreateInfoGetData(resourceCreateInfo));
-    }
 }
 
 } // namespace

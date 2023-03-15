@@ -8,6 +8,8 @@
 #include <foe/ecs/name_map.h>
 #include <foe/ecs/result.h>
 #include <foe/imgui/state.hpp>
+#include <foe/resource/imgui/create_info.h>
+#include <foe/resource/imgui/resource.h>
 #include <foe/simulation/imgui/registrar.hpp>
 #include <foe/simulation/simulation.hpp>
 #include <imgui.h>
@@ -280,7 +282,49 @@ bool foeImGuiResourceList::displayResource(ResourceDisplayData *pData) {
     ImGui::Text("EditorID: %s", pEditorName);
     free(pEditorName);
 
-    mpRegistrar->displayResource(pData->resourceID, mpSimulationState);
+    // Display Resource Data
+    foeResource resource = foeResourcePoolFind(mpSimulationState->resourcePool, pData->resourceID);
+    if (resource == FOE_NULL_HANDLE) {
+        ImGui::Text("Resource handle does not exist");
+        // @TODO - More info/option to load resource
+    } else {
+        imgui_foeResource(resource);
+        ImGui::Separator();
+
+        if ((foeResourceGetState(resource) & FOE_RESOURCE_STATE_LOADED_BIT) &&
+            ImGui::CollapsingHeader("Data")) {
+            bool first = true;
+            foeResourceBase const *pResourceData =
+                (foeResourceBase const *)foeResourceGetData(resource);
+
+            while (pResourceData != nullptr) {
+                if (!first)
+                    ImGui::Separator();
+                first = false;
+
+                ImGui::Text("Resource sub-type: %i", pResourceData->rType);
+                mpRegistrar->displayResource(pResourceData);
+                pResourceData = (foeResourceBase const *)pResourceData->pNext;
+            }
+        }
+
+        foeResourceDecrementRefCount(resource);
+    }
+
+    // Display ResourceCreateInfo Data
+    foeResourceCreateInfo resourceCI = FOE_NULL_HANDLE;
+    foeResultSet result =
+        foeSimulationGetResourceCreateInfo(mpSimulationState, pData->resourceID, &resourceCI);
+    if (resourceCI == FOE_NULL_HANDLE) {
+        ImGui::Text("ResourceCreateInfo does not exist");
+        // @TODO - More info/option to load resource
+    } else if (ImGui::CollapsingHeader("CreateInfo")) {
+        imgui_foeResourceCreateInfo(resourceCI);
+        ImGui::Separator();
+
+        mpRegistrar->displayResourceCreateInfo(resourceCI);
+        foeResourceCreateInfoDecrementRefCount(resourceCI);
+    }
 
     ImGui::End();
 

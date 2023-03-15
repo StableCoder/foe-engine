@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@
 
 #include <foe/ecs/id.h>
 #include <foe/resource/create_info.h>
+#include <foe/resource/resource.h>
 #include <foe/simulation/imgui/export.h>
 
 #include <functional>
@@ -32,9 +33,7 @@ struct foeResourceLoaderBase;
 class foeSimulationImGuiRegistrar {
   public:
     using ComponentFn = void (*)(foeEntityID, foeSimulation const *);
-    using ResourceFn = void (*)(foeResourceID,
-                                foeSimulation const *,
-                                std::function<void(foeResourceCreateInfo)>);
+    using ResourceFn = void (*)(foeResourceBase const *);
     using ResourceCreateInfoFn = void (*)(foeResourceCreateInfo);
     using LoaderFn = void (*)(foeResourceID, foeResourceLoaderBase **, size_t);
 
@@ -71,11 +70,9 @@ class foeSimulationImGuiRegistrar {
     FOE_SIM_IMGUI_EXPORT void displayEntity(foeEntityID entity, foeSimulation const *pSimulation);
 
     /** @brief Attempts to render resources associated with the ID
-     * @param resource ID to find associated components to
-     * @param pSimulation is a pointer to the simulation to search for the resource
+     * @param pResourceData The resource data to be displayed
      */
-    FOE_SIM_IMGUI_EXPORT void displayResource(foeResourceID resourceID,
-                                              foeSimulation const *pSimulation);
+    FOE_SIM_IMGUI_EXPORT void displayResource(foeResourceBase const *pResourceData);
 
     /** @brief Attempts to render resources associated with the ID
      * @param createInfo is the handle of the resource to attempt to display

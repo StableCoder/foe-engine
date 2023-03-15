@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,7 +23,8 @@ foeResultSet foeSimulationImGuiRegistrar::registerElements(
     ResourceFn resourceFn,
     ResourceCreateInfoFn resourceCreateInfoFn,
     LoaderFn loaderFn) {
-    if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
+    if (componentFn == nullptr && resourceFn == nullptr && resourceCreateInfoFn == nullptr &&
+        loaderFn == nullptr)
         return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL);
 
     std::scoped_lock lock{mSync};
@@ -48,7 +49,8 @@ foeResultSet foeSimulationImGuiRegistrar::deregisterElements(
     ResourceFn resourceFn,
     ResourceCreateInfoFn resourceCreateInfoFn,
     LoaderFn loaderFn) {
-    if (componentFn == nullptr && resourceFn == nullptr && loaderFn == nullptr)
+    if (componentFn == nullptr && resourceFn == nullptr && resourceCreateInfoFn == nullptr &&
+        loaderFn == nullptr)
         return to_foeResult(FOE_SIMULATION_IMGUI_ERROR_ALL_PARAMETERS_NULL);
 
     std::scoped_lock lock{mSync};
@@ -73,15 +75,12 @@ void foeSimulationImGuiRegistrar::displayEntity(foeEntityID entity,
     }
 }
 
-void foeSimulationImGuiRegistrar::displayResource(foeResourceID resourceID,
-                                                  foeSimulation const *pSimulation) {
+void foeSimulationImGuiRegistrar::displayResource(foeResourceBase const *pResourceData) {
     std::scoped_lock lock{mSync};
 
     for (auto const &it : mFnLists) {
         if (it.resourceFn) {
-            it.resourceFn(resourceID, pSimulation, [this](foeResourceCreateInfo createInfo) {
-                this->displayResourceCreateInfo(createInfo);
-            });
+            it.resourceFn(pResourceData);
         }
     }
 }

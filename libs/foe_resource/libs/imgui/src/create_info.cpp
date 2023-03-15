@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,5 +8,6 @@
 
 extern "C" void imgui_foeResourceCreateInfo(foeResourceCreateInfo createInfo) {
     ImGui::Text("Type: %i", foeResourceCreateInfoGetType(createInfo));
-    ImGui::Text("Ref Count: %i", foeResourceCreateInfoGetRefCount(createInfo));
+    // Decrement ref-count by 1 to account for handle being held for display purposes
+    ImGui::Text("Ref Count: %i", foeResourceCreateInfoGetRefCount(createInfo) - 1);
 }
