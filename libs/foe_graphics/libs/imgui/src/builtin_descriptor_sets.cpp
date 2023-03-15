@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,11 @@
 
 void imgui_foeBuiltinDescriptorSetLayoutFlags(std::string const &label,
                                               foeBuiltinDescriptorSetLayoutFlags const &data) {
-    std::string serializedStr =
+    char const *pLayoutStr =
         builtin_set_layout_to_string((foeBuiltinDescriptorSetLayoutFlagBits)data);
-    ImGui::Text("%s: %s", label.c_str(), serializedStr.c_str());
+
+    if (pLayoutStr != NULL)
+        ImGui::Text("%s: %s", label.c_str(), pLayoutStr);
+    else
+        ImGui::Text("%s: N/A", label.c_str());
 }
