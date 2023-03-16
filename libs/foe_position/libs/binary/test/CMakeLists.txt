@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_executable(test_foe_position_binary)
@@ -13,7 +13,7 @@ add_test(NAME FoE-Position-Binary-Test COMMAND test_foe_position_binary)
 target_sources(test_foe_position_binary PRIVATE c_header_compatibility.c
                                                 result.cpp)
 
-target_link_libraries(test_foe_position_binary PRIVATE catch
+target_link_libraries(test_foe_position_binary PRIVATE Catch2::Catch2WithMain
                                                        foe_position_binary)
 
 target_code_coverage(

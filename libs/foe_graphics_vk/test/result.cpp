@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/vk/result.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         foeGraphicsVkResultToString(X, resultString);                                              \
-        CHECK(std::string_view{resultString} == #X);                                               \
+        CHECK(std::string{resultString} == #X);                                                    \
     }
 
 TEST_CASE("foeGraphicsVkResult - Ensure error codes return correct values and strings") {
@@ -16,11 +16,11 @@ TEST_CASE("foeGraphicsVkResult - Ensure error codes return correct values and st
 
     SECTION("Generic non-existant negative value") {
         foeGraphicsVkResultToString((foeGraphicsVkResult)FOE_RESULT_MIN_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_GRAPHICS_VK_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string{resultString} == "FOE_GRAPHICS_VK_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foeGraphicsVkResultToString((foeGraphicsVkResult)FOE_RESULT_MAX_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_GRAPHICS_VK_UNKNOWN_SUCCESS_2147483647");
+        CHECK(std::string{resultString} == "FOE_GRAPHICS_VK_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_GRAPHICS_VK_SUCCESS)

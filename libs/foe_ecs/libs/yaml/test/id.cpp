@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/result.h>
 #include <foe/ecs/yaml/id.hpp>

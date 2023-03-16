@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/simulation/result.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         foeSimulationResultToString(X, resultString);                                              \
-        CHECK(std::string_view{resultString} == #X);                                               \
+        CHECK(std::string{resultString} == #X);                                                    \
     }
 
 TEST_CASE("foeSimulationResult - Ensure error codes return correct values and strings") {
@@ -16,11 +16,11 @@ TEST_CASE("foeSimulationResult - Ensure error codes return correct values and st
 
     SECTION("Generic non-existant negative value") {
         foeSimulationResultToString((foeSimulationResult)FOE_RESULT_MIN_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_SIMULATION_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string{resultString} == "FOE_SIMULATION_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foeSimulationResultToString((foeSimulationResult)FOE_RESULT_MAX_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_SIMULATION_UNKNOWN_SUCCESS_2147483647");
+        CHECK(std::string{resultString} == "FOE_SIMULATION_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_SIMULATION_SUCCESS)

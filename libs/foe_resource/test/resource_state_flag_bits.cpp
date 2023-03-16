@@ -2,20 +2,18 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/resource/resource.h>
 
 #include <limits>
 
 TEST_CASE("foeResourceStateFlags - Enum to string values") {
     // Unknown
-    CHECK(std::string_view{foeResourceStateFlagBitToString(
+    CHECK(std::string{foeResourceStateFlagBitToString(
               std::numeric_limits<foeResourceStateFlagBits>::max())} == "<UNKNOWN>");
 
-    CHECK(std::string_view{foeResourceStateFlagBitToString(FOE_RESOURCE_STATE_LOADING_BIT)} ==
+    CHECK(std::string{foeResourceStateFlagBitToString(FOE_RESOURCE_STATE_LOADING_BIT)} ==
           "LOADING");
-    CHECK(std::string_view{foeResourceStateFlagBitToString(FOE_RESOURCE_STATE_FAILED_BIT)} ==
-          "FAILED");
-    CHECK(std::string_view{foeResourceStateFlagBitToString(FOE_RESOURCE_STATE_LOADED_BIT)} ==
-          "LOADED");
+    CHECK(std::string{foeResourceStateFlagBitToString(FOE_RESOURCE_STATE_FAILED_BIT)} == "FAILED");
+    CHECK(std::string{foeResourceStateFlagBitToString(FOE_RESOURCE_STATE_LOADED_BIT)} == "LOADED");
 }

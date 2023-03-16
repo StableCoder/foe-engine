@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_test(NAME FoE-Graphics-VK-Test COMMAND test_foe_graphics_vk)
@@ -27,7 +27,8 @@ if(BUILD_VULKAN_RUNTIME_TESTS)
                                               shader.cpp upload.cpp)
 endif()
 
-target_link_libraries(test_foe_graphics_vk PRIVATE catch foe_graphics_vk)
+target_link_libraries(test_foe_graphics_vk PRIVATE Catch2::Catch2
+                                                   foe_graphics_vk)
 
 target_code_coverage(
   test_foe_graphics_vk

@@ -1,9 +1,9 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_executable(test_foe_imex_yaml)
@@ -18,7 +18,8 @@ target_sources(
 target_compile_definitions(
   test_foe_imex_yaml PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data")
 
-target_link_libraries(test_foe_imex_yaml PRIVATE catch foe_imex_yaml)
+target_link_libraries(test_foe_imex_yaml PRIVATE Catch2::Catch2WithMain
+                                                 foe_imex_yaml)
 
 target_code_coverage(
   test_foe_imex_yaml

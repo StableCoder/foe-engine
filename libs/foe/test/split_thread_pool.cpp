@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <atomic>
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/chrono/easy_clock.hpp>
 #include <foe/split_thread_pool.h>
 #include <thread>

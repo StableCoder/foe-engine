@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/delimited_string.h>
 
 #include <cstring>
@@ -67,7 +67,7 @@ TEST_CASE("CombinedString - Combining a single given string", "[foe][CombinedStr
                                            dstArr));
 
             CHECK(dstLen == 5);
-            CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});
+            CHECK(std::string{dstArr} == std::string{srcStrings[0]});
         }
     }
 
@@ -85,7 +85,7 @@ TEST_CASE("CombinedString - Combining a single given string", "[foe][CombinedStr
                                            dstArr));
 
             CHECK(dstLen == 8);
-            CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});
+            CHECK(std::string{dstArr} == std::string{srcStrings[0]});
         }
     }
 
@@ -166,8 +166,8 @@ TEST_CASE("CombinedString - Combining a multiple given strings", "[foe][Combined
                                            dstArr));
 
             CHECK(dstLen == 4);
-            CHECK(std::string_view{dstArr} == std::string_view{srcStrings[1]});
-            CHECK(std::string_view{dstArr + 2} == std::string_view{srcStrings[3]});
+            CHECK(std::string{dstArr} == std::string{srcStrings[1]});
+            CHECK(std::string{dstArr + 2} == std::string{srcStrings[3]});
         }
     }
 
@@ -185,8 +185,8 @@ TEST_CASE("CombinedString - Combining a multiple given strings", "[foe][Combined
                                            dstArr));
 
             CHECK(dstLen == 8);
-            CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});
-            CHECK(std::string_view{dstArr + 4} == std::string_view{srcStrings[1]});
+            CHECK(std::string{dstArr} == std::string{srcStrings[0]});
+            CHECK(std::string{dstArr + 4} == std::string{srcStrings[1]});
         }
     }
 
@@ -204,7 +204,7 @@ TEST_CASE("CombinedString - Combining a multiple given strings", "[foe][Combined
                                                  &dstLen, dstArr));
 
             CHECK(dstLen == 5);
-            CHECK(std::string_view{dstArr} == std::string_view{srcStrings[0]});
+            CHECK(std::string{dstArr} == std::string{srcStrings[0]});
         }
     }
 }
@@ -249,7 +249,7 @@ TEST_CASE("CombinedString - Copying a single combined string", "[foe][CombinedSt
                                          dstArr));
 
             CHECK(dstLen == 5);
-            CHECK(std::string_view{dstArr} == srcString);
+            CHECK(std::string{dstArr} == srcString);
         }
     }
 
@@ -267,7 +267,7 @@ TEST_CASE("CombinedString - Copying a single combined string", "[foe][CombinedSt
                                          dstArr));
 
             CHECK(dstLen == 8);
-            CHECK(std::string_view{dstArr} == srcString);
+            CHECK(std::string{dstArr} == srcString);
         }
     }
 
@@ -328,7 +328,7 @@ TEST_CASE("CombinedString - Copying a multi-combined string", "[foe][CombinedStr
             CHECK(foeCopyDelimitedString(srcLen, srcString, '\0', &dstLen, dstArr));
 
             CHECK(dstLen == 8);
-            CHECK(std::string_view{dstArr} == srcString);
+            CHECK(std::string{dstArr} == srcString);
         }
     }
 
@@ -385,13 +385,13 @@ TEST_CASE("CombinedString - Getting an indexed string from a single combined str
         CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', nullptr, &pStr));
 
         CHECK(pStr == srcString);
-        CHECK(std::string_view{pStr} == std::string_view{pStr});
+        CHECK(std::string{pStr} == std::string{pStr});
 
         CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', &strLength, &pStr));
 
         CHECK(strLength == srcLen);
         CHECK(pStr == srcString);
-        CHECK(std::string_view{pStr} == std::string_view{pStr});
+        CHECK(std::string{pStr} == std::string{pStr});
     }
     SECTION("Index 1") {
         CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', nullptr, &pStr));
@@ -416,25 +416,25 @@ TEST_CASE("CombinedString - Getting an indexed string from a combined multi-stri
         CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', nullptr, &pStr));
 
         CHECK(pStr == srcString);
-        CHECK(std::string_view{pStr} == std::string_view{"abcd"});
+        CHECK(std::string{pStr} == std::string{"abcd"});
 
         CHECK(foeIndexedDelimitedString(srcLen, srcString, 0, '\0', &strLength, &pStr));
 
         CHECK(strLength == 4);
         CHECK(pStr == srcString);
-        CHECK(std::string_view{pStr} == std::string_view{"abcd"});
+        CHECK(std::string{pStr} == std::string{"abcd"});
     }
     SECTION("Index 1") {
         CHECK(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', nullptr, &pStr));
 
         CHECK(pStr == srcString + 5);
-        CHECK(std::string_view{pStr} == std::string_view{"efgh"});
+        CHECK(std::string{pStr} == std::string{"efgh"});
 
         CHECK(foeIndexedDelimitedString(srcLen, srcString, 1, '\0', &strLength, &pStr));
 
         CHECK(strLength == 4);
         CHECK(pStr == srcString + 5);
-        CHECK(std::string_view{pStr} == std::string_view{"efgh"});
+        CHECK(std::string{pStr} == std::string{"efgh"});
     }
     SECTION("Index 2") {
         CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 2, '\0', nullptr, &pStr));
@@ -461,14 +461,14 @@ TEST_CASE(
 
         CHECK(strLength == 4);
         CHECK(pStr == srcString);
-        CHECK(std::string_view{pStr, strLength} == std::string_view{"abcd"});
+        CHECK(std::string{pStr, strLength} == std::string{"abcd"});
     }
     SECTION("Index 1") {
         CHECK(foeIndexedDelimitedString(srcLen, srcString, 1, ' ', &strLength, &pStr));
 
         CHECK(strLength == 4);
         CHECK(pStr == srcString + 5);
-        CHECK(std::string_view{pStr, strLength} == std::string_view{"efgh"});
+        CHECK(std::string{pStr, strLength} == std::string{"efgh"});
     }
     SECTION("Index 2") {
         CHECK_FALSE(foeIndexedDelimitedString(srcLen, srcString, 2, ' ', nullptr, &pStr));

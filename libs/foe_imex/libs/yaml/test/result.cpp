@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/imex/yaml/result.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         foeImexYamlResultToString(X, resultString);                                                \
-        CHECK(std::string_view{resultString} == #X);                                               \
+        CHECK(std::string{resultString} == #X);                                                    \
     }
 
 TEST_CASE("foeImexYamlResult - Ensure error codes return correct values and strings") {
@@ -16,11 +16,11 @@ TEST_CASE("foeImexYamlResult - Ensure error codes return correct values and stri
 
     SECTION("Generic non-existant negative value") {
         foeImexYamlResultToString((foeImexYamlResult)FOE_RESULT_MIN_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_IMEX_YAML_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string{resultString} == "FOE_IMEX_YAML_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foeImexYamlResultToString((foeImexYamlResult)FOE_RESULT_MAX_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_IMEX_YAML_UNKNOWN_SUCCESS_2147483647");
+        CHECK(std::string{resultString} == "FOE_IMEX_YAML_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_IMEX_YAML_SUCCESS)

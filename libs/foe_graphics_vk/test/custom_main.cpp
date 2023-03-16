@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#define CATCH_CONFIG_RUNNER
-#include <catch.hpp>
+#include <catch2/catch_session.hpp>
 
 int gpuSelection = 0;
 
@@ -13,7 +12,7 @@ int main(int argc, char *argv[]) {
     Catch::Session session; // There must be exactly one instance
 
     // Build a new parser on top of Catch's
-    using namespace Catch::clara;
+    using namespace Catch::Clara;
     auto cli = session.cli()                   // Get Catch's composite command line parser
                | Opt(gpuSelection, "gpu")      // bind variable to a new option, with a hint string
                      ["--gpu"]                 // the option names it will respond to

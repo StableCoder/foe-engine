@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/wsi/mouse.hpp>
 
 constexpr int cMaxMouseButtons = 1024;
@@ -10,12 +11,12 @@ constexpr int cMaxMouseButtons = 1024;
 TEST_CASE("foeWsiMouse - Initial Clean State", "[foe][wsi]") {
     foeWsiMouse mouse = {};
 
-    REQUIRE(mouse.position.x == Approx(0));
-    REQUIRE(mouse.position.y == Approx(0));
-    REQUIRE(mouse.oldPosition.x == Approx(0));
-    REQUIRE(mouse.oldPosition.y == Approx(0));
-    REQUIRE(mouse.scroll.x == Approx(0));
-    REQUIRE(mouse.scroll.y == Approx(0));
+    REQUIRE(mouse.position.x == Catch::Approx(0));
+    REQUIRE(mouse.position.y == Catch::Approx(0));
+    REQUIRE(mouse.oldPosition.x == Catch::Approx(0));
+    REQUIRE(mouse.oldPosition.y == Catch::Approx(0));
+    REQUIRE(mouse.scroll.x == Catch::Approx(0));
+    REQUIRE(mouse.scroll.y == Catch::Approx(0));
 
     REQUIRE_FALSE(mouse.inWindow);
     REQUIRE_FALSE(mouse.oldInWindow);

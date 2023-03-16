@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
@@ -74,13 +74,13 @@ TEST_CASE("foeGfxSession(Vulkan)") {
                 result = foeGfxVkEnumerateSessionExtensions(session, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 17);
-                CHECK(std::string_view{strBuffer} == "VK_KHR_swapchain");
+                CHECK(std::string{strBuffer} == "VK_KHR_swapchain");
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateSessionExtensions(session, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 17);
-                CHECK(std::string_view{strBuffer} == "VK_KHR_swapchain");
+                CHECK(std::string{strBuffer} == "VK_KHR_swapchain");
             }
             SECTION("Undersized buffer provided") {
                 strLen = 10;

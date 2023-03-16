@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/ecs/indexes.h>
 #include <foe/ecs/name_map.h>
 #include <foe/ecs/result.h>
@@ -42,7 +42,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
 
     CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
     REQUIRE(pGroupName != nullptr);
-    CHECK(std::string_view{pGroupName} == "11-good-content");
+    CHECK(std::string{pGroupName} == "11-good-content");
 
     SECTION("Dependencies (getDependencies)") {
         uint32_t dependenciesCount;
@@ -65,10 +65,10 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             REQUIRE(namesLength == 14);
 
             CHECK(groups[0] == 0);
-            CHECK(std::string_view{&names[0]} == "test01");
+            CHECK(std::string{&names[0]} == "test01");
 
             CHECK(groups[1] == foeIdValueToGroup(1));
-            CHECK(std::string_view{&names[7]} == "test02");
+            CHECK(std::string{&names[7]} == "test02");
         }
         SECTION("With oversized buffers") {
             std::array<foeIdGroup, 3> groups;
@@ -83,10 +83,10 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             REQUIRE(namesLength == 14);
 
             CHECK(groups[0] == 0);
-            CHECK(std::string_view{&names[0]} == "test01");
+            CHECK(std::string{&names[0]} == "test01");
 
             CHECK(groups[1] == foeIdValueToGroup(1));
-            CHECK(std::string_view{&names[7]} == "test02");
+            CHECK(std::string{&names[7]} == "test02");
         }
         SECTION("With undersized GroupID buffers") {
             std::array<foeIdGroup, 1> groups;
@@ -100,7 +100,7 @@ TEST_CASE("foeYamlImporter - Function Tests") {
             REQUIRE(namesLength == 14);
 
             CHECK(groups[0] == 0);
-            CHECK(std::string_view{&names[0]} == "test01");
+            CHECK(std::string{&names[0]} == "test01");
         }
         SECTION("With undersized name buffer") {
             std::array<foeIdGroup, 2> groups;

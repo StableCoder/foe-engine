@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <assimp/postprocess.h>
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/model/assimp/flags.hpp>
 
 TEST_CASE("Serializing empty flags gives empty string", "[foe][model][assimp]") {}

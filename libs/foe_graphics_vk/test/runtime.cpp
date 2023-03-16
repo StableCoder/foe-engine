@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
 
@@ -54,13 +54,13 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
                 result = foeGfxVkEnumerateRuntimeLayers(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 28);
-                CHECK(std::string_view{strBuffer} == "VK_LAYER_KHRONOS_validation");
+                CHECK(std::string{strBuffer} == "VK_LAYER_KHRONOS_validation");
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateRuntimeLayers(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 28);
-                CHECK(std::string_view{strBuffer} == "VK_LAYER_KHRONOS_validation");
+                CHECK(std::string{strBuffer} == "VK_LAYER_KHRONOS_validation");
             }
             SECTION("Undersized buffer provided") {
                 strLen = 10;
@@ -92,7 +92,7 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
 #else
                 CHECK(strLen == 20);
 #endif
-                CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
+                CHECK(std::string{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, strBuffer);
@@ -104,7 +104,7 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
 #else
                 CHECK(strLen == 20);
 #endif
-                CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
+                CHECK(std::string{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Undersized buffer provided") {
                 strLen = 10;
@@ -137,13 +137,13 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
                 result = foeGfxVkEnumerateRuntimeLayers(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 28);
-                CHECK(std::string_view{strBuffer} == "VK_LAYER_KHRONOS_validation");
+                CHECK(std::string{strBuffer} == "VK_LAYER_KHRONOS_validation");
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateRuntimeLayers(runtime, &strLen, strBuffer);
                 CHECK(result.value == FOE_SUCCESS);
                 CHECK(strLen == 28);
-                CHECK(std::string_view{strBuffer} == "VK_LAYER_KHRONOS_validation");
+                CHECK(std::string{strBuffer} == "VK_LAYER_KHRONOS_validation");
             }
             SECTION("Undersized buffer provided") {
                 strLen = 10;
@@ -175,7 +175,7 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
 #else
                 CHECK(strLen == 20);
 #endif
-                CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
+                CHECK(std::string{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Exact buffer provided") {
                 result = foeGfxVkEnumerateRuntimeExtensions(runtime, &strLen, strBuffer);
@@ -187,7 +187,7 @@ TEST_CASE("foeGfxRuntime(Vulkan)") {
 #else
                 CHECK(strLen == 20);
 #endif
-                CHECK(std::string_view{strBuffer} == "VK_EXT_debug_report");
+                CHECK(std::string{strBuffer} == "VK_EXT_debug_report");
             }
             SECTION("Undersized buffer provided") {
                 strLen = 10;

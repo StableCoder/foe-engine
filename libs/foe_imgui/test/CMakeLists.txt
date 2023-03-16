@@ -4,10 +4,10 @@
 
 # Test Setup
 enable_testing()
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 add_executable(test_foe_imgui state.cpp)
-target_link_libraries(test_foe_imgui PRIVATE foe_imgui catch)
+target_link_libraries(test_foe_imgui PRIVATE foe_imgui Catch2::Catch2WithMain)
 target_code_coverage(
   test_foe_imgui
   AUTO

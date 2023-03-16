@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/simulation/registration.hpp>
 #include <foe/simulation/result.h>
 #include <foe/simulation/simulation.hpp>

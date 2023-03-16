@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/imex/yaml/importer.hpp>
 #include <foe/imex/yaml/result.h>
 
@@ -36,7 +36,7 @@ TEST_CASE("foeCreateYamlImporter - Success Case") {
 
         CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
         REQUIRE(pGroupName != nullptr);
-        CHECK(std::string_view{pGroupName} == "10-good-empty");
+        CHECK(std::string{pGroupName} == "10-good-empty");
     }
 
     SECTION("Good layout/files, with valid content") {
@@ -57,7 +57,7 @@ TEST_CASE("foeCreateYamlImporter - Success Case") {
 
         CHECK(result.value == FOE_IMEX_YAML_SUCCESS);
         REQUIRE(pGroupName != nullptr);
-        CHECK(std::string_view{pGroupName} == "11-good-content");
+        CHECK(std::string{pGroupName} == "11-good-content");
     }
 
     foeDestroyImporter(testImporter);

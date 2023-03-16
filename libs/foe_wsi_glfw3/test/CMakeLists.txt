@@ -1,9 +1,9 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_executable(test_foe_wsi_glfw3)
@@ -22,7 +22,8 @@ endif()
 target_include_directories(test_foe_wsi_glfw3
                            PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../private)
 
-target_link_libraries(test_foe_wsi_glfw3 PRIVATE catch foe_wsi_glfw3)
+target_link_libraries(test_foe_wsi_glfw3 PRIVATE Catch2::Catch2WithMain
+                                                 foe_wsi_glfw3)
 target_code_coverage(
   test_foe_wsi_glfw3
   AUTO

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/binary_result.h>
 #include <foe/graphics/resource/binary.h>
 #include <foe/graphics/resource/cleanup.h>

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/vk/sample_count.h>
 
 TEST_CASE("SampleCount - Flag to integer", "[foe][graphics][vk]") {

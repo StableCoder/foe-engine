@@ -6,13 +6,13 @@
 // Re-generate via the script directly (tools/generate_result_code.sh)
 // or the 'make autogenerate_code_foe_graphics_resource_yaml' target.
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/resource/yaml/result.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         foeGraphicsResourceYamlResultToString(X, resultString);                                    \
-        CHECK(std::string_view{resultString} == #X);                                               \
+        CHECK(std::string{resultString} == #X);                                                    \
     }
 
 TEST_CASE("foeGraphicsResourceYamlResult - Ensure error codes return correct values and strings") {
@@ -21,14 +21,12 @@ TEST_CASE("foeGraphicsResourceYamlResult - Ensure error codes return correct val
     SECTION("Generic non-existant negative value") {
         foeGraphicsResourceYamlResultToString((foeGraphicsResourceYamlResult)FOE_RESULT_MIN_ENUM,
                                               resultString);
-        CHECK(std::string_view{resultString} ==
-              "FOE_GRAPHICS_RESOURCE_YAML_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string{resultString} == "FOE_GRAPHICS_RESOURCE_YAML_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foeGraphicsResourceYamlResultToString((foeGraphicsResourceYamlResult)FOE_RESULT_MAX_ENUM,
                                               resultString);
-        CHECK(std::string_view{resultString} ==
-              "FOE_GRAPHICS_RESOURCE_YAML_UNKNOWN_SUCCESS_2147483647");
+        CHECK(std::string{resultString} == "FOE_GRAPHICS_RESOURCE_YAML_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_GRAPHICS_RESOURCE_YAML_SUCCESS)

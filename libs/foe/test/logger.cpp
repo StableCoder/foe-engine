@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/log.h>
 
 namespace {
@@ -15,13 +15,13 @@ void exception(void *) {}
 } // namespace
 
 TEST_CASE("foeLogLevel - to_string checks", "[foe][log]") {
-    CHECK(std::string_view{foeLogLevel_to_string(FOE_LOG_LEVEL_FATAL)} == "Fatal");
-    CHECK(std::string_view{foeLogLevel_to_string(FOE_LOG_LEVEL_ERROR)} == "Error");
-    CHECK(std::string_view{foeLogLevel_to_string(FOE_LOG_LEVEL_WARNING)} == "Warning");
-    CHECK(std::string_view{foeLogLevel_to_string(FOE_LOG_LEVEL_INFO)} == "Info");
-    CHECK(std::string_view{foeLogLevel_to_string(FOE_LOG_LEVEL_VERBOSE)} == "Verbose");
+    CHECK(std::string{foeLogLevel_to_string(FOE_LOG_LEVEL_FATAL)} == "Fatal");
+    CHECK(std::string{foeLogLevel_to_string(FOE_LOG_LEVEL_ERROR)} == "Error");
+    CHECK(std::string{foeLogLevel_to_string(FOE_LOG_LEVEL_WARNING)} == "Warning");
+    CHECK(std::string{foeLogLevel_to_string(FOE_LOG_LEVEL_INFO)} == "Info");
+    CHECK(std::string{foeLogLevel_to_string(FOE_LOG_LEVEL_VERBOSE)} == "Verbose");
 
-    CHECK(std::string_view{foeLogLevel_to_string(static_cast<foeLogLevel>(999999))} == "Unknown");
+    CHECK(std::string{foeLogLevel_to_string(static_cast<foeLogLevel>(999999))} == "Unknown");
 }
 
 TEST_CASE("foeLogger - Cannot register the same sink multiple times") {

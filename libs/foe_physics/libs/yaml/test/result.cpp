@@ -6,13 +6,13 @@
 // Re-generate via the script directly (tools/generate_result_code.sh)
 // or the 'make autogenerate_code_foe_physics_yaml' target.
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/physics/yaml/result.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         foePhysicsYamlResultToString(X, resultString);                                             \
-        CHECK(std::string_view{resultString} == #X);                                               \
+        CHECK(std::string{resultString} == #X);                                                    \
     }
 
 TEST_CASE("foePhysicsYamlResult - Ensure error codes return correct values and strings") {
@@ -20,11 +20,11 @@ TEST_CASE("foePhysicsYamlResult - Ensure error codes return correct values and s
 
     SECTION("Generic non-existant negative value") {
         foePhysicsYamlResultToString((foePhysicsYamlResult)FOE_RESULT_MIN_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_PHYSICS_YAML_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string{resultString} == "FOE_PHYSICS_YAML_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foePhysicsYamlResultToString((foePhysicsYamlResult)FOE_RESULT_MAX_ENUM, resultString);
-        CHECK(std::string_view{resultString} == "FOE_PHYSICS_YAML_UNKNOWN_SUCCESS_2147483647");
+        CHECK(std::string{resultString} == "FOE_PHYSICS_YAML_UNKNOWN_SUCCESS_2147483647");
     }
 
     ERROR_CODE_CATCH_CHECK(FOE_PHYSICS_YAML_SUCCESS)

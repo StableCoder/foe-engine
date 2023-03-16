@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/ecs/id.h>
 #include <foe/ecs/result.h>
 #include <foe/imex/result.h>

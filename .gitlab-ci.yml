@@ -96,7 +96,7 @@ Python Files:
   dependencies: []
   retry: 2
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" $env:CMAKE_OPTIONS
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_PREFIX_PATH="C:\" $env:CMAKE_OPTIONS
     - ninja -C build
     - ninja -C build test
 

@@ -1,9 +1,9 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_test(NAME FoE-Graphics-Yaml-Test COMMAND test_foe_graphics_vk_yaml)
@@ -21,8 +21,9 @@ target_compile_definitions(
   PRIVATE
     FUZZED_TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/../data/fuzzed_test_data")
 
-target_link_libraries(test_foe_graphics_vk_yaml
-                      PRIVATE catch foe_graphics_vk_yaml vk_struct_compare)
+target_link_libraries(
+  test_foe_graphics_vk_yaml PRIVATE Catch2::Catch2WithMain foe_graphics_vk_yaml
+                                    vk_struct_compare)
 
 if(UNIX
    OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"

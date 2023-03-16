@@ -103,7 +103,6 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # Misc CMake
 include(compiler-options)
 include(glsl-shaders)
-include(prepare-catch)
 include(sanitizers)
 
 if(WIN32)

@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/resource/binary/result.h>
 
 #define ERROR_CODE_CATCH_CHECK(X)                                                                  \
     SECTION(#X) {                                                                                  \
         foeGraphicsResourceBinaryResultToString(X, resultString);                                  \
-        CHECK(std::string_view{resultString} == #X);                                               \
+        CHECK(std::string{resultString} == #X);                                                    \
     }
 
 TEST_CASE(
@@ -18,13 +18,12 @@ TEST_CASE(
     SECTION("Generic non-existant negative value") {
         foeGraphicsResourceBinaryResultToString(
             (foeGraphicsResourceBinaryResult)FOE_RESULT_MIN_ENUM, resultString);
-        CHECK(std::string_view{resultString} ==
-              "FOE_GRAPHICS_RESOURCE_BINARY_UNKNOWN_ERROR_2147483647");
+        CHECK(std::string{resultString} == "FOE_GRAPHICS_RESOURCE_BINARY_UNKNOWN_ERROR_2147483647");
     }
     SECTION("Generic non-existant positive value") {
         foeGraphicsResourceBinaryResultToString(
             (foeGraphicsResourceBinaryResult)FOE_RESULT_MAX_ENUM, resultString);
-        CHECK(std::string_view{resultString} ==
+        CHECK(std::string{resultString} ==
               "FOE_GRAPHICS_RESOURCE_BINARY_UNKNOWN_SUCCESS_2147483647");
     }
 

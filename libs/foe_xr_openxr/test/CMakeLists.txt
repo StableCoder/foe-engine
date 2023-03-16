@@ -1,9 +1,9 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_test(NAME FoE-OpenXR-Test COMMAND test_foe_openxr)
@@ -12,7 +12,8 @@ add_executable(test_foe_openxr)
 # Definition
 target_sources(test_foe_openxr PRIVATE c_header_compatibility.c result.cpp)
 
-target_link_libraries(test_foe_openxr PRIVATE catch foe_xr_openxr)
+target_link_libraries(test_foe_openxr PRIVATE Catch2::Catch2WithMain
+                                              foe_xr_openxr)
 
 target_code_coverage(
   test_foe_openxr

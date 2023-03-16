@@ -5,7 +5,7 @@
 #ifndef CREATE_TEST_SESSION_HPP
 #define CREATE_TEST_SESSION_HPP
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>

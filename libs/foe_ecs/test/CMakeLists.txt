@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_test(NAME FoE-ECS-Test COMMAND test_foe_ecs)
@@ -22,7 +22,7 @@ target_sources(
           indexes.cpp
           result.cpp)
 
-target_link_libraries(test_foe_ecs PRIVATE catch foe_ecs)
+target_link_libraries(test_foe_ecs PRIVATE Catch2::Catch2WithMain foe_ecs)
 
 target_code_coverage(
   test_foe_ecs

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Setup
-prepare_catch(COMPILED_CATCH)
+find_package(Catch2 3 REQUIRED)
 
 # Declaration
 add_executable(test_foe_resource)
@@ -22,7 +22,8 @@ target_sources(
           resource_unloading.cpp
           result.cpp)
 
-target_link_libraries(test_foe_resource PRIVATE catch foe_resource)
+target_link_libraries(test_foe_resource PRIVATE Catch2::Catch2WithMain
+                                                foe_resource)
 
 target_code_coverage(
   test_foe_resource

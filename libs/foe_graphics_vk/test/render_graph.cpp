@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/graphics/vk/result.h>
 
@@ -39,7 +39,7 @@ TEST_CASE("foeGfxVkRenderGraph - Basics") {
             REQUIRE(result.value == FOE_SUCCESS);
             REQUIRE(resource != FOE_NULL_HANDLE);
 
-            CHECK(std::string_view{foeGfxVkRenderGraphGetResourceName(resource)} == "testResource");
+            CHECK(std::string{foeGfxVkRenderGraphGetResourceName(resource)} == "testResource");
         }
 
         SECTION("Creating a mutable resource") {

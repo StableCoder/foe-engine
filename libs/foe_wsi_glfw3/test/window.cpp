@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 #include <foe/wsi/window.h>
 
 #include <cstring>
@@ -95,10 +95,10 @@ TEST_CASE("WSI-GLFW - Window Title") {
     foeWsiWindow test{FOE_NULL_HANDLE};
 
     REQUIRE(foeWsiCreateWindow(128, 128, "test window", false, &test).value == FOE_SUCCESS);
-    CHECK(std::string_view{foeWsiWindowGetTitle(test)} == "test window");
+    CHECK(std::string{foeWsiWindowGetTitle(test)} == "test window");
 
     foeWsiWindowSetTitle(test, "new window title");
-    CHECK(std::string_view{foeWsiWindowGetTitle(test)} == "new window title");
+    CHECK(std::string{foeWsiWindowGetTitle(test)} == "new window title");
 
     if (test != FOE_NULL_HANDLE)
         foeWsiDestroyWindow(test);
