@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,6 +17,10 @@ target_sources(
           vk_result.c
           #
           render_graph/render_scene.cpp)
+
+# For application.cpp
+find_package(glfw3 REQUIRED)
+target_link_libraries(foe_bringup_lib PRIVATE glfw)
 
 if(XR_SUPPORT)
   target_sources(foe_bringup_lib PRIVATE xr.cpp xr_result.c)

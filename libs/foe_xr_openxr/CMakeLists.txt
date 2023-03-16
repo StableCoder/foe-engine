@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,7 @@ project(foe_xr_openxr)
 # in the CMake project settings
 
 # Dependencies
+find_package(glm REQUIRED)
 find_package(OpenXR REQUIRED)
 
 # Declaration
@@ -27,10 +28,11 @@ generate_export_header(
   foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/public/foe/xr/export.h)
 
-target_include_directories(foe_xr_openxr
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
+target_include_directories(
+  foe_xr_openxr PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
+                       ${GLM_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS}/include)
 
-target_link_libraries(foe_xr_openxr PUBLIC foe_xr openxr_loader)
+target_link_libraries(foe_xr_openxr PUBLIC foe_xr OpenXR::openxr_loader)
 target_link_libraries(foe_xr_openxr PRIVATE khronos_mini_libs)
 
 target_code_coverage(foe_xr_openxr)

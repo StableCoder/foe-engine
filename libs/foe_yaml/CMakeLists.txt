@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,8 @@ cmake_minimum_required(VERSION 3.15)
 project(foe_yaml)
 
 # Dependencies
-find_package(yamlcpp REQUIRED)
+find_package(glm REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 # Declaration
 add_library(foe_yaml SHARED)
@@ -17,10 +18,11 @@ add_subdirectory(src)
 generate_export_header(foe_yaml EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/public/foe/yaml/export.h)
 
-target_include_directories(foe_yaml PUBLIC include
-                                           ${CMAKE_CURRENT_BINARY_DIR}/public)
+target_include_directories(
+  foe_yaml PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
+                  ${GLM_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS}/include)
 
-target_link_libraries(foe_yaml PUBLIC yamlcpp::yamlcpp)
+target_link_libraries(foe_yaml PUBLIC yaml-cpp)
 
 target_code_coverage(foe_yaml)
 
