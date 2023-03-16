@@ -5,7 +5,9 @@
 #include <catch.hpp>
 #include <foe/ecs/component_pool.h>
 
+#include <algorithm>
 #include <array>
+#include <atomic>
 
 TEST_CASE("ComponentPool - Initially there are no associated entity lists") {
     foeEcsComponentPool testPool{FOE_NULL_HANDLE};

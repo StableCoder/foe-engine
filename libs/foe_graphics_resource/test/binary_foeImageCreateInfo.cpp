@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave - gcave@stablecoder.ca
+// Copyright (C) 2020-2023 George Cave
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,8 @@
 #include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/compare.h>
 #include <foe/graphics/resource/image_create_info.h>
+
+#include <memory>
 
 namespace {
 

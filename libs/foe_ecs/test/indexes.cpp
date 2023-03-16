@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@
 #include <foe/ecs/indexes.h>
 #include <foe/ecs/result.h>
 
+#include <algorithm>
 #include <array>
 #include <thread>
 #include <vector>

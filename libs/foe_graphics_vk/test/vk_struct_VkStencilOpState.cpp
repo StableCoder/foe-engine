@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave - gcave@stablecoder.ca
+// Copyright (C) 2020-2023 George Cave
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,8 @@
 #include <foe/binary_result.h>
 #include <foe/graphics/vk/vk_binary.h>
 #include <vk_struct_compare.h>
+
+#include <memory>
 
 namespace {
 

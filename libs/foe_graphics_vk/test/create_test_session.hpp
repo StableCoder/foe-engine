@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,8 @@
 #include <foe/result.h>
 
 #include "custom_main.hpp"
+
+#include <memory>
 
 inline foeResultSet createTestSession(foeGfxRuntime *pRuntime, foeGfxSession *pSession) {
     VkResult vkResult;
