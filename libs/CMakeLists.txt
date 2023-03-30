@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,7 @@ add_subdirectory(foe_imex)
 add_subdirectory(foe_imgui)
 add_subdirectory(foe_model)
 add_subdirectory(foe_model_assimp)
+add_subdirectory(foe_network)
 add_subdirectory(foe_physics)
 add_subdirectory(foe_position)
 add_subdirectory(foe_resource)
