@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,12 +18,12 @@
 extern "C" {
 #endif
 
-struct foeGfxVkRenderTargetSpec {
+typedef struct foeGfxVkRenderTargetSpec {
     VkFormat format;
     VkImageUsageFlags usage;
     // Number of images to rotate through
     uint32_t count;
-};
+} foeGfxVkRenderTargetSpec;
 
 FOE_GFX_EXPORT foeResultSet
 foeGfxVkCreateRenderTarget(foeGfxSession session,

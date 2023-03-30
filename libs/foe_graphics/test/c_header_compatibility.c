@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/mesh.h>
 #include <foe/graphics/render_target.h>
+#include <foe/graphics/render_view_pool.h>
 #include <foe/graphics/result.h>
 #include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>

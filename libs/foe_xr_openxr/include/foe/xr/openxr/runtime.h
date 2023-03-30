@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,6 +9,8 @@
 #include <foe/xr/export.h>
 #include <foe/xr/runtime.h>
 #include <openxr/openxr.h>
+
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {

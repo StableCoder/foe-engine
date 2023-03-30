@@ -4,6 +4,7 @@
 
 #include <foe/ecs/binary.h>
 #include <foe/ecs/component_pool.h>
+#include <foe/ecs/entity_list.h>
 #include <foe/ecs/group_translator.h>
 #include <foe/ecs/id.h>
 #include <foe/ecs/indexes.h>

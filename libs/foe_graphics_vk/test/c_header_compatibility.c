@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,6 +15,8 @@
 #include <foe/graphics/vk/pipeline_pool.h>
 #include <foe/graphics/vk/queue_family.h>
 #include <foe/graphics/vk/render_pass_pool.h>
+#include <foe/graphics/vk/render_target.h>
+#include <foe/graphics/vk/render_view_pool.h>
 #include <foe/graphics/vk/result.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/sample_count.h>
