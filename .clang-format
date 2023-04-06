@@ -11,3 +11,5 @@ BreakInheritanceList: AfterColon
 PackConstructorInitializers: NextLine
 PenaltyReturnTypeOnItsOwnLine: 10000
 QualifierAlignment: Right
+AlignConsecutiveMacros: Consecutive
+AlignConsecutiveBitFields: AcrossComments
