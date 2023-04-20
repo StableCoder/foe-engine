@@ -87,7 +87,7 @@ Python Files:
 
 .platform_windows_template: &platform_windows_template
   stage: Windows Builds
-  image: docker.io/stabletec/build-foe:windows
+  image: docker.io/stabletec/build-foe:windows-2019
   tags:
     - container
     - windows
@@ -347,7 +347,7 @@ macOS/Clang Shared:
 
 # Windows
 
-Windows/MSVC Static:
+Windows 2019/MSVC Static:
   parallel:
     matrix:
     - ARCH: [amd64]
@@ -355,7 +355,7 @@ Windows/MSVC Static:
   variables:
   <<: *platform_windows_template
 
-Windows/MSVC Shared:
+Windows 2019/MSVC Shared:
   parallel:
     matrix:
     - ARCH: [amd64]
@@ -364,7 +364,7 @@ Windows/MSVC Shared:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows/Clang-cl Static:
+Windows 2019/Clang-cl Static:
   parallel:
     matrix:
     - ARCH: [amd64]
@@ -374,7 +374,7 @@ Windows/Clang-cl Static:
     CXX: clang-cl
   <<: *platform_windows_template
 
-Windows/Clang-cl Shared:
+Windows 2019/Clang-cl Shared:
   parallel:
     matrix:
     - ARCH: [amd64]
@@ -385,7 +385,7 @@ Windows/Clang-cl Shared:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows/Clang Static:
+Windows 2019/Clang Static:
   parallel:
     matrix:
     - ARCH: [amd64]
@@ -395,7 +395,7 @@ Windows/Clang Static:
     CXX: clang
   <<: *platform_windows_template
 
-Windows/Clang Shared:
+Windows 2019/Clang Shared:
   parallel:
     matrix:
     - ARCH: [amd64]
