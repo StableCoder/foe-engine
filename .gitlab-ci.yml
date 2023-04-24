@@ -433,7 +433,7 @@ Arch Vulkan SW Testing:
     GPU: llvmpipe
   <<: *vulkan_template
 
-Fedora Vulkan SW Testing:
+.Fedora Vulkan SW Testing:
   parallel:
     matrix:
     - ARCH: [amd64, ppc64le]
