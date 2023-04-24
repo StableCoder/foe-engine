@@ -6,6 +6,8 @@
 
 #include <foe/graphics/vk/fragment_descriptor.h>
 
+#include <cstdlib>
+
 foeGfxVkFragmentDescriptorPoolImpl::~foeGfxVkFragmentDescriptorPoolImpl() {
     std::scoped_lock lock{mSync};
 

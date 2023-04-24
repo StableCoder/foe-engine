@@ -9,6 +9,7 @@
 
 #include <map>
 #include <shared_mutex>
+#include <string_view>
 
 struct BinaryResourceFns {
     PFN_foeImexBinaryImportResource importFn;

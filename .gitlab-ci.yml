@@ -478,7 +478,7 @@ Arch Vulkan HW Testing:
     CXX: clang++
   <<: *vulkan_template
 
-Fedora Vulkan HW Testing:
+.Fedora Vulkan HW Testing:
   parallel:
     matrix:
     - ARCH: [amd64]

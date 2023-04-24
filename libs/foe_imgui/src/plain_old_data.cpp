@@ -8,6 +8,7 @@
 #include <foe/imgui/export.h>
 #include <imgui.h>
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 
