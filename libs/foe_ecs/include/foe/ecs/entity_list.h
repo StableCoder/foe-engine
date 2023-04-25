@@ -18,18 +18,23 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeEcsEntityList)
 
-FOE_ECS_EXPORT foeResultSet foeEcsCreateEntityList(foeEcsEntityList *pEntityList);
+FOE_ECS_EXPORT
+foeResultSet foeEcsCreateEntityList(foeEcsEntityList *pEntityList);
 
-FOE_ECS_EXPORT void foeEcsDestroyEntityList(foeEcsEntityList entityList);
+FOE_ECS_EXPORT
+void foeEcsDestroyEntityList(foeEcsEntityList entityList);
 
-FOE_ECS_EXPORT foeResultSet foeEcsResetEntityList(foeEcsEntityList entityList,
-                                                  uint32_t listCount,
-                                                  uint32_t const *pEntityListCounts,
-                                                  foeEntityID const *const *ppEntityLists);
+FOE_ECS_EXPORT
+foeResultSet foeEcsResetEntityList(foeEcsEntityList entityList,
+                                   uint32_t listCount,
+                                   uint32_t const *pEntityListCounts,
+                                   foeEntityID const *const *ppEntityLists);
 
-FOE_ECS_EXPORT uint32_t foeEcsEntityListSize(foeEcsEntityList entityList);
+FOE_ECS_EXPORT
+uint32_t foeEcsEntityListSize(foeEcsEntityList entityList);
 
-FOE_ECS_EXPORT foeEntityID const *foeEcsEntityListPtr(foeEcsEntityList entityList);
+FOE_ECS_EXPORT
+foeEntityID const *foeEcsEntityListPtr(foeEcsEntityList entityList);
 
 #ifdef __cplusplus
 }

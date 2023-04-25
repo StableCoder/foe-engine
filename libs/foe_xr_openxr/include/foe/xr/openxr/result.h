@@ -18,8 +18,8 @@ typedef enum foeOpenXrResult {
     FOE_OPENXR_ERROR_OUT_OF_MEMORY = -1000012001,
 } foeOpenXrResult;
 
-FOE_XR_EXPORT void foeOpenXrResultToString(foeOpenXrResult value,
-                                           char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_XR_EXPORT
+void foeOpenXrResultToString(foeOpenXrResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

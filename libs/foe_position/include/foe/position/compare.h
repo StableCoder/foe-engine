@@ -15,8 +15,8 @@ extern "C" {
 
 typedef struct foePosition3d foePosition3d;
 
-FOE_POSITION_EXPORT bool compare_foePosition3d(foePosition3d const *pData1,
-                                               foePosition3d const *pData2);
+FOE_POSITION_EXPORT
+bool compare_foePosition3d(foePosition3d const *pData1, foePosition3d const *pData2);
 
 #ifdef __cplusplus
 }

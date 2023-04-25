@@ -16,23 +16,27 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeEcsGroupTranslator)
 
-FOE_ECS_EXPORT foeResultSet foeEcsCreateGroupTranslator(uint32_t originalCount,
-                                                        char const **ppOriginalNames,
-                                                        foeIdGroup *pOriginalGroups,
-                                                        uint32_t translatedCount,
-                                                        char const **ppTranslatedNames,
-                                                        foeIdGroup *pTranslatedGroups,
-                                                        foeEcsGroupTranslator *pGroupTranslator);
+FOE_ECS_EXPORT
+foeResultSet foeEcsCreateGroupTranslator(uint32_t originalCount,
+                                         char const **ppOriginalNames,
+                                         foeIdGroup *pOriginalGroups,
+                                         uint32_t translatedCount,
+                                         char const **ppTranslatedNames,
+                                         foeIdGroup *pTranslatedGroups,
+                                         foeEcsGroupTranslator *pGroupTranslator);
 
-FOE_ECS_EXPORT void foeEcsDestroyGroupTranslator(foeEcsGroupTranslator groupTranslator);
+FOE_ECS_EXPORT
+void foeEcsDestroyGroupTranslator(foeEcsGroupTranslator groupTranslator);
 
-FOE_ECS_EXPORT foeResultSet foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTranslator,
-                                                     foeIdGroup originalGroup,
-                                                     foeIdGroup *pTranslatedGroup);
+FOE_ECS_EXPORT
+foeResultSet foeEcsGetTranslatedGroup(foeEcsGroupTranslator groupTranslator,
+                                      foeIdGroup originalGroup,
+                                      foeIdGroup *pTranslatedGroup);
 
-FOE_ECS_EXPORT foeResultSet foeEcsGetOriginalGroup(foeEcsGroupTranslator groupTranslator,
-                                                   foeIdGroup translatedGroup,
-                                                   foeIdGroup *pOriginalGroup);
+FOE_ECS_EXPORT
+foeResultSet foeEcsGetOriginalGroup(foeEcsGroupTranslator groupTranslator,
+                                    foeIdGroup translatedGroup,
+                                    foeIdGroup *pOriginalGroup);
 
 #ifdef __cplusplus
 }

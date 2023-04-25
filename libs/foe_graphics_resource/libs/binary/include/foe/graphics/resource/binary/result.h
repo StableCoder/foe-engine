@@ -35,8 +35,9 @@ typedef enum foeGraphicsResourceBinaryResult {
     FOE_GRAPHICS_RESOURCE_BINARY_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER = -1000022018,
 } foeGraphicsResourceBinaryResult;
 
-FOE_GFX_RES_BINARY_EXPORT void foeGraphicsResourceBinaryResultToString(
-    foeGraphicsResourceBinaryResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_GFX_RES_BINARY_EXPORT
+void foeGraphicsResourceBinaryResultToString(foeGraphicsResourceBinaryResult value,
+                                             char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

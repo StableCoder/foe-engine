@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
-FOE_PHYSICS_BINARY_EXPORT foeResultSet foePhysicsBinaryRegisterExporters();
+FOE_PHYSICS_BINARY_EXPORT
+foeResultSet foePhysicsBinaryRegisterExporters();
 
-FOE_PHYSICS_BINARY_EXPORT void foePhysicsBinaryDeregisterExporters();
+FOE_PHYSICS_BINARY_EXPORT
+void foePhysicsBinaryDeregisterExporters();
 
 #ifdef __cplusplus
 }

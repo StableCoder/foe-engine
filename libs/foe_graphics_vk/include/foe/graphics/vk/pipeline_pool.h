@@ -20,22 +20,25 @@ typedef struct foeGfxVkFragmentDescriptor foeGfxVkFragmentDescriptor;
 
 FOE_DEFINE_HANDLE(foeGfxVkPipelinePool)
 
-FOE_GFX_EXPORT foeGfxVkPipelinePool foeGfxVkGetPipelinePool(foeGfxSession session);
+FOE_GFX_EXPORT
+foeGfxVkPipelinePool foeGfxVkGetPipelinePool(foeGfxSession session);
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkCreatePipelinePool(foeGfxSession session,
-                                                       foeGfxVkPipelinePool *pPipelinePool);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkCreatePipelinePool(foeGfxSession session, foeGfxVkPipelinePool *pPipelinePool);
 
-FOE_GFX_EXPORT void foeGfxVkDestroyPipelinePool(foeGfxVkPipelinePool pipelinePool);
+FOE_GFX_EXPORT
+void foeGfxVkDestroyPipelinePool(foeGfxVkPipelinePool pipelinePool);
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkGetPipeline(foeGfxVkPipelinePool pipelinePool,
-                                                foeGfxVkVertexDescriptor *vertexDescriptor,
-                                                foeGfxVkFragmentDescriptor *fragmentDescriptor,
-                                                VkRenderPass renderPass,
-                                                uint32_t subpass,
-                                                VkSampleCountFlags samples,
-                                                VkPipelineLayout *pPipelineLayout,
-                                                uint32_t *pDescriptorSetLayoutCount,
-                                                VkPipeline *pPipeline);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkGetPipeline(foeGfxVkPipelinePool pipelinePool,
+                                 foeGfxVkVertexDescriptor *vertexDescriptor,
+                                 foeGfxVkFragmentDescriptor *fragmentDescriptor,
+                                 VkRenderPass renderPass,
+                                 uint32_t subpass,
+                                 VkSampleCountFlags samples,
+                                 VkPipelineLayout *pPipelineLayout,
+                                 uint32_t *pDescriptorSetLayoutCount,
+                                 VkPipeline *pPipeline);
 #ifdef __cplusplus
 }
 #endif

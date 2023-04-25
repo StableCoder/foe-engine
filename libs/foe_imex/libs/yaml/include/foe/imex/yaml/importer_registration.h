@@ -12,8 +12,10 @@
 extern "C" {
 #endif
 
-FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlRegisterImporter();
-FOE_IMEX_YAML_EXPORT void foeImexYamlDeregisterImporter();
+FOE_IMEX_YAML_EXPORT
+foeResultSet foeImexYamlRegisterImporter();
+FOE_IMEX_YAML_EXPORT
+void foeImexYamlDeregisterImporter();
 
 #ifdef __cplusplus
 }

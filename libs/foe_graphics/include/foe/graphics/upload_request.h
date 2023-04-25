@@ -29,14 +29,16 @@ typedef enum foeGfxUploadRequestStatus {
  * @return VK_SUCCESS if the request hasn't been submitted, or if it has and has finished. An
  * appropriate value otherwise.
  */
-FOE_GFX_EXPORT foeGfxUploadRequestStatus
-foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT
+foeGfxUploadRequestStatus foeGfxGetUploadRequestStatus(foeGfxUploadRequest uploadRequest);
 
-FOE_GFX_EXPORT void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
-                                               foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT
+void foeGfxDestroyUploadRequest(foeGfxUploadContext uploadContext,
+                                foeGfxUploadRequest uploadRequest);
 
-FOE_GFX_EXPORT foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
-                                                        foeGfxUploadRequest uploadRequest);
+FOE_GFX_EXPORT
+foeResultSet foeSubmitUploadDataCommands(foeGfxUploadContext uploadContext,
+                                         foeGfxUploadRequest uploadRequest);
 
 #ifdef __cplusplus
 }

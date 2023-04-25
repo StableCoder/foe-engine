@@ -21,7 +21,8 @@ FOE_DEFINE_HANDLE(foeGfxVkQueueFamily)
  * @return A valid VkQueue if one could be secured, VK_NULL_HANDLE if no queue is available
  * @note Non-blocking
  */
-FOE_GFX_EXPORT VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily queueFamily);
+FOE_GFX_EXPORT
+VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily queueFamily);
 
 /**
  * @brief Attempts to lock and return an available command queue
@@ -30,7 +31,8 @@ FOE_GFX_EXPORT VkQueue foeGfxTryGetQueue(foeGfxVkQueueFamily queueFamily);
  * queues in family)
  * @note Blocking
  */
-FOE_GFX_EXPORT VkQueue foeGfxGetQueue(foeGfxVkQueueFamily queueFamily);
+FOE_GFX_EXPORT
+VkQueue foeGfxGetQueue(foeGfxVkQueueFamily queueFamily);
 
 /**
  * @brief Releases a queue to the family so that it can be used elsewhere
@@ -38,7 +40,8 @@ FOE_GFX_EXPORT VkQueue foeGfxGetQueue(foeGfxVkQueueFamily queueFamily);
  * @param queue The specific queue being released.
  * @warning The queue MUST belong to the queue family, otherwise nothing will happen!
  */
-FOE_GFX_EXPORT void foeGfxReleaseQueue(foeGfxVkQueueFamily queueFamily, VkQueue queue);
+FOE_GFX_EXPORT
+void foeGfxReleaseQueue(foeGfxVkQueueFamily queueFamily, VkQueue queue);
 
 #ifdef __cplusplus
 }

@@ -25,9 +25,10 @@ FOE_DEFINE_HANDLE(foeGfxVkRenderPassPool)
  * If the render pass described already exists, this will return the handle to that. If it
  * doesn't it will be generated.
  */
-FOE_GFX_EXPORT VkRenderPass foeGfxVkGetRenderPass(foeGfxVkRenderPassPool renderPassPool,
-                                                  uint32_t attachmentCount,
-                                                  VkAttachmentDescription const *pAttachments);
+FOE_GFX_EXPORT
+VkRenderPass foeGfxVkGetRenderPass(foeGfxVkRenderPassPool renderPassPool,
+                                   uint32_t attachmentCount,
+                                   VkAttachmentDescription const *pAttachments);
 
 /**
  * @brief Returns a compatible render pass for the given formats/samples
@@ -43,10 +44,11 @@ FOE_GFX_EXPORT VkRenderPass foeGfxVkGetRenderPass(foeGfxVkRenderPassPool renderP
  *
  * If no render pass is found, it will generate a basic one instead.
  */
-FOE_GFX_EXPORT VkRenderPass foeGfxVkGetCompatibleRenderPass(foeGfxVkRenderPassPool renderPassPool,
-                                                            uint32_t attachmentCount,
-                                                            VkFormat const *pFormats,
-                                                            VkSampleCountFlags const *pSampleFlags);
+FOE_GFX_EXPORT
+VkRenderPass foeGfxVkGetCompatibleRenderPass(foeGfxVkRenderPassPool renderPassPool,
+                                             uint32_t attachmentCount,
+                                             VkFormat const *pFormats,
+                                             VkSampleCountFlags const *pSampleFlags);
 
 #ifdef __cplusplus
 }

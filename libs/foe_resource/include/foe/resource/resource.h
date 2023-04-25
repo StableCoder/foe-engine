@@ -54,13 +54,16 @@ typedef enum foeResourceStateFlagBits {
 } foeResourceStateFlagBits;
 typedef uint32_t foeResourceStateFlags;
 
-FOE_RES_EXPORT char const *foeResourceStateFlagBitToString(foeResourceStateFlagBits flag);
+FOE_RES_EXPORT
+char const *foeResourceStateFlagBitToString(foeResourceStateFlagBits flag);
 
-FOE_RES_EXPORT foeResultSet foeCreateUndefinedResource(foeResourceID id,
-                                                       foeResourceFns const *pResourceFns,
-                                                       foeResource *pResource);
+FOE_RES_EXPORT
+foeResultSet foeCreateUndefinedResource(foeResourceID id,
+                                        foeResourceFns const *pResourceFns,
+                                        foeResource *pResource);
 
-FOE_RES_EXPORT foeResultSet foeCreateLoadedResource(
+FOE_RES_EXPORT
+foeResultSet foeCreateLoadedResource(
     foeResourceID id,
     foeResourceType type,
     foeResourceFns const *pResourceFns,
@@ -71,36 +74,53 @@ FOE_RES_EXPORT foeResultSet foeCreateLoadedResource(
     void (*pUnloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool),
     foeResource *pResource);
 
-FOE_RES_EXPORT foeResultSet foeCreateResource(foeResourceID id,
-                                              foeResourceType type,
-                                              foeResourceFns const *pResourceFns,
-                                              size_t size, // Must be >= to sizeof(foeResourceBase)
-                                              foeResource *pResource);
+FOE_RES_EXPORT
+foeResultSet foeCreateResource(foeResourceID id,
+                               foeResourceType type,
+                               foeResourceFns const *pResourceFns,
+                               size_t size, // Must be >= to sizeof(foeResourceBase)
+                               foeResource *pResource);
 
-FOE_RES_EXPORT foeResultSet foeResourceReplace(foeResource oldResource, foeResource newResource);
+FOE_RES_EXPORT
+foeResultSet foeResourceReplace(foeResource oldResource, foeResource newResource);
 // Returned resource has it's reference already incremented
-FOE_RES_EXPORT foeResource foeResourceGetReplacement(foeResource resource);
+FOE_RES_EXPORT
+foeResource foeResourceGetReplacement(foeResource resource);
 
-FOE_RES_EXPORT foeResourceID foeResourceGetID(foeResource resource);
+FOE_RES_EXPORT
+foeResourceID foeResourceGetID(foeResource resource);
 
-FOE_RES_EXPORT foeResourceType foeResourceGetType(foeResource resource);
-FOE_RES_EXPORT bool foeResourceHasType(foeResource resource, foeResourceType type);
+FOE_RES_EXPORT
+foeResourceType foeResourceGetType(foeResource resource);
+FOE_RES_EXPORT
+bool foeResourceHasType(foeResource resource, foeResourceType type);
 
-FOE_RES_EXPORT int foeResourceGetRefCount(foeResource resource);
-FOE_RES_EXPORT int foeResourceIncrementRefCount(foeResource resource);
-FOE_RES_EXPORT int foeResourceDecrementRefCount(foeResource resource);
+FOE_RES_EXPORT
+int foeResourceGetRefCount(foeResource resource);
+FOE_RES_EXPORT
+int foeResourceIncrementRefCount(foeResource resource);
+FOE_RES_EXPORT
+int foeResourceDecrementRefCount(foeResource resource);
 
-FOE_RES_EXPORT int foeResourceGetUseCount(foeResource resource);
-FOE_RES_EXPORT int foeResourceIncrementUseCount(foeResource resource);
-FOE_RES_EXPORT int foeResourceDecrementUseCount(foeResource resource);
+FOE_RES_EXPORT
+int foeResourceGetUseCount(foeResource resource);
+FOE_RES_EXPORT
+int foeResourceIncrementUseCount(foeResource resource);
+FOE_RES_EXPORT
+int foeResourceDecrementUseCount(foeResource resource);
 
-FOE_RES_EXPORT foeResourceStateFlags foeResourceGetState(foeResource resource);
+FOE_RES_EXPORT
+foeResourceStateFlags foeResourceGetState(foeResource resource);
 
-FOE_RES_EXPORT void const *foeResourceGetData(foeResource resource);
-FOE_RES_EXPORT void const *foeResourceGetTypeData(foeResource resource, foeResourceType type);
+FOE_RES_EXPORT
+void const *foeResourceGetData(foeResource resource);
+FOE_RES_EXPORT
+void const *foeResourceGetTypeData(foeResource resource, foeResourceType type);
 
-FOE_RES_EXPORT foeResultSet foeResourceLoadData(foeResource resource);
-FOE_RES_EXPORT void foeResourceUnloadData(foeResource resource, bool immediate);
+FOE_RES_EXPORT
+foeResultSet foeResourceLoadData(foeResource resource);
+FOE_RES_EXPORT
+void foeResourceUnloadData(foeResource resource, bool immediate);
 
 #ifdef __cplusplus
 }

@@ -25,23 +25,25 @@ typedef struct foeGfxVkRenderTargetSpec {
     uint32_t count;
 } foeGfxVkRenderTargetSpec;
 
-FOE_GFX_EXPORT foeResultSet
-foeGfxVkCreateRenderTarget(foeGfxSession session,
-                           foeGfxDelayedCaller delayedCaller,
-                           foeGfxVkRenderTargetSpec const *pSpecifications,
-                           uint32_t count,
-                           VkSampleCountFlags samples,
-                           foeGfxRenderTarget *pRenderTarget);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkCreateRenderTarget(foeGfxSession session,
+                                        foeGfxDelayedCaller delayedCaller,
+                                        foeGfxVkRenderTargetSpec const *pSpecifications,
+                                        uint32_t count,
+                                        VkSampleCountFlags samples,
+                                        foeGfxRenderTarget *pRenderTarget);
 
-FOE_GFX_EXPORT VkSampleCountFlags foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget);
+FOE_GFX_EXPORT
+VkSampleCountFlags foeGfxVkGetRenderTargetSamples(foeGfxRenderTarget renderTarget);
 
-FOE_GFX_EXPORT VkImage foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget,
-                                                    uint32_t index);
+FOE_GFX_EXPORT
+VkImage foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t index);
 
-FOE_GFX_EXPORT VkImageView foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget,
-                                                            uint32_t index);
+FOE_GFX_EXPORT
+VkImageView foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget, uint32_t index);
 
-FOE_GFX_EXPORT VkFramebuffer foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget);
+FOE_GFX_EXPORT
+VkFramebuffer foeGfxVkGetRenderTargetFramebuffer(foeGfxRenderTarget renderTarget);
 
 #ifdef __cplusplus
 }

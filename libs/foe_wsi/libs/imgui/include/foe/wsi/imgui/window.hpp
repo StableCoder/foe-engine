@@ -15,11 +15,15 @@ class foeImGuiState;
 
 class foeWsiImGuiWindow {
   public:
-    FOE_WSI_IMGUI_EXPORT bool addWindow(foeWsiWindow window);
-    FOE_WSI_IMGUI_EXPORT bool removeWindow(foeWsiWindow window);
+    FOE_WSI_IMGUI_EXPORT
+    bool addWindow(foeWsiWindow window);
+    FOE_WSI_IMGUI_EXPORT
+    bool removeWindow(foeWsiWindow window);
 
-    FOE_WSI_IMGUI_EXPORT bool registerUI(foeImGuiState *pState);
-    FOE_WSI_IMGUI_EXPORT void deregisterUI(foeImGuiState *pState);
+    FOE_WSI_IMGUI_EXPORT
+    bool registerUI(foeImGuiState *pState);
+    FOE_WSI_IMGUI_EXPORT
+    void deregisterUI(foeImGuiState *pState);
 
   private:
     struct WindowData {

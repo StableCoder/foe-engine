@@ -18,19 +18,23 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foePhysicsSystem)
 
-FOE_PHYSICS_EXPORT foeResultSet foePhysicsCreateSystem(foePhysicsSystem *pPhysicsSystem);
+FOE_PHYSICS_EXPORT
+foeResultSet foePhysicsCreateSystem(foePhysicsSystem *pPhysicsSystem);
 
-FOE_PHYSICS_EXPORT void foePhysicsDestroySystem(foePhysicsSystem physicsSystem);
+FOE_PHYSICS_EXPORT
+void foePhysicsDestroySystem(foePhysicsSystem physicsSystem);
 
-FOE_PHYSICS_EXPORT foeResultSet foePhysicsInitializeSystem(foePhysicsSystem physicsSystem,
-                                                           foeResourcePool resourcePool,
-                                                           foeRigidBodyPool rigidBodyPool,
-                                                           foePosition3dPool positionPool);
+FOE_PHYSICS_EXPORT
+foeResultSet foePhysicsInitializeSystem(foePhysicsSystem physicsSystem,
+                                        foeResourcePool resourcePool,
+                                        foeRigidBodyPool rigidBodyPool,
+                                        foePosition3dPool positionPool);
 
-FOE_PHYSICS_EXPORT void foePhysicsDeinitializeSystem(foePhysicsSystem physicsSystem);
+FOE_PHYSICS_EXPORT
+void foePhysicsDeinitializeSystem(foePhysicsSystem physicsSystem);
 
-FOE_PHYSICS_EXPORT foeResultSet foePhysicsProcessSystem(foePhysicsSystem physicsSystem,
-                                                        float timeElapsed);
+FOE_PHYSICS_EXPORT
+foeResultSet foePhysicsProcessSystem(foePhysicsSystem physicsSystem, float timeElapsed);
 
 #ifdef __cplusplus
 }

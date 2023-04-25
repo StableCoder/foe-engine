@@ -10,19 +10,19 @@
 #include <foe/result.h>
 #include <vulkan/vulkan.h>
 
-FOE_GFX_EXPORT foeResultSet
-foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                           char const *pJobName,
-                           VkFence fence,
-                           foeGfxVkRenderGraphResource srcImage,
-                           uint32_t srcImageUpstreamJobCount,
-                           foeGfxVkRenderGraphJob const *pSrcImageUpstreamJobs,
-                           VkImageLayout srcFinalLayout,
-                           foeGfxVkRenderGraphResource dstImage,
-                           uint32_t dstImageUpstreamJobCount,
-                           foeGfxVkRenderGraphJob const *pDstImageUpstreamJobs,
-                           VkImageLayout dstFinalLayout,
-                           VkFilter filter,
-                           foeGfxVkRenderGraphJob *pRenderGraphJob);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkBlitImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                        char const *pJobName,
+                                        VkFence fence,
+                                        foeGfxVkRenderGraphResource srcImage,
+                                        uint32_t srcImageUpstreamJobCount,
+                                        foeGfxVkRenderGraphJob const *pSrcImageUpstreamJobs,
+                                        VkImageLayout srcFinalLayout,
+                                        foeGfxVkRenderGraphResource dstImage,
+                                        uint32_t dstImageUpstreamJobCount,
+                                        foeGfxVkRenderGraphJob const *pDstImageUpstreamJobs,
+                                        VkImageLayout dstFinalLayout,
+                                        VkFilter filter,
+                                        foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_BLIT_IMAGE_HPP

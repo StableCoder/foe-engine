@@ -33,10 +33,12 @@ struct foeProgramClock {
     using time_point = std::chrono::time_point<foeProgramClock, duration>;
 
     /// steady clock flag, always `true`
-    FOE_EXPORT static constexpr bool is_steady = true;
+    FOE_EXPORT
+    static constexpr bool is_steady = true;
 
     /// returns a time_point representing the current value of the clock
-    FOE_EXPORT static auto now() noexcept -> time_point;
+    FOE_EXPORT
+    static auto now() noexcept -> time_point;
 };
 
 // Adds several nice-to-have, such as updating for ticks and elapsed time between those ticks.

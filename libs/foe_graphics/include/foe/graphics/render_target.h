@@ -17,14 +17,17 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeGfxRenderTarget)
 
-FOE_GFX_EXPORT void foeGfxDestroyRenderTarget(foeGfxRenderTarget renderTarget);
+FOE_GFX_EXPORT
+void foeGfxDestroyRenderTarget(foeGfxRenderTarget renderTarget);
 
-FOE_GFX_EXPORT void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
-                                                   uint32_t width,
-                                                   uint32_t height);
+FOE_GFX_EXPORT
+void foeGfxUpdateRenderTargetExtent(foeGfxRenderTarget renderTarget,
+                                    uint32_t width,
+                                    uint32_t height);
 
-FOE_GFX_EXPORT foeResultSet foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
-                                                          uint32_t maxBufferedFrames);
+FOE_GFX_EXPORT
+foeResultSet foeGfxAcquireNextRenderTarget(foeGfxRenderTarget renderTarget,
+                                           uint32_t maxBufferedFrames);
 
 #ifdef __cplusplus
 }

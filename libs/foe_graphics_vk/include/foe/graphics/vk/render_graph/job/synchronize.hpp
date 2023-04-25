@@ -9,12 +9,13 @@
 #include <foe/graphics/vk/render_graph.hpp>
 #include <foe/result.h>
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkSynchronizeJob(foeGfxVkRenderGraph renderGraph,
-                                                   char const *pJobName,
-                                                   bool required,
-                                                   VkFence fence,
-                                                   uint32_t upstreamJobCount,
-                                                   foeGfxVkRenderGraphJob *pUpstreamJobs,
-                                                   foeGfxVkRenderGraphJob *pJob);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkSynchronizeJob(foeGfxVkRenderGraph renderGraph,
+                                    char const *pJobName,
+                                    bool required,
+                                    VkFence fence,
+                                    uint32_t upstreamJobCount,
+                                    foeGfxVkRenderGraphJob *pUpstreamJobs,
+                                    foeGfxVkRenderGraphJob *pJob);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_SYNCHRONIZE_HPP

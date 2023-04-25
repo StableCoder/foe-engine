@@ -32,8 +32,9 @@ typedef enum foeGraphicsResourceYamlResult {
     FOE_GRAPHICS_RESOURCE_YAML_ERROR_FAILED_TO_REGISTER_SHADER_IMPORTER = -1000021016,
 } foeGraphicsResourceYamlResult;
 
-FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlResultToString(
-    foeGraphicsResourceYamlResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_GFX_RES_YAML_EXPORT
+void foeGraphicsResourceYamlResultToString(foeGraphicsResourceYamlResult value,
+                                           char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

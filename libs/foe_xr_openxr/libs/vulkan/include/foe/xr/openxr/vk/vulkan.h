@@ -16,26 +16,32 @@
 extern "C" {
 #endif
 
-FOE_OPENXR_VK_EXPORT foeResultSet foeXrGetVulkanInstanceExtensions(XrInstance instance,
-                                                                   uint32_t *pExtensionsLength,
-                                                                   char *pExtensions);
+FOE_OPENXR_VK_EXPORT
+foeResultSet foeXrGetVulkanInstanceExtensions(XrInstance instance,
+                                              uint32_t *pExtensionsLength,
+                                              char *pExtensions);
 
-FOE_OPENXR_VK_EXPORT foeResultSet foeXrGetVulkanDeviceExtensions(XrInstance instance,
-                                                                 uint32_t *pExtensionsLength,
-                                                                 char *pExtensions);
+FOE_OPENXR_VK_EXPORT
+foeResultSet foeXrGetVulkanDeviceExtensions(XrInstance instance,
+                                            uint32_t *pExtensionsLength,
+                                            char *pExtensions);
 
-FOE_OPENXR_VK_EXPORT foeResultSet foeXrGetVulkanGraphicsDevice(XrInstance instance,
-                                                               XrSystemId systemId,
-                                                               VkInstance vkInstance,
-                                                               VkPhysicalDevice *vkPhysicalDevice);
+FOE_OPENXR_VK_EXPORT
+foeResultSet foeXrGetVulkanGraphicsDevice(XrInstance instance,
+                                          XrSystemId systemId,
+                                          VkInstance vkInstance,
+                                          VkPhysicalDevice *vkPhysicalDevice);
 
-FOE_OPENXR_VK_EXPORT foeResultSet
-foeXrGetVulkanGraphicsRequirements(XrInstance instance,
-                                   XrSystemId systemId,
-                                   XrGraphicsRequirementsVulkanKHR *graphicsRequirements);
+FOE_OPENXR_VK_EXPORT
+foeResultSet foeXrGetVulkanGraphicsRequirements(
+    XrInstance instance,
+    XrSystemId systemId,
+    XrGraphicsRequirementsVulkanKHR *graphicsRequirements);
 
-FOE_OPENXR_VK_EXPORT foeResultSet foeOpenXrEnumerateSwapchainVkImages(
-    XrSwapchain swapchain, uint32_t *pImageCount, XrSwapchainImageVulkanKHR *pImages);
+FOE_OPENXR_VK_EXPORT
+foeResultSet foeOpenXrEnumerateSwapchainVkImages(XrSwapchain swapchain,
+                                                 uint32_t *pImageCount,
+                                                 XrSwapchainImageVulkanKHR *pImages);
 
 #ifdef __cplusplus
 }

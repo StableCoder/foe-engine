@@ -10,13 +10,11 @@
 
 #include <string>
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkEnum32(std::string const &typeName,
-                                            std::string const &label,
-                                            uint32_t const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkEnum32(std::string const &typeName, std::string const &label, uint32_t const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkEnum64(std::string const &typeName,
-                                            std::string const &label,
-                                            uint64_t const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkEnum64(std::string const &typeName, std::string const &label, uint64_t const &data);
 
 template <typename VkEnum>
 void imgui_VkEnum(std::string const &typeName, std::string const &label, VkEnum const &data) {
@@ -30,6 +28,7 @@ void imgui_VkEnum(std::string const &typeName, std::string const &label, VkEnum 
     }
 }
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkBool32(std::string const &label, VkBool32 const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkBool32(std::string const &label, VkBool32 const &data);
 
 #endif // FOE_GRAPHICS_VK_IMGUI_VK_TYPE_HPP

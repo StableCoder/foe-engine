@@ -17,8 +17,8 @@ typedef enum foePositionResult {
     FOE_POSITION_ERROR_OUT_OF_MEMORY = -1000015001,
 } foePositionResult;
 
-FOE_POSITION_EXPORT void foePositionResultToString(foePositionResult value,
-                                                   char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_POSITION_EXPORT
+void foePositionResultToString(foePositionResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

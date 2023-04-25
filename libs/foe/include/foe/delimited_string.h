@@ -29,7 +29,8 @@ extern "C" {
  *
  * If the total length of the strings is zero, then no buffer is created and ppDst is not modified.
  */
-FOE_EXPORT bool foeCreateDelimitedString(
+FOE_EXPORT
+bool foeCreateDelimitedString(
     uint32_t srcCount, char const *const *ppSrc, char delimiter, uint32_t *pDstLength, char *pDst);
 
 /** @brief Returns data in the given destination if possible, or returns the buffer size required.
@@ -52,7 +53,8 @@ FOE_EXPORT bool foeCreateDelimitedString(
  * Data written to the provided destination is delimited by NULL characters and the returned length
  * counts the last character which will be NULL.
  */
-FOE_EXPORT bool foeCopyDelimitedString(
+FOE_EXPORT
+bool foeCopyDelimitedString(
     uint32_t srcLength, char const *pSrc, char delimiter, uint32_t *pDstLength, char *pDst);
 
 /** @brief Returns the start and length of the string inside the larger delimited string
@@ -63,12 +65,13 @@ FOE_EXPORT bool foeCopyDelimitedString(
  * false is returned then this is not modified.
  * @return true if the requested string index was found and pStr was thus modified, otherwise false
  */
-FOE_EXPORT bool foeIndexedDelimitedString(uint32_t srcLength,
-                                          char const *pSrc,
-                                          uint32_t index,
-                                          char delimiter,
-                                          uint32_t *pStrLength,
-                                          char const **ppStr);
+FOE_EXPORT
+bool foeIndexedDelimitedString(uint32_t srcLength,
+                               char const *pSrc,
+                               uint32_t index,
+                               char delimiter,
+                               uint32_t *pStrLength,
+                               char const **ppStr);
 
 #ifdef __cplusplus
 }

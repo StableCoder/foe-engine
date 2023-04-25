@@ -16,27 +16,27 @@ typedef struct foeGfxVkSwapchainPresentInfo {
     foeGfxVkRenderGraphJob *pUpstreamJobs;
 } foeGfxVkSwapchainPresentInfo;
 
-FOE_GFX_EXPORT foeResultSet
-foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                      char const *pJobName,
-                                      VkFence fence,
-                                      char const *pResourceName,
-                                      VkSwapchainKHR swapchain,
-                                      uint32_t index,
-                                      VkImage image,
-                                      VkImageView view,
-                                      VkFormat format,
-                                      VkExtent2D extent,
-                                      VkImageLayout initialLayout,
-                                      VkSemaphore waitSemaphore,
-                                      foeGfxVkRenderGraphResource *pSwapchainResource,
-                                      foeGfxVkRenderGraphJob *pRenderGraphJob);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                   char const *pJobName,
+                                                   VkFence fence,
+                                                   char const *pResourceName,
+                                                   VkSwapchainKHR swapchain,
+                                                   uint32_t index,
+                                                   VkImage image,
+                                                   VkImageView view,
+                                                   VkFormat format,
+                                                   VkExtent2D extent,
+                                                   VkImageLayout initialLayout,
+                                                   VkSemaphore waitSemaphore,
+                                                   foeGfxVkRenderGraphResource *pSwapchainResource,
+                                                   foeGfxVkRenderGraphJob *pRenderGraphJob);
 
-FOE_GFX_EXPORT foeResultSet
-foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                       char const *pJobName,
-                                       VkFence fence,
-                                       uint32_t presentInfoCount,
-                                       foeGfxVkSwapchainPresentInfo *pPresentInfos);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkPresentSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                                    char const *pJobName,
+                                                    VkFence fence,
+                                                    uint32_t presentInfoCount,
+                                                    foeGfxVkSwapchainPresentInfo *pPresentInfos);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_PRESENT_IMAGE_HPP

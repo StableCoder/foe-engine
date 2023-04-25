@@ -20,24 +20,29 @@ FOE_DEFINE_HANDLE(foeGfxDelayedCaller)
 
 typedef void (*PFN_foeGfxDelayedCall)(void *, foeGfxSession);
 
-FOE_GFX_EXPORT foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
-                                                      uint32_t initialDelay,
-                                                      foeGfxDelayedCaller *pDelayedCaller);
+FOE_GFX_EXPORT
+foeResultSet foeGfxCreateDelayedCaller(foeGfxSession session,
+                                       uint32_t initialDelay,
+                                       foeGfxDelayedCaller *pDelayedCaller);
 
-FOE_GFX_EXPORT void foeGfxDestroyDelayedCaller(foeGfxDelayedCaller delayedCaller);
+FOE_GFX_EXPORT
+void foeGfxDestroyDelayedCaller(foeGfxDelayedCaller delayedCaller);
 
 /// Advances to the next set of delayed destruction calls and runs them. Meant to be synchronized to
 /// the frames.
-FOE_GFX_EXPORT void foeGfxRunDelayedCalls(foeGfxDelayedCaller delayedCaller);
+FOE_GFX_EXPORT
+void foeGfxRunDelayedCalls(foeGfxDelayedCaller delayedCaller);
 
-FOE_GFX_EXPORT void foeGfxAddDefaultDelayedCall(foeGfxDelayedCaller delayedCaller,
-                                                PFN_foeGfxDelayedCall destroyCall,
-                                                void *pContext);
+FOE_GFX_EXPORT
+void foeGfxAddDefaultDelayedCall(foeGfxDelayedCaller delayedCaller,
+                                 PFN_foeGfxDelayedCall destroyCall,
+                                 void *pContext);
 
-FOE_GFX_EXPORT void foeGfxAddDelayedCall(foeGfxDelayedCaller delayedCaller,
-                                         PFN_foeGfxDelayedCall destroyCall,
-                                         void *pContext,
-                                         uint32_t numDelayed);
+FOE_GFX_EXPORT
+void foeGfxAddDelayedCall(foeGfxDelayedCaller delayedCaller,
+                          PFN_foeGfxDelayedCall destroyCall,
+                          void *pContext,
+                          uint32_t numDelayed);
 
 #ifdef __cplusplus
 }

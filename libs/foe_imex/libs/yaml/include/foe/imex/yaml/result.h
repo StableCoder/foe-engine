@@ -52,8 +52,8 @@ typedef enum foeImexYamlResult {
     FOE_IMEX_YAML_ERROR_FAILED_TO_WRITE_COMPONENT_DATA = -1000004035,
 } foeImexYamlResult;
 
-FOE_IMEX_YAML_EXPORT void foeImexYamlResultToString(foeImexYamlResult value,
-                                                    char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_IMEX_YAML_EXPORT
+void foeImexYamlResultToString(foeImexYamlResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

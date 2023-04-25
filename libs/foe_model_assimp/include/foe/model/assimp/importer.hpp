@@ -61,7 +61,8 @@ class FOE_MODEL_ASSIMP_EXPORT foeModelAssimpImporter final : public foeModelImpo
     auto importMeshBones(unsigned int mesh) -> std::vector<foeMeshBone>;
 
   private:
-    FOE_MODEL_ASSIMP_NO_EXPORT aiScene const *mpScene;
+    FOE_MODEL_ASSIMP_NO_EXPORT
+    aiScene const *mpScene;
 };
 
 #endif // FOE_MODEL_ASSIMP_IMPORTER_HPP

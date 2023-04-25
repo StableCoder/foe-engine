@@ -21,8 +21,8 @@ typedef enum foeBinaryResult {
     FOE_BINARY_RESULT_NEGATIVE_VALUE = FOE_RESULT_MIN_ENUM,
 } foeBinaryResult;
 
-FOE_EXPORT void foeBinaryResultToString(foeBinaryResult value,
-                                        char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_EXPORT
+void foeBinaryResultToString(foeBinaryResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 inline static foeResultSet foeBinaryResult_to_foeResultSet(foeBinaryResult value) {
     foeResultSet result = {

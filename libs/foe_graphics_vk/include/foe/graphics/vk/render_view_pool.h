@@ -15,8 +15,9 @@
 extern "C" {
 #endif
 
-FOE_GFX_EXPORT VkDescriptorSet foeGfxVkGetRenderViewDescriptorSet(
-    foeGfxRenderViewPool renderViewPool, foeGfxRenderView renderView);
+FOE_GFX_EXPORT
+VkDescriptorSet foeGfxVkGetRenderViewDescriptorSet(foeGfxRenderViewPool renderViewPool,
+                                                   foeGfxRenderView renderView);
 
 #ifdef __cplusplus
 }

@@ -9,7 +9,7 @@
 
 struct foeGfxVkFragmentDescriptor;
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_foeGfxVkFragmentDescriptor(
-    foeGfxVkFragmentDescriptor const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_foeGfxVkFragmentDescriptor(foeGfxVkFragmentDescriptor const &data);
 
 #endif // FOE_GRAPHICS_VK_IMGUI_FRAGMENT_DESCRIPTOR_HPP

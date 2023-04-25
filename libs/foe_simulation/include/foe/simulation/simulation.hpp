@@ -129,8 +129,8 @@ bool foeSimulationIsGraphicsInitialzied(foeSimulation const *pSimulation);
  *
  * The 'pCreateFn' of any previously registered functionality is called on the created simulation.
  */
-FOE_SIM_EXPORT foeResultSet foeCreateSimulation(bool addNameMaps,
-                                                foeSimulation **ppSimulationState);
+FOE_SIM_EXPORT
+foeResultSet foeCreateSimulation(bool addNameMaps, foeSimulation **ppSimulationState);
 
 /**
  * @brief Attempts to destroy a given SimulationState
@@ -143,7 +143,8 @@ FOE_SIM_EXPORT foeResultSet foeCreateSimulation(bool addNameMaps,
  * If the simulation is valid and was previously initialized, the 'onDeinitialize' is called.
  * 'pDestroyFn' is called last and the object is then freed.
  */
-FOE_SIM_EXPORT foeResultSet foeDestroySimulation(foeSimulation *pSimulation);
+FOE_SIM_EXPORT
+foeResultSet foeDestroySimulation(foeSimulation *pSimulation);
 
 /**
  * @brief Initializes a SimulationState given InitInfo
@@ -157,8 +158,9 @@ FOE_SIM_EXPORT foeResultSet foeDestroySimulation(foeSimulation *pSimulation);
  * function. If any of these fails, then it backtracks deinitializing anything that did succeed and
  * returns a state fully deinitialized.
  */
-FOE_SIM_EXPORT foeResultSet foeInitializeSimulation(foeSimulation *pSimulation,
-                                                    foeSimulationInitInfo const *pInitInfo);
+FOE_SIM_EXPORT
+foeResultSet foeInitializeSimulation(foeSimulation *pSimulation,
+                                     foeSimulationInitInfo const *pInitInfo);
 
 /**
  * @brief Deinitializes a SimulationState given InitInfo
@@ -169,7 +171,8 @@ FOE_SIM_EXPORT foeResultSet foeInitializeSimulation(foeSimulation *pSimulation,
  *
  * Iterates through any registered functionality and calls its 'pDeinitializeFn' function.
  */
-FOE_SIM_EXPORT foeResultSet foeDeinitializeSimulation(foeSimulation *pSimulation);
+FOE_SIM_EXPORT
+foeResultSet foeDeinitializeSimulation(foeSimulation *pSimulation);
 
 /**
  * @brief Initializes graphics for a SimulationState
@@ -182,8 +185,8 @@ FOE_SIM_EXPORT foeResultSet foeDeinitializeSimulation(foeSimulation *pSimulation
  * failed attempt to initialize some functionality will be returned.
  *
  */
-FOE_SIM_EXPORT foeResultSet foeInitializeSimulationGraphics(foeSimulation *pSimulation,
-                                                            foeGfxSession gfxSession);
+FOE_SIM_EXPORT
+foeResultSet foeInitializeSimulationGraphics(foeSimulation *pSimulation, foeGfxSession gfxSession);
 
 /**
  * @brief Deinitializes graphics from the given simulation
@@ -192,67 +195,84 @@ FOE_SIM_EXPORT foeResultSet foeInitializeSimulationGraphics(foeSimulation *pSimu
  * happened without issue. FOE_SIMULATION_ERROR_SIMULATION_GRAPHICS_NOT_INITIALIZED if the
  * simulation's graphics was not previously successfully initialized.
  */
-FOE_SIM_EXPORT foeResultSet foeDeinitializeSimulationGraphics(foeSimulation *pSimulation);
+FOE_SIM_EXPORT
+foeResultSet foeDeinitializeSimulationGraphics(foeSimulation *pSimulation);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationGetRefCount(foeSimulation const *pSimulation,
-                                                     foeSimulationStructureType sType,
-                                                     size_t *pRefCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationGetRefCount(foeSimulation const *pSimulation,
+                                      foeSimulationStructureType sType,
+                                      size_t *pRefCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationIncrementRefCount(foeSimulation *pSimulation,
-                                                           foeSimulationStructureType sType,
-                                                           size_t *pRefCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationIncrementRefCount(foeSimulation *pSimulation,
+                                            foeSimulationStructureType sType,
+                                            size_t *pRefCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationDecrementRefCount(foeSimulation *pSimulation,
-                                                           foeSimulationStructureType sType,
-                                                           size_t *pRefCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationDecrementRefCount(foeSimulation *pSimulation,
+                                            foeSimulationStructureType sType,
+                                            size_t *pRefCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationGetInitCount(foeSimulation const *pSimulation,
-                                                      foeSimulationStructureType sType,
-                                                      size_t *pInitCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationGetInitCount(foeSimulation const *pSimulation,
+                                       foeSimulationStructureType sType,
+                                       size_t *pInitCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationIncrementInitCount(foeSimulation *pSimulation,
-                                                            foeSimulationStructureType sType,
-                                                            size_t *pInitCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationIncrementInitCount(foeSimulation *pSimulation,
+                                             foeSimulationStructureType sType,
+                                             size_t *pInitCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationDecrementInitCount(foeSimulation *pSimulation,
-                                                            foeSimulationStructureType sType,
-                                                            size_t *pInitCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationDecrementInitCount(foeSimulation *pSimulation,
+                                             foeSimulationStructureType sType,
+                                             size_t *pInitCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
-                                                         foeSimulationStructureType sType,
-                                                         size_t *pGfxInitCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationGetGfxInitCount(foeSimulation const *pSimulation,
+                                          foeSimulationStructureType sType,
+                                          size_t *pGfxInitCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
-                                                               foeSimulationStructureType sType,
-                                                               size_t *pGfxInitCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationIncrementGfxInitCount(foeSimulation *pSimulation,
+                                                foeSimulationStructureType sType,
+                                                size_t *pGfxInitCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
-                                                               foeSimulationStructureType sType,
-                                                               size_t *pGfxInitCount);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationDecrementGfxInitCount(foeSimulation *pSimulation,
+                                                foeSimulationStructureType sType,
+                                                size_t *pGfxInitCount);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationInsertResourceLoader(
-    foeSimulation *pSimulation, foeSimulationLoaderData const *pCreateInfo);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationInsertResourceLoader(foeSimulation *pSimulation,
+                                               foeSimulationLoaderData const *pCreateInfo);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
-                                                               foeSimulationStructureType sType,
-                                                               void **ppLoader);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationReleaseResourceLoader(foeSimulation *pSimulation,
+                                                foeSimulationStructureType sType,
+                                                void **ppLoader);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationInsertComponentPool(
-    foeSimulation *pSimulation, foeSimulationComponentPoolData const *pCreateInfo);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationInsertComponentPool(foeSimulation *pSimulation,
+                                              foeSimulationComponentPoolData const *pCreateInfo);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
-                                                              foeSimulationStructureType sType,
-                                                              void **ppComponentPool);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationReleaseComponentPool(foeSimulation *pSimulation,
+                                               foeSimulationStructureType sType,
+                                               void **ppComponentPool);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationInsertSystem(foeSimulation *pSimulation,
-                                                      foeSimulationSystemData const *pCreateInfo);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationInsertSystem(foeSimulation *pSimulation,
+                                       foeSimulationSystemData const *pCreateInfo);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationReleaseSystem(foeSimulation *pSimulation,
-                                                       foeSimulationStructureType sType,
-                                                       void **ppSystem);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationReleaseSystem(foeSimulation *pSimulation,
+                                        foeSimulationStructureType sType,
+                                        void **ppSystem);
 
-FOE_SIM_EXPORT foeResultSet foeSimulationGetResourceCreateInfo(foeSimulation const *pSimulation,
-                                                               foeResourceID resourceID,
-                                                               foeResourceCreateInfo *pResourceCI);
+FOE_SIM_EXPORT
+foeResultSet foeSimulationGetResourceCreateInfo(foeSimulation const *pSimulation,
+                                                foeResourceID resourceID,
+                                                foeResourceCreateInfo *pResourceCI);
 
 #endif // FOE_SIMULATION_CORE_HPP

@@ -43,7 +43,8 @@ typedef enum foeResult {
     FOE_ERROR_ZERO_ASYNC_THREADS = -1000000010,
 } foeResult;
 
-FOE_EXPORT void foeResultToString(foeResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_EXPORT
+void foeResultToString(foeResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

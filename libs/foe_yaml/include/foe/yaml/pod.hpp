@@ -8,14 +8,15 @@
 #include <foe/yaml/export.h>
 #include <yaml-cpp/yaml.h>
 
+#include <cstdint>
 #include <string>
 
 #define POD_YAML_DECLARATION(T, Y)                                                                 \
-    FOE_YAML_EXPORT bool yaml_read_##T(std::string const &nodeName, YAML::Node const &node,        \
-                                       Y &data);                                                   \
+    FOE_YAML_EXPORT                                                                                \
+    bool yaml_read_##T(std::string const &nodeName, YAML::Node const &node, Y &data);              \
                                                                                                    \
-    FOE_YAML_EXPORT void yaml_write_##T(std::string const &nodeName, Y const &data,                \
-                                        YAML::Node &node);
+    FOE_YAML_EXPORT                                                                                \
+    void yaml_write_##T(std::string const &nodeName, Y const &data, YAML::Node &node);
 
 POD_YAML_DECLARATION(bool, bool)
 POD_YAML_DECLARATION(string, std::string)

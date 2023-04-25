@@ -33,9 +33,10 @@ class foeGfxVkDescriptorSetLayoutPool {
     auto get(VkDescriptorSetLayoutCreateInfo const *pDescriptorSetLayoutCI)
         -> VkDescriptorSetLayout;
 
-    FOE_GFX_EXPORT bool getCI(VkDescriptorSetLayout layout,
-                              VkDescriptorSetLayoutCreateInfo &layoutCI,
-                              std::vector<VkDescriptorSetLayoutBinding> &layoutBindings);
+    FOE_GFX_EXPORT
+    bool getCI(VkDescriptorSetLayout layout,
+               VkDescriptorSetLayoutCreateInfo &layoutCI,
+               std::vector<VkDescriptorSetLayoutBinding> &layoutBindings);
 
   private:
     struct Layout {

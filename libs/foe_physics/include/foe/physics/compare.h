@@ -16,11 +16,12 @@ extern "C" {
 typedef struct foeRigidBody foeRigidBody;
 typedef struct foeCollisionShapeCreateInfo foeCollisionShapeCreateInfo;
 
-FOE_PHYSICS_EXPORT bool compare_foeRigidBody(foeRigidBody const *pData1,
-                                             foeRigidBody const *pData2);
+FOE_PHYSICS_EXPORT
+bool compare_foeRigidBody(foeRigidBody const *pData1, foeRigidBody const *pData2);
 
-FOE_PHYSICS_EXPORT bool compare_foeCollisionShapeCreateInfo(
-    foeCollisionShapeCreateInfo const *pData1, foeCollisionShapeCreateInfo const *pData2);
+FOE_PHYSICS_EXPORT
+bool compare_foeCollisionShapeCreateInfo(foeCollisionShapeCreateInfo const *pData1,
+                                         foeCollisionShapeCreateInfo const *pData2);
 
 #ifdef __cplusplus
 }

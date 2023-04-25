@@ -20,8 +20,8 @@ typedef enum foeWsiResult {
     FOE_WSI_ERROR_VULKAN_NOT_SUPPORTED = -1000003004,
 } foeWsiResult;
 
-FOE_WSI_EXPORT void foeWsiResultToString(foeWsiResult value,
-                                         char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_WSI_EXPORT
+void foeWsiResultToString(foeWsiResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

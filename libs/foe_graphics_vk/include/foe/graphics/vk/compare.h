@@ -15,8 +15,9 @@ extern "C" {
 
 typedef struct foeGfxVkShaderCreateInfo foeGfxVkShaderCreateInfo;
 
-FOE_GFX_EXPORT bool compare_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const *pData1,
-                                                     foeGfxVkShaderCreateInfo const *pData2);
+FOE_GFX_EXPORT
+bool compare_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const *pData1,
+                                      foeGfxVkShaderCreateInfo const *pData2);
 
 #ifdef __cplusplus
 }

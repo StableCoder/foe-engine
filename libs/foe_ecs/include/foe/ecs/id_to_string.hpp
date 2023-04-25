@@ -14,18 +14,21 @@
  * @param id ID to convert
  * @return The ID in a hexadecimal format
  */
-FOE_ECS_EXPORT std::string foeIdToString(foeId id);
+FOE_ECS_EXPORT
+std::string foeIdToString(foeId id);
 
 /** @brief Converts the foeIdGroup to a more readable hexadecimal string
  * @param id ID to convert
  * @return The ID in a hexadecimal format
  */
-FOE_ECS_EXPORT std::string foeIdGroupToString(foeIdGroup group);
+FOE_ECS_EXPORT
+std::string foeIdGroupToString(foeIdGroup group);
 
 /** @brief Converts the foeIdIndex to a more readable hexadecimal string
  * @param id ID to convert
  * @return The ID in a hexadecimal format
  */
-FOE_ECS_EXPORT std::string foeIdIndexToString(foeIdIndex index);
+FOE_ECS_EXPORT
+std::string foeIdIndexToString(foeIdIndex index);
 
 #endif // FOE_ECS_ID_TO_STRING_HPP

@@ -22,11 +22,13 @@ typedef struct foeGfxVkFragmentDescriptor {
     VkPipelineColorBlendAttachmentState *pColourBlendAttachments;
 } foeGfxVkFragmentDescriptor;
 
-FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlags foeGfxVkGetFragmentDescriptorBuiltinSetLayouts(
+FOE_GFX_EXPORT
+foeBuiltinDescriptorSetLayoutFlags foeGfxVkGetFragmentDescriptorBuiltinSetLayouts(
     foeGfxVkFragmentDescriptor const *pFragmentDescriptor);
 
-FOE_GFX_EXPORT VkPipelineColorBlendStateCreateInfo const *
-foeGfxVkGetFragmentDescriptorColourBlendSCI(foeGfxVkFragmentDescriptor const *pFragmentDescriptor);
+FOE_GFX_EXPORT
+VkPipelineColorBlendStateCreateInfo const *foeGfxVkGetFragmentDescriptorColourBlendSCI(
+    foeGfxVkFragmentDescriptor const *pFragmentDescriptor);
 
 #ifdef __cplusplus
 }

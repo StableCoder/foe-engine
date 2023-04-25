@@ -28,7 +28,8 @@ extern "C" {
 FOE_DEFINE_HANDLE(foeXrRuntime)
 
 #ifdef FOE_XR_SUPPORT
-FOE_XR_EXPORT foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime);
+FOE_XR_EXPORT
+foeResultSet foeXrDestroyRuntime(foeXrRuntime runtime);
 #endif // FOE_XR_SUPPORT
 
 #ifdef __cplusplus

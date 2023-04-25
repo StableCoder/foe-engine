@@ -44,8 +44,9 @@ typedef enum foeGraphicsVkResult {
     FOE_GRAPHICS_VK_ERROR_DATA_LARGER_THAN_BUFFER = -100001027,
 } foeGraphicsVkResult;
 
-FOE_GFX_EXPORT void foeGraphicsVkResultToString(foeGraphicsVkResult value,
-                                                char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_GFX_EXPORT
+void foeGraphicsVkResultToString(foeGraphicsVkResult value,
+                                 char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

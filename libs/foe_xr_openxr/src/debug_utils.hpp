@@ -8,10 +8,12 @@
 #include <foe/xr/export.h>
 #include <openxr/openxr.h>
 
-FOE_XR_EXPORT XrResult
-foeOpenXrCreateDebugUtilsMessenger(XrInstance instance, XrDebugUtilsMessengerEXT *pDebugMessenger);
+FOE_XR_EXPORT
+XrResult foeOpenXrCreateDebugUtilsMessenger(XrInstance instance,
+                                            XrDebugUtilsMessengerEXT *pDebugMessenger);
 
-FOE_XR_EXPORT XrResult foeOpenXrDestroyDebugUtilsMessenger(XrInstance instance,
-                                                           XrDebugUtilsMessengerEXT debugMessenger);
+FOE_XR_EXPORT
+XrResult foeOpenXrDestroyDebugUtilsMessenger(XrInstance instance,
+                                             XrDebugUtilsMessengerEXT debugMessenger);
 
 #endif // FOE_XR_DEBUG_UTILS_HPP

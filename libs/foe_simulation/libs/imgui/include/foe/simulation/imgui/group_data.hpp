@@ -14,10 +14,13 @@ struct ImGuiContext;
 
 class foeSimulationImGuiGroupData {
   public:
-    FOE_SIM_IMGUI_EXPORT foeSimulationImGuiGroupData(foeSimulation *pSimulation);
+    FOE_SIM_IMGUI_EXPORT
+    foeSimulationImGuiGroupData(foeSimulation *pSimulation);
 
-    FOE_SIM_IMGUI_EXPORT bool registerUI(foeImGuiState *pState);
-    FOE_SIM_IMGUI_EXPORT void deregisterUI(foeImGuiState *pState);
+    FOE_SIM_IMGUI_EXPORT
+    bool registerUI(foeImGuiState *pState);
+    FOE_SIM_IMGUI_EXPORT
+    void deregisterUI(foeImGuiState *pState);
 
   private:
     static bool renderMenuElements(ImGuiContext *pImGuiContext, void *pUserData, char const *pMenu);

@@ -20,15 +20,18 @@ typedef struct foeGfxVkShaderCreateInfo {
     VkPushConstantRange pushConstantRange;
 } foeGfxVkShaderCreateInfo;
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkCreateShader(foeGfxSession session,
-                                                 foeGfxVkShaderCreateInfo const *pCreateInfo,
-                                                 uint32_t shaderCodeSize,
-                                                 uint32_t const *pShaderCode,
-                                                 foeGfxShader *pShader);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkCreateShader(foeGfxSession session,
+                                  foeGfxVkShaderCreateInfo const *pCreateInfo,
+                                  uint32_t shaderCodeSize,
+                                  uint32_t const *pShaderCode,
+                                  foeGfxShader *pShader);
 
-FOE_GFX_EXPORT VkDescriptorSetLayout foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader);
+FOE_GFX_EXPORT
+VkDescriptorSetLayout foeGfxVkGetShaderDescriptorSetLayout(foeGfxShader shader);
 
-FOE_GFX_EXPORT VkPushConstantRange foeGfxVkGetShaderPushConstantRange(foeGfxShader shader);
+FOE_GFX_EXPORT
+VkPushConstantRange foeGfxVkGetShaderPushConstantRange(foeGfxShader shader);
 
 #ifdef __cplusplus
 }

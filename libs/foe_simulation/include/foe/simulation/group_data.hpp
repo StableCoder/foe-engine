@@ -18,36 +18,52 @@
 
 class foeGroupData {
   public:
-    FOE_SIM_EXPORT foeGroupData();
-    FOE_SIM_EXPORT ~foeGroupData();
+    FOE_SIM_EXPORT
+    foeGroupData();
+    FOE_SIM_EXPORT
+    ~foeGroupData();
 
-    FOE_SIM_EXPORT bool addDynamicGroup(foeEcsIndexes entityIndexes,
-                                        foeEcsIndexes resourceIndexes,
-                                        foeImexImporter importer);
+    FOE_SIM_EXPORT
+    bool addDynamicGroup(foeEcsIndexes entityIndexes,
+                         foeEcsIndexes resourceIndexes,
+                         foeImexImporter importer);
 
-    FOE_SIM_EXPORT bool setPersistentImporter(foeImexImporter importer);
+    FOE_SIM_EXPORT
+    bool setPersistentImporter(foeImexImporter importer);
 
-    FOE_SIM_EXPORT auto entityIndexes(foeIdGroup group) noexcept -> foeEcsIndexes;
-    FOE_SIM_EXPORT auto entityIndexes(std::string_view groupName) noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto entityIndexes(foeIdGroup group) noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto entityIndexes(std::string_view groupName) noexcept -> foeEcsIndexes;
 
-    FOE_SIM_EXPORT auto resourceIndexes(foeIdGroup group) noexcept -> foeEcsIndexes;
-    FOE_SIM_EXPORT auto resourceIndexes(std::string_view groupName) noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto resourceIndexes(foeIdGroup group) noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto resourceIndexes(std::string_view groupName) noexcept -> foeEcsIndexes;
 
-    FOE_SIM_EXPORT auto importer(foeIdGroup group) noexcept -> foeImexImporter;
-    FOE_SIM_EXPORT auto importer(std::string_view groupName) noexcept -> foeImexImporter;
+    FOE_SIM_EXPORT
+    auto importer(foeIdGroup group) noexcept -> foeImexImporter;
+    FOE_SIM_EXPORT
+    auto importer(std::string_view groupName) noexcept -> foeImexImporter;
 
-    FOE_SIM_EXPORT auto persistentEntityIndexes() noexcept -> foeEcsIndexes;
-    FOE_SIM_EXPORT auto persistentResourceIndexes() noexcept -> foeEcsIndexes;
-    FOE_SIM_EXPORT auto persistentImporter() noexcept -> foeImexImporter;
+    FOE_SIM_EXPORT
+    auto persistentEntityIndexes() noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto persistentResourceIndexes() noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto persistentImporter() noexcept -> foeImexImporter;
 
-    FOE_SIM_EXPORT auto temporaryEntityIndexes() noexcept -> foeEcsIndexes;
-    FOE_SIM_EXPORT auto temporaryResourceIndexes() noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto temporaryEntityIndexes() noexcept -> foeEcsIndexes;
+    FOE_SIM_EXPORT
+    auto temporaryResourceIndexes() noexcept -> foeEcsIndexes;
 
     // Used for resource loaders
-    FOE_SIM_EXPORT foeResourceCreateInfo getResourceCreateInfo(foeId id);
+    FOE_SIM_EXPORT
+    foeResourceCreateInfo getResourceCreateInfo(foeId id);
     // Used for resource loaders
-    FOE_SIM_EXPORT foeResultSet findExternalFile(char const *pFilePath,
-                                                 foeManagedMemory *pManagedMemory);
+    FOE_SIM_EXPORT
+    foeResultSet findExternalFile(char const *pFilePath, foeManagedMemory *pManagedMemory);
 
   private:
     struct CombinedGroup {

@@ -31,8 +31,9 @@ typedef enum foeImexBinaryResult {
     FOE_IMEX_BINARY_ERROR_FAILED_TO_FIND_EXTERNAL_DATA = -1000005014,
 } foeImexBinaryResult;
 
-FOE_IMEX_BINARY_EXPORT void foeImexBinaryResultToString(foeImexBinaryResult value,
-                                                        char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_IMEX_BINARY_EXPORT
+void foeImexBinaryResultToString(foeImexBinaryResult value,
+                                 char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

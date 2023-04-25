@@ -14,7 +14,8 @@
  * @brief Returns the number of vertices for the cube mesh
  * @return Number of unique vertices worth of data
  */
-FOE_MODEL_EXPORT int foeModelCubeNumVertices() noexcept;
+FOE_MODEL_EXPORT
+int foeModelCubeNumVertices() noexcept;
 
 /**
  * @brief Copies requested data components into the provided buffer
@@ -24,15 +25,17 @@ FOE_MODEL_EXPORT int foeModelCubeNumVertices() noexcept;
  * `foeModelCubeNumVertices() * foeGetVertexComponentStride(componentCount,pComponents) *
  * sizeof(float)` bytes.
  */
-FOE_MODEL_EXPORT void foeModelCubeVertexData(uint32_t componentCount,
-                                             foeVertexComponent const *pComponents,
-                                             float *pData);
+FOE_MODEL_EXPORT
+void foeModelCubeVertexData(uint32_t componentCount,
+                            foeVertexComponent const *pComponents,
+                            float *pData);
 
 /**
  * @brief Returns the number of indices for the cube mesh
  * @return Number of indices
  */
-FOE_MODEL_EXPORT int foeModelCubeNumIndices() noexcept;
+FOE_MODEL_EXPORT
+int foeModelCubeNumIndices() noexcept;
 
 /**
  * @brief Copies cube 16-bit index data into the provided buffer
@@ -40,7 +43,8 @@ FOE_MODEL_EXPORT int foeModelCubeNumIndices() noexcept;
  * @param pData[out] Buffer to copy indice data to. Must be minimum of `foeModelCubeNumIndices() *
  * sizeof(uint16_t)` bytes.
  */
-FOE_MODEL_EXPORT void foeModelCubeIndexData16(uint16_t offset, uint16_t *pData);
+FOE_MODEL_EXPORT
+void foeModelCubeIndexData16(uint16_t offset, uint16_t *pData);
 
 /**
  * @brief Copies cube 32-bit index data into the provided buffer
@@ -48,6 +52,7 @@ FOE_MODEL_EXPORT void foeModelCubeIndexData16(uint16_t offset, uint16_t *pData);
  * @param pData[out] Buffer to copy indice data to. Must be minimum of `foeModelCubeNumIndices() *
  * sizeof(uint32_t)` bytes.
  */
-FOE_MODEL_EXPORT void foeModelCubeIndexData32(uint32_t offset, uint32_t *pData);
+FOE_MODEL_EXPORT
+void foeModelCubeIndexData32(uint32_t offset, uint32_t *pData);
 
 #endif // FOE_MODEL_CUBE_HPP

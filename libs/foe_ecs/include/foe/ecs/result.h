@@ -30,8 +30,8 @@ typedef enum foeEcsResult {
     FOE_ECS_ERROR_NO_MATCH = -1000001012,
 } foeEcsResult;
 
-FOE_ECS_EXPORT void foeEcsResultToString(foeEcsResult value,
-                                         char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_ECS_EXPORT
+void foeEcsResultToString(foeEcsResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

@@ -20,8 +20,8 @@ typedef enum foeImGuiVkResult {
     FOE_IMGUI_VK_ERROR_GRAPH_UI_COLOUR_TARGET_MISSING_STATE = -1000026004,
 } foeImGuiVkResult;
 
-FOE_IMGUI_VK_EXPORT void foeImGuiVkResultToString(foeImGuiVkResult value,
-                                                  char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_IMGUI_VK_EXPORT
+void foeImGuiVkResultToString(foeImGuiVkResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

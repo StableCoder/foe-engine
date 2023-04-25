@@ -10,10 +10,10 @@
 
 class foeSimulationImGuiRegistrar;
 
-FOE_PHYSICS_IMGUI_EXPORT foeResultSet
-foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
+FOE_PHYSICS_IMGUI_EXPORT
+foeResultSet foePhysicsImGuiRegister(foeSimulationImGuiRegistrar *pRegistrar);
 
-FOE_PHYSICS_IMGUI_EXPORT foeResultSet
-foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
+FOE_PHYSICS_IMGUI_EXPORT
+foeResultSet foePhysicsImGuiDeregister(foeSimulationImGuiRegistrar *pRegistrar);
 
 #endif // FOE_PHYSICS_IMGUI_REGISTRATION_HPP

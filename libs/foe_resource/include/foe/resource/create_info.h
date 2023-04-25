@@ -21,21 +21,26 @@ typedef int foeResourceCreateInfoType;
 
 typedef void (*PFN_foeResourceCreateInfoCleanup)(void *);
 
-FOE_RES_EXPORT foeResultSet foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
-                                                        PFN_foeResourceCreateInfoCleanup cleanupFn,
-                                                        size_t size,
-                                                        void *pData,
-                                                        void (*pDataFn)(void *, void *),
-                                                        foeResourceCreateInfo *pCreateInfo);
+FOE_RES_EXPORT
+foeResultSet foeCreateResourceCreateInfo(foeResourceCreateInfoType type,
+                                         PFN_foeResourceCreateInfoCleanup cleanupFn,
+                                         size_t size,
+                                         void *pData,
+                                         void (*pDataFn)(void *, void *),
+                                         foeResourceCreateInfo *pCreateInfo);
 
-FOE_RES_EXPORT foeResourceCreateInfoType
-foeResourceCreateInfoGetType(foeResourceCreateInfo createInfo);
+FOE_RES_EXPORT
+foeResourceCreateInfoType foeResourceCreateInfoGetType(foeResourceCreateInfo createInfo);
 
-FOE_RES_EXPORT int foeResourceCreateInfoGetRefCount(foeResourceCreateInfo createInfo);
-FOE_RES_EXPORT int foeResourceCreateInfoIncrementRefCount(foeResourceCreateInfo createInfo);
-FOE_RES_EXPORT int foeResourceCreateInfoDecrementRefCount(foeResourceCreateInfo createInfo);
+FOE_RES_EXPORT
+int foeResourceCreateInfoGetRefCount(foeResourceCreateInfo createInfo);
+FOE_RES_EXPORT
+int foeResourceCreateInfoIncrementRefCount(foeResourceCreateInfo createInfo);
+FOE_RES_EXPORT
+int foeResourceCreateInfoDecrementRefCount(foeResourceCreateInfo createInfo);
 
-FOE_RES_EXPORT void const *foeResourceCreateInfoGetData(foeResourceCreateInfo createInfo);
+FOE_RES_EXPORT
+void const *foeResourceCreateInfoGetData(foeResourceCreateInfo createInfo);
 
 #ifdef __cplusplus
 }

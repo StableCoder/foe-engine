@@ -11,14 +11,15 @@
 #include <yaml-cpp/yaml.h>
 
 #define GLM_YAML_DECLARATION(T)                                                                    \
-    FOE_YAML_EXPORT bool yaml_read_glm_##T(std::string const &nodeName, YAML::Node const &node,    \
-                                           glm::T &data);                                          \
+    FOE_YAML_EXPORT                                                                                \
+    bool yaml_read_glm_##T(std::string const &nodeName, YAML::Node const &node, glm::T &data);     \
                                                                                                    \
-    FOE_YAML_EXPORT void yaml_write_glm_##T(std::string const &nodeName, glm::T const &data,       \
-                                            YAML::Node &node);                                     \
+    FOE_YAML_EXPORT                                                                                \
+    void yaml_write_glm_##T(std::string const &nodeName, glm::T const &data, YAML::Node &node);    \
                                                                                                    \
-    FOE_YAML_EXPORT void yaml_write_glm_##T_colour(std::string const &nodeName,                    \
-                                                   glm::T const &data, YAML::Node &node);
+    FOE_YAML_EXPORT                                                                                \
+    void yaml_write_glm_##T_colour(std::string const &nodeName, glm::T const &data,                \
+                                   YAML::Node &node);
 
 // 4
 GLM_YAML_DECLARATION(vec4)

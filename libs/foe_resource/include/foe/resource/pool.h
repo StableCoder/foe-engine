@@ -22,17 +22,20 @@ typedef int foeResourcePoolType;
 
 FOE_DEFINE_HANDLE(foeResourcePool)
 
-FOE_RES_EXPORT foeResultSet foeCreateResourcePool(foeResourceFns const *pResourceFns,
-                                                  foeResourcePool *pResourcePool);
+FOE_RES_EXPORT
+foeResultSet foeCreateResourcePool(foeResourceFns const *pResourceFns,
+                                   foeResourcePool *pResourcePool);
 
-FOE_RES_EXPORT void foeDestroyResourcePool(foeResourcePool resourcePool);
-
-// Returned resources have reference count pre-incremented.
-FOE_RES_EXPORT foeResource foeResourcePoolAdd(foeResourcePool resourcePool,
-                                              foeResourceID resourceID);
+FOE_RES_EXPORT
+void foeDestroyResourcePool(foeResourcePool resourcePool);
 
 // Returned resources have reference count pre-incremented.
-FOE_RES_EXPORT foeResource foeResourcePoolLoadedReplace(
+FOE_RES_EXPORT
+foeResource foeResourcePoolAdd(foeResourcePool resourcePool, foeResourceID resourceID);
+
+// Returned resources have reference count pre-incremented.
+FOE_RES_EXPORT
+foeResource foeResourcePoolLoadedReplace(
     foeResourcePool resourcePool,
     foeResourceID resourceID,
     foeResourceType resourceType,
@@ -43,22 +46,24 @@ FOE_RES_EXPORT foeResource foeResourcePoolLoadedReplace(
     void (*pUnloadDataFn)(void *, foeResource, uint32_t, PFN_foeResourceUnloadCall, bool));
 
 // Returned resources have reference count pre-incremented.
-FOE_RES_EXPORT foeResource foeResourcePoolFind(foeResourcePool resourcePool,
-                                               foeResourceID resourceID);
+FOE_RES_EXPORT
+foeResource foeResourcePoolFind(foeResourcePool resourcePool, foeResourceID resourceID);
 
-FOE_RES_EXPORT foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool,
-                                                  foeResourceID resourceID);
+FOE_RES_EXPORT
+foeResultSet foeResourcePoolRemove(foeResourcePool resourcePool, foeResourceID resourceID);
 
-FOE_RES_EXPORT void foeResourcePoolSetAsyncTaskCallback(foeResourcePool resourcePool,
-                                                        void *pScheduleAsyncTaskContext,
-                                                        PFN_foeScheduleTask scheduleAsyncTask);
-
-// Unloads called 'immediately'
-FOE_RES_EXPORT void foeResourcePoolUnloadAll(foeResourcePool resourcePool);
+FOE_RES_EXPORT
+void foeResourcePoolSetAsyncTaskCallback(foeResourcePool resourcePool,
+                                         void *pScheduleAsyncTaskContext,
+                                         PFN_foeScheduleTask scheduleAsyncTask);
 
 // Unloads called 'immediately'
-FOE_RES_EXPORT uint32_t foeResourcePoolUnloadType(foeResourcePool resourcePool,
-                                                  foeResourceType resourceType);
+FOE_RES_EXPORT
+void foeResourcePoolUnloadAll(foeResourcePool resourcePool);
+
+// Unloads called 'immediately'
+FOE_RES_EXPORT
+uint32_t foeResourcePoolUnloadType(foeResourcePool resourcePool, foeResourceType resourceType);
 
 #ifdef __cplusplus
 }

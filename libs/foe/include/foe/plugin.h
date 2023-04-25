@@ -21,13 +21,15 @@ FOE_DEFINE_HANDLE(foePlugin)
  * @param pPath String representing the location of the plugin to load
  * @param[out] pPlugin Handle of the new plugin, returns FOE_NULL_HANDLE if not loaded
  */
-FOE_EXPORT void foeCreatePlugin(char const *pPath, foePlugin *pPlugin);
+FOE_EXPORT
+void foeCreatePlugin(char const *pPath, foePlugin *pPlugin);
 
 /**
  *@brief Destroys the given plugin
  * @param plugin Handle of the plugin to be destroyed
  */
-FOE_EXPORT void foeDestroyPlugin(foePlugin plugin);
+FOE_EXPORT
+void foeDestroyPlugin(foePlugin plugin);
 
 /**
  *@brief Gets an exported symbol from the provided plugin
@@ -35,7 +37,8 @@ FOE_EXPORT void foeDestroyPlugin(foePlugin plugin);
  * @param pSymbol String of the name of the symbol to return
  * @return Pointer to the address of the symbol in the plugin, or nullptr if not found.
  */
-FOE_EXPORT void *foeGetPluginSymbol(foePlugin plugin, char const *pSymbol);
+FOE_EXPORT
+void *foeGetPluginSymbol(foePlugin plugin, char const *pSymbol);
 
 #ifdef __cplusplus
 }

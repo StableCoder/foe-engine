@@ -11,8 +11,8 @@
 extern "C" {
 #endif
 
-FOE_EXPORT foeResultSet foeCreateMemoryMappedFile(char const *pFilePath,
-                                                  foeManagedMemory *pManagedMemory);
+FOE_EXPORT
+foeResultSet foeCreateMemoryMappedFile(char const *pFilePath, foeManagedMemory *pManagedMemory);
 
 #ifdef __cplusplus
 }

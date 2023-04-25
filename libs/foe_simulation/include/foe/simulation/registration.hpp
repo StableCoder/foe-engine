@@ -69,8 +69,8 @@ struct foeSimulationFunctionalty {
  * If a failure occurs, then the functionality is fully removed from anywhere it may have succeeded
  * and is then not considered registered.
  */
-FOE_SIM_EXPORT foeResultSet
-foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
+FOE_SIM_EXPORT
+foeResultSet foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
 
 /**
  * @brief Attempts to deregister a set of simulation functionality globally
@@ -81,6 +81,7 @@ foeRegisterFunctionality(foeSimulationFunctionalty const &functionality);
  * simulations and call 'pDeinitializeFn' and 'pDestroyFn' to remove the functionality before
  * finally returning.
  */
-FOE_SIM_EXPORT foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionalityUUID);
+FOE_SIM_EXPORT
+foeResultSet foeDeregisterFunctionality(foeSimulationUUID functionalityUUID);
 
 #endif // FOE_SIMULATION_REGISTRATION_HPP

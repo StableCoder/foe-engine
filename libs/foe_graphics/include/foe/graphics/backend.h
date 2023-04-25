@@ -25,9 +25,11 @@ _Static_assert(sizeof(struct foeGfxVersion) == 4,
                "foeGfxVersion should be 4 bytes in size (uint32_t)");
 #endif
 
-FOE_GFX_EXPORT char const *foeGfxBackendName();
+FOE_GFX_EXPORT
+char const *foeGfxBackendName();
 
-FOE_GFX_EXPORT struct foeGfxVersion foeGfxBackendVersion();
+FOE_GFX_EXPORT
+struct foeGfxVersion foeGfxBackendVersion();
 
 #ifdef __cplusplus
 }

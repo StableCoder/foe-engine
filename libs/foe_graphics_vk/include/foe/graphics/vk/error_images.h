@@ -15,23 +15,25 @@
 extern "C" {
 #endif
 
-FOE_GFX_EXPORT foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
-                                                      VkFormat format,
-                                                      uint32_t numMipLevels,
-                                                      uint32_t numCheckSquares,
-                                                      VmaAllocation *pAlloc,
-                                                      VkImage *pImage,
-                                                      VkImageView *pImageView,
-                                                      VkSampler *pSampler);
+FOE_GFX_EXPORT
+foeResultSet foeCreateErrorColourImage(foeGfxUploadContext uploadContext,
+                                       VkFormat format,
+                                       uint32_t numMipLevels,
+                                       uint32_t numCheckSquares,
+                                       VmaAllocation *pAlloc,
+                                       VkImage *pImage,
+                                       VkImageView *pImageView,
+                                       VkSampler *pSampler);
 
-FOE_GFX_EXPORT foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
-                                                            uint32_t numMipLevels,
-                                                            uint32_t numCheckSquares,
-                                                            VmaAllocation *pAlloc,
-                                                            VkImage *pImage,
-                                                            VkImageView *pImageDepthView,
-                                                            VkImageView *pImageStencilView,
-                                                            VkSampler *pSampler);
+FOE_GFX_EXPORT
+foeResultSet foeCreateErrorDepthStencilImage(foeGfxUploadContext uploadContext,
+                                             uint32_t numMipLevels,
+                                             uint32_t numCheckSquares,
+                                             VmaAllocation *pAlloc,
+                                             VkImage *pImage,
+                                             VkImageView *pImageDepthView,
+                                             VkImageView *pImageStencilView,
+                                             VkSampler *pSampler);
 
 #ifdef __cplusplus
 }

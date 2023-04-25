@@ -19,8 +19,10 @@
  * @return True if the node was found/parsed, false if the node could not be found.
  * @exception Throws foeYamlException on any parsing issue or any exception is caught.
  */
-FOE_GFX_YAML_EXPORT bool yaml_read_foeBuiltinDescriptorSetLayoutFlags(
-    std::string const &nodeName, YAML::Node const &node, foeBuiltinDescriptorSetLayoutFlags &data);
+FOE_GFX_YAML_EXPORT
+bool yaml_read_foeBuiltinDescriptorSetLayoutFlags(std::string const &nodeName,
+                                                  YAML::Node const &node,
+                                                  foeBuiltinDescriptorSetLayoutFlags &data);
 
 /** @brief Encodes the given data object to Yaml
  * @param nodeName Name of the Yaml sub-node to operate on (blank to operator on given node)
@@ -28,7 +30,9 @@ FOE_GFX_YAML_EXPORT bool yaml_read_foeBuiltinDescriptorSetLayoutFlags(
  * @param node [out] Yaml node to operate on
  * @exception Throws foeYamlException if there's any exception during writing
  */
-FOE_GFX_YAML_EXPORT void yaml_write_foeBuiltinDescriptorSetLayoutFlags(
-    std::string const &nodeName, foeBuiltinDescriptorSetLayoutFlags const &data, YAML::Node &node);
+FOE_GFX_YAML_EXPORT
+void yaml_write_foeBuiltinDescriptorSetLayoutFlags(std::string const &nodeName,
+                                                   foeBuiltinDescriptorSetLayoutFlags const &data,
+                                                   YAML::Node &node);
 
 #endif // FOE_GRAPHICS_YAML_ENUMS_HPP

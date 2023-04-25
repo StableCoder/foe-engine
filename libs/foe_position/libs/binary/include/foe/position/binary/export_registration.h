@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
-FOE_POSITION_BINARY_EXPORT foeResultSet foePositionBinaryRegisterExporters();
+FOE_POSITION_BINARY_EXPORT
+foeResultSet foePositionBinaryRegisterExporters();
 
-FOE_POSITION_BINARY_EXPORT void foePositionBinaryDeregisterExporters();
+FOE_POSITION_BINARY_EXPORT
+void foePositionBinaryDeregisterExporters();
 
 #ifdef __cplusplus
 }

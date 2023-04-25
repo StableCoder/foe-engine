@@ -11,19 +11,20 @@
 #include <openxr/openxr.h>
 #include <vulkan/vulkan.h>
 
-FOE_OPENXR_VK_EXPORT foeResultSet
-foeOpenXrVkImportSwapchainImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                                         char const *pJobName,
-                                         VkFence fence,
-                                         char const *pResourceName,
-                                         VkSemaphore semaphore,
-                                         XrSwapchain swapchain,
-                                         VkImage image,
-                                         VkImageView view,
-                                         VkFormat format,
-                                         VkExtent2D extent,
-                                         VkImageLayout layout,
-                                         foeGfxVkRenderGraphResource *pXrSwapchainResource,
-                                         foeGfxVkRenderGraphJob *pRenderGraphJob);
+FOE_OPENXR_VK_EXPORT
+foeResultSet foeOpenXrVkImportSwapchainImageRenderJob(
+    foeGfxVkRenderGraph renderGraph,
+    char const *pJobName,
+    VkFence fence,
+    char const *pResourceName,
+    VkSemaphore semaphore,
+    XrSwapchain swapchain,
+    VkImage image,
+    VkImageView view,
+    VkFormat format,
+    VkExtent2D extent,
+    VkImageLayout layout,
+    foeGfxVkRenderGraphResource *pXrSwapchainResource,
+    foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // FOE_XR_OPENXR_VK_RENDER_GRAPH_JOBS_SWAPCHAIN_HPP

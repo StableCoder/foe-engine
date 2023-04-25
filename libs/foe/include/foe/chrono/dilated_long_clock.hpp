@@ -23,20 +23,22 @@ class foeDilatedLongClock : public foeDilatedClock {
      * @param startTime The time the clock will start at.
      * @param timeDilation The starting time dilation value.
      */
-    FOE_EXPORT explicit foeDilatedLongClock(
-        std::chrono::nanoseconds externalTime,
-        std::chrono::nanoseconds startTime = std::chrono::nanoseconds{0},
-        float dilation = 1.f);
+    FOE_EXPORT
+    explicit foeDilatedLongClock(std::chrono::nanoseconds externalTime,
+                                 std::chrono::nanoseconds startTime = std::chrono::nanoseconds{0},
+                                 float dilation = 1.f);
 
     /** Updates the clock.
      * @param externalTime The current time of the external clock used as a baseline.
      */
-    FOE_EXPORT void update(std::chrono::nanoseconds externalTime) noexcept;
+    FOE_EXPORT
+    void update(std::chrono::nanoseconds externalTime) noexcept;
 
     /** Gets the value of the external clock that last time this object was updated
      * @return The external time this was last processed for/at.
      */
-    FOE_EXPORT auto externalTime() const noexcept -> std::chrono::nanoseconds;
+    FOE_EXPORT
+    auto externalTime() const noexcept -> std::chrono::nanoseconds;
 
     /** Sets the clock's internally set external time, without performing other processing.
      * @param externalTime The external time to set.
@@ -45,7 +47,8 @@ class foeDilatedLongClock : public foeDilatedClock {
      * for example if there was a long pause or a change in the time stream for this clock, as in
      * switching which clock it is being based on with, for example, a different epoch.
      */
-    FOE_EXPORT void externalTime(std::chrono::nanoseconds externalTime) noexcept;
+    FOE_EXPORT
+    void externalTime(std::chrono::nanoseconds externalTime) noexcept;
 
   private:
     // Make the updateClock function from the base class non-public here.

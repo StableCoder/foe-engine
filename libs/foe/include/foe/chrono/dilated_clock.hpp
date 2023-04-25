@@ -30,15 +30,16 @@ class foeDilatedClock {
      * @param startTime The time the clock will start at.
      * @param timeDilation The starting time dilation value.
      */
-    FOE_EXPORT explicit foeDilatedClock(
-        std::chrono::nanoseconds startTime = std::chrono::nanoseconds{0}, float dilation = 1.f);
+    FOE_EXPORT
+    explicit foeDilatedClock(std::chrono::nanoseconds startTime = std::chrono::nanoseconds{0},
+                             float dilation = 1.f);
 
     /** Updated the internal clock based on the real time since the last update.
      * @param externalTime Current time of the external clock.
      * @param elapsed Elapsed time on the external clock since the last update.
      */
-    FOE_EXPORT void update(std::chrono::nanoseconds externalTime,
-                           std::chrono::nanoseconds elapsed) noexcept;
+    FOE_EXPORT
+    void update(std::chrono::nanoseconds externalTime, std::chrono::nanoseconds elapsed) noexcept;
 
     template <typename DurationType = std::chrono::nanoseconds>
     auto elapsed() const noexcept -> DurationType {
@@ -55,17 +56,20 @@ class foeDilatedClock {
      *
      * This also sets the elapsed time to 0, as if starting a fresh clock.
      */
-    FOE_EXPORT void time(std::chrono::nanoseconds time) noexcept;
+    FOE_EXPORT
+    void time(std::chrono::nanoseconds time) noexcept;
 
     /** Returns the current dilation value.
      * @return The time dilation value.
      */
-    FOE_EXPORT float dilation() const noexcept;
+    FOE_EXPORT
+    float dilation() const noexcept;
 
     /** Sets a new time dilation value.
      * @param dilation Float value represnting the new time dilation rate.
      */
-    FOE_EXPORT void dilation(float dilation) noexcept;
+    FOE_EXPORT
+    void dilation(float dilation) noexcept;
 
   protected:
     void resetChecks();

@@ -16,7 +16,8 @@
  * @param pNumVertices[out] Number of vertices for the recursion level
  * @param pNumindices[out] Number of indices for the recursion level
  */
-FOE_MODEL_EXPORT void foeModelIcoSphereNums(int recursion, int *pNumVertices, int *pNumIndices);
+FOE_MODEL_EXPORT
+void foeModelIcoSphereNums(int recursion, int *pNumVertices, int *pNumIndices);
 
 /**
  * @brief Returns the number of vertices for the sphere mesh
@@ -25,7 +26,8 @@ FOE_MODEL_EXPORT void foeModelIcoSphereNums(int recursion, int *pNumVertices, in
  * @note Each level of recursion increases the smoothness of the sphere, at the expense of
  * exponential number of vertices.
  */
-FOE_MODEL_EXPORT int foeModelIcoSphereNumVertices(int recursion) noexcept;
+FOE_MODEL_EXPORT
+int foeModelIcoSphereNumVertices(int recursion) noexcept;
 
 /**
  * @brief Copies requested data components into the provided buffer
@@ -38,10 +40,11 @@ FOE_MODEL_EXPORT int foeModelIcoSphereNumVertices(int recursion) noexcept;
  * @note Each level of recursion increases the smoothness of the sphere, at the expense of
  * exponential number of vertices.
  */
-FOE_MODEL_EXPORT void foeModelIcoSphereVertexData(int recursion,
-                                                  uint32_t componentCount,
-                                                  foeVertexComponent const *pComponents,
-                                                  float *pData);
+FOE_MODEL_EXPORT
+void foeModelIcoSphereVertexData(int recursion,
+                                 uint32_t componentCount,
+                                 foeVertexComponent const *pComponents,
+                                 float *pData);
 
 /**
  * @brief Returns the number of indices for the sphere mesh
@@ -50,7 +53,8 @@ FOE_MODEL_EXPORT void foeModelIcoSphereVertexData(int recursion,
  * @note Each level of recursion increases the smoothness of the sphere, at the expense of
  * exponential number of vertices.
  */
-FOE_MODEL_EXPORT int foeModelIcoSphereNumIndices(int recursion) noexcept;
+FOE_MODEL_EXPORT
+int foeModelIcoSphereNumIndices(int recursion) noexcept;
 
 /**
  * @brief Copies sphere 16-bit index data into the provided buffer
@@ -61,7 +65,8 @@ FOE_MODEL_EXPORT int foeModelIcoSphereNumIndices(int recursion) noexcept;
  * @note Each level of recursion increases the smoothness of the sphere, at the expense of
  * exponential number of vertices.
  */
-FOE_MODEL_EXPORT void foeModelIcoSphereIndexData16(int recursion, uint16_t offset, uint16_t *pData);
+FOE_MODEL_EXPORT
+void foeModelIcoSphereIndexData16(int recursion, uint16_t offset, uint16_t *pData);
 
 /**
  * @brief Copies sphere 32-bit index data into the provided buffer
@@ -72,6 +77,7 @@ FOE_MODEL_EXPORT void foeModelIcoSphereIndexData16(int recursion, uint16_t offse
  * @note Each level of recursion increases the smoothness of the sphere, at the expense of
  * exponential number of vertices.
  */
-FOE_MODEL_EXPORT void foeModelIcoSphereIndexData32(int recursion, uint32_t offset, uint32_t *pData);
+FOE_MODEL_EXPORT
+void foeModelIcoSphereIndexData32(int recursion, uint32_t offset, uint32_t *pData);
 
 #endif // FOE_MODEL_ICO_SPHERE_HPP

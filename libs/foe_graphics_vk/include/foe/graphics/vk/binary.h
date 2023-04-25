@@ -16,14 +16,18 @@ extern "C" {
 
 typedef struct foeGfxVkShaderCreateInfo foeGfxVkShaderCreateInfo;
 
-FOE_GFX_EXPORT foeResultSet binary_read_foeGfxVkShaderCreateInfo(void const *pReadBuffer,
-                                                                 uint32_t *pReadSize,
-                                                                 foeGfxVkShaderCreateInfo *pData);
+FOE_GFX_EXPORT
+foeResultSet binary_read_foeGfxVkShaderCreateInfo(void const *pReadBuffer,
+                                                  uint32_t *pReadSize,
+                                                  foeGfxVkShaderCreateInfo *pData);
 
-FOE_GFX_EXPORT foeResultSet binary_write_foeGfxVkShaderCreateInfo(
-    foeGfxVkShaderCreateInfo const *pData, uint32_t *pWriteSize, void *pWriteBuffer);
+FOE_GFX_EXPORT
+foeResultSet binary_write_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const *pData,
+                                                   uint32_t *pWriteSize,
+                                                   void *pWriteBuffer);
 
-FOE_GFX_EXPORT char const *binary_key_foeGfxVkShaderCreateInfo();
+FOE_GFX_EXPORT
+char const *binary_key_foeGfxVkShaderCreateInfo();
 
 #ifdef __cplusplus
 }

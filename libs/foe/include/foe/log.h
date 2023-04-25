@@ -79,17 +79,21 @@ typedef void (*PFN_foeLogMessage)(void *pContext,
                                   char const *pMessage);
 typedef void (*PFN_foeLogException)(void *pContext);
 
-FOE_EXPORT char const *foeLogLevel_to_string(foeLogLevel logLevel);
+FOE_EXPORT
+char const *foeLogLevel_to_string(foeLogLevel logLevel);
 
-FOE_EXPORT void foeLogMessage(char const *pCategoryName, foeLogLevel level, char const *pMessage);
+FOE_EXPORT
+void foeLogMessage(char const *pCategoryName, foeLogLevel level, char const *pMessage);
 
-FOE_EXPORT bool foeLogRegisterSink(void *pContext,
-                                   PFN_foeLogMessage logMessage,
-                                   PFN_foeLogException logException);
+FOE_EXPORT
+bool foeLogRegisterSink(void *pContext,
+                        PFN_foeLogMessage logMessage,
+                        PFN_foeLogException logException);
 
-FOE_EXPORT bool foeLogDeregisterSink(void *pContext,
-                                     PFN_foeLogMessage logMessage,
-                                     PFN_foeLogException logException);
+FOE_EXPORT
+bool foeLogDeregisterSink(void *pContext,
+                          PFN_foeLogMessage logMessage,
+                          PFN_foeLogException logException);
 
 #ifdef __cplusplus
 }

@@ -26,8 +26,9 @@ typedef enum foePhysicsBinaryResult {
     FOE_PHYSICS_BINARY_ERROR_RIGID_BODY_POOL_NOT_FOUND = -1000020009,
 } foePhysicsBinaryResult;
 
-FOE_PHYSICS_BINARY_EXPORT void foePhysicsBinaryResultToString(
-    foePhysicsBinaryResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_PHYSICS_BINARY_EXPORT
+void foePhysicsBinaryResultToString(foePhysicsBinaryResult value,
+                                    char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

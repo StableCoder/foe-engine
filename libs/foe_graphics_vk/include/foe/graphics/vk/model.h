@@ -17,28 +17,31 @@
 extern "C" {
 #endif
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkMapModelBuffers(VmaAllocator allocator,
-                                                    VkDeviceSize vertexDataSize,
-                                                    VmaAllocation vertexAlloc,
-                                                    VmaAllocation indexAlloc,
-                                                    foeGfxUploadContext uploadContext,
-                                                    foeGfxUploadBuffer uploadBuffer,
-                                                    void **ppVertexData,
-                                                    void **ppIndexData);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkMapModelBuffers(VmaAllocator allocator,
+                                     VkDeviceSize vertexDataSize,
+                                     VmaAllocation vertexAlloc,
+                                     VmaAllocation indexAlloc,
+                                     foeGfxUploadContext uploadContext,
+                                     foeGfxUploadBuffer uploadBuffer,
+                                     void **ppVertexData,
+                                     void **ppIndexData);
 
-FOE_GFX_EXPORT void foeGfxVkUnmapModelBuffers(VmaAllocator allocator,
-                                              VmaAllocation vertexAlloc,
-                                              VmaAllocation indexAlloc,
-                                              foeGfxUploadContext uploadContext,
-                                              foeGfxUploadBuffer uploadBuffer);
+FOE_GFX_EXPORT
+void foeGfxVkUnmapModelBuffers(VmaAllocator allocator,
+                               VmaAllocation vertexAlloc,
+                               VmaAllocation indexAlloc,
+                               foeGfxUploadContext uploadContext,
+                               foeGfxUploadBuffer uploadBuffer);
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkRecordModelUploadCommands(foeGfxUploadContext uploadContext,
-                                                              VkBuffer vertexBuffer,
-                                                              VkDeviceSize vertexDataSize,
-                                                              VkBuffer indexBuffer,
-                                                              VkDeviceSize indexDataSize,
-                                                              foeGfxUploadBuffer uploadBuffer,
-                                                              foeGfxUploadRequest *pUploadRequest);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkRecordModelUploadCommands(foeGfxUploadContext uploadContext,
+                                               VkBuffer vertexBuffer,
+                                               VkDeviceSize vertexDataSize,
+                                               VkBuffer indexBuffer,
+                                               VkDeviceSize indexDataSize,
+                                               foeGfxUploadBuffer uploadBuffer,
+                                               foeGfxUploadRequest *pUploadRequest);
 
 #ifdef __cplusplus
 }

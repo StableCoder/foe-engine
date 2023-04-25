@@ -10,11 +10,11 @@
 #include <yaml-cpp/yaml.h>
 
 #define POD_YAML_DECLARATION(T)                                                                    \
-    FOE_GFX_VK_YAML_EXPORT bool yaml_read_##T(std::string const &nodeName, YAML::Node const &node, \
-                                              T &data);                                            \
+    FOE_GFX_VK_YAML_EXPORT                                                                         \
+    bool yaml_read_##T(std::string const &nodeName, YAML::Node const &node, T &data);              \
                                                                                                    \
-    FOE_GFX_VK_YAML_EXPORT void yaml_write_##T(std::string const &nodeName, T const &data,         \
-                                               YAML::Node &node);
+    FOE_GFX_VK_YAML_EXPORT                                                                         \
+    void yaml_write_##T(std::string const &nodeName, T const &data, YAML::Node &node);
 
 POD_YAML_DECLARATION(VkBool32)
 

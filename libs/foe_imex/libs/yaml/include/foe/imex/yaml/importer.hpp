@@ -14,9 +14,10 @@
 
 #include <string_view>
 
-FOE_IMEX_YAML_EXPORT foeResultSet foeCreateYamlImporter(foeIdGroup group,
-                                                        char const *pRootDir,
-                                                        foeImexImporter *pImporter);
+FOE_IMEX_YAML_EXPORT
+foeResultSet foeCreateYamlImporter(foeIdGroup group,
+                                   char const *pRootDir,
+                                   foeImexImporter *pImporter);
 
 /// Imports the definition of a resource from a YAML node
 using PFN_foeImexYamlResourceImport = void (*)(YAML::Node const &,
@@ -37,8 +38,8 @@ using PFN_foeImexYamlComponent = bool (*)(YAML::Node const &,
  * @note Reasons for failure are recorded in the log
  * @todo Change to return appropriate error code
  */
-FOE_IMEX_YAML_EXPORT bool foeImexYamlRegisterResourceFns(std::string_view key,
-                                                         PFN_foeImexYamlResourceImport pImportFn);
+FOE_IMEX_YAML_EXPORT
+bool foeImexYamlRegisterResourceFns(std::string_view key, PFN_foeImexYamlResourceImport pImportFn);
 
 /**
  * @brief Removes the given key/function pair from the importer map
@@ -48,8 +49,9 @@ FOE_IMEX_YAML_EXPORT bool foeImexYamlRegisterResourceFns(std::string_view key,
  * @note Reasons for failure are recorded in the log
  * @todo Change to return appropriate error code
  */
-FOE_IMEX_YAML_EXPORT bool foeImexYamlDeregisterResourceFns(std::string_view key,
-                                                           PFN_foeImexYamlResourceImport pImportFn);
+FOE_IMEX_YAML_EXPORT
+bool foeImexYamlDeregisterResourceFns(std::string_view key,
+                                      PFN_foeImexYamlResourceImport pImportFn);
 
 /**
  * @brief Adds a string/function pointer pair to the importer map
@@ -59,8 +61,8 @@ FOE_IMEX_YAML_EXPORT bool foeImexYamlDeregisterResourceFns(std::string_view key,
  * @note Reasons for failure are recorded in the log
  * @todo Change to return appropriate error code
  */
-FOE_IMEX_YAML_EXPORT bool foeImexYamlRegisterComponentFn(std::string_view key,
-                                                         PFN_foeImexYamlComponent pImportFn);
+FOE_IMEX_YAML_EXPORT
+bool foeImexYamlRegisterComponentFn(std::string_view key, PFN_foeImexYamlComponent pImportFn);
 
 /**
  * @brief Removes the given key/function pair from the importer map
@@ -70,7 +72,7 @@ FOE_IMEX_YAML_EXPORT bool foeImexYamlRegisterComponentFn(std::string_view key,
  * @note Reasons for failure are recorded in the log
  * @todo Change to return appropriate error code
  */
-FOE_IMEX_YAML_EXPORT bool foeImexYamlDeregisterComponentFn(std::string_view key,
-                                                           PFN_foeImexYamlComponent pImportFn);
+FOE_IMEX_YAML_EXPORT
+bool foeImexYamlDeregisterComponentFn(std::string_view key, PFN_foeImexYamlComponent pImportFn);
 
 #endif // FOE_IMEX_YAML_IMPORTER_HPP

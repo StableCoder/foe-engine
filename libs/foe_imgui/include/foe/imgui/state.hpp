@@ -30,7 +30,8 @@ class foeImGuiState {
      * this, a single context is meant to be created by the main application, passed to this, which
      * will then proceed to pass it to all rendering calls to ensure a single global context.
      */
-    FOE_IMGUI_EXPORT void setImGuiContext(ImGuiContext *pContext);
+    FOE_IMGUI_EXPORT
+    void setImGuiContext(ImGuiContext *pContext);
 
     /** @brief Adds the rendering of a specific GUI
      * @param pUserData Pointer to the context that is passed in with the given functions
@@ -43,11 +44,12 @@ class foeImGuiState {
      * For the menu sets, this is taken to mean under which menu contexts that the element is
      * rendering UI items to, such as the 'File', 'Edit' or any custom named top-level menu.
      */
-    FOE_IMGUI_EXPORT bool addUI(void *pUserData,
-                                PFN_foeImGuiRenderMainMenu pMainMenuFn,
-                                PFN_foeImGuiRenderCustomUI pCustomFn,
-                                char const **ppMenuSets,
-                                size_t menuSetCount);
+    FOE_IMGUI_EXPORT
+    bool addUI(void *pUserData,
+               PFN_foeImGuiRenderMainMenu pMainMenuFn,
+               PFN_foeImGuiRenderCustomUI pCustomFn,
+               char const **ppMenuSets,
+               size_t menuSetCount);
 
     /** @brief Removes the rendering of specific GUI
      * @param pUserData Pointer to user data that is passed in with the given functions
@@ -57,14 +59,16 @@ class foeImGuiState {
      * @param menuSetCount Number of strings in ppMenuSets
      * @warning There are no checks to ensure the Menu strings are the same as was registered with!
      */
-    FOE_IMGUI_EXPORT void removeUI(void *pUserData,
-                                   PFN_foeImGuiRenderMainMenu pMainMenuFn,
-                                   PFN_foeImGuiRenderCustomUI pCustomFn,
-                                   char const **ppMenuSets,
-                                   size_t menuSetCount);
+    FOE_IMGUI_EXPORT
+    void removeUI(void *pUserData,
+                  PFN_foeImGuiRenderMainMenu pMainMenuFn,
+                  PFN_foeImGuiRenderCustomUI pCustomFn,
+                  char const **ppMenuSets,
+                  size_t menuSetCount);
 
     /// Runs all the attached UI items to be rendered
-    FOE_IMGUI_EXPORT void runUI();
+    FOE_IMGUI_EXPORT
+    void runUI();
 
   private:
     struct GuiData {

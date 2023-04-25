@@ -13,11 +13,14 @@
 
 struct foeGfxVkShaderCreateInfo;
 
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_foeGfxVkShaderCreateInfo(std::string const &nodeName,
-                                                               YAML::Node const &node,
-                                                               foeGfxVkShaderCreateInfo &data);
+FOE_GFX_VK_YAML_EXPORT
+bool yaml_read_foeGfxVkShaderCreateInfo(std::string const &nodeName,
+                                        YAML::Node const &node,
+                                        foeGfxVkShaderCreateInfo &data);
 
-FOE_GFX_VK_YAML_EXPORT void yaml_write_foeGfxVkShaderCreateInfo(
-    std::string const &nodeName, foeGfxVkShaderCreateInfo const &data, YAML::Node &node);
+FOE_GFX_VK_YAML_EXPORT
+void yaml_write_foeGfxVkShaderCreateInfo(std::string const &nodeName,
+                                         foeGfxVkShaderCreateInfo const &data,
+                                         YAML::Node &node);
 
 #endif // FOE_GRAPHICS_VK_YAML_STRUCTS_HPP

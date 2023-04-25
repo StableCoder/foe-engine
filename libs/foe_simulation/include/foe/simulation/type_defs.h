@@ -20,14 +20,16 @@ struct foeSimulationBaseStruct {
     void *pNext;
 };
 
-FOE_SIM_EXPORT void *foeSimulationGetResourceLoader(foeSimulation const *pSimulation,
-                                                    foeSimulationStructureType sType);
+FOE_SIM_EXPORT
+void *foeSimulationGetResourceLoader(foeSimulation const *pSimulation,
+                                     foeSimulationStructureType sType);
 
-FOE_SIM_EXPORT void *foeSimulationGetSystem(foeSimulation const *pSimulation,
-                                            foeSimulationStructureType sType);
+FOE_SIM_EXPORT
+void *foeSimulationGetSystem(foeSimulation const *pSimulation, foeSimulationStructureType sType);
 
-FOE_SIM_EXPORT void *foeSimulationGetComponentPool(foeSimulation const *pSimulation,
-                                                   foeSimulationStructureType sType);
+FOE_SIM_EXPORT
+void *foeSimulationGetComponentPool(foeSimulation const *pSimulation,
+                                    foeSimulationStructureType sType);
 
 #ifdef __cplusplus
 }

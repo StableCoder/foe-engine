@@ -14,7 +14,8 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeGfxRuntime)
 
-FOE_GFX_EXPORT void foeGfxDestroyRuntime(foeGfxRuntime runtime);
+FOE_GFX_EXPORT
+void foeGfxDestroyRuntime(foeGfxRuntime runtime);
 
 #ifdef __cplusplus
 }

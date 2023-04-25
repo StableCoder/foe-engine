@@ -17,9 +17,11 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeGfxMesh)
 
-FOE_GFX_EXPORT uint32_t foeGfxGetMeshIndices(foeGfxMesh mesh);
+FOE_GFX_EXPORT
+uint32_t foeGfxGetMeshIndices(foeGfxMesh mesh);
 
-FOE_GFX_EXPORT void foeGfxDestroyMesh(foeGfxSession session, foeGfxMesh mesh);
+FOE_GFX_EXPORT
+void foeGfxDestroyMesh(foeGfxSession session, foeGfxMesh mesh);
 
 #ifdef __cplusplus
 }

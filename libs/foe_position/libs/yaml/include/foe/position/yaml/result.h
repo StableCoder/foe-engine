@@ -18,8 +18,9 @@ typedef enum foePositionYamlResult {
     FOE_POSITION_YAML_ERROR_FAILED_TO_REGISTER_3D_EXPORTER = -1000016002,
 } foePositionYamlResult;
 
-FOE_POSITION_YAML_EXPORT void foePositionYamlResultToString(
-    foePositionYamlResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_POSITION_YAML_EXPORT
+void foePositionYamlResultToString(foePositionYamlResult value,
+                                   char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

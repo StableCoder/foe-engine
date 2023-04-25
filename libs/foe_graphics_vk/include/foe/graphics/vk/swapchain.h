@@ -29,25 +29,28 @@ typedef struct foeGfxVkSwapchainImageData {
     uint32_t imageIndex;
 } foeGfxVkSwapchainImageData;
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
-                                                    VkSurfaceKHR surface,
-                                                    VkSurfaceFormatKHR surfaceFormat,
-                                                    VkPresentModeKHR presentMode,
-                                                    VkImageUsageFlags extraUsage,
-                                                    foeGfxVkSwapchain oldSwapchain,
-                                                    uint32_t minChainSize,
-                                                    uint32_t width,
-                                                    uint32_t height,
-                                                    foeGfxVkSwapchain *pSwapchain);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
+                                     VkSurfaceKHR surface,
+                                     VkSurfaceFormatKHR surfaceFormat,
+                                     VkPresentModeKHR presentMode,
+                                     VkImageUsageFlags extraUsage,
+                                     foeGfxVkSwapchain oldSwapchain,
+                                     uint32_t minChainSize,
+                                     uint32_t width,
+                                     uint32_t height,
+                                     foeGfxVkSwapchain *pSwapchain);
 
-FOE_GFX_EXPORT void foeGfxVkDestroySwapchain(foeGfxSession session, foeGfxVkSwapchain swapchain);
+FOE_GFX_EXPORT
+void foeGfxVkDestroySwapchain(foeGfxSession session, foeGfxVkSwapchain swapchain);
 
-FOE_GFX_EXPORT VkExtent2D foeGfxVkGetSwapchainExtent(foeGfxVkSwapchain swapchain);
+FOE_GFX_EXPORT
+VkExtent2D foeGfxVkGetSwapchainExtent(foeGfxVkSwapchain swapchain);
 
-FOE_GFX_EXPORT VkResult
-foeGfxVkAcquireSwapchainImage(foeGfxSession session,
-                              foeGfxVkSwapchain swapchain,
-                              foeGfxVkSwapchainImageData *pSwapchainImageData);
+FOE_GFX_EXPORT
+VkResult foeGfxVkAcquireSwapchainImage(foeGfxSession session,
+                                       foeGfxVkSwapchain swapchain,
+                                       foeGfxVkSwapchainImageData *pSwapchainImageData);
 
 #ifdef __cplusplus
 }

@@ -13,7 +13,8 @@ extern "C" {
 
 typedef struct foeGfxVkShaderCreateInfo foeGfxVkShaderCreateInfo;
 
-FOE_GFX_EXPORT void cleanup_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo *pData);
+FOE_GFX_EXPORT
+void cleanup_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo *pData);
 
 #ifdef __cplusplus
 }

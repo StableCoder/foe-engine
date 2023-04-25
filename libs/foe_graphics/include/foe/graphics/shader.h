@@ -16,10 +16,11 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeGfxShader)
 
-FOE_GFX_EXPORT void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader);
+FOE_GFX_EXPORT
+void foeGfxDestroyShader(foeGfxSession session, foeGfxShader shader);
 
-FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlags
-foeGfxShaderGetBuiltinDescriptorSetLayouts(foeGfxShader shader);
+FOE_GFX_EXPORT
+foeBuiltinDescriptorSetLayoutFlags foeGfxShaderGetBuiltinDescriptorSetLayouts(foeGfxShader shader);
 
 #ifdef __cplusplus
 }

@@ -12,19 +12,19 @@
 
 #include <vector>
 
-FOE_GFX_EXPORT foeResultSet
-foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
-                             char const *pJobName,
-                             VkFence fence,
-                             char const *pResourceName,
-                             VkImage image,
-                             VkImageView view,
-                             VkFormat format,
-                             VkExtent2D extent,
-                             VkImageLayout layout,
-                             bool isMutable,
-                             std::vector<VkSemaphore> waitSemaphores,
-                             foeGfxVkRenderGraphResource *pImportedImageResource,
-                             foeGfxVkRenderGraphJob *pRenderGraphJob);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkImportImageRenderJob(foeGfxVkRenderGraph renderGraph,
+                                          char const *pJobName,
+                                          VkFence fence,
+                                          char const *pResourceName,
+                                          VkImage image,
+                                          VkImageView view,
+                                          VkFormat format,
+                                          VkExtent2D extent,
+                                          VkImageLayout layout,
+                                          bool isMutable,
+                                          std::vector<VkSemaphore> waitSemaphores,
+                                          foeGfxVkRenderGraphResource *pImportedImageResource,
+                                          foeGfxVkRenderGraphJob *pRenderGraphJob);
 
 #endif // FOE_GRAPHICS_RENDER_GRAPH_JOB_IMPORT_IMAGE_HPP

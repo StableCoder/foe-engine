@@ -20,27 +20,31 @@ FOE_DEFINE_HANDLE(foeManagedMemory)
 
 typedef void (*PFN_foeManagedMemoryCleanup)(void *pData, uint32_t dataSize, void *pMetadata);
 
-FOE_EXPORT foeResultSet foeCreateManagedMemory(void *pData,
-                                               size_t dataSize,
-                                               PFN_foeManagedMemoryCleanup cleanupFn,
-                                               void *pMetadata,
-                                               size_t metadataSize,
-                                               foeManagedMemory *pManagedMemory);
+FOE_EXPORT
+foeResultSet foeCreateManagedMemory(void *pData,
+                                    size_t dataSize,
+                                    PFN_foeManagedMemoryCleanup cleanupFn,
+                                    void *pMetadata,
+                                    size_t metadataSize,
+                                    foeManagedMemory *pManagedMemory);
 
-FOE_EXPORT foeResultSet foeCreateManagedMemorySubset(foeManagedMemory parentMemory,
-                                                     size_t dataOffset,
-                                                     size_t dataSize,
-                                                     foeManagedMemory *pManagedMemory);
+FOE_EXPORT
+foeResultSet foeCreateManagedMemorySubset(foeManagedMemory parentMemory,
+                                          size_t dataOffset,
+                                          size_t dataSize,
+                                          foeManagedMemory *pManagedMemory);
 
-FOE_EXPORT void foeManagedMemoryGetData(foeManagedMemory managedMemory,
-                                        void **ppData,
-                                        uint32_t *pDataSize);
+FOE_EXPORT
+void foeManagedMemoryGetData(foeManagedMemory managedMemory, void **ppData, uint32_t *pDataSize);
 
-FOE_EXPORT uint32_t foeManagedMemoryGetUse(foeManagedMemory managedMemory);
+FOE_EXPORT
+uint32_t foeManagedMemoryGetUse(foeManagedMemory managedMemory);
 
-FOE_EXPORT uint32_t foeManagedMemoryIncrementUse(foeManagedMemory managedMemory);
+FOE_EXPORT
+uint32_t foeManagedMemoryIncrementUse(foeManagedMemory managedMemory);
 
-FOE_EXPORT uint32_t foeManagedMemoryDecrementUse(foeManagedMemory managedMemory);
+FOE_EXPORT
+uint32_t foeManagedMemoryDecrementUse(foeManagedMemory managedMemory);
 
 #ifdef __cplusplus
 }

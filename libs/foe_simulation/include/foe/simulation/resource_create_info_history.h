@@ -17,32 +17,38 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeResourceCreateInfoHistory)
 
-FOE_SIM_EXPORT foeResultSet
-foeCreateResourceCreateInfoHistory(foeResourceCreateInfoHistory *pResourceCreateInfoHistory);
+FOE_SIM_EXPORT
+foeResultSet foeCreateResourceCreateInfoHistory(
+    foeResourceCreateInfoHistory *pResourceCreateInfoHistory);
 
-FOE_SIM_EXPORT void foeDestroyResourceCreateInfoHistory(
-    foeResourceCreateInfoHistory resourceCreateInfoHistory);
+FOE_SIM_EXPORT
+void foeDestroyResourceCreateInfoHistory(foeResourceCreateInfoHistory resourceCreateInfoHistory);
 
-FOE_SIM_EXPORT foeResultSet
-foeResourceCreateInfoHistoryAdd(foeResourceCreateInfoHistory resourceCreateInfoHistory,
-                                foeResourceID resourceID,
-                                foeResourceCreateInfo resourceCreateInfo);
+FOE_SIM_EXPORT
+foeResultSet foeResourceCreateInfoHistoryAdd(foeResourceCreateInfoHistory resourceCreateInfoHistory,
+                                             foeResourceID resourceID,
+                                             foeResourceCreateInfo resourceCreateInfo);
 
-FOE_SIM_EXPORT foeResultSet foeResourceCreateInfoHistoryRemove(
+FOE_SIM_EXPORT
+foeResultSet foeResourceCreateInfoHistoryRemove(
     foeResourceCreateInfoHistory resourceCreateInfoHistory, foeResourceID resourceID);
 
-FOE_SIM_EXPORT foeResultSet
-foeResourceCreateInfoHistoryUpdate(foeResourceCreateInfoHistory resourceCreateInfoHistory,
-                                   foeResourceID resourceID,
-                                   foeResourceCreateInfo resourceCreateInfo);
+FOE_SIM_EXPORT
+foeResultSet foeResourceCreateInfoHistoryUpdate(
+    foeResourceCreateInfoHistory resourceCreateInfoHistory,
+    foeResourceID resourceID,
+    foeResourceCreateInfo resourceCreateInfo);
 
-FOE_SIM_EXPORT foeResourceCreateInfo foeResourceCreateInfoHistoryCurrent(
+FOE_SIM_EXPORT
+foeResourceCreateInfo foeResourceCreateInfoHistoryCurrent(
     foeResourceCreateInfoHistory resourceCreateInfoHistory, foeResourceID resourceID);
 
-FOE_SIM_EXPORT foeResultSet foeResourceCreateInfoHistoryUndo(
+FOE_SIM_EXPORT
+foeResultSet foeResourceCreateInfoHistoryUndo(
     foeResourceCreateInfoHistory resourceCreateInfoHistory, foeResourceID resourceID);
 
-FOE_SIM_EXPORT foeResultSet foeResourceCreateInfoHistoryRedo(
+FOE_SIM_EXPORT
+foeResultSet foeResourceCreateInfoHistoryRedo(
     foeResourceCreateInfoHistory resourceCreateInfoHistory, foeResourceID resourceID);
 
 #ifdef __cplusplus

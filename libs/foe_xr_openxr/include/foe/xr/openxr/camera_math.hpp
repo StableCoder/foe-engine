@@ -9,12 +9,13 @@
 #include <glm/glm.hpp>
 #include <openxr/openxr.h>
 
-FOE_XR_EXPORT glm::mat4 foeOpenXrProjectionMatrix(XrFovf const &fieldOfView,
-                                                  float nearZ,
-                                                  float farZ);
+FOE_XR_EXPORT
+glm::mat4 foeOpenXrProjectionMatrix(XrFovf const &fieldOfView, float nearZ, float farZ);
 
-FOE_XR_EXPORT glm::quat foeOpenXrPoseOrientation(XrPosef const &pose);
+FOE_XR_EXPORT
+glm::quat foeOpenXrPoseOrientation(XrPosef const &pose);
 
-FOE_XR_EXPORT glm::vec3 foeOpenXrPosePosition(XrPosef const &pose);
+FOE_XR_EXPORT
+glm::vec3 foeOpenXrPosePosition(XrPosef const &pose);
 
 #endif // FOE_XR_OPENXR_CAMERA_HPP

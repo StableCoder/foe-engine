@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
-FOE_POSITION_YAML_EXPORT foeResultSet foePositionYamlRegisterExporters();
+FOE_POSITION_YAML_EXPORT
+foeResultSet foePositionYamlRegisterExporters();
 
-FOE_POSITION_YAML_EXPORT void foePositionYamlDeregisterExporters();
+FOE_POSITION_YAML_EXPORT
+void foePositionYamlDeregisterExporters();
 
 #ifdef __cplusplus
 }

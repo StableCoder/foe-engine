@@ -12,41 +12,45 @@
 
 #include <string>
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkDescriptorSetLayoutBinding(
-    VkDescriptorSetLayoutBinding const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkDescriptorSetLayoutBinding(VkDescriptorSetLayoutBinding const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkDescriptorSetLayoutCreateInfo(
-    VkDescriptorSetLayoutCreateInfo const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkDescriptorSetLayoutCreateInfo(VkDescriptorSetLayoutCreateInfo const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkVertexInputBindingDescription(
-    VkVertexInputBindingDescription const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkVertexInputBindingDescription(VkVertexInputBindingDescription const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkVertexInputAttributeDescription(
-    VkVertexInputAttributeDescription const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkVertexInputAttributeDescription(VkVertexInputAttributeDescription const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPipelineVertexInputStateCreateInfo(
-    VkPipelineVertexInputStateCreateInfo const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPipelineVertexInputStateCreateInfo(VkPipelineVertexInputStateCreateInfo const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPipelineInputAssemblyStateCreateInfo(
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPipelineInputAssemblyStateCreateInfo(
     VkPipelineInputAssemblyStateCreateInfo const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPipelineTessellationStateCreateInfo(
-    VkPipelineTessellationStateCreateInfo const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPipelineTessellationStateCreateInfo(VkPipelineTessellationStateCreateInfo const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPipelineRasterizationStateCreateInfo(
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPipelineRasterizationStateCreateInfo(
     VkPipelineRasterizationStateCreateInfo const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPipelineColorBlendAttachmentState(
-    VkPipelineColorBlendAttachmentState const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPipelineColorBlendAttachmentState(VkPipelineColorBlendAttachmentState const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPipelineColorBlendStateCreateInfo(
-    VkPipelineColorBlendStateCreateInfo const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPipelineColorBlendStateCreateInfo(VkPipelineColorBlendStateCreateInfo const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkStencilOpState(VkStencilOpState const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkStencilOpState(VkStencilOpState const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPipelineDepthStencilStateCreateInfo(
-    VkPipelineDepthStencilStateCreateInfo const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPipelineDepthStencilStateCreateInfo(VkPipelineDepthStencilStateCreateInfo const &data);
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_VkPushConstantRange(VkPushConstantRange const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_VkPushConstantRange(VkPushConstantRange const &data);
 
 #endif // FOE_GRAPHICS_VK_IMGUI_DISPLAY_VK_STRUCTS_HPP

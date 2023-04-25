@@ -34,8 +34,9 @@ typedef enum foeSimulationResult {
     FOE_SIMULATION_ERROR_RESOURCE_CREATE_INFO_NOT_FOUND = -1000006016,
 } foeSimulationResult;
 
-FOE_SIM_EXPORT void foeSimulationResultToString(foeSimulationResult value,
-                                                char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_SIM_EXPORT
+void foeSimulationResultToString(foeSimulationResult value,
+                                 char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

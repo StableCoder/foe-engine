@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
-FOE_GFX_RES_BINARY_EXPORT foeResultSet foeGraphicsResourceBinaryRegisterImporters();
+FOE_GFX_RES_BINARY_EXPORT
+foeResultSet foeGraphicsResourceBinaryRegisterImporters();
 
-FOE_GFX_RES_BINARY_EXPORT void foeGraphicsResourceBinaryDeregisterImporters();
+FOE_GFX_RES_BINARY_EXPORT
+void foeGraphicsResourceBinaryDeregisterImporters();
 
 #ifdef __cplusplus
 }

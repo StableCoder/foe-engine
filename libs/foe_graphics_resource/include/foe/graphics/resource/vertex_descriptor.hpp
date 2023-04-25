@@ -22,6 +22,7 @@ struct foeVertexDescriptor {
     foeGfxVkVertexDescriptor vertexDescriptor;
 };
 
-FOE_GFX_RES_EXPORT void cleanup_foeVertexDescriptor(foeVertexDescriptor *pData);
+FOE_GFX_RES_EXPORT
+void cleanup_foeVertexDescriptor(foeVertexDescriptor *pData);
 
 #endif // FOE_GRAPHICS_RESOURCE_VERTEX_DESCRIPTOR_HPP

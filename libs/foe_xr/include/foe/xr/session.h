@@ -18,7 +18,8 @@ extern "C" {
 FOE_DEFINE_HANDLE(foeXrSession)
 
 #ifdef FOE_XR_SUPPORT
-FOE_XR_EXPORT void foeXrDestroySession(foeXrSession session);
+FOE_XR_EXPORT
+void foeXrDestroySession(foeXrSession session);
 #endif // FOE_XR_SUPPORT
 
 #ifdef __cplusplus

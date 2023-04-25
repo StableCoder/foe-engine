@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
-FOE_GFX_RES_YAML_EXPORT foeResultSet foeGraphicsResourceYamlRegisterExporters();
+FOE_GFX_RES_YAML_EXPORT
+foeResultSet foeGraphicsResourceYamlRegisterExporters();
 
-FOE_GFX_RES_YAML_EXPORT void foeGraphicsResourceYamlDeregisterExporters();
+FOE_GFX_RES_YAML_EXPORT
+void foeGraphicsResourceYamlDeregisterExporters();
 
 #ifdef __cplusplus
 }

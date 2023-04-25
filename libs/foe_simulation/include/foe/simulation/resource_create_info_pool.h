@@ -17,23 +17,25 @@ extern "C" {
 
 FOE_DEFINE_HANDLE(foeResourceCreateInfoPool)
 
-FOE_SIM_EXPORT foeResultSet
-foeCreateResourceCreateInfoPool(foeResourceCreateInfoPool *pResourceCreateInfoPool);
+FOE_SIM_EXPORT
+foeResultSet foeCreateResourceCreateInfoPool(foeResourceCreateInfoPool *pResourceCreateInfoPool);
 
-FOE_SIM_EXPORT void foeDestroyResourceCreateInfoPool(
-    foeResourceCreateInfoPool resourceCreateInfoPool);
+FOE_SIM_EXPORT
+void foeDestroyResourceCreateInfoPool(foeResourceCreateInfoPool resourceCreateInfoPool);
 
-FOE_SIM_EXPORT foeResultSet
-foeResourceCreateInfoPoolAdd(foeResourceCreateInfoPool resourceCreateInfoPool,
-                             foeResourceID resourceID,
-                             foeResourceCreateInfo resourceCreateInfo);
+FOE_SIM_EXPORT
+foeResultSet foeResourceCreateInfoPoolAdd(foeResourceCreateInfoPool resourceCreateInfoPool,
+                                          foeResourceID resourceID,
+                                          foeResourceCreateInfo resourceCreateInfo);
 
-FOE_SIM_EXPORT foeResultSet foeResourceCreateInfoPoolRemove(
-    foeResourceCreateInfoPool resourceCreateInfoPool, foeResourceID resourceID);
+FOE_SIM_EXPORT
+foeResultSet foeResourceCreateInfoPoolRemove(foeResourceCreateInfoPool resourceCreateInfoPool,
+                                             foeResourceID resourceID);
 
 // Returned handles are pre-incremented
-FOE_SIM_EXPORT foeResourceCreateInfo foeResourceCreateInfoPoolGet(
-    foeResourceCreateInfoPool resourceCreateInfoPool, foeResourceID resourceID);
+FOE_SIM_EXPORT
+foeResourceCreateInfo foeResourceCreateInfoPoolGet(foeResourceCreateInfoPool resourceCreateInfoPool,
+                                                   foeResourceID resourceID);
 
 #ifdef __cplusplus
 }

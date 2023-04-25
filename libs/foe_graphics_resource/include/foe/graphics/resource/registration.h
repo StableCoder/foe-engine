@@ -12,11 +12,14 @@
 extern "C" {
 #endif
 
-FOE_GFX_RES_EXPORT int foeGraphicsResourceFunctionalityID();
+FOE_GFX_RES_EXPORT
+int foeGraphicsResourceFunctionalityID();
 
-FOE_GFX_RES_EXPORT foeResultSet foeGraphicsResourceRegisterFunctionality();
+FOE_GFX_RES_EXPORT
+foeResultSet foeGraphicsResourceRegisterFunctionality();
 
-FOE_GFX_RES_EXPORT void foeGraphicsResourceDeregisterFunctionality();
+FOE_GFX_RES_EXPORT
+void foeGraphicsResourceDeregisterFunctionality();
 
 #ifdef __cplusplus
 }

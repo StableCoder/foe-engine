@@ -12,11 +12,14 @@
 extern "C" {
 #endif
 
-FOE_PHYSICS_EXPORT int foePhysicsFunctionalityID();
+FOE_PHYSICS_EXPORT
+int foePhysicsFunctionalityID();
 
-FOE_PHYSICS_EXPORT foeResultSet foePhysicsRegisterFunctionality();
+FOE_PHYSICS_EXPORT
+foeResultSet foePhysicsRegisterFunctionality();
 
-FOE_PHYSICS_EXPORT void foePhysicsDeregisterFunctionality();
+FOE_PHYSICS_EXPORT
+void foePhysicsDeregisterFunctionality();
 
 #ifdef __cplusplus
 }

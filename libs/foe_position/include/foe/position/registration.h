@@ -12,11 +12,14 @@
 extern "C" {
 #endif
 
-FOE_POSITION_EXPORT int foePositionFunctionalityID();
+FOE_POSITION_EXPORT
+int foePositionFunctionalityID();
 
-FOE_POSITION_EXPORT foeResultSet foePositionRegisterFunctionality();
+FOE_POSITION_EXPORT
+foeResultSet foePositionRegisterFunctionality();
 
-FOE_POSITION_EXPORT void foePositionDeregisterFunctionality();
+FOE_POSITION_EXPORT
+void foePositionDeregisterFunctionality();
 
 #ifdef __cplusplus
 }

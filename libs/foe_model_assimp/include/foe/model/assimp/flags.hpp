@@ -17,7 +17,8 @@
  * if true is returned.
  * @return True the value was successfully serialized. False otherwise.
  */
-FOE_MODEL_ASSIMP_EXPORT bool foe_model_assimp_serialize(unsigned int flags, std::string *pString);
+FOE_MODEL_ASSIMP_EXPORT
+bool foe_model_assimp_serialize(unsigned int flags, std::string *pString);
 
 /**
  * @brief Parses a assimp bitflag serialized string
@@ -26,6 +27,7 @@ FOE_MODEL_ASSIMP_EXPORT bool foe_model_assimp_serialize(unsigned int flags, std:
  * true is returned.
  * @return True the value was successfully serialized. False otherwise.
  */
-FOE_MODEL_ASSIMP_EXPORT bool foe_model_assimp_parse(std::string_view string, unsigned int *pValue);
+FOE_MODEL_ASSIMP_EXPORT
+bool foe_model_assimp_parse(std::string_view string, unsigned int *pValue);
 
 #endif // FOE_MODEL_ASSIMP_FLAGS_HPP

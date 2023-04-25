@@ -18,7 +18,8 @@ typedef struct foeGfxVkFragmentDescriptor foeGfxVkFragmentDescriptor;
 
 FOE_DEFINE_HANDLE(foeGfxVkFragmentDescriptorPool)
 
-FOE_GFX_EXPORT foeGfxVkFragmentDescriptor *foeGfxVkGetFragmentDescriptor(
+FOE_GFX_EXPORT
+foeGfxVkFragmentDescriptor *foeGfxVkGetFragmentDescriptor(
     foeGfxVkFragmentDescriptorPool fragmentDescriptorPool,
     VkPipelineRasterizationStateCreateInfo const *pRasterizationSCI,
     VkPipelineDepthStencilStateCreateInfo const *pDepthStencilSCI,

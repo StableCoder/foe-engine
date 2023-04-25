@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
-FOE_PHYSICS_YAML_EXPORT foeResultSet foePhysicsYamlRegisterImporters();
+FOE_PHYSICS_YAML_EXPORT
+foeResultSet foePhysicsYamlRegisterImporters();
 
-FOE_PHYSICS_YAML_EXPORT void foePhysicsYamlDeregisterImporters();
+FOE_PHYSICS_YAML_EXPORT
+void foePhysicsYamlDeregisterImporters();
 
 #ifdef __cplusplus
 }

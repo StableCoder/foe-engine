@@ -22,8 +22,9 @@ typedef enum foePhysicsYamlResult {
     FOE_PHYSICS_YAML_ERROR_FAILED_TO_REGISTER_RIGID_BODY_EXPORTER = -1000019006,
 } foePhysicsYamlResult;
 
-FOE_PHYSICS_YAML_EXPORT void foePhysicsYamlResultToString(foePhysicsYamlResult value,
-                                                          char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_PHYSICS_YAML_EXPORT
+void foePhysicsYamlResultToString(foePhysicsYamlResult value,
+                                  char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

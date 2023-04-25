@@ -37,8 +37,9 @@ typedef enum foeGraphicsResourceResult {
     FOE_GRAPHICS_RESOURCE_ERROR_SHADER_LOADER_BINARY_FILE_NOT_FOUND = -1000009019,
 } foeGraphicsResourceResult;
 
-FOE_GFX_RES_EXPORT void foeGraphicsResourceResultToString(foeGraphicsResourceResult value,
-                                                          char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_GFX_RES_EXPORT
+void foeGraphicsResourceResultToString(foeGraphicsResourceResult value,
+                                       char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

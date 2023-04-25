@@ -23,8 +23,8 @@ typedef enum foePhysicsResult {
     FOE_PHYSICS_ERROR_MISSING_POSITION_3D_COMPONENTS = -1000018008,
 } foePhysicsResult;
 
-FOE_PHYSICS_EXPORT void foePhysicsResultToString(foePhysicsResult value,
-                                                 char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_PHYSICS_EXPORT
+void foePhysicsResultToString(foePhysicsResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

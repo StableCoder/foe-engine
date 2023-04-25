@@ -9,6 +9,7 @@
 
 struct foeGfxVkShaderCreateInfo;
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const &data);
 
 #endif // FOE_GRAPHICS_VK_IMGUI_SHADER_HPP

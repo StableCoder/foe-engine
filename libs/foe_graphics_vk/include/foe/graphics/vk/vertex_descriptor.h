@@ -30,16 +30,20 @@ typedef struct foeGfxVkVertexDescriptor {
     VkPipelineTessellationStateCreateInfo mTessellationSCI;
 } foeGfxVkVertexDescriptor;
 
-FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlags
-foeGfxVkGetVertexDescriptorBuiltinSetLayouts(foeGfxVkVertexDescriptor const *pVertexDescriptor);
+FOE_GFX_EXPORT
+foeBuiltinDescriptorSetLayoutFlags foeGfxVkGetVertexDescriptorBuiltinSetLayouts(
+    foeGfxVkVertexDescriptor const *pVertexDescriptor);
 
-FOE_GFX_EXPORT VkPipelineVertexInputStateCreateInfo const *
-foeGfxVkGetVertexDescriptorVertexInputSCI(foeGfxVkVertexDescriptor const *pVertexDescriptor);
+FOE_GFX_EXPORT
+VkPipelineVertexInputStateCreateInfo const *foeGfxVkGetVertexDescriptorVertexInputSCI(
+    foeGfxVkVertexDescriptor const *pVertexDescriptor);
 
-FOE_GFX_EXPORT VkPipelineTessellationStateCreateInfo const *
-foeGfxVkGetVertexDescriptorTessellationSCI(foeGfxVkVertexDescriptor const *pVertexDescriptor);
+FOE_GFX_EXPORT
+VkPipelineTessellationStateCreateInfo const *foeGfxVkGetVertexDescriptorTessellationSCI(
+    foeGfxVkVertexDescriptor const *pVertexDescriptor);
 
-FOE_GFX_EXPORT void cleanup_foeGfxVkVertexDescriptor(foeGfxVkVertexDescriptor *pData);
+FOE_GFX_EXPORT
+void cleanup_foeGfxVkVertexDescriptor(foeGfxVkVertexDescriptor *pData);
 
 #ifdef __cplusplus
 }

@@ -20,10 +20,11 @@
  * @exception Throws foeYamlException if the required node is not found or there's an error
  * during parsing
  */
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_VkEnum32(std::string const &typeName,
-                                               std::string const &nodeName,
-                                               YAML::Node const &node,
-                                               uint32_t &data);
+FOE_GFX_VK_YAML_EXPORT
+bool yaml_read_VkEnum32(std::string const &typeName,
+                        std::string const &nodeName,
+                        YAML::Node const &node,
+                        uint32_t &data);
 
 /** @brief Encodes the given data object to Yaml (32-bit)
  * @param typeName String name of the Vulkan type
@@ -32,10 +33,11 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_VkEnum32(std::string const &typeName,
  * @param node [out] Yaml node that should have the sub-node to operate on
  * @exception Throws foeYamlException if there's an exception during encoding
  */
-FOE_GFX_VK_YAML_EXPORT void yaml_write_VkEnum32(std::string const &typeName,
-                                                std::string const &nodeName,
-                                                uint32_t const &data,
-                                                YAML::Node &node);
+FOE_GFX_VK_YAML_EXPORT
+void yaml_write_VkEnum32(std::string const &typeName,
+                         std::string const &nodeName,
+                         uint32_t const &data,
+                         YAML::Node &node);
 
 /** @brief Read a node and parse it into the given data type (64-bit)
  * @param typeName String name of the Vulkan type
@@ -46,10 +48,11 @@ FOE_GFX_VK_YAML_EXPORT void yaml_write_VkEnum32(std::string const &typeName,
  * @exception Throws foeYamlException if the required node is not found or there's an error
  * during parsing
  */
-FOE_GFX_VK_YAML_EXPORT bool yaml_read_VkEnum64(std::string const &typeName,
-                                               std::string const &nodeName,
-                                               YAML::Node const &node,
-                                               uint64_t &data);
+FOE_GFX_VK_YAML_EXPORT
+bool yaml_read_VkEnum64(std::string const &typeName,
+                        std::string const &nodeName,
+                        YAML::Node const &node,
+                        uint64_t &data);
 
 /** @brief Encodes the given data object to Yaml (64-bit)
  * @param typeName String name of the Vulkan type
@@ -58,10 +61,11 @@ FOE_GFX_VK_YAML_EXPORT bool yaml_read_VkEnum64(std::string const &typeName,
  * @param node [out] Yaml node that should have the sub-node to operate on
  * @exception Throws foeYamlException if there's an exception during encoding
  */
-FOE_GFX_VK_YAML_EXPORT void yaml_write_VkEnum64(std::string const &typeName,
-                                                std::string const &nodeName,
-                                                uint64_t const &data,
-                                                YAML::Node &node);
+FOE_GFX_VK_YAML_EXPORT
+void yaml_write_VkEnum64(std::string const &typeName,
+                         std::string const &nodeName,
+                         uint64_t const &data,
+                         YAML::Node &node);
 
 /** @brief Read a node and parse it into the given data type (template)
  * @tparam T Vulkan type to parse/serialize

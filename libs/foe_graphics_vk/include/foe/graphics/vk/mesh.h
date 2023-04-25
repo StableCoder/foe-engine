@@ -14,25 +14,23 @@
 extern "C" {
 #endif
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkCreateMesh(foeGfxSession session,
-                                               uint64_t vertexDataSize,
-                                               uint64_t indexDataSize,
-                                               uint32_t numIndices,
-                                               VkIndexType indexType,
-                                               uint64_t boneDataOffset,
-                                               bool *pHostVisible,
-                                               foeGfxMesh *pMesh);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkCreateMesh(foeGfxSession session,
+                                uint64_t vertexDataSize,
+                                uint64_t indexDataSize,
+                                uint32_t numIndices,
+                                VkIndexType indexType,
+                                uint64_t boneDataOffset,
+                                bool *pHostVisible,
+                                foeGfxMesh *pMesh);
 
-FOE_GFX_EXPORT void foeGfxVkBindMesh(foeGfxMesh mesh,
-                                     VkCommandBuffer commandBuffer,
-                                     bool bindBoneData);
+FOE_GFX_EXPORT
+void foeGfxVkBindMesh(foeGfxMesh mesh, VkCommandBuffer commandBuffer, bool bindBoneData);
 
-FOE_GFX_EXPORT void foeGfxVkGetMeshVertexData(foeGfxMesh mesh,
-                                              VkBuffer *pBuffer,
-                                              VmaAllocation *pAllocation);
-FOE_GFX_EXPORT void foeGfxVkGetMeshIndexData(foeGfxMesh mesh,
-                                             VkBuffer *pBuffer,
-                                             VmaAllocation *pAllocation);
+FOE_GFX_EXPORT
+void foeGfxVkGetMeshVertexData(foeGfxMesh mesh, VkBuffer *pBuffer, VmaAllocation *pAllocation);
+FOE_GFX_EXPORT
+void foeGfxVkGetMeshIndexData(foeGfxMesh mesh, VkBuffer *pBuffer, VmaAllocation *pAllocation);
 
 #ifdef __cplusplus
 }

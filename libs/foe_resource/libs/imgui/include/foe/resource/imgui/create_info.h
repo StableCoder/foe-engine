@@ -12,7 +12,8 @@
 extern "C" {
 #endif
 
-FOE_RES_IMGUI_EXPORT void imgui_foeResourceCreateInfo(foeResourceCreateInfo createInfo);
+FOE_RES_IMGUI_EXPORT
+void imgui_foeResourceCreateInfo(foeResourceCreateInfo createInfo);
 
 #ifdef __cplusplus
 }

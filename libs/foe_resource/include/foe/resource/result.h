@@ -25,8 +25,8 @@ typedef enum foeResourceResult {
     FOE_RESOURCE_ERROR_REPLACED_CANNOT_BE_LOADED = -1000007007,
 } foeResourceResult;
 
-FOE_RES_EXPORT void foeResourceResultToString(foeResourceResult value,
-                                              char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_RES_EXPORT
+void foeResourceResultToString(foeResourceResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

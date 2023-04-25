@@ -31,11 +31,11 @@ typedef enum foeDescriptorSetLayoutIndex {
     FragmentShader = 7,
 } foeDescriptorSetLayoutIndex;
 
-FOE_GFX_EXPORT char const *builtin_set_layout_to_string(
-    foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout);
+FOE_GFX_EXPORT
+char const *builtin_set_layout_to_string(foeBuiltinDescriptorSetLayoutFlagBits builtinSetLayout);
 
-FOE_GFX_EXPORT foeBuiltinDescriptorSetLayoutFlagBits
-string_to_builtin_set_layout(char const *pString);
+FOE_GFX_EXPORT
+foeBuiltinDescriptorSetLayoutFlagBits string_to_builtin_set_layout(char const *pString);
 
 #ifdef __cplusplus
 }

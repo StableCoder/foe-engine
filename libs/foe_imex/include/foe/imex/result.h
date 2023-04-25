@@ -24,8 +24,8 @@ typedef enum foeImexResult {
     FOE_IMEX_ERROR_IMPORTER_NOT_REGISTERED = -1000002007,
 } foeImexResult;
 
-FOE_IMEX_EXPORT void foeImexResultToString(foeImexResult value,
-                                           char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_IMEX_EXPORT
+void foeImexResultToString(foeImexResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

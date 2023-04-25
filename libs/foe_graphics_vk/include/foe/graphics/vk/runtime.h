@@ -34,16 +34,17 @@ extern "C" {
  * @param pRuntime points to a foeGfxRuntime handle in which the resulting runtime is returned.
  * @return FOE_GFX_VK_SUCCESS on success, or an appropriate error otherwise.
  */
-FOE_GFX_EXPORT foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
-                                                  uint32_t applicationVersion,
-                                                  uint32_t applicationApiVersion,
-                                                  uint32_t layerCount,
-                                                  char const *const *ppLayerNames,
-                                                  uint32_t extensionCount,
-                                                  char const *const *ppExtensionNames,
-                                                  bool validation,
-                                                  bool debugLogging,
-                                                  foeGfxRuntime *pRuntime);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
+                                   uint32_t applicationVersion,
+                                   uint32_t applicationApiVersion,
+                                   uint32_t layerCount,
+                                   char const *const *ppLayerNames,
+                                   uint32_t extensionCount,
+                                   char const *const *ppExtensionNames,
+                                   bool validation,
+                                   bool debugLogging,
+                                   foeGfxRuntime *pRuntime);
 
 /** @brief Enumerate the enabled layers for the given runtime
  * @param runtime is the handle to the runtime whose layers will be queried.
@@ -60,9 +61,10 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
  * return all names, at most pLayerNamesLength is written, and FOE_GFX_VK_INCOMPLETE will be
  * returned instead of FOE_GFX_VK_SUCCESS, to indicate that not all names were returned.
  */
-FOE_GFX_EXPORT foeResultSet foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
-                                                           uint32_t *pLayerNamesLength,
-                                                           char *pLayerNames);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime,
+                                            uint32_t *pLayerNamesLength,
+                                            char *pLayerNames);
 
 /** @brief Enumerate the enabled extensions for the given runtime
  * @param runtime is the handle to the runtime whose extensions will be queried.
@@ -80,21 +82,24 @@ FOE_GFX_EXPORT foeResultSet foeGfxVkEnumerateRuntimeLayers(foeGfxRuntime runtime
  * written, and FOE_GFX_VK_INCOMPLETE will be returned instead of FOE_GFX_VK_SUCCESS, to indicate
  * that not all names were returned.
  */
-FOE_GFX_EXPORT foeResultSet foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
-                                                               uint32_t *pExtensionNamesLength,
-                                                               char *pExtensionNames);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkEnumerateRuntimeExtensions(foeGfxRuntime runtime,
+                                                uint32_t *pExtensionNamesLength,
+                                                char *pExtensionNames);
 
 /** @brief Returns the API version a Vulkan graphics runtime was created with
  * @param runtime Runtime to query
  * @return A uint32_t representing the API version
  */
-FOE_GFX_EXPORT uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime);
+FOE_GFX_EXPORT
+uint32_t foeGfxVkEnumerateApiVersion(foeGfxRuntime runtime);
 
 /** @brief Returns the Vulkan instance handle
  * @param runtime is the handle to the Vukan-based graphics runtime
  * @return The VkInstance handle
  */
-FOE_GFX_EXPORT VkInstance foeGfxVkGetRuntimeInstance(foeGfxRuntime runtime);
+FOE_GFX_EXPORT
+VkInstance foeGfxVkGetRuntimeInstance(foeGfxRuntime runtime);
 
 #ifdef __cplusplus
 }

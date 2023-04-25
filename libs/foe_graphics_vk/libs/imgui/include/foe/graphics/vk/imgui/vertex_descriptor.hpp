@@ -9,6 +9,7 @@
 
 struct foeGfxVkVertexDescriptor;
 
-FOE_GFX_VK_IMGUI_EXPORT void imgui_foeGfxVkVertexDescriptor(foeGfxVkVertexDescriptor const &data);
+FOE_GFX_VK_IMGUI_EXPORT
+void imgui_foeGfxVkVertexDescriptor(foeGfxVkVertexDescriptor const &data);
 
 #endif // FOE_GRAPHICS_VK_IMGUI_VERTEX_DESCRIPTOR_HPP

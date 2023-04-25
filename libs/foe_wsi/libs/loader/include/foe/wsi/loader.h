@@ -13,9 +13,11 @@
 extern "C" {
 #endif
 
-FOE_WSI_EXPORT bool foeWsiLoadedImplementation();
+FOE_WSI_EXPORT
+bool foeWsiLoadedImplementation();
 
-FOE_WSI_EXPORT bool foeWsiLoadImplementation(char const *pPath);
+FOE_WSI_EXPORT
+bool foeWsiLoadImplementation(char const *pPath);
 
 #ifdef __cplusplus
 }

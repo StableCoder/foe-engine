@@ -19,8 +19,9 @@ typedef enum foeSimulationImGuiResult {
     FOE_SIMULATION_IMGUI_ERROR_FUNCTIONALITY_NOT_REGISTERED = -1000014003,
 } foeSimulationImGuiResult;
 
-FOE_SIM_IMGUI_EXPORT void foeSimulationImGuiResultToString(foeSimulationImGuiResult value,
-                                                           char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_SIM_IMGUI_EXPORT
+void foeSimulationImGuiResultToString(foeSimulationImGuiResult value,
+                                      char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }

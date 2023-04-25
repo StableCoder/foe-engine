@@ -45,10 +45,11 @@ class foeSimulationImGuiRegistrar {
      * @param loaderFn Function for various loader types
      * @return An appropriate error code based on the success or failure of the call
      */
-    FOE_SIM_IMGUI_EXPORT foeResultSet registerElements(ComponentFn componentFn,
-                                                       ResourceFn resourceFn,
-                                                       ResourceCreateInfoFn resourceCreateInfoFn,
-                                                       LoaderFn loaderFn);
+    FOE_SIM_IMGUI_EXPORT
+    foeResultSet registerElements(ComponentFn componentFn,
+                                  ResourceFn resourceFn,
+                                  ResourceCreateInfoFn resourceCreateInfoFn,
+                                  LoaderFn loaderFn);
 
     /** @brief Deregisters a set of ImGui element rendering functions
      * @param componentFn Function for component types
@@ -58,26 +59,30 @@ class foeSimulationImGuiRegistrar {
      * @param loaderFn Function for various loader types
      * @return An appropriate error code based on the success or failure of the call
      */
-    FOE_SIM_IMGUI_EXPORT foeResultSet deregisterElements(ComponentFn componentFn,
-                                                         ResourceFn resourceFn,
-                                                         ResourceCreateInfoFn resourceCreateInfoFn,
-                                                         LoaderFn loaderFn);
+    FOE_SIM_IMGUI_EXPORT
+    foeResultSet deregisterElements(ComponentFn componentFn,
+                                    ResourceFn resourceFn,
+                                    ResourceCreateInfoFn resourceCreateInfoFn,
+                                    LoaderFn loaderFn);
 
     /** @brief Attempts to render components associated with the entity
      * @param entity ID to find associated components to
      * @param pSimulation is a pointer to the simulation to search for the entity
      */
-    FOE_SIM_IMGUI_EXPORT void displayEntity(foeEntityID entity, foeSimulation const *pSimulation);
+    FOE_SIM_IMGUI_EXPORT
+    void displayEntity(foeEntityID entity, foeSimulation const *pSimulation);
 
     /** @brief Attempts to render resources associated with the ID
      * @param pResourceData The resource data to be displayed
      */
-    FOE_SIM_IMGUI_EXPORT void displayResource(foeResourceBase const *pResourceData);
+    FOE_SIM_IMGUI_EXPORT
+    void displayResource(foeResourceBase const *pResourceData);
 
     /** @brief Attempts to render resources associated with the ID
      * @param createInfo is the handle of the resource to attempt to display
      */
-    FOE_SIM_IMGUI_EXPORT void displayResourceCreateInfo(foeResourceCreateInfo createInfo);
+    FOE_SIM_IMGUI_EXPORT
+    void displayResourceCreateInfo(foeResourceCreateInfo createInfo);
 
   private:
     struct DisplayFns {

@@ -52,12 +52,15 @@ struct foeGfxVkRenderGraphStructure {
     void *pNext;
 };
 
-FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
+FOE_GFX_EXPORT
+foeGfxVkRenderGraphStructure const *foeGfxVkGraphFindStructure(
     foeGfxVkRenderGraphStructure const *pData, foeGfxVkRenderGraphStructureType sType);
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkCreateRenderGraph(foeGfxVkRenderGraph *pRenderGraph);
 
-FOE_GFX_EXPORT void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
+FOE_GFX_EXPORT
+void foeGfxVkDestroyRenderGraph(foeGfxVkRenderGraph renderGraph);
 
 struct foeGfxVkRenderGraphResourceCreateInfo {
     uint32_t sType;
@@ -67,14 +70,18 @@ struct foeGfxVkRenderGraphResourceCreateInfo {
     void *pResourceData;
 };
 
-FOE_GFX_EXPORT foeResultSet
-foeGfxVkRenderGraphCreateResource(foeGfxVkRenderGraph renderGraph,
-                                  foeGfxVkRenderGraphResourceCreateInfo *pResoureCreateInfo,
-                                  foeGfxVkRenderGraphResource *pResource);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkRenderGraphCreateResource(
+    foeGfxVkRenderGraph renderGraph,
+    foeGfxVkRenderGraphResourceCreateInfo *pResoureCreateInfo,
+    foeGfxVkRenderGraphResource *pResource);
 
-FOE_GFX_EXPORT char const *foeGfxVkRenderGraphGetResourceName(foeGfxVkRenderGraphResource resource);
-FOE_GFX_EXPORT bool foeGfxVkRenderGraphGetResourceIsMutable(foeGfxVkRenderGraphResource resource);
-FOE_GFX_EXPORT foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourceData(
+FOE_GFX_EXPORT
+char const *foeGfxVkRenderGraphGetResourceName(foeGfxVkRenderGraphResource resource);
+FOE_GFX_EXPORT
+bool foeGfxVkRenderGraphGetResourceIsMutable(foeGfxVkRenderGraphResource resource);
+FOE_GFX_EXPORT
+foeGfxVkRenderGraphStructure const *foeGfxVkRenderGraphGetResourceData(
     foeGfxVkRenderGraphResource resource);
 
 struct foeGfxVkRenderGraphResourceState {
@@ -103,19 +110,22 @@ struct foeGfxVkRenderGraphJobInfo {
     VkFence fence;
 };
 
-FOE_GFX_EXPORT foeResultSet
-foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
-                          foeGfxVkRenderGraphJobInfo *pJobInfo,
-                          PFN_foeGfxVkRenderGraphCustomSubmit &&customSubmit,
-                          PFN_foeGfxVkRenderGraphFillCmdBuffer &&fillCmdBuf,
-                          foeGfxVkRenderGraphJob *pJob);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkRenderGraphAddJob(foeGfxVkRenderGraph renderGraph,
+                                       foeGfxVkRenderGraphJobInfo *pJobInfo,
+                                       PFN_foeGfxVkRenderGraphCustomSubmit &&customSubmit,
+                                       PFN_foeGfxVkRenderGraphFillCmdBuffer &&fillCmdBuf,
+                                       foeGfxVkRenderGraphJob *pJob);
 
-FOE_GFX_EXPORT bool foeGfxVkRenderGraphJobToExecute(foeGfxVkRenderGraphJob job);
+FOE_GFX_EXPORT
+bool foeGfxVkRenderGraphJobToExecute(foeGfxVkRenderGraphJob job);
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkRenderGraphCompile(foeGfxVkRenderGraph renderGraph);
 
-FOE_GFX_EXPORT foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
-                                                       foeGfxSession gfxSession,
-                                                       foeGfxDelayedCaller gfxDelayedDestructor);
+FOE_GFX_EXPORT
+foeResultSet foeGfxVkRenderGraphExecute(foeGfxVkRenderGraph renderGraph,
+                                        foeGfxSession gfxSession,
+                                        foeGfxDelayedCaller gfxDelayedDestructor);
 
 #endif // FOE_GRAPHICS_VK_RENDER_GRAPH_HPP

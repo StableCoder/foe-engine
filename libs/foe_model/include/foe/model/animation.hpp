@@ -61,8 +61,8 @@ struct foeAnimation {
  * - If it's on a keyframe, returns that.
  * - If between keyframes, returns an itnerpolation between the two.
  */
-FOE_MODEL_EXPORT glm::vec3 interpolatePosition(double time,
-                                               foeNodeAnimationChannel const *pAnimationChannel);
+FOE_MODEL_EXPORT
+glm::vec3 interpolatePosition(double time, foeNodeAnimationChannel const *pAnimationChannel);
 
 /** @brief Returns an interpolated rotation based on the given time and node animation channel
  * @param time Time to use for interpolation
@@ -76,8 +76,8 @@ FOE_MODEL_EXPORT glm::vec3 interpolatePosition(double time,
  * - If it's on a keyframe, returns that.
  * - If between keyframes, returns an itnerpolation between the two.
  */
-FOE_MODEL_EXPORT glm::quat interpolateRotation(double time,
-                                               foeNodeAnimationChannel const *pAnimationChannel);
+FOE_MODEL_EXPORT
+glm::quat interpolateRotation(double time, foeNodeAnimationChannel const *pAnimationChannel);
 
 /** @brief Returns an interpolated scaling based on the given time and node animation channel
  * @param time Time to use for interpolation
@@ -91,7 +91,7 @@ FOE_MODEL_EXPORT glm::quat interpolateRotation(double time,
  * - If it's on a keyframe, returns that.
  * - If between keyframes, returns an itnerpolation between the two.
  */
-FOE_MODEL_EXPORT glm::vec3 interpolateScaling(double time,
-                                              foeNodeAnimationChannel const *pAnimationChannel);
+FOE_MODEL_EXPORT
+glm::vec3 interpolateScaling(double time, foeNodeAnimationChannel const *pAnimationChannel);
 
 #endif // FOE_MODEL_ANIMATION_HPP

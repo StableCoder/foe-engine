@@ -22,16 +22,20 @@ struct foeKeyYamlPair {
     YAML::Node data;
 };
 
-FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlRegisterResourceFn(
+FOE_IMEX_YAML_EXPORT
+foeResultSet foeImexYamlRegisterResourceFn(
     std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceCreateInfo));
 
-FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlDeregisterResourceFn(
+FOE_IMEX_YAML_EXPORT
+foeResultSet foeImexYamlDeregisterResourceFn(
     std::vector<foeKeyYamlPair> (*pResourceFn)(foeResourceCreateInfo));
 
-FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlRegisterComponentFn(
+FOE_IMEX_YAML_EXPORT
+foeResultSet foeImexYamlRegisterComponentFn(
     std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *));
 
-FOE_IMEX_YAML_EXPORT foeResultSet foeImexYamlDeregisterComponentFn(
+FOE_IMEX_YAML_EXPORT
+foeResultSet foeImexYamlDeregisterComponentFn(
     std::vector<foeKeyYamlPair> (*pComponentFn)(foeEntityID, foeSimulation const *));
 
 #endif // FOE_IMEX_YAML_EXPORTER_HPP

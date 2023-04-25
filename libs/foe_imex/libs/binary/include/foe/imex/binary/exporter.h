@@ -37,21 +37,27 @@ typedef foeResultSet (*PFN_foeImexBinaryExportComponent)(foeEntityID,
                                                          foeSimulation const *,
                                                          foeImexBinarySet *);
 
-FOE_IMEX_BINARY_EXPORT foeResultSet
-foeImexBinaryRegisterResourceExportFn(PFN_foeImexBinaryExportResource exportResourceFn);
+FOE_IMEX_BINARY_EXPORT
+foeResultSet foeImexBinaryRegisterResourceExportFn(
+    PFN_foeImexBinaryExportResource exportResourceFn);
 
-FOE_IMEX_BINARY_EXPORT foeResultSet
-foeImexBinaryDeregisterResourceExportFn(PFN_foeImexBinaryExportResource exportResourceFn);
+FOE_IMEX_BINARY_EXPORT
+foeResultSet foeImexBinaryDeregisterResourceExportFn(
+    PFN_foeImexBinaryExportResource exportResourceFn);
 
-FOE_IMEX_BINARY_EXPORT foeResultSet
-foeImexBinaryRegisterComponentExportFn(PFN_foeImexBinaryExportComponent exportComponentFn);
+FOE_IMEX_BINARY_EXPORT
+foeResultSet foeImexBinaryRegisterComponentExportFn(
+    PFN_foeImexBinaryExportComponent exportComponentFn);
 
-FOE_IMEX_BINARY_EXPORT foeResultSet
-foeImexBinaryDeregisterComponentExportFn(PFN_foeImexBinaryExportComponent exportComponentFn);
+FOE_IMEX_BINARY_EXPORT
+foeResultSet foeImexBinaryDeregisterComponentExportFn(
+    PFN_foeImexBinaryExportComponent exportComponentFn);
 
-FOE_IMEX_BINARY_EXPORT foeResultSet foeImexBinaryRegisterExporter();
+FOE_IMEX_BINARY_EXPORT
+foeResultSet foeImexBinaryRegisterExporter();
 
-FOE_IMEX_BINARY_EXPORT void foeImexBinaryDeregisterExporter();
+FOE_IMEX_BINARY_EXPORT
+void foeImexBinaryDeregisterExporter();
 
 #ifdef __cplusplus
 }

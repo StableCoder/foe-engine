@@ -21,8 +21,9 @@ typedef enum foePositionBinaryResult {
     FOE_POSITION_BINARY_ERROR_POSITION_3D_POOL_NOT_FOUND = -1000017004,
 } foePositionBinaryResult;
 
-FOE_POSITION_BINARY_EXPORT void foePositionBinaryResultToString(
-    foePositionBinaryResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+FOE_POSITION_BINARY_EXPORT
+void foePositionBinaryResultToString(foePositionBinaryResult value,
+                                     char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }
