@@ -17,8 +17,8 @@ struct QueueFamily {
     uint32_t family;
     uint32_t numQueues = 0;
 
-    std::array<std::mutex, MaxQueuesPerFamily> sync;
-    std::array<VkQueue, MaxQueuesPerFamily> queue;
+    std::array<std::mutex, FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY> sync;
+    std::array<VkQueue, FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY> queue;
 };
 
 FOE_DEFINE_HANDLE_CASTS(queue_family, QueueFamily, foeGfxVkQueueFamily)

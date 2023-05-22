@@ -28,7 +28,7 @@ struct foeGfxVkSession {
     VmaAllocator allocator{VK_NULL_HANDLE};
 
     uint32_t numQueueFamilies{0};
-    QueueFamily queueFamilies[MaxQueueFamilies];
+    QueueFamily queueFamilies[FOE_GRAPHICS_MAX_QUEUE_FAMILIES];
 
     /// Length in bytes of pLayerNames
     uint32_t layerNamesLength{0};

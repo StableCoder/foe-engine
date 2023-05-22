@@ -9,14 +9,9 @@
 extern "C" {
 #endif
 
-enum {
-    FOE_GRAPHICS_MAX_BUFFERED_FRAMES = 3,
-};
-
-enum {
-    MaxQueueFamilies = 8U,
-    MaxQueuesPerFamily = 8U,
-};
+#define FOE_GRAPHICS_MAX_BUFFERED_FRAMES   3U
+#define FOE_GRAPHICS_MAX_QUEUE_FAMILIES    8U
+#define FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY 8U
 
 #ifdef __cplusplus
 }

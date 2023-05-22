@@ -44,10 +44,10 @@ void createQueueFamily(VkDevice device,
                        uint32_t family,
                        uint32_t numQueues,
                        QueueFamily *pQueueFamily) {
-    if (numQueues >= MaxQueuesPerFamily) {
+    if (numQueues >= FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY) {
         FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_FATAL,
                 "There are {} Vulkan queue families, when the maximum compiled support is {}",
-                numQueues, MaxQueuesPerFamily)
+                numQueues, FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY)
         std::abort();
     }
 
@@ -700,7 +700,7 @@ extern "C" uint32_t foeGfxVkGetBestQueueFamily(foeGfxSession session, VkQueueFla
     auto *pSession = session_from_handle(session);
     std::vector<std::pair<uint32_t, uint32_t>> compatibleQueueFamilies;
 
-    for (uint32_t i = 0; i < MaxQueueFamilies; ++i) {
+    for (uint32_t i = 0; i < FOE_GRAPHICS_MAX_QUEUE_FAMILIES; ++i) {
         if (pSession->queueFamilies[i].numQueues == 0)
             continue;
 
