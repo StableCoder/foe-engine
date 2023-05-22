@@ -6,6 +6,7 @@
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
 #include <foe/handle.h>
+#include <foe/hex.h>
 #include <foe/managed_memory.h>
 #include <foe/memory_alignment.h>
 #include <foe/memory_mapped_file.h>

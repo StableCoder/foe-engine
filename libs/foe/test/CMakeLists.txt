@@ -20,6 +20,7 @@ target_sources(
           c_header_compatibility.c
           delimited_string.cpp
           filesystem.cpp
+          hex.cpp
           logger.cpp
           managed_memory.cpp
           memory_alignment.cpp

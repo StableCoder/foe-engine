@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -29,6 +29,9 @@ void foeResultToString(foeResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE])
         RESULT_CASE(FOE_ERROR_MEMORY_SUBSET_OVERRUNS_PARENT)
         RESULT_CASE(FOE_ERROR_ZERO_SYNC_THREADS)
         RESULT_CASE(FOE_ERROR_ZERO_ASYNC_THREADS)
+        RESULT_CASE(FOE_ERROR_DESTINATION_BUFFER_TOO_SMALL)
+        RESULT_CASE(FOE_ERROR_INVALID_HEX_DATA_SIZE)
+        RESULT_CASE(FOE_ERROR_MALFORMED_HEX_DATA)
 
     default:
         if (value > 0) {

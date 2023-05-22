@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2023 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ target_sources(
   PRIVATE binary_result.c
           delimited_string.c
           filesystem.cpp
+          hex.c
           log.cpp
           logger.cpp
           managed_memory_subset.c
