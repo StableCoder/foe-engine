@@ -299,7 +299,7 @@ Ubuntu/Clang Shared:
 macOS/AppleClang Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
       BUILD_TYPE: [Release]
   tags:
     - macos
@@ -309,7 +309,7 @@ macOS/AppleClang Static:
 macOS/AppleClang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
       BUILD_TYPE: [Release]
   tags:
     - macos
@@ -321,7 +321,7 @@ macOS/AppleClang Shared:
 macOS/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
       BUILD_TYPE: [Release]
   tags:
     - macos
@@ -334,7 +334,7 @@ macOS/Clang Static:
 macOS/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+    - ARCH: [arm64]
       BUILD_TYPE: [Release]
   tags:
     - macos
@@ -352,7 +352,6 @@ Windows 2019/MSVC Static:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
-  variables:
   <<: *platform_windows_template
 
 Windows 2019/MSVC Shared:
