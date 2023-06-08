@@ -44,6 +44,14 @@ if [[ "$DEVICE_NAME" == "llvmpipe" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"llvmpipe"* ]]; then
         exit 0
     fi
+elif [[ "$DEVICE_NAME" == "amd_ellesmere" ]]; then
+    if [[ "$VK_DEVICE_NAME" == *"RADV POLARIS10"* ]]; then
+        exit 0
+    fi
+elif [[ "$DEVICE_NAME" == "amd_vega10" ]]; then
+    if [[ "$VK_DEVICE_NAME" == *"RADV VEGA10"* ]]; then
+        exit 0
+    fi
 elif [[ "$DEVICE_NAME" == "amd_vega7" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"RADV RENOIR"* ]]; then
         exit 0
@@ -68,5 +76,5 @@ fi
 
 # Exit with error if didn't match above
 echo "ERROR: No match for device name '$DEVICE_NAME' with selected index of $DEVICE_INDEX"
-vulkaninfo
+vulkaninfo --summary
 exit 1
