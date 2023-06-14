@@ -31,6 +31,9 @@ typedef struct foeNetworkInterface {
 } foeNetworkInterface;
 
 FOE_NETWORK_EXPORT
+bool foeNetworkAddressMatch(foeNetworkAddress addr1, foeNetworkAddress addr2);
+
+FOE_NETWORK_EXPORT
 bool foeNetworkAddressIsIPv4(foeNetworkAddress address);
 
 FOE_NETWORK_EXPORT

@@ -17,6 +17,10 @@ _Static_assert(sizeof(foeNetworkAddress) == sizeof(struct in6_addr),
 _Static_assert(FOE_NETWORK_ADDRESS_STRLEN == INET6_ADDRSTRLEN,
                "FOE_NETWORK_ADDRESS_STRLEN must be large enough to fit full IPv6 in stirng form");
 
+bool foeNetworkAddressMatch(foeNetworkAddress addr1, foeNetworkAddress addr2) {
+    return memcmp(&addr1, &addr2, sizeof(foeNetworkAddress)) == 0;
+}
+
 bool foeNetworkAddressIsIPv4(foeNetworkAddress address) {
     // First 9 bytes are 0x00
     for (int i = 0; i < 10; ++i) {

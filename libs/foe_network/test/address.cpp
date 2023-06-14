@@ -22,6 +22,30 @@ TEST_CASE("foeNetwork - Blank/Zeroed Address") {
     CHECK_FALSE(foeNetworkAddressIsLoopback(address));
 }
 
+TEST_CASE("foeNetwork - Matching addresses") {
+    CHECK(foeNetworkAddressMatch(cBlankAddress, cBlankAddress));
+
+    foeNetworkAddress addr = cBlankAddress;
+    addr.ip_block[1] = 0x1;
+
+    CHECK(foeNetworkAddressMatch(addr, addr));
+
+    CHECK_FALSE(foeNetworkAddressMatch(addr, cBlankAddress));
+    CHECK_FALSE(foeNetworkAddressMatch(cBlankAddress, addr));
+
+    foeNetworkAddress addr2 = addr;
+
+    CHECK(foeNetworkAddressMatch(addr, addr2));
+    CHECK(foeNetworkAddressMatch(addr2, addr));
+
+    addr2.ip_block[4] = 0x2;
+
+    CHECK(foeNetworkAddressMatch(addr2, addr2));
+
+    CHECK_FALSE(foeNetworkAddressMatch(addr, addr2));
+    CHECK_FALSE(foeNetworkAddressMatch(addr2, addr));
+}
+
 TEST_CASE("foeNetwork - Checking IPv4 Addresses") {
     foeNetworkAddress addr = cBlankAddress;
     REQUIRE(memcmp(&cBlankAddress, &addr, sizeof(foeNetworkAddress)) == 0);
