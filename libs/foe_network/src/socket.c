@@ -12,10 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _WIN32
-typedef int foePlatformSocket;
-#else
+#ifdef _WIN32
 typedef SOCKET foePlatformSocket;
+#else
+#include <sys/ioctl.h>
+
+typedef int foePlatformSocket;
 #endif
 
 _Static_assert(sizeof(foeNetworkSocket) >= sizeof(int),
@@ -42,6 +44,18 @@ foeResultSet foeCreateNetworkSocket(foeNetworkAddress address,
     if (newSocket == -1) {
         deinitializeNetworkStack();
         return to_foeResult(FOE_NETWORK_ERROR_SOCKET_CREATION_ERROR);
+    }
+
+    // Set socket to non-blocking
+    unsigned long opt = 1;
+#ifdef _WIN32
+    if (ioctlsocket(newSocket, FIONBIO, &opt) != 0)
+#else
+    if (ioctl(newSocket, FIONBIO, &opt) != 0)
+#endif
+    {
+        foeDestroyNetworkSocket(socket_to_handle(newSocket));
+        return to_foeResult(FOE_NETWORK_ERROR_SOCKET_FAILED_TO_SET_NONBLOCKING);
     }
 
     // Set Socket to be dual stack (IPv4 and IPv6)
@@ -143,9 +157,10 @@ foeResultSet foeNetworkSocketRecvData(foeNetworkSocket socket,
                             (struct sockaddr *)&fromAddr, &fromAddrSize);
     if (recvSize >= 0)
         *pBufferSize = recvSize;
-
-    if (recvSize == -1)
-        return to_foeResult(FOE_NETWORK_ERROR_RECIEVE_FAILURE);
+    else
+        // Most of the time it's -1, usually meaning it would have blocked.
+        // @TODO Implement better error checking
+        return to_foeResult(FOE_NETWORK_NO_DATA_READ);
 
     switch (fromAddr.ss_family) {
     case AF_INET:

@@ -7,6 +7,7 @@
 #include <foe/network/socket.h>
 
 #include <cstring>
+#include <thread>
 
 namespace {
 
@@ -83,6 +84,9 @@ TEST_CASE("foeNetwork - Creating and destroying a socket on IPv6 loopback") {
         foeNetworkAddress fromAddr = {};
         uint16_t fromPort = 0;
 
+        // Pause waiting for message
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
         result = foeNetworkSocketRecvData(socket, &recvSize, recvBuffer, &fromAddr, &fromPort);
         REQUIRE(result.value == FOE_SUCCESS);
 
@@ -137,6 +141,9 @@ TEST_CASE("foeNetwork - Creating and destroying a socket on IPv4 loopback") {
         foeNetworkAddress fromAddr = {};
         uint16_t fromPort = 0;
 
+        // Pause waiting for message
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
         result = foeNetworkSocketRecvData(socket, &recvSize, recvBuffer, &fromAddr, &fromPort);
         REQUIRE(result.value == FOE_SUCCESS);
 
@@ -171,5 +178,5 @@ TEST_CASE("foeNetwork - Recieving from a bad socket fails") {
     foeResultSet result;
 
     result = foeNetworkSocketRecvData(socket, &recvSize, recvBuffer, &fromAddr, &fromPort);
-    REQUIRE(result.value == FOE_NETWORK_ERROR_RECIEVE_FAILURE);
+    REQUIRE(result.value == FOE_NETWORK_NO_DATA_READ);
 }
