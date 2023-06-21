@@ -12,6 +12,11 @@
 
 #include <stdint.h>
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,6 +30,13 @@ foeResultSet foeCreateNetworkSocket(foeNetworkAddress address,
 
 FOE_NETWORK_EXPORT
 void foeDestroyNetworkSocket(foeNetworkSocket socket);
+
+FOE_NETWORK_EXPORT
+#ifndef _WIN32
+int foeNetworkSocketGetHandle(foeNetworkSocket socket);
+#else
+SOCKET foeNetworkSocketGetHandle(foeNetworkSocket socket);
+#endif
 
 FOE_NETWORK_EXPORT
 foeResultSet foeNetworkGetSocketAddress(foeNetworkSocket socket,

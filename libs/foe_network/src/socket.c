@@ -12,12 +12,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef _WIN32
+typedef int foePlatformSocket;
+#else
+typedef SOCKET foePlatformSocket;
+#endif
+
 _Static_assert(sizeof(foeNetworkSocket) >= sizeof(int),
                "foeNetworkSocket must be large enough for the socket file descriptor");
 
-static foeNetworkSocket socket_to_handle(int socket) { return (foeNetworkSocket)socket; }
+static foeNetworkSocket socket_to_handle(foePlatformSocket socket) {
+    return (foeNetworkSocket)socket;
+}
 
-static int socket_from_handle(foeNetworkSocket handle) { return (int)handle; }
+static int socket_from_handle(foeNetworkSocket handle) { return (foePlatformSocket)handle; }
 
 foeResultSet foeCreateNetworkSocket(foeNetworkAddress address,
                                     uint16_t port,
@@ -30,7 +38,7 @@ foeResultSet foeCreateNetworkSocket(foeNetworkAddress address,
         return result;
 
     // Socket
-    int newSocket = socket(AF_INET6, SOCK_DGRAM, 0);
+    foePlatformSocket newSocket = socket(AF_INET6, SOCK_DGRAM, 0);
     if (newSocket == -1) {
         deinitializeNetworkStack();
         return to_foeResult(FOE_NETWORK_ERROR_SOCKET_CREATION_ERROR);
@@ -69,6 +77,15 @@ void foeDestroyNetworkSocket(foeNetworkSocket socket) {
     close(socket_from_handle(socket));
 #endif
     deinitializeNetworkStack();
+}
+
+#ifndef _WIN32
+int foeNetworkSocketGetHandle(foeNetworkSocket socket)
+#else
+SOCKET foeNetworkSocketGetHandle(foeNetworkSocket socket)
+#endif
+{
+    return socket_from_handle(socket);
 }
 
 foeResultSet foeNetworkGetSocketAddress(foeNetworkSocket socket,
