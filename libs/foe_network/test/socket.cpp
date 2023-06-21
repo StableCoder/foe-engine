@@ -6,6 +6,7 @@
 #include <foe/network/result.h>
 #include <foe/network/socket.h>
 
+#include <chrono>
 #include <cstring>
 #include <thread>
 
@@ -84,10 +85,13 @@ TEST_CASE("foeNetwork - Creating and destroying a socket on IPv6 loopback") {
         foeNetworkAddress fromAddr = {};
         uint16_t fromPort = 0;
 
-        // Pause waiting for message
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // Loop waiting for the message
+        auto haltTime = std::chrono::steady_clock::now() + std::chrono::milliseconds(15);
+        do {
+            result = foeNetworkSocketRecvData(socket, &recvSize, recvBuffer, &fromAddr, &fromPort);
+        } while (result.value == FOE_NETWORK_NO_DATA_READ ||
+                 haltTime < std::chrono::steady_clock::now());
 
-        result = foeNetworkSocketRecvData(socket, &recvSize, recvBuffer, &fromAddr, &fromPort);
         REQUIRE(result.value == FOE_SUCCESS);
 
         CHECK_FALSE(foeNetworkAddressIsIPv4(fromAddr));
@@ -141,10 +145,13 @@ TEST_CASE("foeNetwork - Creating and destroying a socket on IPv4 loopback") {
         foeNetworkAddress fromAddr = {};
         uint16_t fromPort = 0;
 
-        // Pause waiting for message
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        // Loop waiting for the message
+        auto haltTime = std::chrono::steady_clock::now() + std::chrono::milliseconds(15);
+        do {
+            result = foeNetworkSocketRecvData(socket, &recvSize, recvBuffer, &fromAddr, &fromPort);
+        } while (result.value == FOE_NETWORK_NO_DATA_READ ||
+                 haltTime < std::chrono::steady_clock::now());
 
-        result = foeNetworkSocketRecvData(socket, &recvSize, recvBuffer, &fromAddr, &fromPort);
         REQUIRE(result.value == FOE_SUCCESS);
 
         CHECK(foeNetworkAddressIsIPv4(fromAddr));
