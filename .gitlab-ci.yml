@@ -15,7 +15,7 @@ variables:
 # Formatting Jobs
 Source Files:
   stage: Formatting
-  image: docker.io/stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:fedora
   allow_failure: true
   tags:
     - container
@@ -28,7 +28,7 @@ Source Files:
 
 CMake Files:
   stage: Formatting
-  image: docker.io/stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:fedora
   allow_failure: true
   tags:
     - container
@@ -41,7 +41,7 @@ CMake Files:
 
 Shell Files:
   stage: Formatting
-  image: docker.io/stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:fedora
   allow_failure: true
   tags:
   - container
@@ -54,7 +54,7 @@ Shell Files:
 
 Python Files:
   stage: Formatting
-  image: docker.io/stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:fedora
   allow_failure: true
   tags:
   - container
@@ -522,11 +522,14 @@ macOS Vulkan HW Testing:
 
 .analysis_template: &analysis_template
   stage: Analysis
-  image: docker.io/stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:fedora
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
   tags:
     - container
     - linux
-    - amd64
+    - ${ARCH}
   dependencies: []
   script:
     - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_TESTS=ON -D BUILD_WINDOW_TESTS=OFF -D DISABLE_PLUGIN_UNLOAD=ON ${CMAKE_OPTIONS}
@@ -537,7 +540,7 @@ macOS Vulkan HW Testing:
 
 Static Analysis:
   stage: Analysis
-  image: docker.io/stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
     - linux
@@ -552,7 +555,7 @@ Static Analysis:
 
 Code Coverage:
   stage: Analysis
-  image: docker.io/stabletec/build-foe:arch
+  image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
     - linux
