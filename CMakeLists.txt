@@ -87,10 +87,14 @@ gen_dep_graph(png ADD_TO_DEP_GRAPH)
 
 # clang-tidy
 include(tools)
+option(CLANG_TIDY "Run clang-tidy static analysis" OFF)
+cmake_dependent_option(
+  CLANG_TIDY_FIX "Turns on fixes for found clang-tidy issues" OFF CLANG_TIDY
+  OFF)
 option(CLANG_TIDY_FIX "" OFF)
 if(CLANG_TIDY_FIX)
   clang_tidy(-header-filter='${CMAKE_SOURCE_DIR}/*' -fix)
-else()
+elseif(CLANG_TIDY)
   clang_tidy(-header-filter='${CMAKE_SOURCE_DIR}/*')
 endif()
 
