@@ -22,7 +22,7 @@ target_include_directories(
   foe_yaml PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
                   ${GLM_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS}/include)
 
-if(WIN32)
+if(WIN32 OR APPLE)
   target_link_libraries(foe_yaml PUBLIC yaml-cpp::yaml-cpp)
 else()
   target_link_libraries(foe_yaml PUBLIC yaml-cpp)
