@@ -24,7 +24,7 @@ extern "C" {
 FOE_DEFINE_HANDLE(foeCryptoContext_AES_256_GCM)
 
 FOE_CRYPTO_EXPORT
-bool foeCrypto_isHardwareAccelerated_AES_256_GCM();
+bool foeCrypto_AES_256_GCM_isHardwareAccelerated();
 
 // Key must be FOE_CRYPTO_AES_256_GCM_KEY_SIZE bytes
 FOE_CRYPTO_EXPORT

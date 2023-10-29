@@ -38,7 +38,7 @@ static_assert(sizeof(nonce1) == sizeof(nonce2));
 #if defined(__APPLE__) || !(defined(__x86_64__) || defined(_WIN64))
 
 TEST_CASE("AES 256 GCM - Detect HW acceleration is not available") {
-    REQUIRE_FALSE(foeCrypto_isHardwareAccelerated_AES_256_GCM());
+    REQUIRE_FALSE(foeCrypto_AES_256_GCM_isHardwareAccelerated());
 }
 
 TEST_CASE("AES 256 GCM - Failure (No AES hardware acceleration)") {
@@ -62,7 +62,7 @@ TEST_CASE("AES 256 GCM - Failure (No AES hardware acceleration)") {
 #else
 
 TEST_CASE("AES 256 GCM - Detect HW acceleration is available") {
-    REQUIRE(foeCrypto_isHardwareAccelerated_AES_256_GCM());
+    REQUIRE(foeCrypto_AES_256_GCM_isHardwareAccelerated());
 }
 
 TEST_CASE("AES 256 GCM - encryption success cases") {

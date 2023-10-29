@@ -21,7 +21,7 @@ _Static_assert(FOE_CRYPTO_AES_256_GCM_ENCRYPTION_OVERHEAD == crypto_aead_aes256g
 
 FOE_DEFINE_HANDLE_CASTS(encryption_state, crypto_aead_aes256gcm_state, foeCryptoContext_AES_256_GCM)
 
-bool foeCrypto_isHardwareAccelerated_AES_256_GCM() {
+bool foeCrypto_AES_256_GCM_isHardwareAccelerated() {
     if (sodium_init() < 0)
         return false;
 
