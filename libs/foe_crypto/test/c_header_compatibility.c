@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/crypto/aes_gcm.h>
+#include <foe/crypto/aes_256_gcm.h>
 #include <foe/crypto/ed25519.h>
 #include <foe/crypto/memory.h>
 #include <foe/crypto/random.h>

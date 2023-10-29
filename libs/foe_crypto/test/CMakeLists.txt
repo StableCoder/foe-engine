@@ -12,7 +12,7 @@ add_test(NAME FoE-Crypto-Test COMMAND test_foe_crypto)
 # Definition
 target_sources(
   test_foe_crypto
-  PRIVATE aes_gcm.cpp
+  PRIVATE aes_256_gcm.cpp
           c_header_compatibility.c
           ed25519.cpp
           key.cpp

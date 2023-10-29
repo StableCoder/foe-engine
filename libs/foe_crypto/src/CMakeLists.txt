@@ -4,7 +4,7 @@
 
 target_sources(
   foe_crypto
-  PRIVATE aes_gcm.c
+  PRIVATE aes_256_gcm.c
           ed25519.c
           key.c
           memory.c
