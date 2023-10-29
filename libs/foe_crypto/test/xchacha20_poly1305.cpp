@@ -32,7 +32,7 @@ static_assert(nonce2.size() == FOE_CRYPTO_XCHACHA20_POLY1305_NONCE_SIZE);
 
 } // namespace
 
-TEST_CASE("XChaCha20 Poly1305 - encryption and decryption success case") {
+TEST_CASE("XChaCha20 Poly1305 - encryption success cases") {
     foeCryptoKey key = FOE_NULL_HANDLE;
     foeResultSet result;
 
@@ -44,19 +44,28 @@ TEST_CASE("XChaCha20 Poly1305 - encryption and decryption success case") {
     // Encrypt data
     size_t encryptedBufferSize =
         cOriginalData.size() + FOE_CRYPTO_XCHACHA20_POLY1305_ENCRYPTION_OVERHEAD;
-    std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize]);
-    memset(encryptedBuffer.get(), 0, encryptedBufferSize);
+    std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize + 16]);
+    memset(encryptedBuffer.get(), 0, encryptedBufferSize + 16);
 
     size_t encryptedDataSize = encryptedBufferSize;
-    result = foeCryptoEncrypt_XChaCha20_Poly1305(key, nonce1.size(), nonce1.data(),
-                                                 cOriginalData.size(), cOriginalData.data(),
-                                                 &encryptedDataSize, encryptedBuffer.get());
-    REQUIRE(result.value == FOE_SUCCESS);
-
-    REQUIRE(encryptedDataSize == encryptedBufferSize);
+    SECTION("destination buffer size is exact required") {
+        result = foeCryptoEncrypt_XChaCha20_Poly1305(key, nonce1.size(), nonce1.data(),
+                                                     cOriginalData.size(), cOriginalData.data(),
+                                                     &encryptedDataSize, encryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(encryptedDataSize == encryptedBufferSize);
+    }
+    SECTION("destination buffer size is too large") {
+        encryptedDataSize += 16;
+        result = foeCryptoEncrypt_XChaCha20_Poly1305(key, nonce1.size(), nonce1.data(),
+                                                     cOriginalData.size(), cOriginalData.data(),
+                                                     &encryptedDataSize, encryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(encryptedDataSize == encryptedBufferSize);
+    }
 
     // Decrypt data
-    size_t decryptedDataBufferSize = encryptedBufferSize;
+    constexpr size_t decryptedDataBufferSize = cOriginalData.size();
     std::unique_ptr<unsigned char[]> decryptedBuffer(new unsigned char[decryptedDataBufferSize]);
 
     size_t decryptedDataSize = decryptedDataBufferSize;
@@ -64,9 +73,58 @@ TEST_CASE("XChaCha20 Poly1305 - encryption and decryption success case") {
                                                  encryptedDataSize, encryptedBuffer.get(),
                                                  &decryptedDataSize, decryptedBuffer.get());
     REQUIRE(result.value == FOE_SUCCESS);
-
-    REQUIRE(decryptedDataSize < encryptedDataSize);
+    REQUIRE(decryptedDataSize == decryptedDataBufferSize);
     REQUIRE(memcmp(cOriginalData.data(), decryptedBuffer.get(), cOriginalData.size()) == 0);
+
+    // Cleanup
+    foeDestroyCryptoKey(key);
+}
+
+TEST_CASE("XChaCha20 Poly1305 - decryption success cases") {
+    foeCryptoKey key = FOE_NULL_HANDLE;
+    foeResultSet result;
+
+    // Create valid key
+    result = foeCreateCryptoKey(validKeyData.size(), validKeyData.data(), &key);
+    REQUIRE(result.value == FOE_SUCCESS);
+    REQUIRE(key != FOE_NULL_HANDLE);
+
+    // Encrypt data
+    size_t encryptedBufferSize =
+        cOriginalData.size() + FOE_CRYPTO_XCHACHA20_POLY1305_ENCRYPTION_OVERHEAD;
+    std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize + 16]);
+    memset(encryptedBuffer.get(), 0, encryptedBufferSize + 16);
+
+    size_t encryptedDataSize = encryptedBufferSize;
+    result = foeCryptoEncrypt_XChaCha20_Poly1305(key, nonce1.size(), nonce1.data(),
+                                                 cOriginalData.size(), cOriginalData.data(),
+                                                 &encryptedDataSize, encryptedBuffer.get());
+    REQUIRE(result.value == FOE_SUCCESS);
+    REQUIRE(encryptedDataSize == encryptedBufferSize);
+
+    // Decrypt data
+    constexpr size_t decryptedDataBufferSize = cOriginalData.size();
+    std::unique_ptr<unsigned char[]> decryptedBuffer(
+        new unsigned char[decryptedDataBufferSize + 16]);
+
+    size_t decryptedDataSize = decryptedDataBufferSize;
+    SECTION("destination buffer size is exact required") {
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(key, nonce1.size(), nonce1.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(decryptedDataSize == decryptedDataBufferSize);
+        REQUIRE(memcmp(cOriginalData.data(), decryptedBuffer.get(), cOriginalData.size()) == 0);
+    }
+    SECTION("destination buffer size is too large") {
+        decryptedDataSize += 16;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(key, nonce1.size(), nonce1.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(decryptedDataSize == decryptedDataBufferSize);
+        REQUIRE(memcmp(cOriginalData.data(), decryptedBuffer.get(), cOriginalData.size()) == 0);
+    }
 
     // Cleanup
     foeDestroyCryptoKey(key);
@@ -75,73 +133,71 @@ TEST_CASE("XChaCha20 Poly1305 - encryption and decryption success case") {
 TEST_CASE("XChaCha20 Poly1305 - encryption failure cases") {
     foeResultSet result;
 
-    SECTION("Correct sized destination buffer") {
-        size_t encryptedBufferSize =
-            cOriginalData.size() + FOE_CRYPTO_XCHACHA20_POLY1305_ENCRYPTION_OVERHEAD;
-        std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize]);
-        memset(encryptedBuffer.get(), 0, encryptedBufferSize);
+    size_t encryptedBufferSize =
+        cOriginalData.size() + FOE_CRYPTO_XCHACHA20_POLY1305_ENCRYPTION_OVERHEAD;
+    std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize]);
+    memset(encryptedBuffer.get(), 0, encryptedBufferSize);
 
-        size_t encryptedDataSize = encryptedBufferSize;
+    size_t encryptedDataSize = encryptedBufferSize;
 
-        SECTION("Invalid key sizes") {
-            SECTION("Too small") {
-                foeCryptoKey invalidKey = FOE_NULL_HANDLE;
-                result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE - 1,
-                                            invalidKeyData.data(), &invalidKey);
-                REQUIRE(result.value == FOE_SUCCESS);
+    SECTION("invalid key sizes") {
+        SECTION("too small") {
+            foeCryptoKey invalidKey = FOE_NULL_HANDLE;
+            result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE - 1,
+                                        invalidKeyData.data(), &invalidKey);
+            REQUIRE(result.value == FOE_SUCCESS);
 
-                result = foeCryptoEncrypt_XChaCha20_Poly1305(
-                    invalidKey, nonce1.size(), nonce1.data(), cOriginalData.size(),
-                    cOriginalData.data(), &encryptedDataSize, encryptedBuffer.get());
-                REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
+            result = foeCryptoEncrypt_XChaCha20_Poly1305(invalidKey, nonce1.size(), nonce1.data(),
+                                                         cOriginalData.size(), cOriginalData.data(),
+                                                         &encryptedDataSize, encryptedBuffer.get());
+            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
 
-                foeDestroyCryptoKey(invalidKey);
-            }
-
-            SECTION("Too large") {
-                foeCryptoKey invalidKey = FOE_NULL_HANDLE;
-                result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE + 1,
-                                            invalidKeyData.data(), &invalidKey);
-                REQUIRE(result.value == FOE_SUCCESS);
-
-                result = foeCryptoEncrypt_XChaCha20_Poly1305(
-                    invalidKey, nonce1.size(), nonce1.data(), cOriginalData.size(),
-                    cOriginalData.data(), &encryptedDataSize, encryptedBuffer.get());
-                REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
-
-                foeDestroyCryptoKey(invalidKey);
-            }
+            foeDestroyCryptoKey(invalidKey);
         }
 
-        SECTION("Invalid nonce sizes") {
-            foeCryptoKey key = FOE_NULL_HANDLE;
-
-            // Create Valid Key
-            result = foeCreateCryptoKey(validKeyData.size(), validKeyData.data(), &key);
+        SECTION("too large") {
+            foeCryptoKey invalidKey = FOE_NULL_HANDLE;
+            result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE + 1,
+                                        invalidKeyData.data(), &invalidKey);
             REQUIRE(result.value == FOE_SUCCESS);
-            REQUIRE(key != FOE_NULL_HANDLE);
 
-            SECTION("Too small") {
-                size_t encryptedDataSize = encryptedBufferSize;
-                result = foeCryptoEncrypt_XChaCha20_Poly1305(
-                    key, nonce1.size() - 1, nonce1.data(), cOriginalData.size(),
-                    cOriginalData.data(), &encryptedDataSize, encryptedBuffer.get());
-                REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
-            }
+            result = foeCryptoEncrypt_XChaCha20_Poly1305(invalidKey, nonce1.size(), nonce1.data(),
+                                                         cOriginalData.size(), cOriginalData.data(),
+                                                         &encryptedDataSize, encryptedBuffer.get());
+            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
 
-            SECTION("Too large") {
-                size_t encryptedDataSize = encryptedBufferSize;
-                result = foeCryptoEncrypt_XChaCha20_Poly1305(
-                    key, nonce1.size() + 1, nonce1.data(), cOriginalData.size(),
-                    cOriginalData.data(), &encryptedDataSize, encryptedBuffer.get());
-                REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
-            }
-
-            foeDestroyCryptoKey(key);
+            foeDestroyCryptoKey(invalidKey);
         }
     }
 
-    SECTION("Destination buffer too small") {
+    SECTION("invalid nonce sizes") {
+        foeCryptoKey key = FOE_NULL_HANDLE;
+
+        // Create Valid Key
+        result = foeCreateCryptoKey(validKeyData.size(), validKeyData.data(), &key);
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(key != FOE_NULL_HANDLE);
+
+        SECTION("too small") {
+            size_t encryptedDataSize = encryptedBufferSize;
+            result = foeCryptoEncrypt_XChaCha20_Poly1305(key, nonce1.size() - 1, nonce1.data(),
+                                                         cOriginalData.size(), cOriginalData.data(),
+                                                         &encryptedDataSize, encryptedBuffer.get());
+            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
+        }
+
+        SECTION("too large") {
+            size_t encryptedDataSize = encryptedBufferSize;
+            result = foeCryptoEncrypt_XChaCha20_Poly1305(key, nonce1.size() + 1, nonce1.data(),
+                                                         cOriginalData.size(), cOriginalData.data(),
+                                                         &encryptedDataSize, encryptedBuffer.get());
+            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
+        }
+
+        foeDestroyCryptoKey(key);
+    }
+
+    SECTION("destination buffer too small") {
         foeCryptoKey key = FOE_NULL_HANDLE;
 
         // Create Valid Key
@@ -195,81 +251,101 @@ TEST_CASE("XChaCha20 Poly1305 - decryption failure cases") {
     REQUIRE(encryptedDataSize == encryptedBufferSize);
 
     // Decryption
-    SECTION("Correct sized destination buffer") {
-        size_t decryptedDataBufferSize = encryptedBufferSize;
-        std::unique_ptr<unsigned char[]> decryptedBuffer(
-            new unsigned char[decryptedDataBufferSize]);
+    size_t decryptedDataBufferSize = encryptedBufferSize;
+    std::unique_ptr<unsigned char[]> decryptedBuffer(new unsigned char[decryptedDataBufferSize]);
 
-        SECTION("Unsuccessful decrypt with same key/different nonce") {
-            size_t decryptedDataSize = decryptedDataBufferSize;
-            result = foeCryptoDecrypt_XChaCha20_Poly1305(key, nonce2.size(), nonce2.data(),
-                                                         encryptedDataSize, encryptedBuffer.get(),
-                                                         &decryptedDataSize, decryptedBuffer.get());
-            REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
-        }
-        SECTION("Unsuccessful decrypt with different key/same nonce") {
-            size_t decryptedDataSize = decryptedDataBufferSize;
-            result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce1.size(), nonce1.data(),
-                                                         encryptedDataSize, encryptedBuffer.get(),
-                                                         &decryptedDataSize, decryptedBuffer.get());
-            REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
-        }
-        SECTION("Unsuccessful decrypt with different key/nonce") {
-            size_t decryptedDataSize = decryptedDataBufferSize;
-            result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce2.size(), nonce2.data(),
-                                                         encryptedDataSize, encryptedBuffer.get(),
-                                                         &decryptedDataSize, decryptedBuffer.get());
-            REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
-        }
-
-        SECTION("Nonce too small") {
-            size_t decryptedDataSize = decryptedDataBufferSize;
-            result = foeCryptoDecrypt_XChaCha20_Poly1305(
-                invalidKey, nonce1.size() - 1, nonce1.data(), encryptedDataSize,
-                encryptedBuffer.get(), &decryptedDataSize, decryptedBuffer.get());
-            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
-        }
-
-        SECTION("Nonce too large") {
-            size_t decryptedDataSize = decryptedDataBufferSize;
-            result = foeCryptoDecrypt_XChaCha20_Poly1305(
-                invalidKey, nonce1.size() - 1, nonce1.data(), encryptedDataSize,
-                encryptedBuffer.get(), &decryptedDataSize, decryptedBuffer.get());
-            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
-        }
-
-        SECTION("Key too small") {
-            foeCryptoKey invalidKey = FOE_NULL_HANDLE;
-            result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE - 1,
-                                        invalidKeyData.data(), &invalidKey);
-            REQUIRE(result.value == FOE_SUCCESS);
-
-            size_t decryptedDataSize = decryptedDataBufferSize;
-            result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce2.size(), nonce2.data(),
-                                                         encryptedDataSize, encryptedBuffer.get(),
-                                                         &decryptedDataSize, decryptedBuffer.get());
-            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
-
-            foeDestroyCryptoKey(invalidKey);
-        }
-
-        SECTION("Key too large") {
-            foeCryptoKey invalidKey = FOE_NULL_HANDLE;
-            result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE + 1,
-                                        invalidKeyData.data(), &invalidKey);
-            REQUIRE(result.value == FOE_SUCCESS);
-
-            size_t decryptedDataSize = decryptedDataBufferSize;
-            result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce2.size(), nonce2.data(),
-                                                         encryptedDataSize, encryptedBuffer.get(),
-                                                         &decryptedDataSize, decryptedBuffer.get());
-            REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
-
-            foeDestroyCryptoKey(invalidKey);
-        }
+    { // Successful decryption baseline
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(
+            key, nonce1.size(), nonce1.data(), encryptedDataSize, encryptedBuffer.get(),
+            &decryptedDataBufferSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_SUCCESS);
     }
 
-    SECTION("Destination buffer too small fails") {
+    SECTION("any byte in encrypted buffer modified") {
+        for (int i = 0; i < encryptedDataSize; ++i) {
+            std::unique_ptr<unsigned char[]> encryptedBufferCopy{
+                new unsigned char[encryptedDataSize]};
+            memcpy(encryptedBufferCopy.get(), encryptedBuffer.get(), encryptedDataSize);
+
+            ++encryptedBufferCopy[i];
+
+            size_t decryptedDataSize = decryptedDataBufferSize;
+            result = foeCryptoDecrypt_XChaCha20_Poly1305(
+                key, nonce1.size(), nonce1.data(), encryptedDataSize, encryptedBufferCopy.get(),
+                &decryptedDataSize, decryptedBuffer.get());
+            REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
+        }
+    }
+    SECTION("same key/different nonce") {
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(key, nonce2.size(), nonce2.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
+    }
+    SECTION("different key/same nonce") {
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce1.size(), nonce1.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
+    }
+    SECTION("different key/nonce") {
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce2.size(), nonce2.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
+    }
+
+    SECTION("nonce too small") {
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce1.size() - 1, nonce1.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
+    }
+
+    SECTION("nonce too large") {
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce1.size() - 1, nonce1.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_NONCE_SIZE);
+    }
+
+    SECTION("key too small") {
+        foeCryptoKey invalidKey = FOE_NULL_HANDLE;
+        result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE - 1,
+                                    invalidKeyData.data(), &invalidKey);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce2.size(), nonce2.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
+
+        foeDestroyCryptoKey(invalidKey);
+    }
+
+    SECTION("key too large") {
+        foeCryptoKey invalidKey = FOE_NULL_HANDLE;
+        result = foeCreateCryptoKey(FOE_CRYPTO_XCHACHA20_POLY1305_KEY_SIZE + 1,
+                                    invalidKeyData.data(), &invalidKey);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(invalidKey, nonce2.size(), nonce2.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
+
+        foeDestroyCryptoKey(invalidKey);
+    }
+
+    SECTION("destination buffer too small fails") {
         size_t decryptedDataBufferSize = cOriginalData.size() - 1;
         std::unique_ptr<unsigned char[]> decryptedBuffer(
             new unsigned char[decryptedDataBufferSize]);

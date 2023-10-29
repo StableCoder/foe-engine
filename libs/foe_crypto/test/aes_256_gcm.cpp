@@ -37,11 +37,11 @@ static_assert(sizeof(nonce1) == sizeof(nonce2));
 // Only x86-64 on non-macOS known to have AES acceleration support in libsodium
 #if defined(__APPLE__) || !(defined(__x86_64__) || defined(_WIN64))
 
-TEST_CASE("AES GCM - Detect HW acceleration is not available") {
+TEST_CASE("AES 256 GCM - Detect HW acceleration is not available") {
     REQUIRE_FALSE(foeCrypto_isHardwareAccelerated_AES_256_GCM());
 }
 
-TEST_CASE("AES GCM - Failure (No AES hardware acceleration)") {
+TEST_CASE("AES 256 GCM - Failure (No AES hardware acceleration)") {
     foeCryptoKey key = FOE_NULL_HANDLE;
     foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
     foeResultSet result;
@@ -61,11 +61,11 @@ TEST_CASE("AES GCM - Failure (No AES hardware acceleration)") {
 
 #else
 
-TEST_CASE("AES GCM - Detect HW acceleration is available") {
+TEST_CASE("AES 256 GCM - Detect HW acceleration is available") {
     REQUIRE(foeCrypto_isHardwareAccelerated_AES_256_GCM());
 }
 
-TEST_CASE("AES GCM - encryption and decryption success case") {
+TEST_CASE("AES 256 GCM - encryption success cases") {
     foeCryptoKey key = FOE_NULL_HANDLE;
     foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
     foeResultSet result;
@@ -85,16 +85,25 @@ TEST_CASE("AES GCM - encryption and decryption success case") {
     // Encrypt Data
     constexpr size_t encryptedBufferSize =
         cOriginalData.size() + FOE_CRYPTO_AES_256_GCM_ENCRYPTION_OVERHEAD;
-    std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize]);
-    memset(encryptedBuffer.get(), 0, encryptedBufferSize);
+    std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize + 16]);
+    memset(encryptedBuffer.get(), 0, encryptedBufferSize + 16);
 
     size_t encryptedDataSize = encryptedBufferSize;
-    result = foeCryptoEncrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
-                                          cOriginalData.size(), cOriginalData.data(),
-                                          &encryptedDataSize, encryptedBuffer.get());
-    REQUIRE(result.value == FOE_SUCCESS);
-
-    REQUIRE(encryptedDataSize == encryptedBufferSize);
+    SECTION("destination buffer size is exact required") {
+        result = foeCryptoEncrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
+                                              cOriginalData.size(), cOriginalData.data(),
+                                              &encryptedDataSize, encryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(encryptedDataSize == encryptedBufferSize);
+    }
+    SECTION("destination buffer size is too large") {
+        encryptedDataSize += 16;
+        result = foeCryptoEncrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
+                                              cOriginalData.size(), cOriginalData.data(),
+                                              &encryptedDataSize, encryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(encryptedDataSize == encryptedBufferSize);
+    }
 
     // Decrypt Data
     constexpr size_t decryptedDataBufferSize = cOriginalData.size();
@@ -105,14 +114,70 @@ TEST_CASE("AES GCM - encryption and decryption success case") {
                                           encryptedBuffer.get(), &decryptedDataSize,
                                           decryptedBuffer.get());
     REQUIRE(result.value == FOE_SUCCESS);
-
     REQUIRE(decryptedDataSize == decryptedDataBufferSize);
     REQUIRE(memcmp(cOriginalData.data(), decryptedBuffer.get(), cOriginalData.size()) == 0);
 
     foeDestroyContext_AES_256_GCM(context);
 }
 
-TEST_CASE("AES GCM - encryption context failure cases") {
+TEST_CASE("AES 256 GCM - decryption success cases") {
+    foeCryptoKey key = FOE_NULL_HANDLE;
+    foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
+    foeResultSet result;
+
+    // Create key
+    result = foeCreateCryptoKey(validKeyData.size(), validKeyData.data(), &key);
+    REQUIRE(result.value == FOE_SUCCESS);
+
+    // Create AES GCM context
+    result = foeCreateContext_AES_256_GCM(key, &context);
+    REQUIRE(result.value == FOE_SUCCESS);
+    REQUIRE(context != FOE_NULL_HANDLE);
+
+    // Don't need the key after context creation
+    foeDestroyCryptoKey(key);
+
+    // Encrypt Data
+    constexpr size_t encryptedBufferSize =
+        cOriginalData.size() + FOE_CRYPTO_AES_256_GCM_ENCRYPTION_OVERHEAD;
+    std::unique_ptr<unsigned char[]> encryptedBuffer(new unsigned char[encryptedBufferSize + 16]);
+    memset(encryptedBuffer.get(), 0, encryptedBufferSize + 16);
+
+    size_t encryptedDataSize = encryptedBufferSize;
+    result = foeCryptoEncrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
+                                          cOriginalData.size(), cOriginalData.data(),
+                                          &encryptedDataSize, encryptedBuffer.get());
+    REQUIRE(result.value == FOE_SUCCESS);
+    REQUIRE(encryptedDataSize == encryptedBufferSize);
+
+    // Decrypt Data
+    constexpr size_t decryptedDataBufferSize = cOriginalData.size();
+    std::unique_ptr<unsigned char[]> decryptedBuffer(
+        new unsigned char[decryptedDataBufferSize + 16]);
+
+    size_t decryptedDataSize = decryptedDataBufferSize;
+    SECTION("destination buffer size is exact required") {
+        result = foeCryptoDecrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
+                                              encryptedDataSize, encryptedBuffer.get(),
+                                              &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(decryptedDataSize == decryptedDataBufferSize);
+        REQUIRE(memcmp(cOriginalData.data(), decryptedBuffer.get(), cOriginalData.size()) == 0);
+    }
+    SECTION("destination buffer size is too large") {
+        decryptedDataSize += 16;
+        result = foeCryptoDecrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
+                                              encryptedDataSize, encryptedBuffer.get(),
+                                              &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+        REQUIRE(decryptedDataSize == decryptedDataBufferSize);
+        REQUIRE(memcmp(cOriginalData.data(), decryptedBuffer.get(), cOriginalData.size()) == 0);
+    }
+
+    foeDestroyContext_AES_256_GCM(context);
+}
+
+TEST_CASE("AES 256 GCM - encryption context creation failure cases") {
     foeCryptoKey key = FOE_NULL_HANDLE;
     foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
     foeResultSet result;
@@ -139,7 +204,7 @@ TEST_CASE("AES GCM - encryption context failure cases") {
     foeDestroyCryptoKey(key);
 }
 
-TEST_CASE("AES GCM - encryption failure cases") {
+TEST_CASE("AES 256 GCM - encryption failure cases") {
     foeCryptoKey key = FOE_NULL_HANDLE;
     foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
     foeResultSet result;
@@ -195,7 +260,7 @@ TEST_CASE("AES GCM - encryption failure cases") {
     foeDestroyContext_AES_256_GCM(context);
 }
 
-TEST_CASE("AES GCM - decryption failure cases") {
+TEST_CASE("AES 256 GCM - decryption failure cases") {
     foeCryptoKey key = FOE_NULL_HANDLE;
     foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
     foeResultSet result;
@@ -228,7 +293,29 @@ TEST_CASE("AES GCM - decryption failure cases") {
     constexpr size_t decryptedDataBufferSize = cOriginalData.size();
     std::unique_ptr<unsigned char[]> decryptedBuffer(new unsigned char[decryptedDataBufferSize]);
 
-    // test cases
+    { // Successful decryption baseline
+        size_t decryptedDataSize = decryptedDataBufferSize;
+        result = foeCryptoDecrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
+                                              encryptedDataSize, encryptedBuffer.get(),
+                                              &decryptedDataSize, decryptedBuffer.get());
+        REQUIRE(result.value == FOE_SUCCESS);
+    }
+
+    SECTION("any byte in encrypted buffer is modified") {
+        for (int i = 0; i < encryptedDataSize; ++i) {
+            std::unique_ptr<unsigned char[]> encryptedBufferCopy{
+                new unsigned char[encryptedDataSize]};
+            memcpy(encryptedBufferCopy.get(), encryptedBuffer.get(), encryptedDataSize);
+
+            ++encryptedBufferCopy[i];
+
+            size_t decryptedDataSize = decryptedDataBufferSize;
+            result = foeCryptoDecrypt_AES_256_GCM(context, nonce1.size(), nonce1.data(),
+                                                  encryptedDataSize, encryptedBufferCopy.get(),
+                                                  &decryptedDataSize, decryptedBuffer.get());
+            REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
+        }
+    }
     SECTION("different nonce") {
         size_t decryptedDataSize = decryptedDataBufferSize;
         result = foeCryptoDecrypt_AES_256_GCM(context, nonce2.size(), nonce2.data(),
@@ -236,7 +323,6 @@ TEST_CASE("AES GCM - decryption failure cases") {
                                               &decryptedDataSize, decryptedBuffer.get());
         REQUIRE(result.value == FOE_CRYPTO_ERROR_FAILED_TO_DECRYPT);
     }
-
     SECTION("nonce too small") {
         size_t decryptedDataSize = decryptedDataBufferSize;
         result = foeCryptoDecrypt_AES_256_GCM(context, nonce1.size() - 1, nonce1.data(),
