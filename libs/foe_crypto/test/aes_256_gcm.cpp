@@ -34,32 +34,8 @@ static_assert(nonce2.size() == FOE_CRYPTO_AES_256_GCM_NONCE_SIZE);
 static_assert(sizeof(nonce1) == sizeof(nonce2));
 } // namespace
 
-// Only x86-64 on non-macOS known to have AES acceleration support in libsodium
-#if defined(__APPLE__) || !(defined(__x86_64__) || defined(_WIN64))
-
-TEST_CASE("AES 256 GCM - Detect HW acceleration is not available") {
-    REQUIRE_FALSE(foeCrypto_AES_256_GCM_isHardwareAccelerated());
-}
-
-TEST_CASE("AES 256 GCM - Failure (No AES hardware acceleration)") {
-    foeCryptoKey key = FOE_NULL_HANDLE;
-    foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
-    foeResultSet result;
-
-    // Create Key
-    result = foeCreateCryptoKey(validKeyData.size(), validKeyData.data(), &key);
-    REQUIRE(result.value == FOE_SUCCESS);
-    REQUIRE(key != FOE_NULL_HANDLE);
-
-    // Attempt to create AES GCM context
-    result = foeCreateContext_AES_256_GCM(key, &context);
-    REQUIRE(result.value == FOE_CRYPTO_ERROR_NO_AES_HARDWARE_ACCELERATION_AVAILABLE);
-    REQUIRE(context == FOE_NULL_HANDLE);
-
-    foeDestroyCryptoKey(key);
-}
-
-#else
+// Only x86-64 or AppleSilicon are known to have AES acceleration support in libsodium
+#if defined(__APPLE__) || defined(__x86_64__) || defined(_WIN64)
 
 TEST_CASE("AES 256 GCM - Detect HW acceleration is available") {
     REQUIRE(foeCrypto_AES_256_GCM_isHardwareAccelerated());
@@ -348,6 +324,30 @@ TEST_CASE("AES 256 GCM - decryption failure cases") {
     }
 
     foeDestroyContext_AES_256_GCM(context);
+}
+
+#else
+
+TEST_CASE("AES 256 GCM - Detect HW acceleration is not available") {
+    REQUIRE_FALSE(foeCrypto_AES_256_GCM_isHardwareAccelerated());
+}
+
+TEST_CASE("AES 256 GCM - Failure (No AES hardware acceleration)") {
+    foeCryptoKey key = FOE_NULL_HANDLE;
+    foeCryptoContext_AES_256_GCM context = FOE_NULL_HANDLE;
+    foeResultSet result;
+
+    // Create Key
+    result = foeCreateCryptoKey(validKeyData.size(), validKeyData.data(), &key);
+    REQUIRE(result.value == FOE_SUCCESS);
+    REQUIRE(key != FOE_NULL_HANDLE);
+
+    // Attempt to create AES GCM context
+    result = foeCreateContext_AES_256_GCM(key, &context);
+    REQUIRE(result.value == FOE_CRYPTO_ERROR_NO_AES_HARDWARE_ACCELERATION_AVAILABLE);
+    REQUIRE(context == FOE_NULL_HANDLE);
+
+    foeDestroyCryptoKey(key);
 }
 
 #endif
