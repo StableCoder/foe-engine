@@ -432,10 +432,10 @@ Arch Vulkan SW Testing:
     GPU: llvmpipe
   <<: *vulkan_template
 
-.Fedora Vulkan SW Testing:
+Fedora Vulkan SW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64, ppc64le]
+    - ARCH: [amd64, arm64, ppc64le]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -450,7 +450,7 @@ Arch Vulkan SW Testing:
 Ubuntu Vulkan SW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64, ppc64le]
+    - ARCH: [amd64, arm64, ppc64le]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
     - container
@@ -477,7 +477,7 @@ Arch Vulkan HW Testing:
     CXX: clang++
   <<: *vulkan_template
 
-.Fedora Vulkan HW Testing:
+Fedora Vulkan HW Testing:
   parallel:
     matrix:
     - ARCH: [amd64]
