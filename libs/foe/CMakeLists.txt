@@ -33,6 +33,11 @@ if(UNIX)
   target_link_libraries(foe PUBLIC dl pthread)
 endif()
 
+if(WIN32)
+  # For timeBeginPeriod()/timeEndPeriod()
+  target_link_libraries(foe PUBLIC winmm)
+endif()
+
 if(MSVC)
   target_compile_options(foe PRIVATE /EHsc)
 else()

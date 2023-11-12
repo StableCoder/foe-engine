@@ -4,6 +4,12 @@
 
 #include <foe/split_thread_pool.h>
 
+#ifdef _WIN32
+#include <windows.h>
+
+#include <timeapi.h>
+#endif
+
 #include "result.h"
 
 #include <atomic>
@@ -176,6 +182,11 @@ extern "C" foeResultSet foeCreateThreadPool(uint32_t syncThreads,
     if (pNewPool == nullptr)
         return to_foeResult(FOE_ERROR_OUT_OF_MEMORY);
 
+#ifdef _WIN32
+    // On Windows, set the kernel rate to 1000Hz
+    timeBeginPeriod(1);
+#endif
+
     new (pNewPool) SplitThreadPoolImpl{
         .terminate = false,
         .runners = 0,
@@ -224,6 +235,11 @@ extern "C" void foeDestroyThreadPool(foeSplitThreadPool pool) {
     for (uint32_t i = 0; i < totalThreadCount; ++i) {
         pThreads[i].join();
     }
+
+#ifdef _WIN32
+    // On Windows, unset the kernel rate to 1000Hz
+    timeEndPeriod(1);
+#endif
 
     // Free used memory
     pPool->~SplitThreadPoolImpl();
