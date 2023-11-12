@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -74,13 +74,9 @@ FOE_DEFINE_HANDLE_CASTS(split_thread_pool, SplitThreadPoolImpl, foeSplitThreadPo
 
 void syncTaskRunner(SplitThreadPoolImpl *pPool) {
     Task task;
-    std::unique_lock syncLock{pPool->syncTasks.sync, std::defer_lock};
+    std::unique_lock syncLock{pPool->syncTasks.sync};
 
     while (true) {
-        syncLock.lock();
-        pPool->syncTasks.available.wait_for(
-            syncLock, 1ms, [&] { return !pPool->syncTasks.tasks.empty() || pPool->terminate; });
-
         if (!pPool->syncTasks.tasks.empty()) {
             // Work available
             ++pPool->syncTasks.runningCount;
@@ -98,10 +94,12 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
 
             // Task complete, cleanup
             --pPool->syncTasks.runningCount;
+
+            syncLock.lock();
         } else if (pPool->terminate) {
             break;
         } else {
-            syncLock.unlock();
+            pPool->syncTasks.available.wait(syncLock);
         }
     }
 
@@ -110,15 +108,9 @@ void syncTaskRunner(SplitThreadPoolImpl *pPool) {
 
 void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
     Task task;
-    std::unique_lock asyncLock{pPool->asyncTasks.sync, std::defer_lock};
+    std::unique_lock asyncLock{pPool->asyncTasks.sync};
 
     while (true) {
-        asyncLock.lock();
-        pPool->asyncTasks.available.wait_for(asyncLock, 1ms, [&] {
-            return !pPool->asyncTasks.tasks.empty() || pPool->syncTasks.queuedCount > 0 ||
-                   pPool->terminate;
-        });
-
         if (!pPool->asyncTasks.tasks.empty()) {
             // Work available
             ++pPool->asyncTasks.runningCount;
@@ -136,10 +128,19 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
 
             // Task complete, cleanup
             --pPool->asyncTasks.runningCount;
-        } else if (pPool->syncTasks.queuedCount > 0 && pPool->syncTasks.sync.try_lock()) {
-            // Might have synchronous work available, check quickly
+
+            asyncLock.lock();
+        } else if (pPool->syncTasks.queuedCount > 0) {
+            if (!pPool->syncTasks.sync.try_lock()) {
+                // Sync tasks available, but could not secure a lock this time, go around again
+                // immediately
+                continue;
+            }
+            // Might have synchronous work available, unlock the async mutex as we're working with
+            // sync stuff, leave for other async threads to interact in the meantime
             asyncLock.unlock();
 
+            // Attempt to pull a job
             bool gotWork{false};
             if (!pPool->syncTasks.tasks.empty()) {
                 gotWork = true;
@@ -149,16 +150,22 @@ void asyncTaskRunner(SplitThreadPoolImpl *pPool) {
                 pPool->syncTasks.tasks.pop();
                 --pPool->syncTasks.queuedCount;
             }
+            // Unlock the sync mutex, we're done with it
             pPool->syncTasks.sync.unlock();
 
+            // If we got sync work, run it
             if (gotWork) {
                 task.task(task.pTaskContext);
                 --pPool->syncTasks.runningCount;
             }
+
+            // Before we loop again, acquire the async mutex
+            asyncLock.lock();
         } else if (pPool->terminate) {
             break;
         } else {
-            asyncLock.unlock();
+            // Nothing available to run for either async or sync task lists, wait
+            pPool->asyncTasks.available.wait(asyncLock);
         }
     }
 

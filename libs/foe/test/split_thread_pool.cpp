@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2023 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +13,12 @@ using namespace std::chrono_literals;
 namespace {
 auto const numThreads = 2;
 
-void testTask(void *) { std::this_thread::sleep_for(std::chrono::milliseconds(10)); }
+void testTask(void *pContext) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    std::atomic_int *pTaskCount = (std::atomic_int *)pContext;
+    ++(*pTaskCount);
+}
 
 std::atomic_uint waitingThreads{0};
 std::atomic_bool pauseThreads = true;
@@ -132,21 +137,21 @@ TEST_CASE("SplitThreadPool - Waiting on sync tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
 
+    std::atomic_int taskCount = 0;
     foeEasySteadyClock timer;
 
-    for (int i = 0; i < 20 * numThreads; ++i) {
-        // !! Double tasks since async threads accelerate sync work !!
-        REQUIRE(foeScheduleSyncTask(pool, testTask, nullptr).value == FOE_SUCCESS);
+    for (int i = 0; i < 10 * numThreads; ++i) {
+        REQUIRE(foeScheduleSyncTask(pool, testTask, &taskCount).value == FOE_SUCCESS);
     }
 
     REQUIRE(foeWaitSyncThreads(pool).value == FOE_SUCCESS);
 
     timer.update();
 
+    CHECK(taskCount == 10 * numThreads);
+    // !! half time since async threads accelerate sync work !!
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
-          std::chrono::milliseconds(100).count());
-    // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(110).count());
+          std::chrono::milliseconds(50).count());
 
     foeDestroyThreadPool(pool);
 }
@@ -155,20 +160,20 @@ TEST_CASE("SplitThreadPool - Waiting on async tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
 
+    std::atomic_int taskCount = 0;
     foeEasySteadyClock timer;
 
     for (int i = 0; i < 10 * numThreads; ++i) {
-        REQUIRE(foeScheduleAsyncTask(pool, testTask, nullptr).value == FOE_SUCCESS);
+        REQUIRE(foeScheduleAsyncTask(pool, testTask, &taskCount).value == FOE_SUCCESS);
     }
 
     REQUIRE(foeWaitAsyncThreads(pool).value == FOE_SUCCESS);
 
     timer.update();
 
+    CHECK(taskCount == 10 * numThreads);
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
           std::chrono::milliseconds(100).count());
-    // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(110).count());
 
     foeDestroyThreadPool(pool);
 }
@@ -177,21 +182,21 @@ TEST_CASE("SplitThreadPool - Waiting on all tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
 
+    std::atomic_int taskCount = 0;
     foeEasySteadyClock timer;
 
     for (int i = 0; i < 10 * numThreads; ++i) {
-        REQUIRE(foeScheduleSyncTask(pool, testTask, nullptr).value == FOE_SUCCESS);
-        REQUIRE(foeScheduleAsyncTask(pool, testTask, nullptr).value == FOE_SUCCESS);
+        REQUIRE(foeScheduleSyncTask(pool, testTask, &taskCount).value == FOE_SUCCESS);
+        REQUIRE(foeScheduleAsyncTask(pool, testTask, &taskCount).value == FOE_SUCCESS);
     }
 
     REQUIRE(foeWaitAllThreads(pool).value == FOE_SUCCESS);
 
     timer.update();
 
+    CHECK(taskCount == 10 * numThreads * 2);
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
           std::chrono::milliseconds(100).count());
-    // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(110).count());
 
     foeDestroyThreadPool(pool);
 }
@@ -200,19 +205,19 @@ TEST_CASE("SplitThreadPool - Destroying pool awaits completion of all tasks") {
     foeSplitThreadPool pool{FOE_NULL_HANDLE};
     REQUIRE(foeCreateThreadPool(numThreads, numThreads, &pool).value == FOE_SUCCESS);
 
+    std::atomic_int taskCount = 0;
     foeEasySteadyClock timer;
 
     for (int i = 0; i < 10 * numThreads; ++i) {
-        REQUIRE(foeScheduleSyncTask(pool, testTask, nullptr).value == FOE_SUCCESS);
-        REQUIRE(foeScheduleAsyncTask(pool, testTask, nullptr).value == FOE_SUCCESS);
+        REQUIRE(foeScheduleSyncTask(pool, testTask, &taskCount).value == FOE_SUCCESS);
+        REQUIRE(foeScheduleAsyncTask(pool, testTask, &taskCount).value == FOE_SUCCESS);
     }
 
     foeDestroyThreadPool(pool);
 
     timer.update();
 
+    CHECK(taskCount == 10 * numThreads * 2);
     CHECK(timer.elapsed<std::chrono::milliseconds>().count() >=
           std::chrono::milliseconds(100).count());
-    // CHECK(timer.elapsed<std::chrono::milliseconds>().count() <
-    //      std::chrono::milliseconds(110).count());
 }
