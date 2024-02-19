@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -84,7 +84,7 @@ foeResultSet foeCryptoSignDataED25519(foeCryptoKey privateKey,
 foeResultSet foeCryptoVerifyDataED25519(foeCryptoKey publicKey,
                                         size_t dataSize,
                                         void const *pData,
-                                        void *pSignature) {
+                                        void const *pSignature) {
     if (foeCryptoGetKeySize(publicKey) != FOE_CRYPTO_ED25519_PUBLIC_KEY_SIZE)
         return to_foeResult(FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
 

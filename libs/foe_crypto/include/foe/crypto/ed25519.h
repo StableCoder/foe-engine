@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -39,7 +39,7 @@ FOE_CRYPTO_EXPORT
 foeResultSet foeCryptoVerifyDataED25519(foeCryptoKey publicKey,
                                         size_t dataSize,
                                         void const *pData,
-                                        void *pSignature);
+                                        void const *pSignature);
 
 #ifdef __cplusplus
 }
