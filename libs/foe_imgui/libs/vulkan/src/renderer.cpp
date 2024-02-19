@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -259,7 +259,7 @@ foeResultSet foeImGuiRenderer::initialize(foeGfxSession session,
         goto INITIALIZATION_FAILED;
     }
 
-SUBMIT_FAILED : {
+SUBMIT_FAILED: {
     auto requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
     while (requestStatus == FOE_GFX_UPLOAD_REQUEST_STATUS_INCOMPLETE) {
         requestStatus = foeGfxGetUploadRequestStatus(uploadRequest);
