@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +14,8 @@
 #include <foe/position/component/3d.hpp>
 #include <foe/position/component/3d_pool.h>
 #include <foe/resource/resource.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
 
 #include "bt_glm_conversion.hpp"
