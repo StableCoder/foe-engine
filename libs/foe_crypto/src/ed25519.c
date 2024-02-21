@@ -32,17 +32,17 @@ foeResultSet foeCryptoCreateKeyPairED25519(foeCryptoKey *pPrivateKey, foeCryptoK
 
     foeResultSet result = foeCreateCryptoKey(sizeof(privateKeyData), privateKeyData, &privateKey);
     if (result.value != FOE_SUCCESS)
-        goto SIGNING_KEY_PAIR_CREATE_FAILED;
+        goto CREATE_KEY_PAIR_FAILED;
 
     assert(memcmp(privateKeyData, foeCryptoGetKeyData(privateKey), sizeof(privateKeyData)) == 0);
 
     result = foeCreateCryptoKey(sizeof(publicKeyData), publicKeyData, &publicKey);
     if (result.value != FOE_SUCCESS)
-        goto SIGNING_KEY_PAIR_CREATE_FAILED;
+        goto CREATE_KEY_PAIR_FAILED;
 
     assert(memcmp(publicKeyData, foeCryptoGetKeyData(publicKey), sizeof(publicKeyData)) == 0);
 
-SIGNING_KEY_PAIR_CREATE_FAILED:
+CREATE_KEY_PAIR_FAILED:
     // Zero the local key memory to help prevent key data leaks
     foeCryptoZeroMemory(sizeof(privateKeyData), privateKeyData);
     foeCryptoZeroMemory(sizeof(publicKeyData), publicKeyData);
@@ -59,6 +59,36 @@ SIGNING_KEY_PAIR_CREATE_FAILED:
     }
 
     foeCryptoZeroMemory(sizeof(foeCryptoKey), &privateKey);
+    foeCryptoZeroMemory(sizeof(foeCryptoKey), &publicKey);
+
+    return result;
+}
+
+foeResultSet foeCryptoCreatePublicKeyED25519(foeCryptoKey privateKey, foeCryptoKey *pPublicKey) {
+    if (foeCryptoGetKeySize(privateKey) != FOE_CRYPTO_ED25519_PRIVATE_KEY_SIZE)
+        return to_foeResult(FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
+
+    uint8_t publicKeyData[FOE_CRYPTO_ED25519_PUBLIC_KEY_SIZE];
+
+    if (crypto_sign_ed25519_sk_to_pk(publicKeyData, foeCryptoGetKeyData(privateKey)) != 0)
+        return to_foeResult(FOE_CRYPTO_ERROR_FAILED_TO_CREATE_KEY_PAIR);
+
+    foeCryptoKey publicKey = FOE_NULL_HANDLE;
+
+    foeResultSet result = foeCreateCryptoKey(sizeof(publicKeyData), publicKeyData, &publicKey);
+    if (result.value != FOE_SUCCESS)
+        goto GENERATE_PUBLIC_KEY_FAILED;
+
+GENERATE_PUBLIC_KEY_FAILED:
+    foeCryptoZeroMemory(sizeof(publicKeyData), publicKeyData);
+
+    if (result.value == FOE_SUCCESS) {
+        *pPublicKey = publicKey;
+    } else {
+        if (publicKey != FOE_NULL_HANDLE)
+            foeDestroyCryptoKey(publicKey);
+    }
+
     foeCryptoZeroMemory(sizeof(foeCryptoKey), &publicKey);
 
     return result;

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -34,17 +34,17 @@ foeResultSet foeCryptoCreateKeyPairX25519(foeCryptoKey *pPrivateKey, foeCryptoKe
 
     foeResultSet result = foeCreateCryptoKey(sizeof(privateKeyData), privateKeyData, &privateKey);
     if (result.value != FOE_SUCCESS)
-        goto EXCHANGE_KEY_PAIR_CREATE_FAILED;
+        goto CREATE_KEY_PAIR_FAILED;
 
     assert(memcmp(privateKeyData, foeCryptoGetKeyData(privateKey), sizeof(privateKeyData)) == 0);
 
     result = foeCreateCryptoKey(sizeof(publicKeyData), publicKeyData, &publicKey);
     if (result.value != FOE_SUCCESS)
-        goto EXCHANGE_KEY_PAIR_CREATE_FAILED;
+        goto CREATE_KEY_PAIR_FAILED;
 
     assert(memcmp(publicKeyData, foeCryptoGetKeyData(publicKey), sizeof(publicKeyData)) == 0);
 
-EXCHANGE_KEY_PAIR_CREATE_FAILED:
+CREATE_KEY_PAIR_FAILED:
     // Zero the local key memory to help prevent key data leaks
     foeCryptoZeroMemory(sizeof(privateKeyData), privateKeyData);
     foeCryptoZeroMemory(sizeof(publicKeyData), publicKeyData);
@@ -61,6 +61,36 @@ EXCHANGE_KEY_PAIR_CREATE_FAILED:
     }
 
     foeCryptoZeroMemory(sizeof(foeCryptoKey), &privateKey);
+    foeCryptoZeroMemory(sizeof(foeCryptoKey), &publicKey);
+
+    return result;
+}
+
+foeResultSet foeCryptoCreatePublicKeyX25519(foeCryptoKey privateKey, foeCryptoKey *pPublicKey) {
+    if (foeCryptoGetKeySize(privateKey) != FOE_CRYPTO_X25519_KEY_SIZE)
+        return to_foeResult(FOE_CRYPTO_ERROR_INVALID_KEY_SIZE);
+
+    uint8_t publicKeyData[FOE_CRYPTO_X25519_KEY_SIZE];
+
+    if (crypto_scalarmult_curve25519_base(publicKeyData, foeCryptoGetKeyData(privateKey)) != 0)
+        return to_foeResult(FOE_CRYPTO_ERROR_FAILED_TO_CREATE_KEY_PAIR);
+
+    foeCryptoKey publicKey = FOE_NULL_HANDLE;
+
+    foeResultSet result = foeCreateCryptoKey(sizeof(publicKeyData), publicKeyData, &publicKey);
+    if (result.value != FOE_SUCCESS)
+        goto GENERATE_PUBLIC_KEY_FAILED;
+
+GENERATE_PUBLIC_KEY_FAILED:
+    foeCryptoZeroMemory(sizeof(publicKeyData), publicKeyData);
+
+    if (result.value == FOE_SUCCESS) {
+        *pPublicKey = publicKey;
+    } else {
+        if (publicKey != FOE_NULL_HANDLE)
+            foeDestroyCryptoKey(publicKey);
+    }
+
     foeCryptoZeroMemory(sizeof(foeCryptoKey), &publicKey);
 
     return result;

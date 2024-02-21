@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,8 +8,6 @@
 #include <foe/crypto/export.h>
 #include <foe/crypto/key.h>
 #include <foe/result.h>
-
-#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,11 +21,14 @@ foeResultSet foeCryptoCreateKeyPairX25519(foeCryptoKey *pPrivateKey, foeCryptoKe
 
 // Uses/creates keys of FOE_CRYPTO_X25519_KEY_SIZE size
 FOE_CRYPTO_EXPORT
-foeResultSet foeCryptoPerformKeyExchangeX25519(foeCryptoKey privateKey,
-                                               foeCryptoKey publicKey,
-                                               foeCryptoKey hashKey1,
-                                               foeCryptoKey hashKey2,
-                                               foeCryptoKey *pSharedKey);
+foeResultSet foeCryptoCreatePublicKeyX25519(foeCryptoKey privateKey, foeCryptoKey *pPublicKey);
+
+// Uses/creates keys of FOE_CRYPTO_X25519_KEY_SIZE size
+FOE_CRYPTO_EXPORT foeResultSet foeCryptoPerformKeyExchangeX25519(foeCryptoKey privateKey,
+                                                                 foeCryptoKey publicKey,
+                                                                 foeCryptoKey hashKey1,
+                                                                 foeCryptoKey hashKey2,
+                                                                 foeCryptoKey *pSharedKey);
 
 #ifdef __cplusplus
 }

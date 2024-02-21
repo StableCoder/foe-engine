@@ -26,6 +26,11 @@ FOE_CRYPTO_EXPORT
 foeResultSet foeCryptoCreateKeyPairED25519(foeCryptoKey *pPrivateKey, foeCryptoKey *pPublicKey);
 
 // Uses key of FOE_CRYPTO_ED25519_SIGNATURE_PRIVATE_KEY_SIZE size
+// Creates public key of FOE_CRYPTO_ED25519_SIGNATURE_PUBLIC_KEY_SIZE size
+FOE_CRYPTO_EXPORT
+foeResultSet foeCryptoCreatePublicKeyED25519(foeCryptoKey privateKey, foeCryptoKey *pPublicKey);
+
+// Uses key of FOE_CRYPTO_ED25519_SIGNATURE_PRIVATE_KEY_SIZE size
 // signature size will be FOE_CRYPTO_ED25519_SIGNATURE_SIZE bytes
 FOE_CRYPTO_EXPORT
 foeResultSet foeCryptoSignDataED25519(foeCryptoKey privateKey,

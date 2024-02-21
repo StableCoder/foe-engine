@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@
 #include <foe/crypto/ed25519.h>
 #include <foe/crypto/result.h>
 
+#include <cstring>
 #include <memory>
 #include <string_view>
 
@@ -45,6 +46,19 @@ TEST_CASE("Create ED25519 Keys") {
     REQUIRE(publicKey != FOE_NULL_HANDLE);
     REQUIRE(foeCryptoGetKeySize(publicKey) == FOE_CRYPTO_ED25519_PUBLIC_KEY_SIZE);
     REQUIRE(foeCryptoGetKeyData(publicKey) != nullptr);
+
+    SECTION("Re-create public key from private key") {
+        foeCryptoKey recreatedPublicKey = FOE_NULL_HANDLE;
+
+        result = foeCryptoCreatePublicKeyED25519(privateKey, &recreatedPublicKey);
+        REQUIRE(result.value == FOE_SUCCESS);
+
+        REQUIRE(foeCryptoGetKeySize(recreatedPublicKey) == FOE_CRYPTO_ED25519_PUBLIC_KEY_SIZE);
+        REQUIRE(foeCryptoGetKeyData(recreatedPublicKey) != nullptr);
+
+        CHECK(memcmp(foeCryptoGetKeyData(publicKey), foeCryptoGetKeyData(recreatedPublicKey),
+                     FOE_CRYPTO_ED25519_PUBLIC_KEY_SIZE) == 0);
+    }
 
     foeDestroyCryptoKey(publicKey);
     foeDestroyCryptoKey(privateKey);
