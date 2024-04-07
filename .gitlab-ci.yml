@@ -466,7 +466,7 @@ Arch Vulkan HW Testing:
   parallel:
     matrix:
     - ARCH: [amd64]
-      GPU: [amd_vega7,amd_navi23,intel_a380,amd_vega10,amd_ellesmere]
+      GPU: [amd_navi23,intel_a380,amd_vega10,amd_ellesmere]
   image: docker.io/stabletec/build-foe:arch
   tags:
     - container
@@ -481,7 +481,7 @@ Fedora Vulkan HW Testing:
   parallel:
     matrix:
     - ARCH: [amd64]
-      GPU: [amd_vega7,amd_navi23,amd_vega10,amd_ellesmere]
+      GPU: [amd_navi23,amd_vega10,amd_ellesmere]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -496,7 +496,7 @@ Ubuntu Vulkan HW Testing:
   parallel:
     matrix:
     - ARCH: [amd64]
-      GPU: [amd_vega7,amd_navi23,amd_vega10,amd_ellesmere]
+      GPU: [amd_navi23,amd_vega10,amd_ellesmere]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
     - container
