@@ -305,8 +305,8 @@ auto foeGfxVkGetRenderTargetImage(foeGfxRenderTarget renderTarget, uint32_t inde
     return pRenderTarget->images[offset + pRenderTarget->indices[index]].image;
 }
 
-auto foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget, uint32_t index)
-    -> VkImageView {
+auto foeGfxVkGetRenderTargetImageView(foeGfxRenderTarget renderTarget,
+                                      uint32_t index) -> VkImageView {
     auto *pRenderTarget = render_target_from_handle(renderTarget);
 
     uint32_t offset = 0;

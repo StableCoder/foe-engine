@@ -334,8 +334,8 @@ std::string uniqueStr(int length) {
     std::random_device rd;
     std::mt19937 gen(rd());
     auto randchar = [&]() -> char {
-        const char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        const size_t max_index = (sizeof(charset) - 1);
+        char const charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        size_t const max_index = (sizeof(charset) - 1);
         std::uniform_int_distribution<> distrib(0, max_index);
         return charset[distrib(gen)];
     };

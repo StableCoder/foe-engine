@@ -19,8 +19,8 @@ class foeGfxVkRenderPassPoolImpl {
     foeResultSet initialize(foeGfxSession session) noexcept;
     void deinitialize() noexcept;
 
-    auto renderPass(uint32_t attachmentCount, VkAttachmentDescription const *pAttachments)
-        -> VkRenderPass;
+    auto renderPass(uint32_t attachmentCount,
+                    VkAttachmentDescription const *pAttachments) -> VkRenderPass;
 
     auto renderPass(uint32_t attachmentCount,
                     VkFormat const *pFormats,
@@ -70,9 +70,8 @@ class foeGfxVkRenderPassPoolImpl {
     auto generateCompatibleKeys(uint32_t attachmentCount,
                                 VkAttachmentDescription const *pAttachments) const
         -> std::vector<RenderPassCompatibleKey>;
-    auto generateVariantKeys(uint32_t attachmentCount,
-                             VkAttachmentDescription const *pAttachments) const
-        -> std::vector<RenderPassVariantKey>;
+    auto generateVariantKeys(uint32_t attachmentCount, VkAttachmentDescription const *pAttachments)
+        const -> std::vector<RenderPassVariantKey>;
 
     auto findRenderPass(std::vector<RenderPassCompatibleKey> const &compatibleKey,
                         std::vector<RenderPassVariantKey> const &variantKey) -> VkRenderPass;

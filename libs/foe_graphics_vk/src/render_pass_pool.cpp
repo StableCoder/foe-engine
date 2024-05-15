@@ -105,8 +105,8 @@ auto foeGfxVkRenderPassPoolImpl::renderPass(uint32_t attachmentCount,
 }
 
 auto foeGfxVkRenderPassPoolImpl::generateCompatibleKeys(
-    uint32_t attachmentCount, VkAttachmentDescription const *pAttachments) const
-    -> std::vector<RenderPassCompatibleKey> {
+    uint32_t attachmentCount,
+    VkAttachmentDescription const *pAttachments) const -> std::vector<RenderPassCompatibleKey> {
     std::vector<RenderPassCompatibleKey> key;
     key.reserve(attachmentCount);
 
@@ -123,8 +123,8 @@ auto foeGfxVkRenderPassPoolImpl::generateCompatibleKeys(
 }
 
 auto foeGfxVkRenderPassPoolImpl::generateVariantKeys(
-    uint32_t attachmentCount, VkAttachmentDescription const *pAttachments) const
-    -> std::vector<RenderPassVariantKey> {
+    uint32_t attachmentCount,
+    VkAttachmentDescription const *pAttachments) const -> std::vector<RenderPassVariantKey> {
     std::vector<RenderPassVariantKey> key;
     key.reserve(attachmentCount);
 

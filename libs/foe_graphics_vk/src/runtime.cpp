@@ -102,12 +102,13 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
     }
 
     // Create Instance
-    VkInstanceCreateInfo instanceCI {
+    VkInstanceCreateInfo instanceCI{
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 #if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
         .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
 #endif
-        .pApplicationInfo = &appinfo, .enabledLayerCount = static_cast<uint32_t>(layers.size()),
+        .pApplicationInfo = &appinfo,
+        .enabledLayerCount = static_cast<uint32_t>(layers.size()),
         .ppEnabledLayerNames = layers.data(),
         .enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
         .ppEnabledExtensionNames = extensions.data(),
