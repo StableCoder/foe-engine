@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave
+// Copyright (C) 2023-2024 George Cave
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -256,14 +256,14 @@ TEST_CASE("XChaCha20 Poly1305 - decryption failure cases") {
 
     { // Successful decryption baseline
         size_t decryptedDataSize = decryptedDataBufferSize;
-        result = foeCryptoDecrypt_XChaCha20_Poly1305(
-            key, nonce1.size(), nonce1.data(), encryptedDataSize, encryptedBuffer.get(),
-            &decryptedDataBufferSize, decryptedBuffer.get());
+        result = foeCryptoDecrypt_XChaCha20_Poly1305(key, nonce1.size(), nonce1.data(),
+                                                     encryptedDataSize, encryptedBuffer.get(),
+                                                     &decryptedDataSize, decryptedBuffer.get());
         REQUIRE(result.value == FOE_CRYPTO_SUCCESS);
     }
 
     SECTION("any byte in encrypted buffer modified") {
-        for (int i = 0; i < encryptedDataSize; ++i) {
+        for (size_t i = 0; i < encryptedDataSize; ++i) {
             std::unique_ptr<unsigned char[]> encryptedBufferCopy{
                 new unsigned char[encryptedDataSize]};
             memcpy(encryptedBufferCopy.get(), encryptedBuffer.get(), encryptedDataSize);

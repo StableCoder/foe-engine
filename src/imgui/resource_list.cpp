@@ -14,6 +14,7 @@
 #include <foe/simulation/simulation.hpp>
 #include <imgui.h>
 
+#include <algorithm>
 #include <array>
 #include <string_view>
 

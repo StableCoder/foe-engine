@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -207,7 +207,6 @@ TEST_CASE("foeNetwork - IPv6 loopback address") {
 TEST_CASE("foeNetwork - 'localhost' loopback domain address") {
     std::array<foeNetworkAddress, 3> addresses = {};
     uint32_t addrCount = 3;
-    char ipAddrStr[FOE_NETWORK_ADDRESS_STRLEN];
     foeResultSet result;
 
     // Check that returned count is accurate

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -278,7 +278,7 @@ TEST_CASE("AES 256 GCM - decryption failure cases") {
     }
 
     SECTION("any byte in encrypted buffer is modified") {
-        for (int i = 0; i < encryptedDataSize; ++i) {
+        for (size_t i = 0; i < encryptedDataSize; ++i) {
             std::unique_ptr<unsigned char[]> encryptedBufferCopy{
                 new unsigned char[encryptedDataSize]};
             memcpy(encryptedBufferCopy.get(), encryptedBuffer.get(), encryptedDataSize);
