@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -47,10 +47,11 @@ void foeGraphicsVkResultToString(foeGraphicsVkResult value,
 
     default:
         if (value > 0) {
-            sprintf(buffer, "FOE_GRAPHICS_VK_UNKNOWN_SUCCESS_%i", value);
+            snprintf(buffer, FOE_MAX_RESULT_STRING_SIZE, "FOE_GRAPHICS_VK_UNKNOWN_SUCCESS_%i",
+                     value);
         } else {
             value = abs(value);
-            sprintf(buffer, "FOE_GRAPHICS_VK_UNKNOWN_ERROR_%i", value);
+            snprintf(buffer, FOE_MAX_RESULT_STRING_SIZE, "FOE_GRAPHICS_VK_UNKNOWN_ERROR_%i", value);
         }
     }
 

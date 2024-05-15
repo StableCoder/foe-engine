@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,10 +23,10 @@ void VkResultToString(VkResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
         strcpy(buffer, pResultStr);
     } else {
         if (value > 0) {
-            sprintf(buffer, "VK_UNKNOWN_SUCCESS_%i", value);
+            snprintf(buffer, FOE_MAX_RESULT_STRING_SIZE, "VK_UNKNOWN_SUCCESS_%i", value);
         } else {
             value = abs(value);
-            sprintf(buffer, "VK_UNKNOWN_ERROR_%i", value);
+            snprintf(buffer, FOE_MAX_RESULT_STRING_SIZE, "VK_UNKNOWN_ERROR_%i", value);
         }
     }
 }
