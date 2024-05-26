@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,9 @@
 extern "C" {
 #endif
 
-#define FOE_CRYPTO_AES_256_GCM_KEY_SIZE            32U
-#define FOE_CRYPTO_AES_256_GCM_NONCE_SIZE          12U
-#define FOE_CRYPTO_AES_256_GCM_ENCRYPTION_OVERHEAD 16U
+#define FOE_CRYPTO_AES_256_GCM_KEY_SIZE            32
+#define FOE_CRYPTO_AES_256_GCM_NONCE_SIZE          12
+#define FOE_CRYPTO_AES_256_GCM_ENCRYPTION_OVERHEAD 16
 
 FOE_DEFINE_HANDLE(foeCryptoContext_AES_256_GCM)
 

@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#define FOE_CRYPTO_X25519_KEY_SIZE 32U
+#define FOE_CRYPTO_X25519_KEY_SIZE 32
 
 // Generates keys of FOE_CRYPTO_X25519_KEY_SIZE size
 FOE_CRYPTO_EXPORT

@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,17 +25,17 @@ constexpr std::string_view cExpectedHash =
 } // namespace
 
 TEST_CASE("SHA512 Hashing") {
-    uint8_t calculatedHash[64];
+    uint8_t calculatedHash[FOE_CRYPTO_SHA512_HASH_SIZE];
     memset(calculatedHash, 0, sizeof(calculatedHash));
 
     CHECK(foeCryptoHashSHA512(cTestText.size(), cTestText.data(), calculatedHash));
 
-    uint8_t expectedHash[64];
-    size_t decodedSize = 64;
+    uint8_t expectedHash[FOE_CRYPTO_SHA512_HASH_SIZE];
+    size_t decodedSize = FOE_CRYPTO_SHA512_HASH_SIZE;
     foeResultSet result =
         foeDecodeHex(cExpectedHash.size(), cExpectedHash.data(), &decodedSize, expectedHash);
     REQUIRE(result.value == FOE_SUCCESS);
-    REQUIRE(decodedSize == 64);
+    REQUIRE(decodedSize == FOE_CRYPTO_SHA512_HASH_SIZE);
 
-    CHECK(memcmp(calculatedHash, expectedHash, 64) == 0);
+    CHECK(memcmp(calculatedHash, expectedHash, FOE_CRYPTO_SHA512_HASH_SIZE) == 0);
 }

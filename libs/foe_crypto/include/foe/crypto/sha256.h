@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2024 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-#define FOE_CRYPTO_SHA256_HASH_SIZE 32U
+#define FOE_CRYPTO_SHA256_HASH_SIZE 32
 
 // pHash mush be FOE_CRYPTO_SHA256_HASH_SIZE bytes
 FOE_CRYPTO_EXPORT
