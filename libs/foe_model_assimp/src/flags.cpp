@@ -18,8 +18,7 @@ struct EnumPair {
 // Prefix on all of the enums/flags
 constexpr std::string_view cPrefix = "aiProcess_";
 
-#define PAIR_DEF(X)                                                                                \
-    { #X, X }
+#define PAIR_DEF(X) {#X, X}
 
 constexpr std::array<EnumPair, 31> cPostProcessFlags = {{
     PAIR_DEF(aiProcess_CalcTangentSpace),
