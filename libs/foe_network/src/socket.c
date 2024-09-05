@@ -61,7 +61,11 @@ foeResultSet foeCreateNetworkSocket(foeNetworkAddress address,
     // Set Socket to be dual stack (IPv4 and IPv6)
     // Mostly a Windows issue, Unix sockets are dual-stack by default
     int val = 0;
+#ifdef __MINGW32__
+    int errCode = setsockopt(newSocket, IPPROTO_IPV6, IPV6_V6ONLY, (char const *)&val, sizeof(val));
+#else
     int errCode = setsockopt(newSocket, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val));
+#endif
     if (errCode != 0) {
         foeDestroyNetworkSocket(socket_to_handle(newSocket));
         return to_foeResult(FOE_NETWORK_ERROR_SOCKET_FAILED_TO_SET_DUAL_STACK);
