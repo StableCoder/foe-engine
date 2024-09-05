@@ -74,7 +74,7 @@ void *loadWindowsPlugin(char const *pPluginPath) {
 }
 
 void *getWindowsPluginSymbolAddr(HMODULE module, char const *pSymbol) {
-    void *pSymbolAddr = GetProcAddress(module, pSymbol);
+    void *pSymbolAddr = (void *)GetProcAddress(module, pSymbol);
     if (pSymbolAddr == nullptr) {
         auto errC = GetLastError();
         FOE_LOG(foeCore, FOE_LOG_LEVEL_ERROR,
