@@ -158,7 +158,7 @@ foeResultSet foeResourceCreateInfoHistoryUndo(
     return to_foeResult(FOE_SIMULATION_SUCCESS);
 }
 
-FOE_RES_EXPORT foeResultSet foeResourceCreateInfoHistoryRedo(
+foeResultSet foeResourceCreateInfoHistoryRedo(
     foeResourceCreateInfoHistory resourceCreateInfoHistory, foeResourceID resourceID) {
     ResourceCreateInfoHistory *pCreateInfoHistory =
         create_info_history_from_handle(resourceCreateInfoHistory);
