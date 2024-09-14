@@ -86,14 +86,14 @@ Python Files:
 
 .platform_windows_template: &platform_windows_template
   stage: Windows Builds
-  image: docker.io/stabletec/build-foe:windows-2019
+  image: docker.io/stabletec/build-foe:windows-ltsc2022-${VISUAL_STUDIO_VERSION}
   tags:
     - container
     - windows
     - amd64
+    - ltsc2022
   needs: []
   dependencies: []
-  retry: 2
   script:
     - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_PREFIX_PATH="C:\" -DBULLET_ROOT="C:\bullet" $env:CMAKE_OPTIONS
     - cmake --build build
@@ -346,58 +346,64 @@ macOS/Clang Shared:
 
 # Windows
 
-Windows 2019/MSVC Static:
+Windows/MSVC Static:
   parallel:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
+      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   <<: *platform_windows_template
 
-Windows 2019/MSVC Shared:
+Windows/MSVC Shared:
   parallel:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
+      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows 2019/Clang-cl Static:
+Windows/Clang-cl Static:
   parallel:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
+      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang-cl
     CXX: clang-cl
   <<: *platform_windows_template
 
-Windows 2019/Clang-cl Shared:
+Windows/Clang-cl Shared:
   parallel:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
+      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang-cl
     CXX: clang-cl
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
 
-Windows 2019/Clang Static:
+Windows/Clang Static:
   parallel:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
+      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang
     CXX: clang
   <<: *platform_windows_template
 
-Windows 2019/Clang Shared:
+Windows/Clang Shared:
   parallel:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
+      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang
     CXX: clang
