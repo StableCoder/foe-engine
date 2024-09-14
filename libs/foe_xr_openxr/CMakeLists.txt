@@ -28,14 +28,22 @@ generate_export_header(
   foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/public/foe/xr/export.h)
 
-target_include_directories(
-  foe_xr_openxr PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
-                       ${GLM_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS}/include)
+target_include_directories(foe_xr_openxr
+                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_xr_openxr PUBLIC foe_xr OpenXR::openxr_loader)
 target_link_libraries(foe_xr_openxr PRIVATE khronos_mini_libs)
 
 target_code_coverage(foe_xr_openxr)
+
+if(DEFINED GLM_INCLUDE_DIRS)
+  target_include_directories(foe_xr_openxr PUBLIC ${GLM_INCLUDE_DIRS}
+                                                  ${GLM_INCLUDE_DIRS}/include)
+elseif(TARGET glm::glm)
+  target_link_libraries(foe_xr_openxr PUBLIC glm::glm)
+else()
+  target_link_libraries(foe_xr_openxr PUBLIC glm::glm-header-only)
+endif()
 
 if(MSVC)
   target_compile_options(foe_xr_openxr PRIVATE /EHsc)

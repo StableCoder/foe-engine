@@ -18,9 +18,17 @@ add_subdirectory(src)
 generate_export_header(foe_yaml EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/public/foe/yaml/export.h)
 
-target_include_directories(
-  foe_yaml PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
-                  ${GLM_INCLUDE_DIRS} ${GLM_INCLUDE_DIRS}/include)
+target_include_directories(foe_yaml PUBLIC include
+                                           ${CMAKE_CURRENT_BINARY_DIR}/public)
+
+if(DEFINED GLM_INCLUDE_DIRS)
+  target_include_directories(foe_yaml PUBLIC ${GLM_INCLUDE_DIRS}
+                                             ${GLM_INCLUDE_DIRS}/include)
+elseif(TARGET glm::glm)
+  target_link_libraries(foe_yaml PUBLIC glm::glm)
+else()
+  target_link_libraries(foe_yaml PUBLIC glm::glm-header-only)
+endif()
 
 if(WIN32 OR APPLE)
   target_link_libraries(foe_yaml PUBLIC yaml-cpp::yaml-cpp)
