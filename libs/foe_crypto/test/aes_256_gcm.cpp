@@ -35,7 +35,7 @@ static_assert(sizeof(nonce1) == sizeof(nonce2));
 } // namespace
 
 // Only x86-64 or AppleSilicon are known to have AES acceleration support in libsodium
-#if defined(__APPLE__) || defined(__x86_64__) || defined(_WIN64)
+#if (defined(__APPLE__) || defined(__x86_64__) || defined(_WIN64)) && !defined(__MINGW32__)
 
 TEST_CASE("AES 256 GCM - Detect HW acceleration is available") {
     REQUIRE(foeCrypto_AES_256_GCM_isHardwareAccelerated());
