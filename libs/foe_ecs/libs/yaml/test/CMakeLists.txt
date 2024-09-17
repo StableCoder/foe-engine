@@ -17,7 +17,7 @@ target_link_libraries(test_foe_ecs_yaml PRIVATE foe_ecs_yaml
                                                 Catch2::Catch2WithMain)
 
 if(MSVC)
-target_compile_options(test_foe_ecs_yaml PRIVATE /EHa)
+  target_compile_options(test_foe_ecs_yaml PRIVATE /EHa)
 else()
   target_compile_options(test_foe_ecs_yaml PRIVATE -fexceptions)
 endif()

@@ -97,7 +97,24 @@ Python Files:
   script:
     - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_PREFIX_PATH="C:\" -DBULLET_ROOT="C:\bullet" $env:CMAKE_OPTIONS
     - cmake --build build
-    - ctest --test-dir build --output-on-failure 
+    - ctest --test-dir build --output-on-failure
+
+.platform_msys_template: &platform_msys_template
+  stage: Windows Builds
+  image: stabletec/build-foe:msys-ltsc2019-${MSYS_SUBSYSTEM}
+  tags:
+    - container
+    - windows
+    - ${ARCH}
+    - ltsc2022
+  needs: []
+  dependencies: []
+  script:
+    # set the directory bash will start in
+    - $env:HOME="$(cygpath -u $(pwd))"
+    - bash.exe -lc "cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$BUILD_TYPE" $CMAKE_OPTIONS"
+    - bash.exe -lc 'cmake --build build'
+    - bash.exe -lc 'ctest --test-dir build --output-on-failure'
 
 # Arch
 
@@ -409,6 +426,50 @@ Windows/Clang Shared:
     CXX: clang
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
+
+MSYS/GCC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
+      MSYS_SUBSYSTEM: [ucrt64, mingw64]
+  variables:
+    MSYS_SUBSYSTEM: ucrt64
+  <<: *platform_msys_template
+
+MSYS/GCC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
+      MSYS_SUBSYSTEM: [ucrt64, mingw64]
+  variables:
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
+  <<: *platform_msys_template
+
+MSYS/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
+      MSYS_SUBSYSTEM: [ucrt64, mingw64, clang64]
+  variables:
+    CC: clang
+    CXX: clang++
+    MSYS_SUBSYSTEM: ucrt64
+  <<: *platform_msys_template
+
+MSYS/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64]
+      BUILD_TYPE: [Release]
+      MSYS_SUBSYSTEM: [ucrt64, mingw64, clang64]
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
+  <<: *platform_msys_template
 
 # Vulkan Testing
 
