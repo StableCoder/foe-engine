@@ -15,12 +15,10 @@ target_sources(test_foe_yaml PRIVATE exception.cpp pod_bool_parsing.cpp
 
 target_link_libraries(test_foe_yaml PRIVATE Catch2::Catch2WithMain foe_yaml)
 
-if(UNIX
-   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
-   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
-  target_compile_options(test_foe_yaml PRIVATE -fexceptions)
-else(MSVC)
+if(MSVC)
   target_compile_options(test_foe_yaml PRIVATE /EHa)
+else()
+  target_compile_options(test_foe_yaml PRIVATE -fexceptions)
 endif()
 
 target_code_coverage(

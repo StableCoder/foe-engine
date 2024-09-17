@@ -25,12 +25,10 @@ target_link_libraries(
   test_foe_graphics_vk_yaml PRIVATE Catch2::Catch2WithMain foe_graphics_vk_yaml
                                     vk_struct_compare)
 
-if(UNIX
-   OR CMAKE_C_COMPILER_ID MATCHES "[Cc]lang"
-   OR CMAKE_CXX_COMPILER_ID MATCHES "[Cc]lang")
-  target_compile_options(test_foe_graphics_vk_yaml PRIVATE -fexceptions)
-else(MSVC)
+if(MSVC)
   target_compile_options(test_foe_graphics_vk_yaml PRIVATE /EHa)
+else()
+  target_compile_options(test_foe_graphics_vk_yaml PRIVATE -fexceptions)
 endif()
 
 target_code_coverage(
