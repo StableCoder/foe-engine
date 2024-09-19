@@ -101,7 +101,7 @@ Python Files:
 
 .platform_msys_template: &platform_msys_template
   stage: Windows Builds
-  image: stabletec/build-foe:msys-ltsc2019-${MSYS_SUBSYSTEM}
+  image: stabletec/build-foe:msys-ltsc2022-${MSYS_SUBSYSTEM}
   tags:
     - container
     - windows
