@@ -86,12 +86,12 @@ Python Files:
 
 .platform_windows_template: &platform_windows_template
   stage: Windows Builds
-  image: docker.io/stabletec/build-foe:windows-ltsc2022-${VISUAL_STUDIO_VERSION}
+  image: docker.io/stabletec/build-foe:windows-ltsc2025-${VISUAL_STUDIO_VERSION}
   tags:
     - container
     - windows
     - amd64
-    - ltsc2022
+    - ltsc2025
   needs: []
   dependencies: []
   script:
@@ -101,12 +101,12 @@ Python Files:
 
 .platform_msys_template: &platform_msys_template
   stage: Windows Builds
-  image: stabletec/build-foe:msys-ltsc2022-${MSYS_SUBSYSTEM}
+  image: stabletec/build-foe:msys-ltsc2025-${MSYS_SUBSYSTEM}
   tags:
     - container
     - windows
     - ${ARCH}
-    - ltsc2022
+    - ltsc2025
   needs: []
   dependencies: []
   script:
