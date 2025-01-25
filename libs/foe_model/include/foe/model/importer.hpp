@@ -52,13 +52,13 @@ class foeModelImporter {
 
     virtual void importMeshIndexData16(unsigned int mesh, uint16_t offset, uint16_t *pData) = 0;
 
-    virtual auto importMeshIndexData16(unsigned int mesh,
-                                       uint16_t offset) -> std::vector<uint16_t> = 0;
+    virtual auto importMeshIndexData16(unsigned int mesh, uint16_t offset)
+        -> std::vector<uint16_t> = 0;
 
     virtual void importMeshIndexData32(unsigned int mesh, uint32_t offset, uint32_t *pData) = 0;
 
-    virtual auto importMeshIndexData32(unsigned int mesh,
-                                       uint32_t offset) -> std::vector<uint32_t> = 0;
+    virtual auto importMeshIndexData32(unsigned int mesh, uint32_t offset)
+        -> std::vector<uint32_t> = 0;
 
     virtual auto getMeshVerticesByWeight(unsigned int mesh) -> std::vector<int> = 0;
 

@@ -8,8 +8,8 @@
 
 char const *yaml_rigid_body_key() { return "rigid_body"; }
 
-auto yaml_read_rigid_body(YAML::Node const &node,
-                          foeEcsGroupTranslator groupTranslator) -> foeRigidBody {
+auto yaml_read_rigid_body(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
+    -> foeRigidBody {
     foeRigidBody rigidBody = {};
 
     yaml_read_foeRigidBody("", node, groupTranslator, rigidBody);

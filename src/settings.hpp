@@ -37,10 +37,8 @@ struct Settings {
 };
 
 /// Returns two items, a boolean on whether to continue the program, and code to return with.
-auto loadSettings(int argc,
-                  char **argv,
-                  Settings &settings,
-                  foeSearchPaths &searchPaths) -> std::tuple<bool, int>;
+auto loadSettings(int argc, char **argv, Settings &settings, foeSearchPaths &searchPaths)
+    -> std::tuple<bool, int>;
 
 bool saveSettings(Settings const &settings);
 

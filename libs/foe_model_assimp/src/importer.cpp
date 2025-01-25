@@ -81,8 +81,8 @@ void foeModelAssimpImporter::importMeshIndexData16(unsigned int mesh,
     ::importMeshIndexData16(mpScene->mMeshes[mesh], offset, pData);
 }
 
-auto foeModelAssimpImporter::importMeshIndexData16(unsigned int mesh,
-                                                   uint16_t offset) -> std::vector<uint16_t> {
+auto foeModelAssimpImporter::importMeshIndexData16(unsigned int mesh, uint16_t offset)
+    -> std::vector<uint16_t> {
     return ::importMeshIndexData16(mpScene->mMeshes[mesh], offset);
 }
 
@@ -92,8 +92,8 @@ void foeModelAssimpImporter::importMeshIndexData32(unsigned int mesh,
     ::importMeshIndexData32(mpScene->mMeshes[mesh], offset, pData);
 }
 
-auto foeModelAssimpImporter::importMeshIndexData32(unsigned int mesh,
-                                                   uint32_t offset) -> std::vector<uint32_t> {
+auto foeModelAssimpImporter::importMeshIndexData32(unsigned int mesh, uint32_t offset)
+    -> std::vector<uint32_t> {
     return ::importMeshIndexData32(mpScene->mMeshes[mesh], offset);
 }
 

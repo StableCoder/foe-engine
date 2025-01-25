@@ -13,8 +13,8 @@
 
 inline char const *yaml_armature_state_key() { return "armature_state"; }
 
-inline auto yaml_read_ArmatureState(YAML::Node const &node,
-                                    foeEcsGroupTranslator groupTranslator) -> foeArmatureState {
+inline auto yaml_read_ArmatureState(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
+    -> foeArmatureState {
     foeArmatureState armatureState;
 
     yaml_read_foeArmatureState("", node, groupTranslator, armatureState);

@@ -11,8 +11,8 @@
 
 char const *yaml_rigid_body_key();
 
-auto yaml_read_rigid_body(YAML::Node const &node,
-                          foeEcsGroupTranslator groupTranslator) -> foeRigidBody;
+auto yaml_read_rigid_body(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
+    -> foeRigidBody;
 
 auto yaml_write_rigid_body(foeRigidBody const &data) -> YAML::Node;
 

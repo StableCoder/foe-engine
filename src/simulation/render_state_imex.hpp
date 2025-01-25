@@ -13,8 +13,8 @@
 
 inline char const *yaml_render_state_key() { return "render_state"; }
 
-inline auto yaml_read_RenderState(YAML::Node const &node,
-                                  foeEcsGroupTranslator groupTranslator) -> foeRenderState {
+inline auto yaml_read_RenderState(YAML::Node const &node, foeEcsGroupTranslator groupTranslator)
+    -> foeRenderState {
     foeRenderState renderState;
 
     yaml_read_foeRenderState("", node, groupTranslator, renderState);

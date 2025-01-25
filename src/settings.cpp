@@ -194,10 +194,8 @@ void emitSettingsYaml(Settings const *pOptions, YAML::Node *pNode) {
 
 } // namespace
 
-auto loadSettings(int argc,
-                  char **argv,
-                  Settings &settings,
-                  foeSearchPaths &searchPaths) -> std::tuple<bool, int> {
+auto loadSettings(int argc, char **argv, Settings &settings, foeSearchPaths &searchPaths)
+    -> std::tuple<bool, int> {
     std::string cfgFile = "foe-settings.yml";
 
     { // Load settings from command line

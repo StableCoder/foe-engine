@@ -20,8 +20,8 @@ class foeGfxVkDescriptorSetLayoutPool;
  */
 class foeGfxVkBuiltinDescriptorSets {
   public:
-    auto initialize(VkDevice device,
-                    foeGfxVkDescriptorSetLayoutPool *pDescriptorSetLayoutPool) -> VkResult;
+    auto initialize(VkDevice device, foeGfxVkDescriptorSetLayoutPool *pDescriptorSetLayoutPool)
+        -> VkResult;
     void deinitialize(VkDevice device);
 
     auto getBuiltinLayout(foeBuiltinDescriptorSetLayoutFlags builtinLayout) const noexcept
