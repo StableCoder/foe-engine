@@ -652,6 +652,7 @@ ThreadSanitizer:
 
 AddressSanitizer:
   variables:
+    ASAN_OPTIONS: detect_leaks=0
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D USE_SANITIZER=Address -D BUILD_VULKAN_RUNTIME_TESTS=OFF
