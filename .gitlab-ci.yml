@@ -95,7 +95,7 @@ Python Files:
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_PREFIX_PATH="C:\" -DBULLET_ROOT="C:\bullet" $env:CMAKE_OPTIONS
+    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_PREFIX_PATH="C:\" -D BULLET_ROOT="C:\bullet" $env:CMAKE_OPTIONS
     - cmake --build build
     - ctest --test-dir build --output-on-failure
 
@@ -483,21 +483,6 @@ MSYS/Clang Shared:
     - cmake --build build --target test_foe_graphics_vk
     - ./build/libs/foe_graphics_vk/test/test_foe_graphics_vk
 
-Arch Vulkan SW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64]
-  image: docker.io/stabletec/build-foe:arch
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: clang
-    CXX: clang++
-    GPU: llvmpipe
-  <<: *vulkan_template
-
 Fedora Vulkan SW Testing:
   parallel:
     matrix:
@@ -526,21 +511,6 @@ Ubuntu Vulkan SW Testing:
     CC: clang
     CXX: clang++
     GPU: llvmpipe
-  <<: *vulkan_template
-
-Arch Vulkan HW Testing:
-  parallel:
-    matrix:
-    - ARCH: [amd64]
-      GPU: [amd_navi23,intel_a380,amd_vega10,amd_ellesmere]
-  image: docker.io/stabletec/build-foe:arch
-  tags:
-    - container
-    - linux
-    - ${ARCH}-${GPU}
-  variables:
-    CC: clang
-    CXX: clang++
   <<: *vulkan_template
 
 Fedora Vulkan HW Testing:
