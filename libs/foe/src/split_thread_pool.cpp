@@ -17,8 +17,6 @@
 #include <queue>
 #include <thread>
 
-using namespace std::chrono_literals;
-
 namespace {
 
 struct Task {
