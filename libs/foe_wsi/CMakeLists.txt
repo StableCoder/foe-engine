@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -18,7 +18,7 @@ add_library(foe_wsi INTERFACE)
 # Definition
 target_include_directories(foe_wsi INTERFACE include ${glfw_INCLUDE_DIR})
 
-target_link_libraries(foe_wsi INTERFACE foe Vulkan::Vulkan)
+target_link_libraries(foe_wsi INTERFACE foe_core Vulkan::Vulkan)
 
 # Auxiliary Targets
 add_subdirectory(libs/imgui)

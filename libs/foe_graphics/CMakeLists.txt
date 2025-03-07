@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -21,7 +21,7 @@ generate_export_header(
 target_include_directories(foe_graphics
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
-target_link_libraries(foe_graphics PUBLIC Vulkan::Vulkan foe)
+target_link_libraries(foe_graphics PUBLIC Vulkan::Vulkan foe_core)
 
 target_code_coverage(foe_graphics)
 

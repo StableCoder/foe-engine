@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,4 +15,4 @@ endif()
 
 target_include_directories(foe_xr INTERFACE include)
 
-target_link_libraries(foe_xr INTERFACE foe)
+target_link_libraries(foe_xr INTERFACE foe_core)

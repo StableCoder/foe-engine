@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -21,7 +21,7 @@ target_include_directories(
   foe_physics PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
                      ${BULLET_INCLUDE_DIRS})
 
-target_link_libraries(foe_physics PUBLIC foe foe_ecs foe_imex foe_position
+target_link_libraries(foe_physics PUBLIC foe_core foe_ecs foe_imex foe_position
                                          ${BULLET_LIBRARIES})
 
 target_code_coverage(foe_physics)

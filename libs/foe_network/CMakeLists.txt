@@ -1,4 +1,4 @@
-# Copyright (C) 2023 George Cave.
+# Copyright (C) 2023-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +17,7 @@ generate_export_header(foe_network EXPORT_FILE_NAME
 target_include_directories(foe_network
                            PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
-target_link_libraries(foe_network PUBLIC foe)
+target_link_libraries(foe_network PUBLIC foe_core)
 if(WIN32)
   target_link_libraries(foe_network PUBLIC ws2_32)
 endif()

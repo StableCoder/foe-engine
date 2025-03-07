@@ -1,4 +1,4 @@
-# Copyright (C) 2023 George Cave.
+# Copyright (C) 2023-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -29,9 +29,9 @@ target_include_directories(
   foe_crypto PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
                     ${libsodium_INCLUDE_DIRS})
 
-target_link_libraries(foe_crypto PUBLIC foe ${libsodium_LINK_LIBRARIES})
+target_link_libraries(foe_crypto PUBLIC foe_core ${libsodium_LINK_LIBRARIES})
 if(WIN32)
-  target_link_libraries(foe_crypto PUBLIC foe sodium::sodium)
+  target_link_libraries(foe_crypto PUBLIC foe_core sodium::sodium)
 endif()
 
 target_code_coverage(foe_crypto)

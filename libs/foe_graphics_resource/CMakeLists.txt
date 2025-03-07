@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -32,7 +32,7 @@ target_include_directories(
 
 target_link_libraries(
   foe_graphics_resource
-  PUBLIC foe
+  PUBLIC foe_core
          foe_ecs
          foe_graphics
          foe_graphics_vk

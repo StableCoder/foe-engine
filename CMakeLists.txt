@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -157,8 +157,8 @@ add_library(foe_bringup_yaml SHARED)
 add_subdirectory(src)
 
 # Engine Definition
-target_link_libraries(foe_bringup_lib PUBLIC foe foe_ecs foe_bringup_lib_eh
-                                             foe_imex)
+target_link_libraries(foe_bringup_lib PUBLIC foe_core foe_ecs
+                                             foe_bringup_lib_eh foe_imex)
 
 # These are plugins which are linked because the bringup library is using
 # header/content directly
@@ -203,7 +203,7 @@ endif()
 target_code_coverage(
   foe_bringup_lib
   OBJECTS
-  foe
+  foe_core
   foe_ecs
   foe_bringup_shared
   foe_bringup_lib_eh
