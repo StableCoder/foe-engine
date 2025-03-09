@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_crypto)
 
 # Dependencies
@@ -20,18 +20,20 @@ endif()
 add_library(foe_crypto SHARED)
 
 # Definition
+add_subdirectory(include)
 add_subdirectory(src)
 
-generate_export_header(foe_crypto EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/crypto/export.h)
+target_include_directories(foe_crypto PRIVATE ${libsodium_INCLUDE_DIRS})
 
-target_include_directories(
-  foe_crypto PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
-                    ${libsodium_INCLUDE_DIRS})
-
-target_link_libraries(foe_crypto PUBLIC foe_core ${libsodium_LINK_LIBRARIES})
+target_link_libraries(
+  foe_crypto
+  PUBLIC foe_core
+  PRIVATE ${libsodium_LINK_LIBRARIES})
 if(WIN32)
-  target_link_libraries(foe_crypto PUBLIC foe_core sodium::sodium)
+  target_link_libraries(
+    foe_crypto
+    PUBLIC foe_core
+    PRIVATE sodium::sodium)
 endif()
 
 target_code_coverage(foe_crypto)

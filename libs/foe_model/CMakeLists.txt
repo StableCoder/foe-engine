@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_model)
 
 # Dependencies
@@ -10,15 +10,11 @@ find_package(glm REQUIRED)
 
 # Declarations
 add_library(foe_model)
+set_property(TARGET foe_model PROPERTY EXPORT_NAME model)
 
 # Library Definition
+add_subdirectory(include)
 add_subdirectory(src)
-
-generate_export_header(foe_model EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/model/export.h)
-
-target_include_directories(foe_model PUBLIC include
-                                            ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_model PUBLIC foe_core)
 

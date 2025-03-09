@@ -2,20 +2,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_network)
 
 # Declaration
 add_library(foe_network SHARED)
+set_property(TARGET foe_network PROPERTY EXPORT_NAME network)
 
 # Definition
+add_subdirectory(include)
 add_subdirectory(src)
-
-generate_export_header(foe_network EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/network/export.h)
-
-target_include_directories(foe_network
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_network PUBLIC foe_core)
 if(WIN32)

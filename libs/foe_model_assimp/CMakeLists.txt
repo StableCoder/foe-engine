@@ -1,8 +1,8 @@
-# Copyright (C) 2022-2023 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_model_assimp)
 
 # Dependencies
@@ -16,17 +16,13 @@ endif()
 
 # Declaration
 add_library(foe_model_assimp SHARED)
+set_property(TARGET foe_model_assimp PROPERTY EXPORT_NAME model_assimp)
 
 # Definition
+add_subdirectory(include)
 add_subdirectory(src)
 
-generate_export_header(
-  foe_model_assimp EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/model/assimp/export.h)
-
-target_include_directories(
-  foe_model_assimp PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
-                          ${assimp_INCLUDE_DIRS})
+target_include_directories(foe_model_assimp PRIVATE ${assimp_INCLUDE_DIRS})
 
 target_link_libraries(foe_model_assimp PUBLIC foe_model
                                               ${assimp_LINK_LIBRARIES})

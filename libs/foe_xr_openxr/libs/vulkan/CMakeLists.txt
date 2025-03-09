@@ -1,22 +1,16 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_xr_openxr_vk)
 
 # Declaration
 add_library(foe_xr_openxr_vk)
 
 # Definition
+add_subdirectory(include)
 add_subdirectory(src)
-
-generate_export_header(
-  foe_xr_openxr_vk EXPORT_MACRO_NAME FOE_OPENXR_VK_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/xr/openxr/vk/export.h)
-
-target_include_directories(foe_xr_openxr_vk
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_xr_openxr_vk PUBLIC foe_xr_openxr foe_graphics_vk)
 

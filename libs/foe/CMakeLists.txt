@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_core)
 
 # Dependencies
@@ -12,13 +12,8 @@ find_package(fmt REQUIRED)
 add_library(foe_core SHARED)
 
 # Definition
+add_subdirectory(include)
 add_subdirectory(src)
-
-generate_export_header(foe_core EXPORT_MACRO_NAME FOE_EXPORT EXPORT_FILE_NAME
-                       ${CMAKE_CURRENT_BINARY_DIR}/public/foe/export.h)
-
-target_include_directories(foe_core PUBLIC include
-                                           ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_core PUBLIC fmt::fmt)
 

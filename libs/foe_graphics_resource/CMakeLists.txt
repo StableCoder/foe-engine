@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_graphics_resource)
 
 # Dependencies
@@ -20,15 +20,11 @@ mark_as_advanced(FORCE freeimage_INCLUDE_DIRS freeimage_LIBRARIES)
 add_library(foe_graphics_resource SHARED)
 
 # Definition
+add_subdirectory(include)
 add_subdirectory(src)
 
-generate_export_header(
-  foe_graphics_resource EXPORT_MACRO_NAME FOE_GFX_RES_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/graphics/resource/export.h)
-
-target_include_directories(
-  foe_graphics_resource PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public
-                               ${freeimage_INCLUDE_DIRS})
+target_include_directories(foe_graphics_resource
+                           PRIVATE ${freeimage_INCLUDE_DIRS})
 
 target_link_libraries(
   foe_graphics_resource

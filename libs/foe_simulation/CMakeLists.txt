@@ -2,21 +2,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_simulation)
 
 # Declaration
 add_library(foe_simulation SHARED)
 
 # Definition
+add_subdirectory(include)
 add_subdirectory(src)
-
-generate_export_header(
-  foe_simulation EXPORT_MACRO_NAME FOE_SIM_EXPORT EXPORT_FILE_NAME
-  ${CMAKE_CURRENT_BINARY_DIR}/public/foe/simulation/export.h)
-
-target_include_directories(foe_simulation
-                           PUBLIC include ${CMAKE_CURRENT_BINARY_DIR}/public)
 
 target_link_libraries(foe_simulation PUBLIC foe_core foe_ecs foe_graphics
                                             foe_imex foe_resource)

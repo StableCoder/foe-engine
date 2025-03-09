@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_wsi)
 
 # Options
@@ -16,7 +16,7 @@ find_package(Vulkan REQUIRED)
 add_library(foe_wsi INTERFACE)
 
 # Definition
-target_include_directories(foe_wsi INTERFACE include ${glfw_INCLUDE_DIR})
+add_subdirectory(include)
 
 target_link_libraries(foe_wsi INTERFACE foe_core Vulkan::Vulkan)
 

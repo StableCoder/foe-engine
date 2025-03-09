@@ -2,17 +2,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.23)
 project(foe_xr)
 
 # Declaration
 add_library(foe_xr INTERFACE)
+set_property(TARGET foe_xr PROPERTY EXPORT_NAME xr)
 
 # Definition
+add_subdirectory(include)
+
 if(XR_SUPPORT)
   target_compile_definitions(foe_xr INTERFACE FOE_XR_SUPPORT)
 endif()
-
-target_include_directories(foe_xr INTERFACE include)
 
 target_link_libraries(foe_xr INTERFACE foe_core)
