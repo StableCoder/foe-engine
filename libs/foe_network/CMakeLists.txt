@@ -26,7 +26,24 @@ else()
   target_compile_options(foe_network PRIVATE -fno-exceptions)
 endif()
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+install(
+  TARGETS foe_network
+  EXPORT foe_network
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_network
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_network-config.cmake DESTINATION share/cmake/foe)

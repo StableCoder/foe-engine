@@ -27,3 +27,22 @@ if(WSI_LOADER)
 else()
   target_link_libraries(foe_wsi_imgui PUBLIC foe_wsi_${WSI_LIBRARY})
 endif()
+
+# install
+set_property(TARGET foe_wsi_imgui PROPERTY EXPORT_NAME wsi_imgui)
+
+install(
+  TARGETS foe_wsi_imgui
+  EXPORT foe_wsi_imgui
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_wsi_imgui
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_wsi_imgui-config.cmake DESTINATION share/cmake/foe)

@@ -29,6 +29,26 @@ endif()
 add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_graphics PROPERTY EXPORT_NAME graphics)
+
+install(
+  TARGETS foe_graphics
+  EXPORT foe_graphics
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_graphics
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_graphics-config.cmake DESTINATION share/cmake/foe)

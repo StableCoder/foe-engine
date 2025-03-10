@@ -16,7 +16,26 @@ target_link_libraries(foe_ecs_yaml PUBLIC foe_ecs foe_yaml)
 
 target_code_coverage(foe_ecs_yaml)
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_ecs_yaml PROPERTY EXPORT_NAME ecs_yaml)
+
+install(
+  TARGETS foe_ecs_yaml
+  EXPORT foe_ecs_yaml
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_ecs_yaml
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_ecs_yaml-config.cmake DESTINATION share/cmake/foe)

@@ -38,7 +38,24 @@ else()
   target_compile_options(foe_model_assimp PRIVATE -fno-exceptions)
 endif()
 
-# Auxiliary Target
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+install(
+  TARGETS foe_model_assimp
+  EXPORT foe_model_assimp
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_model_assimp
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_model_assimp-config.cmake DESTINATION share/cmake/foe)

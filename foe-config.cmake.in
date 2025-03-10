@@ -1,0 +1,20 @@
+@PACKAGE_INIT@
+
+# Copyright (C) 2025 George Cave.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# try to include all requested components
+foreach(component ${foe_FIND_COMPONENTS})
+  # For requested component, execute its "config" script
+  if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/foe_${component}-config.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/foe_${component}-config.cmake)
+  else()
+    # component not found, check if it was a required one
+    if(foe_FIND_REQUIRED_${component})
+      message(SEND_ERROR "Requested required component not found: foe::${component}")
+    else()
+      message(STATUS "Requested optional component not found: foe::${component}")
+    endif()
+  endif()
+endforeach()

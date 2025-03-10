@@ -295,3 +295,15 @@ if(BUILD_SHADERS)
   target_glsl_shaders(foe_bringup PRIVATE ${GLSL_FILES})
   clang_format(format_shaders ${GLSL_FILES})
 endif()
+
+# install
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/foe-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/foe-config.cmake
+  INSTALL_DESTINATION cmake
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/foe-config.cmake
+        DESTINATION share/cmake/foe)

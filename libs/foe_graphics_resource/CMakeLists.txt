@@ -35,7 +35,7 @@ target_link_libraries(
          foe_model
          foe_model_assimp
          foe_simulation
-         vk_struct_cleanup
+         $<BUILD_INTERFACE:vk_struct_cleanup>
          ${freeimage_LIBRARIES})
 
 target_code_coverage(foe_graphics_resource)
@@ -51,6 +51,27 @@ add_subdirectory(libs/binary)
 add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_graphics_resource PROPERTY EXPORT_NAME
+                                                   graphics_resource)
+
+install(
+  TARGETS foe_graphics_resource
+  EXPORT foe_graphics_resource
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_graphics_resource
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_graphics_resource-config.cmake DESTINATION share/cmake/foe)

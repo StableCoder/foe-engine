@@ -51,7 +51,26 @@ target_sources(
   foe_wsi_glfw3 PUBLIC FILE_SET HEADERS BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}
                        FILES ${CMAKE_CURRENT_BINARY_DIR}/foe/wsi/export.h)
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_wsi_glfw3 PROPERTY EXPORT_NAME wsi_glfw3)
+
+install(
+  TARGETS foe_wsi_glfw3
+  EXPORT foe_wsi_glfw3
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_wsi_glfw3
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_wsi_glfw3-config.cmake DESTINATION share/cmake/foe)

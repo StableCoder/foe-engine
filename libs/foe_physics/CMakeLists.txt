@@ -35,6 +35,24 @@ add_subdirectory(libs/binary)
 add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+install(
+  TARGETS foe_physics
+  EXPORT foe_physics
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_physics
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_physics-config.cmake DESTINATION share/cmake/foe)

@@ -17,7 +17,26 @@ target_link_libraries(foe_position_binary PUBLIC foe_ecs foe_position
 
 target_code_coverage(foe_position_binary)
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_position_binary PROPERTY EXPORT_NAME position_binary)
+
+install(
+  TARGETS foe_position_binary
+  EXPORT foe_position_binary
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_position_binary
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_position_binary-config.cmake DESTINATION share/cmake/foe)

@@ -21,3 +21,22 @@ if(MSVC)
 else()
   target_compile_options(foe_resource_imgui PRIVATE -fno-exceptions)
 endif()
+
+# install
+set_property(TARGET foe_resource_imgui PROPERTY EXPORT_NAME resource_imgui)
+
+install(
+  TARGETS foe_resource_imgui
+  EXPORT foe_resource_imgui
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_resource_imgui
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_resource_imgui-config.cmake DESTINATION share/cmake/foe)

@@ -13,9 +13,13 @@ add_subdirectory(include)
 add_subdirectory(src)
 
 target_link_libraries(
-  foe_graphics_vk PUBLIC foe_graphics vulkan_memory_allocator vk_struct_cleanup
-                         vk_struct_compare vk_value_serialization)
-target_link_libraries(foe_graphics_vk PRIVATE khronos_mini_libs)
+  foe_graphics_vk
+  PUBLIC foe_graphics
+         $<BUILD_INTERFACE:vulkan_memory_allocator>
+         $<BUILD_INTERFACE:vk_struct_cleanup>
+         $<BUILD_INTERFACE:vk_struct_compare>
+         $<BUILD_INTERFACE:vk_value_serialization>
+  PRIVATE $<BUILD_INTERFACE:khronos_mini_libs>)
 
 target_code_coverage(foe_graphics_vk)
 
@@ -33,6 +37,26 @@ endif()
 add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_graphics_vk PROPERTY EXPORT_NAME graphics_vk)
+
+install(
+  TARGETS foe_graphics_vk
+  EXPORT foe_graphics_vk
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_graphics_vk
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_graphics_vk-config.cmake DESTINATION share/cmake/foe)

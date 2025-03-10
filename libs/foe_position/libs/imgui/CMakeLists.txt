@@ -22,3 +22,22 @@ if(MSVC)
 else()
   target_compile_options(foe_position_imgui PRIVATE -fno-exceptions)
 endif()
+
+# install
+set_property(TARGET foe_position_imgui PROPERTY EXPORT_NAME position_imgui)
+
+install(
+  TARGETS foe_position_imgui
+  EXPORT foe_position_imgui
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_position_imgui
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_position_imgui-config.cmake DESTINATION share/cmake/foe)

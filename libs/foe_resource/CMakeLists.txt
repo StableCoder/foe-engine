@@ -25,6 +25,26 @@ endif()
 # Other
 add_subdirectory(libs/imgui)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_resource PROPERTY EXPORT_NAME resource)
+
+install(
+  TARGETS foe_resource
+  EXPORT foe_resource
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_resource
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_resource-config.cmake DESTINATION share/cmake/foe)

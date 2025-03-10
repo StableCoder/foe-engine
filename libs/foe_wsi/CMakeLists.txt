@@ -24,6 +24,26 @@ target_link_libraries(foe_wsi INTERFACE foe_core Vulkan::Vulkan)
 add_subdirectory(libs/imgui)
 add_subdirectory(libs/loader)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_wsi PROPERTY EXPORT_NAME wsi)
+
+install(
+  TARGETS foe_wsi
+  EXPORT foe_wsi
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_wsi
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_wsi-config.cmake DESTINATION share/cmake/foe)

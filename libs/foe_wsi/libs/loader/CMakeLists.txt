@@ -35,3 +35,20 @@ if(WSI_LOADER)
 else()
 
 endif()
+
+# install
+install(
+  TARGETS foe_wsi_loader
+  EXPORT foe_wsi_loader
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_wsi_loader
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_wsi_loader-config.cmake DESTINATION share/cmake/foe)

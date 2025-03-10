@@ -25,6 +25,26 @@ endif()
 # Auxiliary Targets
 add_subdirectory(libs/yaml)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_ecs PROPERTY EXPORT_NAME ecs)
+
+install(
+  TARGETS foe_ecs
+  EXPORT foe_ecs
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_ecs
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_ecs-config.cmake DESTINATION share/cmake/foe)

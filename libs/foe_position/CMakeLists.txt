@@ -38,3 +38,22 @@ endif()
 add_subdirectory(libs/binary)
 add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
+
+# install
+set_property(TARGET foe_position PROPERTY EXPORT_NAME position)
+
+install(
+  TARGETS foe_position
+  EXPORT foe_position
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_position
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_position-config.cmake DESTINATION share/cmake/foe)

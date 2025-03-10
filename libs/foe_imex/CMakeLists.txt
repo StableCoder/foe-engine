@@ -27,6 +27,24 @@ endif()
 add_subdirectory(libs/binary)
 add_subdirectory(libs/yaml)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+install(
+  TARGETS foe_imex
+  EXPORT foe_imex
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_imex
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_imex-config.cmake DESTINATION share/cmake/foe)

@@ -16,7 +16,26 @@ target_link_libraries(foe_xr_openxr_vk PUBLIC foe_xr_openxr foe_graphics_vk)
 
 target_code_coverage(foe_xr_openxr_vk)
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_xr_openxr_vk PROPERTY EXPORT_NAME xr_openxr_vk)
+
+install(
+  TARGETS foe_xr_openxr_vk
+  EXPORT foe_xr_openxr_vk
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_xr_openxr_vk
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_xr_openxr_vk-config.cmake DESTINATION share/cmake/foe)

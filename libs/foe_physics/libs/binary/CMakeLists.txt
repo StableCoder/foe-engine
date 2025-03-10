@@ -17,7 +17,26 @@ target_link_libraries(foe_physics_binary PUBLIC foe_ecs foe_physics
 
 target_code_coverage(foe_physics_binary)
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_physics_binary PROPERTY EXPORT_NAME physics_binary)
+
+install(
+  TARGETS foe_physics_binary
+  EXPORT foe_physics_binary
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_physics_binary
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_physics_binary-config.cmake DESTINATION share/cmake/foe)

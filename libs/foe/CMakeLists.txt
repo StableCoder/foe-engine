@@ -25,12 +25,12 @@ endif()
 
 if(UNIX)
   target_compile_options(foe_core PRIVATE -fPIC)
-  target_link_libraries(foe_core PUBLIC dl pthread)
+  target_link_libraries(foe_core PRIVATE dl pthread)
 endif()
 
 if(WIN32)
   # For timeBeginPeriod()/timeEndPeriod()
-  target_link_libraries(foe_core PUBLIC winmm)
+  target_link_libraries(foe_core PRIVATE winmm)
 endif()
 
 if(MSVC)
@@ -39,7 +39,26 @@ else()
   target_compile_options(foe_core PRIVATE -fno-exceptions)
 endif()
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_core PROPERTY EXPORT_NAME core)
+
+install(
+  TARGETS foe_core
+  EXPORT foe_core
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_core
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_core-config.cmake DESTINATION share/cmake/foe)

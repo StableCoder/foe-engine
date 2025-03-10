@@ -20,7 +20,24 @@ target_link_libraries(foe_imgui_vk PUBLIC foe_graphics_vk foe_imgui glfw)
 
 target_code_coverage(foe_imgui_vk)
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+install(
+  TARGETS foe_imgui_vk
+  EXPORT foe_imgui_vk
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_imgui_vk
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_imgui_vk-config.cmake DESTINATION share/cmake/foe)

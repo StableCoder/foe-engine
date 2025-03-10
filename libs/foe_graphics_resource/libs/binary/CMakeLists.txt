@@ -17,7 +17,28 @@ target_link_libraries(foe_graphics_resource_binary
 
 target_code_coverage(foe_graphics_resource_binary)
 
-# Auxiliary Targets
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_graphics_resource_binary
+             PROPERTY EXPORT_NAME graphics_resource_binary)
+
+install(
+  TARGETS foe_graphics_resource_binary
+  EXPORT foe_graphics_resource_binary
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_graphics_resource_binary
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_graphics_resource_binary-config.cmake
+        DESTINATION share/cmake/foe)

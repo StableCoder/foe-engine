@@ -17,3 +17,20 @@ if(XR_SUPPORT)
 endif()
 
 target_link_libraries(foe_xr INTERFACE foe_core)
+
+# install
+install(
+  TARGETS foe_xr
+  EXPORT foe_xr
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_xr
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_xr-config.cmake DESTINATION share/cmake/foe)

@@ -51,6 +51,24 @@ endif()
 # Auxiliary Targets
 add_subdirectory(libs/vulkan)
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+install(
+  TARGETS foe_xr_openxr
+  EXPORT foe_xr_openxr
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_xr_openxr
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_xr_openxr-config.cmake DESTINATION share/cmake/foe)

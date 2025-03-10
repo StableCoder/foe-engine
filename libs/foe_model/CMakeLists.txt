@@ -39,4 +39,19 @@ else()
   target_compile_options(foe_model PRIVATE -fno-exceptions)
 endif()
 
-# Auxiliary Target
+# install
+install(
+  TARGETS foe_model
+  EXPORT foe_model
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_model
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_model-config.cmake DESTINATION share/cmake/foe)

@@ -22,3 +22,20 @@ if(MSVC)
 else()
   target_compile_options(foe_graphics_vk_imgui PRIVATE -fno-exceptions)
 endif()
+
+# install
+install(
+  TARGETS foe_graphics_vk_imgui
+  EXPORT foe_graphics_vk_imgui
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_graphics_vk_imgui
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_graphics_vk_imgui-config.cmake DESTINATION share/cmake/foe)

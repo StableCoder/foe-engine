@@ -33,7 +33,26 @@ endif()
 
 target_code_coverage(foe_yaml)
 
-# Auxiliary Target
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_yaml PROPERTY EXPORT_NAME yaml)
+
+install(
+  TARGETS foe_yaml
+  EXPORT foe_yaml
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_yaml
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_yaml-config.cmake DESTINATION share/cmake/foe)

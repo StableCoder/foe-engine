@@ -44,6 +44,26 @@ else()
   target_compile_options(foe_crypto PRIVATE -fno-exceptions)
 endif()
 
+# test
 if(BUILD_TESTS)
   add_subdirectory(test)
 endif()
+
+# install
+set_property(TARGET foe_crypto PROPERTY EXPORT_NAME crypto)
+
+install(
+  TARGETS foe_crypto
+  EXPORT foe_crypto
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+          FILE_SET HEADERS
+          DESTINATION include)
+
+install(
+  EXPORT foe_crypto
+  NAMESPACE foe::
+  DESTINATION share/cmake/foe)
+
+install(FILES foe_crypto-config.cmake DESTINATION share/cmake/foe)
