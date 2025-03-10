@@ -501,7 +501,7 @@ Fedora Vulkan SW Testing:
 Ubuntu Vulkan SW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le]
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
   image: docker.io/stabletec/build-foe:ubuntu
   tags:
     - container
