@@ -185,7 +185,7 @@ Arch/Clang Shared:
 Fedora/GCC Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le]
+    - ARCH: [amd64, arm64]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
@@ -200,7 +200,7 @@ Fedora/GCC Static:
 Fedora/GCC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le]
+    - ARCH: [amd64, arm64]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
@@ -216,7 +216,7 @@ Fedora/GCC Shared:
 Fedora/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le]
+    - ARCH: [amd64, arm64]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
@@ -231,7 +231,7 @@ Fedora/Clang Static:
 Fedora/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le]
+    - ARCH: [amd64, arm64]
       BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
@@ -486,7 +486,7 @@ MSYS/Clang Shared:
 Fedora Vulkan SW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le]
+    - ARCH: [amd64, arm64]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
