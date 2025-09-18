@@ -8,10 +8,13 @@
 #include <foe/graphics/session.h>
 #include <foe/imgui/vk/export.h>
 #include <foe/result.h>
+#include <imgui.h>
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <vector>
+
+typedef ImGuiKey (*PFN_ImplKeyToImGuiKey)(int keycode);
 
 struct ImGuiContext;
 struct foeWsiKeyboard;
@@ -55,7 +58,8 @@ class foeImGuiRenderer {
     FOE_IMGUI_VK_EXPORT
     bool wantCaptureKeyboard() const noexcept;
     FOE_IMGUI_VK_EXPORT
-    void keyboardInput(foeWsiKeyboard const *pKeyboard) noexcept;
+    void keyboardInput(foeWsiKeyboard const *pKeyboard,
+                       PFN_ImplKeyToImGuiKey implKeyToImGuiKey) noexcept;
 
   private:
     VkResult initializeDescriptorPool(VkDevice device);

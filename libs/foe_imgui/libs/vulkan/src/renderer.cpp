@@ -47,30 +47,6 @@ void foeImGuiRenderer::setImGuiContext(ImGuiContext *pContext) {
     ImGuiIO &io = ImGui::GetIO();
     io.FontGlobalScale = 1.0f;
     io.DisplayFramebufferScale = ImVec2(1.f, 1.f);
-
-    // Keymap [GLFW]
-    io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;
-    io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow] = GLFW_KEY_UP;
-    io.KeyMap[ImGuiKey_DownArrow] = GLFW_KEY_DOWN;
-    io.KeyMap[ImGuiKey_PageUp] = GLFW_KEY_PAGE_UP;
-    io.KeyMap[ImGuiKey_PageDown] = GLFW_KEY_PAGE_DOWN;
-    io.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
-    io.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
-    io.KeyMap[ImGuiKey_Insert] = GLFW_KEY_INSERT;
-    io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
-    io.KeyMap[ImGuiKey_Space] = GLFW_KEY_SPACE;
-    io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
-    io.KeyMap[ImGuiKey_Escape] = GLFW_KEY_ESCAPE;
-    io.KeyMap[ImGuiKey_KeyPadEnter] = GLFW_KEY_KP_ENTER;
-    io.KeyMap[ImGuiKey_A] = GLFW_KEY_A;
-    io.KeyMap[ImGuiKey_C] = GLFW_KEY_C;
-    io.KeyMap[ImGuiKey_V] = GLFW_KEY_V;
-    io.KeyMap[ImGuiKey_X] = GLFW_KEY_X;
-    io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
-    io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 }
 
 foeResultSet foeImGuiRenderer::initialize(foeGfxSession session,
@@ -528,32 +504,31 @@ void foeImGuiRenderer::mouseInput(foeWsiMouse const *pMouse) noexcept {
     ImGuiIO &io = ImGui::GetIO();
 
     // Buttons down
-    std::fill_n(io.MouseDown, IM_ARRAYSIZE(io.MouseDown), false);
-    for (auto const &it : pMouse->downButtons) {
-        io.MouseDown[it] = true;
-    }
+    for (auto const &it : pMouse->downButtons)
+        io.AddMouseButtonEvent(it, true);
+    for (auto const &it : pMouse->releasedButtons)
+        io.AddMouseButtonEvent(it, false);
 
     // Mouse pos
-    io.MousePos.x = pMouse->position.x;
-    io.MousePos.y = pMouse->position.y;
+    io.AddMousePosEvent(pMouse->position.x, pMouse->position.y);
 
     // Mouse wheel
-    io.MouseWheelH += pMouse->scroll.x;
-    io.MouseWheel += pMouse->scroll.y;
+    io.AddMouseWheelEvent(pMouse->scroll.x, pMouse->scroll.y);
 }
 
 bool foeImGuiRenderer::wantCaptureKeyboard() const noexcept {
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void foeImGuiRenderer::keyboardInput(foeWsiKeyboard const *pKeyboard) noexcept {
+void foeImGuiRenderer::keyboardInput(foeWsiKeyboard const *pKeyboard,
+                                     PFN_ImplKeyToImGuiKey implKeyToImGuiKey) noexcept {
     ImGuiIO &io = ImGui::GetIO();
 
     // Down keys
-    std::fill_n(io.KeysDown, IM_ARRAYSIZE(io.KeysDown), false);
-    for (auto const &it : pKeyboard->downKeys) {
-        io.KeysDown[it] = true;
-    }
+    for (auto const &it : pKeyboard->downKeys)
+        io.AddKeyEvent(implKeyToImGuiKey(it), true);
+    for (auto const &it : pKeyboard->releasedKeys)
+        io.AddKeyEvent(implKeyToImGuiKey(it), false);
 
     // Character
     if (pKeyboard->unicodeChar != 0) {

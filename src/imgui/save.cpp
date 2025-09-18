@@ -110,8 +110,12 @@ void foeImGuiSave::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) 
     }
 
     if (pData->mSaveFileDialog) {
-        ImGuiFileDialog::Instance()->OpenModal("SaveToLocation", "Choose File", nullptr, ".", 1,
-                                               nullptr, ImGuiFileDialogFlags_ConfirmOverwrite);
+        IGFD::FileDialogConfig config;
+        config.path = ".";
+        config.countSelectionMax = 1;
+        config.flags = ImGuiFileDialogFlags_ConfirmOverwrite;
+
+        ImGuiFileDialog::Instance()->OpenDialog("SaveToLocation", "Choose File", nullptr, config);
         pData->mSaveFileDialog = false;
     }
 
