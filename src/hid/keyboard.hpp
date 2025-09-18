@@ -1,14 +1,14 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_WSI_KEYBOARD_HPP
-#define FOE_WSI_KEYBOARD_HPP
+#ifndef HID_KEYBOARD_HPP
+#define HID_KEYBOARD_HPP
 
 #include <cstdint>
 #include <set>
 
-struct foeWsiKeyboard {
+struct KeyboardInput {
     /// Unicode character currently active
     uint32_t unicodeChar;
     // Only the last pressed key can be repeated
@@ -35,6 +35,14 @@ struct foeWsiKeyboard {
     inline bool keyDown(uint32_t key) const noexcept {
         return downKeys.find(key) != downKeys.end();
     }
+
+    void preprocessing() {
+        unicodeChar = 0;
+        repeatKey = 0;
+
+        pressedKeys.clear();
+        releasedKeys.clear();
+    }
 };
 
-#endif // FOE_WSI_KEYBOARD_HPP
+#endif // HID_KEYBOARD_HPP

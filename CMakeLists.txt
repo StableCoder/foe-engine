@@ -25,16 +25,6 @@ option(EDITOR_MODE "Build with the editor UI capability" OFF)
 cmake_dependent_option(
   IMGUI_DEMO "Build with the ImGui demo in the bringup app" OFF EDITOR_MODE OFF)
 
-# WSI Loader/Implementation Settings
-option(
-  WSI_LOADER
-  "Compile/link the WSI loader library (implementations are shared objects)" ON)
-set(WSI_LIBRARY
-    "glfw3"
-    CACHE
-      STRING
-      "WSI library linked/loaded by default (passed via compile definitions)")
-
 # XR Settings
 if(APPLE)
   option(XR_SUPPORT "Compile/link XR device support" OFF)
@@ -215,12 +205,6 @@ target_code_coverage(
   foe_position
   foe_simulation)
 
-if(WSI_LOADER)
-  target_link_libraries(foe_bringup_lib PUBLIC foe_wsi_loader)
-else()
-  target_link_libraries(foe_bringup_lib PUBLIC foe_wsi_${WSI_LIBRARY})
-endif()
-
 if(XR_SUPPORT)
   target_link_libraries(foe_bringup_lib PUBLIC foe_xr_openxr foe_xr_openxr_vk)
 else()
@@ -238,8 +222,7 @@ target_link_libraries(
          foe_graphics_resource_imgui
          foe_position_imgui
          foe_physics_imgui
-         foe_simulation_imgui
-         foe_wsi_imgui)
+         foe_simulation_imgui)
 
 if(IMGUI_DEMO)
   target_compile_definitions(foe_bringup_imgui PUBLIC IMGUI_SHOW_DEMO)

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,7 +18,9 @@
 
 #include "per_frame_data.hpp"
 #include "settings.hpp"
-#include "window.hpp"
+
+// WSI
+#include "wsi_glfw/window.hpp"
 
 #include <array>
 #include <memory>
@@ -32,7 +34,6 @@
 #include <foe/imgui/vk/renderer.hpp>
 #include <foe/simulation/imgui/group_data.hpp>
 #include <foe/simulation/imgui/registrar.hpp>
-#include <foe/wsi/imgui/window.hpp>
 #include <imgui.h>
 
 #include "imgui/developer_console.hpp"
@@ -41,6 +42,7 @@
 #include "imgui/resource_list.hpp"
 #include "imgui/save.hpp"
 #include "imgui/termination.hpp"
+#include "imgui/window.hpp"
 
 #ifdef IMGUI_SHOW_DEMO
 #include "imgui/demo.hpp"
@@ -65,7 +67,7 @@ struct Application {
     foeSimulation *pSimulationSet{nullptr};
 
     // I/O
-    std::array<WindowData, 1> windowData;
+    std::array<GLFW_WindowData, 1> windowData;
     FrameTimer frameTime;
 
     // XR
@@ -93,7 +95,7 @@ struct Application {
     foeImGuiDeveloperConsole devConsole;
     foeImGuiTermination fileTermination;
     foeImGuiFrameTimeInfo viewFrameTimeInfo{&frameTime};
-    foeWsiImGuiWindow windowInfo;
+    foeImGuiWindow windowInfo;
     foeImGuiSave uiSave;
 
 #ifdef IMGUI_SHOW_DEMO

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@
 
 #include <FreeImage.h>
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
 #include <foe/graphics/vk/render_graph.hpp>
@@ -27,9 +28,6 @@
 #include <foe/physics/type_defs.h>
 #include <foe/quaternion_math.hpp>
 #include <foe/simulation/simulation.hpp>
-#include <foe/wsi/keyboard.hpp>
-#include <foe/wsi/mouse.hpp>
-#include <foe/wsi/vulkan.h>
 
 #include "graphics.hpp"
 #include "log.hpp"
@@ -40,6 +38,9 @@
 #include "simulation/armature_state.h"
 #include "simulation/render_system.hpp"
 #include "simulation/type_defs.h"
+#include "vk_result.h"
+#include "wsi_glfw/imgui.hpp"
+#include "wsi_glfw/window.hpp"
 
 #ifdef FOE_XR_SUPPORT
 #include <foe/xr/openxr/runtime.h>
@@ -53,10 +54,6 @@
 #include <foe/imgui/vk/render_graph_job_imgui.hpp>
 
 #include "imgui/register.hpp"
-#endif
-
-#ifdef WSI_LOADER
-#include <foe/wsi/loader.h>
 #endif
 
 #include <thread>
@@ -162,22 +159,13 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     pResourceListUI->registerUI(&imguiState);
 #endif
 
-#ifdef WSI_LOADER
-    std::string wsiImplementation = DEFAULT_WSI_IMPLEMENTATION;
-    if (!settings.window.implementation.empty())
-        wsiImplementation = settings.window.implementation;
-
-    if (!foeWsiLoadImplementation(wsiImplementation.data())) {
-        END_PROGRAM_TUPLE
-    }
-#endif
-
     {
         for (auto &it : windowData) {
-            result = foeWsiCreateWindow(settings.window.width, settings.window.height, "FoE Engine",
-                                        true, &it.window);
-            if (result.value != FOE_SUCCESS)
-                ERRC_END_PROGRAM_TUPLE
+            bool result =
+                createGlfwWindow(settings.window.width, settings.window.height, "FoE Engine", true,
+                                 &it.pWindow, &it.mouse, &it.keyboard, &it.resized);
+            if (!result)
+                std::abort();
 
             it.position = glm::vec3{0.f, 0.f, -17.5f};
             it.orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
@@ -186,7 +174,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             it.farZ = 50;
 
 #ifdef EDITOR_MODE
-            windowInfo.addWindow(it.window);
+            imguiAddGlfwWindow(&windowInfo, it.pWindow, &it.keyboard, &it.mouse);
 #endif
         }
 
@@ -199,16 +187,32 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         }
 #endif
 
+        std::vector<std::string> vkInstanceExtensions;
+
+        { // wsi - extensions
+            uint32_t extensionCount;
+            char const **ppExtensionNames;
+
+            // glfw
+            if (!glfwVulkanSupported())
+                std::abort();
+
+            ppExtensionNames = glfwGetRequiredInstanceExtensions(&extensionCount);
+            for (uint32_t i = 0; i < extensionCount; ++i) {
+                vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
+            }
+        }
+
         result =
-            createGfxRuntime(xrRuntime, settings.window.enableWSI, settings.graphics.validation,
-                             settings.graphics.debugLogging, &gfxRuntime);
+            createGfxRuntime(xrRuntime, settings.graphics.validation,
+                             settings.graphics.debugLogging, {}, vkInstanceExtensions, &gfxRuntime);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
         }
 
         for (auto &it : windowData) {
-            result = foeWsiWindowGetVkSurface(it.window, foeGfxVkGetRuntimeInstance(gfxRuntime),
-                                              &it.surface);
+            result = vk_to_foeResult(glfwCreateWindowSurface(foeGfxVkGetRuntimeInstance(gfxRuntime),
+                                                             it.pWindow, nullptr, &it.surface));
             if (result.value != FOE_SUCCESS)
                 ERRC_END_PROGRAM_TUPLE
         }
@@ -267,7 +271,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
     imguiRenderer.resize(settings.window.width, settings.window.height);
     float xScale, yScale;
-    foeWsiWindowGetContentScale(windowData[0].window, &xScale, &yScale);
+    glfwGetWindowContentScale(windowData[0].pWindow, &xScale, &yScale);
     imguiRenderer.rescale(xScale, yScale);
 #endif
 
@@ -353,7 +357,7 @@ void Application::deinitialize() {
         it.renderView = FOE_NULL_HANDLE;
 
 #ifdef EDITOR_MODE
-        windowInfo.removeWindow(it.window);
+        windowInfo.removeWindow(it.pWindow);
 #endif
         if (it.gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
             foeGfxDestroyRenderTarget(it.gfxOffscreenRenderTarget);
@@ -366,9 +370,9 @@ void Application::deinitialize() {
             vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), it.surface, nullptr);
         it.surface = VK_NULL_HANDLE;
 
-        if (it.window != FOE_NULL_HANDLE)
-            foeWsiDestroyWindow(it.window);
-        it.window = FOE_NULL_HANDLE;
+        if (it.pWindow)
+            destroyGlfwWindow(&it);
+        it.pWindow = FOE_NULL_HANDLE;
     }
 
     // Cleanup graphics
@@ -421,8 +425,8 @@ void Application::deinitialize() {
 namespace {
 
 void processUserInput(double timeElapsedInSeconds,
-                      foeWsiKeyboard const *pKeyboard,
-                      foeWsiMouse const *pMouse,
+                      KeyboardInput const *pKeyboard,
+                      MouseInput const *pMouse,
                       glm::vec3 *pPosition,
                       glm::quat *pOrientation) {
     constexpr float movementMultiplier = 10.f;
@@ -473,251 +477,6 @@ void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
     vkDestroySemaphore(foeGfxVkGetDevice(session), semaphore, nullptr);
 }
 
-ImGuiKey ImGui_ImplGlfw_KeyToImGuiKey(int keycode) {
-    switch (keycode) {
-    case GLFW_KEY_TAB:
-        return ImGuiKey_Tab;
-    case GLFW_KEY_LEFT:
-        return ImGuiKey_LeftArrow;
-    case GLFW_KEY_RIGHT:
-        return ImGuiKey_RightArrow;
-    case GLFW_KEY_UP:
-        return ImGuiKey_UpArrow;
-    case GLFW_KEY_DOWN:
-        return ImGuiKey_DownArrow;
-    case GLFW_KEY_PAGE_UP:
-        return ImGuiKey_PageUp;
-    case GLFW_KEY_PAGE_DOWN:
-        return ImGuiKey_PageDown;
-    case GLFW_KEY_HOME:
-        return ImGuiKey_Home;
-    case GLFW_KEY_END:
-        return ImGuiKey_End;
-    case GLFW_KEY_INSERT:
-        return ImGuiKey_Insert;
-    case GLFW_KEY_DELETE:
-        return ImGuiKey_Delete;
-    case GLFW_KEY_BACKSPACE:
-        return ImGuiKey_Backspace;
-    case GLFW_KEY_SPACE:
-        return ImGuiKey_Space;
-    case GLFW_KEY_ENTER:
-        return ImGuiKey_Enter;
-    case GLFW_KEY_ESCAPE:
-        return ImGuiKey_Escape;
-    case GLFW_KEY_APOSTROPHE:
-        return ImGuiKey_Apostrophe;
-    case GLFW_KEY_COMMA:
-        return ImGuiKey_Comma;
-    case GLFW_KEY_MINUS:
-        return ImGuiKey_Minus;
-    case GLFW_KEY_PERIOD:
-        return ImGuiKey_Period;
-    case GLFW_KEY_SLASH:
-        return ImGuiKey_Slash;
-    case GLFW_KEY_SEMICOLON:
-        return ImGuiKey_Semicolon;
-    case GLFW_KEY_EQUAL:
-        return ImGuiKey_Equal;
-    case GLFW_KEY_LEFT_BRACKET:
-        return ImGuiKey_LeftBracket;
-    case GLFW_KEY_BACKSLASH:
-        return ImGuiKey_Backslash;
-    case GLFW_KEY_WORLD_1:
-        return ImGuiKey_Oem102;
-    case GLFW_KEY_WORLD_2:
-        return ImGuiKey_Oem102;
-    case GLFW_KEY_RIGHT_BRACKET:
-        return ImGuiKey_RightBracket;
-    case GLFW_KEY_GRAVE_ACCENT:
-        return ImGuiKey_GraveAccent;
-    case GLFW_KEY_CAPS_LOCK:
-        return ImGuiKey_CapsLock;
-    case GLFW_KEY_SCROLL_LOCK:
-        return ImGuiKey_ScrollLock;
-    case GLFW_KEY_NUM_LOCK:
-        return ImGuiKey_NumLock;
-    case GLFW_KEY_PRINT_SCREEN:
-        return ImGuiKey_PrintScreen;
-    case GLFW_KEY_PAUSE:
-        return ImGuiKey_Pause;
-    case GLFW_KEY_KP_0:
-        return ImGuiKey_Keypad0;
-    case GLFW_KEY_KP_1:
-        return ImGuiKey_Keypad1;
-    case GLFW_KEY_KP_2:
-        return ImGuiKey_Keypad2;
-    case GLFW_KEY_KP_3:
-        return ImGuiKey_Keypad3;
-    case GLFW_KEY_KP_4:
-        return ImGuiKey_Keypad4;
-    case GLFW_KEY_KP_5:
-        return ImGuiKey_Keypad5;
-    case GLFW_KEY_KP_6:
-        return ImGuiKey_Keypad6;
-    case GLFW_KEY_KP_7:
-        return ImGuiKey_Keypad7;
-    case GLFW_KEY_KP_8:
-        return ImGuiKey_Keypad8;
-    case GLFW_KEY_KP_9:
-        return ImGuiKey_Keypad9;
-    case GLFW_KEY_KP_DECIMAL:
-        return ImGuiKey_KeypadDecimal;
-    case GLFW_KEY_KP_DIVIDE:
-        return ImGuiKey_KeypadDivide;
-    case GLFW_KEY_KP_MULTIPLY:
-        return ImGuiKey_KeypadMultiply;
-    case GLFW_KEY_KP_SUBTRACT:
-        return ImGuiKey_KeypadSubtract;
-    case GLFW_KEY_KP_ADD:
-        return ImGuiKey_KeypadAdd;
-    case GLFW_KEY_KP_ENTER:
-        return ImGuiKey_KeypadEnter;
-    case GLFW_KEY_KP_EQUAL:
-        return ImGuiKey_KeypadEqual;
-    case GLFW_KEY_LEFT_SHIFT:
-        return ImGuiKey_LeftShift;
-    case GLFW_KEY_LEFT_CONTROL:
-        return ImGuiKey_LeftCtrl;
-    case GLFW_KEY_LEFT_ALT:
-        return ImGuiKey_LeftAlt;
-    case GLFW_KEY_LEFT_SUPER:
-        return ImGuiKey_LeftSuper;
-    case GLFW_KEY_RIGHT_SHIFT:
-        return ImGuiKey_RightShift;
-    case GLFW_KEY_RIGHT_CONTROL:
-        return ImGuiKey_RightCtrl;
-    case GLFW_KEY_RIGHT_ALT:
-        return ImGuiKey_RightAlt;
-    case GLFW_KEY_RIGHT_SUPER:
-        return ImGuiKey_RightSuper;
-    case GLFW_KEY_MENU:
-        return ImGuiKey_Menu;
-    case GLFW_KEY_0:
-        return ImGuiKey_0;
-    case GLFW_KEY_1:
-        return ImGuiKey_1;
-    case GLFW_KEY_2:
-        return ImGuiKey_2;
-    case GLFW_KEY_3:
-        return ImGuiKey_3;
-    case GLFW_KEY_4:
-        return ImGuiKey_4;
-    case GLFW_KEY_5:
-        return ImGuiKey_5;
-    case GLFW_KEY_6:
-        return ImGuiKey_6;
-    case GLFW_KEY_7:
-        return ImGuiKey_7;
-    case GLFW_KEY_8:
-        return ImGuiKey_8;
-    case GLFW_KEY_9:
-        return ImGuiKey_9;
-    case GLFW_KEY_A:
-        return ImGuiKey_A;
-    case GLFW_KEY_B:
-        return ImGuiKey_B;
-    case GLFW_KEY_C:
-        return ImGuiKey_C;
-    case GLFW_KEY_D:
-        return ImGuiKey_D;
-    case GLFW_KEY_E:
-        return ImGuiKey_E;
-    case GLFW_KEY_F:
-        return ImGuiKey_F;
-    case GLFW_KEY_G:
-        return ImGuiKey_G;
-    case GLFW_KEY_H:
-        return ImGuiKey_H;
-    case GLFW_KEY_I:
-        return ImGuiKey_I;
-    case GLFW_KEY_J:
-        return ImGuiKey_J;
-    case GLFW_KEY_K:
-        return ImGuiKey_K;
-    case GLFW_KEY_L:
-        return ImGuiKey_L;
-    case GLFW_KEY_M:
-        return ImGuiKey_M;
-    case GLFW_KEY_N:
-        return ImGuiKey_N;
-    case GLFW_KEY_O:
-        return ImGuiKey_O;
-    case GLFW_KEY_P:
-        return ImGuiKey_P;
-    case GLFW_KEY_Q:
-        return ImGuiKey_Q;
-    case GLFW_KEY_R:
-        return ImGuiKey_R;
-    case GLFW_KEY_S:
-        return ImGuiKey_S;
-    case GLFW_KEY_T:
-        return ImGuiKey_T;
-    case GLFW_KEY_U:
-        return ImGuiKey_U;
-    case GLFW_KEY_V:
-        return ImGuiKey_V;
-    case GLFW_KEY_W:
-        return ImGuiKey_W;
-    case GLFW_KEY_X:
-        return ImGuiKey_X;
-    case GLFW_KEY_Y:
-        return ImGuiKey_Y;
-    case GLFW_KEY_Z:
-        return ImGuiKey_Z;
-    case GLFW_KEY_F1:
-        return ImGuiKey_F1;
-    case GLFW_KEY_F2:
-        return ImGuiKey_F2;
-    case GLFW_KEY_F3:
-        return ImGuiKey_F3;
-    case GLFW_KEY_F4:
-        return ImGuiKey_F4;
-    case GLFW_KEY_F5:
-        return ImGuiKey_F5;
-    case GLFW_KEY_F6:
-        return ImGuiKey_F6;
-    case GLFW_KEY_F7:
-        return ImGuiKey_F7;
-    case GLFW_KEY_F8:
-        return ImGuiKey_F8;
-    case GLFW_KEY_F9:
-        return ImGuiKey_F9;
-    case GLFW_KEY_F10:
-        return ImGuiKey_F10;
-    case GLFW_KEY_F11:
-        return ImGuiKey_F11;
-    case GLFW_KEY_F12:
-        return ImGuiKey_F12;
-    case GLFW_KEY_F13:
-        return ImGuiKey_F13;
-    case GLFW_KEY_F14:
-        return ImGuiKey_F14;
-    case GLFW_KEY_F15:
-        return ImGuiKey_F15;
-    case GLFW_KEY_F16:
-        return ImGuiKey_F16;
-    case GLFW_KEY_F17:
-        return ImGuiKey_F17;
-    case GLFW_KEY_F18:
-        return ImGuiKey_F18;
-    case GLFW_KEY_F19:
-        return ImGuiKey_F19;
-    case GLFW_KEY_F20:
-        return ImGuiKey_F20;
-    case GLFW_KEY_F21:
-        return ImGuiKey_F21;
-    case GLFW_KEY_F22:
-        return ImGuiKey_F22;
-    case GLFW_KEY_F23:
-        return ImGuiKey_F23;
-    case GLFW_KEY_F24:
-        return ImGuiKey_F24;
-    default:
-        return ImGuiKey_None;
-    }
-}
-
 } // namespace
 
 int Application::mainloop() {
@@ -730,13 +489,13 @@ int Application::mainloop() {
     uint32_t frameIndex = UINT32_MAX;
 
     for (int i = windowData.size() - 1; i >= 0; --i) {
-        foeWsiWindowShow(windowData[i].window);
+        glfwShowWindow(windowData[i].pWindow);
     }
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
     FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Entering main loop")
-    while (!foeWsiWindowGetShouldClose(windowData[0].window)
+    while (!glfwWindowShouldClose(windowData[0].pWindow)
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
@@ -833,9 +592,12 @@ int Application::mainloop() {
             pSimulationSet, FOE_BRINGUP_STRUCTURE_TYPE_RENDER_SYSTEM));
 
         // Process Window Events
-        for (auto &it : windowData)
-            foeWsiWindowProcessing(it.window);
-        foeWsiGlobalProcessing();
+        for (auto &it : windowData) {
+            it.mouse.preprocessing();
+            it.keyboard.preprocessing();
+            it.resized = false;
+        }
+        glfwPollEvents();
 
 #ifdef FOE_XR_SUPPORT
         // Process XR Events
@@ -850,9 +612,22 @@ int Application::mainloop() {
 #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
             if (i == 0) {
-                imguiRenderer.keyboardInput(foeWsiGetKeyboard(window.window),
-                                            ImGui_ImplGlfw_KeyToImGuiKey);
-                imguiRenderer.mouseInput(foeWsiGetMouse(window.window));
+                std::vector<uint32_t> keysPressed{window.keyboard.pressedKeys.cbegin(),
+                                                  window.keyboard.pressedKeys.cend()};
+                std::vector<uint32_t> keysReleased{window.keyboard.releasedKeys.cbegin(),
+                                                   window.keyboard.releasedKeys.cend()};
+                imguiRenderer.keyboardInput(window.keyboard.unicodeChar, imguiGlfwKeyConvert,
+                                            keysPressed.data(), keysPressed.size(),
+                                            keysReleased.data(), keysReleased.size());
+
+                std::vector<uint32_t> buttonsPressed{window.mouse.pressedButtons.cbegin(),
+                                                     window.mouse.pressedButtons.cend()};
+                std::vector<uint32_t> buttonsReleased{window.mouse.releasedButtons.cbegin(),
+                                                      window.mouse.releasedButtons.cend()};
+                imguiRenderer.mouseInput(window.mouse.position.x, window.mouse.position.y,
+                                         window.mouse.scroll.x, window.mouse.scroll.y,
+                                         buttonsPressed.data(), buttonsPressed.size(),
+                                         buttonsReleased.data(), buttonsReleased.size());
             }
 
             // If ImGui is capturing, don't pass inputs through from the first window
@@ -860,20 +635,19 @@ int Application::mainloop() {
                 i != 0)
 #endif
             {
-                processUserInput(timeElapsedInSec, foeWsiGetKeyboard(window.window),
-                                 foeWsiGetMouse(window.window), &window.position,
-                                 &window.orientation);
+                processUserInput(timeElapsedInSec, &window.keyboard, &window.mouse,
+                                 &window.position, &window.orientation);
             }
 
             // Check if window was resized, and if so request associated swapchains to be rebuilt
-            if (foeWsiWindowResized(window.window)) {
+            if (window.resized) {
                 window.needSwapchainRebuild = true;
 
 #ifdef EDITOR_MODE
                 // ImGui only follows primary/first window size
                 if (i == 0) {
                     int width, height;
-                    foeWsiWindowGetSize(window.window, &width, &height);
+                    glfwGetWindowSize(window.pWindow, &width, &height);
                     imguiRenderer.resize(width, height);
                 }
 #endif
@@ -942,17 +716,17 @@ int Application::mainloop() {
             // Swapchain updates if necessary
             for (auto &it : windowData) {
                 // If no window here, skip
-                if (it.window == FOE_NULL_HANDLE)
+                if (it.pWindow == FOE_NULL_HANDLE)
                     continue;
 
-                result = performWindowMaintenance(&it, gfxSession, gfxDelayedDestructor, globalMSAA,
-                                                  depthFormat);
+                result = performGlfwWindowMaintenance(&it, gfxSession, gfxDelayedDestructor,
+                                                      globalMSAA, depthFormat);
                 if (result.value != FOE_SUCCESS)
                     ERRC_END_PROGRAM
             }
 
             // Acquire Target Presentation Images
-            std::vector<WindowData *> windowRenderList;
+            std::vector<GLFW_WindowData *> windowRenderList;
             windowRenderList.reserve(windowData.size());
 
             for (auto &it : windowData) {

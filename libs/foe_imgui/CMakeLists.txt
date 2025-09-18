@@ -12,7 +12,7 @@ add_library(foe_imgui)
 add_subdirectory(include)
 add_subdirectory(src)
 
-target_link_libraries(foe_imgui PUBLIC foe_wsi $<BUILD_INTERFACE:imgui>
+target_link_libraries(foe_imgui PUBLIC $<BUILD_INTERFACE:imgui>
                                        $<BUILD_INTERFACE:imgui_file_dialog>)
 
 target_code_coverage(foe_imgui)

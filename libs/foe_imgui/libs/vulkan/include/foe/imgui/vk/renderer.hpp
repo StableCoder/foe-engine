@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,8 +17,6 @@
 typedef ImGuiKey (*PFN_ImplKeyToImGuiKey)(int keycode);
 
 struct ImGuiContext;
-struct foeWsiKeyboard;
-struct foeWsiMouse;
 
 class foeImGuiRenderer {
   public:
@@ -53,13 +51,24 @@ class foeImGuiRenderer {
     FOE_IMGUI_VK_EXPORT
     bool wantCaptureMouse() const noexcept;
     FOE_IMGUI_VK_EXPORT
-    void mouseInput(foeWsiMouse const *pMouse) noexcept;
+    void mouseInput(float posX,
+                    float posY,
+                    float scrollX,
+                    float scrollY,
+                    uint32_t const *pPressedButtons,
+                    uint32_t pressedButtonCount,
+                    uint32_t const *pReleasedButtons,
+                    uint32_t releasedButtonCount) noexcept;
 
     FOE_IMGUI_VK_EXPORT
     bool wantCaptureKeyboard() const noexcept;
     FOE_IMGUI_VK_EXPORT
-    void keyboardInput(foeWsiKeyboard const *pKeyboard,
-                       PFN_ImplKeyToImGuiKey implKeyToImGuiKey) noexcept;
+    void keyboardInput(uint32_t unicodeChar,
+                       PFN_ImplKeyToImGuiKey implKeyToImGuiKey,
+                       uint32_t const *pPressedKeys,
+                       uint32_t pressedKeyCount,
+                       uint32_t const *pReleasedKeys,
+                       uint32_t releasedKeyCount) noexcept;
 
   private:
     VkResult initializeDescriptorPool(VkDevice device);

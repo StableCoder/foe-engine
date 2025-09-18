@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,8 @@ target_sources(
           render_state.cpp
           resource_list.cpp
           save.cpp
-          termination.cpp)
+          termination.cpp
+          window.cpp)
 
 if(IMGUI_DEMO)
   target_sources(foe_bringup_imgui PRIVATE demo.cpp)

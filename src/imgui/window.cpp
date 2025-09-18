@@ -1,13 +1,11 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include <foe/wsi/imgui/window.hpp>
+#include "window.hpp"
 
 #include <fmt/core.h>
 #include <foe/imgui/state.hpp>
-#include <foe/wsi/keyboard.hpp>
-#include <foe/wsi/mouse.hpp>
 #include <imgui.h>
 
 #include <array>
@@ -19,7 +17,7 @@ std::array<char const *, 1> renderMenus{
     "View",
 };
 
-void renderKeyboardUI(foeWsiKeyboard const *pKeyboard) {
+void renderKeyboardUI(KeyboardInput const *pKeyboard) {
     // Handle
     ImGui::Text("Handle: %p", pKeyboard);
 
@@ -45,7 +43,7 @@ void renderKeyboardUI(foeWsiKeyboard const *pKeyboard) {
     ImGui::EndTable();
 }
 
-void renderMouseUI(foeWsiMouse const *pMouse) {
+void renderMouseUI(MouseInput const *pMouse) {
     // Handle
     ImGui::Text("Handle: %p", pMouse);
 
@@ -78,15 +76,29 @@ void renderMouseUI(foeWsiMouse const *pMouse) {
 
 } // namespace
 
-bool foeWsiImGuiWindow::addWindow(foeWsiWindow window) {
+bool foeImGuiWindow::addWindow(void *pContext,
+                               PFN_WindowTitle pfnTitle,
+                               PFN_WindowTerminationCalled pfnTerminationCalled,
+                               PFN_WindowSize pfnSize,
+                               PFN_WindowVisible pfnVisible,
+                               PFN_WindowContentScale pfnContentScale,
+                               KeyboardInput const *pKeyboard,
+                               MouseInput const *pMouse) {
     for (auto const &it : mWindowList) {
-        if (it.window == window) {
+        if (it.pContext == pContext) {
             return false;
         }
     }
 
     mWindowList.emplace_back(WindowData{
-        .window = window,
+        .pContext = pContext,
+        .pfnTitle = pfnTitle,
+        .pfnTerminationCalled = pfnTerminationCalled,
+        .pfnSize = pfnSize,
+        .pfnVisible = pfnVisible,
+        .pfnContentScale = pfnContentScale,
+        .pKeyboard = pKeyboard,
+        .pMouse = pMouse,
         .open = false,
         .focus = false,
     });
@@ -94,9 +106,9 @@ bool foeWsiImGuiWindow::addWindow(foeWsiWindow window) {
     return true;
 }
 
-bool foeWsiImGuiWindow::removeWindow(foeWsiWindow window) {
+bool foeImGuiWindow::removeWindow(void *pContext) {
     for (auto it = mWindowList.begin(); it != mWindowList.end(); ++it) {
-        if (it->window == window) {
+        if (it->pContext == pContext) {
             mWindowList.erase(it);
             return true;
         }
@@ -105,21 +117,21 @@ bool foeWsiImGuiWindow::removeWindow(foeWsiWindow window) {
     return false;
 }
 
-bool foeWsiImGuiWindow::registerUI(foeImGuiState *pState) {
-    return pState->addUI(this, foeWsiImGuiWindow::renderMenuElements,
-                         foeWsiImGuiWindow::renderCustomUI, renderMenus.data(), renderMenus.size());
+bool foeImGuiWindow::registerUI(foeImGuiState *pState) {
+    return pState->addUI(this, foeImGuiWindow::renderMenuElements, foeImGuiWindow::renderCustomUI,
+                         renderMenus.data(), renderMenus.size());
 }
 
-void foeWsiImGuiWindow::deregisterUI(foeImGuiState *pState) {
-    pState->removeUI(this, foeWsiImGuiWindow::renderMenuElements, foeWsiImGuiWindow::renderCustomUI,
+void foeImGuiWindow::deregisterUI(foeImGuiState *pState) {
+    pState->removeUI(this, foeImGuiWindow::renderMenuElements, foeImGuiWindow::renderCustomUI,
                      renderMenus.data(), renderMenus.size());
 }
 
-bool foeWsiImGuiWindow::renderMenuElements(ImGuiContext *pImGuiContext,
-                                           void *pUserData,
-                                           char const *pMenu) {
+bool foeImGuiWindow::renderMenuElements(ImGuiContext *pImGuiContext,
+                                        void *pUserData,
+                                        char const *pMenu) {
     ImGui::SetCurrentContext(pImGuiContext);
-    auto *pData = static_cast<foeWsiImGuiWindow *>(pUserData);
+    auto *pData = static_cast<foeImGuiWindow *>(pUserData);
     std::string_view menu{pMenu};
 
     if (menu == "View") {
@@ -129,18 +141,18 @@ bool foeWsiImGuiWindow::renderMenuElements(ImGuiContext *pImGuiContext,
     return false;
 }
 
-void foeWsiImGuiWindow::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) {
+void foeImGuiWindow::renderCustomUI(ImGuiContext *pImGuiContext, void *pUserData) {
     ImGui::SetCurrentContext(pImGuiContext);
-    auto *pData = static_cast<foeWsiImGuiWindow *>(pUserData);
+    auto *pData = static_cast<foeImGuiWindow *>(pUserData);
 
     pData->customUI();
 }
 
-bool foeWsiImGuiWindow::viewMainMenu() {
+bool foeImGuiWindow::viewMainMenu() {
     if (ImGui::BeginMenu("Windows", !mWindowList.empty())) {
         for (auto &it : mWindowList) {
-            std::string menuLabel = fmt::format("{} : {}", static_cast<void *>(it.window),
-                                                foeWsiWindowGetTitle(it.window));
+            std::string menuLabel =
+                fmt::format("{} : {}", static_cast<void *>(it.pContext), it.pfnTitle(it.pContext));
             if (ImGui::MenuItem(menuLabel.data())) {
                 it.open = true;
                 it.focus = true;
@@ -153,28 +165,27 @@ bool foeWsiImGuiWindow::viewMainMenu() {
     return true;
 }
 
-void foeWsiImGuiWindow::customUI() {
+void foeImGuiWindow::customUI() {
     for (auto &it : mWindowList) {
         if (!it.open)
             continue;
 
         ImGui::SetNextWindowSize(ImVec2(0, 0), 0);
-        std::string imguiElementName =
-            fmt::format("foeWsiWindow - ({}) {}", static_cast<void *>(it.window),
-                        foeWsiWindowGetTitle(it.window));
+        std::string imguiElementName = fmt::format(
+            "Window - ({}) {}", static_cast<void *>(it.pContext), it.pfnTitle(it.pContext));
         if (!ImGui::Begin(imguiElementName.data(), &it.open)) {
             ImGui::End();
             continue;
         }
 
         // Handle
-        ImGui::Text("Handle: %p", static_cast<void *>(it.window));
+        ImGui::Text("Handle: %p", static_cast<void *>(it.pContext));
 
         // Title
-        ImGui::Text("Title: %s", foeWsiWindowGetTitle(it.window));
+        ImGui::Text("Title: %s", it.pfnTitle(it.pContext));
 
         // Termination called
-        if (foeWsiWindowGetShouldClose(it.window)) {
+        if (it.pfnTerminationCalled(it.pContext)) {
             ImGui::Text("Terminate: true");
         } else {
             ImGui::Text("Terminate: false");
@@ -182,11 +193,11 @@ void foeWsiImGuiWindow::customUI() {
 
         // Size
         int width, height;
-        foeWsiWindowGetSize(it.window, &width, &height);
+        it.pfnSize(it.pContext, &width, &height);
         ImGui::Text("Width/Height: %i x %i", width, height);
 
         // Visible
-        if (foeWsiWindowVisible(it.window)) {
+        if (it.pfnVisible(it.pContext)) {
             ImGui::Text("Visible: true");
         } else {
             ImGui::Text("Visible: false");
@@ -194,18 +205,18 @@ void foeWsiImGuiWindow::customUI() {
 
         // Scale
         float xScale, yScale;
-        foeWsiWindowGetContentScale(it.window, &xScale, &yScale);
+        it.pfnContentScale(it.pContext, &xScale, &yScale);
         ImGui::Text("Content Scale: %.2f x %.2f", xScale, yScale);
 
         // Keyboard
         ImGui::Separator();
         ImGui::Text("Keyboard");
-        renderKeyboardUI(foeWsiGetKeyboard(it.window));
+        renderKeyboardUI(it.pKeyboard);
 
         // Mouse
         ImGui::Separator();
         ImGui::Text("Mouse");
-        renderMouseUI(foeWsiGetMouse(it.window));
+        renderMouseUI(it.pMouse);
 
         ImGui::End();
     }

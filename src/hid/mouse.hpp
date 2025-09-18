@@ -1,14 +1,14 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef FOE_WSI_MOUSE_HPP
-#define FOE_WSI_MOUSE_HPP
+#ifndef HID_MOUSE_HPP
+#define HID_MOUSE_HPP
 
 #include <cstdint>
 #include <set>
 
-struct foeWsiMouse {
+struct MouseInput {
     /// Holds the mouse cursor's X,Y coordinates
     struct Vec2 {
         double x;
@@ -49,6 +49,16 @@ struct foeWsiMouse {
     inline bool buttonDown(uint32_t button) const noexcept {
         return downButtons.find(button) != downButtons.end();
     }
+
+    void preprocessing() {
+        oldInWindow = inWindow;
+        oldPosition = position;
+
+        scroll = {0, 0};
+
+        pressedButtons.clear();
+        releasedButtons.clear();
+    }
 };
 
-#endif // FOE_WSI_MOUSE_HPP
+#endif // HID_MOUSE_HPP

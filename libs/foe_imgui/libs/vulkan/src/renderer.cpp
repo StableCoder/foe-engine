@@ -1,16 +1,13 @@
-// Copyright (C) 2020-2024 George Cave.
+// Copyright (C) 2020-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include <foe/imgui/vk/renderer.hpp>
 
-#include <GLFW/glfw3.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/upload_request.h>
 #include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/session.h>
-#include <foe/wsi/keyboard.hpp>
-#include <foe/wsi/mouse.hpp>
 #include <imgui.h>
 
 #include "fragment_shader.h"
@@ -500,39 +497,50 @@ void foeImGuiRenderer::rescale(float xScale, float yScale) {
 
 bool foeImGuiRenderer::wantCaptureMouse() const noexcept { return ImGui::GetIO().WantCaptureMouse; }
 
-void foeImGuiRenderer::mouseInput(foeWsiMouse const *pMouse) noexcept {
+void foeImGuiRenderer::mouseInput(float posX,
+                                  float posY,
+                                  float scrollX,
+                                  float scrollY,
+                                  uint32_t const *pPressedButtons,
+                                  uint32_t pressedButtonCount,
+                                  uint32_t const *pReleasedButtons,
+                                  uint32_t releasedButtonCount) noexcept {
     ImGuiIO &io = ImGui::GetIO();
 
-    // Buttons down
-    for (auto const &it : pMouse->downButtons)
-        io.AddMouseButtonEvent(it, true);
-    for (auto const &it : pMouse->releasedButtons)
-        io.AddMouseButtonEvent(it, false);
+    // buttons
+    for (uint32_t i = 0; i < pressedButtonCount; ++i)
+        io.AddMouseButtonEvent(pPressedButtons[i], true);
+    for (uint32_t i = 0; i < releasedButtonCount; ++i)
+        io.AddMouseButtonEvent(pReleasedButtons[i], false);
 
     // Mouse pos
-    io.AddMousePosEvent(pMouse->position.x, pMouse->position.y);
+    io.AddMousePosEvent(posX, posY);
 
     // Mouse wheel
-    io.AddMouseWheelEvent(pMouse->scroll.x, pMouse->scroll.y);
+    io.AddMouseWheelEvent(scrollX, scrollY);
 }
 
 bool foeImGuiRenderer::wantCaptureKeyboard() const noexcept {
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void foeImGuiRenderer::keyboardInput(foeWsiKeyboard const *pKeyboard,
-                                     PFN_ImplKeyToImGuiKey implKeyToImGuiKey) noexcept {
+void foeImGuiRenderer::keyboardInput(uint32_t unicodeChar,
+                                     PFN_ImplKeyToImGuiKey implKeyToImGuiKey,
+                                     uint32_t const *pPressedKeys,
+                                     uint32_t pressedKeyCount,
+                                     uint32_t const *pReleasedKeys,
+                                     uint32_t releasedKeyCount) noexcept {
     ImGuiIO &io = ImGui::GetIO();
 
-    // Down keys
-    for (auto const &it : pKeyboard->downKeys)
-        io.AddKeyEvent(implKeyToImGuiKey(it), true);
-    for (auto const &it : pKeyboard->releasedKeys)
-        io.AddKeyEvent(implKeyToImGuiKey(it), false);
+    // keys
+    for (uint32_t i = 0; i < pressedKeyCount; ++i)
+        io.AddKeyEvent(implKeyToImGuiKey(pPressedKeys[i]), true);
+    for (uint32_t i = 0; i < releasedKeyCount; ++i)
+        io.AddKeyEvent(implKeyToImGuiKey(pReleasedKeys[i]), false);
 
     // Character
-    if (pKeyboard->unicodeChar != 0) {
-        io.AddInputCharacter(pKeyboard->unicodeChar);
+    if (unicodeChar != 0) {
+        io.AddInputCharacter(unicodeChar);
     }
 }
 

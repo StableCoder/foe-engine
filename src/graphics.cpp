@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,6 @@
 #include <foe/delimited_string.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
-#include <foe/wsi/vulkan.h>
 
 #include "log.hpp"
 #include "result.h"
@@ -25,26 +24,11 @@ static_assert(false, "FoE engine requires at least Vulkan 1.2 support (for timel
 #endif
 
 foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
-                              bool enableWindowing,
                               bool validation,
                               bool debugLogging,
+                              std::vector<std::string> layers,
+                              std::vector<std::string> extensions,
                               foeGfxRuntime *pGfxRuntime) {
-    std::vector<std::string> layers;
-    std::vector<std::string> extensions;
-
-    if (enableWindowing) {
-        uint32_t extensionCount;
-        char const **extensionNames;
-        foeResultSet result = foeWsiWindowGetVulkanExtensions(&extensionCount, &extensionNames);
-        if (result.value != FOE_SUCCESS) {
-            return result;
-        }
-
-        for (uint32_t i = 0; i < extensionCount; ++i) {
-            extensions.emplace_back(extensionNames[i]);
-        }
-    }
-
 #ifdef FOE_XR_SUPPORT
     // OpenXR
     if (xrRuntime != FOE_NULL_HANDLE) {

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,12 +11,14 @@
 #include <foe/xr/runtime.h>
 #include <vulkan/vulkan.h>
 
+#include <string>
 #include <vector>
 
 foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
-                              bool enableWindowing,
                               bool validation,
                               bool debugLogging,
+                              std::vector<std::string> layers,
+                              std::vector<std::string> extensions,
                               foeGfxRuntime *pGfxRuntime);
 
 foeResultSet createGfxSession(foeGfxRuntime gfxRuntime,
