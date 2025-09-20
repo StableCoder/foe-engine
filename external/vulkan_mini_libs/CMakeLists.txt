@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -11,12 +11,6 @@ find_package(Vulkan REQUIRED)
 if(UNIX OR APPLE)
   add_compile_options(-fPIC)
 endif()
-
-# Interface Library
-add_library(khronos_mini_libs INTERFACE)
-
-target_include_directories(khronos_mini_libs
-                           INTERFACE vulkan-mini-libs-2/include)
 
 # Struct Cleanup
 add_library(vk_struct_cleanup STATIC src/struct_cleanup.c)
