@@ -7,14 +7,16 @@ project(foe_graphics_resource_yaml)
 
 # Declaration
 add_library(foe_graphics_resource_yaml SHARED)
+add_library(foe::graphics::resource::yaml ALIAS foe_graphics_resource_yaml)
 
 # Definition
 add_subdirectory(include)
 add_subdirectory(src)
 
 target_link_libraries(
-  foe_graphics_resource_yaml PUBLIC foe_ecs_yaml foe_graphics_resource
-                                    foe_graphics_vk_yaml foe_imex_yaml)
+  foe_graphics_resource_yaml
+  PUBLIC foe_ecs_yaml foe_graphics_resource foe_graphics_vk_yaml foe_imex_yaml
+  PRIVATE vk_struct_compare)
 
 target_code_coverage(foe_graphics_resource_yaml)
 
@@ -24,8 +26,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_graphics_resource_yaml PROPERTY EXPORT_NAME
-                                                        graphics_resource_yaml)
+set_property(TARGET foe_graphics_resource_yaml
+             PROPERTY EXPORT_NAME graphics::resource::yaml)
 
 install(
   TARGETS foe_graphics_resource_yaml

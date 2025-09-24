@@ -7,6 +7,7 @@ project(foe_resource_imgui)
 
 # Declaration
 add_library(foe_resource_imgui)
+add_library(foe::resource::imgui ALIAS foe_resource_imgui)
 
 # Definition
 add_subdirectory(include)
@@ -23,7 +24,7 @@ else()
 endif()
 
 # install
-set_property(TARGET foe_resource_imgui PROPERTY EXPORT_NAME resource_imgui)
+set_property(TARGET foe_resource_imgui PROPERTY EXPORT_NAME resource::imgui)
 
 install(
   TARGETS foe_resource_imgui

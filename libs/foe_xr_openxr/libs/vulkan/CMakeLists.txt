@@ -7,12 +7,16 @@ project(foe_xr_openxr_vk)
 
 # Declaration
 add_library(foe_xr_openxr_vk)
+add_library(foe::xr::openxr::vk ALIAS foe_xr_openxr_vk)
 
 # Definition
 add_subdirectory(include)
 add_subdirectory(src)
 
-target_link_libraries(foe_xr_openxr_vk PUBLIC foe_xr_openxr foe_graphics_vk)
+target_link_libraries(
+  foe_xr_openxr_vk
+  PUBLIC foe_xr_openxr foe_graphics_vk
+  PRIVATE vk_result_serialization)
 
 target_code_coverage(foe_xr_openxr_vk)
 
@@ -22,7 +26,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_xr_openxr_vk PROPERTY EXPORT_NAME xr_openxr_vk)
+set_property(TARGET foe_xr_openxr_vk PROPERTY EXPORT_NAME xr::openxr::vk)
 
 install(
   TARGETS foe_xr_openxr_vk

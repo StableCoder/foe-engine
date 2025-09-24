@@ -7,6 +7,7 @@ project(foe_imex_binary)
 
 # Declaration
 add_library(foe_imex_binary SHARED)
+add_library(foe::imex::binary ALIAS foe_imex_binary)
 
 # Definition
 add_subdirectory(include)
@@ -22,7 +23,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_imex_binary PROPERTY EXPORT_NAME imex_binary)
+set_property(TARGET foe_imex_binary PROPERTY EXPORT_NAME imex::binary)
 
 install(
   TARGETS foe_imex_binary

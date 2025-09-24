@@ -2,4 +2,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+include(CMakeFindDependencyMacro)
+find_dependency(
+  foe
+  REQUIRED
+  COMPONENTS
+  core
+  ecs
+  graphics
+  imex
+  resource)
+
 include(${CMAKE_CURRENT_LIST_DIR}/foe_simulation.cmake)

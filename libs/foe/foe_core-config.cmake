@@ -3,6 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 include(CMakeFindDependencyMacro)
-find_dependency(fmt)
+find_dependency(fmt REQUIRED)
 
 include(${CMAKE_CURRENT_LIST_DIR}/foe_core.cmake)

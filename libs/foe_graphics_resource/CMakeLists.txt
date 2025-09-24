@@ -18,6 +18,7 @@ mark_as_advanced(FORCE freeimage_INCLUDE_DIRS freeimage_LIBRARIES)
 
 # Declaration
 add_library(foe_graphics_resource SHARED)
+add_library(foe::graphics::resource ALIAS foe_graphics_resource)
 
 # Definition
 add_subdirectory(include)
@@ -35,8 +36,7 @@ target_link_libraries(
          foe_model
          foe_model_assimp
          foe_simulation
-         $<BUILD_INTERFACE:vk_struct_cleanup>
-         ${freeimage_LIBRARIES})
+  PRIVATE ${freeimage_LIBRARIES} vk_struct_cleanup vk_struct_compare)
 
 target_code_coverage(foe_graphics_resource)
 
@@ -58,7 +58,7 @@ endif()
 
 # install
 set_property(TARGET foe_graphics_resource PROPERTY EXPORT_NAME
-                                                   graphics_resource)
+                                                   graphics::resource)
 
 install(
   TARGETS foe_graphics_resource

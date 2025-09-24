@@ -7,6 +7,7 @@ project(foe_resource)
 
 # Declaration
 add_library(foe_resource SHARED)
+add_library(foe::resource ALIAS foe_resource)
 
 # Definition
 add_subdirectory(include)

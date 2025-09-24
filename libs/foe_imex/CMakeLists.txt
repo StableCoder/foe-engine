@@ -7,7 +7,7 @@ project(foe_imex)
 
 # Declaration
 add_library(foe_imex SHARED)
-set_property(TARGET foe_imex PROPERTY EXPORT_NAME imex)
+add_library(foe::imex ALIAS foe_imex)
 
 # Definition
 add_subdirectory(include)
@@ -33,6 +33,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
+set_property(TARGET foe_imex PROPERTY EXPORT_NAME imex)
+
 install(
   TARGETS foe_imex
   EXPORT foe_imex

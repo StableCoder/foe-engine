@@ -11,6 +11,7 @@ find_package(yaml-cpp REQUIRED)
 
 # Declaration
 add_library(foe_yaml SHARED)
+add_library(foe::yaml ALIAS foe_yaml)
 
 # Definition
 add_subdirectory(include)

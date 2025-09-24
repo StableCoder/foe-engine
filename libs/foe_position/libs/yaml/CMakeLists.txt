@@ -7,6 +7,7 @@ project(foe_position_yaml)
 
 # Declaration
 add_library(foe_position_yaml SHARED)
+add_library(foe::position::yaml ALIAS foe_position_yaml)
 
 # Definition
 add_subdirectory(include)
@@ -22,7 +23,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_position_yaml PROPERTY EXPORT_NAME position_yaml)
+set_property(TARGET foe_position_yaml PROPERTY EXPORT_NAME position::yaml)
 
 install(
   TARGETS foe_position_yaml

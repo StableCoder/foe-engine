@@ -7,6 +7,7 @@ project(foe_graphics_yaml)
 
 # Declaration
 add_library(foe_graphics_yaml SHARED)
+add_library(foe::graphics::yaml ALIAS foe_graphics_yaml)
 
 # Definition
 add_subdirectory(include)
@@ -17,7 +18,7 @@ target_link_libraries(foe_graphics_yaml PUBLIC foe_graphics foe_yaml)
 target_code_coverage(foe_graphics_yaml)
 
 # install
-set_property(TARGET foe_graphics_yaml PROPERTY EXPORT_NAME graphics_yaml)
+set_property(TARGET foe_graphics_yaml PROPERTY EXPORT_NAME graphics::yaml)
 
 install(
   TARGETS foe_graphics_yaml

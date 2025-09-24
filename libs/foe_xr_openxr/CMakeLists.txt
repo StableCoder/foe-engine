@@ -20,7 +20,7 @@ if(XR_LOADER)
 else()
   add_library(foe_xr_openxr)
 endif()
-set_property(TARGET foe_xr_openxr PROPERTY EXPORT_NAME xr_openxr)
+add_library(foe::xr::openxr ALIAS foe_xr_openxr)
 
 # Definition
 add_subdirectory(include)
@@ -29,7 +29,7 @@ add_subdirectory(src)
 target_link_libraries(
   foe_xr_openxr
   PUBLIC foe_xr OpenXR::openxr_loader
-  PRIVATE $<BUILD_INTERFACE:khronos_mini_libs>)
+  PRIVATE xr_result_serialization)
 
 target_code_coverage(foe_xr_openxr)
 
@@ -57,8 +57,10 @@ if(BUILD_TESTS)
 endif()
 
 # install
+set_property(TARGET foe_xr_openxr PROPERTY EXPORT_NAME xr::openxr)
+
 install(
-  TARGETS foe_xr_openxr
+  TARGETS foe_xr_openxr xr_result_serialization
   EXPORT foe_xr_openxr
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib

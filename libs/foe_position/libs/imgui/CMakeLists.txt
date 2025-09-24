@@ -7,6 +7,7 @@ project(foe_position_imgui)
 
 # Declaration
 add_library(foe_position_imgui)
+add_library(foe::position::imgui ALIAS foe_position_imgui)
 
 # Definition
 add_subdirectory(include)
@@ -24,7 +25,7 @@ else()
 endif()
 
 # install
-set_property(TARGET foe_position_imgui PROPERTY EXPORT_NAME position_imgui)
+set_property(TARGET foe_position_imgui PROPERTY EXPORT_NAME position::imgui)
 
 install(
   TARGETS foe_position_imgui

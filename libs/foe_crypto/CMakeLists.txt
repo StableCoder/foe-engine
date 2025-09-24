@@ -18,6 +18,7 @@ endif()
 
 # Declaration
 add_library(foe_crypto SHARED)
+add_library(foe::crypto ALIAS foe_crypto)
 
 # Definition
 add_subdirectory(include)

@@ -7,6 +7,7 @@ project(foe_graphics_imgui)
 
 # Declaration
 add_library(foe_graphics_imgui)
+add_library(foe::graphics::imgui ALIAS foe_graphics_imgui)
 
 # Definition
 add_subdirectory(include)
@@ -23,7 +24,7 @@ else()
 endif()
 
 # install
-set_property(TARGET foe_graphics_imgui PROPERTY EXPORT_NAME graphics_imgui)
+set_property(TARGET foe_graphics_imgui PROPERTY EXPORT_NAME graphics::imgui)
 
 install(
   TARGETS foe_graphics_imgui

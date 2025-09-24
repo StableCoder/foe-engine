@@ -7,6 +7,7 @@ project(foe_graphics_resource_binary)
 
 # Declaration
 add_library(foe_graphics_resource_binary SHARED)
+add_library(foe::graphics::resource::binary ALIAS foe_graphics_resource_binary)
 
 # Definition
 add_subdirectory(include)
@@ -24,7 +25,7 @@ endif()
 
 # install
 set_property(TARGET foe_graphics_resource_binary
-             PROPERTY EXPORT_NAME graphics_resource_binary)
+             PROPERTY EXPORT_NAME graphics::resource::binary)
 
 install(
   TARGETS foe_graphics_resource_binary

@@ -2,4 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+include(CMakeFindDependencyMacro)
+find_dependency(foe REQUIRED COMPONENTS graphics::vk xr::openxr)
+
 include(${CMAKE_CURRENT_LIST_DIR}/foe_xr_openxr_vk.cmake)

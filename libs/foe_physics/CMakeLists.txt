@@ -10,17 +10,18 @@ find_package(Bullet REQUIRED)
 
 # Declaration
 add_library(foe_physics SHARED)
-set_property(TARGET foe_physics PROPERTY EXPORT_NAME physics)
+add_library(foe::physics ALIAS foe_physics)
 
 # Definition
 add_subdirectory(include)
 add_subdirectory(src)
 
-target_include_directories(foe_physics
-                           PUBLIC $<BUILD_INTERFACE:${BULLET_INCLUDE_DIRS}>)
+target_include_directories(foe_physics PUBLIC ${BULLET_INCLUDE_DIRS})
 
-target_link_libraries(foe_physics PUBLIC foe_core foe_ecs foe_imex foe_position
-                                         ${BULLET_LIBRARIES})
+target_link_libraries(
+  foe_physics
+  PUBLIC foe_core foe_ecs foe_imex foe_position
+  PRIVATE ${BULLET_LIBRARIES})
 
 target_code_coverage(foe_physics)
 
@@ -41,6 +42,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
+set_property(TARGET foe_physics PROPERTY EXPORT_NAME physics)
+
 install(
   TARGETS foe_physics
   EXPORT foe_physics

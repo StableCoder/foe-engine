@@ -7,6 +7,7 @@ project(foe_physics_binary)
 
 # Declaration
 add_library(foe_physics_binary SHARED)
+add_library(foe::physics::binary ALIAS foe_physics_binary)
 
 # Definition
 add_subdirectory(include)
@@ -23,7 +24,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_physics_binary PROPERTY EXPORT_NAME physics_binary)
+set_property(TARGET foe_physics_binary PROPERTY EXPORT_NAME physics::binary)
 
 install(
   TARGETS foe_physics_binary

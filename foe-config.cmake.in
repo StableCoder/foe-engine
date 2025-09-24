@@ -6,6 +6,9 @@
 
 # try to include all requested components
 foreach(component ${foe_FIND_COMPONENTS})
+  # replace non-namespace '::' -> '_'
+  string(REPLACE "::" "_" component "${component}")
+
   # For requested component, execute its "config" script
   if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/foe_${component}-config.cmake)
     include(${CMAKE_CURRENT_LIST_DIR}/foe_${component}-config.cmake)

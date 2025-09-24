@@ -7,6 +7,7 @@ project(foe_physics_yaml)
 
 # Declaration
 add_library(foe_physics_yaml SHARED)
+add_library(foe::physics::yaml ALIAS foe_physics_yaml)
 
 # Definition
 add_subdirectory(include)
@@ -23,7 +24,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_physics_yaml PROPERTY EXPORT_NAME physics_yaml)
+set_property(TARGET foe_physics_yaml PROPERTY EXPORT_NAME physics::yaml)
 
 install(
   TARGETS foe_physics_yaml

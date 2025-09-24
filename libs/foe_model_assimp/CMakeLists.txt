@@ -16,7 +16,7 @@ endif()
 
 # Declaration
 add_library(foe_model_assimp SHARED)
-set_property(TARGET foe_model_assimp PROPERTY EXPORT_NAME model_assimp)
+add_library(foe::model::assimp ALIAS foe_model_assimp)
 
 # Definition
 add_subdirectory(include)
@@ -44,6 +44,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
+set_property(TARGET foe_model_assimp PROPERTY EXPORT_NAME model::assimp)
+
 install(
   TARGETS foe_model_assimp
   EXPORT foe_model_assimp

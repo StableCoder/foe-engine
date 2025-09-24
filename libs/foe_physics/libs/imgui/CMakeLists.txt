@@ -7,6 +7,7 @@ project(foe_physics_imgui)
 
 # Declaration
 add_library(foe_physics_imgui)
+add_library(foe::physics::imgui ALIAS foe_physics_imgui)
 
 # Definition
 add_subdirectory(include)
@@ -25,7 +26,7 @@ else()
 endif()
 
 # install
-set_property(TARGET foe_physics_imgui PROPERTY EXPORT_NAME physics_imgui)
+set_property(TARGET foe_physics_imgui PROPERTY EXPORT_NAME physics::imgui)
 
 install(
   TARGETS foe_physics_imgui

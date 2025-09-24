@@ -7,7 +7,7 @@ project(foe_xr)
 
 # Declaration
 add_library(foe_xr INTERFACE)
-set_property(TARGET foe_xr PROPERTY EXPORT_NAME xr)
+add_library(foe::xr ALIAS foe_xr)
 
 # Definition
 add_subdirectory(include)
@@ -19,6 +19,8 @@ endif()
 target_link_libraries(foe_xr INTERFACE foe_core)
 
 # install
+set_property(TARGET foe_xr PROPERTY EXPORT_NAME xr)
+
 install(
   TARGETS foe_xr
   EXPORT foe_xr

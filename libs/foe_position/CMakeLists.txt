@@ -10,6 +10,7 @@ find_package(glm REQUIRED)
 
 # Declaration
 add_library(foe_position SHARED)
+add_library(foe::position ALIAS foe_position)
 
 # Definition
 add_subdirectory(include)

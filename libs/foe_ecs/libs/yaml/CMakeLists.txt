@@ -7,6 +7,7 @@ project(foe_ecs_yaml CXX)
 
 # Declaration
 add_library(foe_ecs_yaml SHARED)
+add_library(foe::ecs::yaml ALIAS foe_ecs_yaml)
 
 # Definition
 add_subdirectory(include)
@@ -22,7 +23,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_ecs_yaml PROPERTY EXPORT_NAME ecs_yaml)
+set_property(TARGET foe_ecs_yaml PROPERTY EXPORT_NAME ecs::yaml)
 
 install(
   TARGETS foe_ecs_yaml

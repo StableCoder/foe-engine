@@ -7,13 +7,16 @@ project(foe_imgui_vk)
 
 # Declaration
 add_library(foe_imgui_vk)
-set_property(TARGET foe_imgui_vk PROPERTY EXPORT_NAME imgui_vk)
+add_library(foe::imgui::vk ALIAS foe_imgui_vk)
 
 # Definition
 add_subdirectory(include)
 add_subdirectory(src)
 
-target_link_libraries(foe_imgui_vk PUBLIC foe_graphics_vk foe_imgui)
+target_link_libraries(
+  foe_imgui_vk
+  PUBLIC foe_graphics_vk foe_imgui
+  PRIVATE vk_result_serialization)
 
 target_code_coverage(foe_imgui_vk)
 
@@ -23,6 +26,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
+set_property(TARGET foe_imgui_vk PROPERTY EXPORT_NAME imgui::vk)
+
 install(
   TARGETS foe_imgui_vk
   EXPORT foe_imgui_vk

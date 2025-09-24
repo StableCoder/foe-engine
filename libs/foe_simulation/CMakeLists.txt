@@ -7,6 +7,7 @@ project(foe_simulation)
 
 # Declaration
 add_library(foe_simulation SHARED)
+add_library(foe::simulation ALIAS foe_simulation)
 
 # Definition
 add_subdirectory(include)

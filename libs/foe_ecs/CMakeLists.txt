@@ -7,6 +7,7 @@ project(foe_ecs)
 
 # Declaration
 add_library(foe_ecs SHARED)
+add_library(foe::ecs ALIAS foe_ecs)
 
 # Definition
 add_subdirectory(include)

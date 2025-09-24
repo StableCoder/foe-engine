@@ -5,17 +5,15 @@
 cmake_minimum_required(VERSION 3.23)
 project(foe_graphics)
 
-# Dependencies
-find_package(Vulkan REQUIRED)
-
 # Declaration
 add_library(foe_graphics SHARED)
+add_library(foe::graphics ALIAS foe_graphics)
 
 # Definition
 add_subdirectory(include)
 add_subdirectory(src)
 
-target_link_libraries(foe_graphics PUBLIC Vulkan::Vulkan foe_core)
+target_link_libraries(foe_graphics PUBLIC foe_core)
 
 target_code_coverage(foe_graphics)
 

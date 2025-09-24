@@ -7,6 +7,7 @@ project(foe_graphics_resource_imgui)
 
 # Declaration
 add_library(foe_graphics_resource_imgui)
+add_library(foe::graphics::resource::imgui ALIAS foe_graphics_resource_imgui)
 
 # Definition
 add_subdirectory(include)
@@ -27,7 +28,7 @@ endif()
 
 # install
 set_property(TARGET foe_graphics_resource_imgui
-             PROPERTY EXPORT_NAME graphics_resource_imgui)
+             PROPERTY EXPORT_NAME graphics::resource::imgui)
 
 install(
   TARGETS foe_graphics_resource_imgui

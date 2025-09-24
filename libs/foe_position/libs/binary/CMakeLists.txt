@@ -7,6 +7,7 @@ project(foe_position_binary)
 
 # Declaration
 add_library(foe_position_binary SHARED)
+add_library(foe::position::binary ALIAS foe_position_binary)
 
 # Definition
 add_subdirectory(include)
@@ -23,7 +24,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_position_binary PROPERTY EXPORT_NAME position_binary)
+set_property(TARGET foe_position_binary PROPERTY EXPORT_NAME position::binary)
 
 install(
   TARGETS foe_position_binary

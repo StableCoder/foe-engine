@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -27,8 +27,10 @@ if(BUILD_VULKAN_RUNTIME_TESTS)
                                               shader.cpp upload.cpp)
 endif()
 
-target_link_libraries(test_foe_graphics_vk PRIVATE Catch2::Catch2
-                                                   foe_graphics_vk)
+target_link_libraries(
+  test_foe_graphics_vk
+  PRIVATE Catch2::Catch2 foe_graphics_vk
+  PRIVATE vk_struct_compare)
 
 target_code_coverage(
   test_foe_graphics_vk

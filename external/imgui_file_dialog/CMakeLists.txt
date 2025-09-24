@@ -1,4 +1,4 @@
-# Copyright (C) 2022 George Cave.
+# Copyright (C) 2022-2025 George Cave.
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -10,14 +10,27 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Declarations
 if(WIN32)
-add_library(imgui_file_dialog STATIC)
+  add_library(imgui_file_dialog STATIC)
 else()
-add_library(imgui_file_dialog)
+  add_library(imgui_file_dialog)
 endif()
 
 # Definition
-target_sources(imgui_file_dialog PRIVATE ImGuiFileDialog/ImGuiFileDialog.cpp)
+target_include_directories(
+  imgui_file_dialog
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog>)
 
-target_include_directories(imgui_file_dialog PUBLIC include ImGuiFileDialog)
+target_link_libraries(imgui_file_dialog PUBLIC imgui_core)
 
-target_link_libraries(imgui_file_dialog PUBLIC imgui)
+target_sources(
+  imgui_file_dialog
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/ImGuiFileDialog.h
+         ${CMAKE_CURRENT_SOURCE_DIR}/include/ImGuiFileDialogConfig.h
+  PRIVATE ImGuiFileDialog/ImGuiFileDialog.cpp)

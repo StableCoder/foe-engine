@@ -10,7 +10,7 @@ find_package(glm REQUIRED)
 
 # Declarations
 add_library(foe_model)
-set_property(TARGET foe_model PROPERTY EXPORT_NAME model)
+add_library(foe::model ALIAS foe_model)
 
 # Library Definition
 add_subdirectory(include)
@@ -40,6 +40,8 @@ else()
 endif()
 
 # install
+set_property(TARGET foe_model PROPERTY EXPORT_NAME model)
+
 install(
   TARGETS foe_model
   EXPORT foe_model

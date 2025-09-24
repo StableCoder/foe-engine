@@ -5,8 +5,12 @@
 cmake_minimum_required(VERSION 3.23)
 project(foe_graphics_vk)
 
+# Dependencies
+find_package(Vulkan REQUIRED)
+
 # Declaration
 add_library(foe_graphics_vk SHARED)
+add_library(foe::graphics::vk ALIAS foe_graphics_vk)
 
 # Definition
 add_subdirectory(include)
@@ -14,12 +18,8 @@ add_subdirectory(src)
 
 target_link_libraries(
   foe_graphics_vk
-  PUBLIC foe_graphics
-         $<BUILD_INTERFACE:vulkan_memory_allocator>
-         $<BUILD_INTERFACE:vk_struct_cleanup>
-         $<BUILD_INTERFACE:vk_struct_compare>
-         $<BUILD_INTERFACE:vk_value_serialization>
-  PRIVATE $<BUILD_INTERFACE:khronos_mini_libs>)
+  PUBLIC foe_graphics Vulkan::Vulkan vulkan_memory_allocator
+  PRIVATE vk_struct_cleanup vk_struct_compare vk_value_serialization)
 
 target_code_coverage(foe_graphics_vk)
 
@@ -43,10 +43,11 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_graphics_vk PROPERTY EXPORT_NAME graphics_vk)
+set_property(TARGET foe_graphics_vk PROPERTY EXPORT_NAME graphics::vk)
 
 install(
-  TARGETS foe_graphics_vk
+  TARGETS foe_graphics_vk vulkan_memory_allocator vk_struct_cleanup
+          vk_struct_compare vk_value_serialization vk_result_serialization
   EXPORT foe_graphics_vk
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib

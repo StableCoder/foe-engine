@@ -10,6 +10,7 @@ find_package(fmt REQUIRED)
 
 # Declaration
 add_library(foe_core SHARED)
+add_library(foe::core ALIAS foe_core)
 
 # Definition
 add_subdirectory(include)

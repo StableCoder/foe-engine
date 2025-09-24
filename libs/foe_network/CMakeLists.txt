@@ -7,7 +7,7 @@ project(foe_network)
 
 # Declaration
 add_library(foe_network SHARED)
-set_property(TARGET foe_network PROPERTY EXPORT_NAME network)
+add_library(foe::network ALIAS foe_network)
 
 # Definition
 add_subdirectory(include)
@@ -32,6 +32,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
+set_property(TARGET foe_network PROPERTY EXPORT_NAME network)
+
 install(
   TARGETS foe_network
   EXPORT foe_network

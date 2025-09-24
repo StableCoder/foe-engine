@@ -7,13 +7,13 @@ project(foe_imgui)
 
 # Declaration
 add_library(foe_imgui)
+add_library(foe::imgui ALIAS foe_imgui)
 
 # Definition
 add_subdirectory(include)
 add_subdirectory(src)
 
-target_link_libraries(foe_imgui PUBLIC $<BUILD_INTERFACE:imgui>
-                                       $<BUILD_INTERFACE:imgui_file_dialog>)
+target_link_libraries(foe_imgui PUBLIC foe_core imgui_core imgui_file_dialog)
 
 target_code_coverage(foe_imgui)
 
@@ -35,7 +35,7 @@ endif()
 set_property(TARGET foe_imgui PROPERTY EXPORT_NAME imgui)
 
 install(
-  TARGETS foe_imgui
+  TARGETS foe_imgui imgui_core imgui_file_dialog
   EXPORT foe_imgui
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib

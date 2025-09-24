@@ -7,6 +7,7 @@ project(foe_graphics_vk_yaml)
 
 # Declaration
 add_library(foe_graphics_vk_yaml SHARED)
+add_library(foe::graphics::vk::yaml ALIAS foe_graphics_vk_yaml)
 
 # Definition
 add_subdirectory(include)
@@ -15,8 +16,7 @@ add_subdirectory(src)
 target_link_libraries(
   foe_graphics_vk_yaml
   PUBLIC foe_ecs foe_graphics_yaml foe_graphics_vk foe_yaml
-         $<BUILD_INTERFACE:vk_struct_cleanup>
-         $<BUILD_INTERFACE:vk_value_serialization>)
+  PRIVATE vk_struct_cleanup vk_struct_compare vk_value_serialization)
 
 target_code_coverage(foe_graphics_vk_yaml)
 
@@ -26,7 +26,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_graphics_vk_yaml PROPERTY EXPORT_NAME graphics_vk_yaml)
+set_property(TARGET foe_graphics_vk_yaml PROPERTY EXPORT_NAME
+                                                  graphics::vk::yaml)
 
 install(
   TARGETS foe_graphics_vk_yaml

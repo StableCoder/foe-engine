@@ -7,6 +7,7 @@ project(foe_simulation_imgui)
 
 # Declaration
 add_library(foe_simulation_imgui)
+add_library(foe::simulation::imgui ALIAS foe_simulation_imgui)
 
 # Definition
 add_subdirectory(include)
@@ -23,7 +24,7 @@ else()
 endif()
 
 # install
-set_property(TARGET foe_simulation_imgui PROPERTY EXPORT_NAME simulation_imgui)
+set_property(TARGET foe_simulation_imgui PROPERTY EXPORT_NAME simulation::imgui)
 
 install(
   TARGETS foe_simulation_imgui
