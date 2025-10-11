@@ -434,7 +434,6 @@ MSYS/GCC Static:
       BUILD_TYPE: [Release]
       MSYS_SUBSYSTEM: [ucrt64, mingw64]
   variables:
-    MSYS_SUBSYSTEM: ucrt64
   <<: *platform_msys_template
 
 MSYS/GCC Shared:
@@ -452,11 +451,10 @@ MSYS/Clang Static:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
-      MSYS_SUBSYSTEM: [ucrt64, mingw64, clang64]
+      MSYS_SUBSYSTEM: [clang64]
   variables:
     CC: clang
     CXX: clang++
-    MSYS_SUBSYSTEM: ucrt64
   <<: *platform_msys_template
 
 MSYS/Clang Shared:
@@ -464,7 +462,7 @@ MSYS/Clang Shared:
     matrix:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
-      MSYS_SUBSYSTEM: [ucrt64, mingw64, clang64]
+      MSYS_SUBSYSTEM: [clang64]
   variables:
     CC: clang
     CXX: clang++
