@@ -566,7 +566,7 @@ macOS Vulkan HW Testing:
     - ${ARCH}
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_TESTS=ON -D BUILD_WINDOW_TESTS=OFF -D DISABLE_PLUGIN_UNLOAD=ON ${CMAKE_OPTIONS}
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_TESTS=ON -D DISABLE_PLUGIN_UNLOAD=ON ${CMAKE_OPTIONS}
     - cmake --build build
     - ctest --test-dir build --output-on-failure 
 
@@ -599,7 +599,7 @@ Code Coverage:
     CC: clang
     CXX: clang++
   script:
-    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D CODE_COVERAGE=ON -D BUILD_TESTS=ON -D BUILD_WINDOW_TESTS=OFF -D NO_VULKAN_RENDERER=ON
+    - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D CODE_COVERAGE=ON -D BUILD_TESTS=ON
     - cmake --build build
     - cmake --build build --target ccov
     - cmake --build build --target ccov-all
