@@ -10,12 +10,28 @@ add_library(foe_imex_binary SHARED)
 add_library(foe::imex::binary ALIAS foe_imex_binary)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_imex_binary EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/imex/binary/export.h)
 
 target_link_libraries(foe_imex_binary PUBLIC foe_imex foe_simulation)
 
 target_code_coverage(foe_imex_binary)
+
+target_sources(
+  foe_imex_binary
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/imex/binary/export.h
+         include/foe/imex/binary/exporter.h
+         include/foe/imex/binary/importer.h
+         include/foe/imex/binary/result.h
+         include/foe/imex/binary/type_defs.h)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

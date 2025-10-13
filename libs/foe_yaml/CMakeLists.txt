@@ -14,8 +14,8 @@ add_library(foe_yaml SHARED)
 add_library(foe::yaml ALIAS foe_yaml)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_yaml EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/yaml/export.h)
 
 if(DEFINED GLM_INCLUDE_DIRS)
   target_include_directories(foe_yaml PUBLIC ${GLM_INCLUDE_DIRS}
@@ -33,6 +33,22 @@ else()
 endif()
 
 target_code_coverage(foe_yaml)
+
+target_sources(
+  foe_yaml
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/yaml/export.h
+         include/foe/yaml/exception.hpp
+         include/foe/yaml/glm_colour_parsing.hpp
+         include/foe/yaml/glm.hpp
+         include/foe/yaml/pod.hpp)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

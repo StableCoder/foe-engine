@@ -10,12 +10,26 @@ add_library(foe_ecs_yaml SHARED)
 add_library(foe::ecs::yaml ALIAS foe_ecs_yaml)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_ecs_yaml EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/ecs/yaml/export.h)
 
 target_link_libraries(foe_ecs_yaml PUBLIC foe_ecs foe_yaml)
 
 target_code_coverage(foe_ecs_yaml)
+
+target_sources(
+  foe_ecs_yaml
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/ecs/yaml/export.h
+         include/foe/ecs/yaml/id.hpp
+         include/foe/ecs/yaml/indexes.hpp)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

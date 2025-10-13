@@ -10,8 +10,8 @@ add_library(foe_ecs SHARED)
 add_library(foe::ecs ALIAS foe_ecs)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_ecs EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/ecs/export.h)
 
 target_link_libraries(foe_ecs PUBLIC foe_core)
 
@@ -22,6 +22,27 @@ if(MSVC)
 else()
   target_compile_options(foe_ecs PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_ecs
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/ecs/export.h
+         include/foe/ecs/binary.h
+         include/foe/ecs/component_pool.h
+         include/foe/ecs/entity_list.h
+         include/foe/ecs/group_translator.h
+         include/foe/ecs/id.h
+         include/foe/ecs/id_to_string.hpp
+         include/foe/ecs/indexes.h
+         include/foe/ecs/name_map.h
+         include/foe/ecs/result.h)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/yaml)

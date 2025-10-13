@@ -10,8 +10,10 @@ add_library(foe_graphics_resource_yaml SHARED)
 add_library(foe::graphics::resource::yaml ALIAS foe_graphics_resource_yaml)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_graphics_resource_yaml EXPORT_MACRO_NAME FOE_GFX_RES_YAML_EXPORT
+  EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/resource/yaml/export.h)
 
 target_link_libraries(
   foe_graphics_resource_yaml
@@ -19,6 +21,22 @@ target_link_libraries(
   PRIVATE vk_struct_compare)
 
 target_code_coverage(foe_graphics_resource_yaml)
+
+target_sources(
+  foe_graphics_resource_yaml
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/resource/yaml/export.h
+         include/foe/graphics/resource/yaml/export_registration.h
+         include/foe/graphics/resource/yaml/import_registration.h
+         include/foe/graphics/resource/yaml/result.h
+         include/foe/graphics/resource/yaml/structs.hpp)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

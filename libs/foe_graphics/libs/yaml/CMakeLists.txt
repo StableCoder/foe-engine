@@ -10,12 +10,26 @@ add_library(foe_graphics_yaml SHARED)
 add_library(foe::graphics::yaml ALIAS foe_graphics_yaml)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_graphics_yaml EXPORT_MACRO_NAME FOE_GFX_YAML_EXPORT EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/yaml/export.h)
 
 target_link_libraries(foe_graphics_yaml PUBLIC foe_graphics foe_yaml)
 
 target_code_coverage(foe_graphics_yaml)
+
+target_sources(
+  foe_graphics_yaml
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/yaml/export.h
+         include/foe/graphics/yaml/enums.hpp)
+
+add_subdirectory(src)
 
 # install
 set_property(TARGET foe_graphics_yaml PROPERTY EXPORT_NAME graphics::yaml)

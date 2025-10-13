@@ -21,8 +21,9 @@ add_library(foe_graphics_resource SHARED)
 add_library(foe::graphics::resource ALIAS foe_graphics_resource)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_graphics_resource EXPORT_MACRO_NAME FOE_GFX_RES_EXPORT EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/resource/export.h)
 
 target_include_directories(foe_graphics_resource
                            PRIVATE ${freeimage_INCLUDE_DIRS})
@@ -45,6 +46,34 @@ if(MSVC)
 else()
   target_compile_options(foe_graphics_resource PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_graphics_resource
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/resource/export.h
+         include/foe/graphics/resource/binary.h
+         include/foe/graphics/resource/cleanup.h
+         include/foe/graphics/resource/compare.h
+         include/foe/graphics/resource/image_create_info.h
+         include/foe/graphics/resource/image.hpp
+         include/foe/graphics/resource/material_create_info.h
+         include/foe/graphics/resource/material.hpp
+         include/foe/graphics/resource/mesh_create_info.h
+         include/foe/graphics/resource/mesh.hpp
+         include/foe/graphics/resource/registration.h
+         include/foe/graphics/resource/result.h
+         include/foe/graphics/resource/shader_create_info.h
+         include/foe/graphics/resource/shader.hpp
+         include/foe/graphics/resource/type_defs.h
+         include/foe/graphics/resource/vertex_descriptor_create_info.h
+         include/foe/graphics/resource/vertex_descriptor.hpp)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/binary)

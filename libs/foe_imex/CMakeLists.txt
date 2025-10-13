@@ -10,8 +10,8 @@ add_library(foe_imex SHARED)
 add_library(foe::imex ALIAS foe_imex)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_imex EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/imex/export.h)
 
 target_link_libraries(foe_imex PUBLIC foe_ecs foe_resource)
 
@@ -22,6 +22,22 @@ if(MSVC)
 else()
   target_compile_options(foe_imex PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_imex
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/imex/export.h
+         include/foe/imex/exporters.h
+         include/foe/imex/importer.h
+         include/foe/imex/result.h
+         include/foe/imex/type_defs.h)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/binary)

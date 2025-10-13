@@ -13,8 +13,8 @@ add_library(foe_model)
 add_library(foe::model ALIAS foe_model)
 
 # Library Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_model EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/model/export.h)
 
 target_link_libraries(foe_model PUBLIC foe_core)
 
@@ -38,6 +38,24 @@ if(MSVC)
 else()
   target_compile_options(foe_model PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_model
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/model/export.h
+         include/foe/model/animation.hpp
+         include/foe/model/armature.hpp
+         include/foe/model/cube.hpp
+         include/foe/model/ico_sphere.hpp
+         include/foe/model/importer.hpp
+         include/foe/model/vertex_component.hpp)
+
+add_subdirectory(src)
 
 # install
 set_property(TARGET foe_model PROPERTY EXPORT_NAME model)

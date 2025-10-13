@@ -10,8 +10,8 @@ add_library(foe_imgui_vk)
 add_library(foe::imgui::vk ALIAS foe_imgui_vk)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_imgui_vk EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/imgui/vk/export.h)
 
 target_link_libraries(
   foe_imgui_vk
@@ -19,6 +19,21 @@ target_link_libraries(
   PRIVATE vk_result_serialization)
 
 target_code_coverage(foe_imgui_vk)
+
+target_sources(
+  foe_imgui_vk
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/imgui/vk/export.h
+         include/foe/imgui/vk/renderer.hpp
+         include/foe/imgui/vk/render_graph_job_imgui.hpp
+         include/foe/imgui/vk/result.h)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

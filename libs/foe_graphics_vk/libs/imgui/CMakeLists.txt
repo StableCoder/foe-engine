@@ -10,8 +10,9 @@ add_library(foe_graphics_vk_imgui)
 add_library(foe::grpahics::vk::imgui ALIAS foe_graphics_vk_imgui)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_graphics_vk_imgui EXPORT_MACRO_NAME FOE_GFX_VK_IMGUI_EXPORT
+  EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/vk/imgui/export.h)
 
 target_link_libraries(
   foe_graphics_vk_imgui
@@ -25,6 +26,23 @@ if(MSVC)
 else()
   target_compile_options(foe_graphics_vk_imgui PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_graphics_vk_imgui
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/vk/imgui/export.h
+         include/foe/graphics/vk/imgui/fragment_descriptor.hpp
+         include/foe/graphics/vk/imgui/shader.hpp
+         include/foe/graphics/vk/imgui/vertex_descriptor.hpp
+         include/foe/graphics/vk/imgui/vk_struct.hpp
+         include/foe/graphics/vk/imgui/vk_type.hpp)
+
+add_subdirectory(src)
 
 # install
 set_property(TARGET foe_graphics_vk_imgui PROPERTY EXPORT_NAME

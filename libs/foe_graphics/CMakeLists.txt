@@ -10,8 +10,9 @@ add_library(foe_graphics SHARED)
 add_library(foe::graphics ALIAS foe_graphics)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_graphics EXPORT_MACRO_NAME FOE_GFX_EXPORT EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/export.h)
 
 target_link_libraries(foe_graphics PUBLIC foe_core)
 
@@ -22,6 +23,32 @@ if(MSVC)
 else()
   target_compile_options(foe_graphics PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_graphics
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/export.h
+         include/foe/graphics/backend.h
+         include/foe/graphics/builtin_descriptor_sets.h
+         include/foe/graphics/delayed_caller.h
+         include/foe/graphics/mesh.h
+         include/foe/graphics/render_target.h
+         include/foe/graphics/render_view_pool.h
+         include/foe/graphics/result.h
+         include/foe/graphics/runtime.h
+         include/foe/graphics/session.h
+         include/foe/graphics/shader.h
+         include/foe/graphics/type_defs.h
+         include/foe/graphics/upload_buffer.h
+         include/foe/graphics/upload_context.h
+         include/foe/graphics/upload_request.h)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/imgui)

@@ -10,12 +10,28 @@ add_library(foe_position_yaml SHARED)
 add_library(foe::position::yaml ALIAS foe_position_yaml)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_position_yaml EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/position/yaml/export.h)
 
 target_link_libraries(foe_position_yaml PUBLIC foe_imex_yaml foe_position)
 
 target_code_coverage(foe_position_yaml)
+
+target_sources(
+  foe_position_yaml
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/position/yaml/export.h
+         include/foe/position/yaml/export_registration.h
+         include/foe/position/yaml/import_registration.h
+         include/foe/position/yaml/result.h
+         include/foe/position/yaml/structs.hpp)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

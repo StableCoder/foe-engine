@@ -13,8 +13,8 @@ add_library(foe_core SHARED)
 add_library(foe::core ALIAS foe_core)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_core EXPORT_MACRO_NAME FOE_EXPORT EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/export.h)
 
 target_link_libraries(foe_core PUBLIC fmt::fmt)
 
@@ -39,6 +39,39 @@ if(MSVC)
 else()
   target_compile_options(foe_core PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_core
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/export.h
+         include/foe/chrono/dilated_clock.hpp
+         include/foe/chrono/dilated_long_clock.hpp
+         include/foe/chrono/easy_clock.hpp
+         include/foe/chrono/program_clock.hpp
+         include/foe/algorithm.hpp
+         include/foe/binary_result.h
+         include/foe/delimited_string.h
+         include/foe/engine_detail.h
+         include/foe/filesystem.hpp
+         include/foe/handle.h
+         include/foe/hex.h
+         include/foe/log.h
+         include/foe/managed_memory.h
+         include/foe/memory_alignment.h
+         include/foe/memory_mapped_file.h
+         include/foe/plugin.h
+         include/foe/quaternion_math.hpp
+         include/foe/result.h
+         include/foe/search_paths.hpp
+         include/foe/split_thread_pool.h
+         include/foe/type_defs.h)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

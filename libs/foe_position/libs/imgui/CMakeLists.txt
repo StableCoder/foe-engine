@@ -10,8 +10,8 @@ add_library(foe_position_imgui)
 add_library(foe::position::imgui ALIAS foe_position_imgui)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_position_imgui EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/position/imgui/export.h)
 
 target_link_libraries(foe_position_imgui PUBLIC foe_imgui foe_position
                                                 foe_simulation_imgui)
@@ -23,6 +23,19 @@ if(MSVC)
 else()
   target_compile_options(foe_position_imgui PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_position_imgui
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/position/imgui/export.h
+         include/foe/position/imgui/registration.hpp)
+
+add_subdirectory(src)
 
 # install
 set_property(TARGET foe_position_imgui PROPERTY EXPORT_NAME position::imgui)

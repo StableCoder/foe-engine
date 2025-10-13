@@ -23,8 +23,9 @@ endif()
 add_library(foe::xr::openxr ALIAS foe_xr_openxr)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/xr/export.h)
 
 target_link_libraries(
   foe_xr_openxr
@@ -47,6 +48,22 @@ if(MSVC)
 else()
   target_compile_options(foe_xr_openxr PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_xr_openxr
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/xr/export.h
+         include/foe/xr/openxr/camera_math.hpp
+         include/foe/xr/openxr/result.h
+         include/foe/xr/openxr/runtime.h
+         include/foe/xr/openxr/session.h)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/vulkan)

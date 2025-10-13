@@ -10,13 +10,21 @@ add_library(foe_xr INTERFACE)
 add_library(foe::xr ALIAS foe_xr)
 
 # Definition
-add_subdirectory(include)
-
 if(XR_SUPPORT)
   target_compile_definitions(foe_xr INTERFACE FOE_XR_SUPPORT)
 endif()
 
 target_link_libraries(foe_xr INTERFACE foe_core)
+
+target_sources(
+  foe_xr
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         include/foe/xr/runtime.h
+         include/foe/xr/session.h)
 
 # install
 set_property(TARGET foe_xr PROPERTY EXPORT_NAME xr)

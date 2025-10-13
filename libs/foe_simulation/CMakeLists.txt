@@ -10,8 +10,9 @@ add_library(foe_simulation SHARED)
 add_library(foe::simulation ALIAS foe_simulation)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_simulation EXPORT_MACRO_NAME FOE_SIM_EXPORT EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/simulation/export.h)
 
 target_link_libraries(foe_simulation PUBLIC foe_core foe_ecs foe_graphics
                                             foe_imex foe_resource)
@@ -23,6 +24,25 @@ if(MSVC)
 else()
   target_compile_options(foe_simulation PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_simulation
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/simulation/export.h
+         include/foe/simulation/group_data.hpp
+         include/foe/simulation/registration.hpp
+         include/foe/simulation/resource_create_info_history.h
+         include/foe/simulation/resource_create_info_pool.h
+         include/foe/simulation/result.h
+         include/foe/simulation/simulation.hpp
+         include/foe/simulation/type_defs.h)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/imgui)

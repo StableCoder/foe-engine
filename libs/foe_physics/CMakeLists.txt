@@ -13,8 +13,8 @@ add_library(foe_physics SHARED)
 add_library(foe::physics ALIAS foe_physics)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_physics EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/physics/export.h)
 
 target_include_directories(foe_physics PUBLIC ${BULLET_INCLUDE_DIRS})
 
@@ -30,6 +30,28 @@ if(MSVC)
 else()
   target_compile_options(foe_physics PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_physics
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/physics/export.h
+         include/foe/physics/component/rigid_body.h
+         include/foe/physics/component/rigid_body_pool.h
+         include/foe/physics/resource/collision_shape_create_info.hpp
+         include/foe/physics/resource/collision_shape.hpp
+         include/foe/physics/binary.h
+         include/foe/physics/compare.h
+         include/foe/physics/registration.h
+         include/foe/physics/result.h
+         include/foe/physics/system.h
+         include/foe/physics/type_defs.h)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/binary)

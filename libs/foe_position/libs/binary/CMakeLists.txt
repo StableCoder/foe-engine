@@ -10,13 +10,28 @@ add_library(foe_position_binary SHARED)
 add_library(foe::position::binary ALIAS foe_position_binary)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_position_binary EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/position/binary/export.h)
 
 target_link_libraries(foe_position_binary PUBLIC foe_ecs foe_position
                                                  foe_imex_binary)
 
 target_code_coverage(foe_position_binary)
+
+target_sources(
+  foe_position_binary
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/position/binary/export.h
+         include/foe/position/binary/export_registration.h
+         include/foe/position/binary/import_registration.h
+         include/foe/position/binary/result.h)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

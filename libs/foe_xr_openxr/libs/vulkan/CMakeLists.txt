@@ -10,8 +10,9 @@ add_library(foe_xr_openxr_vk)
 add_library(foe::xr::openxr::vk ALIAS foe_xr_openxr_vk)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_xr_openxr_vk EXPORT_MACRO_NAME FOE_OPENXR_VK_EXPORT EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/xr/openxr/vk/export.h)
 
 target_link_libraries(
   foe_xr_openxr_vk
@@ -19,6 +20,21 @@ target_link_libraries(
   PRIVATE vk_result_serialization)
 
 target_code_coverage(foe_xr_openxr_vk)
+
+target_sources(
+  foe_xr_openxr_vk
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/xr/openxr/vk/export.h
+         include/foe/xr/openxr/vk/render_graph_jobs_swapchain.hpp
+         include/foe/xr/openxr/vk/result.h
+         include/foe/xr/openxr/vk/vulkan.h)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

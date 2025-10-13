@@ -10,8 +10,10 @@ add_library(foe_graphics_resource_imgui)
 add_library(foe::graphics::resource::imgui ALIAS foe_graphics_resource_imgui)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(
+  foe_graphics_resource_imgui EXPORT_MACRO_NAME FOE_GFX_RES_IMGUI_EXPORT
+  EXPORT_FILE_NAME
+  ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/resource/imgui/export.h)
 
 target_link_libraries(
   foe_graphics_resource_imgui
@@ -25,6 +27,19 @@ if(MSVC)
 else()
   target_compile_options(foe_graphics_resource_imgui PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_graphics_resource_imgui
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/resource/imgui/export.h
+         include/foe/graphics/resource/imgui/registration.hpp)
+
+add_subdirectory(src)
 
 # install
 set_property(TARGET foe_graphics_resource_imgui

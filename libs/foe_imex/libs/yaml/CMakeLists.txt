@@ -10,13 +10,31 @@ add_library(foe_imex_yaml SHARED)
 add_library(foe::imex::yaml ALIAS foe_imex_yaml)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_imex_yaml EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/imex/yaml/export.h)
 
 target_link_libraries(foe_imex_yaml PUBLIC foe_imex foe_yaml foe_ecs_yaml
                                            foe_simulation)
 
 target_code_coverage(foe_imex_yaml)
+
+target_sources(
+  foe_imex_yaml
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/imex/yaml/export.h
+         include/foe/imex/yaml/exporter.hpp
+         include/foe/imex/yaml/exporter_registration.h
+         include/foe/imex/yaml/importer.hpp
+         include/foe/imex/yaml/importer_registration.h
+         include/foe/imex/yaml/result.h
+         include/foe/imex/yaml/type_defs.h)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

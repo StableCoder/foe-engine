@@ -13,8 +13,8 @@ add_library(foe_position SHARED)
 add_library(foe::position ALIAS foe_position)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_position EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/position/export.h)
 
 target_link_libraries(foe_position PUBLIC foe_core foe_imex foe_simulation)
 
@@ -34,6 +34,25 @@ if(MSVC)
 else()
   target_compile_options(foe_position PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_position
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/position/export.h
+         include/foe/position/component/3d.hpp
+         include/foe/position/component/3d_pool.h
+         include/foe/position/binary.h
+         include/foe/position/compare.h
+         include/foe/position/registration.h
+         include/foe/position/result.h
+         include/foe/position/type_defs.h)
+
+add_subdirectory(src)
 
 # Auxiliary Targets
 add_subdirectory(libs/binary)

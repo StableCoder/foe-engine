@@ -21,8 +21,8 @@ add_library(foe_crypto SHARED)
 add_library(foe::crypto ALIAS foe_crypto)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_crypto EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/crypto/export.h)
 
 target_include_directories(foe_crypto PRIVATE ${libsodium_INCLUDE_DIRS})
 
@@ -44,6 +44,28 @@ if(MSVC)
 else()
   target_compile_options(foe_crypto PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_crypto
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/crypto/export.h
+         include/foe/crypto/aes_256_gcm.h
+         include/foe/crypto/ed25519.h
+         include/foe/crypto/key.h
+         include/foe/crypto/memory.h
+         include/foe/crypto/random.h
+         include/foe/crypto/result.h
+         include/foe/crypto/sha256.h
+         include/foe/crypto/sha512.h
+         include/foe/crypto/x25519.h
+         include/foe/crypto/xchacha20_poly1305.h)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)

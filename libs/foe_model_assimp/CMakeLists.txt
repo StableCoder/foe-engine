@@ -19,8 +19,8 @@ add_library(foe_model_assimp SHARED)
 add_library(foe::model::assimp ALIAS foe_model_assimp)
 
 # Definition
-add_subdirectory(include)
-add_subdirectory(src)
+generate_export_header(foe_model_assimp EXPORT_FILE_NAME
+                       ${CMAKE_CURRENT_BINARY_DIR}/foe/model/assimp/export.h)
 
 target_include_directories(foe_model_assimp PRIVATE ${assimp_INCLUDE_DIRS})
 
@@ -37,6 +37,20 @@ if(MSVC)
 else()
   target_compile_options(foe_model_assimp PRIVATE -fno-exceptions)
 endif()
+
+target_sources(
+  foe_model_assimp
+  PUBLIC FILE_SET
+         HEADERS
+         BASE_DIRS
+         ${CMAKE_CURRENT_BINARY_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/foe/model/assimp/export.h
+         include/foe/model/assimp/flags.hpp
+         include/foe/model/assimp/importer.hpp)
+
+add_subdirectory(src)
 
 # test
 if(BUILD_TESTS)
