@@ -21,10 +21,6 @@ option(BUILD_VULKAN_RUNTIME_TESTS
 # tools that do post-analysis such as sanitizers.
 option(DISABLE_PLUGIN_UNLOAD "Prevent plugins from unloading" OFF)
 
-option(EDITOR_MODE "Build with the editor UI capability" OFF)
-cmake_dependent_option(
-  IMGUI_DEMO "Build with the ImGui demo in the bringup app" OFF EDITOR_MODE OFF)
-
 # XR Settings
 if(APPLE)
   option(XR_SUPPORT "Compile/link XR device support" OFF)
