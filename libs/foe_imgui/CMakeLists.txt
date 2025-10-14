@@ -46,7 +46,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_imgui PROPERTY EXPORT_NAME imgui)
+set_property(TARGET foe_imgui PROPERTY EXPORT_NAME foe::imgui)
 
 install(
   TARGETS foe_imgui imgui_core imgui_file_dialog
@@ -57,9 +57,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_imgui
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_imgui DESTINATION share/cmake/foe)
 
 install(FILES foe_imgui-config.cmake DESTINATION share/cmake/foe)

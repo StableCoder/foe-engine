@@ -40,7 +40,8 @@ target_sources(
 add_subdirectory(src)
 
 # install
-set_property(TARGET foe_simulation_imgui PROPERTY EXPORT_NAME simulation::imgui)
+set_property(TARGET foe_simulation_imgui PROPERTY EXPORT_NAME
+                                                  foe::simulation::imgui)
 
 install(
   TARGETS foe_simulation_imgui
@@ -51,9 +52,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_simulation_imgui
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_simulation_imgui DESTINATION share/cmake/foe)
 
 install(FILES foe_simulation_imgui-config.cmake DESTINATION share/cmake/foe)

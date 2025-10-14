@@ -39,7 +39,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_position_binary PROPERTY EXPORT_NAME position::binary)
+set_property(TARGET foe_position_binary PROPERTY EXPORT_NAME
+                                                 foe::position::binary)
 
 install(
   TARGETS foe_position_binary
@@ -50,9 +51,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_position_binary
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_position_binary DESTINATION share/cmake/foe)
 
 install(FILES foe_position_binary-config.cmake DESTINATION share/cmake/foe)

@@ -60,7 +60,7 @@ add_subdirectory(libs/imgui)
 add_subdirectory(libs/yaml)
 
 # install
-set_property(TARGET foe_position PROPERTY EXPORT_NAME position)
+set_property(TARGET foe_position PROPERTY EXPORT_NAME foe::position)
 
 install(
   TARGETS foe_position
@@ -71,9 +71,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_position
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_position DESTINATION share/cmake/foe)
 
 install(FILES foe_position-config.cmake DESTINATION share/cmake/foe)

@@ -38,7 +38,8 @@ target_sources(
 add_subdirectory(src)
 
 # install
-set_property(TARGET foe_position_imgui PROPERTY EXPORT_NAME position::imgui)
+set_property(TARGET foe_position_imgui PROPERTY EXPORT_NAME
+                                                foe::position::imgui)
 
 install(
   TARGETS foe_position_imgui
@@ -49,9 +50,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_position_imgui
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_position_imgui DESTINATION share/cmake/foe)
 
 install(FILES foe_position_imgui-config.cmake DESTINATION share/cmake/foe)

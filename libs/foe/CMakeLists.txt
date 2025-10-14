@@ -79,7 +79,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_core PROPERTY EXPORT_NAME core)
+set_property(TARGET foe_core PROPERTY EXPORT_NAME foe::core)
 
 install(
   TARGETS foe_core
@@ -90,9 +90,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_core
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_core DESTINATION share/cmake/foe)
 
 install(FILES foe_core-config.cmake DESTINATION share/cmake/foe)

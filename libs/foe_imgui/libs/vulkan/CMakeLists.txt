@@ -41,7 +41,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_imgui_vk PROPERTY EXPORT_NAME imgui::vk)
+set_property(TARGET foe_imgui_vk PROPERTY EXPORT_NAME foe::imgui::vk)
 
 install(
   TARGETS foe_imgui_vk
@@ -52,9 +52,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_imgui_vk
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_imgui_vk DESTINATION share/cmake/foe)
 
 install(FILES foe_imgui_vk-config.cmake DESTINATION share/cmake/foe)

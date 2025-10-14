@@ -32,7 +32,7 @@ target_sources(
 add_subdirectory(src)
 
 # install
-set_property(TARGET foe_graphics_yaml PROPERTY EXPORT_NAME graphics::yaml)
+set_property(TARGET foe_graphics_yaml PROPERTY EXPORT_NAME foe::graphics::yaml)
 
 install(
   TARGETS foe_graphics_yaml
@@ -43,9 +43,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics_yaml
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics_yaml DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics_yaml-config.cmake DESTINATION share/cmake/foe)

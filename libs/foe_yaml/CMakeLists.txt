@@ -56,7 +56,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_yaml PROPERTY EXPORT_NAME yaml)
+set_property(TARGET foe_yaml PROPERTY EXPORT_NAME foe::yaml)
 
 install(
   TARGETS foe_yaml
@@ -67,9 +67,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_yaml
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_yaml DESTINATION share/cmake/foe)
 
 install(FILES foe_yaml-config.cmake DESTINATION share/cmake/foe)

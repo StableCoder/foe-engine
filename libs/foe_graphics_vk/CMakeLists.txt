@@ -88,7 +88,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_graphics_vk PROPERTY EXPORT_NAME graphics::vk)
+set_property(TARGET foe_graphics_vk PROPERTY EXPORT_NAME foe::graphics::vk)
 
 install(
   TARGETS foe_graphics_vk vulkan_memory_allocator vk_struct_cleanup
@@ -100,9 +100,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics_vk
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics_vk DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics_vk-config.cmake DESTINATION share/cmake/foe)

@@ -42,7 +42,7 @@ endif()
 
 # install
 set_property(TARGET foe_graphics_resource_binary
-             PROPERTY EXPORT_NAME graphics::resource::binary)
+             PROPERTY EXPORT_NAME foe::graphics::resource::binary)
 
 install(
   TARGETS foe_graphics_resource_binary
@@ -53,10 +53,7 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics_resource_binary
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics_resource_binary DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics_resource_binary-config.cmake
         DESTINATION share/cmake/foe)

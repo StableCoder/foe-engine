@@ -39,7 +39,8 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_physics_binary PROPERTY EXPORT_NAME physics::binary)
+set_property(TARGET foe_physics_binary PROPERTY EXPORT_NAME
+                                                foe::physics::binary)
 
 install(
   TARGETS foe_physics_binary
@@ -50,9 +51,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_physics_binary
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_physics_binary DESTINATION share/cmake/foe)
 
 install(FILES foe_physics_binary-config.cmake DESTINATION share/cmake/foe)

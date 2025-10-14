@@ -58,7 +58,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_model_assimp PROPERTY EXPORT_NAME model::assimp)
+set_property(TARGET foe_model_assimp PROPERTY EXPORT_NAME foe::model::assimp)
 
 install(
   TARGETS foe_model_assimp
@@ -69,9 +69,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_model_assimp
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_model_assimp DESTINATION share/cmake/foe)
 
 install(FILES foe_model_assimp-config.cmake DESTINATION share/cmake/foe)

@@ -37,7 +37,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_ecs_yaml PROPERTY EXPORT_NAME ecs::yaml)
+set_property(TARGET foe_ecs_yaml PROPERTY EXPORT_NAME foe::ecs::yaml)
 
 install(
   TARGETS foe_ecs_yaml
@@ -48,9 +48,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_ecs_yaml
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_ecs_yaml DESTINATION share/cmake/foe)
 
 install(FILES foe_ecs_yaml-config.cmake DESTINATION share/cmake/foe)

@@ -49,7 +49,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_imex PROPERTY EXPORT_NAME imex)
+set_property(TARGET foe_imex PROPERTY EXPORT_NAME foe::imex)
 
 install(
   TARGETS foe_imex
@@ -60,9 +60,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_imex
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_imex DESTINATION share/cmake/foe)
 
 install(FILES foe_imex-config.cmake DESTINATION share/cmake/foe)

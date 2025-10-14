@@ -47,7 +47,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_network PROPERTY EXPORT_NAME network)
+set_property(TARGET foe_network PROPERTY EXPORT_NAME foe::network)
 
 install(
   TARGETS foe_network
@@ -58,9 +58,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_network
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_network DESTINATION share/cmake/foe)
 
 install(FILES foe_network-config.cmake DESTINATION share/cmake/foe)

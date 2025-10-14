@@ -41,7 +41,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_physics_yaml PROPERTY EXPORT_NAME physics::yaml)
+set_property(TARGET foe_physics_yaml PROPERTY EXPORT_NAME foe::physics::yaml)
 
 install(
   TARGETS foe_physics_yaml
@@ -52,9 +52,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_physics_yaml
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_physics_yaml DESTINATION share/cmake/foe)
 
 install(FILES foe_physics_yaml-config.cmake DESTINATION share/cmake/foe)

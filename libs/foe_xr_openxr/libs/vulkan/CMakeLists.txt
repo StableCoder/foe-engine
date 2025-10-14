@@ -42,7 +42,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_xr_openxr_vk PROPERTY EXPORT_NAME xr::openxr::vk)
+set_property(TARGET foe_xr_openxr_vk PROPERTY EXPORT_NAME foe::xr::openxr::vk)
 
 install(
   TARGETS foe_xr_openxr_vk
@@ -53,9 +53,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_xr_openxr_vk
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_xr_openxr_vk DESTINATION share/cmake/foe)
 
 install(FILES foe_xr_openxr_vk-config.cmake DESTINATION share/cmake/foe)

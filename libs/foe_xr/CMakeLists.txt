@@ -27,7 +27,7 @@ target_sources(
          include/foe/xr/session.h)
 
 # install
-set_property(TARGET foe_xr PROPERTY EXPORT_NAME xr)
+set_property(TARGET foe_xr PROPERTY EXPORT_NAME foe::xr)
 
 install(
   TARGETS foe_xr
@@ -38,9 +38,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_xr
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_xr DESTINATION share/cmake/foe)
 
 install(FILES foe_xr-config.cmake DESTINATION share/cmake/foe)

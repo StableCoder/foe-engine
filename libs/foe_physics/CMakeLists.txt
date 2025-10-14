@@ -64,7 +64,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_physics PROPERTY EXPORT_NAME physics)
+set_property(TARGET foe_physics PROPERTY EXPORT_NAME foe::physics)
 
 install(
   TARGETS foe_physics
@@ -75,9 +75,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_physics
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_physics DESTINATION share/cmake/foe)
 
 install(FILES foe_physics-config.cmake DESTINATION share/cmake/foe)

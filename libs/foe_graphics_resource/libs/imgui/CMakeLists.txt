@@ -43,7 +43,7 @@ add_subdirectory(src)
 
 # install
 set_property(TARGET foe_graphics_resource_imgui
-             PROPERTY EXPORT_NAME graphics::resource::imgui)
+             PROPERTY EXPORT_NAME foe::graphics::resource::imgui)
 
 install(
   TARGETS foe_graphics_resource_imgui
@@ -54,10 +54,7 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics_resource_imgui
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics_resource_imgui DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics_resource_imgui-config.cmake
         DESTINATION share/cmake/foe)

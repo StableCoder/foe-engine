@@ -45,7 +45,7 @@ endif()
 
 # install
 set_property(TARGET foe_graphics_resource_yaml
-             PROPERTY EXPORT_NAME graphics::resource::yaml)
+             PROPERTY EXPORT_NAME foe::graphics::resource::yaml)
 
 install(
   TARGETS foe_graphics_resource_yaml
@@ -56,10 +56,7 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics_resource_yaml
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics_resource_yaml DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics_resource_yaml-config.cmake
         DESTINATION share/cmake/foe)

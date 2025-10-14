@@ -53,7 +53,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_ecs PROPERTY EXPORT_NAME ecs)
+set_property(TARGET foe_ecs PROPERTY EXPORT_NAME foe::ecs)
 
 install(
   TARGETS foe_ecs
@@ -64,9 +64,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_ecs
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_ecs DESTINATION share/cmake/foe)
 
 install(FILES foe_ecs-config.cmake DESTINATION share/cmake/foe)

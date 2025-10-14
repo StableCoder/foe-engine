@@ -44,7 +44,7 @@ endif()
 
 # install
 set_property(TARGET foe_graphics_vk_yaml PROPERTY EXPORT_NAME
-                                                  graphics::vk::yaml)
+                                                  foe::graphics::vk::yaml)
 
 install(
   TARGETS foe_graphics_vk_yaml
@@ -55,9 +55,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics_vk_yaml
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics_vk_yaml DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics_vk_yaml-config.cmake DESTINATION share/cmake/foe)

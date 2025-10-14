@@ -73,7 +73,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_crypto PROPERTY EXPORT_NAME crypto)
+set_property(TARGET foe_crypto PROPERTY EXPORT_NAME foe::crypto)
 
 install(
   TARGETS foe_crypto
@@ -84,9 +84,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_crypto
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_crypto DESTINATION share/cmake/foe)
 
 install(FILES foe_crypto-config.cmake DESTINATION share/cmake/foe)

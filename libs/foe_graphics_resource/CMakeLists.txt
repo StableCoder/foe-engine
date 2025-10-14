@@ -87,7 +87,7 @@ endif()
 
 # install
 set_property(TARGET foe_graphics_resource PROPERTY EXPORT_NAME
-                                                   graphics::resource)
+                                                   foe::graphics::resource)
 
 install(
   TARGETS foe_graphics_resource
@@ -98,9 +98,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics_resource
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics_resource DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics_resource-config.cmake DESTINATION share/cmake/foe)

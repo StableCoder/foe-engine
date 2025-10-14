@@ -39,7 +39,7 @@ target_sources(
 add_subdirectory(src)
 
 # install
-set_property(TARGET foe_physics_imgui PROPERTY EXPORT_NAME physics::imgui)
+set_property(TARGET foe_physics_imgui PROPERTY EXPORT_NAME foe::physics::imgui)
 
 install(
   TARGETS foe_physics_imgui
@@ -50,9 +50,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_physics_imgui
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_physics_imgui DESTINATION share/cmake/foe)
 
 install(FILES foe_physics_imgui-config.cmake DESTINATION share/cmake/foe)

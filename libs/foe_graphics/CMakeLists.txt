@@ -60,7 +60,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_graphics PROPERTY EXPORT_NAME graphics)
+set_property(TARGET foe_graphics PROPERTY EXPORT_NAME foe::graphics)
 
 install(
   TARGETS foe_graphics
@@ -71,9 +71,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_graphics
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_graphics DESTINATION share/cmake/foe)
 
 install(FILES foe_graphics-config.cmake DESTINATION share/cmake/foe)

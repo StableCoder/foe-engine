@@ -51,7 +51,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_resource PROPERTY EXPORT_NAME resource)
+set_property(TARGET foe_resource PROPERTY EXPORT_NAME foe::resource)
 
 install(
   TARGETS foe_resource
@@ -62,9 +62,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_resource
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_resource DESTINATION share/cmake/foe)
 
 install(FILES foe_resource-config.cmake DESTINATION share/cmake/foe)

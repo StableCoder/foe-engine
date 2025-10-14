@@ -19,6 +19,9 @@ endif()
 add_library(vk_struct_cleanup STATIC)
 add_library(foe::vk_struct_cleanup ALIAS vk_struct_cleanup)
 
+set_property(TARGET vk_struct_cleanup PROPERTY EXPORT_NAME
+                                               foe::vk_struct_cleanup)
+
 target_include_directories(
   vk_struct_cleanup
   PUBLIC
@@ -37,6 +40,9 @@ target_sources(
 add_library(vk_struct_compare STATIC)
 add_library(foe::vk_struct_compare ALIAS vk_struct_compare)
 
+set_property(TARGET vk_struct_compare PROPERTY EXPORT_NAME
+                                               foe::vk_struct_compare)
+
 target_include_directories(
   vk_struct_compare
   PUBLIC
@@ -54,6 +60,9 @@ target_sources(
 # VK Value Serialization
 add_library(vk_value_serialization STATIC)
 add_library(foe::vk_value_serialization ALIAS vk_value_serialization)
+
+set_property(TARGET vk_value_serialization PROPERTY EXPORT_NAME
+                                                    foe::vk_value_serialization)
 
 target_include_directories(
   vk_value_serialization
@@ -77,6 +86,9 @@ target_sources(
 add_library(vk_result_serialization INTERFACE)
 add_library(foe::vk_result_serialization ALIAS vk_result_serialization)
 
+set_property(TARGET vk_result_serialization
+             PROPERTY EXPORT_NAME foe::vk_result_serialization)
+
 target_include_directories(
   vk_result_serialization
   INTERFACE
@@ -95,6 +107,9 @@ target_sources(
 if(XR_SUPPORT)
   add_library(xr_result_serialization INTERFACE)
   add_library(foe::xr_result_serialization ALIAS xr_result_serialization)
+
+  set_property(TARGET xr_result_serialization
+               PROPERTY EXPORT_NAME foe::xr_result_serialization)
 
   target_include_directories(
     xr_result_serialization

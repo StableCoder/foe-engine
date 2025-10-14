@@ -58,7 +58,7 @@ target_sources(
 add_subdirectory(src)
 
 # install
-set_property(TARGET foe_model PROPERTY EXPORT_NAME model)
+set_property(TARGET foe_model PROPERTY EXPORT_NAME foe::model)
 
 install(
   TARGETS foe_model
@@ -69,9 +69,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_model
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_model DESTINATION share/cmake/foe)
 
 install(FILES foe_model-config.cmake DESTINATION share/cmake/foe)

@@ -53,7 +53,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_simulation PROPERTY EXPORT_NAME simulation)
+set_property(TARGET foe_simulation PROPERTY EXPORT_NAME foe::simulation)
 
 install(
   TARGETS foe_simulation
@@ -64,9 +64,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_simulation
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_simulation DESTINATION share/cmake/foe)
 
 install(FILES foe_simulation-config.cmake DESTINATION share/cmake/foe)

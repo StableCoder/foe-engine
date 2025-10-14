@@ -74,7 +74,7 @@ if(BUILD_TESTS)
 endif()
 
 # install
-set_property(TARGET foe_xr_openxr PROPERTY EXPORT_NAME xr::openxr)
+set_property(TARGET foe_xr_openxr PROPERTY EXPORT_NAME foe::xr::openxr)
 
 install(
   TARGETS foe_xr_openxr xr_result_serialization
@@ -85,9 +85,6 @@ install(
           FILE_SET HEADERS
           DESTINATION include)
 
-install(
-  EXPORT foe_xr_openxr
-  NAMESPACE foe::
-  DESTINATION share/cmake/foe)
+install(EXPORT foe_xr_openxr DESTINATION share/cmake/foe)
 
 install(FILES foe_xr_openxr-config.cmake DESTINATION share/cmake/foe)
