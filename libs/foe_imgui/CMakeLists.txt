@@ -13,7 +13,7 @@ add_library(foe::imgui ALIAS foe_imgui)
 generate_export_header(foe_imgui EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/imgui/export.h)
 
-target_link_libraries(foe_imgui PUBLIC foe_core imgui_core imgui_file_dialog)
+target_link_libraries(foe_imgui PUBLIC foe_core imgui imgui_file_dialog)
 
 target_code_coverage(foe_imgui)
 
@@ -49,7 +49,7 @@ endif()
 set_property(TARGET foe_imgui PROPERTY EXPORT_NAME foe::imgui)
 
 install(
-  TARGETS foe_imgui imgui_core imgui_file_dialog
+  TARGETS foe_imgui imgui imgui_file_dialog
   EXPORT foe_imgui
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib

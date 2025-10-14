@@ -17,15 +17,11 @@ endif()
 
 # Struct Cleanup
 add_library(vk_struct_cleanup STATIC)
-add_library(foe::vk_struct_cleanup ALIAS vk_struct_cleanup)
+add_library(foe::external::vk_struct_cleanup ALIAS vk_struct_cleanup)
 
 set_property(TARGET vk_struct_cleanup PROPERTY EXPORT_NAME
-                                               foe::vk_struct_cleanup)
+                                               foe::external::vk_struct_cleanup)
 
-target_include_directories(
-  vk_struct_cleanup
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include>)
 target_link_libraries(vk_struct_cleanup PUBLIC Vulkan::Vulkan)
 
 target_sources(
@@ -38,15 +34,11 @@ target_sources(
 
 # Struct Cleanup
 add_library(vk_struct_compare STATIC)
-add_library(foe::vk_struct_compare ALIAS vk_struct_compare)
+add_library(foe::external::vk_struct_compare ALIAS vk_struct_compare)
 
 set_property(TARGET vk_struct_compare PROPERTY EXPORT_NAME
-                                               foe::vk_struct_compare)
+                                               foe::external::vk_struct_compare)
 
-target_include_directories(
-  vk_struct_compare
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include>)
 target_link_libraries(vk_struct_compare PUBLIC Vulkan::Vulkan)
 
 target_sources(
@@ -59,15 +51,11 @@ target_sources(
 
 # VK Value Serialization
 add_library(vk_value_serialization STATIC)
-add_library(foe::vk_value_serialization ALIAS vk_value_serialization)
+add_library(foe::external::vk_value_serialization ALIAS vk_value_serialization)
 
 set_property(TARGET vk_value_serialization PROPERTY EXPORT_NAME
-                                                    foe::vk_value_serialization)
+                                                    foe::external::vk_value_serialization)
 
-target_include_directories(
-  vk_value_serialization
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include>)
 target_link_libraries(vk_value_serialization PUBLIC Vulkan::Vulkan)
 
 target_sources(
@@ -84,15 +72,11 @@ target_sources(
 
 # Vulkan Result Serialization
 add_library(vk_result_serialization INTERFACE)
-add_library(foe::vk_result_serialization ALIAS vk_result_serialization)
+add_library(foe::external::vk_result_serialization ALIAS vk_result_serialization)
 
 set_property(TARGET vk_result_serialization
-             PROPERTY EXPORT_NAME foe::vk_result_serialization)
+             PROPERTY EXPORT_NAME foe::external::vk_result_serialization)
 
-target_include_directories(
-  vk_result_serialization
-  INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include>)
 target_link_libraries(vk_result_serialization INTERFACE Vulkan::Vulkan)
 
 target_sources(
@@ -106,15 +90,11 @@ target_sources(
 # OpenXR Result Serialization
 if(XR_SUPPORT)
   add_library(xr_result_serialization INTERFACE)
-  add_library(foe::xr_result_serialization ALIAS xr_result_serialization)
+  add_library(foe::external::xr_result_serialization ALIAS xr_result_serialization)
 
   set_property(TARGET xr_result_serialization
-               PROPERTY EXPORT_NAME foe::xr_result_serialization)
+               PROPERTY EXPORT_NAME foe::external::xr_result_serialization)
 
-  target_include_directories(
-    xr_result_serialization
-    INTERFACE
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include>)
   target_link_libraries(xr_result_serialization INTERFACE OpenXR::headers)
 
   target_sources(

@@ -18,10 +18,8 @@ generate_export_header(foe_physics EXPORT_FILE_NAME
 
 target_include_directories(foe_physics PUBLIC ${BULLET_INCLUDE_DIRS})
 
-target_link_libraries(
-  foe_physics
-  PUBLIC foe_core foe_ecs foe_imex foe_position
-  PRIVATE ${BULLET_LIBRARIES})
+target_link_libraries(foe_physics PUBLIC foe_core foe_ecs foe_imex foe_position
+                                         ${BULLET_LIBRARIES})
 
 target_code_coverage(foe_physics)
 

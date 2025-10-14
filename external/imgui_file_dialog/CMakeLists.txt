@@ -14,14 +14,13 @@ if(WIN32)
 else()
   add_library(imgui_file_dialog)
 endif()
+add_library(foe::external::imgui::file_dialog ALIAS imgui_file_dialog)
 
 # Definition
-target_include_directories(
-  imgui_file_dialog
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog>)
+set_property(TARGET imgui_file_dialog PROPERTY EXPORT_NAME
+                                               foe::external::imgui::file_dialog)
 
-target_link_libraries(imgui_file_dialog PUBLIC imgui_core)
+target_link_libraries(imgui_file_dialog PUBLIC imgui)
 
 target_sources(
   imgui_file_dialog
@@ -31,6 +30,6 @@ target_sources(
          ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog
          ${CMAKE_CURRENT_SOURCE_DIR}/include
          FILES
-         ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/ImGuiFileDialog.h
-         ${CMAKE_CURRENT_SOURCE_DIR}/include/ImGuiFileDialogConfig.h
+         ImGuiFileDialog/ImGuiFileDialog.h
+         include/ImGuiFileDialogConfig.h
   PRIVATE ImGuiFileDialog/ImGuiFileDialog.cpp)

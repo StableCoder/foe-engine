@@ -11,10 +11,11 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Library
 add_library(vulkan_memory_allocator)
-add_library(foe::vulkan_memory_allocator ALIAS vulkan_memory_allocator)
+add_library(foe::external::vulkan_memory_allocator ALIAS vulkan_memory_allocator)
 
-target_include_directories(
-  vulkan_memory_allocator PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+set_property(TARGET vulkan_memory_allocator PROPERTY EXPORT_NAME
+                                               foe::external::vulkan_memory_allocator)
+
 target_link_libraries(vulkan_memory_allocator PUBLIC Vulkan::Vulkan)
 if(UNIX)
   target_compile_options(vulkan_memory_allocator PRIVATE -fPIC)

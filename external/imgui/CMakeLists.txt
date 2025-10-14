@@ -9,38 +9,44 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # Declarations
 if(WIN32)
-  add_library(imgui_core STATIC)
+  add_library(imgui STATIC)
 else()
-  add_library(imgui_core)
+  add_library(imgui)
 endif()
+add_library(foe::external::imgui ALIAS imgui)
+
 add_library(imgui_demo STATIC)
+add_library(foe::external::imgui::demo ALIAS imgui_demo)
 
 # imgui Definition
-target_include_directories(
-  imgui_core PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/imgui>)
+set_property(TARGET imgui PROPERTY EXPORT_NAME
+                                               foe::external::imgui)
+
 if(UNIX)
-  target_compile_options(imgui_core PRIVATE -fPIC)
+  target_compile_options(imgui PRIVATE -fPIC)
 endif()
 
 target_sources(
-  imgui_core
+  imgui
   PUBLIC FILE_SET
          HEADERS
          BASE_DIRS
          ${CMAKE_CURRENT_SOURCE_DIR}/imgui
          ${CMAKE_CURRENT_SOURCE_DIR}/include
          FILES
-         ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h
-         ${CMAKE_CURRENT_SOURCE_DIR}/include/imconfig.h
+         imgui/imgui.h
+         include/imconfig.h
   PRIVATE imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
           imgui/imgui_widgets.cpp)
 
 # imgui_demo Definition
-target_sources(imgui_demo PRIVATE imgui/imgui_demo.cpp)
+set_property(TARGET imgui_demo PROPERTY EXPORT_NAME
+                                               foe::external::imgui::demo)
 
-target_link_libraries(imgui_demo PUBLIC imgui_core)
-
-if(UNIX)
+                                               if(UNIX)
   target_compile_options(imgui_demo PRIVATE -fPIC)
 endif()
+
+target_link_libraries(imgui_demo PUBLIC imgui)
+
+target_sources(imgui_demo PRIVATE imgui/imgui_demo.cpp)
