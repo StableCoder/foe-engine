@@ -6,15 +6,7 @@ cmake_minimum_required(VERSION 3.23)
 project(foe_graphics_resource)
 
 # Dependencies
-find_file(freeimage_INCLUDE_DIRS FreeImage.h)
-find_library(freeimage_LIBRARIES freeimage)
-if(freeimage_INCLUDE_DIRS-NOTFOUND OR freeimage_LIBRARIES-NOTFOUND)
-  message(FATAL_ERROR "Cannot find required FreeImage library!")
-else()
-  get_filename_component(freeimage_INCLUDE_DIRS ${freeimage_INCLUDE_DIRS}
-                         DIRECTORY)
-endif()
-mark_as_advanced(FORCE freeimage_INCLUDE_DIRS freeimage_LIBRARIES)
+find_package(ImageMagick REQUIRED MagickCore)
 
 # Declaration
 add_library(foe_graphics_resource SHARED)
@@ -25,9 +17,6 @@ generate_export_header(
   foe_graphics_resource EXPORT_MACRO_NAME FOE_GFX_RES_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/resource/export.h)
 
-target_include_directories(foe_graphics_resource
-                           PRIVATE ${freeimage_INCLUDE_DIRS})
-
 target_link_libraries(
   foe_graphics_resource
   PUBLIC foe_core
@@ -37,7 +26,7 @@ target_link_libraries(
          foe_model
          foe_model_assimp
          foe_simulation
-  PRIVATE ${freeimage_LIBRARIES} vk_struct_cleanup vk_struct_compare)
+  PRIVATE vk_struct_cleanup vk_struct_compare ImageMagick::MagickCore)
 
 target_code_coverage(foe_graphics_resource)
 

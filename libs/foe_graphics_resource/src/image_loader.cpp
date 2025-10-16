@@ -1,10 +1,10 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "image_loader.hpp"
 
-#include <FreeImage.h>
+#include <MagickCore/MagickCore.h>
 #include <foe/ecs/id_to_string.hpp>
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/type_defs.h>
@@ -16,11 +16,16 @@
 #include "result.h"
 #include "vk_result.h"
 
+#include <cassert>
+
 foeResultSet foeImageLoader::initialize(
     foeResourcePool resourcePool,
     std::function<foeResultSet(char const *, foeManagedMemory *)> externalFileSearchFn) {
     if (resourcePool == FOE_NULL_HANDLE || !externalFileSearchFn)
         return to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_IMAGE_LOADER_INITIALIZATION_FAILED);
+
+    MagickBooleanType magickFalse = MagickFalse;
+    MagickCoreGenesis(nullptr, magickFalse);
 
     mResourcePool = resourcePool;
     mExternalFileSearchFn = externalFileSearchFn;
@@ -31,6 +36,8 @@ foeResultSet foeImageLoader::initialize(
 void foeImageLoader::deinitialize() {
     mExternalFileSearchFn = {};
     mResourcePool = FOE_NULL_HANDLE;
+
+    MagickCoreTerminus();
 }
 
 bool foeImageLoader::initialized() const noexcept { return !!mExternalFileSearchFn; }
@@ -252,39 +259,26 @@ void foeImageLoader::load(foeResource resource,
             goto LOADING_FAILED;
 
         // Determine the image format
-        FIMEMORY *fiMemory;
-        foeManagedMemoryGetData(managedMemory, (void **)&fiMemory, nullptr);
-        FREE_IMAGE_FORMAT imageFormat = FreeImage_GetFileTypeFromMemory(fiMemory);
-        if (imageFormat == FIF_UNKNOWN) {
-            FreeImage_GetFIFFromFilename(pImageCI->pFile);
-        }
-        if (imageFormat == FIF_UNKNOWN) {
-            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR,
-                    "Could not determine image format for: {}", pImageCI->pFile)
-            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_FORMAT_UNKNOWN);
-            goto LOADING_FAILED;
-        }
+        void *fileMemHandle;
+        uint32_t fileMemSize;
+        foeManagedMemoryGetData(managedMemory, (void **)&fileMemHandle, &fileMemSize);
 
-        // Load the image into memory
-        auto *bitmap = FreeImage_LoadFromMemory(imageFormat, fiMemory, 0);
-        if (bitmap == nullptr) {
-            FOE_LOG(foeGraphicsResource, FOE_LOG_LEVEL_ERROR, "Failed to load image: {}",
-                    pImageCI->pFile)
-            result = to_foeResult(FOE_GRAPHICS_RESOURCE_ERROR_EXTERNAL_IMAGE_LOAD_FAILURE);
-            goto LOADING_FAILED;
-        }
+        ExceptionInfo *exceptionInfo;
+        exceptionInfo = AcquireExceptionInfo();
 
-        { // Convert to 32 bit RGBA
-            auto *newBitmap = FreeImage_ConvertTo32Bits(bitmap);
-            // Unload original
-            FreeImage_Unload(bitmap);
-            bitmap = newBitmap;
-        }
+        ImageInfo *imageInfo = AcquireImageInfo();
+        Image *image = BlobToImage(imageInfo, fileMemHandle, fileMemSize, exceptionInfo);
+        ImageView *imageView = NewImageView(image, exceptionInfo);
+
+        RectangleInfo magickExtent = GetImageViewExtent(imageView);
+        QuantumType magickType = GetQuantumType(image, exceptionInfo);
+
+        assert(magickType == RGBQuantum);
 
         VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
         VkExtent3D extent{
-            .width = FreeImage_GetWidth(bitmap),
-            .height = FreeImage_GetHeight(bitmap),
+            .width = (uint32_t)magickExtent.width,
+            .height = (uint32_t)magickExtent.height,
             .depth = 1,
         };
         auto mipLevels = foeGfxVkMipmapCount(extent);
@@ -294,23 +288,44 @@ void foeImageLoader::load(foeResource resource,
         std::unique_ptr<uint8_t[]> pelData(new uint8_t[totalDataSize]);
         std::vector<uint8_t *> mipmapOffsetPtrs;
 
-        auto *pPelData = pelData.get();
+        uint8_t *pPelData = pelData.get();
         for (uint32_t m = 0; m < mipLevels; ++m) {
             auto mipExtent = foeGfxVkMipmapExtent(extent, m);
             auto mipDataSize = bpp * mipExtent.width * mipExtent.height * mipExtent.depth;
 
+            Image *mipImage =
+                ResizeImage(image, mipExtent.width, mipExtent.height, LanczosFilter, exceptionInfo);
+            ImageView *mipImageView = NewImageView(mipImage, exceptionInfo);
+
+            Quantum const *pixels =
+                GetVirtualPixels(image, 0, 0, mipExtent.width, mipExtent.height, exceptionInfo);
+
             mipmapOffsetPtrs.emplace_back(pPelData);
 
-            auto *mipBitmap = FreeImage_Rescale(bitmap, mipExtent.width, mipExtent.height);
-            auto *mipData = FreeImage_GetBits(mipBitmap);
+            for (size_t x = 0; x < mipExtent.width; ++x) {
+                for (size_t y = 0; y < mipExtent.height; ++y) {
+                    *pPelData = ScaleQuantumToChar(pixels[2]);
+                    ++pPelData;
+                    *pPelData = ScaleQuantumToChar(pixels[1]);
+                    ++pPelData;
+                    *pPelData = ScaleQuantumToChar(pixels[0]);
+                    ++pPelData;
+                    *pPelData = UINT8_MAX;
+                    ++pPelData;
+                    pixels += 3;
+                }
+            }
 
-            std::memcpy(pPelData, mipData, mipDataSize);
-            pPelData += mipDataSize;
-
-            FreeImage_Unload(mipBitmap);
+            mipImageView = DestroyImageView(mipImageView);
+            mipImage = DestroyImage(mipImage);
         }
 
-        FreeImage_Unload(bitmap);
+        imageView = DestroyImageView(imageView);
+        image = DestroyImage(image);
+        imageInfo = DestroyImageInfo(imageInfo);
+
+        exceptionInfo = DestroyExceptionInfo(exceptionInfo);
+
         foeManagedMemoryDecrementUse(managedMemory);
 
         // Create the resources
