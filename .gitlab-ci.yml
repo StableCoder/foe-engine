@@ -626,6 +626,7 @@ macOS Vulkan HW Testing:
     - container
     - linux
     - ${ARCH}
+  needs: []
   dependencies: []
   script:
     - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_TESTS=ON -D DISABLE_PLUGIN_UNLOAD=ON ${CMAKE_OPTIONS}
@@ -641,6 +642,7 @@ Static Analysis:
     - container
     - linux
     - amd64
+  needs: []
   dependencies: []
   variables:
     CC: clang
@@ -656,6 +658,7 @@ Code Coverage:
     - container
     - linux
     - amd64
+  needs: []
   dependencies: []
   variables:
     CC: clang
