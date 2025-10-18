@@ -180,6 +180,72 @@ Arch/Clang Shared:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
+# Debian
+
+Debian/GCC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
+  <<: *linux_template
+
+Debian/GCC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
+  <<: *linux_template
+
+Debian/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
+  <<: *linux_template
+
+Debian/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:debian
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
+  <<: *linux_template
+
 # Fedora
 
 Fedora/GCC Static:
@@ -244,72 +310,6 @@ Fedora/Clang Shared:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *linux_template
 
-# Ubuntu
-
-Ubuntu/GCC Static:
-  parallel:
-    matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
-  image: docker.io/stabletec/build-foe:ubuntu
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: gcc
-    CXX: g++
-    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
-  <<: *linux_template
-
-Ubuntu/GCC Shared:
-  parallel:
-    matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
-  image: docker.io/stabletec/build-foe:ubuntu
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: gcc
-    CXX: g++
-    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
-  <<: *linux_template
-
-Ubuntu/Clang Static:
-  parallel:
-    matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
-  image: docker.io/stabletec/build-foe:ubuntu
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D XR_SUPPORT=OFF
-  <<: *linux_template
-
-Ubuntu/Clang Shared:
-  parallel:
-    matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
-  image: docker.io/stabletec/build-foe:ubuntu
-  tags:
-    - container
-    - linux
-    - ${ARCH}
-  variables:
-    CC: clang
-    CXX: clang++
-    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON -D XR_SUPPORT=OFF
-  <<: *linux_template
-
 # macOS
 
 macOS/AppleClang Static:
@@ -360,6 +360,70 @@ macOS/Clang Shared:
     CXX: clang++
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_macos_template
+
+# openSUSE
+
+openSUSE/GCC Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:opensuse
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: gcc
+    CXX: g++
+  <<: *linux_template
+
+openSUSE/GCC Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:opensuse
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
+  <<: *linux_template
+
+openSUSE/Clang Static:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:opensuse
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+  <<: *linux_template
+
+openSUSE/Clang Shared:
+  parallel:
+    matrix:
+    - ARCH: [amd64, arm64]
+      BUILD_TYPE: [Release]
+  image: docker.io/stabletec/build-foe:opensuse
+  tags:
+    - container
+    - linux
+    - ${ARCH}
+  variables:
+    CC: clang
+    CXX: clang++
+    CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
+  <<: *linux_template
 
 # Windows
 
@@ -433,7 +497,6 @@ MSYS/GCC Static:
     - ARCH: [amd64]
       BUILD_TYPE: [Release]
       MSYS_SUBSYSTEM: [ucrt64, mingw64]
-  variables:
   <<: *platform_msys_template
 
 MSYS/GCC Shared:
@@ -481,26 +544,26 @@ MSYS/Clang Shared:
     - cmake --build build --target test_foe_graphics_vk
     - ./build/libs/foe_graphics_vk/test/test_foe_graphics_vk
 
-Fedora Vulkan SW Testing:
+Debian Vulkan HW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-  image: docker.io/stabletec/build-foe:fedora
+    - ARCH: [amd64]
+      GPU: [amd_navi23,amd_vega10,amd_ellesmere]
+  image: docker.io/stabletec/build-foe:debian
   tags:
     - container
     - linux
-    - ${ARCH}
+    - ${ARCH}-${GPU}
   variables:
     CC: clang
     CXX: clang++
-    GPU: llvmpipe
   <<: *vulkan_template
 
-Ubuntu Vulkan SW Testing:
+Debian Vulkan SW Testing:
   parallel:
     matrix:
     - ARCH: [amd64, arm64, ppc64le, riscv64]
-  image: docker.io/stabletec/build-foe:ubuntu
+  image: docker.io/stabletec/build-foe:debian
   tags:
     - container
     - linux
@@ -526,19 +589,19 @@ Fedora Vulkan HW Testing:
     CXX: clang++
   <<: *vulkan_template
 
-Ubuntu Vulkan HW Testing:
+Fedora Vulkan SW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      GPU: [amd_navi23,amd_vega10,amd_ellesmere]
-  image: docker.io/stabletec/build-foe:ubuntu
+    - ARCH: [amd64, arm64, ppc64le, s390x]
+  image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
     - linux
-    - ${ARCH}-${GPU}
+    - ${ARCH}
   variables:
     CC: clang
     CXX: clang++
+    GPU: llvmpipe
   <<: *vulkan_template
 
 macOS Vulkan HW Testing:
@@ -549,7 +612,6 @@ macOS Vulkan HW Testing:
   tags:
     - macos
     - ${ARCH}-${GPU}
-  variables:
   <<: *vulkan_template
 
 # Analysis Stage Templates
