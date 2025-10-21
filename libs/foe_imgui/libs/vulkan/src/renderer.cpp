@@ -4,11 +4,11 @@
 
 #include <foe/imgui/vk/renderer.hpp>
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/upload_request.h>
 #include <foe/graphics/vk/image.h>
 #include <foe/graphics/vk/session.h>
-#include <imgui.h>
 
 #include "fragment_shader.h"
 #include "result.h"

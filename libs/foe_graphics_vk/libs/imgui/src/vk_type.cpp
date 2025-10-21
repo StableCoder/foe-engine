@@ -5,7 +5,7 @@
 #include <foe/graphics/vk/imgui/vk_type.hpp>
 
 #include <fmt/core.h>
-#include <imgui.h>
+#include <foe/external/imgui.h>
 #include <vk_value_serialization.hpp>
 
 void imgui_VkEnum32(std::string const &typeName, std::string const &label, uint32_t const &data) {

@@ -4,7 +4,7 @@
 
 #include <foe/imgui/state.hpp>
 
-#include <imgui.h>
+#include <foe/external/imgui.h>
 
 void foeImGuiState::setImGuiContext(ImGuiContext *pContext) {
     ImGui::SetCurrentContext(pContext);

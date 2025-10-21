@@ -4,11 +4,11 @@
 
 #include "vertex_descriptor.hpp"
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/resource/vertex_descriptor.hpp>
 #include <foe/graphics/resource/vertex_descriptor_create_info.h>
 #include <foe/graphics/vk/imgui/vertex_descriptor.hpp>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
-#include <imgui.h>
 
 void imgui_foeVertexDescriptor(foeVertexDescriptor const *pResource) {
     ImGui::Text("foeVertexDescriptor");

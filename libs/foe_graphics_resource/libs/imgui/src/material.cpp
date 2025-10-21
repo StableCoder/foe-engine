@@ -5,11 +5,11 @@
 #include "material.hpp"
 
 #include <foe/ecs/id_to_string.hpp>
+#include <foe/external/imgui.h>
 #include <foe/graphics/resource/material.hpp>
 #include <foe/graphics/resource/material_create_info.h>
 #include <foe/graphics/vk/imgui/fragment_descriptor.hpp>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
-#include <imgui.h>
 
 void imgui_foeMaterial(foeMaterial const *pResource) {
     ImGui::Text("foeMaterial");

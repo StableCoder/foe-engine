@@ -6,9 +6,9 @@
 
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/vk/imgui/vk_type.hpp>
 #include <foe/imgui/plain_old_data.hpp>
-#include <imgui.h>
 
 void imgui_VkDescriptorSetLayoutBinding(VkDescriptorSetLayoutBinding const &data) {
 

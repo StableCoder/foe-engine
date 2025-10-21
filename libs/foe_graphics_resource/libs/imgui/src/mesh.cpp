@@ -4,9 +4,9 @@
 
 #include "mesh.hpp"
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/resource/mesh.hpp>
 #include <foe/graphics/resource/mesh_create_info.h>
-#include <imgui.h>
 
 void imgui_foeMesh(foeMesh const *pResource) {
     ImGui::Text("foeMesh");

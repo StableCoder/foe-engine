@@ -4,7 +4,7 @@
 
 #include <foe/resource/imgui/resource.h>
 
-#include <imgui.h>
+#include <foe/external/imgui.h>
 
 #include <limits>
 #include <string>

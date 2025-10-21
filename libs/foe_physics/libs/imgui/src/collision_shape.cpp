@@ -4,9 +4,9 @@
 
 #include "collision_shape.hpp"
 
+#include <foe/external/imgui.h>
 #include <foe/physics/resource/collision_shape.hpp>
 #include <foe/physics/resource/collision_shape_create_info.hpp>
-#include <imgui.h>
 
 void imgui_foeCollisionShape(foeCollisionShape const *pResource) {
     ImGui::Text("foeCollisionShape");

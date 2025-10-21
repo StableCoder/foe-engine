@@ -17,19 +17,39 @@ endif()
 add_library(foe::external::imgui::file_dialog ALIAS imgui_file_dialog)
 
 # Definition
-set_property(TARGET imgui_file_dialog PROPERTY EXPORT_NAME
-                                               foe::external::imgui::file_dialog)
+set_property(TARGET imgui_file_dialog
+             PROPERTY EXPORT_NAME foe::external::imgui::file_dialog)
+
+target_compile_definitions(imgui_file_dialog
+                           PUBLIC IMGUI_INCLUDE="foe/external/imgui.h")
 
 target_link_libraries(imgui_file_dialog PUBLIC imgui)
 
+# copy headers to custom location to avoid clashes
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/ImGuiFileDialog.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/ImGuiFileDialog.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/ImGuiFileDialog.h
+  DEPENDS ImGuiFileDialog/ImGuiFileDialog.h)
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/ImGuiFileDialogConfig.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog/ImGuiFileDialogConfig.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/ImGuiFileDialogConfig.h
+  DEPENDS ImGuiFileDialog/ImGuiFileDialogConfig.h)
+
 target_sources(
   imgui_file_dialog
-  PUBLIC FILE_SET
-         HEADERS
-         BASE_DIRS
-         ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiFileDialog
-         ${CMAKE_CURRENT_SOURCE_DIR}/include
-         FILES
-         ImGuiFileDialog/ImGuiFileDialog.h
-         include/ImGuiFileDialogConfig.h
+  PUBLIC
+    FILE_SET
+    HEADERS
+    BASE_DIRS
+    ${CMAKE_CURRENT_BINARY_DIR}/include
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/ImGuiFileDialog.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/ImGuiFileDialogConfig.h
   PRIVATE ImGuiFileDialog/ImGuiFileDialog.cpp)

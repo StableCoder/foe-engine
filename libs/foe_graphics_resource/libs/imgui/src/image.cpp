@@ -4,9 +4,9 @@
 
 #include "image.hpp"
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/resource/image.hpp>
 #include <foe/graphics/resource/image_create_info.h>
-#include <imgui.h>
 
 void imgui_foeImage(foeImage const *pResource) { ImGui::Text("foeImage"); }
 

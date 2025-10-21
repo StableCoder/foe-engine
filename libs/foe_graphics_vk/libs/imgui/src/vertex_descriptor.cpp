@@ -4,9 +4,9 @@
 
 #include <foe/graphics/vk/imgui/vertex_descriptor.hpp>
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <foe/graphics/vk/vertex_descriptor.h>
-#include <imgui.h>
 
 void imgui_foeGfxVkVertexDescriptor(foeGfxVkVertexDescriptor const &data) {
     ImGui::Text("Vertex Shader: %p", data.mVertex);

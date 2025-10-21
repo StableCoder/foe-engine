@@ -4,7 +4,7 @@
 
 #include <foe/graphics/imgui/builtin_descriptor_sets.hpp>
 
-#include <imgui.h>
+#include <foe/external/imgui.h>
 
 void imgui_foeBuiltinDescriptorSetLayoutFlags(std::string const &label,
                                               foeBuiltinDescriptorSetLayoutFlags const &data) {

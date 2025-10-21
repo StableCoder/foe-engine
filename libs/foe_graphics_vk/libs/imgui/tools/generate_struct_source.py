@@ -131,7 +131,7 @@ def main(argv):
 
 #include <foe/graphics/vk/imgui/vk_type.hpp>
 #include <foe/imgui/plain_old_data.hpp>
-#include <imgui.h>
+#include <foe/external/imgui.h>
 """.format(copyright))
 
     for struct in xmlRoot.findall('structs/'):

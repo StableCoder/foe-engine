@@ -4,10 +4,10 @@
 
 #include "shader.hpp"
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/resource/shader.hpp>
 #include <foe/graphics/resource/shader_create_info.h>
 #include <foe/graphics/vk/imgui/shader.hpp>
-#include <imgui.h>
 
 void imgui_foeShader(foeShader const *pResource) {
     ImGui::Text("foeShader");

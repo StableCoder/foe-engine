@@ -4,7 +4,7 @@
 
 #include <foe/resource/imgui/create_info.h>
 
-#include <imgui.h>
+#include <foe/external/imgui.h>
 
 extern "C" void imgui_foeResourceCreateInfo(foeResourceCreateInfo createInfo) {
     ImGui::Text("Type: %i", foeResourceCreateInfoGetType(createInfo));

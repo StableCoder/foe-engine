@@ -4,10 +4,10 @@
 
 #include <foe/graphics/vk/imgui/shader.hpp>
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/imgui/builtin_descriptor_sets.hpp>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
 #include <foe/graphics/vk/shader.h>
-#include <imgui.h>
 
 void imgui_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const &data) {
     imgui_foeBuiltinDescriptorSetLayoutFlags(

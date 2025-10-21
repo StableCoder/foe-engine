@@ -4,9 +4,9 @@
 
 #include <foe/graphics/vk/imgui/fragment_descriptor.hpp>
 
+#include <foe/external/imgui.h>
 #include <foe/graphics/vk/fragment_descriptor.h>
 #include <foe/graphics/vk/imgui/vk_struct.hpp>
-#include <imgui.h>
 
 void imgui_foeGfxVkFragmentDescriptor(foeGfxVkFragmentDescriptor const &data) {
     ImGui::Text("Fragment Shader: %p", data.mFragment);

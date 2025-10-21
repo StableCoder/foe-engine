@@ -4,8 +4,8 @@
 
 #include "position_3d.hpp"
 
+#include <foe/external/imgui.h>
 #include <foe/position/component/3d.hpp>
-#include <imgui.h>
 
 void imgui_foePosition3d(foePosition3d *pPosition3d) {
     ImGui::Separator();

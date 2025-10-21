@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <catch2/catch_test_macros.hpp>
+#include <foe/external/imgui.h>
 #include <foe/imgui/state.hpp>
-#include <imgui.h>
 
 #include <array>
 

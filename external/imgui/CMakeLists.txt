@@ -19,31 +19,45 @@ add_library(imgui_demo STATIC)
 add_library(foe::external::imgui::demo ALIAS imgui_demo)
 
 # imgui Definition
-set_property(TARGET imgui PROPERTY EXPORT_NAME
-                                               foe::external::imgui)
+set_property(TARGET imgui PROPERTY EXPORT_NAME foe::external::imgui)
 
 if(UNIX)
   target_compile_options(imgui PRIVATE -fPIC)
 endif()
+
+# copy headers to custom location to avoid clashes
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/imgui.h
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h
+          ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/imgui.h
+  DEPENDS imgui/imgui.h)
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/imconfig.h
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imconfig.h
+          ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/imconfig.h
+  DEPENDS imgui/imconfig.h)
 
 target_sources(
   imgui
   PUBLIC FILE_SET
          HEADERS
          BASE_DIRS
-         ${CMAKE_CURRENT_SOURCE_DIR}/imgui
-         ${CMAKE_CURRENT_SOURCE_DIR}/include
+         ${CMAKE_CURRENT_BINARY_DIR}/include/
          FILES
-         imgui/imgui.h
-         include/imconfig.h
+         ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/imconfig.h
+         ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/imgui.h
   PRIVATE imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp
           imgui/imgui_widgets.cpp)
 
-# imgui_demo Definition
-set_property(TARGET imgui_demo PROPERTY EXPORT_NAME
-                                               foe::external::imgui::demo)
+target_include_directories(
+  imgui
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include/foe/external>
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/imgui>)
 
-                                               if(UNIX)
+# imgui_demo Definition
+set_property(TARGET imgui_demo PROPERTY EXPORT_NAME foe::external::imgui::demo)
+
+if(UNIX)
   target_compile_options(imgui_demo PRIVATE -fPIC)
 endif()
 

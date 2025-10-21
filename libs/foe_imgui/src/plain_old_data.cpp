@@ -5,8 +5,8 @@
 #include <foe/imgui/plain_old_data.hpp>
 
 #include <fmt/core.h>
+#include <foe/external/imgui.h>
 #include <foe/imgui/export.h>
-#include <imgui.h>
 
 #include <cstdint>
 #include <string>
