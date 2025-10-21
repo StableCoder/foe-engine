@@ -4,8 +4,8 @@
 
 #include <foe/graphics/vk/cleanup.h>
 
+#include <foe/external/vk_struct_cleanup.h>
 #include <foe/graphics/vk/shader.h>
-#include <vk_struct_cleanup.h>
 
 #include <stddef.h>
 #include <stdlib.h>

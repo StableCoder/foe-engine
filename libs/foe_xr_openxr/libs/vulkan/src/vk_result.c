@@ -5,7 +5,7 @@
 #include "vk_result.h"
 
 #define VK_RESULT_TO_STRING_CONFIG_MAIN
-#include <vk_result_to_string.h>
+#include <foe/external/vk_result_to_string.h>
 
 #include <assert.h>
 #include <stdio.h>

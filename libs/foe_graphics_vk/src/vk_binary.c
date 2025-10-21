@@ -5,8 +5,8 @@
 #include <foe/graphics/vk/vk_binary.h>
 
 #include <foe/binary_result.h>
-#include <vk_struct_cleanup.h>
-#include <vk_struct_compare.h>
+#include <foe/external/vk_struct_cleanup.h>
+#include <foe/external/vk_struct_compare.h>
 
 #include <stdlib.h>
 #include <string.h>

@@ -61,10 +61,10 @@ def main(argv):
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include <foe/external/vk_struct_cleanup.h>
 #include <foe/graphics/vk/yaml/vk_enum.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/parsing.hpp>
-#include <vk_struct_cleanup.h>
 #include <vulkan/vulkan.h>
 
 #include <cstring>

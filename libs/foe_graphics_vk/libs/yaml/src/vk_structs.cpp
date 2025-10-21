@@ -2,13 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+#include <foe/external/vk_struct_cleanup.h>
+#include <foe/external/vk_struct_compare.h>
 #include <foe/graphics/vk/yaml/vk_enums.hpp>
 #include <foe/graphics/vk/yaml/vk_pod.hpp>
 #include <foe/graphics/vk/yaml/vk_structs.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/pod.hpp>
-#include <vk_struct_cleanup.h>
-#include <vk_struct_compare.h>
 
 #include <string.h>
 

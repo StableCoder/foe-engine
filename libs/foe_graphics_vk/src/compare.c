@@ -4,8 +4,8 @@
 
 #include <foe/graphics/vk/compare.h>
 
+#include <foe/external/vk_struct_compare.h>
 #include <foe/graphics/vk/shader.h>
-#include <vk_struct_compare.h>
 
 bool compare_foeGfxVkShaderCreateInfo(foeGfxVkShaderCreateInfo const *pData1,
                                       foeGfxVkShaderCreateInfo const *pData2) {

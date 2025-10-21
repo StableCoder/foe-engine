@@ -4,8 +4,8 @@
 
 #include <foe/graphics/vk/yaml/vk_enums.hpp>
 
+#include <foe/external/vk_value_serialization.hpp>
 #include <foe/yaml/exception.hpp>
-#include <vk_value_serialization.hpp>
 #include <vulkan/vulkan.h>
 
 namespace {

@@ -20,7 +20,8 @@ generate_export_header(
 target_link_libraries(
   foe_graphics_vk
   PUBLIC foe_graphics Vulkan::Vulkan vulkan_memory_allocator
-  PRIVATE vk_struct_cleanup vk_struct_compare vk_value_serialization)
+  PRIVATE vk_struct_cleanup vk_struct_compare vk_value_serialization
+          vk_result_serialization)
 
 target_code_coverage(foe_graphics_vk)
 

@@ -5,7 +5,7 @@
 #include "xr_result.h"
 
 #define XR_RESULT_TO_STRING_CONFIG_MAIN
-#include <xr_result_to_string.h>
+#include <foe/external/xr_result_to_string.h>
 
 #include <assert.h>
 #include <stdio.h>

@@ -4,8 +4,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <foe/binary_result.h>
+#include <foe/external/vk_struct_compare.h>
 #include <foe/graphics/vk/vk_binary.h>
-#include <vk_struct_compare.h>
 
 #include <memory>
 

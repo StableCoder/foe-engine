@@ -24,12 +24,18 @@ set_property(TARGET vk_struct_cleanup PROPERTY EXPORT_NAME
 
 target_link_libraries(vk_struct_cleanup PUBLIC Vulkan::Vulkan)
 
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_struct_cleanup.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_struct_cleanup.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_struct_cleanup.h
+  DEPENDS vulkan-mini-libs-2/include/vk_struct_cleanup.h)
+
 target_sources(
   vk_struct_cleanup
-  PUBLIC
-    FILE_SET HEADERS BASE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_struct_cleanup.h
+  PUBLIC FILE_SET HEADERS BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_struct_cleanup.h
   PRIVATE src/struct_cleanup.c)
 
 # Struct Cleanup
@@ -41,22 +47,45 @@ set_property(TARGET vk_struct_compare PROPERTY EXPORT_NAME
 
 target_link_libraries(vk_struct_compare PUBLIC Vulkan::Vulkan)
 
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_struct_compare.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_struct_compare.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_struct_compare.h
+  DEPENDS vulkan-mini-libs-2/include/vk_struct_compare.h)
+
 target_sources(
   vk_struct_compare
-  PUBLIC
-    FILE_SET HEADERS BASE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_struct_compare.h
+  PUBLIC FILE_SET HEADERS BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include FILES
+         ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_struct_compare.h
   PRIVATE src/struct_compare.c)
 
 # VK Value Serialization
 add_library(vk_value_serialization STATIC)
 add_library(foe::external::vk_value_serialization ALIAS vk_value_serialization)
 
-set_property(TARGET vk_value_serialization PROPERTY EXPORT_NAME
-                                                    foe::external::vk_value_serialization)
+set_property(TARGET vk_value_serialization
+             PROPERTY EXPORT_NAME foe::external::vk_value_serialization)
 
 target_link_libraries(vk_value_serialization PUBLIC Vulkan::Vulkan)
+
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_value_serialization.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_value_serialization.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_value_serialization.h
+  DEPENDS vulkan-mini-libs-2/include/vk_value_serialization.h)
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_value_serialization.hpp
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_value_serialization.hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_value_serialization.hpp
+  DEPENDS vulkan-mini-libs-2/include/vk_value_serialization.hpp)
 
 target_sources(
   vk_value_serialization
@@ -64,47 +93,69 @@ target_sources(
     FILE_SET
     HEADERS
     BASE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include
+    ${CMAKE_CURRENT_BINARY_DIR}/include
     FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_value_serialization.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_value_serialization.hpp
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_value_serialization.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_value_serialization.hpp
   PRIVATE src/value_serialization.cpp)
 
 # Vulkan Result Serialization
 add_library(vk_result_serialization INTERFACE)
-add_library(foe::external::vk_result_serialization ALIAS vk_result_serialization)
+add_library(foe::external::vk_result_serialization ALIAS
+            vk_result_serialization)
 
 set_property(TARGET vk_result_serialization
              PROPERTY EXPORT_NAME foe::external::vk_result_serialization)
 
 target_link_libraries(vk_result_serialization INTERFACE Vulkan::Vulkan)
 
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_result_to_string.h
+  COMMAND
+    ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_result_to_string.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_result_to_string.h
+  DEPENDS vulkan-mini-libs-2/include/vk_result_to_string.h)
+add_custom_target(
+  vk_result_serialization_header_copy
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_result_to_string.h
+)
+add_dependencies(vk_result_serialization vk_result_serialization_header_copy)
+
 target_sources(
   vk_result_serialization
   INTERFACE
-    FILE_SET HEADERS BASE_DIRS
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/vk_result_to_string.h
-)
+    FILE_SET HEADERS BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/vk_result_to_string.h)
 
 # OpenXR Result Serialization
 if(XR_SUPPORT)
   add_library(xr_result_serialization INTERFACE)
-  add_library(foe::external::xr_result_serialization ALIAS xr_result_serialization)
+  add_library(foe::external::xr_result_serialization ALIAS
+              xr_result_serialization)
 
   set_property(TARGET xr_result_serialization
                PROPERTY EXPORT_NAME foe::external::xr_result_serialization)
 
   target_link_libraries(xr_result_serialization INTERFACE OpenXR::headers)
 
+  add_custom_command(
+    OUTPUT
+      ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/xr_result_to_string.h
+    COMMAND
+      ${CMAKE_COMMAND} -E copy
+      ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/xr_result_to_string.h
+      ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/xr_result_to_string.h
+    DEPENDS vulkan-mini-libs-2/include/xr_result_to_string.h)
+  add_custom_target(
+    xr_result_serialization_header_copy
+    DEPENDS
+      ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/xr_result_to_string.h)
+  add_dependencies(xr_result_serialization xr_result_serialization_header_copy)
+
   target_sources(
     xr_result_serialization
     INTERFACE
-      FILE_SET
-      HEADERS
-      BASE_DIRS
-      ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include
-      FILES
-      ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-mini-libs-2/include/xr_result_to_string.h
-  )
+      FILE_SET HEADERS BASE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/include/foe/external/xr_result_to_string.h)
 endif()

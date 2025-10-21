@@ -6,7 +6,7 @@
 
 #include <fmt/core.h>
 #include <foe/external/imgui.h>
-#include <vk_value_serialization.hpp>
+#include <foe/external/vk_value_serialization.hpp>
 
 void imgui_VkEnum32(std::string const &typeName, std::string const &label, uint32_t const &data) {
     std::string serializedStr;

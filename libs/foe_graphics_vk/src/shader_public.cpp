@@ -5,7 +5,7 @@
 #include <foe/graphics/shader.h>
 #include <foe/graphics/vk/shader.h>
 
-#include <vk_struct_cleanup.h>
+#include <foe/external/vk_struct_cleanup.h>
 
 #include "result.h"
 #include "session.hpp"

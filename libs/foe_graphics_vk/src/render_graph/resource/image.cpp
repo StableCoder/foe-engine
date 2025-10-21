@@ -4,7 +4,7 @@
 
 #include <foe/graphics/vk/render_graph/resource/image.hpp>
 
-#include <vk_value_serialization.hpp>
+#include <foe/external/vk_value_serialization.hpp>
 
 #include "../../log.hpp"
 

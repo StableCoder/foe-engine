@@ -6,6 +6,7 @@
 
 #include <foe/binary_result.h>
 #include <foe/ecs/binary.h>
+#include <foe/external/vk_struct_compare.h>
 #include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/material_create_info.h>
@@ -15,7 +16,6 @@
 #include <foe/graphics/vk/binary.h>
 #include <foe/graphics/vk/compare.h>
 #include <foe/graphics/vk/vk_binary.h>
-#include <vk_struct_compare.h>
 
 #include <stdlib.h>
 #include <string.h>

@@ -4,6 +4,7 @@
 
 #include <foe/graphics/vk/yaml/structs.hpp>
 
+#include <foe/external/vk_struct_compare.h>
 #include <foe/graphics/vk/cleanup.h>
 #include <foe/graphics/vk/shader.h>
 #include <foe/graphics/vk/yaml/vk_structs.hpp>
@@ -11,7 +12,6 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/glm.hpp>
 #include <foe/yaml/pod.hpp>
-#include <vk_struct_compare.h>
 
 bool yaml_read_foeGfxVkShaderCreateInfo(std::string const &nodeName,
                                         YAML::Node const &node,

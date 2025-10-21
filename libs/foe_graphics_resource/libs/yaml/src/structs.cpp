@@ -5,6 +5,7 @@
 #include <foe/graphics/resource/yaml/structs.hpp>
 
 #include <foe/ecs/yaml/id.hpp>
+#include <foe/external/vk_struct_compare.h>
 #include <foe/graphics/resource/cleanup.h>
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/material_create_info.h>
@@ -18,7 +19,6 @@
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/glm.hpp>
 #include <foe/yaml/pod.hpp>
-#include <vk_struct_compare.h>
 
 #include "assimp_flags.hpp"
 

@@ -4,13 +4,13 @@
 
 #include <foe/graphics/resource/cleanup.h>
 
+#include <foe/external/vk_struct_cleanup.h>
 #include <foe/graphics/resource/image_create_info.h>
 #include <foe/graphics/resource/material_create_info.h>
 #include <foe/graphics/resource/mesh_create_info.h>
 #include <foe/graphics/resource/shader_create_info.h>
 #include <foe/graphics/resource/vertex_descriptor_create_info.h>
 #include <foe/graphics/vk/cleanup.h>
-#include <vk_struct_cleanup.h>
 
 #include <stddef.h>
 #include <stdlib.h>
