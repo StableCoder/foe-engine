@@ -680,7 +680,7 @@ ThreadSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Thread
+    CMAKE_OPTIONS: -D SANITIZER=Thread
   <<: *analysis_template
 
 AddressSanitizer:
@@ -688,19 +688,19 @@ AddressSanitizer:
     ASAN_OPTIONS: detect_leaks=0
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Address -D BUILD_VULKAN_RUNTIME_TESTS=OFF
+    CMAKE_OPTIONS: -D SANITIZER=Address -D BUILD_VULKAN_RUNTIME_TESTS=OFF
   <<: *analysis_template
 
 LeakSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Leak -D BUILD_VULKAN_RUNTIME_TESTS=OFF
+    CMAKE_OPTIONS: -D SANITIZER=Leak -D BUILD_VULKAN_RUNTIME_TESTS=OFF
   <<: *analysis_template
 
 UndefinedSanitizer:
   variables:
     CC: clang
     CXX: clang++
-    CMAKE_OPTIONS: -D USE_SANITIZER=Undefined
+    CMAKE_OPTIONS: -D SANITIZER=Undefined
   <<: *analysis_template

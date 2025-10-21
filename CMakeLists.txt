@@ -6,22 +6,29 @@
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 cmake_minimum_required(VERSION 3.23)
-include(afl-fuzzing)
 project(FoE-Engine C CXX)
 
-# Global Options
+# Options
 include(CMakeDependentOption)
-option(BUILD_SHADERS "Build GLSL shaders to SPIR-V automatically" ON)
+
 option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_VULKAN_RUNTIME_TESTS
        "Build tests that require an available Vulkan runtime" OFF)
+
+option(CLANG_TIDY "Run clang-tidy static analysis" OFF)
+cmake_dependent_option(
+  CLANG_TIDY_FIX "Turns on fixes for found clang-tidy issues" OFF CLANG_TIDY
+  OFF)
 
 # There are cases where it is easier to debug issues if dynamic plugin library
 # content is still loaded into the application when it terminates, such as for
 # tools that do post-analysis such as sanitizers.
 option(DISABLE_PLUGIN_UNLOAD "Prevent plugins from unloading" OFF)
 
-# XR Settings
+set(SANITIZER
+    ""
+    CACHE STRING "Sanitizer to compile FoE projects with")
+
 if(APPLE)
   option(XR_SUPPORT "Compile/link XR device support" OFF)
 else()
@@ -73,15 +80,11 @@ gen_dep_graph(png ADD_TO_DEP_GRAPH)
 
 # clang-tidy
 include(tools)
-option(CLANG_TIDY "Run clang-tidy static analysis" OFF)
-cmake_dependent_option(
-  CLANG_TIDY_FIX "Turns on fixes for found clang-tidy issues" OFF CLANG_TIDY
-  OFF)
-option(CLANG_TIDY_FIX "" OFF)
+
 if(CLANG_TIDY_FIX)
-  clang_tidy(-header-filter='${CMAKE_SOURCE_DIR}/*' -fix)
+  clang_tidy(-header-filter='${CMAKE_CURRENT_SOURCE_DIR}/*' -fix)
 elseif(CLANG_TIDY)
-  clang_tidy(-header-filter='${CMAKE_SOURCE_DIR}/*')
+  clang_tidy(-header-filter='${CMAKE_CURRENT_SOURCE_DIR}/*')
 endif()
 
 # Header Exports
@@ -90,10 +93,24 @@ set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
+# sanitizers
+include(sanitizers)
+
+set_sanitizer_options(address DEFAULT -fsanitize-address-use-after-scope
+                      -fsanitize-address-use-after-return=runtime)
+set_sanitizer_options(leak DEFAULT)
+set_sanitizer_options(memory DEFAULT)
+set_sanitizer_options(memorywithorigins DEFAULT SANITIZER memory
+                      -fsanitize-memory-track-origins)
+set_sanitizer_options(undefined DEFAULT -fno-sanitize-recover=undefined)
+set_sanitizer_options(thread DEFAULT)
+
+if(SANITIZER)
+  add_sanitizer_support(${SANITIZER})
+endif()
+
 # Misc CMake
 include(compiler-options)
-include(glsl-shaders)
-include(sanitizers)
 
 if(WIN32)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -104,9 +121,6 @@ if(BUILD_TESTS)
 endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# GLFW/Vulkan
-add_compile_definitions(GLFW_INCLUDE_VULKAN)
 
 # Libraries
 add_subdirectory(external)
