@@ -5,6 +5,7 @@
 #ifndef FOE_GRAPHICS_VK_SESSION_H
 #define FOE_GRAPHICS_VK_SESSION_H
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/runtime.h>
@@ -13,7 +14,6 @@
 #include <foe/graphics/vk/queue_family.h>
 #include <foe/graphics/vk/render_pass_pool.h>
 #include <foe/result.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #ifdef __cplusplus

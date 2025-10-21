@@ -6,10 +6,10 @@
 #define FOE_IMGUI_VK_RENDERER_HPP
 
 #include <foe/external/imgui.h>
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/session.h>
 #include <foe/imgui/vk/export.h>
 #include <foe/result.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <vector>

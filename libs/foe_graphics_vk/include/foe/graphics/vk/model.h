@@ -5,12 +5,12 @@
 #ifndef FOE_GRAPHICS_MODEL_H
 #define FOE_GRAPHICS_MODEL_H
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/upload_buffer.h>
 #include <foe/graphics/upload_context.h>
 #include <foe/graphics/upload_request.h>
 #include <foe/result.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #ifdef __cplusplus

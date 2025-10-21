@@ -5,10 +5,10 @@
 #ifndef UPLOAD_CONTEXT_HPP
 #define UPLOAD_CONTEXT_HPP
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/export.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/upload_context.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "queue_family.hpp"

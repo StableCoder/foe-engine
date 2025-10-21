@@ -5,10 +5,10 @@
 #include <foe/graphics/render_view_pool.h>
 #include <foe/graphics/vk/render_view_pool.h>
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/builtin_descriptor_sets.h>
 #include <foe/graphics/type_defs.h>
 #include <foe/graphics/vk/session.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include "result.h"

@@ -5,9 +5,9 @@
 #ifndef FOE_GRAPHICS_VK_MESH_H
 #define FOE_GRAPHICS_VK_MESH_H
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/mesh.h>
 #include <foe/result.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #ifdef __cplusplus

@@ -5,10 +5,10 @@
 #ifndef RENDER_TARGET_HPP
 #define RENDER_TARGET_HPP
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/vk/render_target.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 #include <vector>

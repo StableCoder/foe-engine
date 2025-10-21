@@ -5,8 +5,8 @@
 #ifndef FOE_GRAPHICS_RESOURCE_IMAGE_HPP
 #define FOE_GRAPHICS_RESOURCE_IMAGE_HPP
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/resource/type_defs.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 struct foeImage {

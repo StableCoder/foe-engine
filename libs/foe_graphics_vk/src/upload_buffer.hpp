@@ -5,8 +5,8 @@
 #ifndef UPLOAD_BUFFER_HPP
 #define UPLOAD_BUFFER_HPP
 
+#include <foe/external/vk_mem_alloc.h>
 #include <foe/graphics/upload_buffer.h>
-#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.h>
 
 struct foeGfxVkUploadBuffer {
