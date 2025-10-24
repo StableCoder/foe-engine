@@ -1,12 +1,12 @@
 # Global
 
 stages:
- - Formatting
- - Linux Builds
- - Windows Builds
- - macOS Builds
- - Vulkan Testing
- - Analysis
+  - Formatting
+  - Linux Builds
+  - Windows Builds
+  - macOS Builds
+  - Vulkan Testing
+  - Analysis
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -43,9 +43,9 @@ Shell Files:
   image: docker.io/stabletec/build-foe:fedora
   allow_failure: true
   tags:
-  - container
-  - linux
-  - amd64
+    - container
+    - linux
+    - amd64
   script:
     - for FILE in $(find . | grep -e "\.sh$"); do echo ">> For File - $FILE"; shfmt -i 4 $FILE > $FILE.tmp; mv $FILE.tmp $FILE; chmod +x $FILE; done
     - git submodule foreach --recursive git reset --hard
@@ -56,9 +56,9 @@ Python Files:
   image: docker.io/stabletec/build-foe:fedora
   allow_failure: true
   tags:
-  - container
-  - linux
-  - amd64
+    - container
+    - linux
+    - amd64
   script:
     - for FILE in $(find . | grep -e "\.py$"); do echo ">> For File - $FILE"; autopep8 -i $FILE; done
     - git submodule foreach --recursive git reset --hard
@@ -73,7 +73,7 @@ Python Files:
   script:
     - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - cmake --build build
-    - ctest --test-dir build --output-on-failure 
+    - ctest --test-dir build --output-on-failure
 
 .platform_macos_template: &platform_macos_template
   stage: macOS Builds
@@ -82,7 +82,7 @@ Python Files:
   script:
     - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
     - cmake --build build
-    - ctest --test-dir build --output-on-failure 
+    - ctest --test-dir build --output-on-failure
 
 .platform_windows_template: &platform_windows_template
   stage: Windows Builds
@@ -121,8 +121,8 @@ Python Files:
 Arch/GCC Static:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release, Debug]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release, Debug]
   image: docker.io/stabletec/build-foe:arch
   tags:
     - container
@@ -136,8 +136,8 @@ Arch/GCC Static:
 Arch/GCC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release, Debug]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release, Debug]
   image: docker.io/stabletec/build-foe:arch
   tags:
     - container
@@ -152,8 +152,8 @@ Arch/GCC Shared:
 Arch/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release, Debug]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release, Debug]
   image: docker.io/stabletec/build-foe:arch
   tags:
     - container
@@ -167,8 +167,8 @@ Arch/Clang Static:
 Arch/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release, Debug]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release, Debug]
   image: docker.io/stabletec/build-foe:arch
   tags:
     - container
@@ -185,8 +185,8 @@ Arch/Clang Shared:
 Debian/GCC Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64, ppc64le, riscv64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
@@ -201,8 +201,8 @@ Debian/GCC Static:
 Debian/GCC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64, ppc64le, riscv64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
@@ -217,8 +217,8 @@ Debian/GCC Shared:
 Debian/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64, ppc64le, riscv64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
@@ -233,8 +233,8 @@ Debian/Clang Static:
 Debian/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64, ppc64le, riscv64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
@@ -251,8 +251,8 @@ Debian/Clang Shared:
 Fedora/GCC Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -266,8 +266,8 @@ Fedora/GCC Static:
 Fedora/GCC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -282,8 +282,8 @@ Fedora/GCC Shared:
 Fedora/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -297,8 +297,8 @@ Fedora/Clang Static:
 Fedora/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -315,8 +315,8 @@ Fedora/Clang Shared:
 macOS/AppleClang Static:
   parallel:
     matrix:
-    - ARCH: [arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [arm64]
+        BUILD_TYPE: [Release]
   tags:
     - macos
     - ${ARCH}
@@ -325,8 +325,8 @@ macOS/AppleClang Static:
 macOS/AppleClang Shared:
   parallel:
     matrix:
-    - ARCH: [arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [arm64]
+        BUILD_TYPE: [Release]
   tags:
     - macos
     - ${ARCH}
@@ -337,8 +337,8 @@ macOS/AppleClang Shared:
 macOS/Clang Static:
   parallel:
     matrix:
-    - ARCH: [arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [arm64]
+        BUILD_TYPE: [Release]
   tags:
     - macos
     - ${ARCH}
@@ -350,8 +350,8 @@ macOS/Clang Static:
 macOS/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [arm64]
+        BUILD_TYPE: [Release]
   tags:
     - macos
     - ${ARCH}
@@ -366,8 +366,8 @@ macOS/Clang Shared:
 openSUSE/GCC Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:opensuse
   tags:
     - container
@@ -381,8 +381,8 @@ openSUSE/GCC Static:
 openSUSE/GCC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:opensuse
   tags:
     - container
@@ -397,8 +397,8 @@ openSUSE/GCC Shared:
 openSUSE/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:opensuse
   tags:
     - container
@@ -412,8 +412,8 @@ openSUSE/Clang Static:
 openSUSE/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
-      BUILD_TYPE: [Release]
+      - ARCH: [amd64, arm64]
+        BUILD_TYPE: [Release]
   image: docker.io/stabletec/build-foe:opensuse
   tags:
     - container
@@ -430,17 +430,17 @@ openSUSE/Clang Shared:
 Windows/MSVC Static:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   <<: *platform_windows_template
 
 Windows/MSVC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
@@ -448,9 +448,9 @@ Windows/MSVC Shared:
 Windows/Clang-cl Static:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang-cl
     CXX: clang-cl
@@ -459,9 +459,9 @@ Windows/Clang-cl Static:
 Windows/Clang-cl Shared:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang-cl
     CXX: clang-cl
@@ -471,9 +471,9 @@ Windows/Clang-cl Shared:
 Windows/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang
     CXX: clang
@@ -482,9 +482,9 @@ Windows/Clang Static:
 Windows/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
   variables:
     CC: clang
     CXX: clang
@@ -494,17 +494,17 @@ Windows/Clang Shared:
 MSYS/GCC Static:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      MSYS_SUBSYSTEM: [ucrt64, mingw64]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        MSYS_SUBSYSTEM: [ucrt64, mingw64]
   <<: *platform_msys_template
 
 MSYS/GCC Shared:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      MSYS_SUBSYSTEM: [ucrt64, mingw64]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        MSYS_SUBSYSTEM: [ucrt64, mingw64]
   variables:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_msys_template
@@ -512,9 +512,9 @@ MSYS/GCC Shared:
 MSYS/Clang Static:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      MSYS_SUBSYSTEM: [clang64]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        MSYS_SUBSYSTEM: [clang64]
   variables:
     CC: clang
     CXX: clang++
@@ -523,9 +523,9 @@ MSYS/Clang Static:
 MSYS/Clang Shared:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      BUILD_TYPE: [Release]
-      MSYS_SUBSYSTEM: [clang64]
+      - ARCH: [amd64]
+        BUILD_TYPE: [Release]
+        MSYS_SUBSYSTEM: [clang64]
   variables:
     CC: clang
     CXX: clang++
@@ -547,8 +547,8 @@ MSYS/Clang Shared:
 Debian Vulkan HW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      GPU: [amd_navi23,amd_vega10,amd_ellesmere]
+      - ARCH: [amd64]
+        GPU: [amd_navi23, amd_vega10, amd_ellesmere, amd_phoenix]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
@@ -562,7 +562,7 @@ Debian Vulkan HW Testing:
 Debian Vulkan SW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, riscv64]
+      - ARCH: [amd64, arm64, ppc64le, riscv64]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
@@ -577,8 +577,8 @@ Debian Vulkan SW Testing:
 Fedora Vulkan HW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64]
-      GPU: [amd_navi23,amd_vega10,amd_ellesmere]
+      - ARCH: [amd64]
+        GPU: [amd_navi23, amd_vega10, amd_ellesmere, amd_phoenix]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -592,7 +592,7 @@ Fedora Vulkan HW Testing:
 Fedora Vulkan SW Testing:
   parallel:
     matrix:
-    - ARCH: [amd64, arm64, ppc64le, s390x]
+      - ARCH: [amd64, arm64, ppc64le, s390x]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
@@ -607,8 +607,8 @@ Fedora Vulkan SW Testing:
 macOS Vulkan HW Testing:
   parallel:
     matrix:
-    - ARCH: [arm64]
-      GPU: [apple_m1]
+      - ARCH: [arm64]
+        GPU: [apple_m1]
   tags:
     - macos
     - ${ARCH}-${GPU}
@@ -621,7 +621,7 @@ macOS Vulkan HW Testing:
   image: docker.io/stabletec/build-foe:fedora
   parallel:
     matrix:
-    - ARCH: [amd64, arm64]
+      - ARCH: [amd64, arm64]
   tags:
     - container
     - linux
@@ -631,7 +631,7 @@ macOS Vulkan HW Testing:
   script:
     - cmake . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_VULKAN_RUNTIME_TESTS=ON -D BUILD_TESTS=ON -D DISABLE_PLUGIN_UNLOAD=ON ${CMAKE_OPTIONS}
     - cmake --build build
-    - ctest --test-dir build --output-on-failure 
+    - ctest --test-dir build --output-on-failure
 
 # Analysis
 
@@ -672,7 +672,7 @@ Code Coverage:
     - cmake --build build --target ccov-all-report
   artifacts:
     name: CodeCoverage
-    paths: 
+    paths:
       - build/ccov
     expire_in: 1 day
 

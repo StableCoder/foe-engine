@@ -26,7 +26,7 @@ done
 
 # Input Checking
 if [ -z $DEVICE_NAME ]; then
-    echo "ERROR: No device name specificed"
+    echo "ERROR: No device name specified"
     exit 1
 fi
 
@@ -42,6 +42,10 @@ VK_DEVICE_NAME=$(vulkaninfo | grep "deviceName" | cut -d '=' -f2 | head -n$((DEV
 # Matching
 if [[ "$DEVICE_NAME" == "llvmpipe" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"llvmpipe"* ]]; then
+        exit 0
+    fi
+elif [[ "$DEVICE_NAME" == "amd_phoenix" ]]; then
+    if [[ "$VK_DEVICE_NAME" == *"RADV PHOENIX"* ]]; then
         exit 0
     fi
 elif [[ "$DEVICE_NAME" == "amd_ellesmere" ]]; then
