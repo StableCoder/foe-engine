@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2024 George Cave.
+// Copyright (C) 2022-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,7 @@
         pResultStr = #X;                                                                           \
         break;
 
-void foeEcsResultToString(foeEcsResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
+void foeEcsResultToString(int value, char buffer[FOE_MAX_RESULT_STRING_SIZE]) {
     char const *pResultStr = NULL;
 
     switch (value) {

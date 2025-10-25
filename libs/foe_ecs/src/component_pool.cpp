@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -98,6 +98,9 @@ void moveData(DataSet *pDstPool,
               size_t srcOffset,
               size_t count,
               size_t dataSize) {
+    if (count == 0)
+        return;
+
     // IDs
     memmove(pDstPool->pIDs + dstOffset, pSrcPool->pIDs + srcOffset, count * sizeof(foeEntityID));
     // Data

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 George Cave.
+// Copyright (C) 2020-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -93,7 +93,10 @@ foeLogger logger;
 
 } // namespace
 
-extern "C" char const *foeLogLevel_to_string(foeLogLevel logLevel) {
+#if defined(__clang__) || defined(__GNUC__)
+extern "C" __attribute__((no_sanitize("enum"))) // passing in non-enum values
+#endif
+char const *foeLogLevel_to_string(foeLogLevel logLevel) {
     switch (logLevel) {
     case FOE_LOG_LEVEL_FATAL:
         return "Fatal";
