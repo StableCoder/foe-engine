@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,13 +10,11 @@
 
 #include "result.h"
 
+#include <stdio.h>
 #include <string.h>
 
-typedef struct KeyDescription {
-    uint32_t size;
-} KeyDescription;
-
-FOE_DEFINE_HANDLE_CASTS(key, KeyDescription, foeCryptoKey)
+// follow machine size
+typedef size_t KeySizeType;
 
 foeResultSet foeCreateCryptoKey(size_t keySize, void const *pKeyData, foeCryptoKey *pKey) {
     if (keySize == 0)
@@ -25,34 +23,45 @@ foeResultSet foeCreateCryptoKey(size_t keySize, void const *pKeyData, foeCryptoK
     if (sodium_init() < 0)
         return to_foeResult(FOE_CRYPTO_ERROR_LIBRARY_FAILED_TO_INITIALIZE);
 
-    KeyDescription *pNewKey = sodium_malloc(sizeof(KeyDescription) + keySize);
+    void *pNewKey = sodium_malloc(sizeof(uint8_t) + (2 * sizeof(KeySizeType)) + keySize);
     if (pNewKey == NULL)
         return to_foeResult(FOE_CRYPTO_ERROR_OUT_OF_MEMORY);
 
-    pNewKey->size = keySize;
+    // to deal with alignment issues, the first byte indicates how many bytes until the start of the
+    // key size, and the key data is always `sizeof(uint8_t) + (2*sizeof(KeySizeType))` bytes after
+    // the original key pointer
+    size_t totalPoint = (size_t)pNewKey;
+    uint8_t neededOffset = 8 - (size_t)pNewKey % sizeof(KeySizeType);
+    *(uint8_t *)pNewKey = neededOffset;
+
+    uint8_t sizeOffset = *(uint8_t *)pNewKey;
+
+    KeySizeType *pNewKeySize = (size_t *)(((uint8_t *)pNewKey) + neededOffset);
+    *pNewKeySize = keySize;
 
     // Copy the key data
     // The key memory has not been marked as read-only yet
-    memcpy((void *)foeCryptoGetKeyData(key_to_handle(pNewKey)), pKeyData, keySize);
+    memcpy((void *)foeCryptoGetKeyData(pNewKey), pKeyData, keySize);
 
     // Set the key memory to be read-only
     sodium_mprotect_readonly(pNewKey);
 
-    *pKey = key_to_handle(pNewKey);
+    *pKey = pNewKey;
     return to_foeResult(FOE_CRYPTO_SUCCESS);
 }
 
 void foeDestroyCryptoKey(foeCryptoKey key) { sodium_free(key); }
 
 size_t foeCryptoGetKeySize(foeCryptoKey key) {
-    KeyDescription *pKey = key_from_handle(key);
+    uint8_t sizeOffset = *(uint8_t *)key;
+    KeySizeType *size = (KeySizeType *)((uint8_t *)key + sizeOffset);
 
-    return pKey->size;
+    return *size;
 }
 
 void const *foeCryptoGetKeyData(foeCryptoKey key) {
-    uint8_t *pKey = (uint8_t *)key_from_handle(key);
-    pKey += sizeof(KeyDescription);
+    uint8_t *pKey = (uint8_t *)key;
+    pKey += sizeof(uint8_t) + (2 * sizeof(KeySizeType));
 
     return pKey;
 }
