@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -532,6 +532,9 @@ TEST_CASE("foeGroupData - foeEcsIndexes/Importer retrieval", "[foe]") {
     }
 }
 
+#if defined(__clang__) || defined(__GNUC__)
+__attribute__((no_sanitize("pointer-overflow"))) // pointer arithmetic with nullptr
+#endif
 TEST_CASE("foeGroupData - getResourceCreateInfo", "[foe]") {
     DummyImporterData dummyImporter;
     foeImexImporter testImporter = reinterpret_cast<foeImexImporter>(&dummyImporter);

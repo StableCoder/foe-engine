@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -378,7 +378,11 @@ TEST_CASE("foeResourcePool - Unloading resources via pool") {
 
 TEST_CASE("foeResourcePool - Check adding async to pool propagates to resources") {
     bool asyncTaskCalled = false;
-    auto asyncTaskFn = [](void *pAsyncContext, PFN_foeTask taskFn, void *pTaskContext) {
+    auto asyncTaskFn = [](void *pAsyncContext, PFN_foeTask taskFn, void *pTaskContext)
+#if defined(__clang__) || defined(__GNUC__)
+                           __attribute__((no_sanitize("function"))) // different function signature
+#endif
+    {
         bool *pAsyncTaskCalled = (bool *)pAsyncContext;
         *pAsyncTaskCalled = true;
 

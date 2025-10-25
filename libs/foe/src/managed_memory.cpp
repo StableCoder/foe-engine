@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -46,7 +46,8 @@ extern "C" foeResultSet foeCreateManagedMemory(void *pData,
 
     new (pNewManagedMemory) ManagedMemory(pData, dataSize, cleanupFn);
 
-    memcpy(foeResourceCreateInfoGetMetadata(pNewManagedMemory), pMetadata, metadataSize);
+    if (metadataSize != 0)
+        memcpy(foeResourceCreateInfoGetMetadata(pNewManagedMemory), pMetadata, metadataSize);
 
     *pManagedMemory = managed_memory_to_handle(pNewManagedMemory);
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,7 +31,7 @@ typedef enum foeEcsResult {
 } foeEcsResult;
 
 FOE_ECS_EXPORT
-void foeEcsResultToString(foeEcsResult value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
+void foeEcsResultToString(int value, char buffer[FOE_MAX_RESULT_STRING_SIZE]);
 
 #ifdef __cplusplus
 }
