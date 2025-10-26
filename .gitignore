@@ -22,12 +22,14 @@ compile_commands.json
 cmake-build*/
 *build/
 build*/
+*install-test/
 *.profraw
 
 # =========================
 # Other
 # =========================
 
+data/
 *.cap
 *.ini
 *.spv

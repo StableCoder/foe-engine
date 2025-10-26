@@ -20,6 +20,8 @@ cmake_dependent_option(
   CLANG_TIDY_FIX "Turns on fixes for found clang-tidy issues" OFF CLANG_TIDY
   OFF)
 
+option(FOE_SKUNKWORKS "Build the skunkworks executable" ON)
+
 # There are cases where it is easier to debug issues if dynamic plugin library
 # content is still loaded into the application when it terminates, such as for
 # tools that do post-analysis such as sanitizers.
@@ -66,12 +68,16 @@ file(
 list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/build)
 list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(FILTER CL_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
+list(FILTER CL_FILES EXCLUDE REGEX
+     ${CMAKE_CURRENT_SOURCE_DIR}/skunkworks/external)
 clang_format(format ${CL_FILES})
 
 file(GLOB_RECURSE CM_FILES CMakeLists.txt *.cmake)
 list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/build)
 list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(FILTER CM_FILES EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/external)
+list(FILTER CM_FILES EXCLUDE REGEX
+     ${CMAKE_CURRENT_SOURCE_DIR}/skunkworks/external)
 cmake_format(cmake-format ${CM_FILES})
 
 # Dependency Graph
@@ -125,6 +131,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Libraries
 add_subdirectory(external)
 add_subdirectory(libs)
+
+# skunkworks
+if(FOE_SKUNKWORKS)
+  add_subdirectory(skunkworks)
+endif()
 
 # install
 include(CMakePackageConfigHelpers)

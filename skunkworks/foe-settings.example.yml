@@ -1,0 +1,18 @@
+window:
+  # have_window: true
+  # vsync: false
+  width: 1920
+  height: 1080
+graphics:
+  # gpu: 0
+  # max_frame_buffering: 3
+  validation: false
+  debug_logging: false
+  msaa: 1
+xr:
+  enable: false
+  force: false
+  validation: false
+  debug_logging: false
+search_paths:
+  - data/bringup-data-sets

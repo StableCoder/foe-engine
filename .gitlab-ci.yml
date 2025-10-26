@@ -71,18 +71,32 @@ Python Files:
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    # combined engine/skunkworks build
+    - cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_INSTALL_PREFIX=$(pwd)/install-test -D BUILD_TESTS=ON  ${CMAKE_OPTIONS}
     - cmake --build build
+    # tests
     - ctest --test-dir build --output-on-failure
+    # install engine build
+    - cmake --install build
+    # separated skunkworks build
+    - cmake -S skunkworks -B build-skunkworks -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_PREFIX_PATH=$(pwd)/install-test ${CMAKE_OPTIONS}
+    - cmake --build build-skunkworks
 
 .platform_macos_template: &platform_macos_template
   stage: macOS Builds
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE=${BUILD_TYPE} ${CMAKE_OPTIONS}
+    # combined engine/skunkworks build
+    - cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_INSTALL_PREFIX=$(pwd)/install-test -D BUILD_TESTS=ON ${CMAKE_OPTIONS}
     - cmake --build build
+    # tests
     - ctest --test-dir build --output-on-failure
+    # install engine build
+    - cmake --install build
+    # separated skunkworks build
+    - cmake -S skunkworks -B build-skunkworks -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_PREFIX_PATH=$(pwd)/install-test ${CMAKE_OPTIONS}
+    - cmake --build build-skunkworks
 
 .platform_windows_template: &platform_windows_template
   stage: Windows Builds
@@ -95,9 +109,16 @@ Python Files:
   needs: []
   dependencies: []
   script:
-    - cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_PREFIX_PATH="C:\" -D BULLET_ROOT="C:\bullet" $env:CMAKE_OPTIONS
+    # combined engine/skunkworks build
+    - cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_INSTALL_PREFIX="$(pwd)\install-test" -D CMAKE_PREFIX_PATH="C:\" -D BULLET_ROOT="C:\bullet" -D BUILD_TESTS=ON $env:CMAKE_OPTIONS
     - cmake --build build
+    # tests
     - ctest --test-dir build --output-on-failure
+    # install engine build
+    - cmake --install build
+      # separated skunkworks build
+    - cmake -S skunkworks -B build-skunkworks -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$env:BUILD_TYPE" -D CMAKE_PREFIX_PATH="$(pwd)\install-test;C:\" -D BULLET_ROOT="C:\bullet" $env:CMAKE_OPTIONS
+    - cmake --build build-skunkworks
 
 .platform_msys_template: &platform_msys_template
   stage: Windows Builds
@@ -112,9 +133,16 @@ Python Files:
   script:
     # set the directory bash will start in
     - $env:HOME="$(cygpath -u $(pwd))"
-    - bash.exe -lc "cmake . -B build -G Ninja -D BUILD_TESTS=ON -D CMAKE_BUILD_TYPE="$BUILD_TYPE" $CMAKE_OPTIONS"
-    - bash.exe -lc 'cmake --build build'
-    - bash.exe -lc 'ctest --test-dir build --output-on-failure'
+    # combined engine/skunkworks build
+    - bash.exe -lc "cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_INSTALL_PREFIX=$(pwd)/install-test -D BUILD_TESTS=ON ${CMAKE_OPTIONS}"
+    - bash.exe -lc "cmake --build build"
+    # tests
+    - bash.exe -lc "ctest --test-dir build --output-on-failure"
+    # separated engine build
+    - bash.exe -lc "cmake --install build"
+    # separated skunkworks build
+    - bash.exe -lc "cmake -S skunkworks -B build-skunkworks -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_PREFIX_PATH=$(pwd)/install-test ${CMAKE_OPTIONS}"
+    - bash.exe -lc "cmake --build build-skunkworks"
 
 # Arch
 
