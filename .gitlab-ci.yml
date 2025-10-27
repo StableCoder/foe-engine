@@ -678,6 +678,7 @@ Code Coverage:
 
 ThreadSanitizer:
   variables:
+    TSAN_OPTIONS: suppressions=${CI_PROJECT_DIR}/tsan.suppressions
     CC: clang
     CXX: clang++
     CMAKE_OPTIONS: -D SANITIZER=Thread
