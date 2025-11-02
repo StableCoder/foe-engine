@@ -72,6 +72,10 @@ elif [[ "$DEVICE_NAME" == "intel_a380" ]]; then
     if [[ "$VK_DEVICE_NAME" == *Intel*Arc*A380*DG2* ]]; then
         exit 0
     fi
+elif [[ "$DEVICE_NAME" == "intel_mtl" ]]; then
+    if [[ "$VK_DEVICE_NAME" == *MTL* ]]; then
+        exit 0
+    fi
 elif [[ "$DEVICE_NAME" == "apple_m1" ]]; then
     if [[ "$VK_DEVICE_NAME" == *"Apple M1"* ]]; then
         exit 0
