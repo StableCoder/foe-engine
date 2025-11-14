@@ -460,7 +460,7 @@ Windows/MSVC Static:
     matrix:
       - ARCH: [amd64]
         BUILD_TYPE: [Release]
-        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022, vs2026]
   <<: *platform_windows_template
 
 Windows/MSVC Shared:
@@ -468,7 +468,7 @@ Windows/MSVC Shared:
     matrix:
       - ARCH: [amd64]
         BUILD_TYPE: [Release]
-        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022, vs2026]
   variables:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_windows_template
@@ -478,7 +478,7 @@ Windows/Clang-cl Static:
     matrix:
       - ARCH: [amd64]
         BUILD_TYPE: [Release]
-        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022, vs2026]
   variables:
     CC: clang-cl
     CXX: clang-cl
@@ -489,7 +489,7 @@ Windows/Clang-cl Shared:
     matrix:
       - ARCH: [amd64]
         BUILD_TYPE: [Release]
-        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022, vs2026]
   variables:
     CC: clang-cl
     CXX: clang-cl
@@ -501,7 +501,7 @@ Windows/Clang Static:
     matrix:
       - ARCH: [amd64]
         BUILD_TYPE: [Release]
-        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022, vs2026]
   variables:
     CC: clang
     CXX: clang
@@ -512,7 +512,7 @@ Windows/Clang Shared:
     matrix:
       - ARCH: [amd64]
         BUILD_TYPE: [Release]
-        VISUAL_STUDIO_VERSION: [vs2019, vs2022]
+        VISUAL_STUDIO_VERSION: [vs2019, vs2022, vs2026]
   variables:
     CC: clang
     CXX: clang
@@ -576,7 +576,15 @@ Debian Vulkan HW Testing:
   parallel:
     matrix:
       - ARCH: [amd64]
-        GPU: [amd_navi23, amd_vega10, amd_ellesmere, amd_phoenix, intel_a380, intel_mtl]
+        GPU:
+          [
+            amd_navi23,
+            amd_vega10,
+            amd_ellesmere,
+            amd_phoenix,
+            intel_a380,
+            intel_mtl,
+          ]
   image: docker.io/stabletec/build-foe:debian
   tags:
     - container
@@ -606,7 +614,15 @@ Fedora Vulkan HW Testing:
   parallel:
     matrix:
       - ARCH: [amd64]
-        GPU: [amd_navi23, amd_vega10, amd_ellesmere, amd_phoenix, intel_a380, intel_mtl]
+        GPU:
+          [
+            amd_navi23,
+            amd_vega10,
+            amd_ellesmere,
+            amd_phoenix,
+            intel_a380,
+            intel_mtl,
+          ]
   image: docker.io/stabletec/build-foe:fedora
   tags:
     - container
