@@ -75,7 +75,7 @@ Python Files:
     - cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_INSTALL_PREFIX=$(pwd)/install-test -D BUILD_TESTS=ON  ${CMAKE_OPTIONS}
     - cmake --build build
     # tests
-    - ctest --test-dir build --output-on-failure
+    - ctest --test-dir build --build-config ${BUILD_TYPE} --output-on-failure
     # install engine build
     - cmake --install build
     # separated skunkworks build
@@ -93,7 +93,7 @@ Python Files:
     # tests
     - ctest --test-dir build --output-on-failure
     # install engine build
-    - cmake --install build
+    - cmake --install build --config ${BUILD_TYPE}
     # separated skunkworks build
     - cmake -S skunkworks -B build-skunkworks -G Ninja -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D CMAKE_PREFIX_PATH=$(pwd)/install-test ${CMAKE_OPTIONS}
     - cmake --build build-skunkworks
@@ -345,9 +345,11 @@ macOS/AppleClang Static:
     matrix:
       - ARCH: [arm64]
         BUILD_TYPE: [Release]
+        TOOLING_ENVIRONMENT: [xcode, xclt]
   tags:
     - macos
     - ${ARCH}
+    - ${TOOLING_ENVIRONMENT}
   <<: *platform_macos_template
 
 macOS/AppleClang Shared:
@@ -355,9 +357,11 @@ macOS/AppleClang Shared:
     matrix:
       - ARCH: [arm64]
         BUILD_TYPE: [Release]
+        TOOLING_ENVIRONMENT: [xcode, xclt]
   tags:
     - macos
     - ${ARCH}
+    - ${TOOLING_ENVIRONMENT}
   variables:
     CMAKE_OPTIONS: -D BUILD_SHARED_LIBS=ON
   <<: *platform_macos_template
@@ -367,9 +371,11 @@ macOS/Clang Static:
     matrix:
       - ARCH: [arm64]
         BUILD_TYPE: [Release]
+        TOOLING_ENVIRONMENT: [xclt]
   tags:
     - macos
     - ${ARCH}
+    - ${TOOLING_ENVIRONMENT}
   variables:
     CC: clang
     CXX: clang++
@@ -380,9 +386,11 @@ macOS/Clang Shared:
     matrix:
       - ARCH: [arm64]
         BUILD_TYPE: [Release]
+        TOOLING_ENVIRONMENT: [xclt]
   tags:
     - macos
     - ${ARCH}
+    - ${TOOLING_ENVIRONMENT}
   variables:
     CC: clang
     CXX: clang++
