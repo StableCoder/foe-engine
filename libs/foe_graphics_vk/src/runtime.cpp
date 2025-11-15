@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,12 +7,11 @@
 #include <foe/delimited_string.h>
 #include <foe/engine_detail.h>
 
-#include "debug_callback.h"
-#include "log.hpp"
 #include "result.h"
 #include "runtime.h"
 #include "vk_result.h"
 
+#include <cstring>
 #include <vector>
 
 namespace {
@@ -21,9 +20,6 @@ void foeGfxVkDestroyRuntime(foeGfxVkRuntime const *pRuntime) {
     // State
     delete[] pRuntime->pExtensionNames;
     delete[] pRuntime->pLayerNames;
-
-    if (pRuntime->debugCallback != VK_NULL_HANDLE)
-        foeVkDestroyDebugCallback(pRuntime->instance, pRuntime->debugCallback);
 
     if (pRuntime->instance != VK_NULL_HANDLE)
         vkDestroyInstance(pRuntime->instance, nullptr);
@@ -40,8 +36,6 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
                                               char const *const *ppLayerNames,
                                               uint32_t extensionCount,
                                               char const *const *ppExtensionNames,
-                                              bool validation,
-                                              bool debugLogging,
                                               foeGfxRuntime *pRuntime) {
     auto *pNewRuntime = new (std::nothrow) foeGfxVkRuntime{};
     if (pNewRuntime == nullptr) {
@@ -65,16 +59,6 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
         layers.emplace_back(ppLayerNames[i]);
     for (uint32_t i = 0; i < extensionCount; ++i)
         extensions.emplace_back(ppExtensionNames[i]);
-
-    if (validation) {
-        layers.emplace_back("VK_LAYER_KHRONOS_validation");
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "Adding validation layers to new VkInstance");
-    }
-    if (debugLogging) {
-        extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE,
-                "Adding debug report extension to new VkInstance");
-    }
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
     // From Vulkan Load 216+, for non-conforming implementations (such as MoltenVK),
@@ -136,14 +120,6 @@ extern "C" foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
         pNewRuntime->pExtensionNames = new char[pNewRuntime->extensionNamesLength];
         foeCreateDelimitedString(extensions.size(), extensions.data(), '\0',
                                  &pNewRuntime->extensionNamesLength, pNewRuntime->pExtensionNames);
-    }
-
-    if (debugLogging) {
-        vkResult = foeVkCreateDebugCallback(pNewRuntime->instance, &pNewRuntime->debugCallback);
-        if (vkResult != VK_SUCCESS)
-            goto CREATE_FAILED;
-
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "Added debug logging to new VkInstance");
     }
 
 CREATE_FAILED:

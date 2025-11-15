@@ -55,6 +55,7 @@ target_sources(
          include/foe/graphics/vk/binary.h
          include/foe/graphics/vk/cleanup.h
          include/foe/graphics/vk/compare.h
+         include/foe/graphics/vk/debug_callback.h
          include/foe/graphics/vk/error_images.h
          include/foe/graphics/vk/format.h
          include/foe/graphics/vk/fragment_descriptor.h

@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -29,8 +29,6 @@ extern "C" {
  * @param extensionCount is the number of Vulkan extensions to enable
  * @param ppExtensionNames is a pointer to an array of layerCount null-terminated UTF-8 strings
  * containing the names of extesnions to enable in the created runtime.
- * @param validation indicates whether to enable the VK_LAYER_KHRONOS_validation layer
- * @param debugLogging indicates whether to enable debug logging.
  * @param pRuntime points to a foeGfxRuntime handle in which the resulting runtime is returned.
  * @return FOE_GFX_VK_SUCCESS on success, or an appropriate error otherwise.
  */
@@ -42,8 +40,6 @@ foeResultSet foeGfxVkCreateRuntime(char const *pApplicationName,
                                    char const *const *ppLayerNames,
                                    uint32_t extensionCount,
                                    char const *const *ppExtensionNames,
-                                   bool validation,
-                                   bool debugLogging,
                                    foeGfxRuntime *pRuntime);
 
 /** @brief Enumerate the enabled layers for the given runtime

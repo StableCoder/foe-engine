@@ -5,6 +5,7 @@
 #include "graphics.hpp"
 
 #include <foe/delimited_string.h>
+#include <foe/graphics/vk/debug_callback.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
 
@@ -22,6 +23,41 @@
 #ifndef VK_VERSION_1_2
 static_assert(false, "FoE engine requires at least Vulkan 1.2 support (for timeline semaphores).");
 #endif
+
+namespace {
+
+static VkDebugReportCallbackEXT registeredCallback = FOE_NULL_HANDLE;
+
+VkBool32 vulkanMessageCallbacks(VkDebugReportFlagsEXT flags,
+                                VkDebugReportObjectTypeEXT /*objectType*/,
+                                uint64_t /*object*/,
+                                size_t /*location*/,
+                                int32_t messageCode,
+                                char const *pLayerPrefix,
+                                char const *pMessage,
+                                void * /*pUserData*/) {
+    if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
+        FOE_LOG(foeBringup, FOE_LOG_LEVEL_ERROR, "[{}] Code {} : {}", pLayerPrefix, messageCode,
+                pMessage)
+    }
+    if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0 ||
+        (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
+        FOE_LOG(foeBringup, FOE_LOG_LEVEL_WARNING, "[{}] Code {} : {}", pLayerPrefix, messageCode,
+                pMessage)
+    }
+    if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
+        FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "[{}] Code {} : {}", pLayerPrefix, messageCode,
+                pMessage)
+    }
+    if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
+        FOE_LOG(foeBringup, FOE_LOG_LEVEL_VERBOSE, "[{}] Code {} : {}", pLayerPrefix, messageCode,
+                pMessage)
+    }
+
+    return VK_FALSE;
+}
+
+} // namespace
 
 foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
                               bool validation,
@@ -58,6 +94,11 @@ foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
     }
 #endif
 
+    if (validation)
+        layers.emplace_back("VK_LAYER_KHRONOS_validation");
+    if (debugLogging)
+        extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+
     // Always use the latest available runtime
     uint32_t vkApiVersion;
     vkEnumerateInstanceVersion(&vkApiVersion);
@@ -70,9 +111,19 @@ foeResultSet createGfxRuntime(foeXrRuntime xrRuntime,
     for (auto &it : extensions)
         extensionsList.emplace_back(it.data());
 
-    return foeGfxVkCreateRuntime("FoE Engine", 0, vkApiVersion, layersList.size(),
-                                 layersList.data(), extensionsList.size(), extensionsList.data(),
-                                 validation, debugLogging, pGfxRuntime);
+    foeResultSet result =
+        foeGfxVkCreateRuntime("FoE Engine", 0, vkApiVersion, layersList.size(), layersList.data(),
+                              extensionsList.size(), extensionsList.data(), pGfxRuntime);
+
+    if (debugLogging && result.value == FOE_SUCCESS) {
+        result = foeGfxVkRegisterDebugCallback(
+            *pGfxRuntime,
+            VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT,
+            &vulkanMessageCallbacks, &registeredCallback);
+    }
+
+    return result;
 }
 
 namespace {

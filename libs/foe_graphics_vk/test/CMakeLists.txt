@@ -23,8 +23,8 @@ target_sources(
           vk_struct_VkStencilOpState.cpp)
 
 if(BUILD_VULKAN_RUNTIME_TESTS)
-  target_sources(test_foe_graphics_vk PRIVATE runtime.cpp session.cpp
-                                              shader.cpp upload.cpp)
+  target_sources(test_foe_graphics_vk PRIVATE debug_callback.cpp runtime.cpp
+                                              session.cpp shader.cpp upload.cpp)
 endif()
 
 target_link_libraries(

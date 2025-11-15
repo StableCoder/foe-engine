@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,6 @@ extern "C" {
 
 struct foeGfxVkRuntime {
     VkInstance instance;
-    VkDebugReportCallbackEXT debugCallback;
 
     /// Vulkan API version the runtime was created with
     uint32_t apiVersion;

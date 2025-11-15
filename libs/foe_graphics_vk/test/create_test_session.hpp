@@ -1,4 +1,4 @@
-// Copyright (C) 2022-2023 George Cave
+// Copyright (C) 2022-2025 George Cave
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,8 +27,7 @@ inline foeResultSet createTestSession(foeGfxRuntime *pRuntime, foeGfxSession *pS
 
     vkEnumerateInstanceVersion(&vkApiVersion);
 
-    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, false, false,
-                                   &runtime);
+    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, &runtime);
     if (result.value != FOE_SUCCESS)
         goto CREATE_TEST_SESSION_FAILED;
 

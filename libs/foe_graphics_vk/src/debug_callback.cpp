@@ -1,71 +1,47 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
-#include "debug_callback.h"
+#include <foe/graphics/vk/debug_callback.h>
+#include <foe/graphics/vk/runtime.h>
 
-#include "log.hpp"
+#include "result.h"
+#include "vk_result.h"
 
-namespace {
-
-VkBool32 vulkanMessageCallbacks(VkDebugReportFlagsEXT flags,
-                                VkDebugReportObjectTypeEXT /*objectType*/,
-                                uint64_t /*object*/,
-                                size_t /*location*/,
-                                int32_t messageCode,
-                                char const *pLayerPrefix,
-                                char const *pMessage,
-                                void * /*pUserData*/) {
-    if ((flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_ERROR, "[{}] Code {} : {}", pLayerPrefix, messageCode,
-                pMessage)
-    }
-    if ((flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) != 0 ||
-        (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_WARNING, "[{}] Code {} : {}", pLayerPrefix,
-                messageCode, pMessage)
-    }
-    if ((flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_INFO, "[{}] Code {} : {}", pLayerPrefix, messageCode,
-                pMessage)
-    }
-    if ((flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) != 0) {
-        FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_VERBOSE, "[{}] Code {} : {}", pLayerPrefix,
-                messageCode, pMessage)
-    }
-
-    return VK_FALSE;
-}
-
-} // namespace
-
-extern "C" VkResult foeVkCreateDebugCallback(VkInstance instance,
-                                             VkDebugReportCallbackEXT *pDebugCallback) {
+foeResultSet foeGfxVkRegisterDebugCallback(foeGfxRuntime runtime,
+                                           VkDebugReportFlagsEXT flags,
+                                           PFN_vkDebugReportCallbackEXT pfnCallback,
+                                           VkDebugReportCallbackEXT *pDebugCallback) {
     VkDebugReportCallbackCreateInfoEXT debugCallbackCI{
         .sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
-        .flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
-                 VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT,
-        .pfnCallback = &vulkanMessageCallbacks,
+        .flags = flags,
+        .pfnCallback = pfnCallback,
     };
 
+    VkInstance vkInstance = foeGfxVkGetRuntimeInstance(runtime);
+
     auto fpCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(
-        vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT"));
+        vkGetInstanceProcAddr(vkInstance, "vkCreateDebugReportCallbackEXT"));
     if (fpCreateDebugReportCallbackEXT == nullptr) {
-        return VK_ERROR_INITIALIZATION_FAILED;
+        return vk_to_foeResult(VK_ERROR_INITIALIZATION_FAILED);
     }
 
-    return fpCreateDebugReportCallbackEXT(instance, &debugCallbackCI, nullptr, pDebugCallback);
+    VkResult result =
+        fpCreateDebugReportCallbackEXT(vkInstance, &debugCallbackCI, nullptr, pDebugCallback);
+    return vk_to_foeResult(result);
 }
 
-extern "C" VkResult foeVkDestroyDebugCallback(VkInstance instance,
-                                              VkDebugReportCallbackEXT debugCallback) {
+foeResultSet foeGfxVkDeregisterDebugCallback(foeGfxRuntime runtime,
+                                             VkDebugReportCallbackEXT debugCallback) {
+    VkInstance vkInstance = foeGfxVkGetRuntimeInstance(runtime);
+
     auto fpDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
-        vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
+        vkGetInstanceProcAddr(vkInstance, "vkDestroyDebugReportCallbackEXT"));
     if (fpDestroyDebugReportCallbackEXT == nullptr) {
-        return VK_ERROR_INITIALIZATION_FAILED;
+        return vk_to_foeResult(VK_ERROR_INITIALIZATION_FAILED);
     }
 
-    fpDestroyDebugReportCallbackEXT(instance, debugCallback, nullptr);
+    fpDestroyDebugReportCallbackEXT(vkInstance, debugCallback, nullptr);
 
-    return VK_SUCCESS;
+    return to_foeResult(FOE_GRAPHICS_VK_SUCCESS);
 }

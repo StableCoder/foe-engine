@@ -1,4 +1,4 @@
-// Copyright (C) 2022 George Cave.
+// Copyright (C) 2022-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,8 +23,7 @@ TEST_CASE("foeGfxSession(Vulkan)") {
 
     vkEnumerateInstanceVersion(&vkApiVersion);
 
-    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, false, false,
-                                   &runtime);
+    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, &runtime);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(runtime != FOE_NULL_HANDLE);
 
@@ -203,8 +202,7 @@ TEST_CASE("foeGfxSession(Vulkan) - Passing in an unknown/garbage features struct
 
     vkEnumerateInstanceVersion(&vkApiVersion);
 
-    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, false, false,
-                                   &runtime);
+    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, &runtime);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(runtime != FOE_NULL_HANDLE);
 
@@ -233,8 +231,7 @@ TEST_CASE("foeGfxSession(Vulkan) - Attempting to enable all physical device feat
 
     vkEnumerateInstanceVersion(&vkApiVersion);
 
-    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, false, false,
-                                   &runtime);
+    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, &runtime);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(runtime != FOE_NULL_HANDLE);
 
@@ -299,8 +296,7 @@ TEST_CASE("foeGfxSession(Vulkan) - Checking session MSAA support") {
 
     vkEnumerateInstanceVersion(&vkApiVersion);
 
-    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, false, false,
-                                   &runtime);
+    result = foeGfxVkCreateRuntime(nullptr, 0, vkApiVersion, 0, nullptr, 0, nullptr, &runtime);
     REQUIRE(result.value == FOE_SUCCESS);
     REQUIRE(runtime != FOE_NULL_HANDLE);
 
