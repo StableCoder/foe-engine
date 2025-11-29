@@ -47,7 +47,7 @@ bool imguiAddGlfwWindow(foeImGuiWindow *pImguiWindow,
                                    windowVisible, windowContentScale, pKeyboard, pMouse);
 }
 
-ImGuiKey imguiGlfwKeyConvert(int keycode) {
+ImGuiKey imguiGlfwKeyConvert(int keycode, int scancode) {
     switch (keycode) {
     case GLFW_KEY_TAB:
         return ImGuiKey_Tab;

@@ -30,14 +30,14 @@ void renderKeyboardUI(KeyboardInput const *pKeyboard) {
     */
 
     // Down Keys
-    ImGui::Text("Keys Down:");
+    ImGui::Text("Key / Scan Codes Down:");
     ImGui::BeginTable("KeyButtonDownTable", 1, ImGuiTableFlags_BordersOuter);
 
-    for (auto const &it : pKeyboard->downKeys) {
+    for (auto const &it : pKeyboard->downCodes) {
         ImGui::TableNextRow();
 
         ImGui::TableNextColumn();
-        ImGui::Text("%u", it);
+        ImGui::Text("%u / %u", it.keycode, it.scancode);
     }
 
     ImGui::EndTable();

@@ -526,17 +526,19 @@ bool foeImGuiRenderer::wantCaptureKeyboard() const noexcept {
 
 void foeImGuiRenderer::keyboardInput(uint32_t unicodeChar,
                                      PFN_ImplKeyToImGuiKey implKeyToImGuiKey,
-                                     uint32_t const *pPressedKeys,
-                                     uint32_t pressedKeyCount,
+                                     uint32_t const *pPressedKeycodes,
+                                     uint32_t const *pPressedScancodes,
+                                     uint32_t pressedCount,
                                      uint32_t const *pReleasedKeys,
-                                     uint32_t releasedKeyCount) noexcept {
+                                     uint32_t const *pReleasedScancodes,
+                                     uint32_t releasedCount) noexcept {
     ImGuiIO &io = ImGui::GetIO();
 
     // keys
-    for (uint32_t i = 0; i < pressedKeyCount; ++i)
-        io.AddKeyEvent(implKeyToImGuiKey(pPressedKeys[i]), true);
-    for (uint32_t i = 0; i < releasedKeyCount; ++i)
-        io.AddKeyEvent(implKeyToImGuiKey(pReleasedKeys[i]), false);
+    for (uint32_t i = 0; i < pressedCount; ++i)
+        io.AddKeyEvent(implKeyToImGuiKey(pPressedKeycodes[i], pPressedScancodes[i]), true);
+    for (uint32_t i = 0; i < releasedCount; ++i)
+        io.AddKeyEvent(implKeyToImGuiKey(pReleasedKeys[i], pReleasedScancodes[i]), false);
 
     // Character
     if (unicodeChar != 0) {

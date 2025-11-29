@@ -21,18 +21,35 @@ struct PrivateWindowData {
     bool *pResized;
 };
 
-void keyCallback(GLFWwindow *pWindow, int key, int, int action, int mods) {
+void keyCallback(GLFWwindow *pWindow, int keycode, int scancode, int action, int mods) {
     auto *pWindowData = static_cast<PrivateWindowData *>(glfwGetWindowUserPointer(pWindow));
     auto *pKeyboard = pWindowData->pKeyboard;
 
     if (action == GLFW_PRESS) {
-        pKeyboard->pressedKeys.insert(key);
-        pKeyboard->downKeys.insert(key);
+        pKeyboard->pressedCodes.emplace_back(keycode, scancode);
+        pKeyboard->downCodes.emplace_back(keycode, scancode);
     } else if (action == GLFW_REPEAT) {
-        pKeyboard->repeatKey = key;
+        pKeyboard->repeatCode = {
+            .keycode = (uint32_t)keycode,
+            .scancode = (uint32_t)scancode,
+        };
     } else if (action == GLFW_RELEASE) {
-        pKeyboard->releasedKeys.insert(key);
-        pKeyboard->downKeys.erase(key);
+        pKeyboard->releasedCodes.emplace_back(keycode, scancode);
+
+        // remove the code pair form the set of held-down codes
+        bool codeFound = false;
+        auto const endIt = pKeyboard->downCodes.end();
+        for (auto it = pKeyboard->downCodes.begin(); it != endIt; ++it) {
+            if (it->keycode == keycode && it->scancode == scancode) {
+                pKeyboard->downCodes.erase(it);
+                codeFound = true;
+                break;
+            }
+        }
+
+        // if the exact same code pair could not be found, meaning it wasn't entered previously,
+        // then something is very wrong and needs to be fixed
+        assert(codeFound);
     }
 }
 

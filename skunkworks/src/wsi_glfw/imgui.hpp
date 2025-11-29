@@ -16,6 +16,6 @@ bool imguiAddGlfwWindow(foeImGuiWindow *pImguiWindow,
                         KeyboardInput const *pKeyboard,
                         MouseInput const *pMouse);
 
-ImGuiKey imguiGlfwKeyConvert(int keycode);
+ImGuiKey imguiGlfwKeyConvert(int keycode, int scancode);
 
 #endif // WSI_GLFW_IMGUI_HPP

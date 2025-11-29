@@ -6,42 +6,92 @@
 #define HID_KEYBOARD_HPP
 
 #include <cstdint>
-#include <set>
+#include <vector>
 
 struct KeyboardInput {
+    struct CodePair {
+        uint32_t keycode;
+        uint32_t scancode;
+    };
+
     /// Unicode character currently active
     uint32_t unicodeChar;
     // Only the last pressed key can be repeated
-    uint32_t repeatKey;
+    CodePair repeatCode;
 
-    /// Set of keys that have received the 'pressed' signal.
-    std::set<uint32_t> pressedKeys;
-    /// Set of keys that have received the 'released' signal.
-    std::set<uint32_t> releasedKeys;
-    /// Set of keys currently held down.
-    std::set<uint32_t> downKeys;
+    /// Set of keycodes/scancodes that have received the 'pressed' signal.
+    std::vector<CodePair> pressedCodes;
+    /// Set of keycodes/scancodes that have received the 'released' signal.
+    std::vector<CodePair> releasedCodes;
+    /// Set of keycodes/scancodes currently held down.
+    std::vector<CodePair> downCodes;
 
-    /// Returns if the given key has just been pressed this tick.
-    inline bool keyPressed(uint32_t key) const noexcept {
-        return pressedKeys.find(key) != pressedKeys.end();
+    /// returns if the given keycode has just been pressed
+    inline bool keycodePressed(uint32_t keycode) const noexcept {
+        for (auto const &it : pressedCodes) {
+            if (it.keycode == keycode)
+                return true;
+        }
+
+        return false;
     }
 
-    /// Returns if the given key has just been released.
-    inline bool keyReleased(uint32_t key) const noexcept {
-        return releasedKeys.find(key) != releasedKeys.end();
+    /// returns if the given scancode has just been pressed
+    inline bool scancodePressed(uint32_t scancode) const noexcept {
+        for (auto const &it : pressedCodes) {
+            if (it.scancode == scancode)
+                return true;
+        }
+
+        return false;
     }
 
-    /// Returns if the given key is being held down.
-    inline bool keyDown(uint32_t key) const noexcept {
-        return downKeys.find(key) != downKeys.end();
+    /// returns if the given keycode has just been released
+    inline bool keycodeReleased(uint32_t keycode) const noexcept {
+        for (auto const &it : releasedCodes) {
+            if (it.keycode == keycode)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// returns if the given scancode has just been released
+    inline bool scancodeReleased(uint32_t scancode) const noexcept {
+        for (auto const &it : releasedCodes) {
+            if (it.scancode == scancode)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// returns if the given keycode is being held down
+    inline bool keycodeDown(uint32_t keycode) const noexcept {
+        for (auto const &it : downCodes) {
+            if (it.keycode == keycode)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// returns if the given scancode is being held down
+    inline bool scancodeDown(uint32_t scancode) const noexcept {
+        for (auto const &it : downCodes) {
+            if (it.scancode == scancode)
+                return true;
+        }
+
+        return false;
     }
 
     void preprocessing() {
         unicodeChar = 0;
-        repeatKey = 0;
+        repeatCode = {};
 
-        pressedKeys.clear();
-        releasedKeys.clear();
+        pressedCodes.clear();
+        releasedCodes.clear();
     }
 };
 

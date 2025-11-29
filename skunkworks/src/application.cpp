@@ -431,24 +431,24 @@ void processUserInput(double timeElapsedInSeconds,
     float multiplier = timeElapsedInSeconds * 3.f; // 3 units per second
 
     if (pMouse->inWindow) {
-        if (pKeyboard->keyDown(GLFW_KEY_Z)) { // Up
+        if (pKeyboard->keycodeDown(GLFW_KEY_Z)) { // Up
             *pPosition += upVec(*pOrientation) * movementMultiplier * multiplier;
         }
-        if (pKeyboard->keyDown(GLFW_KEY_X)) { // Down
+        if (pKeyboard->keycodeDown(GLFW_KEY_X)) { // Down
             *pPosition -= upVec(*pOrientation) * movementMultiplier * multiplier;
         }
 
-        if (pKeyboard->keyDown(GLFW_KEY_W)) { // Forward
+        if (pKeyboard->keycodeDown(GLFW_KEY_W)) { // Forward
             *pPosition += forwardVec(*pOrientation) * movementMultiplier * multiplier;
         }
-        if (pKeyboard->keyDown(GLFW_KEY_S)) { // Back
+        if (pKeyboard->keycodeDown(GLFW_KEY_S)) { // Back
             *pPosition -= forwardVec(*pOrientation) * movementMultiplier * multiplier;
         }
 
-        if (pKeyboard->keyDown(GLFW_KEY_A)) { // Left
+        if (pKeyboard->keycodeDown(GLFW_KEY_A)) { // Left
             *pPosition += leftVec(*pOrientation) * movementMultiplier * multiplier;
         }
-        if (pKeyboard->keyDown(GLFW_KEY_D)) { // Right
+        if (pKeyboard->keycodeDown(GLFW_KEY_D)) { // Right
             *pPosition -= leftVec(*pOrientation) * movementMultiplier * multiplier;
         }
 
@@ -458,11 +458,11 @@ void processUserInput(double timeElapsedInSeconds,
             *pOrientation = changePitch(*pOrientation,
                                         glm::radians(pMouse->oldPosition.y - pMouse->position.y));
 
-            if (pKeyboard->keyDown(GLFW_KEY_Q)) { // Roll Left
+            if (pKeyboard->keycodeDown(GLFW_KEY_Q)) { // Roll Left
                 *pOrientation =
                     changeRoll(*pOrientation, glm::radians(rorationMultiplier * multiplier));
             }
-            if (pKeyboard->keyDown(GLFW_KEY_E)) { // Roll Right
+            if (pKeyboard->keycodeDown(GLFW_KEY_E)) { // Roll Right
                 *pOrientation =
                     changeRoll(*pOrientation, -glm::radians(rorationMultiplier * multiplier));
             }
@@ -609,13 +609,34 @@ int Application::mainloop() {
 #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
             if (i == 0) {
-                std::vector<uint32_t> keysPressed{window.keyboard.pressedKeys.cbegin(),
-                                                  window.keyboard.pressedKeys.cend()};
-                std::vector<uint32_t> keysReleased{window.keyboard.releasedKeys.cbegin(),
-                                                   window.keyboard.releasedKeys.cend()};
+                std::vector<uint32_t> pressedKeycodes;
+                std::vector<uint32_t> pressedScancodes;
+                size_t const pressedCount = window.keyboard.pressedCodes.size();
+                pressedKeycodes.reserve(pressedCount);
+                pressedScancodes.reserve(pressedCount);
+                for (size_t i = 0; i < pressedCount; ++i) {
+                    auto const &it = window.keyboard.pressedCodes[i];
+
+                    pressedKeycodes.emplace_back(it.keycode);
+                    pressedScancodes.emplace_back(it.scancode);
+                }
+
+                std::vector<uint32_t> releasedKeycodes;
+                std::vector<uint32_t> releasedScancodes;
+                size_t const releasedCount = window.keyboard.releasedCodes.size();
+                releasedKeycodes.reserve(releasedCount);
+                releasedScancodes.reserve(releasedCount);
+                for (size_t i = 0; i < releasedCount; ++i) {
+                    auto const &it = window.keyboard.releasedCodes[i];
+
+                    releasedKeycodes.emplace_back(it.keycode);
+                    releasedScancodes.emplace_back(it.scancode);
+                }
+
                 imguiRenderer.keyboardInput(window.keyboard.unicodeChar, imguiGlfwKeyConvert,
-                                            keysPressed.data(), keysPressed.size(),
-                                            keysReleased.data(), keysReleased.size());
+                                            pressedKeycodes.data(), pressedScancodes.data(),
+                                            pressedKeycodes.size(), releasedKeycodes.data(),
+                                            releasedScancodes.data(), releasedKeycodes.size());
 
                 std::vector<uint32_t> buttonsPressed{window.mouse.pressedButtons.cbegin(),
                                                      window.mouse.pressedButtons.cend()};

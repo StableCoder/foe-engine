@@ -14,7 +14,7 @@
 
 #include <vector>
 
-typedef ImGuiKey (*PFN_ImplKeyToImGuiKey)(int keycode);
+typedef ImGuiKey (*PFN_ImplKeyToImGuiKey)(int keycode, int scancode);
 
 struct ImGuiContext;
 
@@ -65,10 +65,12 @@ class foeImGuiRenderer {
     FOE_IMGUI_VK_EXPORT
     void keyboardInput(uint32_t unicodeChar,
                        PFN_ImplKeyToImGuiKey implKeyToImGuiKey,
-                       uint32_t const *pPressedKeys,
-                       uint32_t pressedKeyCount,
-                       uint32_t const *pReleasedKeys,
-                       uint32_t releasedKeyCount) noexcept;
+                       uint32_t const *pPressedKeycodes,
+                       uint32_t const *pPressedScancodes,
+                       uint32_t pressedCount,
+                       uint32_t const *pReleasedKeycodes,
+                       uint32_t const *pReleasedScancodes,
+                       uint32_t releasedCount) noexcept;
 
   private:
     VkResult initializeDescriptorPool(VkDevice device);
