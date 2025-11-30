@@ -199,7 +199,7 @@ foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
         pWindow->needSwapchainRebuild = false;
 
         int width, height;
-        glfwGetWindowSize(pWindow->pWindow, &width, &height);
+        glfwGetFramebufferSize(pWindow->pWindow, &width, &height);
 
         if (!pWindow->swapchain) {
             // Surface Format

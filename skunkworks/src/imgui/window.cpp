@@ -79,7 +79,8 @@ void renderMouseUI(MouseInput const *pMouse) {
 bool foeImGuiWindow::addWindow(void *pContext,
                                PFN_WindowTitle pfnTitle,
                                PFN_WindowTerminationCalled pfnTerminationCalled,
-                               PFN_WindowSize pfnSize,
+                               PFN_WindowSize pfnLogicalSize,
+                               PFN_WindowSize pfnPixelSize,
                                PFN_WindowVisible pfnVisible,
                                PFN_WindowContentScale pfnContentScale,
                                KeyboardInput const *pKeyboard,
@@ -94,7 +95,8 @@ bool foeImGuiWindow::addWindow(void *pContext,
         .pContext = pContext,
         .pfnTitle = pfnTitle,
         .pfnTerminationCalled = pfnTerminationCalled,
-        .pfnSize = pfnSize,
+        .pfnLogicalSize = pfnLogicalSize,
+        .pfnPixelSize = pfnPixelSize,
         .pfnVisible = pfnVisible,
         .pfnContentScale = pfnContentScale,
         .pKeyboard = pKeyboard,
@@ -193,8 +195,11 @@ void foeImGuiWindow::customUI() {
 
         // Size
         int width, height;
-        it.pfnSize(it.pContext, &width, &height);
-        ImGui::Text("Width/Height: %i x %i", width, height);
+        it.pfnLogicalSize(it.pContext, &width, &height);
+        ImGui::Text("Window Size: %i x %i", width, height);
+
+        it.pfnPixelSize(it.pContext, &width, &height);
+        ImGui::Text("Pixel Size: %i x %i", width, height);
 
         // Visible
         if (it.pfnVisible(it.pContext)) {

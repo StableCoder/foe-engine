@@ -24,7 +24,8 @@ class foeImGuiWindow {
     bool addWindow(void *pContext,
                    PFN_WindowTitle pfnTitle,
                    PFN_WindowTerminationCalled pfnTerminationCalled,
-                   PFN_WindowSize pfnSize,
+                   PFN_WindowSize pfnLogicalSize,
+                   PFN_WindowSize pfnPixelSize,
                    PFN_WindowVisible pfnVisible,
                    PFN_WindowContentScale pfnContentScale,
                    KeyboardInput const *pKeyboard,
@@ -40,7 +41,8 @@ class foeImGuiWindow {
 
         PFN_WindowTitle pfnTitle;
         PFN_WindowTerminationCalled pfnTerminationCalled;
-        PFN_WindowSize pfnSize;
+        PFN_WindowSize pfnLogicalSize;
+        PFN_WindowSize pfnPixelSize;
         PFN_WindowVisible pfnVisible;
         PFN_WindowContentScale pfnContentScale;
 

@@ -19,10 +19,18 @@ bool windowTerminationCalled(void *pContext) {
     return glfwWindowShouldClose(pWindow);
 }
 
-void windowSize(void *pContext, int *pWidth, int *pHeight) {
+// logical size is the size reported by the OS, which o macOS/Wayland can be different than pixel
+// size for scaling reasons
+void windowLogicalSize(void *pContext, int *pWidth, int *pHeight) {
     GLFWwindow *pWindow = (GLFWwindow *)pContext;
 
     glfwGetWindowSize(pWindow, pWidth, pHeight);
+}
+
+void windowPixelSize(void *pContext, int *pWidth, int *pHeight) {
+    GLFWwindow *pWindow = (GLFWwindow *)pContext;
+
+    glfwGetFramebufferSize(pWindow, pWidth, pHeight);
 }
 
 bool windowVisible(void *pContext) {
@@ -43,8 +51,9 @@ bool imguiAddGlfwWindow(foeImGuiWindow *pImguiWindow,
                         GLFWwindow *pWindow,
                         KeyboardInput const *pKeyboard,
                         MouseInput const *pMouse) {
-    return pImguiWindow->addWindow(pWindow, windowTitle, windowTerminationCalled, windowSize,
-                                   windowVisible, windowContentScale, pKeyboard, pMouse);
+    return pImguiWindow->addWindow(pWindow, windowTitle, windowTerminationCalled, windowLogicalSize,
+                                   windowPixelSize, windowVisible, windowContentScale, pKeyboard,
+                                   pMouse);
 }
 
 ImGuiKey imguiGlfwKeyConvert(int keycode, int scancode) {
