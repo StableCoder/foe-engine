@@ -159,21 +159,24 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #endif
 
     {
-        for (auto &it : windowData) {
+        // always start with at least 1 GLFW window
+        windowData.emplace_back(new GLFW_WindowData{});
+
+        for (auto it : windowData) {
             bool result =
                 createGlfwWindow(settings.window.width, settings.window.height, "FoE Engine", true,
-                                 &it.pWindow, &it.mouse, &it.keyboard, &it.resized);
+                                 &it->pWindow, &it->mouse, &it->keyboard, &it->resized);
             if (!result)
                 std::abort();
 
-            it.position = glm::vec3{0.f, 0.f, -17.5f};
-            it.orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
-            it.fovY = 60;
-            it.nearZ = 2;
-            it.farZ = 50;
+            it->position = glm::vec3{0.f, 0.f, -17.5f};
+            it->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+            it->fovY = 60;
+            it->nearZ = 2;
+            it->farZ = 50;
 
 #ifdef EDITOR_MODE
-            imguiAddGlfwWindow(&windowInfo, it.pWindow, &it.keyboard, &it.mouse);
+            imguiAddGlfwWindow(&windowInfo, it->pWindow, &it->keyboard, &it->mouse);
 #endif
         }
 
@@ -209,16 +212,16 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
 
-        for (auto &it : windowData) {
+        for (auto it : windowData) {
             result = vk_to_foeResult(glfwCreateWindowSurface(foeGfxVkGetRuntimeInstance(gfxRuntime),
-                                                             it.pWindow, nullptr, &it.surface));
+                                                             it->pWindow, nullptr, &it->surface));
             if (result.value != FOE_SUCCESS)
                 ERRC_END_PROGRAM_TUPLE
         }
 
         std::vector<VkSurfaceKHR> surfaces;
-        for (auto const &it : windowData) {
-            surfaces.push_back(it.surface);
+        for (auto const it : windowData) {
+            surfaces.push_back(it->surface);
         }
 
         result =
@@ -261,7 +264,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     }
 
     for (auto &it : windowData) {
-        result = foeGfxAllocateRenderView(gfxRenderViewPool, &it.renderView);
+        result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
         }
@@ -270,7 +273,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
     imguiRenderer.resize(settings.window.width, settings.window.height);
     float xScale, yScale;
-    glfwGetWindowContentScale(windowData[0].pWindow, &xScale, &yScale);
+    glfwGetWindowContentScale(windowData[0]->pWindow, &xScale, &yScale);
     imguiRenderer.rescale(xScale, yScale);
 #endif
 
@@ -352,26 +355,26 @@ void Application::deinitialize() {
     }
 
     // Destroy window data
-    for (auto &it : windowData) {
-        it.renderView = FOE_NULL_HANDLE;
+    for (auto it : windowData) {
+        it->renderView = FOE_NULL_HANDLE;
 
 #ifdef EDITOR_MODE
-        windowInfo.removeWindow(it.pWindow);
+        windowInfo.removeWindow(it->pWindow);
 #endif
-        if (it.gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
-            foeGfxDestroyRenderTarget(it.gfxOffscreenRenderTarget);
-        it.gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
+        if (it->gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
+            foeGfxDestroyRenderTarget(it->gfxOffscreenRenderTarget);
+        it->gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
 
-        if (it.swapchain != FOE_NULL_HANDLE)
-            foeGfxVkDestroySwapchain(gfxSession, it.swapchain);
+        if (it->swapchain != FOE_NULL_HANDLE)
+            foeGfxVkDestroySwapchain(gfxSession, it->swapchain);
 
-        if (it.surface != VK_NULL_HANDLE)
-            vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), it.surface, nullptr);
-        it.surface = VK_NULL_HANDLE;
+        if (it->surface != VK_NULL_HANDLE)
+            vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), it->surface, nullptr);
+        it->surface = VK_NULL_HANDLE;
 
-        if (it.pWindow)
-            destroyGlfwWindow(&it);
-        it.pWindow = FOE_NULL_HANDLE;
+        if (it->pWindow)
+            destroyGlfwWindow(it);
+        it->pWindow = FOE_NULL_HANDLE;
     }
 
     // Cleanup graphics
@@ -486,13 +489,13 @@ int Application::mainloop() {
     uint32_t frameIndex = UINT32_MAX;
 
     for (int i = windowData.size() - 1; i >= 0; --i) {
-        glfwShowWindow(windowData[i].pWindow);
+        glfwShowWindow(windowData[i]->pWindow);
     }
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
     FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Entering main loop")
-    while (!glfwWindowShouldClose(windowData[0].pWindow)
+    while (!glfwWindowShouldClose(windowData[0]->pWindow)
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
@@ -590,9 +593,9 @@ int Application::mainloop() {
 
         // Process Window Events
         for (auto &it : windowData) {
-            it.mouse.preprocessing();
-            it.keyboard.preprocessing();
-            it.resized = false;
+            it->mouse.preprocessing();
+            it->keyboard.preprocessing();
+            it->resized = false;
         }
         glfwPollEvents();
 
@@ -604,18 +607,18 @@ int Application::mainloop() {
 
         // Window Processing
         for (size_t i = 0; i < windowData.size(); ++i) {
-            auto &window = windowData[i];
+            GLFW_WindowData *window = windowData[i];
 
 #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
             if (i == 0) {
                 std::vector<uint32_t> pressedKeycodes;
                 std::vector<uint32_t> pressedScancodes;
-                size_t const pressedCount = window.keyboard.pressedCodes.size();
+                size_t const pressedCount = window->keyboard.pressedCodes.size();
                 pressedKeycodes.reserve(pressedCount);
                 pressedScancodes.reserve(pressedCount);
                 for (size_t i = 0; i < pressedCount; ++i) {
-                    auto const &it = window.keyboard.pressedCodes[i];
+                    auto const &it = window->keyboard.pressedCodes[i];
 
                     pressedKeycodes.emplace_back(it.keycode);
                     pressedScancodes.emplace_back(it.scancode);
@@ -623,27 +626,27 @@ int Application::mainloop() {
 
                 std::vector<uint32_t> releasedKeycodes;
                 std::vector<uint32_t> releasedScancodes;
-                size_t const releasedCount = window.keyboard.releasedCodes.size();
+                size_t const releasedCount = window->keyboard.releasedCodes.size();
                 releasedKeycodes.reserve(releasedCount);
                 releasedScancodes.reserve(releasedCount);
                 for (size_t i = 0; i < releasedCount; ++i) {
-                    auto const &it = window.keyboard.releasedCodes[i];
+                    auto const &it = window->keyboard.releasedCodes[i];
 
                     releasedKeycodes.emplace_back(it.keycode);
                     releasedScancodes.emplace_back(it.scancode);
                 }
 
-                imguiRenderer.keyboardInput(window.keyboard.unicodeChar, imguiGlfwKeyConvert,
+                imguiRenderer.keyboardInput(window->keyboard.unicodeChar, imguiGlfwKeyConvert,
                                             pressedKeycodes.data(), pressedScancodes.data(),
                                             pressedKeycodes.size(), releasedKeycodes.data(),
                                             releasedScancodes.data(), releasedKeycodes.size());
 
-                std::vector<uint32_t> buttonsPressed{window.mouse.pressedButtons.cbegin(),
-                                                     window.mouse.pressedButtons.cend()};
-                std::vector<uint32_t> buttonsReleased{window.mouse.releasedButtons.cbegin(),
-                                                      window.mouse.releasedButtons.cend()};
-                imguiRenderer.mouseInput(window.mouse.position.x, window.mouse.position.y,
-                                         window.mouse.scroll.x, window.mouse.scroll.y,
+                std::vector<uint32_t> buttonsPressed{window->mouse.pressedButtons.cbegin(),
+                                                     window->mouse.pressedButtons.cend()};
+                std::vector<uint32_t> buttonsReleased{window->mouse.releasedButtons.cbegin(),
+                                                      window->mouse.releasedButtons.cend()};
+                imguiRenderer.mouseInput(window->mouse.position.x, window->mouse.position.y,
+                                         window->mouse.scroll.x, window->mouse.scroll.y,
                                          buttonsPressed.data(), buttonsPressed.size(),
                                          buttonsReleased.data(), buttonsReleased.size());
             }
@@ -653,20 +656,20 @@ int Application::mainloop() {
                 i != 0)
 #endif
             {
-                processUserInput(timeElapsedInSec, &window.keyboard, &window.mouse,
-                                 &window.position, &window.orientation);
+                processUserInput(timeElapsedInSec, &window->keyboard, &window->mouse,
+                                 &window->position, &window->orientation);
             }
 
             // Check if window was resized, and if so request associated swapchains to
             // be rebuilt
-            if (window.resized) {
-                window.needSwapchainRebuild = true;
+            if (window->resized) {
+                window->needSwapchainRebuild = true;
 
 #ifdef EDITOR_MODE
                 // ImGui only follows primary/first window size
                 if (i == 0) {
                     int width, height;
-                    glfwGetWindowSize(window.pWindow, &width, &height);
+                    glfwGetWindowSize(window->pWindow, &width, &height);
                     imguiRenderer.resize(width, height);
                 }
 #endif
@@ -735,12 +738,12 @@ int Application::mainloop() {
             }
 
             // Swapchain updates if necessary
-            for (auto &it : windowData) {
+            for (auto it : windowData) {
                 // If no window here, skip
-                if (it.pWindow == FOE_NULL_HANDLE)
+                if (it->pWindow == FOE_NULL_HANDLE)
                     continue;
 
-                result = performGlfwWindowMaintenance(&it, gfxSession, gfxDelayedDestructor,
+                result = performGlfwWindowMaintenance(it, gfxSession, gfxDelayedDestructor,
                                                       globalMSAA, depthFormat);
                 if (result.value != FOE_SUCCESS)
                     ERRC_END_PROGRAM
@@ -751,35 +754,35 @@ int Application::mainloop() {
             windowRenderList.reserve(windowData.size());
 
             for (auto &it : windowData) {
-                result = vk_to_foeResult(
-                    foeGfxVkAcquireSwapchainImage(gfxSession, it.swapchain, &it.acquiredImageData));
+                result = vk_to_foeResult(foeGfxVkAcquireSwapchainImage(gfxSession, it->swapchain,
+                                                                       &it->acquiredImageData));
                 if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
                     // Waiting for an image to become ready
                 } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
                     // Surface changed, need to rebuild swapchains
-                    it.needSwapchainRebuild = true;
+                    it->needSwapchainRebuild = true;
                 } else if (result.value == VK_SUBOPTIMAL_KHR) {
                     // Surface is still usable, but should rebuild next time
-                    it.needSwapchainRebuild = true;
-                    it.acquiredImage = true;
-                    windowRenderList.emplace_back(&it);
+                    it->needSwapchainRebuild = true;
+                    it->acquiredImage = true;
+                    windowRenderList.emplace_back(it);
                 } else if (result.value) {
                     // Catastrophic error
                     ERRC_END_PROGRAM
                 } else {
                     // No issues, add it to be rendered
-                    windowRenderList.emplace_back(&it);
-                    it.acquiredImage = true;
+                    windowRenderList.emplace_back(it);
+                    it->acquiredImage = true;
                 }
 
-                if (it.acquiredImage) {
+                if (it->acquiredImage) {
                     glm::mat4 matrix = glm::perspectiveFov(
-                        glm::radians(it.fovY), (float)it.acquiredImageData.extent.width,
-                        (float)it.acquiredImageData.extent.height, it.nearZ, it.farZ);
-                    matrix *= glm::mat4_cast(it.orientation) *
-                              glm::translate(glm::mat4(1.f), it.position);
+                        glm::radians(it->fovY), (float)it->acquiredImageData.extent.width,
+                        (float)it->acquiredImageData.extent.height, it->nearZ, it->farZ);
+                    matrix *= glm::mat4_cast(it->orientation) *
+                              glm::translate(glm::mat4(1.f), it->position);
 
-                    foeGfxUpdateRenderView(it.renderView, sizeof(glm::mat4), &matrix);
+                    foeGfxUpdateRenderView(it->renderView, sizeof(glm::mat4), &matrix);
                 }
             }
             if (windowRenderList.empty()) {
@@ -1316,7 +1319,7 @@ int Application::mainloop() {
                 foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
 #ifdef EDITOR_MODE
                 // ImGui only renders on the first/primary window
-                if (window == &windowData[0]) {
+                if (window == windowData[0]) {
                     result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
                                                    presentImageResource, 1, &resolveOrCopyJob,
                                                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,

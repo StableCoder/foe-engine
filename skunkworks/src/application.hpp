@@ -24,6 +24,7 @@
 
 #include <array>
 #include <memory>
+#include <vector>
 
 #ifdef FOE_XR_SUPPORT
 #include "xr.hpp"
@@ -67,7 +68,7 @@ struct Application {
     foeSimulation *pSimulationSet{nullptr};
 
     // I/O
-    std::array<GLFW_WindowData, 1> windowData;
+    std::vector<GLFW_WindowData *> windowData;
     FrameTimer frameTime;
 
     // XR
