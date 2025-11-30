@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 George Cave.
+// Copyright (C) 2020-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -52,15 +52,25 @@ foeResultSet foeGfxVkCreateSwapchain(foeGfxSession session,
         return to_foeResult(FOE_GRAPHICS_VK_ERROR_CHAIN_SIZE_MORE_THAN_SUPPORTED);
 
     // Extent
-    VkExtent2D extent;
-    if (capabilities.currentExtent.width == UINT32_MAX) {
-        // If the current extent is undefined, the size is set to the images requested
-        extent.width = width;
-        extent.height = height;
-    } else {
-        // If the surface size is defined, the swap chain must match
-        extent = capabilities.currentExtent;
+    VkExtent2D extent = {.width = width, .height = height};
+
+    // if no width/height are provided, then try to use the current surface extent
+    if (extent.width == 0 && extent.height == 0) {
+        extent.width = capabilities.currentExtent.width;
+        extent.height = capabilities.currentExtent.height;
     }
+
+    // if there is no current extent, then just return as invalid
+    if (extent.width == UINT32_MAX || extent.height == UINT32_MAX)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_EXTENT_SIZE_INVALID);
+
+    // check against min/max extent
+    if (extent.width > capabilities.maxImageExtent.width ||
+        extent.height > capabilities.maxImageExtent.height)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_EXTENT_SIZE_MORE_THAN_SUPPORTED);
+    if (extent.width < capabilities.minImageExtent.width ||
+        extent.height < capabilities.minImageExtent.height)
+        return to_foeResult(FOE_GRAPHICS_VK_ERROR_EXTENT_SIZE_LESS_THAN_SUPPORTED);
 
     // Surface Transform
     VkSurfaceTransformFlagBitsKHR preTransform = {0};
