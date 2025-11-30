@@ -1,10 +1,9 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
 #include "settings.hpp"
 
-#include <CLI/CLI11.hpp>
 #include <foe/search_paths.hpp>
 #include <foe/yaml/exception.hpp>
 #include <foe/yaml/pod.hpp>
@@ -17,47 +16,6 @@
 namespace {
 
 std::string outCfgFile = "out-foe-settings.yml";
-
-void addCommandLineOptions(CLI::App *pParser, Settings *pOptions, foeSearchPaths &searchPaths) {
-    // Window
-    pParser->add_flag("--window,!--no-window", pOptions->window.enableWSI,
-                      "Whether or not to start with an initial window");
-    pParser->add_option("--wsi-implementation", pOptions->window.implementation,
-                        "Path to the WSI implementation library");
-    pParser->add_option("--width", pOptions->window.width, "Width of the initial window");
-    pParser->add_option("--height", pOptions->window.height, "Height of the initial window");
-    pParser->add_flag("--vsync,!--no-vsync", pOptions->window.vsync, "V-Sync");
-
-    // Graphics
-    pParser->add_option("--gpu", pOptions->graphics.gpu, "Physical GPU to use to render");
-    pParser->add_option("--frame-buffering", pOptions->graphics.maxFrameBuffering,
-                        "Maximum frames to buffer");
-    pParser->add_option("--msaa", pOptions->graphics.msaa, "MSAA to use (typically 1,2,4 or 8)");
-    pParser->add_flag("--gfx-validation", pOptions->graphics.validation,
-                      "Turns on graphics validation layers");
-    pParser->add_flag("--gfx-debug-logging", pOptions->graphics.debugLogging,
-                      "Turns on the graphics debug logging callback");
-
-    // Xr
-    pParser->add_flag("--vr,!--no-vr", pOptions->xr.enableXr, "Enable VR (OpenXR)");
-    pParser->add_flag("--force-vr", pOptions->xr.forceXr, "Force using VR (Fail without it)");
-    pParser->add_flag("--vr-validation", pOptions->xr.validation, "Turns on vr validation layers");
-    pParser->add_option("--vr-debug-logging", pOptions->xr.debugLogging,
-                        "Turns on OpenXR debug logging");
-
-    // Non-Specific
-    pParser->add_option("--dump-config", outCfgFile,
-                        "If specified, the config on exit will be written to this file (default: "
-                        "out-foe-settings.yml)");
-
-    pParser->add_option_function<std::string>(
-        "--search-path",
-        [&](std::string const &data) {
-            auto writer = searchPaths.getWriter();
-            writer.searchPaths()->push_back(data);
-        },
-        "Adds a path that the program uses to search for data sets");
-}
 
 bool parseEngineConfigFile(Settings *pOptions,
                            foeSearchPaths &searchPaths,
@@ -198,33 +156,9 @@ auto loadSettings(int argc, char **argv, Settings &settings, foeSearchPaths &sea
     -> std::tuple<bool, int> {
     std::string cfgFile = "foe-settings.yml";
 
-    { // Load settings from command line
-        CLI::App clParser{"This is the FoE Engine Bringup Application"};
-
-        clParser.add_option("--config", cfgFile,
-                            "Configuration file to load settings from (default: foe-settings.yml)");
-
-        try {
-            (clParser).parse((argc), (argv));
-        } catch (const CLI::ParseError &e) {
-            if (e.get_name() != "CallForHelp") {
-                return std::make_tuple(false, (clParser).exit(e));
-            }
-        }
-
-        { // Load settings from a configuration file (YAML)
-            if (!parseEngineConfigFile(&settings, searchPaths, cfgFile)) {
-                return std::make_tuple(false, 1);
-            }
-        }
-
-        addCommandLineOptions(&clParser, &settings, searchPaths);
-
-        try {
-            (clParser).parse((argc), (argv));
-        } catch (const CLI::ParseError &e) {
-            return std::make_tuple(false, (clParser).exit(e));
-        }
+    // Load settings from a configuration file (YAML)
+    if (!parseEngineConfigFile(&settings, searchPaths, cfgFile)) {
+        return std::make_tuple(false, 1);
     }
 
     return std::make_tuple(true, 0);

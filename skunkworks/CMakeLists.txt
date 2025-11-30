@@ -71,8 +71,6 @@ endif()
 
 find_package(ImageMagick REQUIRED MagickCore)
 
-add_subdirectory(external/CLI11)
-
 # Engine Entrypoint
 add_executable(foe_skunkworks)
 target_link_libraries(foe_skunkworks PRIVATE foe_skunkworks_lib)
@@ -196,8 +194,7 @@ if(UNIX)
 endif()
 
 # Exception-handling Definition
-target_link_libraries(foe_skunkworks_lib_eh PUBLIC CLI11 foe::simulation
-                                                   foe::yaml)
+target_link_libraries(foe_skunkworks_lib_eh PUBLIC foe::simulation foe::yaml)
 
 target_code_coverage(foe_skunkworks_lib_eh)
 
