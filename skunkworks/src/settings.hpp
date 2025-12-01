@@ -1,4 +1,4 @@
-// Copyright (C) 2021 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,18 +7,27 @@
 
 #include <cstdint>
 #include <string>
-#include <tuple>
+#include <vector>
 
 class foeSearchPaths;
 
 struct Settings {
+    struct General {
+        bool enableWindows = true;
+    } general;
+
     struct Window {
-        bool enableWSI = true;
-        std::string implementation;
+        enum Implementation {
+            GLFW,
+        };
+
+        Implementation implementation = Implementation::GLFW;
+        std::string title = "FoE Skunkworks";
         uint32_t width = 1280;
         uint32_t height = 720;
         bool vsync = false;
-    } window;
+    };
+    std::vector<Window> windows{Window()};
 
     struct Graphics {
         uint32_t gpu = UINT32_MAX;
@@ -39,7 +48,5 @@ struct Settings {
 /// Returns two items, a boolean on whether to continue the program, and code to return with.
 auto loadSettings(int argc, char **argv, Settings &settings, foeSearchPaths &searchPaths)
     -> std::tuple<bool, int>;
-
-bool saveSettings(Settings const &settings);
 
 #endif // SETTINGS_HPP

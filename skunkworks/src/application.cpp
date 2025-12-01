@@ -159,25 +159,40 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #endif
 
     {
-        // always start with at least 1 GLFW window
-        windowData.emplace_back(new GLFW_WindowData{});
+        // window creation
+        bool firstWindow = true;
+        for (auto const &it : settings.windows) {
+            std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
 
-        for (auto it : windowData) {
             bool result =
-                createGlfwWindow(settings.window.width, settings.window.height, "FoE Engine", true,
-                                 &it->pWindow, &it->mouse, &it->keyboard, &it->resized);
+                createGlfwWindow(it.width, it.height, it.title.c_str(), true, &pNewWindow->pWindow,
+                                 &pNewWindow->mouse, &pNewWindow->keyboard, &pNewWindow->resized);
             if (!result)
                 std::abort();
 
-            it->position = glm::vec3{0.f, 0.f, -17.5f};
-            it->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
-            it->fovY = 60;
-            it->nearZ = 2;
-            it->farZ = 50;
+            pNewWindow->vsync = it.vsync;
+
+            pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+            pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+            pNewWindow->fovY = 60;
+            pNewWindow->nearZ = 2;
+            pNewWindow->farZ = 50;
 
 #ifdef EDITOR_MODE
-            imguiAddGlfwWindow(&windowInfo, it->pWindow, &it->keyboard, &it->mouse);
+            imguiAddGlfwWindow(&windowInfo, pNewWindow->pWindow, &pNewWindow->keyboard,
+                               &pNewWindow->mouse);
+
+            if (firstWindow) {
+                firstWindow = false;
+
+                imguiRenderer.resize(it.width, it.height);
+                float xScale, yScale;
+                glfwGetWindowContentScale(pNewWindow->pWindow, &xScale, &yScale);
+                imguiRenderer.rescale(xScale, yScale);
+            }
 #endif
+
+            windowData.emplace_back(pNewWindow.release());
         }
 
 #ifdef FOE_XR_SUPPORT
@@ -224,9 +239,9 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             surfaces.push_back(it->surface);
         }
 
-        result =
-            createGfxSession(gfxRuntime, xrRuntime, settings.window.enableWSI, std::move(surfaces),
-                             settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
+        result = createGfxSession(
+            gfxRuntime, xrRuntime, settings.general.enableWindows || !windowData.empty(),
+            std::move(surfaces), settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
         }
@@ -269,13 +284,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
     }
-
-#ifdef EDITOR_MODE
-    imguiRenderer.resize(settings.window.width, settings.window.height);
-    float xScale, yScale;
-    glfwGetWindowContentScale(windowData[0]->pWindow, &xScale, &yScale);
-    imguiRenderer.rescale(xScale, yScale);
-#endif
 
     // Create per-frame data
     for (auto &it : frameData) {
@@ -417,9 +425,6 @@ void Application::deinitialize() {
 #ifdef EDITOR_MODE
     devConsole.deregisterFromLogger();
 #endif
-
-    // Output configuration settings to a YAML configuration file
-    // saveSettings(settings);
 }
 
 namespace {
