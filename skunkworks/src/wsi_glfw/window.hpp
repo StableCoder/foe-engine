@@ -22,6 +22,7 @@
 struct GLFW_WindowData {
     GLFWwindow *pWindow{FOE_NULL_HANDLE};
     bool resized{false};
+    bool vsync{false};
 
     KeyboardInput keyboard;
     MouseInput mouse;

@@ -233,7 +233,17 @@ foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
             if (vkResult != VK_SUCCESS)
                 return vk_to_foeResult(vkResult);
 
-            pWindow->surfacePresentMode = presentModes[0];
+            // FIFO is always supported at a minimum
+            pWindow->surfacePresentMode = VK_PRESENT_MODE_FIFO_KHR;
+            if (!pWindow->vsync) {
+                // if not set for vsync, use any other presentation mode available
+                for (auto mode : presentModes) {
+                    if (mode != VK_PRESENT_MODE_FIFO_KHR) {
+                        pWindow->surfacePresentMode = mode;
+                        break;
+                    }
+                }
+            }
 
             // Offscreen render target
             std::array<foeGfxVkRenderTargetSpec, 2> offscreenSpecs = {
