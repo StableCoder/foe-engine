@@ -80,8 +80,9 @@ void foeArmatureLoader::maintenance() {
 
         if (foeResourceGetType(it.resource) == FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED) {
             foeResource newResource = foeResourcePoolLoadedReplace(
-                mResourcePool, foeResourceGetID(it.resource), FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE,
-                sizeof(foeArmature), &it.data, moveFn, this, foeArmatureLoader::unloadResource);
+                mResourcePool, foeResourceGetID(it.resource),
+                FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE, sizeof(foeArmature), &it.data, moveFn, this,
+                foeArmatureLoader::unloadResource);
 
             if (newResource == FOE_NULL_HANDLE)
                 // @TODO - Handle failure

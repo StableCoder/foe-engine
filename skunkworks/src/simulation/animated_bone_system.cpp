@@ -358,9 +358,9 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
             foeArmatureState const *const pArmatureStateData =
                 pStartArmatureStateData + (pArmatureStateID - pStartArmatureStateID);
 
-            foeResourceStateFlags resourceState =
-                processResourceLoadState(&awaitingIt->armature, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE,
-                                         FOE_RESOURCE_STATE_LOADED_BIT);
+            foeResourceStateFlags resourceState = processResourceLoadState(
+                &awaitingIt->armature, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE,
+                FOE_RESOURCE_STATE_LOADED_BIT);
 
             assert(resourceState & (FOE_RESOURCE_STATE_LOADING_BIT | FOE_RESOURCE_STATE_FAILED_BIT |
                                     FOE_RESOURCE_STATE_LOADED_BIT));
@@ -570,7 +570,8 @@ extern "C" foeResultSet foeProcessAnimatedBoneSystem(foeAnimatedBoneSystem anima
                             type != FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE &&
                             type != FOE_RESOURCE_RESOURCE_TYPE_UNDEFINED &&
                             type != FOE_RESOURCE_RESOURCE_TYPE_REPLACED &&
-                            !foeResourceHasType(newArmature, FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE)) {
+                            !foeResourceHasType(newArmature,
+                                                FOE_SKUNKWORKS_STRUCTURE_TYPE_ARMATURE)) {
                             // Newly acquired resource is not correct type, don't use it
                             foeResourceDecrementRefCount(newArmature);
                         } else {

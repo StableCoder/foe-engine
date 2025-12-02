@@ -41,7 +41,8 @@ void foeBringupResultToString(foeBringupResult value, char buffer[FOE_MAX_RESULT
 
     default:
         if (value > 0) {
-            snprintf(buffer, FOE_MAX_RESULT_STRING_SIZE, "FOE_SKUNKWORKS_UNKNOWN_SUCCESS_%i", value);
+            snprintf(buffer, FOE_MAX_RESULT_STRING_SIZE, "FOE_SKUNKWORKS_UNKNOWN_SUCCESS_%i",
+                     value);
         } else {
             value = abs(value);
             snprintf(buffer, FOE_MAX_RESULT_STRING_SIZE, "FOE_SKUNKWORKS_UNKNOWN_ERROR_%i", value);

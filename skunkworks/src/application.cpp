@@ -771,8 +771,8 @@ int Application::mainloop() {
 
             // Run Systems that generate graphics data
             foeProcessRenderSystemGraphics(
-                (foeRenderSystem)foeSimulationGetSystem(pSimulationSet,
-                                                        FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM),
+                (foeRenderSystem)foeSimulationGetSystem(
+                    pSimulationSet, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM),
                 frameIndex);
 
 #ifdef FOE_XR_SUPPORT
