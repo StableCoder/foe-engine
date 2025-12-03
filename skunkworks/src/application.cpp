@@ -166,7 +166,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
             bool result =
                 createGlfwWindow(it.width, it.height, it.title.c_str(), true, &pNewWindow->pWindow,
-                                 &pNewWindow->mouse, &pNewWindow->keyboard, &pNewWindow->resized);
+                                 &pNewWindow->mouse, &pNewWindow->keyboard, &pNewWindow->resized,
+                                 &pNewWindow->requestClose);
             if (!result)
                 std::abort();
 
@@ -364,25 +365,10 @@ void Application::deinitialize() {
 
     // Destroy window data
     for (auto it : windowData) {
-        it->renderView = FOE_NULL_HANDLE;
-
 #ifdef EDITOR_MODE
         windowInfo.removeWindow(it->pWindow);
 #endif
-        if (it->gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
-            foeGfxDestroyRenderTarget(it->gfxOffscreenRenderTarget);
-        it->gfxOffscreenRenderTarget = FOE_NULL_HANDLE;
-
-        if (it->swapchain != FOE_NULL_HANDLE)
-            foeGfxVkDestroySwapchain(gfxSession, it->swapchain);
-
-        if (it->surface != VK_NULL_HANDLE)
-            vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), it->surface, nullptr);
-        it->surface = VK_NULL_HANDLE;
-
-        if (it->pWindow)
-            destroyGlfwWindow(it);
-        it->pWindow = FOE_NULL_HANDLE;
+        destroyGlfwWindow(gfxRuntime, gfxSession, it);
     }
 
     // Cleanup graphics
@@ -500,7 +486,7 @@ int Application::mainloop() {
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
     FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Entering main loop")
-    while (!glfwWindowShouldClose(windowData[0]->pWindow)
+    while (!windowData.empty()
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
@@ -611,12 +597,23 @@ int Application::mainloop() {
 #endif
 
         // Window Processing
-        for (size_t i = 0; i < windowData.size(); ++i) {
-            GLFW_WindowData *window = windowData[i];
+        for (auto it = windowData.begin(); it != windowData.end();) {
+            GLFW_WindowData *window = *it;
+
+            // if window is set to close, destroy it now
+            if (window->requestClose) {
+#ifdef EDITOR_MODE
+                windowInfo.removeWindow(window->pWindow);
+#endif
+                destroyGlfwWindow(gfxRuntime, gfxSession, window);
+
+                it = windowData.erase(it);
+                continue;
+            }
 
 #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
-            if (i == 0) {
+            if (it == windowData.begin()) {
                 std::vector<uint32_t> pressedKeycodes;
                 std::vector<uint32_t> pressedScancodes;
                 size_t const pressedCount = window->keyboard.pressedCodes.size();
@@ -658,7 +655,7 @@ int Application::mainloop() {
 
             // If ImGui is capturing, don't pass inputs through from the first window
             if ((!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()) ||
-                i != 0)
+                it != windowData.begin())
 #endif
             {
                 processUserInput(timeElapsedInSec, &window->keyboard, &window->mouse,
@@ -672,13 +669,15 @@ int Application::mainloop() {
 
 #ifdef EDITOR_MODE
                 // ImGui only follows primary/first window size
-                if (i == 0) {
+                if (it == windowData.begin()) {
                     int width, height;
                     glfwGetWindowSize(window->pWindow, &width, &height);
                     imguiRenderer.resize(width, height);
                 }
 #endif
             }
+
+            ++it;
         }
 
         // Determine if the next frame is available to start rendering to, if we
@@ -756,7 +755,6 @@ int Application::mainloop() {
 
             // Acquire Target Presentation Images
             std::vector<GLFW_WindowData *> windowRenderList;
-            windowRenderList.reserve(windowData.size());
 
             for (auto &it : windowData) {
                 result = vk_to_foeResult(foeGfxVkAcquireSwapchainImage(gfxSession, it->swapchain,
@@ -764,7 +762,7 @@ int Application::mainloop() {
                 if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
                     // Waiting for an image to become ready
                 } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
-                    // Surface changed, need to rebuild swapchains
+                    // Surface changed, need to rebuild swapchain
                     it->needSwapchainRebuild = true;
                 } else if (result.value == VK_SUBOPTIMAL_KHR) {
                     // Surface is still usable, but should rebuild next time

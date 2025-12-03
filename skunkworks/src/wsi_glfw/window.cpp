@@ -6,6 +6,7 @@
 
 #include <GLFW/glfw3.h>
 #include <foe/graphics/vk/render_target.h>
+#include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
 
 #include "../result.h"
@@ -19,6 +20,7 @@ struct PrivateWindowData {
     MouseInput *pMouse;
     KeyboardInput *pKeyboard;
     bool *pResized;
+    bool *pClose;
 };
 
 void keyCallback(GLFWwindow *pWindow, int keycode, int scancode, int action, int mods) {
@@ -107,6 +109,12 @@ void windowResizedCallback(GLFWwindow *pWindow, int, int) {
     *pWindowData->pResized = true;
 }
 
+void closeCallback(GLFWwindow *pWindow) {
+    auto *pWindowData = static_cast<PrivateWindowData *>(glfwGetWindowUserPointer(pWindow));
+
+    *pWindowData->pClose = true;
+}
+
 } // namespace
 
 bool createGlfwWindow(int width,
@@ -116,7 +124,8 @@ bool createGlfwWindow(int width,
                       GLFWwindow **ppWindow,
                       MouseInput *pMouse,
                       KeyboardInput *pKeyboard,
-                      bool *pResized) {
+                      bool *pResized,
+                      bool *pClose) {
     if (!glfwInit())
         std::abort();
 
@@ -137,6 +146,7 @@ bool createGlfwWindow(int width,
         .pMouse = pMouse,
         .pKeyboard = pKeyboard,
         .pResized = pResized,
+        .pClose = pClose,
     };
     if (!pNewPrivateWindowData)
         result = false;
@@ -154,8 +164,9 @@ bool createGlfwWindow(int width,
     glfwSetScrollCallback(pNewWindow, scrollCallback);
     glfwSetMouseButtonCallback(pNewWindow, buttonCallback);
 
-    // Window Callbacks
+    // Misc Callbacks
     glfwSetWindowSizeCallback(pNewWindow, windowResizedCallback);
+    glfwSetWindowCloseCallback(pNewWindow, closeCallback);
 
     if (result) {
         *ppWindow = pNewWindow;
@@ -169,13 +180,28 @@ bool createGlfwWindow(int width,
     return result;
 }
 
-void destroyGlfwWindow(GLFW_WindowData *pWindow) {
+void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
+                       foeGfxSession gfxSession,
+                       GLFW_WindowData *pWindow) {
+    // graphics items
+    if (pWindow->gfxOffscreenRenderTarget != FOE_NULL_HANDLE)
+        foeGfxDestroyRenderTarget(pWindow->gfxOffscreenRenderTarget);
+
+    if (pWindow->swapchain != FOE_NULL_HANDLE)
+        foeGfxVkDestroySwapchain(gfxSession, pWindow->swapchain);
+
+    if (pWindow->surface != VK_NULL_HANDLE)
+        vkDestroySurfaceKHR(foeGfxVkGetRuntimeInstance(gfxRuntime), pWindow->surface, nullptr);
+
+    // glfw items
     PrivateWindowData *pPrivateWindowData =
         (PrivateWindowData *)glfwGetWindowUserPointer(pWindow->pWindow);
     if (pPrivateWindowData)
         delete pPrivateWindowData;
 
     glfwDestroyWindow(pWindow->pWindow);
+
+    delete pWindow;
 }
 
 namespace {

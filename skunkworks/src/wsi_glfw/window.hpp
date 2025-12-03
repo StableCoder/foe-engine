@@ -9,6 +9,7 @@
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/render_view_pool.h>
+#include <foe/graphics/runtime.h>
 #include <foe/graphics/session.h>
 #include <foe/graphics/vk/swapchain.h>
 #include <foe/result.h>
@@ -23,6 +24,7 @@ struct GLFW_WindowData {
     GLFWwindow *pWindow{FOE_NULL_HANDLE};
     bool resized{false};
     bool vsync{false};
+    bool requestClose{false};
 
     KeyboardInput keyboard;
     MouseInput mouse;
@@ -53,9 +55,12 @@ bool createGlfwWindow(int width,
                       GLFWwindow **ppWindow,
                       MouseInput *pMouse,
                       KeyboardInput *pKeyboard,
-                      bool *pResized);
+                      bool *pResized,
+                      bool *pClose);
 
-void destroyGlfwWindow(GLFW_WindowData *pWindow);
+void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
+                       foeGfxSession gfxSession,
+                       GLFW_WindowData *pWindow);
 
 foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
                                           foeGfxSession gfxSession,
