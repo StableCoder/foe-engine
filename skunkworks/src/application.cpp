@@ -369,6 +369,7 @@ void Application::deinitialize() {
         windowInfo.removeWindow(it->pWindow);
 #endif
         destroyGlfwWindow(gfxRuntime, gfxSession, it);
+        delete it;
     }
 
     // Cleanup graphics
@@ -606,6 +607,7 @@ int Application::mainloop() {
                 windowInfo.removeWindow(window->pWindow);
 #endif
                 destroyGlfwWindow(gfxRuntime, gfxSession, window);
+                delete window;
 
                 it = windowData.erase(it);
                 continue;

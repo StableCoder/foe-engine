@@ -200,8 +200,6 @@ void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
         delete pPrivateWindowData;
 
     glfwDestroyWindow(pWindow->pWindow);
-
-    delete pWindow;
 }
 
 namespace {
