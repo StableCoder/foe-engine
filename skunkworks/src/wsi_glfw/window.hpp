@@ -5,7 +5,6 @@
 #ifndef WSI_GLFW_WINDOW_HPP
 #define WSI_GLFW_WINDOW_HPP
 
-#include <GLFW/glfw3.h>
 #include <foe/graphics/delayed_caller.h>
 #include <foe/graphics/render_target.h>
 #include <foe/graphics/render_view_pool.h>
@@ -16,12 +15,13 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-#include "../frame_timer.hpp"
 #include "../hid/keyboard.hpp"
 #include "../hid/mouse.hpp"
 
+struct GLFWwindow;
+
 struct GLFW_WindowData {
-    GLFWwindow *pWindow{FOE_NULL_HANDLE};
+    GLFWwindow *pWindow{nullptr};
     bool resized{false};
     bool vsync{false};
     bool requestClose{false};
@@ -30,37 +30,41 @@ struct GLFW_WindowData {
     MouseInput mouse;
 
     VkSurfaceKHR surface{VK_NULL_HANDLE};
-
-    foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
-
     bool needSwapchainRebuild{false};
     VkSurfaceFormatKHR surfaceFormat;
     VkPresentModeKHR surfacePresentMode;
     foeGfxVkSwapchain swapchain{FOE_NULL_HANDLE};
     bool acquiredImage{false};
-    foeGfxVkSwapchainImageData acquiredImageData;
+    foeGfxVkSwapchainImageData acquiredImageData{FOE_NULL_HANDLE};
+
+    foeGfxRenderTarget gfxOffscreenRenderTarget{FOE_NULL_HANDLE};
 
     glm::vec3 position;
     glm::quat orientation;
     float fovY, nearZ, farZ;
     foeGfxRenderView renderView{FOE_NULL_HANDLE};
-
-    FrameTimer frameTime;
 };
 
-bool createGlfwWindow(int width,
-                      int height,
-                      char const *pTitle,
-                      bool visible,
-                      GLFWwindow **ppWindow,
-                      MouseInput *pMouse,
-                      KeyboardInput *pKeyboard,
-                      bool *pResized,
-                      bool *pClose);
+bool createGlfwWindow(int width, int height, char const *pTitle, GLFW_WindowData *pWindowData);
 
 void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
                        foeGfxSession gfxSession,
                        GLFW_WindowData *pWindow);
+
+void processGlfwEvents();
+
+void getGlfwWindowLogicalSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight);
+
+void getGlfwWindowPixelSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight);
+
+void getGlfwWindowScale(GLFW_WindowData *pWindowData, float *xScale, float *yScale);
+
+bool getGlfwVkExtensions(uint32_t *pCount, char const *const **ppExtensionNames);
+
+bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
+                               GLFW_WindowData *pWindowData,
+                               VkAllocationCallbacks *pAllocator,
+                               VkSurfaceKHR *pSurface);
 
 foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
                                           foeGfxSession gfxSession,

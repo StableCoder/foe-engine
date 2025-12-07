@@ -5,7 +5,6 @@
 #include "application.hpp"
 
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 #include <MagickCore/MagickCore.h>
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
@@ -160,14 +159,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
     {
         // window creation
-        bool firstWindow = true;
         for (auto const &it : settings.windows) {
             std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
 
-            bool result =
-                createGlfwWindow(it.width, it.height, it.title.c_str(), true, &pNewWindow->pWindow,
-                                 &pNewWindow->mouse, &pNewWindow->keyboard, &pNewWindow->resized,
-                                 &pNewWindow->requestClose);
+            bool result = createGlfwWindow(it.width, it.height, it.title.c_str(), pNewWindow.get());
             if (!result)
                 std::abort();
 
@@ -182,15 +177,6 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 #ifdef EDITOR_MODE
             imguiAddGlfwWindow(&windowInfo, pNewWindow->pWindow, &pNewWindow->keyboard,
                                &pNewWindow->mouse);
-
-            if (firstWindow) {
-                firstWindow = false;
-
-                imguiRenderer.resize(it.width, it.height);
-                float xScale, yScale;
-                glfwGetWindowContentScale(pNewWindow->pWindow, &xScale, &yScale);
-                imguiRenderer.rescale(xScale, yScale);
-            }
 #endif
 
             windowData.emplace_back(pNewWindow.release());
@@ -209,13 +195,10 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
         { // wsi - extensions
             uint32_t extensionCount;
-            char const **ppExtensionNames;
+            char const *const *ppExtensionNames;
 
-            // glfw
-            if (!glfwVulkanSupported())
+            if (!getGlfwVkExtensions(&extensionCount, &ppExtensionNames))
                 std::abort();
-
-            ppExtensionNames = glfwGetRequiredInstanceExtensions(&extensionCount);
             for (uint32_t i = 0; i < extensionCount; ++i) {
                 vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
             }
@@ -229,10 +212,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         }
 
         for (auto it : windowData) {
-            result = vk_to_foeResult(glfwCreateWindowSurface(foeGfxVkGetRuntimeInstance(gfxRuntime),
-                                                             it->pWindow, nullptr, &it->surface));
-            if (result.value != FOE_SUCCESS)
-                ERRC_END_PROGRAM_TUPLE
+            if (!createGlfwWindowVkSurface(gfxRuntime, it, nullptr, &it->surface))
+                std::abort();
         }
 
         std::vector<VkSurfaceKHR> surfaces;
@@ -480,9 +461,6 @@ int Application::mainloop() {
     uint32_t lastFrameIndex = UINT32_MAX;
     uint32_t frameIndex = UINT32_MAX;
 
-    for (int i = windowData.size() - 1; i >= 0; --i) {
-        glfwShowWindow(windowData[i]->pWindow);
-    }
     programClock.update();
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
@@ -589,7 +567,7 @@ int Application::mainloop() {
             it->keyboard.preprocessing();
             it->resized = false;
         }
-        glfwPollEvents();
+        processGlfwEvents();
 
 #ifdef FOE_XR_SUPPORT
         // Process XR Events
@@ -668,16 +646,19 @@ int Application::mainloop() {
             // be rebuilt
             if (window->resized) {
                 window->needSwapchainRebuild = true;
+            }
 
 #ifdef EDITOR_MODE
-                // ImGui only follows primary/first window size
-                if (it == windowData.begin()) {
-                    int width, height;
-                    glfwGetWindowSize(window->pWindow, &width, &height);
-                    imguiRenderer.resize(width, height);
-                }
-#endif
+            // ImGui only follows primary/first window size
+            if (it == windowData.begin()) {
+                int width, height;
+                getGlfwWindowLogicalSize(window, &width, &height);
+                imguiRenderer.resize(width, height);
+                float xScale, yScale;
+                getGlfwWindowScale(window, &xScale, &yScale);
+                imguiRenderer.rescale(xScale, yScale);
             }
+#endif
 
             ++it;
         }

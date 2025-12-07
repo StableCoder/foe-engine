@@ -4,7 +4,10 @@
 
 #include "window.hpp"
 
+#include <vulkan/vulkan.h>
+
 #include <GLFW/glfw3.h>
+
 #include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
@@ -117,39 +120,29 @@ void closeCallback(GLFWwindow *pWindow) {
 
 } // namespace
 
-bool createGlfwWindow(int width,
-                      int height,
-                      char const *pTitle,
-                      bool visible,
-                      GLFWwindow **ppWindow,
-                      MouseInput *pMouse,
-                      KeyboardInput *pKeyboard,
-                      bool *pResized,
-                      bool *pClose) {
+bool createGlfwWindow(int width, int height, char const *pTitle, GLFW_WindowData *pWindowData) {
     if (!glfwInit())
-        std::abort();
+        return false;
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    if (visible) {
-        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-    } else {
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    }
+    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
 
     GLFWwindow *pNewWindow = glfwCreateWindow(width, height, pTitle, nullptr, nullptr);
     if (!pNewWindow)
-        std::abort();
+        return false;
 
     bool result = true;
 
     PrivateWindowData *pNewPrivateWindowData = new (std::nothrow) PrivateWindowData{
-        .pMouse = pMouse,
-        .pKeyboard = pKeyboard,
-        .pResized = pResized,
-        .pClose = pClose,
+        .pMouse = &pWindowData->mouse,
+        .pKeyboard = &pWindowData->keyboard,
+        .pResized = &pWindowData->resized,
+        .pClose = &pWindowData->requestClose,
     };
-    if (!pNewPrivateWindowData)
-        result = false;
+    if (!pNewPrivateWindowData) {
+        glfwDestroyWindow(pNewWindow);
+        return false;
+    }
 
     // Set User Data Pointer
     glfwSetWindowUserPointer(pNewWindow, pNewPrivateWindowData);
@@ -168,16 +161,9 @@ bool createGlfwWindow(int width,
     glfwSetWindowSizeCallback(pNewWindow, windowResizedCallback);
     glfwSetWindowCloseCallback(pNewWindow, closeCallback);
 
-    if (result) {
-        *ppWindow = pNewWindow;
-    } else {
-        if (pNewPrivateWindowData)
-            delete pNewPrivateWindowData;
+    pWindowData->pWindow = pNewWindow;
 
-        glfwDestroyWindow(pNewWindow);
-    }
-
-    return result;
+    return true;
 }
 
 void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
@@ -200,6 +186,44 @@ void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
         delete pPrivateWindowData;
 
     glfwDestroyWindow(pWindow->pWindow);
+}
+
+void processGlfwEvents() { glfwPollEvents(); }
+
+void getGlfwWindowLogicalSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight) {
+    glfwGetWindowSize(pWindowData->pWindow, pWidth, pHeight);
+}
+
+void getGlfwWindowPixelSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight) {
+    int width, height;
+    getGlfwWindowLogicalSize(pWindowData, &width, &height);
+
+    float xScale, yScale;
+    getGlfwWindowScale(pWindowData, &xScale, &yScale);
+
+    *pWidth = width * xScale;
+    *pHeight = height * yScale;
+}
+
+void getGlfwWindowScale(GLFW_WindowData *pWindowData, float *xScale, float *yScale) {
+    glfwGetWindowContentScale(pWindowData->pWindow, xScale, yScale);
+}
+
+bool getGlfwVkExtensions(uint32_t *pCount, char const *const **pppExtensionNames) {
+    if (!glfwVulkanSupported())
+        return false;
+
+    *pppExtensionNames = glfwGetRequiredInstanceExtensions(pCount);
+
+    return true;
+}
+
+bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
+                               GLFW_WindowData *pWindowData,
+                               VkAllocationCallbacks *pAllocator,
+                               VkSurfaceKHR *pSurface) {
+    return glfwCreateWindowSurface(foeGfxVkGetRuntimeInstance(gfxRuntime), pWindowData->pWindow,
+                                   pAllocator, pSurface) == VK_SUCCESS;
 }
 
 namespace {

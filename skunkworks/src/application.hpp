@@ -16,6 +16,7 @@
 #include <foe/split_thread_pool.h>
 #include <foe/xr/runtime.h>
 
+#include "frame_timer.hpp"
 #include "per_frame_data.hpp"
 #include "settings.hpp"
 
@@ -23,7 +24,6 @@
 #include "wsi_glfw/window.hpp"
 
 #include <array>
-#include <memory>
 #include <vector>
 
 #ifdef FOE_XR_SUPPORT
