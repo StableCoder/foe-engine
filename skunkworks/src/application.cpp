@@ -4,7 +4,6 @@
 
 #include "application.hpp"
 
-#include <GLFW/glfw3.h>
 #include <MagickCore/MagickCore.h>
 #include <foe/chrono/dilated_long_clock.hpp>
 #include <foe/chrono/program_clock.hpp>
@@ -397,55 +396,6 @@ void Application::deinitialize() {
 
 namespace {
 
-void processUserInput(double timeElapsedInSeconds,
-                      KeyboardInput const *pKeyboard,
-                      MouseInput const *pMouse,
-                      glm::vec3 *pPosition,
-                      glm::quat *pOrientation) {
-    constexpr float movementMultiplier = 10.f;
-    constexpr float rorationMultiplier = 40.f;
-    float multiplier = timeElapsedInSeconds * 3.f; // 3 units per second
-
-    if (pMouse->inWindow) {
-        if (pKeyboard->keycodeDown(GLFW_KEY_Z)) { // Up
-            *pPosition += upVec(*pOrientation) * movementMultiplier * multiplier;
-        }
-        if (pKeyboard->keycodeDown(GLFW_KEY_X)) { // Down
-            *pPosition -= upVec(*pOrientation) * movementMultiplier * multiplier;
-        }
-
-        if (pKeyboard->keycodeDown(GLFW_KEY_W)) { // Forward
-            *pPosition += forwardVec(*pOrientation) * movementMultiplier * multiplier;
-        }
-        if (pKeyboard->keycodeDown(GLFW_KEY_S)) { // Back
-            *pPosition -= forwardVec(*pOrientation) * movementMultiplier * multiplier;
-        }
-
-        if (pKeyboard->keycodeDown(GLFW_KEY_A)) { // Left
-            *pPosition += leftVec(*pOrientation) * movementMultiplier * multiplier;
-        }
-        if (pKeyboard->keycodeDown(GLFW_KEY_D)) { // Right
-            *pPosition -= leftVec(*pOrientation) * movementMultiplier * multiplier;
-        }
-
-        if (pMouse->buttonDown(GLFW_MOUSE_BUTTON_1)) {
-            *pOrientation =
-                changeYaw(*pOrientation, -glm::radians(pMouse->oldPosition.x - pMouse->position.x));
-            *pOrientation = changePitch(*pOrientation,
-                                        glm::radians(pMouse->oldPosition.y - pMouse->position.y));
-
-            if (pKeyboard->keycodeDown(GLFW_KEY_Q)) { // Roll Left
-                *pOrientation =
-                    changeRoll(*pOrientation, glm::radians(rorationMultiplier * multiplier));
-            }
-            if (pKeyboard->keycodeDown(GLFW_KEY_E)) { // Roll Right
-                *pOrientation =
-                    changeRoll(*pOrientation, -glm::radians(rorationMultiplier * multiplier));
-            }
-        }
-    }
-}
-
 void destroy_VkSemaphore(VkSemaphore semaphore, foeGfxSession session) {
     vkDestroySemaphore(foeGfxVkGetDevice(session), semaphore, nullptr);
 }
@@ -638,8 +588,7 @@ int Application::mainloop() {
                 it != windowData.begin())
 #endif
             {
-                processUserInput(timeElapsedInSec, &window->keyboard, &window->mouse,
-                                 &window->position, &window->orientation);
+                processUserInput(window, timeElapsedInSec);
             }
 
             // Check if window was resized, and if so request associated swapchains to

@@ -11,10 +11,12 @@
 #include <foe/graphics/vk/render_target.h>
 #include <foe/graphics/vk/runtime.h>
 #include <foe/graphics/vk/session.h>
+#include <foe/quaternion_math.hpp>
 
 #include "../result.h"
 #include "../vk_result.h"
 
+#include <array>
 #include <vector>
 
 namespace {
@@ -189,6 +191,62 @@ void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
 }
 
 void processGlfwEvents() { glfwPollEvents(); }
+
+void processUserInput(GLFW_WindowData *pWindowData, double timeElapsedInSec) {
+    constexpr float movementMultiplier = 10.f;
+    constexpr float rorationMultiplier = 40.f;
+
+    MouseInput *pMouse = &pWindowData->mouse;
+    KeyboardInput *pKeyboard = &pWindowData->keyboard;
+
+    float multiplier = timeElapsedInSec * 3.f; // 3 units per second
+
+    if (pMouse->inWindow) {
+        if (pKeyboard->keycodeDown(GLFW_KEY_Z)) { // Up
+            pWindowData->position +=
+                upVec(pWindowData->orientation) * movementMultiplier * multiplier;
+        }
+        if (pKeyboard->keycodeDown(GLFW_KEY_X)) { // Down
+            pWindowData->position -=
+                upVec(pWindowData->orientation) * movementMultiplier * multiplier;
+        }
+
+        if (pKeyboard->keycodeDown(GLFW_KEY_W)) { // Forward
+            pWindowData->position +=
+                forwardVec(pWindowData->orientation) * movementMultiplier * multiplier;
+        }
+        if (pKeyboard->keycodeDown(GLFW_KEY_S)) { // Back
+            pWindowData->position -=
+                forwardVec(pWindowData->orientation) * movementMultiplier * multiplier;
+        }
+
+        if (pKeyboard->keycodeDown(GLFW_KEY_A)) { // Left
+            pWindowData->position +=
+                leftVec(pWindowData->orientation) * movementMultiplier * multiplier;
+        }
+        if (pKeyboard->keycodeDown(GLFW_KEY_D)) { // Right
+            pWindowData->position -=
+                leftVec(pWindowData->orientation) * movementMultiplier * multiplier;
+        }
+
+        if (pMouse->buttonDown(GLFW_MOUSE_BUTTON_1)) {
+            pWindowData->orientation =
+                changeYaw(pWindowData->orientation,
+                          -glm::radians(pMouse->oldPosition.x - pMouse->position.x));
+            pWindowData->orientation = changePitch(
+                pWindowData->orientation, glm::radians(pMouse->oldPosition.y - pMouse->position.y));
+
+            if (pKeyboard->keycodeDown(GLFW_KEY_Q)) { // Roll Left
+                pWindowData->orientation = changeRoll(
+                    pWindowData->orientation, glm::radians(rorationMultiplier * multiplier));
+            }
+            if (pKeyboard->keycodeDown(GLFW_KEY_E)) { // Roll Right
+                pWindowData->orientation = changeRoll(
+                    pWindowData->orientation, -glm::radians(rorationMultiplier * multiplier));
+            }
+        }
+    }
+}
 
 void getGlfwWindowLogicalSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight) {
     glfwGetWindowSize(pWindowData->pWindow, pWidth, pHeight);

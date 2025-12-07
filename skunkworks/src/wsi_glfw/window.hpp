@@ -53,6 +53,8 @@ void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
 
 void processGlfwEvents();
 
+void processUserInput(GLFW_WindowData *pWindowData, double timeElapsedInSec);
+
 void getGlfwWindowLogicalSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight);
 
 void getGlfwWindowPixelSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight);
