@@ -257,7 +257,7 @@ VkResult foeGfxVkAcquireSwapchainImage(foeGfxSession session,
     struct foeGfxVkSwapchainImpl *pSwapchain = swapchain_from_handle(swapchain);
 
     uint32_t nextSemaphoreIndex = pSwapchain->currentSemaphoreIndex + 1;
-    if (nextSemaphoreIndex >= pSwapchain->currentSemaphoreIndex)
+    if (nextSemaphoreIndex >= SEMAPHORE_COUNT(pSwapchain->chainSize))
         nextSemaphoreIndex = 0;
 
     uint32_t swapchainImageIndex;
