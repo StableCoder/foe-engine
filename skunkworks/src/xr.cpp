@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -169,8 +169,10 @@ foeResultSet startXR(foeXrRuntime runtime,
             if (result.value != FOE_SUCCESS)
                 goto START_XR_FAILED;
 
-            std::vector<XrViewConfigurationView> viewConfigs;
-            viewConfigs.resize(viewConfigViewCount);
+            std::vector<XrViewConfigurationView> viewConfigs{
+                viewConfigViewCount, XrViewConfigurationView{
+                                         .type = XR_TYPE_VIEW_CONFIGURATION_VIEW,
+                                     }};
 
             result = xr_to_foeResult(xrEnumerateViewConfigurationViews(
                 foeOpenXrGetInstance(runtime), foeOpenXrGetSystemId(pXrData->session),
