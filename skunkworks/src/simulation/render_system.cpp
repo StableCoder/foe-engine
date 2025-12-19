@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -531,7 +531,7 @@ extern "C" foeResultSet foeProcessRenderSystem(foeRenderSystem renderSystem) {
                 if (result.value != FOE_SUCCESS)
                     return result;
 
-                pRenderSystem->renderData.insert(renderDataIt, *awaitingIt);
+                renderDataIt = pRenderSystem->renderData.insert(renderDataIt, *awaitingIt);
             } else if (resourceState & FOE_RESOURCE_STATE_LOADING_BIT) {
                 // Still loading
                 pRenderSystem->awaitingLoading.emplace_back(*awaitingIt);

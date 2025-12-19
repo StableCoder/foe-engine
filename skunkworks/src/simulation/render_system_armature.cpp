@@ -1,4 +1,4 @@
-// Copyright (C) 2023 George Cave.
+// Copyright (C) 2023-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -123,10 +123,11 @@ void freeAllocation(std::vector<RenderSystemArmatureData::ArmatureBoneAlloc> &fr
 
     // See if we can merge into the previous entry
     bool mergeBefore = false;
-    auto previousIt = insertIt - 1;
+    auto previousIt = insertIt;
     if (insertIt != freeAllocs.begin()) {
         // If the insert position is not at the beginning of the range, that means there must be a
         // previous entry we can try to merge into
+        --previousIt;
         if (previousIt->offset + previousIt->size == alloc.offset) {
             mergeBefore = true;
         }
