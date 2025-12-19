@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -44,7 +44,7 @@ void createQueueFamily(VkDevice device,
                        uint32_t family,
                        uint32_t numQueues,
                        QueueFamily *pQueueFamily) {
-    if (numQueues >= FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY) {
+    if (numQueues > FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY) {
         FOE_LOG(foeVkGraphics, FOE_LOG_LEVEL_FATAL,
                 "There are {} Vulkan queue families, when the maximum compiled support is {}",
                 numQueues, FOE_GRAPHICS_MAX_QUEUES_PER_FAMILY)
