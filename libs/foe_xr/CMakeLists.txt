@@ -10,6 +10,8 @@ add_library(foe_xr INTERFACE)
 add_library(foe::xr ALIAS foe_xr)
 
 # Definition
+set_target_properties(foe_xr PROPERTIES DEBUG_POSTFIX "_d")
+
 if(XR_SUPPORT)
   target_compile_definitions(foe_xr INTERFACE FOE_XR_SUPPORT)
 endif()

@@ -10,6 +10,8 @@ add_library(foe_xr_openxr_vk)
 add_library(foe::xr::openxr::vk ALIAS foe_xr_openxr_vk)
 
 # Definition
+set_target_properties(foe_xr_openxr_vk PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_xr_openxr_vk EXPORT_MACRO_NAME FOE_OPENXR_VK_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/xr/openxr/vk/export.h)

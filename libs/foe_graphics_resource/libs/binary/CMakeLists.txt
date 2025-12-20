@@ -10,6 +10,9 @@ add_library(foe_graphics_resource_binary SHARED)
 add_library(foe::graphics::resource::binary ALIAS foe_graphics_resource_binary)
 
 # Definition
+set_target_properties(foe_graphics_resource_binary PROPERTIES DEBUG_POSTFIX
+                                                              "_d")
+
 generate_export_header(
   foe_graphics_resource_binary EXPORT_MACRO_NAME FOE_GFX_RES_BINARY_EXPORT
   EXPORT_FILE_NAME

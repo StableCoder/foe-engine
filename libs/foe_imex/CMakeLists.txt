@@ -10,6 +10,8 @@ add_library(foe_imex SHARED)
 add_library(foe::imex ALIAS foe_imex)
 
 # Definition
+set_target_properties(foe_imex PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_imex EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/imex/export.h)
 

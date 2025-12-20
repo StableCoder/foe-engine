@@ -10,6 +10,8 @@ add_library(foe_graphics_vk_yaml SHARED)
 add_library(foe::graphics::vk::yaml ALIAS foe_graphics_vk_yaml)
 
 # Definition
+set_target_properties(foe_graphics_vk_yaml PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_graphics_vk_yaml EXPORT_MACRO_NAME FOE_GFX_VK_YAML_EXPORT
   EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/vk/yaml/export.h)

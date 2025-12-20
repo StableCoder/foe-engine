@@ -10,6 +10,8 @@ add_library(foe_physics_binary SHARED)
 add_library(foe::physics::binary ALIAS foe_physics_binary)
 
 # Definition
+set_target_properties(foe_physics_binary PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_physics_binary EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/physics/binary/export.h)
 

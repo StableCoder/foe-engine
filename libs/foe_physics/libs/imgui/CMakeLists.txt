@@ -10,6 +10,8 @@ add_library(foe_physics_imgui)
 add_library(foe::physics::imgui ALIAS foe_physics_imgui)
 
 # Definition
+set_target_properties(foe_physics_imgui PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_physics_imgui EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/physics/imgui/export.h)
 

@@ -10,6 +10,8 @@ add_library(foe_network SHARED)
 add_library(foe::network ALIAS foe_network)
 
 # Definition
+set_target_properties(foe_network PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_network EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/network/export.h)
 

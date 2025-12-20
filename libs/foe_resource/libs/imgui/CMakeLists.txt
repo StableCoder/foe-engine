@@ -10,6 +10,8 @@ add_library(foe_resource_imgui)
 add_library(foe::resource::imgui ALIAS foe_resource_imgui)
 
 # Definition
+set_target_properties(foe_resource_imgui PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_resource_imgui EXPORT_MACRO_NAME FOE_RES_IMGUI_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/resource/imgui/export.h)

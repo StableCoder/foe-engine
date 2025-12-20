@@ -10,6 +10,8 @@ add_library(foe_physics_yaml SHARED)
 add_library(foe::physics::yaml ALIAS foe_physics_yaml)
 
 # Definition
+set_target_properties(foe_physics_yaml PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_physics_yaml EXPORT_MACRO_NAME FOE_PHYSICS_YAML_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/physics/yaml/export.h)

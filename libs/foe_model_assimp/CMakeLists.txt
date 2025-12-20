@@ -19,6 +19,8 @@ add_library(foe_model_assimp SHARED)
 add_library(foe::model::assimp ALIAS foe_model_assimp)
 
 # Definition
+set_target_properties(foe_model_assimp PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_model_assimp EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/model/assimp/export.h)
 

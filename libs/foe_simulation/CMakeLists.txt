@@ -10,6 +10,8 @@ add_library(foe_simulation SHARED)
 add_library(foe::simulation ALIAS foe_simulation)
 
 # Definition
+set_target_properties(foe_simulation PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_simulation EXPORT_MACRO_NAME FOE_SIM_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/simulation/export.h)

@@ -10,6 +10,8 @@ add_library(foe_graphics_resource_imgui)
 add_library(foe::graphics::resource::imgui ALIAS foe_graphics_resource_imgui)
 
 # Definition
+set_target_properties(foe_graphics_resource_imgui PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_graphics_resource_imgui EXPORT_MACRO_NAME FOE_GFX_RES_IMGUI_EXPORT
   EXPORT_FILE_NAME

@@ -13,6 +13,8 @@ add_library(foe_core SHARED)
 add_library(foe::core ALIAS foe_core)
 
 # Definition
+set_target_properties(foe_core PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_core EXPORT_MACRO_NAME FOE_EXPORT EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/export.h)
 

@@ -13,6 +13,8 @@ add_library(foe_model)
 add_library(foe::model ALIAS foe_model)
 
 # Library Definition
+set_target_properties(foe_model PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_model EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/model/export.h)
 

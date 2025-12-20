@@ -13,6 +13,8 @@ add_library(foe_position SHARED)
 add_library(foe::position ALIAS foe_position)
 
 # Definition
+set_target_properties(foe_position PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_position EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/position/export.h)
 

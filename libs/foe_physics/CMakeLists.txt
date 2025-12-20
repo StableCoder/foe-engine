@@ -13,6 +13,8 @@ add_library(foe_physics SHARED)
 add_library(foe::physics ALIAS foe_physics)
 
 # Definition
+set_target_properties(foe_physics PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_physics EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/physics/export.h)
 

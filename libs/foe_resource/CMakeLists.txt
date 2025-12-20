@@ -10,6 +10,8 @@ add_library(foe_resource SHARED)
 add_library(foe::resource ALIAS foe_resource)
 
 # Definition
+set_target_properties(foe_resource PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_resource EXPORT_MACRO_NAME FOE_RES_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/resource/export.h)

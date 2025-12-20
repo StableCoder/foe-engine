@@ -10,6 +10,8 @@ add_library(foe_graphics SHARED)
 add_library(foe::graphics ALIAS foe_graphics)
 
 # Definition
+set_target_properties(foe_graphics PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_graphics EXPORT_MACRO_NAME FOE_GFX_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/export.h)

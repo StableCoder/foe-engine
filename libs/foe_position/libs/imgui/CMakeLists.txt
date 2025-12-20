@@ -10,6 +10,8 @@ add_library(foe_position_imgui)
 add_library(foe::position::imgui ALIAS foe_position_imgui)
 
 # Definition
+set_target_properties(foe_position_imgui PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_position_imgui EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/position/imgui/export.h)
 

@@ -10,6 +10,8 @@ add_library(foe_ecs SHARED)
 add_library(foe::ecs ALIAS foe_ecs)
 
 # Definition
+set_target_properties(foe_ecs PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_ecs EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/ecs/export.h)
 

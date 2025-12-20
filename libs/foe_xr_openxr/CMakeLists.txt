@@ -23,6 +23,8 @@ endif()
 add_library(foe::xr::openxr ALIAS foe_xr_openxr)
 
 # Definition
+set_target_properties(foe_xr_openxr PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_xr_openxr EXPORT_MACRO_NAME FOE_XR_EXPORT EXPORT_FILE_NAME
   ${CMAKE_CURRENT_BINARY_DIR}/foe/xr/export.h)

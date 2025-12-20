@@ -21,6 +21,8 @@ add_library(foe_crypto SHARED)
 add_library(foe::crypto ALIAS foe_crypto)
 
 # Definition
+set_target_properties(foe_crypto PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(foe_crypto EXPORT_FILE_NAME
                        ${CMAKE_CURRENT_BINARY_DIR}/foe/crypto/export.h)
 

@@ -10,6 +10,8 @@ add_library(foe_graphics_vk_imgui)
 add_library(foe::grpahics::vk::imgui ALIAS foe_graphics_vk_imgui)
 
 # Definition
+set_target_properties(foe_graphics_vk_imgui PROPERTIES DEBUG_POSTFIX "_d")
+
 generate_export_header(
   foe_graphics_vk_imgui EXPORT_MACRO_NAME FOE_GFX_VK_IMGUI_EXPORT
   EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/foe/graphics/vk/imgui/export.h)
