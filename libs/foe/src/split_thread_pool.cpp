@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2023 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,7 @@
 #include "result.h"
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <queue>
 #include <thread>
@@ -232,7 +233,7 @@ extern "C" void foeDestroyThreadPool(foeSplitThreadPool pool) {
     while (pPool->runners > 0) {
         pPool->syncTasks.available.notify_all();
         pPool->asyncTasks.available.notify_all();
-        std::this_thread::yield();
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     std::thread *pThreads = getThreadArray(pPool);
