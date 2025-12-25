@@ -13,6 +13,8 @@ char const *windowTitle(void *pContext) {
     return glfwGetWindowTitle(pWindow);
 }
 
+char const *windowBackend(void *pContext) { return "GLFW"; }
+
 bool windowTerminationCalled(void *pContext) {
     GLFWwindow *pWindow = (GLFWwindow *)pContext;
 
@@ -51,9 +53,9 @@ bool imguiAddGlfwWindow(foeImGuiWindow *pImguiWindow,
                         GLFWwindow *pWindow,
                         KeyboardInput const *pKeyboard,
                         MouseInput const *pMouse) {
-    return pImguiWindow->addWindow(pWindow, windowTitle, windowTerminationCalled, windowLogicalSize,
-                                   windowPixelSize, windowVisible, windowContentScale, pKeyboard,
-                                   pMouse);
+    return pImguiWindow->addWindow(pWindow, windowBackend, windowTitle, windowTerminationCalled,
+                                   windowLogicalSize, windowPixelSize, windowVisible,
+                                   windowContentScale, pKeyboard, pMouse);
 }
 
 ImGuiKey imguiGlfwKeyConvert(int keycode, int scancode) {

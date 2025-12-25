@@ -77,6 +77,7 @@ void renderMouseUI(MouseInput const *pMouse) {
 } // namespace
 
 bool foeImGuiWindow::addWindow(void *pContext,
+                               PFN_WindowBackend pfnBackend,
                                PFN_WindowTitle pfnTitle,
                                PFN_WindowTerminationCalled pfnTerminationCalled,
                                PFN_WindowSize pfnLogicalSize,
@@ -93,6 +94,7 @@ bool foeImGuiWindow::addWindow(void *pContext,
 
     mWindowList.emplace_back(WindowData{
         .pContext = pContext,
+        .pfnBackend = pfnBackend,
         .pfnTitle = pfnTitle,
         .pfnTerminationCalled = pfnTerminationCalled,
         .pfnLogicalSize = pfnLogicalSize,
@@ -182,6 +184,9 @@ void foeImGuiWindow::customUI() {
 
         // Handle
         ImGui::Text("Handle: %p", static_cast<void *>(it.pContext));
+
+        // Backend
+        ImGui::Text("Backend: %s", it.pfnBackend(it.pContext));
 
         // Title
         ImGui::Text("Title: %s", it.pfnTitle(it.pContext));

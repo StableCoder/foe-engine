@@ -10,6 +10,7 @@
 
 #include <vector>
 
+typedef char const *(*PFN_WindowBackend)(void *pContext);
 typedef char const *(*PFN_WindowTitle)(void *pContext);
 typedef bool (*PFN_WindowTerminationCalled)(void *pContext);
 typedef void (*PFN_WindowSize)(void *pContext, int *pWidth, int *pHeight);
@@ -22,6 +23,7 @@ class foeImGuiState;
 class foeImGuiWindow {
   public:
     bool addWindow(void *pContext,
+                   PFN_WindowBackend pfnBackend,
                    PFN_WindowTitle pfnTitle,
                    PFN_WindowTerminationCalled pfnTerminationCalled,
                    PFN_WindowSize pfnLogicalSize,
@@ -39,6 +41,7 @@ class foeImGuiWindow {
     struct WindowData {
         void *pContext;
 
+        PFN_WindowBackend pfnBackend;
         PFN_WindowTitle pfnTitle;
         PFN_WindowTerminationCalled pfnTerminationCalled;
         PFN_WindowSize pfnLogicalSize;
