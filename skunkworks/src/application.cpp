@@ -516,12 +516,7 @@ int Application::mainloop() {
             pSimulationSet, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM));
 
         // Process Window Events
-        for (auto &it : windowData) {
-            it->mouse.preprocessing();
-            it->keyboard.preprocessing();
-            it->resized = false;
-        }
-        processGlfwEvents();
+        processGlfwEvents(windowData.size(), windowData.data());
 
 #ifdef FOE_XR_SUPPORT
         // Process XR Events

@@ -51,7 +51,7 @@ void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
                        foeGfxSession gfxSession,
                        GLFW_WindowData *pWindow);
 
-void processGlfwEvents();
+void processGlfwEvents(uint32_t count, GLFW_WindowData **ppWindowData);
 
 void processUserInput(GLFW_WindowData *pWindowData, double timeElapsedInSec);
 

@@ -190,7 +190,17 @@ void destroyGlfwWindow(foeGfxRuntime gfxRuntime,
     glfwDestroyWindow(pWindow->pWindow);
 }
 
-void processGlfwEvents() { glfwPollEvents(); }
+void processGlfwEvents(uint32_t count, GLFW_WindowData **ppWindowData) {
+    for (uint32_t i = 0; i < count; ++i) {
+        GLFW_WindowData *it = ppWindowData[i];
+
+        it->mouse.preprocessing();
+        it->keyboard.preprocessing();
+        it->resized = false;
+    }
+
+    glfwPollEvents();
+}
 
 void processUserInput(GLFW_WindowData *pWindowData, double timeElapsedInSec) {
     constexpr float movementMultiplier = 10.f;
