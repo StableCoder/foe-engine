@@ -267,7 +267,7 @@ void getGlfwWindowScale(GLFW_WindowData *pWindowData, float *xScale, float *ySca
     glfwGetWindowContentScale(pWindowData->pWindow, xScale, yScale);
 }
 
-bool getGlfwVkExtensions(uint32_t *pCount, char const *const **pppExtensionNames) {
+bool getGlfwVkInstanceExtensions(uint32_t *pCount, char const *const **pppExtensionNames) {
     if (!glfwVulkanSupported())
         return false;
 

@@ -61,7 +61,7 @@ void getGlfwWindowPixelSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHei
 
 void getGlfwWindowScale(GLFW_WindowData *pWindowData, float *xScale, float *yScale);
 
-bool getGlfwVkExtensions(uint32_t *pCount, char const *const **ppExtensionNames);
+bool getGlfwVkInstanceExtensions(uint32_t *pCount, char const *const **ppExtensionNames);
 
 bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
                                GLFW_WindowData *pWindowData,

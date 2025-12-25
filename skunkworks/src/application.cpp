@@ -196,7 +196,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             uint32_t extensionCount;
             char const *const *ppExtensionNames;
 
-            if (!getGlfwVkExtensions(&extensionCount, &ppExtensionNames))
+            if (!getGlfwVkInstanceExtensions(&extensionCount, &ppExtensionNames))
                 std::abort();
             for (uint32_t i = 0; i < extensionCount; ++i) {
                 vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
