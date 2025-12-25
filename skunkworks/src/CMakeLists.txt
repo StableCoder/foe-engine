@@ -12,6 +12,7 @@ target_sources(
           log.cpp
           logging.cpp
           register_basic_functionality.cpp
+          render_to_file.cpp
           result.c
           vk_result.c
           #

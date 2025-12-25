@@ -32,6 +32,7 @@
 #include "logging.hpp"
 #include "register_basic_functionality.h"
 #include "render_graph/render_scene.hpp"
+#include "render_to_file.hpp"
 #include "simulation/animated_bone_system.h"
 #include "simulation/armature_state.h"
 #include "simulation/render_system.hpp"
@@ -90,6 +91,7 @@
 #include "state_import/import_state.hpp"
 
 auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
+    MagickCoreGenesis(nullptr, MagickFalse);
     foeResultSet result;
 
     initializeLogging();
@@ -392,6 +394,8 @@ void Application::deinitialize() {
 #ifdef EDITOR_MODE
     devConsole.deregisterFromLogger();
 #endif
+
+    MagickCoreTerminus();
 }
 
 namespace {
@@ -1106,148 +1110,23 @@ int Application::mainloop() {
                     }
                 }
 
-                static struct {
-                    VmaAllocation alloc;
-                    VkImage image;
-                    VkFormat format;
-
-                    VkExtent3D extent;
-                    VkFence fence;
-                    bool saved;
-                } cpuImage = {};
+                static CpuImageData *pCpuImageData = nullptr;
 
                 if (frame == 100 && i == 0) {
                     auto extent = window->acquiredImageData.extent;
-
-                    // Create Fence
-                    VkFenceCreateInfo fenceCI{
-                        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-                    };
-
-                    VkResult vkRes = vkCreateFence(foeGfxVkGetDevice(gfxSession), &fenceCI, nullptr,
-                                                   &cpuImage.fence);
-                    if (vkRes != VK_SUCCESS) {
-                        std::abort();
-                    }
-
-                    // Create Image
-                    cpuImage.format = VK_FORMAT_B8G8R8A8_UNORM;
-                    cpuImage.extent = VkExtent3D{
-                        .width = extent.width,
-                        .height = extent.height,
-                        .depth = 1U,
-                    };
-
-                    VkImageCreateInfo imageCI{
-                        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-                        .imageType = VK_IMAGE_TYPE_2D,
-                        .format = cpuImage.format,
-                        .extent = cpuImage.extent,
-                        .mipLevels = 1U,
-                        .arrayLayers = 1U,
-                        .samples = VK_SAMPLE_COUNT_1_BIT,
-                        .tiling = VK_IMAGE_TILING_LINEAR,
-                        .usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    };
-
-                    VmaAllocationCreateInfo allocCI{
-                        .usage = VMA_MEMORY_USAGE_CPU_ONLY,
-                    };
-
-                    vkRes = vmaCreateImage(foeGfxVkGetAllocator(gfxSession), &imageCI, &allocCI,
-                                           &cpuImage.image, &cpuImage.alloc, nullptr);
-                    if (vkRes != VK_SUCCESS) {
-                        std::abort();
-                    }
-
-                    foeGfxVkRenderGraphResource cpuCopiedImage;
-                    foeGfxVkRenderGraphJob cpuImageImportJob;
-                    result = foeGfxVkImportImageRenderJob(
-                        renderGraph, "importCpuImage", VK_NULL_HANDLE, "cpuImage", cpuImage.image,
-                        VK_NULL_HANDLE, cpuImage.format, extent, VK_IMAGE_LAYOUT_UNDEFINED, true,
-                        {}, &cpuCopiedImage, &cpuImageImportJob);
-                    if (result.value != FOE_SUCCESS) {
-                        ERRC_END_PROGRAM
-                    }
-
-                    foeGfxVkRenderGraphJob cpuResolveOrCopyJob;
-                    if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
-                        VK_SAMPLE_COUNT_1_BIT) {
-                        // Resolve
-                        result = foeGfxVkResolveImageRenderJob(
-                            renderGraph, "resolveRenderedImageToCpuImage", VK_NULL_HANDLE,
-                            renderTargetColourImageResource, 1, &renderSceneJobHandle,
-                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1,
-                            &cpuImageImportJob, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                            &cpuResolveOrCopyJob);
-                        if (result.value != FOE_SUCCESS) {
-                            ERRC_END_PROGRAM
-                        }
-                    } else {
-                        // Copy
-                        result = foeGfxVkBlitImageRenderJob(
-                            renderGraph, "blitRenderedImageToCpuImage", VK_NULL_HANDLE,
-                            renderTargetColourImageResource, 1, &renderSceneJobHandle,
-                            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, cpuCopiedImage, 1,
-                            &cpuImageImportJob, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                            VK_FILTER_NEAREST, &cpuResolveOrCopyJob);
-                        if (result.value != FOE_SUCCESS) {
-                            ERRC_END_PROGRAM
-                        }
-                    }
-
-                    foeGfxVkExportImageRenderJob(renderGraph, "exportCpuImage", cpuImage.fence,
-                                                 cpuCopiedImage, 1, &cpuResolveOrCopyJob,
-                                                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, {});
+                    pCpuImageData = addCpuImageExport(
+                        gfxSession, renderGraph, extent, "glfw.png",
+                        renderTargetColourImageResource,
+                        foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget),
+                        renderSceneJobHandle);
                 }
 
-                if (cpuImage.fence != VK_NULL_HANDLE && !cpuImage.saved && i == 0) {
+                if (pCpuImageData && pCpuImageData->fence != VK_NULL_HANDLE) {
                     VkResult vkRes =
-                        vkGetFenceStatus(foeGfxVkGetDevice(gfxSession), cpuImage.fence);
+                        vkGetFenceStatus(foeGfxVkGetDevice(gfxSession), pCpuImageData->fence);
                     if (vkRes == VK_SUCCESS) {
-                        cpuImage.saved = true;
-
-                        MagickCoreGenesis(nullptr, MagickFalse);
-
-                        ExceptionInfo *exceptionInfo;
-                        exceptionInfo = AcquireExceptionInfo();
-
-                        void *pData = nullptr;
-                        VkResult vkRes =
-                            vmaMapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc, &pData);
-                        if (vkRes != VK_SUCCESS) {
-                            std::abort();
-                        }
-
-                        Image *image =
-                            ConstituteImage(cpuImage.extent.width, cpuImage.extent.height, "BGRA",
-                                            CharPixel, pData, exceptionInfo);
-
-                        vmaUnmapMemory(foeGfxVkGetAllocator(gfxSession), cpuImage.alloc);
-
-                        vkDestroyFence(foeGfxVkGetDevice(gfxSession), cpuImage.fence, nullptr);
-
-                        vmaDestroyImage(foeGfxVkGetAllocator(gfxSession), cpuImage.image,
-                                        cpuImage.alloc);
-
-                        ImageInfo *imageInfo = AcquireImageInfo();
-                        strcpy(imageInfo->filename, "test.png");
-
-                        size_t blobSize = 0;
-                        void *blob = ImageToBlob(imageInfo, image, &blobSize, exceptionInfo);
-
-                        std::ofstream outFile("test.png",
-                                              std::ofstream::out | std::ofstream::binary);
-                        outFile.write((char const *)blob, blobSize);
-
-                        image = DestroyImage(image);
-                        imageInfo = DestroyImageInfo(imageInfo);
-
-                        exceptionInfo = DestroyExceptionInfo(exceptionInfo);
-
-                        MagickCoreTerminus();
-
-                        FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "SAVED IMAGE");
+                        foeScheduleAsyncTask(threadPool, renderedImageToFile, pCpuImageData);
+                        pCpuImageData = nullptr;
                     }
                 }
 
