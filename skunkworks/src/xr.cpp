@@ -111,7 +111,6 @@ foeResultSet startXR(foeXrRuntime runtime,
                      foeGfxSession gfxSession,
                      foeGfxDelayedCaller gfxDelayedCaller,
                      VkFormat gfxDepthFormat,
-                     VkSampleCountFlags gfxMSAA,
                      bool localPoll,
                      BringupAppXrData *pXrData) {
     foeResultSet result = to_foeResult(FOE_SKUNKWORKS_SUCCESS);
@@ -207,7 +206,7 @@ foeResultSet startXR(foeXrRuntime runtime,
             std::array<VkAttachmentDescription, 2> xrOffscreenAttachmentDescription{
                 VkAttachmentDescription{
                     .format = pXrData->colourFormat,
-                    .samples = static_cast<VkSampleCountFlagBits>(gfxMSAA),
+                    .samples = static_cast<VkSampleCountFlagBits>(pXrData->sampleCount),
                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                     .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -217,7 +216,7 @@ foeResultSet startXR(foeXrRuntime runtime,
                 },
                 VkAttachmentDescription{
                     .format = pXrData->depthFormat,
-                    .samples = static_cast<VkSampleCountFlagBits>(gfxMSAA),
+                    .samples = static_cast<VkSampleCountFlagBits>(pXrData->sampleCount),
                     .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                     .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
                     .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
@@ -253,7 +252,7 @@ foeResultSet startXR(foeXrRuntime runtime,
             };
 
             result = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedCaller, offscreenSpecs.data(),
-                                                offscreenSpecs.size(), gfxMSAA,
+                                                offscreenSpecs.size(), pXrData->sampleCount,
                                                 &view.offscreenRenderTarget);
             if (result.value != FOE_SUCCESS)
                 goto START_XR_FAILED;

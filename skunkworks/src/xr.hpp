@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -62,6 +62,8 @@ struct foeXrVkSessionView {
 struct BringupAppXrData {
     foeXrSession session{FOE_NULL_HANDLE};
 
+    uint32_t desiredSampleCount{1};
+    VkSampleCountFlags sampleCount;
     VkFormat colourFormat;
     VkFormat depthFormat{VK_FORMAT_D16_UNORM};
     VkRenderPass swapchainRenderPass;
@@ -79,7 +81,6 @@ foeResultSet startXR(foeXrRuntime runtime,
                      foeGfxSession gfxSession,
                      foeGfxDelayedCaller gfxDelayedCaller,
                      VkFormat gfxDepthFormat,
-                     VkSampleCountFlags gfxMSAA,
                      bool localPoll,
                      BringupAppXrData *pXrData);
 

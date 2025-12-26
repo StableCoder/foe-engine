@@ -29,6 +29,8 @@ struct GLFW_WindowData {
     KeyboardInput keyboard;
     MouseInput mouse;
 
+    uint32_t desiredSampleCount{1};
+    VkSampleCountFlags sampleCount;
     VkSurfaceKHR surface{VK_NULL_HANDLE};
     bool needSwapchainRebuild{false};
     VkSurfaceFormatKHR surfaceFormat;
@@ -71,7 +73,6 @@ bool createGlfwWindowVkSurface(foeGfxRuntime gfxRuntime,
 foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
                                           foeGfxSession gfxSession,
                                           foeGfxDelayedCaller gfxDelayedDestructor,
-                                          VkSampleCountFlags sampleCount,
                                           VkFormat depthFormat);
 
 #endif // WSI_GLFW_WINDOW_HPP

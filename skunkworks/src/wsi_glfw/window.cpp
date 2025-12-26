@@ -305,7 +305,6 @@ void destroy_foeGfxVkSwapchain(foeGfxVkSwapchain pSwapchain, foeGfxSession sessi
 foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
                                           foeGfxSession gfxSession,
                                           foeGfxDelayedCaller gfxDelayedDestructor,
-                                          VkSampleCountFlags sampleCount,
                                           VkFormat depthFormat) {
     VkResult vkResult{VK_SUCCESS};
     foeResultSet result = {.value = FOE_SUCCESS, .toString = NULL};
@@ -375,9 +374,9 @@ foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
                 },
             };
 
-            result = foeGfxVkCreateRenderTarget(gfxSession, gfxDelayedDestructor,
-                                                offscreenSpecs.data(), offscreenSpecs.size(),
-                                                sampleCount, &pWindow->gfxOffscreenRenderTarget);
+            result = foeGfxVkCreateRenderTarget(
+                gfxSession, gfxDelayedDestructor, offscreenSpecs.data(), offscreenSpecs.size(),
+                pWindow->sampleCount, &pWindow->gfxOffscreenRenderTarget);
             if (result.value != FOE_SUCCESS) {
                 return result;
             }

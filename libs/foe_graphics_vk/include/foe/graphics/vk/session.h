@@ -1,4 +1,4 @@
-// Copyright (C) 2021-2022 George Cave.
+// Copyright (C) 2021-2025 George Cave.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -140,6 +140,10 @@ foeGfxVkFragmentDescriptorPool foeGfxVkGetFragmentDescriptorPool(foeGfxSession s
 
 FOE_GFX_EXPORT
 VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session);
+
+FOE_GFX_EXPORT
+VkSampleCountFlags foeGfxVkGetBestSupportedMSAA(foeGfxSession session, uint32_t sampleCount);
+
 FOE_GFX_EXPORT
 VkSampleCountFlags foeGfxVkGetMaxSupportedMSAA(foeGfxSession session);
 

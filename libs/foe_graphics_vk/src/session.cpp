@@ -6,6 +6,7 @@
 
 #include <foe/delimited_string.h>
 #include <foe/graphics/vk/runtime.h>
+#include <foe/graphics/vk/sample_count.h>
 
 #include "fragment_descriptor_pool.hpp"
 #include "log.hpp"
@@ -805,6 +806,23 @@ extern "C" VkSampleCountFlags foeGfxVkGetSupportedMSAA(foeGfxSession session) {
 
     return properties.limits.framebufferColorSampleCounts &
            properties.limits.framebufferDepthSampleCounts;
+}
+
+extern "C" VkSampleCountFlags foeGfxVkGetBestSupportedMSAA(foeGfxSession session,
+                                                           uint32_t sampleCount) {
+    // this is always supported
+    if (sampleCount <= 1U)
+        return VK_SAMPLE_COUNT_1_BIT;
+
+    VkSampleCountFlags supported = foeGfxVkGetSupportedMSAA(session);
+
+    do {
+        VkSampleCountFlags matchingCount = foeGfxVkGetSampleCountFlags(sampleCount);
+        if (matchingCount != 0 && matchingCount & supported)
+            return matchingCount;
+    } while (--sampleCount);
+
+    return VK_SAMPLE_COUNT_1_BIT;
 }
 
 extern "C" VkSampleCountFlags foeGfxVkGetMaxSupportedMSAA(foeGfxSession session) {

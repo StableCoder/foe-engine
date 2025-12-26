@@ -167,6 +167,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             if (!result)
                 std::abort();
 
+            pNewWindow->desiredSampleCount = it.msaa;
             pNewWindow->vsync = it.vsync;
 
             pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
@@ -189,6 +190,8 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             if (result.value != FOE_SUCCESS && settings.xr.forceXr) {
                 ERRC_END_PROGRAM_TUPLE
             }
+
+            xrData.desiredSampleCount = settings.xr.msaa;
         }
 #endif
 
@@ -229,20 +232,18 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
 
-        // Make sure the MSAA setting is valid
-        globalMSAA = foeGfxVkGetMaxSupportedMSAA(gfxSession);
-        uint32_t maxSupportedCount = foeGfxVkGetSampleCount(globalMSAA);
-
-        if (settings.graphics.msaa > maxSupportedCount) {
-            settings.graphics.msaa = maxSupportedCount;
-        } else if (settings.graphics.msaa < 1) {
-            settings.graphics.msaa = 1;
+        // msaa - wsi - GLFW
+        for (auto &window : windowData) {
+            window->sampleCount =
+                foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
-        do {
-            globalMSAA = foeGfxVkGetSampleCountFlags(settings.graphics.msaa);
-            if (globalMSAA == 0)
-                --settings.graphics.msaa;
-        } while (globalMSAA == 0);
+
+#ifdef FOE_XR_SUPPORT
+        { // msaa - xr
+            xrData.sampleCount =
+                foeGfxVkGetBestSupportedMSAA(gfxSession, xrData.desiredSampleCount);
+        }
+#endif
     }
 
     result = foeGfxCreateUploadContext(gfxSession, &gfxResUploadContext);
@@ -300,8 +301,7 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
 
 #ifdef FOE_XR_SUPPORT
     if (settings.xr.enableXr || settings.xr.forceXr) {
-        result = ::startXR(xrRuntime, gfxSession, gfxDelayedDestructor, depthFormat, globalMSAA,
-                           true, &xrData);
+        result = ::startXR(xrRuntime, gfxSession, gfxDelayedDestructor, depthFormat, true, &xrData);
 
         // If the user specified to force an XR session and couldn't find/create the
         // session, fail out
@@ -471,7 +471,7 @@ int Application::mainloop() {
                             Application *pApplication = (Application *)pUserData;
                             startXR(pApplication->xrRuntime, pApplication->gfxSession,
                                     pApplication->gfxDelayedDestructor, pApplication->depthFormat,
-                                    pApplication->globalMSAA, false, &pApplication->xrData);
+                                    false, &pApplication->xrData);
                         },
                         this);
                 } else {
@@ -678,8 +678,8 @@ int Application::mainloop() {
                 if (it->pWindow == FOE_NULL_HANDLE)
                     continue;
 
-                result = performGlfwWindowMaintenance(it, gfxSession, gfxDelayedDestructor,
-                                                      globalMSAA, depthFormat);
+                result =
+                    performGlfwWindowMaintenance(it, gfxSession, gfxDelayedDestructor, depthFormat);
                 if (result.value != FOE_SUCCESS)
                     ERRC_END_PROGRAM
             }
@@ -910,7 +910,7 @@ int Application::mainloop() {
                             renderTargetColourImageResource, 1, &renderTargetColourImportJob,
                             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, renderTargetDepthImageResource, 1,
                             &renderTargetDepthImportJob, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                            globalMSAA, pSimulationSet, viewDescriptorSet, frameIndex,
+                            xrData.sampleCount, pSimulationSet, viewDescriptorSet, frameIndex,
                             &xrRenderSceneJob);
                         if (result.value != FOE_SUCCESS) {
                             ERRC_END_PROGRAM
@@ -1061,7 +1061,7 @@ int Application::mainloop() {
                     renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource,
                     1, &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, globalMSAA, pSimulationSet,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, window->sampleCount, pSimulationSet,
                     cameraProjViewDescriptor, frameIndex, &renderSceneJobHandle);
                 if (result.value != FOE_SUCCESS) {
                     ERRC_END_PROGRAM

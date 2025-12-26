@@ -64,6 +64,7 @@ bool parseEngineConfigFile(Settings *pOptions,
                     yaml_read_uint32_t("width", *it, newWindow.width);
                     yaml_read_uint32_t("height", *it, newWindow.height);
 
+                    yaml_read_uint32_t("msaa", *it, newWindow.msaa);
                     yaml_read_bool("vsync", *it, newWindow.vsync);
 
                     pOptions->windows.emplace_back(std::move(newWindow));
@@ -79,7 +80,6 @@ bool parseEngineConfigFile(Settings *pOptions,
                 yaml_read_uint32_t("gpu", graphicsNode, pOptions->graphics.gpu);
                 yaml_read_uint32_t("max_frame_buffering", graphicsNode,
                                    pOptions->graphics.maxFrameBuffering);
-                yaml_read_uint32_t("msaa", graphicsNode, pOptions->graphics.msaa);
                 yaml_read_bool("validation", graphicsNode, pOptions->graphics.validation);
                 yaml_read_bool("debug_logging", graphicsNode, pOptions->graphics.debugLogging);
             } catch (foeYamlException const &e) {
@@ -94,6 +94,7 @@ bool parseEngineConfigFile(Settings *pOptions,
                 yaml_read_bool("force", xrNode, pOptions->xr.forceXr);
                 yaml_read_bool("validation", xrNode, pOptions->xr.validation);
                 yaml_read_bool("debug_logging", xrNode, pOptions->xr.debugLogging);
+                yaml_read_uint32_t("msaa", xrNode, pOptions->xr.msaa);
             } catch (foeYamlException const &e) {
                 throw foeYamlException{"xr::" + e.whatStr()};
             }

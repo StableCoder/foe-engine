@@ -25,13 +25,13 @@ struct Settings {
         std::string title = "FoE Skunkworks";
         uint32_t width = 1280;
         uint32_t height = 720;
+        uint32_t msaa = 1;
         bool vsync = false;
     };
     std::vector<Window> windows{Window()};
 
     struct Graphics {
         uint32_t gpu = UINT32_MAX;
-        uint32_t msaa = 1; // By default no MSAA
         uint32_t maxFrameBuffering = UINT32_MAX;
         bool validation = false;
         bool debugLogging = false;
@@ -42,6 +42,7 @@ struct Settings {
         bool forceXr = false;
         bool validation = false;
         bool debugLogging = false;
+        uint32_t msaa = 1;
     } xr;
 };
 
