@@ -22,6 +22,7 @@
 
 // WSI
 #include "wsi_glfw/window.hpp"
+#include "wsi_sdl3/window.hpp"
 
 #include <array>
 #include <vector>
@@ -68,7 +69,8 @@ struct Application {
     foeSimulation *pSimulationSet{nullptr};
 
     // I/O
-    std::vector<GLFW_WindowData *> windowData;
+    std::vector<GLFW_WindowData *> glfw_windowData;
+    std::vector<SDL3_WindowData *> sdl3_windowData;
     FrameTimer frameTime;
 
     // XR

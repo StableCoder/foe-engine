@@ -55,9 +55,13 @@ bool parseEngineConfigFile(Settings *pOptions,
                     std::transform(implementation.begin(), implementation.end(),
                                    implementation.begin(),
                                    [](unsigned char c) { return std::tolower(c); });
-                    if (implementation == "glfw") {
+                    if (implementation == "sdl3")
+                        newWindow.implementation = Settings::Window::Implementation::SDL3;
+                    else if (implementation == "glfw")
                         newWindow.implementation = Settings::Window::Implementation::GLFW;
-                    }
+                    else
+                        // fallback is always GLFW
+                        newWindow.implementation = Settings::Window::Implementation::GLFW;
 
                     yaml_read_string("title", *it, newWindow.title);
 

@@ -53,6 +53,7 @@
 
 #include "imgui/register.hpp"
 #include "wsi_glfw/imgui.hpp"
+#include "wsi_sdl3/imgui.hpp"
 #endif
 
 #include <fstream>
@@ -161,27 +162,54 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
     {
         // window creation
         for (auto const &it : settings.windows) {
-            std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
+            if (it.implementation == Settings::Window::Implementation::GLFW) {
+                std::unique_ptr<GLFW_WindowData> pNewWindow{new GLFW_WindowData};
 
-            bool result = createGlfwWindow(it.width, it.height, it.title.c_str(), pNewWindow.get());
-            if (!result)
-                std::abort();
+                bool result =
+                    createGlfwWindow(it.width, it.height, it.title.c_str(), pNewWindow.get());
+                if (!result)
+                    std::abort();
 
-            pNewWindow->desiredSampleCount = it.msaa;
-            pNewWindow->vsync = it.vsync;
+                pNewWindow->desiredSampleCount = it.msaa;
+                pNewWindow->vsync = it.vsync;
 
-            pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
-            pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
-            pNewWindow->fovY = 60;
-            pNewWindow->nearZ = 2;
-            pNewWindow->farZ = 50;
+                pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+                pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+                pNewWindow->fovY = 60;
+                pNewWindow->nearZ = 2;
+                pNewWindow->farZ = 50;
 
 #ifdef EDITOR_MODE
-            imguiAddGlfwWindow(&windowInfo, pNewWindow->pWindow, &pNewWindow->keyboard,
-                               &pNewWindow->mouse);
+                imguiAddGlfwWindow(&windowInfo, pNewWindow->pWindow, &pNewWindow->keyboard,
+                                   &pNewWindow->mouse);
 #endif
 
-            windowData.emplace_back(pNewWindow.release());
+                glfw_windowData.emplace_back(pNewWindow.release());
+            } else if (it.implementation == Settings::Window::Implementation::SDL3) {
+                std::unique_ptr<SDL3_WindowData> pNewWindow{new SDL3_WindowData};
+
+                bool result =
+                    createSDL3Window(it.width, it.height, it.title.c_str(), pNewWindow.get());
+
+                if (!result)
+                    std::abort();
+
+                pNewWindow->desiredSampleCount = it.msaa;
+                pNewWindow->vsync = it.vsync;
+
+                pNewWindow->position = glm::vec3{0.f, 0.f, -17.5f};
+                pNewWindow->orientation = glm::quat{1.f, 0.f, 0.f, 0.f};
+                pNewWindow->fovY = 60;
+                pNewWindow->nearZ = 2;
+                pNewWindow->farZ = 50;
+
+#ifdef EDITOR_MODE
+                imguiAddSDL3Window(&windowInfo, pNewWindow.get(), &pNewWindow->keyboard,
+                                   &pNewWindow->mouse);
+#endif
+
+                sdl3_windowData.emplace_back(pNewWindow.release());
+            }
         }
 
 #ifdef FOE_XR_SUPPORT
@@ -206,6 +234,12 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             for (uint32_t i = 0; i < extensionCount; ++i) {
                 vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
             }
+
+            if (!getSDL3VkExtensions(&extensionCount, &ppExtensionNames))
+                std::abort();
+            for (uint32_t i = 0; i < extensionCount; ++i) {
+                vkInstanceExtensions.emplace_back(ppExtensionNames[i]);
+            }
         }
 
         result =
@@ -215,25 +249,41 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
             ERRC_END_PROGRAM_TUPLE
         }
 
-        for (auto it : windowData) {
+        for (auto it : glfw_windowData) {
             if (!createGlfwWindowVkSurface(gfxRuntime, it, nullptr, &it->surface))
                 std::abort();
         }
 
+        // sdl3
+        for (auto &it : sdl3_windowData) {
+            if (!createSDL3WindowVkSurface(gfxRuntime, it, nullptr, &it->surface))
+                std::abort();
+        }
+
         std::vector<VkSurfaceKHR> surfaces;
-        for (auto const it : windowData) {
+        // glfw
+        for (auto const it : glfw_windowData) {
+            surfaces.push_back(it->surface);
+        }
+        for (auto const it : sdl3_windowData) {
             surfaces.push_back(it->surface);
         }
 
         result = createGfxSession(
-            gfxRuntime, xrRuntime, settings.general.enableWindows || !windowData.empty(),
+            gfxRuntime, xrRuntime, settings.general.enableWindows || !glfw_windowData.empty(),
             std::move(surfaces), settings.graphics.gpu, settings.xr.forceXr, &gfxSession);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
         }
 
         // msaa - wsi - GLFW
-        for (auto &window : windowData) {
+        for (auto &window : glfw_windowData) {
+            window->sampleCount =
+                foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
+        }
+
+        // msaa - wsi - SDL3
+        for (auto &window : sdl3_windowData) {
             window->sampleCount =
                 foeGfxVkGetBestSupportedMSAA(gfxSession, window->desiredSampleCount);
         }
@@ -262,7 +312,16 @@ auto Application::initialize(int argc, char **argv) -> std::tuple<bool, int> {
         ERRC_END_PROGRAM_TUPLE
     }
 
-    for (auto &it : windowData) {
+    // glfw
+    for (auto it : glfw_windowData) {
+        result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
+        if (result.value != FOE_SUCCESS) {
+            ERRC_END_PROGRAM_TUPLE
+        }
+    }
+
+    // sdl3
+    for (auto &it : sdl3_windowData) {
         result = foeGfxAllocateRenderView(gfxRenderViewPool, &it->renderView);
         if (result.value != FOE_SUCCESS) {
             ERRC_END_PROGRAM_TUPLE
@@ -346,13 +405,25 @@ void Application::deinitialize() {
     }
 
     // Destroy window data
-    for (auto it : windowData) {
+    // sdl3
+    for (auto it : sdl3_windowData) {
+#ifdef EDITOR_MODE
+        windowInfo.removeWindow(it);
+#endif
+        destroySDL3Window(gfxRuntime, gfxSession, it);
+        delete it;
+    }
+    sdl3_windowData.clear();
+
+    // glfw
+    for (auto it : glfw_windowData) {
 #ifdef EDITOR_MODE
         windowInfo.removeWindow(it->pWindow);
 #endif
         destroyGlfwWindow(gfxRuntime, gfxSession, it);
         delete it;
     }
+    glfw_windowData.clear();
 
     // Cleanup graphics
     if (gfxRenderViewPool != FOE_NULL_HANDLE)
@@ -419,7 +490,7 @@ int Application::mainloop() {
     simulationClock.externalTime(programClock.currentTime<std::chrono::nanoseconds>());
 
     FOE_LOG(foeBringup, FOE_LOG_LEVEL_INFO, "Entering main loop")
-    while (!windowData.empty()
+    while ((!glfw_windowData.empty() || !sdl3_windowData.empty())
 #ifdef EDITOR_MODE
            && !fileTermination.terminationRequested()
 #endif
@@ -516,7 +587,8 @@ int Application::mainloop() {
             pSimulationSet, FOE_SKUNKWORKS_STRUCTURE_TYPE_RENDER_SYSTEM));
 
         // Process Window Events
-        processGlfwEvents(windowData.size(), windowData.data());
+        processGlfwEvents(glfw_windowData.size(), glfw_windowData.data());
+        processSDL3Events(sdl3_windowData.size(), sdl3_windowData.data());
 
 #ifdef FOE_XR_SUPPORT
         // Process XR Events
@@ -525,7 +597,7 @@ int Application::mainloop() {
 #endif
 
         // Window Processing
-        for (auto it = windowData.begin(); it != windowData.end();) {
+        for (auto it = glfw_windowData.begin(); it != glfw_windowData.end();) {
             GLFW_WindowData *window = *it;
 
             // if window is set to close, destroy it now
@@ -536,13 +608,13 @@ int Application::mainloop() {
                 destroyGlfwWindow(gfxRuntime, gfxSession, window);
                 delete window;
 
-                it = windowData.erase(it);
+                it = glfw_windowData.erase(it);
                 continue;
             }
 
 #ifdef EDITOR_MODE
             // Only the first/primary window supports ImGui interaction
-            if (it == windowData.begin()) {
+            if (it == glfw_windowData.begin()) {
                 std::vector<uint32_t> pressedKeycodes;
                 std::vector<uint32_t> pressedScancodes;
                 size_t const pressedCount = window->keyboard.pressedCodes.size();
@@ -584,7 +656,7 @@ int Application::mainloop() {
 
             // If ImGui is capturing, don't pass inputs through from the first window
             if ((!imguiRenderer.wantCaptureKeyboard() && !imguiRenderer.wantCaptureMouse()) ||
-                it != windowData.begin())
+                it != glfw_windowData.begin())
 #endif
             {
                 processUserInput(window, timeElapsedInSec);
@@ -598,7 +670,7 @@ int Application::mainloop() {
 
 #ifdef EDITOR_MODE
             // ImGui only follows primary/first window size
-            if (it == windowData.begin()) {
+            if (it == glfw_windowData.begin()) {
                 int width, height;
                 getGlfwWindowLogicalSize(window, &width, &height);
                 imguiRenderer.resize(width, height);
@@ -607,6 +679,32 @@ int Application::mainloop() {
                 imguiRenderer.rescale(xScale, yScale);
             }
 #endif
+
+            ++it;
+        }
+
+        // sdl3
+        for (auto it = sdl3_windowData.begin(); it < sdl3_windowData.end();) {
+            SDL3_WindowData *window = *it;
+
+            if (window->close) {
+#ifdef EDITOR_MODE
+                windowInfo.removeWindow(window);
+#endif
+                destroySDL3Window(gfxRuntime, gfxSession, window);
+                delete window;
+
+                it = sdl3_windowData.erase(it);
+                continue;
+            }
+
+            processSDL3UserInput(window, timeElapsedInSec);
+
+            // Check if window was resized, and if so request associated swapchains to
+            // be rebuilt
+            if (window->resized) {
+                window->needSwapchainRebuild = true;
+            }
 
             ++it;
         }
@@ -673,7 +771,8 @@ int Application::mainloop() {
             }
 
             // Swapchain updates if necessary
-            for (auto it : windowData) {
+            // glfw
+            for (auto it : glfw_windowData) {
                 // If no window here, skip
                 if (it->pWindow == FOE_NULL_HANDLE)
                     continue;
@@ -684,10 +783,24 @@ int Application::mainloop() {
                     ERRC_END_PROGRAM
             }
 
-            // Acquire Target Presentation Images
-            std::vector<GLFW_WindowData *> windowRenderList;
+            // sdl3
+            for (auto it : sdl3_windowData) {
+                // If no window here, skip
+                if (it->pWindow == FOE_NULL_HANDLE)
+                    continue;
 
-            for (auto &it : windowData) {
+                result =
+                    performSDL3WindowMaintenance(it, gfxSession, gfxDelayedDestructor, depthFormat);
+                if (result.value != FOE_SUCCESS)
+                    ERRC_END_PROGRAM
+            }
+
+            // Acquire Target Presentation Images
+            // glfw
+            std::vector<GLFW_WindowData *> glfw_windowRenderList;
+            glfw_windowRenderList.reserve(glfw_windowData.size());
+
+            for (auto &it : glfw_windowData) {
                 result = vk_to_foeResult(foeGfxVkAcquireSwapchainImage(gfxSession, it->swapchain,
                                                                        &it->acquiredImageData));
                 if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
@@ -699,13 +812,13 @@ int Application::mainloop() {
                     // Surface is still usable, but should rebuild next time
                     it->needSwapchainRebuild = true;
                     it->acquiredImage = true;
-                    windowRenderList.emplace_back(it);
+                    glfw_windowRenderList.emplace_back(it);
                 } else if (result.value) {
                     // Catastrophic error
                     ERRC_END_PROGRAM
                 } else {
                     // No issues, add it to be rendered
-                    windowRenderList.emplace_back(it);
+                    glfw_windowRenderList.emplace_back(it);
                     it->acquiredImage = true;
                 }
 
@@ -719,7 +832,45 @@ int Application::mainloop() {
                     foeGfxUpdateRenderView(it->renderView, sizeof(glm::mat4), &matrix);
                 }
             }
-            if (windowRenderList.empty()) {
+
+            // sdl
+            std::vector<SDL3_WindowData *> sdl3_windowRenderList;
+            sdl3_windowRenderList.reserve(sdl3_windowData.size());
+
+            for (auto it : sdl3_windowData) {
+                result = vk_to_foeResult(foeGfxVkAcquireSwapchainImage(gfxSession, it->swapchain,
+                                                                       &it->acquiredImageData));
+                if (result.value == VK_TIMEOUT || result.value == VK_NOT_READY) {
+                    // Waiting for an image to become ready
+                } else if (result.value == VK_ERROR_OUT_OF_DATE_KHR) {
+                    // Surface changed, need to rebuild swapchains
+                    it->needSwapchainRebuild = true;
+                } else if (result.value == VK_SUBOPTIMAL_KHR) {
+                    // Surface is still usable, but should rebuild next time
+                    it->needSwapchainRebuild = true;
+                    it->acquiredImage = true;
+                    sdl3_windowRenderList.emplace_back(it);
+                } else if (result.value) {
+                    // Catastrophic error
+                    ERRC_END_PROGRAM
+                } else {
+                    // No issues, add it to be rendered
+                    sdl3_windowRenderList.emplace_back(it);
+                    it->acquiredImage = true;
+                }
+
+                if (it->acquiredImage) {
+                    glm::mat4 matrix = glm::perspectiveFov(
+                        glm::radians(it->fovY), (float)it->acquiredImageData.extent.width,
+                        (float)it->acquiredImageData.extent.height, it->nearZ, it->farZ);
+                    matrix *= glm::mat4_cast(it->orientation) *
+                              glm::translate(glm::mat4(1.f), it->position);
+
+                    foeGfxUpdateRenderView(it->renderView, sizeof(glm::mat4), &matrix);
+                }
+            }
+
+            if (glfw_windowRenderList.empty() && sdl3_windowRenderList.empty()) {
                 goto SKIP_FRAME_RENDER;
             }
 
@@ -1017,8 +1168,9 @@ int Application::mainloop() {
 
             std::vector<foeGfxVkRenderGraphJob> completeJobList;
 
-            for (size_t i = 0; i < windowRenderList.size(); ++i) {
-                auto &window = windowRenderList[i];
+            // glfw
+            for (size_t i = 0; i < glfw_windowRenderList.size(); ++i) {
+                auto &window = glfw_windowRenderList[i];
 
                 result = foeGfxAcquireNextRenderTarget(window->gfxOffscreenRenderTarget,
                                                        FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
@@ -1128,7 +1280,7 @@ int Application::mainloop() {
                 foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
 #ifdef EDITOR_MODE
                 // ImGui only renders on the first/primary window
-                if (window == windowData[0]) {
+                if (window == glfw_windowData[0]) {
                     result = foeImGuiVkRenderUiJob(renderGraph, "RenderImGuiPass", VK_NULL_HANDLE,
                                                    presentImageResource, 1, &resolveOrCopyJob,
                                                    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &imguiRenderer,
@@ -1138,6 +1290,137 @@ int Application::mainloop() {
                     }
                 }
 #endif
+                // For the 'frame complete' fence, use the jobs just before swapchain
+                // present.
+                completeJobList.emplace_back(
+                    (renderDebugUiJob != FOE_NULL_HANDLE) ? renderDebugUiJob : resolveOrCopyJob);
+
+                window->acquiredImage = false;
+
+                foeGfxVkSwapchainPresentInfo presentInfo = {
+                    .swapchainResource = presentImageResource,
+                    .upstreamJobCount = 1U,
+                    .pUpstreamJobs = (renderDebugUiJob != FOE_NULL_HANDLE) ? &renderDebugUiJob
+                                                                           : &resolveOrCopyJob,
+                };
+
+                result = foeGfxVkPresentSwapchainImageRenderJob(renderGraph, "presentFinalImage",
+                                                                FOE_NULL_HANDLE, 1U, &presentInfo);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+            }
+
+            // sdl3
+            for (size_t i = 0; i < sdl3_windowRenderList.size(); ++i) {
+                auto &window = sdl3_windowRenderList[i];
+
+                result = foeGfxAcquireNextRenderTarget(window->gfxOffscreenRenderTarget,
+                                                       FOE_GRAPHICS_MAX_BUFFERED_FRAMES);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                foeGfxVkRenderGraphResource renderTargetColourImageResource;
+                foeGfxVkRenderGraphJob renderTargetColourImportJob;
+                foeGfxVkRenderGraphResource renderTargetDepthImageResource;
+                foeGfxVkRenderGraphJob renderTargetDepthImportJob;
+
+                result = foeGfxVkImportImageRenderJob(
+                    renderGraph, "importRenderedImage", VK_NULL_HANDLE, "renderedImage",
+                    foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 0),
+                    foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 0),
+                    window->surfaceFormat.format, window->acquiredImageData.extent,
+                    VK_IMAGE_LAYOUT_UNDEFINED, true, {}, &renderTargetColourImageResource,
+                    &renderTargetColourImportJob);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                result = foeGfxVkImportImageRenderJob(
+                    renderGraph, "importRenderTargetDepthImage", VK_NULL_HANDLE,
+                    "renderTargetDepthImage",
+                    foeGfxVkGetRenderTargetImage(window->gfxOffscreenRenderTarget, 1),
+                    foeGfxVkGetRenderTargetImageView(window->gfxOffscreenRenderTarget, 1),
+                    depthFormat, window->acquiredImageData.extent, VK_IMAGE_LAYOUT_UNDEFINED, true,
+                    {}, &renderTargetDepthImageResource, &renderTargetDepthImportJob);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                VkDescriptorSet cameraProjViewDescriptor =
+                    foeGfxVkGetRenderViewDescriptorSet(gfxRenderViewPool, window->renderView);
+
+                foeGfxVkRenderGraphJob renderSceneJobHandle;
+                result = renderSceneJob(
+                    renderGraph, "render3dScene", VK_NULL_HANDLE, renderTargetColourImageResource,
+                    1, &renderTargetColourImportJob, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    renderTargetDepthImageResource, 1, &renderTargetDepthImportJob,
+                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, window->sampleCount, pSimulationSet,
+                    cameraProjViewDescriptor, frameIndex, &renderSceneJobHandle);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                foeGfxVkRenderGraphResource presentImageResource;
+                foeGfxVkRenderGraphJob presentImageImportJob;
+
+                result = foeGfxVkImportSwapchainImageRenderJob(
+                    renderGraph, "importPresentationImage", VK_NULL_HANDLE, "presentImage",
+                    window->acquiredImageData.swapchain, window->acquiredImageData.imageIndex,
+                    window->acquiredImageData.image, window->acquiredImageData.view,
+                    window->surfaceFormat.format, window->acquiredImageData.extent,
+                    VK_IMAGE_LAYOUT_UNDEFINED, window->acquiredImageData.readySemaphore,
+                    &presentImageResource, &presentImageImportJob);
+                if (result.value != FOE_SUCCESS) {
+                    ERRC_END_PROGRAM
+                }
+
+                foeGfxVkRenderGraphJob resolveOrCopyJob;
+                if (foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget) !=
+                    VK_SAMPLE_COUNT_1_BIT) {
+                    // Resolve
+                    result = foeGfxVkResolveImageRenderJob(
+                        renderGraph, "resolveRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                        renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
+                        &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
+                    if (result.value != FOE_SUCCESS) {
+                        ERRC_END_PROGRAM
+                    }
+                } else {
+                    // Copy
+                    result = foeGfxVkCopyImageRenderJob(
+                        renderGraph, "copyRenderedImageToBackbuffer", VK_NULL_HANDLE,
+                        renderTargetColourImageResource, 1, &renderSceneJobHandle,
+                        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, presentImageResource, 1,
+                        &presentImageImportJob, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &resolveOrCopyJob);
+                    if (result.value != FOE_SUCCESS) {
+                        ERRC_END_PROGRAM
+                    }
+                }
+
+                static CpuImageData *pCpuImageData = nullptr;
+
+                if (frame == 100 && i == 0) {
+                    auto extent = window->acquiredImageData.extent;
+                    pCpuImageData = addCpuImageExport(
+                        gfxSession, renderGraph, extent, "sdl3.png",
+                        renderTargetColourImageResource,
+                        foeGfxVkGetRenderTargetSamples(window->gfxOffscreenRenderTarget),
+                        renderSceneJobHandle);
+                }
+
+                if (pCpuImageData && pCpuImageData->fence != VK_NULL_HANDLE) {
+                    VkResult vkRes =
+                        vkGetFenceStatus(foeGfxVkGetDevice(gfxSession), pCpuImageData->fence);
+                    if (vkRes == VK_SUCCESS) {
+                        foeScheduleAsyncTask(threadPool, renderedImageToFile, pCpuImageData);
+                        pCpuImageData = nullptr;
+                    }
+                }
+
+                foeGfxVkRenderGraphJob renderDebugUiJob = FOE_NULL_HANDLE;
                 // For the 'frame complete' fence, use the jobs just before swapchain
                 // present.
                 completeJobList.emplace_back(

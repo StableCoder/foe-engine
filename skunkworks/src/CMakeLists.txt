@@ -31,3 +31,4 @@ add_subdirectory(state_import)
 
 # wsi
 add_subdirectory(wsi_glfw)
+add_subdirectory(wsi_sdl3)

@@ -19,6 +19,7 @@ struct Settings {
     struct Window {
         enum Implementation {
             GLFW,
+            SDL3,
         };
 
         Implementation implementation = Implementation::GLFW;
