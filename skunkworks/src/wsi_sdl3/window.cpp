@@ -20,7 +20,8 @@ bool createSDL3Window(int width, int height, char const *pTitle, SDL3_WindowData
         std::abort();
     }
 
-    SDL_WindowFlags windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE;
+    SDL_WindowFlags windowFlags =
+        SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
     SDL_Window *pNewWindow = SDL_CreateWindow(pTitle, width, height, windowFlags);
 
     if (!pNewWindow) {
@@ -306,7 +307,7 @@ foeResultSet performSDL3WindowMaintenance(SDL3_WindowData *pWindow,
         pWindow->needSwapchainRebuild = false;
 
         int width, height;
-        SDL_GetWindowSize(pWindow->pWindow, &width, &height);
+        getSDL3WindowPixelSize(pWindow, &width, &height);
 
         if (!pWindow->swapchain) {
             // Surface Format
