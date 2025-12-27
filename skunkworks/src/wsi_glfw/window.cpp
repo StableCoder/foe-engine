@@ -263,14 +263,7 @@ void getGlfwWindowLogicalSize(GLFW_WindowData *pWindowData, int *pWidth, int *pH
 }
 
 void getGlfwWindowPixelSize(GLFW_WindowData *pWindowData, int *pWidth, int *pHeight) {
-    int width, height;
-    getGlfwWindowLogicalSize(pWindowData, &width, &height);
-
-    float xScale, yScale;
-    getGlfwWindowScale(pWindowData, &xScale, &yScale);
-
-    *pWidth = width * xScale;
-    *pHeight = height * yScale;
+    glfwGetFramebufferSize(pWindowData->pWindow, pWidth, pHeight);
 }
 
 void getGlfwWindowScale(GLFW_WindowData *pWindowData, float *xScale, float *yScale) {
@@ -314,7 +307,7 @@ foeResultSet performGlfwWindowMaintenance(GLFW_WindowData *pWindow,
         pWindow->needSwapchainRebuild = false;
 
         int width, height;
-        glfwGetFramebufferSize(pWindow->pWindow, &width, &height);
+        getGlfwWindowPixelSize(pWindow, &width, &height);
 
         if (!pWindow->swapchain) {
             // Surface Format
